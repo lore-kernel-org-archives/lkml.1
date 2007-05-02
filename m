@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992911AbXEBIrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992908AbXEBIsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992911AbXEBIrO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 04:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992916AbXEBIrO
+	id S2992908AbXEBIsy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 04:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992913AbXEBIsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 04:47:14 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:44426 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992908AbXEBIrN (ORCPT
+	Wed, 2 May 2007 04:48:54 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:55970 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992908AbXEBIsw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 04:47:13 -0400
-Date: Wed, 2 May 2007 01:46:17 -0700
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Dan Kruchinin <dubalom@gmail.com>, linux-kernel@vger.kernel.org,
-       Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
-       William Irwin <bill.irwin@oracle.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC BUG?] dereference PAGE_OFFSET address (rc7-mm2)
-Message-ID: <20070502084617.GY26598@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Dan Kruchinin <dubalom@gmail.com>, linux-kernel@vger.kernel.org,
-	Jeremy Fitzhardinge <jeremy@xensource.com>, Andi Kleen <ak@suse.de>,
-	Ingo Molnar <mingo@elte.hu>
-References: <a8f16e2b0705012026u6078f90dsbe55f854d8638795@mail.gmail.com> <20070502005140.b94500ff.akpm@linux-foundation.org>
+	Wed, 2 May 2007 04:48:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=cC1Ol54O6DqycDZUffH48u+wMGa8/TL5iIAxrywnfBcC3IQzVparziuLF0wnoNrD4nMOPiB539mgkrPcoRsbYzbyZI9kAn+9oxQoZRxmjVtXbfQlMOFizLiAi3vPVCLDM0dPGyjt6X9Ru8QZEnOpbGliQPxFdh/edceXFhC/PIc=
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: Mike Galbraith <efault@gmx.de>
+Subject: Re: [patch] CFS scheduler, -v8
+Date: Wed, 2 May 2007 04:48:45 -0400
+User-Agent: KMail/1.9.6
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Mark Lord <lkml@rtr.ca>,
+       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>,
+       Balbir Singh <balbir@in.ibm.com>
+References: <20070501212223.GA29867@elte.hu> <200705020403.35385.gene.heskett@gmail.com> <1178093536.8926.47.camel@Homer.simpson.net>
+In-Reply-To: <1178093536.8926.47.camel@Homer.simpson.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070502005140.b94500ff.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Message-Id: <200705020448.46255.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 12:51:40AM -0700, Andrew Morton wrote:
-> Thanks for the report.  I can reproduce it.
-> Bisection shows that x86_64-mm-paravirt-initial-pagetable.patch caused
-> this.
-> I didn't check whether the patch actually permits us to read kernel
-> memory.  Probably it does.  Probably we'd prefer that it didn't ;)
+On Wednesday 02 May 2007, Mike Galbraith wrote:
+>On Wed, 2007-05-02 at 04:03 -0400, Gene Heskett wrote:
+>> I just checked my logs, and it appears my workload didn't trigger this one
+>> Mike.
+>
+>It's just a build time compiler warning.
 
-Brown paper bag time. I don't know how it got past me.
+Duh.  I have a couple of pages of "may be used uninitialized" warnings.
+Including one in serial.c for the raw channel.  And I have a bit of trouble 
+there too.  Related?  Dunno.
 
+>> Ingo asked for a 0-100 rating, where 0 is mainline as I recall it, and 100
+>> is the best of the breed.  I'll give this one a 100 till something better
+>> shows up.
+>
+>Ditto.  (so far... ya never know;)
+>
+>	-Mike
 
--- wli
+Yup, this is sweet so far. :-)
+
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The vulcan-death-grip ping has been applied.
