@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbXEBHWt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161717AbXEBHZl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbXEBHWt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 03:22:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbXEBHWt
+	id S1161717AbXEBHZl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 03:25:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161746AbXEBHZl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 03:22:49 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:13720 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbXEBHWr (ORCPT
+	Wed, 2 May 2007 03:25:41 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47205 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161717AbXEBHZk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 03:22:47 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=Xh3SxKBafFPDtmstVkQVr4cAprro9HfeIZfulCT/sqJKuONrYnbjxvSACgKVf0HRy
-	5G3sjdTGdmamct0++aKsw==
-Date: Wed, 2 May 2007 00:22:24 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] compiler: define __attribute_unused__
-In-Reply-To: <1178089444.28659.246.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0705020020420.22717@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com> 
- <1178084403.28659.222.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com> 
- <1178087393.28659.238.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0705012336430.22339@chino.kir.corp.google.com>
- <1178089444.28659.246.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 2 May 2007 03:25:40 -0400
+Date: Wed, 2 May 2007 00:25:38 -0700
+From: Paul Jackson <pj@sgi.com>
+To: "Paul Menage" <menage@google.com>
+Cc: rientjes@google.com, torvalds@linux-foundation.org,
+       clameter@cthulhu.engr.sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch] cpusets: allow empty {cpus,mems}_allowed to be set for
+ unpopulated cpuset
+Message-Id: <20070502002538.a863bf95.pj@sgi.com>
+In-Reply-To: <6599ad830705012036g21cc8470nff246e146b1e4023@mail.gmail.com>
+References: <Pine.LNX.4.64.0705011714490.6376@chino.kir.corp.google.com>
+	<20070501202201.6903d922.pj@sgi.com>
+	<6599ad830705012036g21cc8470nff246e146b1e4023@mail.gmail.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Rusty Russell wrote:
+Paul M wrote:
+> Otherwise the only way to reclaim
+> the node for a different sibling is to delete the cpuset.
 
-> 	That sounds exactly right to me!  If the author says it's optional, it
-> might be discarded.  If they say it's needed, it won't be.  At least,
-> when I'm coding and gcc warns me something is unused, this is the
-> decision I have to make ("is this really needed or not?").
-> 
+Ah - I just made sense of that sentence.
 
-Hi Rusty,
+It means that if a particular memory node is in one cpuset, and you'd
+like to have it in another cpuset instead, then with the existing
+kernel code, you had to special case the situation where this memory
+node was the last node in the original cpuset - deleting the cpuset
+just to do this.
 
-There are many instances in the tree of functions that have no callers 
-whatsoever because they've been commented out temporarily, disabled 
-through configuration, etc.  These are marked __attribute__ ((unused)) 
-right now so that the compiler doesn't emit a warning (and with gcc >=3.4 
-it doesn't even emit code for them).  What's __optional about these 
-functions if they have no callers?  They're unused.  So we cover all our 
-bases with __maybe_unused.
+Yeah - I have never given much thought to moving memory nodes from one
+cpuset to another.  No good reason; it just didn't happen to be a
+common operation for the uses of cpusets I cared about.
+
+I still have this niggling fear that there was something that passed my
+view, years ago, that this proposed change (to allow unpopulating a
+cpuset) will break.
+
+But I'll be damned if I can remember what it was.
+
+Ok ... if this patch passes my cpuset_test (guess I'll try that now)
+then I'm ok with this patch.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
