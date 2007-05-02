@@ -1,76 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767193AbXEBXGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767197AbXEBXHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767193AbXEBXGp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 19:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767196AbXEBXGo
+	id S1767197AbXEBXHB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 19:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767198AbXEBXHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 19:06:44 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53934 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767193AbXEBXGn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 19:06:43 -0400
-Date: Wed, 2 May 2007 16:06:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: lkml <linux-kernel@vger.kernel.org>, jwboyer@linux.vnet.ibm.com,
-       grant.likely@secretlab.ca, jketreno@linux.intel.com
-Subject: Re: [PATCH] lib/hexdump
-Message-Id: <20070502160635.31dd91e6.akpm@linux-foundation.org>
-In-Reply-To: <46391730.2080003@oracle.com>
-References: <20070502153556.3c995de7.randy.dunlap@oracle.com>
-	<20070502154557.b463c9c3.akpm@linux-foundation.org>
-	<46391730.2080003@oracle.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 2 May 2007 19:07:00 -0400
+Received: from smtp.gentoo.org ([140.211.166.183]:37348 "EHLO smtp.gentoo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767197AbXEBXG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 19:06:58 -0400
+From: Mike Frysinger <vapier@gentoo.org>
+Organization: wh0rd.org
+To: kai.germaschewski@gmx.de
+Subject: [patch] sanitize linux/isdn_divertif.h for userspace
+Date: Wed, 2 May 2007 19:07:06 -0400
+User-Agent: KMail/1.9.6
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705021907.07157.vapier@gentoo.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 02 May 2007 15:56:48 -0700
-Randy Dunlap <randy.dunlap@oracle.com> wrote:
+the isdn_divertif contains kernel-only references so ive wrapped them in 
+__KERNEL__ and add proper #include statements
 
-> Andrew Morton wrote:
-> > On Wed, 2 May 2007 15:35:56 -0700
-> > Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> > 
-> >> From: Randy Dunlap <randy.dunlap@oracle.com>
-> >>
-> >> Based on ace_dump_mem() from Grant Likely for the Xilinx 
-> >> SystemACE CompactFlash interface.
-> >>
-> >> Add hex_dumper() to lib/hexdump.c and linux/kernel.h.
-> >>
-> >> This patch adds the function 'hex_dumper' which can be used to perform a 
-> >> hex + ASCII dump of data to syslog, in an easily viewable format, thus
-> >> providing a common text hex dump format.
-> >>
-> >> It does not provide a hexdump_to_buffer() function.
-> >> if someone needs that, we'll have to add it.
-> >>
-> >> Example usage:
-> >> 	hex_dumper(KERN_DEBUG, data, length);
-> >>
-> > 
-> > Fair enough.  This is the sort of thing one could easily overdesign ;)
-> 
-> The Intel version also returned the number of bytes printed.
-> and they had a hexdump_to_buffer() for sysfs output.
-> 
-
-Yeah, that's where we get into creature feeping.  Really it should be
-passed the address of a function which performs the per-char output and
-which is passed a bunch of args so it can do its stuff.  But doing printk
-of a single char at a time is a bit inefficient and produces mangled output
-on SMP.  And then we don't know the length of the output and we'd like it
-dynamically allocated and on and on.
-
-Ho hum.  Perhaps a middle ground is to implement hexdump-to-memory as the
-core function.  hex_dumper() becomes a simple wrapper around that.  (but
-how big is its buffer?  One line would be OK, I guess)
-
-> OK, that's one way to do it.  I'll wait a bit for other comments.
-
-Good luck ;)
-
+Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+---
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 4ff0f57..ab2aaa2 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -91,7 +91,6 @@ header-y += ip_mp_alg.h
+ header-y += ipsec.h
+ header-y += ipx.h
+ header-y += irda.h
+-header-y += isdn_divertif.h
+ header-y += iso_fs.h
+ header-y += ixjuser.h
+ header-y += jffs2.h
+@@ -238,6 +237,7 @@ unifdef-y += ipv6.h
+ unifdef-y += ipv6_route.h
+ unifdef-y += isdn.h
+ unifdef-y += isdnif.h
++unifdef-y += isdn_divertif.h
+ unifdef-y += isdn_ppp.h
+ unifdef-y += isicom.h
+ unifdef-y += jbd.h
+diff --git a/include/linux/isdn_divertif.h b/include/linux/isdn_divertif.h
+index 0e7e44c..0df24b2 100644
+--- a/include/linux/isdn_divertif.h
++++ b/include/linux/isdn_divertif.h
+@@ -24,6 +24,10 @@
+ #define DIVERT_REL_ERR  0x04  /* module not registered */
+ #define DIVERT_REG_NAME isdn_register_divert
+ 
++#ifdef __KERNEL__
++#include <linux/isdnif.h>
++#include <linux/types.h>
++
+ /***************************************************************/
+ /* structure exchanging data between isdn hl and divert module */
+ /***************************************************************/ 
+@@ -40,3 +43,4 @@ typedef struct
+ /* function register */
+ /*********************/
+ extern int DIVERT_REG_NAME(isdn_divert_if *);
++#endif
