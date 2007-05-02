@@ -1,98 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750755AbXEBBm6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752812AbXEBB5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750755AbXEBBm6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 21:42:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751306AbXEBBm6
+	id S1752812AbXEBB5w (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 21:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbXEBB5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 21:42:58 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:20793 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750755AbXEBBm5 (ORCPT
+	Tue, 1 May 2007 21:57:52 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:23665 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752330AbXEBB5u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 21:42:57 -0400
+	Tue, 1 May 2007 21:57:50 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
   s=s1024; d=yahoo.com.au;
-  h=Received:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=2dujixeMWOf7xgGTq4XNxwNZt2wDrdk/e0R6blGElLvKvOZYNF6mLw3fCSoOkSpjJxgl86eiviM6a8yv9P0xeYO4olPiGa5fhrRZaaVkQ20Nqp3Bs1RDmyvh8/Q+FIchD2wix4DvgtxnAwAO3n2LulZdttsOiDVqbhkxg7k0jkc=  ;
-Message-ID: <4637EC95.2010501@yahoo.com.au>
-Date: Wed, 02 May 2007 11:42:45 +1000
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=xW0s4g+mOKyHJRvWGq2c1eY+qNUTdfIik0GiZ2QgJooOSfIc6P5BP8+yBaiC1ebEaXrHzd2/0JR6NGrL9RNwg74dGDWt/CgsjQXp7jFTUXEluQ0JiXuNJFwjTX+PHkVWyOTcSbypRxcEmILRrDTFLwauzZpGKfVUtF3S9M1q2nI=  ;
+X-YMail-OSG: rUhueyIVM1kMv7DmSI2poTKZaBYa9I8xuJyyhrp3T7TwmMB7Zsb0t2m_UXT2JmAkOz5dTRmKPg--
+Message-ID: <4637F014.7080409@yahoo.com.au>
+Date: Wed, 02 May 2007 11:57:40 +1000
 From: Nick Piggin <nickpiggin@yahoo.com.au>
 User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
 X-Accept-Language: en
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: mm-more-rmap-checking
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <Pine.LNX.4.64.0705011458060.16979@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0705011458060.16979@blonde.wat.veritas.com>
+To: rohitseth@google.com
+CC: "'Mike Stroyan'" <mike.stroyan@hp.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Hugh Dickins'" <hugh@veritas.com>,
+       "'Luck, Tony'" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+References: <200704281757.l3SHvUrs026921@smtp.corp.google.com>	 <46372706.5030609@yahoo.com.au> <1178066178.19466.67.camel@galaxy.corp.google.com>
+In-Reply-To: <1178066178.19466.67.camel@galaxy.corp.google.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Mon, 30 Apr 2007, Andrew Morton wrote:
+Rohit Seth wrote:
+> On Tue, 2007-05-01 at 21:39 +1000, Nick Piggin wrote:
 > 
->>... 
->> mm-more-rmap-checking.patch
->>...
+>>Rohit Seth wrote:
+> 
+> 
+>>>If a user is requesting kernel to do (for example) write on a page that is
+>>>already mapped with execute and write permissions then it should be treated
+>>>as if the user space is doing modifications to that page.  There is no
+>>>change in protections so lazy_prot_mmu_update shouldn't be called even
+>>>though PG_arch_1 is (I think) set.  Does it answer your concern?
 >>
->>Misc MM things.  Will merge.
+>>I'm not sure that I would agree. For direct modifications of memory via
+>>a passed in user virtual address, perhaps. For operations on pagecache,
+>>we may not even have a handle to issue the flush cache instruction on (ie.
+>>a user virtual address), let alone know whether anyone else is mapping
+>>the page.
+>>
 > 
 > 
-> Would Nick mind very much if I ask you to drop this one?
-> You did CC me ages ago, but I've only just run across it.
-> It's a small matter, but I'd prefer it dropped for now.
+> Can you please describe the page cache scenario in more detail?  IMO, if
+> a page is user mapped with at least one execute and write permission
+> then the responsibility of update caches lies with user.
 
-I guess I would prefer it to go under CONFIG_DEBUG_VM. Speaking
-of which, it would be nice to be able to turn that on unconditionally
-in -rc1. Although I may have put a few too many things under it, so
-it might slow down too much...
+What if a different user write(2)s the underlying page?
 
 
->>>Re-introduce rmap verification patches that Hugh removed when he removed
->>>PG_map_lock. PG_map_lock actually isn't needed to synchronise access to
->>>anonymous pages, because PG_locked and PTL together already do.
+>>>>What if you were to say remove all the PG_arch_1 code, and do 
+>>>>something really simple like flush icache in 
+>>>>flush_dcache_page? Would performance suffer horribly?
 >>>
->>>These checks were important in discovering and fixing a rare rmap corruption
->>>in SLES9.
+>>>
+>>>On Itanium, I think it will have some performance penalty (horrible or not I
+>>>don't know) as you will be invalidating the caches more often.  And they
+>>>alsways look for last 0.1% performance that they can get.
+>>
+>>Sure, but if we _only_ flushed when page_mapcount was raised,
 > 
 > 
-> It introduces some silly checks which were never in mainline,
-> nor so far as I can tell in SLES9: I'm thinking of those
-> +	BUG_ON(address < vma->vm_start || address >= vma->vm_end);
+> You will need this every time there is change in protection (e.g.
+> mprotect) not only when page_mapcount is raised.
 
-Yes, but IIRC I put that in because there was another check in
-SLES9 that I actually couldn't put in, but used this one instead
-because it also caught the bug we saw.
-
-
-> There are few callsites for these rmap functions, I don't think
-> they need to be checking their arguments in that way.
-> 
-> It also changes the inline page_dup_rmap (a single atomic increment)
-> into a bugchecking out-of-line function: do we really want to slow
-> down fork in that way, for 2.6.22 to fix a rare corruption in SLES9?
-
-This was actually a rare corruption that is also in 2.6.21, and
-as few rmap callsites as we have, it was never noticed until the
-SLES9 bug check was triggered.
-
-
-> What I really like about the patch is Nick's observation that my
-> 	/* else checking page index and mapping is racy */
-> is no longer true: a change we made to the do_swap_page sequence
-> some while ago has indeed cured that raciness, and I'm happy to
-> reintroduce the check on mapping and index in page_add_anon_rmap,
-> and his BUG_ON(!PageLocked(page)) there (despite BUG_ONs falling
-> out of fashion very recently).
-
-Hmm, I didn't notice the do_swap_page change, rather just derived
-its safety by looking at the current state of the code (which I
-guess must have been post-do_swap_page change)...
-
-Do you have a pointer to the patch, for my interest?
+Yeah, you would retain the flush on fault, I meant you would
+introduce a flush in flush_dcache_page for when mapcount is raised.
 
 -- 
 SUSE Labs, Novell Inc.
