@@ -1,71 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766794AbXEBTmz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766806AbXEBTnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766794AbXEBTmz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:42:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766800AbXEBTmz
+	id S1766806AbXEBTnL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766810AbXEBTnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:42:55 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36660 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1766794AbXEBTmy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:42:54 -0400
-Date: Wed, 2 May 2007 12:42:54 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub
-In-Reply-To: <20070502121105.de3433d5.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705021234470.1543@schroedinger.engr.sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
- <20070501125559.9ab42896.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
- <20070501133618.93793687.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705021346170.16517@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705021002040.32271@schroedinger.engr.sgi.com>
- <20070502121105.de3433d5.akpm@linux-foundation.org>
+	Wed, 2 May 2007 15:43:10 -0400
+Received: from holomorphy.com ([66.93.40.71]:40780 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1766806AbXEBTnG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 15:43:06 -0400
+Date: Wed, 2 May 2007 12:42:47 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ting Yang <tingy@cs.umass.edu>,
+       linux-kernel@vger.kernel.org, "Tong N. Li" <tong.n.li@intel.com>
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070502194247.GW31925@holomorphy.com>
+References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu> <20070502173634.GA11308@in.ibm.com> <20070502174829.GX19966@holomorphy.com> <20070502181533.GA19479@elte.hu> <20070502185613.GU31925@holomorphy.com> <20070502191235.GA2455@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502191235.GA2455@elte.hu>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Andrew Morton wrote:
+* William Lee Irwin III <wli@holomorphy.com> wrote:
+>> Things are moving in good directions on all this as far as I'm 
+>> concerned. Moving according to Ting Yang's analysis should wrap up the 
+>> soundness concerns about intra-queue policy I've had. OTOH load 
+>> balancing I know much less about (not that I was ever any sort of an 
+>> expert on single queue affairs). [...]
 
-> > At some point I dream that SLUB could become the default but I thought 
-> > this would take at least 6 month or so. If want to force this now then I 
-> > will certainly have some busy weeks ahead.
-> 
-> s/dream/promise/ ;)
-> 
-> Six months sounds reasonable - I was kind of hoping for less.  Make it
-> default-to-on in 2.6.23-rc1, see how it goes.
+On Wed, May 02, 2007 at 09:12:35PM +0200, Ingo Molnar wrote:
+> the whole move to ->load_weight based calculations was to make CFS 
+> integrate better with load-balancing and to bring the smpnice 
+> infrastructure even more into the scheduler mainstream. [ There's a 
+> small smpnice related buglet i fixed in -v9-to-be (based on Balbir 
+> Singh's feedback), but otherwise it behaves quite well on SMP and that's 
+> not a big surprise: i left the load-balancer largely intact. ]
 
-Here is how I think the future could develop
+Despite the original motive, the ->load_weight -based calculations
+largely resolved my concerns about intra-queue prioritization. They
+were the change to the ->fair_key computation I wanted to see, which
+were still not enough because of the O(rq->nr_running) lag issue due to
+the differences from EEVDF, but I wasn't entirely aware of that, only
+suspicious that some issue remained.
 
-Cycle	SLAB		SLUB		SLOB		SLxB
+Load balancing has non-negligible impacts on fairness but I'm almost
+entirely ignorant of the aspects of the theory relating to it. More
+knowledgeable people, e.g. Tong Li and Ting Yang, need to take over
+reviewing here much as they did on the intra-queue front, where I only
+knew enough to drop hints and not to make more useful suggestions.
 
-2.6.22	API fixes	Stabilization	API fixes
+O(1) vs. O(lg(n)) priority queues are not what matter here (well,
+obviously O(n) priority queues would break), but rather O(1) vs. O(n)
+lag.
 
-Major event: SLUB availability as experimental
 
-2.6.23	API upgrades	Perf. Valid.	EOL
-
-Major events: SLUB performance validation. Switch off
-	experimental (could even be the default) 
-	Slab allocators support targeted reclaim for at
-	least one slab cache (dentry?)
-	(vacate/move all objects in a slab)
-
-2.6.24	Earliest EOL	Stable		- 		Experiments
-
-Major events: SLUB stable. Stable targeted reclaim
-		for all major reclaimable slabs.
-		Maybe experiments with another new allocator?
-
-2.6.25	EOL		default		-		?
-
-Death of SLAB. SLUB default. Hopefully new ideas on the horizon.
-
+-- wli
