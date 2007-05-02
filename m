@@ -1,76 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767206AbXEBSwx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767210AbXEBSw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767206AbXEBSwx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:52:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767210AbXEBSwx
+	id S1767210AbXEBSw4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767211AbXEBSwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:52:53 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60615 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767206AbXEBSwv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:52:51 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4638DDCF.7080304@s5r6.in-berlin.de>
-Date: Wed, 02 May 2007 20:51:59 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Wed, 2 May 2007 14:52:55 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:35413 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767210AbXEBSwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:52:54 -0400
+Date: Thu, 3 May 2007 00:22:35 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Nathan Lynch <ntl@pobox.com>
+Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ashok.raj@intel.com,
+       heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: /sys/devices/system/cpu/*: Present cpus or Possible cpus
+Message-ID: <20070502185235.GA6859@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20070502110022.GA13040@in.ibm.com> <20070502163757.GF30688@localdomain>
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: Adrian Bunk <bunk@stusta.de>, Olaf Hering <olh@suse.de>,
-       =?ISO-8859-1?Q?Kristian_H=F8gsberg?= <krh@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>
-Subject: Re: [git pull] New firewire stack
-References: <4637A29F.6070302@redhat.com> <20070502122147.GA31215@suse.de> <4638888B.4080908@s5r6.in-berlin.de> <200705020956.59804.gene.heskett@gmail.com>
-In-Reply-To: <200705020956.59804.gene.heskett@gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502163757.GF30688@localdomain>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> On Wednesday 02 May 2007, Stefan Richter wrote:
->> Olaf Hering wrote:
->>> NACK.
->>> Upgrade the current drivers/ieee1394/ with the new code,
->>> and keep all existing module names.
->> I'm impartial to that.  Using same names might ease the transition from
->> the userspace side, as far as there is userland which relies on module
->> names.
->>
->> A certain drawback of same names would be that geeks cannot install both
->> stacks at once during the transition period.
-[...]
-> So I'd vote unconditionally to have 2 trees to select 
-> from at module load time until the shakeout has produced usable code in the 
-> 2nd tree.
-[...]
+On Wed, May 02, 2007 at 11:37:57AM -0500, Nathan Lynch wrote:
+> Hi Gautham-
+> 
+> I believe that the powerpc behavior was established before
+> cpu_present_map was introduced.
 
-Adrian Bunk wrote:
-> An advantage of changing the names is that they are now prefixed.
-> But looking at them, there will again be the point whether everyone will 
-> think that "fw" is firmware, and perhaps switching to the (although 
-> longer) prefix "firewire" might make sense?
+Ok. I guess the same is the reason with a few other architectures like 
+s390.
 
+> 
+> 
+> > I am not entirely surely if it's due cpu hotplug because 
+> > both i386 and powerpc support it!
+> 
+> powerpc also supports processor add and remove (as opposed to
+> online/offline); i386 does not AFAIK.  I think this may be a reason
+> for the difference.
+> 
 
-Whatever names the FireWire modules will get, we shouldn't change the
-names anymore _after_ the new code appears in mainline.
+Well, ACPI seems to be supporting it.
+acpi_processor_hotadd_init() in drivers/acpi/processor_core.c appears 
+to be equivalent to pSeries_add_processor(), except that the former
+creates the sysfs entries on a hot add, while the later just updates
+the cpu_present map.
 
-Anyway, if the same names really should be used, as Olaf demands, then
-it affects at most ohci1394, sbp2, eth1394, ieee1394.  However, ieee1394
-is probably never loaded explicitly by scripts (only auto-loaded per
-dependency of the others), and the other three all have proper module
-aliases.
+> 
+> > When I do a 
+> > "echo 1 > /sys/devices/system/cpu/cpuX/online" on a power box as root, 
+> > I might get "-bash: echo: write error: Invalid argument" 
+> > because cpuX might not be present!
+> >
+> > In case of lpar, cpu_present_map need not necessarily be equal to
+> > cpu_possible_map, so the above error is observable.
+> 
+> Working as intended.  You have to add a cpu to the partition before
+> you can online it.
+> 
+> 
+> > Is this discrepency intentional ?
+> > Or is it due to the fact that in most cases,
+> > cpu_present_map == cpu_possible_map, so lets not bother about it :-?
+> 
+> I think it's the inevitable result when architectures are free to
+> invent their own versions of the same sysfs interface.  But is it
+> really causing a problem in this case?
+> 
 
-If the new modules are meant to look like the old ones, then there is
-also the problem with module parameters.  Many of the old stack's module
-parameters are merely there as hacks or workarounds though;  therefore
-they shouldn't appear in shipped scripts and shipped configurations anyway.
+No, it is not causing any problems :-)
+I was just overwhelmed to see cpu0 to cpu77 in the sysfs entries on the
+lpar which I was using. Looking at the kernel code, I figured out that
+the MAX_CPUS for that lpar was 39 and each virtual cpu was probably
+running 2 threads. That explained the 78 sysfs entries.
+
+Thanks for the explaination anyway.
+Regards
+gautham.
 -- 
-Stefan Richter
--=====-=-=== -=-= ---=-
-http://arcgraph.de/sr/
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
