@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754123AbXEBTLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993130AbXEBTLP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754123AbXEBTLT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 15:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbXEBTLT
+	id S2993130AbXEBTLP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 15:11:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993136AbXEBTLP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 15:11:19 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:52148 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754123AbXEBTLR (ORCPT
+	Wed, 2 May 2007 15:11:15 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3868 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993130AbXEBTLN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 15:11:17 -0400
-Date: Wed, 2 May 2007 20:15:11 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Ioan Ionita" <opslynx@gmail.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       htejun@gmail.com
-Subject: Re: More JMicron troubles with 2.6.21
-Message-ID: <20070502201511.4c8085e9@the-village.bc.nu>
-In-Reply-To: <df47b87a0705021037k7dc2d408mcdddbc83daa3b68b@mail.gmail.com>
-References: <df47b87a0705021037k7dc2d408mcdddbc83daa3b68b@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Wed, 2 May 2007 15:11:13 -0400
+Date: Wed, 2 May 2007 20:11:01 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Stefan Roese <ml@stefan-roese.de>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Correct location for ADC/DAC drivers
+Message-ID: <20070502191101.GB16696@flint.arm.linux.org.uk>
+Mail-Followup-To: Robert Schwebel <r.schwebel@pengutronix.de>,
+	Stefan Roese <ml@stefan-roese.de>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <200705011435.45046.ml@stefan-roese.de> <Pine.LNX.4.60.0705012301500.4972@poirot.grange> <200705021225.54417.ml@stefan-roese.de> <20070502133512.GK22585@pengutronix.de>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502133512.GK22585@pengutronix.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have an Asus Commando Mobo with one of those dreadful JMicron
-> controllers (JMicron 20360/20363 AHCI Controller (rev 02). I have a
+On Wed, May 02, 2007 at 03:35:12PM +0200, Robert Schwebel wrote:
+> On Wed, May 02, 2007 at 12:25:53PM +0200, Stefan Roese wrote:
+> > Is there a maintainer for this "drivers/mfd" directory?
+> 
+> rmk
 
-The Jmicron controllers get a lot of testing so should run smoothly.
+I wouldn't go that far.  There's no real infrastructure there
+to maintain, so I'd actually say that the directory was
+maintainerless.  However, I'll own up to the UCB/MCP drivers
+in there.
 
-> I can't get my CD-RW to work. have tried the pata_jmicron driver and
-> the JMicron  ide driver, no success.
-
-This is almost certainly a problem outside of the IDE handling in that
-case. The jmicron controllers are smart, there is basically no code to
-the IDE driver to go wrong (especially in the case of using the old IDE
-for the PATA port where you basically use zero code that hasn't been
-tested for years).
-
-Do you get the odd timeout or continuous timeouts ?
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
