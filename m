@@ -1,68 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767158AbXEBSa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767163AbXEBSdM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767158AbXEBSa2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 14:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767159AbXEBSa1
+	id S1767163AbXEBSdM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 14:33:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767169AbXEBSdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 14:30:27 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:39697 "EHLO mailer.gwdg.de"
+	Wed, 2 May 2007 14:33:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37396 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767158AbXEBSaZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 14:30:25 -0400
-Date: Wed, 2 May 2007 20:22:23 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Rene Herman <rene.herman@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-In-Reply-To: <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.61.0705022017360.18504@yvahk01.tjqt.qr>
-References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org>
- <4637A3F6.70508@gmail.com> <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org>
+	id S1767163AbXEBSdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 14:33:11 -0400
+Date: Wed, 2 May 2007 13:13:56 -0300
+From: Glauber de Oliveira Costa <gcosta@redhat.com>
+To: Andi Kleen <ak@novell.com>
+Cc: Mark Lord <lkml@rtr.ca>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Remove unnecessary irq disabling
+Message-ID: <20070502161356.GA8485@redhat.com>
+References: <20070501213050.GD6119@redhat.com> <4637D459.2040502@rtr.ca> <20070502044424.GA7049@redhat.com> <200705021158.17759.ak@novell.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705021158.17759.ak@novell.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On May 1 2007 14:41, Linus Torvalds wrote:
->On Tue, 1 May 2007, Rene Herman wrote:
->> 
->> The answer will probably be "no", but would this be a good point to ask if
->> this would be a good time to not bother with the mode switching code at all
->> anymore?
->
->The standard extended modes are actually really useful, if for a very 
->simply reason: they give you bigger more lines on screen when a bug 
->happens.
->
->So I _still_ occasionally use "vga=extended" just for that reason. The  
->default 80x25 thing scrolls most oops away.
->[...]
->80x50 is useful for the above reason. Yeah, it's ugly, but it's useful for 
->the "It's too much work to try to do anything but just take a digital 
->photo of the screen". And that 50-line mode will actually be 43 in EGA 
->mode, I think.
->
->The 132x50 mode is probably a bit prettier, and is fairly common too, and 
->useful for the same reason.
-
-Seconded. 80x50, and where platforms support it, *80x60 and 132x60*,
-is kinda handy (despite the font getting smaller and smaller, heh),
-esp. when you don't run it in VMware and not have some capturing
-device (serial con/netconsole.. takes time to set up)
-
->And yes, I'm literally talking about the *text* modes. Not all of us want 
->to have fbcon built in - I prefer my text-mode lean and mean and fast as 
->hell, and if I want a frame buffer, I'll take X11, thank you very much.
-
-You speak for me :)
-
-
-
-Jan
+On Wed, May 02, 2007 at 11:58:17AM +0200, Andi Kleen wrote:
+> 
+> > > What does that break, or was it already broken and this fixes it?
+> > I think neither. This function is only called at early bootup,
+> > (start_secondary() ), and most of its callees have interrupts off anyway.
+> > But maybe we do lose something. Andi, do you have a word on this?
+> 
+> We need to enable them somewhere, but cpu_idle will do it in the end.
+> So it should be safe to drop it. I guess keeping them disabled the whole
+> time will be a little safer against potential races.
+yeah, that's exactly what I've thought. We enable interrupts (to disable
+them afterwards) in smp_callin(), to avoid waking up Mr. Watchdog. I
+guess it won't be a problem after that, will it?
+ 
 -- 
+Glauber de Oliveira Costa
+Red Hat Inc.
+"Free as in Freedom"
