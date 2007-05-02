@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767026AbXEBVUJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161000AbXEBVUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767026AbXEBVUJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:20:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767030AbXEBVUJ
+	id S1161000AbXEBVUy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161789AbXEBVUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:20:09 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:39363 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767026AbXEBVUH (ORCPT
+	Wed, 2 May 2007 17:20:54 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:50617 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161000AbXEBVUx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:20:07 -0400
-X-Sasl-enc: rPZfs8lHirMdSwAWtltn1opcvn572TfTXTa90/iEzmFX 1178140806
-Message-ID: <46390129.4020801@imap.cc>
-Date: Wed, 02 May 2007 23:22:49 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Hugh Dickins <hugh@veritas.com>
-Subject: Re: 2.6.21-rc7-mm2 crash: Eeek! page_mapcount(page) went negative!
- (-1)
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>	<46338AEB.2070109@imap.cc>	<20070428141024.887342bd.akpm@linux-foundation.org>	<4636248E.7030309@imap.cc>	<20070430112130.b64321d3.akpm@linux-foundation.org>	<46364346.6030407@imap.cc>	<20070430124638.10611058.akpm@linux-foundation.org>	<46383742.9050503@imap.cc>	<20070502001000.8460fb31.akpm@linux-foundation.org>	<20070502075238.GA9083@suse.de>	<4638CC03.7030903@imap.cc> <20070502130746.265bba0f.akpm@linux-foundation.org>
-In-Reply-To: <20070502130746.265bba0f.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig00F219DB640D3586A4CAC9A8"
+	Wed, 2 May 2007 17:20:53 -0400
+Date: Wed, 2 May 2007 14:20:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Markus Rechberger" <markus.rechberger@amd.com>
+Cc: linux-kernel@vger.kernel.org,
+       Dominik Brodowski <linux@dominikbrodowski.net>
+Subject: Re: [PATCH] pcmcia/pccard deadlock fix
+Message-Id: <20070502142014.b1f1d77e.akpm@linux-foundation.org>
+In-Reply-To: <45DB0EDB.3090803@amd.com>
+References: <45DB0EDB.3090803@amd.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig00F219DB640D3586A4CAC9A8
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+> On Tue, 20 Feb 2007 16:08:11 +0100
 
-Am 02.05.2007 22:07 schrieb Andrew Morton:
->> Started to git-bisect mainline now, but that will take some time.
-[...]
-> I don't think there's much point in you doing that.  We know what the b=
-ug is.
+20 Feb was a long time ago, sorry.  I was hoping to feed the pcmcia patches
+through Dominik but I think he's busy with exams or such.  So I get to
+pretend to be pcmcia maintainer.
 
-Good. Saves me some work. :-)
+"Markus Rechberger" <markus.rechberger@amd.com> wrote:
 
-If you'd like me to test anything, just let me know.
+> following patch prevents a mutex/semaphore deadlock within the pcmcia
+> framework when ejecting devices multiple times using pccardctl eject.
+> 
+> For some more details see:
+> http://lkml.org/lkml/2007/2/19/58
+> 
+> Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
+> 
+> -- 
+> Markus Rechberger
+> Operating System Research Center
+> AMD Saxony LLC & Co. KG
+> 
+> 
+> 
+> [pcmcia-pccard-deadlock-fix.diff  text/plain (757B)]
+> index ac00424..c02bf0d 100644
+> --- a/drivers/pcmcia/cs.c
+> +++ b/drivers/pcmcia/cs.c
+> @@ -856,7 +856,8 @@ int pcmcia_eject_card(struct pcmcia_socket *skt)
+>      
+>  	cs_dbg(skt, 1, "user eject request\n");
+>  
+> -	mutex_lock(&skt->skt_mutex);
+> +	if (!mutex_trylock(&skt->skt_mutex)) 
+> +		return -EAGAIN;
+>  	do {
+>  		if (!(skt->state & SOCKET_PRESENT)) {
+>  			ret = -ENODEV;
+> index 18e111e..b9d3440 100644
+> --- a/drivers/pcmcia/ds.c
+> +++ b/drivers/pcmcia/ds.c
+> @@ -1100,7 +1100,9 @@ static ssize_t pcmcia_store_allow_func_id_match(struct device *dev,
+>  	if (!count)
+>  		return -EINVAL;
+>  
+> -	mutex_lock(&p_dev->socket->skt_mutex);
+> +	if (!mutex_trylock(&p_dev->socket->skt_mutex)) 
+> +		return -EAGAIN;
+> +
+>  	p_dev->allow_func_id_match = 1;
+>  	mutex_unlock(&p_dev->socket->skt_mutex);
+>  
 
-Thanks,
-Tilman
+This is a pretty sad-looking solution.  Does it not mean that sometimes
+user-initiated actions will mysteriously fail?
 
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-- Undetected errors are handled as if no error occurred. (IBM) -
+Are you able to provide a more detailed description of why/how the deadlock
+actually occurs so that perhaps a more robust fix can be implemented?
 
-
---------------enig00F219DB640D3586A4CAC9A8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGOQExMdB4Whm86/kRAm9jAJ9DZjLpQWN1FY27ZWHT1smk0xojlwCggv1N
-1KQiVAt6tlPyy73mtjYL1DI=
-=+Q0I
------END PGP SIGNATURE-----
-
---------------enig00F219DB640D3586A4CAC9A8--
+Thanks.
