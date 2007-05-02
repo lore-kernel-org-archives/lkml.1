@@ -1,40 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993213AbXEBOE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993219AbXEBOHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993213AbXEBOE6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 10:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993215AbXEBOE6
+	id S2993219AbXEBOHL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 10:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993210AbXEBOHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 10:04:58 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:55590 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993213AbXEBOE5 (ORCPT
+	Wed, 2 May 2007 10:07:10 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:47423 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993217AbXEBOHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 10:04:57 -0400
-Date: Wed, 2 May 2007 15:04:44 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Phillip Susi <psusi@cfl.rr.com>
-cc: Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Execute in place
-In-Reply-To: <4637B751.1080907@cfl.rr.com>
-Message-ID: <Pine.LNX.4.64.0705021502450.16517@blonde.wat.veritas.com>
-References: <4637B751.1080907@cfl.rr.com>
+	Wed, 2 May 2007 10:07:08 -0400
+From: Thomas Klein <osstklei@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH] ehea: Fix skb header access
+Date: Wed, 2 May 2007 16:07:05 +0200
+User-Agent: KMail/1.8.2
+Cc: Christoph Raisch <raisch@de.ibm.com>,
+       "Jan-Bernd Themann" <ossthema@de.ibm.com>,
+       "Jan-Bernd Themann" <themann@de.ibm.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-ppc" <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>,
+       netdev <netdev@vger.kernel.org>, Thomas Klein <tklein@de.ibm.com>,
+       Stefan Roscher <ossrosch@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 02 May 2007 14:04:56.0948 (UTC) FILETIME=[DD681B40:01C78CC2]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAAAmluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAcHN1c2lAY2ZsLnJyLmNvbQA=
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705021607.05338.osstklei@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Phillip Susi wrote:
-> I seem to remember seeing some patches go by at some point that allowed one of
-> the rom type embeded system filesystems to directly execute binaries out of
-> the original rom memory rather than copying them to ram first, then executing
-> from there.  I was wondering if rootfs or tmpfs support such execute in place
-> today, or if binaries executed from there have their code segments duplicated
-> in ram?
+Adapt to new skb header access functions.
 
-Only ext2 supports it today: see Documentation/filesystems/xip.txt
+Signed-off-by: Thomas Klein <tklein@de.ibm.com>
+---
 
-Hugh
+
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index c7a5614..7211648 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -1803,10 +1803,10 @@ static inline int ehea_hash_skb(struct s
+ 	u32 tmp;
+ 
+ 	if ((skb->protocol == htons(ETH_P_IP)) &&
+-	    (skb->nh.iph->protocol == IPPROTO_TCP)) {
+-		tcp = (struct tcphdr*)(skb->nh.raw + (skb->nh.iph->ihl * 4));
++	    (ip_hdr(skb)->protocol == IPPROTO_TCP)) {
++		tcp = (struct tcphdr*)(skb_network_header(skb) + (ip_hdr(skb)->ihl * 4));
+ 		tmp = (tcp->source + (tcp->dest << 16)) % 31;
+-		tmp += skb->nh.iph->daddr % 31;
++		tmp += ip_hdr(skb)->daddr % 31;
+ 		return tmp % num_qps;
+ 	}
+ 	else
+
+
