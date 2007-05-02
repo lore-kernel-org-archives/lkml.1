@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161182AbXEBGHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992764AbXEBGJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161182AbXEBGHQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 02:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161263AbXEBGHP
+	id S2992764AbXEBGJI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 02:09:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992788AbXEBGJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 02:07:15 -0400
-Received: from www.osadl.org ([213.239.205.134]:54443 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1161182AbXEBGHO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 02:07:14 -0400
-Subject: Re: [patch 0/3] Clocksource / clockevent updates
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       John Stultz <johnstul@us.ibm.com>
-In-Reply-To: <20070501173356.15e9d482.akpm@linux-foundation.org>
-References: <20070430102837.748238000@linutronix.de>
-	 <20070501173356.15e9d482.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 08:09:29 +0200
-Message-Id: <1178086170.5791.338.camel@localhost.localdomain>
+	Wed, 2 May 2007 02:09:08 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:43766 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S2992764AbXEBGJG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 02:09:06 -0400
+Date: Tue, 1 May 2007 23:08:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/10] compiler: define __attribute_unused__
+Message-Id: <20070501230858.b29564ef.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705012252020.21669@chino.kir.corp.google.com>
+References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com>
+	<20070502051723.GB5843@martell.zuzino.mipt.ru>
+	<Pine.LNX.4.64.0705012252020.21669@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-01 at 17:33 -0700, Andrew Morton wrote:
-> On Mon, 30 Apr 2007 10:43:31 -0000
-> Thomas Gleixner <tglx@linutronix.de> wrote:
+On Tue, 1 May 2007 22:53:52 -0700 (PDT) David Rientjes <rientjes@google.com> wrote:
+
+> On Wed, 2 May 2007, Alexey Dobriyan wrote:
 > 
-> > Andrew,
+> > On Tue, May 01, 2007 at 09:28:18PM -0700, David Rientjes wrote:
+> > > +#define __attribute_unused__		__attribute__((unused))
 > > 
-> > please pick up the following updates to clocksource / clockevents:
-> > 
-> > - Fixups to the resume logic
-> > - Keep TSC stable, when lapic_timer_c2_ok is set
+> > Suggest __unused which is shorter and looks compiler-neutral.
 > > 
 > 
-> Should we be targetting these at 2.6.20.x?
+> So you would also suggest renaming __attribute_used__ and all 48 of its 
+> uses to __used?
 
-2.6.21.x ?
+Or __needed or __unneeded.  None of them mean much to me and I'd be forever
+going back to the definition to work out what was intended.
 
-Hmm. They should get some testing first, but otherwise yes.
-
-	tglx
-
+We're still in search of a name, IMO.  But once we have it, yeah, we should
+update all present users.  We can do that over time: retain the old and new
+definitions for a while.
 
