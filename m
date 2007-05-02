@@ -1,57 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993462AbXEBQUA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993463AbXEBQUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993462AbXEBQUA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:20:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993463AbXEBQUA
+	id S2993463AbXEBQUS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993464AbXEBQUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:20:00 -0400
-Received: from lucidpixels.com ([75.144.35.66]:37066 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993462AbXEBQT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:19:59 -0400
-Date: Wed, 2 May 2007 12:19:14 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: "Williams, Dan J" <dan.j.williams@intel.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, neilb@suse.de,
-       akpm@linux-foundation.org,
-       "Leech, Christopher" <christopher.leech@intel.com>,
-       linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org
-Subject: RE: [PATCH 00/16] raid acceleration and asynchronous offload api
- for 2.6.22
-In-Reply-To: <0C7297FA1D2D244A9C7F6959C0BF1E5201CA8E4D@azsmsx413.amr.corp.intel.com>
-Message-ID: <Pine.LNX.4.64.0705021218380.25382@p34.internal.lan>
-References: <0C7297FA1D2D244A9C7F6959C0BF1E5201CA8E4D@azsmsx413.amr.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 2 May 2007 12:20:18 -0400
+Received: from public.id2-vpn.continvity.gns.novell.com ([195.33.99.129]:54536
+	"EHLO gwia-smtp.id2.novell.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S2993463AbXEBQUQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 12:20:16 -0400
+Message-Id: <4638D66D.76E4.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 7.0.1 
+Date: Wed, 02 May 2007 17:20:29 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Cc: <prarit@redhat.com>, "Haruo Tomita" <haruo.tomita@toshiba.co.jp>,
+       "lkml" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] Fix the memory leak Intel RNG driver for
+	2.6.21-rc7-mm1
+References: <BF571719A4041A478005EF3F08EA6DF004332395@pcsmail03.pcs.pc.ome.toshiba.co.jp>
+ <20070428001950.6c1fd98a.akpm@linux-foundation.org>
+In-Reply-To: <20070428001950.6c1fd98a.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>Prarit, Jan: here's the original patch plus the two fixups.  Could you please
+>re-review and ideally re-test this, let me know the result?
 
+Works fine for me - ack. Jan
 
-On Wed, 2 May 2007, Williams, Dan J wrote:
-
->> From: Justin Piszcz [mailto:jpiszcz@lucidpixels.com]
->> I have not been following this closely, must you have an
->> CONFIG_INTEL_IOP_ADMA piece of hardware and/or chipset to use this
->> feature or can regular desktop users take hold of it as well?
->>
-> Currently this feature is available on the iop series of processors,
-> e.g. http://www.intel.com/design/iio/iop348.htm
->
-> And there is a driver in the works to support the 440spe platform
-> (http://marc.info/?l=linux-raid&m=117400143317440&w=2)
->
-> Desktops currently take advantage of architecture specific SIMD
-> instructions to accelerate xor calculations.
->
->> Justin.
->
-> Dan
->
-
-Ahh-- these are the family of chips in the Areca controllers (or close to 
-them)-- so md/software raid will utilize the HW functions of the chip? 
-If so, that is pretty slick :)
-
-Justin.
