@@ -1,82 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030351AbXEBHrx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753650AbXEBHsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030351AbXEBHrx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 03:47:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030847AbXEBHrx
+	id S1753650AbXEBHsl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 03:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXEBHsl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 03:47:53 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:33400 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030351AbXEBHrv (ORCPT
+	Wed, 2 May 2007 03:48:41 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:52930 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753329AbXEBHsk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 03:47:51 -0400
-X-Originating-Ip: 74.109.98.66
-Date: Wed, 2 May 2007 03:47:26 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: David Rientjes <rientjes@google.com>
-cc: Alexey Dobriyan <adobriyan@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] compiler: define __attribute_unused__
-In-Reply-To: <Pine.LNX.4.64.0705020015470.22717@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0705020344480.6259@localhost.localdomain>
-References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com>
- <20070502051723.GB5843@martell.zuzino.mipt.ru>
- <Pine.LNX.4.64.0705020257520.5859@localhost.localdomain>
- <Pine.LNX.4.64.0705020015470.22717@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Wed, 2 May 2007 03:48:40 -0400
+Date: Wed, 2 May 2007 00:48:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Juergen Beisert <juergen127@kreuzholzen.de>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [PATCH] [1/1] CPU-i386-Geode: Chipset access macros do not work
+ as expected (2nd try)
+Message-Id: <20070502004824.9f9cbdfe.akpm@linux-foundation.org>
+In-Reply-To: <200705020917.00134.juergen127@kreuzholzen.de>
+References: <200704301409.l3UE9sFg019392@harpo.it.uu.se>
+	<200704301733.41903.juergen127@kreuzholzen.de>
+	<20070501174808.4ac5378b.akpm@linux-foundation.org>
+	<200705020917.00134.juergen127@kreuzholzen.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, David Rientjes wrote:
+On Wed, 2 May 2007 09:16:59 +0200 Juergen Beisert <juergen127@kreuzholzen.de> wrote:
 
-> On Wed, 2 May 2007, Robert P. J. Day wrote:
->
-> >   not only that, but there are numerous files that *already* use
-> > "__unused":
 > >
-> > $ grep -rw __unused *
-> > ... snip lots of output here ...
+> > This clashes with Andi's "msr-index" patch:
 > >
-> > as well as a few files that can now have their definition of that
-> > removed:
-> >
-> > $ grep -r "define __unused" *
-> > drivers/net/defxx.c:#define __unused __attribute__ ((unused))
-> > drivers/net/declance.c:#define __unused __attribute__ ((unused))
-> > drivers/misc/thinkpad_acpi.c:#define __unused __attribute__ ((unused))
-> >
-> >   i think "__unused" is the clear choice here.
-> >
->
-> No, it's not the clear choice.  This would apply to both functions
-> and variables so the suppress a compiler warning for a variable
-> whose use depends on preprocessor macros, I would have to use
-> __unused even though it may be used.
->
-> Hence, I recommend __maybe_unused.
+> > ftp://ftp.firstfloor.org/pub/ak/x86_64/quilt/patches/msr-index
+> 
+> I see. He also moves these defines to another file. Not problem where they 
+> are. But it isn't possible to replace the macros by the inlined functions in 
+> processor.h. The used outb/inb macros fail for various other files.
 
-sorry, i worded that badly.  i suggested that "__unused" was the clear
-choice only because it already had significant historical precedent
-and people on this list are notorious for not liking major, disruptive
-changes.
+Oh well.  Please work out what you think needs to be done.
 
-if no one objects to changing the existing occurrences, then no
-problem.
+> > Perhaps it'd be best to wait until msr-index goes upstream and to raise a
+> > patch then.  Or to redo and retest against 2.6.21-rc7-mm2, which includes
+> > msr-index.
+> 
+> All right. To wait is no problem for me (my system works with my 
+> patch.... ;-) )
+> 
+> > Also, include/asm-x86_64/processor.h has a getCx86(), too.  Does it also
+> > need fixing?
+> 
+> As I can see the macros are used in:
+>  - i386/kernel/cpu/cpufreq/gx-suspmod.c (ups, its not in my patch, so it is
+>    currently no complete)
+>  - i386/kernel/cpu/mtrr/state.c (also not part of my patch yet)
+>  - i386/kernel/cpu/cyrix.c
+>  - i386/kernel/cpu/mtrr/cyrix.c
+> 
+> Most comments states Cyrix CPUs when they are using the macros. Is anything 
+> with Cyrix 64 bit relevant? Maybe "include/asm-x86_64/processor.h" is a 
+> simple copy of "include/asm-i386/processor.h" and nobody delete the unused 
+> macros?
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+I don't think Cyrix make 64-bit stuff, surely.  Andi?
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+> Please keep me informed and I will resend the patch.
+> 
+
+Thanks.  I think Andi was after a better explanation of what was going
+wrong with the macros, too.  Please include that in the changelog.
+
