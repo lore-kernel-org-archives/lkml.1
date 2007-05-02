@@ -1,65 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755223AbXEBPrO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993378AbXEBPte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755223AbXEBPrO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 11:47:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXEBPrO
+	id S2993378AbXEBPte (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 11:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993358AbXEBPte
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 11:47:14 -0400
-Received: from h155.mvista.com ([63.81.120.155]:4347 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755223AbXEBPrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 11:47:12 -0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-To: tglx@linuxtronux.de
-Subject: [PATCH] clockchips.h: kernel-doc fix
-Date: Wed, 2 May 2007 19:48:47 +0400
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
+	Wed, 2 May 2007 11:49:34 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48296 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993378AbXEBPtd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 11:49:33 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Dean Nelson <dcn@sgi.com>
+Cc: akpm@linux-foundation.org, hch@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: "partical" kthread conversion
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<20070501084245.GA14364@infradead.org>
+	<20070501015141.f09f6dde.akpm@linux-foundation.org>
+	<20070502140115.GA23595@sgi.com>
+	<m11whzxp0d.fsf@ebiederm.dsl.xmission.com>
+	<20070502153727.GA31794@sgi.com>
+Date: Wed, 02 May 2007 09:49:05 -0600
+In-Reply-To: <20070502153727.GA31794@sgi.com> (Dean Nelson's message of "Wed,
+	2 May 2007 10:37:27 -0500")
+Message-ID: <m1r6pzw7im.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705021948.47563.sshtylyov@ru.mvista.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix misnamed fields of 'struct clock_event_device' in the kernel-doc comment.
-Convert the acronyms to uppercase, while at it...
+Dean Nelson <dcn@sgi.com> writes:
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> I'd typed up some questions for you about the new patch I need to create
+> which I'd just sent to you, so I won't repeat them here.
+>
+> Before proceeding to far with your above changes, you might wait to see
+> the proposal that Robin Holt is putting together for a kthread pool.
+> I'm not sure how spawning a thread (which involves allocation of the
+> task_struct amongst other things, plus scheduling) can beat a wake_up()
+> of an already existing thread for cost time-wise.
 
----
+A reasonable point, although if you don't happen to sleep in the allocations
+I suspect time wise it's pretty much a wash.
 
- include/linux/clockchips.h |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+I have some other reasons I might need the capability of clone a thread
+from a non-parent process, and it has the potential to simplify some things
+in the kthread case so I'm going to finish investigating, since I believe
+I have figured out a path to that target.
 
-Index: linux-2.6/include/linux/clockchips.h
-===================================================================
---- linux-2.6.orig/include/linux/clockchips.h
-+++ linux-2.6/include/linux/clockchips.h
-@@ -54,17 +54,17 @@ enum clock_event_nofitiers {
- /**
-  * struct clock_event_device - clock event device descriptor
-  * @name:		ptr to clock event name
-- * @hints:		usage hints
-+ * @features:		features
-  * @max_delta_ns:	maximum delta value in ns
-  * @min_delta_ns:	minimum delta value in ns
-  * @mult:		nanosecond to cycles multiplier
-  * @shift:		nanoseconds to cycles divisor (power of two)
-  * @rating:		variable to rate clock event devices
-- * @irq:		irq number (only for non cpu local devices)
-- * @cpumask:		cpumask to indicate for which cpus this device works
-- * @set_next_event:	set next event
-+ * @irq:		IRQ number (only for non CPU local devices)
-+ * @cpumask:		cpumask to indicate for which CPUs this device works
-+ * @set_next_event:	set next event function
-  * @set_mode:		set mode function
-- * @evthandler:		Assigned by the framework to be called by the low
-+ * @event_handler:	Assigned by the framework to be called by the low
-  *			level handler of the event source
-  * @broadcast:		function to broadcast events
-  * @list:		list head for the management code
-
+Eric
