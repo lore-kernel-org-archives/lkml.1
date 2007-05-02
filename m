@@ -1,70 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992680AbXEBD6I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992698AbXEBD60@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992680AbXEBD6I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 1 May 2007 23:58:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992692AbXEBD6I
+	id S2992698AbXEBD60 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 1 May 2007 23:58:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992704AbXEBD60
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 1 May 2007 23:58:08 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53174 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S2992680AbXEBD6G (ORCPT
+	Tue, 1 May 2007 23:58:26 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:50571 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992702AbXEBD6Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 1 May 2007 23:58:06 -0400
-Date: Tue, 1 May 2007 20:58:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nate Diller <nate.diller@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] zero_user_page uses in fs/buffer.c and fs/libfs.c
-In-Reply-To: <5c49b0ed0705011927n66208c1egd7cfdb6985dc901b@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705012046120.28655@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0704292313060.3018@schroedinger.engr.sgi.com> 
- <a781481a0704292353v34ea217fpbbf732465dd652e8@mail.gmail.com> 
- <Pine.LNX.4.64.0704300000430.3147@schroedinger.engr.sgi.com> 
- <20070501172643.270bb061.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0705011807550.28210@schroedinger.engr.sgi.com> 
- <5c49b0ed0705011916y89212c0v1cec1cb1edae052f@mail.gmail.com>
- <5c49b0ed0705011927n66208c1egd7cfdb6985dc901b@mail.gmail.com>
+	Tue, 1 May 2007 23:58:24 -0400
+Message-ID: <46380C49.3070404@linux.vnet.ibm.com>
+Date: Wed, 02 May 2007 09:28:01 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+Organization: IBM
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Paul Menage <menage@google.com>
+CC: vatsa@in.ibm.com, ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com,
+       haveblue@us.ibm.com, xemul@sw.ru, dev@sw.ru, containers@lists.osdl.org,
+       pj@sgi.com, devel@openvz.org, ebiederm@xmission.com, mbligh@google.com,
+       rohitseth@google.com, serue@us.ibm.com, akpm@linux-foundation.org,
+       svaidy@linux.vnet.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [ckrm-tech] [PATCH 3/9] Containers (V9): Add tasks file interface
+References: <20070427104607.252541000@menage.corp.google.com> <20070427111300.406327000@menage.corp.google.com> <46378311.6000703@linux.vnet.ibm.com> <6599ad830705011337r6f200baen841919ac17c6f38b@mail.gmail.com>
+In-Reply-To: <6599ad830705011337r6f200baen841919ac17c6f38b@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007, Nate Diller wrote:
+Paul Menage wrote:
+> On 5/1/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+>> > +     if (container_is_removed(cont)) {
+>> > +             retval = -ENODEV;
+>> > +             goto out2;
+>> > +     }
+>>
+>> Can't we make this check prior to kmalloc() and copy_from_user()?
+> 
+> We could but I'm not sure what it would buy us - we'd be optimizing
+> for the case that essentially never occurs.
+> 
 
-> well, leave it to me to reply too quickly, sorry.  i think we should
-> leave simple_prepare_write() the way it is, since it's a library
-> function itself.  the other two callsites in your patch are buffers,
-> which may themselves be smaller than a page so you would need a
-> special function for just those two uses, there's no other way to
-> avoid making two calls to flush_dcache_page().  if it's tremendously
-> important to you to eliminate open coding of these, maybe make a
-> 'static int buffer_prepare_write()' or some such in fs/buffer.c
+I am not sure about the never occurs part of it, because we check
+for the condition, so it could occur. I agree, it is a premature
+optimization and could wait a little longer before going in.
 
-All three sites zap two parts of a page. If we had a 
-zero_user_page2 like this
+>>
+>>
+>>
+>> > +int container_task_count(const struct container *cont) {
+>> > +     int count = 0;
+>> > +     struct task_struct *g, *p;
+>> > +     struct container_subsys_state *css;
+>> > +     int subsys_id;
+>> > +     get_first_subsys(cont, &css, &subsys_id);
+>> > +
+>> > +     read_lock(&tasklist_lock);
+>>
+>> Can be replaced with rcu_read_lock() and rcu_read_unlock()
+> 
+> Are you sure about that? I see many users of
+> do_each_thread()/while_each_thread() taking a lock on tasklist_lock,
+> and only one (fs/binfmt_elf.c) that's clearly relying on an RCU
+> critical sections. Documentation?
+> 
 
-zero_user_page2(page, start1, end1, start2, end2, kmap)
+I suspect they are all pending conversions to be made.
+Eric is the expert on this. Meanwhile here's a couple of
+pointers. Quoting from the second URL
 
-then all 3 sites could use the same funtion.
+"We don't need the tasklist_lock to safely iterate through processes
+anymore."
 
-libfs.c:
+http://www.linuxjournal.com/article/6993 (please see incremental use
+of RCU) and
+http://kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.17/2.6.17-mm2/broken-out/proc-remove-tasklist_lock-from-proc_pid_readdir.patch
 
-zero_user_page_segments(page, 0, from, to, PAGE_CACHE_SIZE, KM_USER0);
+>>
+>> Any chance we could get a per-container task list? It will
+>> help subsystem writers as well.
+> 
+> It would be possible, yes - but we probably wouldn't want the overhead
+> (additional ref counts and list manipulations on every fork/exit) of
+> it on by default. We could make it a config option that particular
+> subsystems could select.
+> 
+> I guess the question is how useful is this really, compared to just
+> doing a do_each_thread() and seeing which tasks are in the container?
+> Certainly that's a non-trivial operation, but in what circumstances is
+> it really necessary to do it?
+> 
+> Paul
 
-buffer.c:
 
-zero_user_page_segments(page, from, block_start, to, block_end, KM_USER0)
-
-zero_user_page_segments(page, blockstart, from, to, block_end, KM_USER0)
-
-
-I did not look through the whole kernel but this zapping segments is 
-likely frequent given the nature of the blocklayer.
-
-The 3 call sites pretty ugly on their own. I think it would be good 
-to have one clearly commented version of this somewhere. Call sites
-will be much clearer since you do not have the kmap_ obfuscation nor
-the calculation of the length of each segment.
-
+-- 
+	Warm Regards,
+	Balbir Singh
+	Linux Technology Center
+	IBM, ISTL
