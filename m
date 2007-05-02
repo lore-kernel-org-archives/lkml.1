@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993423AbXEBQGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993439AbXEBQHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993423AbXEBQGt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993424AbXEBQGt
+	id S2993439AbXEBQHn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993430AbXEBQHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:06:49 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:47006 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993423AbXEBQGs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:06:48 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4638B6F5.9070802@s5r6.in-berlin.de>
-Date: Wed, 02 May 2007 18:06:13 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Wed, 2 May 2007 12:07:43 -0400
+Received: from mga09.intel.com ([134.134.136.24]:45824 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S2993439AbXEBQHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 12:07:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,480,1170662400"; 
+   d="scan'208";a="82696724"
+Message-ID: <4638B748.40007@intel.com>
+Date: Wed, 02 May 2007 09:07:36 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-To: John Stoffel <john@stoffel.org>
-CC: Kristian H??gsberg <krh@redhat.com>, linux-kernel@vger.kernel.org,
-       Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 3/6] firewire: char device interface
-References: <4637A29F.6070302@redhat.com>	<20070502090007.GA28174@infradead.org>	<tkrat.087ee29add656926@s5r6.in-berlin.de>	<tkrat.350cb4dfe522266e@s5r6.in-berlin.de>	<tkrat.65aea95f1451c211@s5r6.in-berlin.de>	<tkrat.2aa3f3ac11a3d60d@s5r6.in-berlin.de> <17976.44988.734513.121919@smtp.charter.net>
-In-Reply-To: <17976.44988.734513.121919@smtp.charter.net>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Michel Lespinasse <walken@zoy.org>
+CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@redhat.com>, Jeb Cramer <cramerj@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: Re: 24 lost ticks with 2.6.20.10 kernel
+References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com> <20070501214912.GA4048@zoy.org> <4637BA70.8000108@intel.com> <20070502084146.GA6089@zoy.org>
+In-Reply-To: <20070502084146.GA6089@zoy.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 02 May 2007 16:07:36.0726 (UTC) FILETIME=[002D1B60:01C78CD4]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John Stoffel wrote:
->>>>>> "Stefan" == Stefan Richter <stefanr@s5r6.in-berlin.de> writes:
-[...]
+Michel Lespinasse wrote:
+> On my system, every e1000_watchdog() invocation calls e1000_read_phy_reg()
+> twice: first near the top of e1000_check_for_link() within the
+> e1000_media_type_copper && hw->get_link_status condition, then within
+> e1000_update_stats() to read and update the idle_errors statistic.
+> Each call results in a 100ms delay. The second call is enclosed within
+> an spin_lock_irqsave()..spin_unlock_irqrestore() section, so it results
+> in 100ms of lost ticks too.
 
-Hmm, I'm just spotting some artifacts after a recent file-renaming patch:
+Unfortunately we need the spinlock here. I'm not 100% sure the irqsave is no 
+longer needed since we recently modified the watchdog to run as a task (out of 
+interrupt context), but this code hasn't made it upstream yet (it's sitting in 
+mm if you're interested).
 
-> Stefan> --- /dev/null
-> Stefan> +++ linux_juju/include/linux/firewire-cdev.h
-                                       ^^^^^^^^^^^^^^^
-> Stefan> @@ -0,0 +1,268 @@
-> Stefan> +/*						-*- c-basic-offset: 8 -*-
-> Stefan> + *
-> Stefan> + * fw-device-cdev.h -- Char device interface.
-              ^^^^^^^^^^^^^^^^
-[...]
-> Stefan> +#ifndef __fw_cdev_h
-> Stefan> +#define __fw_cdev_h
-                   ^^^^^^^^^^^
-[...]
-> Stefan> +#define TCODE_WRITE_QUADLET_REQUEST	0
-> Stefan> +#define TCODE_WRITE_BLOCK_REQUEST	1
-[...]
-> Stefan> +#define SCODE_100			0x0
-> Stefan> +#define SCODE_200			0x1
-> Stefan> +#define SCODE_400			0x2
-> Stefan> +#define SCODE_800			0x3
-> Stefan> +#define SCODE_1600			0x4
-> Stefan> +#define SCODE_3200			0x5
+> Now I have no idea how to fix that, but it does seem like it must be an
+> initialisation issue. Possibly it might be a matter of telling the firmware
+> "management engine" to keep its paws off of the adapter, I dont know.
+> If you want me to add logging within the init functions, let me know.
+
+please don't, see below
+
+> The other operations - like all the E1000_READ_REG() calls within
+> e1000_update_stats() - seem to take negligible time compared to the
+> two failing e1000_read_phy_reg() calls.
 > 
-> These are also defined in fw-transaction.h, though that file doesn't
-> have all the values.  Can these just be combined into a single
-> fw-constants.h file instead?  
+>> I've had good results with 2.6.21.1 (even running tickless :)) on these 
+>> NICs. Have you tried that yet?
 > 
-> I honestly haven't checked all your defines....
-[...]
+> Not yet. Coming up... I'd prefer not to rely on new kernels at this
+> point though - but I can certainly try it just to report on current status.
 
-Right, there are some overlaps...
+I currently suspect that (on this NIC) you're being bitten by a initialization 
+bug that was fixed in later patches that made it into 2.6.21. The best thing to 
+try for you is attempt to run 2.6.21 in the same configuration and see if that 
+fixes it for you. It has to do with a patch I sent to fix the firmware takeover 
+bits at startup, something that was definately broken in 2.6.19 and probably 2.6.20.
 
-Note, firewire-cdev.h declares a userspace ABI, while fw-transaction.h
-declares an in-kernel API.  I'm not quite sure right now how it should
-rather be organized.  Maybe rename fw-transaction.h's macros.  Only
-fw-cdev.c (which implements the userspace ABI) includes both header files.
-
-(PS: I'm not the author; only subsystem maintainer.)
--- 
-Stefan Richter
--=====-=-=== -=-= ---=-
-http://arcgraph.de/sr/
+Auke
