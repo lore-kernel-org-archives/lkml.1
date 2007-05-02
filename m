@@ -1,36 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766760AbXEBQwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766753AbXEBQyJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766760AbXEBQwq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766767AbXEBQwq
+	id S1766753AbXEBQyJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:54:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766755AbXEBQyJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:52:46 -0400
-Received: from www.osadl.org ([213.239.205.134]:50421 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1766760AbXEBQwp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:52:45 -0400
-Subject: Re: [PATCH] clockchips.h: kernel-doc fix
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <200705021948.47563.sshtylyov@ru.mvista.com>
-References: <200705021948.47563.sshtylyov@ru.mvista.com>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 18:55:02 +0200
-Message-Id: <1178124903.25504.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 2 May 2007 12:54:09 -0400
+Received: from wr-out-0506.google.com ([64.233.184.239]:65468 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766753AbXEBQyG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 12:54:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=p503SkI74gzKzzBE1QVVD95MyV4kVfepTaCQhSq83sIViWlOplabKb5IYwqjBenIq+byYLSYap9qfYFdW+XGYZHZ4l9TgMdXmAYA+aN/PT/UddNYPRuKi75SGGv0wPrQzDinEZOaQng6TxBiGpLLLb/ysgCJ3AcEni+2R4GroKc=
+Message-ID: <12c511ca0705020954q1230ae85o9ab7ca609fd07507@mail.gmail.com>
+Date: Wed, 2 May 2007 09:54:04 -0700
+From: "Tony Luck" <tony.luck@intel.com>
+To: "Daniel J Blueman" <daniel.blueman@gmail.com>
+Subject: Re: Kernel Scalability
+Cc: "Rajib Majumder" <rajibm2005@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <6278d2220705020843l718b3272k5d6ebf8b827d0806@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6278d2220705020843l718b3272k5d6ebf8b827d0806@mail.gmail.com>
+X-Google-Sender-Auth: bf344136d606dec7
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-02 at 19:48 +0400, Sergei Shtylyov wrote:
-> Fix misnamed fields of 'struct clock_event_device' in the kernel-doc comment.
-> Convert the acronyms to uppercase, while at it...
-> 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+On 5/2/07, Daniel J Blueman <daniel.blueman@gmail.com> wrote:
+>
+> There are 128-processor IA64 systems which run recent 2.6 kernels out
+> there; the per-processor counters, RCU and page-fault scalability work
+> has been instrumental to the necessary scaling for decent resource
+> usage on these.
 
-Acked-by: Thomas Gleixner <tglx@linutronix.de>
+128 cpu is a bit dated ... there are 512 and 1024 cpu systems being
+used in production environments.  The highest reported count stands
+at 4096 ... but that was only a prototype system, not a production
+machine ... a small number of patches were needed to boot (e.g.
+with 10 kernel daemons per cpu, a default kernel hits the maximum
+number of process ids limit!).
 
+The question of how well it scales is very workload dependent.  Most
+of those high cpu count systems are running scientific workloads that
+crunch numbers in user mode for 7.5 million years before making a
+single syscall to print that the answer is 42. Obviously scaling of
+such applications is near linear.
 
+But your original question was about 4-8 cpus with 2.4/2.6 ... you
+will almost certainly be a lot happier with a recent 2.6 kernel. A
+great deal of work has been done to make it scale well.  But
+there are still some dark corners that haven't been cleaned up
+so you will have to run your target application and make your
+own measurments on scaling.  If you find that it doesn't scale
+well, then we'd like to hear about it here.
+
+-Tony
