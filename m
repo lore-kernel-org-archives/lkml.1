@@ -1,114 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767112AbXEBVzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767129AbXEBV6K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767112AbXEBVzt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767125AbXEBVzt
+	id S1767129AbXEBV6K (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:58:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767123AbXEBV6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:55:49 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:50662 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767112AbXEBVzs (ORCPT
+	Wed, 2 May 2007 17:58:10 -0400
+Received: from creto.quietwind.net ([71.39.149.34]:52872 "EHLO
+	creto.quietwind.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767129AbXEBV6I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:55:48 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Paul Fulghum <paulkf@microgate.com>
-Subject: Re: [PATCH] tty add compat_ioctl method
-Date: Wed, 2 May 2007 23:55:38 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@osdl.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <1177620717.5060.11.camel@amdx2.microgate.com> <200704270008.58811.arnd@arndb.de> <1178128321.9430.14.camel@amdx2.microgate.com>
-In-Reply-To: <1178128321.9430.14.camel@amdx2.microgate.com>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 2 May 2007 17:58:08 -0400
+X-Greylist: delayed 974 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 17:58:08 EDT
+Subject: kernel oops when closing a pipe
+From: Chris Kottaridis <chriskot@quietwind.net>
+Reply-To: chriskot@quietwind.net
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705022355.38975.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX181nfUX/buXYjgiunTNuoAVx7LRUwbzpDPFZSw
- OZAjTBGi5YBLDVNOZZ+eOV3+IWx2ESAstaNq5hnZLE2WqQrKBY
- f0nsaEC+NCF5rLgZzowPQ==
+Date: Wed, 02 May 2007 15:41:52 -0600
+Message-Id: <1178142112.42186.21.camel@creto.quietwind.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.3 FreeBSD GNOME Team Port 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 02 May 2007, Paul Fulghum wrote:
-> Add compat_ioctl method for tty code to allow processing
-> of 32 bit ioctl calls on 64 bit systems by tty core,
-> tty drivers, and line disciplines.
+I got an oops with the following backtrace:
 
-Looks ok mostly. Just some details:
+============================================================
+CPU:    2
+EIP:    0060:[<c0179ee3>]    Not tainted VLI
+EFLAGS: 00010002   (2.6.10-pne)
+EIP is at fasync_helper+0x4f/0xcf
+eax: c04d2e28   ebx: 00000000   ecx: d9562f6c   edx: 00000001
+esi: f2686d80   edi: d9562f6c   ebp: f22cbf20   esp: f22cbf08
+ds: 007b   es: 007b   ss: 0068
+Process dsIpMgr (pid: 18122, threadinfo=f22ca000 task=f40a0710)
+Stack: f40a0710 00000292 00000000 f5db1b70 c5246580 f5db1b70 f22cbf3c
+c017470d
+       ffffffff f2686d80 00000000 d9562f6c f2686d80 f22cbf50 c0174828
+ffffffff
+       f2686d80 00000000 f22cbf70 c016985d f5db1b70 f2686d80 ed0daab4
+f2686d80
+Call Trace:
+ [<c010340f>] show_stack+0x80/0x96
+ [<c01035a2>] show_registers+0x15d/0x1d6
+ [<c0103900>] die+0x106/0x194
+ [<c01125ed>] do_page_fault+0x583/0x8d8
+ [<c01030bb>] error_code+0x2b/0x30
+ [<c017470d>] pipe_read_fasync+0x3d/0x56
+ [<c0174828>] pipe_read_release+0x21/0x3e
+ [<c016985d>] __fput+0xf3/0x122
+ [<c0167f69>] filp_close+0x50/0x8e
+ [<c016803d>] sys_close+0x96/0xc1
+ [<c0102554>] no_dpa_vsyscall_enter+0x8/0x1b
+Code: c7 44 24 04 d0 00 00 00 89 04 24 e8 5f 60 fd ff 89 c3 b8 f4 ff ff
+ff 85 db 74 50 b8 28 2e 4d c0 e8 52 b7 2e 00 89 f9 8b 17 eb 0b <39> 72
+0c 74 43 8d 4a 08 8b 52 08 85 d2 75 f1 8b 45 10 85 c0 74
 
-> --- a/include/linux/tty_driver.h	2006-11-29 15:57:37.000000000 -0600
-> +++ b/include/linux/tty_driver.h	2007-04-30 14:05:02.000000000 -0500
-> @@ -132,6 +132,10 @@ struct tty_operations {
->  	int  (*chars_in_buffer)(struct tty_struct *tty);
->  	int  (*ioctl)(struct tty_struct *tty, struct file * file,
->  		    unsigned int cmd, unsigned long arg);
-> +#ifdef CONFIG_COMPAT
-> +	long (*compat_ioctl)(struct tty_struct *tty, struct file * file,
-> +			     unsigned int cmd, unsigned long arg);
-> +#endif
->  	void (*set_termios)(struct tty_struct *tty, struct termios * old);
->  	void (*throttle)(struct tty_struct * tty);
->  	void (*unthrottle)(struct tty_struct * tty);
-> @@ -193,6 +197,10 @@ struct tty_driver {
->  	int  (*chars_in_buffer)(struct tty_struct *tty);
->  	int  (*ioctl)(struct tty_struct *tty, struct file * file,
->  		    unsigned int cmd, unsigned long arg);
-> +#ifdef CONFIG_COMPAT
-> +	long (*compat_ioctl)(struct tty_struct *tty, struct file * file,
-> +			     unsigned int cmd, unsigned long arg);
-> +#endif
->  	void (*set_termios)(struct tty_struct *tty, struct termios * old);
->  	void (*throttle)(struct tty_struct * tty);
->  	void (*unthrottle)(struct tty_struct * tty);
+=====================================================================
 
-I wouldn't hide this inside of an #ifdef. The structures are all static
-and therefore a single field per driver doesn't add much bload, but
-being able to always assign the .compat_ioctl pointer makes the code
-somewhat nicer
+I am running a flavor of 2.6.10 and am not really in a position to
+upgrade to a newer version. I assume this is happening when fa is
+getting de-referenced in the for loop. So, I assume the fasync reader
+list has gotten corrupted somehow:
 
-> --- a/drivers/char/tty_io.c	2006-11-29 15:57:37.000000000 -0600
-> +++ b/drivers/char/tty_io.c	2007-04-30 14:51:01.000000000 -0500
-> @@ -151,6 +151,9 @@ static int tty_open(struct inode *, stru
->  static int tty_release(struct inode *, struct file *);
->  int tty_ioctl(struct inode * inode, struct file * file,
->  	      unsigned int cmd, unsigned long arg);
-> +#ifdef CONFIG_COMPAT
-> +long tty_compat_ioctl(struct file * file, unsigned int cmd, unsigned long arg);
-> +#endif
->  static int tty_fasync(int fd, struct file * filp, int on);
->  static void release_mem(struct tty_struct *tty, int idx);
+/*
+ * fasync_helper() is used by some character device drivers (mainly
+mice)
+ * to set up the fasync queue. It returns negative on error, 0 if it did
+ * no changes and positive if it added/deleted the entry.
+ */
+int fasync_helper(int fd, struct file * filp, int on, struct
+fasync_struct **fapp)
+{
+        struct fasync_struct *fa, **fp;
+        struct fasync_struct *new = NULL;
+        int result = 0;
 
-declarations should never be hidden inside of an #ifdef. If you want to be
-extra clever here, you can do
+        if (on) {
+                new = kmem_cache_alloc(fasync_cache, SLAB_KERNEL);
+                if (!new)
+                        return -ENOMEM;
+        }
+        write_lock_irq(&fasync_lock);
+        for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
+                if (fa->fa_file == filp) {
+                        if(on) {
+                                fa->fa_fd = fd;
+                                kmem_cache_free(fasync_cache, new);
+                        } else {
+                                *fp = fa->fa_next;
+                                kmem_cache_free(fasync_cache, fa);
+                                result = 1;
+                        }
+                        goto out;
+                }
+        }
 
-#ifdef CONFIG_COMPAT
-long tty_compat_ioctl(struct file * file, unsigned int cmd, unsigned long arg);
-#else
-#define tty_compat_ioctl NULL
-#endif
+        if (on) {
+                new->magic = FASYNC_MAGIC;
+                new->fa_file = filp;
+                new->fa_fd = fd;
+                new->fa_next = *fapp;
+                *fapp = new;
+                result = 1;
+        }
+out:
+        write_unlock_irq(&fasync_lock);
+        return result;
+}
 
-then you don't need an #ifdef in the code setting the function pointers.
+The variable "on" is zero when this gets called and fd is -1.
 
-> @@ -3284,6 +3299,32 @@ int tty_ioctl(struct inode * inode, stru
->  	return retval;
->  }
->  
-> +#ifdef CONFIG_COMPAT
-> +long tty_compat_ioctl(struct file * file, unsigned int cmd, unsigned long arg)
-> +{
-> +	struct inode *inode = file->f_dentry->d_inode;
-> +	struct tty_struct *tty;
-> +	struct tty_ldisc *ld;
-> +	int retval = -ENOIOCTLCMD;
-> +
-> +	tty = (struct tty_struct *)file->private_data;
+Anyone seen anything like this when trying to close down a pipe ?
 
-no need for the cast, ->private_data is void*.
+Thanks
+       Chris Kottaridis    (chriskot@quietwind.net)
 
-	Arnd <><
