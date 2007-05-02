@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993120AbXEBNN1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993132AbXEBNSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993120AbXEBNN1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 09:13:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993123AbXEBNN1
+	id S2993132AbXEBNSA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 09:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993144AbXEBNSA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 09:13:27 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:34272 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993120AbXEBNN0 (ORCPT
+	Wed, 2 May 2007 09:18:00 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:33774 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993132AbXEBNR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 09:13:26 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46388E63.9010409@s5r6.in-berlin.de>
-Date: Wed, 02 May 2007 15:13:07 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Wed, 2 May 2007 09:17:59 -0400
+Date: Wed, 2 May 2007 14:17:45 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: mm-more-rmap-checking
+In-Reply-To: <4637EC95.2010501@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0705021355390.16517@blonde.wat.veritas.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705011458060.16979@blonde.wat.veritas.com>
+ <4637EC95.2010501@yahoo.com.au>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Neil Brown <neilb@suse.de>, "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       Valdis.Kletnieks@vt.edu, Andre Tomt <andre@tomt.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: so ... what *are* candidates for removal?
-References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain> <46375D1C.4050404@tomt.net> <10590.1178037443@turing-police.cc.vt.edu> <4637C04E.4070306@s5r6.in-berlin.de> <Pine.LNX.4.64.0705020418530.7102@localhost.localdomain> <46385EF8.8040005@s5r6.in-berlin.de> <alpine.DEB.0.98.0705020612290.9993@sigma.j-a-k-j.com> <Pine.LNX.4.64.0705020653560.7971@localhost.localdomain> <17976.31592.666183.353731@notabene.brown> <Pine.LNX.4.64.0705020827320.8581@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705020827320.8581@localhost.localdomain>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 02 May 2007 13:17:58.0917 (UTC) FILETIME=[4DBAB350:01C78CBC]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAbmlja3BpZ2dpbkB5YWhvby5jb20uYXUA
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Wed, 2 May 2007, Neil Brown wrote:
+On Wed, 2 May 2007, Nick Piggin wrote:
 > 
->> Unfortunately, this community is not founded on the concept of
->> 'wiki'.  It is founded on the concept of 'email'.  That is were most
->> discussions happen.
->>
->> So if you want to start a discussion (and your topic certainly seems
->> relevant) I suspect you will get more participation if you keep it
->> in the mailing list.
-> 
-> you have it backwards -- i deliberately chose a wiki to get this
-> discussion *off* the LKML.  given the traffic volume here, and given
-> that kernel code removal isn't what most people consider a high
-> priority, i'm guessing most folks here are monumentally uninterested
-> in the discussion.
-[...]
+> Yes, but IIRC I put that in because there was another check in
+> SLES9 that I actually couldn't put in, but used this one instead
+> because it also caught the bug we saw.
+>... 
+> This was actually a rare corruption that is also in 2.6.21, and
+> as few rmap callsites as we have, it was never noticed until the
+> SLES9 bug check was triggered.
 
-IMO you are both right and wrong in your own ways.
+You are being very mysterious.  Please describe this bug (privately
+if you think it's exploitable), and let's work on the patch to fix it,
+rather than this "debug" patch.
 
-I agree with Neil that you* have to go to the people who are concerned.
+> Hmm, I didn't notice the do_swap_page change, rather just derived
+> its safety by looking at the current state of the code (which I
+> guess must have been post-do_swap_page change)...
 
-I agree with you that LKML will often not be the place where you* find
-them.  (Still, you* have to find them; it's not that they have to find
-your wiki discussion.)
+Your addition of page_add_new_anon_rmap clarified the situation too.
 
+> Do you have a pointer to the patch, for my interest?
 
-*) "you" = whoever has the drive and persistence, and is connected
-enough with the communities to help in feature removal processes
--- 
-Stefan Richter
--=====-=-=== -=-= ---=-
-http://arcgraph.de/sr/
+The patch which changed do_swap_page?
+
+commit c475a8ab625d567eacf5e30ec35d6d8704558062
+Author: Hugh Dickins <hugh@veritas.com>
+Date:   Tue Jun 21 17:15:12 2005 -0700
+[PATCH] can_share_swap_page: use page_mapcount
+
+Or my intended PG_swapcache to PAGE_MAPPING_SWAP patch,
+which does assume PageLocked in page_add_anon_rmap?
+Yes, I can send you its current unsplit state if you like
+(but have higher priorities before splitting and commenting
+it for posting).
+
+Hugh
