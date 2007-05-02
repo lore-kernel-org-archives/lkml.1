@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767060AbXEBVmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767092AbXEBVms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767060AbXEBVmQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 17:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767051AbXEBVl7
+	id S1767092AbXEBVms (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 17:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767095AbXEBVms
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 17:41:59 -0400
-Received: from smtpq2.tilbu1.nb.home.nl ([213.51.146.201]:33536 "EHLO
-	smtpq2.tilbu1.nb.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767059AbXEBVll (ORCPT
+	Wed, 2 May 2007 17:42:48 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:44603 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767092AbXEBVmp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 17:41:41 -0400
-Message-ID: <46390503.1000401@gmail.com>
-Date: Wed, 02 May 2007 23:39:15 +0200
-From: Rene Herman <rene.herman@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Wed, 2 May 2007 17:42:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=qvCgTpUGUeirH9tYfJ93a/wpKs+BV+2Jg3wj8LmLv62Ywfam2eWVBMTDCA1TPSIFxWTRpQ5RstKy8EG4r5X4LE6GxQo8L8y3YZzN2NZY+DOV37gMj4Fy5/5w9M1xo7WZQEQYlMJNR1QJk7mS/abKbGK3e3VkRWeCbE2++dXsfDk=
+Message-ID: <6bffcb0e0705021442k68d265b3m88746051aa95cb00@mail.gmail.com>
+Date: Wed, 2 May 2007 23:42:44 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Thomas Gleixner" <tglx@linutronix.de>
+Subject: 2.6.21-git4 BUG: soft lockup detected on CPU#1!
+Cc: LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Jeff Garzik <jeff@garzik.org>, Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: arch/i386/boot rewrite, and all the hard-coded video cards
-References: <463698D5.20102@zytor.com> <alpine.LFD.0.98.0704301940320.3808@woody.linux-foundation.org> <4637A3F6.70508@gmail.com> <alpine.LFD.0.98.0705011433050.3808@woody.linux-foundation.org> <Pine.LNX.4.61.0705022017360.18504@yvahk01.tjqt.qr> <4638FBB8.4020506@zytor.com> <4638FDA6.9030500@gmail.com> <4638FF70.8020400@zytor.com> <46390086.2030904@gmail.com> <463901C9.7090107@zytor.com>
-In-Reply-To: <463901C9.7090107@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
-X-AtHome-MailScanner: Found to be clean
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/02/2007 11:25 PM, H. Peter Anvin wrote:
+Hi Thomas,
 
->> Anyways, I know you asked about register writes but in case it's
->> still useful info: the CL54xx adapters have 132x43 and 132x25 as BIOS
->> modes 0x54 and 0x55 (ie, just int 0x10 modes) respectively. No idea how
->> complete the Bochs/Qemu video BIOS is.
-> 
-> No, they don't.  I've found enough Cirrus docs to learn that that was
-> pulled out of their BIOS when they ran out of space.
+I hit this soft lockup
 
-Mine has them.
+[ 5401.599275] BUG: soft lockup detected on CPU#1!
+[ 5401.603809]  [<c0105039>] show_trace_log_lvl+0x1a/0x2f
+[ 5401.608980]  [<c0105720>] show_trace+0x12/0x14
+[ 5401.613456]  [<c01057d2>] dump_stack+0x16/0x18
+[ 5401.617934]  [<c01518e8>] softlockup_tick+0xa7/0xb9
+[ 5401.622841]  [<c012a0b5>] run_local_timers+0x12/0x14
+[ 5401.627829]  [<c012a482>] update_process_times+0x3e/0x63
+[ 5401.633164]  [<c013a028>] tick_sched_timer+0x5d/0xa1
+[ 5401.638160]  [<c01366fb>] hrtimer_interrupt+0x127/0x1b4
+[ 5401.643415]  [<c0114c66>] smp_apic_timer_interrupt+0x72/0x84
+[ 5401.649097]  [<c0104b2b>] apic_timer_interrupt+0x33/0x38
+[ 5401.654437]  =======================
+[ 5401.658055] Clocksource tsc unstable (delta = 9372000804 ns)
+[ 5401.664061] Time: acpi_pm clocksource has been installed.
 
-Rene.
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git4/git-config
+http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git4/git-dmesg
 
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
