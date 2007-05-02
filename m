@@ -1,76 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754875AbXEBGmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030900AbXEBGqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754875AbXEBGmS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 02:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXEBGmS
+	id S1030900AbXEBGqm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 02:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030901AbXEBGql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 02:42:18 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:1683 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754875AbXEBGmR (ORCPT
+	Wed, 2 May 2007 02:46:41 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:27131 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1030900AbXEBGqk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 02:42:17 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=n+/c9t2P2SxcK3ivvFkcvh9kzwXOdO7+4w8NwQZegRAVVP0UadH/4OmO8/5jbwel3
-	8pNWFDgYxrnvgGmjBnfNA==
-Date: Tue, 1 May 2007 23:41:34 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Rusty Russell <rusty@rustcorp.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/10] compiler: define __attribute_unused__
-In-Reply-To: <1178087393.28659.238.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0705012336430.22339@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com> 
- <1178084403.28659.222.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com>
- <1178087393.28659.238.camel@localhost.localdomain>
+	Wed, 2 May 2007 02:46:40 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=EFJ+8GaLNoT8AF1T4TNLwjjYGrpX8Hflumk2QrgFPEbcjPci9kR3r/yIMFDLVgejey1OXWc9sbml3YtcsKS1YA3JtNxksxDa5CaieopB3V2D81rpQ6k5BGvHhmTyLIh8+pce4rdiCDq2PV6gmo4o4cNOy6ZLyhzarLgRtDRdduM=  ;
+X-YMail-OSG: aLl8P7QVM1kQRezoCAQp_tzaxrRgjxeu9G5CdSakEm9KfMwArdc4TLrOtVoxGNT62CRWJzsQwg--
+Message-ID: <463833C6.5030401@yahoo.com.au>
+Date: Wed, 02 May 2007 16:46:30 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Rientjes <rientjes@google.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/10] compiler: define __attribute_unused__
+References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com>	<20070502051723.GB5843@martell.zuzino.mipt.ru>	<Pine.LNX.4.64.0705012252020.21669@chino.kir.corp.google.com> <20070501230858.b29564ef.akpm@linux-foundation.org>
+In-Reply-To: <20070501230858.b29564ef.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Rusty Russell wrote:
-
-> OTOH, your point about "__unneeded" is well taken.  "__needed" and
-> "__optional" perhaps?  But their feature is *exactly* that the don't
-> look like the gcc attributes, hence avoid their semantic screwage.
+Andrew Morton wrote:
+> On Tue, 1 May 2007 22:53:52 -0700 (PDT) David Rientjes <rientjes@google.com> wrote:
 > 
+> 
+>>On Wed, 2 May 2007, Alexey Dobriyan wrote:
+>>
+>>
+>>>On Tue, May 01, 2007 at 09:28:18PM -0700, David Rientjes wrote:
+>>>
+>>>>+#define __attribute_unused__		__attribute__((unused))
+>>>
+>>>Suggest __unused which is shorter and looks compiler-neutral.
+>>>
+>>
+>>So you would also suggest renaming __attribute_used__ and all 48 of its 
+>>uses to __used?
+> 
+> 
+> Or __needed or __unneeded.  None of them mean much to me and I'd be forever
+> going back to the definition to work out what was intended.
+> 
+> We're still in search of a name, IMO.  But once we have it, yeah, we should
+> update all present users.  We can do that over time: retain the old and new
+> definitions for a while.
 
-Hmm, __optional doesn't sound appropriate either.  Since this is going to 
-be defined to be __attribute__ ((unused)), it can apply to both functions 
-and variables.  It should be applied to a function if it truly is 
-unreferenced within the tree (and there are several examples of this 
-current HEAD) and we don't want to use __needed because it still emits the 
-function code even though it suppresses the warning.  So saying a function 
-that has no callers is "__optional" makes no sense since its code isn't 
-going to be emitted in gcc >=3.4.
+maybe_unused?
 
-What's your opinion of my __needed and __maybe_unused idea such as the 
-following?
+The used attribute IMO is a bit easier to parse, so I don't think that
+needs to be renamed.
 
+Regarding the used vs needed thing, I don't think needed adds very much
+and deviates from gcc terminology. Presumably if something is used it is
+needed, and vice versa; similarly for unused.
 
-
-compiler: define __maybe_unused
-
-Define __maybe_unused to apply to both functions or variables as
-__attribute__((unused)).  This will not emit a compile-time warning when
-a function or variable is declared but unreferenced.
-
-We eventually want to change the name of __attribute_used__ to __used.
-
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- include/linux/compiler-gcc.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -37,3 +37,4 @@
- #define  noinline			__attribute__((noinline))
- #define __attribute_pure__		__attribute__((pure))
- #define __attribute_const__		__attribute__((__const__))
-+#define __maybe_unused			__attribute__((unused))
+-- 
+SUSE Labs, Novell Inc.
