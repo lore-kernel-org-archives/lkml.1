@@ -1,108 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2992973AbXEBJvM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992992AbXEBJvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2992973AbXEBJvM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 05:51:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992980AbXEBJvM
+	id S2992992AbXEBJvo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 05:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2992986AbXEBJvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 05:51:12 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:50940 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2992973AbXEBJvL (ORCPT
+	Wed, 2 May 2007 05:51:44 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:33987 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2992992AbXEBJvn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 05:51:11 -0400
-Message-ID: <46385F07.9070608@linux.vnet.ibm.com>
-Date: Wed, 02 May 2007 15:21:03 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Wed, 2 May 2007 05:51:43 -0400
+Message-ID: <46385EF8.8040005@s5r6.in-berlin.de>
+Date: Wed, 02 May 2007 11:50:48 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Pavel Emelianov <xemul@sw.ru>
-CC: Andrew Morton <akpm@osdl.org>, Paul Menage <menage@google.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Balbir Singh <balbir@in.ibm.com>,
-       devel@openvz.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kirill Korotaev <dev@sw.ru>, Chandra Seetharaman <sekharan@us.ibm.com>,
-       Cedric Le Goater <clg@fr.ibm.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Linux Containers <containers@lists.osdl.org>
-Subject: Re: [PATCH 8/8] Per-container pages reclamation
-References: <461A3010.90403@sw.ru> <461A397A.8080609@sw.ru>
-In-Reply-To: <461A397A.8080609@sw.ru>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Valdis.Kletnieks@vt.edu, Andre Tomt <andre@tomt.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: so ... what *are* candidates for removal?
+References: <Pine.LNX.4.64.0705011050080.11853@localhost.localdomain>            <46375D1C.4050404@tomt.net> <10590.1178037443@turing-police.cc.vt.edu> <4637C04E.4070306@s5r6.in-berlin.de> <Pine.LNX.4.64.0705020418530.7102@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0705020418530.7102@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Emelianov wrote:
-> Implement try_to_free_pages_in_container() to free the
-> pages in container that has run out of memory.
+Robert P. J. Day wrote:
+> On Wed, 2 May 2007, Stefan Richter wrote:
 > 
-> The scan_control->isolate_pages() function isolates the
-> container pages only.
+>> Regarding features that are overdue for removal according to
+>> feature-removal-schedule.txt:
+>>
+>> I remember that at least one person used to watch for due dates for
+>> feature removal, wrote the removing patches, and sent them to the
+>> appropriate lists and maintainers.  This either got rid of the
+>> obsolete stuff, or it turned up reasons why some feature could not
+>> be removed just yet and how to update feature-removal-schedule.txt
+>> to correctly reflect that.
+>>
+>> So, as they say, Patches Are Welcome.
 > 
-> +#ifdef CONFIG_RSS_CONTAINER
-> +unsigned long try_to_free_pages_in_container(struct rss_container *cnt)
-> +{
-> +	struct scan_control sc = {
-> +		.gfp_mask = GFP_KERNEL,
-> +		.may_writepage = 1,
-> +		.swap_cluster_max = 1,
-> +		.may_swap = 1,
-> +		.swappiness = vm_swappiness,
-> +		.cnt = cnt,
-> +		.isolate_pages = isolate_pages_in_container,
-> +	};
-> +	int node;
-> +	struct zone **zones;
-> +
-> +	for_each_node(node) {
-> +#ifdef CONFIG_HIGHMEM
-> +		zones = NODE_DATA(node)->node_zonelists[ZONE_HIGHMEM].zones;
-> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
-> +			return 1;
-> +#endif
-> +		zones = NODE_DATA(node)->node_zonelists[ZONE_NORMAL].zones;
-> +		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
-> +			return 1;
-> +	}
-> +	return 0;
-> +}
-> +#endif
-> +
+> that's a nice idea, but it doesn't address the problem that someone
+> might go to the trouble to create such a patch and send it in, only to
+> have that submission generate shrieking along the lines of "OHMIGOD,
+> we can't delete that *yet*!!!"
 
-Hi, Pavel,
+You are absolutely right.
 
-This patch fixes a bug in the RSS controller, where we walk through all
-nodes during reclaim in try_to_free_pages_in_container(). Instead of
-for_each_node(), we now use for_each_online_node() so that we do not
-end up with invalid zones from nodes that are not online.
+We have to try to avoid this waste of resources when we put features
+into feature-removal-schedule.txt.  That's what I meant with "the hard
+part" in the other post.
 
-Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Signed-off-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
----
+BTW, of course it doesn't suffice to say "we can't remove it yet" after
+the due day.  There need to be well-founded reasons for another
+deferral.  Of course if there are such reasons, it means something went
+wrong when the feature was put into removal schedule.  (Some facts
+weren't known.)
 
-  mm/vmscan.c |    2 +-
-  1 file changed, 1 insertion(+), 1 deletion(-)
+> that's the whole point of this wiki page:
+> 
+> http://fsdev.net/wiki/index.php?title=Stuff_to_be_removed
 
-diff -puN mm/vmscan.c~rss-fix-nodescan mm/vmscan.c
---- linux-2.6.20/mm/vmscan.c~rss-fix-nodescan	2007-05-02 14:47:09.000000000 
-+0530
-+++ linux-2.6.20-balbir/mm/vmscan.c	2007-05-02 14:47:25.000000000 +0530
-@@ -1127,7 +1127,7 @@ unsigned long try_to_free_pages_in_conta
-  	int node;
-  	struct zone **zones;
+Yep; if that page helps to collect the facts, then all the better.
 
--	for_each_node(node) {
-+	for_each_online_node(node) {
-  #ifdef CONFIG_HIGHMEM
-  		zones = NODE_DATA(node)->node_zonelists[ZONE_HIGHMEM].zones;
-  		if (do_try_to_free_pages(zones, sc.gfp_mask, &sc))
-_
+Though in the very end, a feature goes away by means of a patch.
 
+[...]
+> i'm sure most people here can think of better things to do with their
+> time.
+
+Funny (or not so) how this sentence applies to all kinds of activities
+into which more than one person is involved.  So let's try to plan our
+work carefully and *timely*, to let as little of it go to waste as possible.
 -- 
-	Warm Regards,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+Stefan Richter
+-=====-=-=== -=-= ---=-
+http://arcgraph.de/sr/
