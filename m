@@ -1,164 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766955AbXEBUQv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766970AbXEBUUH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766955AbXEBUQv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 16:16:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766956AbXEBUQu
+	id S1766970AbXEBUUH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 16:20:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766977AbXEBUUH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 16:16:50 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:45961 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766955AbXEBUQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 16:16:49 -0400
-Date: Wed, 2 May 2007 22:17:41 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@osdl.org>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: [GIT PATCHES] kbuild, kconfig + Kconfig updates
-Message-ID: <20070502201741.GD9044@uranus.ravnborg.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.4.2.1i
+	Wed, 2 May 2007 16:20:07 -0400
+Received: from static-72-92-88-10.phlapa.fios.verizon.net ([72.92.88.10]:57181
+	"EHLO smtp.roinet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766970AbXEBUUB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 16:20:01 -0400
+Message-ID: <4638F2B2.2000103@roinet.com>
+Date: Wed, 02 May 2007 16:21:06 -0400
+From: David Acker <dacker@roinet.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Milton Miller <miltonm@bga.com>
+CC: Scott Feldman <sfeldma@pobox.com>, Jeff Garzik <jeff@garzik.org>,
+       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       John Ronciak <john.ronciak@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
+       Auke Kok <auke-jan.h.kok@intel.com>
+Subject: Re: [PATCH] e100 rx: or s and el bits
+References: <200705011124.l41BOEG4007662@sullivan.realtime.net> <46375664.8030701@roinet.com>
+In-Reply-To: <46375664.8030701@roinet.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
+David Acker wrote:
+> Milton Miller wrote:
+>> In commit d52df4a35af569071fda3f4eb08e47cc7023f094, the description
+>> talks about emulating another driver by setting addtional bits and
+>> the being unable to test when submitted.  Seeing the & operator to
+>> set more bits made me suspicious, and indeed the bits are defined
+>> in positive logic:
+>>
+>>     cb_s      = 0x4000,
+>>     cb_el     = 0x8000,
+>>
+>> So anding those together would be 0.   I'm guessing they should
+>> be or'd, but don't have hardware here to test, much like the
+>> committed patch.  In fact, I'll let someone else do the compile
+>> test too.  I'll update the comment.
+>>
+> 
+> I wonder if this worked for me because the hardware also spun on the 
+> link field being NULL?  Since the RU base is also set to 0, the 
+> calculated physical address would be 0 as well.  I would imagine if the 
+> hardware tried to read/write to very low addresses across PCI, there 
+> would be issues.  I will retest with a small receive pool to try to hit 
+> the problem.
+> I will also run these tests with the new patch and with a smaller 
+> receive pool (default is 256) to make the pool run out more often.
 
-Please pull latest kbuild/kconfig and Kconfig updates.
-Most of these have been present in -mm although a bunch
-of trivial updates has been applied the last week too.
+So far my testing has shown both the original and the new version of the 
+S-bit patch work in that no corruption seemed to occur over long term 
+runs.  The previous S-bit patch may have only worked due to something 
+specific about how my PCI companion chip handles I/O to low memory 
+addresses (from dereferencing a link address of 0).  Perhaps the e100 
+handles the NULL link as well, but given that the manual does not seem 
+to state what happens when the hardware encounters a buffer with a link 
+of 0, I think Milton's fix is the proper way to do it.  The old eepro 
+driver did set both bits although it did it with a hardcoded constant.
 
-
-Main changes
-o Added cleanfile and cleanpatch scripts
-  Useful to tidy up stuff before submission.
-  The discussed checkpatch script may be a good third candidate
-o section mismatch does now include vmlinux so expect a few new warnings
-o Ignore section mismatch warnings in several cases to bring down false positives significantly
-o complain about missing system calls
-  The way to find missing system calls was discussed but in general the current version
-  was apprecated and triggered davem to add a few to sparc64 for example
-o It is now possible to override build version and build timestamp using
-  KBUILD_BUILD_VERSION and KBUILD_BUILD_TIMESTAMP
-o One patch does some trivial fixes in several Kconfig files which
-  caused some 'nosie' in the diffstat.
-o Another patch deals with module alias which explain the changes in input.h
-
-Please pull from
-git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
-
-shortlog + diffstat below.
-
-	Sam
-
-
-Alex Landau (1):
-      kbuild: handle compressed cpio initramfs-es
-
-Alexander E. Patrakov (2):
-      usr/Kconfig: fix typo
-      kconfig: fix path to modules.txt in Kconfig help
-
-Andreas Dilger (1):
-      kconfig.debug: clarify CONFIG_DEBUG_INFO help text
-
-Andy Green (1):
-      kbuild: scripts/basic/fixdep segfault on pathological string-o-death
-
-Anton Blanchard (1):
-      kbuild: small documentation fix in Documentation/kbuild/modules.txt
-
-Don Mullis (1):
-      kbuild: move tags from ARCH and include/ ahead of drivers
-
-H. Peter Anvin (2):
-      cleanfile: a script to clean up stealth whitespace
-      cleanpatch: a script to clean up stealth whitespace added by a patch
-
-Marco Costalba (1):
-      kconfig/xconfig: sync main view with search dialog current menu
-
-Matthew Wilcox (1):
-      kbuild: distinguish between errors and warnings in modpost
-
-Michael Ellerman (1):
-      kbuild: propagate errors from find in scripts/gen_initramfs_list.sh
-
-Mike Frysinger (1):
-      menuconfig: dont use obsolete index() function in lxdialog
-
-Randy Dunlap (2):
-      kbuild: be more explicit on missing .config file
-      kernel-doc: alphabetically-sorted entries in index.html of 'htmldocs'
-
-Robert P. J. Day (2):
-      kbuild: clarify the creation of the LOCALVERSION_AUTO string.
-      kconfig: correct minor typo in Kconfig warning message.
-
-Sam Ravnborg (16):
-      kbuild: fix section mismatch check for vmlinux
-      kbuild: whitelist section mismatch in init/main.c
-      kbuild: fix warnings from .pci_fixup section
-      kbuild: fix segmentation fault in modpost
-      kbuild: whitelist logo references from .text to .init.data
-      kbuild: remove dependency on input.h from file2alias
-      menuconfig: remember alternate config filename
-      kbuild: do not emit src version warning for non-modules
-      kbuild: complain about missing system calls
-      kbuild: override build timestamp & version
-      kconfig/menuconfig: do not hardcode '.config'
-      kbuild: remove kconfig binaries during make mrproper
-      kbuild: fix make mrproper for Documentation/DocBook/man
-      kbuild: remove stale comment in modpost.c
-      kbuild: ignore section mismatch warning for references from .paravirtprobe to .init.text
-      kconfig: refer to qt3 if we cannot find qt libraries
-
-Uwe Zeisberger (1):
-      kbuild: add a missing slash in the comments
-
-Uwe kleine-König (1):
-      kbuild/mkuboot.sh: allow spaces in CROSS_COMPILE
-
- Documentation/DocBook/Makefile     |    9 +-
- Documentation/DocBook/man/Makefile |    3 -
- Documentation/kbuild/modules.txt   |    2 +-
- Kbuild                             |   11 ++
- Makefile                           |   15 ++-
- drivers/mtd/devices/Kconfig        |    4 +-
- drivers/net/Kconfig                |    6 +-
- drivers/net/wireless/Kconfig       |   12 +-
- drivers/scsi/Kconfig               |    4 +-
- drivers/video/Kconfig              |    8 +-
- include/linux/input.h              |    4 +
- include/linux/mod_devicetable.h    |    1 +
- init/Kconfig                       |   16 ++-
- init/main.c                        |    6 +-
- lib/Kconfig.debug                  |    3 +
- net/ipv6/netfilter/Kconfig         |    2 +-
- net/netfilter/Kconfig              |   24 ++--
- net/tipc/Kconfig                   |    2 +-
- scripts/Makefile.modpost           |    8 +-
- scripts/basic/fixdep.c             |    2 +
- scripts/checksyscalls.sh           |  118 ++++++++++++++++++++
- scripts/cleanfile                  |  126 ++++++++++++++++++++++
- scripts/cleanpatch                 |  206 ++++++++++++++++++++++++++++++++++++
- scripts/gen_initramfs_list.sh      |   12 ++-
- scripts/kconfig/Makefile           |    5 +-
- scripts/kconfig/conf.c             |    1 +
- scripts/kconfig/lkc.h              |    1 +
- scripts/kconfig/lxdialog/dialog.h  |    1 +
- scripts/kconfig/lxdialog/util.c    |    9 ++-
- scripts/kconfig/mconf.c            |   43 ++++++--
- scripts/kconfig/menu.c             |    2 +-
- scripts/kconfig/qconf.cc           |    5 +-
- scripts/kconfig/qconf.h            |    2 +-
- scripts/mkcompile_h                |   27 ++++--
- scripts/mkuboot.sh                 |    2 +-
- scripts/mod/file2alias.c           |   21 ++--
- scripts/mod/modpost.c              |  141 +++++++++++++++++++------
- scripts/mod/modpost.h              |    1 +
- scripts/mod/sumversion.c           |    5 +-
- usr/Kconfig                        |    2 +-
- 40 files changed, 735 insertions(+), 137 deletions(-)
+I will continue testing with slab debug on but that will take longer. 
+Has anyone tried this on other platforms?
+-Ack
