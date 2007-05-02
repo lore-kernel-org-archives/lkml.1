@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993517AbXEBQoO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993519AbXEBQqN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993517AbXEBQoO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:44:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993519AbXEBQoO
+	id S2993519AbXEBQqN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:46:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993521AbXEBQqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:44:14 -0400
-Received: from hu-out-0506.google.com ([72.14.214.229]:42185 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S2993517AbXEBQoL (ORCPT
+	Wed, 2 May 2007 12:46:13 -0400
+Received: from ag-out-0708.google.com ([72.14.246.245]:8542 "EHLO
+	ag-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S2993519AbXEBQqL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:44:11 -0400
+	Wed, 2 May 2007 12:46:11 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=NG0rYRLb3s9HEhJjHsDMBzdbVH/8R3fTZ/eImMo10Y3C5D9PYPTMoCaxPWrRkOjaRxQQ1nMiIAIwr/tsSRg0YaF9XaBm0jThK4xSZ8RASuKxHtCq+xLgHmRN28JQ4Q3kTZVRY4EmhCuvJx/0/WdvCAQzqbHsqny4ACbnUwHoo5Q=
-Message-ID: <4638BFC9.5090304@gmail.com>
-Date: Wed, 02 May 2007 20:43:53 +0400
+        b=Bk9OTyPQ29tTn9MeOxuj865b4lzfiazekRb5tmP0m9ZRCO8nX26m9Ikg6L0iICFLVleZDrSiDKr9XjoeWWkiRCtvwZZuwAjFwXhEjw0ERfseUWO/s4vOJNKrEl9v0Qur6XdQlFWYAvU4ft5pSwtsDxjkiyoEGKhz+yqUSYvpdME=
+Message-ID: <4638C046.1020005@gmail.com>
+Date: Wed, 02 May 2007 20:45:58 +0400
 From: Manu Abraham <abraham.manu@gmail.com>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
 To: Uwe Bugla <uwe.bugla@gmx.de>
-CC: xyzzy@speakeasy.org, linux-dvb@linuxtv.org, akpm@linux-foundation.org,
-       helge.hafting@aitel.hist.no, jengelh@linux01.gwdg.de,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       simon@fire.lp0.eu, mchehab@infradead.org
+CC: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org
 Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
  points	about ...)
 References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>	<4636E0E2.5020601@simon.arlott.org.uk>	<Pine.LNX.4.58.0705011500570.309@shell2.speakeasy.net> <46389278.1070208@gmail.com> <20070502155125.280320@gmx.net>
@@ -194,3 +191,4 @@ to have firmware downloads from there, also some people had access there
 for hosting test repo's and so on)
 
 Well, that was a long rant
+
