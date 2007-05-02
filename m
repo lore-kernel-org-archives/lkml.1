@@ -1,72 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993439AbXEBQHn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993429AbXEBQKp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993439AbXEBQHn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 12:07:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993430AbXEBQHn
+	id S2993429AbXEBQKp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 12:10:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993436AbXEBQKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 12:07:43 -0400
-Received: from mga09.intel.com ([134.134.136.24]:45824 "EHLO mga09.intel.com"
+	Wed, 2 May 2007 12:10:45 -0400
+Received: from holomorphy.com ([66.93.40.71]:47977 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993439AbXEBQHm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 12:07:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,480,1170662400"; 
-   d="scan'208";a="82696724"
-Message-ID: <4638B748.40007@intel.com>
-Date: Wed, 02 May 2007 09:07:36 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	id S2993429AbXEBQKo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 12:10:44 -0400
+Date: Wed, 2 May 2007 09:11:17 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Christian Schmidt <lkml@digadd.de>, linux-kernel@vger.kernel.org
+Subject: Re: Memory consumption on linux
+Message-ID: <20070502161117.GW19966@holomorphy.com>
+References: <4637958F.5010405@digadd.de> <p73odl3xvie.fsf@bingen.suse.de>
 MIME-Version: 1.0
-To: Michel Lespinasse <walken@zoy.org>
-CC: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>, Jeb Cramer <cramerj@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: 24 lost ticks with 2.6.20.10 kernel
-References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com> <20070501214912.GA4048@zoy.org> <4637BA70.8000108@intel.com> <20070502084146.GA6089@zoy.org>
-In-Reply-To: <20070502084146.GA6089@zoy.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 02 May 2007 16:07:36.0726 (UTC) FILETIME=[002D1B60:01C78CD4]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <p73odl3xvie.fsf@bingen.suse.de>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michel Lespinasse wrote:
-> On my system, every e1000_watchdog() invocation calls e1000_read_phy_reg()
-> twice: first near the top of e1000_check_for_link() within the
-> e1000_media_type_copper && hw->get_link_status condition, then within
-> e1000_update_stats() to read and update the idle_errors statistic.
-> Each call results in a 100ms delay. The second call is enclosed within
-> an spin_lock_irqsave()..spin_unlock_irqrestore() section, so it results
-> in 100ms of lost ticks too.
+Christian Schmidt <lkml@digadd.de> writes:
+>> Global cache is easy to understand - file system / inode caches. What
+>> exactly is buffers, though?
 
-Unfortunately we need the spinlock here. I'm not 100% sure the irqsave is no 
-longer needed since we recently modified the watchdog to run as a task (out of 
-interrupt context), but this code hasn't made it upstream yet (it's sitting in 
-mm if you're interested).
+On Wed, May 02, 2007 at 02:25:29PM +0200, Andi Kleen wrote:
+> http://www.halobates.de/memorywaste.pdf and http://www.halobates.de/memory.pdf
+> give some overview of in kernel memory users.
 
-> Now I have no idea how to fix that, but it does seem like it must be an
-> initialisation issue. Possibly it might be a matter of telling the firmware
-> "management engine" to keep its paws off of the adapter, I dont know.
-> If you want me to add logging within the init functions, let me know.
+Very interesting. This is a veritable TODO list.
 
-please don't, see below
 
-> The other operations - like all the E1000_READ_REG() calls within
-> e1000_update_stats() - seem to take negligible time compared to the
-> two failing e1000_read_phy_reg() calls.
-> 
->> I've had good results with 2.6.21.1 (even running tickless :)) on these 
->> NICs. Have you tried that yet?
-> 
-> Not yet. Coming up... I'd prefer not to rely on new kernels at this
-> point though - but I can certainly try it just to report on current status.
-
-I currently suspect that (on this NIC) you're being bitten by a initialization 
-bug that was fixed in later patches that made it into 2.6.21. The best thing to 
-try for you is attempt to run 2.6.21 in the same configuration and see if that 
-fixes it for you. It has to do with a patch I sent to fix the firmware takeover 
-bits at startup, something that was definately broken in 2.6.19 and probably 2.6.20.
-
-Auke
+-- wli
