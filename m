@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162020AbXECOgp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162019AbXECOg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162020AbXECOgp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:36:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162017AbXECOgp
+	id S1162019AbXECOg4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162021AbXECOgz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:36:45 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53084 "EHLO mx1.redhat.com"
+	Thu, 3 May 2007 10:36:55 -0400
+Received: from mail.samba.org ([66.70.73.150]:60375 "EHLO lists.samba.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161999AbXECOgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:36:44 -0400
-Message-ID: <4639F2F4.1090905@redhat.com>
-Date: Thu, 03 May 2007 16:34:28 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-Subject: Re: netfront for review
-References: <4637D672.5030706@goop.org> <1178077033.28659.173.camel@localhost.localdomain> <4638EAC0.7020107@goop.org> <46399057.4000409@redhat.com> <4639F16C.3090005@goop.org>
-In-Reply-To: <4639F16C.3090005@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	id S1162019AbXECOgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 10:36:54 -0400
+Subject: Re: [linux-cifs-client] Re: SMB2 file system - should it be a
+	distinct module
+From: simo <idra@samba.org>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070503141742.GB20328@infradead.org>
+References: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com>
+	 <20070501090657.GA17949@infradead.org>
+	 <1178198489.28758.14.camel@localhost.localdomain>
+	 <20070503141742.GB20328@infradead.org>
+Content-Type: text/plain
+Organization: Samba Team
+Date: Thu, 03 May 2007 10:36:53 -0400
+Message-Id: <1178203013.28758.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Gerd Hoffmann wrote:
->>> Gerd, in change 11196:b85da7cd9ea5 "front: Fix rx buffer leak when
->>> tearing down an interface." you added a call to
->>> "add_id_to_freelist(np->rx_skbs, id);".  However, rx_skbs doesn't have
->>> an extra entry for the list head, and there's never any corresponding
->>> get_id_from_freelist(np->rx_skbs).  What should it be?
->> The function has an effect in page flipping mode only.  It walks the
->> whole list of rx skbufs (id is the loop variable ...), checks whenever
->> they are handed out to the frontend driver to fill in packet data and
->> not returned yet, and if so reclaim them ...
+On Thu, 2007-05-03 at 15:17 +0100, Christoph Hellwig wrote:
+> On Thu, May 03, 2007 at 09:21:29AM -0400, simo wrote:
+> > Separate modules would mean the user have to know which protocol to
+> > choose each time. And this make little sense.
 > 
-> Yes, but why use add_id_to_freelist?  rx_skbs are not being used on a
-> freelist anywhere else.  It just means the rx_skb array gets filled with
-> small integers, but the rest of the code assumes they're either NULL or
-> an skb pointer.
+> Of course it makes a lot of sense.  We don't have anyfs.ko either
+> because some ubuntu users are too braindead to know what's on their
+> disk.
+> 
+> > You really want to auto-negotiate which protocol to use, because you
+> > could have at the same time a connection to a Vista/Longhorn (SMB2)
+> > machine and one to a Windows 2000 server (plain SMB) in the same domain
+> > using the same credentials.
+> 
+> So what?
 
-Hmm, good point.  Have to look at the code again, it has been some time 
-I've written that, and it took me some time to figure how all the grant 
-table stuff works ...
+I guess DFS referrals can work cross protocol, so if you are redirected
+from a longhorn server to a windoes 2000 or a samba server you want to
+be able to follow the DFS referral and not return an error.
+To do that you need to have either 1 module that support both protocols
+or a way from one module to call the other. Just separating the 2
+without any glue will not work (or you will have to add some userspace
+upcall hack to make it work).
 
-Maybe the add_id_to_freelist() call can simply be dropped.  The whole 
-interface is released shortly thereafter, probably thats why filling the 
-freelist with yunk never caused any problems ...
+Simo.
 
-cheers,
-   Gerd
+-- 
+Simo Sorce
+Samba Team GPL Compliance Officer
+email: idra@samba.org
+http://samba.org
 
