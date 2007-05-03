@@ -1,246 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752316AbXECUnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751658AbXECUox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752316AbXECUnJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 16:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766499AbXECUnJ
+	id S1751658AbXECUox (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 16:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752209AbXECUox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 16:43:09 -0400
-Received: from mail.screens.ru ([213.234.233.54]:56145 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031304AbXECUnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 16:43:07 -0400
-Date: Fri, 4 May 2007 00:42:26 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, David Howells <dhowells@redhat.com>,
-       Gautham Shenoy <ego@in.ibm.com>, Jarek Poplawski <jarkao2@o2.pl>,
-       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] make cancel_rearming_delayed_work() reliable
-Message-ID: <20070503204226.GA212@tv-sign.ru>
+	Thu, 3 May 2007 16:44:53 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:51069 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751559AbXECUov (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 16:44:51 -0400
+Date: Thu, 3 May 2007 13:42:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: John Keller <jpk@sgi.com>
+Cc: linux-ia64@vger.kernel.org, steiner@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] - SN: validate smp_affinity mask on intr redirect
+Message-Id: <20070503134248.e9b58a32.akpm@linux-foundation.org>
+In-Reply-To: <20070503125602.12552.4152.sendpatchset@attica.americas.sgi.com>
+References: <20070503125602.12552.4152.sendpatchset@attica.americas.sgi.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks to Jarek Poplawski for the ideas and for spotting the bug in the
-initial draft patch.
+On Thu, 03 May 2007 07:56:02 -0500
+John Keller <jpk@sgi.com> wrote:
 
-cancel_rearming_delayed_work() currently has many limitations, because it
-requires that dwork always re-arms itself via queue_delayed_work(). So it
-hangs forever if dwork doesn't do this, or cancel_rearming_delayed_work/
-cancel_delayed_work was already called. It uses flush_workqueue() in a loop,
-so it can't be used if workqueue was freezed, and it is potentially live-
-lockable on busy system if delay is small.
+> On SN, only allow one bit to be set in the smp_affinty mask
+> when redirecting an interrupt. Currently setting multiple
+> bits is allowed, but only the first bit is used in
+> determining the CPU to redirect to. This has caused confusion
+> among some customers.
+> 
+> ...
+>
+> +
+> +int is_affinity_mask_valid(cpumask_t cpumask)
+> +{
+> +	if (ia64_platform_is("sn2")) {
+> +		/* Only allow one CPU to be specified in the smp_affinity mask */
+> +		if (cpus_weight(cpumask) != 1)
+> +			return 0;
+> +	}
+> +	return 1;
+> +}
 
-With this patch cancel_rearming_delayed_work() doesn't make any assumptions
-about dwork, it can re-arm itself via queue_delayed_work(), or queue_work(),
-or do nothing.
+A bool returning true or false would be appropriate, given this function's
+clearly-boolean name.
 
-As a "side effect", cancel_work_sync() was changed to handle re-arming works
-as well.
+> +#ifndef ARCH_HAS_IRQ_AFFINITY_VALIDATION
+> +#define is_irq_affinity_mask_valid(cpumask)         1
+> +#endif
 
-Disadvantages:
+The ARCH_HAS_FOO things have never been popular.  There are a couple of
+alternatives going around:
 
-	- this patch adds wmb() to insert_work().
+a) use __attribute__((weak)) and provide a one-line default
+   implementation in kernel/irq/proc.c.  This has a small runtime cost.
 
-	- slowdowns the fast path (when del_timer() succeeds on entry) of
-	  cancel_rearming_delayed_work(), because wait_on_work() is called
-	  unconditionally. In that case, compared to the old version, we are
-	  doing "unneeded" lock/unlock for each online CPU.
+b) In include/asm-ia64/irq.h, do
 
-	  On the other hand, this means we don't need to use cancel_work_sync()
-	  after cancel_rearming_delayed_work().
+   #define is_affinity_mask_valid is_affinity_mask_valid
 
-	- complicates the code (.text grows by 130 bytes).
+   and in kernel/irq/proc.c do
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+   #ifndef is_affinity_mask_valid
+   #define is_affinity_mask_valid() 1
+   #endif
 
---- OLD/kernel/workqueue.c~1_CRDW	2007-05-02 23:29:07.000000000 +0400
-+++ OLD/kernel/workqueue.c	2007-05-03 22:42:29.000000000 +0400
-@@ -120,6 +120,11 @@ static void insert_work(struct cpu_workq
- 				struct work_struct *work, int tail)
- {
- 	set_wq_data(work, cwq);
-+	/*
-+	 * Ensure that we get the right work->data if we see the
-+	 * result of list_add() below, see try_to_grab_pending().
-+	 */
-+	smp_wmb();
- 	if (tail)
- 		list_add_tail(&work->entry, &cwq->worklist);
- 	else
-@@ -381,7 +386,46 @@ void fastcall flush_workqueue(struct wor
- }
- EXPORT_SYMBOL_GPL(flush_workqueue);
- 
--static void wait_on_work(struct cpu_workqueue_struct *cwq,
-+/*
-+ * Upon a successfull return, the caller "owns" WORK_STRUCT_PENDING bit,
-+ * so this work can't be re-armed in any way.
-+ */
-+static int try_to_grab_pending(struct work_struct *work)
-+{
-+	struct cpu_workqueue_struct *cwq;
-+	int ret = 0;
-+
-+	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
-+		return 1;
-+
-+	/*
-+	 * The queueing is in progress, or it is already queued. Try to
-+	 * steal it from ->worklist without clearing WORK_STRUCT_PENDING.
-+	 */
-+
-+	cwq = get_wq_data(work);
-+	if (!cwq)
-+		return ret;
-+
-+	spin_lock_irq(&cwq->lock);
-+	if (!list_empty(&work->entry)) {
-+		/*
-+		 * This work is queued, but perhaps we locked the wrong cwq.
-+		 * In that case we must see the new value after rmb(), see
-+		 * insert_work()->wmb().
-+		 */
-+		smp_rmb();
-+		if (cwq == get_wq_data(work)) {
-+			list_del_init(&work->entry);
-+			ret = 1;
-+		}
-+	}
-+	spin_unlock_irq(&cwq->lock);
-+
-+	return ret;
-+}
-+
-+static void wait_on_cpu_work(struct cpu_workqueue_struct *cwq,
- 				struct work_struct *work)
- {
- 	struct wq_barrier barr;
-@@ -398,20 +442,7 @@ static void wait_on_work(struct cpu_work
- 		wait_for_completion(&barr.done);
- }
- 
--/**
-- * cancel_work_sync - block until a work_struct's callback has terminated
-- * @work: the work which is to be flushed
-- *
-- * cancel_work_sync() will attempt to cancel the work if it is queued. If the
-- * work's callback appears to be running, cancel_work_sync() will block until
-- * it has completed.
-- *
-- * cancel_work_sync() is designed to be used when the caller is tearing down
-- * data structures which the callback function operates upon. It is expected
-- * that, prior to calling cancel_work_sync(), the caller has arranged for the
-- * work to not be requeued.
-- */
--void cancel_work_sync(struct work_struct *work)
-+static void wait_on_work(struct work_struct *work)
- {
- 	struct cpu_workqueue_struct *cwq;
- 	struct workqueue_struct *wq;
-@@ -421,29 +452,59 @@ void cancel_work_sync(struct work_struct
- 	might_sleep();
- 
- 	cwq = get_wq_data(work);
--	/* Was it ever queued ? */
- 	if (!cwq)
- 		return;
- 
--	/*
--	 * This work can't be re-queued, no need to re-check that
--	 * get_wq_data() is still the same when we take cwq->lock.
--	 */
--	spin_lock_irq(&cwq->lock);
--	list_del_init(&work->entry);
--	work_clear_pending(work);
--	spin_unlock_irq(&cwq->lock);
--
- 	wq = cwq->wq;
- 	cpu_map = wq_cpu_map(wq);
- 
- 	for_each_cpu_mask(cpu, *cpu_map)
--		wait_on_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
-+		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
-+}
-+
-+/**
-+ * cancel_work_sync - block until a work_struct's callback has terminated
-+ * @work: the work which is to be flushed
-+ *
-+ * cancel_work_sync() will cancel the work if it is queued. If the work's
-+ * callback appears to be running, cancel_work_sync() will block until it
-+ * has completed.
-+ *
-+ * It is possible to use this function if the work re-queues itself. It can
-+ * cancel the work even if it migrates to another workqueue, however in that
-+ * case it only garantees that work->func() has completed on the last queued
-+ * workqueue.
-+ *
-+ * The caller must ensure that workqueue_struct on which this work was last
-+ * queued can't be destroyed before this function returns.
-+ */
-+void cancel_work_sync(struct work_struct *work)
-+{
-+	while (!try_to_grab_pending(work))
-+		;
-+	wait_on_work(work);
-+	work_clear_pending(work);
- }
- EXPORT_SYMBOL_GPL(cancel_work_sync);
- 
-+/**
-+ * cancel_rearming_delayed_work - reliably kill off a delayed work.
-+ * @dwork: the delayed work struct
-+ *
-+ * It is possible to use this function if dwork rearms itself via queue_work()
-+ * or queue_delayed_work(). See also the comment for cancel_work_sync().
-+ */
-+void cancel_rearming_delayed_work(struct delayed_work *dwork)
-+{
-+	while (!del_timer(&dwork->timer) &&
-+	       !try_to_grab_pending(&dwork->work))
-+		;
-+	wait_on_work(&dwork->work);
-+	work_clear_pending(&dwork->work);
-+}
-+EXPORT_SYMBOL(cancel_rearming_delayed_work);
- 
--static struct workqueue_struct *keventd_wq;
-+static struct workqueue_struct *keventd_wq __read_mostly;
- 
- /**
-  * schedule_work - put work task in global workqueue
-@@ -530,28 +591,6 @@ void flush_scheduled_work(void)
- EXPORT_SYMBOL(flush_scheduled_work);
- 
- /**
-- * cancel_rearming_delayed_work - kill off a delayed work whose handler rearms the delayed work.
-- * @dwork: the delayed work struct
-- *
-- * Note that the work callback function may still be running on return from
-- * cancel_delayed_work(). Run flush_workqueue() or cancel_work_sync() to wait
-- * on it.
-- */
--void cancel_rearming_delayed_work(struct delayed_work *dwork)
--{
--	struct cpu_workqueue_struct *cwq = get_wq_data(&dwork->work);
--
--	/* Was it ever queued ? */
--	if (cwq != NULL) {
--		struct workqueue_struct *wq = cwq->wq;
--
--		while (!cancel_delayed_work(dwork))
--			flush_workqueue(wq);
--	}
--}
--EXPORT_SYMBOL(cancel_rearming_delayed_work);
--
--/**
-  * execute_in_process_context - reliably execute the routine with user context
-  * @fn:		the function to execute
-  * @ew:		guaranteed storage for the execute work structure (must
+   This has minimal runtime cost, but is a bit tricksy.
+
+   It has the advantage that it doesn't introduce some new identifier
+   which needs to be maintained.
+
+>  extern int irq_set_affinity(unsigned int irq, cpumask_t cpumask);
+>  extern int irq_can_set_affinity(unsigned int irq);
+>  
+> Index: linux-2.6/include/asm-ia64/irq.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-ia64/irq.h	2007-05-01 15:47:01.660643076 -0500
+> +++ linux-2.6/include/asm-ia64/irq.h	2007-05-01 15:48:42.729254805 -0500
+> @@ -11,6 +11,8 @@
+>   * 02/29/00     D.Mosberger	moved most things into hw_irq.h
+>   */
+>  
+> +#include <linux/cpumask.h>
+> +
+
+This is the sort of inclusion which tends to make things blow up.  I trust
+this was carefully compile-tested.
+
+With a) above, the is_affinity_mask_valid() declaration would be in a
+different header.  With b), no additional include will be needed.
+
+>  #define NR_IRQS		256
+>  #define NR_IRQ_VECTORS	NR_IRQS
+>  
+> @@ -30,4 +32,7 @@ extern void disable_irq_nosync (unsigned
+>  extern void enable_irq (unsigned int);
+>  extern void set_irq_affinity_info (unsigned int irq, int dest, int redir);
+>  
+> +#define ARCH_HAS_IRQ_AFFINITY_VALIDATION
+> +extern int is_affinity_mask_valid(cpumask_t cpumask);
+> +
 
