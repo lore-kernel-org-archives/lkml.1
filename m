@@ -1,51 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767543AbXECRjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767570AbXECRva@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767543AbXECRjV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 13:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767553AbXECRjV
+	id S1767570AbXECRva (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 13:51:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767568AbXECRva
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 13:39:21 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:40213 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767543AbXECRi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 13:38:57 -0400
-Message-ID: <463A1CD3.2060200@redhat.com>
-Date: Thu, 03 May 2007 13:33:07 -0400
-From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 3 May 2007 13:51:30 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:37137 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767569AbXECRv0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 13:51:26 -0400
+Date: Thu, 3 May 2007 19:51:26 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: David Rientjes <rientjes@google.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/10] compiler: define __attribute_unused__
+Message-ID: <20070503175125.GL3531@stusta.de>
+References: <Pine.LNX.4.64.0705012118130.19277@chino.kir.corp.google.com> <1178084403.28659.222.camel@localhost.localdomain> <Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com> <1178087393.28659.238.camel@localhost.localdomain> <Pine.LNX.4.64.0705012336430.22339@chino.kir.corp.google.com> <1178089444.28659.246.camel@localhost.localdomain> <Pine.LNX.4.64.0705020020420.22717@chino.kir.corp.google.com> <20070502145550.GE3531@stusta.de> <20070502150546.GF3531@stusta.de> <Pine.LNX.4.64.0705021014070.3033@chino.kir.corp.google.com>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, Olaf Hering <olh@suse.de>,
-       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       linux1394-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [git pull] New firewire stack
-References: <200705030004.l4304l8h012587@turbo.physics.adelaide.edu.au> <46399BDE.4040605@s5r6.in-berlin.de> <20070503114854.GA12731@suse.de> <4639E3FC.8060107@s5r6.in-berlin.de> <20070503163442.GK3531@stusta.de>
-In-Reply-To: <20070503163442.GK3531@stusta.de>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705021014070.3033@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
->> | An advantage of changing the names is that they are now prefixed.
->>
->> Is the opportunity to clean up module names compelling enough, vs. (the
->> wish for) minimized trouble with scripts which refer to module names?
->> ...
+On Wed, May 02, 2007 at 10:16:15AM -0700, David Rientjes wrote:
+> On Wed, 2 May 2007, Adrian Bunk wrote:
 > 
-> How big is the trouble actually?
+> > If we don't want any warnings with CONFIG_PCI=n, CONFIG_SYSFS=n or
+> > CONFIG_PROC_FS=n, we'd have to annotate _many_ functions.
+> > 
+> > If the lonterm goal is to compile the kernel with -Werror then we need 
+> > -Wno-unused-function, not annotating individual functions.
+> 
+> That's only addressing part of the issue.  What about automatic or static 
+> external variables that are declared but may go unreferenced depending on 
 
-Exactly.  In Fedora we've just added a fw-sbp2 case to mkinitrd, it's only a 
-couple of lines of extra shell code:
+This is only about static code. For non-static code it would be
+impossible for gcc to issue warnings.
 
-     elif [ "$modName" = "fw-sbp2" ]; then
-         findmodule fw-core
-         findmodule fw-ohci
-         modName="fw-sbp2"
+> preprocessor macros?  You need to annotate them with __attribute__ 
+> ((unused)) to suppress compiler warnings.  Globally disabling such 
+> warnings would eventually cause unused code to go unnoticed.
 
-and that's the extent of the changes.  The sbp2 case for the old drivers is 
-still in there and in the end mkinitrd works with either stack.
+But looking at a kernel build it seems there are far few warnings than I 
+remembered, so it might actually be possible to annotate all code 
+accordingly.
 
-Kristian
+> 		David
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
