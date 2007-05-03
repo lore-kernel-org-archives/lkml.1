@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161837AbXECKi0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752024AbXECKkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161837AbXECKi0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:38:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161838AbXECKi0
+	id S1752024AbXECKkW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXECKkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:38:26 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:44011 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161837AbXECKiY (ORCPT
+	Thu, 3 May 2007 06:40:22 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:50041 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752024AbXECKkV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:38:24 -0400
-Date: Thu, 3 May 2007 11:37:56 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrea Arcangeli <andrea@suse.de>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
-Message-ID: <20070503103756.GA19958@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Nick Piggin <nickpiggin@yahoo.com.au>,
-	Hugh Dickins <hugh@veritas.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	Andrea Arcangeli <andrea@suse.de>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com> <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com> <46393BA7.6030106@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46393BA7.6030106@yahoo.com.au>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 3 May 2007 06:40:21 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Thu, 3 May 2007 06:40:03 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: dead CONFIG_ variables:   drivers/video/
+Message-ID: <Pine.LNX.4.64.0705030638270.380@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 11:32:23AM +1000, Nick Piggin wrote:
-> The attached patch gets performance up a bit by avoiding some
-> barriers and some cachelines:
-> 
-> G5
->          pagefault   fork          exec
-> 2.6.21   1.49-1.51   164.6-170.8   741.8-760.3
-> +patch   1.71-1.73   175.2-180.8   780.5-794.2
-> +patch2  1.61-1.63   169.8-175.0   748.6-757.0
-> 
-> So that brings the fork/exec hits down to much less than 5%, and
-> would likely speed up other things that lock the page, like write
-> or page reclaim.
 
-Is that every fork/exec or just under certain cicumstances?
-A 5% regression on every fork/exec is not acceptable.
+$ ../dead_config.sh drivers/video
+========== FB_68328_INVERT ==========
+drivers/video/68328fb.c:53:#if defined(CONFIG_FB_68328_INVERT)
+========== FB_AU1200_DEVS ==========
+drivers/video/au1200fb.c:52:#ifndef CONFIG_FB_AU1200_DEVS
+drivers/video/au1200fb.c:53:#define CONFIG_FB_AU1200_DEVS 4
+drivers/video/au1200fb.c:160:static struct au1200fb_device _au1200fb_devices[CONFIG_FB_AU1200_DEVS];
+drivers/video/au1200fb.c:714:   for (i = 0; i < CONFIG_FB_AU1200_DEVS; ++i) {
+drivers/video/au1200fb.c:1635:  for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) {
+drivers/video/au1200fb.c:1730:  for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)
+drivers/video/au1200fb.c:1850:                  for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)         {
+========== FB_MATROX_32MB ==========
+drivers/video/matrox/matroxfb_base.c:307:#ifdef CONFIG_FB_MATROX_32MB
+drivers/video/matrox/matroxfb_base.c:327:#ifdef CONFIG_FB_MATROX_32MB
+drivers/video/matrox/matroxfb_base.c:339:#ifdef CONFIG_FB_MATROX_32MB
+drivers/video/matrox/matroxfb_base.c:1342:#ifdef CONFIG_FB_MATROX_32MB
+drivers/video/matrox/matroxfb_base.c:1619:#ifdef CONFIG_FB_MATROX_32MB
+drivers/video/matrox/matroxfb_DAC1064.c:1053:#ifdef CONFIG_FB_MATROX_32MB
+drivers/video/matrox/matroxfb_base.h:58:#define CONFIG_FB_MATROX_32MB
+drivers/video/matrox/matroxfb_base.h:466:#ifdef CONFIG_FB_MATROX_32MB
+========== FB_NVIDIA_DEBUG ==========
+drivers/video/nvidia/nvidia.c:40:#undef CONFIG_FB_NVIDIA_DEBUG
+drivers/video/nvidia/nvidia.c:41:#ifdef CONFIG_FB_NVIDIA_DEBUG
+drivers/video/nvidia/nvidia.c:50:#ifdef CONFIG_FB_NVIDIA_DEBUG
+========== FB_SOFT_CURSOR ==========
+drivers/video/sis/sis_main.c:1906:#ifdef CONFIG_FB_SOFT_CURSOR
+========== MACH_MX1FS2 ==========
+drivers/video/imxfb.c:410:#ifndef CONFIG_MACH_MX1FS2
+arch/arm/tools/mach-types:486:mx1fs2                    MACH_MX1FS2             MX1FS2                  470
+========== MACH_PIMX1 ==========
+drivers/video/imxfb.c:404:#ifndef CONFIG_MACH_PIMX1
+arch/arm/tools/mach-types:678:pimx1                     MACH_PIMX1              PIMX1                   664
 
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
