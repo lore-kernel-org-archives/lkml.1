@@ -1,67 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767372AbXECEUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767371AbXECEVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767372AbXECEUi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 00:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767373AbXECEUi
+	id S1767371AbXECEVj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 00:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767376AbXECEVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 00:20:38 -0400
-Received: from ozlabs.org ([203.10.76.45]:45429 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767372AbXECEUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 00:20:37 -0400
-Subject: Re: [RELEASE] Lguest for 2.6.21
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: WANG Cong <xiyou.wangcong@gmail.com>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-In-Reply-To: <20070503035749.GC2295@localhost.localdomain>
-References: <1178117028.19815.14.camel@localhost.localdomain>
-	 <20070502193303.GA1502@localhost.localdomain>
-	 <1178146848.23670.6.camel@localhost.localdomain>
-	 <20070503035749.GC2295@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 14:20:32 +1000
-Message-Id: <1178166032.23670.16.camel@localhost.localdomain>
+	Thu, 3 May 2007 00:21:39 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:32962 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767371AbXECEVi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 00:21:38 -0400
+Date: Wed, 2 May 2007 21:20:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: dann frazier <dannf@hp.com>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       support@moxa.com.tw, dilinger@debian.org
+Subject: Re: old buffer overflow in moxa driver
+Message-Id: <20070502212053.e0ad2dba.akpm@linux-foundation.org>
+In-Reply-To: <20070430224829.GI31283@krebs.dannf>
+References: <20070430224829.GI31283@krebs.dannf>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-03 at 11:57 +0800, WANG Cong wrote:
-> On Thu, May 03, 2007 at 09:00:48AM +1000, Rusty Russell wrote:
-> >	Thanks for the patch.  This omission (in several places) was
-> >deliberate.  We can't really do anything sensible if the user unmapped
-> >the page.  I assume you saw a gcc warning from this code?
+On Mon, 30 Apr 2007 16:48:29 -0600 dann frazier <dannf@hp.com> wrote:
+
+> hey,
+>   I noticed that the moxa input checking security bug described by
+> CVE-2005-0504 appears to remain unfixed upstream.
+>  
+> The issue is described here:
+>   http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2005-0504
 > 
-> Yes. In fact, I got two warnings, another one is in drivers/lguest/hypercalls.c.
+> Debian has been shipping the following patch from Andres Salomon. I
+> tried contacting the listed maintainer a few months ago but received
+> no response.
 > 
-> If I understand you correctly, you mean we can do nothing useful to fix it?
-
-We can, but we can ignore those warnings for the moment; they're
-harmless.
-
-> I have sent a mail which described the errors I got when comipling
-> Documentation/lguest/lguest.c. But it seems that you didn't receive it
-> (it didn't appear in lkml.org neither!).
-
-Hmm, no, I didn't get it here either 8(
-
->  It is that, I have already made my .config as you suggested, but I
-> still can't compile Documentation/lguest/lguest.c, errors are:
+> I've tested that this still applies to and compiles against 2.6.21.
 > 
-> lguest.c: In function 'add_to_bridge':
-> lguest.c:779: error: 'SIOCBRADDIF' undeclared (first use in this function)
-> lguest.c:779: error: (Each undeclared identifier is reported only once
-> lguest.c:779: error: for each function it appears in.)
+> Signed-off-by: dann frazier <dannf@hp.com>
+> 
+> diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
+> index 7dbaee8..e0d35c2 100644
+> --- a/drivers/char/moxa.c
+> +++ b/drivers/char/moxa.c
+> @@ -1582,7 +1582,7 @@ copy:
+>  
+>  	if(copy_from_user(&dltmp, argp, sizeof(struct dl_str)))
+>  		return -EFAULT;
+> -	if(dltmp.cardno < 0 || dltmp.cardno >= MAX_BOARDS)
+> +	if(dltmp.cardno < 0 || dltmp.cardno >= MAX_BOARDS || dltmp.len < 0)
+>  		return -EINVAL;
+>  
+>  	switch(cmd)
+> @@ -2529,6 +2529,8 @@ static int moxaloadbios(int cardno, unsigned char __user *tmp, int len)
+>  	void __iomem *baseAddr;
+>  	int i;
+>  
+> +	if(len < 0 || len > sizeof(moxaBuff))
+> +		return -EINVAL;
+>  	if(copy_from_user(moxaBuff, tmp, len))
+>  		return -EFAULT;
+>  	baseAddr = moxa_boards[cardno].basemem;
+> @@ -2576,7 +2578,7 @@ static int moxaload320b(int cardno, unsigned char __user *tmp, int len)
+>  	void __iomem *baseAddr;
+>  	int i;
+>  
+> -	if(len > sizeof(moxaBuff))
+> +	if(len < 0 || len > sizeof(moxaBuff))
+>  		return -EINVAL;
+>  	if(copy_from_user(moxaBuff, tmp, len))
+>  		return -EFAULT;
+> @@ -2596,6 +2598,8 @@ static int moxaloadcode(int cardno, unsigned char __user *tmp, int len)
+>  	void __iomem *baseAddr, *ofsAddr;
+>  	int retval, port, i;
+>  
+> +	if(len < 0 || len > sizeof(moxaBuff))
+> +		return -EINVAL;
+>  	if(copy_from_user(moxaBuff, tmp, len))
+>  		return -EFAULT;
+>  	baseAddr = moxa_boards[cardno].basemem;
+> 
 
-Ah, perhaps older libc headers?  Can you try adding this to the top of
-Documentation/lguest/lguest.c after the #define BRIDGE_PFX "bridge:"
+I'm seeing copies of this patch floating around the internet from the 2.6.10
+timeframe at least.
 
-#ifndef SIOCBRADDIF
-#define SIOCBRADDIF	0x89a2		/* add interface to bridge      */
-#endif
-
-Thanks,
-Rusty.
+Could people please be more diligent about getting bugfixes back into
+mainline?
 
