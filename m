@@ -1,72 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162066AbXECOt0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162074AbXECOwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162066AbXECOt0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:49:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162064AbXECOt0
+	id S1162074AbXECOwr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162075AbXECOwr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:49:26 -0400
-Received: from tomts43-srv.bellnexxia.net ([209.226.175.110]:49755 "EHLO
-	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1162067AbXECOtZ (ORCPT
+	Thu, 3 May 2007 10:52:47 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51777 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1162074AbXECOwp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:49:25 -0400
-Date: Thu, 3 May 2007 10:49:25 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, wfg@ustc.edu
-Subject: Re: 2.6.22 -mm merge plans
-Message-ID: <20070503144925.GB26864@Krystal>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <p733b2gzqkg.fsf@bingen.suse.de> <20070501220803.GA27698@Krystal> <20070502104413.GC4392@one.firstfloor.org> <20070502094707.4197ab7a.akpm@linux-foundation.org> <20070502172934.GA17782@infradead.org> <20070502203627.GA18733@Krystal> <20070502135336.6d6d3569.akpm@linux-foundation.org> <20070502231104.GA26045@Krystal> <20070503103148.GA18822@one.firstfloor.org>
+	Thu, 3 May 2007 10:52:45 -0400
+Date: Thu, 3 May 2007 17:52:43 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] revoke: rename to can_revoke_{file|vma}
+Message-ID: <Pine.LNX.4.64.0705031752150.6505@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070503103148.GA18822@one.firstfloor.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 10:43:30 up 90 days,  4:50,  4 users,  load average: 2.43, 2.29, 1.85
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-This plan makes sense. I will split the "patched in enabled/disable
-flags" part into a separate piece (good idea!) and then submit the LTTng
-core to Andrew. Christoph's has a good point about wanting a usable
-infrastructure to go ini. Regarding your plan, I must argue that
-blktrace is not a general purpose tracing infrastructure, but one
-dedicated to block io tracing.  Therefore, it makes sense to bring in
-the generic infrastructure first and then convert blktrace to it.
+The inode_matches and need_revoke functions have confusing names so
+rename them to can_revoke_file and can_revoke_vma respectively.
 
-Mathieu
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/revoke.c |   33 ++++++++++++++++-----------------
+ 1 file changed, 16 insertions(+), 17 deletions(-)
 
-* Andi Kleen (andi@firstfloor.org) wrote:
-> > If we are looking at current "potential users" that are already in
-> > mainline, we could change blktrace to make it use the markers.
-> 
-> Ok, but do it step by step:
-> - split out useful pieces like the "patched in enable/disable flags" 
-> and submit them separate with an example user or two 
-> [I got a couple of candidates e.g. with some of the sysctls in VM or 
-> networking] 
-> - post and merge that.
-> - don't implement anything initially that is not needed by blktrace
-> - post a minimal marker patch together with the blktrace
-> conversion for review again on linux-kernel
-> - await review comments. This review would not cover the basic
-> need of markers, just the specific implementation.
-> - then potentially merge incorporate review comments
-> - then merge
-> - later add features with individual review/discussion as new users in the 
-> kernel are added.
-> 
-> -Andi
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Index: 26-mm/fs/revoke.c
+===================================================================
+--- 26-mm.orig/fs/revoke.c	2007-05-03 16:46:00.000000000 +0300
++++ 26-mm/fs/revoke.c	2007-05-03 17:09:52.000000000 +0300
+@@ -75,10 +75,13 @@ 	filp->f_pos = 0;
+ 	return NULL;
+ }
+ 
+-static inline int inode_matches(struct file *file, struct inode *inode,
+-				struct file *to_exclude)
++static inline bool can_revoke_file(struct file *file, struct inode *inode,
++				   struct file *to_exclude)
+ {
+-	return file && file != to_exclude && file->f_dentry->d_inode == inode;
++	if (!file || file == to_exclude)
++		return false;
++
++	return file->f_dentry->d_inode == inode;
+ }
+ 
+ static inline bool revoke_table_is_full(struct revoke_table *table)
+@@ -116,7 +119,7 @@ 	for (fd = 0; fd < fdt->max_fds; fd++) {
+ 		struct inode *new_inode;
+ 
+ 		filp = fcheck_files(files, fd);
+-		if (!inode_matches(filp, inode, to_exclude))
++		if (!can_revoke_file(filp, inode, to_exclude))
+ 			continue;
+ 
+ 		if (!filp->f_op->revoke) {
+@@ -159,22 +162,18 @@ 	for (fd = 0; fd < fdt->max_fds; fd++) {
+ 	return err;
+ }
+ 
+-static inline bool need_revoke(struct vm_area_struct *vma,
+-			       struct inode *inode,
+-			       struct file *to_exclude)
++static inline bool can_revoke_vma(struct vm_area_struct *vma,
++				  struct inode *inode, struct file *to_exclude)
+ {
+ 	struct file *file = vma->vm_file;
+ 
+ 	if (vma->vm_flags & VM_REVOKED)
+ 		return false;
+ 
+-	if (!file)
+-		return false;
+-
+-	if (file->f_path.dentry->d_inode != inode)
++	if (!file || file == to_exclude)
+ 		return false;
+ 
+-	return file != to_exclude;
++	return file->f_path.dentry->d_inode == inode;
+ }
+ 
+ static int __revoke_break_cow(struct task_struct *tsk, struct inode *inode,
+@@ -191,7 +190,7 @@ 	int err = 0;
+ 		if (vma->vm_flags & VM_SHARED)
+ 			continue;
+ 
+-		if (!need_revoke(vma, inode, to_exclude))
++		if (!can_revoke_vma(vma, inode, to_exclude))
+ 			continue;
+ 
+ 		ret = get_user_pages(tsk, tsk->mm, vma->vm_start,
+@@ -287,7 +286,7 @@ 	int err = 0;
+ 		if (!(vma->vm_flags & VM_SHARED))
+ 			continue;
+ 
+-		if (!need_revoke(vma, mapping->host, to_exclude))
++		if (!can_revoke_vma(vma, mapping->host, to_exclude))
+ 			continue;
+ 
+ 		err = revoke_vma(vma, &details);
+@@ -320,7 +319,7 @@ 	vma_prio_tree_foreach(vma, &iter, &mapp
+ 		if (!(vma->vm_flags & VM_SHARED))
+ 			continue;
+ 
+-		if (likely(!need_revoke(vma, mapping->host, to_exclude)))
++		if (likely(!can_revoke_vma(vma, mapping->host, to_exclude)))
+ 			continue;
+ 
+ 		err = revoke_mm(vma->vm_mm, mapping, to_exclude);
+@@ -348,7 +347,7 @@ 	int try_again = 0;
+ 	list_for_each_entry(vma, &mapping->i_mmap_nonlinear, shared.vm_set.list) {
+ 		int err;
+ 
+-		if (likely(!need_revoke(vma, mapping->host, to_exclude)))
++		if (likely(!can_revoke_vma(vma, mapping->host, to_exclude)))
+ 			continue;
+ 
+ 		err = revoke_mm(vma->vm_mm, mapping, to_exclude);
+@@ -470,7 +469,7 @@ 		for (fd = 0; fd < fdt->max_fds; fd++) 
+ 			struct file *file;
+ 
+ 			file = fcheck_files(files, fd);
+-			if (inode_matches(file, inode, to_exclude)) {
++			if (can_revoke_file(file, inode, to_exclude)) {
+ 				nr_fds += fdt->max_fds;
+ 				break;
+ 			}
