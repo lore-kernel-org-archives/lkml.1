@@ -1,95 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S376163AbXECQFS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376172AbXECQIE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S376163AbXECQFS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 12:05:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376169AbXECQFS
+	id S376172AbXECQIE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 12:08:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376174AbXECQID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 12:05:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:55274 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S376163AbXECQFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 12:05:15 -0400
-Cc: xyzzy@speakeasy.org, mkrufky@linuxtv.org, mrechberger@gmail.com,
-       mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       linux-dvb@linuxtv.org
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 03 May 2007 18:05:14 +0200
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <463A0462.5070106@gmail.com>
-Message-ID: <20070503160514.184710@gmx.net>
+	Thu, 3 May 2007 12:08:03 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:64374 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S376172AbXECQIA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 12:08:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mEH7pR41UFogFMB74o8kfILurztucWNlIxE6epLaP+i9NxPQth5dC3cIKbpR9EO9GdOH/GmopE/fRhULvrGeC7zmsHTE4BSXtG1xG2C858z/so/gY9RSTnQ/244/DhHVEuoWVjnyjTS66xOG3eZllU76NUPWMKf4Ck9fMq2nsL0=
+Message-ID: <43806ba60705030907u511e61f8pa8f125caad8b1f50@mail.gmail.com>
+Date: Thu, 3 May 2007 12:07:58 -0400
+From: "Gary Martin" <gm4rtin@gmail.com>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       "Marcel Holtmann" <marcel@holtmann.org>
+Subject: Re: Kernel Oops on 2.6.18-1.2869.fc6 is this a bug?
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <6bffcb0e0705030536s61d42ec0x27a4b54ddef234a3@mail.gmail.com>
 MIME-Version: 1.0
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
-	<4636E0E2.5020601@simon.arlott.org.uk>
-	<Pine.LNX.4.58.0705011500570.309@shell2.speakeasy.net>
- <46389278.1070208@gmail.com> <20070502155125.280320@gmx.net>
- <4638C046.1020005@gmail.com> <20070503112013.272380@gmx.net>
- <4639F554.1040505@gmail.com> <20070503153129.268110@gmx.net>
- <463A0462.5070106@gmail.com>
-Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
- points	about ...)
-To: Manu Abraham <abraham.manu@gmail.com>
-X-Authenticated: #8359428
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX19oQD1B4ZBo8LdLRRQR0k1qkDGb3O/MNx2lLeU3ym
- p/RDfD5fTDH6D8R5ITEkkEiF3lbzL/ET+QKA== 
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-GMX-UID: bUxwAW8va2AoTGC4SHQy1ls6OWhhaoeH
+Content-Disposition: inline
+References: <43806ba60705030524g2a8b0e54m2dda6f52615eba77@mail.gmail.com>
+	 <6bffcb0e0705030536s61d42ec0x27a4b54ddef234a3@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Thanks.
 
--------- Original-Nachricht --------
-Datum: Thu, 03 May 2007 19:48:50 +0400
-Von: Manu Abraham <abraham.manu@gmail.com>
-An: Uwe Bugla <uwe.bugla@gmx.de>
-CC: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org, mchehab@infradead.org, mrechberger@gmail.com, mkrufky@linuxtv.org, xyzzy@speakeasy.org
-Betreff: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical points	about ...)
-
-> Uwe Bugla wrote:
-> 
-> > Hi Manu,
-> > 
-> > But it would be an acceptable compromise FOR NOW, wouldn't it?
-> 
-> 
-> The reason is i do not wish to make changes to it, till i can fix it. It
-> is indeed hard to fix things that support a lot of devices, with
-> different issues. There are enough of issues in there.
-> 
-> You can look at all those frontend not found issues on the DVB ML.
-> 
-> The people who make all these noise, do nothing but just play politics.
-> Just do a search on the linux-dvb ML at gmane.org. You can easily find
-> them.
-> 
-> > Waiting for your link meanwhile to download that hopeful project...
-> 
-> http://thadathil.net:8000/cgi-bin/hgwebdir.cgi/cx878_41?ca=43abfe89c2c9;type=bz2
-
-Sorry Manu,
-
-incorrect link!
-Why?
-
-If you download the thing as tar.bz2 you get a zero file down.
-
-However, if you download the thing as tar.gz you will succeed in getting it.
-
-I'll sit down this evening, try to make changes to imply it into the actual mercurial tree, produce necessary patches and give you a bug report as far as the compilation errors are concerned.
-
-I am really looking forward to see this fantastic thing finished....
-It's worth it for a thousands of very good reasons, not only RAM optimization, but also stability and many many others...
-
-So gimme some time, and perhaps please supply a tar.bz2 version if you can, or fix the download error (zero file) if there is any other reason that I cannot see.
-
-OKIDOK so far?
-
-Uwe
-
-
-
--- 
-"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
-Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
+On 5/3/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> Hi Gary,
+>
+> On 03/05/07, Gary Martin <gm4rtin@gmail.com> wrote:
+> > I have a system running Fedora Core 6 on a Dell PE4400 that crashed
+> > and became unresponsive, I captured the following kernel oops in
+> > /var/log/messages:
+> >
+> > Apr 30 08:52:11 hostname kernel: list_del corruption. prev->next
+> > should be d5507478, but was 0000008f
+> > Apr 30 08:52:11 hostname kernel: ------------[ cut here ]------------
+> > Apr 30 08:52:11 hostname kernel: kernel BUG at lib/list_debug.c:65!
+> > Apr 30 08:52:11 hostname kernel: invalid opcode: 0000 [#1]
+> > Apr 30 08:52:11 hostname kernel: SMP
+> > Apr 30 08:52:11 hostname kernel: last sysfs file:
+> > /devices/pci0000:00/0000:00:04.0/irq
+> >  Apr 30 08:52:11 hostname kernel: Modules linked in: ipv6 autofs4
+> > dm_multipath video sbs i2c_ec button battery ac lp i2c_piix4 sr_mod
+> > i2c_core st cdrom e100 sg floppy pcspkr mii parport_pc tg3 parport
+> > serio_raw dm_snapshot dm_zero dm_mirror dm_mod aic7xxx
+> > scsi_transport_spi aacraid sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd
+> > uhci_hcd
+> > Apr 30 08:52:11 hostname kernel: CPU:    0
+> > Apr 30 08:52:11 hostname kernel: EIP:    0060:[<c04e5913>]    Not tainted VLI
+> > Apr 30 08:52:11 hostname kernel: EFLAGS: 00010296   (2.6.18-1.2869.fc6 #1)
+> > Apr 30 08:52:11 hostname kernel: EIP is at list_del+0x23/0x6c
+> > Apr 30 08:52:11 hostname kernel: eax: 00000048   ebx: d5507478   ecx:
+> > c0671c50   edx: 00000096
+> > Apr 30 08:52:11 hostname kernel: esi: d5507428   edi: f7d98e40   ebp:
+> > 00000282   esp: f7feff38
+> > Apr 30 08:52:11 hostname kernel: ds: 007b   es: 007b   ss: 0068
+> > Apr 30 08:52:11 hostname kernel: Process events/0 (pid: 8, ti=f7fef000
+> > task=c2ec05c0 task.ti=f7fef000)
+> > Apr 30 08:52:11 hostname kernel: Stack: c063707b d5507478 0000008f
+> > d5507420 c04b7ae6 d5507420 d5507428 f7d98e40
+> > Apr 30 08:52:11 hostname kernel:        c04b772c c067ece0 c067ece4
+> > c042fa34 00000246 f7d98e40 f7d98e60 c04b7675
+> > Apr 30 08:52:11 hostname kernel:        00000000 f7d98e60 f7d98e40
+> > f7d98e58 00000000 c043032c 00000001 00000000
+> > Apr 30 08:52:11 hostname kernel: Call Trace:
+> > Apr 30 08:52:11 hostname kernel:  [<c04b7ae6>] keyring_destroy+0x28/0x65
+> > Apr 30 08:52:11 hostname kernel:  [<c04b772c>] key_cleanup+0xb7/0xd0
+> > Apr 30 08:52:11 hostname kernel:  [<c042fa34>] run_workqueue+0x83/0xc5
+> > Apr 30 08:52:11 hostname kernel:  [<c043032c>] worker_thread+0xd9/0x10d
+> > Apr 30 08:52:11 hostname kernel:  [<c04327f3>] kthread+0xc0/0xed
+> > Apr 30 08:52:11 hostname kernel:  [<c0405447>] kernel_thread_helper+0x7/0x10
+> > Apr 30 08:52:11 hostname kernel: DWARF2 unwinder stuck at
+> > kernel_thread_helper+0x7/0x10
+> > Apr 30 08:52:11 hostname kernel: Leftover inexact backtrace:
+> > Apr 30 08:52:11 hostname kernel:  =======================
+> > Apr 30 08:52:11 hostname kernel: Code: 00 00 89 c3 eb e8 90 90 53 89
+> > c3 83 ec 0c 8b 40 04 8b 00 39 d8 74 1c 89 5c 24 04 89 44 24 08 c7 04
+> > 24 7b 70 63 c0 e8 df bc f3 ff <0f> 0b 41 00 b8 70 63 c0 8b 03 8b 40 04
+> > 39 d8 74 1c 89 5c 24 04
+> > Apr 30 08:52:11 hostname kernel: EIP: [<c04e5913>] list_del+0x23/0x6c
+> > SS:ESP 0068:f7feff38
+> > Apr 30 08:52:20 hostname kernel:  <3>BUG: soft lockup detected on CPU#0!
+> > Apr 30 08:52:20 hostname kernel:  [<c0405876>] dump_trace+0x69/0x1af
+> > Apr 30 08:52:20 hostname kernel:  [<c04059d4>] show_trace_log_lvl+0x18/0x2c
+> > Apr 30 08:52:20 hostname kernel:  [<c0405f83>] show_trace+0xf/0x11
+> > Apr 30 08:52:20 hostname kernel:  [<c0406080>] dump_stack+0x15/0x17
+> > Apr 30 08:52:20 hostname kernel:  [<c04498a9>] softlockup_tick+0xad/0xc4
+> > Apr 30 08:52:20 hostname kernel:  [<c042a39a>] update_process_times+0x39/0x5c
+> > Apr 30 08:52:20 hostname kernel:  [<c04148c5>]
+> > smp_apic_timer_interrupt+0x5b/0x62
+> > Apr 30 08:52:20 hostname kernel:  [<c040512f>] apic_timer_interrupt+0x1f/0x30
+> > Apr 30 08:52:20 hostname kernel: DWARF2 unwinder stuck at
+> > apic_timer_interrupt+0x1f/0x30
+> > Apr 30 08:52:20 hostname kernel: Leftover inexact backtrace:
+> > Apr 30 08:52:20 hostname kernel:  [<c0609f2f>] __write_lock_failed+0xf/0x20
+> > Apr 30 08:52:20 hostname kernel:  [<c04e57f9>] _raw_write_lock+0x5d/0x74
+> > Apr 30 08:52:20 hostname kernel:  [<c04b7ffd>] keyring_publish_name+0x2c/0x6d
+> > Apr 30 08:52:20 hostname kernel:  [<c04b804c>] keyring_instantiate+0xe/0x13
+> > Apr 30 08:52:20 hostname kernel:  [<c04b6fa4>]
+> > __key_instantiate_and_link+0x2f/0xa8
+> > Apr 30 08:52:20 hostname kernel:  [<c04b820d>] keyring_alloc+0x53/0x6a
+> > Apr 30 08:52:20 hostname kernel:  [<c04b9888>] alloc_uid_keyring+0x4c/0xb2
+> > Apr 30 08:52:20 hostname kernel:  [<c042a80d>] alloc_uid+0x95/0x13c
+> > Apr 30 08:52:20 hostname kernel:  [<c042d66f>] set_user+0xb/0x8e
+> > Apr 30 08:52:20 hostname kernel:  [<c042ef3a>] sys_setresuid+0x111/0x1dd
+> > Apr 30 08:52:20 hostname kernel:  [<c0404027>] syscall_call+0x7/0xb
+> > Apr 30 08:52:20 hostname kernel:  =======================
+> >
+> > Is this a bug?
+>
+> Yes, it is.
+>
+> >  Please let me know if I can provide any other
+> > information to determine the cause of this crash.  Thanks.
+>
+> You need to upgrade the kernel "yum upgrade kernel.i686"
+>
+> If the problem still appears, fill bug report in RedHat bugzilla
+> https://bugzilla.redhat.com/bugzilla/index.cgi
+>
+> Regards,
+> Michal
+>
+> --
+> Michal K. K. Piotrowski
+> Kernel Monkeys
+> (http://kernel.wikidot.com/start)
+>
