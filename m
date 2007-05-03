@@ -1,631 +1,373 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031305AbXECVgy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767429AbXECVgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031305AbXECVgy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:36:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767439AbXECVgn
+	id S1767429AbXECVgz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767447AbXECVgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:36:43 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:4216 "EHLO mail.z-net.ru"
+	Thu, 3 May 2007 17:36:40 -0400
+Received: from mail.z-net.ru ([89.113.80.10]:4226 "EHLO mail.z-net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767429AbXECVgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:36:21 -0400
-Date: Fri, 4 May 2007 01:32:48 +0400
+	id S1767439AbXECVgg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 17:36:36 -0400
+Date: Fri, 4 May 2007 01:33:03 +0400
 From: Anton Vorontsov <cbou@mail.ru>
 To: Greg KH <gregkh@suse.de>
 Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
        David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 6/8] 1-Wire ds2760 chip battery driver
-Message-ID: <20070503213248.GF20067@zarina>
+Subject: [PATCH 8/8] One Laptop Per Child power/battery driver
+Message-ID: <20070503213303.GH20067@zarina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is driver for batteries with ds2760 chip inside, found inside
-almost every HP iPaq and HTC PDAs/phones.
+This probably should be marked as BROKEN because, according
+to David Woodhouse, EC-acccess method will change. Plus currently
+it lacks mutexes. So this driver is just for reference. Converted
+from the battery-2.6 repository, 1:1.
+
+But nevertheless it should work.
 
 Signed-off-by: Anton Vorontsov <cbou@mail.ru>
 ---
- drivers/power/Kconfig          |    7 +
- drivers/power/Makefile         |    2 +
- drivers/power/ds2760_battery.c |  520 ++++++++++++++++++++++++++++++++++++++++
- include/linux/ds2760_battery.h |   32 +++
- 4 files changed, 561 insertions(+), 0 deletions(-)
- create mode 100644 drivers/power/ds2760_battery.c
- create mode 100644 include/linux/ds2760_battery.h
+ drivers/power/Kconfig        |    6 +
+ drivers/power/Makefile       |    1 +
+ drivers/power/olpc_battery.c |  300 ++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 307 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/power/olpc_battery.c
 
 diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 791fa0c..9214562 100644
+index 051724f..3ac79c3 100644
 --- a/drivers/power/Kconfig
 +++ b/drivers/power/Kconfig
-@@ -28,4 +28,11 @@ config APM_POWER
- 	  Say Y here to enable support APM status emulation using
- 	  battery class devices.
+@@ -42,4 +42,10 @@ config BATTERY_PMU
+ 	  Say Y here to expose battery information on Apple machines
+ 	  through the generic battery class.
  
-+config BATTERY_DS2760
-+	tristate "DS2760 battery driver (HP iPAQ & others)"
-+	select W1
-+	select W1_SLAVE_DS2760
++config BATTERY_OLPC
++	tristate "One Laptop Per Child battery"
++	depends on X86_32
 +	help
-+	  Say Y here to enable support for batteries with ds2760 chip.
++	  Say Y to enable support for the battery on the $100 laptop.
 +
  endif # POWER_SUPPLY
 diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index a8fbc7e..492df05 100644
+index 0ebdc6d..62b58ca 100644
 --- a/drivers/power/Makefile
 +++ b/drivers/power/Makefile
-@@ -16,3 +16,5 @@ obj-$(CONFIG_POWER_SUPPLY)         += power_supply.o
+@@ -19,3 +19,4 @@ obj-$(CONFIG_APM_POWER)            += apm_power.o
  
- obj-$(CONFIG_PDA_POWER)            += pda_power.o
- obj-$(CONFIG_APM_POWER)            += apm_power.o
-+
-+obj-$(CONFIG_BATTERY_DS2760)       += ds2760_battery.o
-diff --git a/drivers/power/ds2760_battery.c b/drivers/power/ds2760_battery.c
+ obj-$(CONFIG_BATTERY_DS2760)       += ds2760_battery.o
+ obj-$(CONFIG_BATTERY_PMU)          += pmu_battery.o
++obj-$(CONFIG_BATTERY_OLPC)         += olpc_battery.o
+diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
 new file mode 100644
-index 0000000..86c562c
+index 0000000..40f76bb
 --- /dev/null
-+++ b/drivers/power/ds2760_battery.c
-@@ -0,0 +1,520 @@
++++ b/drivers/power/olpc_battery.c
+@@ -0,0 +1,300 @@
 +/*
-+ * Driver for batteries with DS2760 chips inside.
++ * Battery driver for One Laptop Per Child ($100 laptop) board.
 + *
-+ * Copyright (c) 2007 Anton Vorontsov
-+ *               2004-2007 Matt Reimer
-+ *               2004 Szabolcs Gyurko
++ *	Copyright © 2006  David Woodhouse <dwmw2@infradead.org>
 + *
-+ * Use consistent with the GNU GPL is permitted,
-+ * provided that this copyright notice is
-+ * preserved in its entirety in all copies and derived works.
-+ *
-+ * Author:  Anton Vorontsov <cbou@mail.ru>
-+ *          February 2007
-+ *
-+ *          Matt Reimer <mreimer@vpop.net>
-+ *          April 2004, 2005, 2007
-+ *
-+ *          Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
-+ *          September 2004
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
 +
 +#include <linux/module.h>
-+#include <linux/param.h>
-+#include <linux/jiffies.h>
-+#include <linux/workqueue.h>
-+#include <linux/pm.h>
++#include <linux/err.h>
 +#include <linux/platform_device.h>
-+#include <linux/ds2760_battery.h>
++#include <linux/power_supply.h>
++#include <asm/io.h>
 +
-+#include "../w1/w1.h"
-+#include "../w1/slaves/w1_ds2760.h"
++#define wBAT_VOLTAGE     0xf900  /* *9.76/32,    mV   */
++#define wBAT_CURRENT     0xf902  /* *15.625/120, mA   */
++#define wBAT_TEMP        0xf906  /* *256/1000,   °C  */
++#define wAMB_TEMP        0xf908  /* *256/1000,   °C  */
++#define SOC              0xf910  /* percentage        */
++#define sMBAT_STATUS     0xfaa4
++#define	sBAT_PRESENT          1
++#define	sBAT_FULL             2
++#define	sBAT_DESTROY          4  /* what is this exactly? */
++#define	sBAT_LOW             32
++#define	sBAT_DISCHG          64
++#define sMCHARGE_STATUS  0xfaa5
++#define	sBAT_CHARGE           1
++#define	sBAT_OVERTEMP         4
++#define	sBAT_NiMH             8
++#define sPOWER_FLAG      0xfa40
++#define	ADAPTER_IN            1
 +
-+struct ds2760_device_info {
-+	struct power_supply_info *bi;
-+	struct device *dev;
++/*********************************************************************
++ *		EC locking and access
++ *********************************************************************/
 +
-+	/* DS2760 data, valid after calling ds2760_battery_read_status() */
-+	unsigned long update_time;      /* jiffies when data read */
-+	char raw[DS2760_DATA_SIZE];     /* raw DS2760 data */
-+	int voltage_raw;                /* units of 4.88 mV */
-+	int voltage_uV;                 /* units of uV */
-+	int current_raw;                /* units of 0.625 mA */
-+	int current_uA;                 /* units of uA */
-+	int accum_current_raw;          /* units of 0.25 mAh */
-+	int accum_current_uAh;          /* units of uAh */
-+	int temp_raw;                   /* units of 0.125 C */
-+	int temp_C;                     /* units of 0.1 C */
-+	int rated_capacity;             /* units of uAh */
-+	int rem_capacity;               /* percentage */
-+	int full_active_uAh;            /* units of uAh */
-+	int empty_uAh;                  /* units of uAh */
-+	int life_sec;                   /* units of seconds */
-+	int charge_status;              /* POWER_SUPPLY_STATUS_* */
-+
-+	int full_counter;
-+	struct power_supply bat;
-+	struct device *w1_dev;
-+	struct workqueue_struct *monitor_wqueue;
-+	struct delayed_work monitor_work;
-+};
-+
-+static unsigned int cache_time = 1000;
-+module_param(cache_time, uint, 0644);
-+MODULE_PARM_DESC(cache_time, "cache time in milliseconds");
-+
-+/* Some batteries have their rated capacity stored a N * 10 mAh, while
-+ * others use an index into this table. */
-+static int rated_capacities[] = {
-+	0,
-+	920,        /* Samsung */
-+	920,        /* BYD */
-+	920,        /* Lishen */
-+	920,        /* NEC */
-+	1440,       /* Samsung */
-+	1440,       /* BYD */
-+	1440,       /* Lishen */
-+	1440,       /* NEC */
-+	2880,       /* Samsung */
-+	2880,       /* BYD */
-+	2880,       /* Lishen */
-+	2880        /* NEC */
-+};
-+
-+/* array is level at temps 0C, 10C, 20C, 30C, 40C
-+ * temp is in Celsius */
-+static int battery_interpolate(int array[], int temp)
++static int lock_ec(void)
 +{
-+	int index, dt;
++	unsigned long timeo = jiffies + HZ / 20;
 +
-+	if (temp <= 0)
-+		return array[0];
-+	if (temp >= 40)
-+		return array[4];
-+
-+	index = temp / 10;
-+	dt    = temp % 10;
-+
-+	return array[index] + (((array[index + 1] - array[index]) * dt) / 10);
++	while (1) {
++		unsigned char lock = inb(0x6c) & 0x80;
++		if (!lock)
++			return 0;
++		if (time_after(jiffies, timeo)) {
++			printk(KERN_ERR "olpc_battery: failed to lock EC for "
++			       "battery access\n");
++			return 1;
++		}
++		yield();
++	}
 +}
 +
-+static int ds2760_battery_read_status(struct ds2760_device_info *di)
++static void unlock_ec(void)
 +{
-+	int ret, i, start, count, scale[5];
-+
-+	if (di->update_time && time_before(jiffies, di->update_time +
-+	                                   msecs_to_jiffies(cache_time)))
-+		return 0;
-+
-+	if (!di->w1_dev)
-+		return 0;
-+
-+	/* The first time we read the entire contents of SRAM/EEPROM,
-+	 * but after that we just read the interesting bits that change. */
-+	if (di->update_time == 0) {
-+		start = 0;
-+		count = DS2760_DATA_SIZE;
-+	}
-+	else {
-+		start = DS2760_VOLTAGE_MSB;
-+		count = DS2760_TEMP_LSB - start + 1;
-+	}
-+
-+	ret = w1_ds2760_read(di->w1_dev, di->raw + start, start, count);
-+	if (ret != count) {
-+		dev_warn(di->dev, "call to w1_ds2760_read failed (0x%08x)\n",
-+		         (unsigned int)di->w1_dev);
-+		return 1;
-+	}
-+
-+	di->update_time = jiffies;
-+
-+	/* DS2760 reports voltage in units of 4.88mV, but the battery class
-+	 * reports in units of uV, so convert by multiplying by 4880. */
-+	di->voltage_raw = (di->raw[DS2760_VOLTAGE_MSB] << 3) |
-+	                  (di->raw[DS2760_VOLTAGE_LSB] >> 5);
-+	di->voltage_uV = di->voltage_raw * 4880;
-+
-+	/* DS2760 reports current in signed units of 0.625mA, but the battery
-+	 * class reports in units of uA, so convert by multiplying by 625. */
-+	di->current_raw =
-+	    (((signed char)di->raw[DS2760_CURRENT_MSB]) << 5) |
-+	                  (di->raw[DS2760_CURRENT_LSB] >> 3);
-+	di->current_uA = di->current_raw * 625;
-+
-+	/* DS2760 reports accumulated current in signed units of 0.25mAh. */
-+	di->accum_current_raw =
-+	    (((signed char)di->raw[DS2760_CURRENT_ACCUM_MSB]) << 8) |
-+	                   di->raw[DS2760_CURRENT_ACCUM_LSB];
-+	di->accum_current_uAh = di->accum_current_raw * 250;
-+
-+	/* DS2760 reports temperature in signed units of 0.125C, but the
-+	 * battery class reports in units of 1/10 C, so we convert by
-+	 * multiplying by .125 * 10 = 1.25. */
-+	di->temp_raw = (((signed char)di->raw[DS2760_TEMP_MSB]) << 3) |
-+	                             (di->raw[DS2760_TEMP_LSB] >> 5);
-+	di->temp_C = di->temp_raw + (di->temp_raw / 4);
-+
-+	/* At least some battery monitors (e.g. HP iPAQ) store the battery's
-+	 * maximum rated capacity. */
-+	if (di->raw[DS2760_RATED_CAPACITY] < ARRAY_SIZE(rated_capacities))
-+		di->rated_capacity = rated_capacities[
-+		        (unsigned int)di->raw[DS2760_RATED_CAPACITY]];
-+	else
-+		di->rated_capacity = di->raw[DS2760_RATED_CAPACITY] * 10;
-+
-+	di->rated_capacity *= 1000; /* convert to uAh */
-+
-+	/* Calculate the full level at the present temperature. */
-+	di->full_active_uAh = di->raw[DS2760_ACTIVE_FULL] << 8 |
-+	                      di->raw[DS2760_ACTIVE_FULL + 1];
-+
-+	scale[0] = di->raw[DS2760_ACTIVE_FULL] << 8 |
-+	           di->raw[DS2760_ACTIVE_FULL + 1];
-+	for (i = 1; i < 5; i++)
-+		scale[i] = scale[i - 1] + di->raw[DS2760_ACTIVE_FULL + 2 + i];
-+
-+	di->full_active_uAh = battery_interpolate(scale, di->temp_C / 10);
-+	di->full_active_uAh *= 1000; /* convert to uAh */
-+
-+	/* Calculate the empty level at the present temperature. */
-+	scale[4] = di->raw[DS2760_ACTIVE_EMPTY + 4];
-+	for (i = 3; i >= 0; i--)
-+		scale[i] = scale[i + 1] + di->raw[DS2760_ACTIVE_EMPTY + i];
-+
-+	di->empty_uAh = battery_interpolate(scale, di->temp_C / 10);
-+	di->empty_uAh *= 1000; /* convert to uAh */
-+
-+	/* From Maxim Application Note 131: remaining capacity =
-+	 * ((ICA - Empty Value) / (Full Value - Empty Value)) x 100% */
-+	di->rem_capacity = ((di->accum_current_uAh - di->empty_uAh) * 100L) /
-+	                    (di->full_active_uAh - di->empty_uAh);
-+
-+	if (di->rem_capacity < 0)
-+		di->rem_capacity = 0;
-+	if (di->rem_capacity > 100)
-+		di->rem_capacity = 100;
-+
-+	if (di->current_uA)
-+		di->life_sec = -((di->accum_current_uAh - di->empty_uAh) *
-+		                 3600L) / di->current_uA;
-+	else
-+		di->life_sec = 0;
-+
-+	return 0;
-+}
-+
-+static void ds2760_battery_update_status(struct ds2760_device_info *di)
-+{
-+	int old_charge_status = di->charge_status;
-+
-+	ds2760_battery_read_status(di);
-+
-+	if (di->charge_status == POWER_SUPPLY_STATUS_UNKNOWN)
-+		di->full_counter = 0;
-+
-+	if (power_supply_am_i_supplied(&di->bat)) {
-+		if (di->current_uA > 10000) {
-+			di->charge_status = POWER_SUPPLY_STATUS_CHARGING;
-+			di->full_counter = 0;
-+		}
-+		else if (di->current_uA < -5000) {
-+			if (di->charge_status != POWER_SUPPLY_STATUS_NOT_CHARGING)
-+				dev_notice(di->dev, "not enough power to "
-+				           "charge\n");
-+			di->charge_status = POWER_SUPPLY_STATUS_NOT_CHARGING;
-+			di->full_counter = 0;
-+		}
-+		else if (di->current_uA < 10000 &&
-+		            di->charge_status != POWER_SUPPLY_STATUS_FULL) {
-+
-+			/* Don't consider the battery to be full unless
-+			 * we've seen the current < 10 mA at least two
-+			 * consecutive times. */
-+
-+			di->full_counter++;
-+
-+			if (di->full_counter < 2)
-+				di->charge_status = POWER_SUPPLY_STATUS_CHARGING;
-+			else {
-+				unsigned char acr[2];
-+				int acr_val;
-+
-+				/* acr is in units of 0.25 mAh */
-+				acr_val = di->full_active_uAh * 4L / 1000;
-+
-+				acr[0] = acr_val >> 8;
-+				acr[1] = acr_val & 0xff;
-+
-+				if (w1_ds2760_write(di->w1_dev, acr,
-+				    DS2760_CURRENT_ACCUM_MSB, 2) < 2)
-+					dev_warn(di->dev,
-+					         "ACR reset failed\n");
-+
-+				di->charge_status = POWER_SUPPLY_STATUS_FULL;
-+			}
-+		}
-+	}
-+	else {
-+		di->charge_status = POWER_SUPPLY_STATUS_DISCHARGING;
-+		di->full_counter = 0;
-+	}
-+
-+	if (di->charge_status != old_charge_status)
-+		power_supply_changed(&di->bat);
-+
++	outb(0xff, 0x6c);
 +	return;
 +}
 +
-+static int ds2760_battery_match_callback(struct device *dev, void *data)
++static unsigned char read_ec_byte(unsigned short adr)
 +{
-+	struct w1_slave *sl;
-+
-+	if (!(dev->driver && dev->driver->name &&
-+	     (strcmp(dev->driver->name, "w1_slave_driver") == 0)))
-+		return 0;
-+
-+	sl = container_of(dev, struct w1_slave, dev);
-+
-+	/* DS2760 w1 slave device names begin with the family number 0x30. */
-+	if (strncmp(sl->name, "30-", 3) != 0)
-+		return 0;
-+
-+	return 1;
++	outb(adr >> 8, 0x381);
++	outb(adr, 0x382);
++	return inb(0x383);
 +}
 +
-+static void ds2760_battery_work(struct work_struct *work)
++static unsigned short read_ec_word(unsigned short adr)
 +{
-+	struct ds2760_device_info *di = container_of(work,
-+		struct ds2760_device_info, monitor_work.work);
-+	struct bus_type *bus;
-+	int interval = HZ * 60;
-+
-+	dev_dbg(di->dev, "%s\n", __FUNCTION__);
-+
-+	if (!di->w1_dev) {
-+		/* Get the battery w1 slave device. */
-+		bus = find_bus("w1");
-+		if (bus)
-+			di->w1_dev = bus_find_device(bus, NULL, NULL,
-+			                   ds2760_battery_match_callback);
-+
-+		if (!di->w1_dev) {
-+			dev_dbg(di->dev, "no w1 dev found\n");
-+			interval = HZ * 10;
-+			goto again_please;
-+		}
-+		dev_dbg(di->dev, "w1 dev found\n");
-+	}
-+
-+	ds2760_battery_update_status(di);
-+
-+again_please:
-+	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, interval);
-+	return;
++	return (read_ec_byte(adr) << 8) | read_ec_byte(adr + 1);
 +}
 +
-+#define to_ds2760_device_info(x) container_of((x), struct ds2760_device_info, \
-+                                              bat);
++/*********************************************************************
++ *		Power
++ *********************************************************************/
 +
-+static void ds2760_battery_external_power_changed(struct power_supply *psy)
++static int olpc_ac_get_prop(struct power_supply *psy,
++                            enum power_supply_property psp,
++                            union power_supply_propval *val)
 +{
-+	struct ds2760_device_info *di = to_ds2760_device_info(psy);
++	int ret = 0;
 +
-+	dev_dbg(di->dev, "%s\n", __FUNCTION__);
-+
-+	cancel_delayed_work(&di->monitor_work);
-+	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ/10);
-+
-+	return;
-+}
-+
-+static int ds2760_battery_get_property(struct power_supply *psy,
-+                                       enum power_supply_property psp,
-+                                       union power_supply_propval *val)
-+{
-+	struct ds2760_device_info *di = to_ds2760_device_info(psy);
++	if (lock_ec())
++		return -EIO;
 +
 +	switch (psp) {
-+	case POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN:
-+		val->intval = di->bi->voltage_max_design;
-+		return 0;
-+	case POWER_SUPPLY_PROP_STATUS:
-+		val->intval = di->charge_status;
-+		return 0;
++	case POWER_SUPPLY_PROP_ONLINE:
++		if (!(read_ec_byte(sMBAT_STATUS) & sBAT_PRESENT)) {
++			ret = -ENODEV;
++			goto out;
++		}
++		val->intval = !!(read_ec_byte(sPOWER_FLAG) & ADAPTER_IN);
++		break;
 +	default:
++		ret = -EINVAL;
 +		break;
 +	}
++out:
++	unlock_ec();
++	return ret;
++}
 +
-+	ds2760_battery_read_status(di);
++static enum power_supply_property olpc_ac_props[] = {
++	POWER_SUPPLY_PROP_ONLINE,
++};
++
++static struct power_supply olpc_ac = {
++	.name = "olpc-ac",
++	.type = POWER_SUPPLY_TYPE_AC,
++	.properties = olpc_ac_props,
++	.num_properties = ARRAY_SIZE(olpc_ac_props),
++	.get_property = olpc_ac_get_prop,
++};
++
++/*********************************************************************
++ *		Battery properties
++ *********************************************************************/
++
++static int olpc_bat_get_property(struct power_supply *psy,
++                                 enum power_supply_property psp,
++                                 union power_supply_propval *val)
++{
++	int ret = 0;
++
++	if (lock_ec())
++		return -EIO;
 +
 +	switch (psp) {
-+	case POWER_SUPPLY_PROP_VOLTAGE_NOW:
-+		val->intval = di->voltage_uV;
++	case POWER_SUPPLY_PROP_STATUS:
++		{
++			int status = POWER_SUPPLY_STATUS_UNKNOWN;
++
++			val->intval = read_ec_byte(sMBAT_STATUS);
++
++			if (!(val->intval & sBAT_PRESENT)) {
++				ret = -ENODEV;
++				goto out;
++			}
++
++			if (val->intval & sBAT_DISCHG)
++				status = POWER_SUPPLY_STATUS_DISCHARGING;
++			else if (val->intval & sBAT_FULL)
++				status = POWER_SUPPLY_STATUS_FULL;
++
++			val->intval = read_ec_byte(sMCHARGE_STATUS);
++			if (val->intval & sBAT_CHARGE)
++				status = POWER_SUPPLY_STATUS_CHARGING;
++
++			val->intval = status;
++			break;
++		}
++	case POWER_SUPPLY_PROP_PRESENT:
++		val->intval = !!(read_ec_byte(sMBAT_STATUS) & sBAT_PRESENT);
 +		break;
-+	case POWER_SUPPLY_PROP_CURRENT_NOW:
-+		val->intval = di->current_uA;
++	case POWER_SUPPLY_PROP_HEALTH:
++		val->intval = read_ec_byte(sMCHARGE_STATUS);
++		if (val->intval & sBAT_OVERTEMP)
++			val->intval = POWER_SUPPLY_HEALTH_OVERHEAT;
++		else
++			val->intval = POWER_SUPPLY_HEALTH_GOOD;
 +		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN:
-+		val->intval = di->rated_capacity;
++	case POWER_SUPPLY_PROP_TECHNOLOGY:
++		val->intval = read_ec_byte(sMCHARGE_STATUS);
++		if (val->intval & sBAT_NiMH)
++			val->intval = POWER_SUPPLY_TECHNOLOGY_NIMH;
++		else
++			val->intval = POWER_SUPPLY_TECHNOLOGY_UNKNOWN;
 +		break;
-+	case POWER_SUPPLY_PROP_CHARGE_FULL:
-+		val->intval = di->full_active_uAh;
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++		val->intval = read_ec_byte(wBAT_VOLTAGE) * 9760L / 32;
 +		break;
-+	case POWER_SUPPLY_PROP_CHARGE_EMPTY:
-+		val->intval = di->empty_uAh;
++	case POWER_SUPPLY_PROP_CURRENT_AVG:
++		val->intval = read_ec_byte(wBAT_CURRENT) * 15625L / 120;
 +		break;
-+	case POWER_SUPPLY_PROP_CHARGE_NOW:
-+		val->intval = di->accum_current_uAh;
++	case POWER_SUPPLY_PROP_CAPACITY:
++		val->intval = read_ec_byte(SOC);
++		break;
++	case POWER_SUPPLY_PROP_CAPACITY_LEVEL:
++		val->intval = read_ec_byte(sMBAT_STATUS);
++		if (val->intval & sBAT_FULL)
++			val->intval = POWER_SUPPLY_CAPACITY_LEVEL_FULL;
++		else if (val->intval & sBAT_LOW)
++			val->intval = POWER_SUPPLY_CAPACITY_LEVEL_LOW;
++		else
++			val->intval = POWER_SUPPLY_CAPACITY_LEVEL_NORMAL;
 +		break;
 +	case POWER_SUPPLY_PROP_TEMP:
-+		val->intval = di->temp_C;
++		val->intval = read_ec_byte(wBAT_TEMP) * 256 / 100;
++		break;
++	case POWER_SUPPLY_PROP_TEMP_AMBIENT:
++		val->intval = read_ec_byte(wAMB_TEMP) * 256 / 100;
 +		break;
 +	default:
-+		return -EINVAL;
++		ret = -EINVAL;
++		break;
 +	}
 +
-+	return 0;
++out:
++	unlock_ec();
++	return ret;
 +}
 +
-+static enum power_supply_property ds2760_battery_props[] = {
++static enum power_supply_property olpc_bat_props[] = {
 +	POWER_SUPPLY_PROP_STATUS,
-+	POWER_SUPPLY_PROP_VOLTAGE_MAX_DESIGN,
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN,
-+	POWER_SUPPLY_PROP_CHARGE_FULL,
-+	POWER_SUPPLY_PROP_CHARGE_EMPTY,
-+	POWER_SUPPLY_PROP_CHARGE_NOW,
++	POWER_SUPPLY_PROP_PRESENT,
++	POWER_SUPPLY_PROP_HEALTH,
++	POWER_SUPPLY_PROP_TECHNOLOGY,
++	POWER_SUPPLY_PROP_VOLTAGE_AVG,
++	POWER_SUPPLY_PROP_CURRENT_AVG,
++	POWER_SUPPLY_PROP_CAPACITY,
++	POWER_SUPPLY_PROP_CAPACITY_LEVEL,
 +	POWER_SUPPLY_PROP_TEMP,
++	POWER_SUPPLY_PROP_TEMP_AMBIENT,
 +};
 +
-+static int ds2760_battery_probe(struct platform_device *pdev)
++/*********************************************************************
++ *		Initialisation
++ *********************************************************************/
++
++static struct platform_device *bat_pdev;
++
++static struct power_supply olpc_bat = {
++	.properties = olpc_bat_props,
++	.num_properties = ARRAY_SIZE(olpc_bat_props),
++	.get_property = olpc_bat_get_property,
++	.use_for_apm = 1,
++};
++
++static int __init olpc_bat_init(void)
 +{
-+	int retval = 0;
-+	struct ds2760_device_info *di;
-+	struct ds2760_platform_data *pdata;
++	int ret = 0;
++	unsigned short tmp;
 +
-+	di = kzalloc(sizeof(*di), GFP_KERNEL);
-+	if (!di) {
-+		retval = -ENOMEM;
-+		goto di_alloc_failed;
++	if (!request_region(0x380, 4, "olpc-battery")) {
++		ret = -EIO;
++		goto region_failed;
 +	}
 +
-+	platform_set_drvdata(pdev, di);
-+
-+	pdata = pdev->dev.platform_data;
-+	di->bi = &pdata->battery_info;
-+	di->dev = &pdev->dev;
-+
-+	di->bat.name           = di->bi->name;
-+	di->bat.type           = POWER_SUPPLY_TYPE_BATTERY;
-+	di->bat.properties     = ds2760_battery_props;
-+	di->bat.num_properties = ARRAY_SIZE(ds2760_battery_props);
-+	di->bat.get_property   = ds2760_battery_get_property;
-+	di->bat.external_power_changed =
-+	                          ds2760_battery_external_power_changed;
-+
-+	di->charge_status = POWER_SUPPLY_STATUS_UNKNOWN;
-+
-+	retval = power_supply_register(&pdev->dev, &di->bat);
-+	if (retval) {
-+		dev_err(di->dev, "failed to register battery");
-+		goto batt_failed;
++	if (lock_ec()) {
++		ret = -EIO;
++		goto lock_failed;
 +	}
 +
-+	INIT_DELAYED_WORK(&di->monitor_work, ds2760_battery_work);
-+	di->monitor_wqueue = create_singlethread_workqueue("ds2760_mon");
-+	if (!di->monitor_wqueue) {
-+		retval = -ESRCH;
-+		goto workqueue_failed;
++	tmp = read_ec_word(0xfe92);
++	unlock_ec();
++
++	if (tmp != 0x380) {
++		/* Doesn't look like OLPC EC */
++		ret = -ENODEV;
++		goto not_olpc_ec;
 +	}
-+	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ * 1);
++
++	bat_pdev = platform_device_register_simple("olpc-battery", 0, NULL, 0);
++	if (IS_ERR(bat_pdev)) {
++		ret = PTR_ERR(bat_pdev);
++		goto pdev_failed;
++	}
++
++	ret = power_supply_register(&bat_pdev->dev, &olpc_ac);
++	if (ret)
++		goto ac_failed;
++
++	olpc_bat.name = bat_pdev->name;
++
++	ret = power_supply_register(&bat_pdev->dev, &olpc_bat);
++	if (ret)
++		goto battery_failed;
 +
 +	goto success;
 +
-+workqueue_failed:
-+	power_supply_unregister(&di->bat);
-+batt_failed:
-+	kfree(di);
-+di_alloc_failed:
++battery_failed:
++	power_supply_unregister(&olpc_ac);
++ac_failed:
++	platform_device_unregister(bat_pdev);
++pdev_failed:
++not_olpc_ec:
++lock_failed:
++	release_region(0x380, 4);
++region_failed:
 +success:
-+	return retval;
++	return ret;
 +}
 +
-+static int ds2760_battery_remove(struct platform_device *pdev)
++static void __exit olpc_bat_exit(void)
 +{
-+	struct ds2760_device_info *di = platform_get_drvdata(pdev);
-+
-+	cancel_rearming_delayed_workqueue(di->monitor_wqueue,
-+	                                  &di->monitor_work);
-+	destroy_workqueue(di->monitor_wqueue);
-+	power_supply_unregister(&di->bat);
-+	if (di->w1_dev)
-+		put_device(di->w1_dev);
-+
-+	return 0;
-+}
-+
-+#ifdef CONFIG_PM
-+
-+static int ds2760_battery_suspend(struct platform_device *pdev,
-+                                  pm_message_t state)
-+{
-+	struct ds2760_device_info *di = platform_get_drvdata(pdev);
-+
-+	di->charge_status = POWER_SUPPLY_STATUS_UNKNOWN;
-+	power_supply_changed(&di->bat);
-+
-+	return 0;
-+}
-+
-+static int ds2760_battery_resume(struct platform_device *pdev)
-+{
-+	struct ds2760_device_info *di = platform_get_drvdata(pdev);
-+
-+	di->charge_status = POWER_SUPPLY_STATUS_UNKNOWN;
-+	power_supply_changed(&di->bat);
-+
-+	cancel_delayed_work(&di->monitor_work);
-+	queue_delayed_work(di->monitor_wqueue, &di->monitor_work, HZ);
-+
-+	return 0;
-+}
-+
-+#else
-+
-+#define ds2760_battery_suspend NULL
-+#define ds2760_battery_resume NULL
-+
-+#endif /* CONFIG_PM */
-+
-+static struct platform_driver ds2760_battery_driver = {
-+	.driver = {
-+		.name = "ds2760-battery",
-+	},
-+	.probe	  = ds2760_battery_probe,
-+	.remove   = ds2760_battery_remove,
-+	.suspend  = ds2760_battery_suspend,
-+	.resume	  = ds2760_battery_resume,
-+};
-+
-+static int __init ds2760_battery_init(void)
-+{
-+	return platform_driver_register(&ds2760_battery_driver);
-+}
-+
-+static void __exit ds2760_battery_exit(void)
-+{
-+	platform_driver_unregister(&ds2760_battery_driver);
++	power_supply_unregister(&olpc_bat);
++	power_supply_unregister(&olpc_ac);
++	platform_device_unregister(bat_pdev);
++	release_region(0x380, 4);
 +	return;
 +}
 +
-+module_init(ds2760_battery_init);
-+module_exit(ds2760_battery_exit);
++module_init(olpc_bat_init);
++module_exit(olpc_bat_exit);
 +
++MODULE_AUTHOR("David Woodhouse <dwmw2@infradead.org>");
 +MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>, "
-+              "Matt Reimer <mreimer@vpop.net>, "
-+              "Anton Vorontsov <cbou@mail.ru>");
-+MODULE_DESCRIPTION("ds2760 battery driver");
-diff --git a/include/linux/ds2760_battery.h b/include/linux/ds2760_battery.h
-new file mode 100644
-index 0000000..d00c768
---- /dev/null
-+++ b/include/linux/ds2760_battery.h
-@@ -0,0 +1,32 @@
-+/*
-+ * Driver for batteries with DS2760 chips inside.
-+ *
-+ * Copyright (c) 2007 Anton Vorontsov
-+ *               2004-2007 Matt Reimer
-+ *               2004 Szabolcs Gyurko
-+ *
-+ * Use consistent with the GNU GPL is permitted,
-+ * provided that this copyright notice is
-+ * preserved in its entirety in all copies and derived works.
-+ *
-+ * Author:  Anton Vorontsov <cbou@mail.ru>
-+ *          February 2007
-+ *
-+ *          Matt Reimer <mreimer@vpop.net>
-+ *          April 2004, 2005, 2007
-+ *
-+ *          Szabolcs Gyurko <szabolcs.gyurko@tlt.hu>
-+ *          September 2004
-+ */
-+
-+#ifndef __DS2760_BATTERY__
-+#define __DS2760_BATTERY__
-+
-+#include <linux/power_supply.h>
-+
-+struct ds2760_platform_data {
-+	/* Battery information and characteristics. */
-+	struct power_supply_info battery_info;
-+};
-+
-+#endif
++MODULE_DESCRIPTION("Battery driver for One Laptop Per Child "
++                   "($100 laptop) board.");
 -- 
 1.5.1.1-dirty
-
