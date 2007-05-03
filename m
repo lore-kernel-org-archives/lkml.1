@@ -1,87 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932409AbXECIiK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932771AbXECIia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932409AbXECIiK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 04:38:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932753AbXECIiK
+	id S932771AbXECIia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 04:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932768AbXECIia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 04:38:10 -0400
-Received: from [212.12.190.206] ([212.12.190.206]:33064 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S932409AbXECIiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 04:38:08 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v7
-Date: Thu, 3 May 2007 11:42:02 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200704300820.49078.a1426z@gawab.com> <20070503074552.GA14960@elte.hu>
-In-Reply-To: <20070503074552.GA14960@elte.hu>
+	Thu, 3 May 2007 04:38:30 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:33349 "EHLO mail.ukfsn.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932771AbXECIi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 04:38:28 -0400
+X-Greylist: delayed 1804 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 04:38:27 EDT
+Message-ID: <46399876.2030800@dgreaves.com>
+Date: Thu, 03 May 2007 09:08:22 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705031142.02550.a1426z@gawab.com>
+To: Miguel Sousa Filipe <miguel.filipe@gmail.com>
+Cc: david@lang.hm, Diego Calleja <diegocg@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: FEATURE REQUEST: merge MD software raid and LVM in one unique
+ layer.
+References: <f058a9c30705021214k75da330ai4d79a2b6b2806652@mail.gmail.com>  <f058a9c30705021218p4fdb4747kb5b4b9000ad50ef2@mail.gmail.com>  <20070502221045.ad20b915.diegocg@gmail.com> <f058a9c30705021351i24c7adc2i4c7e8a76e3b8d1bb@mail.gmail.com> <Pine.LNX.4.64.0705021756210.5342@asgard.lang.hm>
+In-Reply-To: <Pine.LNX.4.64.0705021756210.5342@asgard.lang.hm>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Al Boldi <a1426z@gawab.com> wrote:
-> > > i'm pleased to announce release -v7 of the CFS scheduler patchset.
-> > > (The main goal of CFS is to implement "desktop scheduling" with as
-> > > high quality as technically possible.)
-> > >
-> > >
-> > > As usual, any sort of feedback, bugreport, fix and suggestion is
-> > > more than welcome,
-> >
-> > This one seems on par with SD, [...]
->
-> excellent :-)
->
-> > [...] but there are still some nice issues.
-> >
-> > Try running 3 chew.c's, then renicing one to -10, starves others for
-> > some seconds while switching prio-level.  Now renice it back to 10, it
-> > starves for up to 45sec.
->
-> ok - to make sure i understood you correctly: does this starvation only
-> occur right when you renice it (when switching prio levels),
+david@lang.hm wrote:
+> On Wed, 2 May 2007, Miguel Sousa Filipe wrote:
+> 
+>> On 5/2/07, Diego Calleja <diegocg@gmail.com> wrote:
+>>>  El Wed, 2 May 2007 20:18:55 +0100, "Miguel Sousa Filipe"
+>>>  <miguel.filipe@gmail.com> escribió:
+>>>
+>>> >  I find it high irritanting having two kernel interfaces and two
+>>> >  userland tools that provide the same funcionality, which one should I
+>>> >  use?
+>>>
+>>>  I doubt users care about kernel's design; however the lack of
+>>> unification of  userspace tools is a real problem. Just my 2¢.
 
-Yes.
+>> This is also a problem for any developer who tries to improve
+>> usability in this area by creating some unified userland tools to
+>> manipulate MD & LVM. (Imagining myself implementing some userland tool
+>> to create some "storage devices" + mount points.. doesn't  seem easy
+>> nor fun..).
+> 
+> why do you care if the userspace tool that does the resizing makes
+> system calls to one layer or to two layers? how would you know?
 
-> and it gets
-> rectified quickly once they get over a few reschedules?
+Indeed!!
 
-Well, depending on nice level this delay may be more than 45sec.
+EVMS
 
-And, in cfs-v8 there is an additional repeating latency blip akin to an 
-expiry when running procs at different nice levels.  chew.c shows this 
-clearly.
+http://evms.sourceforge.net/
 
-> > Also, nice levels are only effective on every other step; ie:
-> >  ... -3/-2 , -1/0 , 1/2 ... yields only 20 instead of 40 prio-levels.
->
-> yeah - this is a first-approximation thing.
->
-> Some background: in the upstream scheduler (and in SD) nice levels are
-> linearly scaled, while in CFS they are exponentially scaled. I did this
-> because i believe exponential is more logical: regardless of which nice
-> level a task uses, if it goes +2 nice levels up then it will halve its
-> "fair CPU share". So for example the CPU consumption delta between nice
-> 0 and nice +10 is 1/32 - and so is the delta between -5 and +5, -10 and
-> -5, etc. This makes nice levels _alot_ more potent than upstream's
-> linear approach.
+Enterprise Volume Management System
 
-Actually, I think 1/32 for +10 is a bit to strong.  Introducing a scalefactor 
-tunable may be useful.
+In order to make the transition to EVMS as smooth as possible, EVMS includes
+compatibility with a number of existing storage and volume management systems.
+Currently, EVMS recognizes:
 
-Also, don't you think it reasonable to lower-bound the timeslices?
+    * All locally attached disks
+    * DOS-style disk partitions (used extensively on Linux systems)
+    * GPT disk partitions (mainly used on IA-64)
+    * S/390 disk partitions (CDL/LDL)
+    * BSD disk partitions
+    * Macintosh disk partitions
+    * Linux MD/Software-RAID devices
+    * Linux LVM volume groups and logical volumes (versions 1 and 2)
 
+Anything else?
 
-Thanks!
+Oh... yes:
 
---
-Al
+In addition to providing compatibility with these existing systems, EVMS also
+provides new functionality that can be built on top of any of the above
+"volumes" that EVMS already recognizes. Features that are currently included are:
 
+    * Bad Block Relocation
+    * Linear Drive Linking
+    * Generic Snapshotting
+
+Enough? or would you like:
+In addition to these volume-level features, the EVMS tools provide convenient
+integration with numerous filesystem tools, to allow tasks such as mkfs and fsck
+directly from the EVMS user interfaces. Currently, the following filesystems are
+supported:
+
+    * Ext2/3
+    * JFS
+    * ReiserFS
+    * XFS
+    * Swap
+    * OCFS2
+    * NTFS
+    * FAT
+
+??
+Oh, and for the l33t there's a GUI and screenshots...
+
+Of course, in keeping with ZFS, this management layer is all proprietary and
+costs megabucks - or is it GPL, can never remember...
+
+Damn that "irritanting" architecture - keeps us from doing cool things...
+
+Seriously - I hope this is useful ;)
+
+David
