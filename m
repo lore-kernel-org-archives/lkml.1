@@ -1,49 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbXECKLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752694AbXECKMA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751965AbXECKLv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXECKLu
+	id S1752694AbXECKMA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:12:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752808AbXECKMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:11:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59095
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751965AbXECKLt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:11:49 -0400
-Date: Thu, 03 May 2007 03:11:49 -0700 (PDT)
-Message-Id: <20070503.031149.51495514.davem@davemloft.net>
-To: dhowells@redhat.com
-Cc: torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
-       geert@linux-m68k.org
-Subject: Re: [PATCH 2/2] AFS/AF_RXRPC: Miscellaneous fixes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070501174752.19112.82814.stgit@warthog.cambridge.redhat.com>
-References: <20070501174747.19112.1985.stgit@warthog.cambridge.redhat.com>
-	<20070501174752.19112.82814.stgit@warthog.cambridge.redhat.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 3 May 2007 06:12:00 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:18722 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752694AbXECKL6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 06:11:58 -0400
+Message-ID: <4639B68D.3000700@sw.ru>
+Date: Thu, 03 May 2007 14:16:45 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Kirill Korotaev <dev@openvz.org>, Alexey Kuznetsov <alexey@openvz.org>,
+       devel@openvz.org
+Subject: [PATCH] Invalid return value of execve() resulting in oopses
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
-Date: Tue, 01 May 2007 18:47:52 +0100
+From: Alexey Kuznetsov <alexey@openvz.org>
 
-> Make miscellaneous fixes to AFS and AF_RXRPC:
-> 
->  (*) Make AF_RXRPC select KEYS rather than RXKAD or AFS_FS in Kconfig.
-> 
->  (*) Don't use FS_BINARY_MOUNTDATA.
-> 
->  (*) Remove a done 'TODO' item in a comemnt on afs_get_sb().
-> 
->  (*) Don't pass a void * as the page pointer argument of kmap_atomic() as this
->      breaks on m68k.  Patch from Geert Uytterhoeven <geert@linux-m68k.org>.
-> 
->  (*) Use match_*() functions rather than doing my own parsing.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+When elf loader fails to map executable (due to memory shortage or
+because binary is malformed), it can return 0. Normally, this is 
+invisible because process is killed with SIGKILL and it never returns
+to user space.
 
-Applied.
+But if exec() is called from kernel thread (hotplug, whatever)
+consequences are more interesting and vary depending on architecture.
+
+i386.   Nothing especially interesting, execve() just returns 
+        with "success"  :-)
+
+x86_64. Fake zero frame is used on way to caller, RSP/RIP are loaded
+        with zeros, ergo... double fault.
+
+ia64.   Similar to i386, but r32...r95 are corrupted. Sometimes it 
+        oopses due to return to zero PC, sometimes it sees NaT in 
+        rXX and oopses due to NaT consumption.
+
+Signed-off-by: Alexey Kuznetsov <alexey@openvz.org>
+Signed-off-by: Kirill Korotaev <dev@openvz.org>
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
+
+---
+
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 67d9b31..fa8ea33 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -871,6 +871,8 @@ static int load_elf_binary(struct linux_
+ 				elf_prot, elf_flags);
+ 		if (BAD_ADDR(error)) {
+ 			send_sig(SIGKILL, current, 0);
++			retval = IS_ERR((void *)error) ?
++				PTR_ERR((void*)error) : -EINVAL;
+ 			goto out_free_dentry;
+ 		}
+ 
+@@ -900,6 +902,7 @@ static int load_elf_binary(struct linux_
+ 		    TASK_SIZE - elf_ppnt->p_memsz < k) {
+ 			/* set_brk can never work. Avoid overflows. */
+ 			send_sig(SIGKILL, current, 0);
++			retval = -EINVAL;
+ 			goto out_free_dentry;
+ 		}
+ 
