@@ -1,94 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754723AbXECXlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbXECXzV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754723AbXECXlu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 19:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbXECXlu
+	id S1754799AbXECXzV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 19:55:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbXECXzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 19:41:50 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:25249 "EHLO
-	viefep25-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754723AbXECXlt (ORCPT
+	Thu, 3 May 2007 19:55:21 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:47145 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754776AbXECXzS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 19:41:49 -0400
-Message-ID: <463A7291.1050600@tungstengraphics.com>
-Date: Fri, 04 May 2007 01:38:57 +0200
-From: Roland Scheidegger <sroland@tungstengraphics.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20061107 SUSE/1.1.1-0.1 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, dmitry.torokhov@gmail.com
-Subject: [PATCH] input: fix aux port detection with some i8042 chips
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 3 May 2007 19:55:18 -0400
+Date: Thu, 3 May 2007 16:54:28 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alex Tomas <alex@clusterfs.com>
+Cc: Andreas Dilger <adilger@clusterfs.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marat Buharov <marat.buharov@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
+ is under heavy write load (massive starvation)
+Message-Id: <20070503165428.855eb7d7.akpm@linux-foundation.org>
+In-Reply-To: <463A1E02.8020506@clusterfs.com>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+	<20070427013350.d0d7ac38.akpm@linux-foundation.org>
+	<698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
+	<alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>
+	<20070427193130.GD5967@schatzie.adilger.int>
+	<20070427151837.f1439639.akpm@linux-foundation.org>
+	<463A1E02.8020506@clusterfs.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Roland Scheidegger <sroland@tungstengraphics.com>
+On Thu, 03 May 2007 21:38:10 +0400
+Alex Tomas <alex@clusterfs.com> wrote:
 
-The i8042 driver fails detection of the AUX port with some chips,
-because they apparently do not change the I8042_CTR_AUXDIS bit
-immediately. This is known to affect at least HP500 / HP510 notebooks,
-consequently the built-in touchpad will not work. The patch will simply
-reread the value until it gets the expected value or a retry limit is
-hit, without touching other workaround code in the same area.
+> Andrew Morton wrote:
+> > We can make great improvements here, and I've (twice) previously decribed
+> > how: hoist the entire ordered-mode data handling out of ext3, and out of
+> > the buffer_head layer and move it up into the VFS pagecache layer. 
+> > Basically, do ordered-data with a commit-time inode walk, calling
+> > do_sync_mapping_range().
+> > 
+> > Do it in the VFS.  Make reiserfs use it, remove reiserfs ordered-mode too. 
+> > Make XFS use it, fix the hey-my-files-are-all-full-of-zeroes problem there.
+> 
+> I'm not sure it's that easy.
+> 
+> if we move to pages, then we have to mark pages to be flushed holding
+> transaction open. now take delayed allocation into account: we need
+> to allocate number of blocks at once and then mark all pages mapped,
+> again within context of the same transaction.
 
-Signed-off-by: Roland Scheidegger <sroland@tungstengraphics.com>
+Yes, there can be issues with needing to allocate journal space within the
+context of a commit.  But
 
----
-There is some discussion about non-working touchpads in HP500 notebooks
-in ubuntu and a (ugly) workaround for this problem here:
-http://ubuntuforums.org/showthread.php?t=344103. I've got a HP510 and
-even with 2.6.21 the aux port would get disabled. Works with the patch,
-for the record the i8042 here needs around 6 tries (sometimes a bit
-more, sometimes less) until it reads the I8042_CTR_AUXDIS bit correctly,
-both after disabling and enabling the aux port.
-(please CC: on any replies)
+a) If the page has newly allocated space on disk then the metadata which
+   refers to that page is already in the journal: no new journal space
+   needed.
 
-Signed-off-by: Roland Scheidegger <sroland@tungstengraphics.com>
+b) If the page doesn't have space allocated on disk then we don't need
+   to write it out at ordered-mode commit time, because the post-recovery
+   filesystem will not have any references to that page.
 
---- linux-2.6/drivers/input/serio/i8042.c.orig	2007-05-03
-16:32:26.000000000 +0200
-+++ linux-2.6/drivers/input/serio/i8042.c	2007-05-03 16:56:00.000000000
-+0200
-@@ -537,6 +537,7 @@ static int __devinit i8042_check_aux(voi
- 	int retval = -1;
- 	int irq_registered = 0;
- 	int aux_loop_broken = 0;
-+	int i = 0;
- 	unsigned long flags;
- 	unsigned char param;
+c) If the page is dirty due to overwrite then no metadata update was required.
 
-@@ -582,14 +583,27 @@ static int __devinit i8042_check_aux(voi
+IOW, under what circumstances would an ordered-mode commit need to allocate
+space for a delayed-allocate page?
 
- 	if (i8042_command(&param, I8042_CMD_AUX_DISABLE))
- 		return -1;
--	if (i8042_command(&param, I8042_CMD_CTL_RCTR) || (~param &
-I8042_CTR_AUXDIS)) {
-+	/* some chips need some time to set the I8042_CTR_AUXDIS bit */
-+	for (i = 0; i < 100; i++) {
-+		if (!i8042_command(&param, I8042_CMD_CTL_RCTR) && (param &
-I8042_CTR_AUXDIS))
-+			break;
-+		udelay(50);
-+	}
-+	if (i == 100) {
- 		printk(KERN_WARNING "Failed to disable AUX port, but continuing
-anyway... Is this a SiS?\n");
- 		printk(KERN_WARNING "If AUX port is really absent please use the
-'i8042.noaux' option.\n");
- 	}
+However b) might lead to the hey-my-file-is-full-of-zeroes problem.
 
- 	if (i8042_command(&param, I8042_CMD_AUX_ENABLE))
- 		return -1;
--	if (i8042_command(&param, I8042_CMD_CTL_RCTR) || (param &
-I8042_CTR_AUXDIS))
-+	for (i = 0; i < 100; i++) {
-+		if (i8042_command(&param, I8042_CMD_CTL_RCTR))
-+			return -1;
-+		if (~param & I8042_CTR_AUXDIS)
-+			break;
-+		udelay(50);
-+	}
-+	if (i == 100)
- 		return -1;
+> so, an implementation
+> would look like the following?
+> 
+> generic_writepages() {
+> 	/* collect set of contig. dirty pages */
+> 	foo_get_blocks() {
+> 		foo_journal_start();
+> 		foo_new_blocks();
+> 		foo_attach_blocks_to_inode();
+> 		generic_mark_pages_mapped();
+> 		foo_journal_stop();
+> 	}
+> }
+> 
+> another question is will it scale well given number of dirty inodes
+> can be much larger than number of inodes with dirty mapped blocks
+> (in delayed allocation case, for example) ?
 
- /*
+Possibly - zillions of dirty-for-atime inodes might get in the way.  A
+short-term fix would be to create a separate dirty-inode list on the
+superblock (ug).  A long-term fix is to rip all the per-superblock
+dirty-inode lists and use a radix-tree.  Not for lookup purposes, but for
+the tree's ability to do tagged and restartable searches.
