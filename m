@@ -1,51 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031118AbXECKTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031176AbXECKUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031118AbXECKTb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031141AbXECKTb
+	id S1031176AbXECKUO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031153AbXECKUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:19:31 -0400
-Received: from adsl-69-232-92-238.dsl.sndg02.pacbell.net ([69.232.92.238]:46653
-	"EHLO gnuppy.monkey.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031118AbXECKT3 (ORCPT
+	Thu, 3 May 2007 06:20:13 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:49472 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031150AbXECKUL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:19:29 -0400
-Date: Thu, 3 May 2007 03:19:10 -0700
-To: Ting Yang <tingy@cs.umass.edu>
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org,
-       "Bill Huey (hui)" <billh@gnuppy.monkey.org>
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070503101910.GB20142@gnuppy.monkey.org>
-References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu> <20070502173634.GA11308@in.ibm.com> <20070502174829.GX19966@holomorphy.com> <46395495.3020802@cs.umass.edu>
+	Thu, 3 May 2007 06:20:11 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Thu, 3 May 2007 06:19:20 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Arnd Bergmann <arnd@arndb.de>
+cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: finding your own dead "CONFIG_" variables
+In-Reply-To: <200705031202.56805.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.64.0705030613120.32556@localhost.localdomain>
+References: <Pine.LNX.4.64.0705030400120.20539@localhost.localdomain>
+ <a781481a0705030237l7d636b55t93f2ee5151cd7709@mail.gmail.com>
+ <Pine.LNX.4.64.0705030546310.29962@localhost.localdomain>
+ <200705031202.56805.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46395495.3020802@cs.umass.edu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Bill Huey (hui) <billh@gnuppy.monkey.org>
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1133002977-1178187560=:32556"
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-15.989, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	SUBJ_YOUR_OWN 0.81)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 11:18:45PM -0400, Ting Yang wrote:
-> I just want to point out that ->wait_runtime, in fact, stores the lag of 
-> each task in CFS, except that it is also used by other things, and 
-> occasionally tweaked (heuristically ?). Under normal cases the sum of 
-> lags of all active tasks in such a system, should be a constant 0. The 
-> lag information is equally important to EEVDF, when some tasks leave the 
-> system (becomes inactive) carrying certain amount of lag. The key point 
-> here is that we have to spread the lag (either negative or positive) to 
-> all remaining task, so that the fairness of the system is preserved. I 
-> thinks CFS implementation does not seems to handle this properly.
-> 
-> I am running out time today :-( I will write an email about CFS -v8 
-> tomorrow, describing 2 issues in CFS I found related to this.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Interesting. I haven't look at the code carefully but that wouldn't
-surprise me if this was the case and it led to odd corner cases.
+--8323328-1133002977-1178187560=:32556
+Content-Type: TEXT/PLAIN; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 
-I'm eagerly waiting your analysis and explanation.
+On Thu, 3 May 2007, Arnd Bergmann wrote:
 
-bill
+> On Thursday 03 May 2007, Robert P. J. Day wrote:
+> > > Suggest: configfiles=$(find . -name 'Kconfig*' -or -name '*defconfig*')
+> > >
+> > > Some CONFIG_ options exist that are not declared anywhere in the
+> > > Kconfig files but defined directly in the arch/.../*defconfig*
+> > > files.
+> >
+> > it's my understanding that entries in any defconfig files are
+> > *automatically* pruned at some point once a CONFIG_ variable no longer
+> > exists in any Kconfig file, so i'm not going to be touching those
+> > files.  also, adding that extra check wouldn't add anything useful to
+> > the output.
+>
+>
+> An interesting category would be a symbol that is
+>
+> - used in a source file
+> - defined in an old defconfig
+> - not present in any Kconfig* file
+>
+> If any of these exist, I would consider them _worse_ than the ones
+> found by your initial script, because some functionality that once
+> was there has been recently removed.
 
+hmmmmmm ... i see your point now -- not present in any Kconfig file
+but still being selected by a defconfig file that might still be
+affecting the eventual build.  that's an easy enough change to make
+but, as i've mentioned before, this output could be reduced
+substantially if developers stopped using CONFIG_ prefixed macro names
+for their own non-Kconfig variables (*cough* MTD *cough* :-).
+
+but, again, some of that issue might disappear if those defconfig
+files were auto-regenerated on a timely basis (if that is, in fact,
+how they're kept up to date).
+
+rday
+
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
+--8323328-1133002977-1178187560=:32556--
