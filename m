@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965724AbXECOow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXECOpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965724AbXECOow (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965714AbXECOow
+	id S1753797AbXECOpU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbXECOpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:44:52 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:16686 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965692AbXECOou (ORCPT
+	Thu, 3 May 2007 10:45:20 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57237 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753797AbXECOpR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:44:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=U2+zXb2WwkikjYu21zexBhdUahAZvWvvDXHX7Zi3tmh8+zj95xNP4+X1idRnIdNnYAVw3E8wP1JYQQ9E+L7IBnQDtjP5J3a4bK5FwA+N2wj+Ec5KaTgXtTkaEX/R4h1RYHy74ytFnTpTXCoFDOLhmt2sGOIb0iTWnz84No2Dprw=
-Message-ID: <4639F554.1040505@gmail.com>
-Date: Thu, 03 May 2007 18:44:36 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Uwe Bugla <uwe.bugla@gmx.de>
-CC: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org
-Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
- points	about ...)
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>	<4636E0E2.5020601@simon.arlott.org.uk>	<Pine.LNX.4.58.0705011500570.309@shell2.speakeasy.net> <46389278.1070208@gmail.com> <20070502155125.280320@gmx.net> <4638C046.1020005@gmail.com> <20070503112013.272380@gmx.net>
-In-Reply-To: <20070503112013.272380@gmx.net>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 10:45:17 -0400
+Date: Thu, 3 May 2007 20:23:18 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Damien Wyart <damien.wyart@free.fr>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070503145318.GA17776@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <46399B51.9040608@dunaweb.hu> <20070503130201.GA9000@elte.hu> <20070503132932.GA4204@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070503132932.GA4204@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Uwe Bugla wrote:
+On Thu, May 03, 2007 at 03:29:32PM +0200, Damien Wyart wrote:
+> What are your thoughts/plans concerning merging CFS into mainline ? Is
+> it a bit premature to get it into 2.6.22 ? I remember Linus was ok to
+> change the default scheduler rapidly (the discussion was about sd at
+> that time) to get more testing than in -mm.
 
-> On the technical layer I noticed that I heard some Pinnacle relais click during testing, but there were some i2c_bus symbols missing during compilation. So I guess those missing symbols are responsible for getting neither picture nor sound.
+And what about group scheduling extensions? Do you have plans to work on
+it? I was begining to work on a prototype to do group scheduling based
+on CFS, basically on the lines of what you and Linus had outlined
+earlier:
 
-Can you send your compile warnings ? I couldn't find the same in my
-mailbox any report on the same. Maybe my mail filter did something.
+	http://lkml.org/lkml/2007/4/18/271
+	http://lkml.org/lkml/2007/4/18/244
 
-> A. If you are really interested I can send you my basic puzzle parts in short, opening a new thread on this issue. Just give me a short response if you are interested.
-> 
-> B. If you want to continue the cx878 project please drop me a short note where I can download it to test and enlarge it with my own ideas as good as I can.
-> 
-> Must not be immediately (no sweat please), but I am looking forward to receive a response from you.
-> 
-
-What i would like to do is like this: Have the current state frozen as
-it is, such that there is a fallback case (The dst is quite fragile and
-change at some place would break another. ie, what looks good for one
-DST variant is bad for the other). Work on a new tree (CX878) and
-migrate stuff to it. Remove the old one, once things are done.
-
-I wouldn't want to mess up the current working situation and hence.
-
+-- 
+Regards,
+vatsa
