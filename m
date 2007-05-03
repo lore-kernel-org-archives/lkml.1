@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767365AbXECESR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767370AbXECESR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767365AbXECESR (ORCPT <rfc822;w@1wt.eu>);
+	id S1767370AbXECESR (ORCPT <rfc822;w@1wt.eu>);
 	Thu, 3 May 2007 00:18:17 -0400
 Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767371AbXECESR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 3 May 2007 00:18:17 -0400
 Received: from c-69-254-139-13.hsd1.nm.comcast.net ([69.254.139.13]:51091 "EHLO
 	deneb.dwf.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767365AbXECESQ (ORCPT
+	with ESMTP id S1767370AbXECESR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 00:18:16 -0400
+	Thu, 3 May 2007 00:18:17 -0400
 X-Greylist: delayed 1059 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 00:18:16 EDT
-Message-Id: <200705030400.l4340bcD031447@deneb.dwf.com>
+Message-Id: <200705030401.l4341X0W031472@deneb.dwf.com>
 X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
 To: linux-kernel@vger.kernel.org
-Subject: I don' t understand this warning.
+From: clemens@dwf.com
+Subject: don' t understand this warning.
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Date: Wed, 02 May 2007 22:00:37 -0600
-From: Reg Clemens <reg@dwf.com>
+Date: Wed, 02 May 2007 22:01:33 -0600
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
