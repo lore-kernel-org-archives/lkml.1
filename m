@@ -1,41 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752808AbXECKOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031116AbXECKQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752808AbXECKOK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXECKOK
+	id S1031116AbXECKQk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031118AbXECKQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:14:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59105
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752808AbXECKOI (ORCPT
+	Thu, 3 May 2007 06:16:40 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49478 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031116AbXECKQj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:14:08 -0400
-Date: Thu, 03 May 2007 03:14:09 -0700 (PDT)
-Message-Id: <20070503.031409.55861440.davem@davemloft.net>
-To: rpjday@mindspring.com
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Re: [PATCH] NET: Delete unused header file net/ipv4/tcp_yeah.h.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.64.0705011450020.23352@localhost.localdomain>
-References: <Pine.LNX.4.64.0705011450020.23352@localhost.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 3 May 2007 06:16:39 -0400
+Date: Thu, 3 May 2007 11:20:23 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Albert Cahalan <acahalan@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
+Subject: Re: console font limits
+Message-ID: <20070503112023.285f92c6@the-village.bc.nu>
+In-Reply-To: <46398D1F.1020306@zytor.com>
+References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com>
+	<Pine.LNX.4.64.0705011347300.27246@anakin>
+	<1178021516.4372.62.camel@daplas>
+	<46375738.1010007@zytor.com>
+	<787b0d920705010849u52a4d6c3o2f1f800521ad5b95@mail.gmail.com>
+	<46398D1F.1020306@zytor.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-Date: Tue, 1 May 2007 14:52:14 -0400 (EDT)
+On Thu, 03 May 2007 00:19:59 -0700
+"H. Peter Anvin" <hpa@zytor.com> wrote:
 
-> Delete the apparently unused header file net/ipv4/tcp_yeah.h.
+> Albert Cahalan wrote:
+> > Font size is not a sane place to draw the line. Features are.
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> Font sizes are an eminently sane place to draw the line, because the
+> crossover is largely determined by the point at which nailing down too
+> much memory (kernel memory = unswappable memory) gets too expensive.
 
-Applied, thanks.
+Which is a value judgement made based upon the cost of memory, the
+memory limit of the system (and the fixed kmalloc limits).
 
-> kind of odd that this header file is unreferenced since there's a
-> matching source file net/ipv4/tcp_yeah.c.  oh, well ...
+Obvious fix Albert would be to post patches which 
 
-Stephen Hemminger cleaned up this code a lot and I think
-killing this header file was just merely forgotten.
+	-	Ignore the font size limits (up to sanity point) for 
+		CAP_SYS_something
+	-	Put the limit in sysfs where it belongs
+	-	Use vmalloc not kmalloc if neccessary
+
+Alan
