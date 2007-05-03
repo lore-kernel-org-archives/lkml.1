@@ -1,40 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767424AbXECV3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030180AbXECVe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767424AbXECV3N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:29:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767422AbXECV3N
+	id S1030180AbXECVe4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031288AbXECVe4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:29:13 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:48030 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1767424AbXECV3M (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:29:12 -0400
-Date: Thu, 3 May 2007 17:23:19 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andi Kleen <ak@novell.com>, akpm@osdl.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 2/6] Create asm-i386/cmpxchg.h
-Message-ID: <20070503212319.GA9082@c2.user-mode-linux.org>
-References: <20070501182157.GA8348@c2.user-mode-linux.org> <200705021137.48675.ak@novell.com> <20070502153847.GC6752@c2.user-mode-linux.org> <20070502175522.a430f216.dada1@cosmosbay.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 May 2007 17:34:56 -0400
+Received: from mx33.mail.ru ([194.67.23.194]:2269 "EHLO mx33.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030180AbXECVew (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 17:34:52 -0400
+Date: Fri, 4 May 2007 01:31:21 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: [PATCH 1/8] remove "#if 0" from find_bus function, export it.
+Message-ID: <20070503213121.GA20067@zarina>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
-In-Reply-To: <20070502175522.a430f216.dada1@cosmosbay.com>
-User-Agent: Mutt/1.4.2.2i
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 05:55:22PM +0200, Eric Dumazet wrote:
-> My guess is ff means firstfloor :) 
-> 
-> https://www.x86-64.org/pipermail/discuss/2006-January/007467.html
+This function were placed in "#if 0" because nobody was using it.
+We using it now.
 
-Thanks!  That makes much more sense than my funky German keyboard theory...
+See http://lwn.net/Articles/210610/
 
-				Jeff
+Signed-off-by: Anton Vorontsov <cbou@mail.ru>
+---
+ drivers/base/bus.c     |    5 ++---
+ include/linux/device.h |    2 ++
+ 2 files changed, 4 insertions(+), 3 deletions(-)
 
+diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+index 253868e..971efa2 100644
+--- a/drivers/base/bus.c
++++ b/drivers/base/bus.c
+@@ -667,14 +667,13 @@ void put_bus(struct bus_type * bus)
+  *
+  *	Note that kset_find_obj increments bus' reference count.
+  */
+-#if 0
++
+ struct bus_type * find_bus(char * name)
+ {
+ 	struct kobject * k = kset_find_obj(&bus_subsys.kset, name);
+ 	return k ? to_bus(k) : NULL;
+ }
+-#endif  /*  0  */
+-
++EXPORT_SYMBOL_GPL(find_bus);
+ 
+ /**
+  *	bus_add_attrs - Add default attributes for this bus.
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 5cf30e9..4015b39 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -68,6 +68,8 @@ extern void bus_unregister(struct bus_type * bus);
+ 
+ extern int __must_check bus_rescan_devices(struct bus_type * bus);
+ 
++extern struct bus_type *find_bus(char *name);
++
+ /* iterator helpers for buses */
+ 
+ int bus_for_each_dev(struct bus_type * bus, struct device * start, void * data,
 -- 
-Work email - jdike at linux dot intel dot com
+1.5.1.1-dirty
+
