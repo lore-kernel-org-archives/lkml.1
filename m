@@ -1,63 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161771AbXECKDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161725AbXECKDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161771AbXECKDK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161140AbXECKDJ
+	id S1161725AbXECKDb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161775AbXECKDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:03:09 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:54429 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161458AbXECKDH convert rfc822-to-8bit (ORCPT
+	Thu, 3 May 2007 06:03:30 -0400
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:60540 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161725AbXECKD3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:03:07 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: finding your own dead "CONFIG_" variables
-Date: Thu, 3 May 2007 12:02:56 +0200
-User-Agent: KMail/1.9.6
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-References: <Pine.LNX.4.64.0705030400120.20539@localhost.localdomain> <a781481a0705030237l7d636b55t93f2ee5151cd7709@mail.gmail.com> <Pine.LNX.4.64.0705030546310.29962@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705030546310.29962@localhost.localdomain>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+	Thu, 3 May 2007 06:03:29 -0400
+Date: Thu, 3 May 2007 12:03:23 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxpps@ml.enneenne.com
+Message-ID: <20070503100323.GA3278@gundam.enneenne.com>
+References: <20070321074121.GA13843@enneenne.com> <20070502193314.GA23367@enneenne.com> <1178140014.7338.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705031202.56805.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18gqvSlx81AdHJk7hA+goywK2eSj0d6QJX/cS+
- QlESiEA3lY/n+2+FeQ11+dwVHF9mJalvpRh6kqGnINZkyiMQFN
- XgK/pZ3FOy70LhtZ9tYxg==
+In-Reply-To: <1178140014.7338.12.camel@localhost.localdomain>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.9i
+X-SA-Exim-Connect-IP: 192.168.32.254
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 03 May 2007, Robert P. J. Day wrote:
-> > Suggest: configfiles=$(find . -name 'Kconfig*' -or -name '*defconfig*')
-> >
-> > Some CONFIG_ options exist that are not declared anywhere in the
-> > Kconfig files but defined directly in the arch/.../*defconfig*
-> > files.
+On Wed, May 02, 2007 at 02:06:53PM -0700, john stultz wrote:
 > 
-> it's my understanding that entries in any defconfig files are
-> *automatically* pruned at some point once a CONFIG_ variable no longer
-> exists in any Kconfig file, so i'm not going to be touching those
-> files.  also, adding that extra check wouldn't add anything useful to
-> the output.
+> Please inline your patch, rather then attaching them. It makes it very
+> difficult to discuss when it is attached.
 
+Ok.
 
-An interesting category would be a symbol that is
+> > +++ b/drivers/pps/clients/ktimer.c
+> > @@ -0,0 +1,106 @@
+> > +/*
+> > + * ktimer.c -- kernel timer test client
+> > + *
+> 
+> Could you use a better name, like pps_ktimer_test.c, so it is less generic?
 
-- used in a source file
-- defined in an old defconfig
-- not present in any Kconfig* file
+Ok. But consider that this is just a testing program.
 
-If any of these exist, I would consider them _worse_ than the ones
-found by your initial script, because some functionality that once
-was there has been recently removed.
+> Same goes for your kabi.c and sysfs.c files.
 
-	Arnd <><
+Why? These files don't generate .ko files.
+
+> > @@ -2004,6 +2004,8 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
+> >  		up->ier |= UART_IER_MSI;
+> >  	if (up->capabilities & UART_CAP_UUE)
+> >  		up->ier |= UART_IER_UUE | UART_IER_RTOIE;
+> > +	if (up->port.flags & UPF_HARDPPS_CD)
+> > +		up->ier |= UART_IER_MSI;	/* enable interrupts */
+> > 
+> 
+> This isn't covered by a #ifdef, so is this always safe? Should it be in
+> a separate patch?
+
+No, this part is regarding the serial driver itself. Maybe it can be
+placed in a separate patch but it is still about the PPS support for
+Linux...
+
+> Unfortunately I don't have any hardware to play with this, but I'd
+> suggest you send this to Andrew Morton for inclusion into his tree for
+> testing.
+
+I'll do it.
+
+Thanks,
+
+Rodolfo
+
+-- 
+
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
