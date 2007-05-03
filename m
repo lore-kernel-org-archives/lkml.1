@@ -1,72 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162205AbXECRia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376271AbXECRiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162205AbXECRia (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 13:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162204AbXECRia
+	id S376271AbXECRiq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 13:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376269AbXECRip
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 13:38:30 -0400
-Received: from mail.rialcom.ru ([80.71.245.247]:52716 "EHLO mail.rialcom.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161509AbXECRi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 13:38:28 -0400
-X-Spam-Flag: SKIP
-X-Spam-Yversion: Spamooborona 1.6.1
-Message-ID: <463A1E02.8020506@clusterfs.com>
-Date: Thu, 03 May 2007 21:38:10 +0400
-From: Alex Tomas <alex@clusterfs.com>
-Organization: Cluster Filesystems, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070302 Fedora/1.5.0.10-1.fc6 pango-text Thunderbird/1.5.0.10 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andreas Dilger <adilger@clusterfs.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Marat Buharov <marat.buharov@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
- FS is under heavy write load (massive starvation)
-References: <1177660767.6567.41.camel@Homer.simpson.net>	<20070427013350.d0d7ac38.akpm@linux-foundation.org>	<698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>	<alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>	<20070427193130.GD5967@schatzie.adilger.int> <20070427151837.f1439639.akpm@linux-foundation.org>
-In-Reply-To: <20070427151837.f1439639.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 3 May 2007 13:38:45 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:47626 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S376261AbXECRim (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 13:38:42 -0400
+Date: Thu, 3 May 2007 10:36:07 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -v2 1/1] Misc: add sensable phantom driver
+Message-Id: <20070503103607.e59773ae.akpm@linux-foundation.org>
+In-Reply-To: <4639D821.9010308@gmail.com>
+References: <219403193181341921@karneval.cz>
+	<20070502234956.cdfe31c2.akpm@linux-foundation.org>
+	<4639D821.9010308@gmail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> We can make great improvements here, and I've (twice) previously decribed
-> how: hoist the entire ordered-mode data handling out of ext3, and out of
-> the buffer_head layer and move it up into the VFS pagecache layer. 
-> Basically, do ordered-data with a commit-time inode walk, calling
-> do_sync_mapping_range().
+On Thu, 03 May 2007 14:40:01 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+
+> >> +static int phantom_release(struct inode *inode, struct file *file)
+> >> +{
+> >> +	struct phantom_device *dev = file->private_data;
+> >> +
+> >> +	if (mutex_lock_interruptible(&dev->open_lock))
+> >> +		return -ERESTARTSYS;
+> >> +
+> >> +	dev->opened = 0;
+> >> +	phantom_status(dev, dev->status & ~PHB_RUNNING);
+> >> +
+> >> +	mutex_unlock(&dev->open_lock);
+> >> +
+> >> +	return 0;
+> >> +}
+> > 
+> > The mutex_lock_interruptible() is wrong, I think.  This function is called
+> > when we do the final close().  If the signal _is_ taken then it's game
+> > over: the device can no longer be opened.
 > 
-> Do it in the VFS.  Make reiserfs use it, remove reiserfs ordered-mode too. 
-> Make XFS use it, fix the hey-my-files-are-all-full-of-zeroes problem there.
+> Yes, starving at sys_close, I think so.
+> 
+> <fast searching in drivers/*>
+> 
+> Wouldn't this be a problem here too:
+> drivers/media/dvb/cinergyT2/cinergyT2.c
+> drivers/usb/misc/auerswald.c
+> at least that the device won't be stopped or something like that?
 
-I'm not sure it's that easy.
+Yes, those drivers appear to have the same problem.  I'll fix 'em.
 
-if we move to pages, then we have to mark pages to be flushed holding
-transaction open. now take delayed allocation into account: we need
-to allocate number of blocks at once and then mark all pages mapped,
-again within context of the same transaction. so, an implementation
-would look like the following?
+> >> +/*
+> >> + * Init and deinit driver
+> >> + */
+> >> +
+> >> +static unsigned int __devinit phantom_get_free(void)
+> >> +{
+> >> +	unsigned int i;
+> >> +
+> >> +	for (i = 0; i < PHANTOM_MAX_MINORS; i++)
+> >> +		if (phantom_devices[i] == 0)
+> >> +			break;
+> >> +
+> >> +	return i;
+> >> +}
+> > 
+> > This function assumes that the phantom_devices[] array will never have any
+> > holes in it.  But if phantom_remove() is called out-of-order, it _will_
+> > have holes.  Perhaps - I didn't look too hard.
+> 
+> I'm afraid I didn't get this. It goes through all phantom_devices and
+> returns first free index. If a hole is present it will return "i" which
+> corresponds to the hole, because phantom_devices[i] is 0. Note that it is
+> unsigned char array.
+> 
 
-generic_writepages() {
-	/* collect set of contig. dirty pages */
-	foo_get_blocks() {
-		foo_journal_start();
-		foo_new_blocks();
-		foo_attach_blocks_to_inode();
-		generic_mark_pages_mapped();
-		foo_journal_stop();
-	}
-}
-
-another question is will it scale well given number of dirty inodes
-can be much larger than number of inodes with dirty mapped blocks
-(in delayed allocation case, for example) ?
-
-thanks, Alex
-
-
-
-
+I guess I must have misread the code.
