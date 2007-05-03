@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031297AbXECNp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161890AbXECNqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031297AbXECNp3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 09:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031304AbXECNp2
+	id S1161890AbXECNqY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 09:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161893AbXECNqY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 09:45:28 -0400
-Received: from [212.12.190.201] ([212.12.190.201]:33160 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031297AbXECNp1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 09:45:27 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patch] CFS scheduler, -v7
-Date: Thu, 3 May 2007 16:49:23 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org
-References: <200704300820.49078.a1426z@gawab.com> <200705031416.50928.a1426z@gawab.com> <20070503123655.GA705@elte.hu>
-In-Reply-To: <20070503123655.GA705@elte.hu>
+	Thu, 3 May 2007 09:46:24 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:40827 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161890AbXECNqX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 09:46:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nGkA4+zD/NlCNTAM3+34oCzUTRZutB+fRWviAQux4OG1m2hXuikprbvKEyQMW9C8y2Ad/iXIIidNDtJFO2mNaxxlhDIvVrS2IiJdERaPjpZNmV5J7BMxjfaSTGPKMbE8FRJvke0WSUn+d1n9J/srMNYC1bJXoMF+O0q5Qmq5GoU=
+Message-ID: <a36005b50705030646v5b729838pe8dc7b91dc9bee2b@mail.gmail.com>
+Date: Thu, 3 May 2007 06:46:22 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Davide Libenzi" <davidel@xmailserver.org>
+Subject: Re: [patch 14/22] pollfs: pollable futex
+Cc: "Davi Arnaut" <davi@haxent.com.br>, "Eric Dumazet" <dada1@cosmosbay.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0705021059430.7176@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705031649.23331.a1426z@gawab.com>
+Content-Disposition: inline
+References: <20070502052235.914764000@haxent.com.br>
+	 <20070502095503.a06f5472.dada1@cosmosbay.com>
+	 <a36005b50705020108o6fb7495ak2383ae64e49c48a0@mail.gmail.com>
+	 <20070502104936.674a4b54.dada1@cosmosbay.com>
+	 <a36005b50705020939j491ced9ekf3f4203fc8b865a3@mail.gmail.com>
+	 <4638C37D.7050503@haxent.com.br>
+	 <a36005b50705021010l5c7badc6ub61228f14fdbb28a@mail.gmail.com>
+	 <Pine.LNX.4.64.0705021028520.7176@alien.or.mcafeemobile.com>
+	 <a36005b50705021053r2fcaf225l956921570dff20e8@mail.gmail.com>
+	 <Pine.LNX.4.64.0705021059430.7176@alien.or.mcafeemobile.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Al Boldi <a1426z@gawab.com> wrote:
-> > [...] But I can still see these awful latency blips in the presence of
-> > negatively niced chew.c at -10 and two chew.c's at nice 0. [...]
->
-> of course: you asked for the two chew's to be treated like that and CFS
-> delivered it! :-)
->
-> nice -10 means the two chew's will get ~90+% of the CPU time, and all
-> other nice 0 tasks will get <10% of CPU time.
+On 5/2/07, Davide Libenzi <davidel@xmailserver.org> wrote:
+> 99% of the fds you'll find inside an event loop you care to scale about,
+> are *already* fd based.
 
-Yes, but the latencies fluctuate wildly from 5ms to 
-sched_granularity_ns*1000.  Isn't it possible to smooth this?
+You are missing the point.  To get acceptable behavior of the wakeup
+it is necessary with this approach to open one descriptor _per thread_
+for a futex.  Otherwise all threads get woken upon FUTEX_WAKE.
+
+This also means you need individual epoll sets for each thread.  You
+cannot share them anymore among all the threads in the process.
 
 
-Thanks!
+> On top of that, those fds are very cheap in terms of memory
 
---
-Al
+They might be when they are counted in dozens.  But here we are
+talking about the possible need to use thousands of additional file
+descriptors.  If they are so cheap to allow thousands of descriptors
+with ease, why would the rlimit for files default to a small number
+(1024 on Fedora right now)?
 
+
+> And this approach is not bound to a completely new and monolitic interface.
+
+So?  It's stil additional, new code for an approach which will have to
+be superceded real soon.  That's just pure overhead to me.
