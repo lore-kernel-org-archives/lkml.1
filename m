@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965440AbXECHbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965695AbXECHeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965440AbXECHbZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 03:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965452AbXECHbZ
+	id S965695AbXECHeJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 03:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXECHeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 03:31:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:49218 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965440AbXECHbY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 03:31:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=nqL9LRmMugmPAPYtoCQsZZR8eZSfETD6X8zUsbhfGoTOJWvb6ONnRPElEJkWCOABP3mdEzY2QW+CYT0HJYtcDmwfUzi344lzHZ5EGjLEJP2FEpUgCyMLE5jNUsJWhH5dqsdUeGCTqMTa5pLfyoZ2AiJvoEqUmtugDl5/KHWHMz0=
-Message-ID: <46398FCF.80100@gmail.com>
-Date: Thu, 03 May 2007 11:31:27 +0400
-From: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>
-User-Agent: Thunderbird 1.5.0.8 (X11/20060911)
+	Thu, 3 May 2007 03:34:09 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54119 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965687AbXECHeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 03:34:07 -0400
+Message-ID: <46399057.4000409@redhat.com>
+Date: Thu, 03 May 2007 09:33:43 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Execute in place
-References: <200705030211.36293.a1426z@gawab.com>
-In-Reply-To: <200705030211.36293.a1426z@gawab.com>
-Content-Type: text/plain; charset=us-ascii
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+Subject: Re: netfront for review
+References: <4637D672.5030706@goop.org> <1178077033.28659.173.camel@localhost.localdomain> <4638EAC0.7020107@goop.org>
+In-Reply-To: <4638EAC0.7020107@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> Hugh Dickins wrote:
->> On Wed, 2 May 2007, Phillip Susi wrote:
->>> Hugh Dickins wrote:
->>>> tmpfs doesn't store its stuff in the page cache twice: that's true,
->>>> and I didn't mean to imply otherwise.  But tmpfs doesn't contain any
->>>> support for rom memory: you'd have to copy from rom to tmpfs to use
->>>> it.
->>> The question is, when you execute a binary on tmpfs, does its code
->>> segment get mapped directly where it's at in the buffer cache, or does
->>> it get copied to another page for the executing process?  At least,
->>> assuming this is possible due to the vma and file offsets of the segment
->>> being aligned.
->> Its pages are mapped directly into the executing process, without copying.
->
-> Thank GOD!  Boy, was I worried there for a second.
->
-> Now, if there were only an easy way to make tmpfs persistent?
->
->
+   Hi,
 
-It would be not a tmpfs (*temporary* fs)then, but something like this
+> Gerd, in change 11196:b85da7cd9ea5 "front: Fix rx buffer leak when
+> tearing down an interface." you added a call to
+> "add_id_to_freelist(np->rx_skbs, id);".  However, rx_skbs doesn't have
+> an extra entry for the list head, and there's never any corresponding
+> get_id_from_freelist(np->rx_skbs).  What should it be?
 
-http://pramfs.sourceforge.net/
+The function has an effect in page flipping mode only.  It walks the 
+whole list of rx skbufs (id is the loop variable ...), checks whenever 
+they are handed out to the frontend driver to fill in packet data and 
+not returned yet, and if so reclaim them ...
 
+>>> +	err = xenbus_scanf(XBT_NIL, np->xbdev->otherend,
+>>> +			   "feature-rx-flip", "%u", &feature_rx_flip);
+>>> +	if (err != 1)
+>>> +		feature_rx_flip = 1;
+>>>     
+>> This second one deserves a comment.  If it doesn't set feature_rx_flip
+>> it's *on*?  Historical reasons
+> 
+> Guess so.  It defaults to flip.  I simplified the rx_copy/flip module
+> parameter to a simple rx_mode=0/1, but this is preserved from the
+> original.  My guess is that originally there was only flip, and copy was
+> added later.
 
+Yep, page flipping is the old (pre xen 3.0.3) way, copy was added (and 
+made the default) later.
 
-Regards,
-Dmitry
-
+cheers,
+   Gerd
