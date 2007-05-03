@@ -1,80 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162009AbXECObl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162020AbXECOgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162009AbXECObl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:31:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162013AbXECObl
+	id S1162020AbXECOgp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162017AbXECOgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:31:41 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:38560 "EHLO mailer.gwdg.de"
+	Thu, 3 May 2007 10:36:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53084 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1162009AbXECObj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:31:39 -0400
-Date: Thu, 3 May 2007 16:26:55 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Albert Cahalan <acahalan@gmail.com>
-cc: "H. Peter Anvin" <hpa@zytor.com>, "Antonino A. Daplas" <adaplas@gmail.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
-Subject: Re: console font limits
-In-Reply-To: <787b0d920705030714k3b290d2csa38a5df63c692d6f@mail.gmail.com>
-Message-ID: <Pine.LNX.4.61.0705031621370.18504@yvahk01.tjqt.qr>
-References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com> 
- <Pine.LNX.4.64.0705011347300.27246@anakin>  <1178021516.4372.62.camel@daplas>
- <46375738.1010007@zytor.com>  <787b0d920705010849u52a4d6c3o2f1f800521ad5b95@mail.gmail.com>
-  <Pine.LNX.4.61.0705021953030.18504@yvahk01.tjqt.qr> 
- <787b0d920705022317j485cbe26wc83f071834c53584@mail.gmail.com> 
- <Pine.LNX.4.61.0705030902430.18504@yvahk01.tjqt.qr>
- <787b0d920705030714k3b290d2csa38a5df63c692d6f@mail.gmail.com>
+	id S1161999AbXECOgo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 10:36:44 -0400
+Message-ID: <4639F2F4.1090905@redhat.com>
+Date: Thu, 03 May 2007 16:34:28 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+Subject: Re: netfront for review
+References: <4637D672.5030706@goop.org> <1178077033.28659.173.camel@localhost.localdomain> <4638EAC0.7020107@goop.org> <46399057.4000409@redhat.com> <4639F16C.3090005@goop.org>
+In-Reply-To: <4639F16C.3090005@goop.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> Gerd Hoffmann wrote:
+>>> Gerd, in change 11196:b85da7cd9ea5 "front: Fix rx buffer leak when
+>>> tearing down an interface." you added a call to
+>>> "add_id_to_freelist(np->rx_skbs, id);".  However, rx_skbs doesn't have
+>>> an extra entry for the list head, and there's never any corresponding
+>>> get_id_from_freelist(np->rx_skbs).  What should it be?
+>> The function has an effect in page flipping mode only.  It walks the
+>> whole list of rx skbufs (id is the loop variable ...), checks whenever
+>> they are handed out to the frontend driver to fill in packet data and
+>> not returned yet, and if so reclaim them ...
+> 
+> Yes, but why use add_id_to_freelist?  rx_skbs are not being used on a
+> freelist anywhere else.  It just means the rx_skb array gets filled with
+> small integers, but the rest of the code assumes they're either NULL or
+> an skb pointer.
 
-On May 3 2007 10:14, Albert Cahalan wrote:
-> On 5/3/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
->> On May 3 2007 02:17, Albert Cahalan wrote:
->
->> > Those sizes are unreadable on the 200 dpi OLPC XO screen,
->> 
->> Hm that should have read, for you:
->> I don't object implementing support for larger sizes.
->> (But I wonder how that should work without FB/CVIDIX/SVGA/VESA
->> extensions.)
->> 
->> Note that I was assuming that no FB is used:
->
-> I'm assuming that the FB is used. Neither of my two
-> computers can do VGA text mode.
+Hmm, good point.  Have to look at the code again, it has been some time 
+I've written that, and it took me some time to figure how all the grant 
+table stuff works ...
 
-Some non-x86 boxes like sparc?
+Maybe the add_id_to_freelist() call can simply be dropped.  The whole 
+interface is released shortly thereafter, probably thats why filling the 
+freelist with yunk never caused any problems ...
 
-> Even for computers
-> which can do VGA text mode, if you want large fonts
-> (either by number of characters or by character width)
-> you need to use FB. That's just a requirement; anything
-> else would be insane.
->
->> For everything beyond Latin, fbiterm should work a lot better.
->
-> Then, as with X, you have problems with kernel messages.
-> Reliably sending printk through a userspace console is not
-> even possible. (consider a panic, OOM, or runaway RT task)
+cheers,
+   Gerd
 
-Actually, the kernel could just "jump in". That is, when you start
-in fb mode, you get the regular 8x16 vga font - on your choice of
-resolution, and can also set it with setfont. So far so nice.
-Now, when you start fbiterm -- for example to read CJK --, fbiterm
-presents you with what looks like a 12x24 font. Also good.
-It _looks_ to me like fbiterm does the drawing itself; ok too.
-Now when the kernel is oopsing, it could just spew out the oops
-trace in the regular font (vga8x16 or in case you use CONFIG_FONTS,
-then that), possibly obstructing some output generated by fbiterm,
-but in case of oops, I think this is ok.
-
-
-
-Jan
--- 
