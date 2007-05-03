@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161815AbXECK3u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161820AbXECKbO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161815AbXECK3u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:29:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161819AbXECK3u
+	id S1161820AbXECKbO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:31:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161817AbXECKbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:29:50 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60857
+	Thu, 3 May 2007 06:31:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60861
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1161775AbXECK3s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:29:48 -0400
-Date: Thu, 03 May 2007 03:29:49 -0700 (PDT)
-Message-Id: <20070503.032949.65795400.davem@davemloft.net>
-To: dhowells@redhat.com
-Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, kaber@trash.net
-Subject: Re: [PATCH 5/5] AFS: Adjust the new netdevice scanning code
+	by vger.kernel.org with ESMTP id S1161820AbXECKbM convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 06:31:12 -0400
+Date: Thu, 03 May 2007 03:31:13 -0700 (PDT)
+Message-Id: <20070503.033113.25133545.davem@davemloft.net>
+To: ilpo.jarvinen@helsinki.fi
+Cc: michal.k.k.piotrowski@gmail.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: kernel BUG at include/net/tcp.h:739
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070503095336.26912.55434.stgit@warthog.cambridge.redhat.com>
-References: <20070503095315.26912.24270.stgit@warthog.cambridge.redhat.com>
-	<20070503095336.26912.55434.stgit@warthog.cambridge.redhat.com>
+In-Reply-To: <Pine.LNX.4.64.0705030841140.3607@kivilampi-30.cs.helsinki.fi>
+References: <4638F14E.6000803@googlemail.com>
+	<Pine.LNX.4.64.0705030841140.3607@kivilampi-30.cs.helsinki.fi>
 X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: Text/Plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
-Date: Thu, 03 May 2007 10:53:36 +0100
+From: "Ilpo_Järvinen" <ilpo.jarvinen@helsinki.fi>
+Date: Thu, 3 May 2007 09:51:36 +0300 (EEST)
 
-> Adjust the new netdevice scanning code provided by Patrick McHardy:
+> [PATCH] [TCP]: Use S+L catcher only with SACK for now
 > 
->  (1) Restore the function banner comments that were dropped.
+> TCP has a transitional state when SACK is not in use during
+> which this invariant is temporarily broken. Without SACK,
+> tcp_clean_rtx_queue does not decrement sacked_out. Therefore
+> calls to tcp_sync_left_out before sacked_out is again
+> corrected by tcp_fastretrans_alert can trigger this trap as
+> sacked_out still has couple of segments that are already out
+> of window.
 > 
->  (2) Rather than using an array size of 6 in some places and an array size of
->      ETH_ALEN in others, pass a pointer instead and pass the array size
->      through so that we can actually check it.
-> 
->  (3) Do the buffer fill count check before checking the for_primary_ifa
->      condition again.  This permits us to skip that check should maxbufs be
->      reached before we run out of interfaces.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
 
-Applied, thanks.
+It would be nice to fix non-SACK as you say, but this is good
+enough for now.
