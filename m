@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755309AbXECSnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376287AbXECSom@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755309AbXECSnX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 14:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755322AbXECSnX
+	id S376287AbXECSom (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 14:44:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376296AbXECSom
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 14:43:23 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52380 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755309AbXECSnX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 14:43:23 -0400
-Date: Thu, 3 May 2007 19:43:21 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] CIFS: make sec=none force an anonymous mount
-Message-ID: <20070503184321.GA23056@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Jeff Layton <jlayton@redhat.com>, linux-cifs-client@lists.samba.org,
-	linux-kernel@vger.kernel.org
-References: <20070503183231.GA1706@salusa.poochiereds.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070503183231.GA1706@salusa.poochiereds.net>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Thu, 3 May 2007 14:44:42 -0400
+Received: from mga03.intel.com ([143.182.124.21]:48555 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S376287AbXECSol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 14:44:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,487,1170662400"; 
+   d="scan'208";a="223848055"
+Subject: Re: [patch] CFS scheduler, -v8
+From: "Li, Tong N" <tong.n.li@intel.com>
+To: William Lee Irwin III <wli@holomorphy.com>
+CC: Srivatsa Vaddagiri <vatsa@in.ibm.com>, Damien Wyart <damien.wyart@free.fr>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+In-Reply-To: <20070503155347.GF19966@holomorphy.com>
+References: <46399B51.9040608@dunaweb.hu> <20070503130201.GA9000@elte.hu>
+	 <20070503132932.GA4204@localhost.localdomain>
+	 <20070503145318.GA17776@in.ibm.com> <20070503155347.GF19966@holomorphy.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 3 May 2007 11:44:27 -0700
+Message-ID: <1178217867.7475.23.camel@tongli.jf.intel.com>
+MIME-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-OriginalArrivalTime: 03 May 2007 18:44:27.0781 (UTC) FILETIME=[1403E350:01C78DB3]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 02:32:33PM -0400, Jeff Layton wrote:
-> We had a customer report that attempting to make CIFS mount with a null
-> username (i.e. doing an anonymous mount) doesn't work. Looking through the
-> code, it looks like CIFS expects a NULL username from userspace in order
-> to trigger an anonymous mount. The mount.cifs code doesn't seem to ever
-> pass a null username to the kernel, however.
+On Thu, 2007-05-03 at 08:53 -0700, William Lee Irwin III wrote:
+> On Thu, May 03, 2007 at 03:29:32PM +0200, Damien Wyart wrote:
+> >> What are your thoughts/plans concerning merging CFS into mainline ? Is
+> >> it a bit premature to get it into 2.6.22 ? I remember Linus was ok to
+> >> change the default scheduler rapidly (the discussion was about sd at
+> >> that time) to get more testing than in -mm.
 > 
-> It looks also like the kernel can take a sec=none option, but it only seems
-> to look at it if the username is already NULL. This seems redundant and
-> effectively makes sec=none useless.
+> On Thu, May 03, 2007 at 08:23:18PM +0530, Srivatsa Vaddagiri wrote:
+> > And what about group scheduling extensions? Do you have plans to work on
+> > it? I was begining to work on a prototype to do group scheduling based
+> > on CFS, basically on the lines of what you and Linus had outlined
+> > earlier:
+> > 	http://lkml.org/lkml/2007/4/18/271
+> > 	http://lkml.org/lkml/2007/4/18/244
 > 
-> The following patch makes sec=none force an anonymous mount. I've briefly
-> tested it and it seems to work. I suppose we could alternately do some
-> stuff in userspace to make mount.cifs force a null username instead, but this
-> seems more straightforward to me.
+> Tong Li's Trio scheduler does a bit of this, though it doesn't seem to
+> have the mindshare cfs seems to have acquired.
+> 
+> The hyperlink seems to have broken, though:
+> 	http://www.cs.duke.edu/~tongli/linux/linux-2.6.19.2-trio.patch
 
-Looks useful.  In case you have some spare time at your hand it would
-be really nice to convert cifs option parsing to the lib/parser.c code
-and move all validation of the arguments into one place, so it's easily
-understanable and better to maintain.
+Yeah, I just fixed the link. The code was written based on the 2.6.19.2
+scheduler. I could forward-port it to the latest kernel if there's
+interest and I can find time. :) Here's a description of the design:
 
+http://lkml.org/lkml/2007/4/20/286
+
+Thanks,
+
+  tong
