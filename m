@@ -1,32 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965686AbXECJfI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030989AbXECJhR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965686AbXECJfI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 05:35:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXECJfI
+	id S1030989AbXECJhR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 05:37:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030980AbXECJhQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 05:35:08 -0400
-Received: from smtp4-g19.free.fr ([212.27.42.30]:56836 "EHLO smtp4-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965686AbXECJfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 05:35:07 -0400
-Message-ID: <4639ACCB.4000100@free.fr>
-Date: Thu, 03 May 2007 11:35:07 +0200
-From: John Sigler <linux.kernel@free.fr>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+	Thu, 3 May 2007 05:37:16 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3883 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030802AbXECJhN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 05:37:13 -0400
+From: Mark Brown <broonie@sirena.org.uk>
+To: Tim Hockin <thockin@hockin.org>, Jeff Garzik <jeff@garzik.org>
+Cc: =?utf-8?b?UmFmYcWC?= Bilski <rafalbilski@interia.pl>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 03 May 2007 10:36:50 +0100
+Message-ID: <20070503093650.7800.45441.stgit@mercator.sirena.org.uk>
+In-Reply-To: <20070503093435.7800.38591.stgit@mercator.sirena.org.uk>
+References: <20070503093435.7800.38591.stgit@mercator.sirena.org.uk>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: "Preston A. Elder" <prez@goth.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: AGPGart / AMD K7
-References: <fa.asou3h2GKTshe+XpxGJ/K4Wjf2s@ifi.uio.no> <fa.YcM0QJJYQHgI9i0mZF4z2OtPhr8@ifi.uio.no> <fa.8rayS7oJHYA3XGzEX9anUebRoMM@ifi.uio.no> <fa.2SB7j6GjGOW6vvgLY7nbvSnuM6I@ifi.uio.no> <fa.v7TywLl5PsPHzpOETJp8xq50Gno@ifi.uio.no> <fa.S5WSCyOavqOFWClpzzJKcKpj03M@ifi.uio.no>
-In-Reply-To: <fa.S5WSCyOavqOFWClpzzJKcKpj03M@ifi.uio.no>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-SA-Exim-Connect-IP: 82.32.140.119
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: [PATCH 1/2] natsemi: Improve diagnostics for DspCfg workaround
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Preston A. Elder wrote:
+The natsemi driver has a workaround for broken hardware which resets itself
+from time to time.  There is a diagnostic message for this workaround but
+it is not printed by default, making the driver behavior more obscure than
+it needs to be.  Make the message be displayed by default.
 
-> What is this edac, btw?
+Signed-Off-By: Mark Brown <broonie@sirena.org.uk>
+---
 
-AFAIK, EDAC stands for Error Detection and Correction.
-http://bluesmoke.sourceforge.net/
+ drivers/net/natsemi.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/net/natsemi.c b/drivers/net/natsemi.c
+index a8d7ff2..109e802 100644
+--- a/drivers/net/natsemi.c
++++ b/drivers/net/natsemi.c
+@@ -1756,7 +1756,7 @@ static void netdev_timer(unsigned long data)
+ 		if (dspcfg != np->dspcfg) {
+ 			if (!netif_queue_stopped(dev)) {
+ 				spin_unlock_irq(&np->lock);
+-				if (netif_msg_hw(np))
++				if (netif_msg_drv(np))
+ 					printk(KERN_NOTICE "%s: possible phy reset: "
+ 						"re-initializing\n", dev->name);
+ 				disable_irq(dev->irq);
+
