@@ -1,95 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161216AbXECJxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161219AbXECJ6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161216AbXECJxs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 05:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031113AbXECJxr
+	id S1161219AbXECJ6j (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 05:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161458AbXECJ6i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 05:53:47 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59357 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031000AbXECJxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 05:53:45 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 3/5] [NET]: Add __dev_getfirstbyhwtype
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       netdev@vger.kernel.org, kaber@trash.net, dhowells@redhat.com
-Date: Thu, 03 May 2007 10:53:26 +0100
-Message-ID: <20070503095325.26912.37429.stgit@warthog.cambridge.redhat.com>
-In-Reply-To: <20070503095315.26912.24270.stgit@warthog.cambridge.redhat.com>
-References: <20070503095315.26912.24270.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	Thu, 3 May 2007 05:58:38 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:48963 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161219AbXECJ6h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 05:58:37 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Thu, 3 May 2007 05:58:04 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: linux-usb-devel@lists.sourceforge.net
+Subject: dead CONFIG_ variables:  drivers/usb/
+Message-ID: <Pine.LNX.4.64.0705030554060.30212@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	UPPERCASE_25_50 0.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add __dev_getfirstbyhwtype for callers that don't want a reference but
-some data from the device and thus need to take the rtnl anyway.
 
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+$ ../dead_config.sh drivers/usb
+========== MACH_OMAP_H4_OTG ==========
+drivers/usb/gadget/omap_udc.c:2159:#ifndef CONFIG_MACH_OMAP_H4_OTG
+========== USBD_SAFE_SERIAL_PRODUCT ==========
+drivers/usb/serial/safe_serial.c:93:#if defined(CONFIG_USBD_SAFE_SERIAL_VENDOR) && !defined(CONFIG_USBD_SAFE_SERIAL_PRODUCT)
+========== USBD_SAFE_SERIAL_VENDOR ==========
+drivers/usb/serial/safe_serial.c:93:#if defined(CONFIG_USBD_SAFE_SERIAL_VENDOR) && !defined(CONFIG_USBD_SAFE_SERIAL_PRODUCT)
+drivers/usb/serial/safe_serial.c:97:#if ! defined(CONFIG_USBD_SAFE_SERIAL_VENDOR)
+========== USB_GADGETFS_PXA2XX ==========
+drivers/usb/gadget/inode.c:1508:#ifndef CONFIG_USB_GADGETFS_PXA2XX
+========== USB_GADGET_HUSB2DEV ==========
+drivers/usb/gadget/gadget_chips.h:78:#ifdef CONFIG_USB_GADGET_HUSB2DEV
+drivers/usb/gadget/ether.c:281:#ifdef CONFIG_USB_GADGET_HUSB2DEV
+========== USB_GADGET_IMX ==========
+drivers/usb/gadget/gadget_chips.h:96:#ifdef CONFIG_USB_GADGET_IMX
+========== USB_GADGET_MPC8272 ==========
+drivers/usb/gadget/gadget_chips.h:122:#ifdef CONFIG_USB_GADGET_MPC8272
+========== USB_GADGET_MQ11XX ==========
+drivers/usb/gadget/gadget_chips.h:54:#ifdef CONFIG_USB_GADGET_MQ11XX
+drivers/usb/gadget/ether.c:249:#ifdef CONFIG_USB_GADGET_MQ11XX
+========== USB_GADGET_MUSB_HDRC ==========
+drivers/usb/gadget/gadget_chips.h:116:#ifdef CONFIG_USB_GADGET_MUSB_HDRC
+drivers/usb/gadget/ether.c:277:#ifdef CONFIG_USB_GADGET_MUSB_HDRC
+========== USB_GADGET_MUSBHSFC ==========
+drivers/usb/gadget/gadget_chips.h:109:#ifdef CONFIG_USB_GADGET_MUSBHSFC
+drivers/usb/gadget/ether.c:273:#ifdef CONFIG_USB_GADGET_MUSBHSFC
+========== USB_GADGET_N9604 ==========
+drivers/usb/gadget/gadget_chips.h:66:#ifdef CONFIG_USB_GADGET_N9604
+drivers/usb/gadget/ether.c:257:#ifdef CONFIG_USB_GADGET_N9604
+========== USB_GADGET_PXA27X ==========
+drivers/usb/gadget/gadget_chips.h:72:#ifdef CONFIG_USB_GADGET_PXA27X
+drivers/usb/gadget/ether.c:261:#ifdef CONFIG_USB_GADGET_PXA27X
+========== USB_GADGET_S3C2410 ==========
+drivers/usb/gadget/gadget_chips.h:84:#ifdef CONFIG_USB_GADGET_S3C2410
+drivers/usb/gadget/ether.c:265:#ifdef CONFIG_USB_GADGET_S3C2410
+========== USB_GADGET_SA1100 ==========
+drivers/usb/gadget/gadget_chips.h:42:#ifdef CONFIG_USB_GADGET_SA1100
+drivers/usb/gadget/ether.c:300:#ifdef CONFIG_USB_GADGET_SA1100
+========== USB_GADGET_SH ==========
+drivers/usb/gadget/ether.c:296:#ifdef CONFIG_USB_GADGET_SH
+========== USB_GADGET_SUPERH ==========
+drivers/usb/gadget/gadget_chips.h:36:#ifdef CONFIG_USB_GADGET_SUPERH
+========== USB_SAFE_PADDED ==========
+drivers/usb/serial/safe_serial.c:77:#ifndef CONFIG_USB_SAFE_PADDED
+drivers/usb/serial/safe_serial.c:78:#define CONFIG_USB_SAFE_PADDED 0
+drivers/usb/serial/safe_serial.c:83:static int padded = CONFIG_USB_SAFE_PADDED;
+========== USB_SAFE_SERIAL_VENDOR ==========
+drivers/usb/serial/safe_serial.c:148:#if defined(CONFIG_USB_SAFE_SERIAL_VENDOR)
+drivers/usb/serial/safe_serial.c:150:    (CONFIG_USB_SAFE_SERIAL_VENDOR, CONFIG_USB_SAFE_SERIAL_PRODUCT, CDC_DEVICE_CLASS,
 
- include/linux/netdevice.h |    1 +
- net/core/dev.c            |   21 ++++++++++++++++-----
- 2 files changed, 17 insertions(+), 5 deletions(-)
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index ac0c92b..4428f1c 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -582,6 +582,7 @@ extern int 			netdev_boot_setup_check(struct net_device *dev);
- extern unsigned long		netdev_boot_base(const char *prefix, int unit);
- extern struct net_device    *dev_getbyhwaddr(unsigned short type, char *hwaddr);
- extern struct net_device *dev_getfirstbyhwtype(unsigned short type);
-+extern struct net_device *__dev_getfirstbyhwtype(unsigned short type);
- extern void		dev_add_pack(struct packet_type *pt);
- extern void		dev_remove_pack(struct packet_type *pt);
- extern void		__dev_remove_pack(struct packet_type *pt);
-diff --git a/net/core/dev.c b/net/core/dev.c
-index eb99900..c305819 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -576,17 +576,28 @@ struct net_device *dev_getbyhwaddr(unsigned short type, char *ha)
- 
- EXPORT_SYMBOL(dev_getbyhwaddr);
- 
--struct net_device *dev_getfirstbyhwtype(unsigned short type)
-+struct net_device *__dev_getfirstbyhwtype(unsigned short type)
- {
- 	struct net_device *dev;
- 
--	rtnl_lock();
-+	ASSERT_RTNL();
- 	for (dev = dev_base; dev; dev = dev->next) {
--		if (dev->type == type) {
--			dev_hold(dev);
-+		if (dev->type == type)
- 			break;
--		}
- 	}
-+	return dev;
-+}
-+
-+EXPORT_SYMBOL(__dev_getfirstbyhwtype);
-+
-+struct net_device *dev_getfirstbyhwtype(unsigned short type)
-+{
-+	struct net_device *dev;
-+
-+	rtnl_lock();
-+	dev = __dev_getfirstbyhwtype(type);
-+	if (dev)
-+		dev_hold(dev);
- 	rtnl_unlock();
- 	return dev;
- }
-
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
