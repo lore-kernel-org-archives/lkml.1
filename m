@@ -1,138 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S376172AbXECQIE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767472AbXECQPM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S376172AbXECQIE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 12:08:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376174AbXECQID
+	id S1767472AbXECQPM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 12:15:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767474AbXECQPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 12:08:03 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:64374 "EHLO
+	Thu, 3 May 2007 12:15:12 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:4072 "EHLO
 	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S376172AbXECQIA (ORCPT
+	with ESMTP id S1767472AbXECQPK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 12:08:00 -0400
+	Thu, 3 May 2007 12:15:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=mEH7pR41UFogFMB74o8kfILurztucWNlIxE6epLaP+i9NxPQth5dC3cIKbpR9EO9GdOH/GmopE/fRhULvrGeC7zmsHTE4BSXtG1xG2C858z/so/gY9RSTnQ/244/DhHVEuoWVjnyjTS66xOG3eZllU76NUPWMKf4Ck9fMq2nsL0=
-Message-ID: <43806ba60705030907u511e61f8pa8f125caad8b1f50@mail.gmail.com>
-Date: Thu, 3 May 2007 12:07:58 -0400
-From: "Gary Martin" <gm4rtin@gmail.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
-       "Marcel Holtmann" <marcel@holtmann.org>
-Subject: Re: Kernel Oops on 2.6.18-1.2869.fc6 is this a bug?
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <6bffcb0e0705030536s61d42ec0x27a4b54ddef234a3@mail.gmail.com>
+        b=ZGXI3wv7IJi/hEQEYWVtGslNBSPzUMM4CfdgTxAU3G2JX6YYvvHTy2UnTOq1baerhJ3JoAACdtESl7XOl3LCIsJJdV+js6HfJkVFSCLE8+Q2sn+08ZzKb8v2UGOE3BtwuoBgm6AyCgbfOTlM+fR9W06AHbXPAjDWBJLCUQsykgs=
+Message-ID: <6bffcb0e0705030915r7c169f1cnd3b21413255a5c1f@mail.gmail.com>
+Date: Thu, 3 May 2007 18:15:06 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Con Kolivas" <kernel@kolivas.org>
+In-Reply-To: <20070503155407.GA7536@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <43806ba60705030524g2a8b0e54m2dda6f52615eba77@mail.gmail.com>
-	 <6bffcb0e0705030536s61d42ec0x27a4b54ddef234a3@mail.gmail.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	 <20070503155407.GA7536@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thanks.
+Hi,
 
-On 5/3/07, Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
-> Hi Gary,
+On 03/05/07, Ingo Molnar <mingo@elte.hu> wrote:
 >
-> On 03/05/07, Gary Martin <gm4rtin@gmail.com> wrote:
-> > I have a system running Fedora Core 6 on a Dell PE4400 that crashed
-> > and became unresponsive, I captured the following kernel oops in
-> > /var/log/messages:
-> >
-> > Apr 30 08:52:11 hostname kernel: list_del corruption. prev->next
-> > should be d5507478, but was 0000008f
-> > Apr 30 08:52:11 hostname kernel: ------------[ cut here ]------------
-> > Apr 30 08:52:11 hostname kernel: kernel BUG at lib/list_debug.c:65!
-> > Apr 30 08:52:11 hostname kernel: invalid opcode: 0000 [#1]
-> > Apr 30 08:52:11 hostname kernel: SMP
-> > Apr 30 08:52:11 hostname kernel: last sysfs file:
-> > /devices/pci0000:00/0000:00:04.0/irq
-> >  Apr 30 08:52:11 hostname kernel: Modules linked in: ipv6 autofs4
-> > dm_multipath video sbs i2c_ec button battery ac lp i2c_piix4 sr_mod
-> > i2c_core st cdrom e100 sg floppy pcspkr mii parport_pc tg3 parport
-> > serio_raw dm_snapshot dm_zero dm_mirror dm_mod aic7xxx
-> > scsi_transport_spi aacraid sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd
-> > uhci_hcd
-> > Apr 30 08:52:11 hostname kernel: CPU:    0
-> > Apr 30 08:52:11 hostname kernel: EIP:    0060:[<c04e5913>]    Not tainted VLI
-> > Apr 30 08:52:11 hostname kernel: EFLAGS: 00010296   (2.6.18-1.2869.fc6 #1)
-> > Apr 30 08:52:11 hostname kernel: EIP is at list_del+0x23/0x6c
-> > Apr 30 08:52:11 hostname kernel: eax: 00000048   ebx: d5507478   ecx:
-> > c0671c50   edx: 00000096
-> > Apr 30 08:52:11 hostname kernel: esi: d5507428   edi: f7d98e40   ebp:
-> > 00000282   esp: f7feff38
-> > Apr 30 08:52:11 hostname kernel: ds: 007b   es: 007b   ss: 0068
-> > Apr 30 08:52:11 hostname kernel: Process events/0 (pid: 8, ti=f7fef000
-> > task=c2ec05c0 task.ti=f7fef000)
-> > Apr 30 08:52:11 hostname kernel: Stack: c063707b d5507478 0000008f
-> > d5507420 c04b7ae6 d5507420 d5507428 f7d98e40
-> > Apr 30 08:52:11 hostname kernel:        c04b772c c067ece0 c067ece4
-> > c042fa34 00000246 f7d98e40 f7d98e60 c04b7675
-> > Apr 30 08:52:11 hostname kernel:        00000000 f7d98e60 f7d98e40
-> > f7d98e58 00000000 c043032c 00000001 00000000
-> > Apr 30 08:52:11 hostname kernel: Call Trace:
-> > Apr 30 08:52:11 hostname kernel:  [<c04b7ae6>] keyring_destroy+0x28/0x65
-> > Apr 30 08:52:11 hostname kernel:  [<c04b772c>] key_cleanup+0xb7/0xd0
-> > Apr 30 08:52:11 hostname kernel:  [<c042fa34>] run_workqueue+0x83/0xc5
-> > Apr 30 08:52:11 hostname kernel:  [<c043032c>] worker_thread+0xd9/0x10d
-> > Apr 30 08:52:11 hostname kernel:  [<c04327f3>] kthread+0xc0/0xed
-> > Apr 30 08:52:11 hostname kernel:  [<c0405447>] kernel_thread_helper+0x7/0x10
-> > Apr 30 08:52:11 hostname kernel: DWARF2 unwinder stuck at
-> > kernel_thread_helper+0x7/0x10
-> > Apr 30 08:52:11 hostname kernel: Leftover inexact backtrace:
-> > Apr 30 08:52:11 hostname kernel:  =======================
-> > Apr 30 08:52:11 hostname kernel: Code: 00 00 89 c3 eb e8 90 90 53 89
-> > c3 83 ec 0c 8b 40 04 8b 00 39 d8 74 1c 89 5c 24 04 89 44 24 08 c7 04
-> > 24 7b 70 63 c0 e8 df bc f3 ff <0f> 0b 41 00 b8 70 63 c0 8b 03 8b 40 04
-> > 39 d8 74 1c 89 5c 24 04
-> > Apr 30 08:52:11 hostname kernel: EIP: [<c04e5913>] list_del+0x23/0x6c
-> > SS:ESP 0068:f7feff38
-> > Apr 30 08:52:20 hostname kernel:  <3>BUG: soft lockup detected on CPU#0!
-> > Apr 30 08:52:20 hostname kernel:  [<c0405876>] dump_trace+0x69/0x1af
-> > Apr 30 08:52:20 hostname kernel:  [<c04059d4>] show_trace_log_lvl+0x18/0x2c
-> > Apr 30 08:52:20 hostname kernel:  [<c0405f83>] show_trace+0xf/0x11
-> > Apr 30 08:52:20 hostname kernel:  [<c0406080>] dump_stack+0x15/0x17
-> > Apr 30 08:52:20 hostname kernel:  [<c04498a9>] softlockup_tick+0xad/0xc4
-> > Apr 30 08:52:20 hostname kernel:  [<c042a39a>] update_process_times+0x39/0x5c
-> > Apr 30 08:52:20 hostname kernel:  [<c04148c5>]
-> > smp_apic_timer_interrupt+0x5b/0x62
-> > Apr 30 08:52:20 hostname kernel:  [<c040512f>] apic_timer_interrupt+0x1f/0x30
-> > Apr 30 08:52:20 hostname kernel: DWARF2 unwinder stuck at
-> > apic_timer_interrupt+0x1f/0x30
-> > Apr 30 08:52:20 hostname kernel: Leftover inexact backtrace:
-> > Apr 30 08:52:20 hostname kernel:  [<c0609f2f>] __write_lock_failed+0xf/0x20
-> > Apr 30 08:52:20 hostname kernel:  [<c04e57f9>] _raw_write_lock+0x5d/0x74
-> > Apr 30 08:52:20 hostname kernel:  [<c04b7ffd>] keyring_publish_name+0x2c/0x6d
-> > Apr 30 08:52:20 hostname kernel:  [<c04b804c>] keyring_instantiate+0xe/0x13
-> > Apr 30 08:52:20 hostname kernel:  [<c04b6fa4>]
-> > __key_instantiate_and_link+0x2f/0xa8
-> > Apr 30 08:52:20 hostname kernel:  [<c04b820d>] keyring_alloc+0x53/0x6a
-> > Apr 30 08:52:20 hostname kernel:  [<c04b9888>] alloc_uid_keyring+0x4c/0xb2
-> > Apr 30 08:52:20 hostname kernel:  [<c042a80d>] alloc_uid+0x95/0x13c
-> > Apr 30 08:52:20 hostname kernel:  [<c042d66f>] set_user+0xb/0x8e
-> > Apr 30 08:52:20 hostname kernel:  [<c042ef3a>] sys_setresuid+0x111/0x1dd
-> > Apr 30 08:52:20 hostname kernel:  [<c0404027>] syscall_call+0x7/0xb
-> > Apr 30 08:52:20 hostname kernel:  =======================
-> >
-> > Is this a bug?
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
 >
-> Yes, it is.
+> > - If replying, please be sure to cc the appropriate individuals.
+> >   Please also consider rewriting the Subject: to something
+> >   appropriate.
 >
-> >  Please let me know if I can provide any other
-> > information to determine the cause of this crash.  Thanks.
+> i'm wondering about swap-prefetch:
 >
-> You need to upgrade the kernel "yum upgrade kernel.i686"
+>   mm-implement-swap-prefetching.patch
+>   swap-prefetch-avoid-repeating-entry.patch
+>   add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated-swap-prefetch.patch
 >
-> If the problem still appears, fill bug report in RedHat bugzilla
-> https://bugzilla.redhat.com/bugzilla/index.cgi
+> The swap-prefetch feature is relatively compact:
 >
-> Regards,
-> Michal
+>    10 files changed, 745 insertions(+), 1 deletion(-)
 >
-> --
-> Michal K. K. Piotrowski
-> Kernel Monkeys
-> (http://kernel.wikidot.com/start)
+> it is contained mostly to itself:
 >
+>    mm/swap_prefetch.c            |  581 ++++++++++++++++++++++++++++++++
+>
+> i've reviewed it once again and in the !CONFIG_SWAP_PREFETCH case it's a
+> clear NOP, while in the CONFIG_SWAP_PREFETCH=y case all the feedback
+> i've seen so far was positive. Time to have this upstream and time for a
+> desktop-oriented distro to pick it up.
+>
+> I think this has been held back way too long. It's .config selectable
+> and it is as ready for integration as it ever is going to be. So it's a
+> win/win scenario.
+
+I'm using SWAP_PREFETCH since 2.6.17-mm1 (I don't have earlier configs)
+http://www.stardust.webpages.pl/files/tbf/euridica/2.6.17-mm1/mm-config
+and I don't recall _any_ problems. It's very stable for me.
+
+>
+> Acked-by: Ingo Molnar <mingo@elte.hu>
+>
+>         Ingo
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
