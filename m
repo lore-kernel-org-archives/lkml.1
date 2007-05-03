@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbXECUIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbXECUKU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753689AbXECUIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 16:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbXECUIu
+	id S1754037AbXECUKU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 16:10:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbXECUKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 16:08:50 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:11832 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753689AbXECUIt (ORCPT
+	Thu, 3 May 2007 16:10:20 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:37632 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754037AbXECUKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 16:08:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=j1bum23TeVAS36RaPc3Is6ybAFLnNGABAJPERa2oRZ2eA0XhugKNHfGaQBTAqDrJVDArl0SHERjmEvKGD6WuOk3HvSQ7bt3vfYeGtjBDZxt67vmDu30DjEvW/WMo2oqNhB12Gtc2UCMNyWXHyf1vYz9xVegbfKIqKQGw/rBT4Nk=
-Message-ID: <3634de740705031308t1dd2bc45r3d906d49a6dde6bf@mail.gmail.com>
-Date: Fri, 4 May 2007 01:38:47 +0530
-From: Maximus <john.maximus@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: MTD - Linux Nand Driver problems
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+	Thu, 3 May 2007 16:10:19 -0400
+Message-Id: <20070503200822.696754319@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 03 May 2007 13:08:22 -0700
+From: Daniel Walker <dwalker@mvista.com>
+To: mingo@elte.hu
+Cc: srostedt@redhat.com, linux-kernel@vger.kernel.org
+Subject: [PATCH -rt] wrong usage of smp_processor_id()
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-  Im using Linux Kernel 2.6.18.
-  Im using a large nand page device.
+Found this while debugging with Steve .. trace_hardirqs_on() isn't always 
+called with interrupt off.
 
-  In my device nand starts from 0x80000 offset of nand.
-  My kernel is around 1MB, I have allocated 2 MB space in my mtd
-partition structure.
-  Similarly My Filesystem starts from 0x280000 offset of nand.
+ BUG: using smp_processor_id() in preemptible [00000000] code: init/1
 
-  MY erase block size is 0x20000 (128 KB)
-
-   mkfs.jffs2 -p -l --eraseblock=128KiB -n -v -r ./rootfs -o /tmp/rootfs.jffs2
-
-   When boot my system i get hundreds of messages like:
-
-
-  Empty flash at 0x02327ffc ends at 0x02328000
-Empty flash at 0x0232fffc ends at 0x02330000
-Empty flash at 0x02337ffc ends at 0x02338000
-Empty flash at 0x02347ffc ends at 0x02348000
-Empty flash at 0x0234fffc ends at 0x02350000
-Empty flash at 0x02357ffc ends at 0x02358000
-Empty flash at 0x02367ffc ends at 0x02368000
-Empty flash at 0x0236fffc ends at 0x02370000
-Empty flash at 0x02377ffc ends at 0x02378000
-Empty flash at 0x0238fffc ends at 0x02390000
-Empty flash at 0x023a7ffc ends at 0x023a8000
-Empty flash at 0x023cfffc ends at 0x023d0000
-Empty flash at 0x023f7ffc ends at 0x023f8000
-Empty flash at 0x02407ffc ends at 0x02408000
-Empty flash at 0x02417ffc ends at 0x02418000
-Empty flash at 0x0242fffc ends at 0x02430000
-Empty flash at 0x02447ffc ends at 0x02448000
-Empty flash at 0x02477ffc ends at 0x02478000
-Empty flash at 0x024a7ffc ends at 0x024a8000
-Empty flash at 0x02527ffc ends at 0x02528000
-Empty flash at 0x0252ffac ends at 0x02530000
-Empty flash at 0x02531abc ends at 0x02532000
+ caller is trace_hardirqs_on+0x16/0xe0
+  [<c01054b1>] show_trace_log_lvl+0x21/0x50
+  [<c0105c82>] show_trace+0x12/0x20
+  [<c0105d56>] dump_stack+0x16/0x20
+  [<c022c819>] debug_smp_processor_id+0xa9/0xb0
+  [<c0152a76>] trace_hardirqs_on+0x16/0xe0
+  [<c0103975>] do_notify_resume+0x115/0x7b0
+  [<c01044f4>] work_notifysig+0x13/0x1b
+  =======================
+ ---------------------------
+ | preempt count: 00000001 ]
+ | 1-level deep critical section nesting:
+ ----------------------------------------
+ .. [<c022c7c3>] .... debug_smp_processor_id+0x53/0xb0
+ .....[<c0152a76>] ..   ( <= trace_hardirqs_on+0x16/0xe0)
 
 
-I know the flash is empty - How does one prevent these messages at boot time.
+Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
+---
+ kernel/latency_trace.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Regards,
-Jo
+Index: linux-2.6.21/kernel/latency_trace.c
+===================================================================
+--- linux-2.6.21.orig/kernel/latency_trace.c
++++ linux-2.6.21/kernel/latency_trace.c
+@@ -105,7 +105,7 @@ static inline int DEBUG_WARN_ON(int cond
+ #ifdef CONFIG_CRITICAL_IRQSOFF_TIMING
+ # ifdef CONFIG_CRITICAL_PREEMPT_TIMING
+    static DEFINE_PER_CPU(int, trace_cpu_idle);
+-#  define irqs_off_preempt_count() (!__get_cpu_var(trace_cpu_idle) && preempt_count())
++#  define irqs_off_preempt_count() (preempt_count() && !__get_cpu_var(trace_cpu_idle))
+ # else
+ #  define irqs_off_preempt_count() 0
+ # endif
+-- 
+
+-- 
