@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767415AbXECPhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161841AbXECPlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767415AbXECPhF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 11:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766496AbXECPhF
+	id S1161841AbXECPlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 11:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031348AbXECPlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 11:37:05 -0400
-Received: from mga09.intel.com ([134.134.136.24]:32635 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S376141AbXECPhA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 11:37:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,486,1170662400"; 
-   d="scan'208";a="83243841"
-Message-ID: <463A0199.4080204@intel.com>
-Date: Thu, 03 May 2007 08:36:57 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	Thu, 3 May 2007 11:41:40 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:41994 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031125AbXECPlj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 11:41:39 -0400
+Date: Thu, 3 May 2007 11:35:11 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+cc: Arne Georg Gleditsch <argggh@dolphinics.no>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, davem@davemloft.net, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: convert crypto.h to UTF-8
+In-Reply-To: <Pine.LNX.4.61.0705031719080.18504@yvahk01.tjqt.qr>
+Message-ID: <alpine.DEB.0.98.0705031132220.24982@sigma.j-a-k-j.com>
+References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
+ <20070502044345.GA29384@gondor.apana.org.au> <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
+ <87r6pyqg2b.fsf@pelargir.dolphinics.no> <alpine.DEB.0.98.0705030915240.21257@sigma.j-a-k-j.com>
+ <Pine.LNX.4.61.0705031719080.18504@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-To: Michel Lespinasse <walken@zoy.org>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       Jeb Cramer <cramerj@intel.com>, John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       "Allan, Bruce W" <bruce.w.allan@intel.com>
-Subject: Re: e1000 issue on DQ965GF board (was 24 lost ticks with 2.6.20.10
- kernel)
-References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com> <20070501214912.GA4048@zoy.org> <4637BA70.8000108@intel.com> <20070502084146.GA6089@zoy.org> <4638D51C.7010603@intel.com> <20070503062701.GA22255@zoy.org>
-In-Reply-To: <20070503062701.GA22255@zoy.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 May 2007 15:36:59.0135 (UTC) FILETIME=[E34CB8F0:01C78D98]
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Adding Bruce to the Cc, reply below]
+> >There's no reason for any non-UTF-8 to be in the tree at all, so 
+> >eventually it won't be a problem. I'm (slowly but surely) working on 
+> >converting everything in the tree. GCC handles UTF-8 just fine, and all 
+> 
+> In fact, GCC gives a crap about comments :)
+> and otherwise sees things as octets, not characters.
+> I think GCJ is the only one that really pays attention to encoding.
 
-Michel Lespinasse wrote:
-> On Wed, May 02, 2007 at 11:14:52AM -0700, Kok, Auke wrote:
->> I just checked and the fix I was referring to earlier didn't make it into 
->> 2.6.21-final. You can get 2.6.21-git1 from kernel.org which has the fix. See
->>
->> http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git1.log
-> 
-> Good. So I tried that patch (well, actually only the change visible at
-> http://lkml.org/lkml/2007/3/6/268). I patched it into a 2.6.20.11 kernel,
-> using the same config file as previously. The good news is that this fixes
-> my issue: there are no lost ticks anymore, and the link does negotiate a
-> gigabit connection. This is a great improvement for me :)
-> 
-> I still seem to hit an issue if using the ethtool command, though.
-> when using 'ethtool -s eth0 autoneg on', the link comes up at gigabit speed,
-> but a couple seconds later is comes down again, and then up at 100 megabits:
-> 
-> e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex
-> e1000: eth0: e1000_watchdog: NIC Link is Down
-> e1000: eth0: e1000_watchdog: NIC Link is Up 100 Mbps Full Duplex
-> e1000: eth0: e1000_watchdog: 10/100 speed: disabling TSO
-> 
-> The same thing happens if I use ifdown eth0; ifup eth0 too. Once again,
-> I only observe this on my DQ965GF motherboard, the DG965RY board is fine
-> (stays at gigabit speed when I issue these commands).
-> 
-> Is this something you could easily reproduce at Intel or would you want me
-> to look into that issue on my system ?
+The changes to the keymap files and so forth aren't quite as simple 
+though. Have to convert the latin1 characters within character-constant 
+expressions to \0 notation, while the comments can be left as utf8.
 
-I think we have confirmed this issue and I'll work with Bruce on seeing where 
-the fix went. I might give you another patch to try.
+> >non-stupid/non-broken distributions of GNU/Linux and other major Un*ces 
+> >should be based on (or at least compatible with) UTF-8 in basic 
+> >operations. Files like the keymaps will be more work to convert, but they 
+> >can be as well.
+> >
+> >I'm operating on the assumption that anything in the tree that isn't UTF-8 
+> >is ISO-8859-1. Of course, I'm also checking it by hand to make sure a 
+> >small-O-with-umlaut doesn't become the Klingon logo...
+> 
+> This is probably all you'll ever see:
+> http://lkml.org/lkml/2007/1/8/222
 
-Auke
+Does this mean you're doing it and I'll be ignored, or that few people 
+care and I'll be ignored? I figure if I just repost my patches to LKML 
+once per month, they'll eventually get merged (or at least I'll get 
+comments on how people actually want them). Things are tough on a 
+high-volume list. I think the git method may have the best chance of 
+success. We'll see.
