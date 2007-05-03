@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993203AbXECVzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753289AbXECWGx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993203AbXECVzL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:55:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993191AbXECVzK
+	id S1753289AbXECWGx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 18:06:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbXECWGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:55:10 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54690 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766518AbXECVzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:55:09 -0400
-Date: Thu, 3 May 2007 22:54:56 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: LinuxConf Europe 2007 [was Re: 2007 Linux Kernel Summit]
-Message-ID: <20070503215456.GO11511@agk.fab.redhat.com>
-Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
-	linux-kernel@vger.kernel.org
-References: <E1H8tIr-0006QH-Bg@candygram.thunk.org> <20070122110711.GA5917@lst.de> <20070122124502.GC30124@devserv.devel.redhat.com> <20070122131416.GA10562@thunk.org> <20070122131702.GA31129@fogou.chygwyn.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 May 2007 18:06:53 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:6787 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753289AbXECWGw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 18:06:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ejM4LbEngUjRa8u3odLaWlZV/pHLsGlCY0ViBB2EjZ/iWt20DlVdgszQRjJ3yIlr5RZCMVBdqJ2GF0iqb2zF7l5OPSif8s6cHIOOUX4A1W3aNqZno1JHMeMwvDp7dugsKC7eYr4HuBPkQYg+NpBweMqBdvuQmCmM2CgO7av8hKs=
+Message-ID: <d9def9db0705031506i53b8b263ld7f32a8cfd47b047@mail.gmail.com>
+Date: Fri, 4 May 2007 00:06:51 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical points about ...)
+Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>, linux-dvb@linuxtv.org,
+       linux-kernel@vger.kernel.org, "Johannes Stezenbach" <js@linuxtv.org>
+In-Reply-To: <463A572E.1000903@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070122131702.GA31129@fogou.chygwyn.com>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
+	 <20070503153129.268110@gmx.net> <463A0462.5070106@gmail.com>
+	 <d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>
+	 <463A0B36.5080204@gmail.com>
+	 <d9def9db0705031019l5083d1c1h607b0829ab526f1@mail.gmail.com>
+	 <1178215045.12651.124.camel@localhost> <463A31EE.20907@gmail.com>
+	 <d9def9db0705031400q375f2a29t1c9354d717a763d4@mail.gmail.com>
+	 <463A572E.1000903@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Jan 22, 2007 at 01:17:02PM +0000, Steven Whitehouse wrote:
-> Wrt, point (a), UKUUG are moving their UK based Summer Linux conference
-> to coincide timewise with the kernel summit. Normally its in the July/August
-> time frame. Location probably, but last I heard from Alasdair Kergon not
-> certain to be, in Cambridge,
- 
-Now confirmed - Cambridge, UK - Sunday 2nd to Tuesday 4th September.
-(A combined event with Linux-Kongress.)
+On 5/3/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> Markus Rechberger wrote:
+> > On 5/3/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> >> Mauro Carvalho Chehab wrote:
+> >> > Enough. Let's stop arguing non technical issues.
+> >> >
+> >> > If either one of you have any technical argue against the Trent's
+> >> > patches, please point where the fix is wrong. Otherwise, if you wish,
+> >> > you may send an acked-by agreeing with the fix.
+> >> >
+> >>
+> >> Why don't you stop this childish behaviour ?
+> >>
+> >> After explaining to you the reasons in the previous mail:
+> >> being the author and maintainer of dst/dst_ca and maintainer of
+> >> dvb-bt8xx, i NACK this change
+> >>
+> >> (1) You aren't DVB maintainer
+> >
+> > I've seen that too often already, now we could point to a mail someone
+> > sent to Uwe regarding maintainership.
+>
+>
+> FYI, I have never written to Uwe regarding any sort of maintainership.
+> You seem to be quite up with an overdose of drugs
+>
 
-Extract from the Call for Papers:
+I mean the mail from Helge Hafting (thread  [linux-dvb] Critical
+points about kernel 2.6.21 and pseudo-authorities) at the very first
+beginning.
 
-  We invite speakers on any aspect of Linux development and use. The
-  programme aims to cover a variety of topics, including kernel and
-  desktop development, tools, applications, networking, security,
-  performance and case-studies of linux deployments. Any topic likely to
-  be of interest to Linux developers and enthusiasts will be considered.
+> From 2005/09/13 - 2007/05/03 (till date) there have been 15 mails from
+> my side to Uwe, none of which has a topic whatsoever you say. Only the
+> first mail was a private mail and that is CC'd to Johannes as well.
+>
+> Firstly you seem to play politics by getting Uwe to flame me, then when
+> it backfired, you are trying to play tricks with the rest of the
+> community as well, by spreading nonsense statements.
+>
 
-  In view of the Kernel Summit following the event, we anticipate
-  devoting a significant proportion of the programme to the linux
-  kernel. We are also particularly interested in receiving papers that
-  focus on the historical development of computing in the Cambridge area. 
+I sent several comments to Uwe to stop flaming, Trent was in the CC
+sometimes I never wrote that he should flame on anyone.
+I can simply forward you all mails I sent to Uwe there's not one bad mail.
 
-  Closing date for abstracts:  20th May 2007
+My point is moreover to get that issue sorted out by either accepting
+his "proposal" or stating out why not to add it (and there must be a
+reason behind it, and no mail which is 2 years old, or explaining what
+the device is, again it got explained what's required from you)
 
-  http://www.linuxconf.eu/cfp/
-  http://lists.linuxconf.eu/mailman/listinfo/cambridge-announce
+seems like your response is based on that misunderstood sentence,
+sorry for not beeing clear enough.
 
-Alasdair
--- 
-agk@redhat.com
+Markus
