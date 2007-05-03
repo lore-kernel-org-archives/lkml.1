@@ -1,86 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031281AbXECUZE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031283AbXECU0B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031281AbXECUZE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 16:25:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031266AbXECUZE
+	id S1031283AbXECU0B (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 16:26:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031288AbXECU0B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 16:25:04 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:54932 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031281AbXECUY6 (ORCPT
+	Thu, 3 May 2007 16:26:01 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:59588 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031283AbXECUZ7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 16:24:58 -0400
-Date: Thu, 3 May 2007 13:22:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] revoke: change revoke_table to fileset and
- revoke_details
-Message-Id: <20070503132253.7b6fe5fe.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705031752440.6505@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0705031752440.6505@sbz-30.cs.Helsinki.FI>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 16:25:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=JiORAsWjqYHb8vFFw9slv8upa6cCZMVEkbD5UoeXBS/yGVWBUAw4nqe0y/uG1ycW/VOqxfNb+LDZhu3UYdgfoKrL1pO4b+VRtvAYcDBCu5slDLJeGAhapxwqJs3YNwzCZNYxZcayCPzwNHcU6AFCzOH9Ns7CJaUWuiLuzcqX3rw=
+Message-ID: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com>
+Date: Thu, 3 May 2007 22:25:48 +0200
+From: "=?ISO-8859-1?Q?=D8yvind_V=E5gen_J=E6gtnes?=" <lorrides@gmail.com>
+To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Routing 600+ vlan's via linux problems (looks like arp problems)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 May 2007 17:53:07 +0300 (EEST)
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+Hi,
 
-> From: Pekka Enberg <penberg@cs.helsinki.fi>
-> 
-> The revoke_table struct is overloaded because it serves two purposes:
-> it manages the pre-allocated set of files and tracks the revoke
-> operation so that we know where to start restore if the operation
-> fails. This splits file set management to separate struct fileset and
-> renames struct revoke_table to revoke_details.
-> 
-> Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-> ---
->  fs/revoke.c |  171 +++++++++++++++++++++++++++++++++++-------------------------
->  1 file changed, 101 insertions(+), 70 deletions(-)
-> 
-> Index: 26-mm/fs/revoke.c
-> ===================================================================
-> --- 26-mm.orig/fs/revoke.c	2007-05-03 17:10:56.000000000 +0300
-> +++ 26-mm/fs/revoke.c	2007-05-03 17:14:49.000000000 +0300
-> @@ -18,19 +18,71 @@  * Copyright (C) 2006-2007  Pekka Enberg
->  #include <linux/revoked_fs_i.h>
->  #include <linux/syscalls.h>
->  
-> -/*
-> - * This is used for pre-allocating an array of file pointers so that we don't
-> - * have to do memory allocation under tasklist_lock.
-> +/**
-> + * fileset - an array of file pointers.
-> + * @files:    the array of file pointers
-> + * @nr:               number of elements in the array
-> + * @end:      index to next unused file pointer
-> + */
-> +struct fileset {
-> +	struct file	**files;
-> +	unsigned long	nr;
-> +	unsigned long	end;
-> +};
+We have a one gigabit internet connection that is normally
+routed by a hardware juniper router. The drive in this is down
+and we need to use a linux machine (Pentium D 3 ghz) as a
+temporary router.
+Now setting up all the 600 vlans and assigning ip addresses
+is no problem. We have testet all by using a laptop, setting up
+600 vlan interfaces on this and running dhcpclient on all.
+This worked just fine, all the interfaces got address.
 
-What's the locking protocol for all this?
+Now for the real setup.
+We closed the mac of the juniper to the network card that
+would be connected to the internal LAN, set up the interfaces,
+and swapped cables. This worked fine for approximately 100
+of the computers that are connected, but the rest would not
+get IP. The connected 100 computers were routed just fine.
 
-> +static void free_fset(struct fileset *fset)
-> +{
-> +      int i;
-> +
-> +      for (i = fset->end; i < fset->nr; i++)
-> +              fput(fset->files[i]);
-> +
-> +      kfree(fset->files);
-> +      kfree(fset);
-> +}
+What we think the problem is, is that the arp cache on the
+linux router seems strange. It can resolve the MAC for the
+100 clients that actually got through.
+For the rest all we see in the arp cache is (incomplete)
 
-Confused.  Shouldn't it be
+Here is some of the listing for arp -n:
+193.239.155.118          ether   00:0A:E4:59:75:66   C
+eth1.1087
+193.239.154.74                   (incomplete)
+eth1.1016
+193.239.155.7            ether   00:11:95:D2:3F:FD   C
+eth1.2002
+83.143.114.222                   (incomplete)
+eth1.1305
+83.143.113.246           ether   00:0B:5D:4B:B8:77   C
+eth1.1247
+83.143.116.126                   (incomplete)
+eth1.1409
+83.143.118.114                   (incomplete)
+eth1.1534
+193.239.154.210          ether   00:03:0D:2F:1B:7F   C
+eth1.1050
+169.254.69.247           ether   00:15:C5:C2:31:6C   C
+eth1.1262
+83.143.112.38                    (incomplete)
+eth1.1131
+83.143.118.18                    (incomplete)
+eth1.1510
+83.143.112.118           ether   00:11:95:CE:BF:72   C
+eth1.1151
+192.168.1.2              ether   00:0D:88:78:C0:00   C
+eth1.2050
+83.143.117.138                   (incomplete)
+eth1.1476
+83.143.116.18                    (incomplete)
+eth1.1382
+83.143.118.26                    (incomplete)
+eth1.1512
+83.143.112.6                     (incomplete)
+eth1.1123
+193.239.155.62                   (incomplete)
+eth1.1073
 
-	for (i = 0; i < fset->end; i++)
+`arp -n|wc -l` returns around 350, which is the number of active ports on the
+edge switches...
+this number is confirmed by snmp
 
-?
+I have looked through the source for arp.c but i can't see any immediate
+problems. There is no messages in dmesg, kern.log og messages (except for
+eth1.vlanid up * 600).
 
+If anyone know what the problem can be, if this is a bug, or if PSBKC i would
+much appreciate it.
+
+regards
+Øyvind Vågen Jægtnes
++47 96 22 03 08
+lorrides@gmail.com
