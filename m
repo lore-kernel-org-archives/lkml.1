@@ -1,64 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162019AbXECOg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162037AbXECOjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162019AbXECOg4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162021AbXECOgz
+	id S1162037AbXECOjD (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162039AbXECOjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:36:55 -0400
-Received: from mail.samba.org ([66.70.73.150]:60375 "EHLO lists.samba.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1162019AbXECOgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:36:54 -0400
-Subject: Re: [linux-cifs-client] Re: SMB2 file system - should it be a
-	distinct module
-From: simo <idra@samba.org>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070503141742.GB20328@infradead.org>
-References: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com>
-	 <20070501090657.GA17949@infradead.org>
-	 <1178198489.28758.14.camel@localhost.localdomain>
-	 <20070503141742.GB20328@infradead.org>
-Content-Type: text/plain
-Organization: Samba Team
-Date: Thu, 03 May 2007 10:36:53 -0400
-Message-Id: <1178203013.28758.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 10:39:03 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:37533 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1162037AbXECOjA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 10:39:00 -0400
+Date: Thu, 3 May 2007 10:32:33 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Arne Georg Gleditsch <argggh@dolphinics.no>
+cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, davem@davemloft.net, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: convert crypto.h to UTF-8
+In-Reply-To: <87hcquqajl.fsf@pelargir.dolphinics.no>
+Message-ID: <alpine.DEB.0.98.0705031024530.23274@sigma.j-a-k-j.com>
+References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
+ <20070502044345.GA29384@gondor.apana.org.au> <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
+ <87r6pyqg2b.fsf@pelargir.dolphinics.no> <alpine.DEB.0.98.0705030915240.21257@sigma.j-a-k-j.com>
+ <87hcquqajl.fsf@pelargir.dolphinics.no>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-03 at 15:17 +0100, Christoph Hellwig wrote:
-> On Thu, May 03, 2007 at 09:21:29AM -0400, simo wrote:
-> > Separate modules would mean the user have to know which protocol to
-> > choose each time. And this make little sense.
+> > Besides, based on the actual binary representation of UTF-8, it's 
+> > extremely unlikely for any ISO-8859-1 string to be detected as UTF-8. VIm 
+> > already does this: UTF-8 it handles natively, but open up one of these 
+> > unpatched files in VIm and you'll see "[converted]" at the bottom of your 
+> > screen. Should happen if you open the attached .patch.bin file in VIm.
 > 
-> Of course it makes a lot of sense.  We don't have anyfs.ko either
-> because some ubuntu users are too braindead to know what's on their
-> disk.
+> Yes, I agree that heuristics can be used to determine the coding
+> system used with a high degree of probability.  I'm just suggesting we
+> make the coding system explicit, in order to spare other applications
+> that do visual presentation of Linux source code having to perform
+> their own heuristics.
 > 
-> > You really want to auto-negotiate which protocol to use, because you
-> > could have at the same time a connection to a Vista/Longhorn (SMB2)
-> > machine and one to a Windows 2000 server (plain SMB) in the same domain
-> > using the same credentials.
-> 
-> So what?
+> But hey, if I'm the only one wanting to see this particular bike shed
+> painted blue...
 
-I guess DFS referrals can work cross protocol, so if you are redirected
-from a longhorn server to a windoes 2000 or a samba server you want to
-be able to follow the DFS referral and not return an error.
-To do that you need to have either 1 module that support both protocols
-or a way from one module to call the other. Just separating the 2
-without any glue will not work (or you will have to add some userspace
-upcall hack to make it work).
+In any other case, I would agree completely, but like I said, the entire 
+tree will be one encoding anyway, which will be UTF-8. Many tools would 
+already have these heuristics, and even if they don't, the code itself 
+will be perfectly legible no matter which encoding is used to view it, and 
+only some things like circuit diagrams and peoples' names may be slightly 
+mangled. Any byte which is 0x7F or less is identical in both encodings, so 
+all normal ASCII is unchanged.
 
-Simo.
+It's an issue only in transition. No new non-UTF-8 patches should be 
+accepted, of course. And I won't be doing any changes that break anything 
+other than a live person reading it and wondering why it looks weird if 
+they don't have the right tools.
 
--- 
-Simo Sorce
-Samba Team GPL Compliance Officer
-email: idra@samba.org
-http://samba.org
+A line in <Documentation/CodingStyle> explicitly requiring UTF-8 sounds 
+like a good idea. I shall submit one later if I remember. Many mail 
+clients do this conversion automatically, which causes me headaches and 
+requires me to attach the patches separately. Quite annoying really. I'm 
+exploring the possibility of hacking together a simple SMTP client if 
+that'll help me with these fool binary patches.
 
+Or maybe setting up a little mini git repository with UTF-8 changes is a 
+good idea? Hmm, I'll research that, and try it. Then I could just cc it to 
+trivial and the list and they can just pull it in one go. One more week 
+until summer vacation! I shall have time to do this then.
