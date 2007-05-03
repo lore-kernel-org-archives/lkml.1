@@ -1,94 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753559AbXECLQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbXECLSR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753559AbXECLQp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 07:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbXECLQp
+	id S1753553AbXECLSR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 07:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXECLSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 07:16:45 -0400
-Received: from charybdis-ext.suse.de ([195.135.221.2]:59269 "EHLO
-	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753388AbXECLQm (ORCPT
+	Thu, 3 May 2007 07:18:17 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:50974 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753170AbXECLSP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 07:16:42 -0400
-Date: Thu, 3 May 2007 13:16:25 +0200 (CEST)
-From: Bernhard Kaindl <bk@suse.de>
-To: randy.dunlap@oracle.com, Andi Kleen <ak@suse.de>
-cc: patches@x86-64.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [16/34] i386: fix mtrr sections
-In-Reply-To: <Pine.LNX.4.64.0705021559160.32650@jbgna.fhfr.qr>
-Message-ID: <Pine.LNX.4.64.0705031229300.27730@jbgna.fhfr.qr>
-References: <20070430549.617098000@suse.de> <20070430154948.B6DDF151CA@wotan.suse.de>
- <Pine.LNX.4.64.0705021559160.32650@jbgna.fhfr.qr>
+	Thu, 3 May 2007 07:18:15 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Thu, 3 May 2007 07:17:34 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: dead CONFIG_ variables:  drivers/scsi/
+In-Reply-To: <20070503111113.GC12018@flint.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0705030713210.680@localhost.localdomain>
+References: <Pine.LNX.4.64.0705030606570.32341@localhost.localdomain>
+ <20070503111113.GC12018@flint.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed that I can just use call graphs to make more clear what I want to say.
+On Thu, 3 May 2007, Russell King wrote:
 
-There is otherwise nothing new in this mail and I'll submit a new patch
-which reverts this patch if my review came too late, if in doubt, just
-ignore this mail, I may just refer to it later then.
-
-> NACK - obsolete, replaced by:
-> Jeremy Fitzhardinge - "x86: clean up identify_cpu"
-> http://lkml.org/lkml/2007/4/7/113 [it's also patch 11/26 in this thread]
+> On Thu, May 03, 2007 at 06:10:28AM -0400, Robert P. J. Day wrote:
+> >
+> > $ ../dead_config.sh drivers/scsi
+> > ========== ACORNSCSI_CONSTANTS ==========
+> > drivers/scsi/arm/acornscsi.c:106:#undef CONFIG_ACORNSCSI_CONSTANTS
+> > drivers/scsi/arm/acornscsi.c:417:#ifdef CONFIG_ACORNSCSI_CONSTANTS
+> > drivers/scsi/arm/acornscsi.c:495:#ifdef CONFIG_ACORNSCSI_CONSTANTS
+> > ========== SCSI_ACORNSCSI_LINK ==========
+> > drivers/scsi/arm/acornscsi.c:70:#undef CONFIG_SCSI_ACORNSCSI_LINK
+> > drivers/scsi/arm/acornscsi.c:169:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
+> > drivers/scsi/arm/acornscsi.c:1675:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
+> > drivers/scsi/arm/acornscsi.c:2849:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
+> > drivers/scsi/arm/acornscsi.c:2880:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
 >
-> It's a leftover of "__init to __cpuinit in mtrr code" (Prarit Bhargava):
-> http://lkml.org/lkml/2007/2/28/198 - (acked by Bhavana Nagendra) which
-> itself is rejected from Andrews tree already.
->
-> Description:
-> ------------
->
-> This function tree (as of 2.6.21) here explains it all:
->
-> __cpuinit       identify_cpu()
->     -> if BSP is inited, so only at __init time, these functions are called:
->          __init     mtrr_bp_init()
->             __init      get_mtrr_state()
->                __initdata   show_mtrr;
->                __init       print_fixed()
+> False positives.  That #undef is preceded by a comment describing the
+> driver-internal configuration for developers rather than users.  I
+> guess they shouldn't be preceded by CONFIG_.
 
-That was around 2.6.15 till 2.6.21.
+i've already admitted that this script is going to generate false
+positives for a number of reasons, the most common one being using the
+"CONFIG_" prefix outside the context of Kconfig.
 
-Prarit Bhargava's patch "__init to __cpuinit in mtrr code" did this:
+technically, of course, that doesn't hurt but it sure would make the
+code clearer if that prefix was officially reserved for Kconfig stuff.
 
-  __cpuinit       identify_cpu()
-      -> if BSP is inited, so only at __init time, these functions are called:
--          __init        mtrr_bp_init()
--               __init        get_mtrr_state()
-+          __cpuinit     mtrr_bp_init()
-+               __cpuinit     get_mtrr_state()
-                             (plus half a dozen other functions)
-                 __initdata   show_mtrr;
-                 __init       print_fixed()
+rday
 
-and Randy's patch (on top of Prarit Bhargava's, which is removed now) does:
+p.s.  "CONFIG_" prefix aside, i would think it's also a bit yucky to
+be checking for the definition of a preprocessor symbol that you've
+already hardcoded out of existence in the same source file.  :-)
 
--                __initdata   show_mtrr;
-+                             show_mtrr;
--                __init       print_fixed()
-+                __cpuinit    print_fixed()
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-While Jeremy Fitzhardinge - "x86: clean up identify_cpu" cleans it up:
-
--  __cpuinit   identify_cpu()
-+  __init      identify_boot_cpu()      (only does the boot-only calls)
-           __init     mtrr_bp_init()
-              __init      get_mtrr_state()
-              (and half a dozen other functions also keep __init)
-                 __initdata   show_mtrr;
-                 __init       print_fixed()
-
-which is best and Randy's patch "fix mtrr sections" is also obsolete then,
-show_mtrr and print_fixed() can keep the __init/__initdata prefix.
-
-As Andy already submitted it to Linus with http://lkml.org/lkml/2007/5/2/346
-we may have to create a patch which reverts this patch.
-
-I'm also planning to add some function headers to the MTRR functions
-and also fix the existing and upcoming function headers to be complant
-to kernel-doc.
-
-Bernhard
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
