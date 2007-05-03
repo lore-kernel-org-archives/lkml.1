@@ -1,104 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752306AbXECKLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751965AbXECKLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752306AbXECKLB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:11:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbXECKLB
+	id S1751965AbXECKLv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXECKLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:11:01 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:49235 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752440AbXECKK7 (ORCPT
+	Thu, 3 May 2007 06:11:50 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59095
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751965AbXECKLt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:10:59 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Thu, 3 May 2007 06:10:28 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: linux-scsi@vger.kernel.org
-Subject: dead CONFIG_ variables:  drivers/scsi/
-Message-ID: <Pine.LNX.4.64.0705030606570.32341@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	UPPERCASE_25_50 0.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 3 May 2007 06:11:49 -0400
+Date: Thu, 03 May 2007 03:11:49 -0700 (PDT)
+Message-Id: <20070503.031149.51495514.davem@davemloft.net>
+To: dhowells@redhat.com
+Cc: torvalds@osdl.org, akpm@osdl.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, netdev@vger.kernel.org,
+       geert@linux-m68k.org
+Subject: Re: [PATCH 2/2] AFS/AF_RXRPC: Miscellaneous fixes
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070501174752.19112.82814.stgit@warthog.cambridge.redhat.com>
+References: <20070501174747.19112.1985.stgit@warthog.cambridge.redhat.com>
+	<20070501174752.19112.82814.stgit@warthog.cambridge.redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: David Howells <dhowells@redhat.com>
+Date: Tue, 01 May 2007 18:47:52 +0100
 
-$ ../dead_config.sh drivers/scsi
-========== 53C700_BE_BUS ==========
-drivers/scsi/53c700.h:266:#ifdef CONFIG_53C700_BE_BUS
-========== ACORNSCSI_CONSTANTS ==========
-drivers/scsi/arm/acornscsi.c:106:#undef CONFIG_ACORNSCSI_CONSTANTS
-drivers/scsi/arm/acornscsi.c:417:#ifdef CONFIG_ACORNSCSI_CONSTANTS
-drivers/scsi/arm/acornscsi.c:495:#ifdef CONFIG_ACORNSCSI_CONSTANTS
-========== AIC7XXX_PROC_STATS ==========
-drivers/scsi/aic7xxx/aic7xxx_osm.c:152:#ifdef CONFIG_AIC7XXX_PROC_STATS
-Documentation/filesystems/proc.txt:636:    AIC7XXX_PROC_STATS     : Disabled
-drivers/scsi/aic7xxx/aic7xxx_osm.c:153:#define AIC7XXX_PROC_STATS
-========== HIGHIO ==========
-drivers/scsi/ips.h:61:   #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,4,20) || defined CONFIG_HIGHIO
-========== NCR53C8XX_PREFETCH ==========
-drivers/scsi/ncr53c8xx.c:1818:#ifdef CONFIG_NCR53C8XX_PREFETCH
-========== SCSI_ACORNSCSI_LINK ==========
-drivers/scsi/arm/acornscsi.c:70:#undef CONFIG_SCSI_ACORNSCSI_LINK
-drivers/scsi/arm/acornscsi.c:169:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-drivers/scsi/arm/acornscsi.c:1675:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-drivers/scsi/arm/acornscsi.c:2849:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-drivers/scsi/arm/acornscsi.c:2880:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-========== SCSI_DC395x_TRMS1040_TRADMAP ==========
-drivers/scsi/dc395x.c:1176:#ifdef CONFIG_SCSI_DC395x_TRMS1040_TRADMAP
-========== SCSI_G_NCR5380_MEM ==========
-drivers/scsi/g_NCR5380.c:299:#ifdef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.c:377:#ifndef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.c:439:#ifndef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.c:449:#ifndef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.c:519:#ifndef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.c:592:#ifndef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.c:599:           /* implies CONFIG_SCSI_G_NCR5380_MEM */
-drivers/scsi/g_NCR5380.c:612:#ifndef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.c:619:           /* implies CONFIG_SCSI_G_NCR5380_MEM */
-drivers/scsi/g_NCR5380.c:678:#ifndef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.c:684:           /* implies CONFIG_SCSI_G_NCR5380_MEM */
-drivers/scsi/g_NCR5380.c:694:#ifndef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.c:700:           /* implies CONFIG_SCSI_G_NCR5380_MEM */
-drivers/scsi/g_NCR5380.h:66:#ifndef CONFIG_SCSI_G_NCR5380_MEM
-drivers/scsi/g_NCR5380.h:94:/* therefore CONFIG_SCSI_G_NCR5380_MEM */
-drivers/scsi/g_NCR5380_mmio.c:7:#define SCSI_G_NCR5380_MEM
-========== SCSI_NCR53C8XX_DISABLE_MPARITY_CHECK ==========
-drivers/scsi/ncr53c8xx.h:175:#ifdef CONFIG_SCSI_NCR53C8XX_DISABLE_MPARITY_CHECK
-========== SCSI_NCR53C8XX_DISABLE_PARITY_CHECK ==========
-drivers/scsi/ncr53c8xx.h:184:#ifdef CONFIG_SCSI_NCR53C8XX_DISABLE_PARITY_CHECK
-========== SCSI_NCR53C8XX_FORCE_SYNC_NEGO ==========
-drivers/scsi/ncr53c8xx.h:166:#ifdef CONFIG_SCSI_NCR53C8XX_FORCE_SYNC_NEGO
-========== SCSI_NCR53C8XX_IARB ==========
-drivers/scsi/ncr53c8xx.h:125:#if defined(CONFIG_SCSI_NCR53C8XX_IARB)
-========== SCSI_NCR53C8XX_INTEGRITY_CHECK ==========
-drivers/scsi/ncr53c8xx.h:70:#ifdef      CONFIG_SCSI_NCR53C8XX_INTEGRITY_CHECK
-========== SCSI_NCR53C8XX_NO_WORD_TRANSFERS ==========
-drivers/scsi/ncr53c8xx.h:416:#ifdef CONFIG_SCSI_NCR53C8XX_NO_WORD_TRANSFERS
-drivers/scsi/ncr53c8xx.h:424:#ifdef CONFIG_SCSI_NCR53C8XX_NO_WORD_TRANSFERS
-========== SCSI_NCR53C8XX_TAGGED_QUEUE ==========
-drivers/scsi/ncr53c8xx.h:116:#elif      defined CONFIG_SCSI_NCR53C8XX_TAGGED_QUEUE
-========== WD33C93_PIO ==========
-drivers/scsi/wd33c93.c:172:#ifdef CONFIG_WD33C93_PIO
-drivers/scsi/wd33c93.c:230:#else /* CONFIG_WD33C93_PIO */
-drivers/scsi/wd33c93.c:297:#endif /* CONFIG_WD33C93_PIO */
-drivers/scsi/wd33c93.h:193:#ifdef CONFIG_WD33C93_PIO
+> Make miscellaneous fixes to AFS and AF_RXRPC:
+> 
+>  (*) Make AF_RXRPC select KEYS rather than RXKAD or AFS_FS in Kconfig.
+> 
+>  (*) Don't use FS_BINARY_MOUNTDATA.
+> 
+>  (*) Remove a done 'TODO' item in a comemnt on afs_get_sb().
+> 
+>  (*) Don't pass a void * as the page pointer argument of kmap_atomic() as this
+>      breaks on m68k.  Patch from Geert Uytterhoeven <geert@linux-m68k.org>.
+> 
+>  (*) Use match_*() functions rather than doing my own parsing.
+> 
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Applied.
