@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S376161AbXECQCa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767442AbXECQDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S376161AbXECQCa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 12:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376165AbXECQC3
+	id S1767442AbXECQDm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 12:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767446AbXECQDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 12:02:29 -0400
-Received: from waste.org ([66.93.16.53]:38170 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S376157AbXECQC2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 12:02:28 -0400
-Date: Thu, 3 May 2007 11:02:01 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [RELEASE] Lguest for 2.6.21
-Message-ID: <20070503160201.GR11166@waste.org>
-References: <1178117028.19815.14.camel@localhost.localdomain>
+	Thu, 3 May 2007 12:03:42 -0400
+Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:23405 "EHLO
+	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767442AbXECQDk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 12:03:40 -0400
+X-IronPort-AV: i="4.14,486,1170662400"; 
+   d="scan'208"; a="483254658:sNHT42995212"
+To: Andi Kleen <ak@suse.de>
+Cc: Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Why ssse3?
+X-Message-Flag: Warning: May contain useful information
+References: <46391392.4070706@redhat.com> <200705030046.07152.ak@suse.de>
+	<4639171A.3050004@redhat.com> <200705031052.31611.ak@suse.de>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 03 May 2007 09:03:36 -0700
+In-Reply-To: <200705031052.31611.ak@suse.de> (Andi Kleen's message of "Thu, 3 May 2007 10:52:31 +0200")
+Message-ID: <aday7k5evxj.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178117028.19815.14.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 03 May 2007 16:03:36.0850 (UTC) FILETIME=[9B9CAF20:01C78D9C]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 12:43:48AM +1000, Rusty Russell wrote:
-> Hi all,
-> 
-> 	Lguest is a simple hypervisor which runs Linux under Linux, without
-> needing VT hardware.
-> 
-> 	Two people asked if I had a version of lguest which worked on
-> other-than-bleeding-edge-mm kernels, so I did a backport of the latest
-> version to 2.6.21.
-> 
-> 	http://lguest.ozlabs.org/lguest-2.6.21-254.patch.gz
-> 
-> See Documentation/lguest/lguest.txt for how to run,
-> drivers/lguest/README for the draft code documentation journey.
+ > PNI (Prescott New Instructions) was the original engineering code name. Unfortunately
+ > it was added too early before the marketing name was known and then it couldn't be 
+ > changed anymore.
 
-Your lguest readme is quite lacking in the area of how to configure a
-guest kernel as opposed to the host kernel. More hand-holding, please.
+... and just to make things more fun, SSE4 is sometimes called Penryn
+New Instructions -- PNI all over again.
 
-Maybe it's obvious once I've actually applied the patch and run
-menuconfig, but I'm loathe to attempt anything that isn't a cake walk
-at my current loadavg, especially given the fits of blind rage trying
-to do anything nontrivial with Xen tends to provoke in me.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+ - R.
