@@ -1,110 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767351AbXECDrw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767356AbXECDsV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767351AbXECDrw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 23:47:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767355AbXECDrw
+	id S1767356AbXECDsV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 23:48:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767359AbXECDsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 23:47:52 -0400
-Received: from [212.12.190.26] ([212.12.190.26]:33005 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767351AbXECDru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 23:47:50 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [ck] [REPORT] 2.6.21.1 vs 2.6.21-sd046 vs 2.6.21-cfs-v6
-Date: Thu, 3 May 2007 06:51:43 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-References: <200705030211.39345.a1426z@gawab.com> <20070503004929.GA19966@holomorphy.com>
-In-Reply-To: <20070503004929.GA19966@holomorphy.com>
+	Wed, 2 May 2007 23:48:21 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:56108 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767356AbXECDsS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 23:48:18 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=FpFy0Vwcsdjk7G9UJTsNhQmgIK1cCe9CxWBoHFvWmx4cH7RTil5XXojoMwh6ImStY
+	YzmGNaSkFov4ro1qz4MqA==
+Message-ID: <b040c32a0705022048p6c08fd41wcca7ac628d4229bc@mail.gmail.com>
+Date: Wed, 2 May 2007 20:48:08 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: cache-pipe-buf-page-address-for-non-highmem-arch.patch
+Cc: "Christoph Hellwig" <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, "Andi Kleen" <ak@suse.de>
+In-Reply-To: <20070501020441.10b6a003.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705030651.43865.a1426z@gawab.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	 <20070501085431.GD14364@infradead.org>
+	 <20070501020441.10b6a003.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
-> Con Kolivas wrote:
-> >> Looks good, thanks. Ingo's been hard at work since then and has v8 out
-> >> by now. SD has not changed so you wouldn't need to do the whole lot of
-> >> tests on SD again unless you don't trust some of the results.
+On 5/1/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> Fair enough, it is a bit of an ugly thing.  And I see no measurements there
+> on what the overall speedup was for any workload.
 >
-> On Thu, May 03, 2007 at 02:11:39AM +0300, Al Boldi wrote:
-> > Well, I tried cfs-v8 and it still shows some nice regressions wrt
-> > mainline/sd.  SD's nice-levels look rather solid, implying fairness.
->
-> That's odd. The ->load_weight changes should've improved that quite
-> a bit. There may be something slightly off in how lag is computed,
-> or maybe the O(n) lag issue Ying Tang spotted is biting you.
+> Ken, which memory model was in use?  sparsemem?
 
-Is it not biting you too?
-
-> Also, I should say that the nice number affairs don't imply fairness
-> per se. The way that works is that when tasks have "weights" (like
-> nice levels in UNIX) the definition of fairness changes so that each
-> task gets shares of CPU bandwidth proportional to its weight instead
-> of one share for one task.
-
-Ok, but you can easily expose scheduler unfairness by using nice levels as 
-relative magnifiers; provided nice levels are implemented correctly.
-
-> It takes a bit closer inspection than feel tests to see if weighted
-> fairness is properly implemented. One thing to try is running a number
-> of identical CPU hogs at the same time at different nice levels for a
-> fixed period of time (e.g. 1 or 2 minutes) so they're in competition
-> with each other and seeing what percent of the CPU each gets. From
-> there you can figure out how many shares each is getting for its nice
-> level. Trying different mixtures of nice levels and different numbers
-> of tasks should give consistent results for the shares of CPU bandwidth
-> the CPU hogs get for being at a particular nice level. A scheduler gets
-> "bonus points" (i.e. is considered better at prioritizing) for the user
-> being able to specify how the weightings come out. The finer-grained
-> the control, the more bonus points.
->
-> Maybe con might want to take a stab at having users be able to specify
-> the weights for each nice level individually.
->
-> CFS actually has a second set of weights for tasks, namely the
-> timeslice for a given task. At the moment, they're all equal. It should
-> be the case that the shorter the timeslice a given task has, the less
-> latency it gets. So there is a fair amount of room for it to manuever
-> with respect to feel tests. It really needs to be done numerically to
-> get results we can be sure mean something.
->
-> The way this goes is task t_i gets a percent of the CPU p_i when the
-> tasks t_1, t_2, ..., t_n are all competing, and task t_i has nice level
-> n_i. The share corresponding to nice level n_i is then
->
->           p_i
->   w_i = -------
->         sum p_j
->
-> One thing to check for is that if two tasks have the same nice level
-> that their weights come out about equal. So for t_i and t_j, if n_i
-> = n_j then you check that at least approximately, w_i = w_j, or even
-> p_i = p_j, since we're not starting and stopping tasks in the midst of
-> the test. Also, you can't simplify sum p_j to 1, since the set of tasks
-> may not be the only things running.
->
-> The other thing to do is try a different number of tasks with a
-> different mix of nice levels. The weight w_i for a given nice
-> level n_i should be the same even in a different mix of tasks
-> and nice levels if the nice levels are the same.
->
-> If this sounds too far out, there's nothing to worry about. You can
-> just run the different numbers of tasks with different mixes of nice
-> levels and post the %cpu numbers. Or if that's still a bit far out
-> for you, a test that does all this is eventually going to get written.
-
-chew.c does exactly that, just make sure sched_granularity_ms >= 5,000,000.
-
-
-Thanks!
-
---
-Al
-
-
+discontigmem with config_numa on.
