@@ -1,63 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162232AbXECSci@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767665AbXECSdm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162232AbXECSci (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 14:32:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162233AbXECSci
+	id S1767665AbXECSdm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 14:33:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767669AbXECSdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 14:32:38 -0400
-Received: from ms-smtp-01.southeast.rr.com ([24.25.9.100]:63757 "EHLO
-	ms-smtp-01.southeast.rr.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1162232AbXECSch (ORCPT
+	Thu, 3 May 2007 14:33:41 -0400
+Received: from mail.bencastricum.nl ([213.84.203.196]:37791 "EHLO
+	bencastricum.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767665AbXECSdl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 14:32:37 -0400
-Date: Thu, 3 May 2007 14:32:33 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: linux-cifs-client@lists.samba.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] CIFS: make sec=none force an anonymous mount
-Message-ID: <20070503183231.GA1706@salusa.poochiereds.net>
+	Thu, 3 May 2007 14:33:41 -0400
+X-Greylist: delayed 591 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 14:33:40 EDT
+Message-ID: <000701c78db0$2a33d930$0602a8c0@links>
+From: "Ben Castricum" <mail0704@bencastricum.nl>
+To: <linux-kernel@vger.kernel.org>
+Subject: kernel panic with 2.6.21-gdc87c398
+Date: Thu, 3 May 2007 20:23:31 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-8859-1";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.3028
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We had a customer report that attempting to make CIFS mount with a null
-username (i.e. doing an anonymous mount) doesn't work. Looking through the
-code, it looks like CIFS expects a NULL username from userspace in order
-to trigger an anonymous mount. The mount.cifs code doesn't seem to ever
-pass a null username to the kernel, however.
 
-It looks also like the kernel can take a sec=none option, but it only seems
-to look at it if the username is already NULL. This seems redundant and
-effectively makes sec=none useless.
+Roughly 5 minutes after trying 2.6.21-gdc87c398 it paniced. I took a couple 
+of pictures of the screen and rebooted. So far it hasn't happened again.
 
-The following patch makes sec=none force an anonymous mount. I've briefly
-tested it and it seems to work. I suppose we could alternately do some
-stuff in userspace to make mount.cifs force a null username instead, but this
-seems more straightforward to me.
+I uploaded all the info into
 
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
+http://www.bencastricum.nl/2.6.21-gdc87c398/
 
-diff --git a/fs/cifs/connect.c b/fs/cifs/connect.c
-index cf40e24..330e290 100644
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -1721,12 +1721,13 @@ cifs_mount(struct super_block *sb, struct cifs_sb_info *cifs_sb,
- 		return -EINVAL;
- 	}
- 
--	if (volume_info.username) {
-+	if (volume_info.nullauth) {
-+		cFYI(1,("null user"));
-+		volume_info.username = NULL;
-+	} else if (volume_info.username) {
- 		/* BB fixme parse for domain name here */
- 		cFYI(1, ("Username: %s ", volume_info.username));
- 
--	} else if (volume_info.nullauth) {
--		cFYI(1,("null user"));
- 	} else {
- 		cifserror("No username specified");
-         /* In userspace mount helper we can get user name from alternate
+Hopefully this helps.
+Ben 
+
