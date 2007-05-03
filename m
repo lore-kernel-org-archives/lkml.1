@@ -1,130 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbXECNcO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754076AbXECNdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbXECNcO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 09:32:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXECNcO
+	id S1754076AbXECNdQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 09:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXECNdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 09:32:14 -0400
-Received: from mailgate.ics.forth.gr ([139.91.1.2]:64798 "EHLO
-	mailgate.ics.forth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754017AbXECNcM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 09:32:12 -0400
-X-Greylist: delayed 3286 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 09:32:11 EDT
-Message-ID: <1178195802.4639d75ac39fb@webmail.ics.forth.gr>
-Date: Thu,  3 May 2007 15:36:42 +0300
-From: mcatos@ics.forth.gr
-To: linux-kernel@vger.kernel.org
-Subject: Error using the buffer cache
+	Thu, 3 May 2007 09:33:16 -0400
+Received: from smtp007.mail.ukl.yahoo.com ([217.12.11.96]:39845 "HELO
+	smtp007.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754076AbXECNdP convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 09:33:15 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5Kf/onEI4EBOVVoZ23B6v5eFSSxOtIhuAC4e1uoMKooGH5BFIlSedbn9JlLwxHS2GlGEpP9mIsi6CMSkGCns5cStRl41IJ+cCxN9ZgXJ1Z6Kf5mpiQLUHahCwd15/v2GtQY6HjMk2eGr6zvPW24cnznrteJQJ2jc3PJgRtjsDrg=  ;
+X-YMail-OSG: MLGQxqUVM1lTEHT5JMkOQ.x3SLnS.n10olCTzPN90.W4qFTtxkb9NcjC7_cJdwqWKtUFrEVEoVUWLxEZ1URqST_BCw1IFYA_INkChoJ9iiajCgSk
+From: Blaisorblade <blaisorblade@yahoo.it>
+To: Jeff Dike <jdike@addtoit.com>
+Subject: Re: [PATCH 5/6] UML - Network and pcap cleanup
+Date: Thu, 3 May 2007 15:32:43 +0200
+User-Agent: KMail/1.9.6
+Cc: akpm@osdl.org, LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+References: <20070501182159.GA8363@c2.user-mode-linux.org>
+In-Reply-To: <20070501182159.GA8363@c2.user-mode-linux.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="-MOQ117819580229fed235aac9bfdaeec7fe525ee25ea6"
-User-Agent: Internet Messaging Program (IMP) 3.2.1
-X-Originating-IP: 139.91.70.46
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705031532.44157.blaisorblade@yahoo.it>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message is in MIME format.
+On martedì 1 maggio 2007, Jeff Dike wrote:
+> [ Paolo - could you eyeball the globally valid MAC piece of this and
+> see if you think it's OK? ]
 
----MOQ117819580229fed235aac9bfdaeec7fe525ee25ea6
-Content-Type: text/plain; charset=windows-1253
-Content-Transfer-Encoding: 8bit
+Done, the patch can be accepted (I've not looked at the PCAP part). I've a 
+note on the other fix there (the additional return).
 
+> Some network device cleanup.
+>
+> When setup_etheraddr found a globally valid MAC being assigned to an
+> interface, it went ahead and used it rather than assigning a random
+> MAC like the other cases do.  This isn't really an error like the
+> others, but it seems consistent to make it behave the same.
+Fine, agreed. For this, you can add my Acked-by. Probably at that time MAC 
+randomization wasn't implemented.
 
+> We were getting some duplicate kfree() in the error case in
+> eth_configure because platform_device_unregister frees buffers that
+> the error cases following tried to free again.
 
-I've written a module that acts as a cache for fixed size objects but I'm
-getting a soft lockup using the buffer cache as backing storage.
+This is due to patch:
+"uml: drivers get release methods"
+this could be useful to check whether other such changes are needed, by 
+grepping for platform_device_unregister in exit paths, also for ubd driver.
 
-I've attached the code that reproduces the error. You need to supply the module
-with a valid block device, i.e. insmod disk_cache.ko devname="/dev/hda2".
-
-Thanx.
-
-P.S: It's the first time I'm writing here, please be gentle...
-
--------------------------------------------------
-This mail sent through IMP: http://horde.org/imp/
-
----MOQ117819580229fed235aac9bfdaeec7fe525ee25ea6
-Content-Type: text/x-csrc; name="disk_cache.c"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="disk_cache.c"
-
-LyoKICogQW4gb2JqZWN0IG9yaWVudGVkIGRpc2sgY2FjaGUuCiAqLwoKI2luY2x1ZGUgPGxpbnV4
-L21vZHVsZS5oPgojaW5jbHVkZSA8bGludXgvbW9kdWxlcGFyYW0uaD4KI2luY2x1ZGUgPGxpbnV4
-L2luaXQuaD4KI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgojaW5jbHVkZSA8bGludXgvZnMuaD4K
-I2luY2x1ZGUgPGxpbnV4L2Vycm5vLmg+CiNpbmNsdWRlIDxsaW51eC90eXBlcy5oPgojaW5jbHVk
-ZSA8bGludXgvdm1hbGxvYy5oPgojaW5jbHVkZSA8bGludXgvZ2VuaGQuaD4KI2luY2x1ZGUgPGxp
-bnV4L2Jsa2Rldi5oPgojaW5jbHVkZSA8bGludXgvaGRyZWcuaD4KI2luY2x1ZGUgPGxpbnV4L3dv
-cmtxdWV1ZS5oPgojaW5jbHVkZSA8bGludXgvYmlvLmg+CiNpbmNsdWRlIDxsaW51eC9idWZmZXJf
-aGVhZC5oPgovLyNpbmNsdWRlICJhc3NlcnQuaCIKLy8jaW5jbHVkZSAiZGVidWcuaCIKI2RlZmlu
-ZSBhc3NlcnQocykgaWYoIShzKSkgeyBwcmludGsoS0VSTl9FTUVSRyAiYXNzZXJ0aW9uIGZhaWxl
-ZDogJWQ6ICIsIF9fTElORV9fKTsgcGFuaWMoI3MpO30KCiNkZWZpbmUgS0VSTkVMX1NFQ1RPUl9T
-SVpFIDUxMgoKTU9EVUxFX0xJQ0VOU0UoIkR1YWwgQlNEL0dQTCIpOwoKc3RydWN0IGRpc2tfY2Fj
-aGUgewoJaW50IG9iamVjdF9zaXplOwkJCS8qIG9iamVjdCBzaXplICovCglzZWN0b3JfdCBjYWNo
-ZV9zaXplOwkJCS8qIG51bWJlciBvZiBvYmplY3RzIHRvIGJlIGhlbGQgaW4gY2FjaGUgKi8KCXNl
-Y3Rvcl90IGRpc2tfc2l6ZTsJCQkvKiBtYXhpbXVtIG51bWJlciBvZiBvYmplY3RzICovCglpbnQg
-b2JqZWN0c19wZXJfc2VjdG9yOwkJCS8qIG51bWJlciBvZiBvYmplY3RzIHBlciBzZWN0b3IgKi8K
-CXNlY3Rvcl90IHN0YXJ0OwkJCQkvKiBzdGFydCBzZWN0b3IgZm9yIGRhdGEgc3RvcmFnZSAqLwp9
-OwoKc3RhdGljIGludCBtYWpvcl9udW0gPSAwOwoKc3RydWN0IGJsb2NrX2RldmljZSAqYmRldiA9
-IE5VTEw7CgpzZWN0b3JfdCBzdGFydCA9IDA7CgpzdGF0aWMgY2hhciAqZGV2bmFtZSA9IE5VTEw7
-Cm1vZHVsZV9wYXJhbShkZXZuYW1lLCBjaGFycCwgMCk7CgovKgogKiBDcmVhdGUgYW5kIGluaXRp
-YWxpemUgYSBkaXNrIGNhY2hlLgogKiBAZGlza19jYWNoZSAtIGFuIGFsbG9jYXRlZCBkaXNrX2Nh
-Y2hlIHN0cnVjdHVyZQogKiBAb2JqZWN0X3NpemUgLSB0aGUgb2JqZWN0IHNpemUgdG8gdXNlIChp
-biBieXRlcykKICogQGNhY2hlX3NpemUgLSB0b3RhbCBtZW1vcnkgc2l6ZSBmb3IgY2FjaGUgKGlu
-IG9iamVjdHMpCiAqIEBkaXNrX3NpemUgLSB0b3RhbCBkaXNrIHNpemUgZm9yIG9iamVjdHMgKGlu
-IG9iamVjdHMpCiAqLwppbnQgZGlza19jYWNoZV9jcmVhdGUoc3RydWN0IGRpc2tfY2FjaGUqIGNv
-bnN0IGRpc2tfY2FjaGUsIGNvbnN0IGludCBvYmplY3Rfc2l6ZSwgY29uc3Qgc2VjdG9yX3QgZGlz
-a19zaXplKSB7CgoJYXNzZXJ0KGRpc2tfY2FjaGUpOwoJYXNzZXJ0KGRpc2tfc2l6ZSA+IDApOwoJ
-CglkaXNrX2NhY2hlLT5vYmplY3Rfc2l6ZSA9IG9iamVjdF9zaXplOwoJZGlza19jYWNoZS0+ZGlz
-a19zaXplID0gZGlza19zaXplOwoJZGlza19jYWNoZS0+b2JqZWN0c19wZXJfc2VjdG9yID0gYmRl
-dl9nZXRfcXVldWUoYmRldiktPmhhcmRzZWN0X3NpemUgLyBvYmplY3Rfc2l6ZTsKCWRpc2tfY2Fj
-aGUtPnN0YXJ0ID0gc3RhcnQ7CQoJc3RhcnQgKz0gKCh1bnNpZ25lZCBsb25nKWRpc2tfc2l6ZSAv
-ICh1bnNpZ25lZCBsb25nKWRpc2tfY2FjaGUtPm9iamVjdHNfcGVyX3NlY3RvcikgKyAxOwoJcmV0
-dXJuIDE7Cn0KRVhQT1JUX1NZTUJPTChkaXNrX2NhY2hlX2NyZWF0ZSk7CgovKgogKiBSZXR1cm5z
-IGFuIGFkZHJlc3Mgd2hlcmUgdGhlIHJlcXVlc3RlZCBvYmplY3QgaXMgZm91bmQuCiAqLwp2b2lk
-ICogZ2V0X29iamVjdChjb25zdCBzdHJ1Y3QgZGlza19jYWNoZSogZGlza19jYWNoZSwgY29uc3Qg
-c2VjdG9yX3Qgb2JqZWN0X251bWJlcikgewoKCWludCBvZmZzZXQgPSAwOwoJc2VjdG9yX3Qgc2Vj
-dG9yID0gMDsKCXN0cnVjdCBidWZmZXJfaGVhZCAqYmggPSBOVUxMOwoKCWFzc2VydChkaXNrX2Nh
-Y2hlKTsKCWFzc2VydChvYmplY3RfbnVtYmVyIDwgZGlza19jYWNoZS0+ZGlza19zaXplKTsKCgkv
-KgoJICogQ29tcHV0ZSBwYWdlIG51bWJlciBpbiB3aGljaCByZXF1ZXN0ZWQgb2JqZWN0IHJlc2lk
-ZXMuCgkgKi8KCXNlY3RvciA9IGRpc2tfY2FjaGUtPnN0YXJ0ICsgKHVuc2lnbmVkIGxvbmcpb2Jq
-ZWN0X251bWJlciAvICh1bnNpZ25lZCBsb25nKWRpc2tfY2FjaGUtPm9iamVjdHNfcGVyX3NlY3Rv
-cjsKCS8vYXNzZXJ0KHNlY3RvciA8IGRpc2tfY2FjaGUtPmRpc2tfc2l6ZSk7CgkvL2Fzc2VydChz
-ZWN0b3IgPCBnZXRfY2FwYWNpdHkoYmRldi0+YmRfZGlzaykpOwoJb2Zmc2V0ID0gKCh1bnNpZ25l
-ZCBsb25nKW9iamVjdF9udW1iZXIgJSAodW5zaWduZWQgbG9uZylkaXNrX2NhY2hlLT5vYmplY3Rz
-X3Blcl9zZWN0b3IpICogZGlza19jYWNoZS0+b2JqZWN0X3NpemU7CgoJYmggPSBfX2JyZWFkKGJk
-ZXYsIHNlY3RvciwgYmRldl9nZXRfcXVldWUoYmRldiktPmhhcmRzZWN0X3NpemUpOwoJLy9yZXR1
-cm4gYmgtPmJfZGF0YSArIG9mZnNldDsKCXJldHVybiBOVUxMOwp9CkVYUE9SVF9TWU1CT0woZ2V0
-X29iamVjdCk7CgovKgogKiBQdXRzIGdpdmVuIG9iamVjdCBiYWNrIHRvIHRoZSBidWZmZXIgY2Fj
-aGUuIEZsYWcgJ21vZGlmaWVkJyBtdXN0IGJlIHNldCBpZiB0aGUgb2JqZWN0IHdhcyBtb2RpZmll
-ZC4KICovCnZvaWQgcHV0X29iamVjdChjb25zdCBzdHJ1Y3QgZGlza19jYWNoZSogY29uc3QgZGlz
-a19jYWNoZSwgY29uc3Qgc2VjdG9yX3Qgb2JqZWN0X251bWJlciwgY29uc3QgaW50IG1vZGlmaWVk
-KSB7CgoJc3RydWN0IGJ1ZmZlcl9oZWFkICpiaCA9IE5VTEw7CglzZWN0b3JfdCBzZWN0b3IgPSBk
-aXNrX2NhY2hlLT5zdGFydCArICh1bnNpZ25lZCBsb25nKW9iamVjdF9udW1iZXIgLyAodW5zaWdu
-ZWQgbG9uZylkaXNrX2NhY2hlLT5vYmplY3RzX3Blcl9zZWN0b3I7CgkKCWJoID0gX19icmVhZChi
-ZGV2LCBzZWN0b3IsIGJkZXZfZ2V0X3F1ZXVlKGJkZXYpLT5oYXJkc2VjdF9zaXplKTsKCS8vaWYo
-bW9kaWZpZWQpIHsJCQoJLy8JbG9ja19idWZmZXIoYmgpOwoJLy8Jc2V0X2J1ZmZlcl91cHRvZGF0
-ZShiaCk7CgkvLwltYXJrX2J1ZmZlcl9kaXJ0eShiaCk7CgkvLwl1bmxvY2tfYnVmZmVyKGJoKTsK
-CS8vfQoJYnJlbHNlKGJoKTsKCS8qCgkgKiBhbiBhZGRpdGlvbmFsIHJlbGVhc2UsIHdlIGRpZG4n
-dCByZWxlYXNlZCBpdCBpbiBnZXRfb2JqZWN0CgkgKi8KCWJyZWxzZShiaCk7CQkKfQpFWFBPUlRf
-U1lNQk9MKHB1dF9vYmplY3QpOwoKc3RhdGljIHZvaWQgdGVzdCh2b2lkKSB7CgoJc3RydWN0IGRp
-c2tfY2FjaGUgZGs7CglpbnQgaTsKCXZvaWQgKnA7CgoJaWYoIWRpc2tfY2FjaGVfY3JlYXRlKCZk
-aywgNiwgMTAwKSkgewoJCXByaW50ayhLRVJOX0VSUiAiY3JlYXRlIGNhY2hlIGVycm9yXG4iKTsK
-CQlyZXR1cm47Cgl9Cglmb3IoaSA9IDA7IGkgPCAxMDA7IGkrKykgewoJCWdldF9vYmplY3QoJmRr
-LCBpKTsKCQlwdXRfb2JqZWN0KCZkaywgaSwgMCk7Cgl9Cn0KCnN0YXRpYyBpbnQgX19pbml0IGRp
-c2tfY2FjaGVfaW5pdCh2b2lkKSB7CgoJbWFqb3JfbnVtID0gcmVnaXN0ZXJfYmxrZGV2KG1ham9y
-X251bSwgImRpc2tfY2FjaGUiKTsKCWlmIChtYWpvcl9udW0gPD0gMCkgewoJCXByaW50ayhLRVJO
-X0VSUiAiZGlza19jYWNoZTogdW5hYmxlIHRvIGdldCBtYWpvciBudW1iZXJcbiIpOwoJCXJldHVy
-biAtRUlOVkFMOwoJfQoKCWlmKCFkZXZuYW1lKSB7CgkJcHJpbnRrKEtFUk5fRVJSICJkaXNrX2Nh
-Y2hlOiBtdXN0IHN1cHBseSBhIHZhbGlkIGJsb2NrIGRldmljZVxuIik7CgkJcmV0dXJuIC1FSU5W
-QUw7Cgl9CgoJYmRldiA9IG9wZW5fYmRldl9leGNsKGRldm5hbWUsIDAsIE5VTEwpOwoJaWYoSVNf
-RVJSKGJkZXYpKSB7CgkJcHJpbnRrKEtFUk5fRVJSICJkaXNrX2NhY2hlOiBjYW5ub3Qgb3BlbiBk
-ZXZpY2UgJXMuXG4iLCBkZXZuYW1lKTsKCQlyZXR1cm4gLUVJTlZBTDsKCX0KCglwcmludGsoS0VS
-Tl9JTkZPICJkaXNrX2NhY2hlOiB1c2luZyBkZXZpY2UgJXNcbiIsIGRldm5hbWUpOwoJcHJpbnRr
-KEtFUk5fSU5GTyAiZGlza19jYWNoZTogJWxsdSBzZWN0b3JzXG4iLCBnZXRfY2FwYWNpdHkoYmRl
-di0+YmRfZGlzaykpOwoKCXRlc3QoKTsKCQoJcmV0dXJuIDA7Cn0KCnN0YXRpYyB2b2lkIF9fZXhp
-dCBkaXNrX2NhY2hlX2V4aXQodm9pZCkgewoJY2xvc2VfYmRldl9leGNsKGJkZXYpOwp9Cgptb2R1
-bGVfaW5pdChkaXNrX2NhY2hlX2luaXQpOwptb2R1bGVfZXhpdChkaXNrX2NhY2hlX2V4aXQpOwoK
-
----MOQ117819580229fed235aac9bfdaeec7fe525ee25ea6--
-
+That patch only fixed net_remove() and ubd_remove().
+-- 
+Inform me of my mistakes, so I can add them to my list!
+Paolo Giarrusso, aka Blaisorblade
+http://www.user-mode-linux.org/~blaisorblade
