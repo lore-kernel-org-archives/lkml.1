@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161256AbXECH5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161105AbXECIBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161256AbXECH5V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 03:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbXECH5V
+	id S1161105AbXECIBv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 04:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161495AbXECIBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 03:57:21 -0400
-Received: from [212.12.190.248] ([212.12.190.248]:33048 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755242AbXECH5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 03:57:19 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [ck] [REPORT] 2.6.21.1 vs 2.6.21-sd046 vs 2.6.21-cfs-v6
-Date: Thu, 3 May 2007 11:01:14 +0300
-User-Agent: KMail/1.5
-Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-References: <200705030211.39345.a1426z@gawab.com> <200705030942.51301.a1426z@gawab.com> <20070503072323.GD19966@holomorphy.com>
-In-Reply-To: <20070503072323.GD19966@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 04:01:51 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2897 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161105AbXECIBu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 04:01:50 -0400
+Date: Thu, 3 May 2007 09:01:42 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Glen Turner <gdt@gdt.id.au>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Detecting process death for anycast named process monitoring
+Message-ID: <20070503080142.GB12018@flint.arm.linux.org.uk>
+Mail-Followup-To: Glen Turner <gdt@gdt.id.au>,
+	Linux kernel <linux-kernel@vger.kernel.org>
+References: <4638FCEA.4010806@gdt.id.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705031101.14600.a1426z@gawab.com>
+In-Reply-To: <4638FCEA.4010806@gdt.id.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-William Lee Irwin III wrote:
-> On Thu, May 03, 2007 at 09:42:51AM +0300, Al Boldi wrote:
-> >         sched_rr_get_interval(0, &ts);
-> >         printf("pid %d, prio %3d, interval of %d nsec\n", getpid(),
-> > getpriority(PRIO_PROCESS, 0), ts.tv_nsec);
->
-> Oh dear. What are you trying to figure out from the task's timeslice?
+On Thu, May 03, 2007 at 06:34:42AM +0930, Glen Turner wrote:
+> We don't want to be the parent of the running process, because that
+> doesn't add robustness. If the parent process dies, then the service
+> dies, and the interface still stays up.
 
-chew.c is general purpose.  It's not specific to cfs.
+Okay.
 
-> That's not even meaningful in cfs.
->
-> On Thu, May 03, 2007 at 09:42:51AM +0300, Al Boldi wrote:
-> >         start = last = stamp();
-> >         while(1) {
-> >                 cur = stamp();
-> >                 delta = cur-last;
-> >                 if (delta > thresh_ticks) {
-> > 			act = last - start;
-> >                         printf("pid %d, prio %3d, out for %4llu ms, ran
-> > for %4llu ms, load %3llu%\n" , getpid(), getpriority(PRIO_PROCESS, 0),
-> > delta/1000, act/1000,(act*100)/(cur-start)); start = cur = stamp();
-> >                 }
-> >                 last = cur;
-> >         }
-> >
-> >         return 0;
-> > }
->
-> This is looking for scheduling latencies, which are necessarily O(tasks).
+> We don't want to poll, because that isn't pretty and the polling
+> interval needs to be very short on a big ISP's DNS servers.
 
-This exposes the actual proc latency/waittime and runtime and cpu load 
-irrespective of being O(tasks) or not.
+If you did have a process which polls for the service, what happens if
+that process dies?
 
-> This is not the way to do it.
+> I have tried using the various notify functions against /proc, but
+> they don't work for that filesystem. I have tried using notify
+> against a UNIX domain socket, but notify doesn't work for
+> that either.
+> 
+> Suggestions, or a patch to support notify for /proc or to push
+> process death notifications into DBUS or whatever, are welcome.
 
-You'll need to boot into /bin/sh and run two or more chew.c's to see any 
-reasonable results.
+What if the dbus system dies?  What if your monitoring process dies?
 
-Then tell me whether this is the way to do it or not.
+Surely a simple solution is going to be the best solution?  Given that
+you're always going to have another process (which might be killed)
+your thought about having a parent process monitor the death of the
+child seems to be the simplest.
 
+You could also have that process interact with a watchog, so failures
+with that process cause a reboot.
 
-Thanks!
-
---
-Al
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
