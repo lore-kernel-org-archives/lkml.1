@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbXECOqU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162060AbXECOsk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754355AbXECOqU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:46:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbXECOqT
+	id S1162060AbXECOsk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:48:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162061AbXECOsk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:46:19 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:35791 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754355AbXECOqS (ORCPT
+	Thu, 3 May 2007 10:48:40 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:49666 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1162060AbXECOsj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:46:18 -0400
-Date: Thu, 3 May 2007 10:46:15 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Mark Lord <lkml@rtr.ca>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>, <marcel@holtmann.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@osdl.org>,
-       <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [BUG] usb/core/hub.c loops forever on resume
- from ram due to bluetooth
-In-Reply-To: <4639E743.2080504@rtr.ca>
-Message-ID: <Pine.LNX.4.44L0.0705031042340.3548-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 3 May 2007 10:48:39 -0400
+Date: Thu, 3 May 2007 10:43:26 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, wfg@ustc.edu
+Subject: Re: 2.6.22 -mm merge plans
+Message-ID: <20070503144326.GA26864@Krystal>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <p733b2gzqkg.fsf@bingen.suse.de> <20070501220803.GA27698@Krystal> <20070502104413.GC4392@one.firstfloor.org> <20070502094707.4197ab7a.akpm@linux-foundation.org> <20070502172934.GA17782@infradead.org> <20070502203627.GA18733@Krystal> <20070502135336.6d6d3569.akpm@linux-foundation.org> <20070502231104.GA26045@Krystal> <20070503080638.GA23000@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070503080638.GA23000@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 10:38:49 up 90 days,  4:45,  4 users,  load average: 2.23, 2.00, 1.62
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 May 2007, Mark Lord wrote:
-
-> > If the code never gets stuck in a loop, then there's no need to check 
-> > whether the loop is unbounded!  :-)
+* Christoph Hellwig (hch@infradead.org) wrote:
+> On Wed, May 02, 2007 at 07:11:04PM -0400, Mathieu Desnoyers wrote:
+> > My statement was probably not clear enough. The actual marker code is
+> > useful as-is without any further kernel patching required : SystemTAP is
+> > an example where they use external modules to load probes that can
+> > connect either to markers or through kprobes. LTTng, in its current state,
+> > has a mostly modular core that also uses the markers.
 > 
-> Yes, except here we know it does actually get stuck in a loop,
-> and having unbounded loops in device-driver code is a known baddy.
+> That just mean you have to load an enormous emount of exernal crap
+> that replaces the missing kernel functionality.  It's exactly the
+> situation we want to avoid.
 > 
-> One cannot predict perfectly exactly how devices will fail,
-> but one can program defensively against them with simple precautions
-> like limiting list traversals and the like.  :)
-> 
-> Sure, Marcel may eventually look at the bluetooth code and fix it
-> to not get confused, but some other USB device may then show up
-> in the future with similar issues.
 
-I'd agree, except that the problem isn't in the bluetooth code.  And it
-probably doesn't have anything in particular to do with the fact that this
-is a bluetooth device; the TT code gets used with USB hubs only.  More
-accurately, the code helps manage the TT embedded in a high-speed USB hub,
-allowing the hub to communicate with a full- or low-speed USB device
-plugged into it.
+It makes sense to use -mm to hold the hole usable infrastructure before
+submitting it to mainline. I will submit my core LTTng patches to Andrew
+in the following weeks.  There is no hurry, in the LTTng perspective, to
+merge the markers sooner, although they could be useful to other
+(external) projects meanwhile.
 
->  The messages are still there
-> so we'll know about any future failure, but it won't just silently
-> crash the machine on resume this way.
-> 
-> Remember, resume is a very tough operation to debug at the best
-> of times, so adding some harmless robustness to the more troublesome
-> drives is a very Good Thing(tm) here.
+Mathieu
 
-Alan Stern
 
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
