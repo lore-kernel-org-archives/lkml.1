@@ -1,118 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161949AbXECOIB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161962AbXECOJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161949AbXECOIB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:08:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161954AbXECOIA
+	id S1161962AbXECOJt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161960AbXECOJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:08:00 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:55403 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161949AbXECOH6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:07:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
-        b=iYnnjS/4+3tqS2jJslqA2gJDO3w6haHqyu9Q3uCFQKm2TBzZzUya0lj7yQ7Z+s7X8t3PPn5qPwld5FmBwy4oA6uwjSDxJDqNHIsmajJuCSgf2r1mOsZHahf7b2pb5ciKi+pNg1E8C0Mr4ZF6DGoCM2Ik02NQOnX9rbQgn7nUC2M=
-Message-ID: <4639ECBA.9080405@googlemail.com>
-Date: Thu, 03 May 2007 16:07:54 +0200
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: =?UTF-8?B?SWxwbyBKw6RydmluZW4=?= <ilpo.jarvinen@helsinki.fi>
-CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kernel BUG at include/net/tcp.h:739
-References: <4638F14E.6000803@googlemail.com> <Pine.LNX.4.64.0705030841140.3607@kivilampi-30.cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0705030841140.3607@kivilampi-30.cs.helsinki.fi>
-X-Enigmail-Version: 0.94.1.1
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+	Thu, 3 May 2007 10:09:49 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35601 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161962AbXECOJs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 10:09:48 -0400
+Date: Thu, 3 May 2007 16:09:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, buddabrod <buddabrod@gmail.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: [patch] CFS scheduler, -v9
+Message-ID: <20070503140911.GA21916@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilpo Järvinen napisał(a):
-> On Wed, 2 May 2007, Michal Piotrowski wrote:
-> 
->> Please take a look at this bug
->>
->> [15236.638092] kernel BUG at /mnt/md0/devel/linux-git/include/net/tcp.h:739!
->> [15236.644860] invalid opcode: 0000 [#1]
->> [15236.648514] PREEMPT SMP 
->> [15236.651075] Modules linked in: ipt_MASQUERADE iptable_nat nf_nat autofs4 af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm evdev snd_timer snd intel_agp i2c_i801 soundcore agpgart snd_page_alloc ide_cd cdrom rtc unix
->> [15236.698898] CPU:    0
->> [15236.698899] EIP:    0060:[<c02f798b>]    Not tainted VLI
->> [15236.698900] EFLAGS: 00010206   (2.6.21-gdc87c398 #169)
->> [15236.711580] EIP is at tcp_ack+0xc54/0x16a0
->> [15236.715664] eax: 00000017   ebx: 00000000   ecx: 00000003   edx: 0000010e
->> [15236.722433] esi: d5bc1254   edi: 0000010e   ebp: c0462e18   esp: c0462da8
->> [15236.729202] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
->> [15236.735019] Process swapper (pid: 0, ti=c0462000 task=c03f14e0 task.ti=c0427000)
->> [15236.742219] Stack: 00000000 00000000 00000000 00000198 00000100 00000000 00000000 00000018 
->> [15236.750698]        3b4d5775 0ffef1c0 3b4d79ad 00000001 00000018 00000006 3b4d79ad 003f14e0 
->> [15236.759178]        00000006 0000082a d4b9cde0 00e4059a 0000000c 00000000 00000000 0130204a 
->> [15236.767649] Call Trace:
->> [15236.770286]  [<c0105039>] show_trace_log_lvl+0x1a/0x2f
->> [15236.775438]  [<c01050eb>] show_stack_log_lvl+0x9d/0xa5
->> [15236.780590]  [<c01052e0>] show_registers+0x1ed/0x32c
->> [15236.785569]  [<c0105537>] die+0x118/0x22f
->> [15236.789588]  [<c01056c7>] do_trap+0x79/0x91
->> [15236.793781]  [<c0105f57>] do_invalid_op+0x97/0xa1
->> [15236.798501]  [<c031f38c>] error_code+0x7c/0x84
->> [15236.802960]  [<c02fafb7>] tcp_rcv_established+0x568/0x645
->> [15236.808354]  [<c03000bd>] tcp_v4_do_rcv+0x2b/0x32c
->> [15236.813144]  [<c030243a>] tcp_v4_rcv+0x7f9/0x86b
->> [15236.817777]  [<c02e9dd3>] ip_local_deliver+0x170/0x235
->> [15236.822928]  [<c02e9c2a>] ip_rcv+0x4f3/0x52c
->> [15236.827199]  [<c02d4909>] netif_receive_skb+0x1b9/0x252
->> [15236.832437]  [<c02635c2>] skge_poll+0x47a/0x545
->> [15236.836967]  [<c02d68df>] net_rx_action+0x9f/0x192
->> [15236.841772]  [<c0126408>] __do_softirq+0x6d/0xea
->> [15236.846407]  [<c01069b5>] do_softirq+0x64/0xd1
->> [15236.850867]  =======================
->> [15236.854437] Code: 69 42 c0 f7 d0 64 8b 15 04 00 00 00 8b 04 90 ff 80 a4 00 00 00 8b 9e 70 05 00 00 89 d8 03 86 74 05 00 00 3b 86 8c 04 00 00 76 04 <0f> 0b eb fe 89 86 90 04 00 00 8a 86 88 03 00 00 84 c0 75 3c 83 
->> [15236.874343] EIP: [<c02f798b>] tcp_ack+0xc54/0x16a0 SS:ESP 0068:c0462da8
->>
->> l *0xc02f798b
->> 0xc02f798b is in tcp_ack (/mnt/md0/devel/linux-git/include/net/tcp.h:739).
->> 734                                 (tp->snd_cwnd >> 2)));
->> 735     }
->> 736
->> 737     static inline void tcp_sync_left_out(struct tcp_sock *tp)
->> 738     {
->> 739             BUG_ON(tp->sacked_out + tp->lost_out > tp->packets_out);
->> 740             tp->left_out = tp->sacked_out + tp->lost_out;
->> 741     }
->> 742
->> 743     extern void tcp_enter_cwr(struct sock *sk, const int set_ssthresh);
->>
->> Caused by commit 34588b4c046c34773e5a1a962da7b78b05c4d1bd 
-> 
-> I think I found the reason:
-> 
-> tcp_clean_rtx_queue without SACK it does not decrement sacked_out but
-> tcp_reset_reno_sack/remove_reno_sack is being called later in
-> tcp_fastretrans_alert. Before that, tcp_sync_left_out is being called, 
-> at least by tcp_fastretrans_alert itself, which sees sacked_out that 
-> includes also segments that are no longer in window (this also explains 
-> why the original code did not do the reduction in the non-SACK case). Also 
-> tcp_process_frto calls tcp_sync_left_out, so it would also lead to the 
-> same problem.
-> 
-> Here is a change that ignores this trap without SACK. However, it would be 
-> useful to trap this without SACK too as S+L skb causes potentially a 
-> negative packets in flight (= large one) disturbing cwnd compares. 
-> 
-> 
 
-Thanks Ilpo. I'm testing the patch.
+i'm pleased to announce release -v9 of the CFS scheduler patchset. (The 
+main goal of CFS is to implement "desktop scheduling" with as high 
+quality as technically possible.)
 
+The CFS patch against v2.6.21.1 (or against v2.6.20.10) can be 
+downloaded from the usual place:
 
-Regards,
-Michal
+    http://people.redhat.com/mingo/cfs-scheduler/
 
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
+-v9 is a small fixes-only release:
+
+    6 files changed, 34 insertions(+), 29 deletions(-)
+
+it includes small fixlets, the most notable of which is the 64-bit SMP 
+balancing fix from Balbir Singh. Things are clearly calming down and 
+there's been no report of interactivity regression against -v8 so far, 
+which is certainly promising. So please try to break -v9 :-)
+
+Changes since -v8:
+
+ - SMP balancing fix for powerpc/64-bit. (Balbir Singh)
+
+ - build warning fix and microoptimization: sched_find_first_bit() only
+   needs to cover 100 priority levels. (Mike Galbraith)
+
+ - fix long initial delay in tasks reniced in a positive direction.
+   (reported by Al Boldi)
+
+ - fix missing syscall_table.S entry for sys_sched_yield_to.
+   (noticed by Vegard Nossum)
+
+ - small tweaks to the /proc/sched_debug output
+
+As usual, any sort of feedback, bugreport, fix and suggestion is more 
+than welcome,
+
+	Ingo
