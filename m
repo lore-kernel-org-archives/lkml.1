@@ -1,109 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031229AbXECM4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031231AbXECM4a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031229AbXECM4I (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 08:56:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031231AbXECM4I
+	id S1031231AbXECM4a (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 08:56:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031233AbXECM43
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 08:56:08 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33816 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031229AbXECM4G (ORCPT
+	Thu, 3 May 2007 08:56:29 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:44634 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1031231AbXECM42 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 08:56:06 -0400
-From: John Keller <jpk@sgi.com>
-To: linux-ia64@vger.kernel.org
-Cc: steiner@sgi.com, linux-kernel@vger.kernel.org, John Keller <jpk@sgi.com>
-Date: Thu, 03 May 2007 07:56:02 -0500
-Message-Id: <20070503125602.12552.4152.sendpatchset@attica.americas.sgi.com>
-Subject: [PATCH] - SN: validate smp_affinity mask on intr redirect
+	Thu, 3 May 2007 08:56:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=NlMgfI9fOL8sidt3Mug9h0RACIDdxfb4dll3G5J3GzAx38jhVXmcWppFgZWZRAX1riBdnPSc6kzIha0NR7Uf9hHK56+jvaqiYxJyre8SsjfqlRZFE7DPGKCkXVcXVQIJFxtQcxEz0ElCtvOt2eFhWOylKAw1/Lhg9HuIMNocVjg=  ;
+X-YMail-OSG: OgtHUQYVM1mB1wx_b58IbzU69rBkCuNzlM9vOtlCemgbwLsc5J75IgTmxIGlh0wz7HroSrbP4g--
+Message-ID: <4639DBEC.2020401@yahoo.com.au>
+Date: Thu, 03 May 2007 22:56:12 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrea Arcangeli <andrea@suse.de>
+Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com> <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com> <46393BA7.6030106@yahoo.com.au> <20070503103756.GA19958@infradead.org>
+In-Reply-To: <20070503103756.GA19958@infradead.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On SN, only allow one bit to be set in the smp_affinty mask
-when redirecting an interrupt. Currently setting multiple
-bits is allowed, but only the first bit is used in
-determining the CPU to redirect to. This has caused confusion
-among some customers.
+Christoph Hellwig wrote:
+> On Thu, May 03, 2007 at 11:32:23AM +1000, Nick Piggin wrote:
+> 
+>>The attached patch gets performance up a bit by avoiding some
+>>barriers and some cachelines:
+>>
+>>G5
+>>         pagefault   fork          exec
+>>2.6.21   1.49-1.51   164.6-170.8   741.8-760.3
+>>+patch   1.71-1.73   175.2-180.8   780.5-794.2
+>>+patch2  1.61-1.63   169.8-175.0   748.6-757.0
+>>
+>>So that brings the fork/exec hits down to much less than 5%, and
+>>would likely speed up other things that lock the page, like write
+>>or page reclaim.
+> 
+> 
+> Is that every fork/exec or just under certain cicumstances?
+> A 5% regression on every fork/exec is not acceptable.
 
-Signed-off-by: John Keller <jpk@sgi.com>
----
+Well after patch2, G5 fork is 3% and exec is 1%, I'd say the P4
+numbers will be improved as well with that patch. Then if we have
+specific lock/unlock bitops, I hope it should reduce that further.
 
- arch/ia64/kernel/irq.c |   11 +++++++++++
- include/asm-ia64/irq.h |    5 +++++
- include/linux/irq.h    |    4 ++++
- kernel/irq/proc.c      |    3 +++
- 4 files changed, 23 insertions(+)
+The overhead that is there should just be coming from the extra
+overhead in the file backed fault handler. For noop fork/execs,
+I think that tends to be more pronounced, it is hard to see any
+difference on any non-micro benchmark.
 
+The other thing is that I think there could be some cache effects
+happening -- for example the exec numbers on the 2nd line are
+disproportionately large.
 
-Index: linux-2.6/kernel/irq/proc.c
-===================================================================
---- linux-2.6.orig/kernel/irq/proc.c	2007-05-01 15:47:01.656642577 -0500
-+++ linux-2.6/kernel/irq/proc.c	2007-05-01 15:48:42.725254306 -0500
-@@ -42,6 +42,9 @@ static int irq_affinity_write_proc(struc
- 	if (err)
- 		return err;
- 
-+	if (!is_affinity_mask_valid(new_value))
-+		return -EINVAL;
-+
- 	/*
- 	 * Do not allow disabling IRQs completely - it's a too easy
- 	 * way to make the system unusable accidentally :-) At least
-Index: linux-2.6/arch/ia64/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/ia64/kernel/irq.c	2007-05-01 15:47:01.660643076 -0500
-+++ linux-2.6/arch/ia64/kernel/irq.c	2007-05-01 15:48:42.729254805 -0500
-@@ -104,6 +104,17 @@ void set_irq_affinity_info (unsigned int
- 		irq_redir[irq] = (char) (redir & 0xff);
- 	}
- }
-+
-+int is_affinity_mask_valid(cpumask_t cpumask)
-+{
-+	if (ia64_platform_is("sn2")) {
-+		/* Only allow one CPU to be specified in the smp_affinity mask */
-+		if (cpus_weight(cpumask) != 1)
-+			return 0;
-+	}
-+	return 1;
-+}
-+
- #endif /* CONFIG_SMP */
- 
- #ifdef CONFIG_HOTPLUG_CPU
-Index: linux-2.6/include/linux/irq.h
-===================================================================
---- linux-2.6.orig/include/linux/irq.h	2007-05-01 15:47:01.660643076 -0500
-+++ linux-2.6/include/linux/irq.h	2007-05-01 15:48:42.729254805 -0500
-@@ -228,6 +228,10 @@ static inline void set_pending_irq(unsig
- 
- #endif /* CONFIG_GENERIC_PENDING_IRQ */
- 
-+#ifndef ARCH_HAS_IRQ_AFFINITY_VALIDATION
-+#define is_irq_affinity_mask_valid(cpumask)         1
-+#endif
-+
- extern int irq_set_affinity(unsigned int irq, cpumask_t cpumask);
- extern int irq_can_set_affinity(unsigned int irq);
- 
-Index: linux-2.6/include/asm-ia64/irq.h
-===================================================================
---- linux-2.6.orig/include/asm-ia64/irq.h	2007-05-01 15:47:01.660643076 -0500
-+++ linux-2.6/include/asm-ia64/irq.h	2007-05-01 15:48:42.729254805 -0500
-@@ -11,6 +11,8 @@
-  * 02/29/00     D.Mosberger	moved most things into hw_irq.h
-  */
- 
-+#include <linux/cpumask.h>
-+
- #define NR_IRQS		256
- #define NR_IRQ_VECTORS	NR_IRQS
- 
-@@ -30,4 +32,7 @@ extern void disable_irq_nosync (unsigned
- extern void enable_irq (unsigned int);
- extern void set_irq_affinity_info (unsigned int irq, int dest, int redir);
- 
-+#define ARCH_HAS_IRQ_AFFINITY_VALIDATION
-+extern int is_affinity_mask_valid(cpumask_t cpumask);
-+
- #endif /* _ASM_IA64_IRQ_H */
+It definitely isn't a good thing to drop performance anywhere
+though, so I'll keep looking for improvements.
+
+-- 
+SUSE Labs, Novell Inc.
