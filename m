@@ -1,53 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755231AbXECH4O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755232AbXECH47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755231AbXECH4O (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 03:56:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXECH4O
+	id S1755232AbXECH47 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 03:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbXECH47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 03:56:14 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2717 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755231AbXECH4N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 03:56:13 -0400
-Date: Thu, 3 May 2007 08:55:43 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Christoph Lameter <clameter@engr.sgi.com>,
-       "David S. Miller" <davem@davemloft.net>, Andi Kleen <ak@suse.de>,
-       "Luck, Tony" <tony.luck@intel.com>, Rik van Riel <riel@redhat.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: incoming
-Message-ID: <20070503075543.GA12018@flint.arm.linux.org.uk>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Hugh Dickins <hugh@veritas.com>,
-	Christoph Lameter <clameter@engr.sgi.com>,
-	"David S. Miller" <davem@davemloft.net>, Andi Kleen <ak@suse.de>,
-	"Luck, Tony" <tony.luck@intel.com>, Rik van Riel <riel@redhat.com>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20070502150252.7ddf67ac.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502150252.7ddf67ac.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 3 May 2007 03:56:59 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:48413 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755232AbXECH46 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 03:56:58 -0400
+Date: Thu, 3 May 2007 09:56:47 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: =?ISO-8859-1?Q?No=E8l_K=F6the?= <noel@debian.org>
+cc: linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kernel option CONFIG_USB_HIDINPUT_POWERBOOK description
+ update
+In-Reply-To: <1178118015.4820.26.camel@mbp.domain.lan>
+Message-ID: <Pine.LNX.4.64.0705030951520.16923@twin.jikos.cz>
+References: <1178118015.4820.26.camel@mbp.domain.lan>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1747641777-1931157655-1178179007=:16923"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 03:02:52PM -0700, Andrew Morton wrote:
-> So this is what I have lined up for the first mm->2.6.22 batch.  I won't be
-> sending it off for another 12-24 hours yet.  To give people time for final
-> comment and to give me time to see if it actually works.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I assume you're going to update this list with my comments I sent
-yesterday?
+---1747641777-1931157655-1178179007=:16923
+Content-Type: TEXT/PLAIN; charset=ISO-8859-2
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+On Wed, 2 May 2007, No?l K=F6the wrote:
+
+> The description of this option needs to be extended to be correct:)
+> --- /usr/src/linux-2.6.21/drivers/usb/input/Kconfig     2007-04-27 18:02:=
+46.000000000 +0200
+> +++ Kconfig.new 2007-05-02 16:47:56.000000000 +0200
+> @@ -28,12 +28,12 @@
+>         depends on USB_HID && INPUT=3Dn
+> =20
+>  config USB_HIDINPUT_POWERBOOK
+> -       bool "Enable support for iBook/PowerBook special keys"
+> +       bool "Enable support for iBook/PowerBook/MacBook/MacBookPro speci=
+al keys"
+
+Hi,
+
+I will apply this into my tree, thanks.
+
+> This option is needed on the Apple Intel Laptops, too. I would suggest=20
+> to rename USB_HIDINPUT_POWERBOOK because its needed on Apple Laptops.=20
+> Maybe USB_HIDINPUT_APPLELAPTOPS or something like this. Is a renaming=20
+> patch for this welcome?
+
+The problem here is backwards compatibility - if we would like to do the=20
+change in a consistent way, we should rename all the places which (for=20
+historic reasons) mention powerbook only. Unfortunately this would also=20
+require renaming the module parameter hid_pb_fnmode, which might be a=20
+little too intrusive with respect to maintaining backward compatibility in=
+=20
+userspace (ok, we have already been fiddling with this parameter anyway=20
+during the usbhid code split, but anyway).
+
+If you would care to make the patch which maintains backwards=20
+compatibility (for example by aliasing the variable pb_fnmode behing two=20
+module parameters), that might probably be ok.
+
+Thanks,
+
+--=20
+Jiri Kosina
+---1747641777-1931157655-1178179007=:16923--
