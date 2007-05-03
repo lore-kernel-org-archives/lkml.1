@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993262AbXECPTL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754272AbXECP2F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993262AbXECPTL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 11:19:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993260AbXECPTK
+	id S1754272AbXECP2F (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 11:28:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbXECP2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 11:19:10 -0400
-Received: from mail.samba.org ([66.70.73.150]:41428 "EHLO lists.samba.org"
+	Thu, 3 May 2007 11:28:05 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:45553 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993254AbXECPTJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 11:19:09 -0400
-X-Greylist: delayed 1982 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 11:19:09 EDT
-Message-ID: <4639F5AD.20807@gmail.com>
-Date: Thu, 03 May 2007 09:46:05 -0500
-From: Gerald Carter <coffeedude.jerry@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	id S1754272AbXECP2B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 11:28:01 -0400
+Date: Thu, 3 May 2007 17:22:25 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+cc: Arne Georg Gleditsch <argggh@dolphinics.no>,
+       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, davem@davemloft.net, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: convert crypto.h to UTF-8
+In-Reply-To: <alpine.DEB.0.98.0705030915240.21257@sigma.j-a-k-j.com>
+Message-ID: <Pine.LNX.4.61.0705031719080.18504@yvahk01.tjqt.qr>
+References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
+ <20070502044345.GA29384@gondor.apana.org.au> <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
+ <87r6pyqg2b.fsf@pelargir.dolphinics.no> <alpine.DEB.0.98.0705030915240.21257@sigma.j-a-k-j.com>
 MIME-Version: 1.0
-To: simo <idra@samba.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Steve French <smfrench@gmail.com>,
-       linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [linux-cifs-client] Re: SMB2 file system - should it be a	distinct
- module
-References: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com>	 <20070501090657.GA17949@infradead.org>	 <1178198489.28758.14.camel@localhost.localdomain>	 <20070503141742.GB20328@infradead.org> <1178203013.28758.29.camel@localhost.localdomain>
-In-Reply-To: <1178203013.28758.29.camel@localhost.localdomain>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
 
-Simo,
+On May 3 2007 09:21, John Anthony Kazos Jr. wrote:
+>
+>There's no reason for any non-UTF-8 to be in the tree at all, so 
+>eventually it won't be a problem. I'm (slowly but surely) working on 
+>converting everything in the tree. GCC handles UTF-8 just fine, and all 
 
-> I guess DFS referrals can work cross protocol, so if you are redirected
-> from a longhorn server to a windoes 2000 or a samba server you want to
-> be able to follow the DFS referral and not return an error.
-> To do that you need to have either 1 module that support both protocols
-> or a way from one module to call the other. Just separating the 2
-> without any glue will not work (or you will have to add some userspace
-> upcall hack to make it work).
+In fact, GCC gives a crap about comments :)
+and otherwise sees things as octets, not characters.
+I think GCJ is the only one that really pays attention to encoding.
 
-Long term I agree that CIFS and SMB2 should be in the same .ko
-But NTLM 0.12 still works for Vista and DFS referrals.
-Breaking out SMB2 initially means that it will not clutter
-the working cifs.ko code.  Remember that an SMB2 client fs is
-mostly research at this point, and not engineering.
+>non-stupid/non-broken distributions of GNU/Linux and other major Un*ces 
+>should be based on (or at least compatible with) UTF-8 in basic 
+>operations. Files like the keymaps will be more work to convert, but they 
+>can be as well.
+>
+>I'm operating on the assumption that anything in the tree that isn't UTF-8 
+>is ISO-8859-1. Of course, I'm also checking it by hand to make sure a 
+>small-O-with-umlaut doesn't become the Klingon logo...
+
+This is probably all you'll ever see:
+http://lkml.org/lkml/2007/1/8/222
 
 
-
-cheers, jerry
-=====================================================================
-Samba                                    ------- http://www.samba.org
-Centeris                         -----------  http://www.centeris.com
-"What man is a man who does not make the world better?"      --Balian
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGOfWsIR7qMdg1EfYRAk35AJ9bCG/s2rIn2HVB4XehxBMY8XH1AQCgkQUj
-Jy522rF0YIdICgd70IWKj4s=
-=EWTL
------END PGP SIGNATURE-----
+Jan
+-- 
