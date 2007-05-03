@@ -1,93 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754439AbXECTDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767685AbXECTEJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754439AbXECTDp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 15:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbXECTDp
+	id S1767685AbXECTEJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 15:04:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767693AbXECTEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 15:03:45 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:21211 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754439AbXECTDo (ORCPT
+	Thu, 3 May 2007 15:04:09 -0400
+Received: from moutng.kundenserver.de ([212.227.126.179]:51181 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767685AbXECTEG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 15:03:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=jMdrs7VN4DlfKIpA4Qu4CbfggI3D/eovvAaGuFEa8wrU2t2FplxoIzr8HhYBC3yZ0Yc31KpuDcAsx8baSlwL1QccUtiMxCCsOZWk/ZyA4IFIn1YNX4ynQRlekgJcS5H3JRzFS3X8kJRNl/3q+XM1bPDZUj/6NEPIUrWA++NKGsg=
-Message-ID: <463A31EE.20907@gmail.com>
-Date: Thu, 03 May 2007 23:03:10 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Thu, 3 May 2007 15:04:06 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
+Date: Thu, 3 May 2007 21:03:33 +0200
+User-Agent: KMail/1.9.6
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+References: <20070503065435.4533.64938.stgit@localhost.localdomain> <200705030948.03984.arnd@arndb.de> <5a7e02f6d1520d8ad02e28ace218981c@kernel.crashing.org>
+In-Reply-To: <5a7e02f6d1520d8ad02e28ace218981c@kernel.crashing.org>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
 MIME-Version: 1.0
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-CC: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org,
-       Johannes Stezenbach <js@linuxtv.org>
-Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
- points about ...)
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>	 <46389278.1070208@gmail.com> <20070502155125.280320@gmx.net>	 <4638C046.1020005@gmail.com> <20070503112013.272380@gmx.net>	 <4639F554.1040505@gmail.com> <20070503153129.268110@gmx.net>	 <463A0462.5070106@gmail.com>	 <d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>	 <463A0B36.5080204@gmail.com>	 <d9def9db0705031019l5083d1c1h607b0829ab526f1@mail.gmail.com> <1178215045.12651.124.camel@localhost>
-In-Reply-To: <1178215045.12651.124.camel@localhost>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705032103.33809.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19tOXzBORL29/Yk94JCSr4PzvZ8ShrmCUOjyq9
+ LmLp+YRT3+LTxTCdErveRDCIZoTGlgtKNNquYPsk8u6PVb06Y0
+ cztt1ZUmsxbkIYZgplubQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mauro Carvalho Chehab wrote:
-> Enough. Let's stop arguing non technical issues.
+On Thursday 03 May 2007, Segher Boessenkool wrote:
+> > For example, you could make this
+> >
+> >       compatible = "8xx\0mpc885ads";
 > 
-> If either one of you have any technical argue against the Trent's
-> patches, please point where the fix is wrong. Otherwise, if you wish,
-> you may send an acked-by agreeing with the fix.
-> 
+> "mpc885ads-pcmcia\0mpc8xx-pcmcia" or something like that.
 
-Why don't you stop this childish behaviour ?
+Right. I can never remember what goes first...
 
-After explaining to you the reasons in the previous mail:
-being the author and maintainer of dst/dst_ca and maintainer of
-dvb-bt8xx, i NACK this change
-
-(1) You aren't DVB maintainer
-(2) one shouldn't make such judgement calls on somebody else's driver
-unless it falls within your own maintainership
-
-
-> Mauro.
-> 
-> Em Qui, 2007-05-03 Ã s 19:19 +0200, Markus Rechberger escreveu:
->> On 5/3/07, Manu Abraham <abraham.manu@gmail.com> wrote:
->>> Markus Rechberger wrote:
->>>
->>>> Manu,
->>>>
->>>> to me it looks like your  attitude is not acceptable here, I sent
->>>> several mails already which you just use to ignore.
->>> You very well know the reason why i am ignoring your mails. You just
->>> tend to flame people for nothing. I tend to ignore the flamers.
->>>
->> You should stop to rely on the history, since such a flame needs at
->> least 2 parties and back then you were also involved. There's nothing
->> else to say about that.
->>
->>>> If you don't change that attitude immediatelly I'd really wish to get
->>>> you banned of this community until you're open for discussions.
->>>>
->>>> http://www.mail-archive.com/linux-dvb%40linuxtv.org/msg22943.html
->>>>
->>>> there's a bugreport and you fully ignore it, and you blame it on the
->>>> "politicians" here, telling me that there are mails out there
->>>> somewhere shows that you're not interested in getting forward.
->>>>
->>> That bug report very well proves my point.
->> Well it would be nice if you could answer the question in that mail
->> then, I don't see any reason why you shouldn't answer it.
->>
->> It's just a guess, but it seems like that you had a problem with other
->> developers at that part and it seems like it didn't get to an end
->> (probably because both parties didn't agree with each other)
->>
->> Markus
->> -
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-
+	Arnd <><
