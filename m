@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S2993207AbXECVpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2993203AbXECVzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S2993207AbXECVpg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993204AbXECVpg
+	id S2993203AbXECVzL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993191AbXECVzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:45:36 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:2885 "EHLO scrub.xs4all.nl"
+	Thu, 3 May 2007 17:55:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54690 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S2993207AbXECVpf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:45:35 -0400
-Date: Thu, 3 May 2007 23:45:32 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 2/2] rename thread_info to stack
-In-Reply-To: <20070503141951.d67d0289.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705032338450.1479@scrub.home>
-References: <Pine.LNX.4.64.0705010210010.1479@scrub.home>
- <20070503141951.d67d0289.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1766518AbXECVzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 17:55:09 -0400
+Date: Thu, 3 May 2007 22:54:56 +0100
+From: Alasdair G Kergon <agk@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: LinuxConf Europe 2007 [was Re: 2007 Linux Kernel Summit]
+Message-ID: <20070503215456.GO11511@agk.fab.redhat.com>
+Mail-Followup-To: Alasdair G Kergon <agk@redhat.com>,
+	linux-kernel@vger.kernel.org
+References: <E1H8tIr-0006QH-Bg@candygram.thunk.org> <20070122110711.GA5917@lst.de> <20070122124502.GC30124@devserv.devel.redhat.com> <20070122131416.GA10562@thunk.org> <20070122131702.GA31129@fogou.chygwyn.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070122131702.GA31129@fogou.chygwyn.com>
+User-Agent: Mutt/1.4.1i
+Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Jan 22, 2007 at 01:17:02PM +0000, Steven Whitehouse wrote:
+> Wrt, point (a), UKUUG are moving their UK based Summer Linux conference
+> to coincide timewise with the kernel summit. Normally its in the July/August
+> time frame. Location probably, but last I heard from Alasdair Kergon not
+> certain to be, in Cambridge,
+ 
+Now confirmed - Cambridge, UK - Sunday 2nd to Tuesday 4th September.
+(A combined event with Linux-Kongress.)
 
-On Thu, 3 May 2007, Andrew Morton wrote:
+Extract from the Call for Papers:
 
-> > This finally renames the thread_info field in task structure to stack,
-> > so that the assumptions about this field are gone and archs have more
-> > freedom about placing the thread_info structure.
-> 
-> It needed this build fix:
-> 
-> --- a/include/asm-x86_64/system.h~rename-thread_info-to-stack-fix
-> +++ a/include/asm-x86_64/system.h
-> @@ -39,7 +39,7 @@
->  		       [threadrsp] "i" (offsetof(struct task_struct, thread.rsp)), \
->  		       [ti_flags] "i" (offsetof(struct thread_info, flags)),\
->  		       [tif_fork] "i" (TIF_FORK),			  \
-> -		       [thread_info] "i" (offsetof(struct task_struct, thread_info)), \
-> +		       [thread_info] "i" (offsetof(struct task_struct, stack)), \
->  		       [pda_pcurrent] "i" (offsetof(struct x8664_pda, pcurrent))   \
->  		     : "memory", "cc" __EXTRA_CLOBBER)
->      
-> _
-> 
-> 
-> It is unpleasing that this code is forced to implicitly assume that the
-> thing pointed to by task_struct.stack has type `struct thread_info'.
-> 
-> Are we sure this patch is a good thing?
+  We invite speakers on any aspect of Linux development and use. The
+  programme aims to cover a variety of topics, including kernel and
+  desktop development, tools, applications, networking, security,
+  performance and case-studies of linux deployments. Any topic likely to
+  be of interest to Linux developers and enthusiasts will be considered.
 
-Assembler code is difficult to wrap, there are more places where assembler 
-code assumes that the thread_info is at the start of the stack.
-Anyway, in this case it looks a little weird that TIF_FORK needs to be 
-cleared at every context switch, other archs setup a different return 
-address (usually ret_from_fork) and then finish scheduling by calling 
-schedule_tail().
+  In view of the Kernel Summit following the event, we anticipate
+  devoting a significant proportion of the programme to the linux
+  kernel. We are also particularly interested in receiving papers that
+  focus on the historical development of computing in the Cambridge area. 
 
-bye, Roman
+  Closing date for abstracts:  20th May 2007
+
+  http://www.linuxconf.eu/cfp/
+  http://lists.linuxconf.eu/mailman/listinfo/cambridge-announce
+
+Alasdair
+-- 
+agk@redhat.com
