@@ -1,109 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161155AbXECJra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030973AbXECJtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161155AbXECJra (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 05:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161140AbXECJra
+	id S1030973AbXECJtj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 05:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161175AbXECJtj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 05:47:30 -0400
-Received: from outbound-fra.frontbridge.com ([62.209.45.174]:19437 "EHLO
-	outbound3-fra-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030772AbXECJr3 (ORCPT
+	Thu, 3 May 2007 05:49:39 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:48758 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030991AbXECJth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 05:47:29 -0400
-X-BigFish: VP
-X-Server-Uuid: 8C3DB987-180B-4465-9446-45C15473FD3E
-Message-ID: <4639AF91.8080200@amd.com>
-Date: Thu, 03 May 2007 11:46:57 +0200
-From: "Markus Rechberger" <markus.rechberger@amd.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+	Thu, 3 May 2007 05:49:37 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Thu, 3 May 2007 05:49:10 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Satyam Sharma <satyam.sharma@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: finding your own dead "CONFIG_" variables
+In-Reply-To: <a781481a0705030237l7d636b55t93f2ee5151cd7709@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705030546310.29962@localhost.localdomain>
+References: <Pine.LNX.4.64.0705030400120.20539@localhost.localdomain>
+ <a781481a0705030237l7d636b55t93f2ee5151cd7709@mail.gmail.com>
 MIME-Version: 1.0
-To: "Andrew Morton" <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org,
-       "Dominik Brodowski" <linux@dominikbrodowski.net>
-Subject: Re: [PATCH] pcmcia/pccard deadlock fix
-References: <45DB0EDB.3090803@amd.com>
- <20070502142014.b1f1d77e.akpm@linux-foundation.org>
-In-Reply-To: <20070502142014.b1f1d77e.akpm@linux-foundation.org>
-X-OriginalArrivalTime: 03 May 2007 09:46:16.0823 (UTC)
- FILETIME=[E51AB870:01C78D67]
-X-WSS-ID: 6A27701520G1238447-01-01
-Content-Type: text/plain;
- charset=iso-8859-1;
- format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-15.989, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	SUBJ_YOUR_OWN 0.81)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
->> On Tue, 20 Feb 2007 16:08:11 +0100
->>     
->
-> 20 Feb was a long time ago, sorry.  I was hoping to feed the pcmcia patches
-> through Dominik but I think he's busy with exams or such.  So I get to
-> pretend to be pcmcia maintainer.
->
-> "Markus Rechberger" <markus.rechberger@amd.com> wrote:
->
->   
->> following patch prevents a mutex/semaphore deadlock within the pcmcia
->> framework when ejecting devices multiple times using pccardctl eject.
->>
->> For some more details see:
->> http://lkml.org/lkml/2007/2/19/58
->>
->> Signed-off-by: Markus Rechberger <markus.rechberger@amd.com>
->>
->> -- 
->> Markus Rechberger
->> Operating System Research Center
->> AMD Saxony LLC & Co. KG
->>
->>
->>
->> [pcmcia-pccard-deadlock-fix.diff  text/plain (757B)]
->> index ac00424..c02bf0d 100644
->> --- a/drivers/pcmcia/cs.c
->> +++ b/drivers/pcmcia/cs.c
->> @@ -856,7 +856,8 @@ int pcmcia_eject_card(struct pcmcia_socket *skt)
->>      
->>  	cs_dbg(skt, 1, "user eject request\n");
->>  
->> -	mutex_lock(&skt->skt_mutex);
->> +	if (!mutex_trylock(&skt->skt_mutex)) 
->> +		return -EAGAIN;
->>  	do {
->>  		if (!(skt->state & SOCKET_PRESENT)) {
->>  			ret = -ENODEV;
->> index 18e111e..b9d3440 100644
->> --- a/drivers/pcmcia/ds.c
->> +++ b/drivers/pcmcia/ds.c
->> @@ -1100,7 +1100,9 @@ static ssize_t pcmcia_store_allow_func_id_match(struct device *dev,
->>  	if (!count)
->>  		return -EINVAL;
->>  
->> -	mutex_lock(&p_dev->socket->skt_mutex);
->> +	if (!mutex_trylock(&p_dev->socket->skt_mutex)) 
->> +		return -EAGAIN;
->> +
->>  	p_dev->allow_func_id_match = 1;
->>  	mutex_unlock(&p_dev->socket->skt_mutex);
->>  
->>     
->
-> This is a pretty sad-looking solution.  Does it not mean that sometimes
-> user-initiated actions will mysteriously fail?
->   
-The userspace application should return the appropriate error then. It 
-can really happen any time when someone tries to eject the pcmcia device 
-(any time as within 1 minute - never in a normal scenario)
+On Thu, 3 May 2007, Satyam Sharma wrote:
 
-> Are you able to provide a more detailed description of why/how the deadlock
-> actually occurs so that perhaps a more robust fix can be implemented?
+> > http://fsdev.net/wiki/index.php?title=Dead_CONFIG_variables
 >
->   
-There's a description about it in following Email:
-http://lkml.org/lkml/2007/2/19/58
+> > kcfiles=$(find . -name "Kconfig*")
+>
+> Suggest: configfiles=$(find . -name 'Kconfig*' -or -name '*defconfig*')
+>
+> Some CONFIG_ options exist that are not declared anywhere in the
+> Kconfig files but defined directly in the arch/.../*defconfig*
+> files.
 
-Markus
+it's my understanding that entries in any defconfig files are
+*automatically* pruned at some point once a CONFIG_ variable no longer
+exists in any Kconfig file, so i'm not going to be touching those
+files.  also, adding that extra check wouldn't add anything useful to
+the output.
 
+rday
 
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
