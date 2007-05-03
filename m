@@ -1,43 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767442AbXECQDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767446AbXECQD7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767442AbXECQDm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 12:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767446AbXECQDm
+	id S1767446AbXECQD7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 12:03:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767459AbXECQD7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 12:03:42 -0400
-Received: from sj-iport-3-in.cisco.com ([171.71.176.72]:23405 "EHLO
-	sj-iport-3.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767442AbXECQDk (ORCPT
+	Thu, 3 May 2007 12:03:59 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:56592 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767446AbXECQD5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 12:03:40 -0400
-X-IronPort-AV: i="4.14,486,1170662400"; 
-   d="scan'208"; a="483254658:sNHT42995212"
-To: Andi Kleen <ak@suse.de>
-Cc: Ulrich Drepper <drepper@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Why ssse3?
-X-Message-Flag: Warning: May contain useful information
-References: <46391392.4070706@redhat.com> <200705030046.07152.ak@suse.de>
-	<4639171A.3050004@redhat.com> <200705031052.31611.ak@suse.de>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 03 May 2007 09:03:36 -0700
-In-Reply-To: <200705031052.31611.ak@suse.de> (Andi Kleen's message of "Thu, 3 May 2007 10:52:31 +0200")
-Message-ID: <aday7k5evxj.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 03 May 2007 16:03:36.0850 (UTC) FILETIME=[9B9CAF20:01C78D9C]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+	Thu, 3 May 2007 12:03:57 -0400
+Subject: [MCA] add integrated device bus matching
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 03 May 2007 11:03:55 -0500
+Message-Id: <1178208235.3714.34.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > PNI (Prescott New Instructions) was the original engineering code name. Unfortunately
- > it was added too early before the marketing name was known and then it couldn't be 
- > changed anymore.
+The MCA bus has a few "integrated" functions, which are effectively
+virtual slots on the bus. The problem is that these special functions
+don't have dedicated pos IDs, so we have to manufacture ids for them
+outside the pos space ... and these ids can't be matched by the standard
+matching function, so add a special registration that requests a list of
+pos ids or a particular integrated function.
 
-... and just to make things more fun, SSE4 is sometimes called Penryn
-New Instructions -- PNI all over again.
+Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
 
- - R.
+----
+
+This is actually needed by the ibmmca.c driver update.
+
+James
+
+Index: BUILD-voyager/drivers/mca/mca-driver.c
+===================================================================
+--- BUILD-voyager.orig/drivers/mca/mca-driver.c	2007-05-03 08:52:36.000000000 -0500
++++ BUILD-voyager/drivers/mca/mca-driver.c	2007-05-03 08:54:57.000000000 -0500
+@@ -36,12 +36,25 @@ int mca_register_driver(struct mca_drive
+ 		mca_drv->driver.bus = &mca_bus_type;
+ 		if ((r = driver_register(&mca_drv->driver)) < 0)
+ 			return r;
++		mca_drv->integrated_id = 0;
+ 	}
+ 
+ 	return 0;
+ }
+ EXPORT_SYMBOL(mca_register_driver);
+ 
++int mca_register_driver_integrated(struct mca_driver *mca_driver,
++				   int integrated_id)
++{
++	int r = mca_register_driver(mca_driver);
++
++	if (!r)
++		mca_driver->integrated_id = integrated_id;
++
++	return r;
++}
++EXPORT_SYMBOL(mca_register_driver_integrated);
++
+ void mca_unregister_driver(struct mca_driver *mca_drv)
+ {
+ 	if (MCA_bus)
+Index: BUILD-voyager/include/linux/mca.h
+===================================================================
+--- BUILD-voyager.orig/include/linux/mca.h	2007-05-03 08:52:41.000000000 -0500
++++ BUILD-voyager/include/linux/mca.h	2007-05-03 08:58:45.000000000 -0500
+@@ -94,6 +94,7 @@ struct mca_bus {
+ struct mca_driver {
+ 	const short		*id_table;
+ 	void			*driver_data;
++	int			integrated_id;
+ 	struct device_driver	driver;
+ };
+ #define to_mca_driver(mdriver) container_of(mdriver, struct mca_driver, driver)
+@@ -125,6 +126,7 @@ extern enum MCA_AdapterStatus mca_device
+ extern struct bus_type mca_bus_type;
+ 
+ extern int mca_register_driver(struct mca_driver *drv);
++extern int mca_register_driver_integrated(struct mca_driver *, int);
+ extern void mca_unregister_driver(struct mca_driver *drv);
+ 
+ /* WARNING: only called by the boot time device setup */
+Index: BUILD-voyager/drivers/mca/mca-bus.c
+===================================================================
+--- BUILD-voyager.orig/drivers/mca/mca-bus.c	2007-05-03 08:47:46.000000000 -0500
++++ BUILD-voyager/drivers/mca/mca-bus.c	2007-05-03 09:03:11.000000000 -0500
+@@ -59,7 +59,14 @@ static int mca_bus_match (struct device 
+ 			return 1;
+ 		}
+ 	}
+-
++	/* If the integrated id is present, treat it as though it were an
++	 * additional id in the id_table (it can't be because by definition,
++	 * integrated id's overflow a short */
++	if (mca_drv->integrated_id && mca_dev->pos_id ==
++	    mca_drv->integrated_id) {
++		mca_dev->index = i;
++		return 1;
++	}
+ 	return 0;
+ }
+ 
+
+
