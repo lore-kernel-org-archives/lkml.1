@@ -1,65 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753759AbXECUD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753689AbXECUIu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753759AbXECUD3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 16:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753932AbXECUD3
+	id S1753689AbXECUIu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 16:08:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754037AbXECUIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 16:03:29 -0400
-Received: from emulex.emulex.com ([138.239.112.1]:59250 "EHLO
-	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753708AbXECUD2 (ORCPT
+	Thu, 3 May 2007 16:08:50 -0400
+Received: from wr-out-0506.google.com ([64.233.184.236]:11832 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753689AbXECUIt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 16:03:28 -0400
-Message-ID: <463A3F79.80809@emulex.com>
-Date: Thu, 03 May 2007 16:00:57 -0400
-From: James Smart <James.Smart@Emulex.Com>
-Reply-To: James.Smart@Emulex.Com
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Thu, 3 May 2007 16:08:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=j1bum23TeVAS36RaPc3Is6ybAFLnNGABAJPERa2oRZ2eA0XhugKNHfGaQBTAqDrJVDArl0SHERjmEvKGD6WuOk3HvSQ7bt3vfYeGtjBDZxt67vmDu30DjEvW/WMo2oqNhB12Gtc2UCMNyWXHyf1vYz9xVegbfKIqKQGw/rBT4Nk=
+Message-ID: <3634de740705031308t1dd2bc45r3d906d49a6dde6bf@mail.gmail.com>
+Date: Fri, 4 May 2007 01:38:47 +0530
+From: Maximus <john.maximus@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: MTD - Linux Nand Driver problems
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Josef Bacik <jwhiter@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Matthew Wilcox <matthew@wil.cx>
-Subject: Re: [RFC][PATCH] fix for async scsi scan sysfs problem (resend)
-References: <20070419132459.GB1481@korben.rdu.redhat.com>	 <1176991356.31764.3.camel@mulgrave.il.steeleye.com>	 <20070419150655.GC1481@korben.rdu.redhat.com>	 <20070421002345.673d9988.akpm@linux-foundation.org>	 <20070421135956.GA22873@korben.rdu.redhat.com>	 <20070423181318.GD22873@korben.rdu.redhat.com> <1177352786.6284.51.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1177352786.6284.51.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 May 2007 20:00:57.0609 (UTC) FILETIME=[C3C40F90:01C78DBD]
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I doubt it's in the fc transport - it's doing what it always did, which has
-nothing to do with coherency of the sdev's.
+Hi,
+  Im using Linux Kernel 2.6.18.
+  Im using a large nand page device.
 
-We're seeing like problems, and it looks like it's related to the scan_mutex
-being held when some of the entry points are being called via the recent
-async scan code (which also still has a bunch of issues around rmmod).
-We should be sending some patches shortly.
+  In my device nand starts from 0x80000 offset of nand.
+  My kernel is around 1MB, I have allocated 2 MB space in my mtd
+partition structure.
+  Similarly My Filesystem starts from 0x280000 offset of nand.
 
--- james s
+  MY erase block size is 0x20000 (128 KB)
 
-James Bottomley wrote:
-> On Mon, 2007-04-23 at 14:13 -0400, Josef Bacik wrote:
->> Ok I have a new patch that I've built and tested on both my UP and SMP machine
->> and it appears to work fine.  I took the async check out of scsi_add_lun, I
->> don't really see the point in waiting to do the sysfs registration stuff (if
->> theres a reason I haven't been able to find it in the original submission of
->> this functionality).  Please let me know if this is incorrect.  Thank you,
-> 
-> Yes, it's incorrect ... if you do this, the devices will come up in a
-> random order for multiple SCSI cards.  One of the original design goals
-> was not to require udev, so the final ordering should be the same as for
-> the sync case.
-> 
-> I think the root cause of the problem is somewhere in the fc transport
-> rport addition code.
-> 
-> James
-> 
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-scsi" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+   mkfs.jffs2 -p -l --eraseblock=128KiB -n -v -r ./rootfs -o /tmp/rootfs.jffs2
+
+   When boot my system i get hundreds of messages like:
+
+
+  Empty flash at 0x02327ffc ends at 0x02328000
+Empty flash at 0x0232fffc ends at 0x02330000
+Empty flash at 0x02337ffc ends at 0x02338000
+Empty flash at 0x02347ffc ends at 0x02348000
+Empty flash at 0x0234fffc ends at 0x02350000
+Empty flash at 0x02357ffc ends at 0x02358000
+Empty flash at 0x02367ffc ends at 0x02368000
+Empty flash at 0x0236fffc ends at 0x02370000
+Empty flash at 0x02377ffc ends at 0x02378000
+Empty flash at 0x0238fffc ends at 0x02390000
+Empty flash at 0x023a7ffc ends at 0x023a8000
+Empty flash at 0x023cfffc ends at 0x023d0000
+Empty flash at 0x023f7ffc ends at 0x023f8000
+Empty flash at 0x02407ffc ends at 0x02408000
+Empty flash at 0x02417ffc ends at 0x02418000
+Empty flash at 0x0242fffc ends at 0x02430000
+Empty flash at 0x02447ffc ends at 0x02448000
+Empty flash at 0x02477ffc ends at 0x02478000
+Empty flash at 0x024a7ffc ends at 0x024a8000
+Empty flash at 0x02527ffc ends at 0x02528000
+Empty flash at 0x0252ffac ends at 0x02530000
+Empty flash at 0x02531abc ends at 0x02532000
+
+
+I know the flash is empty - How does one prevent these messages at boot time.
+
+
+Regards,
+Jo
