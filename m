@@ -1,370 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161796AbXECGuD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161810AbXECGvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161796AbXECGuD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 02:50:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161802AbXECGuC
+	id S1161810AbXECGvk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 02:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161803AbXECGvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 02:50:02 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:51770 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161796AbXECGuA (ORCPT
+	Thu, 3 May 2007 02:51:40 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34597 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161802AbXECGvi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 02:50:00 -0400
-Date: Wed, 2 May 2007 23:49:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -v2 1/1] Misc: add sensable phantom driver
-Message-Id: <20070502234956.cdfe31c2.akpm@linux-foundation.org>
-In-Reply-To: <219403193181341921@karneval.cz>
-References: <219403193181341921@karneval.cz>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 02:51:38 -0400
+Date: Thu, 3 May 2007 09:51:36 +0300 (EEST)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@kivilampi-30.cs.helsinki.fi
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       David Miller <davem@davemloft.net>
+cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kernel BUG at include/net/tcp.h:739
+In-Reply-To: <4638F14E.6000803@googlemail.com>
+Message-ID: <Pine.LNX.4.64.0705030841140.3607@kivilampi-30.cs.helsinki.fi>
+References: <4638F14E.6000803@googlemail.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-696243703-1270442657-1178175096=:3607"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed,  2 May 2007 17:56:01 +0200 (CEST) Jiri Slaby <jirislaby@gmail.com> wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> add sensable phantom driver
+---696243703-1270442657-1178175096=:3607
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 
-<googles>
+On Wed, 2 May 2007, Michal Piotrowski wrote:
 
-Is that one of these? 
-http://www.est-kl.com/aufbau_general/index_hard_haptic.html?http://www.est-kl.com/hardware/haptic/sensable/phantom_omni.html
-
-I don't think we've ever had a driver for a device like that before.  I
-wonder how you designed the userspace interface to it.
-
-> +static int phantom_ioctl(struct inode *inode, struct file *file, u_int cmd,
-> +	u_long arg)
-
-Could we please use standard-looking types in this driver?  u32 and u64 and
-things?
-
-However in this case, as it's an ioctl handler it should be "int" and
-"unsigned long".
-
-Does this driver require compat handling?  (Seems not?)
-
-> static int phantom_open(struct inode *inode, struct file *file)
-> {
-> 	struct phantom_device *dev = container_of(inode->i_cdev,
-> 			struct phantom_device, cdev);
+> Please take a look at this bug
 > 
-> 	if (mutex_lock_interruptible(&dev->open_lock))
-> 		return -ERESTARTSYS;
+> [15236.638092] kernel BUG at /mnt/md0/devel/linux-git/include/net/tcp.h:739!
+> [15236.644860] invalid opcode: 0000 [#1]
+> [15236.648514] PREEMPT SMP 
+> [15236.651075] Modules linked in: ipt_MASQUERADE iptable_nat nf_nat autofs4 af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm evdev snd_timer snd intel_agp i2c_i801 soundcore agpgart snd_page_alloc ide_cd cdrom rtc unix
+> [15236.698898] CPU:    0
+> [15236.698899] EIP:    0060:[<c02f798b>]    Not tainted VLI
+> [15236.698900] EFLAGS: 00010206   (2.6.21-gdc87c398 #169)
+> [15236.711580] EIP is at tcp_ack+0xc54/0x16a0
+> [15236.715664] eax: 00000017   ebx: 00000000   ecx: 00000003   edx: 0000010e
+> [15236.722433] esi: d5bc1254   edi: 0000010e   ebp: c0462e18   esp: c0462da8
+> [15236.729202] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+> [15236.735019] Process swapper (pid: 0, ti=c0462000 task=c03f14e0 task.ti=c0427000)
+> [15236.742219] Stack: 00000000 00000000 00000000 00000198 00000100 00000000 00000000 00000018 
+> [15236.750698]        3b4d5775 0ffef1c0 3b4d79ad 00000001 00000018 00000006 3b4d79ad 003f14e0 
+> [15236.759178]        00000006 0000082a d4b9cde0 00e4059a 0000000c 00000000 00000000 0130204a 
+> [15236.767649] Call Trace:
+> [15236.770286]  [<c0105039>] show_trace_log_lvl+0x1a/0x2f
+> [15236.775438]  [<c01050eb>] show_stack_log_lvl+0x9d/0xa5
+> [15236.780590]  [<c01052e0>] show_registers+0x1ed/0x32c
+> [15236.785569]  [<c0105537>] die+0x118/0x22f
+> [15236.789588]  [<c01056c7>] do_trap+0x79/0x91
+> [15236.793781]  [<c0105f57>] do_invalid_op+0x97/0xa1
+> [15236.798501]  [<c031f38c>] error_code+0x7c/0x84
+> [15236.802960]  [<c02fafb7>] tcp_rcv_established+0x568/0x645
+> [15236.808354]  [<c03000bd>] tcp_v4_do_rcv+0x2b/0x32c
+> [15236.813144]  [<c030243a>] tcp_v4_rcv+0x7f9/0x86b
+> [15236.817777]  [<c02e9dd3>] ip_local_deliver+0x170/0x235
+> [15236.822928]  [<c02e9c2a>] ip_rcv+0x4f3/0x52c
+> [15236.827199]  [<c02d4909>] netif_receive_skb+0x1b9/0x252
+> [15236.832437]  [<c02635c2>] skge_poll+0x47a/0x545
+> [15236.836967]  [<c02d68df>] net_rx_action+0x9f/0x192
+> [15236.841772]  [<c0126408>] __do_softirq+0x6d/0xea
+> [15236.846407]  [<c01069b5>] do_softirq+0x64/0xd1
+> [15236.850867]  =======================
+> [15236.854437] Code: 69 42 c0 f7 d0 64 8b 15 04 00 00 00 8b 04 90 ff 80 a4 00 00 00 8b 9e 70 05 00 00 89 d8 03 86 74 05 00 00 3b 86 8c 04 00 00 76 04 <0f> 0b eb fe 89 86 90 04 00 00 8a 86 88 03 00 00 84 c0 75 3c 83 
+> [15236.874343] EIP: [<c02f798b>] tcp_ack+0xc54/0x16a0 SS:ESP 0068:c0462da8
 > 
-> 	if (dev->opened) {
-> 		mutex_unlock(&dev->open_lock);
-> 		return -EINVAL;
-> 	}
+> l *0xc02f798b
+> 0xc02f798b is in tcp_ack (/mnt/md0/devel/linux-git/include/net/tcp.h:739).
+> 734                                 (tp->snd_cwnd >> 2)));
+> 735     }
+> 736
+> 737     static inline void tcp_sync_left_out(struct tcp_sock *tp)
+> 738     {
+> 739             BUG_ON(tp->sacked_out + tp->lost_out > tp->packets_out);
+> 740             tp->left_out = tp->sacked_out + tp->lost_out;
+> 741     }
+> 742
+> 743     extern void tcp_enter_cwr(struct sock *sk, const int set_ssthresh);
 > 
-> 	file->private_data = dev;
-> 
-> 	dev->opened++;
-> 	mutex_unlock(&dev->open_lock);
-> 
-> 	return 0;
-> }
+> Caused by commit 34588b4c046c34773e5a1a962da7b78b05c4d1bd 
 
-You should call nonseekable_open() in here.
+I think I found the reason:
 
-> +static int phantom_release(struct inode *inode, struct file *file)
-> +{
-> +	struct phantom_device *dev = file->private_data;
-> +
-> +	if (mutex_lock_interruptible(&dev->open_lock))
-> +		return -ERESTARTSYS;
-> +
-> +	dev->opened = 0;
-> +	phantom_status(dev, dev->status & ~PHB_RUNNING);
-> +
-> +	mutex_unlock(&dev->open_lock);
-> +
-> +	return 0;
-> +}
+tcp_clean_rtx_queue without SACK it does not decrement sacked_out but
+tcp_reset_reno_sack/remove_reno_sack is being called later in
+tcp_fastretrans_alert. Before that, tcp_sync_left_out is being called, 
+at least by tcp_fastretrans_alert itself, which sees sacked_out that 
+includes also segments that are no longer in window (this also explains 
+why the original code did not do the reduction in the non-SACK case). Also 
+tcp_process_frto calls tcp_sync_left_out, so it would also lead to the 
+same problem.
 
-The mutex_lock_interruptible() is wrong, I think.  This function is called
-when we do the final close().  If the signal _is_ taken then it's game
-over: the device can no longer be opened.
-
-> +static unsigned int phantom_poll(struct file *file, poll_table *wait)
-> +{
-> +	struct phantom_device *dev = file->private_data;
-> +	unsigned int mask = 0;
-> +
-> +	pr_debug("phantom_poll: %u\n", dev->counter);
-> +	poll_wait(file, &dev->wait, wait);
-> +	if (dev->counter) {
-> +		mask = POLLIN | POLLRDNORM;
-> +		dev->counter--;
-> +	} else if ((dev->status & PHB_RUNNING) == 0)
-> +		mask = POLLIN | POLLRDNORM | POLLERR;
-> +	pr_debug("phantom_poll end: %x/%u\n", mask, dev->counter);
-> +
-> +	return mask;
-> +}
-> +
-> +static struct file_operations phantom_file_ops = {
-> +	.open = phantom_open,
-> +	.release = phantom_release,
-> +	.ioctl = phantom_ioctl,
-> +	.poll = phantom_poll,
-> +};
-> +
-> +static irqreturn_t phantom_isr(int irq, void *data)
-> +{
-> +	struct phantom_device *dev = data;
-> +
-> +	if (!(ioread32(dev->iaddr + PHN_CONTROL) & PHN_CTL_IRQ))
-> +		return IRQ_NONE;
-> +
-> +	iowrite32(0, dev->iaddr);
-> +	iowrite32(0xc0, dev->iaddr);
-> +
-> +	dev->counter++;
-> +	wake_up_interruptible(&dev->wait);
-> +
-> +	return IRQ_HANDLED;
-> +}
-
-The access to dev->counter is racy even on non-preempt uniprocessor.  An
-atomic_t would suit.
-
-> +/*
-> + * Init and deinit driver
-> + */
-> +
-> +static unsigned int __devinit phantom_get_free(void)
-> +{
-> +	unsigned int i;
-> +
-> +	for (i = 0; i < PHANTOM_MAX_MINORS; i++)
-> +		if (phantom_devices[i] == 0)
-> +			break;
-> +
-> +	return i;
-> +}
-
-This function assumes that the phantom_devices[] array will never have any
-holes in it.  But if phantom_remove() is called out-of-order, it _will_
-have holes.  Perhaps - I didn't look too hard.
+Here is a change that ignores this trap without SACK. However, it would be 
+useful to trap this without SACK too as S+L skb causes potentially a 
+negative packets in flight (= large one) disturbing cwnd compares. 
 
 
-> +static int __devinit phantom_probe(struct pci_dev *pdev,
-> +	const struct pci_device_id *pci_id)
-> +{
-> +	struct phantom_device *pht;
-> +	unsigned int minor;
-> +	int retval;
-> +
-> +	retval = pci_enable_device(pdev);
-> +	if (retval)
-> +		goto err;
-> +
-> +	minor = phantom_get_free();
-> +	if (minor == PHANTOM_MAX_MINORS) {
-> +		dev_err(&pdev->dev, "too many devices found!\n");
-> +		retval = -EIO;
-> +		goto err_dis;
-> +	}
-> +
-> +	phantom_devices[minor] = 1;
-> +
-> +	retval = pci_request_regions(pdev, "phantom");
-> +	if (retval)
-> +		goto err_null;
-> +
-> +	retval = -ENOMEM;
-> +	pht = kzalloc(sizeof(*pht), GFP_KERNEL);
-> +	if (pht == NULL) {
-> +		dev_err(&pdev->dev, "unable to allocate device\n");
-> +		goto err_reg;
-> +	}
-> +
-> +	pht->caddr = pci_iomap(pdev, 0, 0);
-> +	if (pht->caddr == NULL) {
-> +		dev_err(&pdev->dev, "can't remap conf space\n");
-> +		goto err_fr;
-> +	}
-> +	pht->iaddr = pci_iomap(pdev, 2, 0);
-> +	if (pht->iaddr == NULL) {
-> +		dev_err(&pdev->dev, "can't remap input space\n");
-> +		goto err_unmc;
-> +	}
-> +	pht->oaddr = pci_iomap(pdev, 3, 0);
-> +	if (pht->oaddr == NULL) {
-> +		dev_err(&pdev->dev, "can't remap output space\n");
-> +		goto err_unmi;
-> +	}
-> +
-> +	mutex_init(&pht->open_lock);
-> +	init_waitqueue_head(&pht->wait);
-> +	cdev_init(&pht->cdev, &phantom_file_ops);
-> +	pht->cdev.owner = THIS_MODULE;
-> +
-> +	iowrite32(0, pht->caddr + PHN_IRQCTL);
-> +	retval = request_irq(pdev->irq, phantom_isr,
-> +			IRQF_SHARED | IRQF_DISABLED, "phantom", pht);
-> +	if (retval) {
-> +		dev_err(&pdev->dev, "can't establish ISR\n");
-> +		goto err_unmo;
-> +	}
-> +
-> +	retval = cdev_add(&pht->cdev, MKDEV(phantom_major, minor), 1);
-> +	if (retval) {
-> +		dev_err(&pdev->dev, "chardev registration failed\n");
-> +		goto err_irq;
-> +	}
-> +
-> +	if (IS_ERR(device_create(phantom_class, &pdev->dev, MKDEV(phantom_major,
-> +			minor), "phantom%u", minor)))
-> +		dev_err(&pdev->dev, "can't create device\n");
-> +
-> +	pci_set_drvdata(pdev, pht);
-> +
-> +	return 0;
-> +err_irq:
-> +	free_irq(pdev->irq, pht);
-> +err_unmo:
-> +	pci_iounmap(pdev, pht->oaddr);
-> +err_unmi:
-> +	pci_iounmap(pdev, pht->iaddr);
-> +err_unmc:
-> +	pci_iounmap(pdev, pht->caddr);
-> +err_fr:
-> +	kfree(pht);
-> +err_reg:
-> +	pci_release_regions(pdev);
-> +err_null:
-> +	phantom_devices[minor] = 0;
-> +err_dis:
-> +	pci_disable_device(pdev);
-> +err:
-> +	return retval;
-> +}
-> +
-> +static void __devexit phantom_remove(struct pci_dev *pdev)
-> +{
-> +	struct phantom_device *pht = pci_get_drvdata(pdev);
-> +	unsigned int minor = MINOR(pht->cdev.dev);
-> +
-> +	device_destroy(phantom_class, MKDEV(phantom_major, minor));
-> +
-> +	cdev_del(&pht->cdev);
-> +
-> +	iowrite32(0, pht->caddr + PHN_IRQCTL);
-> +	free_irq(pdev->irq, pht);
-> +
-> +	pci_iounmap(pdev, pht->oaddr);
-> +	pci_iounmap(pdev, pht->iaddr);
-> +	pci_iounmap(pdev, pht->caddr);
-> +
-> +	kfree(pht);
-> +
-> +	pci_release_regions(pdev);
-> +
-> +	phantom_devices[minor] = 0;
-> +
-> +	pci_disable_device(pdev);
-> +}
-> +
-> +#ifdef CONFIG_PM
-> +static int phantom_suspend(struct pci_dev *pdev, pm_message_t state)
-> +{
-> +	struct phantom_device *dev = pci_get_drvdata(pdev);
-> +
-> +	iowrite32(0, dev->caddr + PHN_IRQCTL);
-> +
-> +	return 0;
-> +}
-> +
-> +static int phantom_resume(struct pci_dev *pdev)
-> +{
-> +	struct phantom_device *dev = pci_get_drvdata(pdev);
-> +
-> +	iowrite32(0, dev->caddr + PHN_IRQCTL);
-> +
-> +	return 0;
-> +}
-> +#endif
+[PATCH] [TCP]: Use S+L catcher only with SACK for now
 
-It's conventional to do
+TCP has a transitional state when SACK is not in use during
+which this invariant is temporarily broken. Without SACK,
+tcp_clean_rtx_queue does not decrement sacked_out. Therefore
+calls to tcp_sync_left_out before sacked_out is again
+corrected by tcp_fastretrans_alert can trigger this trap as
+sacked_out still has couple of segments that are already out
+of window.
 
-#else
-#define phantom_suspend NULL
-#define phantom_resume NULL
-#endif
+Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@helsinki.fi>
+---
+ include/net/tcp.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-> +static struct pci_device_id phantom_pci_tbl[] __devinitdata = {
-> +	{ PCI_DEVICE(PCI_VENDOR_ID_PLX, PCI_DEVICE_ID_PLX_9050),
-> +		.class = PCI_CLASS_BRIDGE_OTHER << 8, .class_mask = 0xffff00 },
-> +	{ 0, }
-> +};
-> +MODULE_DEVICE_TABLE(pci, phantom_pci_tbl);
-> +
-> +static struct pci_driver phantom_pci_driver = {
-> +	.name = "phantom",
-> +	.id_table = phantom_pci_tbl,
-> +	.probe = phantom_probe,
-> +	.remove = __devexit_p(phantom_remove),
-> +#ifdef CONFIG_PM
-> +	.suspend = phantom_suspend,
-> +	.resume = phantom_resume
-> +#endif
-> +};
+diff --git a/include/net/tcp.h b/include/net/tcp.h
+index ef8f9d4..e22b4f0 100644
+--- a/include/net/tcp.h
++++ b/include/net/tcp.h
+@@ -736,7 +736,8 @@ static inline __u32 tcp_current_ssthresh
+ 
+ static inline void tcp_sync_left_out(struct tcp_sock *tp)
+ {
+-	BUG_ON(tp->sacked_out + tp->lost_out > tp->packets_out);
++	BUG_ON(tp->rx_opt.sack_ok &&
++	       (tp->sacked_out + tp->lost_out > tp->packets_out));
+ 	tp->left_out = tp->sacked_out + tp->lost_out;
+ }
+ 
+-- 
+1.4.2
 
-thus making these ifdefs unnecessary.
 
-> index 0000000..d3ebbfa
-> --- /dev/null
-> +++ b/include/linux/phantom.h
-> @@ -0,0 +1,42 @@
-> +/*
-> + *  Copyright (C) 2005-2007 Jiri Slaby <jirislaby@gmail.com>
-> + *
-> + *  This program is free software; you can redistribute it and/or modify
-> + *  it under the terms of the GNU General Public License as published by
-> + *  the Free Software Foundation; either version 2 of the License, or
-> + *  (at your option) any later version.
-> + */
-> +
-> +#ifndef __PHANTOM_H
-> +#define __PHANTOM_H
-> +
-> +#include <asm/types.h>
-> +
-> +/* PHN_(G/S)ET_REG param */
-> +struct phm_reg {
-> +	__u32 reg;
-> +	__u32 value;
-> +};
-> +
-> +/* PHN_(G/S)ET_REGS param */
-> +struct phm_regs {
-> +	__u32 count;
-> +	__u32 mask;
-> +	__u32 values[8];
-> +};
 
-No, I guess it doesn't need compat handling.
-
-> +#define PH_IOC_MAGIC		'p'
-> +#define PHN_GET_REG		_IOWR(PH_IOC_MAGIC, 0, struct phm_reg *)
-> +#define PHN_SET_REG		_IOW (PH_IOC_MAGIC, 1, struct phm_reg *)
-> +#define PHN_GET_REGS		_IOWR(PH_IOC_MAGIC, 2, struct phm_regs *)
-> +#define PHN_SET_REGS		_IOW (PH_IOC_MAGIC, 3, struct phm_regs *)
-> +#define PH_IOC_MAXNR		3
-> +
-> +#define PHN_CONTROL		0x6     /* control byte in iaddr space */
-> +#define PHN_CTL_AMP		0x1     /*   switch after torques change */
-> +#define PHN_CTL_BUT		0x2     /*   is button switched */
-> +#define PHN_CTL_IRQ		0x10    /*   is irq enabled */
-> +
-> +#define PHN_ZERO_FORCE		2048	/* zero torque on motor */
-> +
-> +#endif
-
-Exported to userspace?  If so, it'll need a mention in include/linux/Kbuild?
+---696243703-1270442657-1178175096=:3607--
