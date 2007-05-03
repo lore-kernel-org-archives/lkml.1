@@ -1,56 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031116AbXECKQk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031138AbXECKRV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031116AbXECKQk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:16:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031118AbXECKQk
+	id S1031138AbXECKRV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:17:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031150AbXECKRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:16:40 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49478 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031116AbXECKQj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:16:39 -0400
-Date: Thu, 3 May 2007 11:20:23 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Albert Cahalan <acahalan@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
-Subject: Re: console font limits
-Message-ID: <20070503112023.285f92c6@the-village.bc.nu>
-In-Reply-To: <46398D1F.1020306@zytor.com>
-References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com>
-	<Pine.LNX.4.64.0705011347300.27246@anakin>
-	<1178021516.4372.62.camel@daplas>
-	<46375738.1010007@zytor.com>
-	<787b0d920705010849u52a4d6c3o2f1f800521ad5b95@mail.gmail.com>
-	<46398D1F.1020306@zytor.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Thu, 3 May 2007 06:17:21 -0400
+Received: from eth8932.sa.adsl.internode.on.net ([150.101.246.227]:37166 "EHLO
+	aix.gdt.id.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031138AbXECKRT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 06:17:19 -0400
+Subject: Re: Detecting process death for anycast named process monitoring
+From: Glen Turner <gdt@gdt.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070503024048.e7192b3b.akpm@linux-foundation.org>
+References: <4638FCEA.4010806@gdt.id.au>
+	 <20070503024048.e7192b3b.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: Glen Turner <http://www.aarnet.edu.au/~gdt/>
+Date: Thu, 03 May 2007 19:47:22 +0930
+Message-Id: <1178187442.3887.0.camel@thrace>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 May 2007 00:19:59 -0700
-"H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> Albert Cahalan wrote:
-> > Font size is not a sane place to draw the line. Features are.
+On Thu, 2007-05-03 at 02:40 -0700, Andrew Morton wrote:
+> Monitor the system using the taskstats interface.  There is a sample
+> application and documentation in Documentation/accounting/.
 > 
-> Font sizes are an eminently sane place to draw the line, because the
-> crossover is largely determined by the point at which nailing down too
-> much memory (kernel memory = unswappable memory) gets too expensive.
+> Your monitoring application will receive a netlink packet each time a process
+> exits.  It includes the exit code and the process's name.
 
-Which is a value judgement made based upon the cost of memory, the
-memory limit of the system (and the fixed kmalloc limits).
+Marvellous, just what is needed.  Thank you Andrew.
 
-Obvious fix Albert would be to post patches which 
-
-	-	Ignore the font size limits (up to sanity point) for 
-		CAP_SYS_something
-	-	Put the limit in sysfs where it belongs
-	-	Use vmalloc not kmalloc if neccessary
-
-Alan
