@@ -1,38 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030505AbXECJAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030657AbXECJCe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030505AbXECJAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 05:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030501AbXECJAa
+	id S1030657AbXECJCe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 05:02:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030778AbXECJCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 05:00:30 -0400
-Received: from cantor.suse.de ([195.135.220.2]:49587 "EHLO mx1.suse.de"
+	Thu, 3 May 2007 05:02:33 -0400
+Received: from il.qumranet.com ([82.166.9.18]:36561 "EHLO il.qumranet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030505AbXECJAa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 05:00:30 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Zachary Amsden <zach@vmware.com>
-Subject: Re: Mysterious RTC hangs on x86_64 - fixed, sort of
-Date: Thu, 3 May 2007 11:00:11 +0200
-User-Agent: KMail/1.9.6
-Cc: Chuck Ebbert <cebbert@redhat.com>, Marcos Pinto <markybob@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alessandro Zummo <a.zummo@towertech.it>
-References: <46391253.30201@vmware.com> <46391716.9040001@redhat.com> <463963AE.5010300@vmware.com>
-In-Reply-To: <463963AE.5010300@vmware.com>
+	id S1030772AbXECJCd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 05:02:33 -0400
+Message-ID: <4639A527.5080909@argo.co.il>
+Date: Thu, 03 May 2007 12:02:31 +0300
+From: Avi Kivity <avi@argo.co.il>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andi Kleen <ak@suse.de>
+CC: Ulrich Drepper <drepper@redhat.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Why ssse3?
+References: <46391392.4070706@redhat.com> <200705030046.07152.ak@suse.de> <4639171A.3050004@redhat.com> <200705031052.31611.ak@suse.de>
+In-Reply-To: <200705031052.31611.ak@suse.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705031100.11863.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andi Kleen wrote:
+> On Thursday 03 May 2007 00:56:26 Ulrich Drepper wrote:
+>   
+>> Andi Kleen wrote:
+>>     
+>>> Nope. SSE3 != SSSE3. The additional S means Supplemential.
+>>>
+>>> It's probably because the few changes didn't justify a SSE4
+>>>       
+>> OK, the problem is that the actual sse3 bit is misnamed.  According to
+>> Intel's docs bit 0 of ECX is "sse", the kernel uses "pni".  Too bad.
+>>     
+>
+> PNI (Prescott New Instructions) was the original engineering code name. Unfortunately
+> it was added too early before the marketing name was known and then it couldn't be 
+> changed anymore.
+>   
 
-> Enough crashing for today.  Strangest thing is the NMI watchdog does not 
-> fire...
+Perhaps sse3 could be added as an alias to pni.
 
-It's disabled now by default.
 
--Andi
+-- 
+error compiling committee.c: too many arguments to function
+
