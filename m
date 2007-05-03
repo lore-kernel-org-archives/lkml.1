@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755257AbXECShz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767677AbXECSiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755257AbXECShz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 14:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbXECShz
+	id S1767677AbXECSiw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 14:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767680AbXECSiv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 14:37:55 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:54535 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755257AbXECShx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 14:37:53 -0400
-Date: Thu, 3 May 2007 20:32:19 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-cc: Arne Georg Gleditsch <argggh@dolphinics.no>,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, davem@davemloft.net, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] crypto: convert crypto.h to UTF-8
-In-Reply-To: <alpine.DEB.0.98.0705031132220.24982@sigma.j-a-k-j.com>
-Message-ID: <Pine.LNX.4.61.0705032028580.18504@yvahk01.tjqt.qr>
-References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
- <20070502044345.GA29384@gondor.apana.org.au> <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
- <87r6pyqg2b.fsf@pelargir.dolphinics.no> <alpine.DEB.0.98.0705030915240.21257@sigma.j-a-k-j.com>
- <Pine.LNX.4.61.0705031719080.18504@yvahk01.tjqt.qr>
- <alpine.DEB.0.98.0705031132220.24982@sigma.j-a-k-j.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Thu, 3 May 2007 14:38:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:56557 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767677AbXECSiu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 14:38:50 -0400
+Subject: Re: [v4l-dvb-maintainer] [PATCH 35/36] Use menuconfig objects II -
+	DVB
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Trent Piepho <xyzzy@speakeasy.org>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0705031453360.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
+	 <Pine.LNX.4.61.0704301429450.29151@yvahk01.tjqt.qr>
+	 <1178129426.29579.17.camel@localhost>
+	 <Pine.LNX.4.58.0705021436050.504@shell2.speakeasy.net>
+	 <Pine.LNX.4.61.0705030855000.18504@yvahk01.tjqt.qr>
+	 <1178195820.12651.28.camel@localhost>
+	 <Pine.LNX.4.61.0705031453360.18504@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 03 May 2007 15:38:21 -0300
+Message-Id: <1178217501.12651.153.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Em Qui, 2007-05-03 às 14:54 +0200, Jan Engelhardt escreveu:
+> On May 3 2007 09:37, Mauro Carvalho Chehab wrote:
+> >Trent is mentioning an out-of-tree building system to allow easier
+> >testing of V4L/DVB patches by end users and developers and during driver
+> >development time. The building system allows faster
+> >compilation/linkedition during driver development, by allowing you to
+> >use:
+> >	make menuconfig/qconfig/xconfig
+> >
+> >inside the tree, unselecting the drivers that you're not working.
+> 
+> Is that all? Because you can do
+> 
+>   make drivers/media/video/
+> 
+> today and it will only build that directory (or even
+> drivers/media/video/foo.o) to only do that one.
 
-On May 3 2007 11:35, John Anthony Kazos Jr. wrote:
->
->> >non-stupid/non-broken distributions of GNU/Linux and other major Un*ces 
->> >should be based on (or at least compatible with) UTF-8 in basic 
->> >operations. Files like the keymaps will be more work to convert, but they 
->> >can be as well.
->> >
->> >I'm operating on the assumption that anything in the tree that isn't UTF-8 
->> >is ISO-8859-1. Of course, I'm also checking it by hand to make sure a 
->> >small-O-with-umlaut doesn't become the Klingon logo...
->> 
->> This is probably all you'll ever see:
->> http://lkml.org/lkml/2007/1/8/222
->
->Does this mean you're doing it and I'll be ignored, or that few people 
->care and I'll be ignored?
+I know. Use this procedure also. This is a very nice feature for kernel
+developers.
 
-Nah. I did a walkthrough once, and my discoveries were that
-iso-8859-{2 .. 14} was a real minority if not nonexistant,
-leaving you with almost obvious choices to guess what a file's
-encoding is. If a name looks good, it must be UTF8 already.
-Else try ISO-8859-1. If it still looks odd -- perhaps because
-it's a weirdo character like "1/2" or it "does not sound right",
-try cp437. etc.
+However, you cannot use this procedure at the newest kernel to generate
+a foo.ko driver for an older kernel. Using the out-of-tree building
+system allows to compile also against older kernel versions, helping us
+to receive more feedback from end users. 
 
-> I figure if I just repost my patches to LKML 
->once per month, they'll eventually get merged (or at least I'll get 
->comments on how people actually want them). Things are tough on a 
->high-volume list. I think the git method may have the best chance of 
->success. We'll see.
->
+This is important for V4L/DVB development, since there are a number of
+normal users that just bought a new video capture board or webcam and
+want to compile the newest driver, without risking on compiling the
+entire kernel, and selecting several items they don't understand.
 
-Jan
+There are more than 500 different supported boards, with lots of
+different variations. Probably, there are more board variations than
+subscribed users at V4L ML. Believe-me, it is not easy to find people
+with all those variations, asking they to replace their kernels to the
+newest version, although this is the recommended way.
+
+So, it is important to have an easy procedure for they to test V4L/DVB.
+
+They just need to clone the tree or retrieve a tarball, and do "make;
+make install" (providing that the kernel were compiled with modules
+option enabled). Advanced users may also do "make menuconfig" to select
+just the driver for his board. They don't need to touch on other kernel
+parameters.
+
+Anyway, Trent's wrote a fix for our building system, adding the missing
+Kconfig vocabulary used on drivers/media Kconfig.
+
 -- 
+Cheers,
+Mauro
+
