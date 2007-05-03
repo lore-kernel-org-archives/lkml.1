@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031231AbXECM4a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031233AbXECM4f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031231AbXECM4a (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 08:56:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031233AbXECM43
+	id S1031233AbXECM4f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 08:56:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031236AbXECM4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 08:56:29 -0400
-Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:44634 "HELO
-	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1031231AbXECM42 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 08:56:28 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=NlMgfI9fOL8sidt3Mug9h0RACIDdxfb4dll3G5J3GzAx38jhVXmcWppFgZWZRAX1riBdnPSc6kzIha0NR7Uf9hHK56+jvaqiYxJyre8SsjfqlRZFE7DPGKCkXVcXVQIJFxtQcxEz0ElCtvOt2eFhWOylKAw1/Lhg9HuIMNocVjg=  ;
-X-YMail-OSG: OgtHUQYVM1mB1wx_b58IbzU69rBkCuNzlM9vOtlCemgbwLsc5J75IgTmxIGlh0wz7HroSrbP4g--
-Message-ID: <4639DBEC.2020401@yahoo.com.au>
-Date: Thu, 03 May 2007 22:56:12 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Thu, 3 May 2007 08:56:34 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:35909 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031233AbXECM4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 08:56:32 -0400
+Date: Thu, 3 May 2007 14:54:56 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Trent Piepho <xyzzy@speakeasy.org>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [v4l-dvb-maintainer] [PATCH 35/36] Use menuconfig objects II -
+ DVB
+In-Reply-To: <1178195820.12651.28.camel@localhost>
+Message-ID: <Pine.LNX.4.61.0705031453360.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr> 
+ <Pine.LNX.4.61.0704301429450.29151@yvahk01.tjqt.qr>  <1178129426.29579.17.camel@localhost>
+  <Pine.LNX.4.58.0705021436050.504@shell2.speakeasy.net> 
+ <Pine.LNX.4.61.0705030855000.18504@yvahk01.tjqt.qr> <1178195820.12651.28.camel@localhost>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrea Arcangeli <andrea@suse.de>
-Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com> <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com> <46393BA7.6030106@yahoo.com.au> <20070503103756.GA19958@infradead.org>
-In-Reply-To: <20070503103756.GA19958@infradead.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Thu, May 03, 2007 at 11:32:23AM +1000, Nick Piggin wrote:
-> 
->>The attached patch gets performance up a bit by avoiding some
->>barriers and some cachelines:
->>
->>G5
->>         pagefault   fork          exec
->>2.6.21   1.49-1.51   164.6-170.8   741.8-760.3
->>+patch   1.71-1.73   175.2-180.8   780.5-794.2
->>+patch2  1.61-1.63   169.8-175.0   748.6-757.0
->>
->>So that brings the fork/exec hits down to much less than 5%, and
->>would likely speed up other things that lock the page, like write
->>or page reclaim.
-> 
-> 
-> Is that every fork/exec or just under certain cicumstances?
-> A 5% regression on every fork/exec is not acceptable.
 
-Well after patch2, G5 fork is 3% and exec is 1%, I'd say the P4
-numbers will be improved as well with that patch. Then if we have
-specific lock/unlock bitops, I hope it should reduce that further.
+On May 3 2007 09:37, Mauro Carvalho Chehab wrote:
+>Trent is mentioning an out-of-tree building system to allow easier
+>testing of V4L/DVB patches by end users and developers and during driver
+>development time. The building system allows faster
+>compilation/linkedition during driver development, by allowing you to
+>use:
+>	make menuconfig/qconfig/xconfig
+>
+>inside the tree, unselecting the drivers that you're not working.
 
-The overhead that is there should just be coming from the extra
-overhead in the file backed fault handler. For noop fork/execs,
-I think that tends to be more pronounced, it is hard to see any
-difference on any non-micro benchmark.
+Is that all? Because you can do
 
-The other thing is that I think there could be some cache effects
-happening -- for example the exec numbers on the 2nd line are
-disproportionately large.
+  make drivers/media/video/
 
-It definitely isn't a good thing to drop performance anywhere
-though, so I'll keep looking for improvements.
+today and it will only build that directory (or even
+drivers/media/video/foo.o) to only do that one.
 
+>The point rised by Trent is that, currently, this is not prepared to
+>handle the "menuconfig" and "if/endif" tags.
+>
+>However, the v4l-dvb building system shouldn't stop improvements at the
+>kernel building system. So, if there are any limits there, the proper
+>solution is to fix the issues, instead of avoiding patches that could
+>break it.
+
+
+Jan
 -- 
-SUSE Labs, Novell Inc.
