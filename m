@@ -1,48 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767370AbXECESR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767372AbXECEUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767370AbXECESR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 00:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767371AbXECESR
+	id S1767372AbXECEUi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 00:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767373AbXECEUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 00:18:17 -0400
-Received: from c-69-254-139-13.hsd1.nm.comcast.net ([69.254.139.13]:51091 "EHLO
-	deneb.dwf.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767370AbXECESR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 00:18:17 -0400
-X-Greylist: delayed 1059 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 00:18:16 EDT
-Message-Id: <200705030401.l4341X0W031472@deneb.dwf.com>
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
-To: linux-kernel@vger.kernel.org
-From: clemens@dwf.com
-Subject: don' t understand this warning.
+	Thu, 3 May 2007 00:20:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:45429 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767372AbXECEUh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 00:20:37 -0400
+Subject: Re: [RELEASE] Lguest for 2.6.21
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+In-Reply-To: <20070503035749.GC2295@localhost.localdomain>
+References: <1178117028.19815.14.camel@localhost.localdomain>
+	 <20070502193303.GA1502@localhost.localdomain>
+	 <1178146848.23670.6.camel@localhost.localdomain>
+	 <20070503035749.GC2295@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 03 May 2007 14:20:32 +1000
+Message-Id: <1178166032.23670.16.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Wed, 02 May 2007 22:01:33 -0600
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The last several kernels I have built all have the following warning in them:
+On Thu, 2007-05-03 at 11:57 +0800, WANG Cong wrote:
+> On Thu, May 03, 2007 at 09:00:48AM +1000, Rusty Russell wrote:
+> >	Thanks for the patch.  This omission (in several places) was
+> >deliberate.  We can't really do anything sensible if the user unmapped
+> >the page.  I assume you saw a gcc warning from this code?
+> 
+> Yes. In fact, I got two warnings, another one is in drivers/lguest/hypercalls.c.
+> 
+> If I understand you correctly, you mean we can do nothing useful to fix it?
 
-WARNING: vmlinux - Section mismatch: reference to .init.text:start_kernel from 
-.text between 'is386'
- (at offset 0xc0401171) and 'check_x87'
-WARNING: vmlinux - Section mismatch: reference to .init.text: from .text 
-between 'rest_init' (at off
-set 0xc0401406) and 'try_name'
-WARNING: vmlinux - Section mismatch: reference to .init.data: from .text 
-between 'probe_bigsmp' (at
-offset 0xc0402032) and 'init_apic_ldr'
-WARNING: vmlinux - Section mismatch: reference to .init.text:find_unisys_acpi_o
-em_table from .text b
-etween 'acpi_madt_oem_check' (at offset 0xc0402244) and 'enable_apic_mode'
+We can, but we can ignore those warnings for the moment; they're
+harmless.
 
-and this goes on with different variables for 18 lines.
+> I have sent a mail which described the errors I got when comipling
+> Documentation/lguest/lguest.c. But it seems that you didn't receive it
+> (it didn't appear in lkml.org neither!).
 
-Is this something I should be worried about?
-I frankly dont understand what the message is trying to say.
--- 
-                                        Reg.Clemens
-                                        reg@dwf.com
+Hmm, no, I didn't get it here either 8(
 
+>  It is that, I have already made my .config as you suggested, but I
+> still can't compile Documentation/lguest/lguest.c, errors are:
+> 
+> lguest.c: In function 'add_to_bridge':
+> lguest.c:779: error: 'SIOCBRADDIF' undeclared (first use in this function)
+> lguest.c:779: error: (Each undeclared identifier is reported only once
+> lguest.c:779: error: for each function it appears in.)
+
+Ah, perhaps older libc headers?  Can you try adding this to the top of
+Documentation/lguest/lguest.c after the #define BRIDGE_PFX "bridge:"
+
+#ifndef SIOCBRADDIF
+#define SIOCBRADDIF	0x89a2		/* add interface to bridge      */
+#endif
+
+Thanks,
+Rusty.
 
