@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031123AbXECN07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031243AbXECN1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031123AbXECN07 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 09:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031240AbXECN07
+	id S1031243AbXECN1p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 09:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031269AbXECN1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 09:26:59 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:59890 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031123AbXECN06 (ORCPT
+	Thu, 3 May 2007 09:27:44 -0400
+Received: from seahorse.shentel.net ([204.111.1.244]:60522 "EHLO
+	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031243AbXECN1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 09:26:58 -0400
-From: Kevin Corry <kevcorry@us.ibm.com>
-Organization: IBM
-To: michael@ellerman.id.au
-Subject: Re: [PATCH 2/2] powerpc: change topology_init() to a subsys_initcall
-Date: Thu, 3 May 2007 08:26:54 -0500
-User-Agent: KMail/1.9.5
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Stephane Eranian <eranian@hpl.hp.com>, Carl Love <carll@us.ibm.com>
-References: <200705021208.59068.kevcorry@us.ibm.com> <200705021211.49331.kevcorry@us.ibm.com> <1178154707.5338.11.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1178154707.5338.11.camel@concordia.ozlabs.ibm.com>
+	Thu, 3 May 2007 09:27:43 -0400
+Date: Thu, 3 May 2007 09:21:11 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Arne Georg Gleditsch <argggh@dolphinics.no>
+cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
+       trivial@kernel.org, davem@davemloft.net, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: convert crypto.h to UTF-8
+In-Reply-To: <87r6pyqg2b.fsf@pelargir.dolphinics.no>
+Message-ID: <alpine.DEB.0.98.0705030915240.21257@sigma.j-a-k-j.com>
+References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
+ <20070502044345.GA29384@gondor.apana.org.au> <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
+ <87r6pyqg2b.fsf@pelargir.dolphinics.no>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705030826.55427.kevcorry@us.ibm.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+> > Did this file individually, per request. Will re-do the whole tree later 
+> > as I'm still working on my handy-dandy testing and patching tools and 
+> > don't have a lot of time outside of work until the summer gets underway.
+> 
+> While this is probably inevitable, it would be nice if there was some
+> way to determine the actual coding system used for individual files.
+> Especially if we're mixing latin1 and utf8 in the same tree.  Has
+> something like adding "/* -*- coding: utf-8; -*- */" or similar to the
+> top of converted files been considered?
 
-On Wed May 2 2007 8:11 pm, Michael Ellerman wrote:
-> On Wed, 2007-05-02 at 12:11 -0500, Kevin Corry wrote:
-> > Change the powerpc version of topology_init() from an __initcall to
-> > a subsys_initcall to match all other architectures.
-> >
-> > Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
-> >
-> > Index: linux-2.6.21/arch/powerpc/kernel/sysfs.c
-> > ===================================================================
-> > --- linux-2.6.21.orig/arch/powerpc/kernel/sysfs.c
-> > +++ linux-2.6.21/arch/powerpc/kernel/sysfs.c
-> > @@ -498,4 +498,4 @@ static int __init topology_init(void)
-> >
-> >  	return 0;
-> >  }
-> > -__initcall(topology_init);
-> > +subsys_initcall(topology_init);
->
-> topology_init() depends on the register_one_node() stuff being
-> available, which relies on register_node_type() being called AFAICT -
-> which is a postcore_initcall(). So that's OK.
->
-> It also creates sysfs files, which is OK because long before initcalls
-> run vfs_caches_init() called mnt_init() which called sysfs_init().
->
-> Just to be super safe it'd be good to diff your sysfs before and after
-> the change. But assuming that show's nothing this looks fine to me.
+There's no reason for any non-UTF-8 to be in the tree at all, so 
+eventually it won't be a problem. I'm (slowly but surely) working on 
+converting everything in the tree. GCC handles UTF-8 just fine, and all 
+non-stupid/non-broken distributions of GNU/Linux and other major Un*ces 
+should be based on (or at least compatible with) UTF-8 in basic 
+operations. Files like the keymaps will be more work to convert, but they 
+can be as well.
 
-I booted with and without this patch applied, and the file listings of /sys on 
-both kernels show no differences (other than timestamps).
+I'm operating on the assumption that anything in the tree that isn't UTF-8 
+is ISO-8859-1. Of course, I'm also checking it by hand to make sure a 
+small-O-with-umlaut doesn't become the Klingon logo...
 
-Thanks for the feedback.
--- 
-Kevin Corry
-kevcorry@us.ibm.com
-http://www.ibm.com/linux/
+Besides, based on the actual binary representation of UTF-8, it's 
+extremely unlikely for any ISO-8859-1 string to be detected as UTF-8. VIm 
+already does this: UTF-8 it handles natively, but open up one of these 
+unpatched files in VIm and you'll see "[converted]" at the bottom of your 
+screen. Should happen if you open the attached .patch.bin file in VIm.
