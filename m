@@ -1,316 +1,283 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767443AbXECVgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767437AbXECVgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767443AbXECVgN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767437AbXECVgM
+	id S1767437AbXECVgj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767430AbXECVgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:36:12 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:4211 "EHLO mail.z-net.ru"
+	Thu, 3 May 2007 17:36:38 -0400
+Received: from mail.z-net.ru ([89.113.80.10]:4221 "EHLO mail.z-net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767430AbXECVgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:36:10 -0400
-Date: Fri, 4 May 2007 01:32:37 +0400
+	id S1767437AbXECVg2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 17:36:28 -0400
+Date: Fri, 4 May 2007 01:32:56 +0400
 From: Anton Vorontsov <cbou@mail.ru>
 To: Greg KH <gregkh@suse.de>
 Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
        David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 5/8] APM emulation driver for class batteries
-Message-ID: <20070503213237.GE20067@zarina>
+Subject: [PATCH 7/8] Apple PMU driver
+Message-ID: <20070503213256.GG20067@zarina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Anton Vorontsov <cbou@mail.ru>
 ---
- drivers/power/Kconfig     |    7 ++
- drivers/power/Makefile    |    1 +
- drivers/power/apm_power.c |  249 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 257 insertions(+), 0 deletions(-)
- create mode 100644 drivers/power/apm_power.c
+ drivers/power/Kconfig       |    7 ++
+ drivers/power/Makefile      |    1 +
+ drivers/power/pmu_battery.c |  215 +++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 223 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/power/pmu_battery.c
 
 diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index cc70644..791fa0c 100644
+index 9214562..051724f 100644
 --- a/drivers/power/Kconfig
 +++ b/drivers/power/Kconfig
-@@ -21,4 +21,11 @@ config PDA_POWER
- 	  one or two external power supplies (AC/USB) connected to main and
- 	  backup batteries, and optional builtin charger.
+@@ -35,4 +35,11 @@ config BATTERY_DS2760
+ 	help
+ 	  Say Y here to enable support for batteries with ds2760 chip.
  
-+config APM_POWER
-+	tristate "APM emulation for class batteries"
-+	depends on APM_EMULATION
++config BATTERY_PMU
++	tristate "Apple PMU battery"
++	depends on ADB_PMU
 +	help
-+	  Say Y here to enable support APM status emulation using
-+	  battery class devices.
++	  Say Y here to expose battery information on Apple machines
++	  through the generic battery class.
 +
  endif # POWER_SUPPLY
 diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index 1808b69..a8fbc7e 100644
+index 492df05..0ebdc6d 100644
 --- a/drivers/power/Makefile
 +++ b/drivers/power/Makefile
-@@ -15,3 +15,4 @@ endif
- obj-$(CONFIG_POWER_SUPPLY)         += power_supply.o
+@@ -18,3 +18,4 @@ obj-$(CONFIG_PDA_POWER)            += pda_power.o
+ obj-$(CONFIG_APM_POWER)            += apm_power.o
  
- obj-$(CONFIG_PDA_POWER)            += pda_power.o
-+obj-$(CONFIG_APM_POWER)            += apm_power.o
-diff --git a/drivers/power/apm_power.c b/drivers/power/apm_power.c
+ obj-$(CONFIG_BATTERY_DS2760)       += ds2760_battery.o
++obj-$(CONFIG_BATTERY_PMU)          += pmu_battery.o
+diff --git a/drivers/power/pmu_battery.c b/drivers/power/pmu_battery.c
 new file mode 100644
-index 0000000..6a3a2f5
+index 0000000..d52e302
 --- /dev/null
-+++ b/drivers/power/apm_power.c
-@@ -0,0 +1,249 @@
++++ b/drivers/power/pmu_battery.c
+@@ -0,0 +1,215 @@
 +/*
-+ * Copyright (c) 2007 Anton Vorontsov <cbou@mail.ru>
-+ * Copyright (c) 2007 Eugeny Boger <eugenyboger@dgap.mipt.ru>
++ * Battery class driver for Apple PMU
 + *
-+ * Author: Eugeny Boger <eugenyboger@dgap.mipt.ru>
++ *	Copyright © 2006  David Woodhouse <dwmw2@infradead.org>
 + *
-+ * Use consistent with the GNU GPL is permitted,
-+ * provided that this copyright notice is
-+ * preserved in its entirety in all copies and derived works.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
 + */
 +
 +#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/err.h>
 +#include <linux/power_supply.h>
-+#include <linux/apm-emulation.h>
++#include <linux/adb.h>
++#include <linux/pmu.h>
 +
-+#ifdef current
-+#undef current /* it expands to get_current() */
-+#endif
++static struct pmu_battery_dev {
++	struct power_supply bat;
++	struct pmu_battery_info *pbi;
++	char name[16];
++	int propval;
++} *pbats[PMU_MAX_BATTERIES];
 +
-+#define PSY_PROP(psy, prop, val) psy->get_property(psy, \
-+                         POWER_SUPPLY_PROP_##prop, val)
++#define to_pmu_battery_dev(x) container_of(x, struct pmu_battery_dev, bat)
 +
-+#define _MPSY_PROP(prop, val) main_battery->get_property(main_battery, \
-+                                                         prop, val)
++/*********************************************************************
++ *		Power
++ *********************************************************************/
 +
-+#define MPSY_PROP(prop, val) _MPSY_PROP(POWER_SUPPLY_PROP_##prop, val)
-+
-+static struct power_supply *main_battery;
-+
-+static void find_main_battery(void)
++static int pmu_get_ac_prop(struct power_supply *psy,
++                           enum power_supply_property psp,
++                           union power_supply_propval *val)
 +{
-+	struct device *dev;
-+	struct power_supply *bat, *batm;
-+	union power_supply_propval full;
-+	int max_charge = 0;
-+
-+	main_battery = NULL;
-+	batm = NULL;
-+	list_for_each_entry(dev, &power_supply_class->devices, node) {
-+		bat = dev_get_drvdata(dev);
-+		/* If none of battery devices cantains 'use_for_apm' flag,
-+		   choice one with maximum design charge */
-+		if (!PSY_PROP(bat, CHARGE_FULL_DESIGN, &full)) {
-+			if (full.intval > max_charge) {
-+				batm = bat;
-+				max_charge = full.intval;
-+			}
-+		}
-+
-+		if (bat->use_for_apm)
-+			main_battery = bat;
-+	}
-+	if (!main_battery)
-+		main_battery = batm;
-+
-+	return;
-+}
-+
-+static int calculate_time(int status)
-+{
-+	union power_supply_propval charge_full, charge_empty;
-+	union power_supply_propval charge, current;
-+
-+	if (MPSY_PROP(CHARGE_FULL, &charge_full)) {
-+		/* if battery can't report this property, use design value */
-+		if (MPSY_PROP(CHARGE_FULL_DESIGN, &charge_full))
-+			return -1;
++	switch (psp) {
++	case POWER_SUPPLY_PROP_ONLINE:
++		val->intval = (!!(pmu_power_flags & PMU_PWR_AC_PRESENT)) ||
++		              (pmu_battery_count == 0);
++		break;
++	default:
++		return -EINVAL;
 +	}
 +
-+	if (MPSY_PROP(CHARGE_EMPTY, &charge_empty)) {
-+		/* if battery can't report this property, use design value */
-+		if (MPSY_PROP(CHARGE_EMPTY_DESIGN, &charge_empty))
-+			charge_empty.intval = 0;
-+	}
-+
-+	if (MPSY_PROP(CHARGE_AVG, &charge)) {
-+		/* if battery can't report average value, use momentary */
-+		if (MPSY_PROP(CHARGE_NOW, &charge))
-+			return -1;
-+	}
-+
-+	if (MPSY_PROP(CURRENT_AVG, &current)) {
-+		/* if battery can't report average value, use momentary */
-+		if (MPSY_PROP(CURRENT_NOW, &current))
-+			return -1;
-+	}
-+
-+	if (status == POWER_SUPPLY_STATUS_CHARGING)
-+		return ((charge.intval - charge_full.intval) * 60L) /
-+		       current.intval;
-+	else
-+		return -((charge.intval - charge_empty.intval) * 60L) /
-+		        current.intval;
-+}
-+
-+static int calculate_capacity(int using_charge)
-+{
-+	enum power_supply_property full_prop, empty_prop;
-+	enum power_supply_property full_design_prop, empty_design_prop;
-+	enum power_supply_property now_prop, avg_prop;
-+	union power_supply_propval empty, full, cur;
-+	int ret;
-+
-+	if (using_charge) {
-+		full_prop = POWER_SUPPLY_PROP_CHARGE_FULL;
-+		empty_prop = POWER_SUPPLY_PROP_CHARGE_EMPTY;
-+		full_design_prop = POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN;
-+		empty_design_prop = POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN;
-+		now_prop = POWER_SUPPLY_PROP_CHARGE_NOW;
-+		avg_prop = POWER_SUPPLY_PROP_CHARGE_AVG;
-+	}
-+	else {
-+		full_prop = POWER_SUPPLY_PROP_ENERGY_FULL;
-+		empty_prop = POWER_SUPPLY_PROP_ENERGY_EMPTY;
-+		full_design_prop = POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN;
-+		empty_design_prop = POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN;
-+		now_prop = POWER_SUPPLY_PROP_ENERGY_NOW;
-+		avg_prop = POWER_SUPPLY_PROP_ENERGY_AVG;
-+	}
-+
-+	if (_MPSY_PROP(full_prop, &full)) {
-+		/* if battery can't report this property, use design value */
-+		if (_MPSY_PROP(full_design_prop, &full))
-+			return -1;
-+	}
-+
-+	if (_MPSY_PROP(avg_prop, &cur)) {
-+		/* if battery can't report average value, use momentary */
-+		if (_MPSY_PROP(now_prop, &cur))
-+			return -1;
-+	}
-+
-+	if (_MPSY_PROP(empty_prop, &empty)) {
-+		/* if battery can't report this property, use design value */
-+		if (_MPSY_PROP(empty_design_prop, &empty))
-+			empty.intval = 0;
-+	}
-+
-+	if (full.intval - empty.intval)
-+		ret =  ((cur.intval - empty.intval) * 100L) /
-+		       (full.intval - empty.intval);
-+	else
-+		return -1;
-+
-+	if (ret > 100)
-+		return 100;
-+	else if (ret < 0)
-+		return 0;
-+
-+	return ret;
-+}
-+
-+static void apm_battery_apm_get_power_status(struct apm_power_info *info)
-+{
-+	union power_supply_propval status;
-+	union power_supply_propval capacity, time_to_full, time_to_empty;
-+
-+	down(&power_supply_class->sem);
-+	find_main_battery();
-+	if (!main_battery) {
-+		up(&power_supply_class->sem);
-+		return;
-+	}
-+
-+	/* status */
-+
-+	if (MPSY_PROP(STATUS, &status))
-+		status.intval = POWER_SUPPLY_STATUS_UNKNOWN;
-+
-+	/* ac line status */
-+
-+	if ((status.intval == POWER_SUPPLY_STATUS_CHARGING) ||
-+	    (status.intval == POWER_SUPPLY_STATUS_NOT_CHARGING) ||
-+	    (status.intval == POWER_SUPPLY_STATUS_FULL))
-+		info->ac_line_status = APM_AC_ONLINE;
-+	else
-+		info->ac_line_status = APM_AC_OFFLINE;
-+
-+	/* battery life (i.e. capacity, in percents) */
-+
-+	if (MPSY_PROP(CAPACITY, &capacity) == 0)
-+		info->battery_life = capacity.intval;
-+	else {
-+		/* try calculate using energy */
-+		info->battery_life = calculate_capacity(0);
-+		/* if failed try calculate using charge instead */
-+		if (info->battery_life == -1)
-+			info->battery_life = calculate_capacity(1);
-+	}
-+
-+	/* charging status */
-+
-+	if (status.intval == POWER_SUPPLY_STATUS_CHARGING)
-+		info->battery_status = APM_BATTERY_STATUS_CHARGING;
-+	else {
-+		if (info->battery_life > 50)
-+			info->battery_status = APM_BATTERY_STATUS_HIGH;
-+		else if (info->battery_life > 5)
-+			info->battery_status = APM_BATTERY_STATUS_LOW;
-+		else
-+			info->battery_status = APM_BATTERY_STATUS_CRITICAL;
-+	}
-+	info->battery_flag = info->battery_status;
-+
-+	/* time */
-+
-+	info->units = APM_UNITS_MINS;
-+
-+	if (status.intval == POWER_SUPPLY_STATUS_CHARGING) {
-+		if (MPSY_PROP(TIME_TO_FULL_AVG, &time_to_full)) {
-+			if (MPSY_PROP(TIME_TO_FULL_NOW, &time_to_full))
-+				info->time = calculate_time(status.intval);
-+			else
-+				info->time = time_to_full.intval / 60;
-+		}
-+	}
-+	else {
-+		if (MPSY_PROP(TIME_TO_EMPTY_AVG, &time_to_empty)) {
-+			if (MPSY_PROP(TIME_TO_EMPTY_NOW, &time_to_empty))
-+				info->time = calculate_time(status.intval);
-+			else
-+				info->time = time_to_empty.intval / 60;
-+		}
-+	}
-+
-+	up(&power_supply_class->sem);
-+	return;
-+}
-+
-+static int __init apm_battery_init(void)
-+{
-+	printk(KERN_INFO "APM Battery Driver\n");
-+
-+	apm_get_power_status = apm_battery_apm_get_power_status;
 +	return 0;
 +}
 +
-+static void __exit apm_battery_exit(void)
++static enum power_supply_property pmu_ac_props[] = {
++	POWER_SUPPLY_PROP_ONLINE,
++};
++
++static struct power_supply pmu_ac = {
++	.name = "pmu-ac",
++	.type = POWER_SUPPLY_TYPE_AC,
++	.properties = pmu_ac_props,
++	.num_properties = ARRAY_SIZE(pmu_ac_props),
++	.get_property = pmu_get_ac_prop,
++};
++
++/*********************************************************************
++ *		Battery properties
++ *********************************************************************/
++
++static char *pmu_batt_types[] = {
++	"Smart", "Comet", "Hooper", "Unknown"
++};
++
++static char *pmu_bat_get_model_name(struct pmu_battery_info *pbi)
 +{
-+	apm_get_power_status = NULL;
++	switch (pbi->flags & PMU_BATT_TYPE_MASK) {
++	case PMU_BATT_TYPE_SMART:
++		return pmu_batt_types[0];
++	case PMU_BATT_TYPE_COMET:
++		return pmu_batt_types[1];
++	case PMU_BATT_TYPE_HOOPER:
++		return pmu_batt_types[2];
++	default: break;
++	}
++	return pmu_batt_types[3];
++}
++
++static int pmu_bat_get_property(struct power_supply *psy,
++                                enum power_supply_property psp,
++                                union power_supply_propval *val)
++{
++	struct pmu_battery_dev *pbat = to_pmu_battery_dev(psy);
++	struct pmu_battery_info *pbi = pbat->pbi;
++
++	switch (psp) {
++	case POWER_SUPPLY_PROP_STATUS:
++		if (pbi->flags & PMU_BATT_CHARGING)
++			val->intval = POWER_SUPPLY_STATUS_CHARGING;
++		else
++			val->intval = POWER_SUPPLY_STATUS_DISCHARGING;
++		break;
++	case POWER_SUPPLY_PROP_PRESENT:
++		val->intval = !!(pbi->flags & PMU_BATT_PRESENT);
++		break;
++	case POWER_SUPPLY_PROP_MODEL_NAME:
++		val->strval = pmu_bat_get_model_name(pbi);
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_AVG:
++		val->intval = pbi->charge     * 1000; /* mWh -> µWh */
++		break;
++	case POWER_SUPPLY_PROP_ENERGY_FULL:
++		val->intval = pbi->max_charge * 1000; /* mWh -> µWh */
++		break;
++	case POWER_SUPPLY_PROP_CURRENT_AVG:
++		val->intval = pbi->amperage   * 1000; /* mA -> µA */
++		break;
++	case POWER_SUPPLY_PROP_VOLTAGE_AVG:
++		val->intval = pbi->voltage    * 1000; /* mV -> µV */
++		break;
++	case POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG:
++		val->intval = pbi->time_remaining;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static enum power_supply_property pmu_bat_props[] = {
++	POWER_SUPPLY_PROP_STATUS,
++	POWER_SUPPLY_PROP_PRESENT,
++	POWER_SUPPLY_PROP_MODEL_NAME,
++	POWER_SUPPLY_PROP_ENERGY_AVG,
++	POWER_SUPPLY_PROP_ENERGY_FULL,
++	POWER_SUPPLY_PROP_CURRENT_AVG,
++	POWER_SUPPLY_PROP_VOLTAGE_AVG,
++	POWER_SUPPLY_PROP_TIME_TO_EMPTY_AVG,
++};
++
++/*********************************************************************
++ *		Initialisation
++ *********************************************************************/
++
++static struct platform_device *bat_pdev;
++
++static int __init pmu_bat_init(void)
++{
++	int ret;
++	int i;
++
++	bat_pdev = platform_device_register_simple("pmu-battery",
++	                                           0, NULL, 0);
++	if (IS_ERR(bat_pdev)) {
++		ret = PTR_ERR(bat_pdev);
++		goto pdev_register_failed;
++	}
++
++	ret = power_supply_register(&bat_pdev->dev, &pmu_ac);
++	if (ret)
++		goto ac_register_failed;
++
++	for (i = 0; i < pmu_battery_count; i++) {
++		struct pmu_battery_dev *pbat = kzalloc(sizeof(*pbat),
++		                                       GFP_KERNEL);
++		if (!pbat)
++			break;
++
++		sprintf(pbat->name, "PMU battery %d", i);
++		pbat->bat.name = pbat->name;
++		pbat->bat.properties = pmu_bat_props;
++		pbat->bat.num_properties = ARRAY_SIZE(pmu_bat_props);
++		pbat->bat.get_property = pmu_bat_get_property;
++		pbat->pbi = &pmu_batteries[i];
++
++		ret = power_supply_register(&bat_pdev->dev, &pbat->bat);
++		if (ret) {
++			kfree(pbat);
++			goto battery_register_failed;
++		}
++		pbats[i] = pbat;
++	}
++
++	goto success;
++
++battery_register_failed:
++	while (i--) {
++		if (!pbats[i])
++			continue;
++		power_supply_unregister(&pbats[i]->bat);
++		kfree(pbats[i]);
++	}
++	power_supply_unregister(&pmu_ac);
++ac_register_failed:
++	platform_device_unregister(bat_pdev);
++pdev_register_failed:
++success:
++	return ret;
++}
++
++static void __exit pmu_bat_exit(void)
++{
++	int i;
++
++	for (i = 0; i < PMU_MAX_BATTERIES; i++) {
++		if (!pbats[i])
++			continue;
++		power_supply_unregister(&pbats[i]->bat);
++		kfree(pbats[i]);
++	}
++	power_supply_unregister(&pmu_ac);
++	platform_device_unregister(bat_pdev);
++
 +	return;
 +}
 +
-+module_init(apm_battery_init);
-+module_exit(apm_battery_exit);
++module_init(pmu_bat_init);
++module_exit(pmu_bat_exit);
 +
-+MODULE_AUTHOR("Eugeny Boger <eugenyboger@dgap.mipt.ru>");
-+MODULE_DESCRIPTION("APM emulation driver for battery monitoring class");
++MODULE_AUTHOR("David Woodhouse <dwmw2@infradead.org>");
 +MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("PMU battery driver");
 -- 
 1.5.1.1-dirty
 
