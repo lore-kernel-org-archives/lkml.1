@@ -1,81 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767821AbXECTdB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376315AbXECTgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767821AbXECTdB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 15:33:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767824AbXECTdB
+	id S376315AbXECTgo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 15:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376312AbXECTgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 15:33:01 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:21112 "EHLO
-	outbound3-dub-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767819AbXECTc6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 15:32:58 -0400
-X-BigFish: VP
-Message-ID: <463A3990.9010006@am.sony.com>
-Date: Thu, 03 May 2007 12:35:44 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
-MIME-Version: 1.0
-To: Tim Bird <tim.bird@am.sony.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-rt-users@vger.kernel.org
-Subject: Re: v2.6.21-rt1 - mips compile bugs
-References: <20070205065636.GA1652@elte.hu> <20070426135730.GA2116@elte.hu> <463A3512.4020508@am.sony.com>
-In-Reply-To: <463A3512.4020508@am.sony.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 03 May 2007 19:32:52.0419 (UTC) FILETIME=[D7507930:01C78DB9]
+	Thu, 3 May 2007 15:36:44 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:52567 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S376315AbXECTgn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 15:36:43 -0400
+Date: Thu, 3 May 2007 21:37:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Christian Hesse <mail@earthworm.de>
+Cc: linux-kernel@vger.kernel.org, James Ketrenos <jketreno@linux.intel.com>
+Subject: Re: build system: no module target ending with slash?
+Message-ID: <20070503193736.GA18216@uranus.ravnborg.org>
+References: <200705030043.49208.mail@earthworm.de> <20070503042511.GB12644@uranus.ravnborg.org> <20070503061533.GA13399@uranus.ravnborg.org> <200705030917.19630.mail@earthworm.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705030917.19630.mail@earthworm.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> i have released the v2.6.20-rt1 kernel...
+On Thu, May 03, 2007 at 09:17:15AM +0200, Christian Hesse wrote:
+> On Thursday 03 May 2007, Sam Ravnborg wrote:
+> > On Thu, May 03, 2007 at 06:25:11AM +0200, Sam Ravnborg wrote:
+> > > On Thu, May 03, 2007 at 12:43:43AM +0200, Christian Hesse wrote:
+> > > > Hi James, hi everybody,
+> > > >
+> > > > playing with iwlwifi I try to patch it into the kernel and to build it
+> > > > from there. But I have a problem with the build system.
+> > > >
+> > > > The file drivers/net/wireless/mac80211/Makefile contains one single
+> > > > line:
+> > > >
+> > > > obj-$(CONFIG_IWLWIFI)   += iwlwifi/
+> > > >
+> > > > When CONFIG_IWLWIFI=m in scripts/Makefile.lib line 29 the target is
+> > > > filtered as it ends with a slash. That results in
+> > > > drivers/net/wireless/mac80211/built-in.o not being built and the build
+> > > > process breaks with an error. What is the correct way to handle this?
+> > > > Why are targets ending with a slash filtered?
+> > >
+> > > Looks buggy. I will take a look tonight.
+> >
+> > After some coffee...
+> >
+> > Line 29 in Kbuild.include find all modules and a directory is not a module.
+> > In line 26 in same file the directory iwlwifi is included in the list
+> > of directories to visit.
+> > So there is something else going on.
+> 
+> In scripts/Kbuild.include line 26 is empty and line 29 is a comment... Do I 
+> look at the wrong place?
+I looked at lxr.linux.no - so probarly an outdated version.
 
-There was also a problem with the patch for arch/mips/kernel/entry.S
-Some kind of cruft was in the patch.
+> 
+> I still believe in my version: built-in.o is built if any of $(obj-y) $(obj-m) 
+> $(obj-n) $(obj-) $(lib-target) contains anything in scripts/Makefile.build 
+> line 77. As scripts/Makefile.lib line 29 filters the only target the object 
+> file is not built.
 
-Below is a patch which fixes both issues.  It at least allows compilation.
-I haven't turned anything on, or looked at runtime yet.
+I have applied your patch and tried it out.
+The reason for the problem is the placeholder directory mac80211.
+kbuild will not waste time building built-in.o for a directory where
+it is not necessary. So for mac80211 no built-in.o is created since there
+is no need. The only reference is to a module.
 
-Index: alp-linux/arch/mips/kernel/entry.S
-===================================================================
---- alp-linux.orig/arch/mips/kernel/entry.S	2007-05-03 12:28:38.000000000 -0700
-+++ alp-linux/arch/mips/kernel/entry.S	2007-05-03 12:21:47.000000000 -0700
-@@ -21,8 +21,6 @@
- #endif
-
- #ifndef CONFIG_PREEMPT
--<<<<<<< delete 	local_irq_disable
--	raw_local_irq_disable
- #define resume_kernel	restore_all
- #else
- #define __ret_from_irq	ret_from_exception
-@@ -32,7 +30,7 @@
- 	.align	5
- #ifndef CONFIG_PREEMPT
- FEXPORT(ret_from_exception)
--	local_irq_disable			# preempt stop
-+	raw_local_irq_disable			# preempt stop
- 	b	__ret_from_irq
- #endif
- FEXPORT(ret_from_irq)
-Index: alp-linux/include/asm-mips/atomic.h
-===================================================================
---- alp-linux.orig/include/asm-mips/atomic.h	2007-05-03 12:28:38.000000000 -0700
-+++ alp-linux/include/asm-mips/atomic.h	2007-05-03 11:56:58.000000000 -0700
-@@ -566,7 +566,6 @@
- 		raw_local_irq_restore(flags);
- 	}
- #endif
--#endif
-
- 	smp_mb();
+The quick-and-dirty workaround is to add a single 
+obj-n := xx
+in mac80211/Makefile and kbuild is happy again.
 
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Electronics
-=============================
+I could teach kbuild to create built-in.o also in the case
+where we refer to a subdirectory only. But then we would end up with a built-in.o
+in all directories where we have a kbuild MAkefile (almost) and that is
+not desireable.
+So I recommend the proposed workaround for now with a proper comment.
 
+	Sam
