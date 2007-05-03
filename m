@@ -1,55 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965687AbXECJab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965686AbXECJfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965687AbXECJab (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 05:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965706AbXECJaa
+	id S965686AbXECJfI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 05:35:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXECJfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 05:30:30 -0400
-Received: from iona.labri.fr ([147.210.8.143]:34710 "EHLO iona.labri.fr"
+	Thu, 3 May 2007 05:35:08 -0400
+Received: from smtp4-g19.free.fr ([212.27.42.30]:56836 "EHLO smtp4-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965687AbXECJa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 05:30:26 -0400
-Date: Thu, 3 May 2007 11:30:25 +0200
-From: Samuel Thibault <samuel.thibault@ens-lyon.org>
-To: linux-kernel@vger.kernel.org, akpm@google.com, alan@redhat.com
-Subject: [PATCH] Fix pata_qdi.c probe code
-Message-ID: <20070503093025.GB3595@implementation.labri.fr>
-Mail-Followup-To: Samuel Thibault <samuel.thibault@ens-lyon.org>,
-	linux-kernel@vger.kernel.org, akpm@google.com, alan@redhat.com
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="tThc/1wpZn/ma/RB"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	id S965686AbXECJfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 05:35:07 -0400
+Message-ID: <4639ACCB.4000100@free.fr>
+Date: Thu, 03 May 2007 11:35:07 +0200
+From: John Sigler <linux.kernel@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061108 SeaMonkey/1.0.6
+MIME-Version: 1.0
+To: "Preston A. Elder" <prez@goth.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: AGPGart / AMD K7
+References: <fa.asou3h2GKTshe+XpxGJ/K4Wjf2s@ifi.uio.no> <fa.YcM0QJJYQHgI9i0mZF4z2OtPhr8@ifi.uio.no> <fa.8rayS7oJHYA3XGzEX9anUebRoMM@ifi.uio.no> <fa.2SB7j6GjGOW6vvgLY7nbvSnuM6I@ifi.uio.no> <fa.v7TywLl5PsPHzpOETJp8xq50Gno@ifi.uio.no> <fa.S5WSCyOavqOFWClpzzJKcKpj03M@ifi.uio.no>
+In-Reply-To: <fa.S5WSCyOavqOFWClpzzJKcKpj03M@ifi.uio.no>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Preston A. Elder wrote:
 
---tThc/1wpZn/ma/RB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> What is this edac, btw?
 
-Hi,
-
-There is a small typo in the probe code of pata_qdi.c, here is a patch.
-
-Samuel
-
---tThc/1wpZn/ma/RB
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename=patch
-
-diff --git a/drivers/ata/pata_qdi.c b/drivers/ata/pata_qdi.c
-index 27685ce..fb8c9e1 100644
---- a/drivers/ata/pata_qdi.c
-+++ b/drivers/ata/pata_qdi.c
-@@ -375,7 +375,7 @@ static __init int qdi_init(void)
- 				res = inb(port + 3);
- 				if (res & 1) {
- 					/* Single channel mode */
--					if (qdi_init_one(port, 6580, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04))
-+					if (qdi_init_one(port, 6580, ide_port[r & 0x01], ide_irq[r & 0x01], r & 0x04) == 0)
- 						ct++;
- 				} else {
- 					/* Dual channel mode */
-
---tThc/1wpZn/ma/RB--
+AFAIK, EDAC stands for Error Detection and Correction.
+http://bluesmoke.sourceforge.net/
