@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965695AbXECHeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965475AbXECHgk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965695AbXECHeJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 03:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965692AbXECHeJ
+	id S965475AbXECHgk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 03:36:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965686AbXECHgk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 03:34:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54119 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965687AbXECHeH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 03:34:07 -0400
-Message-ID: <46399057.4000409@redhat.com>
-Date: Thu, 03 May 2007 09:33:43 +0200
-From: Gerd Hoffmann <kraxel@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-Subject: Re: netfront for review
-References: <4637D672.5030706@goop.org> <1178077033.28659.173.camel@localhost.localdomain> <4638EAC0.7020107@goop.org>
-In-Reply-To: <4638EAC0.7020107@goop.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 03:36:40 -0400
+Received: from ecfrec.frec.bull.fr ([129.183.4.8]:42133 "EHLO
+	ecfrec.frec.bull.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965475AbXECHgj convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 03:36:39 -0400
+Date: Thu, 3 May 2007 09:32:25 +0200
+From: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+Message-ID: <20070503093225.10765f46@frecb000686.frec.bull.fr>
+In-Reply-To: <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
+References: <20070423141123.GA21174@skybase>
+	<20070423104534.51bac974.akpm@linux-foundation.org>
+	<20070425112133.4ae86399.randy.dunlap@oracle.com>
+	<20070425143011.57247c1d.akpm@linux-foundation.org>
+	<20070425172447.1576c399.akpm@linux-foundation.org>
+	<20070426003911.GA19383@redhat.com>
+	<4630109F.6090002@oracle.com>
+	<20070425200207.77a2721a.akpm@linux-foundation.org>
+	<20070428030805.GA13331@redhat.com>
+	<Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+X-MIMETrack: Itemize by SMTP Server on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 03/05/2007 09:39:33,
+	Serialize by Router on ECN002/FR/BULL(Release 5.0.12  |February 13, 2003) at
+ 03/05/2007 09:39:34,
+	Serialize complete at 03/05/2007 09:39:34
+Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-   Hi,
+On Wed, 2 May 2007 16:28:27 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-> Gerd, in change 11196:b85da7cd9ea5 "front: Fix rx buffer leak when
-> tearing down an interface." you added a call to
-> "add_id_to_freelist(np->rx_skbs, id);".  However, rx_skbs doesn't have
-> an extra entry for the list head, and there's never any corresponding
-> get_id_from_freelist(np->rx_skbs).  What should it be?
 
-The function has an effect in page flipping mode only.  It walks the 
-whole list of rx skbufs (id is the loop variable ...), checks whenever 
-they are handed out to the frontend driver to fill in packet data and 
-not returned yet, and if so reclaim them ...
+> +		$warnings += search(qr/__FUNCION__/,
 
->>> +	err = xenbus_scanf(XBT_NIL, np->xbdev->otherend,
->>> +			   "feature-rx-flip", "%u", &feature_rx_flip);
->>> +	if (err != 1)
->>> +		feature_rx_flip = 1;
->>>     
->> This second one deserves a comment.  If it doesn't set feature_rx_flip
->> it's *on*?  Historical reasons
-> 
-> Guess so.  It defaults to flip.  I simplified the rx_copy/flip module
-> parameter to a simple rx_mode=0/1, but this is preserved from the
-> original.  My guess is that originally there was only flip, and copy was
-> added later.
+                                       ^__FUNCTION__ maybe?
 
-Yep, page flipping is the old (pre xen 3.0.3) way, copy was added (and 
-made the default) later.
+> +			"Should use C99 __func__ instead of GNU __FUNCTION__\n");
 
-cheers,
-   Gerd
+
+  Sébastien.
