@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766496AbXECUfL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161034AbXECUil@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766496AbXECUfL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 16:35:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766493AbXECUfL
+	id S1161034AbXECUil (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 16:38:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161162AbXECUil
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 16:35:11 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:40178 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031206AbXECUfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 16:35:08 -0400
-Date: Thu, 3 May 2007 22:34:52 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: =?ISO-8859-1?Q?=D8yvind_V=E5gen_J=E6gtnes?= <lorrides@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
-In-Reply-To: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com>
-Message-ID: <Pine.LNX.4.61.0705032232450.18504@yvahk01.tjqt.qr>
-References: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com>
+	Thu, 3 May 2007 16:38:41 -0400
+Received: from sj-iport-2-in.cisco.com ([171.71.176.71]:38388 "EHLO
+	sj-iport-2.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161309AbXECUih (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 16:38:37 -0400
+X-IronPort-AV: i="4.14,487,1170662400"; 
+   d="scan'208"; a="373264028:sNHT48910744630"
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Add info about whitespace to SubmitChecklist
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 03 May 2007 13:38:17 -0700
+Message-ID: <ada1whxd4na.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 03 May 2007 20:38:17.0991 (UTC) FILETIME=[FB233970:01C78DC2]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On May 3 2007 22:25, Øyvind Vågen Jægtnes wrote:
->
-> Now for the real setup.
-> We closed the mac of the juniper to the network card that
-> would be connected to the internal LAN, set up the interfaces,
-> and swapped cables. This worked fine for approximately 100
-> of the computers that are connected, but the rest would not
-> get IP. The connected 100 computers were routed just fine.
-
-Try tcpdump. See if dhcpd actually hands out leases, and
-run another tcpdump on a dhcp client machine, to see if it
-even arrives. Furthermore, you could
-
-> 193.239.155.118          ether   00:0A:E4:59:75:66   C
-> eth1.1087
-> 193.239.154.74                   (incomplete)
-> eth1.1016
-
-check if eth1.1016 even "works", by
-  ping -bf 255.255.255.255 -I eth1.1016
-if it lights up in the correct places, packets must be flowing.
-
-
-Jan
--- 
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+---
+diff --git a/Documentation/SubmitChecklist b/Documentation/SubmitChecklist
+index bd23dc0..6491b2c 100644
+--- a/Documentation/SubmitChecklist
++++ b/Documentation/SubmitChecklist
+@@ -80,3 +80,7 @@ kernel patches.
+ 23: Tested after it has been merged into the -mm patchset to make sure
+     that it still works with all of the other queued patches and various
+     changes in the VM, VFS, and other subsystems.
++
++24: Avoid whitespace damage such as indenting with spaces or whitespace
++    at the end of lines.  You can test this by feeding the patch to
++    "git apply --check --whitespace=error-all"
