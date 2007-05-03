@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767755AbXECTYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767770AbXECT2E@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767755AbXECTYW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 15:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767756AbXECTYW
+	id S1767770AbXECT2E (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 15:28:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767775AbXECT2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 15:24:22 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:45351 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767755AbXECTYV (ORCPT
+	Thu, 3 May 2007 15:28:04 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:5071 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767770AbXECT2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 15:24:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=o5GkYHg8zPCUZVYAuxOuiDTuG8NCFtFfGEAQx6Bf8NteifM5eWiLLv+fMljIuq5DyKxlbS88exKV98hP1kUPJMxObjn0p8YWeTcbQmYznbddvPc4MtuvN56SsbwtQqeEZafkum3b+gcsM7VSDIHZ08286jN+17tISamHggWxYpA=
-Date: Thu, 3 May 2007 23:24:22 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Ben Castricum <mail0704@bencastricum.nl>
-Cc: linux-kernel@vger.kernel.org
-Subject: kernel BUG at include/net/tcp.h:739 (was Re: kernel panic with 2.6.21-gdc87c398)
-Message-ID: <20070503192422.GB5836@martell.zuzino.mipt.ru>
-References: <000801c78db5$880fc3c0$0602a8c0@links>
+	Thu, 3 May 2007 15:28:01 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=HEjvROtdaQor/0r1vMOV5gFaYAWoqM/J5hsJRv/4vy70cCkw1aBwmORWMq8qEZoOI
+	JKfUw6eNNp5uRobz8AwPA==
+Date: Thu, 3 May 2007 12:24:17 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Adrian Bunk <bunk@stusta.de>
+cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 01/10] compiler: define __attribute_unused__
+In-Reply-To: <20070503190522.GM3531@stusta.de>
+Message-ID: <Pine.LNX.4.64.0705031213510.2813@chino.kir.corp.google.com>
+References: <Pine.LNX.4.64.0705012254160.21685@chino.kir.corp.google.com>
+ <1178087393.28659.238.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0705012336430.22339@chino.kir.corp.google.com>
+ <1178089444.28659.246.camel@localhost.localdomain>
+ <Pine.LNX.4.64.0705020020420.22717@chino.kir.corp.google.com>
+ <20070502145550.GE3531@stusta.de> <20070502150546.GF3531@stusta.de>
+ <Pine.LNX.4.64.0705021014070.3033@chino.kir.corp.google.com>
+ <20070503175125.GL3531@stusta.de> <Pine.LNX.4.64.0705031154310.2312@chino.kir.corp.google.com>
+ <20070503190522.GM3531@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <000801c78db5$880fc3c0$0602a8c0@links>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 09:01:56PM +0200, Ben Castricum wrote:
-> It crashed again, this time leaving more useable info on screen (see the 
-> Crash2.jpg in the same directory).
+On Thu, 3 May 2007, Adrian Bunk wrote:
+
+> > static external variables are certainly still static code and gcc issues 
+> > the proper warnings if I do:
+> > 
+> > 	static struct bootnode nodes[MAX_NUMNODES];
+> > 
+> > and I never reference nodes.
 > 
-> >I uploaded all the info into
-> >
-> >http://www.bencastricum.nl/2.6.21-gdc87c398/
+> No disagreement.
+> 
+> But you said:
+>   What about automatic or static external variables that are declared but ...
+> 
 
-Follow this thread
-http://marc.info/?t=117813749500005&r=1&w=2
+Ahh, I see the problem.  I was talking about "automatic variables" and 
+"static external variables" implicitly, both of which emit compiler 
+warnings if they are unreferenced as we saw in the arch/i386/pci/init.c 
+case and the example above, respectively.
 
+The only advantage this gives us as opposed to just removing an 
+unreferenced variable completely is the case when its usage depends on 
+multiple preprocessor macros.  Like in the arch/i386/pci/init.c example, 
+the use of 'type' depends on CONFIG_PCI_DIRECT or CONFIG_PCI_MMCONFIG.  It 
+gets sloppy pretty quickly when we're adding
+
+	#if defined(CONFIG_PCI_DIRECT) || defined(CONFIG_PCI_MMCONFIG)
+
+around the variable declarations.  Unfortunately we still have the 
+drawback of perhaps leaving abandoned declarations in the code but now 
+there will be an easy way to detect it: defining __maybe_unused and __used 
+to be empty.  Then we won't have hardcoded __attribute__ ((unused)) text 
+sprinkled around the tree that would require examination on an individual 
+basis.
+
+		David
