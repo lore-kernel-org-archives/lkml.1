@@ -1,77 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161862AbXECMEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161861AbXECMIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161862AbXECMEM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 08:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161861AbXECMEM
+	id S1161861AbXECMIf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 08:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161866AbXECMIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 08:04:12 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:41758 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161862AbXECMEL (ORCPT
+	Thu, 3 May 2007 08:08:35 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3217 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161863AbXECMIe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 08:04:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=QXAzF9syjAtywsIwnDrWfvxAvxbXvzlIDKfK/Flt2DkF8oK/kg2tbcTmfH6Z2gbsKci21GOBHR2ncWbA+ebZv0xISR/3QLxLtp/s+2Erd1CdUUyWxzvOAIyMK8/Ml5h9BcB+ecoE2QbcupN72fwBjsIOSJLgGrnhgz7k9cO7p6g=
-Subject: Re: dead CONFIG_ variables:   drivers/video/
-From: "Antonino A. Daplas" <adaplas@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0705030638270.380@localhost.localdomain>
-References: <Pine.LNX.4.64.0705030638270.380@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 20:04:04 +0800
-Message-Id: <1178193844.4606.64.camel@daplas>
+	Thu, 3 May 2007 08:08:34 -0400
+Date: Thu, 3 May 2007 13:08:15 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Corey Minyard <minyard@acm.org>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>, linux-serial@vger.kernel.org
+Subject: Re: Serial 8250: clear the lsr_break_flag at open
+Message-ID: <20070503120815.GA21024@flint.arm.linux.org.uk>
+Mail-Followup-To: Corey Minyard <minyard@acm.org>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	linux-serial@vger.kernel.org
+References: <20070430220858.GA28890@localdomain> <20070501092933.GB18233@flint.arm.linux.org.uk> <46373F42.4080305@acm.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46373F42.4080305@acm.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-03 at 06:40 -0400, Robert P. J. Day wrote:
-> $ ../dead_config.sh drivers/video
-> ========== FB_68328_INVERT ==========
-> drivers/video/68328fb.c:53:#if defined(CONFIG_FB_68328_INVERT)
+On Tue, May 01, 2007 at 08:23:14AM -0500, Corey Minyard wrote:
+> Russell King wrote:
+> >On Mon, Apr 30, 2007 at 05:08:59PM -0500, Corey Minyard wrote:
+> >  
+> >>I'm having a hard time understanding why the lsr_break_flag
+> >>is necessary.
+> >>    
+> >
+> >Merely reading the LSR clears status bits.  We read the LSR repeatedly
+> >so that we can monitor the transmit FIFO when outputting serial console
+> >messages.
+> >
+> >This means that if you have a busy serial console, and you want to send
+> >it a sysrq request, there's a chance that the break flag in the LSR will
+> >be cleared by the transmit FIFO status polling code thereby being lost.
+> >
+> >So, we need to remember that status, and we do this via the lsr_break_flag.
+> >  
+> I should have said a little more.  I couldn't find anywhere in any docs
+> for this that said it was a destructive read.
 
-Can be made part of Kconfig, I think
+The TI 16550A data sheet says:
 
-> ========== FB_AU1200_DEVS ==========
-> drivers/video/au1200fb.c:52:#ifndef CONFIG_FB_AU1200_DEVS
-> drivers/video/au1200fb.c:53:#define CONFIG_FB_AU1200_DEVS 4
-> drivers/video/au1200fb.c:160:static struct au1200fb_device _au1200fb_devices[CONFIG_FB_AU1200_DEVS];
-> drivers/video/au1200fb.c:714:   for (i = 0; i < CONFIG_FB_AU1200_DEVS; ++i) {
-> drivers/video/au1200fb.c:1635:  for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) {
-> drivers/video/au1200fb.c:1730:  for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)
-> drivers/video/au1200fb.c:1850:                  for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)         {
+* Bit 1: This bit is the overrun error (OE) indicator. ... The OE indicator
+  is cleared every time the CPU reads the contents of the LSR.
 
-Not sure about this one.
+* Bit 2.: This bit is the parity error (PE) indicator. ... The PE bit is
+  cleared every time the CPU reads the contents of the LSR.
 
-> ========== FB_MATROX_32MB ==========
-> drivers/video/matrox/matroxfb_base.c:307:#ifdef CONFIG_FB_MATROX_32MB
-> drivers/video/matrox/matroxfb_base.c:327:#ifdef CONFIG_FB_MATROX_32MB
-> drivers/video/matrox/matroxfb_base.c:339:#ifdef CONFIG_FB_MATROX_32MB
-> drivers/video/matrox/matroxfb_base.c:1342:#ifdef CONFIG_FB_MATROX_32MB
-> drivers/video/matrox/matroxfb_base.c:1619:#ifdef CONFIG_FB_MATROX_32MB
-> drivers/video/matrox/matroxfb_DAC1064.c:1053:#ifdef CONFIG_FB_MATROX_32MB
-> drivers/video/matrox/matroxfb_base.h:58:#define CONFIG_FB_MATROX_32MB
-> drivers/video/matrox/matroxfb_base.h:466:#ifdef CONFIG_FB_MATROX_32MB
+* Bit 3: This bit is the framing error (FE) indicator. ... The FE bit is
+  cleared every time the CPU reads the contents of the LSR.
 
-This needs to be part of Kconfig.
+* Bit 4: This bit is the break interrupt (BI) indicator. ... The BI bit is
+  cleared every time the CPU reads the contents of the LSR.
 
-> ========== FB_NVIDIA_DEBUG ==========
-> drivers/video/nvidia/nvidia.c:40:#undef CONFIG_FB_NVIDIA_DEBUG
-> drivers/video/nvidia/nvidia.c:41:#ifdef CONFIG_FB_NVIDIA_DEBUG
-> drivers/video/nvidia/nvidia.c:50:#ifdef CONFIG_FB_NVIDIA_DEBUG
+> So two things:
+> 
+> There are other bits in this register that also appear to be destroyed on
+> read: framing, parity, and overrun.  Should those be saved, too?
 
-False positive, may be renamed.
+Yes.
 
-> ========== FB_SOFT_CURSOR ==========
-> drivers/video/sis/sis_main.c:1906:#ifdef CONFIG_FB_SOFT_CURSOR
+> There are several places where the LSR is read and nothing is done
+> for this, in serial8250_start_tx, serial8250_backup_timeout, and
+> serial8250_tx_empty.  It seems like these would need to be handled,
+> too.
 
-This is dead, FB_SOFT_CURSOR is truly gone.
+The backup code is something I never properly reviewed, so no comments
+there.  The tx_empty code I assumed would be a relatively rare event,
+except when closing the port (at which point you don't particularly care
+about errors anyway, not even the break flag since chances are you'll
+miss the following character.)
 
-Thanks.
+Given that people might want to poll it for various reasons, I guess
+saving the status away should be done.  However, there's a slight issue
+with working out which character the error is associated with.  Careful
+locking may be the answer to that though.
 
-Tony
+As for start_tx, yes, though slightly harder to check.  Maybe the code
+should be modified to reduce the number of potential LSR reads by reading
+the IIR first, and only if that shows no interrupt pending should the LSR
+be read (and the error flags remembered.)
 
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
