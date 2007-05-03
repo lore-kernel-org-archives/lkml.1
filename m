@@ -1,40 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031103AbXECJhw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031059AbXECJh6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031103AbXECJhw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 05:37:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031059AbXECJhv
+	id S1031059AbXECJh6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 05:37:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030986AbXECJhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 05:37:51 -0400
-Received: from wr-out-0506.google.com ([64.233.184.233]:35850 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031000AbXECJhV (ORCPT
+	Thu, 3 May 2007 05:37:18 -0400
+Received: from cassiel.sirena.org.uk ([80.68.93.111]:3884 "EHLO
+	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030973AbXECJhN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 05:37:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aVtHv8vWWIYJ+O4/Oi6Lzt9Z/MzPRhkcv1NQ/mxaZlbiB0DsR/zDxwSLymoOMKHhZuFrzxezBev7iqHAL2aR/ZiIRIj3aeVgM2o1Vk+cSYOI28OAAdZm3HME2MwQdqNKCNeQeK3PJ9OkKRXKHOzsHqhI9TPpdyauYy/oKFoqv9w=
-Message-ID: <a781481a0705030237l7d636b55t93f2ee5151cd7709@mail.gmail.com>
-Date: Thu, 3 May 2007 02:37:20 -0700
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Subject: Re: finding your own dead "CONFIG_" variables
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0705030400120.20539@localhost.localdomain>
+	Thu, 3 May 2007 05:37:13 -0400
+From: Mark Brown <broonie@sirena.org.uk>
+To: Tim Hockin <thockin@hockin.org>, Jeff Garzik <jeff@garzik.org>
+Cc: =?utf-8?b?UmFmYcWC?= Bilski <rafalbilski@interia.pl>,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 03 May 2007 10:36:44 +0100
+Message-ID: <20070503093435.7800.38591.stgit@mercator.sirena.org.uk>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0705030400120.20539@localhost.localdomain>
+X-SA-Exim-Connect-IP: 82.32.140.119
+X-SA-Exim-Mail-From: broonie@sirena.org.uk
+Subject: [PATCH 0/2] natsemi: Improve DspCfg workaround
+X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
+X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> http://fsdev.net/wiki/index.php?title=Dead_CONFIG_variables
+The natsemi driver contains a workaround for broken hardware which can
+on some boards cause more problems than it solves.  The following patch
+series improves this by making the diagnostic more obvious and allowing
+users to disable the workaround if it causes them problems.
 
-> kcfiles=$(find . -name "Kconfig*")
-
-Suggest: configfiles=$(find . -name 'Kconfig*' -or -name '*defconfig*')
-
-Some CONFIG_ options exist that are not declared anywhere in the
-Kconfig files but defined directly in the arch/.../*defconfig* files.
+-- 
+"You grabbed my hand and we fell into it, like a daydream - or a fever."
