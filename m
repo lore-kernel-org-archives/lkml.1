@@ -1,85 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767222AbXECVPB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767224AbXECVPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767222AbXECVPB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031350AbXECVPB
+	id S1767224AbXECVPR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031350AbXECVPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:15:01 -0400
-Received: from mga06.intel.com ([134.134.136.21]:21463 "EHLO
-	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767222AbXECVOt (ORCPT
+	Thu, 3 May 2007 17:15:17 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34222 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031349AbXECVPO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:14:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,487,1170662400"; 
-   d="scan'208";a="238877390"
-Date: Thu, 3 May 2007 14:14:52 -0700
-From: Valerie Henson <val_henson@linux.intel.com>
-To: David Chinner <dgc@sgi.com>
-Cc: "Cabot, Mason B" <mason.b.cabot@intel.com>, linux-kernel@vger.kernel.org,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: Re: Ext3 vs NTFS performance
-Message-ID: <20070503211450.GA3869@nifty>
-References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070502154414.GB77450368@melbourne.sgi.com>
+	Thu, 3 May 2007 17:15:14 -0400
+Date: Thu, 3 May 2007 14:15:13 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Hugh Dickins <hugh@veritas.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: slub on PowerPC
+In-Reply-To: <Pine.LNX.4.64.0705032143420.7589@blonde.wat.veritas.com>
+Message-ID: <Pine.LNX.4.64.0705031408360.13387@schroedinger.engr.sgi.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
+ <20070501125559.9ab42896.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
+ <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705021017270.32635@schroedinger.engr.sgi.com>
+ <20070503011515.0d89082b.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705030936120.5165@blonde.wat.veritas.com>
+ <20070503015729.7496edff.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705031011020.9826@blonde.wat.veritas.com>
+ <Pine.LNX.4.64.0705032143420.7589@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502154414.GB77450368@melbourne.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 01:44:14AM +1000, David Chinner wrote:
-> On Tue, May 01, 2007 at 01:43:18PM -0700, Cabot, Mason B wrote:
-> > Hello all,
+On Thu, 3 May 2007, Hugh Dickins wrote:
+
+> On Thu, 3 May 2007, Hugh Dickins wrote:
 > > 
-> > I've been testing the NAS performance of ext3/Openfiler 2.2 against
-> > NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
-> > video workloads. The Windows CIFS client will attempt a poor-man's
-> > pre-allocation of the file on the server by sending 1-byte writes at
-> > 128K-byte strides, breaking block allocation on ext3 and leading to
-> > fragmentation and poor performance. This will happen for many
-> > applications (including iTunes) as the CIFS client issues these
-> > pre-allocates under the application layer.
-> > 
-> > I've posted a brief paper on Intel's OSS website
-> > (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
-> > it a read and let me know what you think. In particular, I'd like to
-> > arrive at the right place to fix this problem: is it in the filesystem,
-> > VFS, or Samba?
+> > Seems we're all wrong in thinking Christoph's Kconfiggery worked
+> > as intended: maybe it just works some of the time.  I'm not going
+> > to hazard a guess as to how to fix it up, will resume looking at
+> > the powerpc's quicklist potential later.
 > 
-> As I commented on IRC to Val Henson - the XFS performance indicates
-> that it is not a VFS or Samba problem.
+> Here's the patch I've been testing on G5, with 4k and with 64k pages,
+> with SLAB and with SLUB.  But, though it doesn't crash, the pgd
+> kmem_cache in the 4k-page SLUB case is revealing SLUB's propensity
+> for using highorder allocations where SLAB would stick to order 0:
+> under load, exec's mm_init gets page allocation failure on order 4
+> - SLUB's calculate_order may need some retuning.  (I'd expect it to
+> be going for order 3 actually, I'm not sure how order 4 comes about.)
 
-In terms of what piece of code we can swap out and get good
-performance, the problem is indeed in ext3 - it's clear that the cause
-of the bad performance is the 1-byte writes resulting in ext3
-fragmenting the on-disk layout of the file, and replacing it with XFS
-results in nice, clean, unfragmented files.
+There are SLUB patches pending (not in rc7-mm2 as far as I can recall) 
+that reduce the default page order sizes to head off this issue. The 
+defaults were initially too large (and they still default to large
+for testing if Mel's Antifrag work is detected to be active).
 
-But in terms of what we should do to fix it, there is the possibility
-of some debate.  In general, I think there is a lot of code stuck down
-in individual file systems - especially in XFS - that could be
-usefully hoisted up to a higher level as generic helper functions.
-For example, we've got at least two implementations of reservations,
-one in XFS and one in ext3/4.  At least some of the code could be
-generic - both file systems want to reserve long contiguous extents -
-with the actual mechanics of looking up and reserving free blocks
-implemented in per-fs code.
+> -	return kmem_cache_alloc(pgtable_cache[PTE_CACHE_NUM],
+> -				GFP_KERNEL|__GFP_REPEAT);
+> +	return quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
 
-I'd really like to see a generic VFS-level detection of
-read()/write()/creat()/mkdir()/etc. patterns which could detect things
-like "Oh, this file is likely to be deleted immediately, wait and see
-if it goes away and don't bother sending it on to the FS immediately"
-or "Looks like this file will grow pretty big, let's go pre-allocate
-some space for it."  This is probably best done as a set of helper
-functions in the usual way.
+__GFP_REPEAT is unusual here but this was carried over from the 
+kmem_cache_alloc it seems. Hmm... There is some variance on how we do this 
+between arches. Should we uniformly set or not set this flag?
 
-For this particular case, Ted is probably right and the only place
-we'll ever see this insane poor man's pre-allocate pattern is from the
-Windows CIFS client, in which case fixing this in Samba makes sense -
-although I'm a bit horrified by the idea of writing 128K of zeroes to
-pre-allocate... oh well, it's temporary, and what we care about here
-is the read performance, more than the write performance.
+clameter@schroedinger:~/software/linux-2.6.21-rc7-mm2$ grep quicklist_alloc include/asm-ia64/*
+include/asm-ia64/pgalloc.h:     return quicklist_alloc(0, GFP_KERNEL, NULL);
+include/asm-ia64/pgalloc.h:     return quicklist_alloc(0, GFP_KERNEL, NULL);
+include/asm-ia64/pgalloc.h:     return quicklist_alloc(0, GFP_KERNEL, NULL);
+include/asm-ia64/pgalloc.h:     void *pg = quicklist_alloc(0, GFP_KERNEL, NULL);
+include/asm-ia64/pgalloc.h:     return quicklist_alloc(0, GFP_KERNEL, NULL);
+clameter@schroedinger:~/software/linux-2.6.21-rc7-mm2$ grep quicklist_alloc arch/i386/mm/*    
+arch/i386/mm/pgtable.c: pgd_t *pgd = quicklist_alloc(0, GFP_KERNEL, pgd_ctor);
+clameter@schroedinger:~/software/linux-2.6.21-rc7-mm2$ grep quicklist_alloc include/asm-sparc64/*
+include/asm-sparc64/pgalloc.h:  return quicklist_alloc(0, GFP_KERNEL, NULL);
+include/asm-sparc64/pgalloc.h:  return quicklist_alloc(0, GFP_KERNEL, NULL);
+include/asm-sparc64/pgalloc.h:  return quicklist_alloc(0, GFP_KERNEL, NULL);
+include/asm-sparc64/pgalloc.h:  void *pg = quicklist_alloc(0, GFP_KERNEL, NULL);
+clameter@schroedinger:~/software/linux-2.6.21-rc7-mm2$ grep quicklist_alloc include/asm-x86_64/* 
+include/asm-x86_64/pgalloc.h:   return (pmd_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+include/asm-x86_64/pgalloc.h:   return (pud_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+include/asm-x86_64/pgalloc.h:   pgd_t *pgd = (pgd_t *)quicklist_alloc(QUICK_PGD,
+include/asm-x86_64/pgalloc.h:   return (pte_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+include/asm-x86_64/pgalloc.h:   void *p = (void *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
 
--VAL
