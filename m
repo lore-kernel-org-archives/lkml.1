@@ -1,57 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031293AbXECMlh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031324AbXECMpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031293AbXECMlh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 08:41:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031299AbXECMlh
+	id S1031324AbXECMpS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 08:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031321AbXECMpS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 08:41:37 -0400
-Received: from fwstl1-1.wul.qc.ec.gc.ca ([205.211.132.24]:41053 "EHLO
-	ecqcmtlbh.quebec.int.ec.gc.ca" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1031293AbXECMlg convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 08:41:36 -0400
-content-class: urn:content-classes:message
+	Thu, 3 May 2007 08:45:18 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:35872 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1031318AbXECMpQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 08:45:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=L0y6KtTNoa1im10why/UR2krP8ZeP3xBYNNxcr6fBtecKECCPWB7J/A8U52cDQpyo5/5c1XXj0gFfXhS3A4CAcrF079XQ+Gk9mfw1x+gssxgqlFVCH+DE7i3fVRs1lawXgWmUiLY9HUNfymHoTvsvdMNpQZdXKVzTRXeY5yGqJo=  ;
+X-YMail-OSG: .K41F2YVM1n9aHhdvQVoLACx_rCwoXV3T0PBDtYN3dTxBZJU
+Message-ID: <4639D8E8.2090608@yahoo.com.au>
+Date: Thu, 03 May 2007 22:43:20 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.0.6603.0
-Subject: RE: [ck] Staircase Deadline cpu scheduler version 0.48 - 2.6.18 to 2.6.20 backports patches
-Date: Thu, 3 May 2007 08:41:12 -0400
-Message-ID: <8E8F647D7835334B985D069AE964A4F7033AB5F1@ECQCMTLMAIL1.quebec.int.ec.gc.ca>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [ck] Staircase Deadline cpu scheduler version 0.48 - 2.6.18 to 2.6.20 backports patches
-Thread-Index: AceNTPWCmAOEUT0+TV63jzUoZyL/pAAK2yPw
-References: <200705031630.24913.kernel@kolivas.org>
-From: "Fortier,Vincent [Montreal]" <Vincent.Fortier1@EC.GC.CA>
-To: "Con Kolivas" <kernel@kolivas.org>, <linux-kernel@vger.kernel.org>,
-       <ck@vds.kolivas.org>
-X-OriginalArrivalTime: 03 May 2007 12:41:12.0562 (UTC) FILETIME=[550D6520:01C78D80]
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com> <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com> <46393BA7.6030106@yahoo.com.au> <Pine.LNX.4.64.0705031306300.24945@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0705031306300.24945@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Message d'origine-----
-> De : ck-bounces@vds.kolivas.org 
-> [mailto:ck-bounces@vds.kolivas.org] De la part de Con Kolivas
-> Envoyé : 3 mai 2007 02:30
+Hugh Dickins wrote:
+> On Thu, 3 May 2007, Nick Piggin wrote:
 > 
-> I've done some minor cleanups and microoptimisations to the 
-> code since version
-> 0.46 in preparation for releasing -ck with SD as its base.
+>>The problem is that lock/unlock_page is expensive on powerpc, and
+>>if we improve that, we improve more than just the fault handler...
+>>
+>>The attached patch gets performance up a bit by avoiding some
+>>barriers and some cachelines:
 > 
-> http://www.kernel.org/pub/linux/kernel/people/ck/patches/stair
-> case-deadline/2.6.21/2.6.21-sd-0.48.patch
+> 
+> There's a strong whiff of raciness about this...
+> but I could very easily be wrong.
+> 
+> 
+>>Index: linux-2.6/mm/filemap.c
+>>===================================================================
+>>--- linux-2.6.orig/mm/filemap.c	2007-05-02 15:00:26.000000000 +1000
+>>+++ linux-2.6/mm/filemap.c	2007-05-03 08:34:32.000000000 +1000
+>>@@ -532,11 +532,13 @@
+>>  */
+>> void fastcall unlock_page(struct page *page)
+>> {
+>>+	VM_BUG_ON(!PageLocked(page));
+>> 	smp_mb__before_clear_bit();
+>>-	if (!TestClearPageLocked(page))
+>>-		BUG();
+>>-	smp_mb__after_clear_bit(); 
+>>-	wake_up_page(page, PG_locked);
+>>+	ClearPageLocked(page);
+>>+	if (unlikely(test_bit(PG_waiters, &page->flags))) {
+>>+		clear_bit(PG_waiters, &page->flags);
+>>+		wake_up_page(page, PG_locked);
+>>+	}
+>> }
+>> EXPORT_SYMBOL(unlock_page);
+>> 
+>>@@ -568,6 +570,11 @@ __lock_page (diff -p would tell us!)
+>> {
+>> 	DEFINE_WAIT_BIT(wait, &page->flags, PG_locked);
+>> 
+>>+	set_bit(PG_waiters, &page->flags);
+>>+	if (unlikely(!TestSetPageLocked(page))) {
+> 
+> 
+> What happens if another cpu is coming through __lock_page at the
+> same time, did its set_bit, now finds PageLocked, and so proceeds
+> to the __wait_on_bit_lock?  But this cpu now clears PG_waiters,
+> so this task's unlock_page won't wake the other?
 
-Hi all,
+You're right, we can't clear the bit here. Doubt it mattered much anyway?
 
-I made backport patches of SD 0.48 for 2.6.18.8, 2.6.19.7 & 2.6.20.11 kernels and also diff patches 0.46 -> 0.47 -> 0.48.
+BTW. I also forgot an smp_mb__after_clear_bit() before the wake_up_page
+above... that barrier is in the slow path as well though, so it shouldn't
+matter either.
 
-All info & download available at http://linux-dev.qc.ec.gc.ca
+> 
+> 
+>>+		clear_bit(PG_waiters, &page->flags);
+>>+		return;
+>>+	}
+>> 	__wait_on_bit_lock(page_waitqueue(page), &wait, sync_page,
+>> 							TASK_UNINTERRUPTIBLE);
+>> }
+> 
+> 
 
-There are also various versions of SD & CFS kernels for FC6 & Debian Sarge/Etch
 
-> --
-> -ck
-
-- vin
+-- 
+SUSE Labs, Novell Inc.
