@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767334AbXECC3S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767335AbXECCbP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767334AbXECC3S (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 22:29:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767340AbXECC3R
+	id S1767335AbXECCbP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 22:31:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767338AbXECCbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 22:29:17 -0400
-Received: from rtr.ca ([64.26.128.89]:3051 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767334AbXECC3Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 22:29:16 -0400
-Message-ID: <463948F8.5090907@rtr.ca>
-Date: Wed, 02 May 2007 22:29:12 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Wed, 2 May 2007 22:31:15 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:48765 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767335AbXECCbO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 22:31:14 -0400
+Date: Wed, 2 May 2007 19:31:09 -0700
+From: Bill Irwin <bill.irwin@oracle.com>
+To: Bill Irwin <bill.irwin@oracle.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       wli@holomorphy.com
+Subject: Re: [PATCH] i386: fix suspend/resume with dynamically allocated irq stacks
+Message-ID: <20070503023109.GE26598@holomorphy.com>
+Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
+	Jeremy Fitzhardinge <jeremy@goop.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <46394139.605@goop.org> <20070503022534.GD26598@holomorphy.com>
 MIME-Version: 1.0
-To: tglx@linutronix.de
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Walker <dwalker@mvista.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [BUG] 2.6.21: Kernel won't boot with either/both	of	CONFIG_NO_HZ,
- CONFIG_HIGH_RES_TIMERS
-References: <46364EBC.5050804@rtr.ca> <46364F5A.2030208@rtr.ca>	 <463653A3.5040606@rtr.ca> <46367D7E.6060502@rtr.ca>	 <1177976798.12796.286.camel@imap.mvista.com> <463683A6.4010505@rtr.ca>	 <1178026458.5791.305.camel@localhost.localdomain> <4637419D.8010303@rtr.ca>		 <463741F1.7050706@rtr.ca>	 <1178027285.5791.307.camel@localhost.localdomain> <46374B1D.6050509@rtr.ca>	 <1178035058.5791.333.camel@localhost.localdomain> <46377055.2060605@rtr.ca>	 <1178092035.5791.349.camel@localhost.localdomain>	 <20070502010527.e64dcce9.akpm@linux-foundation.org>	 <1178120457.25504.17.camel@localhost.localdomain> <463910BF.9050103@rtr.ca> <1178145675.2340.28.camel@localhost.localdomain>
-In-Reply-To: <1178145675.2340.28.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070503022534.GD26598@holomorphy.com>
+User-Agent: Mutt/1.5.11
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> ..
-> I try to come up with something, but I'm travelling tomorrow, so it
-> might be not before end of week.
+On Wed, May 02, 2007 at 06:56:09PM -0700, Jeremy Fitzhardinge wrote:
+>> +static void __cpuinit __free_irqstack(int cpu, void *stk)
+>> +{
+>> +	int i;
+>> +
+>> +	if (!cpu)
+>> +		return;
+>> +
+>> +	unmap_vm_area(per_cpu(irqstack_area, cpu));
+>> +
+>> +	for (i = 0; i < THREAD_SIZE/PAGE_SIZE; ++i)
+>> +		__free_page(per_cpu(irqstack_pages, cpu)[i]);
+>> +}
 
-Thanks, Thomas.
+On Wed, May 02, 2007 at 07:25:34PM -0700, Bill Irwin wrote:
+[...]
 
-I believe we definitely want to nail this down before 2.6.22-final,
-but there's a good workaround in the interim (CONFIG_DETECT_SOFTLOCKUP=y)
-and we've got at least a couple of months 'till then.
+Not sure if cpu 0 can ever be offlined, but it is remapped and so on.
+So its virtual mapping should be undone if it can be offlined, but we
+probably shouldn't attempt to free its underlying bootmem allocation.
 
-I think I may have fiddled with the RTC config, so I'll compare with my
-old config and see what changed.
 
-Cheers
+-- wli
