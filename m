@@ -1,40 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031155AbXECLs5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161850AbXECLtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031155AbXECLs5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 07:48:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161848AbXECLs5
+	id S1161850AbXECLtX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 07:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161854AbXECLtX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 07:48:57 -0400
-Received: from mx1.suse.de ([195.135.220.2]:60508 "EHLO mx1.suse.de"
+	Thu, 3 May 2007 07:49:23 -0400
+Received: from ozlabs.org ([203.10.76.45]:39476 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031155AbXECLs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 07:48:56 -0400
-Date: Thu, 3 May 2007 13:48:54 +0200
-From: Olaf Hering <olh@suse.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       linux1394-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       krh@redhat.com
-Subject: Re: [git pull] New firewire stack
-Message-ID: <20070503114854.GA12731@suse.de>
-References: <200705030004.l4304l8h012587@turbo.physics.adelaide.edu.au> <46399BDE.4040605@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <46399BDE.4040605@s5r6.in-berlin.de>
-X-DOS: I got your 640K Real Mode Right Here Buddy!
-X-Homeland-Security: You are not supposed to read this line! You are a terrorist!
-User-Agent: Mutt und vi sind doch schneller als Notes (und GroupWise)
+	id S1161850AbXECLtV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 07:49:21 -0400
+Subject: Re: [LGUEST] Look in object dir for .config
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Tony Breeds <tony@bakeyournoodle.com>
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070503045446.GG15955@bakeyournoodle.com>
+References: <20070503045446.GG15955@bakeyournoodle.com>
+Content-Type: text/plain
+Date: Thu, 03 May 2007 21:49:04 +1000
+Message-Id: <1178192945.23670.18.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, Stefan Richter wrote:
+On Thu, 2007-05-03 at 14:54 +1000, Tony Breeds wrote:
+> From: Tony Breeds <tony@bakeyournoodle.com>
+> 
+> [LGUEST] Look in object dir for .config
+> 
+> If you build with make O=.... then .config isn't in ../../, this patch
+> goes partway to making sure that you don't dirty the source tree.
+> 
+> Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 
-> 	ieee1394-old
+Thanks Tony.  Will forward to Andrew.
 
-Noone will seriously ship two firewire stacks, so that cant be the
-issue (for distributors). 
+Cheers,
+Rusty.
 
-Once there is a way to easily switch between kernel releases, I'm ok
-with whatever module names you pick. 
