@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162043AbXECOmN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161268AbXECOnS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162043AbXECOmN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:42:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162046AbXECOmN
+	id S1161268AbXECOnS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:43:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162028AbXECOnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:42:13 -0400
-Received: from mu-out-0910.google.com ([209.85.134.184]:17401 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1162043AbXECOmM (ORCPT
+	Thu, 3 May 2007 10:43:18 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:34201 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161268AbXECOnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:42:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=gtHHlaLuzNST/W/LkU/mMjogZetxYZuwgq2WJWz1b58qc26rvDw9vvhc2kk84SiofJiCNsOa1bhw9lC6r+q/cHgAXfBCrOy/6n1HK8owk24QSILxo0C9ww+maX25Ek7zBCi+ZTf4b/wiSjyEUrANC6Zy34YS2lw9i4RmYKYpD3k=
-Message-ID: <4639F4B1.2080606@gmail.com>
-Date: Thu, 03 May 2007 16:41:53 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -v2 1/1] Misc: add sensable phantom driver
-References: <219403193181341921@karneval.cz> <20070502234956.cdfe31c2.akpm@linux-foundation.org>
-In-Reply-To: <20070502234956.cdfe31c2.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 10:43:17 -0400
+Date: Thu, 3 May 2007 15:43:15 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: simo <idra@samba.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Steve French <smfrench@gmail.com>,
+       linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-cifs-client] Re: SMB2 file system - should it be a distinct module
+Message-ID: <20070503144315.GA24129@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	simo <idra@samba.org>, Steve French <smfrench@gmail.com>,
+	linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
+References: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com> <20070501090657.GA17949@infradead.org> <1178198489.28758.14.camel@localhost.localdomain> <20070503141742.GB20328@infradead.org> <1178203013.28758.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178203013.28758.29.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton napsal(a):
->> +static int phantom_ioctl(struct inode *inode, struct file *file, u_int cmd,
->> +	u_long arg)
-> 
-> Could we please use standard-looking types in this driver?  u32 and u64 and
-> things?
-> 
-> However in this case, as it's an ioctl handler it should be "int" and
-> "unsigned long".
+On Thu, May 03, 2007 at 10:36:53AM -0400, simo wrote:
+> I guess DFS referrals can work cross protocol, so if you are redirected
+> from a longhorn server to a windoes 2000 or a samba server you want to
+> be able to follow the DFS referral and not return an error.
+> To do that you need to have either 1 module that support both protocols
+> or a way from one module to call the other. Just separating the 2
+> without any glue will not work (or you will have to add some userspace
+> upcall hack to make it work).
 
-actually, according to file_operations struct:
+You can easily redirect from one filesystem to another through
+->follow_link, and you can mount new filesystems instances from there.
 
-int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
-
-"*unsigned* int" and "unsigned long" are correct types...
-
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
- B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Can we please stop the bullshitting now?  And can you please get a realname
+before playing smart ass on filesystem developers lists?
