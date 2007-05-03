@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161870AbXECM7N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161878AbXECM7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161870AbXECM7N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 08:59:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161878AbXECM7N
+	id S1161878AbXECM7Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 08:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161879AbXECM7Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 08:59:13 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:19253 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161870AbXECM7M (ORCPT
+	Thu, 3 May 2007 08:59:24 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:34233 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161878AbXECM7X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 08:59:12 -0400
-Date: Thu, 3 May 2007 13:58:52 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
-In-Reply-To: <4639D8E8.2090608@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0705031351180.29450@blonde.wat.veritas.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com>
- <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com>
- <46393BA7.6030106@yahoo.com.au> <Pine.LNX.4.64.0705031306300.24945@blonde.wat.veritas.com>
- <4639D8E8.2090608@yahoo.com.au>
+	Thu, 3 May 2007 08:59:23 -0400
+Date: Thu, 3 May 2007 08:57:41 -0400
+From: Chris Mason <chris.mason@oracle.com>
+To: David Chinner <dgc@sgi.com>
+Cc: "Cabot, Mason B" <mason.b.cabot@intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: Ext3 vs NTFS performance
+Message-ID: <20070503125741.GA1518@think.oraclecorp.com>
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070502154414.GB77450368@melbourne.sgi.com> <20070502194621.GY1518@think.oraclecorp.com> <20070503001511.GD77450368@melbourne.sgi.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 03 May 2007 12:59:08.0951 (UTC) FILETIME=[D6A15270:01C78D82]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGFuZHJlYUBzdXNlLmRlAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAaGNoQGluZnJhZGVhZC5vcmcAbmlja3BpZ2dpbkB5YWhvby5jb20uYXUA
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070503001511.GD77450368@melbourne.sgi.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 May 2007, Nick Piggin wrote:
-> >>@@ -568,6 +570,11 @@ __lock_page (diff -p would tell us!)
-> > > {
-> > >  DEFINE_WAIT_BIT(wait, &page->flags, PG_locked);
-> > >
-> > >+	set_bit(PG_waiters, &page->flags);
-> > >+	if (unlikely(!TestSetPageLocked(page))) {
-> > 
-> > What happens if another cpu is coming through __lock_page at the
-> > same time, did its set_bit, now finds PageLocked, and so proceeds
-> > to the __wait_on_bit_lock?  But this cpu now clears PG_waiters,
-> > so this task's unlock_page won't wake the other?
+On Thu, May 03, 2007 at 10:15:11AM +1000, David Chinner wrote:
+[ bad fragmentation from a funky write one byte every 128k system ]
 > 
-> You're right, we can't clear the bit here. Doubt it mattered much anyway?
-
-Ah yes, that's a good easy answer.  In fact, just remove this whole
-test and block (we already tried TestSetPageLocked outside just a
-short while ago, so this repeat won't often save anything).
-
+> This only becomes a problem if the system has enough pages dirty to
+> be triggering throttling so that the 1byte writes are converted before
+> the data actually hits the server.
 > 
-> BTW. I also forgot an smp_mb__after_clear_bit() before the wake_up_page
-> above... that barrier is in the slow path as well though, so it shouldn't
-> matter either.
+> Even then, if you are on an XFS filesystem with a sunit/swidth set,
+> the alocation alignments and speculative allocations will go a long
+> way to preventing fragmentations.
+> 
+> If that doesn't work, then set the extent allocation size hint on the
+> XFS inode to 128k or 256k to set the minimum all ocation size for the
+> file to span the distance between the 1 byte writes. This attribute
+> can be inherited from the parent directory on create, so it's a
+> set and forget type of thing...
+> 
+> i.e. XFS has lots of ways to prevent perfromance from degrading
+> on these sorts of issues.
 
-I vaguely wondered how such barriers had managed to dissolve away,
-but cranking my brain up to think about barriers takes far too long.
+I'm not surprised that XFS would fair the best in this workload,
+but this sounds like a lot of magic that shouldn't be required.  The
+fact that it is good to have the allocation knobs and delalloc in
+general doesn't mean that samba shouldn't do the right thing and
+preallocate the space in a sensible fashion.
 
-> > >+		clear_bit(PG_waiters, &page->flags);
-> > >+		return;
-> > >+	}
-> > >  __wait_on_bit_lock(page_waitqueue(page), &wait, sync_page,
-> > >        TASK_UNINTERRUPTIBLE);
-> >> }
+-chris
+
