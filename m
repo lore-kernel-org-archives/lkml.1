@@ -1,77 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753553AbXECLSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbXECLTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753553AbXECLSR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 07:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753388AbXECLSR
+	id S1753753AbXECLTK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 07:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbXECLTK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 07:18:17 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:50974 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753170AbXECLSP (ORCPT
+	Thu, 3 May 2007 07:19:10 -0400
+Received: from hammerhead.shentel.net ([204.111.1.228]:54768 "EHLO
+	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753388AbXECLTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 07:18:15 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Thu, 3 May 2007 07:17:34 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: dead CONFIG_ variables:  drivers/scsi/
-In-Reply-To: <20070503111113.GC12018@flint.arm.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0705030713210.680@localhost.localdomain>
-References: <Pine.LNX.4.64.0705030606570.32341@localhost.localdomain>
- <20070503111113.GC12018@flint.arm.linux.org.uk>
+	Thu, 3 May 2007 07:19:08 -0400
+Date: Thu, 3 May 2007 07:17:25 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+cc: linux-kernel@vger.kernel.org, trivial@kernel.org, davem@davemloft.net,
+       linux-crypto@vger.kernel.org
+Subject: [PATCH] crypto: convert crypto.h to UTF-8
+In-Reply-To: <20070502044345.GA29384@gondor.apana.org.au>
+Message-ID: <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
+References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
+ <20070502044345.GA29384@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: MULTIPART/MIXED; BOUNDARY="1875672472-1995079615-1178191047=:17390"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 May 2007, Russell King wrote:
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> On Thu, May 03, 2007 at 06:10:28AM -0400, Robert P. J. Day wrote:
-> >
-> > $ ../dead_config.sh drivers/scsi
-> > ========== ACORNSCSI_CONSTANTS ==========
-> > drivers/scsi/arm/acornscsi.c:106:#undef CONFIG_ACORNSCSI_CONSTANTS
-> > drivers/scsi/arm/acornscsi.c:417:#ifdef CONFIG_ACORNSCSI_CONSTANTS
-> > drivers/scsi/arm/acornscsi.c:495:#ifdef CONFIG_ACORNSCSI_CONSTANTS
-> > ========== SCSI_ACORNSCSI_LINK ==========
-> > drivers/scsi/arm/acornscsi.c:70:#undef CONFIG_SCSI_ACORNSCSI_LINK
-> > drivers/scsi/arm/acornscsi.c:169:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-> > drivers/scsi/arm/acornscsi.c:1675:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-> > drivers/scsi/arm/acornscsi.c:2849:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-> > drivers/scsi/arm/acornscsi.c:2880:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
->
-> False positives.  That #undef is preceded by a comment describing the
-> driver-internal configuration for developers rather than users.  I
-> guess they shouldn't be preceded by CONFIG_.
+--1875672472-1995079615-1178191047=:17390
+Content-Type: TEXT/PLAIN; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 
-i've already admitted that this script is going to generate false
-positives for a number of reasons, the most common one being using the
-"CONFIG_" prefix outside the context of Kconfig.
+From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-technically, of course, that doesn't hurt but it sure would make the
-code clearer if that prefix was officially reserved for Kconfig stuff.
+Convert the encoding of <include/linux/crypto.h> from ISO-8859-1 to UTF-8.
 
-rday
+Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
 
-p.s.  "CONFIG_" prefix aside, i would think it's also a bit yucky to
-be checking for the definition of a preprocessor symbol that you've
-already hardcoded out of existence in the same source file.  :-)
+---
 
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Did this file individually, per request. Will re-do the whole tree later 
+as I'm still working on my handy-dandy testing and patching tools and 
+don't have a lot of time outside of work until the summer gets underway.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+The patch works in ISO-8859-1 encoding. If I am unsuccessful in getting 
+this mail to send as that, or if your viewer reinterprets it from that, 
+you'll need to use the file attached as MIME type octet-stream. Thanks for 
+your time and interest.
+
+--- linux-2.6.21-rc7-git4.orig/include/linux/crypto.h	2007-04-20 20:22:13.000000000 -0400
++++ linux-2.6.21-rc7-git4.mod/include/linux/crypto.h	2007-05-03 07:09:47.000000000 -0400
+@@ -6,7 +6,7 @@
+  * Copyright (c) 2005 Herbert Xu <herbert@gondor.apana.org.au>
+  *
+  * Portions derived from Cryptoapi, by Alexander Kjeldaas <astor@fast.no>
+- * and Nettle, by Niels Möller.
++ * and Nettle, by Niels MÃ¶ller.
+  * 
+  * This program is free software; you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the Free
+--1875672472-1995079615-1178191047=:17390
+Content-Type: APPLICATION/octet-stream; name=include-linux-crypto-h-to-utf8.patch.bin
+Content-Transfer-Encoding: BASE64
+Content-ID: <alpine.DEB.0.98.0705030717250.17390@sigma.j-a-k-j.com>
+Content-Description: 
+Content-Disposition: attachment; filename=include-linux-crypto-h-to-utf8.patch.bin
+
+LS0tIGxpbnV4LTIuNi4yMS1yYzctZ2l0NC5vcmlnL2luY2x1ZGUvbGludXgv
+Y3J5cHRvLmgJMjAwNy0wNC0yMCAyMDoyMjoxMy4wMDAwMDAwMDAgLTA0MDAK
+KysrIGxpbnV4LTIuNi4yMS1yYzctZ2l0NC5tb2QvaW5jbHVkZS9saW51eC9j
+cnlwdG8uaAkyMDA3LTA1LTAzIDA3OjA5OjQ3LjAwMDAwMDAwMCAtMDQwMApA
+QCAtNiw3ICs2LDcgQEAKICAqIENvcHlyaWdodCAoYykgMjAwNSBIZXJiZXJ0
+IFh1IDxoZXJiZXJ0QGdvbmRvci5hcGFuYS5vcmcuYXU+CiAgKgogICogUG9y
+dGlvbnMgZGVyaXZlZCBmcm9tIENyeXB0b2FwaSwgYnkgQWxleGFuZGVyIEtq
+ZWxkYWFzIDxhc3RvckBmYXN0Lm5vPgotICogYW5kIE5ldHRsZSwgYnkgTmll
+bHMgTfZsbGVyLgorICogYW5kIE5ldHRsZSwgYnkgTmllbHMgTcO2bGxlci4K
+ICAqIAogICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBj
+YW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkgaXQKICAqIHVuZGVy
+IHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2Ug
+YXMgcHVibGlzaGVkIGJ5IHRoZSBGcmVlCg==
+
+--1875672472-1995079615-1178191047=:17390--
