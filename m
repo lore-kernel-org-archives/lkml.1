@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753797AbXECOpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbXECOqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753797AbXECOpU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754236AbXECOpU
+	id S1754355AbXECOqU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754356AbXECOqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:45:20 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:57237 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797AbXECOpR (ORCPT
+	Thu, 3 May 2007 10:46:19 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:35791 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754355AbXECOqS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:45:17 -0400
-Date: Thu, 3 May 2007 20:23:18 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Damien Wyart <damien.wyart@free.fr>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070503145318.GA17776@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <46399B51.9040608@dunaweb.hu> <20070503130201.GA9000@elte.hu> <20070503132932.GA4204@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070503132932.GA4204@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+	Thu, 3 May 2007 10:46:18 -0400
+Date: Thu, 3 May 2007 10:46:15 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Mark Lord <lkml@rtr.ca>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>, <marcel@holtmann.org>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@osdl.org>,
+       <linux-usb-devel@lists.sourceforge.net>
+Subject: Re: [linux-usb-devel] [BUG] usb/core/hub.c loops forever on resume
+ from ram due to bluetooth
+In-Reply-To: <4639E743.2080504@rtr.ca>
+Message-ID: <Pine.LNX.4.44L0.0705031042340.3548-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 03:29:32PM +0200, Damien Wyart wrote:
-> What are your thoughts/plans concerning merging CFS into mainline ? Is
-> it a bit premature to get it into 2.6.22 ? I remember Linus was ok to
-> change the default scheduler rapidly (the discussion was about sd at
-> that time) to get more testing than in -mm.
+On Thu, 3 May 2007, Mark Lord wrote:
 
-And what about group scheduling extensions? Do you have plans to work on
-it? I was begining to work on a prototype to do group scheduling based
-on CFS, basically on the lines of what you and Linus had outlined
-earlier:
+> > If the code never gets stuck in a loop, then there's no need to check 
+> > whether the loop is unbounded!  :-)
+> 
+> Yes, except here we know it does actually get stuck in a loop,
+> and having unbounded loops in device-driver code is a known baddy.
+> 
+> One cannot predict perfectly exactly how devices will fail,
+> but one can program defensively against them with simple precautions
+> like limiting list traversals and the like.  :)
+> 
+> Sure, Marcel may eventually look at the bluetooth code and fix it
+> to not get confused, but some other USB device may then show up
+> in the future with similar issues.
 
-	http://lkml.org/lkml/2007/4/18/271
-	http://lkml.org/lkml/2007/4/18/244
+I'd agree, except that the problem isn't in the bluetooth code.  And it
+probably doesn't have anything in particular to do with the fact that this
+is a bluetooth device; the TT code gets used with USB hubs only.  More
+accurately, the code helps manage the TT embedded in a high-speed USB hub,
+allowing the hub to communicate with a full- or low-speed USB device
+plugged into it.
 
--- 
-Regards,
-vatsa
+>  The messages are still there
+> so we'll know about any future failure, but it won't just silently
+> crash the machine on resume this way.
+> 
+> Remember, resume is a very tough operation to debug at the best
+> of times, so adding some harmless robustness to the more troublesome
+> drives is a very Good Thing(tm) here.
+
+Alan Stern
+
