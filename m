@@ -1,68 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753993AbXECNba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbXECNcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753993AbXECNba (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 09:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754015AbXECNba
+	id S1754017AbXECNcO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 09:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXECNcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 09:31:30 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:38644 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753993AbXECNb3 (ORCPT
+	Thu, 3 May 2007 09:32:14 -0400
+Received: from mailgate.ics.forth.gr ([139.91.1.2]:64798 "EHLO
+	mailgate.ics.forth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754017AbXECNcM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 09:31:29 -0400
-Message-ID: <4639E3FC.8060107@s5r6.in-berlin.de>
-Date: Thu, 03 May 2007 15:30:36 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Thu, 3 May 2007 09:32:12 -0400
+X-Greylist: delayed 3286 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 09:32:11 EDT
+Message-ID: <1178195802.4639d75ac39fb@webmail.ics.forth.gr>
+Date: Thu,  3 May 2007 15:36:42 +0300
+From: mcatos@ics.forth.gr
+To: linux-kernel@vger.kernel.org
+Subject: Error using the buffer cache
 MIME-Version: 1.0
-To: Olaf Hering <olh@suse.de>
-CC: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       linux1394-devel@lists.sourceforge.net, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       krh@redhat.com, Adrian Bunk <bunk@stusta.de>
-Subject: Re: [git pull] New firewire stack
-References: <200705030004.l4304l8h012587@turbo.physics.adelaide.edu.au> <46399BDE.4040605@s5r6.in-berlin.de> <20070503114854.GA12731@suse.de>
-In-Reply-To: <20070503114854.GA12731@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="-MOQ117819580229fed235aac9bfdaeec7fe525ee25ea6"
+User-Agent: Internet Messaging Program (IMP) 3.2.1
+X-Originating-IP: 139.91.70.46
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olaf Hering wrote:
-> On Thu, May 03, Stefan Richter wrote:
-> 
->> 	ieee1394-old
-> 
-> Noone will seriously ship two firewire stacks, so that cant be the
-> issue (for distributors). 
+This message is in MIME format.
 
-I don't actively watch distributions, but I believe there are frequently
-alternative drivers shipped.  How much sense that makes for FireWire is
-another question.
+---MOQ117819580229fed235aac9bfdaeec7fe525ee25ea6
+Content-Type: text/plain; charset=windows-1253
+Content-Transfer-Encoding: 8bit
 
-> Once there is a way to easily switch between kernel releases, I'm ok
-> with whatever module names you pick. 
 
-It may actually be easier to let problem reporters (who cannot or don't
-want to compile kernels) compare between different kernel releases,
-rather than to ask them to compare between different stacks on top of
-the same kernel.  Still, it potentially reduces the testers base.
 
-Adrian wrote:
-| An advantage of changing the names is that they are now prefixed.
+I've written a module that acts as a cache for fixed size objects but I'm
+getting a soft lockup using the buffer cache as backing storage.
 
-Is the opportunity to clean up module names compelling enough, vs. (the
-wish for) minimized trouble with scripts which refer to module names?
+I've attached the code that reproduces the error. You need to supply the module
+with a valid block device, i.e. insmod disk_cache.ko devname="/dev/hda2".
 
-Kristian wrote:
-| Another point in favour of different module names is that the new
-| stack doesn't actually provide the same user space interfaces as the
-| old stack.
+Thanx.
 
-This applies mostly to <fw-core> vs. <ieee1394 + raw1394 + video1394 +
-dv1394>.  The rest should look identical to the user, except that some
-inapplicable module parameters (and bugs) were removed.
--- 
-Stefan Richter
--=====-=-=== -=-= ---==
-http://arcgraph.de/sr/
+P.S: It's the first time I'm writing here, please be gentle...
+
+-------------------------------------------------
+This mail sent through IMP: http://horde.org/imp/
+
+---MOQ117819580229fed235aac9bfdaeec7fe525ee25ea6
+Content-Type: text/x-csrc; name="disk_cache.c"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="disk_cache.c"
+
+LyoKICogQW4gb2JqZWN0IG9yaWVudGVkIGRpc2sgY2FjaGUuCiAqLwoKI2luY2x1ZGUgPGxpbnV4
+L21vZHVsZS5oPgojaW5jbHVkZSA8bGludXgvbW9kdWxlcGFyYW0uaD4KI2luY2x1ZGUgPGxpbnV4
+L2luaXQuaD4KI2luY2x1ZGUgPGxpbnV4L2tlcm5lbC5oPgojaW5jbHVkZSA8bGludXgvZnMuaD4K
+I2luY2x1ZGUgPGxpbnV4L2Vycm5vLmg+CiNpbmNsdWRlIDxsaW51eC90eXBlcy5oPgojaW5jbHVk
+ZSA8bGludXgvdm1hbGxvYy5oPgojaW5jbHVkZSA8bGludXgvZ2VuaGQuaD4KI2luY2x1ZGUgPGxp
+bnV4L2Jsa2Rldi5oPgojaW5jbHVkZSA8bGludXgvaGRyZWcuaD4KI2luY2x1ZGUgPGxpbnV4L3dv
+cmtxdWV1ZS5oPgojaW5jbHVkZSA8bGludXgvYmlvLmg+CiNpbmNsdWRlIDxsaW51eC9idWZmZXJf
+aGVhZC5oPgovLyNpbmNsdWRlICJhc3NlcnQuaCIKLy8jaW5jbHVkZSAiZGVidWcuaCIKI2RlZmlu
+ZSBhc3NlcnQocykgaWYoIShzKSkgeyBwcmludGsoS0VSTl9FTUVSRyAiYXNzZXJ0aW9uIGZhaWxl
+ZDogJWQ6ICIsIF9fTElORV9fKTsgcGFuaWMoI3MpO30KCiNkZWZpbmUgS0VSTkVMX1NFQ1RPUl9T
+SVpFIDUxMgoKTU9EVUxFX0xJQ0VOU0UoIkR1YWwgQlNEL0dQTCIpOwoKc3RydWN0IGRpc2tfY2Fj
+aGUgewoJaW50IG9iamVjdF9zaXplOwkJCS8qIG9iamVjdCBzaXplICovCglzZWN0b3JfdCBjYWNo
+ZV9zaXplOwkJCS8qIG51bWJlciBvZiBvYmplY3RzIHRvIGJlIGhlbGQgaW4gY2FjaGUgKi8KCXNl
+Y3Rvcl90IGRpc2tfc2l6ZTsJCQkvKiBtYXhpbXVtIG51bWJlciBvZiBvYmplY3RzICovCglpbnQg
+b2JqZWN0c19wZXJfc2VjdG9yOwkJCS8qIG51bWJlciBvZiBvYmplY3RzIHBlciBzZWN0b3IgKi8K
+CXNlY3Rvcl90IHN0YXJ0OwkJCQkvKiBzdGFydCBzZWN0b3IgZm9yIGRhdGEgc3RvcmFnZSAqLwp9
+OwoKc3RhdGljIGludCBtYWpvcl9udW0gPSAwOwoKc3RydWN0IGJsb2NrX2RldmljZSAqYmRldiA9
+IE5VTEw7CgpzZWN0b3JfdCBzdGFydCA9IDA7CgpzdGF0aWMgY2hhciAqZGV2bmFtZSA9IE5VTEw7
+Cm1vZHVsZV9wYXJhbShkZXZuYW1lLCBjaGFycCwgMCk7CgovKgogKiBDcmVhdGUgYW5kIGluaXRp
+YWxpemUgYSBkaXNrIGNhY2hlLgogKiBAZGlza19jYWNoZSAtIGFuIGFsbG9jYXRlZCBkaXNrX2Nh
+Y2hlIHN0cnVjdHVyZQogKiBAb2JqZWN0X3NpemUgLSB0aGUgb2JqZWN0IHNpemUgdG8gdXNlIChp
+biBieXRlcykKICogQGNhY2hlX3NpemUgLSB0b3RhbCBtZW1vcnkgc2l6ZSBmb3IgY2FjaGUgKGlu
+IG9iamVjdHMpCiAqIEBkaXNrX3NpemUgLSB0b3RhbCBkaXNrIHNpemUgZm9yIG9iamVjdHMgKGlu
+IG9iamVjdHMpCiAqLwppbnQgZGlza19jYWNoZV9jcmVhdGUoc3RydWN0IGRpc2tfY2FjaGUqIGNv
+bnN0IGRpc2tfY2FjaGUsIGNvbnN0IGludCBvYmplY3Rfc2l6ZSwgY29uc3Qgc2VjdG9yX3QgZGlz
+a19zaXplKSB7CgoJYXNzZXJ0KGRpc2tfY2FjaGUpOwoJYXNzZXJ0KGRpc2tfc2l6ZSA+IDApOwoJ
+CglkaXNrX2NhY2hlLT5vYmplY3Rfc2l6ZSA9IG9iamVjdF9zaXplOwoJZGlza19jYWNoZS0+ZGlz
+a19zaXplID0gZGlza19zaXplOwoJZGlza19jYWNoZS0+b2JqZWN0c19wZXJfc2VjdG9yID0gYmRl
+dl9nZXRfcXVldWUoYmRldiktPmhhcmRzZWN0X3NpemUgLyBvYmplY3Rfc2l6ZTsKCWRpc2tfY2Fj
+aGUtPnN0YXJ0ID0gc3RhcnQ7CQoJc3RhcnQgKz0gKCh1bnNpZ25lZCBsb25nKWRpc2tfc2l6ZSAv
+ICh1bnNpZ25lZCBsb25nKWRpc2tfY2FjaGUtPm9iamVjdHNfcGVyX3NlY3RvcikgKyAxOwoJcmV0
+dXJuIDE7Cn0KRVhQT1JUX1NZTUJPTChkaXNrX2NhY2hlX2NyZWF0ZSk7CgovKgogKiBSZXR1cm5z
+IGFuIGFkZHJlc3Mgd2hlcmUgdGhlIHJlcXVlc3RlZCBvYmplY3QgaXMgZm91bmQuCiAqLwp2b2lk
+ICogZ2V0X29iamVjdChjb25zdCBzdHJ1Y3QgZGlza19jYWNoZSogZGlza19jYWNoZSwgY29uc3Qg
+c2VjdG9yX3Qgb2JqZWN0X251bWJlcikgewoKCWludCBvZmZzZXQgPSAwOwoJc2VjdG9yX3Qgc2Vj
+dG9yID0gMDsKCXN0cnVjdCBidWZmZXJfaGVhZCAqYmggPSBOVUxMOwoKCWFzc2VydChkaXNrX2Nh
+Y2hlKTsKCWFzc2VydChvYmplY3RfbnVtYmVyIDwgZGlza19jYWNoZS0+ZGlza19zaXplKTsKCgkv
+KgoJICogQ29tcHV0ZSBwYWdlIG51bWJlciBpbiB3aGljaCByZXF1ZXN0ZWQgb2JqZWN0IHJlc2lk
+ZXMuCgkgKi8KCXNlY3RvciA9IGRpc2tfY2FjaGUtPnN0YXJ0ICsgKHVuc2lnbmVkIGxvbmcpb2Jq
+ZWN0X251bWJlciAvICh1bnNpZ25lZCBsb25nKWRpc2tfY2FjaGUtPm9iamVjdHNfcGVyX3NlY3Rv
+cjsKCS8vYXNzZXJ0KHNlY3RvciA8IGRpc2tfY2FjaGUtPmRpc2tfc2l6ZSk7CgkvL2Fzc2VydChz
+ZWN0b3IgPCBnZXRfY2FwYWNpdHkoYmRldi0+YmRfZGlzaykpOwoJb2Zmc2V0ID0gKCh1bnNpZ25l
+ZCBsb25nKW9iamVjdF9udW1iZXIgJSAodW5zaWduZWQgbG9uZylkaXNrX2NhY2hlLT5vYmplY3Rz
+X3Blcl9zZWN0b3IpICogZGlza19jYWNoZS0+b2JqZWN0X3NpemU7CgoJYmggPSBfX2JyZWFkKGJk
+ZXYsIHNlY3RvciwgYmRldl9nZXRfcXVldWUoYmRldiktPmhhcmRzZWN0X3NpemUpOwoJLy9yZXR1
+cm4gYmgtPmJfZGF0YSArIG9mZnNldDsKCXJldHVybiBOVUxMOwp9CkVYUE9SVF9TWU1CT0woZ2V0
+X29iamVjdCk7CgovKgogKiBQdXRzIGdpdmVuIG9iamVjdCBiYWNrIHRvIHRoZSBidWZmZXIgY2Fj
+aGUuIEZsYWcgJ21vZGlmaWVkJyBtdXN0IGJlIHNldCBpZiB0aGUgb2JqZWN0IHdhcyBtb2RpZmll
+ZC4KICovCnZvaWQgcHV0X29iamVjdChjb25zdCBzdHJ1Y3QgZGlza19jYWNoZSogY29uc3QgZGlz
+a19jYWNoZSwgY29uc3Qgc2VjdG9yX3Qgb2JqZWN0X251bWJlciwgY29uc3QgaW50IG1vZGlmaWVk
+KSB7CgoJc3RydWN0IGJ1ZmZlcl9oZWFkICpiaCA9IE5VTEw7CglzZWN0b3JfdCBzZWN0b3IgPSBk
+aXNrX2NhY2hlLT5zdGFydCArICh1bnNpZ25lZCBsb25nKW9iamVjdF9udW1iZXIgLyAodW5zaWdu
+ZWQgbG9uZylkaXNrX2NhY2hlLT5vYmplY3RzX3Blcl9zZWN0b3I7CgkKCWJoID0gX19icmVhZChi
+ZGV2LCBzZWN0b3IsIGJkZXZfZ2V0X3F1ZXVlKGJkZXYpLT5oYXJkc2VjdF9zaXplKTsKCS8vaWYo
+bW9kaWZpZWQpIHsJCQoJLy8JbG9ja19idWZmZXIoYmgpOwoJLy8Jc2V0X2J1ZmZlcl91cHRvZGF0
+ZShiaCk7CgkvLwltYXJrX2J1ZmZlcl9kaXJ0eShiaCk7CgkvLwl1bmxvY2tfYnVmZmVyKGJoKTsK
+CS8vfQoJYnJlbHNlKGJoKTsKCS8qCgkgKiBhbiBhZGRpdGlvbmFsIHJlbGVhc2UsIHdlIGRpZG4n
+dCByZWxlYXNlZCBpdCBpbiBnZXRfb2JqZWN0CgkgKi8KCWJyZWxzZShiaCk7CQkKfQpFWFBPUlRf
+U1lNQk9MKHB1dF9vYmplY3QpOwoKc3RhdGljIHZvaWQgdGVzdCh2b2lkKSB7CgoJc3RydWN0IGRp
+c2tfY2FjaGUgZGs7CglpbnQgaTsKCXZvaWQgKnA7CgoJaWYoIWRpc2tfY2FjaGVfY3JlYXRlKCZk
+aywgNiwgMTAwKSkgewoJCXByaW50ayhLRVJOX0VSUiAiY3JlYXRlIGNhY2hlIGVycm9yXG4iKTsK
+CQlyZXR1cm47Cgl9Cglmb3IoaSA9IDA7IGkgPCAxMDA7IGkrKykgewoJCWdldF9vYmplY3QoJmRr
+LCBpKTsKCQlwdXRfb2JqZWN0KCZkaywgaSwgMCk7Cgl9Cn0KCnN0YXRpYyBpbnQgX19pbml0IGRp
+c2tfY2FjaGVfaW5pdCh2b2lkKSB7CgoJbWFqb3JfbnVtID0gcmVnaXN0ZXJfYmxrZGV2KG1ham9y
+X251bSwgImRpc2tfY2FjaGUiKTsKCWlmIChtYWpvcl9udW0gPD0gMCkgewoJCXByaW50ayhLRVJO
+X0VSUiAiZGlza19jYWNoZTogdW5hYmxlIHRvIGdldCBtYWpvciBudW1iZXJcbiIpOwoJCXJldHVy
+biAtRUlOVkFMOwoJfQoKCWlmKCFkZXZuYW1lKSB7CgkJcHJpbnRrKEtFUk5fRVJSICJkaXNrX2Nh
+Y2hlOiBtdXN0IHN1cHBseSBhIHZhbGlkIGJsb2NrIGRldmljZVxuIik7CgkJcmV0dXJuIC1FSU5W
+QUw7Cgl9CgoJYmRldiA9IG9wZW5fYmRldl9leGNsKGRldm5hbWUsIDAsIE5VTEwpOwoJaWYoSVNf
+RVJSKGJkZXYpKSB7CgkJcHJpbnRrKEtFUk5fRVJSICJkaXNrX2NhY2hlOiBjYW5ub3Qgb3BlbiBk
+ZXZpY2UgJXMuXG4iLCBkZXZuYW1lKTsKCQlyZXR1cm4gLUVJTlZBTDsKCX0KCglwcmludGsoS0VS
+Tl9JTkZPICJkaXNrX2NhY2hlOiB1c2luZyBkZXZpY2UgJXNcbiIsIGRldm5hbWUpOwoJcHJpbnRr
+KEtFUk5fSU5GTyAiZGlza19jYWNoZTogJWxsdSBzZWN0b3JzXG4iLCBnZXRfY2FwYWNpdHkoYmRl
+di0+YmRfZGlzaykpOwoKCXRlc3QoKTsKCQoJcmV0dXJuIDA7Cn0KCnN0YXRpYyB2b2lkIF9fZXhp
+dCBkaXNrX2NhY2hlX2V4aXQodm9pZCkgewoJY2xvc2VfYmRldl9leGNsKGJkZXYpOwp9Cgptb2R1
+bGVfaW5pdChkaXNrX2NhY2hlX2luaXQpOwptb2R1bGVfZXhpdChkaXNrX2NhY2hlX2V4aXQpOwoK
+
+---MOQ117819580229fed235aac9bfdaeec7fe525ee25ea6--
+
