@@ -1,58 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767346AbXECDS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767352AbXECDXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767346AbXECDS6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 23:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767348AbXECDS6
+	id S1767352AbXECDXk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 23:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767351AbXECDXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 23:18:58 -0400
-Received: from dodo.cs.umass.edu ([128.119.242.12]:57541 "EHLO
-	dodo.cs.umass.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767346AbXECDS5 (ORCPT
+	Wed, 2 May 2007 23:23:40 -0400
+Received: from stinky.trash.net ([213.144.137.162]:50987 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767348AbXECDXi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 23:18:57 -0400
-Message-ID: <46395495.3020802@cs.umass.edu>
-Date: Wed, 02 May 2007 23:18:45 -0400
-From: Ting Yang <tingy@cs.umass.edu>
-Reply-To: tingy@cs.umass.edu
-Organization: ALI Lab, CS Dept, UMASS
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 2 May 2007 23:23:38 -0400
+Message-ID: <46395597.2000500@trash.net>
+Date: Thu, 03 May 2007 05:23:03 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-To: William Lee Irwin III <wli@holomorphy.com>
-CC: Srivatsa Vaddagiri <vatsa@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v8
-References: <20070501212223.GA29867@elte.hu> <4637FE0A.7090405@cs.umass.edu> <20070502173634.GA11308@in.ibm.com> <20070502174829.GX19966@holomorphy.com>
-In-Reply-To: <20070502174829.GX19966@holomorphy.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Netdev Mailing List <netdev@vger.kernel.org>
+Subject: Re: dead CONFIG_ variables:  net/ipv4/
+References: <Pine.LNX.4.64.0705021711450.16967@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0705021711450.16967@localhost.localdomain>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Robert P. J. Day wrote:
+>   again, this list contains some CONFIG_ variables that aren't
+> technically dead, but *really* should be renamed to not be confused
+> with Kconfig variables.  there are, however, legitimately dead ones in
+> the following in places:
 
-> On Wed, May 02, 2007 at 11:06:34PM +0530, Srivatsa Vaddagiri wrote:
->   
->> There is also p->wait_runtime which is taken into account when
->> calculating p->fair_key. So if p3 had waiting in runqueue for long
->> before, it can get to run quicker than 10ms later.
->>     
->
-> Virtual time is time from the task's point of view, which it has spent
-> executing. ->wait_runtime is a device to subtract out time spent on the
-> runqueue but not running from what would otherwise be virtual time to
-> express lag, whether deliberately or coincidentally. ->wait_runtime
-> would not be useful for EEVDF AFAICT, though it may be interesting to
-> report.
-I just want to point out that ->wait_runtime, in fact, stores the lag of 
-each task in CFS, except that it is also used by other things, and 
-occasionally tweaked (heuristically ?). Under normal cases the sum of 
-lags of all active tasks in such a system, should be a constant 0. The 
-lag information is equally important to EEVDF, when some tasks leave the 
-system (becomes inactive) carrying certain amount of lag. The key point 
-here is that we have to spread the lag (either negative or positive) to 
-all remaining task, so that the fairness of the system is preserved. I 
-thinks CFS implementation does not seems to handle this properly.
+Please post to netdev for networking related things.
 
-I am running out time today :-( I will write an email about CFS -v8 
-tomorrow, describing 2 issues in CFS I found related to this.
+> $ ../dead_config.sh net/ipv4
+> ========== IP_NF_NAT ==========
+> net/ipv4/netfilter/Kconfig:# If they want FTP, set to $CONFIG_IP_NF_NAT (m or y),
+> net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c:#if !defined(CONFIG_IP_NF_NAT) && !defined(CONFIG_IP_NF_NAT_MODULE)
+> net/ipv4/netfilter/nf_conntrack_l3proto_ipv4.c:#if !defined(CONFIG_IP_NF_NAT) && !defined(CONFIG_IP_NF_NAT_MODULE)
 
-Ting
+This one is a bug, thanks. Could you post results from the
+other net/ subdirectories please?
