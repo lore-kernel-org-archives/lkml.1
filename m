@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932526AbXECGXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030926AbXECG1G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932526AbXECGXp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 02:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932753AbXECGXp
+	id S1030926AbXECG1G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 02:27:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030933AbXECG1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 02:23:45 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:49448 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932526AbXECGXo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 02:23:44 -0400
-Date: Thu, 3 May 2007 08:24:22 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Reg Clemens <reg@dwf.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: I don' t understand this warning.
-Message-ID: <20070503062422.GB13399@uranus.ravnborg.org>
-References: <200705030400.l4340bcD031447@deneb.dwf.com>
-Mime-Version: 1.0
+	Thu, 3 May 2007 02:27:05 -0400
+Received: from netblock-66-245-252-131.dslextreme.com ([66.245.252.131]:56389
+	"EHLO Angel.zoy.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030926AbXECG1E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 02:27:04 -0400
+Date: Wed, 2 May 2007 23:27:02 -0700
+From: Michel Lespinasse <walken@zoy.org>
+To: "Kok, Auke" <auke-jan.h.kok@intel.com>
+Cc: Chuck Ebbert <cebbert@redhat.com>, linux-kernel@vger.kernel.org,
+       Dave Jones <davej@redhat.com>, Jeb Cramer <cramerj@intel.com>,
+       John Ronciak <john.ronciak@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: e1000 issue on DQ965GF board (was 24 lost ticks with 2.6.20.10 kernel)
+Message-ID: <20070503062701.GA22255@zoy.org>
+References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com> <20070501214912.GA4048@zoy.org> <4637BA70.8000108@intel.com> <20070502084146.GA6089@zoy.org> <4638D51C.7010603@intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705030400.l4340bcD031447@deneb.dwf.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <4638D51C.7010603@intel.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 10:00:37PM -0600, Reg Clemens wrote:
-> The last several kernels I have built all have the following warning in them:
+On Wed, May 02, 2007 at 11:14:52AM -0700, Kok, Auke wrote:
+> I just checked and the fix I was referring to earlier didn't make it into 
+> 2.6.21-final. You can get 2.6.21-git1 from kernel.org which has the fix. See
 > 
-> WARNING: vmlinux - Section mismatch: reference to .init.text:start_kernel from 
-> .text between 'is386'
->  (at offset 0xc0401171) and 'check_x87'
-> WARNING: vmlinux - Section mismatch: reference to .init.text: from .text 
-> between 'rest_init' (at off
-> set 0xc0401406) and 'try_name'
-> WARNING: vmlinux - Section mismatch: reference to .init.data: from .text 
-> between 'probe_bigsmp' (at
-> offset 0xc0402032) and 'init_apic_ldr'
-> WARNING: vmlinux - Section mismatch: reference to .init.text:find_unisys_acpi_o
-> em_table from .text b
-> etween 'acpi_madt_oem_check' (at offset 0xc0402244) and 'enable_apic_mode'
-> 
-> and this goes on with different variables for 18 lines.
-> 
-> Is this something I should be worried about?
-> I frankly dont understand what the message is trying to say.
+> http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git1.log
 
-The kernel place code in three different sections.
+Good. So I tried that patch (well, actually only the change visible at
+http://lkml.org/lkml/2007/3/6/268). I patched it into a 2.6.20.11 kernel,
+using the same config file as previously. The good news is that this fixes
+my issue: there are no lost ticks anymore, and the link does negotiate a
+gigabit connection. This is a great improvement for me :)
 
-.init.text is used for all the code that is used during early
-initalisation of the kernel and is code that are discarded when the
-kernel has finished the init part.
+I still seem to hit an issue if using the ethtool command, though.
+when using 'ethtool -s eth0 autoneg on', the link comes up at gigabit speed,
+but a couple seconds later is comes down again, and then up at 100 megabits:
 
-.text is used for regular code and here we hae most of the code.
+e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex
+e1000: eth0: e1000_watchdog: NIC Link is Down
+e1000: eth0: e1000_watchdog: NIC Link is Up 100 Mbps Full Duplex
+e1000: eth0: e1000_watchdog: 10/100 speed: disabling TSO
 
-.exit.text is used for code that is used for module unloading. This section is dropped
-in case that the module is build in.
+The same thing happens if I use ifdown eth0; ifup eth0 too. Once again,
+I only observe this on my DQ965GF motherboard, the DG965RY board is fine
+(stays at gigabit speed when I issue these commands).
 
+Is this something you could easily reproduce at Intel or would you want me
+to look into that issue on my system ?
 
-Now consider the scenario where code from .text refer to code in .init.text.
-This is OK as long as the .init.text code is still present but when we have
-discarded the .init.text section then we go oops.
+Thanks,
 
-So to take the first warning then we can see that there is a reference to the
-symbol start_kernel in section .iit.text from the .text section somewhere between
-the symbols is386 and check_x87.
-The symbols in this case is most likely functions.
-Due to the heavy use of inlining in the kernel this can be a bit complicated
-to dechiper and sometimes I just drop the inlines and try again.
-
-
-Fro data we have a .init.data section that include data used only during early
-init and is discarded too. So the rule is that .text may not refer to .init.data
-because it has potential been discarded => oops.
-This is the reason for the warning about probe_bigsmp.
-
-For now please do not worry they will all be fixed up pretty soon - the above are
-most likely false positives or just lack of proper annotations of relevant functions.
-
-	Sam
+-- 
+Michel "Walken" Lespinasse
+"Bill Gates is a monocle and a Persian cat away from being the villain
+in a James Bond movie." -- Dennis Miller
