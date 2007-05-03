@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162137AbXECPmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1945889AbXECPmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162137AbXECPmT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 11:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946187AbXECPmT
+	id S1945889AbXECPmu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 11:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376143AbXECPmu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 11:42:19 -0400
-Received: from lazybastard.de ([212.112.238.170]:41156 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1162137AbXECPmR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 11:42:17 -0400
-Date: Thu, 3 May 2007 17:37:53 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Erik Mouw <mouw@nl.linux.org>
-Cc: Hugh Dickins <hugh@veritas.com>, Phillip Susi <psusi@cfl.rr.com>,
-       Linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Execute in place
-Message-ID: <20070503153753.GA29755@lazybastard.org>
-References: <4637B751.1080907@cfl.rr.com> <Pine.LNX.4.64.0705021502450.16517@blonde.wat.veritas.com> <20070503113822.GA27404@gateway.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070503113822.GA27404@gateway.home>
-User-Agent: Mutt/1.5.9i
+	Thu, 3 May 2007 11:42:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45409 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1946180AbXECPmt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 11:42:49 -0400
+Message-ID: <463A01F7.90500@redhat.com>
+Date: Thu, 03 May 2007 17:38:31 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>, Gerd Hoffmann <kraxel@redhat.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>,
+       Herbert Xu <herbert@gondor.apana.org.au>,
+       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+Subject: Re: netfront for review
+References: <4637D672.5030706@goop.org> <1178077033.28659.173.camel@localhost.localdomain> <4638EAC0.7020107@goop.org> <46399057.4000409@redhat.com> <20070503151756.GA29629@infradead.org>
+In-Reply-To: <20070503151756.GA29629@infradead.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 May 2007 13:38:22 +0200, Erik Mouw wrote:
-> On Wed, May 02, 2007 at 03:04:44PM +0100, Hugh Dickins wrote:
-> > 
-> > Only ext2 supports it today: see Documentation/filesystems/xip.txt
+Christoph Hellwig wrote:
+> On Thu, May 03, 2007 at 09:33:43AM +0200, Gerd Hoffmann wrote:
+>>> Guess so.  It defaults to flip.  I simplified the rx_copy/flip module
+>>> parameter to a simple rx_mode=0/1, but this is preserved from the
+>>> original.  My guess is that originally there was only flip, and copy was
+>>> added later.
+>> Yep, page flipping is the old (pre xen 3.0.3) way, copy was added (and 
+>> made the default) later.
 > 
-> IIRC JFFS2 also supports XIP.
+> So can we please just rip out the obsolete code completely?  There's
+> no point adding this code anymore.
 
-Definitely not.  AXFS does, if you want to consider out-of-tree patches.
-
-Jörn
-
--- 
-Fools ignore complexity.  Pragmatists suffer it.
-Some can avoid it.  Geniuses remove it.
--- Perlis's Programming Proverb #58, SIGPLAN Notices, Sept.  1982
+Drawback is that the guest kernel wouldn't work with older xen versions 
+(dom0 netback driver to be exact) any more.  Probably wouldn't be a 
+showstopper though, given that xen 3.0.3 probably is almost one year out 
+by the time 2.6.22 will be released ...
