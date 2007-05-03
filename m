@@ -1,59 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1946010AbXECUbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S2992420AbXECUcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1946010AbXECUbq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 16:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946072AbXECUbp
+	id S2992420AbXECUcb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 16:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031286AbXECUcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 16:31:45 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:55979 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1946010AbXECUbo (ORCPT
+	Thu, 3 May 2007 16:32:31 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:59982 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031206AbXECUca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 16:31:44 -0400
-Date: Thu, 3 May 2007 16:31:43 -0400
-To: linux-kernel@vger.kernel.org
-Subject: Strange soft lockup detected message
-Message-ID: <20070503203143.GA8753@csclub.uwaterloo.ca>
-MIME-Version: 1.0
+	Thu, 3 May 2007 16:32:30 -0400
+Date: Thu, 3 May 2007 23:32:28 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] revoke: change revoke_table to fileset and revoke_details
+In-Reply-To: <20070503132253.7b6fe5fe.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705032329220.14781@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0705031752440.6505@sbz-30.cs.Helsinki.FI>
+ <20070503132253.7b6fe5fe.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have had this happen a few times recently and was wondering if anyone
-has an idea what could be going on:
+On Thu, 3 May 2007, Andrew Morton wrote:
+> > +/**
+> > + * fileset - an array of file pointers.
+> > + * @files:    the array of file pointers
+> > + * @nr:               number of elements in the array
+> > + * @end:      index to next unused file pointer
+> > + */
+> > +struct fileset {
+> > +	struct file	**files;
+> > +	unsigned long	nr;
+> > +	unsigned long	end;
+> > +};
+> 
+> What's the locking protocol for all this?
 
-BUG: soft lockup detected on CPU#0!
- [<c0103fc4>] dump_stack+0x24/0x30
- [<c013d71e>] softlockup_tick+0x7e/0xc0
- [<c011eb23>] update_process_times+0x33/0x80
- [<c01062c9>] timer_interrupt+0x39/0x80
- [<c013daad>] handle_IRQ_event+0x3d/0x70
- [<c013de09>] __do_IRQ+0xa9/0x150
- [<c0104e55>] do_IRQ+0x25/0x60
- [<c010313a>] common_interrupt+0x1a/0x20
- [<d084e00c>] pcnet32_dwio_read_csr+0xc/0x20 [pcnet32]
- [<d084e9d2>] pcnet32_interrupt+0x42/0x2b0 [pcnet32]
- [<c013daad>] handle_IRQ_event+0x3d/0x70
- [<c013de09>] __do_IRQ+0xa9/0x150
- [<c0104e55>] do_IRQ+0x25/0x60
- [<c010313a>] common_interrupt+0x1a/0x20
- [<c013da88>] handle_IRQ_event+0x18/0x70
- [<c013de09>] __do_IRQ+0xa9/0x150
- [<c0104e55>] do_IRQ+0x25/0x60
- [<c010313a>] common_interrupt+0x1a/0x20
- [<00005791>] 0x5791
+What do you mean? There is no concurrent access going on here.
 
-This is on a system running a Geode LX at 500MHz, using 2.6.18 based
-kernel (specifically a slightly modified debian 4.0 Etch kernel).
+On Thu, 3 May 2007, Andrew Morton wrote:
+> > +static void free_fset(struct fileset *fset)
+> > +{
+> > +      int i;
+> > +
+> > +      for (i = fset->end; i < fset->nr; i++)
+> > +              fput(fset->files[i]);
+> > +
+> > +      kfree(fset->files);
+> > +      kfree(fset);
+> > +}
+> 
+> Confused.  Shouldn't it be
+> 
+> 	for (i = 0; i < fset->end; i++)
 
-I am really wondering where do I go looking for the cause of this.  The
-same kernel running on a Geode SC1200 (GX1) does not appear to do this.
+No. The fset->end is an index to the first _unused_ file pointer. All 
+entries before that are in use by revoked file descriptors so we don't 
+want to fput() them.
 
-If I knew what the error meant I would have a better idea how to debug
-it and fix it.
-
---
-Len Sorensen
+			Pekka
