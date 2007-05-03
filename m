@@ -1,150 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754274AbXECWz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754452AbXECW6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754274AbXECWz1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 18:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbXECWz1
+	id S1754452AbXECW6l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 18:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbXECW6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 18:55:27 -0400
-Received: from mailhost.ics.forth.gr ([139.91.157.55]:48120 "EHLO
-	mailhost.ics.forth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754094AbXECWzZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 18:55:25 -0400
-X-Greylist: delayed 35520 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 18:55:24 EDT
-X-DKIM: Sendmail DKIM Filter v0.6.6 mailhost.ics.forth.gr l43D3MWQ016826
-X-AuditID: 7f000001-a4d26bb000003e42-58-4639dd996161 
-Date: Thu, 3 May 2007 16:03:21 +0300 (EET DST)
-From: Thanos Makatos <mcatos@ics.forth.gr>
-To: linux-kernel@vger.kernel.org
-Subject: Error using the buffer cache
-Message-ID: <Pine.GSO.4.58.0705031559080.12822@calliope>
+	Thu, 3 May 2007 18:58:41 -0400
+Received: from mail.z-net.ru ([89.113.80.10]:2110 "EHLO mail.z-net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754448AbXECW6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 18:58:40 -0400
+Date: Fri, 4 May 2007 02:55:06 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: ian <spyro@f2s.com>
+Cc: Greg KH <gregkh@suse.de>, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
+Subject: Re: [Kernel-discuss] [PATCH 3/8] Universal power supply class
+	(was: battery class)
+Message-ID: <20070503225506.GA20742@zarina>
+Reply-To: cbou@mail.ru
+References: <20070503213139.GC20067@zarina> <1178230466.20102.27.camel@wirenth>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-559023410-851401618-1178197401=:12917"
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <1178230466.20102.27.camel@wirenth>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 03, 2007 at 11:14:26PM +0100, ian wrote:
+> On Fri, 2007-05-04 at 01:31 +0400, Anton Vorontsov wrote:
+> >     # cat /sys/class/power\ supply/ac/type
+> >         AC
+> > 
+> >         # cat /sys/class/power\ supply/usb/type
+> >         USB 
+> 
+> isnt that a bit redundant?
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-  Send mail to mime@docserver.cac.washington.edu for more info.
+Let me note that "usb"/"ac" is just names pda-power driver
+gives for these supplies. So, it's not power supply class issue,
+but pda-power.
 
----559023410-851401618-1178197401=:12917
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+As for pda-power.. Yes, it can name them "supply0" and "supply1"...
+Or maybe "pda-supplyX", but I don't see any need to maim name just
+because it is very similar to its type. ;-) Anyhow I don't care
+much, i.e. if you or anyone else will insist, I'll change
+pda-power's supply names with no problems.
 
-I've written a module that acts as a cache for fixed size objects but I
-get a soft lockup trying to use the buffer cache.
+Thanks,
 
-I've attached the module that reproduces the error. You need to supply the
-module with a block device, i.e.
-insmod disk_cache.ko devname="/dev/hda2".
-
----559023410-851401618-1178197401=:12917
-Content-Type: TEXT/PLAIN; charset=US-ASCII; name="disk_cache.c"
-Content-Transfer-Encoding: BASE64
-Content-ID: <Pine.GSO.4.58.0705031603210.12917@calliope>
-Content-Description: 
-Content-Disposition: attachment; filename="disk_cache.c"
-
-LyoNCiAqIEFuIG9iamVjdCBvcmllbnRlZCBkaXNrIGNhY2hlLg0KICovDQoN
-CiNpbmNsdWRlIDxsaW51eC9tb2R1bGUuaD4NCiNpbmNsdWRlIDxsaW51eC9t
-b2R1bGVwYXJhbS5oPg0KI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4NCiNpbmNs
-dWRlIDxsaW51eC9rZXJuZWwuaD4NCiNpbmNsdWRlIDxsaW51eC9mcy5oPg0K
-I2luY2x1ZGUgPGxpbnV4L2Vycm5vLmg+DQojaW5jbHVkZSA8bGludXgvdHlw
-ZXMuaD4NCiNpbmNsdWRlIDxsaW51eC92bWFsbG9jLmg+DQojaW5jbHVkZSA8
-bGludXgvZ2VuaGQuaD4NCiNpbmNsdWRlIDxsaW51eC9ibGtkZXYuaD4NCiNp
-bmNsdWRlIDxsaW51eC9oZHJlZy5oPg0KI2luY2x1ZGUgPGxpbnV4L3dvcmtx
-dWV1ZS5oPg0KI2luY2x1ZGUgPGxpbnV4L2Jpby5oPg0KI2luY2x1ZGUgPGxp
-bnV4L2J1ZmZlcl9oZWFkLmg+DQovLyNpbmNsdWRlICJhc3NlcnQuaCINCi8v
-I2luY2x1ZGUgImRlYnVnLmgiDQojZGVmaW5lIGFzc2VydChzKSBpZighKHMp
-KSB7IHByaW50ayhLRVJOX0VNRVJHICJhc3NlcnRpb24gZmFpbGVkOiAlZDog
-IiwgX19MSU5FX18pOyBwYW5pYygjcyk7fQ0KDQojZGVmaW5lIEtFUk5FTF9T
-RUNUT1JfU0laRSA1MTINCg0KTU9EVUxFX0xJQ0VOU0UoIkR1YWwgQlNEL0dQ
-TCIpOw0KDQpzdHJ1Y3QgZGlza19jYWNoZSB7DQoJaW50IG9iamVjdF9zaXpl
-OwkJCS8qIG9iamVjdCBzaXplICovDQoJc2VjdG9yX3QgY2FjaGVfc2l6ZTsJ
-CQkvKiBudW1iZXIgb2Ygb2JqZWN0cyB0byBiZSBoZWxkIGluIGNhY2hlICov
-DQoJc2VjdG9yX3QgZGlza19zaXplOwkJCS8qIG1heGltdW0gbnVtYmVyIG9m
-IG9iamVjdHMgKi8NCglpbnQgb2JqZWN0c19wZXJfc2VjdG9yOwkJCS8qIG51
-bWJlciBvZiBvYmplY3RzIHBlciBzZWN0b3IgKi8NCglzZWN0b3JfdCBzdGFy
-dDsJCQkJLyogc3RhcnQgc2VjdG9yIGZvciBkYXRhIHN0b3JhZ2UgKi8NCn07
-DQoNCnN0YXRpYyBpbnQgbWFqb3JfbnVtID0gMDsNCg0Kc3RydWN0IGJsb2Nr
-X2RldmljZSAqYmRldiA9IE5VTEw7DQoNCnNlY3Rvcl90IHN0YXJ0ID0gMDsN
-Cg0Kc3RhdGljIGNoYXIgKmRldm5hbWUgPSBOVUxMOw0KbW9kdWxlX3BhcmFt
-KGRldm5hbWUsIGNoYXJwLCAwKTsNCg0KLyoNCiAqIENyZWF0ZSBhbmQgaW5p
-dGlhbGl6ZSBhIGRpc2sgY2FjaGUuDQogKiBAZGlza19jYWNoZSAtIGFuIGFs
-bG9jYXRlZCBkaXNrX2NhY2hlIHN0cnVjdHVyZQ0KICogQG9iamVjdF9zaXpl
-IC0gdGhlIG9iamVjdCBzaXplIHRvIHVzZSAoaW4gYnl0ZXMpDQogKiBAY2Fj
-aGVfc2l6ZSAtIHRvdGFsIG1lbW9yeSBzaXplIGZvciBjYWNoZSAoaW4gb2Jq
-ZWN0cykNCiAqIEBkaXNrX3NpemUgLSB0b3RhbCBkaXNrIHNpemUgZm9yIG9i
-amVjdHMgKGluIG9iamVjdHMpDQogKi8NCmludCBkaXNrX2NhY2hlX2NyZWF0
-ZShzdHJ1Y3QgZGlza19jYWNoZSogY29uc3QgZGlza19jYWNoZSwgY29uc3Qg
-aW50IG9iamVjdF9zaXplLCBjb25zdCBzZWN0b3JfdCBkaXNrX3NpemUpIHsN
-Cg0KCWFzc2VydChkaXNrX2NhY2hlKTsNCglhc3NlcnQoZGlza19zaXplID4g
-MCk7DQoJDQoJZGlza19jYWNoZS0+b2JqZWN0X3NpemUgPSBvYmplY3Rfc2l6
-ZTsNCglkaXNrX2NhY2hlLT5kaXNrX3NpemUgPSBkaXNrX3NpemU7DQoJZGlz
-a19jYWNoZS0+b2JqZWN0c19wZXJfc2VjdG9yID0gYmRldl9nZXRfcXVldWUo
-YmRldiktPmhhcmRzZWN0X3NpemUgLyBvYmplY3Rfc2l6ZTsNCglkaXNrX2Nh
-Y2hlLT5zdGFydCA9IHN0YXJ0OwkNCglzdGFydCArPSAoKHVuc2lnbmVkIGxv
-bmcpZGlza19zaXplIC8gKHVuc2lnbmVkIGxvbmcpZGlza19jYWNoZS0+b2Jq
-ZWN0c19wZXJfc2VjdG9yKSArIDE7DQoJcmV0dXJuIDE7DQp9DQpFWFBPUlRf
-U1lNQk9MKGRpc2tfY2FjaGVfY3JlYXRlKTsNCg0KLyoNCiAqIFJldHVybnMg
-YW4gYWRkcmVzcyB3aGVyZSB0aGUgcmVxdWVzdGVkIG9iamVjdCBpcyBmb3Vu
-ZC4NCiAqLw0Kdm9pZCAqIGdldF9vYmplY3QoY29uc3Qgc3RydWN0IGRpc2tf
-Y2FjaGUqIGRpc2tfY2FjaGUsIGNvbnN0IHNlY3Rvcl90IG9iamVjdF9udW1i
-ZXIpIHsNCg0KCWludCBvZmZzZXQgPSAwOw0KCXNlY3Rvcl90IHNlY3RvciA9
-IDA7DQoJc3RydWN0IGJ1ZmZlcl9oZWFkICpiaCA9IE5VTEw7DQoNCglhc3Nl
-cnQoZGlza19jYWNoZSk7DQoJYXNzZXJ0KG9iamVjdF9udW1iZXIgPCBkaXNr
-X2NhY2hlLT5kaXNrX3NpemUpOw0KDQoJLyoNCgkgKiBDb21wdXRlIHBhZ2Ug
-bnVtYmVyIGluIHdoaWNoIHJlcXVlc3RlZCBvYmplY3QgcmVzaWRlcy4NCgkg
-Ki8NCglzZWN0b3IgPSBkaXNrX2NhY2hlLT5zdGFydCArICh1bnNpZ25lZCBs
-b25nKW9iamVjdF9udW1iZXIgLyAodW5zaWduZWQgbG9uZylkaXNrX2NhY2hl
-LT5vYmplY3RzX3Blcl9zZWN0b3I7DQoJLy9hc3NlcnQoc2VjdG9yIDwgZGlz
-a19jYWNoZS0+ZGlza19zaXplKTsNCgkvL2Fzc2VydChzZWN0b3IgPCBnZXRf
-Y2FwYWNpdHkoYmRldi0+YmRfZGlzaykpOw0KCW9mZnNldCA9ICgodW5zaWdu
-ZWQgbG9uZylvYmplY3RfbnVtYmVyICUgKHVuc2lnbmVkIGxvbmcpZGlza19j
-YWNoZS0+b2JqZWN0c19wZXJfc2VjdG9yKSAqIGRpc2tfY2FjaGUtPm9iamVj
-dF9zaXplOw0KDQoJYmggPSBfX2JyZWFkKGJkZXYsIHNlY3RvciwgYmRldl9n
-ZXRfcXVldWUoYmRldiktPmhhcmRzZWN0X3NpemUpOw0KCS8vcmV0dXJuIGJo
-LT5iX2RhdGEgKyBvZmZzZXQ7DQoJcmV0dXJuIE5VTEw7DQp9DQpFWFBPUlRf
-U1lNQk9MKGdldF9vYmplY3QpOw0KDQovKg0KICogUHV0cyBnaXZlbiBvYmpl
-Y3QgYmFjayB0byB0aGUgYnVmZmVyIGNhY2hlLiBGbGFnICdtb2RpZmllZCcg
-bXVzdCBiZSBzZXQgaWYgdGhlIG9iamVjdCB3YXMgbW9kaWZpZWQuDQogKi8N
-CnZvaWQgcHV0X29iamVjdChjb25zdCBzdHJ1Y3QgZGlza19jYWNoZSogY29u
-c3QgZGlza19jYWNoZSwgY29uc3Qgc2VjdG9yX3Qgb2JqZWN0X251bWJlciwg
-Y29uc3QgaW50IG1vZGlmaWVkKSB7DQoNCglzdHJ1Y3QgYnVmZmVyX2hlYWQg
-KmJoID0gTlVMTDsNCglzZWN0b3JfdCBzZWN0b3IgPSBkaXNrX2NhY2hlLT5z
-dGFydCArICh1bnNpZ25lZCBsb25nKW9iamVjdF9udW1iZXIgLyAodW5zaWdu
-ZWQgbG9uZylkaXNrX2NhY2hlLT5vYmplY3RzX3Blcl9zZWN0b3I7DQoJDQoJ
-YmggPSBfX2JyZWFkKGJkZXYsIHNlY3RvciwgYmRldl9nZXRfcXVldWUoYmRl
-diktPmhhcmRzZWN0X3NpemUpOw0KCS8vaWYobW9kaWZpZWQpIHsJCQ0KCS8v
-CWxvY2tfYnVmZmVyKGJoKTsNCgkvLwlzZXRfYnVmZmVyX3VwdG9kYXRlKGJo
-KTsNCgkvLwltYXJrX2J1ZmZlcl9kaXJ0eShiaCk7DQoJLy8JdW5sb2NrX2J1
-ZmZlcihiaCk7DQoJLy99DQoJYnJlbHNlKGJoKTsNCgkvKg0KCSAqIGFuIGFk
-ZGl0aW9uYWwgcmVsZWFzZSwgd2UgZGlkbid0IHJlbGVhc2VkIGl0IGluIGdl
-dF9vYmplY3QNCgkgKi8NCglicmVsc2UoYmgpOwkJDQp9DQpFWFBPUlRfU1lN
-Qk9MKHB1dF9vYmplY3QpOw0KDQpzdGF0aWMgdm9pZCB0ZXN0KHZvaWQpIHsN
-Cg0KCXN0cnVjdCBkaXNrX2NhY2hlIGRrOw0KCWludCBpOw0KCXZvaWQgKnA7
-DQoNCglpZighZGlza19jYWNoZV9jcmVhdGUoJmRrLCA2LCAxMDApKSB7DQoJ
-CXByaW50ayhLRVJOX0VSUiAiY3JlYXRlIGNhY2hlIGVycm9yXG4iKTsNCgkJ
-cmV0dXJuOw0KCX0NCglmb3IoaSA9IDA7IGkgPCAxMDA7IGkrKykgew0KCQln
-ZXRfb2JqZWN0KCZkaywgaSk7DQoJCXB1dF9vYmplY3QoJmRrLCBpLCAwKTsN
-Cgl9DQp9DQoNCnN0YXRpYyBpbnQgX19pbml0IGRpc2tfY2FjaGVfaW5pdCh2
-b2lkKSB7DQoNCgltYWpvcl9udW0gPSByZWdpc3Rlcl9ibGtkZXYobWFqb3Jf
-bnVtLCAiZGlza19jYWNoZSIpOw0KCWlmIChtYWpvcl9udW0gPD0gMCkgew0K
-CQlwcmludGsoS0VSTl9FUlIgImRpc2tfY2FjaGU6IHVuYWJsZSB0byBnZXQg
-bWFqb3IgbnVtYmVyXG4iKTsNCgkJcmV0dXJuIC1FSU5WQUw7DQoJfQ0KDQoJ
-aWYoIWRldm5hbWUpIHsNCgkJcHJpbnRrKEtFUk5fRVJSICJkaXNrX2NhY2hl
-OiBtdXN0IHN1cHBseSBhIHZhbGlkIGJsb2NrIGRldmljZVxuIik7DQoJCXJl
-dHVybiAtRUlOVkFMOw0KCX0NCg0KCWJkZXYgPSBvcGVuX2JkZXZfZXhjbChk
-ZXZuYW1lLCAwLCBOVUxMKTsNCglpZihJU19FUlIoYmRldikpIHsNCgkJcHJp
-bnRrKEtFUk5fRVJSICJkaXNrX2NhY2hlOiBjYW5ub3Qgb3BlbiBkZXZpY2Ug
-JXMuXG4iLCBkZXZuYW1lKTsNCgkJcmV0dXJuIC1FSU5WQUw7DQoJfQ0KDQoJ
-cHJpbnRrKEtFUk5fSU5GTyAiZGlza19jYWNoZTogdXNpbmcgZGV2aWNlICVz
-XG4iLCBkZXZuYW1lKTsNCglwcmludGsoS0VSTl9JTkZPICJkaXNrX2NhY2hl
-OiAlbGx1IHNlY3RvcnNcbiIsIGdldF9jYXBhY2l0eShiZGV2LT5iZF9kaXNr
-KSk7DQoNCgl0ZXN0KCk7DQoJDQoJcmV0dXJuIDA7DQp9DQoNCnN0YXRpYyB2
-b2lkIF9fZXhpdCBkaXNrX2NhY2hlX2V4aXQodm9pZCkgew0KCWNsb3NlX2Jk
-ZXZfZXhjbChiZGV2KTsNCn0NCg0KbW9kdWxlX2luaXQoZGlza19jYWNoZV9p
-bml0KTsNCm1vZHVsZV9leGl0KGRpc2tfY2FjaGVfZXhpdCk7DQoNCg==
-
----559023410-851401618-1178197401=:12917--
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
