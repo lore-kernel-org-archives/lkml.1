@@ -1,145 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161917AbXECOFE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161949AbXECOIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161917AbXECOFE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:05:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161948AbXECOFE
+	id S1161949AbXECOIB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161954AbXECOIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:05:04 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:42038 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161917AbXECOFA (ORCPT
+	Thu, 3 May 2007 10:08:00 -0400
+Received: from wx-out-0506.google.com ([66.249.82.230]:55403 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161949AbXECOH6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:05:00 -0400
-Subject: Re: [linux-dvb] Re: DST/BT878 module customization (..
-	was:	Critical points about ...)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Cc: Markus Rechberger <mrechberger@gmail.com>, linux-dvb@linuxtv.org,
-       linux-kernel@vger.kernel.org, Manu Abraham <abraham.manu@gmail.com>
-In-Reply-To: <Pine.LNX.4.58.0705020348080.309@shell2.speakeasy.net>
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
-	 <1178031333.3958.63.camel@localhost>
-	 <Pine.LNX.4.58.0705011606070.309@shell2.speakeasy.net>
-	 <1178071431.11109.62.camel@localhost>
-	 <Pine.LNX.4.58.0705020348080.309@shell2.speakeasy.net>
-Content-Type: text/plain; charset=utf-8
-Date: Thu, 03 May 2007 11:02:56 -0300
-Message-Id: <1178200976.12651.104.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
+	Thu, 3 May 2007 10:07:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=iYnnjS/4+3tqS2jJslqA2gJDO3w6haHqyu9Q3uCFQKm2TBzZzUya0lj7yQ7Z+s7X8t3PPn5qPwld5FmBwy4oA6uwjSDxJDqNHIsmajJuCSgf2r1mOsZHahf7b2pb5ciKi+pNg1E8C0Mr4ZF6DGoCM2Ik02NQOnX9rbQgn7nUC2M=
+Message-ID: <4639ECBA.9080405@googlemail.com>
+Date: Thu, 03 May 2007 16:07:54 +0200
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: =?UTF-8?B?SWxwbyBKw6RydmluZW4=?= <ilpo.jarvinen@helsinki.fi>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       David Miller <davem@davemloft.net>, Netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kernel BUG at include/net/tcp.h:739
+References: <4638F14E.6000803@googlemail.com> <Pine.LNX.4.64.0705030841140.3607@kivilampi-30.cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0705030841140.3607@kivilampi-30.cs.helsinki.fi>
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Qua, 2007-05-02 às 04:10 -0700, Trent Piepho escreveu:
-> On Tue, 1 May 2007, Mauro Carvalho Chehab wrote:
-
-> > However, when dst is selected, I got those errors:
+Ilpo Järvinen napisał(a):
+> On Wed, 2 May 2007, Michal Piotrowski wrote:
 > 
-> When I made this patch I was basing it off a patch I made around 9 months
-> ago.  I thought since that one was ok, this would be ok too, and in my
-> hurry to get it done I've clearly put too little effort into checking it,
-> and I'm sorry to have wasted your time.
+>> Please take a look at this bug
+>>
+>> [15236.638092] kernel BUG at /mnt/md0/devel/linux-git/include/net/tcp.h:739!
+>> [15236.644860] invalid opcode: 0000 [#1]
+>> [15236.648514] PREEMPT SMP 
+>> [15236.651075] Modules linked in: ipt_MASQUERADE iptable_nat nf_nat autofs4 af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss snd_pcm evdev snd_timer snd intel_agp i2c_i801 soundcore agpgart snd_page_alloc ide_cd cdrom rtc unix
+>> [15236.698898] CPU:    0
+>> [15236.698899] EIP:    0060:[<c02f798b>]    Not tainted VLI
+>> [15236.698900] EFLAGS: 00010206   (2.6.21-gdc87c398 #169)
+>> [15236.711580] EIP is at tcp_ack+0xc54/0x16a0
+>> [15236.715664] eax: 00000017   ebx: 00000000   ecx: 00000003   edx: 0000010e
+>> [15236.722433] esi: d5bc1254   edi: 0000010e   ebp: c0462e18   esp: c0462da8
+>> [15236.729202] ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+>> [15236.735019] Process swapper (pid: 0, ti=c0462000 task=c03f14e0 task.ti=c0427000)
+>> [15236.742219] Stack: 00000000 00000000 00000000 00000198 00000100 00000000 00000000 00000018 
+>> [15236.750698]        3b4d5775 0ffef1c0 3b4d79ad 00000001 00000018 00000006 3b4d79ad 003f14e0 
+>> [15236.759178]        00000006 0000082a d4b9cde0 00e4059a 0000000c 00000000 00000000 0130204a 
+>> [15236.767649] Call Trace:
+>> [15236.770286]  [<c0105039>] show_trace_log_lvl+0x1a/0x2f
+>> [15236.775438]  [<c01050eb>] show_stack_log_lvl+0x9d/0xa5
+>> [15236.780590]  [<c01052e0>] show_registers+0x1ed/0x32c
+>> [15236.785569]  [<c0105537>] die+0x118/0x22f
+>> [15236.789588]  [<c01056c7>] do_trap+0x79/0x91
+>> [15236.793781]  [<c0105f57>] do_invalid_op+0x97/0xa1
+>> [15236.798501]  [<c031f38c>] error_code+0x7c/0x84
+>> [15236.802960]  [<c02fafb7>] tcp_rcv_established+0x568/0x645
+>> [15236.808354]  [<c03000bd>] tcp_v4_do_rcv+0x2b/0x32c
+>> [15236.813144]  [<c030243a>] tcp_v4_rcv+0x7f9/0x86b
+>> [15236.817777]  [<c02e9dd3>] ip_local_deliver+0x170/0x235
+>> [15236.822928]  [<c02e9c2a>] ip_rcv+0x4f3/0x52c
+>> [15236.827199]  [<c02d4909>] netif_receive_skb+0x1b9/0x252
+>> [15236.832437]  [<c02635c2>] skge_poll+0x47a/0x545
+>> [15236.836967]  [<c02d68df>] net_rx_action+0x9f/0x192
+>> [15236.841772]  [<c0126408>] __do_softirq+0x6d/0xea
+>> [15236.846407]  [<c01069b5>] do_softirq+0x64/0xd1
+>> [15236.850867]  =======================
+>> [15236.854437] Code: 69 42 c0 f7 d0 64 8b 15 04 00 00 00 8b 04 90 ff 80 a4 00 00 00 8b 9e 70 05 00 00 89 d8 03 86 74 05 00 00 3b 86 8c 04 00 00 76 04 <0f> 0b eb fe 89 86 90 04 00 00 8a 86 88 03 00 00 84 c0 75 3c 83 
+>> [15236.874343] EIP: [<c02f798b>] tcp_ack+0xc54/0x16a0 SS:ESP 0068:c0462da8
+>>
+>> l *0xc02f798b
+>> 0xc02f798b is in tcp_ack (/mnt/md0/devel/linux-git/include/net/tcp.h:739).
+>> 734                                 (tp->snd_cwnd >> 2)));
+>> 735     }
+>> 736
+>> 737     static inline void tcp_sync_left_out(struct tcp_sock *tp)
+>> 738     {
+>> 739             BUG_ON(tp->sacked_out + tp->lost_out > tp->packets_out);
+>> 740             tp->left_out = tp->sacked_out + tp->lost_out;
+>> 741     }
+>> 742
+>> 743     extern void tcp_enter_cwr(struct sock *sk, const int set_ssthresh);
+>>
+>> Caused by commit 34588b4c046c34773e5a1a962da7b78b05c4d1bd 
 > 
-> I promise, this time it's right!
-> http://linuxtv.org/hg/~tap/dst-new
+> I think I found the reason:
+> 
+> tcp_clean_rtx_queue without SACK it does not decrement sacked_out but
+> tcp_reset_reno_sack/remove_reno_sack is being called later in
+> tcp_fastretrans_alert. Before that, tcp_sync_left_out is being called, 
+> at least by tcp_fastretrans_alert itself, which sees sacked_out that 
+> includes also segments that are no longer in window (this also explains 
+> why the original code did not do the reduction in the non-SACK case). Also 
+> tcp_process_frto calls tcp_sync_left_out, so it would also lead to the 
+> same problem.
+> 
+> Here is a change that ignores this trap without SACK. However, it would be 
+> useful to trap this without SACK too as S+L skb causes potentially a 
+> negative packets in flight (= large one) disturbing cwnd compares. 
+> 
+> 
 
-Confirmed. Now the patch is properly working. My tests were done with a
-board with DST. Those are the results:
+Thanks Ilpo. I'm testing the patch.
 
-1) when DST is unselected, on a board with DST, it will print the errors
-indicating that the Kconfig items were not selected:
 
-DVB: registering new adapter (bttv0).
-DVB: Unable to find symbol dst_attach()
-frontend_init: Could not find a Twinhan DST.
-dvb-bt8xx: A frontend driver was not found for device 109e/0878 subsystem fbfb/f800
-
-The only issue is the wrong printk msg, stating that a "frontend driver"
-were not found. As this issue also happens with the current driver, due
-the usage of dvb_attach() macro, I don't see any regressions.
-
-It would be nice, however, to have a patch making dvb_attach more
-generic, by e.g. having a variant that allows passing another message.
-
-Trying to run dvb programs like scan and kaffeine will properly fail.
-
-2) With DST selected, the driver works properly. 
-
-The changes also solved the issue of removing the dst drivers. Before
-the patch, sometimes it is required to force removal of dst module with
-the '-f' flag, since the module count were wrong.
-
----
-
-I'll risk to make a briefing of the technical points:
-
-<SUMMARY>
-Current issues:
-	1) allow deselecting DST/DST_CA support, since this is not needed by
-some supported boards;
-	2) sometimes, module removal don't work with dst, since usage count
-becomes wrong;
-	3) if dst or dst_ca is not properly loaded, the printk message wrongly
-indicates that "A frontend driver was not found"
-
-The Trent's original patch were written on Aug, 2006 (*). The current
-version fixes (1) and (2). It doesn't touch on (3). There aren't any
-other patches properly fixing (1) and (2).
-
-There's an argument against the prototype changes on dst_attach and
-dst_ca_attach since they aren't frontend.
-</SUMMARY>
-
-(*) Notice: I can't remember why the patches were not applied on that
-time. I think somebody nacked they, although I didn't found any record
-about the patch on my mailbox.
-
-About the usage of frontend support for a non-frontend module, I really
-can't see any issues at the current implementation, since even before
-the patch, all DST initialization are done by a routine called
-"frontend_init()". Even dst not being a frontend, the initialization
-gets the result of the attachment process, using it as a "frontend":
-
-	state = kmalloc(sizeof (struct dst_state), GFP_KERNEL);
-
-        state->config = &dst_config;
-        state->i2c = card->i2c_adapter;
-        state->bt = card->bt;
-        state->dst_ca = NULL;
-
-        dvb_attach(dst_attach, state, &card->dvb_adapter);
-
-        card->fe = &state->frontend;
-
-	(comments and error checks removed to make code cleaner)
-
-The patch basically moved state initialization to dst_attach. The above
-code, after the patch is:
-	
-	card->fe = dvb_attach(dst_attach, &dst_config, card->bt, card->i2c_adapter);
-
-So, I didn't noticed any regressions by running the modified driver nor
-I couldn't identify any regressions by inspecting the source code. 
-
-The end result seems also cleaner and easier to understand, preserving
-all characteristics of the original code. Also, it uses dvb_attach the
-same way as the other dvb helper modules.
-
-If later any changes will be needed to allow using DST on different
-configurations, future patches probably will need to move dst
-initialization to other places, and use different callbacks for it,
-altering the above initialization. I can't see why those changes would
-possibly avoid any further changes at the driver.
-
-That's said, I intend to commit the two patches, fixing the current
-issues, at this weekend.
-
-I'm open to other technical reviews of the patches. 
+Regards,
+Michal
 
 -- 
-Cheers,
-Mauro
-
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
