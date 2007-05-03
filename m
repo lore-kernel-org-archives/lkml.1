@@ -1,229 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031385AbXECRhd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162205AbXECRia@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031385AbXECRhd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 13:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031386AbXECRhd
+	id S1162205AbXECRia (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 13:38:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162204AbXECRia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 13:37:33 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:42245
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031385AbXECRhc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 13:37:32 -0400
-Subject: [PATCH] tty add compat_ioctl
-From: Paul Fulghum <paulkf@microgate.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 12:34:43 -0500
-Message-Id: <1178213683.4369.3.camel@amdx2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+	Thu, 3 May 2007 13:38:30 -0400
+Received: from mail.rialcom.ru ([80.71.245.247]:52716 "EHLO mail.rialcom.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161509AbXECRi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 13:38:28 -0400
+X-Spam-Flag: SKIP
+X-Spam-Yversion: Spamooborona 1.6.1
+Message-ID: <463A1E02.8020506@clusterfs.com>
+Date: Thu, 03 May 2007 21:38:10 +0400
+From: Alex Tomas <alex@clusterfs.com>
+Organization: Cluster Filesystems, Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070302 Fedora/1.5.0.10-1.fc6 pango-text Thunderbird/1.5.0.10 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andreas Dilger <adilger@clusterfs.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marat Buharov <marat.buharov@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
+ FS is under heavy write load (massive starvation)
+References: <1177660767.6567.41.camel@Homer.simpson.net>	<20070427013350.d0d7ac38.akpm@linux-foundation.org>	<698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>	<alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>	<20070427193130.GD5967@schatzie.adilger.int> <20070427151837.f1439639.akpm@linux-foundation.org>
+In-Reply-To: <20070427151837.f1439639.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add compat_ioctl method for tty code to allow processing
-of 32 bit ioctl calls on 64 bit systems by tty core,
-tty drivers, and line disciplines.
+Andrew Morton wrote:
+> We can make great improvements here, and I've (twice) previously decribed
+> how: hoist the entire ordered-mode data handling out of ext3, and out of
+> the buffer_head layer and move it up into the VFS pagecache layer. 
+> Basically, do ordered-data with a commit-time inode walk, calling
+> do_sync_mapping_range().
+> 
+> Do it in the VFS.  Make reiserfs use it, remove reiserfs ordered-mode too. 
+> Make XFS use it, fix the hey-my-files-are-all-full-of-zeroes problem there.
 
-Based on patch by Arnd Bergmann:
-http://www.uwsg.iu.edu/hypermail/linux/kernel/0511.0/1732.html
+I'm not sure it's that easy.
 
-Signed-off-by: Paul Fulghum <paulkf@microgate.com>
-CC: Arnd Bergmann <arnd@arndb.de>
+if we move to pages, then we have to mark pages to be flushed holding
+transaction open. now take delayed allocation into account: we need
+to allocate number of blocks at once and then mark all pages mapped,
+again within context of the same transaction. so, an implementation
+would look like the following?
 
---- a/drivers/char/n_tty.c	2007-04-25 22:08:32.000000000 -0500
-+++ b/drivers/char/n_tty.c	2007-05-01 11:00:47.000000000 -0500
-@@ -1544,21 +1544,18 @@ static unsigned int normal_poll(struct t
- }
- 
- struct tty_ldisc tty_ldisc_N_TTY = {
--	TTY_LDISC_MAGIC,	/* magic */
--	"n_tty",		/* name */
--	0,			/* num */
--	0,			/* flags */
--	n_tty_open,		/* open */
--	n_tty_close,		/* close */
--	n_tty_flush_buffer,	/* flush_buffer */
--	n_tty_chars_in_buffer,	/* chars_in_buffer */
--	read_chan,		/* read */
--	write_chan,		/* write */
--	n_tty_ioctl,		/* ioctl */
--	n_tty_set_termios,	/* set_termios */
--	normal_poll,		/* poll */
--	NULL,			/* hangup */
--	n_tty_receive_buf,	/* receive_buf */
--	n_tty_write_wakeup	/* write_wakeup */
-+	.magic           = TTY_LDISC_MAGIC,
-+	.name            = "n_tty",
-+	.open            = n_tty_open,
-+	.close           = n_tty_close,
-+	.flush_buffer    = n_tty_flush_buffer,
-+	.chars_in_buffer = n_tty_chars_in_buffer,
-+	.read            = read_chan,
-+	.write           = write_chan,
-+	.ioctl           = n_tty_ioctl,
-+	.set_termios     = n_tty_set_termios,
-+	.poll            = normal_poll,
-+	.receive_buf     = n_tty_receive_buf,
-+	.write_wakeup    = n_tty_write_wakeup
- };
- 
---- a/include/linux/tty_driver.h	2007-04-25 22:08:32.000000000 -0500
-+++ b/include/linux/tty_driver.h	2007-05-03 10:03:52.000000000 -0500
-@@ -52,6 +52,11 @@
-  * 	This routine allows the tty driver to implement
-  *	device-specific ioctl's.  If the ioctl number passed in cmd
-  * 	is not recognized by the driver, it should return ENOIOCTLCMD.
-+ *
-+ * long (*compat_ioctl)(struct tty_struct *tty, struct file * file,
-+ * 	                unsigned int cmd, unsigned long arg);
-+ *
-+ * 	implement ioctl processing for 32 bit process on 64 bit system
-  * 
-  * void (*set_termios)(struct tty_struct *tty, struct ktermios * old);
-  *
-@@ -132,6 +137,8 @@ struct tty_operations {
- 	int  (*chars_in_buffer)(struct tty_struct *tty);
- 	int  (*ioctl)(struct tty_struct *tty, struct file * file,
- 		    unsigned int cmd, unsigned long arg);
-+	long (*compat_ioctl)(struct tty_struct *tty, struct file * file,
-+			     unsigned int cmd, unsigned long arg);
- 	void (*set_termios)(struct tty_struct *tty, struct ktermios * old);
- 	void (*throttle)(struct tty_struct * tty);
- 	void (*unthrottle)(struct tty_struct * tty);
-@@ -193,6 +200,8 @@ struct tty_driver {
- 	int  (*chars_in_buffer)(struct tty_struct *tty);
- 	int  (*ioctl)(struct tty_struct *tty, struct file * file,
- 		    unsigned int cmd, unsigned long arg);
-+	long (*compat_ioctl)(struct tty_struct *tty, struct file * file,
-+			     unsigned int cmd, unsigned long arg);
- 	void (*set_termios)(struct tty_struct *tty, struct ktermios * old);
- 	void (*throttle)(struct tty_struct * tty);
- 	void (*unthrottle)(struct tty_struct * tty);
---- a/drivers/char/tty_io.c	2007-04-25 22:08:32.000000000 -0500
-+++ b/drivers/char/tty_io.c	2007-05-03 10:42:35.000000000 -0500
-@@ -153,6 +153,11 @@ static int tty_open(struct inode *, stru
- static int tty_release(struct inode *, struct file *);
- int tty_ioctl(struct inode * inode, struct file * file,
- 	      unsigned int cmd, unsigned long arg);
-+#ifdef CONFIG_COMPAT
-+long tty_compat_ioctl(struct file * file, unsigned int cmd, unsigned long arg);
-+#else
-+#define tty_compat_ioctl NULL
-+#endif
- static int tty_fasync(int fd, struct file * filp, int on);
- static void release_tty(struct tty_struct *tty, int idx);
- static struct pid *__proc_set_tty(struct task_struct *tsk,
-@@ -1145,8 +1150,8 @@ static unsigned int hung_up_tty_poll(str
- 	return POLLIN | POLLOUT | POLLERR | POLLHUP | POLLRDNORM | POLLWRNORM;
- }
- 
--static int hung_up_tty_ioctl(struct inode * inode, struct file * file,
--			     unsigned int cmd, unsigned long arg)
-+static long hung_up_tty_ioctl(struct file * file,
-+			      unsigned int cmd, unsigned long arg)
- {
- 	return cmd == TIOCSPGRP ? -ENOTTY : -EIO;
- }
-@@ -1157,6 +1162,7 @@ static const struct file_operations tty_
- 	.write		= tty_write,
- 	.poll		= tty_poll,
- 	.ioctl		= tty_ioctl,
-+	.compat_ioctl	= tty_compat_ioctl,
- 	.open		= tty_open,
- 	.release	= tty_release,
- 	.fasync		= tty_fasync,
-@@ -1169,6 +1175,7 @@ static const struct file_operations ptmx
- 	.write		= tty_write,
- 	.poll		= tty_poll,
- 	.ioctl		= tty_ioctl,
-+	.compat_ioctl	= tty_compat_ioctl,
- 	.open		= ptmx_open,
- 	.release	= tty_release,
- 	.fasync		= tty_fasync,
-@@ -1181,6 +1188,7 @@ static const struct file_operations cons
- 	.write		= redirected_tty_write,
- 	.poll		= tty_poll,
- 	.ioctl		= tty_ioctl,
-+	.compat_ioctl	= tty_compat_ioctl,
- 	.open		= tty_open,
- 	.release	= tty_release,
- 	.fasync		= tty_fasync,
-@@ -1191,7 +1199,8 @@ static const struct file_operations hung
- 	.read		= hung_up_tty_read,
- 	.write		= hung_up_tty_write,
- 	.poll		= hung_up_tty_poll,
--	.ioctl		= hung_up_tty_ioctl,
-+	.unlocked_ioctl = hung_up_tty_ioctl,
-+	.compat_ioctl	= hung_up_tty_ioctl,
- 	.release	= tty_release,
- };
- 
-@@ -3353,6 +3362,31 @@ int tty_ioctl(struct inode * inode, stru
- 	return retval;
- }
- 
-+#ifdef CONFIG_COMPAT
-+long tty_compat_ioctl(struct file * file, unsigned int cmd, unsigned long arg)
-+{
-+	struct inode *inode = file->f_dentry->d_inode;
-+	struct tty_struct *tty = file->private_data;
-+	struct tty_ldisc *ld;
-+	int retval = -ENOIOCTLCMD;
-+
-+	if (tty_paranoia_check(tty, inode, "tty_ioctl"))
-+		return -EINVAL;
-+
-+	if (tty->driver->compat_ioctl) {
-+		retval = (tty->driver->compat_ioctl)(tty, file, cmd, arg);
-+		if (retval != -ENOIOCTLCMD)
-+			return retval;
-+	}
-+
-+	ld = tty_ldisc_ref_wait(tty);
-+	if (ld->compat_ioctl)
-+		retval = ld->compat_ioctl(tty, file, cmd, arg);
-+	tty_ldisc_deref(ld);
-+
-+	return retval;
-+}
-+#endif
- 
- /*
-  * This implements the "Secure Attention Key" ---  the idea is to
-@@ -3685,6 +3719,7 @@ void tty_set_operations(struct tty_drive
- 	driver->write_room = op->write_room;
- 	driver->chars_in_buffer = op->chars_in_buffer;
- 	driver->ioctl = op->ioctl;
-+	driver->compat_ioctl = op->compat_ioctl;
- 	driver->set_termios = op->set_termios;
- 	driver->throttle = op->throttle;
- 	driver->unthrottle = op->unthrottle;
---- a/include/linux/tty_ldisc.h	2007-04-25 22:08:32.000000000 -0500
-+++ b/include/linux/tty_ldisc.h	2007-05-03 10:53:30.000000000 -0500
-@@ -59,6 +59,11 @@
-  * 	low-level driver can "grab" an ioctl request before the line
-  * 	discpline has a chance to see it.
-  * 
-+ * long	(*compat_ioctl)(struct tty_struct * tty, struct file * file,
-+ * 		        unsigned int cmd, unsigned long arg);
-+ *
-+ *      Process ioctl calls from 32-bit process on 64-bit system
-+ *
-  * void	(*set_termios)(struct tty_struct *tty, struct ktermios * old);
-  *
-  * 	This function notifies the line discpline that a change has
-@@ -118,6 +123,8 @@ struct tty_ldisc {
- 			 const unsigned char * buf, size_t nr);	
- 	int	(*ioctl)(struct tty_struct * tty, struct file * file,
- 			 unsigned int cmd, unsigned long arg);
-+	long	(*compat_ioctl)(struct tty_struct * tty, struct file * file,
-+				unsigned int cmd, unsigned long arg);
- 	void	(*set_termios)(struct tty_struct *tty, struct ktermios * old);
- 	unsigned int (*poll)(struct tty_struct *, struct file *,
- 			     struct poll_table_struct *);
+generic_writepages() {
+	/* collect set of contig. dirty pages */
+	foo_get_blocks() {
+		foo_journal_start();
+		foo_new_blocks();
+		foo_attach_blocks_to_inode();
+		generic_mark_pages_mapped();
+		foo_journal_stop();
+	}
+}
+
+another question is will it scale well given number of dirty inodes
+can be much larger than number of inodes with dirty mapped blocks
+(in delayed allocation case, for example) ?
+
+thanks, Alex
+
+
 
 
