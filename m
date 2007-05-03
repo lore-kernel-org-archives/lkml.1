@@ -1,98 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767321AbXECCOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767320AbXECCOT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767321AbXECCOK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 22:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767320AbXECCOK
+	id S1767320AbXECCOT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 22:14:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767324AbXECCOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 22:14:10 -0400
-Received: from ns1.suse.de ([195.135.220.2]:56292 "EHLO mx1.suse.de"
+	Wed, 2 May 2007 22:14:18 -0400
+Received: from ns2.suse.de ([195.135.220.15]:47165 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767321AbXECCOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 22:14:08 -0400
+	id S1767320AbXECCOL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 22:14:11 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Jean Delvare <khali@linux-fr.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 2/5] platform: reorder platform_device_del
-Date: Wed,  2 May 2007 19:11:30 -0700
-Message-Id: <11781583003703-git-send-email-gregkh@suse.de>
+Cc: Rolf Eike Beer <eike-kernel@sf-tec.de>, Tejun Heo <htejun@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 3/5] DOC: Fix wrong identifier name in Documentation/driver-model/devres.txt
+Date: Wed,  2 May 2007 19:11:31 -0700
+Message-Id: <11781583073805-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.5.1.2
-In-Reply-To: <11781582932668-git-send-email-gregkh@suse.de>
+In-Reply-To: <11781583003703-git-send-email-gregkh@suse.de>
 References: <20070503020924.GB21316@kroah.com>
  <11781582932668-git-send-email-gregkh@suse.de>
+ <11781583003703-git-send-email-gregkh@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
 
-In platform_device_del(), we currently delete the device resources
-first, then we delete the device itself. This causes a (minor) bug to
-occur when one unregisters a platform device before unregistering its
-platform driver, and the driver is requesting (in .probe()) and
-releasing (in .remove()) a resource of the device. The device
-resources are already gone by the time the driver gets the chance to
-release the resources it had been requesting, causing an error like:
-Trying to free nonexistent resource <0000000000000295-0000000000000296>
+Above and below we talk about my_midlayer_create_something, I assume that is
+also meant here.
 
-If the platform driver is unregistered first, the problem doesn't
-occur, as the driver will have the opportunity to release the
-resources it had requested before the device resources themselves are
-released. It's a bit odd that unregistering the driver first or the
-device first doesn't lead to the same result.
-
-So I believe that we should delete the device first in
-platform_device_del(). I've searched the git history and found that it
-used to be the case before 2.6.8, but was changed here:
-
-http://www.kernel.org/git/?p=linux/kernel/git/torvalds/old-2.6-bkcvs.git;a=commitdiff;h=96ef7b3689936ee1e64b711511342026a8ce459c
-
-> 2004/07/14 16:09:44-07:00 dtor_core
-> [PATCH] Driver core: Fix OOPS in device_platform_unregister
->
-> Driver core: platform_device_unregister should release resources first
->              and only then call device_unregister, otherwise if there
->              are no more references to the device it will be freed and
->              the fucntion will try to access freed memory.
-
-However we now have an explicit call to put_device() at the end of
-platform_device_unregister() so I guess the original problem no longer
-exists and it is safe to revert that change.
-
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Rolf Eike Beer <eike-kernel@sf-tec.de>
+Signed-off-by: Tejun Heo <htejun@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/platform.c |    8 +++++---
- 1 files changed, 5 insertions(+), 3 deletions(-)
+ Documentation/driver-model/devres.txt |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 30480f6..17b5ece 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -292,20 +292,22 @@ EXPORT_SYMBOL_GPL(platform_device_add);
-  *	@pdev:	platform device we're removing
-  *
-  *	Note that this function will also release all memory- and port-based
-- *	resources owned by the device (@dev->resource).
-+ *	resources owned by the device (@dev->resource).  This function
-+ *	must _only_ be externally called in error cases.  All other usage
-+ *	is a bug.
-  */
- void platform_device_del(struct platform_device *pdev)
- {
- 	int i;
+diff --git a/Documentation/driver-model/devres.txt b/Documentation/driver-model/devres.txt
+index 5163b85..6c8d8f2 100644
+--- a/Documentation/driver-model/devres.txt
++++ b/Documentation/driver-model/devres.txt
+@@ -182,7 +182,7 @@ For example, you can do something like the following.
  
- 	if (pdev) {
-+		device_del(&pdev->dev);
-+
- 		for (i = 0; i < pdev->num_resources; i++) {
- 			struct resource *r = &pdev->resource[i];
- 			if (r->flags & (IORESOURCE_MEM|IORESOURCE_IO))
- 				release_resource(r);
- 		}
--
--		device_del(&pdev->dev);
- 	}
- }
- EXPORT_SYMBOL_GPL(platform_device_del);
+ 	...
+ 
+-	devres_close_group(dev, my_midlayer_something);
++	devres_close_group(dev, my_midlayer_create_something);
+ 	return 0;
+   }
+ 
 -- 
 1.5.1.2
 
