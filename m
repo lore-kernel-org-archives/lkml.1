@@ -1,120 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031219AbXECMfc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031241AbXECMfz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031219AbXECMfc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 08:35:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031236AbXECMfc
+	id S1031241AbXECMfz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 08:35:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031240AbXECMfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 08:35:32 -0400
-Received: from coyote.holtmann.net ([217.160.111.169]:33659 "EHLO
-	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031219AbXECMfb (ORCPT
+	Thu, 3 May 2007 08:35:55 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:53063 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031241AbXECMfx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 08:35:31 -0400
-Subject: Re: Kernel Oops on 2.6.18-1.2869.fc6 is this a bug?
-From: Marcel Holtmann <marcel@holtmann.org>
-To: Gary Martin <gm4rtin@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <43806ba60705030524g2a8b0e54m2dda6f52615eba77@mail.gmail.com>
-References: <43806ba60705030524g2a8b0e54m2dda6f52615eba77@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 14:35:56 +0200
-Message-Id: <1178195756.6891.62.camel@violet>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 08:35:53 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Thu, 3 May 2007 08:35:24 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: dead CONFIG_ variables:   drivers/video/
+In-Reply-To: <1178193844.4606.64.camel@daplas>
+Message-ID: <Pine.LNX.4.64.0705030833560.2223@localhost.localdomain>
+References: <Pine.LNX.4.64.0705030638270.380@localhost.localdomain>
+ <1178193844.4606.64.camel@daplas>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Gary,
+On Thu, 3 May 2007, Antonino A. Daplas wrote:
 
-> I have a system running Fedora Core 6 on a Dell PE4400 that crashed
-> and became unresponsive, I captured the following kernel oops in
-> /var/log/messages:
-> 
-> Apr 30 08:52:11 hostname kernel: list_del corruption. prev->next
-> should be d5507478, but was 0000008f
-> Apr 30 08:52:11 hostname kernel: ------------[ cut here ]------------
-> Apr 30 08:52:11 hostname kernel: kernel BUG at lib/list_debug.c:65!
-> Apr 30 08:52:11 hostname kernel: invalid opcode: 0000 [#1]
-> Apr 30 08:52:11 hostname kernel: SMP
-> Apr 30 08:52:11 hostname kernel: last sysfs file:
-> /devices/pci0000:00/0000:00:04.0/irq
->  Apr 30 08:52:11 hostname kernel: Modules linked in: ipv6 autofs4
-> dm_multipath video sbs i2c_ec button battery ac lp i2c_piix4 sr_mod
-> i2c_core st cdrom e100 sg floppy pcspkr mii parport_pc tg3 parport
-> serio_raw dm_snapshot dm_zero dm_mirror dm_mod aic7xxx
-> scsi_transport_spi aacraid sd_mod scsi_mod ext3 jbd ehci_hcd ohci_hcd
-> uhci_hcd
-> Apr 30 08:52:11 hostname kernel: CPU:    0
-> Apr 30 08:52:11 hostname kernel: EIP:    0060:[<c04e5913>]    Not tainted VLI
-> Apr 30 08:52:11 hostname kernel: EFLAGS: 00010296   (2.6.18-1.2869.fc6 #1)
-> Apr 30 08:52:11 hostname kernel: EIP is at list_del+0x23/0x6c
-> Apr 30 08:52:11 hostname kernel: eax: 00000048   ebx: d5507478   ecx:
-> c0671c50   edx: 00000096
-> Apr 30 08:52:11 hostname kernel: esi: d5507428   edi: f7d98e40   ebp:
-> 00000282   esp: f7feff38
-> Apr 30 08:52:11 hostname kernel: ds: 007b   es: 007b   ss: 0068
-> Apr 30 08:52:11 hostname kernel: Process events/0 (pid: 8, ti=f7fef000
-> task=c2ec05c0 task.ti=f7fef000)
-> Apr 30 08:52:11 hostname kernel: Stack: c063707b d5507478 0000008f
-> d5507420 c04b7ae6 d5507420 d5507428 f7d98e40
-> Apr 30 08:52:11 hostname kernel:        c04b772c c067ece0 c067ece4
-> c042fa34 00000246 f7d98e40 f7d98e60 c04b7675
-> Apr 30 08:52:11 hostname kernel:        00000000 f7d98e60 f7d98e40
-> f7d98e58 00000000 c043032c 00000001 00000000
-> Apr 30 08:52:11 hostname kernel: Call Trace:
-> Apr 30 08:52:11 hostname kernel:  [<c04b7ae6>] keyring_destroy+0x28/0x65
-> Apr 30 08:52:11 hostname kernel:  [<c04b772c>] key_cleanup+0xb7/0xd0
-> Apr 30 08:52:11 hostname kernel:  [<c042fa34>] run_workqueue+0x83/0xc5
-> Apr 30 08:52:11 hostname kernel:  [<c043032c>] worker_thread+0xd9/0x10d
-> Apr 30 08:52:11 hostname kernel:  [<c04327f3>] kthread+0xc0/0xed
-> Apr 30 08:52:11 hostname kernel:  [<c0405447>] kernel_thread_helper+0x7/0x10
-> Apr 30 08:52:11 hostname kernel: DWARF2 unwinder stuck at
-> kernel_thread_helper+0x7/0x10
-> Apr 30 08:52:11 hostname kernel: Leftover inexact backtrace:
-> Apr 30 08:52:11 hostname kernel:  =======================
-> Apr 30 08:52:11 hostname kernel: Code: 00 00 89 c3 eb e8 90 90 53 89
-> c3 83 ec 0c 8b 40 04 8b 00 39 d8 74 1c 89 5c 24 04 89 44 24 08 c7 04
-> 24 7b 70 63 c0 e8 df bc f3 ff <0f> 0b 41 00 b8 70 63 c0 8b 03 8b 40 04
-> 39 d8 74 1c 89 5c 24 04
-> Apr 30 08:52:11 hostname kernel: EIP: [<c04e5913>] list_del+0x23/0x6c
-> SS:ESP 0068:f7feff38
-> Apr 30 08:52:20 hostname kernel:  <3>BUG: soft lockup detected on CPU#0!
-> Apr 30 08:52:20 hostname kernel:  [<c0405876>] dump_trace+0x69/0x1af
-> Apr 30 08:52:20 hostname kernel:  [<c04059d4>] show_trace_log_lvl+0x18/0x2c
-> Apr 30 08:52:20 hostname kernel:  [<c0405f83>] show_trace+0xf/0x11
-> Apr 30 08:52:20 hostname kernel:  [<c0406080>] dump_stack+0x15/0x17
-> Apr 30 08:52:20 hostname kernel:  [<c04498a9>] softlockup_tick+0xad/0xc4
-> Apr 30 08:52:20 hostname kernel:  [<c042a39a>] update_process_times+0x39/0x5c
-> Apr 30 08:52:20 hostname kernel:  [<c04148c5>]
-> smp_apic_timer_interrupt+0x5b/0x62
-> Apr 30 08:52:20 hostname kernel:  [<c040512f>] apic_timer_interrupt+0x1f/0x30
-> Apr 30 08:52:20 hostname kernel: DWARF2 unwinder stuck at
-> apic_timer_interrupt+0x1f/0x30
-> Apr 30 08:52:20 hostname kernel: Leftover inexact backtrace:
-> Apr 30 08:52:20 hostname kernel:  [<c0609f2f>] __write_lock_failed+0xf/0x20
-> Apr 30 08:52:20 hostname kernel:  [<c04e57f9>] _raw_write_lock+0x5d/0x74
-> Apr 30 08:52:20 hostname kernel:  [<c04b7ffd>] keyring_publish_name+0x2c/0x6d
-> Apr 30 08:52:20 hostname kernel:  [<c04b804c>] keyring_instantiate+0xe/0x13
-> Apr 30 08:52:20 hostname kernel:  [<c04b6fa4>]
-> __key_instantiate_and_link+0x2f/0xa8
-> Apr 30 08:52:20 hostname kernel:  [<c04b820d>] keyring_alloc+0x53/0x6a
-> Apr 30 08:52:20 hostname kernel:  [<c04b9888>] alloc_uid_keyring+0x4c/0xb2
-> Apr 30 08:52:20 hostname kernel:  [<c042a80d>] alloc_uid+0x95/0x13c
-> Apr 30 08:52:20 hostname kernel:  [<c042d66f>] set_user+0xb/0x8e
-> Apr 30 08:52:20 hostname kernel:  [<c042ef3a>] sys_setresuid+0x111/0x1dd
-> Apr 30 08:52:20 hostname kernel:  [<c0404027>] syscall_call+0x7/0xb
-> Apr 30 08:52:20 hostname kernel:  =======================
-> 
-> Is this a bug?  Please let me know if I can provide any other
-> information to determine the cause of this crash.  Thanks.
-
-if my memory servers me correctly, then this was the key serial number
-collision avoidance algorithm bug. However latest Fedora Core 6 kernel
-is actually 2.6.20-1.2948.fc6. Please try that one.
-
-Regards
-
-Marcel
+> On Thu, 2007-05-03 at 06:40 -0400, Robert P. J. Day wrote:
+> > $ ../dead_config.sh drivers/video
+> > ========== FB_68328_INVERT ==========
+> > drivers/video/68328fb.c:53:#if defined(CONFIG_FB_68328_INVERT)
+>
+> Can be made part of Kconfig, I think
+>
+> > ========== FB_AU1200_DEVS ==========
+> > drivers/video/au1200fb.c:52:#ifndef CONFIG_FB_AU1200_DEVS
+> > drivers/video/au1200fb.c:53:#define CONFIG_FB_AU1200_DEVS 4
+> > drivers/video/au1200fb.c:160:static struct au1200fb_device _au1200fb_devices[CONFIG_FB_AU1200_DEVS];
+> > drivers/video/au1200fb.c:714:   for (i = 0; i < CONFIG_FB_AU1200_DEVS; ++i) {
+> > drivers/video/au1200fb.c:1635:  for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane) {
+> > drivers/video/au1200fb.c:1730:  for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)
+> > drivers/video/au1200fb.c:1850:                  for (plane = 0; plane < CONFIG_FB_AU1200_DEVS; ++plane)         {
+>
+> Not sure about this one.
+>
+> > ========== FB_MATROX_32MB ==========
+> > drivers/video/matrox/matroxfb_base.c:307:#ifdef CONFIG_FB_MATROX_32MB
+> > drivers/video/matrox/matroxfb_base.c:327:#ifdef CONFIG_FB_MATROX_32MB
+> > drivers/video/matrox/matroxfb_base.c:339:#ifdef CONFIG_FB_MATROX_32MB
+> > drivers/video/matrox/matroxfb_base.c:1342:#ifdef CONFIG_FB_MATROX_32MB
+> > drivers/video/matrox/matroxfb_base.c:1619:#ifdef CONFIG_FB_MATROX_32MB
+> > drivers/video/matrox/matroxfb_DAC1064.c:1053:#ifdef CONFIG_FB_MATROX_32MB
+> > drivers/video/matrox/matroxfb_base.h:58:#define CONFIG_FB_MATROX_32MB
+> > drivers/video/matrox/matroxfb_base.h:466:#ifdef CONFIG_FB_MATROX_32MB
+>
+> This needs to be part of Kconfig.
+>
+> > ========== FB_NVIDIA_DEBUG ==========
+> > drivers/video/nvidia/nvidia.c:40:#undef CONFIG_FB_NVIDIA_DEBUG
+> > drivers/video/nvidia/nvidia.c:41:#ifdef CONFIG_FB_NVIDIA_DEBUG
+> > drivers/video/nvidia/nvidia.c:50:#ifdef CONFIG_FB_NVIDIA_DEBUG
+>
+> False positive, may be renamed.
+>
+> > ========== FB_SOFT_CURSOR ==========
+> > drivers/video/sis/sis_main.c:1906:#ifdef CONFIG_FB_SOFT_CURSOR
+>
+> This is dead, FB_SOFT_CURSOR is truly gone.
+>
+> Thanks.
 
 
+um ... just so there's no misunderstanding, *i* don't plan on fixing
+any of this, i'm just running the script and reporting it.  i'm
+assuming the respective maintainers can take it from here.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
