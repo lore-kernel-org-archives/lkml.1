@@ -1,58 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161878AbXECM7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161892AbXECNCK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161878AbXECM7Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 08:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161879AbXECM7Y
+	id S1161892AbXECNCK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 09:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161893AbXECNCJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 08:59:24 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:34233 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161878AbXECM7X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 08:59:23 -0400
-Date: Thu, 3 May 2007 08:57:41 -0400
-From: Chris Mason <chris.mason@oracle.com>
-To: David Chinner <dgc@sgi.com>
-Cc: "Cabot, Mason B" <mason.b.cabot@intel.com>, linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-Message-ID: <20070503125741.GA1518@think.oraclecorp.com>
-References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070502154414.GB77450368@melbourne.sgi.com> <20070502194621.GY1518@think.oraclecorp.com> <20070503001511.GD77450368@melbourne.sgi.com>
-MIME-Version: 1.0
+	Thu, 3 May 2007 09:02:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:55418 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161892AbXECNCI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 09:02:08 -0400
+Date: Thu, 3 May 2007 15:02:02 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Zoltan Boszormenyi <zboszor@dunaweb.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070503130201.GA9000@elte.hu>
+References: <46399B51.9040608@dunaweb.hu>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070503001511.GD77450368@melbourne.sgi.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+In-Reply-To: <46399B51.9040608@dunaweb.hu>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 10:15:11AM +1000, David Chinner wrote:
-[ bad fragmentation from a funky write one byte every 128k system ]
-> 
-> This only becomes a problem if the system has enough pages dirty to
-> be triggering throttling so that the 1byte writes are converted before
-> the data actually hits the server.
-> 
-> Even then, if you are on an XFS filesystem with a sunit/swidth set,
-> the alocation alignments and speculative allocations will go a long
-> way to preventing fragmentations.
-> 
-> If that doesn't work, then set the extent allocation size hint on the
-> XFS inode to 128k or 256k to set the minimum all ocation size for the
-> file to span the distance between the 1 byte writes. This attribute
-> can be inherited from the parent directory on create, so it's a
-> set and forget type of thing...
-> 
-> i.e. XFS has lots of ways to prevent perfromance from degrading
-> on these sorts of issues.
 
-I'm not surprised that XFS would fair the best in this workload,
-but this sounds like a lot of magic that shouldn't be required.  The
-fact that it is good to have the allocation knobs and delalloc in
-general doesn't mean that samba shouldn't do the right thing and
-preallocate the space in a sensible fashion.
+* Zoltan Boszormenyi <zboszor@dunaweb.hu> wrote:
 
--chris
+> I started up 12 glxgears to see the effect of CFS v8 on my Athlon64 X2 
+> 4200.
+> 
+> Without this patch all the GL load was handled by the second core, the 
+> system only stressed the first core if other processes were also 
+> started, i.e. a kernel compilation. With this patch the load is evenly 
+> balanced across the two cores all the time.
 
+ok, i didnt realize that it would affect x86_64 too. I'll do a -v9 
+release with this fix included.
+
+> [...] And while doing make -j4 on the kernel, the 12 gears are still 
+> spinning about 185+ FPS and there are only slightly visible hiccups. 
+> Switching between workspaces, i.e. refreshing the large windows of 
+> Thunderbird and Firefox are done very quickly, the whole system is 
+> exceptionally responsive.
+
+great! So it seems -v8 does improve OpenGL handling too :-)
+
+> Thanks for this great work!
+
+you are welcome :)
+
+	Ingo
