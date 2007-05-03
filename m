@@ -1,96 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767285AbXECAS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767290AbXECA3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767285AbXECAS0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 20:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767286AbXECAS0
+	id S1767290AbXECA3q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 20:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767289AbXECA3q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 20:18:26 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:21232 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1767285AbXECASZ (ORCPT
+	Wed, 2 May 2007 20:29:46 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:57160 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767290AbXECA3p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 20:18:25 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=kusoicdDQb6cxKiDfRm3pmcoG1mvHZlDvCEbkTzdoi90gxOGp2Yt+rXso3fVkI/rXFZag4IUwJUHwm+4I3QDQqHEcDMiy998ZMpuO/05+nHHYUtc7U08CKdvo9XXCNU1MfucZOwvVP9tuDNqKlsQ6HRH/2bEuM62rnEP8aIl9T0=  ;
-X-YMail-OSG: Y9H_5usVM1lB75xMs1EPJCoVvB2yJ04zMXyjnO1fqOZa2ImuJpFo06ORu5AOGqPcZKyKQ73QHQ--
-Message-ID: <46392A3C.30606@yahoo.com.au>
-Date: Thu, 03 May 2007 10:18:04 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 2 May 2007 20:29:45 -0400
+X-Greylist: delayed 1432 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 20:29:44 EDT
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200705030004.l4304l8h012587@turbo.physics.adelaide.edu.au>
+Subject: Re: [git pull] New firewire stack
+To: linux1394-devel@lists.sourceforge.net
+Date: Thu, 3 May 2007 09:34:47 +0930 (CST)
+Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe), olh@suse.de,
+       akpm@linux-foundation.org, stefanr@s5r6.in-berlin.de,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       krh@redhat.com
+In-Reply-To: <mailman.197656.1178135675.32383.linux1394-devel@lists.sourceforge.net> from "linux1394-devel-request@lists.sourceforge.net" at May 02, 2007 12:54:35 PM
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: mm-more-rmap-checking
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <Pine.LNX.4.64.0705011458060.16979@blonde.wat.veritas.com> <4637EC95.2010501@yahoo.com.au> <Pine.LNX.4.64.0705021355390.16517@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0705021355390.16517@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Wed, 2 May 2007, Nick Piggin wrote:
+Kritian wrote:
+> Olaf Hering wrote:
+> > On Tue, May 01, Kristian H?gsberg wrote:
+> > 
+> >>   drivers/firewire/Kconfig          |   60 ++
+> > 
+> > NACK.
+> > Upgrade the current drivers/ieee1394/ with the new code, and keep all
+> > existing module names.
 > 
->>Yes, but IIRC I put that in because there was another check in
->>SLES9 that I actually couldn't put in, but used this one instead
->>because it also caught the bug we saw.
->>... 
->>This was actually a rare corruption that is also in 2.6.21, and
->>as few rmap callsites as we have, it was never noticed until the
->>SLES9 bug check was triggered.
-> 
-> 
-> You are being very mysterious.  Please describe this bug (privately
-> if you think it's exploitable), and let's work on the patch to fix it,
-> rather than this "debug" patch.
+> What's your reasoning here?  Having different module names allows people to 
+> compile both stacks and switch between them as they wish.
 
-It is exec-fix-remove_arg_zero.patch in Andrew's tree, it's exploitable
-in that it leaks memory, but it could also release corrupted pagetables
-into quicklists on those architectures that have them...
+While I'm not fussed about the implementation details I agree with those
+who have advocated a migration period where both stacks are present.  A
+major change such as this is almost certain to turn up bugs when it becomes
+more widely tested, and many firewire users are unlikely to test the
+new stack without an easy fallback to a known working system.  Yes, I know
+development and production systems should be separate, but I (and many
+others) can't afford enough hardware for that.
 
-Anyway, it quite likely would have gone unfixed for several more years
-if we didn't have the bug triggers in. Now you could argue that my
-patch obviously fixes all bugs in there (but I wouldn't :)), and being
-most complex of the few callsites, _now_ we can avoid the bug checks.
-However I'd prefer to keep them at least under CONFIG_DEBUG_VM.
+> Another point in favour of different module names is that the new stack
+> doesn't actually provide the same user space interfaces as the old stack. 
+> Basically, no applications use the raw kernel interfaces and the new stack
+> is only compatible at the library level.  In the light of this, I think
+> it's fair to change the module names.
 
+Sounds reasonable to me.
 
->>Hmm, I didn't notice the do_swap_page change, rather just derived
->>its safety by looking at the current state of the code (which I
->>guess must have been post-do_swap_page change)...
-> 
-> 
-> Your addition of page_add_new_anon_rmap clarified the situation too.
-> 
-> 
->>Do you have a pointer to the patch, for my interest?
-> 
-> 
-> The patch which changed do_swap_page?
-> 
-> commit c475a8ab625d567eacf5e30ec35d6d8704558062
-> Author: Hugh Dickins <hugh@veritas.com>
-> Date:   Tue Jun 21 17:15:12 2005 -0700
-> [PATCH] can_share_swap_page: use page_mapcount
+However, as a compromise how about renaming the existing stack's modules and
+then reusing the existing names for the new stack?  Messy I know, but this
+way both stacks would still be available without recompilation for those who
+needed them and the sbp2-as-root dilemma raised by Olaf would also be
+covered.
 
+> As for putting the new stack in drivers/ieee1394 - I don't know, I think it 
+> makes sense to keep the new stack in it's own directory.
 
-Yeah, this one, thanks. I'm just interested.
+My immediate thought it that it would be neater and clearer to have both
+stacks in different directories, but I could live with either.
 
+Oh yes, it would be nice to have working PCILynx support again (although I
+acknowledge it's unlikely to happen).  Some of us do have these cards
+installed for sniffing purposes (using nosy) but it would be nice to be able
+to use them with libraw1394 as well.  It would for example save me having to
+swap cards depending on what I needed to do (I have insufficient PCI slots
+to have both the PCILynx and OHCI cards installed simultaneously).
 
-> Or my intended PG_swapcache to PAGE_MAPPING_SWAP patch,
-> which does assume PageLocked in page_add_anon_rmap?
-> Yes, I can send you its current unsplit state if you like
-> (but have higher priorities before splitting and commenting
-> it for posting).
-
-I would like to see that too, but when you are ready :)
-
-Thanks,
-Nick
-
--- 
-SUSE Labs, Novell Inc.
+Regards
+  jonathan
