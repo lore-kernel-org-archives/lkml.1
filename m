@@ -1,52 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031255AbXECMhF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXECMh1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031255AbXECMhF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 08:37:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031248AbXECMhF
+	id S1753957AbXECMh1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 08:37:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752784AbXECMh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 08:37:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42556 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031247AbXECMhD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 08:37:03 -0400
-Date: Thu, 3 May 2007 14:36:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v7
-Message-ID: <20070503123655.GA705@elte.hu>
-References: <200704300820.49078.a1426z@gawab.com> <20070503074552.GA14960@elte.hu> <20070503080706.GA18427@elte.hu> <200705031416.50928.a1426z@gawab.com>
+	Thu, 3 May 2007 08:37:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:44885 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753957AbXECMhX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 08:37:23 -0400
+Subject: Re: [v4l-dvb-maintainer] [PATCH 35/36] Use menuconfig objects II -
+	DVB
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Trent Piepho <xyzzy@speakeasy.org>,
+       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.61.0705030855000.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
+	 <Pine.LNX.4.61.0704301429450.29151@yvahk01.tjqt.qr>
+	 <1178129426.29579.17.camel@localhost>
+	 <Pine.LNX.4.58.0705021436050.504@shell2.speakeasy.net>
+	 <Pine.LNX.4.61.0705030855000.18504@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 03 May 2007 09:37:00 -0300
+Message-Id: <1178195820.12651.28.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705031416.50928.a1426z@gawab.com>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Em Qui, 2007-05-03 às 08:56 +0200, Jan Engelhardt escreveu:
+> On May 2 2007 14:38, Trent Piepho wrote:
+> >On Wed, 2 May 2007, Mauro Carvalho Chehab wrote:
+> >> Em Seg, 2007-04-30 às 14:30 +0200, Jan Engelhardt escreveu:
+> >> > Change Kconfig objects from "menu, config" into "menuconfig" so
+> >> > that the user can disable the whole feature without having to
+> >> > enter the menu first.
+> >> >
+> >> > Also remove one indirection (CONFIG_DVB) that does not seem to
+> >> > be really used inside the kernel.
+> >>
+> >> Hmm.. in fact, it becames harder to unselect DVB, at least on my tests.
+> >> The patch bellow solved the issue. It also allows keeping core DVB,
+> >> disabling the adapters menu.
+> >>
+> >> If nobody is against, I intend to apply both Jan and the patch bellow on
+> >> my tree by tomorrow.
+> >
+> >The v4l-dvb build system doesn't support menuconfig yet.
+> >I'm pretty sure stuff like:
+> >if VIDEO_CAPTURE_DRIVERS
+> >will not work correctly either.
+> 
+> Have you actually tried running `make menuconfig` ['menuconfig' works
+> -- unfortunate misnaming between menuconfig and menuconfig though],
+> and looked at Documentation/kbuild/ [explains if..endif]?
+> menuconfig-if-...-endif is also used in other Kconfig files, and I
+> did not have problems building a kernel out of it.
 
-* Al Boldi <a1426z@gawab.com> wrote:
+Trent is mentioning an out-of-tree building system to allow easier
+testing of V4L/DVB patches by end users and developers and during driver
+development time. The building system allows faster
+compilation/linkedition during driver development, by allowing you to
+use:
+	make menuconfig/qconfig/xconfig
 
-> [...] But I can still see these awful latency blips in the presence of 
-> negatively niced chew.c at -10 and two chew.c's at nice 0. [...]
+inside the tree, unselecting the drivers that you're not working.
 
-of course: you asked for the two chew's to be treated like that and CFS 
-delivered it! :-)
+This way, our building system allows testing Kconfig menus, and properly
+process Kconfig items for building drivers. 
 
-nice -10 means the two chew's will get ~90+% of the CPU time, and all 
-other nice 0 tasks will get <10% of CPU time.
+The point rised by Trent is that, currently, this is not prepared to
+handle the "menuconfig" and "if/endif" tags.
 
-in the previous mail i have described the new exponential-scale nice 
-levels that CFS introduces. In practice this means that vanilla kernel's 
-nice -20 level is roughly equivalent to CFS's nice -6. CFS's nice -10 
-would be roughly equivalent to vanilla nice -80 (if it existed).
+However, the v4l-dvb building system shouldn't stop improvements at the
+kernel building system. So, if there are any limits there, the proper
+solution is to fix the issues, instead of avoiding patches that could
+break it.
 
-	Ingo
+> Jan
+-- 
+Cheers,
+Mauro
+
