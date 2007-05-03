@@ -1,90 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767224AbXECVPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161466AbXECVTd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767224AbXECVPR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031350AbXECVPR
+	id S1161466AbXECVTd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:19:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161480AbXECVTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:15:17 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34222 "EHLO
+	Thu, 3 May 2007 17:19:33 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34526 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031349AbXECVPO (ORCPT
+	with ESMTP id S1161466AbXECVTb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:15:14 -0400
-Date: Thu, 3 May 2007 14:15:13 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Hugh Dickins <hugh@veritas.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub on PowerPC
-In-Reply-To: <Pine.LNX.4.64.0705032143420.7589@blonde.wat.veritas.com>
-Message-ID: <Pine.LNX.4.64.0705031408360.13387@schroedinger.engr.sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
- <20070501125559.9ab42896.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
- <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705021017270.32635@schroedinger.engr.sgi.com>
- <20070503011515.0d89082b.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705030936120.5165@blonde.wat.veritas.com>
- <20070503015729.7496edff.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705031011020.9826@blonde.wat.veritas.com>
- <Pine.LNX.4.64.0705032143420.7589@blonde.wat.veritas.com>
+	Thu, 3 May 2007 17:19:31 -0400
+From: John Keller <jpk@sgi.com>
+Message-Id: <200705032119.l43LJTo0037721@fcbayern.americas.sgi.com>
+Subject: Re: [PATCH] - SN: validate smp_affinity mask on intr redirect
+To: akpm@linux-foundation.org (Andrew Morton)
+Date: Thu, 3 May 2007 16:19:28 -0500 (CDT)
+Cc: jpk@sgi.com (John Keller), linux-ia64@vger.kernel.org, steiner@sgi.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070503134248.e9b58a32.akpm@linux-foundation.org> from "Andrew Morton" at May 03, 2007 01:42:48 PM
+X-Mailer: ELM [version 2.5 PL2]
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 May 2007, Hugh Dickins wrote:
+I'll rework as per your suggestions.
 
-> On Thu, 3 May 2007, Hugh Dickins wrote:
-> > 
-> > Seems we're all wrong in thinking Christoph's Kconfiggery worked
-> > as intended: maybe it just works some of the time.  I'm not going
-> > to hazard a guess as to how to fix it up, will resume looking at
-> > the powerpc's quicklist potential later.
+Thanks,
+John
+
+
 > 
-> Here's the patch I've been testing on G5, with 4k and with 64k pages,
-> with SLAB and with SLUB.  But, though it doesn't crash, the pgd
-> kmem_cache in the 4k-page SLUB case is revealing SLUB's propensity
-> for using highorder allocations where SLAB would stick to order 0:
-> under load, exec's mm_init gets page allocation failure on order 4
-> - SLUB's calculate_order may need some retuning.  (I'd expect it to
-> be going for order 3 actually, I'm not sure how order 4 comes about.)
-
-There are SLUB patches pending (not in rc7-mm2 as far as I can recall) 
-that reduce the default page order sizes to head off this issue. The 
-defaults were initially too large (and they still default to large
-for testing if Mel's Antifrag work is detected to be active).
-
-> -	return kmem_cache_alloc(pgtable_cache[PTE_CACHE_NUM],
-> -				GFP_KERNEL|__GFP_REPEAT);
-> +	return quicklist_alloc(0, GFP_KERNEL|__GFP_REPEAT, NULL);
-
-__GFP_REPEAT is unusual here but this was carried over from the 
-kmem_cache_alloc it seems. Hmm... There is some variance on how we do this 
-between arches. Should we uniformly set or not set this flag?
-
-clameter@schroedinger:~/software/linux-2.6.21-rc7-mm2$ grep quicklist_alloc include/asm-ia64/*
-include/asm-ia64/pgalloc.h:     return quicklist_alloc(0, GFP_KERNEL, NULL);
-include/asm-ia64/pgalloc.h:     return quicklist_alloc(0, GFP_KERNEL, NULL);
-include/asm-ia64/pgalloc.h:     return quicklist_alloc(0, GFP_KERNEL, NULL);
-include/asm-ia64/pgalloc.h:     void *pg = quicklist_alloc(0, GFP_KERNEL, NULL);
-include/asm-ia64/pgalloc.h:     return quicklist_alloc(0, GFP_KERNEL, NULL);
-clameter@schroedinger:~/software/linux-2.6.21-rc7-mm2$ grep quicklist_alloc arch/i386/mm/*    
-arch/i386/mm/pgtable.c: pgd_t *pgd = quicklist_alloc(0, GFP_KERNEL, pgd_ctor);
-clameter@schroedinger:~/software/linux-2.6.21-rc7-mm2$ grep quicklist_alloc include/asm-sparc64/*
-include/asm-sparc64/pgalloc.h:  return quicklist_alloc(0, GFP_KERNEL, NULL);
-include/asm-sparc64/pgalloc.h:  return quicklist_alloc(0, GFP_KERNEL, NULL);
-include/asm-sparc64/pgalloc.h:  return quicklist_alloc(0, GFP_KERNEL, NULL);
-include/asm-sparc64/pgalloc.h:  void *pg = quicklist_alloc(0, GFP_KERNEL, NULL);
-clameter@schroedinger:~/software/linux-2.6.21-rc7-mm2$ grep quicklist_alloc include/asm-x86_64/* 
-include/asm-x86_64/pgalloc.h:   return (pmd_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
-include/asm-x86_64/pgalloc.h:   return (pud_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
-include/asm-x86_64/pgalloc.h:   pgd_t *pgd = (pgd_t *)quicklist_alloc(QUICK_PGD,
-include/asm-x86_64/pgalloc.h:   return (pte_t *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
-include/asm-x86_64/pgalloc.h:   void *p = (void *)quicklist_alloc(QUICK_PT, GFP_KERNEL|__GFP_REPEAT, NULL);
+> On Thu, 03 May 2007 07:56:02 -0500
+> John Keller <jpk@sgi.com> wrote:
+> 
+> > On SN, only allow one bit to be set in the smp_affinty mask
+> > when redirecting an interrupt. Currently setting multiple
+> > bits is allowed, but only the first bit is used in
+> > determining the CPU to redirect to. This has caused confusion
+> > among some customers.
+> > 
+> > ...
+> >
+> > +
+> > +int is_affinity_mask_valid(cpumask_t cpumask)
+> > +{
+> > +	if (ia64_platform_is("sn2")) {
+> > +		/* Only allow one CPU to be specified in the smp_affinity mask */
+> > +		if (cpus_weight(cpumask) != 1)
+> > +			return 0;
+> > +	}
+> > +	return 1;
+> > +}
+> 
+> A bool returning true or false would be appropriate, given this function's
+> clearly-boolean name.
+> 
+> > +#ifndef ARCH_HAS_IRQ_AFFINITY_VALIDATION
+> > +#define is_irq_affinity_mask_valid(cpumask)         1
+> > +#endif
+> 
+> The ARCH_HAS_FOO things have never been popular.  There are a couple of
+> alternatives going around:
+> 
+> a) use __attribute__((weak)) and provide a one-line default
+>    implementation in kernel/irq/proc.c.  This has a small runtime cost.
+> 
+> b) In include/asm-ia64/irq.h, do
+> 
+>    #define is_affinity_mask_valid is_affinity_mask_valid
+> 
+>    and in kernel/irq/proc.c do
+> 
+>    #ifndef is_affinity_mask_valid
+>    #define is_affinity_mask_valid() 1
+>    #endif
+> 
+>    This has minimal runtime cost, but is a bit tricksy.
+> 
+>    It has the advantage that it doesn't introduce some new identifier
+>    which needs to be maintained.
+> 
+> >  extern int irq_set_affinity(unsigned int irq, cpumask_t cpumask);
+> >  extern int irq_can_set_affinity(unsigned int irq);
+> >  
+> > Index: linux-2.6/include/asm-ia64/irq.h
+> > ===================================================================
+> > --- linux-2.6.orig/include/asm-ia64/irq.h	2007-05-01 15:47:01.660643076 -0500
+> > +++ linux-2.6/include/asm-ia64/irq.h	2007-05-01 15:48:42.729254805 -0500
+> > @@ -11,6 +11,8 @@
+> >   * 02/29/00     D.Mosberger	moved most things into hw_irq.h
+> >   */
+> >  
+> > +#include <linux/cpumask.h>
+> > +
+> 
+> This is the sort of inclusion which tends to make things blow up.  I trust
+> this was carefully compile-tested.
+> 
+> With a) above, the is_affinity_mask_valid() declaration would be in a
+> different header.  With b), no additional include will be needed.
+> 
+> >  #define NR_IRQS		256
+> >  #define NR_IRQ_VECTORS	NR_IRQS
+> >  
+> > @@ -30,4 +32,7 @@ extern void disable_irq_nosync (unsigned
+> >  extern void enable_irq (unsigned int);
+> >  extern void set_irq_affinity_info (unsigned int irq, int dest, int redir);
+> >  
+> > +#define ARCH_HAS_IRQ_AFFINITY_VALIDATION
+> > +extern int is_affinity_mask_valid(cpumask_t cpumask);
+> > +
+> 
+> 
 
