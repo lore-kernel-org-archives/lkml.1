@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030914AbXECKp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030942AbXECKri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030914AbXECKp3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030942AbXECKp3
+	id S1030942AbXECKri (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031141AbXECKri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:45:29 -0400
-Received: from opal.biophys.uni-duesseldorf.de ([134.99.176.7]:59524 "EHLO
+	Thu, 3 May 2007 06:47:38 -0400
+Received: from opal.biophys.uni-duesseldorf.de ([134.99.176.7]:59605 "EHLO
 	opal.biophys.uni-duesseldorf.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030914AbXECKp2 (ORCPT
+	by vger.kernel.org with ESMTP id S1030942AbXECKrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:45:28 -0400
-X-Greylist: delayed 663 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 06:45:26 EDT
-Date: Thu, 3 May 2007 12:33:42 +0200 (CEST)
+	Thu, 3 May 2007 06:47:37 -0400
+Date: Thu, 3 May 2007 12:47:12 +0200 (CEST)
 From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
-To: James Simmons <jsimmons@infradead.org>
-cc: "Antonino A. Daplas" <adaplas@gmail.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
+To: Christoph Hellwig <hch@infradead.org>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Michael Schmitz <schmitz@debian.org>,
+       linux-kernel@vger.kernel.org,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Michael Schmitz <schmitz@debian.org>,
        Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: [patch 05/33] m68k: Atari fb revival
-In-Reply-To: <Pine.LNX.4.64.0705022100030.6403@pentafluge.infradead.org>
-Message-ID: <Pine.LNX.4.58.0705031229480.8342@xplor.biophys.uni-duesseldorf.de>
-References: <20070501203234.252205858@mail.of.borg>  <20070501203330.469191361@mail.of.borg>
- <1178056237.4606.19.camel@daplas> <Pine.LNX.4.64.0705022100030.6403@pentafluge.infradead.org>
+Subject: Re: [patch 04/33] m68k: Atari keyboard and mouse support.
+In-Reply-To: <20070501205740.GC21080@infradead.org>
+Message-ID: <Pine.LNX.4.58.0705031236150.8342@xplor.biophys.uni-duesseldorf.de>
+References: <20070501203234.252205858@mail.of.borg> <20070501203330.172479999@mail.of.borg>
+ <20070501205740.GC21080@infradead.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > > Update the atari fb to 2.6 by Michael Schmitz,
-> >
-> > Finally :-). That leaves only pm3fb that needs porting.
-> >
-> > It still contains remnants of 2.4 code though, ie, FBCON_HAS_*, but
-> > that's minor.
->
-> Yeah!!! Its a good step forward. Needs more cleanup down the road.
+On Tue, 1 May 2007, Christoph Hellwig wrote:
 
-You bet. I'll kill the old cruft when I get to the pixmap support. My
-keyboard and SCSI patches got trashed badly, so I'll need to work on those
-first.
+> What's the reason for splitting this up?  Things would be a quite a bit
+> simpler if all the code was directly in atakeyb.c.
+
+Simple: I assumed that keeping the input driver code with the other input
+stuff was the Right Thing. I can move everything back to atakeyb.c if
+that's preferred.
+
+> > +/*
+> > + * linux/atari/atakeyb.c
+
+Shall I update that path, then? :-)
+
+Honestly - no one had worked on the Atari code for years, and my number
+one priority was to get it back into functional state. I'll keep your
+suggestions in mind when merging the low-level and input parts.
 
 	Michael
