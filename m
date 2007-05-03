@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S637778AbXECPs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767421AbXECPt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S637778AbXECPs3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 11:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637777AbXECPs2
+	id S1767421AbXECPt2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 11:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767422AbXECPt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 11:48:28 -0400
-Received: from gw.ac.upc.es ([147.83.30.3]:48481 "EHLO gw.ac.upc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S637778AbXECPs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 11:48:27 -0400
-X-Greylist: delayed 1926 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 11:48:27 EDT
-Mime-Version: 1.0 (Apple Message framework v752.3)
+	Thu, 3 May 2007 11:49:28 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:12742 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767421AbXECPt0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 11:49:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=PO8iWvDLzHc8W14j5XcrwVept7gL5EqFhWDLcyNKFnCWeMur8qS5I63B21CYmfBU7S6hLT77kdD2o6Dx624odtfhEUc3+6UJoYl6DSrc3vziQm7GJR0xVVFiPNb2wa1Gyog258nFuWGpp4qLRyqs9kzGW/yeejfiUR+ZgDsx2zg=
+Message-ID: <463A0462.5070106@gmail.com>
+Date: Thu, 03 May 2007 19:48:50 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Uwe Bugla <uwe.bugla@gmx.de>
+CC: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org, mchehab@infradead.org,
+       mrechberger@gmail.com, mkrufky@linuxtv.org, xyzzy@speakeasy.org
+Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
+ points	about ...)
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>	<4636E0E2.5020601@simon.arlott.org.uk>	<Pine.LNX.4.58.0705011500570.309@shell2.speakeasy.net> <46389278.1070208@gmail.com> <20070502155125.280320@gmx.net> <4638C046.1020005@gmail.com> <20070503112013.272380@gmx.net> <4639F554.1040505@gmail.com> <20070503153129.268110@gmx.net>
+In-Reply-To: <20070503153129.268110@gmx.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-Id: <16C35E62-A26F-49FC-9CD8-7BADFCD97BA5@ac.upc.edu>
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-To: linux-kernel@vger.kernel.org
-From: "Julio M. Merino Vidal" <jmerino@ac.upc.edu>
-Subject: Per-CPU data as a structure
-Date: Thu, 3 May 2007 17:16:17 +0200
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Uwe Bugla wrote:
 
-At the moment, data specific to a CPU is stored in different, fixed- 
-size separate arrays by means of the "percpu framework".  I'm working  
-on some changes to modify the way some CPUs are represented, and I'm  
-wondering what's the rationale behind such a representation.
-
-At first sight, it'd seem more reasonable to have a structure holding  
-all the information that is CPU-specific (as is done with any object  
-represented within the system).  After searching the mail archives, I  
-see that similar changes were proposed before, but those threads did  
-not seem to get any reply (so I'm assuming that the changes were not  
-desired).
-
-Similarly, and if I understood it correctly, the PDA (Per-processor  
-Data Area) also aims to do the above, but at the moment it only  
-contains some fields and is not defined in all platforms.  There are  
-still a lot of usages of the percpu functionality (such as, e.g., in  
-kernel/sched.c).
-
-Part of my changes introduce a new structure that is able to  
-represent any kind of CPU (and which each platform can extend to add  
-new information to it).  It is supposed to supersede the per-cpu  
-definitions.  I bet this could also be redone by using percpu in some  
-way...  The thing is I am willing to share my work when I've finished  
-it (it is still very much work-in-progress), but first I'm interested  
-to know if adding this new structure is a crazy idea (meaning I  
-should stick to percpu wherever possible) or something that can be  
-accepted later on.
-
-Summarizing, my questions are:
-- Why is the code currently using multiple separate arrays (percpu)
-   to hold CPU information instead of a structure?
-- Could this structure-based approach (instead of all these separate
-   arrays) be considered for inclusion into the system?
-
-As far as I can tell, the advantage of percpu is that you can define  
-new "fields" anywhere in the code and independently from the rest of  
-the system.  Also, I seem to understand that there are performance  
-advantages related to this.  But on the other hand, percpu seems like  
-an unnatural approach to "reimplement" regular structures.
-
-Thank you very much.
-
--- 
-Julio M. Merino Vidal <jmerino@ac.upc.edu>
+> Hi Manu,
+> 
+> But it would be an acceptable compromise FOR NOW, wouldn't it?
 
 
+The reason is i do not wish to make changes to it, till i can fix it. It
+is indeed hard to fix things that support a lot of devices, with
+different issues. There are enough of issues in there.
+
+You can look at all those frontend not found issues on the DVB ML.
+
+The people who make all these noise, do nothing but just play politics.
+Just do a search on the linux-dvb ML at gmane.org. You can easily find them.
+
+> Waiting for your link meanwhile to download that hopeful project...
+
+http://thadathil.net:8000/cgi-bin/hgwebdir.cgi/cx878_41?ca=43abfe89c2c9;type=bz2
