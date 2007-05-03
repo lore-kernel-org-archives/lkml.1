@@ -1,96 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750897AbXECIPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750773AbXECIU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750897AbXECIPf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 04:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbXECIPe
+	id S1750773AbXECIU0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 04:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750954AbXECIU0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 04:15:34 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:47769 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750833AbXECIP3 (ORCPT
+	Thu, 3 May 2007 04:20:26 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:47075 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbXECIUJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 04:15:29 -0400
-Date: Thu, 3 May 2007 01:15:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Hugh Dickins <hugh@veritas.com>, haveblue@ibm.com,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub
-Message-Id: <20070503011515.0d89082b.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705021017270.32635@schroedinger.engr.sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com>
-	<20070501125559.9ab42896.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com>
-	<Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com>
-	<Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com>
-	<Pine.LNX.4.64.0705021017270.32635@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 04:20:09 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Thu, 3 May 2007 04:19:48 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: netdev@vger.kernel.org
+Subject: finding your own dead "CONFIG_" variables
+Message-ID: <Pine.LNX.4.64.0705030400120.20539@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-15.989, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
+	SUBJ_YOUR_OWN 0.81)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007 10:25:47 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-> On Wed, 2 May 2007, Hugh Dickins wrote:
-> 
-> > I presume the answer is just to extend your quicklist work to
-> > powerpc's lowest level of pagetables.  The only other architecture
-> > which is using kmem_cache for them is arm26, which has
-> > "#error SMP is not supported", so won't be giving this problem.
-> 
-> In the meantime we would need something like this to disable SLUB in this 
-> particular configuration. Note that I have not tested this and the <= for
-> the comparision with SPLIT_PTLOCK_CPUS may not work (Never seen such a
-> construct in a Kconfig file but it is needed here).
-> 
-> 
-> 
-> PowerPC: Disable SLUB for configurations in which slab page structs are modified
-> 
-> PowerPC uses the slab allocator to manage the lowest level of the page table.
-> In high cpu configurations we also use the page struct to split the page
-> table lock. Disallow the selection of SLUB for that case.
-> 
-> [Not tested: I am not familiar with powerpc build procedures etc]
-> 
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
-> 
-> Index: linux-2.6.21-rc7-mm2/arch/powerpc/Kconfig
-> ===================================================================
-> --- linux-2.6.21-rc7-mm2.orig/arch/powerpc/Kconfig	2007-05-02 10:07:34.000000000 -0700
-> +++ linux-2.6.21-rc7-mm2/arch/powerpc/Kconfig	2007-05-02 10:13:37.000000000 -0700
-> @@ -117,6 +117,19 @@ config GENERIC_BUG
->  	default y
->  	depends on BUG
->  
-> +#
-> +# Powerpc uses the slab allocator to manage its ptes and the
-> +# page structs of ptes are used for splitting the page table
-> +# lock for configurations supporting more than SPLIT_PTLOCK_CPUS.
-> +#
-> +# In that special configuration the page structs of slabs are modified.
-> +# This setting disables the selection of SLUB as a slab allocator.
-> +#
-> +config ARCH_USES_SLAB_PAGE_STRUCT
-> +	bool
-> +	default y
-> +	depends on SPLIT_PTLOCK_CPUS <= NR_CPUS
-> +
+  while there's still a pile of possible dead CONFIG_ variables under
+the fs/ and drivers/ directories i haven't posted yet, you don't need
+to wait for me to generate them.  take a minute and run the script
+yourself:
 
-That all seems to work as intended.
+http://fsdev.net/wiki/index.php?title=Dead_CONFIG_variables
 
-However with NR_CPUS=8 SPLIT_PTLOCK_CPUS=4, enabling SLUB=y crashes the
-machine early in boot.  
+  a couple of examples:
 
-Too early for netconsole, no serial console.  Wedges up uselessly with
-CONFIG_XMON=n, does mysterious repeated uncontrollable exceptions with
-CONFIG_XMON=y.  This is all fairly typical for a powerpc/G5 crash :(
+$ ../dead_config.sh net/wanrouter
+========== WANPIPE_MULTPPP ==========
+net/wanrouter/wanmain.c:#ifdef CONFIG_WANPIPE_MULTPPP
+net/wanrouter/wanmain.c:#ifdef CONFIG_WANPIPE_MULTPPP
+net/wanrouter/wanmain.c:#ifdef CONFIG_WANPIPE_MULTPPP
 
-However I was able to glimpse some stuff as it flew past.  Crash started in
-flush_old_exec and ended in pgtable_free_tlb -> kmem_cache_free.  I don't know
-how to do better than that I'm afraid, unless I'm to hunt down a PCIE serial
-card, perhaps.
+$ ../dead_config.sh drivers/net/wireless
+========== BCM947XX ==========
+drivers/net/wireless/bcm43xx/bcm43xx_dma.c:663:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.h:36:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:64:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:145:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:789:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:799:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:1228:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:1390://FIXME: Do we _really_ want #ifndef CONFIG_BCM947XX here?
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:1392:#ifndef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:2143:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:2155:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:2648:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx_main.c:4147:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx.h:661:#ifdef CONFIG_BCM947XX
+drivers/net/wireless/bcm43xx/bcm43xx.h:792:#ifdef CONFIG_BCM947XX
+$
 
+  go wild.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
