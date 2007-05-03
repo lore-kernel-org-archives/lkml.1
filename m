@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934012AbXEGNxO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934045AbXEGNxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934012AbXEGNxO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 09:53:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933946AbXEGNxM
+	id S934045AbXEGNxZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 09:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934017AbXEGNxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 09:53:12 -0400
-Received: from frankvm.xs4all.nl ([80.126.170.174]:59463 "EHLO
-	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933932AbXEGNxL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 09:53:11 -0400
-Date: Mon, 7 May 2007 15:53:10 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Frank van Maarseveen <frankvm@frankvm.com>, linux-kernel@vger.kernel.org,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: JBD: ext2online wants too many credits (744 > 256)
-Message-ID: <20070507135309.GA32476@janus>
-References: <20070506222626.GA25632@janus> <20070506214014.8b7451ba.akpm@linux-foundation.org>
+	Mon, 7 May 2007 09:53:24 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4735 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934021AbXEGNxX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 09:53:23 -0400
+Date: Thu, 3 May 2007 17:18:43 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: David Lang <david.lang@digitalinsight.com>
+Cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+Message-ID: <20070503171843.GA4355@ucw.cz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704280041.17617.rjw@sisk.pl> <alpine.LFD.0.98.0704271612380.9964@woody.linux-foundation.org> <200704280145.26253.rjw@sisk.pl> <1177718250.4737.222.camel@nigel.suspend2.net> <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070506214014.8b7451ba.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
-X-BotBait: val@frankvm.com, kuil@frankvm.com
+In-Reply-To: <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 06, 2007 at 09:40:14PM -0700, Andrew Morton wrote:
-> On Mon, 7 May 2007 00:26:26 +0200 Frank van Maarseveen <frankvm@frankvm.com> wrote:
+Hi!
+
+> nobody is suggesting that you leave peocesses running 
+> while you do the snapshot, what is being proposed is
 > 
-> > Steps to reproduce:
-> > Create a 3G partition, say /dev/vol1/project
-> > mke2fs -j -b 4096 /dev/vol1/project 22812
-> > mount it
-> > ext2online /dev/vol1/project said:
-> > 
-> > | ext2online v1.1.18 - 2001/03/18 for EXT2FS 0.5b
-> > | ext2online: ext2_ioctl: No space left on device
-> > | 
-> > | ext2online: unable to resize /dev/mapper/vol1-project
-> > 
-> > kernel said:
-> > 
-> > | JBD: ext2online wants too many credits (721 > 256)
+> 1. pause userspace (prevent scheduling)
+> 2. make snapshot image of memory
+> 3. make mounted filesystems read-only (possibly with 
+> snapshot/checkpoint)
+> 4. unpause
+> 5. save image (with full userspace available, including 
+> network)
 
-There's a threshold for the problem depending on the initial
-size. This one fails:
-
-	mke2fs -j -b 4096 /dev/<3GB-blockdev> 32768
-	(mount + ext2online or resize2fs)
-	kernel: JBD: resize2fs wants too many credits (1034 > 1024)
-
-Add one block to the initial mke2fs (32768+1 == 32769) and the
-problem is gone.
-
-Without the -b 4096 there's another resize problem
-
-	mke2fs -j /dev/loop1 2048
-	mount /dev/loop1 /1
-	resize2fs /dev/loop1
-
-says:
-	resize2fs 1.40-WIP (14-Nov-2006)
-	Filesystem at /dev/loop1 is mounted on /1; on-line resizing required
-	old desc_blocks = 1, new_desc_blocks = 12
-	Performing an on-line resize of /dev/loop1 to 3072000 (1k) blocks.
-	resize2fs: Invalid argument While trying to add group #256
-
-and the kernel says:
-
-May  7 15:36:08 lokka EXT3-fs warning (device loop1): verify_reserved_gdb: 
-May  7 15:36:08 lokka reserved GDT 10 missing grp 1 (8202)
-May  7 15:36:08 lokka  
-
-After that, the filesystem has been resized to 2GB. I recall a 2G
-(?) limit for ext3 resizing with 1k blocksize but trying the above with
-4096 1k blocks seems to work. fsck says it's ok all the time.
+Including network? Your tcp peers will be really confused, then, if
+you ACK packets then claim you did not get them. No, you do not want
+to start network.
 
 -- 
-Frank
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
