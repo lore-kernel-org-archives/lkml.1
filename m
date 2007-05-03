@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767373AbXECEZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767374AbXECE1f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767373AbXECEZm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 00:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767374AbXECEZm
+	id S1767374AbXECE1f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 00:27:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767377AbXECE1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 00:25:42 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:45152 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767373AbXECEZl (ORCPT
+	Thu, 3 May 2007 00:27:34 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:40691 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767374AbXECE1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 00:25:41 -0400
-Message-ID: <463963AE.5010300@vmware.com>
-Date: Wed, 02 May 2007 21:23:10 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: Marcos Pinto <markybob@gmail.com>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alessandro Zummo <a.zummo@towertech.it>
-Subject: Re: Mysterious RTC hangs on x86_64 - fixed, sort of
-References: <46391253.30201@vmware.com> <46391716.9040001@redhat.com>
-In-Reply-To: <46391716.9040001@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 3 May 2007 00:27:34 -0400
+Date: Wed, 2 May 2007 21:27:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] rename thread_info to stack
+Message-Id: <20070502212721.5883abbc.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705010210010.1479@scrub.home>
+References: <Pine.LNX.4.64.0705010210010.1479@scrub.home>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
->
->   
->> CONFIG_HPET_EMULATE_RTC=y
->>     
->
-> Did you try without that?
->   
+On Tue, 1 May 2007 02:10:34 +0200 (CEST) Roman Zippel <zippel@linux-m68k.org> wrote:
 
-Just did.  Still hangs same way; strace shows /sbin/hwclock dying after 
-hundreds of RTC_RD_TIME.  And now /proc/interrupts shows no rtc 
-interrupts being generated (expected, I gues).  Seems to take longer to 
-crash, but this is a heisenbug.
+> This finally renames the thread_info field in task structure to stack,
+> so that the assumptions about this field are gone and archs have more
+> freedom about placing the thread_info structure.
 
-Enough crashing for today.  Strangest thing is the NMI watchdog does not 
-fire...
+It's been a year or so and I've forgotten what the actual point to these
+changes is.  Can we be reminded please?
 
-Zach
