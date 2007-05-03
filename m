@@ -1,112 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767446AbXECQD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376163AbXECQFS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767446AbXECQD7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 12:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767459AbXECQD7
+	id S376163AbXECQFS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 12:05:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376169AbXECQFS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 12:03:59 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:56592 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767446AbXECQD5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 12:03:57 -0400
-Subject: [MCA] add integrated device bus matching
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 11:03:55 -0500
-Message-Id: <1178208235.3714.34.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Thu, 3 May 2007 12:05:18 -0400
+Received: from mail.gmx.net ([213.165.64.20]:55274 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S376163AbXECQFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 12:05:15 -0400
+Cc: xyzzy@speakeasy.org, mkrufky@linuxtv.org, mrechberger@gmail.com,
+       mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       linux-dvb@linuxtv.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 03 May 2007 18:05:14 +0200
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+In-Reply-To: <463A0462.5070106@gmail.com>
+Message-ID: <20070503160514.184710@gmx.net>
+MIME-Version: 1.0
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
+	<4636E0E2.5020601@simon.arlott.org.uk>
+	<Pine.LNX.4.58.0705011500570.309@shell2.speakeasy.net>
+ <46389278.1070208@gmail.com> <20070502155125.280320@gmx.net>
+ <4638C046.1020005@gmail.com> <20070503112013.272380@gmx.net>
+ <4639F554.1040505@gmail.com> <20070503153129.268110@gmx.net>
+ <463A0462.5070106@gmail.com>
+Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
+ points	about ...)
+To: Manu Abraham <abraham.manu@gmail.com>
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX19oQD1B4ZBo8LdLRRQR0k1qkDGb3O/MNx2lLeU3ym
+ p/RDfD5fTDH6D8R5ITEkkEiF3lbzL/ET+QKA== 
 Content-Transfer-Encoding: 7bit
+X-GMX-UID: bUxwAW8va2AoTGC4SHQy1ls6OWhhaoeH
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The MCA bus has a few "integrated" functions, which are effectively
-virtual slots on the bus. The problem is that these special functions
-don't have dedicated pos IDs, so we have to manufacture ids for them
-outside the pos space ... and these ids can't be matched by the standard
-matching function, so add a special registration that requests a list of
-pos ids or a particular integrated function.
 
-Signed-off-by: James Bottomley <James.Bottomley@SteelEye.com>
+-------- Original-Nachricht --------
+Datum: Thu, 03 May 2007 19:48:50 +0400
+Von: Manu Abraham <abraham.manu@gmail.com>
+An: Uwe Bugla <uwe.bugla@gmx.de>
+CC: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org, mchehab@infradead.org, mrechberger@gmail.com, mkrufky@linuxtv.org, xyzzy@speakeasy.org
+Betreff: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical points	about ...)
 
-----
+> Uwe Bugla wrote:
+> 
+> > Hi Manu,
+> > 
+> > But it would be an acceptable compromise FOR NOW, wouldn't it?
+> 
+> 
+> The reason is i do not wish to make changes to it, till i can fix it. It
+> is indeed hard to fix things that support a lot of devices, with
+> different issues. There are enough of issues in there.
+> 
+> You can look at all those frontend not found issues on the DVB ML.
+> 
+> The people who make all these noise, do nothing but just play politics.
+> Just do a search on the linux-dvb ML at gmane.org. You can easily find
+> them.
+> 
+> > Waiting for your link meanwhile to download that hopeful project...
+> 
+> http://thadathil.net:8000/cgi-bin/hgwebdir.cgi/cx878_41?ca=43abfe89c2c9;type=bz2
 
-This is actually needed by the ibmmca.c driver update.
+Sorry Manu,
 
-James
+incorrect link!
+Why?
 
-Index: BUILD-voyager/drivers/mca/mca-driver.c
-===================================================================
---- BUILD-voyager.orig/drivers/mca/mca-driver.c	2007-05-03 08:52:36.000000000 -0500
-+++ BUILD-voyager/drivers/mca/mca-driver.c	2007-05-03 08:54:57.000000000 -0500
-@@ -36,12 +36,25 @@ int mca_register_driver(struct mca_drive
- 		mca_drv->driver.bus = &mca_bus_type;
- 		if ((r = driver_register(&mca_drv->driver)) < 0)
- 			return r;
-+		mca_drv->integrated_id = 0;
- 	}
- 
- 	return 0;
- }
- EXPORT_SYMBOL(mca_register_driver);
- 
-+int mca_register_driver_integrated(struct mca_driver *mca_driver,
-+				   int integrated_id)
-+{
-+	int r = mca_register_driver(mca_driver);
-+
-+	if (!r)
-+		mca_driver->integrated_id = integrated_id;
-+
-+	return r;
-+}
-+EXPORT_SYMBOL(mca_register_driver_integrated);
-+
- void mca_unregister_driver(struct mca_driver *mca_drv)
- {
- 	if (MCA_bus)
-Index: BUILD-voyager/include/linux/mca.h
-===================================================================
---- BUILD-voyager.orig/include/linux/mca.h	2007-05-03 08:52:41.000000000 -0500
-+++ BUILD-voyager/include/linux/mca.h	2007-05-03 08:58:45.000000000 -0500
-@@ -94,6 +94,7 @@ struct mca_bus {
- struct mca_driver {
- 	const short		*id_table;
- 	void			*driver_data;
-+	int			integrated_id;
- 	struct device_driver	driver;
- };
- #define to_mca_driver(mdriver) container_of(mdriver, struct mca_driver, driver)
-@@ -125,6 +126,7 @@ extern enum MCA_AdapterStatus mca_device
- extern struct bus_type mca_bus_type;
- 
- extern int mca_register_driver(struct mca_driver *drv);
-+extern int mca_register_driver_integrated(struct mca_driver *, int);
- extern void mca_unregister_driver(struct mca_driver *drv);
- 
- /* WARNING: only called by the boot time device setup */
-Index: BUILD-voyager/drivers/mca/mca-bus.c
-===================================================================
---- BUILD-voyager.orig/drivers/mca/mca-bus.c	2007-05-03 08:47:46.000000000 -0500
-+++ BUILD-voyager/drivers/mca/mca-bus.c	2007-05-03 09:03:11.000000000 -0500
-@@ -59,7 +59,14 @@ static int mca_bus_match (struct device 
- 			return 1;
- 		}
- 	}
--
-+	/* If the integrated id is present, treat it as though it were an
-+	 * additional id in the id_table (it can't be because by definition,
-+	 * integrated id's overflow a short */
-+	if (mca_drv->integrated_id && mca_dev->pos_id ==
-+	    mca_drv->integrated_id) {
-+		mca_dev->index = i;
-+		return 1;
-+	}
- 	return 0;
- }
- 
+If you download the thing as tar.bz2 you get a zero file down.
+
+However, if you download the thing as tar.gz you will succeed in getting it.
+
+I'll sit down this evening, try to make changes to imply it into the actual mercurial tree, produce necessary patches and give you a bug report as far as the compilation errors are concerned.
+
+I am really looking forward to see this fantastic thing finished....
+It's worth it for a thousands of very good reasons, not only RAM optimization, but also stability and many many others...
+
+So gimme some time, and perhaps please supply a tar.bz2 version if you can, or fix the download error (zero file) if there is any other reason that I cannot see.
+
+OKIDOK so far?
+
+Uwe
 
 
+
+-- 
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
