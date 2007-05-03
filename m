@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767505AbXECQwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767520AbXECQyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767505AbXECQwr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 12:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767511AbXECQwr
+	id S1767520AbXECQyl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 12:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767515AbXECQyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 12:52:47 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:37958 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767505AbXECQwq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 12:52:46 -0400
-Date: Thu, 3 May 2007 09:52:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Hugh Dickins <hugh@veritas.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
-Message-Id: <20070503095224.77e89dbf.akpm@linux-foundation.org>
-In-Reply-To: <46393BA7.6030106@yahoo.com.au>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
-	<4636FDD7.9080401@yahoo.com.au>
-	<Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com>
-	<4638009E.3070408@yahoo.com.au>
-	<Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com>
-	<46393BA7.6030106@yahoo.com.au>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 May 2007 12:54:41 -0400
+Received: from smtpout.mac.com ([17.250.248.175]:57616 "EHLO smtpout.mac.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767520AbXECQyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 12:54:40 -0400
+In-Reply-To: <20070503151047.GB3866@ucw.cz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <1177654110.4737.91.camel@nigel.suspend2.net> <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI> <200704272324.43359.rjw@sisk.pl> <alpine.LFD.0.98.0704271442160.9964@woody.linux-foundation.org> <1177711666.4737.176.camel@nigel.suspend2.net> <35EFC5BA-D16B-41BE-A641-AEA8CCC9E0BE@mac.com> <20070503151047.GB3866@ucw.cz>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E92E80B1-2D3F-4942-A17B-AED903F535C6@mac.com>
+Cc: nigel@nigel.suspend2.net, Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: Back to the future.
+Date: Thu, 3 May 2007 12:53:48 -0400
+To: Pavel Machek <pavel@ucw.cz>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 May 2007 11:32:23 +1000 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On May 03, 2007, at 11:10:47, Pavel Machek wrote:
+> How mature is freezing filesystems -- will it work on at least  
+> ext2/3 and vfat?
 
->  void fastcall unlock_page(struct page *page)
->  {
-> +	VM_BUG_ON(!PageLocked(page));
->  	smp_mb__before_clear_bit();
-> -	if (!TestClearPageLocked(page))
-> -		BUG();
-> -	smp_mb__after_clear_bit(); 
-> -	wake_up_page(page, PG_locked);
-> +	ClearPageLocked(page);
-> +	if (unlikely(test_bit(PG_waiters, &page->flags))) {
-> +		clear_bit(PG_waiters, &page->flags);
-> +		wake_up_page(page, PG_locked);
-> +	}
->  }
+I'm pretty sure it works on ext2/3 and xfs and possibly others, I  
+don't know either way about VFAT though.  Essentially the "freeze"  
+part involves telling the filesystem to sync all data, flush the  
+journal, and mark the filesystem clean.  The intent under dm/LVM was  
+to allow you to make snapshots without having to fsck the just- 
+created snapshot before you mounted it.
 
-Why is that significantly faster than plain old wake_up_page(), which
-tests waitqueue_active()?
+> What happens if you try to boot and filesystems are frozen from  
+> previous run?
+
+If you're just doing a fresh boot then the filesystem is already  
+clean due to the dm freeze and so it mounts up normally.  All you  
+need to do then is have a little startup script which purges the  
+saved image before you fsck or remount things read-write since either  
+case means the image is no longer safe to resume.
+
+If the kernel is later modified to purge all filesystem data (dcache/ 
+pagecache) during snapshot and effectively remount and reopen all the  
+files by path during restore then you could remove that requirement.   
+You'd just need to make sure that the restore-from-disk scripts did  
+an fsck or journal-restore before reloading the old kernel data.
+
+Cheers,
+Kyle Moffett
