@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752326AbXECJ1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965513AbXECJaE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752326AbXECJ1Q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 05:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXECJ1P
+	id S965513AbXECJaE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 05:30:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965576AbXECJaE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 05:27:15 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:54461 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752274AbXECJ1O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 05:27:14 -0400
-Date: Thu, 3 May 2007 11:27:13 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
-cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: checkpatch, a patch checking script.
-In-Reply-To: <20070503093225.10765f46@frecb000686.frec.bull.fr>
-Message-ID: <Pine.LNX.4.62.0705031127010.29761@pademelon.sonytel.be>
-References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org>
- <20070425112133.4ae86399.randy.dunlap@oracle.com>
- <20070425143011.57247c1d.akpm@linux-foundation.org>
- <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com>
- <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org>
- <20070428030805.GA13331@redhat.com> <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
- <20070503093225.10765f46@frecb000686.frec.bull.fr>
+	Thu, 3 May 2007 05:30:04 -0400
+Received: from styx.suse.cz ([82.119.242.94]:50698 "EHLO duck.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965513AbXECJaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 05:30:00 -0400
+Date: Thu, 3 May 2007 11:39:37 +0200
+From: Jan Kara <jack@suse.cz>
+To: Mike Frysinger <vapier@gentoo.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch] hide spinlock in linux/quota.h behind __KERNEL__
+Message-ID: <20070503093936.GA12229@duck.suse.cz>
+References: <200705021853.39952.vapier@gentoo.org>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1241859657-1178184433=:29761"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705021853.39952.vapier@gentoo.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Wed 02-05-07 18:53:39, Mike Frysinger wrote:
+> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
+  Acked-by: Jan Kara <jack@suse.cz>
 
----584337861-1241859657-1178184433=:29761
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Thu, 3 May 2007, [ISO-8859-1] Sébastien Dugué wrote:
-> On Wed, 2 May 2007 16:28:27 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> 
-> 
-> > +		$warnings += search(qr/__FUNCION__/,
-> 
->                                        ^__FUNCTION__ maybe?
-> 
-> > +			"Should use C99 __func__ instead of GNU __FUNCTION__\n");
-
-Bummer... Of course!
-
-Thx!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
----584337861-1241859657-1178184433=:29761--
+> ---
+> diff --git a/include/linux/quota.h b/include/linux/quota.h
+> index 77db80a..6243982 100644
+> --- a/include/linux/quota.h
+> +++ b/include/linux/quota.h
+> @@ -44,8 +44,6 @@
+>  typedef __kernel_uid32_t qid_t; /* Type in which we store ids in memory */
+>  typedef __u64 qsize_t;          /* Type in which we store sizes */
+>  
+> -extern spinlock_t dq_data_lock;
+> -
+>  /* Size of blocks in which are counted size limits */
+>  #define QUOTABLOCK_BITS 10
+>  #define QUOTABLOCK_SIZE (1 << QUOTABLOCK_BITS)
+> @@ -139,6 +137,8 @@ struct if_dqinfo {
+>  #include <linux/dqblk_v1.h>
+>  #include <linux/dqblk_v2.h>
+>  
+> +extern spinlock_t dq_data_lock;
+> +
+>  /* Maximal numbers of writes for quota operation (insert/delete/update)
+>   * (over VFS all formats) */
+>  #define DQUOT_INIT_ALLOC max(V1_INIT_ALLOC, V2_INIT_ALLOC)
+-- 
+Jan Kara <jack@suse.cz>
+SuSE CR Labs
