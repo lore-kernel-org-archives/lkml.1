@@ -1,76 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031325AbXECVA7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S637743AbXECVDb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031325AbXECVA7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:00:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031335AbXECVA6
+	id S637743AbXECVDb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:03:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637736AbXECVDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:00:58 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:40471 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031325AbXECVA5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:00:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tj+N50w3WYmsWHUur6t3souvN8Vf2FgxJRaarkyxkGBFMe7OMCvNjmBJXAHUq9zMxycNOul5AtYTOI+lstgMPIG98o2rQ4tp1Tf/o0qCHvA1g3+rVItf4IrGbVlEkKPO6ffKgyzCkqQ8I0fnhDoPDZvPjpGRuIzLVe7z6Vzwv2I=
-Message-ID: <d9def9db0705031400q375f2a29t1c9354d717a763d4@mail.gmail.com>
-Date: Thu, 3 May 2007 23:00:56 +0200
-From: "Markus Rechberger" <mrechberger@gmail.com>
-To: "Manu Abraham" <abraham.manu@gmail.com>
-Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical points about ...)
-Cc: "Mauro Carvalho Chehab" <mchehab@infradead.org>, linux-dvb@linuxtv.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <463A31EE.20907@gmail.com>
+	Thu, 3 May 2007 17:03:31 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1972 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031352AbXECVD3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 17:03:29 -0400
+Date: Thu, 3 May 2007 23:01:23 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+cc: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Michael Schmitz <schmitz@debian.org>
+Subject: Re: [patch 04/33] m68k: Atari keyboard and mouse support.
+In-Reply-To: <d120d5000705031332o444415favd3f245ccdea95bea@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705032245550.2956@scrub.home>
+References: <20070501195052.390551603@mail.of.borg>  <20070501195129.842338339@mail.of.borg>
+  <d120d5000705011346h263bb5c4nb534692c11e7081b@mail.gmail.com> 
+ <Pine.LNX.4.58.0705031832450.9408@xplor.biophys.uni-duesseldorf.de> 
+ <Pine.LNX.4.64.0705031917150.2956@scrub.home> 
+ <d120d5000705031217h64db0644qb1e8bc8d8af6e78c@mail.gmail.com> 
+ <Pine.LNX.4.64.0705032124020.1479@scrub.home>
+ <d120d5000705031332o444415favd3f245ccdea95bea@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
-	 <20070503112013.272380@gmx.net> <4639F554.1040505@gmail.com>
-	 <20070503153129.268110@gmx.net> <463A0462.5070106@gmail.com>
-	 <d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>
-	 <463A0B36.5080204@gmail.com>
-	 <d9def9db0705031019l5083d1c1h607b0829ab526f1@mail.gmail.com>
-	 <1178215045.12651.124.camel@localhost> <463A31EE.20907@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/3/07, Manu Abraham <abraham.manu@gmail.com> wrote:
-> Mauro Carvalho Chehab wrote:
-> > Enough. Let's stop arguing non technical issues.
-> >
-> > If either one of you have any technical argue against the Trent's
-> > patches, please point where the fix is wrong. Otherwise, if you wish,
-> > you may send an acked-by agreeing with the fix.
-> >
->
-> Why don't you stop this childish behaviour ?
->
-> After explaining to you the reasons in the previous mail:
-> being the author and maintainer of dst/dst_ca and maintainer of
-> dvb-bt8xx, i NACK this change
->
-> (1) You aren't DVB maintainer
+Hi,
 
-I've seen that too often already, now we could point to a mail someone
-sent to Uwe regarding maintainership.
+On Thu, 3 May 2007, Dmitry Torokhov wrote:
 
-You wouldn't be better at the moment, Mauro at least aknowlidges the
-work of others.
-I don't know what problems you have with Mauro I heard that there have
-been some mails between you and some other developers as well and the
-whole situation is just terrible.
-If you want to change the whole situation, think about what you can do
-for improving the whole situation even if it means that you have to
-work with people you don't like.
+> > I never said that. Many keyboard _types_ need a separate key mapping.
+> > Localization is a completely different problem (and could be solved via
+> > separate localization tables).
+> > Most of it can be solved in userspace and we wouldn't have to enumerate
+> > every possible single key the kernel never cares about in <linux/input.h>.
+> > 
+> 
+> I am not sure that solving it all in userspace is right solution.
 
+What userspace are you talking about? There is one main user - X, for it 
+and all the rest you could provide a simple input library.
 
-> (2) one shouldn't make such judgement calls on somebody else's driver
-> unless it falls within your own maintainership
->
+> Consider a sleep button. It can be hooked up via ACPI, located on AT
+> keyboard, USB keyboard or even on a remote control or some userspace
+> daemon getting data from the network. If kernel just passes raw data
+> to userspace then userspace programs need to know all these potential
+> sources and handle them separately. But with unified input device
+> interface userspace program only needs to monotor appearance of new
+> event devices, latch onto them and wait for EV_KEY/KEY_SLEEP. And it
+> is not much burden for the kernel because kernel already interfaces
+> with all these devices. In fact there probably savings because kernel
+> uses single interface layer.
 
-I wrote what I'd like to see from you, it would be a start if you
-could work on that first.
+If the kernel would do it properly, you would have a point...
 
-Markus
+> > You still completely ignore the problem of how said application should
+> > properly support multiple keyboard mappings...
+> > 
+> 
+> I am afraid this statement is too vague, we need to discuss specific
+> scenarios...
+> 
+> Consider this scenario:
+> 
+> You use 2 PS/2 keyboards with your laptop - built-in and external one
+> on a separate serio port. Your built-in has media keys generating some
+> non-standard scancodes. The external one also has same media keys but
+> generating different set of keycodes. With unified input events you
+> can "fix" your keboards to generate same input events and the rest of
+> your stack does not care.
+
+That's not the problem. Your keycode mapping has no idea about alternative 
+mappings. How does the application know that "Shift"+"2" may mean '"' or 
+'@'?
+
+bye, Roman
