@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753251AbXECLL1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753317AbXECLMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753251AbXECLL1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 07:11:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXECLL1
+	id S1753317AbXECLMx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 07:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXECLMx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 07:11:27 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3118 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753251AbXECLLX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 07:11:23 -0400
-Date: Thu, 3 May 2007 12:11:13 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: dead CONFIG_ variables:  drivers/scsi/
-Message-ID: <20070503111113.GC12018@flint.arm.linux.org.uk>
-Mail-Followup-To: "Robert P. J. Day" <rpjday@mindspring.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-scsi@vger.kernel.org
-References: <Pine.LNX.4.64.0705030606570.32341@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 3 May 2007 07:12:53 -0400
+Received: from [212.12.190.22] ([212.12.190.22]:33102 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753317AbXECLMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 07:12:52 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v7
+Date: Thu, 3 May 2007 14:16:50 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org
+References: <200704300820.49078.a1426z@gawab.com> <20070503074552.GA14960@elte.hu> <20070503080706.GA18427@elte.hu>
+In-Reply-To: <20070503080706.GA18427@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705030606570.32341@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200705031416.50928.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 06:10:28AM -0400, Robert P. J. Day wrote:
-> 
-> $ ../dead_config.sh drivers/scsi
-> ========== ACORNSCSI_CONSTANTS ==========
-> drivers/scsi/arm/acornscsi.c:106:#undef CONFIG_ACORNSCSI_CONSTANTS
-> drivers/scsi/arm/acornscsi.c:417:#ifdef CONFIG_ACORNSCSI_CONSTANTS
-> drivers/scsi/arm/acornscsi.c:495:#ifdef CONFIG_ACORNSCSI_CONSTANTS
-> ========== SCSI_ACORNSCSI_LINK ==========
-> drivers/scsi/arm/acornscsi.c:70:#undef CONFIG_SCSI_ACORNSCSI_LINK
-> drivers/scsi/arm/acornscsi.c:169:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-> drivers/scsi/arm/acornscsi.c:1675:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-> drivers/scsi/arm/acornscsi.c:2849:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-> drivers/scsi/arm/acornscsi.c:2880:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
+Ingo Molnar wrote:
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> > > [...] but there are still some nice issues.
+> > >
+> > > Try running 3 chew.c's, then renicing one to -10, starves others for
+> > > some seconds while switching prio-level.  Now renice it back to 10,
+> > > it starves for up to 45sec.
+> >
+> > ok - to make sure i understood you correctly: does this starvation
+> > only occur right when you renice it (when switching prio levels), and
+> > it gets rectified quickly once they get over a few reschedules?
+>
+> meanwhile i managed to reproduce it by following the exact steps you
+> described, and i've fixed the bug in my tree. Can you confirm that the
+> patch below fixes it for you too?
 
-False positives.  That #undef is preceded by a comment describing the
-driver-internal configuration for developers rather than users.  I
-guess they shouldn't be preceded by CONFIG_.
+Seems like this fixed it.  But I can still see these awful latency blips in 
+the presence of negatively niced chew.c at -10 and two chew.c's at nice 0.  
+This gets really bad when sched_granularity_ns >= 5,000,000.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+
+Thanks!
+
+--
+Al
+
