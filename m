@@ -1,51 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162174AbXECRZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161459AbXECR3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162174AbXECRZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 13:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162191AbXECRZ4
+	id S1161459AbXECR3V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 13:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161461AbXECR3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 13:25:56 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:39844 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1162174AbXECRZz (ORCPT
+	Thu, 3 May 2007 13:29:21 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:30041 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161459AbXECR3U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 13:25:55 -0400
-Date: Thu, 3 May 2007 18:25:46 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, wfg@ustc.edu
-Subject: Re: 2.6.22 -mm merge plans
-Message-ID: <20070503172546.GA13392@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-	rusty@rustcorp.com.au, wfg@ustc.edu
-References: <20070502104413.GC4392@one.firstfloor.org> <20070502094707.4197ab7a.akpm@linux-foundation.org> <20070502172934.GA17782@infradead.org> <20070502203627.GA18733@Krystal> <20070502135336.6d6d3569.akpm@linux-foundation.org> <20070502231104.GA26045@Krystal> <20070502162135.f949e371.akpm@linux-foundation.org> <20070503150415.GC26864@Krystal> <20070503151201.GA27281@infradead.org> <20070503171646.GA506@Krystal>
+	Thu, 3 May 2007 13:29:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mail-followup-to:mime-version:content-type:content-disposition:user-agent;
+        b=roclOmaedu33tQPU+BHoJXJQ1vwPuy2BMFWbyJAXGHNyZxpM+K4kKrR7o6cb4xxEkoMPnFKwd8L0Dr1jAMWxmWvxirbf89+fFN2lzZhfG33OBIbmyqbgaTcwy1mMSwFCWAE13XWfJVMC4tSwVeNOLmPoKqWkYZ5HHikMxn0VkYk=
+Date: Fri, 4 May 2007 02:23:15 +0900
+From: Akinobu Mita <akinobu.mita@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Harald Welte <laforge@gnumonks.org>
+Subject: [PATCH] cm4000_cs: fix error paths
+Message-ID: <20070503172315.GA3491@APFDCB5C>
+Mail-Followup-To: Akinobu Mita <akinobu.mita@gmail.com>,
+	linux-kernel@vger.kernel.org, Harald Welte <laforge@gnumonks.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070503171646.GA506@Krystal>
 User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 01:16:46PM -0400, Mathieu Desnoyers wrote:
-> > kprobes does this kind of synchronization internally, so the marker
-> > wrapper should probabl aswell.
-> > 
-> 
-> The problem appears on heavily loaded systems. Doing 50
-> synchronize_sched() calls in a row can take up to a few seconds on a
-> 4-way machine. This is why I prefer to do it in the module to which
-> the callbacks belong.
+This patch fixes error paths in module_init and probe
+functions in cm4000_cs and cm4040_cs drivers.
 
-We recently had a discussion on batch unreistration interface for
-kprobes.  I'm not very happy with having so different interfaces for
-different kind of probe registrations.
+Cc: Harald Welte <laforge@gnumonks.org>
+Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
 
+---
+ drivers/char/pcmcia/cm4000_cs.c |    9 +++++++--
+ drivers/char/pcmcia/cm4040_cs.c |    7 ++++++-
+ 2 files changed, 13 insertions(+), 3 deletions(-)
+
+Index: 2.6-git/drivers/char/pcmcia/cm4000_cs.c
+===================================================================
+--- 2.6-git.orig/drivers/char/pcmcia/cm4000_cs.c
++++ 2.6-git/drivers/char/pcmcia/cm4000_cs.c
+@@ -1881,8 +1881,11 @@ static int cm4000_probe(struct pcmcia_de
+ 	init_waitqueue_head(&dev->readq);
+ 
+ 	ret = cm4000_config(link, i);
+-	if (ret)
++	if (ret) {
++		dev_table[i] = NULL;
++		kfree(dev);
+ 		return ret;
++	}
+ 
+ 	class_device_create(cmm_class, NULL, MKDEV(major, i), NULL,
+ 			    "cmm%d", i);
+@@ -1907,7 +1910,7 @@ static void cm4000_detach(struct pcmcia_
+ 	cm4000_release(link);
+ 
+ 	dev_table[devno] = NULL;
+- 	kfree(dev);
++	kfree(dev);
+ 
+ 	class_device_destroy(cmm_class, MKDEV(major, devno));
+ 
+@@ -1956,12 +1959,14 @@ static int __init cmm_init(void)
+ 	if (major < 0) {
+ 		printk(KERN_WARNING MODULE_NAME
+ 			": could not get major number\n");
++		class_destroy(cmm_class);
+ 		return major;
+ 	}
+ 
+ 	rc = pcmcia_register_driver(&cm4000_driver);
+ 	if (rc < 0) {
+ 		unregister_chrdev(major, DEVICE_NAME);
++		class_destroy(cmm_class);
+ 		return rc;
+ 	}
+ 
+Index: 2.6-git/drivers/char/pcmcia/cm4040_cs.c
+===================================================================
+--- 2.6-git.orig/drivers/char/pcmcia/cm4040_cs.c
++++ 2.6-git/drivers/char/pcmcia/cm4040_cs.c
+@@ -636,8 +636,11 @@ static int reader_probe(struct pcmcia_de
+ 	setup_timer(&dev->poll_timer, cm4040_do_poll, 0);
+ 
+ 	ret = reader_config(link, i);
+-	if (ret)
++	if (ret) {
++		dev_table[i] = NULL;
++		kfree(dev);
+ 		return ret;
++	}
+ 
+ 	class_device_create(cmx_class, NULL, MKDEV(major, i), NULL,
+ 			    "cmx%d", i);
+@@ -708,12 +711,14 @@ static int __init cm4040_init(void)
+ 	if (major < 0) {
+ 		printk(KERN_WARNING MODULE_NAME
+ 			": could not get major number\n");
++		class_destroy(cmx_class);
+ 		return major;
+ 	}
+ 
+ 	rc = pcmcia_register_driver(&reader_driver);
+ 	if (rc < 0) {
+ 		unregister_chrdev(major, DEVICE_NAME);
++		class_destroy(cmx_class);
+ 		return rc;
+ 	}
+ 
