@@ -1,104 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754337AbXECP4M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162151AbXECP4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754337AbXECP4M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 11:56:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754539AbXECP4L
+	id S1162151AbXECP4k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 11:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162148AbXECP4k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 11:56:11 -0400
-Received: from mga09.intel.com ([134.134.136.24]:55867 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754337AbXECP4J convert rfc822-to-8bit (ORCPT
+	Thu, 3 May 2007 11:56:40 -0400
+Received: from adicia.telenet-ops.be ([195.130.132.56]:57830 "EHLO
+	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1162152AbXECP4i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 11:56:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,486,1170662400"; 
-   d="scan'208";a="83252871"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 3 May 2007 11:56:38 -0400
+Date: Thu, 3 May 2007 17:56:35 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Albert Cahalan <acahalan@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
+Subject: Re: console font limits
+In-Reply-To: <Pine.LNX.4.61.0705031621370.18504@yvahk01.tjqt.qr>
+Message-ID: <Pine.LNX.4.64.0705031754410.4727@anakin>
+References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com> 
+ <Pine.LNX.4.64.0705011347300.27246@anakin> <1178021516.4372.62.camel@daplas>
+ <46375738.1010007@zytor.com> <787b0d920705010849u52a4d6c3o2f1f800521ad5b95@mail.gmail.com>
+ <Pine.LNX.4.61.0705021953030.18504@yvahk01.tjqt.qr> 
+ <787b0d920705022317j485cbe26wc83f071834c53584@mail.gmail.com> 
+ <Pine.LNX.4.61.0705030902430.18504@yvahk01.tjqt.qr>
+ <787b0d920705030714k3b290d2csa38a5df63c692d6f@mail.gmail.com>
+ <Pine.LNX.4.61.0705031621370.18504@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: e1000 issue on DQ965GF board (was 24 lost ticks with 2.6.20.10 kernel)
-Date: Thu, 3 May 2007 08:56:02 -0700
-Message-ID: <BD524EA7912ED5469DFD0BAEF6BC752F01D46D71@orsmsx411.amr.corp.intel.com>
-In-Reply-To: <463A0199.4080204@intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: e1000 issue on DQ965GF board (was 24 lost ticks with 2.6.20.10 kernel)
-Thread-Index: AceNmORmsQrN4EZiQXCU/1hBBXwQQgAAJiGw
-From: "Allan, Bruce W" <bruce.w.allan@intel.com>
-To: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Michel Lespinasse" <walken@zoy.org>
-Cc: "Kok, Auke-jan H" <auke-jan.h.kok@intel.com>,
-       "Chuck Ebbert" <cebbert@redhat.com>, <linux-kernel@vger.kernel.org>,
-       "Dave Jones" <davej@redhat.com>, "cramerj" <cramerj@intel.com>,
-       "Ronciak, John" <john.ronciak@intel.com>,
-       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
-X-OriginalArrivalTime: 03 May 2007 15:56:03.0997 (UTC) FILETIME=[8DB0CCD0:01C78D9B]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, this was discovered through code inspection last week and I've
-already made a fix (as I mentioned to Auke off-thread).  It should be
-submitted upstream shortly.
-
------Original Message-----
-From: Kok, Auke [mailto:auke-jan.h.kok@intel.com] 
-Sent: Thursday, May 03, 2007 8:37 AM
-To: Michel Lespinasse
-Cc: Kok, Auke-jan H; Chuck Ebbert; linux-kernel@vger.kernel.org; Dave
-Jones; cramerj; Ronciak, John; Brandeburg, Jesse; Kirsher, Jeffrey T;
-Allan, Bruce W
-Subject: Re: e1000 issue on DQ965GF board (was 24 lost ticks with
-2.6.20.10 kernel)
-
-[Adding Bruce to the Cc, reply below]
-
-Michel Lespinasse wrote:
-> On Wed, May 02, 2007 at 11:14:52AM -0700, Kok, Auke wrote:
->> I just checked and the fix I was referring to earlier didn't make it
-into 
->> 2.6.21-final. You can get 2.6.21-git1 from kernel.org which has the
-fix. See
->>
->>
-http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git1.
-log
+On Thu, 3 May 2007, Jan Engelhardt wrote:
+> On May 3 2007 10:14, Albert Cahalan wrote:
+> > On 5/3/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+> >> On May 3 2007 02:17, Albert Cahalan wrote:
+> >
+> >> > Those sizes are unreadable on the 200 dpi OLPC XO screen,
+                                                 ^^^^
+> >> 
+> >> Hm that should have read, for you:
+> >> I don't object implementing support for larger sizes.
+> >> (But I wonder how that should work without FB/CVIDIX/SVGA/VESA
+> >> extensions.)
+> >> 
+> >> Note that I was assuming that no FB is used:
+> >
+> > I'm assuming that the FB is used. Neither of my two
+> > computers can do VGA text mode.
 > 
-> Good. So I tried that patch (well, actually only the change visible at
-> http://lkml.org/lkml/2007/3/6/268). I patched it into a 2.6.20.11
-kernel,
-> using the same config file as previously. The good news is that this
-fixes
-> my issue: there are no lost ticks anymore, and the link does negotiate
-a
-> gigabit connection. This is a great improvement for me :)
-> 
-> I still seem to hit an issue if using the ethtool command, though.
-> when using 'ethtool -s eth0 autoneg on', the link comes up at gigabit
-speed,
-> but a couple seconds later is comes down again, and then up at 100
-megabits:
-> 
-> e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex
-> e1000: eth0: e1000_watchdog: NIC Link is Down
-> e1000: eth0: e1000_watchdog: NIC Link is Up 100 Mbps Full Duplex
-> e1000: eth0: e1000_watchdog: 10/100 speed: disabling TSO
-> 
-> The same thing happens if I use ifdown eth0; ifup eth0 too. Once
-again,
-> I only observe this on my DQ965GF motherboard, the DG965RY board is
-fine
-> (stays at gigabit speed when I issue these commands).
-> 
-> Is this something you could easily reproduce at Intel or would you
-want me
-> to look into that issue on my system ?
+> Some non-x86 boxes like sparc?
 
-I think we have confirmed this issue and I'll work with Bruce on seeing
-where 
-the fix went. I might give you another patch to try.
+OLPC is x86 ;-)
 
-Auke
+> > Then, as with X, you have problems with kernel messages.
+> > Reliably sending printk through a userspace console is not
+> > even possible. (consider a panic, OOM, or runaway RT task)
+> 
+> Actually, the kernel could just "jump in". That is, when you start
+> in fb mode, you get the regular 8x16 vga font - on your choice of
+> resolution, and can also set it with setfont. So far so nice.
+> Now, when you start fbiterm -- for example to read CJK --, fbiterm
+> presents you with what looks like a 12x24 font. Also good.
+> It _looks_ to me like fbiterm does the drawing itself; ok too.
+> Now when the kernel is oopsing, it could just spew out the oops
+> trace in the regular font (vga8x16 or in case you use CONFIG_FONTS,
+> then that), possibly obstructing some output generated by fbiterm,
+> but in case of oops, I think this is ok.
+
+Funny, that's exactly how kernel messages where handled in the early
+fbdev days: just draw them to the frame buffer, whatever mode it is
+in...
+Just like on the SunOS boxes ;-)
+
+Put people didn't like that, and disabled text output when the console
+is in KD_GRAPHICS mode...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
