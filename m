@@ -1,55 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031243AbXECN1p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031303AbXECNa7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031243AbXECN1p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 09:27:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031269AbXECN1o
+	id S1031303AbXECNa7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 09:30:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031307AbXECNa7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 09:27:44 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:60522 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031243AbXECN1n (ORCPT
+	Thu, 3 May 2007 09:30:59 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:47789 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031303AbXECNa6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 09:27:43 -0400
-Date: Thu, 3 May 2007 09:21:11 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Arne Georg Gleditsch <argggh@dolphinics.no>
-cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, davem@davemloft.net, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] crypto: convert crypto.h to UTF-8
-In-Reply-To: <87r6pyqg2b.fsf@pelargir.dolphinics.no>
-Message-ID: <alpine.DEB.0.98.0705030915240.21257@sigma.j-a-k-j.com>
-References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
- <20070502044345.GA29384@gondor.apana.org.au> <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
- <87r6pyqg2b.fsf@pelargir.dolphinics.no>
+	Thu, 3 May 2007 09:30:58 -0400
+Message-ID: <4639E40D.6030809@snapgear.com>
+Date: Thu, 03 May 2007 23:30:53 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: linux-2.6.21-uc0 (MMU-less updates)
+References: <46382055.8030203@snapgear.com> <200705030655.36957.rgetz@blackfin.uclinux.org> <4639C164.5070908@snapgear.com> <200705030735.36879.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200705030735.36879.rgetz@blackfin.uclinux.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Did this file individually, per request. Will re-do the whole tree later 
-> > as I'm still working on my handy-dandy testing and patching tools and 
-> > don't have a lot of time outside of work until the summer gets underway.
+Robin Getz wrote:
+> On Thu 3 May 2007 07:03, Greg Ungerer pondered:
+>> Robin Getz wrote:
+>>> On Wed 2 May 2007 07:32, Greg Ungerer pondered:
+>>>> Robin Getz wrote:
+>>>>> I was trying to understand why we don't want to do the same checking on
+>>>>> noMMU?
+>>>> The problem is on systems that have RAM mapped at high physical
+>>>> addresses. TASK_SIZE may well be a numerically smaller number
+>>>> than the address range that RAM sits in. So this test fails when
+>>>> it shouldn't.
+>>> So, then this is a problem only on one or two architectures, not all
+>>> noMMU platforms?
+>> Its not an architecture problem. It can effect any board that
+>> has RAM mapped at a large numerical addresses (larger than TASK_SIZE).
+>> So it can effect any non-MMU platform.
 > 
-> While this is probably inevitable, it would be nice if there was some
-> way to determine the actual coding system used for individual files.
-> Especially if we're mixing latin1 and utf8 in the same tree.  Has
-> something like adding "/* -*- coding: utf-8; -*- */" or similar to the
-> top of converted files been considered?
+> Depending on how TASK_SIZE is defined - it looks like everyone else forces it 
+> to end of memory, except 68k[nommu].
+> 
+> asm-arm/memory.h:#define TASK_SIZE              (CONFIG_DRAM_SIZE)
+> asm-blackfin/processor.h:#define TASK_SIZE      (memory_end)
+> asm-frv/mem-layout.h:#define TASK_SIZE                  __UL(0xFFFFFFFFUL)
+> 
+> asm-m68k/processor.h:#define TASK_SIZE  (0xF0000000UL)
+> asm-m68k/processor.h:#define TASK_SIZE  (0x0E000000)
+> asm-m68k/processor.h:#define TASK_SIZE  (0x0E000000UL)
+> asm-m68knommu/processor.h:#define TASK_SIZE     (0xF0000000UL)
 
-There's no reason for any non-UTF-8 to be in the tree at all, so 
-eventually it won't be a problem. I'm (slowly but surely) working on 
-converting everything in the tree. GCC handles UTF-8 just fine, and all 
-non-stupid/non-broken distributions of GNU/Linux and other major Un*ces 
-should be based on (or at least compatible with) UTF-8 in basic 
-operations. Files like the keymaps will be more work to convert, but they 
-can be as well.
+Probably too:
 
-I'm operating on the assumption that anything in the tree that isn't UTF-8 
-is ISO-8859-1. Of course, I'm also checking it by hand to make sure a 
-small-O-with-umlaut doesn't become the Klingon logo...
+asm-sh/processor.h:#define TASK_SIZE    0x7c000000UL
 
-Besides, based on the actual binary representation of UTF-8, it's 
-extremely unlikely for any ISO-8859-1 string to be detected as UTF-8. VIm 
-already does this: UTF-8 it handles natively, but open up one of these 
-unpatched files in VIm and you'll see "[converted]" at the bottom of your 
-screen. Should happen if you open the attached .patch.bin file in VIm.
+which has some parts with MMU.
+
+There have been others out of tree that have it like this to.
+
+
+> I'm happy to learn we are doing something wrong, but I think that we just 
+> copied the arm/frv setup.
+
+That is one way to handle it. Have you followed all the other
+uses of TASK_SIZE and verified it is not a problem?
+
+Regards
+Greg
+
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
