@@ -1,96 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767278AbXECAP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767285AbXECAS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767278AbXECAP0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 20:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767282AbXECAP0
+	id S1767285AbXECAS0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 20:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767286AbXECAS0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 20:15:26 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35463 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767278AbXECAPY (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 20:15:24 -0400
-Date: Thu, 3 May 2007 10:15:11 +1000
-From: David Chinner <dgc@sgi.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: David Chinner <dgc@sgi.com>, "Cabot, Mason B" <mason.b.cabot@intel.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-Message-ID: <20070503001511.GD77450368@melbourne.sgi.com>
-References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070502154414.GB77450368@melbourne.sgi.com> <20070502194621.GY1518@think.oraclecorp.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070502194621.GY1518@think.oraclecorp.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 2 May 2007 20:18:26 -0400
+Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:21232 "HELO
+	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1767285AbXECASZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 20:18:25 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=kusoicdDQb6cxKiDfRm3pmcoG1mvHZlDvCEbkTzdoi90gxOGp2Yt+rXso3fVkI/rXFZag4IUwJUHwm+4I3QDQqHEcDMiy998ZMpuO/05+nHHYUtc7U08CKdvo9XXCNU1MfucZOwvVP9tuDNqKlsQ6HRH/2bEuM62rnEP8aIl9T0=  ;
+X-YMail-OSG: Y9H_5usVM1lB75xMs1EPJCoVvB2yJ04zMXyjnO1fqOZa2ImuJpFo06ORu5AOGqPcZKyKQ73QHQ--
+Message-ID: <46392A3C.30606@yahoo.com.au>
+Date: Thu, 03 May 2007 10:18:04 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans: mm-more-rmap-checking
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <Pine.LNX.4.64.0705011458060.16979@blonde.wat.veritas.com> <4637EC95.2010501@yahoo.com.au> <Pine.LNX.4.64.0705021355390.16517@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0705021355390.16517@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 03:46:21PM -0400, Chris Mason wrote:
-> On Thu, May 03, 2007 at 01:44:14AM +1000, David Chinner wrote:
-> > On Tue, May 01, 2007 at 01:43:18PM -0700, Cabot, Mason B wrote:
-> > > Hello all,
-> > > 
-> > > I've been testing the NAS performance of ext3/Openfiler 2.2 against
-> > > NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
-> > > video workloads. The Windows CIFS client will attempt a poor-man's
-> > > pre-allocation of the file on the server by sending 1-byte writes at
-> > > 128K-byte strides, breaking block allocation on ext3 and leading to
-> > > fragmentation and poor performance. This will happen for many
-> > > applications (including iTunes) as the CIFS client issues these
-> > > pre-allocates under the application layer.
-> > > 
-> > > I've posted a brief paper on Intel's OSS website
-> > > (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
-> > > it a read and let me know what you think. In particular, I'd like to
-> > > arrive at the right place to fix this problem: is it in the filesystem,
-> > > VFS, or Samba?
-> > 
-> > As I commented on IRC to Val Henson - the XFS performance indicates
-> > that it is not a VFS or Samba problem.
-> > 
-> > I'd say it's probably delayed allocation that is making the
-> > difference here - no allocation occurs on the single byte writes, it
-> > occurs when the larger data writes are flushed to disk. Hence no
-> > adverse fragmentation will occur and there wil be no extra
-> > allocations being done.
-> > 
-> > Hence I think it's probably a filesystm problem - it would be
-> > interesting to see how ext4 performs on this workload....
+Hugh Dickins wrote:
+> On Wed, 2 May 2007, Nick Piggin wrote:
 > 
-> If we rely on delalloc for this, what happens if another proc on the
-> same fs is doing synchronous writes to other files? (say for mail
-> delivery).  Will random FS commits force delayed allocations to become
-> real?
+>>Yes, but IIRC I put that in because there was another check in
+>>SLES9 that I actually couldn't put in, but used this one instead
+>>because it also caught the bug we saw.
+>>... 
+>>This was actually a rare corruption that is also in 2.6.21, and
+>>as few rmap callsites as we have, it was never noticed until the
+>>SLES9 bug check was triggered.
+> 
+> 
+> You are being very mysterious.  Please describe this bug (privately
+> if you think it's exploitable), and let's work on the patch to fix it,
+> rather than this "debug" patch.
 
-Not on XFS.
+It is exec-fix-remove_arg_zero.patch in Andrew's tree, it's exploitable
+in that it leaks memory, but it could also release corrupted pagetables
+into quicklists on those architectures that have them...
 
-> Also, I'd expect a sufficiently loaded server to break down eventually
-> as load/users increase.  The cost of a bad delalloc decision gets much
-> higher if we're using it as a crutch for this kind of bad userland
-> coding.
+Anyway, it quite likely would have gone unfixed for several more years
+if we didn't have the bug triggers in. Now you could argue that my
+patch obviously fixes all bugs in there (but I wouldn't :)), and being
+most complex of the few callsites, _now_ we can avoid the bug checks.
+However I'd prefer to keep them at least under CONFIG_DEBUG_VM.
 
-This only becomes a problem if the system has enough pages dirty to
-be triggering throttling so that the 1byte writes are converted before
-the data actually hits the server.
 
-Even then, if you are on an XFS filesystem with a sunit/swidth set,
-the alocation alignments and speculative allocations will go a long
-way to preventing fragmentations.
+>>Hmm, I didn't notice the do_swap_page change, rather just derived
+>>its safety by looking at the current state of the code (which I
+>>guess must have been post-do_swap_page change)...
+> 
+> 
+> Your addition of page_add_new_anon_rmap clarified the situation too.
+> 
+> 
+>>Do you have a pointer to the patch, for my interest?
+> 
+> 
+> The patch which changed do_swap_page?
+> 
+> commit c475a8ab625d567eacf5e30ec35d6d8704558062
+> Author: Hugh Dickins <hugh@veritas.com>
+> Date:   Tue Jun 21 17:15:12 2005 -0700
+> [PATCH] can_share_swap_page: use page_mapcount
 
-If that doesn't work, then set the extent allocation size hint on the
-XFS inode to 128k or 256k to set the minimum all ocation size for the
-file to span the distance between the 1 byte writes. This attribute
-can be inherited from the parent directory on create, so it's a
-set and forget type of thing...
 
-i.e. XFS has lots of ways to prevent perfromance from degrading
-on these sorts of issues.
+Yeah, this one, thanks. I'm just interested.
 
-Cheers,
 
-Dave.
+> Or my intended PG_swapcache to PAGE_MAPPING_SWAP patch,
+> which does assume PageLocked in page_add_anon_rmap?
+> Yes, I can send you its current unsplit state if you like
+> (but have higher priorities before splitting and commenting
+> it for posting).
+
+I would like to see that too, but when you are ready :)
+
+Thanks,
+Nick
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+SUSE Labs, Novell Inc.
