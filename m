@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767369AbXECEOw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767365AbXECESR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767369AbXECEOw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 00:14:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767370AbXECEOw
+	id S1767365AbXECESR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 00:18:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767371AbXECESR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 00:14:52 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:52815 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767369AbXECEOv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 00:14:51 -0400
-Date: Thu, 3 May 2007 06:15:43 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       Kristian H??gsberg <krh@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 6/6] firewire: add it all to kbuild
-Message-ID: <20070503041543.GA12644@uranus.ravnborg.org>
-References: <20070502090007.GA28174@infradead.org> <tkrat.087ee29add656926@s5r6.in-berlin.de> <tkrat.350cb4dfe522266e@s5r6.in-berlin.de> <tkrat.65aea95f1451c211@s5r6.in-berlin.de> <tkrat.2aa3f3ac11a3d60d@s5r6.in-berlin.de> <tkrat.a41f7f10d21d3cc4@s5r6.in-berlin.de> <tkrat.c82a1d775d989371@s5r6.in-berlin.de> <tkrat.abd13e310a4516c7@s5r6.in-berlin.de> <20070502194442.GE1248@infradead.org> <46391834.2050209@s5r6.in-berlin.de>
+	Thu, 3 May 2007 00:18:17 -0400
+Received: from c-69-254-139-13.hsd1.nm.comcast.net ([69.254.139.13]:51091 "EHLO
+	deneb.dwf.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767365AbXECESQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 00:18:16 -0400
+X-Greylist: delayed 1059 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 00:18:16 EDT
+Message-Id: <200705030400.l4340bcD031447@deneb.dwf.com>
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.1
+To: linux-kernel@vger.kernel.org
+Subject: I don' t understand this warning.
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46391834.2050209@s5r6.in-berlin.de>
-User-Agent: Mutt/1.4.2.1i
+Date: Wed, 02 May 2007 22:00:37 -0600
+From: Reg Clemens <reg@dwf.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 01:01:08AM +0200, Stefan Richter wrote:
-> Christoph Hellwig wrote:
-> >> +fw-core-objs := fw-card.o fw-topology.o fw-transaction.o fw-iso.o \
-> >> +	fw-device.o fw-cdev.o
-> > 
-> > fw-core-y += ..
-> > 
-> 
-> Like such?
-Yes - the latter is much more readable.
+The last several kernels I have built all have the following warning in them:
 
-	Sam
+WARNING: vmlinux - Section mismatch: reference to .init.text:start_kernel from 
+.text between 'is386'
+ (at offset 0xc0401171) and 'check_x87'
+WARNING: vmlinux - Section mismatch: reference to .init.text: from .text 
+between 'rest_init' (at off
+set 0xc0401406) and 'try_name'
+WARNING: vmlinux - Section mismatch: reference to .init.data: from .text 
+between 'probe_bigsmp' (at
+offset 0xc0402032) and 'init_apic_ldr'
+WARNING: vmlinux - Section mismatch: reference to .init.text:find_unisys_acpi_o
+em_table from .text b
+etween 'acpi_madt_oem_check' (at offset 0xc0402244) and 'enable_apic_mode'
 
-> 
-> --- linux.orig/drivers/usb/core/Makefile
-> +++ linux/drivers/usb/core/Makefile
-> @@ -2,17 +2,12 @@
->  # Makefile for USB Core files and filesystem
->  #
-> 
-> -usbcore-objs	:= usb.o hub.o hcd.o urb.o message.o driver.o \
-> +usbcore-y	+= usb.o hub.o hcd.o urb.o message.o driver.o \
->  			config.o file.o buffer.o sysfs.o endpoint.o \
->  			devio.o notify.o generic.o quirks.o
-> 
-> -ifeq ($(CONFIG_PCI),y)
-> -	usbcore-objs	+= hcd-pci.o
-> -endif
-> -
-> -ifeq ($(CONFIG_USB_DEVICEFS),y)
-> -	usbcore-objs	+= inode.o devices.o
-> -endif
-> +usbcore-$(CONFIG_PCI)		+= hcd-pci.o
-> +usbcore-$(CONFIG_USB_DEVICEFS)	+= inode.o devices.o
-> 
->  obj-$(CONFIG_USB)	+= usbcore.o
-> 
-> 
-> -- 
-> Stefan Richter
-> -=====-=-=== -=-= ---==
-> http://arcgraph.de/sr/
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+and this goes on with different variables for 18 lines.
+
+Is this something I should be worried about?
+I frankly dont understand what the message is trying to say.
+-- 
+                                        Reg.Clemens
+                                        reg@dwf.com
+
+
