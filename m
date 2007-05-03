@@ -1,84 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbXECLTK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbXECLTk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753753AbXECLTK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 07:19:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753698AbXECLTK
+	id S1753872AbXECLTk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 07:19:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753873AbXECLTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 07:19:10 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:54768 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbXECLTI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 07:19:08 -0400
-Date: Thu, 3 May 2007 07:17:25 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-cc: linux-kernel@vger.kernel.org, trivial@kernel.org, davem@davemloft.net,
-       linux-crypto@vger.kernel.org
-Subject: [PATCH] crypto: convert crypto.h to UTF-8
-In-Reply-To: <20070502044345.GA29384@gondor.apana.org.au>
-Message-ID: <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
-References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
- <20070502044345.GA29384@gondor.apana.org.au>
+	Thu, 3 May 2007 07:19:39 -0400
+Received: from mx2.suse.de ([195.135.220.15]:46373 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753872AbXECLTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 07:19:38 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Bernhard Kaindl <bk@suse.de>
+Subject: Re: [PATCH] [16/34] i386: fix mtrr sections
+Date: Thu, 3 May 2007 13:19:34 +0200
+User-Agent: KMail/1.9.6
+Cc: randy.dunlap@oracle.com, patches@x86-64.org, linux-kernel@vger.kernel.org
+References: <20070430549.617098000@suse.de> <Pine.LNX.4.64.0705021559160.32650@jbgna.fhfr.qr> <Pine.LNX.4.64.0705031229300.27730@jbgna.fhfr.qr>
+In-Reply-To: <Pine.LNX.4.64.0705031229300.27730@jbgna.fhfr.qr>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="1875672472-1995079615-1178191047=:17390"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705031319.34353.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---1875672472-1995079615-1178191047=:17390
-Content-Type: TEXT/PLAIN; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+> 
+> As Andy already submitted it to Linus with http://lkml.org/lkml/2007/5/2/346
+> we may have to create a patch which reverts this patch.
 
-From: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
+Ok thanks for the explanation. I will queue a revert patch
+ 
+> I'm also planning to add some function headers to the MTRR functions
+> and also fix the existing and upcoming function headers to be complant
+> to kernel-doc.
 
-Convert the encoding of <include/linux/crypto.h> from ISO-8859-1 to UTF-8.
+Thanks
 
-Signed-off-by: John Anthony Kazos Jr. <jakj@j-a-k-j.com>
-
----
-
-Did this file individually, per request. Will re-do the whole tree later 
-as I'm still working on my handy-dandy testing and patching tools and 
-don't have a lot of time outside of work until the summer gets underway.
-
-The patch works in ISO-8859-1 encoding. If I am unsuccessful in getting 
-this mail to send as that, or if your viewer reinterprets it from that, 
-you'll need to use the file attached as MIME type octet-stream. Thanks for 
-your time and interest.
-
---- linux-2.6.21-rc7-git4.orig/include/linux/crypto.h	2007-04-20 20:22:13.000000000 -0400
-+++ linux-2.6.21-rc7-git4.mod/include/linux/crypto.h	2007-05-03 07:09:47.000000000 -0400
-@@ -6,7 +6,7 @@
-  * Copyright (c) 2005 Herbert Xu <herbert@gondor.apana.org.au>
-  *
-  * Portions derived from Cryptoapi, by Alexander Kjeldaas <astor@fast.no>
-- * and Nettle, by Niels Möller.
-+ * and Nettle, by Niels MÃ¶ller.
-  * 
-  * This program is free software; you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the Free
---1875672472-1995079615-1178191047=:17390
-Content-Type: APPLICATION/octet-stream; name=include-linux-crypto-h-to-utf8.patch.bin
-Content-Transfer-Encoding: BASE64
-Content-ID: <alpine.DEB.0.98.0705030717250.17390@sigma.j-a-k-j.com>
-Content-Description: 
-Content-Disposition: attachment; filename=include-linux-crypto-h-to-utf8.patch.bin
-
-LS0tIGxpbnV4LTIuNi4yMS1yYzctZ2l0NC5vcmlnL2luY2x1ZGUvbGludXgv
-Y3J5cHRvLmgJMjAwNy0wNC0yMCAyMDoyMjoxMy4wMDAwMDAwMDAgLTA0MDAK
-KysrIGxpbnV4LTIuNi4yMS1yYzctZ2l0NC5tb2QvaW5jbHVkZS9saW51eC9j
-cnlwdG8uaAkyMDA3LTA1LTAzIDA3OjA5OjQ3LjAwMDAwMDAwMCAtMDQwMApA
-QCAtNiw3ICs2LDcgQEAKICAqIENvcHlyaWdodCAoYykgMjAwNSBIZXJiZXJ0
-IFh1IDxoZXJiZXJ0QGdvbmRvci5hcGFuYS5vcmcuYXU+CiAgKgogICogUG9y
-dGlvbnMgZGVyaXZlZCBmcm9tIENyeXB0b2FwaSwgYnkgQWxleGFuZGVyIEtq
-ZWxkYWFzIDxhc3RvckBmYXN0Lm5vPgotICogYW5kIE5ldHRsZSwgYnkgTmll
-bHMgTfZsbGVyLgorICogYW5kIE5ldHRsZSwgYnkgTmllbHMgTcO2bGxlci4K
-ICAqIAogICogVGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBj
-YW4gcmVkaXN0cmlidXRlIGl0IGFuZC9vciBtb2RpZnkgaXQKICAqIHVuZGVy
-IHRoZSB0ZXJtcyBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2Ug
-YXMgcHVibGlzaGVkIGJ5IHRoZSBGcmVlCg==
-
---1875672472-1995079615-1178191047=:17390--
+-Andi
