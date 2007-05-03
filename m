@@ -1,68 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162037AbXECOjD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162043AbXECOmN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162037AbXECOjD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:39:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162039AbXECOjD
+	id S1162043AbXECOmN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:42:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162046AbXECOmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:39:03 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:37533 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1162037AbXECOjA (ORCPT
+	Thu, 3 May 2007 10:42:13 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:17401 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1162043AbXECOmM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:39:00 -0400
-Date: Thu, 3 May 2007 10:32:33 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Arne Georg Gleditsch <argggh@dolphinics.no>
-cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, davem@davemloft.net, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] crypto: convert crypto.h to UTF-8
-In-Reply-To: <87hcquqajl.fsf@pelargir.dolphinics.no>
-Message-ID: <alpine.DEB.0.98.0705031024530.23274@sigma.j-a-k-j.com>
-References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
- <20070502044345.GA29384@gondor.apana.org.au> <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
- <87r6pyqg2b.fsf@pelargir.dolphinics.no> <alpine.DEB.0.98.0705030915240.21257@sigma.j-a-k-j.com>
- <87hcquqajl.fsf@pelargir.dolphinics.no>
+	Thu, 3 May 2007 10:42:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=gtHHlaLuzNST/W/LkU/mMjogZetxYZuwgq2WJWz1b58qc26rvDw9vvhc2kk84SiofJiCNsOa1bhw9lC6r+q/cHgAXfBCrOy/6n1HK8owk24QSILxo0C9ww+maX25Ek7zBCi+ZTf4b/wiSjyEUrANC6Zy34YS2lw9i4RmYKYpD3k=
+Message-ID: <4639F4B1.2080606@gmail.com>
+Date: Thu, 03 May 2007 16:41:53 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -v2 1/1] Misc: add sensable phantom driver
+References: <219403193181341921@karneval.cz> <20070502234956.cdfe31c2.akpm@linux-foundation.org>
+In-Reply-To: <20070502234956.cdfe31c2.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Besides, based on the actual binary representation of UTF-8, it's 
-> > extremely unlikely for any ISO-8859-1 string to be detected as UTF-8. VIm 
-> > already does this: UTF-8 it handles natively, but open up one of these 
-> > unpatched files in VIm and you'll see "[converted]" at the bottom of your 
-> > screen. Should happen if you open the attached .patch.bin file in VIm.
+Andrew Morton napsal(a):
+>> +static int phantom_ioctl(struct inode *inode, struct file *file, u_int cmd,
+>> +	u_long arg)
 > 
-> Yes, I agree that heuristics can be used to determine the coding
-> system used with a high degree of probability.  I'm just suggesting we
-> make the coding system explicit, in order to spare other applications
-> that do visual presentation of Linux source code having to perform
-> their own heuristics.
+> Could we please use standard-looking types in this driver?  u32 and u64 and
+> things?
 > 
-> But hey, if I'm the only one wanting to see this particular bike shed
-> painted blue...
+> However in this case, as it's an ioctl handler it should be "int" and
+> "unsigned long".
 
-In any other case, I would agree completely, but like I said, the entire 
-tree will be one encoding anyway, which will be UTF-8. Many tools would 
-already have these heuristics, and even if they don't, the code itself 
-will be perfectly legible no matter which encoding is used to view it, and 
-only some things like circuit diagrams and peoples' names may be slightly 
-mangled. Any byte which is 0x7F or less is identical in both encodings, so 
-all normal ASCII is unchanged.
+actually, according to file_operations struct:
 
-It's an issue only in transition. No new non-UTF-8 patches should be 
-accepted, of course. And I won't be doing any changes that break anything 
-other than a live person reading it and wondering why it looks weird if 
-they don't have the right tools.
+int (*ioctl) (struct inode *, struct file *, unsigned int, unsigned long);
 
-A line in <Documentation/CodingStyle> explicitly requiring UTF-8 sounds 
-like a good idea. I shall submit one later if I remember. Many mail 
-clients do this conversion automatically, which causes me headaches and 
-requires me to attach the patches separately. Quite annoying really. I'm 
-exploring the possibility of hacking together a simple SMTP client if 
-that'll help me with these fool binary patches.
+"*unsigned* int" and "unsigned long" are correct types...
 
-Or maybe setting up a little mini git repository with UTF-8 changes is a 
-good idea? Hmm, I'll research that, and try it. Then I could just cc it to 
-trivial and the list and they can just pull it in one go. One more week 
-until summer vacation! I shall have time to do this then.
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+ B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
