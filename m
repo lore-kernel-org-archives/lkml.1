@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753665AbXECWPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXECWSF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753665AbXECWPp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 18:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbXECWPo
+	id S1753413AbXECWSF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 18:18:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbXECWSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 18:15:44 -0400
-Received: from mail38.syd.optusnet.com.au ([211.29.133.67]:60088 "EHLO
-	mail38.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767447AbXECWOx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 18:14:53 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
-Date: Fri, 4 May 2007 08:14:26 +1000
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070503155407.GA7536@elte.hu>
-In-Reply-To: <20070503155407.GA7536@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705040814.26902.kernel@kolivas.org>
+	Thu, 3 May 2007 18:18:05 -0400
+Received: from mail-in-01.arcor-online.net ([151.189.21.41]:43671 "EHLO
+	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753413AbXECWSC convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 18:18:02 -0400
+In-Reply-To: <200705032103.33809.arnd@arndb.de>
+References: <20070503065435.4533.64938.stgit@localhost.localdomain> <200705030948.03984.arnd@arndb.de> <5a7e02f6d1520d8ad02e28ace218981c@kernel.crashing.org> <200705032103.33809.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <162630d74e53bc10840b667973122fff@kernel.crashing.org>
+Content-Transfer-Encoding: 8BIT
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
+Date: Fri, 4 May 2007 00:17:39 +0200
+To: Arnd Bergmann <arnd@arndb.de>
+X-Mailer: Apple Mail (2.623)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 04 May 2007 01:54, Ingo Molnar wrote:
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > - If replying, please be sure to cc the appropriate individuals.
-> >   Please also consider rewriting the Subject: to something
-> >   appropriate.
-
-> i've reviewed it once again and in the !CONFIG_SWAP_PREFETCH case it's a
-> clear NOP, while in the CONFIG_SWAP_PREFETCH=y case all the feedback
-> i've seen so far was positive. Time to have this upstream and time for a
-> desktop-oriented distro to pick it up.
+>>> For example, you could make this
+>>>
+>>>       compatible = "8xx\0mpc885ads";
+>>
+>> "mpc885ads-pcmcia\0mpc8xx-pcmcia" or something like that.
 >
-> I think this has been held back way too long. It's .config selectable
-> and it is as ready for integration as it ever is going to be. So it's a
-> win/win scenario.
->
-> Acked-by: Ingo Molnar <mingo@elte.hu>
+> Right. I can never remember what goes first...
 
-Thank you very much for code review, ack and support!
+It doesn't really matter all that much; "correct"
+drivers probe for the most specific thing first,
+then the next most specific thing they support,
+etc.  It is mostly a convention.
 
--- 
--ck
+The important thing is that you can't just call
+yourself "8xx", that is way to generic a name.
+
+
+Segher
+
