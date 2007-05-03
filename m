@@ -1,95 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767422AbXECXIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767451AbXECXJI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767422AbXECXIL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 19:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767451AbXECXIL
+	id S1767451AbXECXJI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 19:09:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767466AbXECXJI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 19:08:11 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:54665 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767422AbXECXIJ (ORCPT
+	Thu, 3 May 2007 19:09:08 -0400
+Received: from nz-out-0506.google.com ([64.233.162.226]:39230 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767451AbXECXJG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 19:08:09 -0400
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200705032307.l43N7NOv032566@turbo.physics.adelaide.edu.au>
-Subject: Re: [git pull] New firewire stack
-To: stefanr@s5r6.in-berlin.de (Stefan Richter)
-Date: Fri, 4 May 2007 08:37:23 +0930 (CST)
-Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       linux1394-devel@lists.sourceforge.net, olh@suse.de,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       linux-kernel@vger.kernel.org, krh@redhat.com
-In-Reply-To: <46399BDE.4040605@s5r6.in-berlin.de> from "Stefan Richter" at May 03, 2007 10:22:54 AM
-X-Mailer: ELM [version 2.5 PL6]
+	Thu, 3 May 2007 19:09:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=BtNTCidUAckM9xTc+Dy9aueJBPQyuXPDrRcu/lzS8LWT3Qx9oqiEbyXuEe9r/B+HAAp5kv4SrDWW0My1MXMkpXBv3VwauKVWitQP4X4AlqbisDOmbwO/68zWPIaTtOGCM1zMSWw+z/S8Txt9nLY7D4506CCn8PL/I2h74RRLBDM=
+Message-ID: <d9def9db0705031609y7fdb1ffcs161f830ad56f41d8@mail.gmail.com>
+Date: Fri, 4 May 2007 01:09:04 +0200
+From: "Markus Rechberger" <mrechberger@gmail.com>
+To: "Manu Abraham" <abraham.manu@gmail.com>
+Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical points about ...)
+Cc: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org
+In-Reply-To: <463A62D5.40205@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
+	 <d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>
+	 <463A0B36.5080204@gmail.com>
+	 <d9def9db0705031019l5083d1c1h607b0829ab526f1@mail.gmail.com>
+	 <1178215045.12651.124.camel@localhost> <463A31EE.20907@gmail.com>
+	 <d9def9db0705031400q375f2a29t1c9354d717a763d4@mail.gmail.com>
+	 <463A572E.1000903@gmail.com>
+	 <d9def9db0705031506i53b8b263ld7f32a8cfd47b047@mail.gmail.com>
+	 <463A62D5.40205@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Jonathan Woithe wrote:
-> >> Olaf Hering wrote:
-> >>> NACK.
-> >>> Upgrade the current drivers/ieee1394/ with the new code, and keep all
-> >>> existing module names.
-> [...]
-> > However, as a compromise how about renaming the existing stack's modules and
-> > then reusing the existing names for the new stack?  Messy I know, but this
-> > way both stacks would still be available without recompilation for those who
-> > needed them and the sbp2-as-root dilemma raised by Olaf would also be
-> > covered.
-> 
-> I.e. new modules:
-> 	ieee1394 (was fw-core)
-> 	ohci1394 (was fw-ohci)
->       :
+On 5/4/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> Markus Rechberger wrote:
+>
+> > I mean the mail from Helge Hafting (thread  [linux-dvb] Critical
+> > points about kernel 2.6.21 and pseudo-authorities) at the very first
+> > beginning.
+> >
+>
+> I am replying to this mail, just because someone's spreading lies all
+> around.
+> On the mentioned thread, what i wrote (and that was the only mail from
+> my side):
+>
+> There is a saying: "He who lives by the sword, dies by the sword."
+>
 
-> old modules, for example:
-> 	ieee1394-old
-> 	ohci1394-old
->       :
-> 
-> Looks... weird.
-> 
-> On the other hand, a 1394 module compilation cycle in order to do the
-> fallback is not such a huge issue, except that it requires the person to
-> be able to compile modules.  That's probably the main issue.
+And what issues are outstanding of these discussions? I went over it
+and it just shows up that there have been communication problems in
+2005.
 
-True on all counts.  I guess it's a question of whether the lack of an easy
-fallback path will significantly reduce the number of testers.  I don't have
-enough of a feel to answer that.
+We now have open issues with several device drivers and that's what we
+should focus at.
 
-> 	eth1394  (to be done) --- but that's a bad name anyway, it
->                                   implements IP over 1394, not Ethernet
-
-So, when eth1394 is ported the name should be something like fw-ip, at least
-if we are to remain consistent with the other 3 module names.
-
-> > Oh yes, it would be nice to have working PCILynx support again (although I
-> > acknowledge it's unlikely to happen).  Some of us do have these cards
-> > installed for sniffing purposes (using nosy) but it would be nice to be able
-> > to use them with libraw1394 as well.  It would for example save me having to
-> > swap cards depending on what I needed to do (I have insufficient PCI slots
-> > to have both the PCILynx and OHCI cards installed simultaneously).
-> 
-> But then, what is the actual utility of pcilynx?  (I mean the current
-> driver, not the card or a future driver.)  Last time I checked, sbp2 was
-> broken without OHCI's physical DMA, and AFAIK raw1394's newer iso API
-> and video1394 and dv1394 don't work with pcilynx either.
-
-It certainly doesn't support the raw1394 API so its current usefulness is
-extremely limited.
-
-> Porting pcilynx to the new low-level API would be quite resource
-> demanding --- seen in relation to which resources we have, what the
-> existing pcilynx driver's state of affairs is, and how rare the hardware
-> is.  (For those who have the hardware, the stand-alone Nosy is
-> undoubtedly the killer application, not pcilynx.)
-
-Precisely.  As I said, I've probably got a corner case and it's certainly
-not worth the effort just for that.  It would be nice though.  You're right
-about nosy; so long as nosy (which is independent of the firewire stack)
-keeps working I'll be happy. :)
-
-Regards
-  jonathan
+Markus
