@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161764AbXECVUF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161425AbXECVZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161764AbXECVUF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:20:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161513AbXECVUF
+	id S1161425AbXECVZv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161485AbXECVZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:20:05 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:58108 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161485AbXECVUD (ORCPT
+	Thu, 3 May 2007 17:25:51 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:57110
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161425AbXECVZu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:20:03 -0400
-Date: Thu, 3 May 2007 14:19:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: [PATCH 2/2] rename thread_info to stack
-Message-Id: <20070503141951.d67d0289.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705010210010.1479@scrub.home>
-References: <Pine.LNX.4.64.0705010210010.1479@scrub.home>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 17:25:50 -0400
+Date: Thu, 3 May 2007 14:25:02 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: David Schwartz <davids@webmaster.com>
+cc: linux-kernel@vger.kernel.org
+Subject: RE: scheduling oddity on 2.6.20.3 stock
+In-Reply-To: <MDEHLPKNGKAHNMBLJOLKIEJKDIAC.davids@webmaster.com>
+Message-ID: <Pine.LNX.4.64.0705031424030.26172@asgard.lang.hm>
+References: <MDEHLPKNGKAHNMBLJOLKIEJKDIAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 1 May 2007 02:10:34 +0200 (CEST)
-Roman Zippel <zippel@linux-m68k.org> wrote:
+On Thu, 3 May 2007, David Schwartz wrote:
 
-> This finally renames the thread_info field in task structure to stack,
-> so that the assumptions about this field are gone and archs have more
-> freedom about placing the thread_info structure.
+>> I needed to recompress some files from .bz2 to .gz so I setup a script to
+>> do
+>>
+>> bunzip2 -c $file.bz2 |gzip -9 >$file.gz
+>>
+>> I expected that the two CPU heavy processes would end up on different
+>> cpu's and spend a little time shuffling data between the two cpu's on a
+>> system (dual core opteron)
+>>
+>> however, instead what I find is that each process is getting 50% of one
+>> cpu while the other cpu is 97% idle.
+>
+> That would only be possible if the compression/decompression block size is
+> small compared to the maximum pipe buffer size. I suspect the reverse is the
+> case.
+>
+> It would be interesting to write an intermediate process that basically
+> enlarged the pipe buffers and see if that changed anything. Basically, the
+> intermediate process would allocate a large buffer (16MB or so) and fill it
+> from 'bunzip2' while draining it to 'gzip' in a non-blocking way (unless the
+> buffer was full/empty, of course).
 
-It needed this build fix:
+hmm, how about
+bunzip2 -c $file.bz2 |dd bs=8m |gzip -9 >$file.gz
+should that work?
 
---- a/include/asm-x86_64/system.h~rename-thread_info-to-stack-fix
-+++ a/include/asm-x86_64/system.h
-@@ -39,7 +39,7 @@
- 		       [threadrsp] "i" (offsetof(struct task_struct, thread.rsp)), \
- 		       [ti_flags] "i" (offsetof(struct thread_info, flags)),\
- 		       [tif_fork] "i" (TIF_FORK),			  \
--		       [thread_info] "i" (offsetof(struct task_struct, thread_info)), \
-+		       [thread_info] "i" (offsetof(struct task_struct, stack)), \
- 		       [pda_pcurrent] "i" (offsetof(struct x8664_pda, pcurrent))   \
- 		     : "memory", "cc" __EXTRA_CLOBBER)
-     
-_
-
-
-It is unpleasing that this code is forced to implicitly assume that the
-thing pointed to by task_struct.stack has type `struct thread_info'.
-
-Are we sure this patch is a good thing?
+David Lang
