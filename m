@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766624AbXECVGY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161162AbXECVKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766624AbXECVGY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:06:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S637742AbXECVGY
+	id S1161162AbXECVKb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031352AbXECVKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:06:24 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:43229 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S637750AbXECVGX (ORCPT
+	Thu, 3 May 2007 17:10:30 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4176 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031350AbXECVK3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:06:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition:x-google-sender-auth;
-        b=g1HwXU1RwQYMCTdZZvxn//W/Z/a59PJ7dY1ChXySf13gTb4tFpVqXQZvsJUJBl5JQr/RbU/hmuMJoz6gw8bTFi3F8RC3ETpAdxfGgXGSg2iR8qdl4WtWpDHPfJxs2buGbgUhz9W6ktR481Fju5p3xvIfqu8PaOSHGrBviyh/dBw=
-Message-ID: <528646bc0705031406v5560d661m8fa1c3e2ea155ddb@mail.gmail.com>
-Date: Thu, 3 May 2007 15:06:21 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Need help on block device error handling.
+	Thu, 3 May 2007 17:10:29 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: <linux-kernel@vger.kernel.org>
+Subject: RE: scheduling oddity on 2.6.20.3 stock
+Date: Thu, 3 May 2007 14:10:23 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKIEJKDIAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-X-Google-Sender-Auth: af6307712c9461a7
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+Importance: Normal
+In-Reply-To: <Pine.LNX.4.64.0705021826560.5342@asgard.lang.hm>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Thu, 03 May 2007 15:10:45 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Thu, 03 May 2007 15:10:47 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've got a device driver for the Xilinx SystemACE CompactFlash
-interface that I'm working on and I'm having problems adding error
-handling and notification.  Specifically, I need to deal with the case
-where the CF card might get pulled out by the user at any time without
-notice.  While this situation will obviously result in data loss, I
-need to make sure that the system is able to recover gracefully (ie.
-the user will be ticked if it hangs or crashes.  :)
 
-So, here are my questions.
-- When a new CF is inserted/removed, how should I notify the
-block/filesystem layer?
-- If the CF is removed mid-transfer, how do I abort all pending bios
-and block new requests?  What is the impact on user space processes
-using the device, will they get signaled?
+> I needed to recompress some files from .bz2 to .gz so I setup a script to
+> do
+>
+> bunzip2 -c $file.bz2 |gzip -9 >$file.gz
+>
+> I expected that the two CPU heavy processes would end up on different
+> cpu's and spend a little time shuffling data between the two cpu's on a
+> system (dual core opteron)
+>
+> however, instead what I find is that each process is getting 50% of one
+> cpu while the other cpu is 97% idle.
 
-AFAICT, I've got two options.  One is to use the media_changed() and
-revalidate_disk() so the block layer can determine when things have
-changed.  However, I cannot figure out how to force all activity to
-stop when the CF is removed while the device is still open.
+That would only be possible if the compression/decompression block size is
+small compared to the maximum pipe buffer size. I suspect the reverse is the
+case.
 
-The other seems to be not call add_gendisk() until media is inserted,
-and then call del_gendisk() when it is removed, but I don't know if
-this is safe, and it still doesn't solve the problem of cancling
-pending transactions and forcing the block layer to close the device.
+It would be interesting to write an intermediate process that basically
+enlarged the pipe buffers and see if that changed anything. Basically, the
+intermediate process would allocate a large buffer (16MB or so) and fill it
+from 'bunzip2' while draining it to 'gzip' in a non-blocking way (unless the
+buffer was full/empty, of course).
 
-Should I be using invalidate_partition() for this?
+DS
 
-Cheers,
-g.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
