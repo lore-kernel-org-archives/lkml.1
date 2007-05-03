@@ -1,94 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031176AbXECKUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161791AbXECK1O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031176AbXECKUO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 06:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031153AbXECKUN
+	id S1161791AbXECK1O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 06:27:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161785AbXECK1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 06:20:13 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:49472 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031150AbXECKUL (ORCPT
+	Thu, 3 May 2007 06:27:14 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45927
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1161140AbXECK1N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 06:20:11 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Thu, 3 May 2007 06:19:20 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Arnd Bergmann <arnd@arndb.de>
-cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: finding your own dead "CONFIG_" variables
-In-Reply-To: <200705031202.56805.arnd@arndb.de>
-Message-ID: <Pine.LNX.4.64.0705030613120.32556@localhost.localdomain>
-References: <Pine.LNX.4.64.0705030400120.20539@localhost.localdomain>
- <a781481a0705030237l7d636b55t93f2ee5151cd7709@mail.gmail.com>
- <Pine.LNX.4.64.0705030546310.29962@localhost.localdomain>
- <200705031202.56805.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1133002977-1178187560=:32556"
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-15.989, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	SUBJ_YOUR_OWN 0.81)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Thu, 3 May 2007 06:27:13 -0400
+Date: Thu, 03 May 2007 03:27:14 -0700 (PDT)
+Message-Id: <20070503.032714.11077929.davem@davemloft.net>
+To: dhowells@redhat.com
+Cc: akpm@osdl.org, linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       netdev@vger.kernel.org, kaber@trash.net
+Subject: Re: [PATCH 1/5] [NETLINK]: Fix use after free in netlink_recvmsg
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070503095315.26912.24270.stgit@warthog.cambridge.redhat.com>
+References: <20070503095315.26912.24270.stgit@warthog.cambridge.redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+From: David Howells <dhowells@redhat.com>
+Date: Thu, 03 May 2007 10:53:15 +0100
 
---8323328-1133002977-1178187560=:32556
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+> When the user passes in MSG_TRUNC the skb is used after getting freed.
+> 
+> Signed-off-by: Patrick McHardy <kaber@trash.net>
+> Signed-off-by: David Howells <dhowells@redhat.com>
 
-On Thu, 3 May 2007, Arnd Bergmann wrote:
-
-> On Thursday 03 May 2007, Robert P. J. Day wrote:
-> > > Suggest: configfiles=$(find . -name 'Kconfig*' -or -name '*defconfig*')
-> > >
-> > > Some CONFIG_ options exist that are not declared anywhere in the
-> > > Kconfig files but defined directly in the arch/.../*defconfig*
-> > > files.
-> >
-> > it's my understanding that entries in any defconfig files are
-> > *automatically* pruned at some point once a CONFIG_ variable no longer
-> > exists in any Kconfig file, so i'm not going to be touching those
-> > files.  also, adding that extra check wouldn't add anything useful to
-> > the output.
->
->
-> An interesting category would be a symbol that is
->
-> - used in a source file
-> - defined in an old defconfig
-> - not present in any Kconfig* file
->
-> If any of these exist, I would consider them _worse_ than the ones
-> found by your initial script, because some functionality that once
-> was there has been recently removed.
-
-hmmmmmm ... i see your point now -- not present in any Kconfig file
-but still being selected by a defconfig file that might still be
-affecting the eventual build.  that's an easy enough change to make
-but, as i've mentioned before, this output could be reduced
-substantially if developers stopped using CONFIG_ prefixed macro names
-for their own non-Kconfig variables (*cough* MTD *cough* :-).
-
-but, again, some of that issue might disappear if those defconfig
-files were auto-regenerated on a timely basis (if that is, in fact,
-how they're kept up to date).
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
---8323328-1133002977-1178187560=:32556--
+Ugh, good catch, applied :-)
