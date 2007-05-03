@@ -1,127 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752016AbXECJZM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752326AbXECJ1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752016AbXECJZM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 05:25:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbXECJZL
+	id S1752326AbXECJ1Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 05:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752346AbXECJ1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 05:25:11 -0400
-Received: from mu-out-0910.google.com ([209.85.134.190]:54154 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752016AbXECJZJ convert rfc822-to-8bit (ORCPT
+	Thu, 3 May 2007 05:27:15 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:54461 "EHLO
+	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752274AbXECJ1O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 05:25:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=QIzVsvNiFnDFlV51Gx14cflLSAqY9yD3xZtEp9TWjAdmY45txouQn7kZ848pB6k1Zpp/KzA4faE59KQ1t3lK7cAVjCVyFRZm3+H3zKha1oyi7+40Xy8gzuOY0OjHb+97yGuV0L/E+5IU0PLO1TpiEbGYIia0mLMqhM4bLx9RHoI=
-Message-ID: <f058a9c30705030225s122ffbag54a33aa810996d8f@mail.gmail.com>
-Date: Thu, 3 May 2007 10:25:07 +0100
-From: "Miguel Sousa Filipe" <miguel.filipe@gmail.com>
-To: "David Greaves" <david@dgreaves.com>
-Subject: Re: FEATURE REQUEST: merge MD software raid and LVM in one unique layer.
-Cc: david@lang.hm, "Diego Calleja" <diegocg@gmail.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <46399876.2030800@dgreaves.com>
+	Thu, 3 May 2007 05:27:14 -0400
+Date: Thu, 3 May 2007 11:27:13 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: =?ISO-8859-1?Q?S=E9bastien_Dugu=E9?= <sebastien.dugue@bull.net>
+cc: Dave Jones <davej@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: Re: checkpatch, a patch checking script.
+In-Reply-To: <20070503093225.10765f46@frecb000686.frec.bull.fr>
+Message-ID: <Pine.LNX.4.62.0705031127010.29761@pademelon.sonytel.be>
+References: <20070423141123.GA21174@skybase> <20070423104534.51bac974.akpm@linux-foundation.org>
+ <20070425112133.4ae86399.randy.dunlap@oracle.com>
+ <20070425143011.57247c1d.akpm@linux-foundation.org>
+ <20070425172447.1576c399.akpm@linux-foundation.org> <20070426003911.GA19383@redhat.com>
+ <4630109F.6090002@oracle.com> <20070425200207.77a2721a.akpm@linux-foundation.org>
+ <20070428030805.GA13331@redhat.com> <Pine.LNX.4.62.0705021626080.3706@pademelon.sonytel.be>
+ <20070503093225.10765f46@frecb000686.frec.bull.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <f058a9c30705021214k75da330ai4d79a2b6b2806652@mail.gmail.com>
-	 <f058a9c30705021218p4fdb4747kb5b4b9000ad50ef2@mail.gmail.com>
-	 <20070502221045.ad20b915.diegocg@gmail.com>
-	 <f058a9c30705021351i24c7adc2i4c7e8a76e3b8d1bb@mail.gmail.com>
-	 <Pine.LNX.4.64.0705021756210.5342@asgard.lang.hm>
-	 <46399876.2030800@dgreaves.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-1241859657-1178184433=:29761"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/3/07, David Greaves <david@dgreaves.com> wrote:
-> david@lang.hm wrote:
-> > On Wed, 2 May 2007, Miguel Sousa Filipe wrote:
-> >
-> >> On 5/2/07, Diego Calleja <diegocg@gmail.com> wrote:
-> >>>  El Wed, 2 May 2007 20:18:55 +0100, "Miguel Sousa Filipe"
-> >>>  <miguel.filipe@gmail.com> escribió:
-> >>>
-> >>> >  I find it high irritanting having two kernel interfaces and two
-> >>> >  userland tools that provide the same funcionality, which one should I
-> >>> >  use?
-> >>>
-> >>>  I doubt users care about kernel's design; however the lack of
-> >>> unification of  userspace tools is a real problem. Just my 2¢.
->
-> >> This is also a problem for any developer who tries to improve
-> >> usability in this area by creating some unified userland tools to
-> >> manipulate MD & LVM. (Imagining myself implementing some userland tool
-> >> to create some "storage devices" + mount points.. doesn't  seem easy
-> >> nor fun..).
-> >
-> > why do you care if the userspace tool that does the resizing makes
-> > system calls to one layer or to two layers? how would you know?
->
-> Indeed!!
->
-> EVMS
->
-> http://evms.sourceforge.net/
->
-> Enterprise Volume Management System
->
-> In order to make the transition to EVMS as smooth as possible, EVMS includes
-> compatibility with a number of existing storage and volume management systems.
-> Currently, EVMS recognizes:
->
->     * All locally attached disks
->     * DOS-style disk partitions (used extensively on Linux systems)
->     * GPT disk partitions (mainly used on IA-64)
->     * S/390 disk partitions (CDL/LDL)
->     * BSD disk partitions
->     * Macintosh disk partitions
->     * Linux MD/Software-RAID devices
->     * Linux LVM volume groups and logical volumes (versions 1 and 2)
->
-> Anything else?
->
-> Oh... yes:
->
-> In addition to providing compatibility with these existing systems, EVMS also
-> provides new functionality that can be built on top of any of the above
-> "volumes" that EVMS already recognizes. Features that are currently included are:
->
->     * Bad Block Relocation
->     * Linear Drive Linking
->     * Generic Snapshotting
->
-> Enough? or would you like:
-> In addition to these volume-level features, the EVMS tools provide convenient
-> integration with numerous filesystem tools, to allow tasks such as mkfs and fsck
-> directly from the EVMS user interfaces. Currently, the following filesystems are
-> supported:
->
->     * Ext2/3
->     * JFS
->     * ReiserFS
->     * XFS
->     * Swap
->     * OCFS2
->     * NTFS
->     * FAT
->
-> ??
-> Oh, and for the l33t there's a GUI and screenshots...
->
-> Of course, in keeping with ZFS, this management layer is all proprietary and
-> costs megabucks - or is it GPL, can never remember...
->
-> Damn that "irritanting" architecture - keeps us from doing cool things...
->
-> Seriously - I hope this is useful ;)
->
-> David
->
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-That was indeed informative, thank you for your reply.
-I'll try EVMS sometime soon then.. :D
+---584337861-1241859657-1178184433=:29761
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
--- 
-Miguel Sousa Filipe
+On Thu, 3 May 2007, [ISO-8859-1] Sébastien Dugué wrote:
+> On Wed, 2 May 2007 16:28:27 +0200 (CEST) Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
+> 
+> 
+> > +		$warnings += search(qr/__FUNCION__/,
+> 
+>                                        ^__FUNCTION__ maybe?
+> 
+> > +			"Should use C99 __func__ instead of GNU __FUNCTION__\n");
+
+Bummer... Of course!
+
+Thx!
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+---584337861-1241859657-1178184433=:29761--
