@@ -1,52 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754963AbXECGdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754972AbXECGi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754963AbXECGdg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 02:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbXECGdf
+	id S1754972AbXECGi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 02:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXECGi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 02:33:35 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:38965 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754705AbXECGde (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 02:33:34 -0400
-Message-ID: <4639822D.2060302@interia.pl>
-Date: Thu, 03 May 2007 08:33:17 +0200
-From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+	Thu, 3 May 2007 02:38:58 -0400
+Received: from [212.12.190.91] ([212.12.190.91]:33028 "EHLO raad.intranet"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754972AbXECGi5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 02:38:57 -0400
+From: Al Boldi <a1426z@gawab.com>
+To: William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [ck] [REPORT] 2.6.21.1 vs 2.6.21-sd046 vs 2.6.21-cfs-v6
+Date: Thu, 3 May 2007 09:42:51 +0300
+User-Agent: KMail/1.5
+Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
+References: <200705030211.39345.a1426z@gawab.com> <200705030651.43865.a1426z@gawab.com> <20070503043541.GC19966@holomorphy.com>
+In-Reply-To: <20070503043541.GC19966@holomorphy.com>
 MIME-Version: 1.0
-To: Mark Brown <broonie@sirena.org.uk>
-Cc: Tim Hockin <thockin@hockin.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Natsemi DP83815 driver spaming
-References: <46379A7E.3000109@interia.pl> <20070501212750.GC31630@sirena.org.uk> <b3ece790705011543gdca3a9ei905d3499b6c18dc8@mail.gmail.com> <46382798.2090709@interia.pl> <b3ece790705012303x1e5a2d03xddf6c14aec5a99d8@mail.gmail.com> <463830E1.8080107@interia.pl> <b3ece790705012351g5c0ff8a6g9f2f350ff86f3319@mail.gmail.com> <20070502082211.GD31630@sirena.org.uk> <b3ece790705020744p2e73bb5fo2c0acad947a5de15@mail.gmail.com> <4638EF0B.9050701@interia.pl> <20070502214128.GA4814@sirena.org.uk>
-In-Reply-To: <20070502214128.GA4814@sirena.org.uk>
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
-X-EMID: e2640acc
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_rRYOGVjnqf7VW4k"
+Message-Id: <200705030942.51301.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> What about module option?
-> 
-> That would work, though you crossed in the post with me writing a patch
-> adding a sysfs file; I merged the two for overkill (below).  I also have
-> a patch which changes the log message for the workaround so that it is
-> displayed by default in order to make this easier to diagnose.
 
-Applied. I set default value to 0. Flashed. However
-> +	if (!NATSEMI_CREATE_FILE(pdev, dspcfg_workaround))
-> +		goto err_create_file;
-is going to err_create_file. Without these lines drivers works fine.
+--Boundary-00=_rRYOGVjnqf7VW4k
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Rafa³
+William Lee Irwin III wrote:
+> William Lee Irwin III wrote:
+> >> That's odd. The ->load_weight changes should've improved that quite
+> >> a bit. There may be something slightly off in how lag is computed,
+> >> or maybe the O(n) lag issue Ying Tang spotted is biting you.
+>
+> On Thu, May 03, 2007 at 06:51:43AM +0300, Al Boldi wrote:
+> > Is it not biting you too?
+>
+> I'm a kernel programmer. I'm not an objective tester.
+>
+> It also happens to be the case that I personally have never encountered
+> a performance problem with any of the schedulers, mainline included, on
+> any system I use interactively. So my "user experience" is not valuable.
+>
+> William Lee Irwin III wrote:
+> >> Also, I should say that the nice number affairs don't imply fairness
+> >> per se. The way that works is that when tasks have "weights" (like
+> >> nice levels in UNIX) the definition of fairness changes so that each
+> >> task gets shares of CPU bandwidth proportional to its weight instead
+> >> of one share for one task.
+>
+> On Thu, May 03, 2007 at 06:51:43AM +0300, Al Boldi wrote:
+> > Ok, but you can easily expose scheduler unfairness by using nice levels
+> > as relative magnifiers; provided nice levels are implemented correctly.
+>
+> This doesn't really fit in with anything I'm aware of.
+
+You are not the first person that doesn't understand what I'm talking about.  
+Don't worry about it.
+
+> William Lee Irwin III wrote:
+> >> The other thing to do is try a different number of tasks with a
+> >> different mix of nice levels. The weight w_i for a given nice
+> >> level n_i should be the same even in a different mix of tasks
+> >> and nice levels if the nice levels are the same.
+> >> If this sounds too far out, there's nothing to worry about. You can
+> >> just run the different numbers of tasks with different mixes of nice
+> >> levels and post the %cpu numbers. Or if that's still a bit far out
+> >> for you, a test that does all this is eventually going to get written.
+>
+> On Thu, May 03, 2007 at 06:51:43AM +0300, Al Boldi wrote:
+> > chew.c does exactly that, just make sure sched_granularity_ms >=
+> > 5,000,000.
+>
+> Please post the source of chew.c
+
+Attached.
+
+
+Thanks!
+
+--
+Al
 
 
 
-----------------------------------------------------------------------
-NIE KUPUJ!!!
-...zanim nie porownasz cen >> http://link.interia.pl/f1a5e
+--Boundary-00=_rRYOGVjnqf7VW4k
+Content-Type: text/x-csrc;
+  charset="iso-8859-1";
+  name="chew.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="chew.c"
+
+/*
+ * original idea by Chris Friesen.  Thanks.
+ */
+
+#include <stdio.h>
+#include <sys/time.h>
+#include <sys/resource.h>
+
+#define THRESHOLD_USEC 2000
+
+unsigned long long stamp()
+{
+        struct timeval tv;
+        gettimeofday(&tv, 0);
+        return (unsigned long long) tv.tv_usec + ((unsigned long long) tv.tv_sec)*1000000;
+}
 
 
+int main()
+{
+        unsigned long long thresh_ticks = THRESHOLD_USEC;
+        unsigned long long cur, last, start, act, delta;
+        struct timespec ts;
+
+        sched_rr_get_interval(0, &ts);
+        printf("pid %d, prio %3d, interval of %d nsec\n", getpid(), getpriority(PRIO_PROCESS, 0), ts.tv_nsec);
+
+        start = last = stamp();
+        while(1) {
+                cur = stamp();
+                delta = cur-last;
+                if (delta > thresh_ticks) {
+			act = last - start;
+                        printf("pid %d, prio %3d, out for %4llu ms, ran for %4llu ms, load %3llu%\n"
+			, getpid(), getpriority(PRIO_PROCESS, 0), delta/1000, act/1000,(act*100)/(cur-start));
+                        start = cur = stamp();
+                }
+                last = cur;
+        }
+
+        return 0;
+}
+
+--Boundary-00=_rRYOGVjnqf7VW4k--
 
