@@ -1,108 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767273AbXECAKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767278AbXECAP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767273AbXECAKP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 20:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767277AbXECAKO
+	id S1767278AbXECAP0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 20:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767282AbXECAP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 20:10:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46315 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767273AbXECAKM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 20:10:12 -0400
-Message-ID: <46392800.4090408@redhat.com>
-Date: Wed, 02 May 2007 20:08:32 -0400
-From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux-kernel@vger.kernel.org, Kristian H??gsberg <krh@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 2/6] firewire: isochronous and asynchronous I/O
-References: <4637A29F.6070302@redhat.com> <20070502090007.GA28174@infradead.org> <tkrat.087ee29add656926@s5r6.in-berlin.de> <tkrat.350cb4dfe522266e@s5r6.in-berlin.de> <tkrat.65aea95f1451c211@s5r6.in-berlin.de> <20070502192904.GB1248@infradead.org>
-In-Reply-To: <20070502192904.GB1248@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 2 May 2007 20:15:26 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35463 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767278AbXECAPY (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 20:15:24 -0400
+Date: Thu, 3 May 2007 10:15:11 +1000
+From: David Chinner <dgc@sgi.com>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: David Chinner <dgc@sgi.com>, "Cabot, Mason B" <mason.b.cabot@intel.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Ext3 vs NTFS performance
+Message-ID: <20070503001511.GD77450368@melbourne.sgi.com>
+References: <B326D0531AF1BA48B4C1E9EBA239A050033DB3C1@scsmsx412.amr.corp.intel.com> <20070502154414.GB77450368@melbourne.sgi.com> <20070502194621.GY1518@think.oraclecorp.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070502194621.GY1518@think.oraclecorp.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
->> +	for (i = 0; i < buffer->page_count; i++) {
->> +		buffer->pages[i] = alloc_page(GFP_KERNEL | GFP_DMA32 | __GFP_ZERO);
->> +		if (buffer->pages[i] == NULL)
->> +			goto out_pages;
->> +
->> +		address = dma_map_page(card->device, buffer->pages[i],
->> +				       0, PAGE_SIZE, direction);
->> +		if (dma_mapping_error(address)) {
->> +			__free_page(buffer->pages[i]);
->> +			goto out_pages;
->> +		}
+On Wed, May 02, 2007 at 03:46:21PM -0400, Chris Mason wrote:
+> On Thu, May 03, 2007 at 01:44:14AM +1000, David Chinner wrote:
+> > On Tue, May 01, 2007 at 01:43:18PM -0700, Cabot, Mason B wrote:
+> > > Hello all,
+> > > 
+> > > I've been testing the NAS performance of ext3/Openfiler 2.2 against
+> > > NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
+> > > video workloads. The Windows CIFS client will attempt a poor-man's
+> > > pre-allocation of the file on the server by sending 1-byte writes at
+> > > 128K-byte strides, breaking block allocation on ext3 and leading to
+> > > fragmentation and poor performance. This will happen for many
+> > > applications (including iTunes) as the CIFS client issues these
+> > > pre-allocates under the application layer.
+> > > 
+> > > I've posted a brief paper on Intel's OSS website
+> > > (http://softwarecommunity.intel.com/articles/eng/1259.htm). Please give
+> > > it a read and let me know what you think. In particular, I'd like to
+> > > arrive at the right place to fix this problem: is it in the filesystem,
+> > > VFS, or Samba?
+> > 
+> > As I commented on IRC to Val Henson - the XFS performance indicates
+> > that it is not a VFS or Samba problem.
+> > 
+> > I'd say it's probably delayed allocation that is making the
+> > difference here - no allocation occurs on the single byte writes, it
+> > occurs when the larger data writes are flushed to disk. Hence no
+> > adverse fragmentation will occur and there wil be no extra
+> > allocations being done.
+> > 
+> > Hence I think it's probably a filesystm problem - it would be
+> > interesting to see how ext4 performs on this workload....
 > 
-> Are you sure using streaming dma mapping is safe here?  I don't see
-> actual user in this patch, but doing the proper ownership protocol
-> for them is quite difficult if you reuse them, and allocating them
-> in kernelspace usually means you want to keep reusing them.
+> If we rely on delalloc for this, what happens if another proc on the
+> same fs is doing synchronous writes to other files? (say for mail
+> delivery).  Will random FS commits force delayed allocations to become
+> real?
 
-What other options are there?  The only user in the stack is the userspace 
-interface, which lets you mmap the pages in the iso_buffer from an 
-application.  The pages need to stay around and stay mapped as long as that 
-buffer is mmapped by userspace.  The buffer can be several megabytes and I 
-don't want to set up a kernel side virtual mapping for it.  The pages are only 
-used for either outgoing or incoming data, never both, so device/driver 
-ownership isn't too difficult to handle.
+Not on XFS.
 
->> +#include <linux/kthread.h>
-> 
-> You don't actually seem to use this one ..
-> 
->> +#include <asm/uaccess.h>
-> 
-> .. or this one ..
-> 
->> +#include <asm/semaphore.h>
-> 
-> .. or this one.
+> Also, I'd expect a sufficiently loaded server to break down eventually
+> as load/users increase.  The cost of a bad delalloc decision gets much
+> higher if we're using it as a crutch for this kind of bad userland
+> coding.
 
-Ah, right, I'll get rid of those.
+This only becomes a problem if the system has enough pages dirty to
+be triggering throttling so that the 1byte writes are converted before
+the data actually hits the server.
 
->> +	retval = fw_core_add_address_handler(&topology_map,
->> +					     &topology_map_region);
->> +	BUG_ON(retval < 0);
->> +
->> +	retval = fw_core_add_address_handler(&registers,
->> +					     &registers_region);
->> +	BUG_ON(retval < 0);
->> +
->> +	/* Add the vendor textual descriptor. */
->> +	retval = fw_core_add_descriptor(&vendor_id_descriptor);
->> +	BUG_ON(retval < 0);
->> +	retval = fw_core_add_descriptor(&model_id_descriptor);
->> +	BUG_ON(retval < 0);
-> 
-> These kinds of bug checks look wrong.  Either the operations
-> can't fail in which case they should not return an error value
-> or you should handle them properly.
+Even then, if you are on an XFS filesystem with a sunit/swidth set,
+the alocation alignments and speculative allocations will go a long
+way to preventing fragmentations.
 
-The fw_core_add_descriptor() checks that the descriptor block it's passed is 
-internally consistent and is used for blocks passed in from userspace too.  In 
-these two cases, the blocks are static const arrays in the driver and if 
-fw_core_add_descriptor returns < 0 it's a bug in the driver.
+If that doesn't work, then set the extent allocation size hint on the
+XFS inode to 128k or 256k to set the minimum all ocation size for the
+file to span the distance between the 1 byte writes. This attribute
+can be inherited from the parent directory on create, so it's a
+set and forget type of thing...
 
-> Both the previous and this patch contain quite a lot of GFP_ATOMIC
-> allocation which are a sign of not having a very good layering.
+i.e. XFS has lots of ways to prevent perfromance from degrading
+on these sorts of issues.
 
-Looking through the GFP_ATOMIC allocations, I see a couple that could be 
-rolled back to GFP_KERNEL.  But I don't know that it means bad layering, I'm 
-just typically using a GFP_ATOMIC kmalloc than, preallocating some fixed 
-number of, say, packets or nodes or whatever.  For example, the old SBP-2 
-(storage) driver uses a free-list of packets and grabs one from that list when 
-the SCSI stacks asks it to send a request.  If that list is empty, it fails 
-and lets the SCSI stack retry the command.  I'm using a GFP_ATOMIC kmalloc 
-instead in that case, and I believe it's a better approach than implementing 
-ad-hoc allocation data structures.
+Cheers,
 
-Thanks for the reviews, I'll look through your other emails.
-Kristian
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
