@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753413AbXECWSF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753940AbXECWXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753413AbXECWSF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 18:18:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753821AbXECWSF
+	id S1753940AbXECWXq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 18:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754426AbXECWXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 18:18:05 -0400
-Received: from mail-in-01.arcor-online.net ([151.189.21.41]:43671 "EHLO
-	mail-in-01.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753413AbXECWSC convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 18:18:02 -0400
-In-Reply-To: <200705032103.33809.arnd@arndb.de>
-References: <20070503065435.4533.64938.stgit@localhost.localdomain> <200705030948.03984.arnd@arndb.de> <5a7e02f6d1520d8ad02e28ace218981c@kernel.crashing.org> <200705032103.33809.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <162630d74e53bc10840b667973122fff@kernel.crashing.org>
-Content-Transfer-Encoding: 8BIT
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       linux-pcmcia@lists.infradead.org
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
-Date: Fri, 4 May 2007 00:17:39 +0200
-To: Arnd Bergmann <arnd@arndb.de>
-X-Mailer: Apple Mail (2.623)
+	Thu, 3 May 2007 18:23:46 -0400
+Received: from 1wt.eu ([62.212.114.60]:2479 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753589AbXECWXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 18:23:45 -0400
+Date: Fri, 4 May 2007 00:23:34 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: =?iso-8859-1?Q?=D8yvind_V=E5gen_J=E6gtnes?= <lorrides@gmail.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
+Message-ID: <20070503222334.GD943@1wt.eu>
+References: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com> <20070503205341.GB943@1wt.eu> <Pine.LNX.4.61.0705032255080.18504@yvahk01.tjqt.qr> <d20c3b7d0705031412y11f18288t321c097aaad4b38b@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d20c3b7d0705031412y11f18288t321c097aaad4b38b@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> For example, you could make this
->>>
->>>       compatible = "8xx\0mpc885ads";
->>
->> "mpc885ads-pcmcia\0mpc8xx-pcmcia" or something like that.
->
-> Right. I can never remember what goes first...
+On Thu, May 03, 2007 at 11:12:09PM +0200, Øyvind Vågen Jægtnes wrote:
+> On 5/3/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+> >
+> >On May 3 2007 22:53, Willy Tarreau wrote:
+> >>> For the rest all we see in the arp cache is (incomplete)
+> >>
+> >>I suspect that your arp cache is full (128 entries by default).
+> >>Check /proc/sys/net/ipv4/neigh/gc_thresh1 (128 for me). You can
+> >>set it as high as gc_thresh2 (512 for me), and I don't know what
+> >>happens above.
+> >
+> >Above, you will perhaps need the not-so-elegant userspace arpd :-/
+> 
+> Yes, i was suspecting that the arp cache got full, but i will try
+> increasing it :)
+> Would there be any huge bugs if i change these lines in arp.c:
+> 
+>        .gc_thresh1 =   128,
+>        .gc_thresh2 =   512,
+> 
+> to
+> 
+>        .gc_thresh1 =   700,
+>        .gc_thresh2 =   700,
+> 
+> under the definition for struct arp_tbl?
 
-It doesn't really matter all that much; "correct"
-drivers probe for the most specific thing first,
-then the next most specific thing they support,
-etc.  It is mostly a convention.
+I don't think it could cause a problem, but network people will surely
+correct me if I'm wrong.
 
-The important thing is that you can't just call
-yourself "8xx", that is way to generic a name.
+> This setup will only run for about 1-2 hours while we fix the hardware
+> router (it is running now, but only on a backup flash card solution.
+> the harddrive in it died ;)
 
+Huhhh! Please tell us exactly what make and model of ROUTER you are using
+which embeds a HARD DRIVE, so that we recall never to buy that ! Having
+seen uptimes of 5 years on moderately big access routers, I would have
+find it awful to see them die multiple times in that timeframe because
+of a crappy IDE drive inside !
 
-Segher
+> I have been looking at arpd, but i quickly discarded it as an option
+> since its marked both experimental and obsolete ;)
+
+I never dared to try it either, and since 512 has always been enough
+for me, anything above is unknown area to me :-)
+
+Regards,
+Willy
 
