@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbXECHws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbXECHzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753895AbXECHws (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 03:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbXECHws
+	id S1754732AbXECHzA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 03:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161105AbXECHzA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 03:52:48 -0400
-Received: from embla.aitel.hist.no ([158.38.50.22]:42348 "HELO
-	embla.aitel.hist.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753895AbXECHwr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 03:52:47 -0400
-Message-ID: <46399302.3050207@aitel.hist.no>
-Date: Thu, 03 May 2007 09:45:06 +0200
-From: Helge Hafting <helge.hafting@aitel.hist.no>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	Thu, 3 May 2007 03:55:00 -0400
+Received: from il.qumranet.com ([82.166.9.18]:43750 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754732AbXECHy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 03:54:59 -0400
+Message-ID: <46399551.2000506@qumranet.com>
+Date: Thu, 03 May 2007 10:54:57 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Albert Cahalan <acahalan@gmail.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
-Subject: Re: console font limits
-References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com>	 <Pine.LNX.4.64.0705011347300.27246@anakin>	 <1178021516.4372.62.camel@daplas> <46375738.1010007@zytor.com> <787b0d920705010849u52a4d6c3o2f1f800521ad5b95@mail.gmail.com> <46398D1F.1020306@zytor.com>
-In-Reply-To: <46398D1F.1020306@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jiri Kosina <jikos@jikos.cz>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
+Subject: Re: [GIT PULL] KVM updates for Linux 2.6.22
+References: <11781765833054-git-send-email-avi@qumranet.com> <Pine.LNX.4.64.0705030943560.16923@twin.jikos.cz>
+In-Reply-To: <Pine.LNX.4.64.0705030943560.16923@twin.jikos.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Albert Cahalan wrote:
+Jiri Kosina wrote:
+> On Thu, 3 May 2007, Avi Kivity wrote:
+>
 >   
->> Font size is not a sane place to draw the line. Features are.
+>> Signed-off-by: Anthony Liguori (1):
+>>       KVM: SVM: Only save/restore MSRs when needed
 >>     
 >
-> Font sizes are an eminently sane place to draw the line, because the
-> crossover is largely determined by the point at which nailing down too
-> much memory (kernel memory = unswappable memory) gets too expensive.
+> BTW the author name here looks bogus.
 >   
-But then the sane limit is a number of pages, not "512 glyphs".
 
-And there is no problem if the memory is allocated dynamically
-when loading the font.  Americans may then load a 127-glyph
-font without wasting memory.  And those who wish to lock down
-5MB unswappable memory for a hi-res chinese console can do that too.
-Doing so isn't really a problem on a desktop pc.
+I missed that, thanks.  Fixed and pushed, location hasn't changed.
 
-Helge Hafting
+-- 
+error compiling committee.c: too many arguments to function
 
