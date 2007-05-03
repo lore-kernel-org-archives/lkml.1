@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767432AbXECVgD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767443AbXECVgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767432AbXECVgD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 17:36:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767429AbXECVgC
+	id S1767443AbXECVgN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 17:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767437AbXECVgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 17:36:02 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:4206 "EHLO mail.z-net.ru"
+	Thu, 3 May 2007 17:36:12 -0400
+Received: from mail.z-net.ru ([89.113.80.10]:4211 "EHLO mail.z-net.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767438AbXECVf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 17:35:59 -0400
-Date: Fri, 4 May 2007 01:32:09 +0400
+	id S1767430AbXECVgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 17:36:10 -0400
+Date: Fri, 4 May 2007 01:32:37 +0400
 From: Anton Vorontsov <cbou@mail.ru>
 To: Greg KH <gregkh@suse.de>
 Cc: linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
        David Woodhouse <dwmw2@infradead.org>
-Subject: [PATCH 4/8] pda power driver
-Message-ID: <20070503213145.GD20067@zarina>
+Subject: [PATCH 5/8] APM emulation driver for class batteries
+Message-ID: <20070503213237.GE20067@zarina>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=koi8-r
 Content-Disposition: inline
@@ -23,351 +23,294 @@ User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Common power driver for PDAs and phones with one or two external
-power supplies (AC/USB) connected to main and backup batteries,
-and optional builtin charger.
-
-It's used to stop logic duplication through different embedded
-devices. So, power supply *logic* is here. pda_power register
-power supplies, and will take care about notifying batteries
-about power changes through external power interface.
-
-AC/USB power consumption issues should be handled by platform
-code, inside set_charge function.
-
-Signed-off-by: Roman Moravcik <roman.moravcik@gmail.com>
 Signed-off-by: Anton Vorontsov <cbou@mail.ru>
 ---
  drivers/power/Kconfig     |    7 ++
- drivers/power/Makefile    |    2 +
- drivers/power/pda_power.c |  256 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pda_power.h |   28 +++++
- 4 files changed, 293 insertions(+), 0 deletions(-)
- create mode 100644 drivers/power/pda_power.c
- create mode 100644 include/linux/pda_power.h
+ drivers/power/Makefile    |    1 +
+ drivers/power/apm_power.c |  249 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 257 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/power/apm_power.c
 
 diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-index 7811fa6..cc70644 100644
+index cc70644..791fa0c 100644
 --- a/drivers/power/Kconfig
 +++ b/drivers/power/Kconfig
-@@ -14,4 +14,11 @@ config POWER_SUPPLY_DEBUG
- 	  Say Y here to enable debugging messages for power supply class
- 	  and drivers.
+@@ -21,4 +21,11 @@ config PDA_POWER
+ 	  one or two external power supplies (AC/USB) connected to main and
+ 	  backup batteries, and optional builtin charger.
  
-+config PDA_POWER
-+	tristate "Generic PDA/phone power driver"
++config APM_POWER
++	tristate "APM emulation for class batteries"
++	depends on APM_EMULATION
 +	help
-+	  Say Y here to enable generic power driver for PDAs and phones with
-+	  one or two external power supplies (AC/USB) connected to main and
-+	  backup batteries, and optional builtin charger.
++	  Say Y here to enable support APM status emulation using
++	  battery class devices.
 +
  endif # POWER_SUPPLY
 diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-index 95085ba..1808b69 100644
+index 1808b69..a8fbc7e 100644
 --- a/drivers/power/Makefile
 +++ b/drivers/power/Makefile
-@@ -13,3 +13,5 @@ EXTRA_CFLAGS += -DDEBUG
- endif
- 
+@@ -15,3 +15,4 @@ endif
  obj-$(CONFIG_POWER_SUPPLY)         += power_supply.o
-+
-+obj-$(CONFIG_PDA_POWER)            += pda_power.o
-diff --git a/drivers/power/pda_power.c b/drivers/power/pda_power.c
+ 
+ obj-$(CONFIG_PDA_POWER)            += pda_power.o
++obj-$(CONFIG_APM_POWER)            += apm_power.o
+diff --git a/drivers/power/apm_power.c b/drivers/power/apm_power.c
 new file mode 100644
-index 0000000..a36936e
+index 0000000..6a3a2f5
 --- /dev/null
-+++ b/drivers/power/pda_power.c
-@@ -0,0 +1,256 @@
++++ b/drivers/power/apm_power.c
+@@ -0,0 +1,249 @@
 +/*
-+ * Common power driver for PDAs and phones with one or two external
-+ * power supplies (AC/USB) connected to main and backup batteries,
-+ * and optional builtin charger.
++ * Copyright (c) 2007 Anton Vorontsov <cbou@mail.ru>
++ * Copyright (c) 2007 Eugeny Boger <eugenyboger@dgap.mipt.ru>
 + *
-+ * Copyright 2007 Anton Vorontsov <cbou@mail.ru>
++ * Author: Eugeny Boger <eugenyboger@dgap.mipt.ru>
 + *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
++ * Use consistent with the GNU GPL is permitted,
++ * provided that this copyright notice is
++ * preserved in its entirety in all copies and derived works.
 + */
 +
 +#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/interrupt.h>
 +#include <linux/power_supply.h>
-+#include <linux/pda_power.h>
-+#include <linux/timer.h>
-+#include <linux/jiffies.h>
++#include <linux/apm-emulation.h>
 +
-+static inline unsigned int get_irq_flags(struct resource *res)
++#ifdef current
++#undef current /* it expands to get_current() */
++#endif
++
++#define PSY_PROP(psy, prop, val) psy->get_property(psy, \
++                         POWER_SUPPLY_PROP_##prop, val)
++
++#define _MPSY_PROP(prop, val) main_battery->get_property(main_battery, \
++                                                         prop, val)
++
++#define MPSY_PROP(prop, val) _MPSY_PROP(POWER_SUPPLY_PROP_##prop, val)
++
++static struct power_supply *main_battery;
++
++static void find_main_battery(void)
 +{
-+	unsigned int flags = IRQF_DISABLED | IRQF_SHARED;
++	struct device *dev;
++	struct power_supply *bat, *batm;
++	union power_supply_propval full;
++	int max_charge = 0;
 +
-+	flags |= res->flags & IRQF_TRIGGER_MASK;
++	main_battery = NULL;
++	batm = NULL;
++	list_for_each_entry(dev, &power_supply_class->devices, node) {
++		bat = dev_get_drvdata(dev);
++		/* If none of battery devices cantains 'use_for_apm' flag,
++		   choice one with maximum design charge */
++		if (!PSY_PROP(bat, CHARGE_FULL_DESIGN, &full)) {
++			if (full.intval > max_charge) {
++				batm = bat;
++				max_charge = full.intval;
++			}
++		}
 +
-+	return flags;
++		if (bat->use_for_apm)
++			main_battery = bat;
++	}
++	if (!main_battery)
++		main_battery = batm;
++
++	return;
 +}
 +
-+static struct device *dev;
-+static struct pda_power_pdata *pdata;
-+static struct resource *ac_irq, *usb_irq;
-+static struct timer_list charger_timer;
-+static struct timer_list supply_timer;
-+
-+static int pda_power_get_property(struct power_supply *psy,
-+                                  enum power_supply_property psp,
-+                                  union power_supply_propval *val)
++static int calculate_time(int status)
 +{
-+	switch (psp) {
-+	case POWER_SUPPLY_PROP_ONLINE:
-+		if (psy->type == POWER_SUPPLY_TYPE_AC)
-+			val->intval = pdata->is_ac_online ?
-+			              pdata->is_ac_online() : 0;
-+		else
-+			val->intval = pdata->is_usb_online ?
-+			              pdata->is_usb_online() : 0;
-+		break;
-+	default:
-+		return -EINVAL;
++	union power_supply_propval charge_full, charge_empty;
++	union power_supply_propval charge, current;
++
++	if (MPSY_PROP(CHARGE_FULL, &charge_full)) {
++		/* if battery can't report this property, use design value */
++		if (MPSY_PROP(CHARGE_FULL_DESIGN, &charge_full))
++			return -1;
 +	}
-+	return 0;
++
++	if (MPSY_PROP(CHARGE_EMPTY, &charge_empty)) {
++		/* if battery can't report this property, use design value */
++		if (MPSY_PROP(CHARGE_EMPTY_DESIGN, &charge_empty))
++			charge_empty.intval = 0;
++	}
++
++	if (MPSY_PROP(CHARGE_AVG, &charge)) {
++		/* if battery can't report average value, use momentary */
++		if (MPSY_PROP(CHARGE_NOW, &charge))
++			return -1;
++	}
++
++	if (MPSY_PROP(CURRENT_AVG, &current)) {
++		/* if battery can't report average value, use momentary */
++		if (MPSY_PROP(CURRENT_NOW, &current))
++			return -1;
++	}
++
++	if (status == POWER_SUPPLY_STATUS_CHARGING)
++		return ((charge.intval - charge_full.intval) * 60L) /
++		       current.intval;
++	else
++		return -((charge.intval - charge_empty.intval) * 60L) /
++		        current.intval;
 +}
 +
-+static enum power_supply_property pda_power_props[] = {
-+	POWER_SUPPLY_PROP_ONLINE,
-+};
-+
-+static char *pda_power_supplied_to[] = {
-+	"main-battery",
-+	"backup-battery",
-+};
-+
-+static struct power_supply pda_power_supplies[] = {
-+	{
-+		.name = "ac",
-+		.type = POWER_SUPPLY_TYPE_AC,
-+		.supplied_to = pda_power_supplied_to,
-+		.num_supplicants = ARRAY_SIZE(pda_power_supplied_to),
-+		.properties = pda_power_props,
-+		.num_properties = ARRAY_SIZE(pda_power_props),
-+		.get_property = pda_power_get_property,
-+	},
-+	{
-+		.name = "usb",
-+		.type = POWER_SUPPLY_TYPE_USB,
-+		.supplied_to = pda_power_supplied_to,
-+		.num_supplicants = ARRAY_SIZE(pda_power_supplied_to),
-+		.properties = pda_power_props,
-+		.num_properties = ARRAY_SIZE(pda_power_props),
-+		.get_property = pda_power_get_property,
-+	},
-+};
-+
-+static void update_charger(void)
++static int calculate_capacity(int using_charge)
 +{
-+	if (!pdata->set_charge)
-+		return;
++	enum power_supply_property full_prop, empty_prop;
++	enum power_supply_property full_design_prop, empty_design_prop;
++	enum power_supply_property now_prop, avg_prop;
++	union power_supply_propval empty, full, cur;
++	int ret;
 +
-+	if (pdata->is_ac_online && pdata->is_ac_online()) {
-+		dev_dbg(dev, "charger on (AC)\n");
-+		pdata->set_charge(PDA_POWER_CHARGE_AC);
-+	}
-+	else if (pdata->is_usb_online && pdata->is_usb_online()) {
-+		dev_dbg(dev, "charger on (USB)\n");
-+		pdata->set_charge(PDA_POWER_CHARGE_USB);
++	if (using_charge) {
++		full_prop = POWER_SUPPLY_PROP_CHARGE_FULL;
++		empty_prop = POWER_SUPPLY_PROP_CHARGE_EMPTY;
++		full_design_prop = POWER_SUPPLY_PROP_CHARGE_FULL_DESIGN;
++		empty_design_prop = POWER_SUPPLY_PROP_CHARGE_EMPTY_DESIGN;
++		now_prop = POWER_SUPPLY_PROP_CHARGE_NOW;
++		avg_prop = POWER_SUPPLY_PROP_CHARGE_AVG;
 +	}
 +	else {
-+		dev_dbg(dev, "charger off\n");
-+		pdata->set_charge(0);
++		full_prop = POWER_SUPPLY_PROP_ENERGY_FULL;
++		empty_prop = POWER_SUPPLY_PROP_ENERGY_EMPTY;
++		full_design_prop = POWER_SUPPLY_PROP_ENERGY_FULL_DESIGN;
++		empty_design_prop = POWER_SUPPLY_PROP_ENERGY_EMPTY_DESIGN;
++		now_prop = POWER_SUPPLY_PROP_ENERGY_NOW;
++		avg_prop = POWER_SUPPLY_PROP_ENERGY_AVG;
 +	}
 +
-+	return;
-+}
-+
-+static void supply_timer_func(unsigned long irq)
-+{
-+	if (ac_irq && irq == ac_irq->start)
-+		power_supply_changed(&pda_power_supplies[0]);
-+	else if (usb_irq && irq == usb_irq->start)
-+		power_supply_changed(&pda_power_supplies[1]);
-+	return;
-+}
-+
-+static void charger_timer_func(unsigned long irq)
-+{
-+	update_charger();
-+
-+	/* Okay, charger set. Now wait a bit before notifying supplicants,
-+	 * charge power should stabilize. */
-+	supply_timer.data = irq;
-+	mod_timer(&supply_timer,
-+	          jiffies + msecs_to_jiffies(pdata->wait_for_charger));
-+	return;
-+}
-+
-+static irqreturn_t power_changed_isr(int irq, void *unused)
-+{
-+	/* Wait a bit before reading ac/usb line status and setting charger,
-+	 * because ac/usb status readings may lag from irq. */
-+	charger_timer.data = irq;
-+	mod_timer(&charger_timer,
-+	          jiffies + msecs_to_jiffies(pdata->wait_for_status));
-+	return IRQ_HANDLED;
-+}
-+
-+static int pda_power_probe(struct platform_device *pdev)
-+{
-+	int ret = 0;
-+
-+	dev = &pdev->dev;
-+
-+	if (pdev->id != -1) {
-+		dev_err(dev, "it's meaningless to register several "
-+		        "pda_powers, use id = -1\n");
-+		ret = -EINVAL;
-+		goto wrongid;
++	if (_MPSY_PROP(full_prop, &full)) {
++		/* if battery can't report this property, use design value */
++		if (_MPSY_PROP(full_design_prop, &full))
++			return -1;
 +	}
 +
-+	pdata = pdev->dev.platform_data;
-+
-+	update_charger();
-+
-+	if (!pdata->wait_for_status)
-+		pdata->wait_for_status = 500;
-+
-+	if (!pdata->wait_for_charger)
-+		pdata->wait_for_charger = 500;
-+
-+	setup_timer(&charger_timer, charger_timer_func, 0);
-+	setup_timer(&supply_timer, supply_timer_func, 0);
-+
-+	ac_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "ac");
-+	usb_irq = platform_get_resource_byname(pdev, IORESOURCE_IRQ, "usb");
-+	if (!ac_irq && !usb_irq) {
-+		dev_err(dev, "no ac/usb irq specified\n");
-+		ret = -ENODEV;
-+		goto noirqs;
++	if (_MPSY_PROP(avg_prop, &cur)) {
++		/* if battery can't report average value, use momentary */
++		if (_MPSY_PROP(now_prop, &cur))
++			return -1;
 +	}
 +
-+	ret = power_supply_register(&pdev->dev, &pda_power_supplies[0]);
-+	if (ret) {
-+		dev_err(dev, "failed to register %s power supply\n",
-+		        pda_power_supplies[0].name);
-+		goto supply0_failed;
++	if (_MPSY_PROP(empty_prop, &empty)) {
++		/* if battery can't report this property, use design value */
++		if (_MPSY_PROP(empty_design_prop, &empty))
++			empty.intval = 0;
 +	}
 +
-+	ret = power_supply_register(&pdev->dev, &pda_power_supplies[1]);
-+	if (ret) {
-+		dev_err(dev, "failed to register %s power supply\n",
-+		        pda_power_supplies[1].name);
-+		goto supply1_failed;
-+	}
++	if (full.intval - empty.intval)
++		ret =  ((cur.intval - empty.intval) * 100L) /
++		       (full.intval - empty.intval);
++	else
++		return -1;
 +
-+	if (ac_irq) {
-+		ret = request_irq(ac_irq->start, power_changed_isr,
-+		                  get_irq_flags(ac_irq), ac_irq->name,
-+		                  &pda_power_supplies[0]);
-+		if (ret) {
-+			dev_err(dev, "request ac irq failed\n");
-+			goto ac_irq_failed;
-+		}
-+	}
++	if (ret > 100)
++		return 100;
++	else if (ret < 0)
++		return 0;
 +
-+	if (usb_irq) {
-+		ret = request_irq(usb_irq->start, power_changed_isr,
-+		                  get_irq_flags(usb_irq), usb_irq->name,
-+		                  &pda_power_supplies[1]);
-+		if (ret) {
-+			dev_err(dev, "request usb irq failed\n");
-+			goto usb_irq_failed;
-+		}
-+	}
-+
-+	goto success;
-+
-+usb_irq_failed:
-+	if (ac_irq)
-+		free_irq(ac_irq->start, &pda_power_supplies[0]);
-+ac_irq_failed:
-+	power_supply_unregister(&pda_power_supplies[1]);
-+supply1_failed:
-+	power_supply_unregister(&pda_power_supplies[0]);
-+supply0_failed:
-+noirqs:
-+wrongid:
-+success:
 +	return ret;
 +}
 +
-+static int pda_power_remove(struct platform_device *pdev)
++static void apm_battery_apm_get_power_status(struct apm_power_info *info)
 +{
-+	if (usb_irq)
-+		free_irq(usb_irq->start, &pda_power_supplies[1]);
-+	if (ac_irq)
-+		free_irq(ac_irq->start, &pda_power_supplies[0]);
-+	del_timer_sync(&charger_timer);
-+	del_timer_sync(&supply_timer);
-+	power_supply_unregister(&pda_power_supplies[1]);
-+	power_supply_unregister(&pda_power_supplies[0]);
-+	return 0;
-+}
++	union power_supply_propval status;
++	union power_supply_propval capacity, time_to_full, time_to_empty;
 +
-+static struct platform_driver pda_power_pdrv = {
-+	.driver = {
-+		.name = "pda-power",
-+	},
-+	.probe = pda_power_probe,
-+	.remove = pda_power_remove,
-+};
++	down(&power_supply_class->sem);
++	find_main_battery();
++	if (!main_battery) {
++		up(&power_supply_class->sem);
++		return;
++	}
 +
-+static int __init pda_power_init(void)
-+{
-+	return platform_driver_register(&pda_power_pdrv);
-+}
++	/* status */
 +
-+static void __exit pda_power_exit(void)
-+{
-+	platform_driver_unregister(&pda_power_pdrv);
++	if (MPSY_PROP(STATUS, &status))
++		status.intval = POWER_SUPPLY_STATUS_UNKNOWN;
++
++	/* ac line status */
++
++	if ((status.intval == POWER_SUPPLY_STATUS_CHARGING) ||
++	    (status.intval == POWER_SUPPLY_STATUS_NOT_CHARGING) ||
++	    (status.intval == POWER_SUPPLY_STATUS_FULL))
++		info->ac_line_status = APM_AC_ONLINE;
++	else
++		info->ac_line_status = APM_AC_OFFLINE;
++
++	/* battery life (i.e. capacity, in percents) */
++
++	if (MPSY_PROP(CAPACITY, &capacity) == 0)
++		info->battery_life = capacity.intval;
++	else {
++		/* try calculate using energy */
++		info->battery_life = calculate_capacity(0);
++		/* if failed try calculate using charge instead */
++		if (info->battery_life == -1)
++			info->battery_life = calculate_capacity(1);
++	}
++
++	/* charging status */
++
++	if (status.intval == POWER_SUPPLY_STATUS_CHARGING)
++		info->battery_status = APM_BATTERY_STATUS_CHARGING;
++	else {
++		if (info->battery_life > 50)
++			info->battery_status = APM_BATTERY_STATUS_HIGH;
++		else if (info->battery_life > 5)
++			info->battery_status = APM_BATTERY_STATUS_LOW;
++		else
++			info->battery_status = APM_BATTERY_STATUS_CRITICAL;
++	}
++	info->battery_flag = info->battery_status;
++
++	/* time */
++
++	info->units = APM_UNITS_MINS;
++
++	if (status.intval == POWER_SUPPLY_STATUS_CHARGING) {
++		if (MPSY_PROP(TIME_TO_FULL_AVG, &time_to_full)) {
++			if (MPSY_PROP(TIME_TO_FULL_NOW, &time_to_full))
++				info->time = calculate_time(status.intval);
++			else
++				info->time = time_to_full.intval / 60;
++		}
++	}
++	else {
++		if (MPSY_PROP(TIME_TO_EMPTY_AVG, &time_to_empty)) {
++			if (MPSY_PROP(TIME_TO_EMPTY_NOW, &time_to_empty))
++				info->time = calculate_time(status.intval);
++			else
++				info->time = time_to_empty.intval / 60;
++		}
++	}
++
++	up(&power_supply_class->sem);
 +	return;
 +}
 +
-+module_init(pda_power_init);
-+module_exit(pda_power_exit);
++static int __init apm_battery_init(void)
++{
++	printk(KERN_INFO "APM Battery Driver\n");
++
++	apm_get_power_status = apm_battery_apm_get_power_status;
++	return 0;
++}
++
++static void __exit apm_battery_exit(void)
++{
++	apm_get_power_status = NULL;
++	return;
++}
++
++module_init(apm_battery_init);
++module_exit(apm_battery_exit);
++
++MODULE_AUTHOR("Eugeny Boger <eugenyboger@dgap.mipt.ru>");
++MODULE_DESCRIPTION("APM emulation driver for battery monitoring class");
 +MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Anton Vorontsov <cbou@mail.ru>");
-diff --git a/include/linux/pda_power.h b/include/linux/pda_power.h
-new file mode 100644
-index 0000000..77e673c
---- /dev/null
-+++ b/include/linux/pda_power.h
-@@ -0,0 +1,28 @@
-+/*
-+ * Common power driver for PDAs and phones with one or two external
-+ * power supplies (AC/USB) connected to main and backup batteries,
-+ * and optional builtin charger.
-+ *
-+ * Copyright 2007 Anton Vorontsov <cbou@mail.ru>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ */
-+
-+#ifndef __PDA_POWER_H__
-+#define __PDA_POWER_H__
-+
-+#define PDA_POWER_CHARGE_AC  (1 << 0)
-+#define PDA_POWER_CHARGE_USB (1 << 1)
-+
-+struct pda_power_pdata {
-+	int (*is_ac_online)(void);
-+	int (*is_usb_online)(void);
-+	void (*set_charge)(int flags);
-+
-+	unsigned int wait_for_status; /* msecs, default is 500 */
-+	unsigned int wait_for_charger; /* msecs, default is 500 */
-+};
-+
-+#endif /* __PDA_POWER_H__ */
 -- 
 1.5.1.1-dirty
 
