@@ -1,79 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767693AbXECTG5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767706AbXECTH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767693AbXECTG5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 15:06:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767704AbXECTG5
+	id S1767706AbXECTH0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 15:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767709AbXECTHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 15:06:57 -0400
-Received: from nz-out-0506.google.com ([64.233.162.232]:56370 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767693AbXECTGz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 15:06:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=h4yhuevPCMxkKvP3mbsCQjnIq8Ife3DD31rDGBabNpfQWrtXxK0mxxRFDbcUsWA2faToNPrFg9xWh9lImVSbaq6y6QI9RzJ5PUm4XcTv3zFK3acyuWH6O+43IHSknTvwQpxGw8+SugfXUGatHepFNQXmLoq+jtXYSIvyoNrAfm0=
-Message-ID: <d120d5000705031206l2c675c22t5aab3eb648aa1cf8@mail.gmail.com>
-Date: Thu, 3 May 2007 15:06:54 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: "Michael Schmitz" <schmitz@opal.biophys.uni-duesseldorf.de>
-Subject: Re: [patch 04/33] m68k: Atari keyboard and mouse support.
-Cc: "Geert Uytterhoeven" <geert@linux-m68k.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Michael Schmitz" <schmitz@debian.org>,
-       "Roman Zippel" <zippel@linux-m68k.org>
-In-Reply-To: <Pine.LNX.4.58.0705031832450.9408@xplor.biophys.uni-duesseldorf.de>
+	Thu, 3 May 2007 15:07:25 -0400
+Received: from mail.aknet.ru ([82.179.72.26]:65504 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767707AbXECTHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 15:07:24 -0400
+Message-ID: <463A338A.2010909@aknet.ru>
+Date: Thu, 03 May 2007 23:10:02 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Linux kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [patch] export hrtimer_forward
+References: <463A2296.7000804@aknet.ru> <1178218674.24217.14.camel@twins>
+In-Reply-To: <1178218674.24217.14.camel@twins>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070501195052.390551603@mail.of.borg>
-	 <20070501195129.842338339@mail.of.borg>
-	 <d120d5000705011346h263bb5c4nb534692c11e7081b@mail.gmail.com>
-	 <Pine.LNX.4.58.0705031832450.9408@xplor.biophys.uni-duesseldorf.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+Hello.
 
-On 5/3/07, Michael Schmitz <schmitz@mail.biophys.uni-duesseldorf.de> wrote:
-> >
-> > > +
-> > > +       if (!(atakbd_dev = input_allocate_device()))
-> > > +               return -ENOMEM;
-> > > +
-> > > +       // need to init core driver if not already done so
-> > > +       if (atari_keyb_init())
-> >
-> > Memory leak
->
-> How so? If the core has been initialized already this will just return ...
->
+Peter Zijlstra wrote:
+>> It seems hrtimer_forward was forgotten to
+>> export - other symbols of the hrtimers API
+> Are there actual in-tree users of this symbol? Without we usually leave
+> the symbol unexported, this saves some space.
+Do you mean it was really left intentional?
+Unbeleivable! But why the other parts of a
+hrtimer API are exported nevertheless, and
+only this particular function not?
 
-You just allocated atakbd_dev. If atari_keyb_init() fails you leak it.
+As for the users - I am porting my pcsp driver to
+it and I need that function.
+It is not exactly in-tree stuff, but it was
+in an ALSA tree for years already, so it is a
+close one.
 
-> > > +       for (i = 1; i < 0x72; i++) {
-> > > +               atakbd_keycode[i] = i;
-> > > +               set_bit(atakbd_keycode[i], atakbd_dev->keybit);
-> >
-> > It looks like this driver is not using standard input event codes. If
-> > Roman does not want to adjust keymaps on Amiga and Atari that should
-> > be handled in legacy keyboard driver (drivers/char/keyboard.c). As it
-> > is programs using /dev/input/eventX have no chance of working.
->
-> The translation map should not have been overwritten like above, is that
-> what you mean?
-> My original patch didn't have that bit; scancodes were translated to
-> input keycodes using atakbd_keycode[scancode] instead. I'll have that
-> reverted...
->
-
-Does KEY_1 actually  maps to scancode 2 on atari?
-
-
-Thanks,
-
--- 
-Dmitry
