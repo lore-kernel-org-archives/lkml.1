@@ -1,90 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161842AbXECLCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161847AbXECLD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161842AbXECLCv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 07:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161843AbXECLCv
+	id S1161847AbXECLD1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 07:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161846AbXECLD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 07:02:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:17375 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161842AbXECLCu (ORCPT
+	Thu, 3 May 2007 07:03:27 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:44346 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161845AbXECLDK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 07:02:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=RK3hwBIj6S4qOWnBBzt9XKAWsW4whD/l5OFAyJHsMtoad5n1bOVR9cT+/Ofbo8dbtImQhDKp/5Y35L6lQ0y1f4kDFt+FkUXriJObkv2Zciht0s77IftWyQGl+tRFE40HVfnBsEpskcNfu2Tci6ZNKMJk4cOytx3z6bVi86d7VrU=
-Message-ID: <f69849430705030402v5e737de4sc6ab246a1c64ec0e@mail.gmail.com>
-Date: Thu, 3 May 2007 04:02:49 -0700
-From: "kernel coder" <lhrkernelcoder@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: bechmarking kernel code
+	Thu, 3 May 2007 07:03:10 -0400
+Message-ID: <4639C164.5070908@snapgear.com>
+Date: Thu, 03 May 2007 21:03:00 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Robin Getz <rgetz@blackfin.uclinux.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: linux-2.6.21-uc0 (MMU-less updates)
+References: <46382055.8030203@snapgear.com> <200705020458.06595.rgetz@blackfin.uclinux.org> <463876BA.9020005@snapgear.com> <200705030655.36957.rgetz@blackfin.uclinux.org>
+In-Reply-To: <200705030655.36957.rgetz@blackfin.uclinux.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi,
-     I'm profiling some part of kernel code.Mine profiling mechanism
-is based on rdtsc instruction.
+Robin Getz wrote:
+> On Wed 2 May 2007 07:32, Greg Ungerer pondered:
+>> Robin Getz wrote:
+>>> On Wed 2 May 2007 01:23, Greg Ungerer pondered:
+>>>> diff -Naur linux-2.6.21/fs/namei.c linux-2.6.21-uc0/fs/namei.c
+>>>> --- linux-2.6.21/fs/namei.c     2007-05-01 17:12:53.000000000 +1000
+>>>> +++ linux-2.6.21-uc0/fs/namei.c 2007-05-01 17:16:18.000000000 +1000
+>>>> @@ -120,12 +120,14 @@
+>>>>         int retval;
+>>>>         unsigned long len = PATH_MAX;
+>>>>
+>>>> +#ifdef CONFIG_MMU
+>>>>         if (!segment_eq(get_fs(), KERNEL_DS)) {
+>>>>                 if ((unsigned long) filename >= TASK_SIZE)
+>>>>                         return -EFAULT;
+>>>>                 if (TASK_SIZE - (unsigned long) filename < PATH_MAX)
+>>>>                         len = TASK_SIZE - (unsigned long) filename;
+>>>>         }
+>>>> +#endif
+>>>>
+>>>>         retval = strncpy_from_user(page, filename, len);
+>>>>         if (retval > 0) {
+>>> I was trying to understand why we don't want to do the same checking on
+>>> noMMU?
+>> The problem is on systems that have RAM mapped at high physical
+>> addresses. TASK_SIZE may well be a numerically smaller number
+>> than the address range that RAM sits in. So this test fails when
+>> it shouldn't.
+> 
+> So, then this is a problem only on one or two architectures, not all noMMU 
+> platforms?
 
-Please tell me if i'm profiling correctly.I'm teting linux kernel
-2.6.15 and mine system is P4.
+Its not an architecture problem. It can effect any board that
+has RAM mapped at a large numerical addresses (larger than TASK_SIZE).
+So it can effect any non-MMU platform.
 
-
-function(){
-
-	unsigned long long c1,c2,c3,c4,c5;
-	before=readtsc();
-	before=readtsc();
-	before=readtsc();
-	overhead=readtsc()-before;
-	c1=testfunc();
-	c2=testfunc();
-	c3=testfunc();
-	c4=testfunc();
-	c5=testfunc();
-
-printk(" \n *c1 = %llu c2= %llu c3 = %llu c4 = %llu c5 = %llu overhead
-=%llu",cycles1,cycles2,cycles3,cycles4,cycles5,overhead);
-
-
-}
-
-/***************************************/
-
-
-unsigned long long readtsc(){
-	unsigned long res[2]={0,0};
-      __asm__ __volatile__  (
-	      "rdtsc\n"
-	       : "=a" (res[0]), "=d" (res[1]) );
-
-	return *((unsigned long long *)res);
-
-}
-
-/*******************************************/
-
-unsigned long long testfunc(){
-	unsigned long start_cycles[2]={0,0};
-	unsigned long end_cycles[2]={0,0};
-	unsigned long long total_cycles=0;
-	int i;
-      __asm__ __volatile__  (               // read TSC, store edx:eax in res
-	      "rdtsc\n"
-	       : "=a" (start_cycles[0]), "=d" (start_cycles[1]) );
+Regards
+Greg
 
 
-               /*  CODE TO BE PROFILED */
 
-
-      __asm__ __volatile__  (               // read TSC, store edx:eax in res
-	      "rdtsc\n"
-	       : "=a" (end_cycles[0]), "=d" (end_cycles[1]) );
-	total_cycles=*((unsigned long long *)end_cycles) - *((unsigned long
-long *)start_cycles);
-	return total_cycles;
-}
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
