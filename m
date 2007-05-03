@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162074AbXECOwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162084AbXECOxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162074AbXECOwr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 10:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162075AbXECOwr
+	id S1162084AbXECOxL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 10:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162085AbXECOxL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 10:52:47 -0400
+	Thu, 3 May 2007 10:53:11 -0400
 Received: from courier.cs.helsinki.fi ([128.214.9.1]:51777 "EHLO
 	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1162074AbXECOwp (ORCPT
+	with ESMTP id S1162084AbXECOxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 10:52:45 -0400
-Date: Thu, 3 May 2007 17:52:43 +0300 (EEST)
+	Thu, 3 May 2007 10:53:08 -0400
+Date: Thu, 3 May 2007 17:53:07 +0300 (EEST)
 From: Pekka J Enberg <penberg@cs.helsinki.fi>
 To: akpm@linux-foundation.org
 cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/2] revoke: rename to can_revoke_{file|vma}
-Message-ID: <Pine.LNX.4.64.0705031752150.6505@sbz-30.cs.Helsinki.FI>
+Subject: [PATCH 2/2] revoke: change revoke_table to fileset and revoke_details
+Message-ID: <Pine.LNX.4.64.0705031752440.6505@sbz-30.cs.Helsinki.FI>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
@@ -24,113 +24,350 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-The inode_matches and need_revoke functions have confusing names so
-rename them to can_revoke_file and can_revoke_vma respectively.
+The revoke_table struct is overloaded because it serves two purposes:
+it manages the pre-allocated set of files and tracks the revoke
+operation so that we know where to start restore if the operation
+fails. This splits file set management to separate struct fileset and
+renames struct revoke_table to revoke_details.
 
 Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
 ---
- fs/revoke.c |   33 ++++++++++++++++-----------------
- 1 file changed, 16 insertions(+), 17 deletions(-)
+ fs/revoke.c |  171 +++++++++++++++++++++++++++++++++++-------------------------
+ 1 file changed, 101 insertions(+), 70 deletions(-)
 
 Index: 26-mm/fs/revoke.c
 ===================================================================
---- 26-mm.orig/fs/revoke.c	2007-05-03 16:46:00.000000000 +0300
-+++ 26-mm/fs/revoke.c	2007-05-03 17:09:52.000000000 +0300
-@@ -75,10 +75,13 @@ 	filp->f_pos = 0;
- 	return NULL;
- }
+--- 26-mm.orig/fs/revoke.c	2007-05-03 17:10:56.000000000 +0300
++++ 26-mm/fs/revoke.c	2007-05-03 17:14:49.000000000 +0300
+@@ -18,19 +18,71 @@  * Copyright (C) 2006-2007  Pekka Enberg
+ #include <linux/revoked_fs_i.h>
+ #include <linux/syscalls.h>
  
--static inline int inode_matches(struct file *file, struct inode *inode,
--				struct file *to_exclude)
-+static inline bool can_revoke_file(struct file *file, struct inode *inode,
-+				   struct file *to_exclude)
- {
--	return file && file != to_exclude && file->f_dentry->d_inode == inode;
-+	if (!file || file == to_exclude)
-+		return false;
+-/*
+- * This is used for pre-allocating an array of file pointers so that we don't
+- * have to do memory allocation under tasklist_lock.
++/**
++ * fileset - an array of file pointers.
++ * @files:    the array of file pointers
++ * @nr:               number of elements in the array
++ * @end:      index to next unused file pointer
++ */
++struct fileset {
++	struct file	**files;
++	unsigned long	nr;
++	unsigned long	end;
++};
 +
-+	return file->f_dentry->d_inode == inode;
++/**
++ * revoke_details - details of the revoke operation
++ * @inode:            invalidate open file descriptors of this inode
++ * @fset:             set of files that point to a revoked inode
++ * @restore_start:    index to the first file pointer that is currently in
++ *                    use by a file descriptor but the real file has not
++ *                    been revoked
+  */
+-struct revoke_table {
+-	struct file **files;
+-	unsigned long size;
+-	unsigned long end;
+-	unsigned long restore_start;
++struct revoke_details {
++	struct fileset	*fset;
++	unsigned long	restore_start;
+ };
+ 
+ static struct kmem_cache *revokefs_inode_cache;
+ 
++static inline bool fset_is_full(struct fileset *set)
++{
++	return set->nr == set->end;
++}
++
++static inline struct file *fset_get_filp(struct fileset *set)
++{
++	return set->files[set->end++];
++}
++
++static struct fileset *alloc_fset(unsigned long size)
++{
++	struct fileset *fset;
++
++	fset = kzalloc(sizeof *fset, GFP_KERNEL);
++	if (!fset)
++		return NULL;
++
++	fset->files = kcalloc(size, sizeof(struct file *), GFP_KERNEL);
++	if (!fset->files) {
++		kfree(fset);
++		return NULL;
++	}
++	fset->nr = size;
++	return fset;
++}
++
++static void free_fset(struct fileset *fset)
++{
++      int i;
++
++      for (i = fset->end; i < fset->nr; i++)
++              fput(fset->files[i]);
++
++      kfree(fset->files);
++      kfree(fset);
++}
++
+ /*
+  * Revoked file descriptors point to inodes in the revokefs filesystem.
+  */
+@@ -84,22 +136,12 @@ static inline bool can_revoke_file(struc
+ 	return file->f_dentry->d_inode == inode;
  }
  
- static inline bool revoke_table_is_full(struct revoke_table *table)
-@@ -116,7 +119,7 @@ 	for (fd = 0; fd < fdt->max_fds; fd++) {
- 		struct inode *new_inode;
+-static inline bool revoke_table_is_full(struct revoke_table *table)
+-{
+-	return table->end == table->size;
+-}
+-
+-static inline struct file *revoke_table_get(struct revoke_table *table)
+-{
+-	return table->files[table->end++];
+-}
+-
+ /*
+  * 	LOCKING: task_lock(owner)
+  */
+ static int revoke_fds(struct task_struct *owner,
+ 		      struct inode *inode,
+-		      struct file *to_exclude, struct revoke_table *table)
++		      struct file *to_exclude, struct fileset *fset)
+ {
+ 	struct files_struct *files;
+ 	struct fdtable *fdt;
+@@ -127,12 +169,12 @@ 	for (fd = 0; fd < fdt->max_fds; fd++) {
+ 			goto failed;
+ 		}
  
- 		filp = fcheck_files(files, fd);
--		if (!inode_matches(filp, inode, to_exclude))
-+		if (!can_revoke_file(filp, inode, to_exclude))
- 			continue;
+-		if (revoke_table_is_full(table)) {
++		if (fset_is_full(fset)) {
+ 			err = -ENOMEM;
+ 			goto failed;
+ 		}
  
- 		if (!filp->f_op->revoke) {
-@@ -159,22 +162,18 @@ 	for (fd = 0; fd < fdt->max_fds; fd++) {
+-		new_filp = revoke_table_get(table);
++		new_filp = fset_get_filp(fset);
+ 
+ 		/*
+ 		 * Replace original struct file pointer with a pointer to
+@@ -208,17 +250,17 @@ 		if (ret < 0) {
  	return err;
  }
  
--static inline bool need_revoke(struct vm_area_struct *vma,
--			       struct inode *inode,
--			       struct file *to_exclude)
-+static inline bool can_revoke_vma(struct vm_area_struct *vma,
-+				  struct inode *inode, struct file *to_exclude)
+-static int revoke_break_cow(struct revoke_table *table, struct inode *inode,
++static int revoke_break_cow(struct fileset *fset, struct inode *inode,
+ 			    struct file *to_exclude)
  {
- 	struct file *file = vma->vm_file;
+ 	unsigned long i;
+ 	int err = 0;
  
- 	if (vma->vm_flags & VM_REVOKED)
- 		return false;
+-	for (i = 0; i < table->end; i++) {
++	for (i = 0; i < fset->end; i++) {
+ 		struct revokefs_inode_info *info;
+ 		struct file *this;
  
--	if (!file)
--		return false;
--
--	if (file->f_path.dentry->d_inode != inode)
-+	if (!file || file == to_exclude)
- 		return false;
+-		this = table->files[i];
++		this = fset->files[i];
+ 		info = revokefs_i(this->f_dentry->d_inode);
  
--	return file != to_exclude;
-+	return file->f_path.dentry->d_inode == inode;
+ 		err = __revoke_break_cow(info->owner, inode, to_exclude);
+@@ -399,32 +441,32 @@ static void restore_file(struct revokefs
+ 	info->owner = NULL;	/* To avoid double-restore. */
  }
  
- static int __revoke_break_cow(struct task_struct *tsk, struct inode *inode,
-@@ -191,7 +190,7 @@ 	int err = 0;
- 		if (vma->vm_flags & VM_SHARED)
- 			continue;
+-static void restore_files(struct revoke_table *table)
++static void restore_files(struct revoke_details *details)
+ {
+ 	unsigned long i;
  
--		if (!need_revoke(vma, inode, to_exclude))
-+		if (!can_revoke_vma(vma, inode, to_exclude))
- 			continue;
+-	for (i = table->restore_start; i < table->end; i++) {
++	for (i = details->restore_start; i < details->fset->end; i++) {
+ 		struct revokefs_inode_info *info;
+ 		struct file *filp;
  
- 		ret = get_user_pages(tsk, tsk->mm, vma->vm_start,
-@@ -287,7 +286,7 @@ 	int err = 0;
- 		if (!(vma->vm_flags & VM_SHARED))
- 			continue;
+-		filp = table->files[i];
++		filp = details->fset->files[i];
+ 		info = revokefs_i(filp->f_dentry->d_inode);
  
--		if (!need_revoke(vma, mapping->host, to_exclude))
-+		if (!can_revoke_vma(vma, mapping->host, to_exclude))
- 			continue;
+ 		restore_file(info);
+ 	}
+ }
  
- 		err = revoke_vma(vma, &details);
-@@ -320,7 +319,7 @@ 	vma_prio_tree_foreach(vma, &iter, &mapp
- 		if (!(vma->vm_flags & VM_SHARED))
- 			continue;
+-static int revoke_files(struct revoke_table *table)
++static int revoke_files(struct revoke_details *details)
+ {
+ 	unsigned long i;
+ 	int err = 0;
  
--		if (likely(!need_revoke(vma, mapping->host, to_exclude)))
-+		if (likely(!can_revoke_vma(vma, mapping->host, to_exclude)))
- 			continue;
+-	for (i = 0; i < table->end; i++) {
++	for (i = 0; i < details->fset->end; i++) {
+ 		struct revokefs_inode_info *info;
+ 		struct file *this, *filp;
+ 		struct inode *inode;
  
- 		err = revoke_mm(vma->vm_mm, mapping, to_exclude);
-@@ -348,7 +347,7 @@ 	int try_again = 0;
- 	list_for_each_entry(vma, &mapping->i_mmap_nonlinear, shared.vm_set.list) {
- 		int err;
+-		this = table->files[i];
++		this = details->fset->files[i];
+ 		inode = this->f_dentry->d_inode;
+ 		info = revokefs_i(inode);
  
--		if (likely(!need_revoke(vma, mapping->host, to_exclude)))
-+		if (likely(!can_revoke_vma(vma, mapping->host, to_exclude)))
- 			continue;
+@@ -432,7 +474,7 @@ 	for (i = 0; i < table->end; i++) {
+ 		 * Increase count before attempting to close file as
+ 		 * an partially closed file can no longer be restored.
+ 		 */
+-		table->restore_start++;
++		details->restore_start++;
+ 		filp = info->file;
+ 		err = filp->f_op->revoke(filp, inode->i_mapping);
+ 		put_task_struct(info->owner);
+@@ -481,50 +523,31 @@ 		for (fd = 0; fd < fdt->max_fds; fd++) 
+ 	return nr_fds;
+ }
  
- 		err = revoke_mm(vma->vm_mm, mapping, to_exclude);
-@@ -470,7 +469,7 @@ 		for (fd = 0; fd < fdt->max_fds; fd++) 
- 			struct file *file;
+-static void free_revoke_table(struct revoke_table *table)
+-{
+-	int i;
+-
+-	for (i = table->end; i < table->size; i++)
+-		fput(table->files[i]);
+-
+-	kfree(table->files);
+-	kfree(table);
+-}
+-
+-static struct revoke_table *__alloc_revoke_table(unsigned long size)
++static struct fileset *__alloc_revoke_fset(unsigned long size)
+ {
+-	struct revoke_table *table;
++	struct fileset *fset;
+ 	int i;
  
- 			file = fcheck_files(files, fd);
--			if (inode_matches(file, inode, to_exclude)) {
-+			if (can_revoke_file(file, inode, to_exclude)) {
- 				nr_fds += fdt->max_fds;
- 				break;
- 			}
+-	table = kzalloc(sizeof *table, GFP_KERNEL);
+-	if (!table)
+-		return NULL;
+-
+-	table->size = size;
+-	table->files = kcalloc(size, sizeof(struct file *), GFP_KERNEL);
+-	if (!table->files) {
+-		kfree(table);
++	fset = alloc_fset(size);
++	if (!fset)
+ 		return NULL;
+-	}
+ 
+-	for (i = 0; i < table->size; i++) {
++	for (i = 0; i < fset->nr; i++) {
+ 		struct file *filp;
+ 
+ 		filp = get_revoked_file();
+ 		if (!filp)
+ 			goto err;
+ 
+-		table->files[i] = filp;
++		fset->files[i] = filp;
+ 	}
+-	return table;
++	return fset;
+   err:
+-	free_revoke_table(table);
++	free_fset(fset);
+ 	return NULL;
+ }
+ 
+-static struct revoke_table *alloc_revoke_table(struct inode *inode,
+-					       struct file *to_exclude)
++static struct fileset *alloc_revoke_fset(struct inode *inode, struct file *to_exclude)
+ {
+ 	unsigned long nr_fds;
+ 
+@@ -532,12 +555,13 @@ static struct revoke_table *alloc_revoke
+ 	nr_fds = inode_fds(inode, to_exclude);
+ 	read_unlock(&tasklist_lock);
+ 
+-	return __alloc_revoke_table(nr_fds);
++	return __alloc_revoke_fset(nr_fds);
+ }
+ 
+ static int do_revoke(struct inode *inode, struct file *to_exclude)
+ {
+-	struct revoke_table *table = NULL;
++	struct revoke_details details;
++	struct fileset *fset = NULL;
+ 	struct task_struct *g, *p;
+ 	int err = 0;
+ 
+@@ -552,8 +576,12 @@ 	int err = 0;
+ 		goto out;
+ 	}
+ 
+-	table = alloc_revoke_table(inode, to_exclude);
+-	if (!table) {
++	/*
++	 * Pre-allocate memory because the first pass is done under
++	 * tasklist_lock.
++	 */
++	fset = alloc_revoke_fset(inode, to_exclude);
++	if (!fset) {
+ 		err = -ENOMEM;
+ 		goto out;
+ 	}
+@@ -563,9 +591,9 @@ 	int err = 0;
+ 	/*
+ 	 * If someone forked while we were allocating memory, try again.
+ 	 */
+-	if (inode_fds(inode, to_exclude) > table->size) {
++	if (inode_fds(inode, to_exclude) > fset->nr) {
+ 		read_unlock(&tasklist_lock);
+-		free_revoke_table(table);
++		free_fset(fset);
+ 		goto retry;
+ 	}
+ 
+@@ -574,7 +602,7 @@ 	int err = 0;
+ 	 * new operations on them.
+ 	 */
+ 	do_each_thread(g, p) {
+-		err = revoke_fds(p, inode, to_exclude, table);
++		err = revoke_fds(p, inode, to_exclude, fset);
+ 		if (err)
+ 			goto exit_loop;
+ 	}
+@@ -593,24 +621,27 @@ 	int err = 0;
+ 	/*
+  	 * Break COW for private mappings.
+  	 */
+-	err = revoke_break_cow(table, inode, to_exclude);
++	err = revoke_break_cow(fset, inode, to_exclude);
+ 	if (err)
+ 		goto out_restore;
+ 
++	details.fset = fset;
++	details.restore_start = 0;
++
+ 	/*
+ 	 * Now, revoke the files for good.
+ 	 */
+-	err = revoke_files(table);
++	err = revoke_files(&details);
+ 	if (err)
+ 		goto out_restore;
+ 
+   out_free_table:
+-	free_revoke_table(table);
++	free_fset(fset);
+   out:
+ 	return err;
+ 
+   out_restore:
+-	restore_files(table);
++	restore_files(&details);
+ 	goto out_free_table;
+ }
+ 
