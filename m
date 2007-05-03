@@ -1,96 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767293AbXECAsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767299AbXECBJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767293AbXECAsx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 20:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767295AbXECAsx
+	id S1767299AbXECBJV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 21:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767300AbXECBJV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 20:48:53 -0400
-Received: from holomorphy.com ([66.93.40.71]:44960 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767293AbXECAsw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 20:48:52 -0400
-Date: Wed, 2 May 2007 17:49:29 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Al Boldi <a1426z@gawab.com>
-Cc: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-Subject: Re: [ck] [REPORT] 2.6.21.1 vs 2.6.21-sd046 vs 2.6.21-cfs-v6
-Message-ID: <20070503004929.GA19966@holomorphy.com>
-References: <200705030211.39345.a1426z@gawab.com>
+	Wed, 2 May 2007 21:09:21 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:58101
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767299AbXECBJU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 21:09:20 -0400
+X-Greylist: delayed 604 seconds by postgrey-1.27 at vger.kernel.org; Wed, 02 May 2007 21:09:20 EDT
+Date: Wed, 2 May 2007 17:58:40 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Miguel Sousa Filipe <miguel.filipe@gmail.com>
+cc: Diego Calleja <diegocg@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: FEATURE REQUEST: merge MD software raid and LVM in one unique
+ layer.
+In-Reply-To: <f058a9c30705021351i24c7adc2i4c7e8a76e3b8d1bb@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705021756210.5342@asgard.lang.hm>
+References: <f058a9c30705021214k75da330ai4d79a2b6b2806652@mail.gmail.com> 
+ <f058a9c30705021218p4fdb4747kb5b4b9000ad50ef2@mail.gmail.com> 
+ <20070502221045.ad20b915.diegocg@gmail.com>
+ <f058a9c30705021351i24c7adc2i4c7e8a76e3b8d1bb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705030211.39345.a1426z@gawab.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="680960-1417889825-1178153920=:5342"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
->> Looks good, thanks. Ingo's been hard at work since then and has v8 out by
->> now. SD has not changed so you wouldn't need to do the whole lot of tests
->> on SD again unless you don't trust some of the results.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Thu, May 03, 2007 at 02:11:39AM +0300, Al Boldi wrote:
-> Well, I tried cfs-v8 and it still shows some nice regressions wrt 
-> mainline/sd.  SD's nice-levels look rather solid, implying fairness.
+--680960-1417889825-1178153920=:5342
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-That's odd. The ->load_weight changes should've improved that quite
-a bit. There may be something slightly off in how lag is computed,
-or maybe the O(n) lag issue Ying Tang spotted is biting you.
+On Wed, 2 May 2007, Miguel Sousa Filipe wrote:
 
-Also, I should say that the nice number affairs don't imply fairness
-per se. The way that works is that when tasks have "weights" (like
-nice levels in UNIX) the definition of fairness changes so that each
-task gets shares of CPU bandwidth proportional to its weight instead
-of one share for one task.
+> On 5/2/07, Diego Calleja <diegocg@gmail.com> wrote:
+>>  El Wed, 2 May 2007 20:18:55 +0100, "Miguel Sousa Filipe"
+>>  <miguel.filipe@gmail.com> escribió:
+>> 
+>> >  I find it high irritanting having two kernel interfaces and two
+>> >  userland tools that provide the same funcionality, which one should I
+>> >  use?
+>>
+>>  I doubt users care about kernel's design; however the lack of unification
+>>  of
+>>  userspace tools is a real problem. Just my 2¢.
+>> 
+>
+> I believe they do, since the kernels desing obviate the need and use
+> of several diferent tools (that shouldn't be needed) like for instance
+> for having raid5 with snapshot and dinamic partition resizing we will
+> allways need:
+>
+> md-raid5
+> lvm
+> some FS.
+>
+> This md-raid5 and lvm separation is the evidence of how the kernels
+> design & API affect usability and userspace tools that the user is
+> obliged to use. I cannot have those features without "bumping" into
+> this kernel design issue.
+> This is also a problem for any developer who tries to improve
+> usability in this area by creating some unified userland tools to
+> manipulate MD & LVM. (Imagining myself implementing some userland tool
+> to create some "storage devices" + mount points.. doesn't  seem easy
+> nor fun..).
 
-It takes a bit closer inspection than feel tests to see if weighted
-fairness is properly implemented. One thing to try is running a number
-of identical CPU hogs at the same time at different nice levels for a
-fixed period of time (e.g. 1 or 2 minutes) so they're in competition
-with each other and seeing what percent of the CPU each gets. From
-there you can figure out how many shares each is getting for its nice
-level. Trying different mixtures of nice levels and different numbers
-of tasks should give consistent results for the shares of CPU bandwidth
-the CPU hogs get for being at a particular nice level. A scheduler gets
-"bonus points" (i.e. is considered better at prioritizing) for the user
-being able to specify how the weightings come out. The finer-grained
-the control, the more bonus points.
+why do you care if the userspace tool that does the resizing makes system 
+calls to one layer or to two layers? how would you know?
 
-Maybe con might want to take a stab at having users be able to specify
-the weights for each nice level individually.
+currently you see that they are seperate becouse you use two different 
+tools to manipulate them, but if it was one tool that manipulated both of 
+them for the common cases you wouldn't know. (this is the point that Diego 
+was trying to make)
 
-CFS actually has a second set of weights for tasks, namely the
-timeslice for a given task. At the moment, they're all equal. It should
-be the case that the shorter the timeslice a given task has, the less
-latency it gets. So there is a fair amount of room for it to manuever
-with respect to feel tests. It really needs to be done numerically to
-get results we can be sure mean something.
-
-The way this goes is task t_i gets a percent of the CPU p_i when the
-tasks t_1, t_2, ..., t_n are all competing, and task t_i has nice level
-n_i. The share corresponding to nice level n_i is then
-
-          p_i
-  w_i = -------
-        sum p_j
-
-One thing to check for is that if two tasks have the same nice level
-that their weights come out about equal. So for t_i and t_j, if n_i
-= n_j then you check that at least approximately, w_i = w_j, or even
-p_i = p_j, since we're not starting and stopping tasks in the midst of
-the test. Also, you can't simplify sum p_j to 1, since the set of tasks
-may not be the only things running.
-
-The other thing to do is try a different number of tasks with a
-different mix of nice levels. The weight w_i for a given nice
-level n_i should be the same even in a different mix of tasks
-and nice levels if the nice levels are the same.
-
-If this sounds too far out, there's nothing to worry about. You can
-just run the different numbers of tasks with different mixes of nice
-levels and post the %cpu numbers. Or if that's still a bit far out
-for you, a test that does all this is eventually going to get written.
-
-
--- wli
+David Lang
+--680960-1417889825-1178153920=:5342--
