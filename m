@@ -1,48 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753959AbXECLgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933004AbXECLi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753959AbXECLgt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 07:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030413AbXECLgt
+	id S933004AbXECLi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 07:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933020AbXECLi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 07:36:49 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:38210 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753873AbXECLgs (ORCPT
+	Thu, 3 May 2007 07:38:57 -0400
+Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:2522 "EHLO
+	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933004AbXECLi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 07:36:48 -0400
-Message-ID: <4639C91C.9070204@s5r6.in-berlin.de>
-Date: Thu, 03 May 2007 13:35:56 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Thu, 3 May 2007 07:38:56 -0400
+Date: Thu, 3 May 2007 13:38:22 +0200
+From: Erik Mouw <mouw@nl.linux.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Phillip Susi <psusi@cfl.rr.com>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Execute in place
+Message-ID: <20070503113822.GA27404@gateway.home>
+References: <4637B751.1080907@cfl.rr.com> <Pine.LNX.4.64.0705021502450.16517@blonde.wat.veritas.com>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: dead CONFIG_ variables:  drivers/scsi/
-References: <Pine.LNX.4.64.0705030606570.32341@localhost.localdomain> <20070503111113.GC12018@flint.arm.linux.org.uk> <Pine.LNX.4.64.0705030713210.680@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705030713210.680@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="EeQfGwPcQSOJBaQU"
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705021502450.16517@blonde.wat.veritas.com>
+Organization: Eric Conspiracy Secret Labs
+X-Eric-Conspiracy: There is no conspiracy!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-[...]
->> > drivers/scsi/arm/acornscsi.c:70:#undef CONFIG_SCSI_ACORNSCSI_LINK
->> > drivers/scsi/arm/acornscsi.c:169:#ifdef CONFIG_SCSI_ACORNSCSI_LINK
-[...]
-> p.s.  "CONFIG_" prefix aside, i would think it's also a bit yucky to
-> be checking for the definition of a preprocessor symbol that you've
-> already hardcoded out of existence in the same source file.  :-)
 
-These are basically #if 0 ... #endif blocks with an activation switch
-conveniently placed at the top of the .c file.  In the quoted example,
-the effect of the activation switch is also documented by a comment.
+--EeQfGwPcQSOJBaQU
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Of course we should restrain ourselves WRT the use of #if 0 ... #endif
-blocks in in-tree code, but sometimes they have sensible applications.
--- 
-Stefan Richter
--=====-=-=== -=-= ---==
-http://arcgraph.de/sr/
+On Wed, May 02, 2007 at 03:04:44PM +0100, Hugh Dickins wrote:
+> On Tue, 1 May 2007, Phillip Susi wrote:
+> > I seem to remember seeing some patches go by at some point that allowed=
+ one of
+> > the rom type embeded system filesystems to directly execute binaries ou=
+t of
+> > the original rom memory rather than copying them to ram first, then exe=
+cuting
+> > from there.  I was wondering if rootfs or tmpfs support such execute in=
+ place
+> > today, or if binaries executed from there have their code segments dupl=
+icated
+> > in ram?
+>=20
+> Only ext2 supports it today: see Documentation/filesystems/xip.txt
+
+IIRC JFFS2 also supports XIP.
+
+
+Erik
+
+--=20
+They're all fools. Don't worry. Darwin may be slow, but he'll
+eventually get them. -- Matthew Lammers in alt.sysadmin.recovery
+
+--EeQfGwPcQSOJBaQU
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGOcmu/PlVHJtIto0RAsjMAJ4l0TWxX8Bgd1tUU2AQt/1pJCJYkgCfWKQU
+JiftOAQKR9gB53BYS/xWXeM=
+=iZUy
+-----END PGP SIGNATURE-----
+
+--EeQfGwPcQSOJBaQU--
