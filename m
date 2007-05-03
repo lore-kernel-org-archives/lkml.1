@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161841AbXECPlk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1162137AbXECPmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161841AbXECPlk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 11:41:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031348AbXECPlk
+	id S1162137AbXECPmT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 11:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1946187AbXECPmT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 11:41:40 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:41994 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031125AbXECPlj (ORCPT
+	Thu, 3 May 2007 11:42:19 -0400
+Received: from lazybastard.de ([212.112.238.170]:41156 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1162137AbXECPmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 11:41:39 -0400
-Date: Thu, 3 May 2007 11:35:11 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: Arne Georg Gleditsch <argggh@dolphinics.no>,
-       Herbert Xu <herbert@gondor.apana.org.au>, linux-kernel@vger.kernel.org,
-       trivial@kernel.org, davem@davemloft.net, linux-crypto@vger.kernel.org
-Subject: Re: [PATCH] crypto: convert crypto.h to UTF-8
-In-Reply-To: <Pine.LNX.4.61.0705031719080.18504@yvahk01.tjqt.qr>
-Message-ID: <alpine.DEB.0.98.0705031132220.24982@sigma.j-a-k-j.com>
-References: <alpine.DEB.0.83.0704171322280.914@sigma.j-a-k-j.com>
- <20070502044345.GA29384@gondor.apana.org.au> <alpine.DEB.0.98.0705030711020.17390@sigma.j-a-k-j.com>
- <87r6pyqg2b.fsf@pelargir.dolphinics.no> <alpine.DEB.0.98.0705030915240.21257@sigma.j-a-k-j.com>
- <Pine.LNX.4.61.0705031719080.18504@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Thu, 3 May 2007 11:42:17 -0400
+Date: Thu, 3 May 2007 17:37:53 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Erik Mouw <mouw@nl.linux.org>
+Cc: Hugh Dickins <hugh@veritas.com>, Phillip Susi <psusi@cfl.rr.com>,
+       Linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Execute in place
+Message-ID: <20070503153753.GA29755@lazybastard.org>
+References: <4637B751.1080907@cfl.rr.com> <Pine.LNX.4.64.0705021502450.16517@blonde.wat.veritas.com> <20070503113822.GA27404@gateway.home>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070503113822.GA27404@gateway.home>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >There's no reason for any non-UTF-8 to be in the tree at all, so 
-> >eventually it won't be a problem. I'm (slowly but surely) working on 
-> >converting everything in the tree. GCC handles UTF-8 just fine, and all 
+On Thu, 3 May 2007 13:38:22 +0200, Erik Mouw wrote:
+> On Wed, May 02, 2007 at 03:04:44PM +0100, Hugh Dickins wrote:
+> > 
+> > Only ext2 supports it today: see Documentation/filesystems/xip.txt
 > 
-> In fact, GCC gives a crap about comments :)
-> and otherwise sees things as octets, not characters.
-> I think GCJ is the only one that really pays attention to encoding.
+> IIRC JFFS2 also supports XIP.
 
-The changes to the keymap files and so forth aren't quite as simple 
-though. Have to convert the latin1 characters within character-constant 
-expressions to \0 notation, while the comments can be left as utf8.
+Definitely not.  AXFS does, if you want to consider out-of-tree patches.
 
-> >non-stupid/non-broken distributions of GNU/Linux and other major Un*ces 
-> >should be based on (or at least compatible with) UTF-8 in basic 
-> >operations. Files like the keymaps will be more work to convert, but they 
-> >can be as well.
-> >
-> >I'm operating on the assumption that anything in the tree that isn't UTF-8 
-> >is ISO-8859-1. Of course, I'm also checking it by hand to make sure a 
-> >small-O-with-umlaut doesn't become the Klingon logo...
-> 
-> This is probably all you'll ever see:
-> http://lkml.org/lkml/2007/1/8/222
+Jörn
 
-Does this mean you're doing it and I'll be ignored, or that few people 
-care and I'll be ignored? I figure if I just repost my patches to LKML 
-once per month, they'll eventually get merged (or at least I'll get 
-comments on how people actually want them). Things are tough on a 
-high-volume list. I think the git method may have the best chance of 
-success. We'll see.
+-- 
+Fools ignore complexity.  Pragmatists suffer it.
+Some can avoid it.  Geniuses remove it.
+-- Perlis's Programming Proverb #58, SIGPLAN Notices, Sept.  1982
