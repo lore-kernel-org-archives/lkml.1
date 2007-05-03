@@ -1,133 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751366AbXECHQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbXECHRR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751366AbXECHQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 03:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbXECHQ1
+	id S1755205AbXECHRR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 03:17:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbXECHRQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 03:16:27 -0400
-Received: from il.qumranet.com ([82.166.9.18]:37684 "EHLO il.qumranet.com"
+	Thu, 3 May 2007 03:17:16 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:32857 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751366AbXECHQZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 03:16:25 -0400
-From: Avi Kivity <avi@qumranet.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, kvm-devel@lists.sourceforge.net
-Subject: [GIT PULL] KVM updates for Linux 2.6.22
-Date: Thu,  3 May 2007 10:16:23 +0300
-Message-Id: <11781765833054-git-send-email-avi@qumranet.com>
-X-Mailer: git-send-email 1.5.0.6
+	id S1755205AbXECHRP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 03:17:15 -0400
+Date: Thu, 3 May 2007 09:12:29 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Albert Cahalan <acahalan@gmail.com>
+cc: "H. Peter Anvin" <hpa@zytor.com>, "Antonino A. Daplas" <adaplas@gmail.com>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
+Subject: Re: console font limits
+In-Reply-To: <787b0d920705022317j485cbe26wc83f071834c53584@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705030902430.18504@yvahk01.tjqt.qr>
+References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com> 
+ <Pine.LNX.4.64.0705011347300.27246@anakin>  <1178021516.4372.62.camel@daplas>
+ <46375738.1010007@zytor.com>  <787b0d920705010849u52a4d6c3o2f1f800521ad5b95@mail.gmail.com>
+  <Pine.LNX.4.61.0705021953030.18504@yvahk01.tjqt.qr>
+ <787b0d920705022317j485cbe26wc83f071834c53584@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
 
-Please pull from the repository and branch
+On May 3 2007 02:17, Albert Cahalan wrote:
+> Note: I never suggested going beyond #3.
+>
+>> 0. yes we want that
+>> 
+>> 1. can't tell
+>> 
+>> 2. utf8 yes, many text files are in that encoding.
+>> large fonts - can't tell, I am fine with the regular vga
+>> font infrastructure (8x16, 8x8)
+>
+> Those sizes are unreadable on the 200 dpi OLPC XO screen,
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
+Hm that should have read, for you:
+I don't object implementing support for larger sizes.
+(But I wonder how that should work without FB/CVIDIX/SVGA/VESA extensions.)
 
-to receive the pending kvm updates for 2.6.22.  The changes increase
-the range of guests we support, improve performance, fix various bugs,
-and improve the userspace interface.
+Note that I was assuming that no FB is used:
 
-Adrian Bunk (1):
-      KVM: fix an if() condition
+>> 3. compositing - no, don't need that,
+>> wide characters - does not even work in vga. just display a '??'
+>> and everything is fine.
+>
+> It's been shown to be workable, and it allows support for
+> some additional languages.
 
-Anthony Liguori (3):
-      KVM: Lazy FPU support for SVM
-      KVM: VMX: Properly shadow the CR0 register in the vcpu struct
-      KVM: VMX: Add lazy FPU support for VT
+What benefits does it actually bring? Your standard VGA knows 256/512
+glyphs, and trying to display combined characters needs a
+precomposed glyph.
 
-Avi Kivity (51):
-      KVM: Use own minor number
-      KVM: Export <linux/kvm.h>
-      KVM: Fix bogus sign extension in mmu mapping audit
-      KVM: Use a shared page for kernel/user communication when runing a vcpu
-      KVM: Do not communicate to userspace through cpu registers during PIO
-      KVM: Handle cpuid in the kernel instead of punting to userspace
-      KVM: Remove the 'emulated' field from the userspace interface
-      KVM: Remove minor wart from KVM_CREATE_VCPU ioctl
-      KVM: Renumber ioctls
-      KVM: Add method to check for backwards-compatible API extensions
-      KVM: Allow userspace to process hypercalls which have no kernel handler
-      KVM: Fold kvm_run::exit_type into kvm_run::exit_reason
-      KVM: Add a special exit reason when exiting due to an interrupt
-      KVM: Initialize the apic_base msr on svm too
-      KVM: Add guest mode signal mask
-      KVM: Allow kernel to select size of mmap() buffer
-      KVM: Future-proof argument-less ioctls
-      KVM: Avoid guest virtual addresses in string pio userspace interface
-      KVM: MMU: Remove unnecessary check for pdptr access
-      KVM: MMU: Remove global pte tracking
-      KVM: Workaround vmx inability to virtualize the reset state
-      KVM: Remove set_cr0_no_modeswitch() arch op
-      KVM: Modify guest segments after potentially switching modes
-      KVM: Hack real-mode segments on vmx from KVM_SET_SREGS
-      KVM: Don't allow the guest to turn off the cpu cache
-      KVM: Remove unused and write-only variables
-      KVM: MMU: Fix hugepage pdes mapping same physical address with different access
-      KVM: SVM: Ensure timestamp counter monotonicity
-      KVM: Use list_move()
-      KVM: Remove debug message
-      KVM: x86 emulator: fix bit string operations operand size
-      KVM: Simply gfn_to_page()
-      KVM: Add physical memory aliasing feature
-      KVM: Add fpu get/set operations
-      KVM: Use kernel-standard types
-      KVM: Initialize cr0 to indicate an fpu is present
-      KVM: Handle partial pae pdptr
-      KVM: Use slab caches to allocate mmu data structures
-      KVM: Retry sleeping allocation if atomic allocation fails
-      KVM: SVM: Report hardware exit reason to userspace instead of dmesg
-      KVM: Handle guest page faults when emulating mmio
-      KVM: VMX: Reduce unnecessary saving of host msrs
-      KVM: VMX: Don't switch 64-bit msrs for 32-bit guests
-      KVM: Fold drivers/kvm/kvm_vmx.h into drivers/kvm/vmx.c
-      KVM: VMX: Only save/restore MSR_K6_STAR if necessary
-      KVM: Per-vcpu statistics
-      KVM: Allow passing 64-bit values to the emulated read/write API
-      KVM: Don't complain about cpu erratum AA15
-      KVM: Remove extraneous guest entry on mmio read
-      KVM: Don't require explicit indication of completion of mmio or pio
-      KVM: Remove unused 'instruction_length'
+>> 4. I do not really think this has a future on VC.
+>> You would also 'need' kerning and that serif combiner thing (complex
+>> shaping?) for Arabic. At best, Arabic would look as horrible on VC
+>> as it does in xterm today (no RTL, no serif combiner)
+>
+> I agree. Hebrew is more doable, but probably not worth the effort
+> because of the rarity and because of the general lack of support
+> in text mode apps for such odd behavior. Very few emulators
+> support this; kermit95 is one of the few.
 
-Dor Laor (3):
-      KVM: Fix guest register corruption on paravirt hypercall
-      KVM: Use the generic skip_emulated_instruction() in hypercall code
-      KVM: Add mmu cache clear function
+For everything beyond Latin, fbiterm should work a lot better.
 
-Eric Sesterhenn / Snakebyte (1):
-      KVM: Fix overflow bug in overflow detection code
+>> In short, the current console is very much OK.
+>
+> I wouldn't say that. We suffer the bloat of all this UTF-8 stuff
+> without being able to load a decent-sized font to go with it.
+> We're stuck at 256 characters really, with the very lame option
+> of trading foreground color intensity control for an extra 256.
 
-Joerg Roedel (2):
-      KVM: SVM: forbid guest to execute monitor/mwait
-      KVM: SVM: enable LBRV virtualization if available
+Making VC use a 16x32 font may be possible, but then you will also
+need 4 glyph positions in a 4096 byte font to create a character.
+Or the hardware needs to support 'non-standard' (that would be
+8x8,12,14,16) fonts.
 
-Michal Piotrowski (1):
-      KVM: Remove unused function
 
-Sergey Kiselev (1):
-      KVM: Handle writes to MCG_STATUS msr
-
-Signed-off-by: Anthony Liguori (1):
-      KVM: SVM: Only save/restore MSRs when needed
-
-Yaozu Dong (2):
-      KVM: MMU: Avoid heavy ASSERT at non debug mode.
-      KVM: VMX: Avoid unnecessary vcpu_load()/vcpu_put() cycles
-
- drivers/kvm/kvm.h          |  100 ++++--
- drivers/kvm/kvm_main.c     |  792 +++++++++++++++++++++++++++++++++++++-------
- drivers/kvm/kvm_svm.h      |   13 +-
- drivers/kvm/kvm_vmx.h      |   14 -
- drivers/kvm/mmu.c          |  154 +++++++---
- drivers/kvm/paging_tmpl.h  |   12 +-
- drivers/kvm/svm.c          |  197 +++++++----
- drivers/kvm/svm.h          |    6 +
- drivers/kvm/vmx.c          |  273 +++++++++++-----
- drivers/kvm/x86_emulate.c  |   51 +---
- drivers/kvm/x86_emulate.h  |   32 +--
- include/linux/Kbuild       |    1 +
- include/linux/kvm.h        |  133 ++++++---
- include/linux/miscdevice.h |    1 +
- 14 files changed, 1301 insertions(+), 478 deletions(-)
- delete mode 100644 drivers/kvm/kvm_vmx.h
+Jan
+-- 
