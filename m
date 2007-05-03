@@ -1,103 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S376193AbXECQX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376200AbXECQZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S376193AbXECQX4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 12:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376197AbXECQX4
+	id S376200AbXECQZj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 12:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376202AbXECQZj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 12:23:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:55921 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S376193AbXECQXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 12:23:54 -0400
-Message-ID: <463A0C9E.4010402@goop.org>
-Date: Thu, 03 May 2007 09:23:58 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 3 May 2007 12:25:39 -0400
+Received: from mail.gmx.net ([213.165.64.20]:43490 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S376200AbXECQZi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 12:25:38 -0400
+Cc: xyzzy@speakeasy.org, mkrufky@linuxtv.org, mchehab@infradead.org,
+       linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org
+Content-Type: text/plain; charset="us-ascii"
+Date: Thu, 03 May 2007 18:25:36 +0200
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+In-Reply-To: <d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>
+Message-ID: <20070503162536.184670@gmx.net>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: vgoyal@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
-       Gerd Hoffmann <kraxel@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
- relocatable bzImage
-References: <4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org>	<46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org>	<4638F9BE.8090508@zytor.com> <4638FC39.4010101@goop.org>	<4638FE1B.9050901@zytor.com> <46390523.5010809@goop.org>	<463909AF.9040205@zytor.com> <20070503045031.GA5794@in.ibm.com>	<m1tzuuv24z.fsf@ebiederm.dsl.xmission.com> <463989BD.6040603@goop.org> <m1ps5iujl8.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1ps5iujl8.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>	
+ <4636E0E2.5020601@simon.arlott.org.uk>	
+ <Pine.LNX.4.58.0705011500570.309@shell2.speakeasy.net>	
+ <46389278.1070208@gmail.com> <20070502155125.280320@gmx.net>	
+ <4638C046.1020005@gmail.com> <20070503112013.272380@gmx.net>	
+ <4639F554.1040505@gmail.com> <20070503153129.268110@gmx.net>	
+ <463A0462.5070106@gmail.com>
+ <d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>
+Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
+ points about ...)
+To: "Markus Rechberger" <mrechberger@gmail.com>, abraham.manu@gmail.com
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX1+b9N1K31ibSGb9ZegsLySL7ATlrRsFqcsaVsXMyu
+ dqgIM5Cp5RPZO0rfeZHmkTewoDA26m7mymWQ== 
 Content-Transfer-Encoding: 7bit
+X-GMX-UID: NzUPcmgCRkkNfnD0DGRqgBtudWkvKFO1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Yes.  I guess in this context, I am generally for building the ELF
-> headers by hand instead of with a linker script, because then we
-> know exactly what is happening and can ensure everything is just so.
->   
 
-Yes, it seems easiest - particularly given how flaky binutils can get
-when you really try to control its ELF generation.
+-------- Original-Nachricht --------
+Datum: Thu, 3 May 2007 17:59:18 +0200
+Von: "Markus Rechberger" <mrechberger@gmail.com>
+An: "Manu Abraham" <abraham.manu@gmail.com>
+CC: "Uwe Bugla" <uwe.bugla@gmx.de>, linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org, mchehab@infradead.org, mkrufky@linuxtv.org, xyzzy@speakeasy.org
+Betreff: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical points about ...)
 
-> Sorry, for not being clear I have been expecting to do this for years,
-> it is one of the reasons I keep coming back to putting an ELF header
-> on the bzImage. 
->   
+> On 5/3/07, Manu Abraham <abraham.manu@gmail.com> wrote:
+> > Uwe Bugla wrote:
+> >
+> > > Hi Manu,
+> > >
+> > > But it would be an acceptable compromise FOR NOW, wouldn't it?
+> >
+> >
+> > The reason is i do not wish to make changes to it, till i can fix it. It
+> > is indeed hard to fix things that support a lot of devices, with
+> > different issues. There are enough of issues in there.
+> >
+> > You can look at all those frontend not found issues on the DVB ML.
+> >
+> > The people who make all these noise, do nothing but just play politics.
+> > Just do a search on the linux-dvb ML at gmane.org. You can easily find
+> them.
+> >
+> 
+> Manu,
+> 
+> to me it looks like your  attitude is not acceptable here, I sent
+> several mails already which you just use to ignore.
+> If you don't change that attitude immediatelly I'd really wish to get
+> you banned of this community until you're open for discussions.
+> 
+> http://www.mail-archive.com/linux-dvb%40linuxtv.org/msg22943.html
+> 
+> there's a bugreport and you fully ignore it, and you blame it on the
+> "politicians" here, telling me that there are mails out there
+> somewhere shows that you're not interested in getting forward.
+> 
+> I'm waiting for your response here.
+> 
+> Markus
 
-OK.  It seems obvious, but I just wanted to make sure ;)
+Hey Markus, fine chap: Please cool down! I just downloaded this cx878 thing which will beat a couple of flies with one attack once it is finished.
 
->> In the Xen case, its obviously the domain builder who creates the
->> mappings, and we can easily implement p != v mappings.  But when booting
->> native, presumably paging is off at this stage, and only identity maps
->> can be implemented.  I guess the rough rule is that if paging is enabled
->> on entry, the kernel should expect all the bzImage mappings to be in
->> place, but if paging is off, well, the question is moot.
->>     
->
-> Right.  Except that there is a bit of a catch 22 in the
-> para-virtualized environments of setting up the page tables, I'm not
-> at all certain what the gain of setting up p != v mappings are.
->   
+It will be more stable than every preceding driver, it will revolutionize RAM usage extraordinarily, and it will solve all outstanding technical problems involved in the current DST driver concept, if I did understand Manu right, which is different sometimes, but, as it seems, not impossible.
 
-Well, that's more or less it.  If the decompressor ends up jumping to
-startup_32, and that immediately goes into xen_start_kernel(), then
-we're still running on the initial bzImage p=v pagetables.  At the
-moment, when the domain builder maps the kernel's vmlinux to the vaddrs
-in its Phdrs, so there's no need to do any more boot-time pagetable
-manipulation.  If we come out of bzImage with only identity mappings,
-then obviously the Xen case will need to do the same pagetable setup as
-the native case - which is good so long as we can work out how to share
-the code to do so.
+So he just changed his priorities, and if this thing is finished we all will be winning a lot in the end I guess...
 
-For i386, it looks like this will be tricky because at this point:
+So please at least try to get yourself involved into that project, even if there are outstanding human drawbacks - its hard with him, I know, but it is not impossible at all.
+And the cx878 project is worth to engage oneself in for a thousands of very good reasons - just believe me, as I have already done a lot of testing work on it.
+It's fine, and it will revolutionize the whole bt8xx driver concept.
 
-    * we're not running at the linked address, so C code will be tricky
-      and non-standard
-    * we need to deal with multiple hypervisors and their constraints on
-      what can be in a pagetable
-    * we could be running with no paging, or paging in either non-PAE or
-      PAE modes
+So if there are many many people helping to finish it, that will be the best thing ever seen...
 
-Writing some code which can deal with all of those at once will be an
-interesting exercise.
+And as far Manu is concerned: he is a primadonna, as I am.
+Primadonnas are real extraordinary people, you know.
+So please do not beat him or treat him like this.
 
-> Part of what I find compelling about this is our initial page tables
-> for linux have always had more going on than the virtual addresses
-> just being at a constant offset from of the physical addresses, so
-> the actions of the current domain builders have me concerned that they
-> may be violating some early linux booting assumptions and are
-> currently just getting lucky.  Moving the page table setup code into
-> the kernel removes that dependency from the domain builders.
+Yours sincerely
 
-The nice thing about having the domain builder create the pagetables is
-that it turns it from a tricky bootstrap problem into a relatively easy
-job.  The main thing is that the domain builder can create a scaffolding
-pagetable which is enough to get everything started.  Once you have that
-in place, its pretty easy to update it to set precisely the right bits
-in the ptes, etc.
+Uwe
 
-It also means that the path for Xen vs native will be more similar,
-because the bzImage code won't need to deal with pagetable setup at all:
-for native it won't matter, and for Xen it has already been done.  It
-only matters once we hit the 32-bit kernel-proper code, and we diverge
-at that point anyway.
+Peace, brother!
+> 
+> > > Waiting for your link meanwhile to download that hopeful project...
+> >
+> >
+> http://thadathil.net:8000/cgi-bin/hgwebdir.cgi/cx878_41?ca=43abfe89c2c9;type=bz2
+> >
+> 
+> 
+> -- 
+> Markus Rechberger
 
-    J
+-- 
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
