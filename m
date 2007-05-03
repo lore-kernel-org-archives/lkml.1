@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754072AbXECNYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031123AbXECN07@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754072AbXECNYU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 09:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXECNYT
+	id S1031123AbXECN07 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 09:26:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031240AbXECN07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 09:24:19 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:55395 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbXECNYR (ORCPT
+	Thu, 3 May 2007 09:26:59 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:59890 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031123AbXECN06 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 09:24:17 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: vgoyal@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
-       Gerd Hoffmann <kraxel@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
-References: <4634483E.9030307@goop.org>
-	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org>
-	<46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org>
-	<4638F9BE.8090508@zytor.com> <4638FC39.4010101@goop.org>
-	<4638FE1B.9050901@zytor.com> <46390523.5010809@goop.org>
-	<463909AF.9040205@zytor.com> <20070503045031.GA5794@in.ibm.com>
-	<m1tzuuv24z.fsf@ebiederm.dsl.xmission.com> <463989BD.6040603@goop.org>
-Date: Thu, 03 May 2007 07:23:31 -0600
-In-Reply-To: <463989BD.6040603@goop.org> (Jeremy Fitzhardinge's message of
-	"Thu, 03 May 2007 00:05:33 -0700")
-Message-ID: <m1ps5iujl8.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Thu, 3 May 2007 09:26:58 -0400
+From: Kevin Corry <kevcorry@us.ibm.com>
+Organization: IBM
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 2/2] powerpc: change topology_init() to a subsys_initcall
+Date: Thu, 3 May 2007 08:26:54 -0500
+User-Agent: KMail/1.9.5
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       Stephane Eranian <eranian@hpl.hp.com>, Carl Love <carll@us.ibm.com>
+References: <200705021208.59068.kevcorry@us.ibm.com> <200705021211.49331.kevcorry@us.ibm.com> <1178154707.5338.11.camel@concordia.ozlabs.ibm.com>
+In-Reply-To: <1178154707.5338.11.camel@concordia.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705030826.55427.kevcorry@us.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+Hi Michael,
 
-> OK, whatever you think will work.  But I do think it should be a proper
-> ELF file with a correct magic number, so that you can just point an ELF
-> file parser at it and have it work (which means, of course, that all the
-> file offsets are offsets from the start of the Ehdr, rather than from
-> the start of the bzImage).
+On Wed May 2 2007 8:11 pm, Michael Ellerman wrote:
+> On Wed, 2007-05-02 at 12:11 -0500, Kevin Corry wrote:
+> > Change the powerpc version of topology_init() from an __initcall to
+> > a subsys_initcall to match all other architectures.
+> >
+> > Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
+> >
+> > Index: linux-2.6.21/arch/powerpc/kernel/sysfs.c
+> > ===================================================================
+> > --- linux-2.6.21.orig/arch/powerpc/kernel/sysfs.c
+> > +++ linux-2.6.21/arch/powerpc/kernel/sysfs.c
+> > @@ -498,4 +498,4 @@ static int __init topology_init(void)
+> >
+> >  	return 0;
+> >  }
+> > -__initcall(topology_init);
+> > +subsys_initcall(topology_init);
+>
+> topology_init() depends on the register_one_node() stuff being
+> available, which relies on register_node_type() being called AFAICT -
+> which is a postcore_initcall(). So that's OK.
+>
+> It also creates sysfs files, which is OK because long before initcalls
+> run vfs_caches_init() called mnt_init() which called sysfs_init().
+>
+> Just to be super safe it'd be good to diff your sysfs before and after
+> the change. But assuming that show's nothing this looks fine to me.
 
-Yes.  I guess in this context, I am generally for building the ELF
-headers by hand instead of with a linker script, because then we
-know exactly what is happening and can ensure everything is just so.
+I booted with and without this patch applied, and the file listings of /sys on 
+both kernels show no differences (other than timestamps).
 
-> You haven't specifically commented on using the Phdrs as a way of
-> specifying the mappings required for decompression and early kernel
-> execution.  It seems pretty natural to me, but I guess that raises the
-> general question of what execution environment the kernel can expect to
-> find itself in, and which modes of booting will actually enable paging
-> and establish any kinds of mapping at all.
-
-Sorry, for not being clear I have been expecting to do this for years,
-it is one of the reasons I keep coming back to putting an ELF header
-on the bzImage.  arch/x86_64/kernel already does this to some extent
-as it has to setup up some identity page mappings for itself in the
-case it has to do the switch from real to protected mode itself.
-
-> In the Xen case, its obviously the domain builder who creates the
-> mappings, and we can easily implement p != v mappings.  But when booting
-> native, presumably paging is off at this stage, and only identity maps
-> can be implemented.  I guess the rough rule is that if paging is enabled
-> on entry, the kernel should expect all the bzImage mappings to be in
-> place, but if paging is off, well, the question is moot.
-
-Right.  Except that there is a bit of a catch 22 in the
-para-virtualized environments of setting up the page tables, I'm not
-at all certain what the gain of setting up p != v mappings are.
-
-Having just written some C code that runs fairly successfully in p !=
-v, on arch/i386 I'm not too concerned.  arch/x86_64 ought to work with
-a similar level of effort although the expectations there are a little
-different. So while I don't necessarily considering running in p != v
-when compiled to run at v general it should work for the cases we
-are interested in.  Setting up the page tables for arch/x86_64 will
-be more interesting.
-
-Part of what I find compelling about this is our initial page tables
-for linux have always had more going on than the virtual addresses
-just being at a constant offset from of the physical addresses, so
-the actions of the current domain builders have me concerned that they
-may be violating some early linux booting assumptions and are
-currently just getting lucky.  Moving the page table setup code into
-the kernel removes that dependency from the domain builders.
-
-Eric
+Thanks for the feedback.
+-- 
+Kevin Corry
+kevcorry@us.ibm.com
+http://www.ibm.com/linux/
