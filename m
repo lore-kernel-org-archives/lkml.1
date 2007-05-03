@@ -1,47 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767156AbXEBXDs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767138AbXEBXFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767156AbXEBXDs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 2 May 2007 19:03:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767138AbXEBXDs
+	id S1767138AbXEBXFs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 2 May 2007 19:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767195AbXEBXFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 2 May 2007 19:03:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:54389 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767156AbXEBXDq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 2 May 2007 19:03:46 -0400
-Message-ID: <463918CF.4000202@goop.org>
-Date: Wed, 02 May 2007 16:03:43 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 2 May 2007 19:05:48 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:55387
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767138AbXEBXFr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 2 May 2007 19:05:47 -0400
+Message-ID: <46392750.8080600@microgate.com>
+Date: Wed, 02 May 2007 18:05:36 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Gerd Hoffmann <kraxel@redhat.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org, Vivek Goyal <vgoyal@in.ibm.com>,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
- relocatable bzImage
-References: <20070428758.455116000@suse.de>	<20070428175909.1D09D151CA@wotan.suse.de>	<46338D72.70402@garzik.org>	<m1fy6kdzi1.fsf@ebiederm.dsl.xmission.com>	<4634483E.9030307@goop.org>	<m14pmz8bbb.fsf@ebiederm.dsl.xmission.com> <46363A68.6080201@goop.org> <46385A8A.6070405@redhat.com> <4638AB55.20408@goop.org> <4638F9BE.8090508@zytor.com> <4638FC39.4010101@goop.org> <4638FE1B.9050901@zytor.com> <46390523.5010809@goop.org> <463909AF.9040205@zytor.com>
-In-Reply-To: <463909AF.9040205@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] synclink_gt add compat_ioctl
+References: <1178137281.10111.8.camel@amdx2.microgate.com> <200705030009.11502.arnd@arndb.de> <46392142.2030201@microgate.com> <200705030047.56286.arnd@arndb.de>
+In-Reply-To: <200705030047.56286.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> I don't know if that would break any programs that are currently
-> bypassing the setup.  The existing setup protocol definitely allows
-> invoking an entry point which isn't 0x100000 (rather, the 32-bit
-> entrypoint is defined by code32_start); I'm not sure how Eric's
-> relocatable kernel patches (2.05 protocol) affect that, mostly because I
-> haven't seen any boot loaders which actually use it so I can't comment
-> on what their code looks like.
+Arnd Bergmann wrote:
+> The same function contains a copy_from_user(), which cannot
+> be called with interrupts disabled, so yes, I am very certain
+> it will not change.
 
-Yes, I'd expect that code32_start would point into the ELF text
-segment.   You could align things so that the entrypoint is still
-actually 0x100000, or bump it up a bit to fit the ELF headers.  I have
-to admit I don't quite understand how all that fits together at the moment.
+Good point.
 
-    J
-
+--
+Paul
