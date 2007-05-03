@@ -1,51 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1162138AbXECPx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754362AbXECPyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1162138AbXECPx0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 11:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162139AbXECPx0
+	id S1754362AbXECPyY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 11:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1162140AbXECPyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 11:53:26 -0400
-Received: from holomorphy.com ([66.93.40.71]:46080 "EHLO holomorphy.com"
+	Thu, 3 May 2007 11:54:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39511 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1162138AbXECPxZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 11:53:25 -0400
-Date: Thu, 3 May 2007 08:53:47 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Damien Wyart <damien.wyart@free.fr>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       "Tong N. Li" <tong.n.li@intel.com>
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070503155347.GF19966@holomorphy.com>
-References: <46399B51.9040608@dunaweb.hu> <20070503130201.GA9000@elte.hu> <20070503132932.GA4204@localhost.localdomain> <20070503145318.GA17776@in.ibm.com>
-MIME-Version: 1.0
+	id S1754362AbXECPyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 11:54:22 -0400
+Date: Thu, 3 May 2007 17:54:07 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Con Kolivas <kernel@kolivas.org>
+Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
+Message-ID: <20070503155407.GA7536@elte.hu>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070503145318.GA17776@in.ibm.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 03:29:32PM +0200, Damien Wyart wrote:
->> What are your thoughts/plans concerning merging CFS into mainline ? Is
->> it a bit premature to get it into 2.6.22 ? I remember Linus was ok to
->> change the default scheduler rapidly (the discussion was about sd at
->> that time) to get more testing than in -mm.
 
-On Thu, May 03, 2007 at 08:23:18PM +0530, Srivatsa Vaddagiri wrote:
-> And what about group scheduling extensions? Do you have plans to work on
-> it? I was begining to work on a prototype to do group scheduling based
-> on CFS, basically on the lines of what you and Linus had outlined
-> earlier:
-> 	http://lkml.org/lkml/2007/4/18/271
-> 	http://lkml.org/lkml/2007/4/18/244
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Tong Li's Trio scheduler does a bit of this, though it doesn't seem to
-have the mindshare cfs seems to have acquired.
+> - If replying, please be sure to cc the appropriate individuals.  
+>   Please also consider rewriting the Subject: to something 
+>   appropriate.
 
-The hyperlink seems to have broken, though:
-	http://www.cs.duke.edu/~tongli/linux/linux-2.6.19.2-trio.patch
+i'm wondering about swap-prefetch:
 
+  mm-implement-swap-prefetching.patch
+  swap-prefetch-avoid-repeating-entry.patch
+  add-__gfp_movable-for-callers-to-flag-allocations-from-high-memory-that-may-be-migrated-swap-prefetch.patch
 
--- wli
+The swap-prefetch feature is relatively compact:
+
+   10 files changed, 745 insertions(+), 1 deletion(-)
+
+it is contained mostly to itself:
+
+   mm/swap_prefetch.c            |  581 ++++++++++++++++++++++++++++++++
+
+i've reviewed it once again and in the !CONFIG_SWAP_PREFETCH case it's a 
+clear NOP, while in the CONFIG_SWAP_PREFETCH=y case all the feedback 
+i've seen so far was positive. Time to have this upstream and time for a 
+desktop-oriented distro to pick it up.
+
+I think this has been held back way too long. It's .config selectable 
+and it is as ready for integration as it ever is going to be. So it's a 
+win/win scenario.
+
+Acked-by: Ingo Molnar <mingo@elte.hu>
+
+	Ingo
