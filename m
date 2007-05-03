@@ -1,61 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031233AbXECM4f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161870AbXECM7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031233AbXECM4f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 08:56:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031236AbXECM4e
+	id S1161870AbXECM7N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 08:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161878AbXECM7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 08:56:34 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:35909 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031233AbXECM4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 08:56:32 -0400
-Date: Thu, 3 May 2007 14:54:56 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-cc: Trent Piepho <xyzzy@speakeasy.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [v4l-dvb-maintainer] [PATCH 35/36] Use menuconfig objects II -
- DVB
-In-Reply-To: <1178195820.12651.28.camel@localhost>
-Message-ID: <Pine.LNX.4.61.0705031453360.18504@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr> 
- <Pine.LNX.4.61.0704301429450.29151@yvahk01.tjqt.qr>  <1178129426.29579.17.camel@localhost>
-  <Pine.LNX.4.58.0705021436050.504@shell2.speakeasy.net> 
- <Pine.LNX.4.61.0705030855000.18504@yvahk01.tjqt.qr> <1178195820.12651.28.camel@localhost>
+	Thu, 3 May 2007 08:59:13 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:19253 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161870AbXECM7M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 08:59:12 -0400
+Date: Thu, 3 May 2007 13:58:52 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
+In-Reply-To: <4639D8E8.2090608@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0705031351180.29450@blonde.wat.veritas.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com>
+ <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com>
+ <46393BA7.6030106@yahoo.com.au> <Pine.LNX.4.64.0705031306300.24945@blonde.wat.veritas.com>
+ <4639D8E8.2090608@yahoo.com.au>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+X-OriginalArrivalTime: 03 May 2007 12:59:08.0951 (UTC) FILETIME=[D6A15270:01C78D82]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGFuZHJlYUBzdXNlLmRlAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAaGNoQGluZnJhZGVhZC5vcmcAbmlja3BpZ2dpbkB5YWhvby5jb20uYXUA
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 3 May 2007, Nick Piggin wrote:
+> >>@@ -568,6 +570,11 @@ __lock_page (diff -p would tell us!)
+> > > {
+> > >  DEFINE_WAIT_BIT(wait, &page->flags, PG_locked);
+> > >
+> > >+	set_bit(PG_waiters, &page->flags);
+> > >+	if (unlikely(!TestSetPageLocked(page))) {
+> > 
+> > What happens if another cpu is coming through __lock_page at the
+> > same time, did its set_bit, now finds PageLocked, and so proceeds
+> > to the __wait_on_bit_lock?  But this cpu now clears PG_waiters,
+> > so this task's unlock_page won't wake the other?
+> 
+> You're right, we can't clear the bit here. Doubt it mattered much anyway?
 
-On May 3 2007 09:37, Mauro Carvalho Chehab wrote:
->Trent is mentioning an out-of-tree building system to allow easier
->testing of V4L/DVB patches by end users and developers and during driver
->development time. The building system allows faster
->compilation/linkedition during driver development, by allowing you to
->use:
->	make menuconfig/qconfig/xconfig
->
->inside the tree, unselecting the drivers that you're not working.
+Ah yes, that's a good easy answer.  In fact, just remove this whole
+test and block (we already tried TestSetPageLocked outside just a
+short while ago, so this repeat won't often save anything).
 
-Is that all? Because you can do
+> 
+> BTW. I also forgot an smp_mb__after_clear_bit() before the wake_up_page
+> above... that barrier is in the slow path as well though, so it shouldn't
+> matter either.
 
-  make drivers/media/video/
+I vaguely wondered how such barriers had managed to dissolve away,
+but cranking my brain up to think about barriers takes far too long.
 
-today and it will only build that directory (or even
-drivers/media/video/foo.o) to only do that one.
-
->The point rised by Trent is that, currently, this is not prepared to
->handle the "menuconfig" and "if/endif" tags.
->
->However, the v4l-dvb building system shouldn't stop improvements at the
->kernel building system. So, if there are any limits there, the proper
->solution is to fix the issues, instead of avoiding patches that could
->break it.
-
-
-Jan
--- 
+> > >+		clear_bit(PG_waiters, &page->flags);
+> > >+		return;
+> > >+	}
+> > >  __wait_on_bit_lock(page_waitqueue(page), &wait, sync_page,
+> > >        TASK_UNINTERRUPTIBLE);
+> >> }
