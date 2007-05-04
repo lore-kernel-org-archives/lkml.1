@@ -1,80 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767669AbXEDEc5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767671AbXEDEeR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767669AbXEDEc5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 00:32:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767672AbXEDEc5
+	id S1767671AbXEDEeR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 00:34:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767672AbXEDEeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 00:32:57 -0400
-Received: from home.keithp.com ([63.227.221.253]:3363 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767669AbXEDEcy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 00:32:54 -0400
-X-Greylist: delayed 1525 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 00:32:54 EDT
-Subject: Re: [RFC] [PATCH] DRM TTM Memory Manager patch
-From: Keith Packard <keithp@keithp.com>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
-Cc: keithp@keithp.com, Eric Anholt <eric@anholt.net>,
-       dri-devel@lists.sourceforge.net, Dave Airlie <airlied@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <46391860.3070409@tungstengraphics.com>
-References: <21d7e9970704252355m4765b65fyb547b9ba2763b103@mail.gmail.com>
-	 <1178137279.53297.114.camel@vonnegut>
-	 <46391860.3070409@tungstengraphics.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-2CBnoYqIh1NCPsbdjWIE"
-Date: Thu, 03 May 2007 21:07:01 -0700
-Message-Id: <1178251621.27028.9.camel@neko.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 4 May 2007 00:34:17 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:35218 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767671AbXEDEeQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 00:34:16 -0400
+Date: Thu, 3 May 2007 21:34:15 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: Remove constructor from buffer_head
+In-Reply-To: <20070503202111.667c9b14.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705032120020.16954@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
+ <20070503202111.667c9b14.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 3 May 2007, Andrew Morton wrote:
 
---=-2CBnoYqIh1NCPsbdjWIE
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> The change looks nice, but I'd microbenchmark it with a write-to-ext2-on-ramdisk
+> or something like that.
 
-On Thu, 2007-05-03 at 01:01 +0200, Thomas Hellstr=C3=B6m wrote:
+Hmmm... How does one benchmark buffer head performance? Guess just by 
+copying files? Not sure if the following will cut it.
 
-> It might be possible to find schemes that work around this. One way=20
-> could possibly be to have a buffer mapping -and validate order for=20
-> shared buffers.
+Two tests. First copying 8M of small files into a 16M ramdisk:
 
-If mapping never blocks on anything other than the fence, then there
-isn't any dead lock possibility. What this says is that ordering of
-rendering between clients is *not DRMs problem*. I think that's a good
-solution though; I want to let multiple apps work on DRM-able memory
-with their own CPU without contention.
+for i in 1 2 3 4 5 6 7 8 9; do
 
-I don't recall if Eric layed out the proposed rules, but:
+        mke2fs /dev/ram0 >/dev/null
+        mount /dev/ram0 /media >/dev/null
+        time cp -a /etc /media
+        umount /dev/ram0
 
- 1) Map never blocks on map. Clients interested in dealing with this=20
-    are on their own.
+done;
 
- 2) Submit blocks on map. You must unmap all buffers before submitting
-    them. Doing the relocations in the kernel makes this all possible.
 
- 3) Map blocks on the fence from submit. We can play with pending the
-    flush until the app asks for the buffer back, or we can play with
-    figuring out when flushes are useful automatically. Doesn't matter
-    if the policy is in the kernel.
+No constructor
 
-I'm interested in making deadlock avoidence trivial and eliminating any
-map-map contention.
+real    0m0.104s
+user    0m0.016s
+sys     0m0.056s
 
---=20
-keith.packard@intel.com
+real    0m0.090s
+user    0m0.008s
+sys     0m0.056s
 
---=-2CBnoYqIh1NCPsbdjWIE
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+real    0m0.089s
+user    0m0.016s
+sys     0m0.048s
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+real    0m0.097s
+user    0m0.004s
+sys     0m0.064s
 
-iD8DBQBGOrFlQp8BWwlsTdMRAsyLAKCompSXiYSyiXFTRPa5VNU9MD8nnACgwynO
-tiY0QFw48VQlkOk0J5T6nJw=
-=jUDR
------END PGP SIGNATURE-----
+real    0m0.091s
+user    0m0.008s
+sys     0m0.052s
 
---=-2CBnoYqIh1NCPsbdjWIE--
+real    0m0.091s
+user    0m0.004s
+sys     0m0.060s
+
+real    0m0.098s
+user    0m0.008s
+sys     0m0.060s
+
+real    0m0.091s
+user    0m0.000s
+sys     0m0.064s
+
+real    0m0.090s
+user    0m0.012s
+sys     0m0.052s
+
+W/constructor
+
+real    0m0.099s
+user    0m0.004s
+sys     0m0.100s
+
+real    0m0.098s
+user    0m0.008s
+sys     0m0.096s
+
+real    0m0.091s
+user    0m0.016s
+sys     0m0.080s
+
+real    0m0.091s
+user    0m0.012s
+sys     0m0.084s
+
+real    0m0.090s
+user    0m0.012s
+sys     0m0.080s
+
+real    0m0.090s
+user    0m0.020s
+sys     0m0.076s
+
+real    0m1.269s
+user    0m0.012s
+sys     0m0.084s
+
+real    0m0.095s
+user    0m0.016s
+sys     0m0.084s
+
+real    0m0.096s
+user    0m0.020s
+sys     0m0.084s
+
+The no constructor numbers are generally lower.
+Lowest is no constructor with 0.089.
+
+Second. Copy vmlinux (52M) to 128M ramdisk:
+
+for i in 1 2 3 4 5 6 7 8 9; do
+
+        mke2fs /dev/ram0 >/dev/null
+        mount /dev/ram0 /media >/dev/null
+        time cp slub/vmlinux /media
+        umount /dev/ram0
+
+done;
+
+
+No constructor:
+
+real    0m2.095s
+user    0m0.000s
+sys     0m0.168s
+
+real    0m0.187s
+user    0m0.008s
+sys     0m0.124s
+
+real    0m0.186s
+user    0m0.008s
+sys     0m0.120s
+
+real    0m0.195s
+user    0m0.008s
+sys     0m0.128s
+
+real    0m0.177s
+user    0m0.004s
+sys     0m0.120s
+
+real    0m0.182s
+user    0m0.004s
+sys     0m0.120s
+
+real    0m0.186s
+user    0m0.008s
+sys     0m0.120s
+
+real    0m0.190s
+user    0m0.004s
+sys     0m0.128s
+
+real    0m0.174s
+user    0m0.004s
+sys     0m0.116s
+
+
+Constructor
+
+real    0m0.183s
+user    0m0.004s
+sys     0m0.188s
+
+real    0m0.183s
+user    0m0.004s
+sys     0m0.192s
+
+real    0m0.177s
+user    0m0.012s
+sys     0m0.176s
+
+real    0m0.186s
+user    0m0.004s
+sys     0m0.192s
+
+real    0m0.187s
+user    0m0.008s
+sys     0m0.188s
+
+real    0m0.184s
+user    0m0.004s
+sys     0m0.192s
+
+real    0m0.177s
+user    0m0.012s
+sys     0m0.176s
+
+real    0m0.183s
+user    0m0.004s
+sys     0m0.192s
+
+real    0m0.182s
+user    0m0.004s
+sys     0m0.188s
+
+Same here. Low is 0.174 no constructor.
+
+
