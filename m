@@ -1,62 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030419AbXEDPfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030767AbXEDPfn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030419AbXEDPfF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 11:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030694AbXEDPfF
+	id S1030767AbXEDPfn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 11:35:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030814AbXEDPfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 11:35:05 -0400
-Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:33050 "HELO
-	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1030419AbXEDPfB (ORCPT
+	Fri, 4 May 2007 11:35:42 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:39590 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030767AbXEDPfi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 11:35:01 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-Subject: Re: console font limits
-Date: Fri, 4 May 2007 08:34:40 -0700
-User-Agent: KMail/1.9.6
-Cc: Daniel Hazelton <dhazelton@enter.net>, "H. Peter Anvin" <hpa@zytor.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Albert Cahalan <acahalan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
-References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com> <200705032358.56055.dhazelton@enter.net> <1178254748.4722.4.camel@daplas>
-In-Reply-To: <1178254748.4722.4.camel@daplas>
+	Fri, 4 May 2007 11:35:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=O2adAmI95/O5Gj/acrJ9uEL7cLe3yTy1kMLQX5/9qNCgKm+aM4p13KnlTDOU9Qh+Hm2zrbNY+lTBORNc9p+D9ehGhLksR/pPzfOmimQLmZkygjudQ4oJu4Wf1IfWHQnoIHSdNrLL+H2/EiZa/LxEZh9dWxzHvy/mRm6lFfx9Z/I=
+Date: Fri, 4 May 2007 17:34:38 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Strange soft lockup detected message (looks like spin_lock bug in pcnet32)
+Message-ID: <20070504153438.GE24769@slug>
+References: <20070503203143.GA8753@csclub.uwaterloo.ca> <20070504141024.GB8753@csclub.uwaterloo.ca> <20070504143326.GD24769@slug> <20070504151934.GA8754@csclub.uwaterloo.ca>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705040834.41000.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 67.161.73.10 authed with jbarnes@virtuousgeek.org}
+In-Reply-To: <20070504151934.GA8754@csclub.uwaterloo.ca>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday, May 03, 2007, Antonino A. Daplas wrote:
-> On Thu, 2007-05-03 at 23:58 -0400, Daniel Hazelton wrote:
-> > On Thursday 03 May 2007 20:39:05 H. Peter Anvin wrote:
-> > > Kyle Moffett wrote:
-> >
-> > I guess I could start on that work again - shouldn't take me all that
-> > long to recover the stuff I lost when a blackout caused my hard drive
-> > to get corrupted beyond recovery (and the automated journal replay
-> > didn't do a damned thing - I think it actually *added* to the
-> > corruption, but I don't think any filesystem would have survived that)
->
-> You might want to look at the modesetting-101 branch of DRM.  It's goal
-> is similar to yours.  They even have a drm framebuffer.  I don't know
-> how far they are with their goal, but I can see some progress.
->
-> Here's their git tree:
->
-> git://git.freedesktop.org/git/mesa/drm#modesetting-101
-
-It sounds like we'll need a new KD_* flag for this work too, something like 
-KD_TEXT_BUT_ONLY_ON_PANIC, sine with the above tree, the kernel will have 
-intimite knowledge of the current graphics mode, framebuffer location, 
-etc.  It should be enough to clear the scanout buffer and output the 
-printk, though if there's a lot of rendering going on, the DRM driver 
-might have to be pretty smart about it.
-
-Jesse
+On Fri, May 04, 2007 at 11:19:34AM -0400, Lennart Sorensen wrote:
+> On Fri, May 04, 2007 at 04:33:26PM +0200, Frederik Deweerdt wrote:
+> > On Fri, May 04, 2007 at 10:10:24AM -0400, Lennart Sorensen wrote:
+> > > On Thu, May 03, 2007 at 04:31:43PM -0400, Lennart Sorensen wrote:
+> > [...]
+> > > Should line 2563 be a spin_lock_irqsave instead along with the
+> > > appropriate unluck later?
+> > IIRC, when you enable lockdep, it will complain about spinlocks used in
+> > an invalid context.
+> 
+> What is lockdep and how do I enable it?
+For the "what" part, see Documentation/lockdep-design.txt. You'll enable
+it by with SPINLOCK_DEBUG, indeed.
+> 
+> I enabled SPINLOCK_DEBUG and am going to try that kernel now (except it
+> hit the bug before I could even log in and install the kernel this time,
+> so another reboot first).
+> 
+> --
+> Len Sorensen
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
