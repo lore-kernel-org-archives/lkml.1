@@ -1,51 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767712AbXEDW7D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031289AbXEDXDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767712AbXEDW7D (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 18:59:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767768AbXEDW7C
+	id S1031289AbXEDXDp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 19:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031442AbXEDXDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 18:59:02 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:41882
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767712AbXEDW7A (ORCPT
+	Fri, 4 May 2007 19:03:45 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34325 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031289AbXEDXDo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 18:59:00 -0400
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial
-	possible bug]
-From: Paul Fulghum <paulkf@microgate.com>
-To: Antonino Ingargiola <tritemio@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <5486cca80705041421y4fcaec01l7acafed1cea4b509@mail.gmail.com>
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
-	 <463B7534.6000207@microgate.com>
-	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
-	 <1178299247.3769.0.camel@amdx2.microgate.com>
-	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
-	 <1178300493.3619.1.camel@amdx2.microgate.com>
-	 <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
-	 <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
-	 <1178308173.3743.14.camel@amdx2.microgate.com>
-	 <5486cca80705041421y4fcaec01l7acafed1cea4b509@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 04 May 2007 05:57:45 -0500
-Message-Id: <1178276265.3417.3.camel@x2>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
-Content-Transfer-Encoding: 7bit
+	Fri, 4 May 2007 19:03:44 -0400
+Date: Fri, 4 May 2007 16:03:43 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: linux-kernel@vger.kernel.org
+cc: linux-mm@kvack.org, dgc@sgi.com, Eric Dumazet <dada1@cosmosbay.com>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC 2/3] SLUB: Implement targeted reclaim and partial list
+ defragmentation
+In-Reply-To: <20070504221708.596112123@sgi.com>
+Message-ID: <Pine.LNX.4.64.0705041603150.27790@schroedinger.engr.sgi.com>
+References: <20070504221555.642061626@sgi.com> <20070504221708.596112123@sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Antonino:
+Fixes suggested by Andrew
 
-Can you try two tests (with my patch applied):
+---
+ include/linux/slab.h |   12 ++++++++++++
+ mm/slub.c            |   32 +++++++++++++++++++++-----------
+ 2 files changed, 33 insertions(+), 11 deletions(-)
 
-1. comment out the tty_flush_buffer() call in tty_ldisc_flush() and test
-
-2. uncomment (reenable) the above call and comment out the
-tty_flush_buffer() call in tty_ioctl() and test
-
-Thanks,
-Paul
-
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-05-04 15:52:54.000000000 -0700
++++ slub/mm/slub.c	2007-05-04 15:53:11.000000000 -0700
+@@ -2142,42 +2142,46 @@ EXPORT_SYMBOL(kfree);
+  *
+  * Return error code or number of remaining objects
+  */
+-static int __kmem_cache_vacate(struct kmem_cache *s, struct page *page)
++static int __kmem_cache_vacate(struct kmem_cache *s,
++		struct page *page, unsigned long flags)
+ {
+ 	void *p;
+ 	void *addr = page_address(page);
+-	unsigned long map[BITS_TO_LONGS(s->objects)];
++	DECLARE_BITMAP(map, s->objects);
+ 	int leftover;
+ 
+ 	if (!page->inuse)
+ 		return 0;
+ 
+ 	/* Determine free objects */
+-	bitmap_zero(map, s->objects);
+-	for(p = page->freelist; p; p = get_freepointer(s, p))
+-		set_bit((p - addr) / s->size, map);
++	bitmap_fill(map, s->objects);
++	for (p = page->freelist; p; p = get_freepointer(s, p))
++		__clear_bit((p - addr) / s->size, map);
+ 
+ 	/*
+ 	 * Get a refcount for all used objects. If that fails then
+ 	 * no KICK callback can be performed.
+ 	 */
+-	for(p = addr; p < addr + s->objects * s->size; p += s->size)
+-		if (!test_bit((p - addr) / s->size, map))
++	for (p = addr; p < addr + s->objects * s->size; p += s->size)
++		if (test_bit((p - addr) / s->size, map))
+ 			if (!s->slab_ops->get_reference(p))
+-				set_bit((p - addr) / s->size, map);
++				__clear_bit((p - addr) / s->size, map);
+ 
+ 	/* Got all the references we need. Now we can drop the slab lock */
+ 	slab_unlock(page);
++	local_irq_restore(flags);
+ 
+ 	/* Perform the KICK callbacks to remove the objects */
+ 	for(p = addr; p < addr + s->objects * s->size; p += s->size)
+-		if (!test_bit((p - addr) / s->size, map))
++		if (test_bit((p - addr) / s->size, map))
+ 			s->slab_ops->kick_object(p);
+ 
++	local_irq_save(flags);
+ 	slab_lock(page);
+ 	leftover = page->inuse;
+ 	ClearPageActive(page);
+ 	putback_slab(s, page);
++	local_irq_restore(flags);
+ 	return leftover;
+ }
+ 
+@@ -2197,6 +2201,7 @@ static void remove_from_lists(struct kme
+  */
+ int kmem_cache_vacate(struct page *page)
+ {
++	unsigned long flags;
+ 	struct kmem_cache *s;
+ 	int rc = 0;
+ 
+@@ -2208,6 +2213,7 @@ int kmem_cache_vacate(struct page *page)
+ 	if (!PageSlab(page))
+ 		goto out;
+ 
++	local_irq_save(flags);
+ 	slab_lock(page);
+ 
+ 	/*
+@@ -2221,6 +2227,7 @@ int kmem_cache_vacate(struct page *page)
+ 	 */
+ 	if (!PageSlab(page) || PageActive(page) || !page->inuse) {
+ 		slab_unlock(page);
++		local_irq_restore(flags);
+ 		goto out;
+ 	}
+ 
+@@ -2231,7 +2238,7 @@ int kmem_cache_vacate(struct page *page)
+ 	s = page->slab;
+ 	remove_from_lists(s, page);
+ 	SetPageActive(page);
+-	rc = __kmem_cache_vacate(s, page) == 0;
++	rc = __kmem_cache_vacate(s, page, flags) == 0;
+ out:
+ 	put_page(page);
+ 	return rc;
+@@ -2336,8 +2343,11 @@ int kmem_cache_shrink(struct kmem_cache 
+ 
+ 		/* Now we can free objects in the slabs on the zaplist */
+ 		list_for_each_entry_safe(page, page2, &zaplist, lru) {
++			unsigned long flags;
++
++			local_irq_save(flags);
+ 			slab_lock(page);
+-			__kmem_cache_vacate(s, page);
++			__kmem_cache_vacate(s, page, flags);
+ 		}
+ 	}
+ 
+Index: slub/include/linux/slab.h
+===================================================================
+--- slub.orig/include/linux/slab.h	2007-05-04 15:53:06.000000000 -0700
++++ slub/include/linux/slab.h	2007-05-04 15:53:17.000000000 -0700
+@@ -42,7 +42,19 @@ struct slab_ops {
+ 	void (*ctor)(void *, struct kmem_cache *, unsigned long);
+ 	/* FIXME: Remove all destructors ? */
+ 	void (*dtor)(void *, struct kmem_cache *, unsigned long);
++	/*
++	 * Called with slab lock held and interrupts disabled.
++	 * No slab operations may be performed in get_reference
++	 *
++	 * Must return 1 if a reference was obtained.
++	 * 0 if we failed to obtain the reference (f.e.
++	 * the object is concurrently freed).
++	 */
+ 	int (*get_reference)(void *);
++	/*
++	 * Called with no locks held and interrupts enabled.
++	 * Any operation may be performed in kick_object.
++	 */
+ 	void (*kick_object)(void *);
+ };
+ 
