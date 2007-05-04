@@ -1,143 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767528AbXEDAgU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767535AbXEDAj0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767528AbXEDAgU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 20:36:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767532AbXEDAgU
+	id S1767535AbXEDAj0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 20:39:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767544AbXEDAj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 20:36:20 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:10464 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767528AbXEDAgT (ORCPT
+	Thu, 3 May 2007 20:39:26 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:53436 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767535AbXEDAjZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 20:36:19 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:message-id:
-	mime-version:content-type;
-	b=pTb47pDCad11WPaUeF9I9aR6t+hFykNWeMuyfWQIofieV2Huzn4mSkF4CVlh2Rn5Y
-	oBLFqHLpcV+6yMFj+WgEg==
-Date: Thu, 3 May 2007 17:35:57 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Rusty Russell <rusty@rustcorp.com.au>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel@vger.kernel.org
-Subject: [patch] compiler: introduce __used and __maybe_unused
-Message-ID: <Pine.LNX.4.64.0705031734520.21416@chino.kir.corp.google.com>
+	Thu, 3 May 2007 20:39:25 -0400
+Message-ID: <463A80A9.7030809@zytor.com>
+Date: Thu, 03 May 2007 17:39:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Albert Cahalan <acahalan@gmail.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
+Subject: Re: console font limits
+References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com> <Pine.LNX.4.64.0705011347300.27246@anakin> <1178021516.4372.62.camel@daplas> <46375738.1010007@zytor.com> <787b0d920705010849u52a4d6c3o2f1f800521ad5b95@mail.gmail.com> <Pine.LNX.4.61.0705021953030.18504@yvahk01.tjqt.qr> <787b0d920705022317j485cbe26wc83f071834c53584@mail.gmail.com> <Pine.LNX.4.61.0705030902430.18504@yvahk01.tjqt.qr> <787b0d920705030714k3b290d2csa38a5df63c692d6f@mail.gmail.com> <Pine.LNX.4.61.0705031621370.18504@yvahk01.tjqt.qr> <Pine.LNX.4.64.0705031754410.4727@anakin> <Pine.LNX.4.61.0705032020130.18504@yvahk01.tjqt.qr> <463A42DF.5030409@zytor.com> <Pine.LNX.4.61.0705032216200.18504@yvahk01.tjqt.qr> <E0FF8D28-219F-44D5-88B4-BDE6A4D6605A@mac.com>
+In-Reply-To: <E0FF8D28-219F-44D5-88B4-BDE6A4D6605A@mac.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__used is defined to be __attribute__((unused)) for all pre-3.4 gcc
-compilers to suppress warnings for unused functions because perhaps they
-are referenced only in inline assembly.  It is defined to be 
-__attribute__((used)) for gcc 3.4 and later so that the code is still
-emitted for such functions.
+Kyle Moffett wrote:
+> 
+> Actually I think the real problem was that "KD_GRAPHICS" got overloaded
+> to mean "some userspace program is probably poking at the GPU in very
+> direct ways possibly including /dev/mem".  As such it really isn't safe
+> at all for the kernel to write stuff to the screen in that situation;
+> you could turn a panic()+reboot-after-30-secs into an unrecoverable hard
+> PCI bus lockup.  IIRC there were at least a couple chipsets which had
+> that problem with X.  If we can implement enough APIs for X to do all of
+> its stuff from userspace without iopl() or /dev/mem then we could
+> probably bring back the option for dumping oopses to screen in
+> KD_GRAPHICS mode, but otherwise it'll just cause more headaches.
+> 
 
-There was a mistake in the current implementation of __attribute_used__
-whereas it would be defined to be __attribute__((used)) incorrectly for
-gcc 3.3 and later.  The unit-at-a-time compilation scheme was only
-introduced in gcc 3.4 and later versions as specified in 
-http://www.gnu.org/software/gcc/gcc-3.4/changes.html.
+It never meant anything *BUT* that, to the best of my knowledge.  That
+was certainly the original meaning of KD_GRAPHICS.
 
-__maybe_unused is defined to be __attribute__((unused)) for both function
-and variable use if it could possibly be unreferenced due to the
-evaluation of preprocessor macros.  Function prototypes shall be marked
-with __maybe_unused if the actual definition of the function is dependant
-on preprocessor macros.
-
-No update to compiler-intel.h is necessary because ICC supports both
-__attribute__((used)) and __attribute__((unused)) as specified by the
-gcc manual.
-
-__attribute_used__ is deprecated and will be removed once all current
-code is converted to using __used.
-
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrian Bunk <bunk@stusta.de>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- include/linux/compiler-gcc.h  |    1 +
- include/linux/compiler-gcc3.h |   13 ++++++-------
- include/linux/compiler-gcc4.h |    3 ++-
- include/linux/compiler.h      |   17 ++++++++++++++---
- 4 files changed, 23 insertions(+), 11 deletions(-)
-
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -37,3 +37,4 @@
- #define  noinline			__attribute__((noinline))
- #define __attribute_pure__		__attribute__((pure))
- #define __attribute_const__		__attribute__((__const__))
-+#define __maybe_unused			__attribute__((unused))
-diff --git a/include/linux/compiler-gcc3.h b/include/linux/compiler-gcc3.h
---- a/include/linux/compiler-gcc3.h
-+++ b/include/linux/compiler-gcc3.h
-@@ -3,14 +3,13 @@
- /* These definitions are for GCC v3.x.  */
- #include <linux/compiler-gcc.h>
- 
--#if __GNUC_MINOR__ >= 3
--# define __attribute_used__	__attribute__((__used__))
--#else
--# define __attribute_used__	__attribute__((__unused__))
--#endif
--
- #if __GNUC_MINOR__ >= 4
--#define __must_check		__attribute__((warn_unused_result))
-+# define __used			__attribute__((__used__))
-+# define __attribute_used__	__used				/* deprecated */
-+# define __must_check		__attribute__((warn_unused_result))
-+#else
-+# define __used			__attribute__((__unused__))
-+# define __attribute_used__	__used				/* deprecated */
- #endif
- 
- #define __always_inline		inline __attribute__((always_inline))
-diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
---- a/include/linux/compiler-gcc4.h
-+++ b/include/linux/compiler-gcc4.h
-@@ -12,7 +12,8 @@
- # define __inline		__inline	__attribute__((always_inline))
- #endif
- 
--#define __attribute_used__	__attribute__((__used__))
-+#define __used			__attribute__((__used__))
-+#define __attribute_used__	__used			/* deprecated */
- #define __must_check 		__attribute__((warn_unused_result))
- #define __compiler_offsetof(a,b) __builtin_offsetof(a,b)
- #define __always_inline		inline __attribute__((always_inline))
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -108,15 +108,26 @@ extern void __chk_io_ptr(const void __iomem *);
-  * Allow us to avoid 'defined but not used' warnings on functions and data,
-  * as well as force them to be emitted to the assembly file.
-  *
-- * As of gcc 3.3, static functions that are not marked with attribute((used))
-- * may be elided from the assembly file.  As of gcc 3.3, static data not so
-+ * As of gcc 3.4, static functions that are not marked with attribute((used))
-+ * may be elided from the assembly file.  As of gcc 3.4, static data not so
-  * marked will not be elided, but this may change in a future gcc version.
-  *
-  * In prior versions of gcc, such functions and data would be emitted, but
-  * would be warned about except with attribute((unused)).
-+ *
-+ * Mark functions that are referenced only in inline assembly as __used so
-+ * the code is emitted even though it appears to be unreferenced.
-  */
- #ifndef __attribute_used__
--# define __attribute_used__	/* unimplemented */
-+# define __attribute_used__	/* deprecated */
-+#endif
-+
-+#ifndef __used
-+# define __used			/* unimplemented */
-+#endif
-+
-+#ifndef __maybe_unused
-+# define __maybe_unused		/* unimplemented */
- #endif
- 
- /*
+	-hpa
