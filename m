@@ -1,70 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbXEDHCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422756AbXEDHFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754078AbXEDHCr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 03:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbXEDHCr
+	id S1422756AbXEDHFh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422770AbXEDHFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 03:02:47 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:43533 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754078AbXEDHCq (ORCPT
+	Fri, 4 May 2007 03:05:37 -0400
+Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:33383
+	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1422756AbXEDHFg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 03:02:46 -0400
-Date: Fri, 4 May 2007 00:02:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Josef Sipek <jsipek@cs.sunysb.edu>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       hch@infradead.org, viro@ftp.linux.org.uk, Trond.Myklebust@netapp.com,
-       mhalcrow@us.ibm.com
-Subject: Re: [PATCH 1/1] fs: add 4th case to do_path_lookup
-Message-Id: <20070504000200.d14bd8d9.akpm@linux-foundation.org>
-In-Reply-To: <20070430033012.GB32047@filer.fsl.cs.sunysb.edu>
-References: <20070430032624.GA32047@filer.fsl.cs.sunysb.edu>
-	<20070430033012.GB32047@filer.fsl.cs.sunysb.edu>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 May 2007 03:05:36 -0400
+Date: Fri, 4 May 2007 09:08:40 +0200
+From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] Power Management: use mutexes instead of semaphores
+Message-ID: <20070504070840.GD3234@traven>
+Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
+	linux-kernel@vger.kernel.org
+References: <20070427083857.GB4213@traven> <20070427084322.GC4213@traven> <20070503225432.97dad06e.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070503225432.97dad06e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007 23:30:12 -0400 Josef Sipek <jsipek@cs.sunysb.edu> wrote:
+El Thu, May 03, 2007 at 10:54:32PM -0700 Andrew Morton ha dit:
 
-> Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+> On Fri, 27 Apr 2007 10:43:22 +0200 Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
 > 
-> diff --git a/fs/namei.c b/fs/namei.c
-> index 2995fba..1516a9b 100644
-> --- a/fs/namei.c
-> +++ b/fs/namei.c
-> @@ -1125,6 +1125,10 @@ static int fastcall do_path_lookup(int dfd, const char *name,
->  		nd->mnt = mntget(fs->rootmnt);
->  		nd->dentry = dget(fs->root);
->  		read_unlock(&fs->lock);
-> +	} else if (flags & LOOKUP_ONE) {
-> +		/* nd->mnt and nd->dentry already set, just grab references */
-> +		mntget(nd->mnt);
-> +		dget(nd->dentry);
->  	} else if (dfd == AT_FDCWD) {
->  		read_lock(&fs->lock);
->  		nd->mnt = mntget(fs->pwdmnt);
-> diff --git a/include/linux/namei.h b/include/linux/namei.h
-> index 92b422b..aa89d97 100644
-> --- a/include/linux/namei.h
-> +++ b/include/linux/namei.h
-> @@ -48,6 +48,7 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT, LAST_BIND};
->   *  - internal "there are more path compnents" flag
->   *  - locked when lookup done with dcache_lock held
->   *  - dentry cache is untrusted; force a real lookup
-> + *  - lookup path from given dentry/vfsmount pair
->   */
->  #define LOOKUP_FOLLOW		 1
->  #define LOOKUP_DIRECTORY	 2
-> @@ -55,6 +56,7 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT, LAST_BIND};
->  #define LOOKUP_PARENT		16
->  #define LOOKUP_NOALT		32
->  #define LOOKUP_REVAL		64
-> +#define LOOKUP_ONE	       128
+> > the Power Management code uses semaphores as mutexes. use the mutex
+> > API instead of the (binary) semaphores
+> 
+> I know it's a little thing, but given a choice between
+> 
+> a) changelogs which use capital letters and fullstops and
+> 
+> b) changelogs which do not,
+> 
+> I think a) gives a better result.
 
-Well the patch passes my too-small-to-care-about test ;)
+thanks for your suggestion, i'll take it into account for future patches
+ 
+> I note that none of these patches added a #include <linux/mutex.h>.  Each C
+> file which uses mutexes should do that, rather than relying upon accidental
+> nested includes.  I hope you're checking for that.
 
-Unless someone objects I'd suggest that you add it to the unionfs tree.
+initially i added the include line (i think at least one patch still
+contains it), but then i realized that in most cases the original code
+doesn't include semaphore.h and i (mis-)interpreted that it should be
+handled the same way (relying upon nested includes) for mutexes. 
+
+do you want me to send you a version of the patches containing the
+include?
+
+regards
+
+-- 
+Matthias Kaehlcke
+Linux Application Developer
+Barcelona
+
+      The assumption that what currently exists must necessarily
+        exist is the acid that corrodes all visionary thinking
+                                                                 .''`.
+    using free software / Debian GNU/Linux | http://debian.org  : :'  :
+                                                                `. `'`
+gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
