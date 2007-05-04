@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767611AbXEDGe6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767683AbXEDGjJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767611AbXEDGe6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 02:34:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767678AbXEDGe5
+	id S1767683AbXEDGjJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 02:39:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767678AbXEDGjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 02:34:57 -0400
-Received: from holomorphy.com ([66.93.40.71]:39300 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767611AbXEDGe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 02:34:57 -0400
-Date: Thu, 3 May 2007 23:35:34 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: Remove constructor from buffer_head
-Message-ID: <20070504063534.GX19966@holomorphy.com>
-References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 4 May 2007 02:39:09 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:40001 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767626AbXEDGjH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 02:39:07 -0400
+Date: Thu, 3 May 2007 23:38:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alex Tomas <alex@clusterfs.com>
+Cc: Andreas Dilger <adilger@clusterfs.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marat Buharov <marat.buharov@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
+ is under heavy write load (massive starvation)
+Message-Id: <20070503233804.9dace4a7.akpm@linux-foundation.org>
+In-Reply-To: <463AD024.6060208@clusterfs.com>
+References: <1177660767.6567.41.camel@Homer.simpson.net>
+	<20070427013350.d0d7ac38.akpm@linux-foundation.org>
+	<698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
+	<alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>
+	<20070427193130.GD5967@schatzie.adilger.int>
+	<20070427151837.f1439639.akpm@linux-foundation.org>
+	<463A1E02.8020506@clusterfs.com>
+	<20070503165428.855eb7d7.akpm@linux-foundation.org>
+	<463AD024.6060208@clusterfs.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 08:08:41PM -0700, Christoph Lameter wrote:
-> Performance tests show a slight improvements in netperf (not a
-> strong case for a performance improvement but removing the
-> constructor has definitely no negative impact so why keep
-> this around?).
+On Fri, 04 May 2007 10:18:12 +0400 Alex Tomas <alex@clusterfs.com> wrote:
 
-Cache effects are not so easily visible. Cache profile results from
-more realistic workloads (e.g. major macrobenchmarks) are more
-appropriate for gauging this.
+> Andrew Morton wrote:
+> > Yes, there can be issues with needing to allocate journal space within the
+> > context of a commit.  But
+> 
+> no-no, this isn't required. we only need to mark pages/blocks within
+> transaction, otherwise race is possible when we allocate blocks in transaction,
+> then transacton starts to commit, then we mark pages/blocks to be flushed
+> before commit.
 
-
--- wli
+I don't understand.  Can you please describe the race in more detail?
