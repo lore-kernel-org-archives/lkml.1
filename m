@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbXEDKkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423683AbXEDKjz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754946AbXEDKkU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 06:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbXEDKj6
+	id S1423683AbXEDKjz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 06:39:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767839AbXEDKjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 06:39:58 -0400
+	Fri, 4 May 2007 06:39:41 -0400
 Received: from amsfep17-int.chello.nl ([213.46.243.15]:3563 "EHLO
 	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1767844AbXEDKjE (ORCPT
+	by vger.kernel.org with ESMTP id S1767849AbXEDKjL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 06:39:04 -0400
-Message-Id: <20070504103200.092467721@chello.nl>
+	Fri, 4 May 2007 06:39:11 -0400
+Message-Id: <20070504103201.289858346@chello.nl>
 References: <20070504102651.923946304@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 May 2007 12:27:11 +0200
+Date: Fri, 04 May 2007 12:27:16 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -23,181 +23,166 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Daniel Phillips <phillips@google.com>
-Subject: [PATCH 20/40] netvm: skb processing
-Content-Disposition: inline; filename=netvm.patch
+Subject: [PATCH 25/40] nfs: remove mempools
+Content-Disposition: inline; filename=nfs-no-mempool.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to make sure emergency packets receive all memory needed to proceed
-ensure processing of emergency skbs happens under PF_MEMALLOC.
-
-Use the (new) sk_backlog_rcv() wrapper to ensure this for backlog processing.
-
-Skip taps, since those are user-space again.
+With the introduction of the shared dirty page accounting in .19, NFS should
+not be able to surpise the VM with all dirty pages. Thus it should always be
+able to free some memory. Hence no more need for mempools.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
 ---
- include/net/sock.h |    4 ++++
- net/core/dev.c     |   42 +++++++++++++++++++++++++++++++++++++-----
- net/core/sock.c    |   19 +++++++++++++++++++
- 3 files changed, 60 insertions(+), 5 deletions(-)
+ fs/nfs/read.c  |   15 +++------------
+ fs/nfs/write.c |   27 +++++----------------------
+ 2 files changed, 8 insertions(+), 34 deletions(-)
 
-Index: linux-2.6-git/net/core/dev.c
+Index: linux-2.6-git/fs/nfs/read.c
 ===================================================================
---- linux-2.6-git.orig/net/core/dev.c
-+++ linux-2.6-git/net/core/dev.c
-@@ -1756,10 +1756,23 @@ int netif_receive_skb(struct sk_buff *sk
- 	struct net_device *orig_dev;
- 	int ret = NET_RX_DROP;
- 	__be16 type;
-+	unsigned long pflags = current->flags;
-+
-+	/* Emergency skb are special, they should
-+	 *  - be delivered to SOCK_VMIO sockets only
-+	 *  - stay away from userspace
-+	 *  - have bounded memory usage
-+	 *
-+	 * Use PF_MEMALLOC as a poor mans memory pool - the grouping kind.
-+	 * This saves us from propagating the allocation context down to all
-+	 * allocation sites.
-+	 */
-+	if (skb_emergency(skb))
-+		current->flags |= PF_MEMALLOC;
+--- linux-2.6-git.orig/fs/nfs/read.c
++++ linux-2.6-git/fs/nfs/read.c
+@@ -33,13 +33,10 @@ static const struct rpc_call_ops nfs_rea
+ static const struct rpc_call_ops nfs_read_full_ops;
  
- 	/* if we've gotten here through NAPI, check netpoll */
- 	if (skb->dev->poll && netpoll_rx(skb))
--		return NET_RX_DROP;
-+		goto out;
+ static struct kmem_cache *nfs_rdata_cachep;
+-static mempool_t *nfs_rdata_mempool;
+-
+-#define MIN_POOL_READ	(32)
  
- 	if (!skb->tstamp.tv64)
- 		net_timestamp(skb);
-@@ -1770,7 +1783,7 @@ int netif_receive_skb(struct sk_buff *sk
- 	orig_dev = skb_bond(skb);
+ struct nfs_read_data *nfs_readdata_alloc(unsigned int pagecount)
+ {
+-	struct nfs_read_data *p = mempool_alloc(nfs_rdata_mempool, GFP_NOFS);
++	struct nfs_read_data *p = kmem_cache_alloc(nfs_rdata_cachep, GFP_NOFS);
  
- 	if (!orig_dev)
--		return NET_RX_DROP;
-+		goto out;
- 
- 	__get_cpu_var(netdev_rx_stat).total++;
- 
-@@ -1789,6 +1802,9 @@ int netif_receive_skb(struct sk_buff *sk
- 	}
- #endif
- 
-+	if (skb_emergency(skb))
-+		goto skip_taps;
-+
- 	list_for_each_entry_rcu(ptype, &ptype_all, list) {
- 		if (!ptype->dev || ptype->dev == skb->dev) {
- 			if (pt_prev)
-@@ -1797,6 +1813,7 @@ int netif_receive_skb(struct sk_buff *sk
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -50,7 +47,7 @@ struct nfs_read_data *nfs_readdata_alloc
+ 		else {
+ 			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
+ 			if (!p->pagevec) {
+-				mempool_free(p, nfs_rdata_mempool);
++				kmem_cache_free(nfs_rdata_cachep, p);
+ 				p = NULL;
+ 			}
  		}
- 	}
- 
-+skip_taps:
- #ifdef CONFIG_NET_CLS_ACT
- 	if (pt_prev) {
- 		ret = deliver_skb(skb, pt_prev, orig_dev);
-@@ -1809,16 +1826,28 @@ int netif_receive_skb(struct sk_buff *sk
- 
- 	if (ret == TC_ACT_SHOT || (ret == TC_ACT_STOLEN)) {
- 		kfree_skb(skb);
--		goto out;
-+		goto unlock;
- 	}
- 
- 	skb->tc_verd = 0;
- ncls:
- #endif
- 
-+	if (skb_emergency(skb))
-+		switch(skb->protocol) {
-+			case __constant_htons(ETH_P_ARP):
-+			case __constant_htons(ETH_P_IP):
-+			case __constant_htons(ETH_P_IPV6):
-+			case __constant_htons(ETH_P_8021Q):
-+				break;
-+
-+			default:
-+				goto drop;
-+		}
-+
- 	skb = handle_bridge(skb, &pt_prev, &ret, orig_dev);
- 	if (!skb)
--		goto out;
-+		goto unlock;
- 
- 	type = skb->protocol;
- 	list_for_each_entry_rcu(ptype, &ptype_base[ntohs(type)&15], list) {
-@@ -1833,6 +1862,7 @@ ncls:
- 	if (pt_prev) {
- 		ret = pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
- 	} else {
-+drop:
- 		kfree_skb(skb);
- 		/* Jamal, now you will not able to escape explaining
- 		 * me how you were going to use this. :-)
-@@ -1840,8 +1870,10 @@ ncls:
- 		ret = NET_RX_DROP;
- 	}
- 
--out:
-+unlock:
- 	rcu_read_unlock();
-+out:
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
- 	return ret;
+@@ -63,7 +60,7 @@ static void nfs_readdata_rcu_free(struct
+ 	struct nfs_read_data *p = container_of(head, struct nfs_read_data, task.u.tk_rcu);
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+-	mempool_free(p, nfs_rdata_mempool);
++	kmem_cache_free(nfs_rdata_cachep, p);
  }
  
-Index: linux-2.6-git/include/net/sock.h
-===================================================================
---- linux-2.6-git.orig/include/net/sock.h
-+++ linux-2.6-git/include/net/sock.h
-@@ -527,10 +527,14 @@ static inline void sk_add_backlog(struct
- 	skb->next = NULL;
+ static void nfs_readdata_free(struct nfs_read_data *rdata)
+@@ -590,16 +587,10 @@ int __init nfs_init_readpagecache(void)
+ 	if (nfs_rdata_cachep == NULL)
+ 		return -ENOMEM;
+ 
+-	nfs_rdata_mempool = mempool_create_slab_pool(MIN_POOL_READ,
+-						     nfs_rdata_cachep);
+-	if (nfs_rdata_mempool == NULL)
+-		return -ENOMEM;
+-
+ 	return 0;
  }
  
-+#ifndef CONFIG_NETVM
- static inline int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
+ void nfs_destroy_readpagecache(void)
  {
- 	return sk->sk_backlog_rcv(sk, skb);
+-	mempool_destroy(nfs_rdata_mempool);
+ 	kmem_cache_destroy(nfs_rdata_cachep);
  }
-+#else
-+extern int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb);
-+#endif
- 
- #define sk_wait_event(__sk, __timeo, __condition)		\
- ({	int rc;							\
-Index: linux-2.6-git/net/core/sock.c
+Index: linux-2.6-git/fs/nfs/write.c
 ===================================================================
---- linux-2.6-git.orig/net/core/sock.c
-+++ linux-2.6-git/net/core/sock.c
-@@ -332,6 +332,25 @@ int sk_clear_vmio(struct sock *sk)
- }
- EXPORT_SYMBOL_GPL(sk_clear_vmio);
+--- linux-2.6-git.orig/fs/nfs/write.c
++++ linux-2.6-git/fs/nfs/write.c
+@@ -29,9 +29,6 @@
  
-+#ifdef CONFIG_NETVM
-+int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
-+{
-+	if (skb_emergency(skb)) {
-+		int ret;
-+		unsigned long pflags = current->flags;
-+	       	/* these should have been dropped before queueing */
-+		BUG_ON(!sk_has_vmio(sk));
-+		current->flags |= PF_MEMALLOC;
-+		ret = sk->sk_backlog_rcv(sk, skb);
-+		tsk_restore_flags(current, pflags, PF_MEMALLOC);
-+		return ret;
-+	}
-+
-+	return sk->sk_backlog_rcv(sk, skb);
-+}
-+EXPORT_SYMBOL(sk_backlog_rcv);
-+#endif
-+
- static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
+ #define NFSDBG_FACILITY		NFSDBG_PAGECACHE
+ 
+-#define MIN_POOL_WRITE		(32)
+-#define MIN_POOL_COMMIT		(4)
+-
+ /*
+  * Local function declarations
+  */
+@@ -45,12 +42,10 @@ static const struct rpc_call_ops nfs_wri
+ static const struct rpc_call_ops nfs_commit_ops;
+ 
+ static struct kmem_cache *nfs_wdata_cachep;
+-static mempool_t *nfs_wdata_mempool;
+-static mempool_t *nfs_commit_mempool;
+ 
+ struct nfs_write_data *nfs_commit_alloc(void)
  {
- 	struct timeval tv;
+-	struct nfs_write_data *p = mempool_alloc(nfs_commit_mempool, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -64,7 +59,7 @@ void nfs_commit_rcu_free(struct rcu_head
+ 	struct nfs_write_data *p = container_of(head, struct nfs_write_data, task.u.tk_rcu);
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+-	mempool_free(p, nfs_commit_mempool);
++	kmem_cache_free(nfs_wdata_cachep, p);
+ }
+ 
+ void nfs_commit_free(struct nfs_write_data *wdata)
+@@ -74,7 +69,7 @@ void nfs_commit_free(struct nfs_write_da
+ 
+ struct nfs_write_data *nfs_writedata_alloc(unsigned int pagecount)
+ {
+-	struct nfs_write_data *p = mempool_alloc(nfs_wdata_mempool, GFP_NOFS);
++	struct nfs_write_data *p = kmem_cache_alloc(nfs_wdata_cachep, GFP_NOFS);
+ 
+ 	if (p) {
+ 		memset(p, 0, sizeof(*p));
+@@ -85,7 +80,7 @@ struct nfs_write_data *nfs_writedata_all
+ 		else {
+ 			p->pagevec = kcalloc(pagecount, sizeof(struct page *), GFP_NOFS);
+ 			if (!p->pagevec) {
+-				mempool_free(p, nfs_wdata_mempool);
++				kmem_cache_free(nfs_wdata_cachep, p);
+ 				p = NULL;
+ 			}
+ 		}
+@@ -98,7 +93,7 @@ static void nfs_writedata_rcu_free(struc
+ 	struct nfs_write_data *p = container_of(head, struct nfs_write_data, task.u.tk_rcu);
+ 	if (p && (p->pagevec != &p->page_array[0]))
+ 		kfree(p->pagevec);
+-	mempool_free(p, nfs_wdata_mempool);
++	kmem_cache_free(nfs_wdata_cachep, p);
+ }
+ 
+ static void nfs_writedata_free(struct nfs_write_data *wdata)
+@@ -1465,16 +1460,6 @@ int __init nfs_init_writepagecache(void)
+ 	if (nfs_wdata_cachep == NULL)
+ 		return -ENOMEM;
+ 
+-	nfs_wdata_mempool = mempool_create_slab_pool(MIN_POOL_WRITE,
+-						     nfs_wdata_cachep);
+-	if (nfs_wdata_mempool == NULL)
+-		return -ENOMEM;
+-
+-	nfs_commit_mempool = mempool_create_slab_pool(MIN_POOL_COMMIT,
+-						      nfs_wdata_cachep);
+-	if (nfs_commit_mempool == NULL)
+-		return -ENOMEM;
+-
+ 	/*
+ 	 * NFS congestion size, scale with available memory.
+ 	 *
+@@ -1500,8 +1485,6 @@ int __init nfs_init_writepagecache(void)
+ 
+ void nfs_destroy_writepagecache(void)
+ {
+-	mempool_destroy(nfs_commit_mempool);
+-	mempool_destroy(nfs_wdata_mempool);
+ 	kmem_cache_destroy(nfs_wdata_cachep);
+ }
+ 
 
 --
 
