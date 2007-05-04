@@ -1,42 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031027AbXEDQFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031020AbXEDQI2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031027AbXEDQFg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 12:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031035AbXEDQFf
+	id S1031020AbXEDQI2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:08:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031039AbXEDQI2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 12:05:35 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53395 "EHLO
+	Fri, 4 May 2007 12:08:28 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38095 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031039AbXEDQFe (ORCPT
+	with ESMTP id S1031020AbXEDQI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 12:05:34 -0400
-Date: Fri, 4 May 2007 09:05:32 -0700 (PDT)
+	Fri, 4 May 2007 12:08:27 -0400
+Date: Fri, 4 May 2007 09:08:25 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: William Lee Irwin III <wli@holomorphy.com>
-cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: Remove constructor from buffer_head
-In-Reply-To: <20070504063534.GX19966@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0705040905020.21436@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
- <20070504063534.GX19966@holomorphy.com>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, sct@redhat.com,
+       akpm@linux-foundation.org, adilger@clusterfs.com
+Subject: Re: [RFC/PATCH] ext3: remove inode constructor
+In-Reply-To: <Pine.LNX.4.64.0705041311230.1455@sbz-30.cs.Helsinki.FI>
+Message-ID: <Pine.LNX.4.64.0705040907180.21436@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705041311230.1455@sbz-30.cs.Helsinki.FI>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 May 2007, William Lee Irwin III wrote:
+On Fri, 4 May 2007, Pekka J Enberg wrote:
 
-> On Thu, May 03, 2007 at 08:08:41PM -0700, Christoph Lameter wrote:
-> > Performance tests show a slight improvements in netperf (not a
-> > strong case for a performance improvement but removing the
-> > constructor has definitely no negative impact so why keep
-> > this around?).
-> 
-> Cache effects are not so easily visible. Cache profile results from
-> more realistic workloads (e.g. major macrobenchmarks) are more
-> appropriate for gauging this.
+> Index: 2.6/fs/ext3/super.c
+> ===================================================================
+> --- 2.6.orig/fs/ext3/super.c	2007-05-04 12:57:09.000000000 +0300
+> +++ 2.6/fs/ext3/super.c	2007-05-04 13:01:27.000000000 +0300
+> @@ -444,17 +444,26 @@ static struct kmem_cache *ext3_inode_cac
+>  static struct inode *ext3_alloc_inode(struct super_block *sb)
+>  {
+>  	struct ext3_inode_info *ei;
+> +	struct inode *inode;
+>  
+>  	ei = kmem_cache_alloc(ext3_inode_cachep, GFP_NOFS);
+>  	if (!ei)
+>  		return NULL;
+> +        INIT_LIST_HEAD(&ei->i_orphan);
+> +#ifdef CONFIG_EXT3_FS_XATTR
+> +        init_rwsem(&ei->xattr_sem);
+> +#endif
+> +        mutex_init(&ei->truncate_mutex);
 
-Yeah I really out to stick a performance counter in this but that would 
-require some effort. Defer for now I guess.
+^^^ whitespace issues
+
+Also could this be generalized to also apply to the generic inode 
+allocation in fs/inode.c?
 
