@@ -1,70 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161469AbXEDSZq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161473AbXEDSZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161469AbXEDSZq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161474AbXEDSZq
+	id S1161473AbXEDSZs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161474AbXEDSZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:25:46 -0400
-Received: from mga09.intel.com ([134.134.136.24]:20273 "EHLO mga09.intel.com"
+	Fri, 4 May 2007 14:25:47 -0400
+Received: from gw.goop.org ([64.81.55.164]:56247 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161469AbXEDSZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:25:45 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,493,1170662400"; 
-   d="scan'208";a="83838545"
-Message-ID: <463B7AA7.9050302@intel.com>
-Date: Fri, 04 May 2007 11:25:43 -0700
-From: "Kok, Auke" <auke-jan.h.kok@intel.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+	id S1161473AbXEDSZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 14:25:46 -0400
+Message-ID: <463B7AAC.90701@goop.org>
+Date: Fri, 04 May 2007 11:25:48 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Michel Lespinasse <walken@zoy.org>
-CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
-       Jeb Cramer <cramerj@intel.com>, John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: e1000 issue on DQ965GF board (was 24 lost ticks with 2.6.20.10
- kernel)
-References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com> <20070501214912.GA4048@zoy.org> <4637BA70.8000108@intel.com> <20070502084146.GA6089@zoy.org> <4638D51C.7010603@intel.com> <20070503062701.GA22255@zoy.org>
-In-Reply-To: <20070503062701.GA22255@zoy.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 3/3] boot bzImages under paravirt
+References: <1178283582.23670.67.camel@localhost.localdomain>	<1178283724.23670.70.camel@localhost.localdomain>	<1178284052.23670.75.camel@localhost.localdomain>	<m1ps5gslfm.fsf@ebiederm.dsl.xmission.com> <463B4E12.50703@goop.org>	<m1r6pwr0yy.fsf@ebiederm.dsl.xmission.com> <463B6C8A.9080206@goop.org> <m11whwqymy.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m11whwqymy.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 04 May 2007 18:25:43.0854 (UTC) FILETIME=[A083FCE0:01C78E79]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michel Lespinasse wrote:
-> On Wed, May 02, 2007 at 11:14:52AM -0700, Kok, Auke wrote:
->> I just checked and the fix I was referring to earlier didn't make it into 
->> 2.6.21-final. You can get 2.6.21-git1 from kernel.org which has the fix. See
->>
->> http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git1.log
-> 
-> Good. So I tried that patch (well, actually only the change visible at
-> http://lkml.org/lkml/2007/3/6/268). I patched it into a 2.6.20.11 kernel,
-> using the same config file as previously. The good news is that this fixes
-> my issue: there are no lost ticks anymore, and the link does negotiate a
-> gigabit connection. This is a great improvement for me :)
-> 
-> I still seem to hit an issue if using the ethtool command, though.
-> when using 'ethtool -s eth0 autoneg on', the link comes up at gigabit speed,
-> but a couple seconds later is comes down again, and then up at 100 megabits:
-> 
-> e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex
-> e1000: eth0: e1000_watchdog: NIC Link is Down
-> e1000: eth0: e1000_watchdog: NIC Link is Up 100 Mbps Full Duplex
-> e1000: eth0: e1000_watchdog: 10/100 speed: disabling TSO
-> 
-> The same thing happens if I use ifdown eth0; ifup eth0 too. Once again,
-> I only observe this on my DQ965GF motherboard, the DG965RY board is fine
-> (stays at gigabit speed when I issue these commands).
-> 
-> Is this something you could easily reproduce at Intel or would you want me
-> to look into that issue on my system ?
+Eric W. Biederman wrote:
+>>> load the segments as well.
+>>>
+>>> Gujin looks like it loads just %es and %ds.
+>>>   
+>>>       
+>> We should be able to make do with that until we've got our own gdt.
+>>     
+>
+> Right after the segments loads we have:
+> 	leal 0x40(%esi), %esp
+> 	call 1f
+> 1:	popl %ebp
+> 	subl $1b, %ebp
+>
+> That uses %ss and %ds.  Can we use a segment override on a call
+> instruction?
+>   
 
-can you try turning off the "management enable" function in the BIOS of the 
-DQ965GF? That fixes this issue for us in our labs. A fix for this is also 
-available in our standalone 7.5.5.1 driver (obtainable from e1000.sf.net), but 
-it hasn't made it upstream yet.
+I overlooked Gujin missing %ss.  That's harsh.  Easy for them to fix,
+presumably.
 
-Auke
+> Yes.  Exactly like we do for real mode code, and with exactly the same
+> values.  Just in a little different format.
+
+Well, fits in well with Xen's requirements, since it wants ELF notes
+there for exactly the same reason.
+
+    J
