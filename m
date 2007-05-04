@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767724AbXEDIQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767730AbXEDIQt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767724AbXEDIQD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767715AbXEDIQB
+	id S1767730AbXEDIQt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:16:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767715AbXEDIQs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:16:01 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:48062 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767724AbXEDIPl (ORCPT
+	Fri, 4 May 2007 04:16:48 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:22772 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965744AbXEDIQp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:15:41 -0400
-Date: Fri, 4 May 2007 01:15:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@steeleye.com>
-Subject: Re: [PATCH] SCSI: Remove redundant GFP_KERNEL type flag in
- kmalloc().
-Message-Id: <20070504011535.ff7181fb.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704300434460.3703@localhost.localdomain>
-References: <Pine.LNX.4.64.0704300434460.3703@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 May 2007 04:16:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=Vm7i6cd7MCG6lwciq2wlFwoUseP4w69/BqE5segeS9PeQFDrnc8pJx46ZEQOtyrB4b7DLlTuFB7nIiqI+aR7kVmiQv6O1JXA5s971iasIytd0RAezi5EpZVK6AfAuJ8NiW7eFkIS7rrmJSgrWWL7w556OMXPxXgEN/0+QsnJfP0=
+Message-ID: <463AEBE0.7010506@gmail.com>
+Date: Fri, 04 May 2007 10:16:32 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Mark Lord <lkml@rtr.ca>, Frank van Maarseveen <frankvm@frankvm.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
+Subject: Re: libata /dev/scd0 problem: mount after burn fails without eject
+References: <20070501135951.GA17072@janus> <46374C11.1010702@rtr.ca> <6bffcb0e0705010731v44cfad1awf4342121245f7ab3@mail.gmail.com>
+In-Reply-To: <6bffcb0e0705010731v44cfad1awf4342121245f7ab3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Michal Piotrowski wrote:
+> On 01/05/07, Mark Lord <lkml@rtr.ca> wrote:
+>> Forwarding to linux-scsi and linux-ide mailing lists.
+>>
+>> Frank van Maarseveen wrote:
+>> > Tested on 2.6.20.6 and 2.6.21.1
+>> >
+>> > I decided to swich from the old IDE drivers to libata and now there
+>> > seems to be a little but annoying problem: cannot mount an ISO image
+>> > after burning it.
+>> >
+>> > May  1 14:32:55 kernel: attempt to access beyond end of device
+>> > May  1 14:32:55 kernel: sr0: rw=0, want=68, limit=4
+>> > May  1 14:32:55 kernel: isofs_fill_super: bread failed, dev=sr0,
+>> iso_blknum=16, block=16
+>> >
+>> > an "eject" command seems to fix the state of the PATA DVD writer
+>> > or driver. The problem occurs for burning a CD and for DVD too with
+>> > identical error messages.
 
-Please be careful to add the appropriate cc's.
+Right after burning, if you run 'fuser -v /dev/sr0', what does it say?
 
-On Mon, 30 Apr 2007 04:37:22 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
-
-> 
-> Remove the apparently redundant GFP_KERNEL type flag in the call to
-> kmalloc().
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> 
-> ---
-> 
-> diff --git a/drivers/scsi/aic7xxx_old.c b/drivers/scsi/aic7xxx_old.c
-> index a988d5a..765ded0 100644
-> --- a/drivers/scsi/aic7xxx_old.c
-> +++ b/drivers/scsi/aic7xxx_old.c
-> @@ -6581,7 +6581,7 @@ aic7xxx_slave_alloc(struct scsi_device *SDptr)
->    struct aic7xxx_host *p = (struct aic7xxx_host *)SDptr->host->hostdata;
->    struct aic_dev_data *aic_dev;
-> 
-> -  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
-> +  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC);
-
-No, this converts the allocation from a robust one which can sleep into a
-flakey one which cannot.
-
-If we want to just clean this code up, we should switch to
-
-	GFP_KERNEL|__GFP_HIGH
-
-and add a comment explaining why we're turning on __GFP_HIGH (pointlessly,
-I suspect).
-
-However I suspect what the code really meant to do was to use just
-GFP_KERNEL.  It's been that way since
-
-commit 5c9342ceb292ac5c619db6eef4ef427a64bcd436
-Author: torvalds <torvalds>
-Date:   Thu Nov 7 04:54:32 2002 +0000
-
-    Merge bk://linux-scsi.bkbits.net/scsi-dledford
-    into home.transmeta.com:/home/torvalds/v2.5/linux
-    
-    2002/11/06 16:40:20-05:00 dledford
-    aic7xxx_old: multiple updates and fixes, driver ported to scsi
-        mid-layer new error handling scheme
+-- 
+tejun
