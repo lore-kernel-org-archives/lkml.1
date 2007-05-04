@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S376150AbXEDUa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423054AbXEDUhh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S376150AbXEDUa4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 16:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376152AbXEDUaz
+	id S1423054AbXEDUhh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 16:37:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423055AbXEDUhh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 16:30:55 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:38590 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S376150AbXEDUax (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 16:30:53 -0400
-Subject: Re: [patch 6/7] SCSI: save disk in scsi_device - resend
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com, akpm@linux-foundation.org
-In-Reply-To: <20070504111733.f507501d.kristen.c.accardi@intel.com>
-References: <20070424074856.005152262@intel.com>
-	 <20070504111733.f507501d.kristen.c.accardi@intel.com>
+	Fri, 4 May 2007 16:37:37 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:54884 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423054AbXEDUhg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 16:37:36 -0400
+Subject: Re: cpufreq longhaul locks up
+From: john stultz <johnstul@us.ibm.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: davej@codemonkey.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk
+In-Reply-To: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
 Content-Type: text/plain
-Date: Fri, 04 May 2007 15:30:48 -0500
-Message-Id: <1178310648.3711.56.camel@mulgrave.il.steeleye.com>
+Date: Fri, 04 May 2007 13:37:32 -0700
+Message-Id: <1178311052.6094.0.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 11:17 -0700, Kristen Carlson Accardi wrote:
-> Give anyone who has access to scsi_device access to the genhd struct as well.
+On Fri, 2007-05-04 at 12:16 +0200, Jan Engelhardt wrote:
+> Hi,
 > 
-> Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> Index: 2.6-git/drivers/scsi/sd.c
-> ===================================================================
-> --- 2.6-git.orig/drivers/scsi/sd.c
-> +++ 2.6-git/drivers/scsi/sd.c
-> @@ -1711,6 +1711,7 @@ static int sd_probe(struct device *dev)
->  
->  	dev_set_drvdata(dev, sdkp);
->  	add_disk(gd);
-> +	sdp->disk = gd;
->  
->  	sdev_printk(KERN_NOTICE, sdp, "Attached scsi %sdisk %s\n",
->  		    sdp->removable ? "removable " : "", gd->disk_name);
-> Index: 2.6-git/drivers/scsi/sr.c
-> ===================================================================
-> --- 2.6-git.orig/drivers/scsi/sr.c
-> +++ 2.6-git/drivers/scsi/sr.c
-> @@ -604,6 +604,7 @@ static int sr_probe(struct device *dev)
->  	if (sdev->media_change_notify)
->  		disk->flags |= GENHD_FL_MEDIA_CHANGE_NOTIFY;
->  	add_disk(disk);
-> +	sdev->disk = disk;
->  
->  	sdev_printk(KERN_DEBUG, sdev,
->  		    "Attached scsi CD-ROM %s\n", cd->cdi.name);
-> Index: 2.6-git/include/scsi/scsi_device.h
-> ===================================================================
-> --- 2.6-git.orig/include/scsi/scsi_device.h
-> +++ 2.6-git/include/scsi/scsi_device.h
-> @@ -138,7 +138,7 @@ struct scsi_device {
->  
->  	struct device		sdev_gendev;
->  	struct class_device	sdev_classdev;
-> -
-> +	struct gendisk 		*disk;
->  	struct execute_work	ew; /* used to get process context on put */
->  
->  	enum scsi_device_state sdev_state;
+> 
+> I found that setting the cpufreq governor to ondemand making the box 
+> lock up solid in 2.6.20.2 and 2.6.21 after a few seconds. Sysrq 
+> does not work anymore, and the last messages are:
+> 
+> May  3 19:16:58 cn kernel: longhaul: VIA C3 'Nehemiah C' [C5P] CPU 
+> detected.  Powersaver supported.
+> May  3 19:16:58 cn kernel: longhaul: Using northbridge support.
+> May  3 19:17:22 cn kernel: Time: acpi_pm clocksource has been installed.
+> May  3 19:17:22 cn kernel: Clocksource tsc unstable (delta = -136422685 
+> ns)
 
-If you're going to do this, you need to take on board removing the
-struct gendisk from all the ULD structures (since it's now become
-generic).
+What happens if you boot wihtout the ondemand governor but w/ clocksource=acpi_pm ? 
 
-James
+
+thanks
+-john
 
 
