@@ -1,226 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767497AbXEDCHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbXEDCi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767497AbXEDCHP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 22:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767534AbXEDCHP
+	id S1754518AbXEDCi5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 22:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbXEDCi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 22:07:15 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:50950 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767497AbXEDCHN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 22:07:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:subject:from:to:cc:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=YDm+CCNYhiasutFQK3F9fbvQSnTZlr81FMbpgvUCv8jnbP66tENFltNxfE2U1MeSc1yk5W9GEM73zzhyuUBxJqb+DchW5uV9mbXT5tZUoAoXgvxzQDWjrgeMPwc3VhZ/M78VKiuivFp+p8gwF24HA7HS1qawCrT5uEJzFa4G0B4=
-Subject: [PATCH] Stop ignoring argument in drivers/network/b44.c
-From: Matthew Martin <mtt.martin@gmail.com>
-To: zambrano@broadcom.com
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+	Thu, 3 May 2007 22:38:57 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:43093 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754518AbXEDCi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 22:38:56 -0400
+Subject: Re: Fw: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
+From: john stultz <johnstul@us.ibm.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
+In-Reply-To: <1178129409.6183.12.camel@localhost.localdomain>
+References: <200704291524.l3TFOL9j013216@harpo.it.uu.se>
+	 <1178129409.6183.12.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Thu, 03 May 2007 21:07:09 -0500
-Message-Id: <1178244429.19298.17.camel@Aragorn.ualr.edu>
+Date: Thu, 03 May 2007 19:38:50 -0700
+Message-Id: <1178246331.7460.27.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-05-02 at 11:10 -0700, john stultz wrote:
+> On Sun, 2007-04-29 at 17:24 +0200, Mikael Pettersson wrote:
+> > On Thu, 26 Apr 2007 15:42:44 -0700, john stultz wrote:
+> > >Another shot in the dark:
+> > >
+> > >I wonder if the ACPI PM counter is halting in idle. Does booting w/
+> > >idle=poll change the behavior? (Please do this while your laptop is
+> > >plugged in, as it will run the cpu at full speed all the time).
+> > 
+> > Bingo!
+> 
+> Awesome! Finally, some progress! Thanks again for putting up w/ all my
+> testing requests.
+> 
+> > I booted the x86-64 2.6.21 final kernel with idle=poll and let the
+> > laptop idle for an hour. The ondemand cpufreq governor did reduce
+> > the CPU's clock frequency, but that shouldn't have affected the
+> > chipset or the ACPI PM counter.
+> > 
+> > Anyway, after 60 minutes `date' and `hwclock' were still in perfect
+> > sync and matched actual time.
+> > 
+> > Any ideas why this halting in idle doesn't happen with the 32-bit kernel?
+> 
+> No clue. Time to ask Len. :)
+> 
+> Hey Len,
+> 	So that slow acpi_pm on x86_64 seems to be connected w/ the idle loop.
+> I'm guessing the chipset halts the ACPI PM in lower C states. Do you
+> have any guesses as to what might differ between x86_64 and i386 ACPI
+> idle loops? Or might this be something different in what the BIOS
+> exports in x86_64 mode or i386 mode?
 
-This patch uses the phy_id variable in b44_readphy and b44_writephy.
+Mikael,
+	Just trying to dig a bit more through the acpi_processor_idle code.
+Could you run "cat /proc/acpi/processor/CPU1/power" and reply w/ the
+output?
 
-Signed-off-by: Matthew Martin <mtt.martin@gmail.com>
----
+thanks
+-john
 
---- vanilla-linux-2.6.21-git4/drivers/net/b44.c	2007-05-03 11:16:21.000000000 -0500
-+++ linux-2.6.21-git4/drivers/net/b44.c	2007-05-03 17:02:39.000000000 -0500
-@@ -327,45 +327,59 @@ static void b44_enable_ints(struct b44 *
- 	bw32(bp, B44_IMASK, bp->imask);
- }
- 
--static int b44_readphy(struct b44 *bp, int reg, u32 *val)
-+static int b44_readphy(struct b44 *bp, int reg, u32 *val, int phy_addr)
- {
- 	int err;
- 
- 	bw32(bp, B44_EMAC_ISTAT, EMAC_INT_MII);
--	bw32(bp, B44_MDIO_DATA, (MDIO_DATA_SB_START |
--			     (MDIO_OP_READ << MDIO_DATA_OP_SHIFT) |
--			     (bp->phy_addr << MDIO_DATA_PMD_SHIFT) |
--			     (reg << MDIO_DATA_RA_SHIFT) |
--			     (MDIO_TA_VALID << MDIO_DATA_TA_SHIFT)));
-+	
-+	if (!phy_addr)	
-+		bw32(bp, B44_MDIO_DATA, (MDIO_DATA_SB_START |
-+				     (MDIO_OP_READ << MDIO_DATA_OP_SHIFT) |
-+				     (bp->phy_addr << MDIO_DATA_PMD_SHIFT) |
-+				     (reg << MDIO_DATA_RA_SHIFT) |
-+				     (MDIO_TA_VALID << MDIO_DATA_TA_SHIFT)));
-+	else
-+		bw32(bp, B44_MDIO_DATA, (MDIO_DATA_SB_START |
-+				     (MDIO_OP_READ << MDIO_DATA_OP_SHIFT) |
-+				     (phy_addr << MDIO_DATA_PMD_SHIFT) |
-+				     (reg << MDIO_DATA_RA_SHIFT) |
-+				     (MDIO_TA_VALID << MDIO_DATA_TA_SHIFT)));
-+
- 	err = b44_wait_bit(bp, B44_EMAC_ISTAT, EMAC_INT_MII, 100, 0);
- 	*val = br32(bp, B44_MDIO_DATA) & MDIO_DATA_DATA;
- 
- 	return err;
- }
- 
--static int b44_writephy(struct b44 *bp, int reg, u32 val)
-+static int b44_writephy(struct b44 *bp, int reg, u32 val, int phy_addr)
- {
- 	bw32(bp, B44_EMAC_ISTAT, EMAC_INT_MII);
--	bw32(bp, B44_MDIO_DATA, (MDIO_DATA_SB_START |
--			     (MDIO_OP_WRITE << MDIO_DATA_OP_SHIFT) |
--			     (bp->phy_addr << MDIO_DATA_PMD_SHIFT) |
--			     (reg << MDIO_DATA_RA_SHIFT) |
--			     (MDIO_TA_VALID << MDIO_DATA_TA_SHIFT) |
--			     (val & MDIO_DATA_DATA)));
-+	
-+	if (!phy_addr)	
-+		bw32(bp, B44_MDIO_DATA, (MDIO_DATA_SB_START |
-+				     (MDIO_OP_WRITE << MDIO_DATA_OP_SHIFT) |
-+				     (bp->phy_addr << MDIO_DATA_PMD_SHIFT) |
-+				     (reg << MDIO_DATA_RA_SHIFT) |
-+				     (MDIO_TA_VALID << MDIO_DATA_TA_SHIFT) |
-+				     (val & MDIO_DATA_DATA)));
-+	else
-+		bw32(bp, B44_MDIO_DATA, (MDIO_DATA_SB_START |
-+				     (MDIO_OP_WRITE << MDIO_DATA_OP_SHIFT) |
-+				     (phy_addr << MDIO_DATA_PMD_SHIFT) |
-+				     (reg << MDIO_DATA_RA_SHIFT) |
-+				     (MDIO_TA_VALID << MDIO_DATA_TA_SHIFT) |
-+				     (val & MDIO_DATA_DATA)));
-+
- 	return b44_wait_bit(bp, B44_EMAC_ISTAT, EMAC_INT_MII, 100, 0);
- }
- 
- /* miilib interface */
--/* FIXME FIXME: phy_id is ignored, bp->phy_addr use is unconditional
-- * due to code existing before miilib use was added to this driver.
-- * Someone should remove this artificial driver limitation in
-- * b44_{read,write}phy.  bp->phy_addr itself is fine (and needed).
-- */
- static int b44_mii_read(struct net_device *dev, int phy_id, int location)
- {
- 	u32 val;
- 	struct b44 *bp = netdev_priv(dev);
--	int rc = b44_readphy(bp, location, &val);
-+	int rc = b44_readphy(bp, location, &val, phy_id);
- 	if (rc)
- 		return 0xffffffff;
- 	return val;
-@@ -375,7 +389,7 @@ static void b44_mii_write(struct net_dev
- 			 int val)
- {
- 	struct b44 *bp = netdev_priv(dev);
--	b44_writephy(bp, location, val);
-+	b44_writephy(bp, location, val, phy_id);
- }
- 
- static int b44_phy_reset(struct b44 *bp)
-@@ -383,11 +397,11 @@ static int b44_phy_reset(struct b44 *bp)
- 	u32 val;
- 	int err;
- 
--	err = b44_writephy(bp, MII_BMCR, BMCR_RESET);
-+	err = b44_writephy(bp, MII_BMCR, BMCR_RESET, 0);
- 	if (err)
- 		return err;
- 	udelay(100);
--	err = b44_readphy(bp, MII_BMCR, &val);
-+	err = b44_readphy(bp, MII_BMCR, &val, 0);
- 	if (!err) {
- 		if (val & BMCR_RESET) {
- 			printk(KERN_ERR PFX "%s: PHY Reset would not complete.\n",
-@@ -446,15 +460,15 @@ static int b44_setup_phy(struct b44 *bp)
- 	u32 val;
- 	int err;
- 
--	if ((err = b44_readphy(bp, B44_MII_ALEDCTRL, &val)) != 0)
-+	if ((err = b44_readphy(bp, B44_MII_ALEDCTRL, &val, 0)) != 0)
- 		goto out;
- 	if ((err = b44_writephy(bp, B44_MII_ALEDCTRL,
--				val & MII_ALEDCTRL_ALLMSK)) != 0)
-+				val & MII_ALEDCTRL_ALLMSK, 0)) != 0)
- 		goto out;
--	if ((err = b44_readphy(bp, B44_MII_TLEDCTRL, &val)) != 0)
-+	if ((err = b44_readphy(bp, B44_MII_TLEDCTRL, &val, 0)) != 0)
- 		goto out;
- 	if ((err = b44_writephy(bp, B44_MII_TLEDCTRL,
--				val | MII_TLEDCTRL_ENABLE)) != 0)
-+				val | MII_TLEDCTRL_ENABLE, 0)) != 0)
- 		goto out;
- 
- 	if (!(bp->flags & B44_FLAG_FORCE_LINK)) {
-@@ -472,22 +486,22 @@ static int b44_setup_phy(struct b44 *bp)
- 		if (bp->flags & B44_FLAG_PAUSE_AUTO)
- 			adv |= ADVERTISE_PAUSE_CAP | ADVERTISE_PAUSE_ASYM;
- 
--		if ((err = b44_writephy(bp, MII_ADVERTISE, adv)) != 0)
-+		if ((err = b44_writephy(bp, MII_ADVERTISE, adv, 0)) != 0)
- 			goto out;
- 		if ((err = b44_writephy(bp, MII_BMCR, (BMCR_ANENABLE |
--						       BMCR_ANRESTART))) != 0)
-+						       BMCR_ANRESTART), 0)) != 0)
- 			goto out;
- 	} else {
- 		u32 bmcr;
- 
--		if ((err = b44_readphy(bp, MII_BMCR, &bmcr)) != 0)
-+		if ((err = b44_readphy(bp, MII_BMCR, &bmcr, 0)) != 0)
- 			goto out;
- 		bmcr &= ~(BMCR_FULLDPLX | BMCR_ANENABLE | BMCR_SPEED100);
- 		if (bp->flags & B44_FLAG_100_BASE_T)
- 			bmcr |= BMCR_SPEED100;
- 		if (bp->flags & B44_FLAG_FULL_DUPLEX)
- 			bmcr |= BMCR_FULLDPLX;
--		if ((err = b44_writephy(bp, MII_BMCR, bmcr)) != 0)
-+		if ((err = b44_writephy(bp, MII_BMCR, bmcr, 0)) != 0)
- 			goto out;
- 
- 		/* Since we will not be negotiating there is no safe way
-@@ -541,8 +555,8 @@ static void b44_check_phy(struct b44 *bp
- {
- 	u32 bmsr, aux;
- 
--	if (!b44_readphy(bp, MII_BMSR, &bmsr) &&
--	    !b44_readphy(bp, B44_MII_AUXCTRL, &aux) &&
-+	if (!b44_readphy(bp, MII_BMSR, &bmsr, 0) &&
-+	    !b44_readphy(bp, B44_MII_AUXCTRL, &aux, 0) &&
- 	    (bmsr != 0xffff)) {
- 		if (aux & MII_AUXCTRL_SPEED)
- 			bp->flags |= B44_FLAG_100_BASE_T;
-@@ -565,8 +579,8 @@ static void b44_check_phy(struct b44 *bp
- 			bw32(bp, B44_TX_CTRL, val);
- 
- 			if (!(bp->flags & B44_FLAG_FORCE_LINK) &&
--			    !b44_readphy(bp, MII_ADVERTISE, &local_adv) &&
--			    !b44_readphy(bp, MII_LPA, &remote_adv))
-+			    !b44_readphy(bp, MII_ADVERTISE, &local_adv, 0) &&
-+			    !b44_readphy(bp, MII_LPA, &remote_adv, 0))
- 				b44_set_flow_ctrl(bp, local_adv, remote_adv);
- 
- 			/* Link now up */
-@@ -1766,12 +1780,12 @@ static int b44_nway_reset(struct net_dev
- 	int r;
- 
- 	spin_lock_irq(&bp->lock);
--	b44_readphy(bp, MII_BMCR, &bmcr);
--	b44_readphy(bp, MII_BMCR, &bmcr);
-+	b44_readphy(bp, MII_BMCR, &bmcr, 0);
-+	b44_readphy(bp, MII_BMCR, &bmcr, 0);
- 	r = -EINVAL;
- 	if (bmcr & BMCR_ANENABLE) {
- 		b44_writephy(bp, MII_BMCR,
--			     bmcr | BMCR_ANRESTART);
-+			     bmcr | BMCR_ANRESTART, 0);
- 		r = 0;
- 	}
- 	spin_unlock_irq(&bp->lock);
+
 
 
