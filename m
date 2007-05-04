@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030780AbXEDPtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030882AbXEDPuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030780AbXEDPtS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 11:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030882AbXEDPtS
+	id S1030882AbXEDPuN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 11:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030878AbXEDPuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 11:49:18 -0400
-Received: from hobbit.corpit.ru ([81.13.94.6]:23012 "EHLO hobbit.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030780AbXEDPtR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 11:49:17 -0400
-Message-ID: <463B55F9.4070606@msgid.tls.msk.ru>
-Date: Fri, 04 May 2007 19:49:13 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-User-Agent: Icedove 1.5.0.10 (X11/20070307)
+	Fri, 4 May 2007 11:50:13 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:33793 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030882AbXEDPuL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 11:50:11 -0400
+Message-ID: <463B55F6.5030306@zytor.com>
+Date: Fri, 04 May 2007 08:49:10 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Anton Altaparmakov <aia21@cam.ac.uk>,
-       Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-References: <E1HjjyF-00022D-00@calista.eckenfels.net> <0733FB88-3E6E-47B7-A55D-704B5C0DB239@cam.ac.uk> <20070504094610.GA31607@infradead.org>
-In-Reply-To: <20070504094610.GA31607@infradead.org>
-X-Enigmail-Version: 0.94.2.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 3/3] boot bzImages under paravirt
+References: <1178283582.23670.67.camel@localhost.localdomain>	 <1178283724.23670.70.camel@localhost.localdomain>	 <1178284052.23670.75.camel@localhost.localdomain>	 <m1ps5gslfm.fsf@ebiederm.dsl.xmission.com> <1178290502.23670.111.camel@localhost.localdomain>
+In-Reply-To: <1178290502.23670.111.camel@localhost.localdomain>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Fri, May 04, 2007 at 09:12:31AM +0100, Anton Altaparmakov wrote:
->> Nothing to do with win32 functions.  Windows does NOT create sparse  
->> files therefore it never can have an issue like ext3 does in this  
->> scenario.  Windows will cause nice allocations to happen because of  
->> this and the 1-byte writes are perfectly sensible in this regard.   
->> (Although a little odd as Windows has a proper API for doing  
->> preallocation so I don't get why it is not using that instead...)
+Rusty Russell wrote:
 > 
-> Which means the right place to fix this is samba.  Samba just need
-> to intersept lseek and pread/pwrite to never allocate sparse files
-> but do the right thing instead.  Now what the right thing would probably
-> be a preallocate instead of writing zeroes, and we need to provide the
-> infrastructure for them to do it, which is in progress currently.
-> (And in fact samba already does the right thing for XFS if you use
-> the prealloc samba vfs module, which AFAIK is not the default)
+> It was a PITA because we can't just load $0x18 into %ss: it has to be
+> $0x19.  I started doing it (read %cs, mask off bottom 2 bits, orl
+> __BOOT_DS), but between that extra code and the extra code to then
+> change segments back...  well, we have to skip the cli anyway so it was
+> easy to skip them all.
+> 
+> I think Jeremy said Xen doesn't start on the boot descriptors either.  I
+> have to wonder why we don't just run on the boot descriptors forever
+> (#define __KERNEL_DS __BOOT_DS etc)?
+> 
 
-Hmm.
+You can't do that once you define your own layout, or you introduce a
+nasty intermodule dependency which shouldn't exist.
 
-How about providing a way to stop kernel (or filesystem) to make gaps
-in files instead?  Like some ioctl(fd, FS_NOGAPS, 1) -- pretty much
-like 'doze has, just the opposite (on windows, this flag is "on" by
-default).
+The rule should be:
 
-Fixing this issue in samba means that samba has to keep/track more state
-data than it currently does.  Detecting such seek+write has some costs.
+- You MUST NOT reload segments before LGDT.
+  (One can possibly get away with declaring that DS = CS+8 by
+  protocol and load dynamic values, but that's not a good thing.)
+- After LGDT, you MUST load your own segment values.
 
-It's even worse: imagine samba transforms this into write(zeros) (as
-preallocate isn't available yet), and at the same time, another process
-is writing there... Which will be perfectly valid in current case, but
-will go wrong way (overwriting just-written data with zeros) in this
-new scenario.
+Anything else is just broken.
 
-But the main point is that samba has to keep track of things which it
-doesn't do now, and those things becomes.. interesting (difficult if
-at all possible to track) in multi-user/concurrent-writes environment.
-
-/mjt
+	-hpa
