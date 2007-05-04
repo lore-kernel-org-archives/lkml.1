@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031397AbXEDRlm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031402AbXEDRnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031397AbXEDRlm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:41:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031402AbXEDRlm
+	id S1031402AbXEDRnQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031413AbXEDRnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:41:42 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:38335
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031397AbXEDRll (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:41:41 -0400
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial
-	possible bug]
-From: Paul Fulghum <paulkf@microgate.com>
-To: Antonino Ingargiola <tritemio@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb-users@lists.sourceforge.net,
+	Fri, 4 May 2007 13:43:16 -0400
+Received: from mail.samba.org ([66.70.73.150]:56209 "EHLO lists.samba.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031402AbXEDRnP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 13:43:15 -0400
+Subject: Re: [linux-cifs-client] Re: SMB2 file system - should it be
+	a	distinct module
+From: simo <idra@samba.org>
+To: Jeremy Allison <jra@samba.org>
+Cc: Gerald Carter <coffeedude.jerry@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>,
+       Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <5486cca80705040233y70915a27yf7cbbc08a617e3ba@mail.gmail.com>
-	 <463B46F4.6090906@microgate.com> <463B4988.9090005@microgate.com>
-	 <1178290160.3913.2.camel@amdx2.microgate.com>
-	 <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
-	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
-	 <463B7534.6000207@microgate.com>
-	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
-	 <1178299247.3769.0.camel@amdx2.microgate.com>
-	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
+In-Reply-To: <20070504171200.GE31976@samba1>
+References: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com>
+	 <20070501090657.GA17949@infradead.org>
+	 <1178198489.28758.14.camel@localhost.localdomain>
+	 <20070503141742.GB20328@infradead.org>
+	 <1178203013.28758.29.camel@localhost.localdomain>
+	 <4639F5AD.20807@gmail.com>  <20070504171200.GE31976@samba1>
 Content-Type: text/plain
-Date: Fri, 04 May 2007 12:41:33 -0500
-Message-Id: <1178300493.3619.1.camel@amdx2.microgate.com>
+Organization: Samba Team
+Date: Fri, 04 May 2007 17:43:13 +0000
+Message-Id: <1178300593.28758.85.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 19:25 +0200, Antonino Ingargiola wrote:
+On Fri, 2007-05-04 at 10:12 -0700, Jeremy Allison wrote:
 
-> No. Ehmm ... I've an usb keybord and vga monitor on a standard desktop pc.
+> Actually I disagree. I think Christoph is correct. These
+> are two independent protocols and should be in two different
+> modules.
 
-OK, I'm stumped.
+They are independent the same way NFS v4 is independent from NFS v3 and
+v2. Independent but related, and most importantly, one is the fallback
+of the other.
 
-I don't see how my patch could cause the machine to not boot
-and I'm not seeing that behavior here.
+> > But NTLM 0.12 still works for Vista and DFS referrals.
+> > Breaking out SMB2 initially means that it will not clutter
+> > the working cifs.ko code.  Remember that an SMB2 client fs is
+> > mostly research at this point, and not engineering.
+> 
+> Long term the common functions should be factored out
+> and put into a lower-level module that both cifs and
+> SMB2 are dependent upon.
+> 
+> That's the cleaner solution IMHO.
+
+If the result is that the fallback work without user space intervention,
+then I agree with you.
+I was just pointing out that the 2 protocols are not in fact completely
+independent and this fact need to be properly considered and factored in
+into this decision, nothing more, nothing less.
+
+Simo.
 
 -- 
-Paul Fulghum
-Microgate Systems, Ltd
+Simo Sorce
+Samba Team GPL Compliance Officer
+email: idra@samba.org
+http://samba.org
 
