@@ -1,106 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423590AbXEDBlA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753296AbXEDBpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423590AbXEDBlA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 21:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423581AbXEDBlA
+	id S1753296AbXEDBpv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 21:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbXEDBpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 21:41:00 -0400
-Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:34044 "EHLO
-	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423557AbXEDBk7 (ORCPT
+	Thu, 3 May 2007 21:45:51 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:45399 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753296AbXEDBpu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 21:40:59 -0400
-Date: Thu, 3 May 2007 18:40:58 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Roman Zippel <zippel@linux-m68k.org>
-cc: Sam Ravnborg <sam@ravnborg.org>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [v4l-dvb-maintainer] [PATCH 35/36] Use menuconfig objects II -
- DVB
-In-Reply-To: <Pine.LNX.4.64.0705040212080.1479@scrub.home>
-Message-ID: <Pine.LNX.4.58.0705031826360.32689@shell2.speakeasy.net>
-References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0704301429450.29151@yvahk01.tjqt.qr> <1178129426.29579.17.camel@localhost>
- <Pine.LNX.4.58.0705021436050.504@shell2.speakeasy.net>
- <Pine.LNX.4.61.0705030855000.18504@yvahk01.tjqt.qr> <1178195820.12651.28.camel@localhost>
- <Pine.LNX.4.61.0705031453360.18504@yvahk01.tjqt.qr>
- <Pine.LNX.4.58.0705031247300.32689@shell2.speakeasy.net>
- <20070503204942.GB18539@uranus.ravnborg.org> <Pine.LNX.4.64.0705040212080.1479@scrub.home>
+	Thu, 3 May 2007 21:45:50 -0400
+Date: Thu, 3 May 2007 18:45:47 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Chen, Tim C" <tim.c.chen@intel.com>
+cc: Tim Chen <tim.c.chen@linux.intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: RE: Regression with SLUB on Netperf and Volanomark
+In-Reply-To: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
+Message-ID: <Pine.LNX.4.64.0705031839480.16296@schroedinger.engr.sgi.com>
+References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Roman Zippel wrote:
-> I don't quite understand. With the menuconfig changes more menu entries
-> should  appear on the left side, so I don't understand why you have to
-> "drill down" to reach it.
-> The rule for menu to appear on the left side is relatively simple - all
-> its parents must be of menu type as well. So if a menuconfig is on the
-> right side it must have a normal config entry as parent.
+Hmmmm.. One potential issues are the complicated way the slab is 
+handled. Could you try this patch and see what impact it has?
 
-I think that's it.  The media tree was done with options to select the core
-system module, then a menuconfig that depended on that which the drivers
-were under.
+If it has any then remove the cachline alignment and see how that 
+influences things.
 
-> > > menuconfig XXXX
-> > > if XXXX
-> > > [....all the other options....]
-> > > endif
-> > >
-> > > Into this:
-> > >
-> > > menuconfig XXXX
-> > > [....all the other options....]
-> > > endmenu
-> > >
-> > > The reason is that a frontend would easily be able to understand the coupling
-> > > between the "menuconfig XXXX" and the "if XXXX".  It will make it easier for
-> > > the frontend to see that all the options are inside and controlled by the
-> > > enclosing menuconfig.
->
-> If the frontend wants to change the behaviour of a menuconfig, it can
-> already do that, so this doesn't require a syntax change.
 
-How about these examples:
+Remove constructor from buffer_head
 
-menuconfig FOO
-if FOO
-config A
-	depends on FOO
-endif
-config B
-if FOO
-config C
-	depends on FOO
-endif
+Buffer head management uses a constructor which increases overhead
+for object handling. Remove the constructor. That way SLUB can place
+the freepointer in an optimal location instead of after the object
+in potentially another cache line.
 
-Or this:
-menu FOO
-menuconfig BAR
-config A
-menuconfig BAZ
-config B
-endmenu
+Also having no constructor makes allocation and disposal of slabs
+from the page allocator much easier since no pass over the objects
+allocated to call construtors is necessary. SLUB can directly begin by
+serving the first object.
 
-How does it show the first one, keeping the config entries in the correct
-order and put them into the menu at the same time?
+Plus it simplifies the code and removes a difficult to understand
+element for buffer handling.
 
-And which of what should the second be show?
+Align the buffer heads on cacheline boundaries for best performance.
 
-foo
-\-bar
-  \-baz
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-or
+---
+ fs/buffer.c                 |   22 ++++------------------
+ include/linux/buffer_head.h |    2 +-
+ 2 files changed, 5 insertions(+), 19 deletions(-)
 
-foo
-|-bar
-\-baz
-
-There is no question with menus, as the menu tree is clearly lexically
-defined by the matching menu / endmenu pairs.  But menuconfig doesn't work
-that way, and it seems like it would make more sense if it did.
+Index: slub/fs/buffer.c
+===================================================================
+--- slub.orig/fs/buffer.c	2007-04-30 22:03:21.000000000 -0700
++++ slub/fs/buffer.c	2007-05-03 18:37:47.000000000 -0700
+@@ -2907,9 +2907,10 @@ static void recalc_bh_state(void)
+ 	
+ struct buffer_head *alloc_buffer_head(gfp_t gfp_flags)
+ {
+-	struct buffer_head *ret = kmem_cache_alloc(bh_cachep,
++	struct buffer_head *ret = kmem_cache_zalloc(bh_cachep,
+ 				set_migrateflags(gfp_flags, __GFP_RECLAIMABLE));
+ 	if (ret) {
++		INIT_LIST_HEAD(&ret->b_assoc_buffers);
+ 		get_cpu_var(bh_accounting).nr++;
+ 		recalc_bh_state();
+ 		put_cpu_var(bh_accounting);
+@@ -2928,17 +2929,6 @@ void free_buffer_head(struct buffer_head
+ }
+ EXPORT_SYMBOL(free_buffer_head);
+ 
+-static void
+-init_buffer_head(void *data, struct kmem_cache *cachep, unsigned long flags)
+-{
+-	if (flags & SLAB_CTOR_CONSTRUCTOR) {
+-		struct buffer_head * bh = (struct buffer_head *)data;
+-
+-		memset(bh, 0, sizeof(*bh));
+-		INIT_LIST_HEAD(&bh->b_assoc_buffers);
+-	}
+-}
+-
+ static void buffer_exit_cpu(int cpu)
+ {
+ 	int i;
+@@ -2965,12 +2955,8 @@ void __init buffer_init(void)
+ {
+ 	int nrpages;
+ 
+-	bh_cachep = kmem_cache_create("buffer_head",
+-					sizeof(struct buffer_head), 0,
+-					(SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|
+-					SLAB_MEM_SPREAD),
+-					init_buffer_head,
+-					NULL);
++	bh_cachep = KMEM_CACHE(buffer_head,
++			SLAB_RECLAIM_ACCOUNT|SLAB_PANIC|SLAB_MEM_SPREAD);
+ 
+ 	/*
+ 	 * Limit the bh occupancy to 10% of ZONE_NORMAL
+Index: slub/include/linux/buffer_head.h
+===================================================================
+--- slub.orig/include/linux/buffer_head.h	2007-05-03 18:40:51.000000000 -0700
++++ slub/include/linux/buffer_head.h	2007-05-03 18:41:07.000000000 -0700
+@@ -73,7 +73,7 @@ struct buffer_head {
+ 	struct address_space *b_assoc_map;	/* mapping this buffer is
+ 						   associated with */
+ 	atomic_t b_count;		/* users using this buffer_head */
+-};
++} ____cacheline_aligned_in_smp;
+ 
+ /*
+  * macro tricks to expand the set_buffer_foo(), clear_buffer_foo()
