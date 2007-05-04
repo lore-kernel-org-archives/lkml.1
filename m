@@ -1,28 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161464AbXEDSU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161383AbXEDSUS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161464AbXEDSU4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161469AbXEDSUx
+	id S1161383AbXEDSUS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:20:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161386AbXEDSUB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:20:53 -0400
-Received: from mga09.intel.com ([134.134.136.24]:11908 "EHLO mga09.intel.com"
+	Fri, 4 May 2007 14:20:01 -0400
+Received: from mga01.intel.com ([192.55.52.88]:26819 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161368AbXEDSUr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:20:47 -0400
+	id S1161430AbXEDSTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 14:19:41 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.14,493,1170662400"; 
-   d="scan'208";a="83836101"
-Date: Fri, 4 May 2007 11:18:16 -0700
+   d="scan'208";a="242028550"
+Date: Fri, 4 May 2007 11:17:09 -0700
 From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 To: jeff@garzik.org
 Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com, akpm@linux-foundation.org
-Subject: [patch 7/7] libata: send event when AN received - resend
-Message-Id: <20070504111816.bf25955e.kristen.c.accardi@intel.com>
-In-Reply-To: <20070424090910.1d145c24@the-village.bc.nu>
+       linux-ide@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
+       akpm@linux-foundation.org
+Subject: Re: [patch 5/7] genhd: send async notification on media change
+Message-Id: <20070504111709.99d2cce9.kristen.c.accardi@intel.com>
+In-Reply-To: <462DBDB3.9010102@gmail.com>
 References: <20070424074856.005152262@intel.com>
-	<20070423170024.73b74a37.kristen.c.accardi@intel.com>
-	<20070424090910.1d145c24@the-village.bc.nu>
+	<20070423170010.5514072e.kristen.c.accardi@intel.com>
+	<462DBDB3.9010102@gmail.com>
 X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,83 +31,80 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we get an SDB FIS with the 'N' bit set, we should send
-an event to user space to indicate that there has been a
-media change.  This will be done via the block device. 
+Send an uevent to user space to indicate that a media change event has occurred.
 
-changed from last version:
-* Make sure that port_addr is within ATA_MAX_DEVICES
+Changes from last version:
+* use get/put_device to increment reference count on the device struct
 
 Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Index: 2.6-git/drivers/ata/ahci.c
+
+Index: 2.6-git/block/genhd.c
 ===================================================================
---- 2.6-git.orig/drivers/ata/ahci.c
-+++ 2.6-git/drivers/ata/ahci.c
-@@ -1147,6 +1147,28 @@ static void ahci_host_intr(struct ata_po
- 		return;
- 	}
+--- 2.6-git.orig/block/genhd.c
++++ 2.6-git/block/genhd.c
+@@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
+ 	.show	= diskstats_show
+ };
  
-+	if (status & PORT_IRQ_SDB_FIS) {
-+		/*
-+		 * if this is an ATAPI device with AN turned on,
-+		 * then we should interrogate the device to
-+		 * determine the cause of the interrupt
-+		 *
-+		 * for AN - this we should check the SDB FIS
-+		 * and find the I and N bits set
-+		 */
-+		const u32 *f = pp->rx_fis + RX_FIS_SDB;
-+
-+		/* check the 'N' bit in word 0 of the FIS */
-+		if (f[0] & (1 << 15)) {
-+			int port_addr =  ((f[0] & 0x00000f00) >> 8);
-+			struct ata_device *adev;
-+			if (port_addr < ATA_MAX_DEVICES) {
-+				adev = &ap->device[port_addr];
-+				if (adev->flags & ATA_DFLAG_AN)
-+					ata_scsi_media_change_notify(adev);
-+			}
-+		}
-+	}
- 	if (ap->sactive)
- 		qc_active = readl(port_mmio + PORT_SCR_ACT);
- 	else
-Index: 2.6-git/include/linux/libata.h
-===================================================================
---- 2.6-git.orig/include/linux/libata.h
-+++ 2.6-git/include/linux/libata.h
-@@ -737,6 +737,7 @@ extern void ata_host_init(struct ata_hos
- extern int ata_scsi_detect(struct scsi_host_template *sht);
- extern int ata_scsi_ioctl(struct scsi_device *dev, int cmd, void __user *arg);
- extern int ata_scsi_queuecmd(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmnd *));
-+extern void ata_scsi_media_change_notify(struct ata_device *atadev);
- extern void ata_sas_port_destroy(struct ata_port *);
- extern struct ata_port *ata_sas_port_alloc(struct ata_host *,
- 					   struct ata_port_info *, struct Scsi_Host *);
-Index: 2.6-git/drivers/ata/libata-scsi.c
-===================================================================
---- 2.6-git.orig/drivers/ata/libata-scsi.c
-+++ 2.6-git/drivers/ata/libata-scsi.c
-@@ -3057,6 +3057,22 @@ static void ata_scsi_remove_dev(struct a
- }
- 
- /**
-+ *	ata_scsi_media_change_notify - send media change event
-+ *	@atadev: Pointer to the disk device with media change event
-+ *
-+ *	Tell the block layer to send a media change notification
-+ *	event.
-+ *
-+ * 	LOCKING:
-+ * 	interrupt context, may not sleep.
-+ */
-+void ata_scsi_media_change_notify(struct ata_device *atadev)
++static void media_change_notify_thread(struct work_struct *work)
 +{
-+	genhd_media_change_notify(atadev->sdev->disk);
-+}
-+EXPORT_SYMBOL_GPL(ata_scsi_media_change_notify);
++	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
++	char event[] = "MEDIA_CHANGE=1";
++	char *envp[] = { event, NULL };
 +
-+/**
-  *	ata_scsi_hotplug - SCSI part of hotplug
-  *	@work: Pointer to ATA port to perform SCSI hotplug on
-  *
++	/*
++	 * set enviroment vars to indicate which event this is for
++	 * so that user space will know to go check the media status.
++	 */
++	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
++	put_device(gd->driverfs_dev);
++}
++
++void genhd_media_change_notify(struct gendisk *disk)
++{
++	get_device(disk->driverfs_dev);
++	schedule_work(&disk->async_notify);
++}
++EXPORT_SYMBOL_GPL(genhd_media_change_notify);
++
+ struct gendisk *alloc_disk(int minors)
+ {
+ 	return alloc_disk_node(minors, -1);
+@@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
+ 		kobj_set_kset_s(disk,block_subsys);
+ 		kobject_init(&disk->kobj);
+ 		rand_initialize_disk(disk);
++		INIT_WORK(&disk->async_notify,
++			media_change_notify_thread);
+ 	}
+ 	return disk;
+ }
+Index: 2.6-git/include/linux/genhd.h
+===================================================================
+--- 2.6-git.orig/include/linux/genhd.h
++++ 2.6-git/include/linux/genhd.h
+@@ -66,6 +66,7 @@ struct partition {
+ #include <linux/smp.h>
+ #include <linux/string.h>
+ #include <linux/fs.h>
++#include <linux/workqueue.h>
+ 
+ struct partition {
+ 	unsigned char boot_ind;		/* 0x80 - active */
+@@ -139,6 +140,7 @@ struct gendisk {
+ #else
+ 	struct disk_stats dkstats;
+ #endif
++	struct work_struct async_notify;
+ };
+ 
+ /* Structure for sysfs attributes on block devices */
+@@ -419,7 +421,7 @@ extern struct gendisk *alloc_disk_node(i
+ extern struct gendisk *alloc_disk(int minors);
+ extern struct kobject *get_disk(struct gendisk *disk);
+ extern void put_disk(struct gendisk *disk);
+-
++extern void genhd_media_change_notify(struct gendisk *disk);
+ extern void blk_register_region(dev_t dev, unsigned long range,
+ 			struct module *module,
+ 			struct kobject *(*probe)(dev_t, int *, void *),
