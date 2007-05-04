@@ -1,51 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031426AbXEDRIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031438AbXEDRIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031426AbXEDRIS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031435AbXEDRIS
+	id S1031438AbXEDRIg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031441AbXEDRIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:08:18 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:46840 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031426AbXEDRIR (ORCPT
+	Fri, 4 May 2007 13:08:35 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:45674 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031438AbXEDRId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:08:17 -0400
-Message-ID: <463B683C.5090308@zytor.com>
-Date: Fri, 04 May 2007 10:07:08 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 4 May 2007 13:08:33 -0400
+Message-ID: <463B687D.1020600@interia.pl>
+Date: Fri, 04 May 2007 19:08:13 +0200
+From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 3/3] boot bzImages under paravirt
-References: <1178283582.23670.67.camel@localhost.localdomain>	<1178283724.23670.70.camel@localhost.localdomain>	<1178284052.23670.75.camel@localhost.localdomain>	<m1ps5gslfm.fsf@ebiederm.dsl.xmission.com> <463B4E12.50703@goop.org>	<463B551E.8030701@zytor.com> <463B5B90.20308@goop.org> <m1irb8r0gl.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1irb8r0gl.fsf@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: cpufreq longhaul locks up
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-EMID: bbb6cacc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+> Hi,
+Hello all
 > 
-> We have real mystery historical cases in Gujin and ELILO.  So it
-> probably makes sense at this point to force a gdt reload if we can and
-> otherwise require all of the segments %ds, %es, %fs, %gs to be loaded
-> with a valid segment, that we can reach everything we need to touch
-> from.
-> 
+> I found that setting the cpufreq governor to ondemand making the box 
+> lock up solid in 2.6.20.2 and 2.6.21 after a few seconds.
+> [...]
 
-I think we should avoid using %fs and %gs (no use for them, anyway); but
- I think it's a decent expectation to have %cs, %ds, %es, and %ss set up.
+I can't explain this. Some motherboards are running fine, some don't.
+I'm running longhaul too. It is working fine. No lockups at all. 
+So far I heard only about one Epia which had problems with longhaul. 
+It was almost like my Epia but older.
+What is possible:
+- some chipsets revisions are broken and aren't blocking DMA,
+- special setup is required, some versions of BIOS are doing 
+necessary things, some don't,
+- some chipsets revisions are broken and drivers are not aware. At 
+the beginning Unichrome driver was causing lockups on my machine, but 
+Openchrome was fine. Longhaul may trigger, somehow, other hardware bug. 
 
-Gujin seems to have a near-zero user community, so if they have to rev
-their code it wouldn't be a big deal (the author keeps trying to push
-some crack-smoking "Gujin native" patches into the kernel, too), but
-breaking ELILO would hurt anyone using Intel Macs.
+Anyway I don't belive in Longhaul anymore. It is working for me. It is 
+working for others. And it isn't working for others. VIA isn't supporting 
+this driver. Support came only from Centaur and Dave Jones. If special 
+setup is required for north/southbridge then it is necessary to have 
+documentation. I will not receive it from VIA.
 
-	-hpa
+I'm asking about advice. Make it BROKEN again? Add "big fat warning" and 
+"enable" option? I know that this is Dave Jones decision, but I would like 
+to heard what people are thinking, becuse I've been messing a lot with 
+this driver.
+
+Btw. I've been writting many times: if You want to use ondemand with 
+Longhaul You don't need cpufreq at all. It is just one another cool 
+gadget for You. Longhaul wasn't designed to change frequency often. 
+It has big latency and requires so much preparation that it isn't worth 
+if You don't need to save power or cool down CPU. 
+
+Sorry for bad English
+Rafał
+
+
+----------------------------------------------------------------------
+NIE KUPUJ!!!
+...zanim nie porownasz cen >> http://link.interia.pl/f1a5e
+
+
+
