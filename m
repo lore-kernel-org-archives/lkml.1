@@ -1,817 +1,3064 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423049AbXEDXva@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422973AbXEDXwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423049AbXEDXva (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 19:51:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422969AbXEDXnz
+	id S1422973AbXEDXwU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 19:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422996AbXEDXwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 19:43:55 -0400
-Received: from 116.sub-75-210-58.myvzw.com ([75.210.58.116]:46298 "EHLO
+	Fri, 4 May 2007 19:52:16 -0400
+Received: from 116.sub-75-210-58.myvzw.com ([75.210.58.116]:46288 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423071AbXEDXnl (ORCPT
+	with ESMTP id S1422973AbXEDXnv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 19:43:41 -0400
-Message-Id: <20070504232120.067551802@goop.org>
+	Fri, 4 May 2007 19:43:51 -0400
+Message-Id: <20070504232121.183354260@goop.org>
 References: <20070504232051.411946839@goop.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 May 2007 16:21:01 -0700
+Date: Fri, 04 May 2007 16:21:13 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Zach Amsden <zach@vmware.com>
-Subject: [patch 10/29] xen: Complete pagetable pinning for Xen
-Content-Disposition: inline; filename=xen-pinned-pagetables.patch
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Greg KH <greg@kroah.com>
+Subject: [patch 22/29] xen: Add the Xenbus sysfs and virtual device hotplug driver.
+Content-Disposition: inline; filename=xenbus.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen has a notion of pinned pagetables, which are pagetables that
-remain read-only to the guest and are validated by the hypervisor.
-This makes context switches much cheaper, because the hypervisor
-doesn't need to revalidate the pagetable each time.
+This communicates with the machine control software via a registry
+residing in a controlling virtual machine. This allows dynamic
+creation, destruction and modification of virtual device
+configurations (network devices, block devices and CPUS, to name some
+examples).
 
-This patch adds a PG_pinned flag for pagetable pages so we can tell if
-it has been pinned or not.  This allows various pagetable update
-optimisations.
+[ Greg, would you mind giving this a review?  Thanks -J ]
 
-This also adds a mm parameter to the alloc_pt pv_op, so that Xen can
-see if we're adding a page to a pinned pagetable.  This is not
-necessary for alloc_pd or release_p[dt], which is fortunate because it
-isn't available at all callsites.
-
-This also adds a new paravirt hook which is called during setup once
-the zones and memory allocator have been initialized.  When the
-init_mm pagetable is first built, the struct page array does not yet
-exist, and so there's nowhere to put he init_mm pagetable's PG_pinned
-flags.  Once the zones are initialized and the struct page array
-exists, we can set the PG_pinned flags for those pages.
-
-This patch also adds the Xen support for pte pages allocated out of
-highmem (highpte), principly by implementing xen_kmap_atomic_pte.
-
+Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Cc: Zach Amsden <zach@vmware.com>
-
+Cc: Greg KH <greg@kroah.com>
 ---
- arch/i386/kernel/setup.c    |    3 
- arch/i386/kernel/vmi.c      |    2 
- arch/i386/mm/init.c         |    2 
- arch/i386/mm/pageattr.c     |    2 
- arch/i386/xen/enlighten.c   |  105 +++++++++++----
- arch/i386/xen/mmu.c         |  283 +++++++++++++++++++++++++++----------------
- arch/i386/xen/mmu.h         |    2 
- arch/i386/xen/xen-ops.h     |    2 
- include/asm-i386/paravirt.h |   16 +-
- include/asm-i386/pgalloc.h  |    6 
- include/asm-i386/setup.h    |    4 
- include/linux/page-flags.h  |    5 
- 12 files changed, 289 insertions(+), 143 deletions(-)
+ drivers/xen/Makefile               |    1 
+ drivers/xen/xenbus/Makefile        |    7 
+ drivers/xen/xenbus/xenbus_client.c |  569 +++++++++++++++++++++
+ drivers/xen/xenbus/xenbus_comms.c  |  233 ++++++++
+ drivers/xen/xenbus/xenbus_comms.h  |   46 +
+ drivers/xen/xenbus/xenbus_probe.c  |  935 ++++++++++++++++++++++++++++++++++++
+ drivers/xen/xenbus/xenbus_probe.h  |   74 ++
+ drivers/xen/xenbus/xenbus_xs.c     |  861 +++++++++++++++++++++++++++++++++
+ include/asm-i386/xen/hypervisor.h  |    1 
+ include/xen/xenbus.h               |  232 ++++++++
+ 10 files changed, 2959 insertions(+)
 
 ===================================================================
---- a/arch/i386/kernel/setup.c
-+++ b/arch/i386/kernel/setup.c
-@@ -607,9 +607,12 @@ void __init setup_arch(char **cmdline_p)
- 	sparse_init();
- 	zone_sizes_init();
- 
-+
- 	/*
- 	 * NOTE: at this point the bootmem allocator is fully available.
- 	 */
-+
-+	paravirt_post_allocator_init();
- 
- 	dmi_scan_machine();
- 
+--- a/drivers/xen/Makefile
++++ b/drivers/xen/Makefile
+@@ -1,2 +1,3 @@ obj-y	+= grant-table.o
+ obj-y	+= grant-table.o
+ obj-y	+= grant-table.o
++obj-y	+= xenbus/
 ===================================================================
---- a/arch/i386/kernel/vmi.c
-+++ b/arch/i386/kernel/vmi.c
-@@ -361,7 +361,7 @@ static void *vmi_kmap_atomic_pte(struct 
- }
- #endif
- 
--static void vmi_allocate_pt(u32 pfn)
-+static void vmi_allocate_pt(struct mm_struct *mm, u32 pfn)
- {
- 	vmi_set_page_type(pfn, VMI_PAGE_L1);
- 	vmi_ops.allocate_page(pfn, VMI_PAGE_L1, 0, 0, 0);
+--- /dev/null
++++ b/drivers/xen/xenbus/Makefile
+@@ -0,0 +1,7 @@
++obj-y	+= xenbus.o
++
++xenbus-objs =
++xenbus-objs += xenbus_client.o
++xenbus-objs += xenbus_comms.o
++xenbus-objs += xenbus_xs.o
++xenbus-objs += xenbus_probe.o
 ===================================================================
---- a/arch/i386/mm/init.c
-+++ b/arch/i386/mm/init.c
-@@ -87,7 +87,7 @@ static pte_t * __init one_page_table_ini
- 	if (!(pmd_val(*pmd) & _PAGE_PRESENT)) {
- 		pte_t *page_table = (pte_t *) alloc_bootmem_low_pages(PAGE_SIZE);
- 
--		paravirt_alloc_pt(__pa(page_table) >> PAGE_SHIFT);
-+		paravirt_alloc_pt(&init_mm, __pa(page_table) >> PAGE_SHIFT);
- 		set_pmd(pmd, __pmd(__pa(page_table) | _PAGE_TABLE));
- 		BUG_ON(page_table != pte_offset_kernel(pmd, 0));
- 	}
-===================================================================
---- a/arch/i386/mm/pageattr.c
-+++ b/arch/i386/mm/pageattr.c
-@@ -60,7 +60,7 @@ static struct page *split_large_page(uns
- 	address = __pa(address);
- 	addr = address & LARGE_PAGE_MASK; 
- 	pbase = (pte_t *)page_address(base);
--	paravirt_alloc_pt(page_to_pfn(base));
-+	paravirt_alloc_pt(&init_mm, page_to_pfn(base));
- 	for (i = 0; i < PTRS_PER_PTE; i++, addr += PAGE_SIZE) {
-                set_pte(&pbase[i], pfn_pte(addr >> PAGE_SHIFT,
-                                           addr == address ? prot : ref_prot));
-===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -21,6 +21,9 @@
- #include <linux/sched.h>
- #include <linux/bootmem.h>
- #include <linux/module.h>
-+#include <linux/mm.h>
-+#include <linux/page-flags.h>
-+#include <linux/highmem.h>
- 
- #include <xen/interface/xen.h>
- #include <xen/interface/physdev.h>
-@@ -486,32 +489,59 @@ static void xen_write_cr3(unsigned long 
- 	}
- }
- 
--static void xen_alloc_pt(u32 pfn)
--{
--	/* XXX pfn isn't necessarily a lowmem page */
-+/* Early in boot, while setting up the initial pagetable, assume
-+   everything is pinned. */
-+static void xen_alloc_pt_init(struct mm_struct *mm, u32 pfn)
-+{
-+	BUG_ON(mem_map);	/* should only be used early */
- 	make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
- }
- 
--static void xen_alloc_pd(u32 pfn)
--{
--	make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
--}
--
--static void xen_release_pd(u32 pfn)
--{
--	make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
--}
--
-+/* This needs to make sure the new pte page is pinned iff its being
-+   attached to a pinned pagetable. */
-+static void xen_alloc_pt(struct mm_struct *mm, u32 pfn)
-+{
-+	struct page *page = pfn_to_page(pfn);
+--- /dev/null
++++ b/drivers/xen/xenbus/xenbus_client.c
+@@ -0,0 +1,569 @@
++/******************************************************************************
++ * Client-facing interface for the Xenbus driver.  In other words, the
++ * interface between the Xenbus and the device-specific code, be it the
++ * frontend or the backend of that driver.
++ *
++ * Copyright (C) 2005 XenSource Ltd
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
 +
-+	if (PagePinned(virt_to_page(mm->pgd))) {
-+		SetPagePinned(page);
-+
-+		if (!PageHighMem(page))
-+			make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
-+		else
-+			/* make sure there are no stray mappings of
-+			   this page */
-+			kmap_flush_unused();
-+	}
-+}
-+
-+/* This should never happen until we're OK to use struct page */
- static void xen_release_pt(u32 pfn)
- {
--	make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
--}
--
--static void xen_alloc_pd_clone(u32 pfn, u32 clonepfn,
--					u32 start, u32 count)
--{
--	xen_alloc_pd(pfn);
--}
-+	struct page *page = pfn_to_page(pfn);
-+
-+	if (PagePinned(page)) {
-+		if (!PageHighMem(page))
-+			make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
-+	}
-+}
-+
-+#ifdef CONFIG_HIGHPTE
-+static void *xen_kmap_atomic_pte(struct page *page, enum km_type type)
-+{
-+	pgprot_t prot = PAGE_KERNEL;
-+
-+	if (PagePinned(page))
-+		prot = PAGE_KERNEL_RO;
-+
-+	if (0 && PageHighMem(page))
-+		printk("mapping highpte %lx type %d prot %s\n",
-+		       page_to_pfn(page), type,
-+		       (unsigned long)pgprot_val(prot) & _PAGE_RW ? "WRITE" : "READ");
-+
-+	return kmap_atomic_prot(page, type, prot);
-+}
-+#endif
- 
- static __init void xen_pagetable_setup_start(pgd_t *base)
- {
-@@ -539,7 +569,7 @@ static __init void xen_pagetable_setup_s
- 				memcpy(pmd, (void *)pgd_page_vaddr(xen_pgd[i]),
- 				       PAGE_SIZE);
- 
--				xen_alloc_pd(PFN_DOWN(__pa(pmd)));
-+				make_lowmem_page_readonly(pmd);
- 
- 				set_pgd(&base[i], __pgd(1 + __pa(pmd)));
- 			} else
-@@ -560,6 +590,10 @@ static __init void xen_pagetable_setup_s
- 
- static __init void xen_pagetable_setup_done(pgd_t *base)
- {
-+	/* This will work as long as patching hasn't happened yet
-+	   (which it hasn't) */
-+	paravirt_ops.alloc_pt = xen_alloc_pt;
-+
- 	if (!xen_feature(XENFEAT_auto_translated_physmap)) {
- 		/*
- 		 * Create a mapping for the shared info page.
-@@ -577,7 +611,19 @@ static __init void xen_pagetable_setup_d
- 		HYPERVISOR_shared_info =
- 			(struct shared_info *)__va(xen_start_info->shared_info);
- 
--	xen_pgd_pin(base);
-+	/* Actually pin the pagetable down, but we can't set PG_pinned
-+	   yet because the page structures don't exist yet. */
-+	{
-+		struct mmuext_op op;
-+#ifdef CONFIG_X86_PAE
-+		op.cmd = MMUEXT_PIN_L3_TABLE;
-+#else
-+		op.cmd = MMUEXT_PIN_L3_TABLE;
-+#endif
-+		op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(base)));
-+		if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
-+			BUG();
-+	}
- 
- 	xen_vcpu_setup(smp_processor_id());
- }
-@@ -594,6 +640,7 @@ static const struct paravirt_ops xen_par
- 	.memory_setup = xen_memory_setup,
- 	.arch_setup = xen_arch_setup,
- 	.init_IRQ = xen_init_IRQ,
-+	.post_allocator_init = xen_mark_init_mm_pinned,
- 
- 	.time_init = xen_time_init,
- 	.set_wallclock = xen_set_wallclock,
-@@ -674,11 +721,15 @@ static const struct paravirt_ops xen_par
- 	.pagetable_setup_start = xen_pagetable_setup_start,
- 	.pagetable_setup_done = xen_pagetable_setup_done,
- 
--	.alloc_pt = xen_alloc_pt,
--	.alloc_pd = xen_alloc_pd,
--	.alloc_pd_clone = xen_alloc_pd_clone,
--	.release_pd = xen_release_pd,
-+	.alloc_pt = xen_alloc_pt_init,
- 	.release_pt = xen_release_pt,
-+	.alloc_pd = paravirt_nop,
-+	.alloc_pd_clone = paravirt_nop,
-+	.release_pd = paravirt_nop,
-+
-+#ifdef CONFIG_HIGHPTE
-+	.kmap_atomic_pte = xen_kmap_atomic_pte,
-+#endif
- 
- 	.set_pte = xen_set_pte,
- 	.set_pte_at = xen_set_pte_at,
-===================================================================
---- a/arch/i386/xen/mmu.c
-+++ b/arch/i386/xen/mmu.c
-@@ -38,18 +38,21 @@
-  *
-  * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
-  */
-+#include <linux/highmem.h>
-+
- #include <asm/bug.h>
--
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <asm/mmu_context.h>
-+#include <asm/paravirt.h>
- 
- #include <asm/xen/hypercall.h>
--#include <asm/paravirt.h>
++#include <linux/types.h>
++#include <linux/vmalloc.h>
 +#include <asm/xen/hypervisor.h>
- 
- #include <xen/page.h>
- #include <xen/interface/xen.h>
- 
-+#include "multicalls.h"
- #include "mmu.h"
- 
- xmaddr_t arbitrary_virt_to_machine(unsigned long address)
-@@ -87,17 +90,6 @@ void make_lowmem_page_readwrite(void *va
- 	ptev = pte_mkwrite(*pte);
- 
- 	if(HYPERVISOR_update_va_mapping(address, ptev, 0))
--		BUG();
--}
--
--
--void xen_set_pte(pte_t *ptep, pte_t pte)
--{
--	struct mmu_update u;
--
--	u.ptr = virt_to_machine(ptep).maddr;
--	u.val = pte_val_ma(pte);
--	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
- 		BUG();
- }
- 
-@@ -110,18 +102,6 @@ void xen_set_pmd(pmd_t *ptr, pmd_t val)
- 	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
- 		BUG();
- }
--
--#ifdef CONFIG_X86_PAE
--void xen_set_pud(pud_t *ptr, pud_t val)
--{
--	struct mmu_update u;
--
--	u.ptr = virt_to_machine(ptr).maddr;
--	u.val = pud_val_ma(val);
--	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
--		BUG();
--}
--#endif
- 
- /*
-  * Associate a virtual page frame with a given physical page frame
-@@ -169,12 +149,29 @@ void xen_set_pte_at(struct mm_struct *mm
- }
- 
- #ifdef CONFIG_X86_PAE
-+void xen_set_pud(pud_t *ptr, pud_t val)
++#include <xen/interface/xen.h>
++#include <xen/interface/event_channel.h>
++#include <xen/events.h>
++#include <xen/grant_table.h>
++#include <xen/xenbus.h>
++
++const char *xenbus_strstate(enum xenbus_state state)
 +{
-+	struct mmu_update u;
-+
-+	u.ptr = virt_to_machine(ptr).maddr;
-+	u.val = pud_val_ma(val);
-+	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
-+		BUG();
++	static const char *const name[] = {
++		[ XenbusStateUnknown      ] = "Unknown",
++		[ XenbusStateInitialising ] = "Initialising",
++		[ XenbusStateInitWait     ] = "InitWait",
++		[ XenbusStateInitialised  ] = "Initialised",
++		[ XenbusStateConnected    ] = "Connected",
++		[ XenbusStateClosing      ] = "Closing",
++		[ XenbusStateClosed	  ] = "Closed",
++	};
++	return (state < ARRAY_SIZE(name)) ? name[state] : "INVALID";
 +}
++EXPORT_SYMBOL_GPL(xenbus_strstate);
 +
-+void xen_set_pte(pte_t *ptep, pte_t pte)
++/**
++ * xenbus_watch_path - register a watch
++ * @dev: xenbus device
++ * @path: path to watch
++ * @watch: watch to register
++ * @callback: callback to register
++ *
++ * Register a @watch on the given path, using the given xenbus_watch structure
++ * for storage, and the given @callback function as the callback.  Return 0 on
++ * success, or -errno on error.  On success, the given @path will be saved as
++ * @watch->node, and remains the caller's to free.  On error, @watch->node will
++ * be NULL, the device will switch to %XenbusStateClosing, and the error will
++ * be saved in the store.
++ */
++int xenbus_watch_path(struct xenbus_device *dev, const char *path,
++		      struct xenbus_watch *watch,
++		      void (*callback)(struct xenbus_watch *,
++				       const char **, unsigned int))
 +{
-+	ptep->pte_high = pte.pte_high;
-+	smp_wmb();
-+	ptep->pte_low = pte.pte_low;
-+}
++	int err;
 +
- void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
- {
- 	set_64bit((u64 *)ptep, pte_val_ma(pte));
- }
- 
--void xen_pte_clear(struct mm_struct *mm, unsigned long addr,pte_t *ptep)
-+void xen_pte_clear(struct mm_struct *mm, unsigned long addr, pte_t *ptep)
- {
- 	ptep->pte_low = 0;
- 	smp_wmb();
-@@ -238,6 +235,11 @@ pgd_t xen_make_pgd(unsigned long long pg
- 	return (pgd_t){ pgd };
- }
- #else  /* !PAE */
-+void xen_set_pte(pte_t *ptep, pte_t pte)
++	watch->node = path;
++	watch->callback = callback;
++
++	err = register_xenbus_watch(watch);
++
++	if (err) {
++		watch->node = NULL;
++		watch->callback = NULL;
++		xenbus_dev_fatal(dev, err, "adding watch on %s", path);
++	}
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(xenbus_watch_path);
++
++
++/**
++ * xenbus_watch_pathfmt - register a watch on a sprintf-formatted path
++ * @dev: xenbus device
++ * @watch: watch to register
++ * @callback: callback to register
++ * @pathfmt: format of path to watch
++ *
++ * Register a watch on the given @path, using the given xenbus_watch
++ * structure for storage, and the given @callback function as the callback.
++ * Return 0 on success, or -errno on error.  On success, the watched path
++ * (@path/@path2) will be saved as @watch->node, and becomes the caller's to
++ * kfree().  On error, watch->node will be NULL, so the caller has nothing to
++ * free, the device will switch to %XenbusStateClosing, and the error will be
++ * saved in the store.
++ */
++int xenbus_watch_pathfmt(struct xenbus_device *dev,
++			 struct xenbus_watch *watch,
++			 void (*callback)(struct xenbus_watch *,
++					const char **, unsigned int),
++			 const char *pathfmt, ...)
 +{
-+	*ptep = pte;
++	int err;
++	va_list ap;
++	char *path;
++
++	va_start(ap, pathfmt);
++	path = kvasprintf(GFP_KERNEL, pathfmt, ap);
++	va_end(ap);
++
++	if (!path) {
++		xenbus_dev_fatal(dev, -ENOMEM, "allocating path for watch");
++		return -ENOMEM;
++	}
++	err = xenbus_watch_path(dev, path, watch, callback);
++
++	if (err)
++		kfree(path);
++	return err;
 +}
++EXPORT_SYMBOL_GPL(xenbus_watch_pathfmt);
 +
- unsigned long xen_pte_val(pte_t pte)
- {
- 	unsigned long ret = pte.pte_low;
-@@ -246,13 +248,6 @@ unsigned long xen_pte_val(pte_t pte)
- 		ret = machine_to_phys(XMADDR(ret)).paddr;
- 
- 	return ret;
--}
--
--unsigned long xen_pmd_val(pmd_t pmd)
--{
--	/* a BUG here is a lot easier to track down than a NULL eip */
--	BUG();
--	return 0;
- }
- 
- unsigned long xen_pgd_val(pgd_t pgd)
-@@ -271,13 +266,6 @@ pte_t xen_make_pte(unsigned long pte)
- 	return (pte_t){ pte };
- }
- 
--pmd_t xen_make_pmd(unsigned long pmd)
--{
--	/* a BUG here is a lot easier to track down than a NULL eip */
--	BUG();
--	return __pmd(0);
--}
--
- pgd_t xen_make_pgd(unsigned long pgd)
- {
- 	if (pgd & _PAGE_PRESENT)
-@@ -288,109 +276,194 @@ pgd_t xen_make_pgd(unsigned long pgd)
- #endif	/* CONFIG_X86_PAE */
- 
- 
--
--static void pgd_walk_set_prot(void *pt, pgprot_t flags)
--{
--	unsigned long pfn = PFN_DOWN(__pa(pt));
--
--	if (HYPERVISOR_update_va_mapping((unsigned long)pt,
--					 pfn_pte(pfn, flags), 0) < 0)
--		BUG();
--}
--
--static void pgd_walk(pgd_t *pgd_base, pgprot_t flags)
-+/*
-+  (Yet another) pagetable walker.  This one is intended for pinning a
-+  pagetable.  This means that it walks a pagetable and calls the
-+  callback function on each page it finds making up the page table,
-+  at every level.  It walks the entire pagetable, but it only bothers
-+  pinning pte pages which are below pte_limit.  In the normal case
-+  this will be TASK_SIZE, but at boot we need to pin up to
-+  FIXADDR_TOP.  But the important bit is that we don't pin beyond
-+  there, because then we start getting into Xen's ptes.
-+*/
-+static int pgd_walk(pgd_t *pgd_base, int (*func)(struct page *, unsigned),
-+		    unsigned long limit)
- {
- 	pgd_t *pgd = pgd_base;
--	pud_t *pud;
--	pmd_t *pmd;
--	pte_t *pte;
--	int    g, u, m;
-+	int flush = 0;
-+	unsigned long addr = 0;
-+	unsigned long pgd_next;
 +
-+	BUG_ON(limit > FIXADDR_TOP);
- 
- 	if (xen_feature(XENFEAT_auto_translated_physmap))
--		return;
--
--	for (g = 0; g < USER_PTRS_PER_PGD; g++, pgd++) {
--		if (pgd_none(*pgd))
++/**
++ * xenbus_switch_state
++ * @dev: xenbus device
++ * @xbt: transaction handle
++ * @state: new state
++ *
++ * Advertise in the store a change of the given driver to the given new_state.
++ * Return 0 on success, or -errno on error.  On error, the device will switch
++ * to XenbusStateClosing, and the error will be saved in the store.
++ */
++int xenbus_switch_state(struct xenbus_device *dev, enum xenbus_state state)
++{
++	/* We check whether the state is currently set to the given value, and
++	   if not, then the state is set.  We don't want to unconditionally
++	   write the given state, because we don't want to fire watches
++	   unnecessarily.  Furthermore, if the node has gone, we don't write
++	   to it, as the device will be tearing down, and we don't want to
++	   resurrect that directory.
++
++	   Note that, because of this cached value of our state, this function
++	   will not work inside a Xenstore transaction (something it was
++	   trying to in the past) because dev->state would not get reset if
++	   the transaction was aborted.
++
++	 */
++
++	int current_state;
++	int err;
++
++	if (state == dev->state)
 +		return 0;
 +
-+	for (; addr != FIXADDR_TOP; pgd++, addr = pgd_next) {
-+		pud_t *pud;
-+		unsigned long pud_limit, pud_next;
++	err = xenbus_scanf(XBT_NIL, dev->nodename, "state", "%d",
++			   &current_state);
++	if (err != 1)
++		return 0;
 +
-+		pgd_next = pud_limit = pgd_addr_end(addr, FIXADDR_TOP);
-+
-+		if (!pgd_val(*pgd))
- 			continue;
-+
- 		pud = pud_offset(pgd, 0);
- 
- 		if (PTRS_PER_PUD > 1) /* not folded */
--			pgd_walk_set_prot(pud,flags);
--
--		for (u = 0; u < PTRS_PER_PUD; u++, pud++) {
-+			flush |= (*func)(virt_to_page(pud), 0);
-+
-+		for (; addr != pud_limit; pud++, addr = pud_next) {
-+			pmd_t *pmd;
-+			unsigned long pmd_limit;
-+
-+			pud_next = pud_addr_end(addr, pud_limit);
-+
-+			if (pud_next < limit)
-+				pmd_limit = pud_next;
-+			else
-+				pmd_limit = limit;
-+
- 			if (pud_none(*pud))
- 				continue;
-+
- 			pmd = pmd_offset(pud, 0);
- 
- 			if (PTRS_PER_PMD > 1) /* not folded */
--				pgd_walk_set_prot(pmd,flags);
--
--			for (m = 0; m < PTRS_PER_PMD; m++, pmd++) {
-+				flush |= (*func)(virt_to_page(pmd), 0);
-+
-+			for (; addr != pmd_limit; pmd++) {
-+				addr += (PAGE_SIZE * PTRS_PER_PTE);
-+				if ((pmd_limit-1) < (addr-1)) {
-+					addr = pmd_limit;
-+					break;
-+				}
-+
- 				if (pmd_none(*pmd))
- 					continue;
- 
--				/* This can get called before mem_map
--				   is set up, so we assume nothing is
--				   highmem at that point. */
--				if (mem_map == NULL ||
--				    !PageHighMem(pmd_page(*pmd))) {
--					pte = pte_offset_kernel(pmd,0);
--					pgd_walk_set_prot(pte,flags);
--				}
-+				flush |= (*func)(pmd_page(*pmd), 0);
- 			}
- 		}
- 	}
- 
--	if (HYPERVISOR_update_va_mapping((unsigned long)pgd_base,
--					 pfn_pte(PFN_DOWN(__pa(pgd_base)),
--						 flags),
--					 UVMF_TLB_FLUSH) < 0)
--		BUG();
--}
--
--
--/* This is called just after a mm has been duplicated from its parent,
--   but it has not been used yet.  We need to make sure that its
--   pagetable is all read-only, and can be pinned. */
-+	flush |= (*func)(virt_to_page(pgd_base), UVMF_TLB_FLUSH);
-+
-+	return flush;
-+}
-+
-+static int pin_page(struct page *page, unsigned flags)
-+{
-+	unsigned pgfl = test_and_set_bit(PG_pinned, &page->flags);
-+	int flush;
-+
-+	if (pgfl)
-+		flush = 0;		/* already pinned */
-+	else if (PageHighMem(page))
-+		/* kmaps need flushing if we found an unpinned
-+		   highpage */
-+		flush = 1;
-+	else {
-+		void *pt = lowmem_page_address(page);
-+		unsigned long pfn = page_to_pfn(page);
-+		struct multicall_space mcs = xen_mc_entry(0);
-+
-+		flush = 0;
-+
-+		MULTI_update_va_mapping(mcs.mc, (unsigned long)pt,
-+					pfn_pte(pfn, PAGE_KERNEL_RO),
-+					flags);
++	err = xenbus_printf(XBT_NIL, dev->nodename, "state", "%d", state);
++	if (err) {
++		if (state != XenbusStateClosing) /* Avoid looping */
++			xenbus_dev_fatal(dev, err, "writing new state");
++		return err;
 +	}
 +
-+	return flush;
++	dev->state = state;
++
++	return 0;
 +}
++EXPORT_SYMBOL_GPL(xenbus_switch_state);
 +
-+/* This is called just after a mm has been created, but it has not
-+   been used yet.  We need to make sure that its pagetable is all
-+   read-only, and can be pinned. */
- void xen_pgd_pin(pgd_t *pgd)
- {
--	struct mmuext_op op;
--
--	pgd_walk(pgd, PAGE_KERNEL_RO);
--
--#if defined(CONFIG_X86_PAE)
--	op.cmd = MMUEXT_PIN_L3_TABLE;
-+	struct multicall_space mcs;
-+	struct mmuext_op *op;
-+
-+	if (pgd_walk(pgd, pin_page, TASK_SIZE))
-+		kmap_flush_unused();
-+
-+	mcs = xen_mc_entry(sizeof(*op));
-+	op = mcs.args;
-+
-+#ifdef CONFIG_X86_PAE
-+	op->cmd = MMUEXT_PIN_L3_TABLE;
- #else
--	op.cmd = MMUEXT_PIN_L2_TABLE;
-+	op->cmd = MMUEXT_PIN_L2_TABLE;
- #endif
--	op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
--	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF) < 0)
--		BUG();
-+	op->arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
-+	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
-+
-+	xen_mc_flush();
-+}
-+
-+/* The init_mm pagetable is really pinned as soon as its created, but
-+   that's before we have page structures to store the bits.  So do all
-+   the book-keeping now. */
-+static __init int mark_pinned(struct page *page, unsigned flags)
++int xenbus_frontend_closed(struct xenbus_device *dev)
 +{
-+	SetPagePinned(page);
++	xenbus_switch_state(dev, XenbusStateClosed);
++	complete(&dev->down);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xenbus_frontend_closed);
++
++/**
++ * Return the path to the error node for the given device, or NULL on failure.
++ * If the value returned is non-NULL, then it is the caller's to kfree.
++ */
++static char *error_path(struct xenbus_device *dev)
++{
++	return kasprintf(GFP_KERNEL, "error/%s", dev->nodename);
++}
++
++
++static void xenbus_va_dev_error(struct xenbus_device *dev, int err,
++				const char *fmt, va_list ap)
++{
++	int ret;
++	unsigned int len;
++	char *printf_buffer = NULL;
++	char *path_buffer = NULL;
++
++#define PRINTF_BUFFER_SIZE 4096
++	printf_buffer = kmalloc(PRINTF_BUFFER_SIZE, GFP_KERNEL);
++	if (printf_buffer == NULL)
++		goto fail;
++
++	len = sprintf(printf_buffer, "%i ", -err);
++	ret = vsnprintf(printf_buffer+len, PRINTF_BUFFER_SIZE-len, fmt, ap);
++
++	BUG_ON(len + ret > PRINTF_BUFFER_SIZE-1);
++
++	dev_err(&dev->dev, "%s\n", printf_buffer);
++
++	path_buffer = error_path(dev);
++
++	if (path_buffer == NULL) {
++		dev_err(&dev->dev, "failed to write error node for %s (%s)\n",
++		       dev->nodename, printf_buffer);
++		goto fail;
++	}
++
++	if (xenbus_write(XBT_NIL, path_buffer, "error", printf_buffer) != 0) {
++		dev_err(&dev->dev, "failed to write error node for %s (%s)\n",
++		       dev->nodename, printf_buffer);
++		goto fail;
++	}
++
++fail:
++	kfree(printf_buffer);
++	kfree(path_buffer);
++}
++
++
++/**
++ * xenbus_dev_error
++ * @dev: xenbus device
++ * @err: error to report
++ * @fmt: error message format
++ *
++ * Report the given negative errno into the store, along with the given
++ * formatted message.
++ */
++void xenbus_dev_error(struct xenbus_device *dev, int err, const char *fmt, ...)
++{
++	va_list ap;
++
++	va_start(ap, fmt);
++	xenbus_va_dev_error(dev, err, fmt, ap);
++	va_end(ap);
++}
++EXPORT_SYMBOL_GPL(xenbus_dev_error);
++
++/**
++ * xenbus_dev_fatal
++ * @dev: xenbus device
++ * @err: error to report
++ * @fmt: error message format
++ *
++ * Equivalent to xenbus_dev_error(dev, err, fmt, args), followed by
++ * xenbus_switch_state(dev, NULL, XenbusStateClosing) to schedule an orderly
++ * closedown of this driver and its peer.
++ */
++
++void xenbus_dev_fatal(struct xenbus_device *dev, int err, const char *fmt, ...)
++{
++	va_list ap;
++
++	va_start(ap, fmt);
++	xenbus_va_dev_error(dev, err, fmt, ap);
++	va_end(ap);
++
++	xenbus_switch_state(dev, XenbusStateClosing);
++}
++EXPORT_SYMBOL_GPL(xenbus_dev_fatal);
++
++/**
++ * xenbus_grant_ring
++ * @dev: xenbus device
++ * @ring_mfn: mfn of ring to grant
++
++ * Grant access to the given @ring_mfn to the peer of the given device.  Return
++ * 0 on success, or -errno on error.  On error, the device will switch to
++ * XenbusStateClosing, and the error will be saved in the store.
++ */
++int xenbus_grant_ring(struct xenbus_device *dev, unsigned long ring_mfn)
++{
++	int err = gnttab_grant_foreign_access(dev->otherend_id, ring_mfn, 0);
++	if (err < 0)
++		xenbus_dev_fatal(dev, err, "granting access to ring page");
++	return err;
++}
++EXPORT_SYMBOL_GPL(xenbus_grant_ring);
++
++
++/**
++ * Allocate an event channel for the given xenbus_device, assigning the newly
++ * created local port to *port.  Return 0 on success, or -errno on error.  On
++ * error, the device will switch to XenbusStateClosing, and the error will be
++ * saved in the store.
++ */
++int xenbus_alloc_evtchn(struct xenbus_device *dev, int *port)
++{
++	struct evtchn_alloc_unbound alloc_unbound;
++	int err;
++
++	alloc_unbound.dom = DOMID_SELF;
++	alloc_unbound.remote_dom = dev->otherend_id;
++
++	err = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound,
++					  &alloc_unbound);
++	if (err)
++		xenbus_dev_fatal(dev, err, "allocating event channel");
++	else
++		*port = alloc_unbound.port;
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(xenbus_alloc_evtchn);
++
++
++/**
++ * Bind to an existing interdomain event channel in another domain. Returns 0
++ * on success and stores the local port in *port. On error, returns -errno,
++ * switches the device to XenbusStateClosing, and saves the error in XenStore.
++ */
++int xenbus_bind_evtchn(struct xenbus_device *dev, int remote_port, int *port)
++{
++	struct evtchn_bind_interdomain bind_interdomain;
++	int err;
++
++	bind_interdomain.remote_dom = dev->otherend_id;
++	bind_interdomain.remote_port = remote_port;
++
++	err = HYPERVISOR_event_channel_op(EVTCHNOP_bind_interdomain,
++					  &bind_interdomain);
++	if (err)
++		xenbus_dev_fatal(dev, err,
++				 "binding to event channel %d from domain %d",
++				 remote_port, dev->otherend_id);
++	else
++		*port = bind_interdomain.local_port;
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(xenbus_bind_evtchn);
++
++
++/**
++ * Free an existing event channel. Returns 0 on success or -errno on error.
++ */
++int xenbus_free_evtchn(struct xenbus_device *dev, int port)
++{
++	struct evtchn_close close;
++	int err;
++
++	close.port = port;
++
++	err = HYPERVISOR_event_channel_op(EVTCHNOP_close, &close);
++	if (err)
++		xenbus_dev_error(dev, err, "freeing event channel %d", port);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(xenbus_free_evtchn);
++
++
++/**
++ * xenbus_map_ring_valloc
++ * @dev: xenbus device
++ * @gnt_ref: grant reference
++ * @vaddr: pointer to address to be filled out by mapping
++ *
++ * Based on Rusty Russell's skeleton driver's map_page.
++ * Map a page of memory into this domain from another domain's grant table.
++ * xenbus_map_ring_valloc allocates a page of virtual address space, maps the
++ * page to that address, and sets *vaddr to that address.
++ * Returns 0 on success, and GNTST_* (see xen/include/interface/grant_table.h)
++ * or -ENOMEM on error. If an error is returned, device will switch to
++ * XenbusStateClosing and the error message will be saved in XenStore.
++ */
++int xenbus_map_ring_valloc(struct xenbus_device *dev, int gnt_ref, void **vaddr)
++{
++	struct gnttab_map_grant_ref op = {
++		.flags = GNTMAP_host_map,
++		.ref   = gnt_ref,
++		.dom   = dev->otherend_id,
++	};
++	struct vm_struct *area;
++
++	*vaddr = NULL;
++
++	area = alloc_vm_area(PAGE_SIZE);
++	if (!area)
++		return -ENOMEM;
++
++	op.host_addr = (unsigned long)area->addr;
++
++	if (HYPERVISOR_grant_table_op(GNTTABOP_map_grant_ref, &op, 1))
++		BUG();
++
++	if (op.status != GNTST_okay) {
++		free_vm_area(area);
++		xenbus_dev_fatal(dev, op.status,
++				 "mapping in shared page %d from domain %d",
++				 gnt_ref, dev->otherend_id);
++		return op.status;
++	}
++
++	/* Stuff the handle in an unused field */
++	area->phys_addr = (unsigned long)op.handle;
++
++	*vaddr = area->addr;
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xenbus_map_ring_valloc);
++
++
++/**
++ * xenbus_map_ring
++ * @dev: xenbus device
++ * @gnt_ref: grant reference
++ * @handle: pointer to grant handle to be filled
++ * @vaddr: address to be mapped to
++ *
++ * Map a page of memory into this domain from another domain's grant table.
++ * xenbus_map_ring does not allocate the virtual address space (you must do
++ * this yourself!). It only maps in the page to the specified address.
++ * Returns 0 on success, and GNTST_* (see xen/include/interface/grant_table.h)
++ * or -ENOMEM on error. If an error is returned, device will switch to
++ * XenbusStateClosing and the error message will be saved in XenStore.
++ */
++int xenbus_map_ring(struct xenbus_device *dev, int gnt_ref,
++		    grant_handle_t *handle, void *vaddr)
++{
++	struct gnttab_map_grant_ref op = {
++		.host_addr = (unsigned long)vaddr,
++		.flags     = GNTMAP_host_map,
++		.ref       = gnt_ref,
++		.dom       = dev->otherend_id,
++	};
++
++	if (HYPERVISOR_grant_table_op(GNTTABOP_map_grant_ref, &op, 1))
++		BUG();
++
++	if (op.status != GNTST_okay) {
++		xenbus_dev_fatal(dev, op.status,
++				 "mapping in shared page %d from domain %d",
++				 gnt_ref, dev->otherend_id);
++	} else
++		*handle = op.handle;
++
++	return op.status;
++}
++EXPORT_SYMBOL_GPL(xenbus_map_ring);
++
++
++/**
++ * xenbus_unmap_ring_vfree
++ * @dev: xenbus device
++ * @vaddr: addr to unmap
++ *
++ * Based on Rusty Russell's skeleton driver's unmap_page.
++ * Unmap a page of memory in this domain that was imported from another domain.
++ * Use xenbus_unmap_ring_vfree if you mapped in your memory with
++ * xenbus_map_ring_valloc (it will free the virtual address space).
++ * Returns 0 on success and returns GNTST_* on error
++ * (see xen/include/interface/grant_table.h).
++ */
++int xenbus_unmap_ring_vfree(struct xenbus_device *dev, void *vaddr)
++{
++	struct vm_struct *area;
++	struct gnttab_unmap_grant_ref op = {
++		.host_addr = (unsigned long)vaddr,
++	};
++
++	/* It'd be nice if linux/vmalloc.h provided a find_vm_area(void *addr)
++	 * method so that we don't have to muck with vmalloc internals here.
++	 * We could force the user to hang on to their struct vm_struct from
++	 * xenbus_map_ring_valloc, but these 6 lines considerably simplify
++	 * this API.
++	 */
++	read_lock(&vmlist_lock);
++	for (area = vmlist; area != NULL; area = area->next) {
++		if (area->addr == vaddr)
++			break;
++	}
++	read_unlock(&vmlist_lock);
++
++	if (!area) {
++		xenbus_dev_error(dev, -ENOENT,
++				 "can't find mapped virtual address %p", vaddr);
++		return GNTST_bad_virt_addr;
++	}
++
++	op.handle = (grant_handle_t)area->phys_addr;
++
++	if (HYPERVISOR_grant_table_op(GNTTABOP_unmap_grant_ref, &op, 1))
++		BUG();
++
++	if (op.status == GNTST_okay)
++		free_vm_area(area);
++	else
++		xenbus_dev_error(dev, op.status,
++				 "unmapping page at handle %d error %d",
++				 (int16_t)area->phys_addr, op.status);
++
++	return op.status;
++}
++EXPORT_SYMBOL_GPL(xenbus_unmap_ring_vfree);
++
++
++/**
++ * xenbus_unmap_ring
++ * @dev: xenbus device
++ * @handle: grant handle
++ * @vaddr: addr to unmap
++ *
++ * Unmap a page of memory in this domain that was imported from another domain.
++ * Returns 0 on success and returns GNTST_* on error
++ * (see xen/include/interface/grant_table.h).
++ */
++int xenbus_unmap_ring(struct xenbus_device *dev,
++		      grant_handle_t handle, void *vaddr)
++{
++	struct gnttab_unmap_grant_ref op = {
++		.host_addr = (unsigned long)vaddr,
++		.handle    = handle,
++	};
++
++	if (HYPERVISOR_grant_table_op(GNTTABOP_unmap_grant_ref, &op, 1))
++		BUG();
++
++	if (op.status != GNTST_okay)
++		xenbus_dev_error(dev, op.status,
++				 "unmapping page at handle %d error %d",
++				 handle, op.status);
++
++	return op.status;
++}
++EXPORT_SYMBOL_GPL(xenbus_unmap_ring);
++
++
++/**
++ * xenbus_read_driver_state
++ * @path: path for driver
++ *
++ * Return the state of the driver rooted at the given store path, or
++ * XenbusStateUnknown if no state can be read.
++ */
++enum xenbus_state xenbus_read_driver_state(const char *path)
++{
++	enum xenbus_state result;
++	int err = xenbus_gather(XBT_NIL, path, "state", "%d", &result, NULL);
++	if (err)
++		result = XenbusStateUnknown;
++
++	return result;
++}
++EXPORT_SYMBOL_GPL(xenbus_read_driver_state);
+===================================================================
+--- /dev/null
++++ b/drivers/xen/xenbus/xenbus_comms.c
+@@ -0,0 +1,233 @@
++/******************************************************************************
++ * xenbus_comms.c
++ *
++ * Low level code to talks to Xen Store: ringbuffer and event channel.
++ *
++ * Copyright (C) 2005 Rusty Russell, IBM Corporation
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#include <linux/wait.h>
++#include <linux/interrupt.h>
++#include <linux/sched.h>
++#include <linux/err.h>
++#include <xen/xenbus.h>
++#include <asm/xen/hypervisor.h>
++#include <xen/events.h>
++#include <xen/page.h>
++#include "xenbus_comms.h"
++
++static int xenbus_irq;
++
++static DECLARE_WORK(probe_work, xenbus_probe);
++
++static DECLARE_WAIT_QUEUE_HEAD(xb_waitq);
++
++static irqreturn_t wake_waiting(int irq, void *unused)
++{
++	if (unlikely(xenstored_ready == 0)) {
++		xenstored_ready = 1;
++		schedule_work(&probe_work);
++	}
++
++	wake_up(&xb_waitq);
++	return IRQ_HANDLED;
++}
++
++static int check_indexes(XENSTORE_RING_IDX cons, XENSTORE_RING_IDX prod)
++{
++	return ((prod - cons) <= XENSTORE_RING_SIZE);
++}
++
++static void *get_output_chunk(XENSTORE_RING_IDX cons,
++			      XENSTORE_RING_IDX prod,
++			      char *buf, uint32_t *len)
++{
++	*len = XENSTORE_RING_SIZE - MASK_XENSTORE_IDX(prod);
++	if ((XENSTORE_RING_SIZE - (prod - cons)) < *len)
++		*len = XENSTORE_RING_SIZE - (prod - cons);
++	return buf + MASK_XENSTORE_IDX(prod);
++}
++
++static const void *get_input_chunk(XENSTORE_RING_IDX cons,
++				   XENSTORE_RING_IDX prod,
++				   const char *buf, uint32_t *len)
++{
++	*len = XENSTORE_RING_SIZE - MASK_XENSTORE_IDX(cons);
++	if ((prod - cons) < *len)
++		*len = prod - cons;
++	return buf + MASK_XENSTORE_IDX(cons);
++}
++
++/**
++ * xb_write - low level write
++ * @data: buffer to send
++ * @len: length of buffer
++ *
++ * Returns 0 on success, error otherwise.
++ */
++int xb_write(const void *data, unsigned len)
++{
++	struct xenstore_domain_interface *intf = xen_store_interface;
++	XENSTORE_RING_IDX cons, prod;
++	int rc;
++
++	while (len != 0) {
++		void *dst;
++		unsigned int avail;
++
++		rc = wait_event_interruptible(
++			xb_waitq,
++			(intf->req_prod - intf->req_cons) !=
++			XENSTORE_RING_SIZE);
++		if (rc < 0)
++			return rc;
++
++		/* Read indexes, then verify. */
++		cons = intf->req_cons;
++		prod = intf->req_prod;
++		if (!check_indexes(cons, prod)) {
++			intf->req_cons = intf->req_prod = 0;
++			return -EIO;
++		}
++
++		dst = get_output_chunk(cons, prod, intf->req, &avail);
++		if (avail == 0)
++			continue;
++		if (avail > len)
++			avail = len;
++
++		/* Must write data /after/ reading the consumer index. */
++		mb();
++
++		memcpy(dst, data, avail);
++		data += avail;
++		len -= avail;
++
++		/* Other side must not see new producer until data is there. */
++		wmb();
++		intf->req_prod += avail;
++
++		/* Implies mb(): other side will see the updated producer. */
++		notify_remote_via_evtchn(xen_store_evtchn);
++	}
++
 +	return 0;
 +}
 +
-+void __init xen_mark_init_mm_pinned(void)
++int xb_data_to_read(void)
 +{
-+	pgd_walk(init_mm.pgd, mark_pinned, FIXADDR_TOP);
++	struct xenstore_domain_interface *intf = xen_store_interface;
++	return (intf->rsp_cons != intf->rsp_prod);
 +}
 +
-+static int unpin_page(struct page *page, unsigned flags)
++int xb_wait_for_data_to_read(void)
 +{
-+	unsigned pgfl = test_and_clear_bit(PG_pinned, &page->flags);
++	return wait_event_interruptible(xb_waitq, xb_data_to_read());
++}
 +
-+	if (pgfl && !PageHighMem(page)) {
-+		void *pt = lowmem_page_address(page);
-+		unsigned long pfn = page_to_pfn(page);
-+		struct multicall_space mcs = xen_mc_entry(0);
++int xb_read(void *data, unsigned len)
++{
++	struct xenstore_domain_interface *intf = xen_store_interface;
++	XENSTORE_RING_IDX cons, prod;
++	int rc;
 +
-+		MULTI_update_va_mapping(mcs.mc, (unsigned long)pt,
-+					pfn_pte(pfn, PAGE_KERNEL),
-+					flags);
++	while (len != 0) {
++		unsigned int avail;
++		const char *src;
++
++		rc = xb_wait_for_data_to_read();
++		if (rc < 0)
++			return rc;
++
++		/* Read indexes, then verify. */
++		cons = intf->rsp_cons;
++		prod = intf->rsp_prod;
++		if (!check_indexes(cons, prod)) {
++			intf->rsp_cons = intf->rsp_prod = 0;
++			return -EIO;
++		}
++
++		src = get_input_chunk(cons, prod, intf->rsp, &avail);
++		if (avail == 0)
++			continue;
++		if (avail > len)
++			avail = len;
++
++		/* Must read data /after/ reading the producer index. */
++		rmb();
++
++		memcpy(data, src, avail);
++		data += avail;
++		len -= avail;
++
++		/* Other side must not see free space until we've copied out */
++		mb();
++		intf->rsp_cons += avail;
++
++		pr_debug("Finished read of %i bytes (%i to go)\n", avail, len);
++
++		/* Implies mb(): other side will see the updated consumer. */
++		notify_remote_via_evtchn(xen_store_evtchn);
 +	}
 +
-+	return 0;		/* never need to flush on unpin */
- }
- 
- /* Release a pagetables pages back as normal RW */
--void xen_pgd_unpin(pgd_t *pgd)
--{
--	struct mmuext_op op;
--
--	op.cmd = MMUEXT_UNPIN_TABLE;
--	op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
--
--	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF) < 0)
--		BUG();
--
--	pgd_walk(pgd, PAGE_KERNEL);
-+static void xen_pgd_unpin(pgd_t *pgd)
-+{
-+	struct mmuext_op *op;
-+	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
-+
-+	op = mcs.args;
-+	op->cmd = MMUEXT_UNPIN_TABLE;
-+	op->arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
-+
-+	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
-+
-+	pgd_walk(pgd, unpin_page, TASK_SIZE);
-+
-+	xen_mc_flush();
- }
- 
- 
- void xen_activate_mm(struct mm_struct *prev, struct mm_struct *next)
- {
-+	spin_lock(&next->page_table_lock);
- 	xen_pgd_pin(next->pgd);
-+	spin_unlock(&next->page_table_lock);
- }
- 
- void xen_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
- {
-+	spin_lock(&mm->page_table_lock);
- 	xen_pgd_pin(mm->pgd);
-+	spin_unlock(&mm->page_table_lock);
- }
- 
- void xen_exit_mmap(struct mm_struct *mm)
-===================================================================
---- a/arch/i386/xen/mmu.h
-+++ b/arch/i386/xen/mmu.h
-@@ -15,7 +15,7 @@ void xen_exit_mmap(struct mm_struct *mm)
- void xen_exit_mmap(struct mm_struct *mm);
- 
- void xen_pgd_pin(pgd_t *pgd);
--void xen_pgd_unpin(pgd_t *pgd);
-+//void xen_pgd_unpin(pgd_t *pgd);
- 
- #ifdef CONFIG_X86_PAE
- unsigned long long xen_pte_val(pte_t);
-===================================================================
---- a/arch/i386/xen/xen-ops.h
-+++ b/arch/i386/xen/xen-ops.h
-@@ -20,6 +20,8 @@ int xen_set_wallclock(unsigned long time
- int xen_set_wallclock(unsigned long time);
- cycle_t xen_clocksource_read(void);
- 
-+void xen_mark_init_mm_pinned(void);
-+
- DECLARE_PER_CPU(enum paravirt_lazy_mode, xen_lazy_mode);
- 
- static inline unsigned xen_get_lazy_mode(void)
-===================================================================
---- a/include/asm-i386/paravirt.h
-+++ b/include/asm-i386/paravirt.h
-@@ -52,6 +52,8 @@ struct paravirt_ops
- 	/* Basic arch-specific setup */
- 	void (*arch_setup)(void);
- 	char *(*memory_setup)(void);
-+	void (*post_allocator_init)(void);
-+
- 	void (*init_IRQ)(void);
- 	void (*time_init)(void);
- 
-@@ -173,7 +175,7 @@ struct paravirt_ops
- 				 unsigned long va);
- 
- 	/* Hooks for allocating/releasing pagetable pages */
--	void (*alloc_pt)(u32 pfn);
-+	void (*alloc_pt)(struct mm_struct *mm, u32 pfn);
- 	void (*alloc_pd)(u32 pfn);
- 	void (*alloc_pd_clone)(u32 pfn, u32 clonepfn, u32 start, u32 count);
- 	void (*release_pt)(u32 pfn);
-@@ -682,6 +684,12 @@ static inline void setup_secondary_clock
- }
- #endif
- 
-+static inline void paravirt_post_allocator_init(void)
-+{
-+	if (paravirt_ops.post_allocator_init)
-+		(*paravirt_ops.post_allocator_init)();
++	return 0;
 +}
 +
- static inline void paravirt_pagetable_setup_start(pgd_t *base)
- {
- 	if (paravirt_ops.pagetable_setup_start)
-@@ -738,9 +746,9 @@ static inline void flush_tlb_others(cpum
- 	PVOP_VCALL3(flush_tlb_others, &cpumask, mm, va);
- }
- 
--static inline void paravirt_alloc_pt(unsigned pfn)
--{
--	PVOP_VCALL1(alloc_pt, pfn);
-+static inline void paravirt_alloc_pt(struct mm_struct *mm, unsigned pfn)
++/**
++ * xb_init_comms - Set up interrupt handler off store event channel.
++ */
++int xb_init_comms(void)
 +{
-+	PVOP_VCALL2(alloc_pt, mm, pfn);
- }
- static inline void paravirt_release_pt(unsigned pfn)
- {
++	struct xenstore_domain_interface *intf = xen_store_interface;
++	int err;
++
++	if (intf->req_prod != intf->req_cons)
++		printk(KERN_ERR "XENBUS request ring is not quiescent "
++		       "(%08x:%08x)!\n", intf->req_cons, intf->req_prod);
++
++	if (intf->rsp_prod != intf->rsp_cons) {
++		printk(KERN_WARNING "XENBUS response ring is not quiescent "
++		       "(%08x:%08x): fixing up\n",
++		       intf->rsp_cons, intf->rsp_prod);
++		intf->rsp_cons = intf->rsp_prod;
++	}
++
++	if (xenbus_irq)
++		unbind_from_irqhandler(xenbus_irq, &xb_waitq);
++
++	err = bind_evtchn_to_irqhandler(
++		xen_store_evtchn, wake_waiting,
++		0, "xenbus", &xb_waitq);
++	if (err <= 0) {
++		printk(KERN_ERR "XENBUS request irq failed %i\n", err);
++		return err;
++	}
++
++	xenbus_irq = err;
++
++	return 0;
++}
 ===================================================================
---- a/include/asm-i386/pgalloc.h
-+++ b/include/asm-i386/pgalloc.h
-@@ -7,7 +7,7 @@
- #ifdef CONFIG_PARAVIRT
- #include <asm/paravirt.h>
- #else
--#define paravirt_alloc_pt(pfn) do { } while (0)
-+#define paravirt_alloc_pt(mm, pfn) do { } while (0)
- #define paravirt_alloc_pd(pfn) do { } while (0)
- #define paravirt_alloc_pd(pfn) do { } while (0)
- #define paravirt_alloc_pd_clone(pfn, clonepfn, start, count) do { } while (0)
-@@ -17,13 +17,13 @@
- 
- #define pmd_populate_kernel(mm, pmd, pte)			\
- do {								\
--	paravirt_alloc_pt(__pa(pte) >> PAGE_SHIFT);		\
-+	paravirt_alloc_pt(mm, __pa(pte) >> PAGE_SHIFT);		\
- 	set_pmd(pmd, __pmd(_PAGE_TABLE + __pa(pte)));		\
- } while (0)
- 
- #define pmd_populate(mm, pmd, pte) 				\
- do {								\
--	paravirt_alloc_pt(page_to_pfn(pte));			\
-+	paravirt_alloc_pt(mm, page_to_pfn(pte));		\
- 	set_pmd(pmd, __pmd(_PAGE_TABLE +			\
- 		((unsigned long long)page_to_pfn(pte) <<	\
- 			(unsigned long long) PAGE_SHIFT)));	\
+--- /dev/null
++++ b/drivers/xen/xenbus/xenbus_comms.h
+@@ -0,0 +1,46 @@
++/*
++ * Private include for xenbus communications.
++ *
++ * Copyright (C) 2005 Rusty Russell, IBM Corporation
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#ifndef _XENBUS_COMMS_H
++#define _XENBUS_COMMS_H
++
++int xs_init(void);
++int xb_init_comms(void);
++
++/* Low level routines. */
++int xb_write(const void *data, unsigned len);
++int xb_read(void *data, unsigned len);
++int xb_data_to_read(void);
++int xb_wait_for_data_to_read(void);
++int xs_input_avail(void);
++extern struct xenstore_domain_interface *xen_store_interface;
++extern int xen_store_evtchn;
++
++#endif /* _XENBUS_COMMS_H */
 ===================================================================
---- a/include/asm-i386/setup.h
-+++ b/include/asm-i386/setup.h
-@@ -79,6 +79,10 @@ void __init add_memory_region(unsigned l
- 
- extern unsigned long init_pg_tables_end;
- 
-+#ifndef CONFIG_PARAVIRT
-+#define paravirt_post_allocator_init()	do {} while(0)
+--- /dev/null
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -0,0 +1,935 @@
++/******************************************************************************
++ * Talks to Xen Store to figure out what devices we have.
++ *
++ * Copyright (C) 2005 Rusty Russell, IBM Corporation
++ * Copyright (C) 2005 Mike Wray, Hewlett-Packard
++ * Copyright (C) 2005, 2006 XenSource Ltd
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#define DPRINTK(fmt, args...)				\
++	pr_debug("xenbus_probe (%s:%d) " fmt ".\n",	\
++		 __func__, __LINE__, ##args)
++
++#include <linux/kernel.h>
++#include <linux/err.h>
++#include <linux/string.h>
++#include <linux/ctype.h>
++#include <linux/fcntl.h>
++#include <linux/mm.h>
++#include <linux/notifier.h>
++#include <linux/kthread.h>
++#include <linux/mutex.h>
++
++#include <asm/io.h>
++#include <asm/page.h>
++#include <asm/pgtable.h>
++#include <asm/xen/hypervisor.h>
++#include <xen/xenbus.h>
++#include <xen/events.h>
++#include <xen/page.h>
++
++#include "xenbus_comms.h"
++#include "xenbus_probe.h"
++
++int xen_store_evtchn;
++struct xenstore_domain_interface *xen_store_interface;
++static unsigned long xen_store_mfn;
++
++static BLOCKING_NOTIFIER_HEAD(xenstore_chain);
++
++static void wait_for_devices(struct xenbus_driver *xendrv);
++
++static int xenbus_probe_frontend(const char *type, const char *name);
++
++static void xenbus_dev_shutdown(struct device *_dev);
++
++/* If something in array of ids matches this device, return it. */
++static const struct xenbus_device_id *
++match_device(const struct xenbus_device_id *arr, struct xenbus_device *dev)
++{
++	for (; *arr->devicetype != '\0'; arr++) {
++		if (!strcmp(arr->devicetype, dev->devicetype))
++			return arr;
++	}
++	return NULL;
++}
++
++int xenbus_match(struct device *_dev, struct device_driver *_drv)
++{
++	struct xenbus_driver *drv = to_xenbus_driver(_drv);
++
++	if (!drv->ids)
++		return 0;
++
++	return match_device(drv->ids, to_xenbus_device(_dev)) != NULL;
++}
++
++/* device/<type>/<id> => <type>-<id> */
++static int frontend_bus_id(char bus_id[BUS_ID_SIZE], const char *nodename)
++{
++	nodename = strchr(nodename, '/');
++	if (!nodename || strlen(nodename + 1) >= BUS_ID_SIZE) {
++		printk(KERN_WARNING "XENBUS: bad frontend %s\n", nodename);
++		return -EINVAL;
++	}
++
++	strlcpy(bus_id, nodename + 1, BUS_ID_SIZE);
++	if (!strchr(bus_id, '/')) {
++		printk(KERN_WARNING "XENBUS: bus_id %s no slash\n", bus_id);
++		return -EINVAL;
++	}
++	*strchr(bus_id, '/') = '-';
++	return 0;
++}
++
++
++static void free_otherend_details(struct xenbus_device *dev)
++{
++	kfree(dev->otherend);
++	dev->otherend = NULL;
++}
++
++
++static void free_otherend_watch(struct xenbus_device *dev)
++{
++	if (dev->otherend_watch.node) {
++		unregister_xenbus_watch(&dev->otherend_watch);
++		kfree(dev->otherend_watch.node);
++		dev->otherend_watch.node = NULL;
++	}
++}
++
++
++int read_otherend_details(struct xenbus_device *xendev,
++				 char *id_node, char *path_node)
++{
++	int err = xenbus_gather(XBT_NIL, xendev->nodename,
++				id_node, "%i", &xendev->otherend_id,
++				path_node, NULL, &xendev->otherend,
++				NULL);
++	if (err) {
++		xenbus_dev_fatal(xendev, err,
++				 "reading other end details from %s",
++				 xendev->nodename);
++		return err;
++	}
++	if (strlen(xendev->otherend) == 0 ||
++	    !xenbus_exists(XBT_NIL, xendev->otherend, "")) {
++		xenbus_dev_fatal(xendev, -ENOENT,
++				 "unable to read other end from %s.  "
++				 "missing or inaccessible.",
++				 xendev->nodename);
++		free_otherend_details(xendev);
++		return -ENOENT;
++	}
++
++	return 0;
++}
++
++
++static int read_backend_details(struct xenbus_device *xendev)
++{
++	return read_otherend_details(xendev, "backend-id", "backend");
++}
++
++
++/* Bus type for frontend drivers. */
++static struct xen_bus_type xenbus_frontend = {
++	.root = "device",
++	.levels = 2, 		/* device/type/<id> */
++	.get_bus_id = frontend_bus_id,
++	.probe = xenbus_probe_frontend,
++	.bus = {
++		.name     = "xen",
++		.match    = xenbus_match,
++		.probe    = xenbus_dev_probe,
++		.remove   = xenbus_dev_remove,
++		.shutdown = xenbus_dev_shutdown,
++	},
++};
++
++static void otherend_changed(struct xenbus_watch *watch,
++			     const char **vec, unsigned int len)
++{
++	struct xenbus_device *dev =
++		container_of(watch, struct xenbus_device, otherend_watch);
++	struct xenbus_driver *drv = to_xenbus_driver(dev->dev.driver);
++	enum xenbus_state state;
++
++	/* Protect us against watches firing on old details when the otherend
++	   details change, say immediately after a resume. */
++	if (!dev->otherend ||
++	    strncmp(dev->otherend, vec[XS_WATCH_PATH],
++		    strlen(dev->otherend))) {
++		dev_dbg(&dev->dev, "Ignoring watch at %s", vec[XS_WATCH_PATH]);
++		return;
++	}
++
++	state = xenbus_read_driver_state(dev->otherend);
++
++	dev_dbg(&dev->dev, "state is %d, (%s), %s, %s",
++		state, xenbus_strstate(state), dev->otherend_watch.node,
++		vec[XS_WATCH_PATH]);
++
++	/*
++	 * Ignore xenbus transitions during shutdown. This prevents us doing
++	 * work that can fail e.g., when the rootfs is gone.
++	 */
++	if (system_state > SYSTEM_RUNNING) {
++		struct xen_bus_type *bus = bus;
++		bus = container_of(dev->dev.bus, struct xen_bus_type, bus);
++		/* If we're frontend, drive the state machine to Closed. */
++		/* This should cause the backend to release our resources. */
++		if ((bus == &xenbus_frontend) && (state == XenbusStateClosing))
++			xenbus_frontend_closed(dev);
++		return;
++	}
++
++	if (drv->otherend_changed)
++		drv->otherend_changed(dev, state);
++}
++
++
++static int talk_to_otherend(struct xenbus_device *dev)
++{
++	struct xenbus_driver *drv = to_xenbus_driver(dev->dev.driver);
++
++	free_otherend_watch(dev);
++	free_otherend_details(dev);
++
++	return drv->read_otherend_details(dev);
++}
++
++
++static int watch_otherend(struct xenbus_device *dev)
++{
++	return xenbus_watch_pathfmt(dev, &dev->otherend_watch, otherend_changed,
++				    "%s/%s", dev->otherend, "state");
++}
++
++
++int xenbus_dev_probe(struct device *_dev)
++{
++	struct xenbus_device *dev = to_xenbus_device(_dev);
++	struct xenbus_driver *drv = to_xenbus_driver(_dev->driver);
++	const struct xenbus_device_id *id;
++	int err;
++
++	DPRINTK("%s", dev->nodename);
++
++	if (!drv->probe) {
++		err = -ENODEV;
++		goto fail;
++	}
++
++	id = match_device(drv->ids, dev);
++	if (!id) {
++		err = -ENODEV;
++		goto fail;
++	}
++
++	err = talk_to_otherend(dev);
++	if (err) {
++		dev_warn(&dev->dev, "talk_to_otherend on %s failed.\n",
++			 dev->nodename);
++		return err;
++	}
++
++	err = drv->probe(dev, id);
++	if (err)
++		goto fail;
++
++	err = watch_otherend(dev);
++	if (err) {
++		dev_warn(&dev->dev, "watch_otherend on %s failed.\n",
++		       dev->nodename);
++		return err;
++	}
++
++	return 0;
++fail:
++	xenbus_dev_error(dev, err, "xenbus_dev_probe on %s", dev->nodename);
++	xenbus_switch_state(dev, XenbusStateClosed);
++	return -ENODEV;
++}
++
++int xenbus_dev_remove(struct device *_dev)
++{
++	struct xenbus_device *dev = to_xenbus_device(_dev);
++	struct xenbus_driver *drv = to_xenbus_driver(_dev->driver);
++
++	DPRINTK("%s", dev->nodename);
++
++	free_otherend_watch(dev);
++	free_otherend_details(dev);
++
++	if (drv->remove)
++		drv->remove(dev);
++
++	xenbus_switch_state(dev, XenbusStateClosed);
++	return 0;
++}
++
++static void xenbus_dev_shutdown(struct device *_dev)
++{
++	struct xenbus_device *dev = to_xenbus_device(_dev);
++	unsigned long timeout = 5*HZ;
++
++	DPRINTK("%s", dev->nodename);
++
++	get_device(&dev->dev);
++	if (dev->state != XenbusStateConnected) {
++		printk(KERN_INFO "%s: %s: %s != Connected, skipping\n", __func__,
++		       dev->nodename, xenbus_strstate(dev->state));
++		goto out;
++	}
++	xenbus_switch_state(dev, XenbusStateClosing);
++	timeout = wait_for_completion_timeout(&dev->down, timeout);
++	if (!timeout)
++		printk(KERN_INFO "%s: %s timeout closing device\n",
++		       __func__, dev->nodename);
++ out:
++	put_device(&dev->dev);
++}
++
++int xenbus_register_driver_common(struct xenbus_driver *drv,
++				  struct xen_bus_type *bus,
++				  struct module *owner,
++				  const char *mod_name)
++{
++	drv->driver.name = drv->name;
++	drv->driver.bus = &bus->bus;
++	drv->driver.owner = owner;
++	drv->driver.mod_name = mod_name;
++
++	return driver_register(&drv->driver);
++}
++
++int __xenbus_register_frontend(struct xenbus_driver *drv,
++			       struct module *owner, const char *mod_name)
++{
++	int ret;
++
++	drv->read_otherend_details = read_backend_details;
++
++	ret = xenbus_register_driver_common(drv, &xenbus_frontend,
++					    owner, mod_name);
++	if (ret)
++		return ret;
++
++	/* If this driver is loaded as a module wait for devices to attach. */
++	wait_for_devices(drv);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(__xenbus_register_frontend);
++
++void xenbus_unregister_driver(struct xenbus_driver *drv)
++{
++	driver_unregister(&drv->driver);
++}
++EXPORT_SYMBOL_GPL(xenbus_unregister_driver);
++
++struct xb_find_info
++{
++	struct xenbus_device *dev;
++	const char *nodename;
++};
++
++static int cmp_dev(struct device *dev, void *data)
++{
++	struct xenbus_device *xendev = to_xenbus_device(dev);
++	struct xb_find_info *info = data;
++
++	if (!strcmp(xendev->nodename, info->nodename)) {
++		info->dev = xendev;
++		get_device(dev);
++		return 1;
++	}
++	return 0;
++}
++
++struct xenbus_device *xenbus_device_find(const char *nodename,
++					 struct bus_type *bus)
++{
++	struct xb_find_info info = { .dev = NULL, .nodename = nodename };
++
++	bus_for_each_dev(bus, NULL, &info, cmp_dev);
++	return info.dev;
++}
++
++static int cleanup_dev(struct device *dev, void *data)
++{
++	struct xenbus_device *xendev = to_xenbus_device(dev);
++	struct xb_find_info *info = data;
++	int len = strlen(info->nodename);
++
++	DPRINTK("%s", info->nodename);
++
++	/* Match the info->nodename path, or any subdirectory of that path. */
++	if (strncmp(xendev->nodename, info->nodename, len))
++		return 0;
++
++	/* If the node name is longer, ensure it really is a subdirectory. */
++	if ((strlen(xendev->nodename) > len) && (xendev->nodename[len] != '/'))
++		return 0;
++
++	info->dev = xendev;
++	get_device(dev);
++	return 1;
++}
++
++static void xenbus_cleanup_devices(const char *path, struct bus_type *bus)
++{
++	struct xb_find_info info = { .nodename = path };
++
++	do {
++		info.dev = NULL;
++		bus_for_each_dev(bus, NULL, &info, cleanup_dev);
++		if (info.dev) {
++			device_unregister(&info.dev->dev);
++			put_device(&info.dev->dev);
++		}
++	} while (info.dev);
++}
++
++static void xenbus_dev_release(struct device *dev)
++{
++	if (dev)
++		kfree(to_xenbus_device(dev));
++}
++
++static ssize_t xendev_show_nodename(struct device *dev,
++				    struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%s\n", to_xenbus_device(dev)->nodename);
++}
++DEVICE_ATTR(nodename, S_IRUSR | S_IRGRP | S_IROTH, xendev_show_nodename, NULL);
++
++static ssize_t xendev_show_devtype(struct device *dev,
++				   struct device_attribute *attr, char *buf)
++{
++	return sprintf(buf, "%s\n", to_xenbus_device(dev)->devicetype);
++}
++DEVICE_ATTR(devtype, S_IRUSR | S_IRGRP | S_IROTH, xendev_show_devtype, NULL);
++
++
++int xenbus_probe_node(struct xen_bus_type *bus,
++		      const char *type,
++		      const char *nodename)
++{
++	int err;
++	struct xenbus_device *xendev;
++	size_t stringlen;
++	char *tmpstring;
++
++	enum xenbus_state state = xenbus_read_driver_state(nodename);
++
++	if (state != XenbusStateInitialising) {
++		/* Device is not new, so ignore it.  This can happen if a
++		   device is going away after switching to Closed.  */
++		return 0;
++	}
++
++	stringlen = strlen(nodename) + 1 + strlen(type) + 1;
++	xendev = kzalloc(sizeof(*xendev) + stringlen, GFP_KERNEL);
++	if (!xendev)
++		return -ENOMEM;
++
++	xendev->state = XenbusStateInitialising;
++
++	/* Copy the strings into the extra space. */
++
++	tmpstring = (char *)(xendev + 1);
++	strcpy(tmpstring, nodename);
++	xendev->nodename = tmpstring;
++
++	tmpstring += strlen(tmpstring) + 1;
++	strcpy(tmpstring, type);
++	xendev->devicetype = tmpstring;
++	init_completion(&xendev->down);
++
++	xendev->dev.bus = &bus->bus;
++	xendev->dev.release = xenbus_dev_release;
++
++	err = bus->get_bus_id(xendev->dev.bus_id, xendev->nodename);
++	if (err)
++		goto fail;
++
++	/* Register with generic device framework. */
++	err = device_register(&xendev->dev);
++	if (err)
++		goto fail;
++
++	err = device_create_file(&xendev->dev, &dev_attr_nodename);
++	if (err)
++		goto fail_unregister;
++
++	err = device_create_file(&xendev->dev, &dev_attr_devtype);
++	if (err)
++		goto fail_remove_file;
++
++	return 0;
++fail_remove_file:
++	device_remove_file(&xendev->dev, &dev_attr_nodename);
++fail_unregister:
++	device_unregister(&xendev->dev);
++fail:
++	kfree(xendev);
++	return err;
++}
++
++/* device/<typename>/<name> */
++static int xenbus_probe_frontend(const char *type, const char *name)
++{
++	char *nodename;
++	int err;
++
++	nodename = kasprintf(GFP_KERNEL, "%s/%s/%s",
++			     xenbus_frontend.root, type, name);
++	if (!nodename)
++		return -ENOMEM;
++
++	DPRINTK("%s", nodename);
++
++	err = xenbus_probe_node(&xenbus_frontend, type, nodename);
++	kfree(nodename);
++	return err;
++}
++
++static int xenbus_probe_device_type(struct xen_bus_type *bus, const char *type)
++{
++	int err = 0;
++	char **dir;
++	unsigned int dir_n = 0;
++	int i;
++
++	dir = xenbus_directory(XBT_NIL, bus->root, type, &dir_n);
++	if (IS_ERR(dir))
++		return PTR_ERR(dir);
++
++	for (i = 0; i < dir_n; i++) {
++		err = bus->probe(type, dir[i]);
++		if (err)
++			break;
++	}
++	kfree(dir);
++	return err;
++}
++
++int xenbus_probe_devices(struct xen_bus_type *bus)
++{
++	int err = 0;
++	char **dir;
++	unsigned int i, dir_n;
++
++	dir = xenbus_directory(XBT_NIL, bus->root, "", &dir_n);
++	if (IS_ERR(dir))
++		return PTR_ERR(dir);
++
++	for (i = 0; i < dir_n; i++) {
++		err = xenbus_probe_device_type(bus, dir[i]);
++		if (err)
++			break;
++	}
++	kfree(dir);
++	return err;
++}
++
++static unsigned int char_count(const char *str, char c)
++{
++	unsigned int i, ret = 0;
++
++	for (i = 0; str[i]; i++)
++		if (str[i] == c)
++			ret++;
++	return ret;
++}
++
++static int strsep_len(const char *str, char c, unsigned int len)
++{
++	unsigned int i;
++
++	for (i = 0; str[i]; i++)
++		if (str[i] == c) {
++			if (len == 0)
++				return i;
++			len--;
++		}
++	return (len == 0) ? i : -ERANGE;
++}
++
++void xenbus_dev_changed(const char *node, struct xen_bus_type *bus)
++{
++	int exists, rootlen;
++	struct xenbus_device *dev;
++	char type[BUS_ID_SIZE];
++	const char *p, *root;
++
++	if (char_count(node, '/') < 2)
++ 		return;
++
++	exists = xenbus_exists(XBT_NIL, node, "");
++	if (!exists) {
++		xenbus_cleanup_devices(node, &bus->bus);
++		return;
++	}
++
++	/* backend/<type>/... or device/<type>/... */
++	p = strchr(node, '/') + 1;
++	snprintf(type, BUS_ID_SIZE, "%.*s", (int)strcspn(p, "/"), p);
++	type[BUS_ID_SIZE-1] = '\0';
++
++	rootlen = strsep_len(node, '/', bus->levels);
++	if (rootlen < 0)
++		return;
++	root = kasprintf(GFP_KERNEL, "%.*s", rootlen, node);
++	if (!root)
++		return;
++
++	dev = xenbus_device_find(root, &bus->bus);
++	if (!dev)
++		xenbus_probe_node(bus, type, root);
++	else
++		put_device(&dev->dev);
++
++	kfree(root);
++}
++
++static void frontend_changed(struct xenbus_watch *watch,
++			     const char **vec, unsigned int len)
++{
++	DPRINTK("");
++
++	xenbus_dev_changed(vec[XS_WATCH_PATH], &xenbus_frontend);
++}
++
++/* We watch for devices appearing and vanishing. */
++static struct xenbus_watch fe_watch = {
++	.node = "device",
++	.callback = frontend_changed,
++};
++
++static int suspend_dev(struct device *dev, void *data)
++{
++	int err = 0;
++	struct xenbus_driver *drv;
++	struct xenbus_device *xdev;
++
++	DPRINTK("");
++
++	if (dev->driver == NULL)
++		return 0;
++	drv = to_xenbus_driver(dev->driver);
++	xdev = container_of(dev, struct xenbus_device, dev);
++	if (drv->suspend)
++		err = drv->suspend(xdev);
++	if (err)
++		printk(KERN_WARNING
++		       "xenbus: suspend %s failed: %i\n", dev->bus_id, err);
++	return 0;
++}
++
++static int suspend_cancel_dev(struct device *dev, void *data)
++{
++	int err = 0;
++	struct xenbus_driver *drv;
++	struct xenbus_device *xdev;
++
++	DPRINTK("");
++
++	if (dev->driver == NULL)
++		return 0;
++	drv = to_xenbus_driver(dev->driver);
++	xdev = container_of(dev, struct xenbus_device, dev);
++	if (drv->suspend_cancel)
++		err = drv->suspend_cancel(xdev);
++	if (err)
++		printk(KERN_WARNING
++		       "xenbus: suspend_cancel %s failed: %i\n",
++		       dev->bus_id, err);
++	return 0;
++}
++
++static int resume_dev(struct device *dev, void *data)
++{
++	int err;
++	struct xenbus_driver *drv;
++	struct xenbus_device *xdev;
++
++	DPRINTK("");
++
++	if (dev->driver == NULL)
++		return 0;
++
++	drv = to_xenbus_driver(dev->driver);
++	xdev = container_of(dev, struct xenbus_device, dev);
++
++	err = talk_to_otherend(xdev);
++	if (err) {
++		printk(KERN_WARNING
++		       "xenbus: resume (talk_to_otherend) %s failed: %i\n",
++		       dev->bus_id, err);
++		return err;
++	}
++
++	xdev->state = XenbusStateInitialising;
++
++	if (drv->resume) {
++		err = drv->resume(xdev);
++		if (err) {
++			printk(KERN_WARNING
++			       "xenbus: resume %s failed: %i\n",
++			       dev->bus_id, err);
++			return err;
++		}
++	}
++
++	err = watch_otherend(xdev);
++	if (err) {
++		printk(KERN_WARNING
++		       "xenbus_probe: resume (watch_otherend) %s failed: "
++		       "%d.\n", dev->bus_id, err);
++		return err;
++	}
++
++	return 0;
++}
++
++void xenbus_suspend(void)
++{
++	DPRINTK("");
++
++	bus_for_each_dev(&xenbus_frontend.bus, NULL, NULL, suspend_dev);
++	xenbus_backend_suspend(suspend_dev);
++	xs_suspend();
++}
++EXPORT_SYMBOL_GPL(xenbus_suspend);
++
++void xenbus_resume(void)
++{
++	xb_init_comms();
++	xs_resume();
++	bus_for_each_dev(&xenbus_frontend.bus, NULL, NULL, resume_dev);
++	xenbus_backend_resume(resume_dev);
++}
++EXPORT_SYMBOL_GPL(xenbus_resume);
++
++void xenbus_suspend_cancel(void)
++{
++	xs_suspend_cancel();
++	bus_for_each_dev(&xenbus_frontend.bus, NULL, NULL, suspend_cancel_dev);
++	xenbus_backend_resume(suspend_cancel_dev);
++}
++EXPORT_SYMBOL_GPL(xenbus_suspend_cancel);
++
++/* A flag to determine if xenstored is 'ready' (i.e. has started) */
++int xenstored_ready = 0;
++
++
++int register_xenstore_notifier(struct notifier_block *nb)
++{
++	int ret = 0;
++
++	if (xenstored_ready > 0)
++		ret = nb->notifier_call(nb, 0, NULL);
++	else
++		blocking_notifier_chain_register(&xenstore_chain, nb);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(register_xenstore_notifier);
++
++void unregister_xenstore_notifier(struct notifier_block *nb)
++{
++	blocking_notifier_chain_unregister(&xenstore_chain, nb);
++}
++EXPORT_SYMBOL_GPL(unregister_xenstore_notifier);
++
++void xenbus_probe(struct work_struct *unused)
++{
++	BUG_ON((xenstored_ready <= 0));
++
++	/* Enumerate devices in xenstore and watch for changes. */
++	xenbus_probe_devices(&xenbus_frontend);
++	register_xenbus_watch(&fe_watch);
++	xenbus_backend_probe_and_watch();
++
++	/* Notify others that xenstore is up */
++	blocking_notifier_call_chain(&xenstore_chain, 0, NULL);
++}
++
++static int __init xenbus_probe_init(void)
++{
++	int err = 0;
++
++	DPRINTK("");
++
++	err = -ENODEV;
++	if (!is_running_on_xen())
++		goto out_error;
++
++	/* Register ourselves with the kernel bus subsystem */
++	err = bus_register(&xenbus_frontend.bus);
++	if (err)
++		goto out_error;
++
++	err = xenbus_backend_bus_register();
++	if (err)
++		goto out_unreg_front;
++
++	/*
++	 * Domain0 doesn't have a store_evtchn or store_mfn yet.
++	 */
++	if (is_initial_xendomain()) {
++		/* dom0 not yet supported */
++	} else {
++		xenstored_ready = 1;
++		xen_store_evtchn = xen_start_info->store_evtchn;
++		xen_store_mfn = xen_start_info->store_mfn;
++	}
++	xen_store_interface = mfn_to_virt(xen_store_mfn);
++
++	/* Initialize the interface to xenstore. */
++	err = xs_init();
++	if (err) {
++		printk(KERN_WARNING
++		       "XENBUS: Error initializing xenstore comms: %i\n", err);
++		goto out_unreg_back;
++	}
++
++	if (!is_initial_xendomain())
++		xenbus_probe(NULL);
++
++	return 0;
++
++  out_unreg_back:
++	xenbus_backend_bus_unregister();
++
++  out_unreg_front:
++	bus_unregister(&xenbus_frontend.bus);
++
++  out_error:
++	return err;
++}
++
++postcore_initcall(xenbus_probe_init);
++
++MODULE_LICENSE("GPL");
++
++static int is_disconnected_device(struct device *dev, void *data)
++{
++	struct xenbus_device *xendev = to_xenbus_device(dev);
++	struct device_driver *drv = data;
++
++	/*
++	 * A device with no driver will never connect. We care only about
++	 * devices which should currently be in the process of connecting.
++	 */
++	if (!dev->driver)
++		return 0;
++
++	/* Is this search limited to a particular driver? */
++	if (drv && (dev->driver != drv))
++		return 0;
++
++	return (xendev->state != XenbusStateConnected);
++}
++
++static int exists_disconnected_device(struct device_driver *drv)
++{
++	return bus_for_each_dev(&xenbus_frontend.bus, NULL, drv,
++				is_disconnected_device);
++}
++
++static int print_device_status(struct device *dev, void *data)
++{
++	struct xenbus_device *xendev = to_xenbus_device(dev);
++	struct device_driver *drv = data;
++
++	/* Is this operation limited to a particular driver? */
++	if (drv && (dev->driver != drv))
++		return 0;
++
++	if (!dev->driver) {
++		/* Information only: is this too noisy? */
++		printk(KERN_INFO "XENBUS: Device with no driver: %s\n",
++		       xendev->nodename);
++	} else if (xendev->state != XenbusStateConnected) {
++		printk(KERN_WARNING "XENBUS: Timeout connecting "
++		       "to device: %s (state %d)\n",
++		       xendev->nodename, xendev->state);
++	}
++
++	return 0;
++}
++
++/* We only wait for device setup after most initcalls have run. */
++static int ready_to_wait_for_devices;
++
++/*
++ * On a 10 second timeout, wait for all devices currently configured.  We need
++ * to do this to guarantee that the filesystems and / or network devices
++ * needed for boot are available, before we can allow the boot to proceed.
++ *
++ * This needs to be on a late_initcall, to happen after the frontend device
++ * drivers have been initialised, but before the root fs is mounted.
++ *
++ * A possible improvement here would be to have the tools add a per-device
++ * flag to the store entry, indicating whether it is needed at boot time.
++ * This would allow people who knew what they were doing to accelerate their
++ * boot slightly, but of course needs tools or manual intervention to set up
++ * those flags correctly.
++ */
++static void wait_for_devices(struct xenbus_driver *xendrv)
++{
++	unsigned long timeout = jiffies + 10*HZ;
++	struct device_driver *drv = xendrv ? &xendrv->driver : NULL;
++
++	if (!ready_to_wait_for_devices || !is_running_on_xen())
++		return;
++
++	while (exists_disconnected_device(drv)) {
++		if (time_after(jiffies, timeout))
++			break;
++		schedule_timeout_interruptible(HZ/10);
++	}
++
++	bus_for_each_dev(&xenbus_frontend.bus, NULL, drv,
++			 print_device_status);
++}
++
++#ifndef MODULE
++static int __init boot_wait_for_devices(void)
++{
++	ready_to_wait_for_devices = 1;
++	wait_for_devices(NULL);
++	return 0;
++}
++
++late_initcall(boot_wait_for_devices);
++#endif
+===================================================================
+--- /dev/null
++++ b/drivers/xen/xenbus/xenbus_probe.h
+@@ -0,0 +1,74 @@
++/******************************************************************************
++ * xenbus_probe.h
++ *
++ * Talks to Xen Store to figure out what devices we have.
++ *
++ * Copyright (C) 2005 Rusty Russell, IBM Corporation
++ * Copyright (C) 2005 XenSource Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#ifndef _XENBUS_PROBE_H
++#define _XENBUS_PROBE_H
++
++#ifdef CONFIG_XEN_BACKEND
++extern void xenbus_backend_suspend(int (*fn)(struct device *, void *));
++extern void xenbus_backend_resume(int (*fn)(struct device *, void *));
++extern void xenbus_backend_probe_and_watch(void);
++extern int xenbus_backend_bus_register(void);
++extern void xenbus_backend_bus_unregister(void);
++#else
++static inline void xenbus_backend_suspend(int (*fn)(struct device *, void *)) {}
++static inline void xenbus_backend_resume(int (*fn)(struct device *, void *)) {}
++static inline void xenbus_backend_probe_and_watch(void) {}
++static inline int xenbus_backend_bus_register(void) {return 0;}
++static inline void xenbus_backend_bus_unregister(void) {}
 +#endif
 +
- #endif /* __ASSEMBLY__ */
- 
- #endif  /*  __KERNEL__  */
-===================================================================
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -93,6 +93,7 @@
- 
- /* PG_owner_priv_1 users should have descriptive aliases */
- #define PG_checked		PG_owner_priv_1 /* Used by some filesystems */
-+#define PG_pinned		PG_owner_priv_1	/* Xen pinned pagetable */
- 
- #if (BITS_PER_LONG > 32)
- /*
-@@ -170,6 +171,10 @@ static inline void SetPageUptodate(struc
- #define PageChecked(page)	test_bit(PG_checked, &(page)->flags)
- #define SetPageChecked(page)	set_bit(PG_checked, &(page)->flags)
- #define ClearPageChecked(page)	clear_bit(PG_checked, &(page)->flags)
++struct xen_bus_type
++{
++	char *root;
++	unsigned int levels;
++	int (*get_bus_id)(char bus_id[BUS_ID_SIZE], const char *nodename);
++	int (*probe)(const char *type, const char *dir);
++	struct bus_type bus;
++};
 +
-+#define PagePinned(page)	test_bit(PG_pinned, &(page)->flags)
-+#define SetPagePinned(page)	set_bit(PG_pinned, &(page)->flags)
-+#define ClearPagePinned(page)	clear_bit(PG_pinned, &(page)->flags)
++extern int xenbus_match(struct device *_dev, struct device_driver *_drv);
++extern int xenbus_dev_probe(struct device *_dev);
++extern int xenbus_dev_remove(struct device *_dev);
++extern int xenbus_register_driver_common(struct xenbus_driver *drv,
++					 struct xen_bus_type *bus,
++					 struct module *owner,
++					 const char *mod_name);
++extern int xenbus_probe_node(struct xen_bus_type *bus,
++			     const char *type,
++			     const char *nodename);
++extern int xenbus_probe_devices(struct xen_bus_type *bus);
++
++extern void xenbus_dev_changed(const char *node, struct xen_bus_type *bus);
++
++#endif
+===================================================================
+--- /dev/null
++++ b/drivers/xen/xenbus/xenbus_xs.c
+@@ -0,0 +1,861 @@
++/******************************************************************************
++ * xenbus_xs.c
++ *
++ * This is the kernel equivalent of the "xs" library.  We don't need everything
++ * and we use xenbus_comms for communication.
++ *
++ * Copyright (C) 2005 Rusty Russell, IBM Corporation
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#include <linux/unistd.h>
++#include <linux/errno.h>
++#include <linux/types.h>
++#include <linux/uio.h>
++#include <linux/kernel.h>
++#include <linux/string.h>
++#include <linux/err.h>
++#include <linux/slab.h>
++#include <linux/fcntl.h>
++#include <linux/kthread.h>
++#include <linux/rwsem.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <xen/xenbus.h>
++#include "xenbus_comms.h"
++
++struct xs_stored_msg {
++	struct list_head list;
++
++	struct xsd_sockmsg hdr;
++
++	union {
++		/* Queued replies. */
++		struct {
++			char *body;
++		} reply;
++
++		/* Queued watch events. */
++		struct {
++			struct xenbus_watch *handle;
++			char **vec;
++			unsigned int vec_size;
++		} watch;
++	} u;
++};
++
++struct xs_handle {
++	/* A list of replies. Currently only one will ever be outstanding. */
++	struct list_head reply_list;
++	spinlock_t reply_lock;
++	wait_queue_head_t reply_waitq;
++
++	/*
++	 * Mutex ordering: transaction_mutex -> watch_mutex -> request_mutex.
++	 * response_mutex is never taken simultaneously with the other three.
++	 */
++
++	/* One request at a time. */
++	struct mutex request_mutex;
++
++	/* Protect xenbus reader thread against save/restore. */
++	struct mutex response_mutex;
++
++	/* Protect transactions against save/restore. */
++	struct rw_semaphore transaction_mutex;
++
++	/* Protect watch (de)register against save/restore. */
++	struct rw_semaphore watch_mutex;
++};
++
++static struct xs_handle xs_state;
++
++/* List of registered watches, and a lock to protect it. */
++static LIST_HEAD(watches);
++static DEFINE_SPINLOCK(watches_lock);
++
++/* List of pending watch callback events, and a lock to protect it. */
++static LIST_HEAD(watch_events);
++static DEFINE_SPINLOCK(watch_events_lock);
++
++/*
++ * Details of the xenwatch callback kernel thread. The thread waits on the
++ * watch_events_waitq for work to do (queued on watch_events list). When it
++ * wakes up it acquires the xenwatch_mutex before reading the list and
++ * carrying out work.
++ */
++static pid_t xenwatch_pid;
++static DEFINE_MUTEX(xenwatch_mutex);
++static DECLARE_WAIT_QUEUE_HEAD(watch_events_waitq);
++
++static int get_error(const char *errorstring)
++{
++	unsigned int i;
++
++	for (i = 0; strcmp(errorstring, xsd_errors[i].errstring) != 0; i++) {
++		if (i == ARRAY_SIZE(xsd_errors) - 1) {
++			printk(KERN_WARNING
++			       "XENBUS xen store gave: unknown error %s",
++			       errorstring);
++			return EINVAL;
++		}
++	}
++	return xsd_errors[i].errnum;
++}
++
++static void *read_reply(enum xsd_sockmsg_type *type, unsigned int *len)
++{
++	struct xs_stored_msg *msg;
++	char *body;
++
++	spin_lock(&xs_state.reply_lock);
++
++	while (list_empty(&xs_state.reply_list)) {
++		spin_unlock(&xs_state.reply_lock);
++		/* XXX FIXME: Avoid synchronous wait for response here. */
++		wait_event(xs_state.reply_waitq,
++			   !list_empty(&xs_state.reply_list));
++		spin_lock(&xs_state.reply_lock);
++	}
++
++	msg = list_entry(xs_state.reply_list.next,
++			 struct xs_stored_msg, list);
++	list_del(&msg->list);
++
++	spin_unlock(&xs_state.reply_lock);
++
++	*type = msg->hdr.type;
++	if (len)
++		*len = msg->hdr.len;
++	body = msg->u.reply.body;
++
++	kfree(msg);
++
++	return body;
++}
++
++void *xenbus_dev_request_and_reply(struct xsd_sockmsg *msg)
++{
++	void *ret;
++	struct xsd_sockmsg req_msg = *msg;
++	int err;
++
++	if (req_msg.type == XS_TRANSACTION_START)
++		down_read(&xs_state.transaction_mutex);
++
++	mutex_lock(&xs_state.request_mutex);
++
++	err = xb_write(msg, sizeof(*msg) + msg->len);
++	if (err) {
++		msg->type = XS_ERROR;
++		ret = ERR_PTR(err);
++	} else
++		ret = read_reply(&msg->type, &msg->len);
++
++	mutex_unlock(&xs_state.request_mutex);
++
++	if ((msg->type == XS_TRANSACTION_END) ||
++	    ((req_msg.type == XS_TRANSACTION_START) &&
++	     (msg->type == XS_ERROR)))
++		up_read(&xs_state.transaction_mutex);
++
++	return ret;
++}
++
++/* Send message to xs, get kmalloc'ed reply.  ERR_PTR() on error. */
++static void *xs_talkv(struct xenbus_transaction t,
++		      enum xsd_sockmsg_type type,
++		      const struct kvec *iovec,
++		      unsigned int num_vecs,
++		      unsigned int *len)
++{
++	struct xsd_sockmsg msg;
++	void *ret = NULL;
++	unsigned int i;
++	int err;
++
++	msg.tx_id = t.id;
++	msg.req_id = 0;
++	msg.type = type;
++	msg.len = 0;
++	for (i = 0; i < num_vecs; i++)
++		msg.len += iovec[i].iov_len;
++
++	mutex_lock(&xs_state.request_mutex);
++
++	err = xb_write(&msg, sizeof(msg));
++	if (err) {
++		mutex_unlock(&xs_state.request_mutex);
++		return ERR_PTR(err);
++	}
++
++	for (i = 0; i < num_vecs; i++) {
++		err = xb_write(iovec[i].iov_base, iovec[i].iov_len);;
++		if (err) {
++			mutex_unlock(&xs_state.request_mutex);
++			return ERR_PTR(err);
++		}
++	}
++
++	ret = read_reply(&msg.type, len);
++
++	mutex_unlock(&xs_state.request_mutex);
++
++	if (IS_ERR(ret))
++		return ret;
++
++	if (msg.type == XS_ERROR) {
++		err = get_error(ret);
++		kfree(ret);
++		return ERR_PTR(-err);
++	}
++
++	if (msg.type != type) {
++		if (printk_ratelimit())
++			printk(KERN_WARNING
++			       "XENBUS unexpected type [%d], expected [%d]\n",
++			       msg.type, type);
++		kfree(ret);
++		return ERR_PTR(-EINVAL);
++	}
++	return ret;
++}
++
++/* Simplified version of xs_talkv: single message. */
++static void *xs_single(struct xenbus_transaction t,
++		       enum xsd_sockmsg_type type,
++		       const char *string,
++		       unsigned int *len)
++{
++	struct kvec iovec;
++
++	iovec.iov_base = (void *)string;
++	iovec.iov_len = strlen(string) + 1;
++	return xs_talkv(t, type, &iovec, 1, len);
++}
++
++/* Many commands only need an ack, don't care what it says. */
++static int xs_error(char *reply)
++{
++	if (IS_ERR(reply))
++		return PTR_ERR(reply);
++	kfree(reply);
++	return 0;
++}
++
++static unsigned int count_strings(const char *strings, unsigned int len)
++{
++	unsigned int num;
++	const char *p;
++
++	for (p = strings, num = 0; p < strings + len; p += strlen(p) + 1)
++		num++;
++
++	return num;
++}
++
++/* Return the path to dir with /name appended. Buffer must be kfree()'ed. */
++static char *join(const char *dir, const char *name)
++{
++	char *buffer;
++
++	if (strlen(name) == 0)
++		buffer = kasprintf(GFP_KERNEL, "%s", dir);
++	else
++		buffer = kasprintf(GFP_KERNEL, "%s/%s", dir, name);
++	return (!buffer) ? ERR_PTR(-ENOMEM) : buffer;
++}
++
++static char **split(char *strings, unsigned int len, unsigned int *num)
++{
++	char *p, **ret;
++
++	/* Count the strings. */
++	*num = count_strings(strings, len);
++
++	/* Transfer to one big alloc for easy freeing. */
++	ret = kmalloc(*num * sizeof(char *) + len, GFP_KERNEL);
++	if (!ret) {
++		kfree(strings);
++		return ERR_PTR(-ENOMEM);
++	}
++	memcpy(&ret[*num], strings, len);
++	kfree(strings);
++
++	strings = (char *)&ret[*num];
++	for (p = strings, *num = 0; p < strings + len; p += strlen(p) + 1)
++		ret[(*num)++] = p;
++
++	return ret;
++}
++
++char **xenbus_directory(struct xenbus_transaction t,
++			const char *dir, const char *node, unsigned int *num)
++{
++	char *strings, *path;
++	unsigned int len;
++
++	path = join(dir, node);
++	if (IS_ERR(path))
++		return (char **)path;
++
++	strings = xs_single(t, XS_DIRECTORY, path, &len);
++	kfree(path);
++	if (IS_ERR(strings))
++		return (char **)strings;
++
++	return split(strings, len, num);
++}
++EXPORT_SYMBOL_GPL(xenbus_directory);
++
++/* Check if a path exists. Return 1 if it does. */
++int xenbus_exists(struct xenbus_transaction t,
++		  const char *dir, const char *node)
++{
++	char **d;
++	int dir_n;
++
++	d = xenbus_directory(t, dir, node, &dir_n);
++	if (IS_ERR(d))
++		return 0;
++	kfree(d);
++	return 1;
++}
++EXPORT_SYMBOL_GPL(xenbus_exists);
++
++/* Get the value of a single file.
++ * Returns a kmalloced value: call free() on it after use.
++ * len indicates length in bytes.
++ */
++void *xenbus_read(struct xenbus_transaction t,
++		  const char *dir, const char *node, unsigned int *len)
++{
++	char *path;
++	void *ret;
++
++	path = join(dir, node);
++	if (IS_ERR(path))
++		return (void *)path;
++
++	ret = xs_single(t, XS_READ, path, len);
++	kfree(path);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(xenbus_read);
++
++/* Write the value of a single file.
++ * Returns -err on failure.
++ */
++int xenbus_write(struct xenbus_transaction t,
++		 const char *dir, const char *node, const char *string)
++{
++	const char *path;
++	struct kvec iovec[2];
++	int ret;
++
++	path = join(dir, node);
++	if (IS_ERR(path))
++		return PTR_ERR(path);
++
++	iovec[0].iov_base = (void *)path;
++	iovec[0].iov_len = strlen(path) + 1;
++	iovec[1].iov_base = (void *)string;
++	iovec[1].iov_len = strlen(string);
++
++	ret = xs_error(xs_talkv(t, XS_WRITE, iovec, ARRAY_SIZE(iovec), NULL));
++	kfree(path);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(xenbus_write);
++
++/* Create a new directory. */
++int xenbus_mkdir(struct xenbus_transaction t,
++		 const char *dir, const char *node)
++{
++	char *path;
++	int ret;
++
++	path = join(dir, node);
++	if (IS_ERR(path))
++		return PTR_ERR(path);
++
++	ret = xs_error(xs_single(t, XS_MKDIR, path, NULL));
++	kfree(path);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(xenbus_mkdir);
++
++/* Destroy a file or directory (directories must be empty). */
++int xenbus_rm(struct xenbus_transaction t, const char *dir, const char *node)
++{
++	char *path;
++	int ret;
++
++	path = join(dir, node);
++	if (IS_ERR(path))
++		return PTR_ERR(path);
++
++	ret = xs_error(xs_single(t, XS_RM, path, NULL));
++	kfree(path);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(xenbus_rm);
++
++/* Start a transaction: changes by others will not be seen during this
++ * transaction, and changes will not be visible to others until end.
++ */
++int xenbus_transaction_start(struct xenbus_transaction *t)
++{
++	char *id_str;
++
++	down_read(&xs_state.transaction_mutex);
++
++	id_str = xs_single(XBT_NIL, XS_TRANSACTION_START, "", NULL);
++	if (IS_ERR(id_str)) {
++		up_read(&xs_state.transaction_mutex);
++		return PTR_ERR(id_str);
++	}
++
++	t->id = simple_strtoul(id_str, NULL, 0);
++	kfree(id_str);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(xenbus_transaction_start);
++
++/* End a transaction.
++ * If abandon is true, transaction is discarded instead of committed.
++ */
++int xenbus_transaction_end(struct xenbus_transaction t, int abort)
++{
++	char abortstr[2];
++	int err;
++
++	if (abort)
++		strcpy(abortstr, "F");
++	else
++		strcpy(abortstr, "T");
++
++	err = xs_error(xs_single(t, XS_TRANSACTION_END, abortstr, NULL));
++
++	up_read(&xs_state.transaction_mutex);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(xenbus_transaction_end);
++
++/* Single read and scanf: returns -errno or num scanned. */
++int xenbus_scanf(struct xenbus_transaction t,
++		 const char *dir, const char *node, const char *fmt, ...)
++{
++	va_list ap;
++	int ret;
++	char *val;
++
++	val = xenbus_read(t, dir, node, NULL);
++	if (IS_ERR(val))
++		return PTR_ERR(val);
++
++	va_start(ap, fmt);
++	ret = vsscanf(val, fmt, ap);
++	va_end(ap);
++	kfree(val);
++	/* Distinctive errno. */
++	if (ret == 0)
++		return -ERANGE;
++	return ret;
++}
++EXPORT_SYMBOL_GPL(xenbus_scanf);
++
++/* Single printf and write: returns -errno or 0. */
++int xenbus_printf(struct xenbus_transaction t,
++		  const char *dir, const char *node, const char *fmt, ...)
++{
++	va_list ap;
++	int ret;
++#define PRINTF_BUFFER_SIZE 4096
++	char *printf_buffer;
++
++	printf_buffer = kmalloc(PRINTF_BUFFER_SIZE, GFP_KERNEL);
++	if (printf_buffer == NULL)
++		return -ENOMEM;
++
++	va_start(ap, fmt);
++	ret = vsnprintf(printf_buffer, PRINTF_BUFFER_SIZE, fmt, ap);
++	va_end(ap);
++
++	BUG_ON(ret > PRINTF_BUFFER_SIZE-1);
++	ret = xenbus_write(t, dir, node, printf_buffer);
++
++	kfree(printf_buffer);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(xenbus_printf);
++
++/* Takes tuples of names, scanf-style args, and void **, NULL terminated. */
++int xenbus_gather(struct xenbus_transaction t, const char *dir, ...)
++{
++	va_list ap;
++	const char *name;
++	int ret = 0;
++
++	va_start(ap, dir);
++	while (ret == 0 && (name = va_arg(ap, char *)) != NULL) {
++		const char *fmt = va_arg(ap, char *);
++		void *result = va_arg(ap, void *);
++		char *p;
++
++		p = xenbus_read(t, dir, name, NULL);
++		if (IS_ERR(p)) {
++			ret = PTR_ERR(p);
++			break;
++		}
++		if (fmt) {
++			if (sscanf(p, fmt, result) == 0)
++				ret = -EINVAL;
++			kfree(p);
++		} else
++			*(char **)result = p;
++	}
++	va_end(ap);
++	return ret;
++}
++EXPORT_SYMBOL_GPL(xenbus_gather);
++
++static int xs_watch(const char *path, const char *token)
++{
++	struct kvec iov[2];
++
++	iov[0].iov_base = (void *)path;
++	iov[0].iov_len = strlen(path) + 1;
++	iov[1].iov_base = (void *)token;
++	iov[1].iov_len = strlen(token) + 1;
++
++	return xs_error(xs_talkv(XBT_NIL, XS_WATCH, iov,
++				 ARRAY_SIZE(iov), NULL));
++}
++
++static int xs_unwatch(const char *path, const char *token)
++{
++	struct kvec iov[2];
++
++	iov[0].iov_base = (char *)path;
++	iov[0].iov_len = strlen(path) + 1;
++	iov[1].iov_base = (char *)token;
++	iov[1].iov_len = strlen(token) + 1;
++
++	return xs_error(xs_talkv(XBT_NIL, XS_UNWATCH, iov,
++				 ARRAY_SIZE(iov), NULL));
++}
++
++static struct xenbus_watch *find_watch(const char *token)
++{
++	struct xenbus_watch *i, *cmp;
++
++	cmp = (void *)simple_strtoul(token, NULL, 16);
++
++	list_for_each_entry(i, &watches, list)
++		if (i == cmp)
++			return i;
++
++	return NULL;
++}
++
++/* Register callback to watch this node. */
++int register_xenbus_watch(struct xenbus_watch *watch)
++{
++	/* Pointer in ascii is the token. */
++	char token[sizeof(watch) * 2 + 1];
++	int err;
++
++	sprintf(token, "%lX", (long)watch);
++
++	down_read(&xs_state.watch_mutex);
++
++	spin_lock(&watches_lock);
++	BUG_ON(find_watch(token));
++	list_add(&watch->list, &watches);
++	spin_unlock(&watches_lock);
++
++	err = xs_watch(watch->node, token);
++
++	/* Ignore errors due to multiple registration. */
++	if ((err != 0) && (err != -EEXIST)) {
++		spin_lock(&watches_lock);
++		list_del(&watch->list);
++		spin_unlock(&watches_lock);
++	}
++
++	up_read(&xs_state.watch_mutex);
++
++	return err;
++}
++EXPORT_SYMBOL_GPL(register_xenbus_watch);
++
++void unregister_xenbus_watch(struct xenbus_watch *watch)
++{
++	struct xs_stored_msg *msg, *tmp;
++	char token[sizeof(watch) * 2 + 1];
++	int err;
++
++	sprintf(token, "%lX", (long)watch);
++
++	down_read(&xs_state.watch_mutex);
++
++	spin_lock(&watches_lock);
++	BUG_ON(!find_watch(token));
++	list_del(&watch->list);
++	spin_unlock(&watches_lock);
++
++	err = xs_unwatch(watch->node, token);
++	if (err)
++		printk(KERN_WARNING
++		       "XENBUS Failed to release watch %s: %i\n",
++		       watch->node, err);
++
++	up_read(&xs_state.watch_mutex);
++
++	/* Make sure there are no callbacks running currently (unless
++	   its us) */
++	if (current->pid != xenwatch_pid)
++		mutex_lock(&xenwatch_mutex);
++
++	/* Cancel pending watch events. */
++	spin_lock(&watch_events_lock);
++	list_for_each_entry_safe(msg, tmp, &watch_events, list) {
++		if (msg->u.watch.handle != watch)
++			continue;
++		list_del(&msg->list);
++		kfree(msg->u.watch.vec);
++		kfree(msg);
++	}
++	spin_unlock(&watch_events_lock);
++
++	if (current->pid != xenwatch_pid)
++		mutex_unlock(&xenwatch_mutex);
++}
++EXPORT_SYMBOL_GPL(unregister_xenbus_watch);
++
++void xs_suspend(void)
++{
++	down_write(&xs_state.transaction_mutex);
++	down_write(&xs_state.watch_mutex);
++	mutex_lock(&xs_state.request_mutex);
++	mutex_lock(&xs_state.response_mutex);
++}
++
++void xs_resume(void)
++{
++	struct xenbus_watch *watch;
++	char token[sizeof(watch) * 2 + 1];
++
++	mutex_unlock(&xs_state.response_mutex);
++	mutex_unlock(&xs_state.request_mutex);
++	up_write(&xs_state.transaction_mutex);
++
++	/* No need for watches_lock: the watch_mutex is sufficient. */
++	list_for_each_entry(watch, &watches, list) {
++		sprintf(token, "%lX", (long)watch);
++		xs_watch(watch->node, token);
++	}
++
++	up_write(&xs_state.watch_mutex);
++}
++
++void xs_suspend_cancel(void)
++{
++	mutex_unlock(&xs_state.response_mutex);
++	mutex_unlock(&xs_state.request_mutex);
++	up_write(&xs_state.watch_mutex);
++	up_write(&xs_state.transaction_mutex);
++}
++
++static int xenwatch_thread(void *unused)
++{
++	struct list_head *ent;
++	struct xs_stored_msg *msg;
++
++	for (;;) {
++		wait_event_interruptible(watch_events_waitq,
++					 !list_empty(&watch_events));
++
++		if (kthread_should_stop())
++			break;
++
++		mutex_lock(&xenwatch_mutex);
++
++		spin_lock(&watch_events_lock);
++		ent = watch_events.next;
++		if (ent != &watch_events)
++			list_del(ent);
++		spin_unlock(&watch_events_lock);
++
++		if (ent != &watch_events) {
++			msg = list_entry(ent, struct xs_stored_msg, list);
++			msg->u.watch.handle->callback(
++				msg->u.watch.handle,
++				(const char **)msg->u.watch.vec,
++				msg->u.watch.vec_size);
++			kfree(msg->u.watch.vec);
++			kfree(msg);
++		}
++
++		mutex_unlock(&xenwatch_mutex);
++	}
++
++	return 0;
++}
++
++static int process_msg(void)
++{
++	struct xs_stored_msg *msg;
++	char *body;
++	int err;
++
++	/*
++	 * We must disallow save/restore while reading a xenstore message.
++	 * A partial read across s/r leaves us out of sync with xenstored.
++	 */
++	for (;;) {
++		err = xb_wait_for_data_to_read();
++		if (err)
++			return err;
++		mutex_lock(&xs_state.response_mutex);
++		if (xb_data_to_read())
++			break;
++		/* We raced with save/restore: pending data 'disappeared'. */
++		mutex_unlock(&xs_state.response_mutex);
++	}
++
++
++	msg = kmalloc(sizeof(*msg), GFP_KERNEL);
++	if (msg == NULL) {
++		err = -ENOMEM;
++		goto out;
++	}
++
++	err = xb_read(&msg->hdr, sizeof(msg->hdr));
++	if (err) {
++		kfree(msg);
++		goto out;
++	}
++
++	body = kmalloc(msg->hdr.len + 1, GFP_KERNEL);
++	if (body == NULL) {
++		kfree(msg);
++		err = -ENOMEM;
++		goto out;
++	}
++
++	err = xb_read(body, msg->hdr.len);
++	if (err) {
++		kfree(body);
++		kfree(msg);
++		goto out;
++	}
++	body[msg->hdr.len] = '\0';
++
++	if (msg->hdr.type == XS_WATCH_EVENT) {
++		msg->u.watch.vec = split(body, msg->hdr.len,
++					 &msg->u.watch.vec_size);
++		if (IS_ERR(msg->u.watch.vec)) {
++			kfree(msg);
++			err = PTR_ERR(msg->u.watch.vec);
++			goto out;
++		}
++
++		spin_lock(&watches_lock);
++		msg->u.watch.handle = find_watch(
++			msg->u.watch.vec[XS_WATCH_TOKEN]);
++		if (msg->u.watch.handle != NULL) {
++			spin_lock(&watch_events_lock);
++			list_add_tail(&msg->list, &watch_events);
++			wake_up(&watch_events_waitq);
++			spin_unlock(&watch_events_lock);
++		} else {
++			kfree(msg->u.watch.vec);
++			kfree(msg);
++		}
++		spin_unlock(&watches_lock);
++	} else {
++		msg->u.reply.body = body;
++		spin_lock(&xs_state.reply_lock);
++		list_add_tail(&msg->list, &xs_state.reply_list);
++		spin_unlock(&xs_state.reply_lock);
++		wake_up(&xs_state.reply_waitq);
++	}
++
++ out:
++	mutex_unlock(&xs_state.response_mutex);
++	return err;
++}
++
++static int xenbus_thread(void *unused)
++{
++	int err;
++
++	for (;;) {
++		err = process_msg();
++		if (err)
++			printk(KERN_WARNING "XENBUS error %d while reading "
++			       "message\n", err);
++		if (kthread_should_stop())
++			break;
++	}
++
++	return 0;
++}
++
++int xs_init(void)
++{
++	int err;
++	struct task_struct *task;
++
++	INIT_LIST_HEAD(&xs_state.reply_list);
++	spin_lock_init(&xs_state.reply_lock);
++	init_waitqueue_head(&xs_state.reply_waitq);
++
++	mutex_init(&xs_state.request_mutex);
++	mutex_init(&xs_state.response_mutex);
++	init_rwsem(&xs_state.transaction_mutex);
++	init_rwsem(&xs_state.watch_mutex);
++
++	/* Initialize the shared memory rings to talk to xenstored */
++	err = xb_init_comms();
++	if (err)
++		return err;
++
++	task = kthread_run(xenwatch_thread, NULL, "xenwatch");
++	if (IS_ERR(task))
++		return PTR_ERR(task);
++	xenwatch_pid = task->pid;
++
++	task = kthread_run(xenbus_thread, NULL, "xenbus");
++	if (IS_ERR(task))
++		return PTR_ERR(task);
++
++	return 0;
++}
+===================================================================
+--- a/include/asm-i386/xen/hypervisor.h
++++ b/include/asm-i386/xen/hypervisor.h
+@@ -42,6 +42,7 @@
  
- #define PageReserved(page)	test_bit(PG_reserved, &(page)->flags)
- #define SetPageReserved(page)	set_bit(PG_reserved, &(page)->flags)
+ #include <asm/ptrace.h>
+ #include <asm/page.h>
++#include <asm/desc.h>
+ #if defined(__i386__)
+ #  ifdef CONFIG_X86_PAE
+ #   include <asm-generic/pgtable-nopud.h>
+===================================================================
+--- /dev/null
++++ b/include/xen/xenbus.h
+@@ -0,0 +1,232 @@
++/******************************************************************************
++ * xenbus.h
++ *
++ * Talks to Xen Store to figure out what devices we have.
++ *
++ * Copyright (C) 2005 Rusty Russell, IBM Corporation
++ * Copyright (C) 2005 XenSource Ltd.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#ifndef _XEN_XENBUS_H
++#define _XEN_XENBUS_H
++
++#include <linux/device.h>
++#include <linux/notifier.h>
++#include <linux/mutex.h>
++#include <linux/completion.h>
++#include <linux/init.h>
++#include <xen/interface/xen.h>
++#include <xen/interface/grant_table.h>
++#include <xen/interface/io/xenbus.h>
++#include <xen/interface/io/xs_wire.h>
++
++/* Register callback to watch this node. */
++struct xenbus_watch
++{
++	struct list_head list;
++
++	/* Path being watched. */
++	const char *node;
++
++	/* Callback (executed in a process context with no locks held). */
++	void (*callback)(struct xenbus_watch *,
++			 const char **vec, unsigned int len);
++};
++
++
++/* A xenbus device. */
++struct xenbus_device {
++	const char *devicetype;
++	const char *nodename;
++	const char *otherend;
++	int otherend_id;
++	struct xenbus_watch otherend_watch;
++	struct device dev;
++	enum xenbus_state state;
++	struct completion down;
++};
++
++static inline struct xenbus_device *to_xenbus_device(struct device *dev)
++{
++	return container_of(dev, struct xenbus_device, dev);
++}
++
++struct xenbus_device_id
++{
++	/* .../device/<device_type>/<identifier> */
++	char devicetype[32]; 	/* General class of device. */
++};
++
++/* A xenbus driver. */
++struct xenbus_driver {
++	char *name;
++	struct module *owner;
++	const struct xenbus_device_id *ids;
++	int (*probe)(struct xenbus_device *dev,
++		     const struct xenbus_device_id *id);
++	void (*otherend_changed)(struct xenbus_device *dev,
++				 enum xenbus_state backend_state);
++	int (*remove)(struct xenbus_device *dev);
++	int (*suspend)(struct xenbus_device *dev);
++	int (*suspend_cancel)(struct xenbus_device *dev);
++	int (*resume)(struct xenbus_device *dev);
++	int (*uevent)(struct xenbus_device *, char **, int, char *, int);
++	struct device_driver driver;
++	int (*read_otherend_details)(struct xenbus_device *dev);
++};
++
++static inline struct xenbus_driver *to_xenbus_driver(struct device_driver *drv)
++{
++	return container_of(drv, struct xenbus_driver, driver);
++}
++
++int __must_check __xenbus_register_frontend(struct xenbus_driver *drv,
++					    struct module *owner,
++					    const char *mod_name);
++
++static inline int __must_check
++xenbus_register_frontend(struct xenbus_driver *drv)
++{
++	WARN_ON(drv->owner != THIS_MODULE);
++	return __xenbus_register_frontend(drv, THIS_MODULE, KBUILD_MODNAME);
++}
++
++int __must_check __xenbus_register_backend(struct xenbus_driver *drv,
++					   struct module *owner,
++					   const char *mod_name);
++static inline int __must_check
++xenbus_register_backend(struct xenbus_driver *drv)
++{
++	WARN_ON(drv->owner != THIS_MODULE);
++	return __xenbus_register_backend(drv, THIS_MODULE, KBUILD_MODNAME);
++}
++
++void xenbus_unregister_driver(struct xenbus_driver *drv);
++
++struct xenbus_transaction
++{
++	u32 id;
++};
++
++/* Nil transaction ID. */
++#define XBT_NIL ((struct xenbus_transaction) { 0 })
++
++int __init xenbus_dev_init(void);
++
++char **xenbus_directory(struct xenbus_transaction t,
++			const char *dir, const char *node, unsigned int *num);
++void *xenbus_read(struct xenbus_transaction t,
++		  const char *dir, const char *node, unsigned int *len);
++int xenbus_write(struct xenbus_transaction t,
++		 const char *dir, const char *node, const char *string);
++int xenbus_mkdir(struct xenbus_transaction t,
++		 const char *dir, const char *node);
++int xenbus_exists(struct xenbus_transaction t,
++		  const char *dir, const char *node);
++int xenbus_rm(struct xenbus_transaction t, const char *dir, const char *node);
++int xenbus_transaction_start(struct xenbus_transaction *t);
++int xenbus_transaction_end(struct xenbus_transaction t, int abort);
++
++/* Single read and scanf: returns -errno or num scanned if > 0. */
++int xenbus_scanf(struct xenbus_transaction t,
++		 const char *dir, const char *node, const char *fmt, ...)
++	__attribute__((format(scanf, 4, 5)));
++
++/* Single printf and write: returns -errno or 0. */
++int xenbus_printf(struct xenbus_transaction t,
++		  const char *dir, const char *node, const char *fmt, ...)
++	__attribute__((format(printf, 4, 5)));
++
++/* Generic read function: NULL-terminated triples of name,
++ * sprintf-style type string, and pointer. Returns 0 or errno.*/
++int xenbus_gather(struct xenbus_transaction t, const char *dir, ...);
++
++/* notifer routines for when the xenstore comes up */
++extern int xenstored_ready;
++int register_xenstore_notifier(struct notifier_block *nb);
++void unregister_xenstore_notifier(struct notifier_block *nb);
++
++int register_xenbus_watch(struct xenbus_watch *watch);
++void unregister_xenbus_watch(struct xenbus_watch *watch);
++void xs_suspend(void);
++void xs_resume(void);
++void xs_suspend_cancel(void);
++
++/* Used by xenbus_dev to borrow kernel's store connection. */
++void *xenbus_dev_request_and_reply(struct xsd_sockmsg *msg);
++
++/* Prepare for domain suspend: then resume or cancel the suspend. */
++void xenbus_suspend(void);
++void xenbus_resume(void);
++void xenbus_probe(struct work_struct *);
++void xenbus_suspend_cancel(void);
++
++#define XENBUS_IS_ERR_READ(str) ({			\
++	if (!IS_ERR(str) && strlen(str) == 0) {		\
++		kfree(str);				\
++		str = ERR_PTR(-ERANGE);			\
++	}						\
++	IS_ERR(str);					\
++})
++
++#define XENBUS_EXIST_ERR(err) ((err) == -ENOENT || (err) == -ERANGE)
++
++int xenbus_watch_path(struct xenbus_device *dev, const char *path,
++		      struct xenbus_watch *watch,
++		      void (*callback)(struct xenbus_watch *,
++				       const char **, unsigned int));
++int xenbus_watch_pathfmt(struct xenbus_device *dev, struct xenbus_watch *watch,
++			 void (*callback)(struct xenbus_watch *,
++					  const char **, unsigned int),
++			 const char *pathfmt, ...)
++	__attribute__ ((format (printf, 4, 5)));
++
++int xenbus_switch_state(struct xenbus_device *dev, enum xenbus_state new_state);
++int xenbus_grant_ring(struct xenbus_device *dev, unsigned long ring_mfn);
++int xenbus_map_ring_valloc(struct xenbus_device *dev,
++			   int gnt_ref, void **vaddr);
++int xenbus_map_ring(struct xenbus_device *dev, int gnt_ref,
++			   grant_handle_t *handle, void *vaddr);
++
++int xenbus_unmap_ring_vfree(struct xenbus_device *dev, void *vaddr);
++int xenbus_unmap_ring(struct xenbus_device *dev,
++		      grant_handle_t handle, void *vaddr);
++
++int xenbus_alloc_evtchn(struct xenbus_device *dev, int *port);
++int xenbus_bind_evtchn(struct xenbus_device *dev, int remote_port, int *port);
++int xenbus_free_evtchn(struct xenbus_device *dev, int port);
++
++enum xenbus_state xenbus_read_driver_state(const char *path);
++
++void xenbus_dev_error(struct xenbus_device *dev, int err, const char *fmt, ...);
++void xenbus_dev_fatal(struct xenbus_device *dev, int err, const char *fmt, ...);
++
++const char *xenbus_strstate(enum xenbus_state state);
++int xenbus_dev_is_online(struct xenbus_device *dev);
++int xenbus_frontend_closed(struct xenbus_device *dev);
++
++#endif /* _XEN_XENBUS_H */
 
 -- 
 
