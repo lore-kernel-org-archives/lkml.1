@@ -1,53 +1,62 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767368AbXECEVe (ORCPT <rfc822;ralf@linux-mips.org>);
-	Thu, 3 May 2007 00:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767371AbXECEVe
+	id S1766584AbXEDUa0 (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 4 May 2007 16:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766579AbXEDUa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 00:21:34 -0400
-Received: from zux221-022-030.adsl.green.ch ([81.221.22.30]:19144 "EHLO
-	cleopatra" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1767368AbXECEVd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 00:21:33 -0400
-X-Greylist: delayed 1150 seconds by postgrey-1.27 at vger.kernel.org; Thu, 03 May 2007 00:21:33 EDT
-Date: Thu, 03 May 2007 09:57:14 +0500
-From: "Ina Bullard" <emmettbmobptbabmzno@adi.pt>
-To: linux-howto@sunsite.unc.edu
-Subject: 100k American Chiropractors 
-Message-ID: <1A707EE3.7684.AB15C2D5@localhost>
+	Fri, 4 May 2007 16:30:26 -0400
+Received: from www.centralpets.com ([216.15.161.2]:35201 "HELO
+	www.centralpets.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S376143AbXEDUaY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 16:30:24 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 16:30:24 EDT
+From: "ana" <ana10@centralpets.com>
+Cc: commons-dev@jakarta.apache.org,
+	debian-devel-changes@lists.debian.org, e-novel@yahoogroups.com,
+	kplug-list@kernel-panic.org, linuxbios@linuxbios.org,
+	linux-kernel@vger.kernel.org, lyx-users@lists.lyx.org,
+	pdml@pdml.net, tamanegi@asia.com, webmaster@ibilce.unesp.br
+Importance: Normal
+Sensitivity: Normal
+Message-ID: <W10309219323181178310347@bark.centralpets.com>
+X-Mailer: Mintersoft VisualMail, Build 4.0.111601
+X-Originating-IP: [189.0.245.118]
+Date: Fri, 04 May 2007 20:25:47 +0000
+Subject: ANA
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-X-OriginalArrivalTime: 03 May 2007 04:02:19.0437 (UTC) FILETIME=[D84385D0:01C78D37]
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1767368AbXECEVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1766584AbXEDUa0@vger.kernel.org>
+
+OL=C3=81! ESTOU ENVIANDO OS MEUS FAVORITOS E AGUARDO OS SEUS TAMB=C3=89=
+M OK!
+http://www.cade.com.br
+Site de busca no Brasil
+----------------------------
+http://www.host-brasil.com
+Hospedagem de Websites e registro de dom=C3=ADnios=20
+-----------------------------------------------------
+http://www.pegatudo.net
+Site de busca no Brasil e no Mundo
+----------------------------------------------
+http://www.aonde.com.br
+Site de busca no Brasil
+-----------------------------------
+Obrigada
+Ana
+
+---------------------------------------------
+This e-mail was sent using a CentralPets.com WebMail account
+Get yours at: http://mail.centralpets.com
 
 
 
-
-This week's special:
-
---------------------------------------------------
-- New Database : American Chiropractor's Offices -
---------------------------------------------------
-
-Fields: Chiropractor/Clinic Name, Postal Address, Phone, Fax, Email and Website
-Date Created: Apr 5, 2007
-Format: MS Excel
-License: Unlimited Use
-
-
-Breakdown:
-
-108,421 Total Records
-3,414 Emails
-6,553 Faxes
-
-Special price until May 4 - $199 
-
-Inquiries, please email chiropractordata@hotmail.com
-
-
-
-
-
-To stop receiving emails from us please email with "off" in the subject.
+-
+To unsubscribe from this list: send the line "unsubscribe linux-kernel"=
+ in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
