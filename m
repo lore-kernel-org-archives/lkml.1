@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031355AbXEDVV3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161172AbXEDVVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031355AbXEDVV3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:21:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031405AbXEDVV3
+	id S1161172AbXEDVVw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031434AbXEDVVw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:21:29 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:18578 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031355AbXEDVV1 (ORCPT
+	Fri, 4 May 2007 17:21:52 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43678 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031707AbXEDVVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:21:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=NipwwEIz+YrrOrYVc8tPEb0wtUBG9SkxxU4h1Xy1CQP4UQ2nCs+FaMjGmXxpzgCiH2A+WORgcrj42bxdJCUa6KfmDyjz/UjFjgD+DtWcgvwIbNiLZ+UdKNrbkK7VZAXkA/xlo4+WfJvPLGWs1QuOh97GQfb98pNCDCQj/1TPdR8=
-Message-ID: <5486cca80705041421y4fcaec01l7acafed1cea4b509@mail.gmail.com>
-Date: Fri, 4 May 2007 23:21:26 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Paul Fulghum" <paulkf@microgate.com>
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1178308173.3743.14.camel@amdx2.microgate.com>
+	Fri, 4 May 2007 17:21:50 -0400
+Date: Fri, 4 May 2007 14:21:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Andy Whitcroft <apw@shadowen.org>, gregkh@suse.de, paulus@samba.org,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Christoph Lameter <clameter@cthulhu.engr.sgi.com>
+Subject: Re: [PATCH] Re: 2.6.21-rc7-mm2 -- hvsi console driver registration
+ failure
+In-Reply-To: <20070504130952.b43fc676.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705041410440.25716@schroedinger.engr.sgi.com>
+References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
+ <4fe4528cb20beb569a8f2ac817c776e5@pinky> <20070504130952.b43fc676.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
-	 <463B7534.6000207@microgate.com>
-	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
-	 <1178299247.3769.0.camel@amdx2.microgate.com>
-	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
-	 <1178300493.3619.1.camel@amdx2.microgate.com>
-	 <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
-	 <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
-	 <1178308173.3743.14.camel@amdx2.microgate.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/4/07, Paul Fulghum <paulkf@microgate.com> wrote:
-> On Fri, 2007-05-04 at 21:06 +0200, Antonino Ingargiola wrote:
->
-> > Filling with echo console-screen.sh I've found that the blocking command is:
-> >
-> >     unicode_start 2> /dev/null || true
-> >
-> > or at least the echo before this command is the last shown.
->
-> I still don't know what is blocking.
->
-> It is possible some tty device is operating with an improperly
-> initialized tty structure. I vaguely remember some console code
-> creating its own minimally initialized 'dummy' tty structure.
->
-> This might be causing the new flush code to hang.
->
-> Try this patch which does not call the flush unless a line
-> discipline is attached to the tty. That should indicate
-> a normally initialized tty structure.
->
+On Fri, 4 May 2007, Andrew Morton wrote:
 
-Tried. Nothing changes with this patch. I'm booting the patched kernel
-commenting out the unicode_start line for now, and there aren't other
-"system" problems.
+> Better, we should be emitting loud warnigns which then disable themselves
+> and then succeeding the allocation so that people can proceed with their
+> kernel testing.
+> 
+> When all the loud-warning sites have been fixed, we can take that code out
+> again.
+> 
+> The present situation is maximally tester-hostile.
+i
 
-I confirm the behavior previously posted for the serial devices on
-flush with this patch too.
+SLUB: Allocate smallest object size if the user asks for 0 bytes.
 
-"With the patch, flushing the input results effectively in a complete flush.
-However after doing the flush I can't read [further] chars [sent to
-the serial port]
-without closing and reopening the port. I've verified this behavior both
-communicating between two serial ports and both communicating with an
-usb-serial device (driver cdc-acm)."
+Makes SLUB behave like SLAB in this area to avoid issues....
 
-Regards,
+Throw a stack dump to alert people.
 
-  ~ Antonio
+At some point the behavior should be switched back. NULL is no
+memory as far as I can tell and if the use asked for 0 bytes then
+he need to get no memory.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ include/linux/slub_def.h |    8 ++++++--
+ mm/slub.c                |    2 +-
+ 2 files changed, 7 insertions(+), 3 deletions(-)
+
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-05-04 14:17:22.000000000 -0700
++++ slub/mm/slub.c	2007-05-04 14:19:36.000000000 -0700
+@@ -2009,7 +2009,7 @@ static struct kmem_cache *get_slab(size_
+ {
+ 	int index = kmalloc_index(size);
+ 
+-	if (!size)
++	if (!index)
+ 		return NULL;
+ 
+ 	/* Allocation too large? */
+Index: slub/include/linux/slub_def.h
+===================================================================
+--- slub.orig/include/linux/slub_def.h	2007-05-04 14:13:40.000000000 -0700
++++ slub/include/linux/slub_def.h	2007-05-04 14:18:25.000000000 -0700
+@@ -81,8 +81,12 @@ extern struct kmem_cache kmalloc_caches[
+  */
+ static inline int kmalloc_index(int size)
+ {
+-	if (size == 0)
+-		return 0;
++	/*
++	 * We should return 0 if size == 0 but we use the smallest object
++	 * here for SLAB legacy reasons.
++	 */
++	WARN_ON(size == 0);
++
+ 	if (size > 64 && size <= 96)
+ 		return 1;
+ 	if (size > 128 && size <= 192)
