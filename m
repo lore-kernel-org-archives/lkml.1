@@ -1,99 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423055AbXEDXt1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423089AbXEDXuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423055AbXEDXt1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 19:49:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423049AbXEDXoG
+	id S1423089AbXEDXuL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 19:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423001AbXEDXtv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 19:44:06 -0400
-Received: from 116.sub-75-210-58.myvzw.com ([75.210.58.116]:46308 "EHLO
-	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423061AbXEDXne (ORCPT
+	Fri, 4 May 2007 19:49:51 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:27238 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1161582AbXEDXtn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 19:43:34 -0400
-Message-Id: <20070504232121.366607336@goop.org>
-References: <20070504232051.411946839@goop.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 04 May 2007 16:21:15 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 24/29] xen: rename xen netif_ structures to xen_netif_
-Content-Disposition: inline; filename=xen-netif-rename.patch
+	Fri, 4 May 2007 19:49:43 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=YnWE5LGmj6S8iKp5pJTpLqyGCx+mryLhRZ3LfqCrxTn7J+hw6ddp+3Tie+vPvltLUDfwYmhdna1GH/fEu1oPxmUyEScM3XQAO5pugCUDCzgu7Oiyrkgrr/6n40InwTB+l0NP+3ic7J34xFNRe0u9k+iK7qTBheRlrP3YqD/SMiM=  ;
+X-YMail-OSG: zf8QrFgVM1kCKgcJpHL4Na06rOCoOXkRJ109aQ3nG4PxlaBAZ0aTw63kMwXoNyIcCuhkevv_Ig--
+Message-ID: <463BC686.70901@yahoo.com.au>
+Date: Sat, 05 May 2007 09:49:26 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Ulrich Drepper <drepper@redhat.com>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
+References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au> <463B1FF6.1030904@redhat.com>
+In-Reply-To: <463B1FF6.1030904@redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The "netif_" prefix is used in the Linux network stack, so rename the
-Xen structures to xen_netif_ to avoid confusion (and potential
-collision).
+Rik van Riel wrote:
+> Nick Piggin wrote:
+> 
+>> Rik van Riel wrote:
+>>
+>>> With lazy freeing of anonymous pages through MADV_FREE, performance of
+>>> the MySQL sysbench workload more than doubles on my quad-core system.
+>>
+>>
+>> OK, I've run some tests on a 16 core Opteron system, both sysbench with
+>> MySQL 5.33 (set up as described in the freebsd vs linux page), and with
+>> ebizzy.
+>>
+>> What I found is that, on this system, MADV_FREE performance improvement
+>> was in the noise when you look at it on top of the MADV_DONTNEED glibc
+>> and down_read(mmap_sem) patch in sysbench.
+> 
+> 
+> Interesting, very different results from my system.
+> 
+> First, did you run with the properly TLB batched version of
+> the MADV_FREE patch?  And did you make sure that MADV_FREE
+> takes the mmap_sem for reading?   Without that, I did see
+> a similar thing to what you saw...
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Yes and yes (I initially forgot to add MADV_FREE to the down_read
+case and saw horrible performance!)
 
----
- include/xen/interface/io/netif.h |   18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
 
-===================================================================
---- a/include/xen/interface/io/netif.h
-+++ b/include/xen/interface/io/netif.h
-@@ -47,7 +47,7 @@
- #define _NETTXF_extra_info     (3)
- #define  NETTXF_extra_info     (1U<<_NETTXF_extra_info)
- 
--struct netif_tx_request {
-+struct xen_netif_tx_request {
-     grant_ref_t gref;      /* Reference to buffer page */
-     uint16_t offset;       /* Offset within buffer page */
-     uint16_t flags;        /* NETTXF_* */
-@@ -71,7 +71,7 @@ struct netif_tx_request {
-  * This structure needs to fit within both netif_tx_request and
-  * netif_rx_response for compatibility.
-  */
--struct netif_extra_info {
-+struct xen_netif_extra_info {
-     uint8_t type;  /* XEN_NETIF_EXTRA_TYPE_* */
-     uint8_t flags; /* XEN_NETIF_EXTRA_FLAG_* */
- 
-@@ -103,12 +103,12 @@ struct netif_extra_info {
-     } u;
- };
- 
--struct netif_tx_response {
-+struct xen_netif_tx_response {
-     uint16_t id;
-     int16_t  status;       /* NETIF_RSP_* */
- };
- 
--struct netif_rx_request {
-+struct xen_netif_rx_request {
-     uint16_t    id;        /* Echoed in response message.        */
-     grant_ref_t gref;      /* Reference to incoming granted frame */
- };
-@@ -129,7 +129,7 @@ struct netif_rx_request {
- #define _NETRXF_extra_info     (3)
- #define  NETRXF_extra_info     (1U<<_NETRXF_extra_info)
- 
--struct netif_rx_response {
-+struct xen_netif_rx_response {
-     uint16_t id;
-     uint16_t offset;       /* Offset in page of start of received packet  */
-     uint16_t flags;        /* NETRXF_* */
-@@ -140,8 +140,12 @@ struct netif_rx_response {
-  * Generate netif ring structures and types.
-  */
- 
--DEFINE_RING_TYPES(netif_tx, struct netif_tx_request, struct netif_tx_response);
--DEFINE_RING_TYPES(netif_rx, struct netif_rx_request, struct netif_rx_response);
-+DEFINE_RING_TYPES(xen_netif_tx,
-+		  struct xen_netif_tx_request,
-+		  struct xen_netif_tx_response);
-+DEFINE_RING_TYPES(xen_netif_rx,
-+		  struct xen_netif_rx_request,
-+		  struct xen_netif_rx_response);
- 
- #define NETIF_RSP_DROPPED         -2
- #define NETIF_RSP_ERROR           -1
+> Secondly, I'll have to try some test runs one of the larger
+> systems in the lab.
+> 
+> Maybe the results from my quad core Intel system are not
+> typical; maybe the results from your 16 core Opteron are
+> not typical.  Either way, I want to find out :)
+
+Yep. We might have something like that here, and I'll try with
+some other architectures as well next week, if I can get glibc
+built.
 
 -- 
-
+SUSE Labs, Novell Inc.
