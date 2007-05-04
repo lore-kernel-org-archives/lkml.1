@@ -1,253 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbXEDLtQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbXEDLxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755102AbXEDLtQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 07:49:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbXEDLtQ
+	id S1755105AbXEDLxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 07:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755120AbXEDLxf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 07:49:16 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:47664 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755096AbXEDLtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 07:49:15 -0400
-Subject: [PATCH 2/5] jffs2: Add LZO compression support to jffs2
-From: Richard Purdie <rpurdie@openedhand.com>
-To: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Fri, 04 May 2007 12:45:00 +0100
-Message-Id: <1178279100.5839.55.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 8bit
+	Fri, 4 May 2007 07:53:35 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:52287 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755104AbXEDLxe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 07:53:34 -0400
+Date: Fri, 4 May 2007 13:51:38 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Wander Winkelhorst <w.winkelhorst@gmail.com>
+cc: davej@codemonkey.org.uk, cpufreq@lists.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: cpufreq longhaul locks up
+In-Reply-To: <5699f8f00705040436u63c5ab38g1054001eccc596e7@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705041349390.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
+ <5699f8f00705040436u63c5ab38g1054001eccc596e7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add LZO1X compression/decompression support to jffs2.
 
-LZO's interface doesn't entirely match that required by jffs2 so a
-buffer and memcpy is unavoidable.
-
-Signed-off-by: Richard Purdie <rpurdie@openedhand.com>
----
- fs/Kconfig            |   10 ++++
- fs/jffs2/Makefile     |    1 +
- fs/jffs2/compr.c      |    6 +++
- fs/jffs2/compr.h      |    7 +++-
- fs/jffs2/compr_lzo.c  |  110 +++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/jffs2.h |    1 +
- 6 files changed, 134 insertions(+), 1 deletions(-)
-
-diff --git a/fs/Kconfig b/fs/Kconfig
-index a42f767..6e7095f 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1310,6 +1310,16 @@ config JFFS2_ZLIB
- 
-           Say 'Y' if unsure.
- 
-+config JFFS2_LZO
-+	bool "JFFS2 LZO compression support" if JFFS2_COMPRESSION_OPTIONS
-+	depends on JFFS2_FS && LZO
-+	default y
-+	help
-+	  LZO based compression. Generally works faster than Zlib with 
-+	  a slightly lower compression ratio.
-+
-+	  Say 'Y' if unsure.
-+
- config JFFS2_RTIME
- 	bool "JFFS2 RTIME compression support" if JFFS2_COMPRESSION_OPTIONS
- 	depends on JFFS2_FS
-diff --git a/fs/jffs2/Makefile b/fs/jffs2/Makefile
-index c32b241..60e5d49 100644
---- a/fs/jffs2/Makefile
-+++ b/fs/jffs2/Makefile
-@@ -17,4 +17,5 @@ jffs2-$(CONFIG_JFFS2_FS_POSIX_ACL)	+= acl.o
- jffs2-$(CONFIG_JFFS2_RUBIN)	+= compr_rubin.o
- jffs2-$(CONFIG_JFFS2_RTIME)	+= compr_rtime.o
- jffs2-$(CONFIG_JFFS2_ZLIB)	+= compr_zlib.o
-+jffs2-$(CONFIG_JFFS2_LZO)	+= compr_lzo.o
- jffs2-$(CONFIG_JFFS2_SUMMARY)   += summary.o
-diff --git a/fs/jffs2/compr.c b/fs/jffs2/compr.c
-index 485d065..6a23408 100644
---- a/fs/jffs2/compr.c
-+++ b/fs/jffs2/compr.c
-@@ -285,6 +285,9 @@ int __init jffs2_compressors_init(void)
-         jffs2_rubinmips_init();
-         jffs2_dynrubin_init();
- #endif
-+#ifdef CONFIG_JFFS2_LZO
-+        jffs2_lzo_init();
-+#endif
- /* Setting default compression mode */
- #ifdef CONFIG_JFFS2_CMODE_NONE
-         jffs2_compression_mode = JFFS2_COMPR_MODE_NONE;
-@@ -303,6 +306,9 @@ int __init jffs2_compressors_init(void)
- int jffs2_compressors_exit(void)
- {
- /* Unregistering compressors */
-+#ifdef CONFIG_JFFS2_LZO
-+        jffs2_lzo_exit();
-+#endif
- #ifdef CONFIG_JFFS2_RUBIN
-         jffs2_dynrubin_exit();
-         jffs2_rubinmips_exit();
-diff --git a/fs/jffs2/compr.h b/fs/jffs2/compr.h
-index 68cc701..8c6b2af 100644
---- a/fs/jffs2/compr.h
-+++ b/fs/jffs2/compr.h
-@@ -27,9 +27,10 @@
- #define JFFS2_RUBINMIPS_PRIORITY 10
- #define JFFS2_DYNRUBIN_PRIORITY  20
- #define JFFS2_LZARI_PRIORITY     30
--#define JFFS2_LZO_PRIORITY       40
- #define JFFS2_RTIME_PRIORITY     50
- #define JFFS2_ZLIB_PRIORITY      60
-+#define JFFS2_LZO_PRIORITY       80
-+
- 
- #define JFFS2_RUBINMIPS_DISABLED /* RUBINs will be used only */
- #define JFFS2_DYNRUBIN_DISABLED  /*        for decompression */
-@@ -90,5 +91,9 @@ void jffs2_rtime_exit(void);
- int jffs2_zlib_init(void);
- void jffs2_zlib_exit(void);
- #endif
-+#ifdef CONFIG_JFFS2_LZO
-+int jffs2_lzo_init(void);
-+void jffs2_lzo_exit(void);
-+#endif
- 
- #endif /* __JFFS2_COMPR_H__ */
-diff --git a/fs/jffs2/compr_lzo.c b/fs/jffs2/compr_lzo.c
-new file mode 100644
-index 0000000..6396682
---- /dev/null
-+++ b/fs/jffs2/compr_lzo.c
-@@ -0,0 +1,110 @@
-+/*
-+ * JFFS2 -- Journalling Flash File System, Version 2.
-+ *
-+ * LZO Compression Interface
-+ *
-+ * Copyright © 2007 Nokia Corporation. All rights reserved.
-+ *
-+ * Created by Richard Purdie <rpurdie@openedhand.com>
-+ *
-+ * For licensing information, see the file 'LICENCE' in this directory.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/vmalloc.h>
-+#include <linux/init.h>
-+#include <linux/lzo.h>
-+#include "compr.h"
-+
-+static void *lzo_mem;
-+static void *lzo_compress_buf;
-+static DEFINE_MUTEX(deflate_mutex);
-+
-+static void free_workspace(void)
-+{
-+	vfree(lzo_mem);
-+	vfree(lzo_compress_buf);
-+}
-+
-+static int __init alloc_workspace(void)
-+{
-+	lzo_mem = vmalloc(LZO1X_MEM_COMPRESS);
-+	lzo_compress_buf = vmalloc(lzo1x_worst_compress(PAGE_SIZE));
-+
-+	if (!lzo_mem || !lzo_compress_buf) {
-+		printk(KERN_WARNING "Failed to allocate lzo deflate workspace\n");
-+		free_workspace();
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+
-+static int jffs2_lzo_compress(unsigned char *data_in, unsigned char *cpage_out,
-+			      uint32_t *sourcelen, uint32_t *dstlen, void *model)
-+{
-+	unsigned long compress_size;
-+	int ret;
-+
-+	mutex_lock(&deflate_mutex);
-+	ret = lzo1x_1_compress(data_in, *sourcelen, lzo_compress_buf, &compress_size, lzo_mem);
-+	mutex_unlock(&deflate_mutex);
-+
-+	if (ret != LZO_E_OK)
-+		return -1;
-+
-+	if (compress_size > *dstlen)
-+		return -1;
-+
-+	memcpy(cpage_out, lzo_compress_buf, compress_size);
-+	*dstlen = compress_size;
-+
-+	return 0;
-+}
-+
-+static int jffs2_lzo_decompress(unsigned char *data_in, unsigned char *cpage_out,
-+				 uint32_t srclen, uint32_t destlen, void *model)
-+{
-+	unsigned long dl = destlen;
-+	int ret;
-+
-+	ret = lzo1x_decompress_safe(data_in, srclen, cpage_out, &dl, NULL);
-+
-+	if (ret != LZO_E_OK || dl != destlen)
-+		return -1;
-+
-+	return 0;
-+}
-+
-+static struct jffs2_compressor jffs2_lzo_comp = {
-+	.priority = JFFS2_LZO_PRIORITY,
-+	.name = "lzo",
-+	.compr = JFFS2_COMPR_LZO,
-+	.compress = &jffs2_lzo_compress,
-+	.decompress = &jffs2_lzo_decompress,
-+	.disabled = 0,
-+};
-+
-+int __init jffs2_lzo_init(void)
-+{
-+	int ret;
-+
-+	ret = alloc_workspace();
-+	if (ret < 0)
-+		return ret;
-+
-+	ret = jffs2_register_compressor(&jffs2_lzo_comp);
-+	if (ret)
-+		free_workspace();
-+
-+	return ret;
-+}
-+
-+void jffs2_lzo_exit(void)
-+{
-+	jffs2_unregister_compressor(&jffs2_lzo_comp);
-+	free_workspace();
-+}
-diff --git a/include/linux/jffs2.h b/include/linux/jffs2.h
-index 840631f..6b563ca 100644
---- a/include/linux/jffs2.h
-+++ b/include/linux/jffs2.h
-@@ -46,6 +46,7 @@
- #define JFFS2_COMPR_COPY	0x04
- #define JFFS2_COMPR_DYNRUBIN	0x05
- #define JFFS2_COMPR_ZLIB	0x06
-+#define JFFS2_COMPR_LZO		0x07
- /* Compatibility flags. */
- #define JFFS2_COMPAT_MASK 0xc000      /* What do to if an unknown nodetype is found */
- #define JFFS2_NODE_ACCURATE 0x2000
+On May 4 2007 13:36, Wander Winkelhorst wrote:
+>
+> Hi,
+>
+> I also have the same problem. Except in my case the box is stable
+> for a couple of hours before it locks up hard. I did some digging
+> around, and from what I found on the internet, it seems that having
+> busmaster DMA devices causes this problem.
+>
+Does it happen for you when you use the 'powersave' governor
+(always keeping the lowest frequency)?
 
 
-
+Jan
+-- 
