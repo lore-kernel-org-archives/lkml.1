@@ -1,176 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754979AbXEDNBH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbXEDNCH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754979AbXEDNBH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 09:01:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbXEDNBH
+	id S1755108AbXEDNCH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 09:02:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbXEDNCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 09:01:07 -0400
-Received: from mail11.syd.optusnet.com.au ([211.29.132.192]:55029 "EHLO
-	mail11.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754979AbXEDNBF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 09:01:05 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>
-Subject: 2.6.21-ck1
-Date: Fri, 4 May 2007 23:00:58 +1000
-User-Agent: KMail/1.9.5
+	Fri, 4 May 2007 09:02:07 -0400
+Received: from mail.suse.de ([195.135.220.2]:59120 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755113AbXEDNCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 09:02:04 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Chandramouli Narayanan <mouli@linux.intel.com>
+Subject: Re: [PATCH 2.6.21 1/3] x86_64: EFI64 support
+Date: Fri, 4 May 2007 15:01:55 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+References: <20070501185945.237601000@em64tdvp.jf.intel.com> <20070501190110.770881000@em64tdvp.jf.intel.com>
+In-Reply-To: <20070501190110.770881000@em64tdvp.jf.intel.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2240405.UQHMMAm5rc";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705042301.01305.kernel@kolivas.org>
+Content-Disposition: inline
+Message-Id: <200705041501.55502.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2240405.UQHMMAm5rc
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tuesday 01 May 2007 20:59:46 Chandramouli Narayanan wrote:
+> General note on EFI x86_64 support
+> ----------------------------------
 
-This patchset is designed to improve system responsiveness and interactivit=
-y.=20
-It is configurable to any workload but the default -ck patch is aimed at th=
-e=20
-desktop and -cks is available with more emphasis on serverspace.
+More review. This code unfortunately has some problems.
 
-Apply to 2.6.21
-http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.21/2.6.21-=
-ck1/patch-2.6.21-ck1.bz2
+First this seems to be quite different from what the 32bit EFI 
+support does (which i suppose is pre UEFI) Are there plans to sync this 
+up eventually?
 
-or server version
-http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.21/2.6.21-=
-ck1/patch-2.6.21-cks1.bz2
+Also your howto above should be somewhere in Documentation/
 
-web:
-http://kernel.kolivas.org
+> - Create a VFAT partition on the disk
+> - Copy the following to the VFAT partition:
+> 	elilo bootloader with x86_64 support and elilo configuration file
+> 	efi64 kernel image, initrd
 
-wiki:
-http://ck.wikia.com
+What format is the kernel image?
 
-all patches:
-http://www.kernel.org/pub/linux/kernel/people/ck/patches/
+> - Boot to EFI shell and invoke elilo choosing efi64 kernel image
+> - On UEFI2.0 firmware systems, pass vga=fbcon for boot messages to appear
+>   on console.
+
+They don't have a compat mode for vga anymore?
+
+> 
+> 2. With CALGARY_IOMMU=y in the kernel configuration, the Calgary detection fails
+> with the message "Calgary: Unable to locate Rio Grande Table in EBDA - bailing".
+> However, the legacy kernel has no such error.
+
+Getting that message when you don't have a IBM Summit system with Calgary is expected.
+It would be more worrying why the old kernel didn't give it.
+
+> +config EFI
+> +	bool "Boot from EFI support (EXPERIMENTAL)"
+> +	default n
+
+The config should be only added after the feature works -- later in the series.
+
+Drop the default n
+> +	---help---
+> +
+> +	This enables the the kernel to boot on EFI platforms using
+> +	system configuration information passed to it from the firmware.
+> +	This also enables the kernel to use any EFI runtime services that are
+> +	available (such as the EFI variable services).
+> +	This option is only useful on systems that have EFI firmware
+> +	and will result in a kernel image that is ~8k larger. However,
+> +	even with this option, the resultant kernel should continue to
+> +	boot on existing non-EFI platforms.
+
+The description should probably have a reference to the Documentation describing
+how to set this up.
+
+Mention UEFI?
+
+> +#define EFI_SYSTAB (*((unsigned long *)(PARAM+0x1b8)))
+> +#define EFI_LOADER_SIG ((unsigned char *)(PARAM+0x1c0))
+> +#define EFI_MEMDESC_SIZE (*((unsigned int *) (PARAM+0x1c4)))
+> +#define EFI_MEMDESC_VERSION (*((unsigned int *) (PARAM+0x1c8)))
+> +#define EFI_MEMMAP_SIZE (*((unsigned int *) (PARAM+0x1cc)))
+> +#define EFI_MEMMAP (*((unsigned long *)(PARAM+0x1d0)))
+
+This needs to be documented in Documentation/i386/zero-page.txt
+
+But it might be already obsolete with the early conversion to e820 change?
+
+> +#define EFI_ARG_NUM_GET_TIME			2
+> +#define EFI_ARG_NUM_SET_TIME			1
+> +#define EFI_ARG_NUM_GET_WAKEUP_TIME		3
+> +#define EFI_ARG_NUM_SET_WAKEUP_TIME		2
+> +#define EFI_ARG_NUM_GET_VARIABLE		5
+> +#define EFI_ARG_NUM_GET_NEXT_VARIABLE		3
+> +#define EFI_ARG_NUM_SET_VARIABLE		5
+> +#define EFI_ARG_NUM_GET_NEXT_HIGH_MONO_COUNT	1
+> +#define EFI_ARG_NUM_RESET_SYSTEM		4
+> +#define EFI_ARG_NUM_SET_VIRTUAL_ADDRESS_MAP	4
+> +
+> +#define EFI_ARG_NUM_MAX 10
+> +#define EFI_REG_ARG_NUM 4
+> +
+> +extern unsigned long efi_call_phys(void *fp, u64 arg_num, ...);
+> +struct efi efi;
+> +EXPORT_SYMBOL(efi);
+> +struct efi efi_phys __initdata;
+> +struct efi_memory_map memmap ;
+> +static efi_system_table_t efi_systab __initdata;
+> +
+> +static unsigned long efi_rt_eflags;
+> +static spinlock_t efi_rt_lock = SPIN_LOCK_UNLOCKED;
+
+Each lock needs a comment what it protects and if there is a locking order.
+
+> +static pgd_t save_pgd;
+
+That looks dubious, more comments later.
+
+> +
+> +/* Convert SysV calling convention to EFI x86_64 calling convention */
+> +
+> +static efi_status_t uefi_call_wrapper(void *fp, unsigned long va_num, ...)
+> +{
+
+Any reason you can't do something simple like (untested)
+
+/* rdi, rsi, rdx, rcx, r8, r9 -> rcx,rdx,r8,r9,stack,stack
+   arg1 function to call */
+
+call_ms:
+        mov %rsi,%rcx
+        mov %rdx,%rdx
+        mov %rcx,%r8
+        mov %r8,%r9
+        push %r9
+        call *%rdi
+        pop %r9
+        ret
+
+I assume none of the calls has more than 6 arguments.
+ndiswrapper probably has already tested variants if you're lazy.
+Then you also wouldn't need the defines for the number of arguments.
+
+Also such code is better written in pure assembly; some versions off 
+gcc don't like clobbering of too many registers.
+
+> +static efi_status_t _efi_get_time(efi_time_t *tm, efi_time_cap_t *tc)
+> +{
+> +	return uefi_call_wrapper((void*)efi.systab->runtime->get_time,
+> +					EFI_ARG_NUM_GET_TIME,
+> +					(u64)tm,
+> +					(u64)tc
+
+Are the casts really needed? 
 
 
-Changes since 2.6.20-ck1:
+> +static void efi_call_phys_prelog(void)
+> +{
+> +	unsigned long vaddress;
+> +
+> +	spin_lock(&efi_rt_lock);
+> +	local_irq_save(efi_rt_eflags);
+> +
+> +	vaddress = (unsigned long)__va(0x0UL);	
+> +	pgd_val(save_pgd) = pgd_val(*pgd_offset_k(0x0UL));
+> +	set_pgd(pgd_offset_k(0x0UL), *pgd_offset_k(vaddress));
 
-The staircase-deadline cpu scheduler has replaced the old staircase design =
-in=20
-this version. The extra scheduling policies in 2.6.20-ck1 of SCHED_IDLEPRIO=
-=20
-(idle cpu scheduling) and SCHED_ISO (unprivileged soft real time) have been=
-=20
-rewritten and work in the same manner on this new scheduler. In almost all=
-=20
-ways this should be a drop in replacement for the older -ck and no userspac=
-e=20
-changes should be required apart from deprecating the "compute" tunable (se=
-e=20
-below).
+Who tells you the other CPUs don't use the current pgd? If it's only used in early
+boot it should be __init. If not it's broken.
 
-More HZ options were added to this kernel. I have had repeated requests for=
-=20
-this as people have found woefully coded binary only availability software=
-=20
-that is dependant on the HZ value for performance (specifically the game=20
-servers). Since it's trivial to add extra values I offer (mostly unsupporte=
-d)=20
-values up to 10000 HZ. People have found game servers benefitting from up t=
-o=20
-4000 if I recall correctly. Note this patch will, unfortunately, cause a=20
-reject with 2.6.21.1 so if you wish to apply -ck to that kernel, please app=
-ly=20
-2.6.21.1 first and then -ck and ignore the reject, or back out the=20
-hz-raise_max-2.patch
+Most likely you need to create an own thread with special page tables.
+
+> +	local_flush_tlb();
+
+That won't flush the global mappings.
+
+> +}
+> +
+> +static void efi_call_phys_epilog(void)
+> +{
+> +	/*
+> +	 * After the lock is released, the original page table is restored.
+> +	 */
+> +	set_pgd(pgd_offset_k(0x0UL), save_pgd);
+> +	local_flush_tlb();
+
+Same
+
+> +	local_irq_restore(efi_rt_eflags);
+> +	spin_unlock(&efi_rt_lock);
+> +}
+> +
+> +static efi_status_t
+> +phys_efi_set_virtual_address_map(unsigned long memory_map_size,
+> +				 unsigned long descriptor_size,
+> +				 u32 descriptor_version,
+> +				 efi_memory_desc_t *virtual_map)
+> +{
+> +	efi_status_t status;
+> +
+> +	efi_call_phys_prelog();
+> +	status = efi_call_phys(efi_phys.set_virtual_address_map,
+> +					EFI_ARG_NUM_SET_VIRTUAL_ADDRESS_MAP,
+> +					(unsigned long)memory_map_size,
+> +					(unsigned long)descriptor_size,
+> +					(unsigned long)descriptor_version, 
+> +					(unsigned long)virtual_map);
+> +	efi_call_phys_epilog();
+> +	return status;
+> +}
+> +
+> +efi_status_t
+> +phys_efi_get_time(efi_time_t *tm, efi_time_cap_t *tc)
+> +{
+
+Looks broken -- i think that is called later, so the pgds
+can be messed up.
+
+Ok there is suspend/resume -- if you're careful you might be able
+to call this before the other CPUs are put online again. But that
+is also current being changed to use frozen CPUs. You probably
+need to coordinate with Rafael.
+
+[i suspect your resume hang is somehow related to this]
+
+> +inline int efi_set_rtc_mmss(unsigned long nowtime)
+
+I think that can be called any time so definitely broken
+regarding page tables.
+
+> +inline unsigned long efi_get_time(void)
+
+inline without static usually leads to wasted code because
+the compiler has to generate an out of line copy.
+
+I don't see why all these functions need to be inline anyways.
+Best just drop that everywhere and let the compiler decide.
+
+That would probably eliminate some of your 8k.
+
+> +	if (status != EFI_SUCCESS)
+> +		printk("Oops: efitime: can't read time status: 0x%lx\n",status);
+
+This should have suitable KERN_* prefixes (missing in most printks)
+
+> +/* Make EFI runtime code executable */
+
+It would be better to integrate this into the standard page table setup
+instead of cut'n'pasting so much code here.
 
 
-The "interactive" tunable in
-/proc/sys/kernel/interactive
-still exists but its effects are now subtle, and fairness is still quite=20
-strongly maintained with it enabled, and starvation is still impossible.=20
-The -cks patch has this disabled by default. From the sysctl documentation=
-=20
-included in Documentation/sysctl/kernel here is a summary:
+> + * We need to map the EFI memory map again after paging_init().
+> + */
+> +void __init efi_map_memmap(void)
+> +{
+> +        efi_memory_desc_t *md;
+> +        void *p;
+> +
+> +	memmap.map = __va((unsigned long) memmap.phys_map);
+> +	memmap.map_end = memmap.map + (memmap.nr_map * memmap.desc_size);
 
-The staircase-deadline cpu scheduler can be set in either purely
-forward-looking mode for absolutely rigid fairness and cpu distribution
-according to nice level, or it can allow a small per-process history
-to smooth out cpu usage perturbations common in interactive tasks by
-enabling this sysctl. While small fairness issues can arise with this
-enabled, overall fairness is usually still strongly maintained and
-starvation is never possible. Enabling this can significantly smooth
-out 3d graphics and games.
+White space broken.
 
 
-The "compute" tunable has been deprecated. The new tunable which is more=20
-flexible is the use of "rr_interval"
-/proc/sys/kernel/rr_interval
-and this describes the millisecond duration tasks at the same priority roun=
-d=20
-robin between each other. The default value chosen is 6ms on UP on -ck and=
-=20
-10ms on UP on -cks. With more cpus it is scaled upwards. It can be changed =
-on=20
-the fly up to 5000. Setting it to this has a similar and even more profound=
-=20
-effect on throughput for pure cpu bound tasks but causes large increases in=
-=20
-scheduling latency. This would be highly desirable for a render or compile=
-=20
-farm machine though.
+> +#if EFI_DEBUG
+> +void __init print_efi_memmap(void)
+
+The memory map should be probably always printed; it's very useful
+for debugging. But if you integrate it with e820 that code can do it.
+
+> +	/*
+> +	 * Show what we know for posterity
+> +	 */
+> +	c16 = (efi_char16_t *) early_ioremap(efi.systab->fw_vendor, 2);
+> +	if (c16) {
+> +		for (i = 0; i < sizeof(vendor) && *c16; ++i) 
+> +			vendor[i] = *c16++;
+
+Probably safer to use probe_kernel_address() here and bail out if it's broken.
 
 
-Split patches available:
-http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.21/2.6.21-=
-ck1/patches/
+> +		vendor[i] = '\0';
+> +	} else
+> +		printk(KERN_ERR PFX "Could not map the firmware vendor!\n");
+
+EFI should be in the error string
 
 
-=46ull patchlist:
+> +	if (status != EFI_SUCCESS) {
+> +		printk (KERN_ALERT "You are screwed! "
+> +			"Unable to switch EFI into virtual mode "
+> +			"(status=%lx)\n", status);
+> +		panic("EFI call to SetVirtualAddressMap() failed!");
 
-ck1-version.patch
-2.6.21-sd-0.48.patch
-sched-sd-0.48-interactive_tunable.patch
-sched-range.patch
-sched-iso-5.4.patch
-track_mutexes-1.patch
-sched-idleprio-2.3.patch
-sched-limit_policy_changes.patch
-sched-add-above-background-load-function.patch
-cfq-ioprio_inherit_rt_class.patch
-cfq-iso_idleprio_ionice.patch
-mm-swap_prefetch-35.patch=20
-mm-convert_swappiness_to_mapped.patch=20
-mm-lots_watermark.diff
-mm-kswapd_inherit_prio-1.patch=20
-mm-prio_dependant_scan-2.patch
-mm-background_scan-2.patch
-mm-filesize_dependant_lru_cache_add.patch
-mm-idleprio_prio.patch
-kconfig-expose_vmsplit_option.patch
-hz-default_1000.patch=20
-hz-no_default_250.patch=20
-hz-raise_max-2.patch
-ck-desktop-tune.patch
-+/- 2.6.21-ck1-cks1.patch =20
+Is the panic really needed?
 
-=E4=B9=BE=E6=9D=AF=20
 
-=2D-=20
-=2Dck
+> diff -uprN -X linux-2.6.21rc7-git2-orig/Documentation/dontdiff linux-2.6.21rc7-git2-orig/arch/x86_64/kernel/head.S linux-2.6.21rc7-git2-uefi-finaltest/arch/x86_64/kernel/head.S
+> --- linux-2.6.21rc7-git2-orig/arch/x86_64/kernel/head.S	2007-04-19 12:39:39.000000000 -0700
+> +++ linux-2.6.21rc7-git2-uefi-finaltest/arch/x86_64/kernel/head.S	2007-04-19 13:01:02.000000000 -0700
+> @@ -94,12 +94,29 @@ startup_32:
+>  	 * EFER.LMA = 1). Now we want to jump in 64bit mode, to do that we use
+>  	 * the new gdt/idt that has __KERNEL_CS with CS.L = 1.
+>  	 */
+> -	ljmp	$__KERNEL_CS, $(startup_64 - __START_KERNEL_map)
+> +	ljmp	$__KERNEL_CS, $(long64 - __START_KERNEL_map)
 
---nextPart2240405.UQHMMAm5rc
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGOy6NZUg7+tp6mRURAu/XAJ9GdnF6RoI92NgBl1yAFNWI9g4qvgCdH0YG
-hPcAADQOvEeBZsz1c9IWWWY=
-=qlsy
------END PGP SIGNATURE-----
-
---nextPart2240405.UQHMMAm5rc--
+What is the head.S change good for?
+  
+-Andi
