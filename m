@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422675AbXEDGST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423581AbXEDGSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422675AbXEDGST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 02:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754431AbXEDGST
+	id S1423581AbXEDGSg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 02:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422722AbXEDGSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 02:18:19 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:38790 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754137AbXEDGSS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 02:18:18 -0400
-Date: Thu, 3 May 2007 23:18:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Rewrite the MAJOR() macro as a call to imajor().
-Message-Id: <20070503231814.e12ad2d7.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0704280621350.516@localhost.localdomain>
-References: <Pine.LNX.4.64.0704280621350.516@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 May 2007 02:18:35 -0400
+Received: from mail.chehov.net ([80.71.245.247]:64260 "EHLO mail.rialcom.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754431AbXEDGSc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 02:18:32 -0400
+X-Spam-Flag: SKIP
+X-Spam-Yversion: Spamooborona 1.6.1
+Message-ID: <463AD024.6060208@clusterfs.com>
+Date: Fri, 04 May 2007 10:18:12 +0400
+From: Alex Tomas <alex@clusterfs.com>
+Organization: Cluster Filesystems, Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070302 Fedora/1.5.0.10-1.fc6 pango-text Thunderbird/1.5.0.10 Mnenhy/0.7.5.666
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andreas Dilger <adilger@clusterfs.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Marat Buharov <marat.buharov@gmail.com>, Mike Galbraith <efault@gmx.de>,
+       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
+ FS is under heavy write load (massive starvation)
+References: <1177660767.6567.41.camel@Homer.simpson.net>	<20070427013350.d0d7ac38.akpm@linux-foundation.org>	<698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>	<alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>	<20070427193130.GD5967@schatzie.adilger.int>	<20070427151837.f1439639.akpm@linux-foundation.org>	<463A1E02.8020506@clusterfs.com> <20070503165428.855eb7d7.akpm@linux-foundation.org>
+In-Reply-To: <20070503165428.855eb7d7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Apr 2007 06:23:54 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
+Andrew Morton wrote:
+> Yes, there can be issues with needing to allocate journal space within the
+> context of a commit.  But
 
-> Replace the MAJOR() macro invocation with a call to the inline
-> imajor() routine.
-> 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> 
-> ---
-> 
-> diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-> index 6b5b642..08da15b 100644
-> --- a/drivers/block/loop.c
-> +++ b/drivers/block/loop.c
-> @@ -710,7 +710,7 @@ static inline int is_loop_device(struct file *file)
->  {
->  	struct inode *i = file->f_mapping->host;
-> 
-> -	return i && S_ISBLK(i->i_mode) && MAJOR(i->i_rdev) == LOOP_MAJOR;
-> +	return i && S_ISBLK(i->i_mode) && imajor(i) == LOOP_MAJOR;
->  }
+no-no, this isn't required. we only need to mark pages/blocks within
+transaction, otherwise race is possible when we allocate blocks in transaction,
+then transacton starts to commit, then we mark pages/blocks to be flushed
+before commit.
 
-there's no runtime change, and I count a couple hundred MAJORs in the tree.
+> a) If the page has newly allocated space on disk then the metadata which
+>    refers to that page is already in the journal: no new journal space
+>    needed.
+> 
+> b) If the page doesn't have space allocated on disk then we don't need
+>    to write it out at ordered-mode commit time, because the post-recovery
+>    filesystem will not have any references to that page.
+> 
+> c) If the page is dirty due to overwrite then no metadata update was required.
+> 
+> IOW, under what circumstances would an ordered-mode commit need to allocate
+> space for a delayed-allocate page?
 
-I don't want to receive 200 one-line patches please.  If you're going to
-do this then please do decent-sized per-subsystem patches and see if you can
-persuade the subsystem maintainers to take them directly.
+no need to allocate space within commit thread, I think. only to take care
+of the race I described above. in hackish version of data=ordered for delayed
+allocation I used counter of submitted bio's with newly-allocated blocks and
+commit thread waits for the counter to reach 0.
+
+> 
+> However b) might lead to the hey-my-file-is-full-of-zeroes problem.
+> 
+
+thanks, Alex
+
