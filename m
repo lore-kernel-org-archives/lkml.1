@@ -1,333 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423105AbXEDTgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161903AbXEDTjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423105AbXEDTgA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 15:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423028AbXEDTgA
+	id S1161903AbXEDTjM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 15:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161895AbXEDTjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 15:36:00 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:34295 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1423105AbXEDTf6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 15:35:58 -0400
-Date: Fri, 4 May 2007 12:35:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
-Message-Id: <20070504123543.5e3fd908.akpm@linux-foundation.org>
-In-Reply-To: <20070503235747.29275.37271.stgit@localhost.localdomain>
-References: <20070503235747.29275.37271.stgit@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 May 2007 15:39:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:58052 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423101AbXEDTjK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 15:39:10 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Alexey Starikovskiy" <aystarik@gmail.com>
+Subject: Re: [linux-pm] [RFT][PATCH] swsusp: Change code ordering related to ACPI
+Date: Fri, 4 May 2007 21:43:23 +0200
+User-Agent: KMail/1.9.5
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Tobias Diedrich" <ranma+kernel@tdiedrich.de>,
+       "pm list" <linux-pm@lists.linux-foundation.org>,
+       "Pavel Machek" <pavel@ucw.cz>, "Marcus Better" <marcus@better.se>
+References: <200705041143.02451.rjw@sisk.pl> <8f8ff01d0705041136r18315079w13f95dc3c627a53b@mail.gmail.com> <8f8ff01d0705041137q28720f76j15b0b4abf585302f@mail.gmail.com>
+In-Reply-To: <8f8ff01d0705041137q28720f76j15b0b4abf585302f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705042143.24467.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 May 2007 03:57:51 +0400
-Vitaly Bordug <vitb@kernel.crashing.org> wrote:
+On Friday, 4 May 2007 20:37, Alexey Starikovskiy wrote:
+> Sorry, I meant executing _WAK _after_ resume of devices...
 
+Somehow, that's what we've done for several months at the very least.
+Moreover, my test boxes apparently don't care.
+
+OTOH, evidently, some systems have been broken by moving the call to
+acpi_pm_finish() before device_resume().  This seems to implicate that there
+are two parts of code in acpi_pm_finish(), one that should be executed before
+device_resume(), including the _WAK method, and the other that should be
+executed after device_resume().  Now, the question is how to split it into
+these parts.
+
+Greetings,
+Rafael
+
+
+> On 5/4/07, Alexey Starikovskiy <aystarik@gmail.com> wrote:
+> > Doing _WAK (from pm_finish) before device_resume will brake almost all
+> > ACPI devices.
+> >
+> > Regards,
+> > Alex.
+> >
+> > On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > Hi,
+> > >
+> > > The change of the hibernation/suspend code ordering made before 2.6.21 has
+> > > caused some systems to have problems related to ACPI.  In particular, the
+> > > 'platform' hibernation mode doesn't work any more on some systems.
+> > >
+> > > It has been confirmed that the appended patch fixes the problem, but it's not
+> > > certain if this changes don't break some other systems.  For this reason, all
+> > > users of hibernation (swsusp, uswsusp) are gently requested to verify if this
+> > > patch doesn't break their systems.
+> > >
+> > > Greetings,
+> > > Rafael
+> > >
+> > > ---
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > >
+> > > The current code ordering in the hibernation code paths causes some systems to
+> > > have problems.  It has been confirmed by testers that these problems do not
+> > > appear if the acpi_pm_finish() function (called via platform_finish()) is
+> > > executed after device_suspend().
+> > >
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > >  kernel/power/disk.c |    4 ++--
+> > >  kernel/power/user.c |    8 ++++----
+> > >  2 files changed, 6 insertions(+), 6 deletions(-)
+> > >
+> > > Index: linux-2.6.21/kernel/power/disk.c
+> > > ===================================================================
+> > > --- linux-2.6.21.orig/kernel/power/disk.c       2007-05-04 10:31:51.000000000 +0200
+> > > +++ linux-2.6.21/kernel/power/disk.c    2007-05-04 10:32:12.000000000 +0200
+> > > @@ -195,9 +195,9 @@ int hibernate(void)
+> > >
+> > >         if (in_suspend) {
+> > >                 enable_nonboot_cpus();
+> > > -               platform_finish();
+> > >                 device_resume();
+> > >                 resume_console();
+> > > +               platform_finish();
+> > >                 pr_debug("PM: writing image.\n");
+> > >                 error = swsusp_write();
+> > >                 if (!error)
+> > > @@ -214,9 +214,9 @@ int hibernate(void)
+> > >   Enable_cpus:
+> > >         enable_nonboot_cpus();
+> > >   Resume_devices:
+> > > -       platform_finish();
+> > >         device_resume();
+> > >         resume_console();
+> > > +       platform_finish();
+> > >   Thaw:
+> > >         mutex_unlock(&pm_mutex);
+> > >         unprepare_processes();
+> > > Index: linux-2.6.21/kernel/power/user.c
+> > > ===================================================================
+> > > --- linux-2.6.21.orig/kernel/power/user.c       2007-05-04 10:31:51.000000000 +0200
+> > > +++ linux-2.6.21/kernel/power/user.c    2007-05-04 10:32:12.000000000 +0200
+> > > @@ -169,11 +169,11 @@ static inline int snapshot_suspend(int p
+> > >         }
+> > >         enable_nonboot_cpus();
+> > >   Resume_devices:
+> > > +       device_resume();
+> > > +       resume_console();
+> > >         if (platform_suspend)
+> > >                 platform_finish();
+> > >
+> > > -       device_resume();
+> > > -       resume_console();
+> > >   Finish:
+> > >         mutex_unlock(&pm_mutex);
+> > >         return error;
+> > > @@ -201,11 +201,11 @@ static inline int snapshot_restore(int p
+> > >
+> > >         enable_nonboot_cpus();
+> > >   Resume_devices:
+> > > +       device_resume();
+> > > +       resume_console();
+> > >         if (platform_suspend)
+> > >                 platform_finish();
+> > >
+> > > -       device_resume();
+> > > -       resume_console();
+> > >   Finish:
+> > >         pm_restore_console();
+> > >         mutex_unlock(&pm_mutex);
+> > > _______________________________________________
+> > > linux-pm mailing list
+> > > linux-pm@lists.linux-foundation.org
+> > > https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+> > >
+> >
 > 
-> Adds support for PowerQuicc on-chip PCMCIA. The driver is implemented as
-> of_device, so only arch/powerpc stuff is capable to use it, which now
-> implies only mpc885ads reference board.
-> 
-> To cope with the code that should be hooked inside driver, but is really
-> board specific (like set_voltage), global structure mpc8xx_pcmcia_ops
-> holds necessary function pointers that are filled in the BSP code.
 > 
 
-argh.
-
-akpm:/home/akpm> grep '^.*        ' x | wc -l 
-72
-
-please, Linux uses hard-tabs, not spacespacespacespacespacespacespacespace
-everywhere.
-
-> +
->  		cpm@ff000000 {
->  			linux,phandle = <ff000000>;
->  			#address-cells = <1>;
-> diff --git a/arch/powerpc/platforms/8xx/m8xx_setup.c b/arch/powerpc/platforms/8xx/m8xx_setup.c
-> index 0901dba..f169355 100644
-> --- a/arch/powerpc/platforms/8xx/m8xx_setup.c
-> +++ b/arch/powerpc/platforms/8xx/m8xx_setup.c
-> @@ -32,6 +32,7 @@
->  #include <linux/root_dev.h>
->  #include <linux/time.h>
->  #include <linux/rtc.h>
-> +#include <linux/fsl_devices.h>
->  
->  #include <asm/mmu.h>
->  #include <asm/reg.h>
-> @@ -49,6 +50,10 @@
->  
->  #include "sysdev/mpc8xx_pic.h"
->  
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
-> +#endif
-
-Please declare this in a header file.
-
-> +/* Some internal interrupt registers use an 8-bit mask for the interrupt
-> + * level instead of a number.
-> + */
-
-Standard Linux commenting style is:
-
-/*
- * Some internal interrupt registers use an 8-bit mask for the interrupt
- * level instead of a number.
- */
-
-> +#define mk_int_int_mask(IL) (1 << (7 - (IL/2)))
-
-Insufficiently parenthesised?
-
-static inline functions are preferred.
-
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +extern struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops;
-
-Please don't ever put extern declarations in C files.  Declare it in a
-header, include that header in the C file which contains the definition as
-well as within all C files which use the symbol.
-
-> +static void pcmcia_hw_setup(int slot, int enable);
-> +static int pcmcia_set_voltage(int slot, int vcc, int vpp);
-> +#endif
-> +
->  void __init mpc885ads_board_setup(void)
->  {
->  	cpm8xx_t *cp;
-> @@ -115,6 +122,12 @@ void __init mpc885ads_board_setup(void)
->  	immr_unmap(io_port);
->  
->  #endif
-> +
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +	/*Set up board specific hook-ups*/
-> +	m8xx_pcmcia_ops.hw_ctrl = pcmcia_hw_setup;
-> +	m8xx_pcmcia_ops.voltage_set = pcmcia_set_voltage;
-> +#endif
->  }
->  
->  
-> @@ -322,6 +335,70 @@ void init_smc_ioports(struct fs_uart_platform_info *data)
->  	}
->  }
->  
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +static void pcmcia_hw_setup(int slot, int enable)
-> +{
-> +	unsigned *bcsr_io;
-> +
-> +	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> +	if (enable)
-> +	clrbits32(bcsr_io, BCSR1_PCCEN);
-> +	else
-> +		setbits32(bcsr_io, BCSR1_PCCEN);
-
-Missing a tab.
-
-> +	iounmap(bcsr_io);
-> +}
-> +
-> +static int pcmcia_set_voltage(int slot, int vcc, int vpp)
-> +{
-> +        u32 reg = 0;
-> +        unsigned *bcsr_io;
-> +
-> +        bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> +
-> +        switch(vcc) {
-> +                case 0:
-> +                        break;
-> +                case 33:
-> +                        reg |= BCSR1_PCCVCC0;
-> +                        break;
-> +                case 50:
-> +                        reg |= BCSR1_PCCVCC1;
-> +                        break;
-> +                default:
-> +                        return 1;
-> +        }
-
-Standard Linux layout for switch statements is:
-
-        switch(vcc) {
-	case 0:
-		break;
-	case 33:
-		reg |= BCSR1_PCCVCC0;
-		break;
-	case 50:
-		reg |= BCSR1_PCCVCC1;
-		break;
-	default:
-		return 1;
-        }
-
-
-> +        switch(vpp) {
-> +                case 0:
-> +                        break;
-> +                case 33:
-> +                case 50:
-> +                        if(vcc == vpp)
-> +                                reg |= BCSR1_PCCVPP1;
-> +                        else
-> +                                return 1;
-> +                        break;
-> +                case 120:
-> +                        if ((vcc == 33) || (vcc == 50))
-> +                                reg |= BCSR1_PCCVPP0;
-> +                        else
-> +                                return 1;
-> +                default:
-> +                        return 1;
-> +        }
-
-Ditto.
-
-> +        /* first, turn off all power */
-> +        clrbits32(bcsr_io, 0x00610000);
-> +
-> +        /* enable new powersettings */
-> +        setbits32(bcsr_io, reg);
-> +
-> +        iounmap(bcsr_io);
-> +        return 0;
-> +}
-> +#endif
-> +
->  int platform_device_skip(const char *model, int id)
->  {
->  #ifdef CONFIG_MPC8xx_SECOND_ETH_SCC3
-> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-> index 8a123c7..01e4a40 100644
-> --- a/arch/powerpc/sysdev/fsl_soc.c
-> +++ b/arch/powerpc/sysdev/fsl_soc.c
-> @@ -1028,6 +1028,18 @@ err:
->  
->  arch_initcall(fs_enet_of_init);
->  
-> +static int __init fsl_pcmcia_of_init(void)
-> +{
-> +	struct device_node *np = NULL;
-> +	/*
-> +	 * Register all the devices which type is "pcmcia"
-> +	 */
-> +	while ((np = of_find_compatible_node(np, "pcmcia", "fsl,pq-pcmcia")) != NULL)
-> +		of_platform_device_create(np, "m8xx-pcmcia", NULL);
-
-please try to fit code into 80 columns.
-
->  
-> -static DEFINE_SPINLOCK(events_lock);
-> +static spinlock_t events_lock = SPIN_LOCK_UNLOCKED;
-
-This is wrong.  DEFINE_SPINLOCK is required for correct lockdep operation.
-
-> +#define hardware_enable(_slot_) m8xx_pcmcia_ops.hw_ctrl(_slot_, 1)
-> +#define hardware_disable(_slot_) m8xx_pcmcia_ops.hw_ctrl(_slot_, 0)
-> +#define voltage_set(slot, vcc, vpp) m8xx_pcmcia_ops.voltage_set(slot, vcc, vpp)
-
-static inline functions are preferred.  One reason is that people are more
-inclined to add comments to them than to macros.
-
-> -static DEFINE_SPINLOCK(pending_event_lock);
-> +static spinlock_t pending_event_lock = SPIN_LOCK_UNLOCKED;
-
-again, you added a bug.
-
-> +	for(i = 0; i < PCMCIA_SOCKETS_NO; i++){
-
-No, we format `for' statements as:
-
-	for (i = 0; i < PCMCIA_SOCKETS_NO; i++) {
-
-> +		w = (void *) &pcmcia->pcmc_pbr0;
->  
-> +		out_be32(&pcmcia->pcmc_pscr, M8XX_PCMCIA_MASK(i));
-> +		out_be32(&pcmcia->pcmc_per, in_be32(&pcmcia->pcmc_per) & ~M8XX_PCMCIA_MASK(i));
-
-80-cols
-
-> +
-> +		/* turn off interrupt and disable CxOE */
-> +		out_be32(M8XX_PGCRX(i), M8XX_PGCRX_CXOE);
-> +
-> +		/* turn off memory windows */
-> +		for(m = 0; m < PCMCIA_MEM_WIN_NO; m++) {
-
-formatting
-
-> +			out_be32(&w->or, 0); /* set to not valid */
-> +			w++;
-> +		}
-> +
-> +		/* turn off voltage */
-> +		voltage_set(i, 0, 0);
-> +
-> +		/* disable external hardware */
-> +		hardware_disable(i);
-> +	}
->  	for (i = 0; i < PCMCIA_SOCKETS_NO; i++)
->  		pcmcia_unregister_socket(&socket[i].socket);
->  
-> -	m8xx_shutdown();
-> +	free_irq(pcmcia_schlvl, NULL);
-> +
-> +	return 0;
-> +}
-
-
-> -	platform_device_unregister(&m8xx_device);
-> -	driver_unregister(&m8xx_driver);
-> +#ifdef CONFIG_PM
-> +static int m8xx_suspend(struct platform_device *pdev, pm_message_t state)
-> +{
-> +        return pcmcia_socket_dev_suspend(&pdev->dev, state);
-> +}
-> +
-> +static int m8xx_resume(struct platform_device *pdev)
-> +{
-> +        return pcmcia_socket_dev_resume(&pdev->dev);
-> +}
-> +#endif
-
-Here, use
-
-#else
-#define m8xx_suspend NULL
-#define m8xx_resume NULL
-#endif
-
-> +static struct of_device_id m8xx_pcmcia_match[] = {
-> +	{
-> +		.type = "pcmcia",
-> +		.compatible = "fsl,pq-pcmcia",
-> +	},
-> +	{},
-> +};
-> +
-> +MODULE_DEVICE_TABLE(of, m8xx_pcmcia_match);
-> +
-> +static struct of_platform_driver m8xx_pcmcia_driver = {
-> +	.name		= (char *) driver_name,
-> +	.match_table	= m8xx_pcmcia_match,
-> +	.probe		= m8xx_probe,
-> +	.remove		= m8xx_remove,
-> +#ifdef CONFIG_PM
-> +	.suspend	= m8xx_suspend,
-> +	.resume		= m8xx_resume,
-> +#endif
-
-then remove this ifdef.
-
-
+-- 
+If you don't have the time to read,
+you don't have the time or the tools to write.
+		- Stephen King
