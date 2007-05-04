@@ -1,46 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031522AbXEDUD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423118AbXEDUHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031522AbXEDUD3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 16:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031510AbXEDUD3
+	id S1423118AbXEDUHb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 16:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161579AbXEDUHb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 16:03:29 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52563 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031503AbXEDUD2 (ORCPT
+	Fri, 4 May 2007 16:07:31 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:34549
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161569AbXEDUHa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 16:03:28 -0400
-Date: Fri, 4 May 2007 13:02:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, sct@redhat.com,
-       adilger@clusterfs.com, clameter@sgi.com
-Subject: Re: [RFC/PATCH] ext3: remove inode constructor
-Message-Id: <20070504130241.c436eb43.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705041311230.1455@sbz-30.cs.Helsinki.FI>
-References: <Pine.LNX.4.64.0705041311230.1455@sbz-30.cs.Helsinki.FI>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 May 2007 16:07:30 -0400
+Message-ID: <463BA0D8.3050403@microgate.com>
+Date: Fri, 04 May 2007 15:08:40 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] synclink_gt add compat_ioctl
+References: <1178215277.4369.6.camel@amdx2.microgate.com> <20070503175305.e46ed8b7.akpm@linux-foundation.org>
+In-Reply-To: <20070503175305.e46ed8b7.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007 13:14:35 +0300 (EEST)
-Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+Andrew Morton wrote:
+> In file included from drivers/char/synclink_gt.c:85:
+> include/linux/synclink.h:175: error: expected specifier-qualifier-list before 'compat_ulong_t'
+> 
+> - We might as well do the same ifdef-avoidery trick around compat_ioctl()
+>   too.  That required that it be renamed.
+> 
+> - It is fishy that apart from one outlier in kexec.h, synclink.h is the
+>   only header file which uses compat_ulong_t.  Are we doing this right?
 
-> As explained by Christoph Lameter, ext3_alloc_inode() touches the same
-> cache line as init_once() so we gain nothing from using slab
-> constructors.  The SLUB allocator will be more effective without it
-> (free pointer can be placed inside the free'd object), so move inode
-> initialization to ext3_alloc_inode completely.
+Arnd, do you have any comment on this?
 
-I got 100% rejects against this because Christoph has already had
-his paws all over the slab constructor code everywhere.
+It seems like the compatible types should be available
+in something that is already commonly used like linux/types.h
 
-Was going to fix it up but then decided that we ought to make changes
-like this to ext4 as well.  Ideally beforehand, but simultaneously is
-OK as long as it's simple enough.
+I'm fine with it either way. I'm not in
+a position to be making those kinds of decisions
+for widely used infrastructure, so I'll leave
+that for someone further up the food chain.
 
-btw, for a benchmark I'd suggest just a silly create-10000-files
-tight loop rather than something more complex like postmark.
+-- 
+Paul Fulghum
+Microgate Systems, Ltd.
