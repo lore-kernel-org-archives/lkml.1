@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422797AbXEDIjo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbXEDImB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422797AbXEDIjo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:39:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031356AbXEDIjn
+	id S1754599AbXEDImB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754604AbXEDImB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:39:43 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:42286 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932840AbXEDIjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:39:42 -0400
-Subject: Re: [PATCH 5/5] crypto: Add LZO compression support to the crypto
-	interface
-From: Richard Purdie <rpurdie@openedhand.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
-       herbert@gondor.apana.org.au, linux-mtd <linux-mtd@lists.infradead.org>,
-       linux-crypto@vger.kernel.org
-In-Reply-To: <a781481a0705040109r45cbf472i4094dd2ebf7841e8@mail.gmail.com>
-References: <1178030843.5883.57.camel@localhost.localdomain>
-	 <a781481a0705040109r45cbf472i4094dd2ebf7841e8@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 04 May 2007 09:39:23 +0100
-Message-Id: <1178267963.5839.10.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Fri, 4 May 2007 04:42:01 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:32483 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754595AbXEDIl7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 04:41:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=S/rph092rSkMMaS8yheUBAyCrp9SNlL1cxWBPxSm9xTDTd2+0V7Jz0vxG8JOhKyyTBoqMLWiDUBzLtP4P6uqkaWVBbCE6fi81c8VonB7l7KpgLpry5UgQk4oM/ScPSsV8Bo0vHthda4nuRBj5pTA8gpvVoTRqIMNJrP/H5KaGoI=
+Message-ID: <463AF1C5.4090401@gmail.com>
+Date: Fri, 04 May 2007 10:41:41 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Frank van Maarseveen <frankvm@frankvm.com>
+CC: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>,
+       bzolnier@gmail.com,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: libata /dev/scd0 problem: mount after burn fails without eject
+References: <20070501135951.GA17072@janus> <46374C11.1010702@rtr.ca> <6bffcb0e0705010731v44cfad1awf4342121245f7ab3@mail.gmail.com> <463AEBE0.7010506@gmail.com> <20070504083735.GA20072@janus>
+In-Reply-To: <20070504083735.GA20072@janus>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 13:39 +0530, Satyam Sharma wrote:
-> On 5/1/07, Richard Purdie <rpurdie@openedhand.com> wrote:
-> > +static int lzo_init(struct crypto_tfm *tfm)
-> > +{
-> > +       struct lzo_ctx *ctx = crypto_tfm_ctx(tfm);
-> > +
-> > +       ctx->lzo_mem = vmalloc(LZO1X_MEM_COMPRESS);
-> > +
-> > +       if (!ctx->lzo_mem) {
-> > +               vfree(ctx->lzo_mem);
+Frank van Maarseveen wrote:
+> On Fri, May 04, 2007 at 10:16:32AM +0200, Tejun Heo wrote:
+>> Michal Piotrowski wrote:
+>>> On 01/05/07, Mark Lord <lkml@rtr.ca> wrote:
+>>>> Forwarding to linux-scsi and linux-ide mailing lists.
+>>>>
+>>>> Frank van Maarseveen wrote:
+>>>>> Tested on 2.6.20.6 and 2.6.21.1
+>>>>>
+>>>>> I decided to swich from the old IDE drivers to libata and now there
+>>>>> seems to be a little but annoying problem: cannot mount an ISO image
+>>>>> after burning it.
+>>>>>
+>>>>> May  1 14:32:55 kernel: attempt to access beyond end of device
+>>>>> May  1 14:32:55 kernel: sr0: rw=0, want=68, limit=4
+>>>>> May  1 14:32:55 kernel: isofs_fill_super: bread failed, dev=sr0,
+>>>> iso_blknum=16, block=16
+>>>>> an "eject" command seems to fix the state of the PATA DVD writer
+>>>>> or driver. The problem occurs for burning a CD and for DVD too with
+>>>>> identical error messages.
+>> Right after burning, if you run 'fuser -v /dev/sr0', what does it say?
 > 
-> Heh. What's (why's) this? You _can_ {k, v}free NULL but doing so after
-> explicitly checking for it is ... ... insane!
+> Tried the fuser as root to be sure but it didn't show anything.
 
-True, there used to be two buffers allocated there and I've missed a
-sensible cleanup when I removed one. I'll fix it, thanks.
+I guess sr is forgetting to set media changed flag somewhere.  Don't
+really know where tho.  CC'd Bartlomiej, linux-scsi and linux-ide.  Any
+ideas?
 
-Cheers,
-
-Richard
-
-
+-- 
+tejun
