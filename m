@@ -1,62 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755087AbXEDLnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755086AbXEDLqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755087AbXEDLnD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 07:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbXEDLnC
+	id S1755086AbXEDLqd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 07:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbXEDLqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 07:43:02 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:45338 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755087AbXEDLnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 07:43:00 -0400
-Date: Fri, 4 May 2007 13:42:09 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
+	Fri, 4 May 2007 07:46:32 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53033 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755086AbXEDLqb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 07:46:31 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Rewrite the MAJOR() macro as a call to imajor().
-In-Reply-To: <Pine.LNX.4.64.0705040410390.20834@localhost.localdomain>
-Message-ID: <Pine.LNX.4.61.0705041340310.18504@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.64.0704280621350.516@localhost.localdomain>
- <20070503231814.e12ad2d7.akpm@linux-foundation.org>
- <Pine.LNX.4.61.0705041008180.18504@yvahk01.tjqt.qr>
- <Pine.LNX.4.64.0705040410390.20834@localhost.localdomain>
+Subject: Re: [PATCH] i386: always clear bss
+References: <463AED07.1000505@goop.org>
+Date: Fri, 04 May 2007 05:46:01 -0600
+In-Reply-To: <463AED07.1000505@goop.org> (Jeremy Fitzhardinge's message of
+	"Fri, 04 May 2007 01:21:27 -0700")
+Message-ID: <m1r6pwu806.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-On May 4 2007 04:14, Robert P. J. Day wrote:
->> On May 3 2007 23:18, Andrew Morton wrote:
->> >>  	struct inode *i = file->f_mapping->host;
->> >>
->> >> -	return i && S_ISBLK(i->i_mode) && MAJOR(i->i_rdev) == LOOP_MAJOR;
->> >> +	return i && S_ISBLK(i->i_mode) && imajor(i) == LOOP_MAJOR;
->> >>  }
->> >
->> >there's no runtime change, and I count a couple hundred MAJORs in the tree.
->>
->> Why do we even have imajor() if all it does is calling the MAJOR()
->> macro?
+> When the paravirt dispatcher gets run immediately on entry to
+> startup_32, the bss isn't cleared.  This happens to work if the
+> hypervisor's domain builder loaded the complete kernel image and
+> cleared the bss for us, but this may not always be true (for example,
+> if we're running out of a decompressed bzImage).
 >
->  i'm guessing it's to hide the underlying implementation of
->extracting the major/minor numbers from an inode, in case that
->implementation ever changes, which strikes me as perfectly reasonable.
+> Change head.S so that it unconditionally clears the bss before doing
+> the paravirt dispatch or continuing on to normal native boot.
+>
+> There are a couple of points to note:
+>  - We can't, in general, load the segment registers before paravirt
+>    dispatch, because we could be running with a non-standard gdt and
+>    segment selectors.  In practice though, all code which ends up
+>    jumping into startup_32 will have already set the segment registers
+>    up to sane values, so we don't need to do it again.
+>  - Paging may or may not be enabled, and if enabled we may or may not
+>    be mapped to the proper kernel virtual address.  To deal with this,
+>    we compare the kernel's linked address with where we're actually
+>    running, and use that to offset the bss pointer.
 
-How often has the implementation changed? I think i_rdev has been
-there for a looong time. But yes, doing the MAJOR => imajor conversion
-is preferable. Because you don't need the struct declaration for inode
-then, and may omit to #include <linux/fs.h>. (Other things may need
-fs.h so it's a bit of a corner case.)
+NAK.  
 
->  all i was doing was standardizing the small handful of holdouts.
+Skipping the segment register load is likely fine.
+Supporting V!=P at startup_32 is not.
+Assuming that we have a stack at startup_32 is not.
 
-Please continue, this was not a rant :)
+If you want to figure out where the kernel is loaded you can do
+(from arch/i386/boot/head.S)
+> 
+> /* Calculate the delta between where we were compiled to run
+>  * at and where we were actually loaded at.  This can only be done
+>  * with a short local call on x86.  Nothing  else will tell us what
+>  * address we are running at.  The reserved chunk of the real-mode
+>  * data at 0x34-0x3f are used as the stack for this calculation.
+>  * Only 4 bytes are needed.
+>  */
+> 	leal 0x40(%esi), %esp
+> 	call 1f
+> 1:	popl %ebp
+> 	subl $1b, %ebp
+> 
 
-
-
-Jan
--- 
+Eric
