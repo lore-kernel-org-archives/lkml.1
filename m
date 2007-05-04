@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031371AbXEDQg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031377AbXEDQgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031371AbXEDQg2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 12:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031379AbXEDQg1
+	id S1031377AbXEDQgd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031381AbXEDQgc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 12:36:27 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55268 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031187AbXEDQgT (ORCPT
+	Fri, 4 May 2007 12:36:32 -0400
+Received: from mailgate.ics.forth.gr ([139.91.1.2]:54818 "EHLO
+	mailgate.ics.forth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031377AbXEDQgb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 12:36:19 -0400
-Date: Fri, 4 May 2007 09:36:16 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
-In-Reply-To: <20070504103157.215424767@chello.nl>
-Message-ID: <Pine.LNX.4.64.0705040932200.22033@schroedinger.engr.sgi.com>
-References: <20070504102651.923946304@chello.nl> <20070504103157.215424767@chello.nl>
+	Fri, 4 May 2007 12:36:31 -0400
+Message-ID: <1178296546.463b60e24ce76@webmail.ics.forth.gr>
+Date: Fri,  4 May 2007 19:35:46 +0300
+From: mcatos@ics.forth.gr
+To: linux-kernel@vger.kernel.org
+Subject: Re: Error using the buffer cache
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=windows-1253
+Content-Transfer-Encoding: 8bit
+User-Agent: Internet Messaging Program (IMP) 3.2.1
+X-Originating-IP: 139.91.70.46
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Peter Zijlstra wrote:
+I have isolated the problem a little bit. Here's what I do:
 
-> Expost buffer_size in order to allow fair estimates on the actual space 
-> used/needed.
+struct buffer_head *bh;
+sector_t sector = 0;
+bh = __bread(bdev, sector, bdev_get_queue(bdev)->hardsect_size);
+brelse(bh);
+sector++;
+bh = __bread(bdev, sector, bdev_get_queue(bdev)->hardsect_size);
+brelse(bh);
 
-If its just an estimate that you are after then I think ksize is 
-sufficient.
+And I get this error:
 
-The buffer size does not include the other per slab overhead that SLAB 
-needs nor the alignment overhead or the padding. For SLUB you'd be more 
-lucky but there it does not include the per slab padding that exist.
+BUG: soft lockup detected on CPU#1!
+[] show_trace_log_lvl+0x185/0x1a0
+[] show_trace+0x12/0x20
+[] dump_stack+0x19/0x20
+[] softlockup_tick+0x9e/0xd0
+[] run_local_timers+0x12/0x20
+[] update_process_times+0x34/0x80
+[] smp_apic_timer_interrupt+0x6d/0x80
+[] apic_timer_interrupt+0x2a/0x30
+[] _read_unlock_irq+0x24/0x30
+DWARF2 unwinder stuck at _read_unlock_irq+0x24/0x30
+Leftover inexact backtrace:
+[] show_trace+0x12/0x20
+[] dump_stack+0x19/0x20
+[] softlockup_tick+0x9e/0xd0
+[] run_local_timers+0x12/0x20
+[] update_process_times+0x34/0x80
+[] smp_apic_timer_interrupt+0x6d/0x80
+[] apic_timer_interrupt+0x2a/0x30
+[] find_lock_page+0x85/0xa0
+[] find_or_create_page+0x3b/0xb0
+[] __getblk+0xef/0x2e0
+[] __bread+0x12/0xb0
 
-Need to check how this is going to be used. It is difficult to estimate 
-slab use because this depends on the availability of object slots in 
-partial slabs.
+What am I doing wrong?
 
-I could add a function that tells you how many object you could allocate 
-from a slab without the page allocator becoming involved? It would count 
-the object slots available on the partial slabs.
+
+
+-------------------------------------------------
+This mail sent through IMP: http://horde.org/imp/
+
