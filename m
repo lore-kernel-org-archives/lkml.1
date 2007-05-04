@@ -1,57 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031420AbXEDRUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031422AbXEDRWL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031420AbXEDRUy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031439AbXEDRUy
+	id S1031422AbXEDRWL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:22:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031435AbXEDRWL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:20:54 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:44456
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031420AbXEDRUx (ORCPT
+	Fri, 4 May 2007 13:22:11 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:50799 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031422AbXEDRWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:20:53 -0400
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial
-	possible bug]
-From: Paul Fulghum <paulkf@microgate.com>
-To: Antonino Ingargiola <tritemio@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <200705041049.20989.oliver@neukum.org>
-	 <5486cca80705040229g53933671m658bd028cadca155@mail.gmail.com>
-	 <5486cca80705040233y70915a27yf7cbbc08a617e3ba@mail.gmail.com>
-	 <463B46F4.6090906@microgate.com> <463B4988.9090005@microgate.com>
-	 <1178290160.3913.2.camel@amdx2.microgate.com>
-	 <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
-	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
-	 <463B7534.6000207@microgate.com>
-	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 04 May 2007 12:20:47 -0500
-Message-Id: <1178299247.3769.0.camel@amdx2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+	Fri, 4 May 2007 13:22:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KtQLaK2owwrxlZSmv00r8DuiPC1g4F8TObzkQQAzUwiZm1NqhGX+iztbnZSL3LgwlHVpxjX9jRY1KFIFm/0q+O7z92i8RONgJ5SekvpSw9XrhBobxgLICc3LXHa7Nf1jnbtBMsDpA5HbEnb0RdRwgJjSyZB2N4ipeDQuIVKkvio=
+Message-ID: <a781481a0705041022jdc163fg20882d450338fb53@mail.gmail.com>
+Date: Fri, 4 May 2007 22:52:08 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
+       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
+       "Pekka Enberg" <penberg@cs.helsinki.fi>
+In-Reply-To: <200705041132.32227.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200705041132.32227.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 19:13 +0200, Antonino Ingargiola wrote:
-> On 5/4/07, Paul Fulghum <paulkf@microgate.com> wrote:
-> > Antonino Ingargiola wrote:
-> > > The system blocks during booting. I can unblock it with SysReq+K but
-> > > then I'm unable to log into X.
-> >
-> > Hmmm, it tests here with no problem.
-> >
-> > Does reversing the patch and rebuilding the kernel fix the boot?
-> 
-> The kernel to which I applied the patch was vanilla 2.6.21.1, and it
-> is the one I'm currently running (no config changes or other patches).
+Trivial suggestions:
 
-Are you using a serial port as console?
+On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> --- linux-2.6.21.orig/include/linux/suspend.h   2007-05-02 22:08:58.000000000 +0200
+> +++ linux-2.6.21/include/linux/suspend.h        2007-05-03 15:22:24.000000000 +0200
+> [...]
+> +/**
+> + * hibernation_set_ops - set the global hibernate operations
+> + * @ops: the hibernation operations to use in subsequent hibernation transitions
+> + */
+> +extern void hibernation_set_ops(struct hibernation_ops *ops);
 
--- 
-Paul Fulghum
-Microgate Systems, Ltd
+Comment must go near code, not with prototype in header.
 
+> +/**
+> + * hibernate - hibernate the system
+> + */
+> +extern int hibernate(void);
+
+Pointless comment. You've already written a doc-book comment in the
+code for this function anyway, so could just as well remove this.
