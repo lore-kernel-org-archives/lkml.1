@@ -1,52 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767683AbXEDGjJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753105AbXEDGlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767683AbXEDGjJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 02:39:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767678AbXEDGjJ
+	id S1753105AbXEDGlu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 02:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767688AbXEDGlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 02:39:09 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:40001 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767626AbXEDGjH (ORCPT
+	Fri, 4 May 2007 02:41:50 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:34773 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753105AbXEDGlt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 02:39:07 -0400
-Date: Thu, 3 May 2007 23:38:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alex Tomas <alex@clusterfs.com>
-Cc: Andreas Dilger <adilger@clusterfs.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Marat Buharov <marat.buharov@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when FS
- is under heavy write load (massive starvation)
-Message-Id: <20070503233804.9dace4a7.akpm@linux-foundation.org>
-In-Reply-To: <463AD024.6060208@clusterfs.com>
-References: <1177660767.6567.41.camel@Homer.simpson.net>
-	<20070427013350.d0d7ac38.akpm@linux-foundation.org>
-	<698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>
-	<alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>
-	<20070427193130.GD5967@schatzie.adilger.int>
-	<20070427151837.f1439639.akpm@linux-foundation.org>
-	<463A1E02.8020506@clusterfs.com>
-	<20070503165428.855eb7d7.akpm@linux-foundation.org>
-	<463AD024.6060208@clusterfs.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 4 May 2007 02:41:49 -0400
+Subject: Re: [PATCH] Bluetooth: postpone hci_dev unregistration
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       bluez-devel@lists.sourceforge.net
+In-Reply-To: <Pine.LNX.4.64.0705021144291.21227@twin.jikos.cz>
+References: <Pine.LNX.4.64.0705021144291.21227@twin.jikos.cz>
+Content-Type: text/plain
+Date: Fri, 04 May 2007 08:41:53 +0200
+Message-Id: <1178260913.25425.27.camel@violet>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 May 2007 10:18:12 +0400 Alex Tomas <alex@clusterfs.com> wrote:
+Hi Jiri,
 
-> Andrew Morton wrote:
-> > Yes, there can be issues with needing to allocate journal space within the
-> > context of a commit.  But
+> (I sent this a week ago but it seems to have got lost in other noise, 
+> resending)
 > 
-> no-no, this isn't required. we only need to mark pages/blocks within
-> transaction, otherwise race is possible when we allocate blocks in transaction,
-> then transacton starts to commit, then we mark pages/blocks to be flushed
-> before commit.
+> From: Jiri Kosina <jkosina@suse.cz>
+> 
+> Bluetooth: postpone hci_dev unregistration
+>     
+> Commit b40df57 substituted bh_lock_sock() in hci_sock_dev_event() for 
+> lock_sock() when unregistering HCI device, in order to prevent deadlock 
+> against locking in l2cap_connect_cfm() from softirq context.
+>     
+> This however introduces another problem - hci_sock_dev_event() for 
+> HCI_DEV_UNREG can also be triggered in atomic context, in which calling 
+> lock_sock() is not safe as it could sleep. Reported by Jeremy Fitzhardinge 
+> at http://lkml.org/lkml/2007/4/23/271
+> 
+> This patch moves the detaching of sockets from hci_device into workqueue, 
+> so that lock_sock() can be used safely. This requires movement of 
+> deallocation of hci_dev - deallocating device just after 
+> hci_unregister_dev() would be too soon, as it could happen before the 
+> workqueue has been run.
 
-I don't understand.  Can you please describe the race in more detail?
+I saw the report on LKML, but I am not really comfortable with this
+approach. It feels like an ugly hack. This needs more thinking and I
+think that simplifying the looking between HCI and L2CAP should be the
+goal.
+
+Regards
+
+Marcel
+
+
