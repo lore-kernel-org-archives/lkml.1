@@ -1,220 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767558AbXEDArL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767554AbXEDAxR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767558AbXEDArL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 20:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767557AbXEDArK
+	id S1767554AbXEDAxR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 20:53:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767561AbXEDAxR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 20:47:10 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:33390 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767552AbXEDArH (ORCPT
+	Thu, 3 May 2007 20:53:17 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44626 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767554AbXEDAxQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 20:47:07 -0400
-Date: Thu, 3 May 2007 17:49:24 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, jwboyer@linux.vnet.ibm.com,
-       grant.likely@secretlab.ca, jketreno@linux.intel.com
-Subject: [PATCH v2] lib/hexdump
-Message-Id: <20070503174924.d0cbafa3.randy.dunlap@oracle.com>
-In-Reply-To: <20070502161533.cbf38b4b.randy.dunlap@oracle.com>
-References: <20070502153556.3c995de7.randy.dunlap@oracle.com>
-	<20070502154557.b463c9c3.akpm@linux-foundation.org>
-	<46391730.2080003@oracle.com>
-	<20070502160635.31dd91e6.akpm@linux-foundation.org>
-	<20070502161533.cbf38b4b.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Thu, 3 May 2007 20:53:16 -0400
+Date: Thu, 3 May 2007 17:53:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Fulghum <paulkf@microgate.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] synclink_gt add compat_ioctl
+Message-Id: <20070503175305.e46ed8b7.akpm@linux-foundation.org>
+In-Reply-To: <1178215277.4369.6.camel@amdx2.microgate.com>
+References: <1178215277.4369.6.camel@amdx2.microgate.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 03 May 2007 13:01:17 -0500
+Paul Fulghum <paulkf@microgate.com> wrote:
 
-> > Ho hum.  Perhaps a middle ground is to implement hexdump-to-memory as the
-> > core function.  hex_dumper() becomes a simple wrapper around that.  (but
-> > how big is its buffer?  One line would be OK, I guess)
+> Add compat_ioctl handler to synclink_gt driver.
 > 
-> Yeah, I almost did it that way.  We'll see.
-> 
-> > > OK, that's one way to do it.  I'll wait a bit for other comments.
-> > 
-> > Good luck ;)
-
-		next try:
+> The one case requiring a separate 32 bit handler could be
+> removed by redefining the associated structure in
+> a way compatible with both 32 and 64 bit systems. But that
+> approach would break existing native 64 bit user applications.
 
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+A made a few changes here...
 
-Based on ace_dump_mem() from Grant Likely for the Xilinx 
-SystemACE CompactFlash interface.
 
-Add print_hex_dump() & hex_dumper() to lib/hexdump.c and linux/kernel.h.
+From: Andrew Morton <akpm@linux-foundation.org>
 
-This patch adds the functions print_hex_dump() & hex_dumper().
-print_hex_dump() can be used to perform a hex + ASCII dump of data to syslog,
-in an easily viewable format, thus providing a common text hex dump format.
+- Fix i386 build:
 
-hex_dumper() provides a dump-to-memory function.  It converts one "line"
-of output (16 bytes of input) at a time.
+In file included from drivers/char/synclink_gt.c:85:
+include/linux/synclink.h:175: error: expected specifier-qualifier-list before 'compat_ulong_t'
 
-Example usages:
-	print_hex_dump(KERN_DEBUG, DUMP_PREFIX_ADDRESS, frame->data, frame->len);
-	hex_dumper(frame->data, frame->len, linebuf, sizeof(linebuf));
+- We might as well do the same ifdef-avoidery trick around compat_ioctl()
+  too.  That required that it be renamed.
 
-Example output using %DUMP_PREFIX_OFFSET:
-0009ab42: 40414243 44454647 48494a4b 4c4d4e4f-@ABCDEFG HIJKLMNO
-Example output using %DUMP_PREFIX_ADDRESS:
-ffffffff88089af0: 70717273 74757677 78797a7b 7c7d7e7f-pqrstuvw xyz{|}~.
+- It is fishy that apart from one outlier in kexec.h, synclink.h is the
+  only header file which uses compat_ulong_t.  Are we doing this right?
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Paul Fulghum <paulkf@microgate.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/kernel.h |   10 ++++
- lib/Makefile           |    2 
- lib/hexdump.c          |  105 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 116 insertions(+), 1 deletion(-)
+ drivers/char/synclink_gt.c |   16 +++++++++-------
+ include/linux/synclink.h   |    5 +++--
+ 2 files changed, 12 insertions(+), 9 deletions(-)
 
---- linux-2.6.21-git4.orig/include/linux/kernel.h
-+++ linux-2.6.21-git4/include/linux/kernel.h
-@@ -202,6 +202,16 @@ extern enum system_states {
+diff -puN drivers/char/synclink_gt.c~synclink_gt-add-compat_ioctl-fix drivers/char/synclink_gt.c
+--- a/drivers/char/synclink_gt.c~synclink_gt-add-compat_ioctl-fix
++++ a/drivers/char/synclink_gt.c
+@@ -1176,15 +1176,16 @@ static int ioctl(struct tty_struct *tty,
+ }
  
- extern void dump_stack(void);
+ #ifdef CONFIG_COMPAT
+-static long compat_ioctl(struct tty_struct *tty, struct file *file,
++static long synclink_compat_ioctl(struct tty_struct *tty, struct file *file,
+ 			 unsigned int cmd, unsigned long arg)
+ {
+ 	struct slgt_info *info = tty->driver_data;
+ 	int rc = -ENOIOCTLCMD;
  
-+enum {
-+	DUMP_PREFIX_NONE,
-+	DUMP_PREFIX_ADDRESS,
-+	DUMP_PREFIX_OFFSET
-+};
-+extern void hex_dumper(void *buf, size_t len, char *linebuf, size_t linebuflen);
-+extern void print_hex_dump(const char *level, int prefix_type,
-+				void *buf, size_t len);
-+#define hextoasc(x)	"0123456789abcdef"[x]
-+
- #ifdef DEBUG
- /* If you are writing a driver, please use dev_dbg instead */
- #define pr_debug(fmt,arg...) \
---- linux-2.6.21-git4.orig/lib/Makefile
-+++ linux-2.6.21-git4/lib/Makefile
-@@ -13,7 +13,7 @@ lib-$(CONFIG_SMP) += cpumask.o
- lib-y	+= kobject.o kref.o kobject_uevent.o klist.o
+-	if (sanity_check(info, tty->name, "compat_ioctl"))
++	if (sanity_check(info, tty->name, "synclink_compat_ioctl"))
+ 		return -ENODEV;
+-	DBGINFO(("%s compat_ioctl() cmd=%08X\n", info->device_name, cmd));
++	DBGINFO(("%s synclink_compat_ioctl() cmd=%08X\n",
++		info->device_name, cmd));
  
- obj-y += div64.o sort.o parser.o halfmd4.o debug_locks.o random32.o \
--	 bust_spinlocks.o
-+	 bust_spinlocks.o hexdump.o
+ 	switch (cmd) {
  
- ifeq ($(CONFIG_DEBUG_KOBJECT),y)
- CFLAGS_kobject.o += -DDEBUG
---- /dev/null
-+++ linux-2.6.21-git4/lib/hexdump.c
-@@ -0,0 +1,105 @@
-+/*
-+ * lib/hexdump.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation. See README and COPYING for
-+ * more details.
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/ctype.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+
-+/**
-+ * hex_dumper - convert a blob of data to "hex ASCII" in memory
-+ * @buf: data blob to dump
-+ * @len: number of bytes in the @buf
-+ * @linebuf: where to put the converted data
-+ * @linebuflen: total size of @linebuf, including space for terminating NUL
-+ *
-+ * hex_dumper() works on one "line" of output at a time, i.e.,
-+ * 16 bytes of input data converted to hex + ASCII output.
-+ *
-+ * Given a buffer of u8 data, hex_dumper() converts the input data to a
-+ * hex + ASCII dump at the supplied memory location.
-+ * The converted output is always NUL-terminated.
-+ *
-+ * E.g.:
-+ *	hex_dumper(frame->data, frame->len, linebuf, sizeof(linebuf));
-+ *
-+ * Prints the offsets of the block of memory, not addresses:
-+ * 0009ab42: 40414243 44454647 48494a4b 4c4d4e4f-@ABCDEFG HIJKLMNO
-+ */
-+void hex_dumper(void *buf, size_t len, char *linebuf, size_t linebuflen)
-+{
-+	const u8 *ptr = buf;
-+	u8 ch;
-+	int j, lx = 0;
-+
-+	for (j = 0; (j < 16) && (j < len) && (lx + 3) < linebuflen; j++) {
-+		if (j && !(j % 4))
-+			linebuf[lx++] = ' ';
-+		ch = ptr[j];
-+		linebuf[lx++] = hextoasc(ch >> 4);
-+		linebuf[lx++] = hextoasc(ch & 0x0f);
-+	}
-+	if (lx < linebuflen)
-+		linebuf[lx++] = '-';
-+	for (j = 0; (j < 16) && (j < len) && (lx + 2) < linebuflen; j++) {
-+		linebuf[lx++] = isprint(ptr[j]) ?  ptr[j] : '.';
-+		if (j == 7)
-+			linebuf[lx++] = ' ';
-+	}
-+	linebuf[lx++] = '\0';
-+}
-+EXPORT_SYMBOL(hex_dumper);
-+
-+/**
-+ * print_hex_dump - print a text hex dump to syslog for a binary blob of data
-+ * @level: kernel log level (e.g. KERN_DEBUG)
-+ * @prefix_type: controls whether prefix of an offset, address, or none
-+ *  is printed (%DUMP_PREFIX_OFFSET, %DUMP_PREFIX_ADDRESS, %DUMP_PREFIX_NONE)
-+ * @buf: data blob to dump
-+ * @len: number of bytes in the @buf
-+ *
-+ * Given a buffer of u8 data, print_hex_dump() prints a hex + ASCII dump
-+ * to the kernel log at the specified kernel log level, with an optional
-+ * leading prefix.
-+ *
-+ * E.g.:
-+ *   print_hex_dump(KERN_DEBUG, DUMP_PREFIX_ADDRESS, frame->data, frame->len);
-+ *
-+ * Example output using %DUMP_PREFIX_OFFSET:
-+ * 0009ab42: 40414243 44454647 48494a4b 4c4d4e4f-@ABCDEFG HIJKLMNO
-+ * Example output using %DUMP_PREFIX_ADDRESS:
-+ * ffffffff88089af0: 70717273 74757677 78797a7b 7c7d7e7f-pqrstuvw xyz{|}~.
-+ */
-+void print_hex_dump(const char *level, int prefix_type, void *buf, size_t len)
-+{
-+	u8 *ptr = buf;
-+	int i, linelen, remaining = len;
-+	unsigned char linebuf[100];
-+
-+	for (i = 0; i < len; i += 16) {
-+		linelen = min(remaining, 16);
-+		remaining -= 16;
-+		hex_dumper(ptr + i, linelen, linebuf, sizeof(linebuf));
-+
-+		switch (prefix_type)
-+		{
-+		case DUMP_PREFIX_ADDRESS:
-+			printk("%s%*p: %s\n", level,
-+				(int)(2 * sizeof(void *)), ptr + i, linebuf);
-+			break;
-+		case DUMP_PREFIX_OFFSET:
-+			printk("%s%.8x: %s\n", level, i, linebuf);
-+			break;
-+		default:
-+			printk("%s%s\n", level, linebuf);
-+			break;
-+		}
-+	}
-+}
-+EXPORT_SYMBOL(print_hex_dump);
+@@ -1219,9 +1220,12 @@ static long compat_ioctl(struct tty_stru
+ 		break;
+ 	}
+ 
+-	DBGINFO(("%s compat_ioctl() cmd=%08X rc=%d\n", info->device_name, cmd, rc));
++	DBGINFO(("%s synclink_compat_ioctl() cmd=%08X rc=%d\n",
++		info->device_name, cmd, rc));
+ 	return rc;
+ }
++#else
++#define synclink_compat_ioctl NULL
+ #endif
+ 
+ /*
+@@ -3554,9 +3558,7 @@ static const struct tty_operations ops =
+ 	.chars_in_buffer = chars_in_buffer,
+ 	.flush_buffer = flush_buffer,
+ 	.ioctl = ioctl,
+-#ifdef CONFIG_COMPAT
+-	.compat_ioctl = compat_ioctl,
+-#endif
++	.compat_ioctl = synclink_compat_ioctl,
+ 	.throttle = throttle,
+ 	.unthrottle = unthrottle,
+ 	.send_xchar = send_xchar,
+diff -puN include/linux/synclink.h~synclink_gt-add-compat_ioctl-fix include/linux/synclink.h
+--- a/include/linux/synclink.h~synclink_gt-add-compat_ioctl-fix
++++ a/include/linux/synclink.h
+@@ -169,9 +169,9 @@ typedef struct _MGSL_PARAMS
+ 
+ } MGSL_PARAMS, *PMGSL_PARAMS;
+ 
++#ifdef CONFIG_COMPAT
+ /* provide 32 bit ioctl compatibility on 64 bit systems */
+-struct MGSL_PARAMS32
+-{
++struct MGSL_PARAMS32 {
+ 	compat_ulong_t	mode;
+ 	unsigned char	loopback;
+ 	unsigned short	flags;
+@@ -186,6 +186,7 @@ struct MGSL_PARAMS32
+ 	unsigned char	stop_bits;
+ 	unsigned char	parity;
+ };
++#endif
+ 
+ #define MICROGATE_VENDOR_ID 0x13c0
+ #define SYNCLINK_DEVICE_ID 0x0010
+_
+
