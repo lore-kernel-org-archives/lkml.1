@@ -1,115 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422906AbXEDJi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161804AbXEDJjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422906AbXEDJi4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 05:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422909AbXEDJi4
+	id S1161804AbXEDJjh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 05:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161877AbXEDJjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 05:38:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:56211 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422906AbXEDJiz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 05:38:55 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [RFT][PATCH] swsusp: Change code ordering related to ACPI
-Date: Fri, 4 May 2007 11:43:01 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Marcus Better <marcus@better.se>, Pavel Machek <pavel@ucw.cz>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       pm list <linux-pm@lists.linux-foundation.org>
+	Fri, 4 May 2007 05:39:37 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:56990 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161804AbXEDJjg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 05:39:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=t+jo3tbxr74xlfpJN5Nd+6AON3VhfyYRdRuuW8XClfuoGOzinZiftVl/iHTUoc7dHEl//VK4YvxbsZTGFiGs2TurTB5sCywCwvXTHkZp3lyH8Ju4IFrq7kGSSg40nh6bvmVLGBBLsfla4ZaV7+sijXikVUvGT6L7aWpuIW72YBw=
+Message-ID: <84144f020705040239l757b35b5jf3ab4cb0d4b1a016@mail.gmail.com>
+Date: Fri, 4 May 2007 12:39:35 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH v2] lib/hexdump
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, jwboyer@linux.vnet.ibm.com,
+       grant.likely@secretlab.ca, jketreno@linux.intel.com
+In-Reply-To: <20070503174924.d0cbafa3.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705041143.02451.rjw@sisk.pl>
+References: <20070502153556.3c995de7.randy.dunlap@oracle.com>
+	 <20070502154557.b463c9c3.akpm@linux-foundation.org>
+	 <46391730.2080003@oracle.com>
+	 <20070502160635.31dd91e6.akpm@linux-foundation.org>
+	 <20070502161533.cbf38b4b.randy.dunlap@oracle.com>
+	 <20070503174924.d0cbafa3.randy.dunlap@oracle.com>
+X-Google-Sender-Auth: 23a5b18b6f787f8a
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hi Randy,
 
-The change of the hibernation/suspend code ordering made before 2.6.21 has
-caused some systems to have problems related to ACPI.  In particular, the
-'platform' hibernation mode doesn't work any more on some systems.
+On 5/4/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> +extern void hex_dumper(void *buf, size_t len, char *linebuf, size_t linebuflen);
 
-It has been confirmed that the appended patch fixes the problem, but it's not
-certain if this changes don't break some other systems.  For this reason, all
-users of hibernation (swsusp, uswsusp) are gently requested to verify if this
-patch doesn't break their systems.
-
-Greetings,
-Rafael
-
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-
-The current code ordering in the hibernation code paths causes some systems to
-have problems.  It has been confirmed by testers that these problems do not
-appear if the acpi_pm_finish() function (called via platform_finish()) is
-executed after device_suspend().
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/disk.c |    4 ++--
- kernel/power/user.c |    8 ++++----
- 2 files changed, 6 insertions(+), 6 deletions(-)
-
-Index: linux-2.6.21/kernel/power/disk.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/disk.c	2007-05-04 10:31:51.000000000 +0200
-+++ linux-2.6.21/kernel/power/disk.c	2007-05-04 10:32:12.000000000 +0200
-@@ -195,9 +195,9 @@ int hibernate(void)
- 
- 	if (in_suspend) {
- 		enable_nonboot_cpus();
--		platform_finish();
- 		device_resume();
- 		resume_console();
-+		platform_finish();
- 		pr_debug("PM: writing image.\n");
- 		error = swsusp_write();
- 		if (!error)
-@@ -214,9 +214,9 @@ int hibernate(void)
-  Enable_cpus:
- 	enable_nonboot_cpus();
-  Resume_devices:
--	platform_finish();
- 	device_resume();
- 	resume_console();
-+	platform_finish();
-  Thaw:
- 	mutex_unlock(&pm_mutex);
- 	unprepare_processes();
-Index: linux-2.6.21/kernel/power/user.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/user.c	2007-05-04 10:31:51.000000000 +0200
-+++ linux-2.6.21/kernel/power/user.c	2007-05-04 10:32:12.000000000 +0200
-@@ -169,11 +169,11 @@ static inline int snapshot_suspend(int p
- 	}
- 	enable_nonboot_cpus();
-  Resume_devices:
-+	device_resume();
-+	resume_console();
- 	if (platform_suspend)
- 		platform_finish();
- 
--	device_resume();
--	resume_console();
-  Finish:
- 	mutex_unlock(&pm_mutex);
- 	return error;
-@@ -201,11 +201,11 @@ static inline int snapshot_restore(int p
- 
- 	enable_nonboot_cpus();
-  Resume_devices:
-+	device_resume();
-+	resume_console();
- 	if (platform_suspend)
- 		platform_finish();
- 
--	device_resume();
--	resume_console();
-  Finish:
- 	pm_restore_console();
- 	mutex_unlock(&pm_mutex);
+Please do s/hex_dumper/hex_dump_to_buffer/ for consistency with print_hex_dump.
