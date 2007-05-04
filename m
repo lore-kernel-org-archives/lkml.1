@@ -1,137 +1,495 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767516AbXEDBXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752336AbXEDBaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767516AbXEDBXc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 21:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767575AbXEDBXc
+	id S1752336AbXEDBaT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 21:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767576AbXEDBaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 21:23:32 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:19801 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767516AbXEDBXb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 21:23:31 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=SjlCBtGe0hEqmtTUxw25wI0EvedJStoPC6PUVHeF8igPpSSAbWXvMPA6ZjtFFiFl4
-	C9KPnk8xz9DJEX9REjRYQ==
-Date: Thu, 3 May 2007 18:21:46 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Adrian Bunk <bunk@stusta.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] compiler: introduce __used and __maybe_unused
-In-Reply-To: <20070504004636.GU3531@stusta.de>
-Message-ID: <Pine.LNX.4.64.0705031821350.8234@chino.kir.corp.google.com>
-References: <Pine.LNX.4.64.0705031734520.21416@chino.kir.corp.google.com>
- <20070504004636.GU3531@stusta.de>
+	Thu, 3 May 2007 21:30:19 -0400
+Received: from mail.gmx.net ([213.165.64.20]:44038 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1767575AbXEDBaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 21:30:14 -0400
+Cc: linux-kernel@vger.kernel.org, mrechberger@gmail.com, mkrufky@linuxtv.org
+Content-Type: text/plain; charset="iso-8859-1"
+Date: Fri, 04 May 2007 03:30:11 +0200
+From: "Uwe Bugla" <uwe.bugla@gmx.de>
+In-Reply-To: <463A62D5.40205@gmail.com>
+Message-ID: <20070504013011.19370@gmx.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>	
+	<20070503153129.268110@gmx.net> <463A0462.5070106@gmail.com>	
+	<d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>	
+	<463A0B36.5080204@gmail.com>	
+	<d9def9db0705031019l5083d1c1h607b0829ab526f1@mail.gmail.com>	
+	<1178215045.12651.124.camel@localhost> <463A31EE.20907@gmail.com>	
+	<d9def9db0705031400q375f2a29t1c9354d717a763d4@mail.gmail.com>	
+	<463A572E.1000903@gmail.com>
+	<d9def9db0705031506i53b8b263ld7f32a8cfd47b047@mail.gmail.com>
+ <463A62D5.40205@gmail.com>
+Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
+	points about ...)
+To: Manu Abraham <abraham.manu@gmail.com>, linux-dvb@linuxtv.org
+X-Authenticated: #8359428
+X-Flags: 0001
+X-Mailer: WWW-Mail 6100 (Global Message Exchange)
+X-Priority: 3
+X-Provags-ID: V01U2FsdGVkX19IfZ5tHktIeXHm6UtolBAoHpva0ZHFGxA6gC0mIt
+ QciWAUPkX4g2+dK1U52SrU26VQUg8udTyGqg== 
+Content-Transfer-Encoding: 8bit
+X-GMX-UID: wuBRLthSTlI8f2zrCGhrIx5OU2poZdlY
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-__used is defined to be __attribute__((unused)) for all pre-3.4 gcc
-compilers to suppress warnings for unused functions because perhaps they
-are referenced only in inline assembly.  It is defined to be 
-__attribute__((used)) for gcc 3.4 and later so that the code is still
-emitted for such functions.
 
-__maybe_unused is defined to be __attribute__((unused)) for both function
-and variable use if it could possibly be unreferenced due to the
-evaluation of preprocessor macros.  Function prototypes shall be marked
-with __maybe_unused if the actual definition of the function is dependant
-on preprocessor macros.
+-------- Original-Nachricht --------
+Datum: Fri, 04 May 2007 02:31:49 +0400
+Von: Manu Abraham <abraham.manu@gmail.com>
+An: linux-dvb@linuxtv.org
+CC: linux-kernel@vger.kernel.org
+Betreff: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical	points about ...)
 
-No update to compiler-intel.h is necessary because ICC supports both
-__attribute__((used)) and __attribute__((unused)) as specified by the
-gcc manual.
+> Markus Rechberger wrote:
+> 
+> > I mean the mail from Helge Hafting (thread  [linux-dvb] Critical
+> > points about kernel 2.6.21 and pseudo-authorities) at the very first
+> > beginning.
+> > 
+> 
+> I am replying to this mail, just because someone's spreading lies all
+> around.
+> On the mentioned thread, what i wrote (and that was the only mail from
+> my side):
+> 
+> There is a saying: "He who lives by the sword, dies by the sword."
 
-__attribute_used__ is deprecated and will be removed once all current
-code is converted to using __used.
+Hi Manu,
 
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrian Bunk <bunk@stusta.de>
-Signed-off-by: David Rientjes <rientjes@google.com>
----
- include/linux/compiler-gcc.h  |    1 +
- include/linux/compiler-gcc3.h |    6 ++++--
- include/linux/compiler-gcc4.h |    3 ++-
- include/linux/compiler.h      |   21 ++++++++++++++++++---
- 4 files changed, 25 insertions(+), 6 deletions(-)
+The saying that you stated is a very christian one.
+I perhaps should state that I am 47 years old now, raised in in utmost reactionary region called Bavaria (Western Germany), and also raised by parents of Russian / Polonian origin who shared the Nazi regime with the usual "I-do-not-want-to-talk-about-it-and-I-do-not-want-to-feel-responsible-about-it                                                                                                                                                                                                                                              "-behaviour.
+And I am very much not only interested in german post-war history, but I simply love to write provocative letters or mails to make my conviction utmost clear that all this capitalist bullshit around us should vanish and shrink and be overcome some day.
 
-diff --git a/include/linux/compiler-gcc.h b/include/linux/compiler-gcc.h
---- a/include/linux/compiler-gcc.h
-+++ b/include/linux/compiler-gcc.h
-@@ -37,3 +37,4 @@
- #define  noinline			__attribute__((noinline))
- #define __attribute_pure__		__attribute__((pure))
- #define __attribute_const__		__attribute__((__const__))
-+#define __maybe_unused			__attribute__((unused))
-diff --git a/include/linux/compiler-gcc3.h b/include/linux/compiler-gcc3.h
---- a/include/linux/compiler-gcc3.h
-+++ b/include/linux/compiler-gcc3.h
-@@ -4,9 +4,11 @@
- #include <linux/compiler-gcc.h>
- 
- #if __GNUC_MINOR__ >= 3
--# define __attribute_used__	__attribute__((__used__))
-+# define __used			__attribute__((__used__))
-+# define __attribute_used__	__used				/* deprecated */
- #else
--# define __attribute_used__	__attribute__((__unused__))
-+# define __used			__attribute__((__unused__))
-+# define __attribute_used__	__used				/* deprecated */
- #endif
- 
- #if __GNUC_MINOR__ >= 4
-diff --git a/include/linux/compiler-gcc4.h b/include/linux/compiler-gcc4.h
---- a/include/linux/compiler-gcc4.h
-+++ b/include/linux/compiler-gcc4.h
-@@ -12,7 +12,8 @@
- # define __inline		__inline	__attribute__((always_inline))
- #endif
- 
--#define __attribute_used__	__attribute__((__used__))
-+#define __used			__attribute__((__used__))
-+#define __attribute_used__	__used			/* deprecated */
- #define __must_check 		__attribute__((warn_unused_result))
- #define __compiler_offsetof(a,b) __builtin_offsetof(a,b)
- #define __always_inline		inline __attribute__((always_inline))
-diff --git a/include/linux/compiler.h b/include/linux/compiler.h
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -108,15 +108,30 @@ extern void __chk_io_ptr(const void __iomem *);
-  * Allow us to avoid 'defined but not used' warnings on functions and data,
-  * as well as force them to be emitted to the assembly file.
-  *
-- * As of gcc 3.3, static functions that are not marked with attribute((used))
-- * may be elided from the assembly file.  As of gcc 3.3, static data not so
-+ * As of gcc 3.4, static functions that are not marked with attribute((used))
-+ * may be elided from the assembly file.  As of gcc 3.4, static data not so
-  * marked will not be elided, but this may change in a future gcc version.
-  *
-+ * NOTE: Because distributions shipped with a backported unit-at-a-time
-+ * compiler in gcc 3.3, we must define __used to be __attribute__((used))
-+ * for gcc >=3.3 instead of 3.4.
-+ *
-  * In prior versions of gcc, such functions and data would be emitted, but
-  * would be warned about except with attribute((unused)).
-+ *
-+ * Mark functions that are referenced only in inline assembly as __used so
-+ * the code is emitted even though it appears to be unreferenced.
-  */
- #ifndef __attribute_used__
--# define __attribute_used__	/* unimplemented */
-+# define __attribute_used__	/* deprecated */
-+#endif
-+
-+#ifndef __used
-+# define __used			/* unimplemented */
-+#endif
-+
-+#ifndef __maybe_unused
-+# define __maybe_unused		/* unimplemented */
- #endif
- 
- /*
+Basic christian ideals are very close to basic marxist ideas.
+The one who never does perceive that is a real poor human being in my eyes, if not to say: a complete idiot or a system-conforming hypocrite.
+
+BUT:
+I in fact do not read this "saying" for the first time:
+
+In my personal experience (feel very sorry about it, but it's true) it has always truthfully been an excuse for persons being strongly limited on what I would call utmost primitive instincts like greed or rapacity (i. e. the utmost perfect sounding "would-like-to-capitalists", if not to say: the perfect slaves or: the perfect counterrevolutionaries or strike-breakers, if not to say: the utmost perfect asscreepers).
+
+Please forgive me for that statement, but I am simply stating my personal experiences very truthfully, without playing any politics, but just telling you my "personal truth" or the sum of all my personal life experience unfortunately bound to that.
+
+And if there is discussion needed on that we should do it private or anyway on some other thread, but definitely not on this one.
+
+Hints to help you to understand the difference:
+
+1. There is a GPL license written by Richard Stallman whose origin I do not know:
+Its essence is the philosophy to share and to be highly transparent as far as information level is concerned.
+
+2. There is a saying by Linus in which he states the best choice he ever did was conforming his work to the terms of Richard Stallman, the GPL.
+
+3. Wikipedia says that Linus's father was no christian at all, but simply a communist.
+
+See, Manu, there are deeply primitive instinct-driven hypocrites around like hell, but there are also truthful human beings around.
+
+But:
+The Internet does not provide a platform to find out who is who and what is what.
+The Internet may be necessary, but in the end it's just a drag, isn't it?
+
+Sincerely
+Uwe
+> 
+> 
+> -------- Original Message --------
+> Subject: Re: [linux-dvb] Re: Critical points about kernel 2.6.21	and
+> pseudo-authorities
+> Date: Tue, 01 May 2007 04:19:41 +0400
+> From: Manu Abraham <abraham.manu@gmail.com>
+> To: Uwe Bugla <uwe.bugla@gmx.de>
+> CC: xyzzy@speakeasy.org,  linux-dvb@linuxtv.org,
+> linux-kernel@vger.kernel.org,  torvalds@linux-foundation.org,
+> akpm@linux-foundation.org,  mkrufky@linuxtv.org
+> References: <20070429182209.267430@gmx.net>
+> <alpine.LFD.0.98.0704291147530.9964@woody.linux-foundation.org>
+> <20070429205925.129920@gmx.net>
+> <alpine.LFD.0.98.0704291412500.9964@woody.linux-foundation.org>
+> <20070429230037.95120@gmx.net>	<1177894713.3046.5.camel@p
+> <alpine.LFD.0.98.0704300854090.9964@woody.linux-foundation.org>
+> <Pine.LNX.4.58.0704301458460.315@shell2.speakeasy.net>
+> <463674A9.9040100@gmail.com> <20070430234000.181660@gmx.net>
+> 
+> Uwe Bugla wrote:
+> 
+> > 1. You utmost personally are responsible for 4 ununsable kernels, as
+> far as bt8xx cards are concerned: 2.6.13, 2.6.14, 2.6.15, 2.6.16!
+> > 2. You did not even want to imply to resolve that issue by incarnating
+> that "community and synergy principle" that linux community needs to
+> exist at all, but you just perverted it by flaming capable people -
+> 
+> You mean like this:
+> 
+> 
+> -------- Original Message --------
+> Subject: kernel patch practice in 2.6.13-mm2
+> Date: Tue, 13 Sep 2005 16:46:35 +0200 (MEST)
+> From: Uwe Bugla <uwe.bugla@gmx.de>
+> To: manu@linuxtv.org
+> CC: js@linuxtv.org
+> 
+> Hi,
+> if you continue to send or sign mm-patches for Kernel 2.6.13 as a
+> consequence of a design change I would appreciate you to stop rubbing out
+> my
+> name.
+> You did that in a file called /Documentation/dvb/bt8xx.txt.
+> My objective is understandable good documentation, even if it may sound
+> trivial for some developpers minds. I always have in mind that there are
+> also lots of beginners reading those documents.
+> As I respect your work I never in my life would even dare to rub out other
+> coauthors names.
+> That´s why I appreciate you to respect my name and stop rubbing it out.
+> 
+> Thanks
+> Uwe Bugla
+> 
+> P. S.: If you f. ex. publish a book I ain´t gonna burn it as a matter of
+> disrespect. So have a little respect vice versa!
+> 
+> -- 
+> Lust, ein paar Euro nebenbei zu verdienen? Ohne Kosten, ohne Risiko!
+> Satte Provisionen für GMX Partner: http://www.gmx.net/de/go/partner
+> 
+> 
+> ------- Original Message --------
+> Subject: "synchronization problems"
+> Date: Thu, 15 Sep 2005 10:44:38 +0200 (MEST)
+> From: Uwe Bugla <uwe.bugla@gmx.de>
+> To: js@linuxtv.org
+> CC: manu@linuxtv.org
+> 
+> Hallo Mr. Stezenbach,
+> 
+> "You breached the protocol by not sending the patches to the maintainer
+> or linux-dvb list. The result of this was that we had conflicting
+> changes in CVS. I spent about 10 minutes thinking how I could
+> merge the two, and then gave up (I had 53 other patches to prepare
+> and I had little time left to do the job). So I didn't just remove
+> your name, but all changes which you sent to akpm along with it.
+> bt8xx.txt in the kernel is now in sync with the version in linuxtv.org
+> CVS."
+> 
+> I didn't breach any protocol, nor did I break any unwritten rule or law. I
+> simply took the advice from Gerd Knorr that linuxtv maintainers were just
+> moving to another place to the point of time when I sent in my first
+> dvb-bt8xx-patch. So consequently I took the direct way to send it to akpm.
+> Just to be sure it is really being applied without waiting 3, 4 weeks or
+> however long. So if you continue to at least discussing with my person,
+> please immediately stop doing that in such a bureaucratic manner. If
+> synchronization of CVS and kernel.org only works unidirectional, and not
+> bidirectional, then neither I, nor akpm, nor Manu or anybody else has a
+> real
+> problem, but you personally have one without any doubts.
+> And if you lack time, simply delegate your job to another person. But
+> simply
+> stop rubbing out other peoples coauthorship and pay respect to their
+> contributions. And the biggest joke about your personal misbehaviour is
+> the
+> fact that you personally cosigned at least one of my patch attempts,
+> without
+> dropping me a single note asking me to not bypass the linuxtv CVS
+> maintainers. So good morning Mr. Stezenbach, I appreciate you to wake up a
+> little bit earlier in the future!
+> 
+> "Additionally you deleted information from bt8xx.txt which I think were
+> useful help for debugging problems, and which were written there on
+> purpose
+> by the developer. So if you talk about respect, you could show some
+> yourself
+> by not bypassing the original authors and maintainers when sending
+> patches."
+> 
+> In fact I did, and I can tell you the simple reasons why.
+> There are in fact two things that I simply cannot and will not tolerate:
+> a. orthographic junk (examples: "bythe" or, even worse: "autodected" and
+> "Recognise") It was ME who corrected that in the past, and it was YOU
+> personally who reversed that, if not to say: fucked it up in the current
+> 2.6.14-rc1. So as a consequence it is YOUR task to do your homework and
+> apologize for that, but not MINE!
+> b. attempts of documentation that do NOT correspond to their appropriate
+> kernel design
+> What do I mean with b.?
+> 1. In Kernels 2.6.12 AND 2.6.13 the simple command "modprobe dvb-bt8xx"
+> caused ALL OTHER modules to load automatically:
+> cx24110, dst, dst-ci and dst-ca. Now if the kernel design forces the
+> automatic loading of dst, dst-ca and dst-ci, every attempt of discussion
+> about debug parameters is simply obsolete! So if I cannot load the dst
+> module separately, how should I be able to hack in
+> debug parameters? I know what debug parameters are for, and I deeply
+> respect
+> developers work, but what the hell is it all worth for if a kernel design
+> suppresses hacking in debug parameters?
+> 2. Moreover I am not shure in how far the parameters 0x68 and 0x71 really
+> correspond to TwinHan cards. A closer look to CARDLIST.bttv says: card ID
+> =
+> 113. But perhaps I have problems to deal with hexadecimal numbers, and
+> this
+> would simply be my problem, not yours!
+> 
+> 4 rules for a real good documentation:
+> 1. understandable and transparent information for different understanding
+> levels
+> 2. strictly corresponding to the laws of the current kernel design
+> 3. absolutely errorfree concerning orthographic junk
+> 4. structured in a senseful manner (f. ex.: headliner corresponds to real
+> contents)
+> 
+> If an attempt of documentation lacks at least one of the four, it is
+> simply
+> useless to my opinion. Why aren't debug parameters part of another part of
+> documentation, f. ex. ci.txt? Or ca.txt? The headline of dvb-bt8xx.txt
+> goes:
+> "How to get the Nebula, PCTV, and TwinHan DST cards working."
+> My question: If the essence of a documentation text is how to bring up a
+> specified card, then please what the hell has that got to do with debug
+> parameters? Who are the addressed groups of such a text? To my opinion at
+> least the headliner says that the following text addresses users and
+> nobody
+> else!
+> So I simply never intended to bypass any developer, but I simply found out
+> that the bt8xx-documentation simply did not correspond to the actual
+> kernel
+> design. In other words: Was unusable. So I decided to write a patch and
+> simply act instead of performing endless discussions, and that's all about
+> it!
+> And: If you reinvent the name of cards: Do it for whatever reason, for
+> god's
+> sake! But: How the hell do you define to a person not convenient with all
+> that special technical vocabulary, what the hell a BT8xx-card is? Remember
+> the first of my 4 rules (see above!). So at least a complete list of cards
+> conforming to that standard is necessary for transparent information:
+> Question: Pinnacle PCTV SAT, Nebula Electronics DigiTV, TwinHan DST and
+> clones, Avermedia of all kinds..... Is that list complete? If not, please
+> drop me a note where I can get that complete list of cards corresponding
+> to
+> that standard, and I'll instantly sit down and write a patch to improve
+> documentation.
+> But before I even think about doing that I appreciate you to do your
+> homework:
+> a. readd my name (I didn't delete it, so I won't do the same job again,
+> not
+> for sync reasons, and not for reasons of lack of time, and not for any
+> other
+> reason.
+> b. fix orthographic errors in dvb-bt8xx.txt (for the same reason mentioned
+> in point a.)
+> c. reconstruct my 2.6.13-structure of dvb-bt8xx.txt as far as possible
+> d. reflect very well, whether debug parameters should not better be
+> situated
+> in different documentation texts (logically structured, understandable)
+> 
+> Regards
+> 
+> Uwe Bugla
+> 
+> P. S.: akpm never complains about lack of time, and he is doing a very
+> fair
+> and good job, and, at least for him, the amount of 54 patches is simply
+> peanuts. I love cooperation with guys like him!
+> In other words: I respect the demand that cvs-tree and current kernel must
+> be in sync somehow, but if the output is rubbish for several reasons and,
+> moreover, neglects my work, there is simply no reason for any kind of
+> respect. Because I ain't no idiot, just to say it in very simple words.
+> So please in future avoid to blame my person for things that you
+> personally
+> don't get worked (synchronization or whatever kind).
+> And would you please answer me one question: How can I be shure that my
+> patchwork at least enters the institution akpm, if there is someone like
+> you
+> in between complaining for lack of time and synchronization faults? I
+> prefer
+> flat hierarchies (the real hidden success principle of Linux) and
+> cooperation with akpm works very fine.
+> So, as a matter of principle, I don't see any reason why I should prepare
+> and send in my work three, four, five times, just because at the other end
+> someone doesn't get his stuff synchronized or lacks time. I ain't no
+> idiot!
+> Ya Basta!
+> And even if I would give in now for strategic reasons and do the same
+> fuckin' work again, how many Stezenbach clones or whoever would come up
+> afterwards and continue to fuck up my work in the same or just in a
+> different way you personally did? Who do you think you are and who do you
+> think I am? So please do your homework, and do it correct in the future,
+> or
+> leave that job simply to another person. OK?
+> Any further questions, Mr. Johannes Stezenbach?
+> 
+> -- 
+> Lust, ein paar Euro nebenbei zu verdienen? Ohne Kosten, ohne Risiko!
+> Satte Provisionen für GMX Partner: http://www.gmx.net/de/go/partner
+> 
+> Hallo Mr. Stezenbach,
+> 
+> "You breached the protocol by not sending the patches to the maintainer
+> or linux-dvb list. The result of this was that we had conflicting
+> changes in CVS. I spent about 10 minutes thinking how I could
+> merge the two, and then gave up (I had 53 other patches to prepare
+> and I had little time left to do the job). So I didn't just remove
+> your name, but all changes which you sent to akpm along with it.
+> bt8xx.txt in the kernel is now in sync with the version in linuxtv.org
+> CVS."
+> 
+> I didn't breach any protocol, nor did I break any unwritten rule or law. I
+> simply took the advice from Gerd Knorr that linuxtv maintainers were just
+> moving to another place to the point of time when I sent in my first
+> dvb-bt8xx-patch. So consequently I took the direct way to send it to akpm.
+> Just to be sure it is really being applied without waiting 3, 4 weeks or
+> however long. So if you continue to at least discussing with my person,
+> please immediately stop doing that in such a bureaucratic manner. If
+> synchronization of CVS and kernel.org only works unidirectional, and not
+> bidirectional, then neither I, nor akpm, nor Manu or anybody else has a
+> real
+> problem, but you personally have one without any doubts.
+> And if you lack time, simply delegate your job to another person. But
+> simply
+> stop rubbing out other peoples coauthorship and pay respect to their
+> contributions. And the biggest joke about your personal misbehaviour is
+> the
+> fact that you personally cosigned at least one of my patch attempts,
+> without
+> dropping me a single note asking me to not bypass the linuxtv CVS
+> maintainers. So good morning Mr. Stezenbach, I appreciate you to wake up a
+> little bit earlier in the future!
+> 
+> "Additionally you deleted information from bt8xx.txt which I think were
+> useful help for debugging problems, and which were written there on
+> purpose
+> by the developer. So if you talk about respect, you could show some
+> yourself
+> by not bypassing the original authors and maintainers when sending
+> patches."
+> 
+> In fact I did, and I can tell you the simple reasons why.
+> There are in fact two things that I simply cannot and will not tolerate:
+> a. orthographic junk (examples: "bythe" or, even worse: "autodected" and
+> "Recognise") It was ME who corrected that in the past, and it was YOU
+> personally who reversed that, if not to say: fucked it up in the current
+> 2.6.14-rc1. So as a consequence it is YOUR task to do your homework and
+> apologize for that, but not MINE!
+> b. attempts of documentation that do NOT correspond to their appropriate
+> kernel design
+> What do I mean with b.?
+> 1. In Kernels 2.6.12 AND 2.6.13 the simple command "modprobe dvb-bt8xx"
+> caused ALL OTHER modules to load automatically:
+> cx24110, dst, dst-ci and dst-ca. Now if the kernel design forces the
+> automatic loading of dst, dst-ca and dst-ci, every attempt of discussion
+> about debug parameters is simply obsolete! So if I cannot load the dst
+> module separately, how should I be able to hack in
+> debug parameters? I know what debug parameters are for, and I deeply
+> respect
+> developers work, but what the hell is it all worth for if a kernel design
+> suppresses hacking in debug parameters?
+> 2. Moreover I am not shure in how far the parameters 0x68 and 0x71 really
+> correspond to TwinHan cards. A closer look to CARDLIST.bttv says: card ID
+> =
+> 113. But perhaps I have problems to deal with hexadecimal numbers, and
+> this
+> would simply be my problem, not yours!
+> 
+> 4 rules for a real good documentation:
+> 1. understandable and transparent information for different understanding
+> levels
+> 2. strictly corresponding to the laws of the current kernel design
+> 3. absolutely errorfree concerning orthographic junk
+> 4. structured in a senseful manner (f. ex.: headliner corresponds to real
+> contents)
+> 
+> If an attempt of documentation lacks at least one of the four, it is
+> simply
+> useless to my opinion. Why aren't debug parameters part of another part of
+> documentation, f. ex. ci.txt? Or ca.txt? The headline of dvb-bt8xx.txt
+> goes:
+> "How to get the Nebula, PCTV, and TwinHan DST cards working."
+> My question: If the essence of a documentation text is how to bring up a
+> specified card, then please what the hell has that got to do with debug
+> parameters? Who are the addressed groups of such a text? To my opinion at
+> least the headliner says that the following text addresses users and
+> nobody
+> else!
+> So I simply never intended to bypass any developer, but I simply found out
+> that the bt8xx-documentation simply did not correspond to the actual
+> kernel
+> design. In other words: Was unusable. So I decided to write a patch and
+> simply act instead of performing endless discussions, and that's all about
+> it!
+> And: If you reinvent the name of cards: Do it for whatever reason, for
+> god's
+> sake! But: How the hell do you define to a person not convenient with all
+> that special technical vocabulary, what the hell a BT8xx-card is? Remember
+> the first of my 4 rules (see above!). So at least a complete list of cards
+> conforming to that standard is necessary for transparent information:
+> Question: Pinnacle PCTV SAT, Nebula Electronics DigiTV, TwinHan DST and
+> clones, Avermedia of all kinds..... Is that list complete? If not, please
+> drop me a note where I can get that complete list of cards corresponding
+> to
+> that standard, and I'll instantly sit down and write a patch to improve
+> documentation.
+> But before I even think about doing that I appreciate you to do your
+> homework:
+> a. readd my name (I didn't delete it, so I won't do the same job again,
+> not
+> for sync reasons, and not for reasons of lack of time, and not for any
+> other
+> reason.
+> b. fix orthographic errors in dvb-bt8xx.txt (for the same reason mentioned
+> in point a.)
+> c. reconstruct my 2.6.13-structure of dvb-bt8xx.txt as far as possible
+> d. reflect very well, whether debug parameters should not better be
+> situated
+> in different documentation texts (logically structured, understandable)
+> 
+> Regards
+> 
+> Uwe Bugla
+> 
+> P. S.: akpm never complains about lack of time, and he is doing a very
+> fair
+> and good job, and, at least for him, the amount of 54 patches is simply
+> peanuts. I love cooperation with guys like him!
+> In other words: I respect the demand that cvs-tree and current kernel must
+> be in sync somehow, but if the output is rubbish for several reasons and,
+> moreover, neglects my work, there is simply no reason for any kind of
+> respect. Because I ain't no idiot, just to say it in very simple words.
+> So please in future avoid to blame my person for things that you
+> personally
+> don't get worked (synchronization or whatever kind).
+> And would you please answer me one question: How can I be shure that my
+> patchwork at least enters the institution akpm, if there is someone like
+> you
+> in between complaining for lack of time and synchronization faults? I
+> prefer
+> flat hierarchies (the real hidden success principle of Linux) and
+> cooperation with akpm works very fine.
+> So, as a matter of principle, I don't see any reason why I should prepare
+> and send in my work three, four, five times, just because at the other end
+> someone doesn't get his stuff synchronized or lacks time. I ain't no
+> idiot!
+> Ya Basta!
+> And even if I would give in now for strategic reasons and do the same
+> fuckin' work again, how many Stezenbach clones or whoever would come up
+> afterwards and continue to fuck up my work in the same or just in a
+> different way you personally did? Who do you think you are and who do you
+> think I am? So please do your homework, and do it correct in the future,
+> or
+> leave that job simply to another person. OK?
+> Any further questions, Mr. Johannes Stezenbach?
+> 
+> -- Lust, ein paar Euro nebenbei zu verdienen? Ohne Kosten, ohne Risiko!
+> Satte Provisionen für GMX Partner: http://www.gmx.net/de/go/partner
+> 
+> _______________________________________________
+> linux-dvb mailing list
+> linux-dvb@linuxtv.org
+> http://www.linuxtv.org/cgi-bin/mailman/listinfo/linux-dvb
+
+-- 
+"Feel free" - 10 GB Mailbox, 100 FreeSMS/Monat ...
+Jetzt GMX TopMail testen: http://www.gmx.net/de/go/topmail
