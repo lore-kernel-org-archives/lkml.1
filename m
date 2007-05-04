@@ -1,93 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755415AbXEDPP0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933046AbXEDPPb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755415AbXEDPP0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 11:15:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755419AbXEDPP0
+	id S933046AbXEDPPb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 11:15:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933068AbXEDPPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 11:15:26 -0400
-Received: from home.keithp.com ([63.227.221.253]:2526 "EHLO keithp.com"
+	Fri, 4 May 2007 11:15:31 -0400
+Received: from gw.goop.org ([64.81.55.164]:34956 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755415AbXEDPPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 11:15:25 -0400
-Subject: Re: [RFC] [PATCH] DRM TTM Memory Manager patch
-From: Keith Packard <keithp@keithp.com>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
-Cc: keithp@keithp.com, Eric Anholt <eric@anholt.net>,
-       dri-devel@lists.sourceforge.net, Dave Airlie <airlied@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <463AE9AE.7070806@tungstengraphics.com>
-References: <21d7e9970704252355m4765b65fyb547b9ba2763b103@mail.gmail.com>
-	 <1178137279.53297.114.camel@vonnegut>
-	 <46391860.3070409@tungstengraphics.com>
-	 <1178251621.27028.9.camel@neko.keithp.com>
-	 <463AE9AE.7070806@tungstengraphics.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-I9n3YtLBr5/EryuOz7g+"
-Date: Fri, 04 May 2007 08:15:02 -0700
-Message-Id: <1178291702.27028.30.camel@neko.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S933046AbXEDPP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 11:15:29 -0400
+Message-ID: <463B4E12.50703@goop.org>
+Date: Fri, 04 May 2007 08:15:30 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 3/3] boot bzImages under paravirt
+References: <1178283582.23670.67.camel@localhost.localdomain>	<1178283724.23670.70.camel@localhost.localdomain>	<1178284052.23670.75.camel@localhost.localdomain> <m1ps5gslfm.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1ps5gslfm.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric W. Biederman wrote:
+> Ok.  Although we can hoist the bss zeroing, if everything needs it.
+>   
 
---=-I9n3YtLBr5/EryuOz7g+
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+It will if we're booting out of bzImage; the bss won't be clear in that
+case.
 
-On Fri, 2007-05-04 at 10:07 +0200, Thomas Hellstr=C3=B6m wrote:
-> =20
-> It's rare to have two clients access the same buffer at the same time.=20
-> In what situation will this occur?
+> Hmm.  I'm wondering about the segment reload and how much of a problem
+> that is.  My memory says that segment reloads are not actually a
+> privileged operation, so we may be able to support this even in
+> paravirt mode.  How hard would that be to support?  The segment
+> we reload is a fixed part of our boot protocol.
+>   
 
-Right, what I'm trying to avoid is having any contention for
-applications *not* sharing the same objects.=20
+The problem is not the reloads themselves, but what you're reloading
+them with.  If we come up under Xen, then it will provide a default GDT
+and pre-load the segments with flat 4G(-ish) selectors - but the
+selectors won't be the normal Linux ones.
 
-If there is any locking for mapping, we can either attempt to define a
-locking order, or we can have a single global lock. The former leaves us
-prone to deadlocks, the latter eliminates the ability for un-contended
-parallel access.
+So if we reload using a constant selector, then that will break under
+Xen. But if we do a:
 
->     * It will encourage different DRI clients to simultaneously access
->       the same buffer.
+    mov %cs, %eax
+    mov %eax, %ds
+    // etc
 
-Sure. Separate 'DRI' from 'GL' and this may be a sensible plan. If you
-want to prevent this *that's not DRI's problem*.
+sequence then it should be fine.  This will work even for loading %ss,
+since the %cs CPL will equal the RPL needed for %ss.
 
->     * Inter-client and GPU data coherence can be guaranteed if we issue
->       a mb() / write-combining flush with the unmap operation (which,
->       BTW, I'm not sure is done today). Otherwise it is up to the
->       clients, and very easy to forget.
-
-CPU-GPU coherence is ensured by the mutual exclusion between mapping and
-submitting. You may either have data available to the CPU or to the GPU.
-I think that's a basic requirement for any solution in this space.
-Keying the submit and map as to whether writing will occur means that
-appropriate flushing and fencing can be automatically applied within the
-kernel.
-
-> OTOH, letting DRM resolve the deadlock by unmapping and remapping shared=20
-> buffers in the correct order might not be the best one either. It will=20
-> certainly mean some CPU overhead and what if we have to do the same with=20
-> buffer validation? (Yes for some operations with thousands and thousands=20
-> of relocations, the user space validation might need to stay).
-
-I do not want to do relocations in user space. I don't see why doing
-thousands of these requires moving this operation out of the kernel.
-
---=20
-keith.packard@intel.com
-
---=-I9n3YtLBr5/EryuOz7g+
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGO032Qp8BWwlsTdMRAhyVAJ973bJdDw7i93mNjk5uehBlOvjLHACeOz8o
-nUG+I42rZm8pLOAV5at61gI=
-=zCPz
------END PGP SIGNATURE-----
-
---=-I9n3YtLBr5/EryuOz7g+--
+    J
