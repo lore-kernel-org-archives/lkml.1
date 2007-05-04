@@ -1,116 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031001AbXEDQCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030950AbXEDQEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031001AbXEDQCS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 12:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031015AbXEDQCS
+	id S1030950AbXEDQEP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbXEDQEP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 12:02:18 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:52209 "EHLO mail4.iitk.ac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031001AbXEDQCQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 12:02:16 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Fri, 4 May 2007 21:49:45 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: linux-kernel@vger.kernel.org
-cc: teigland@redhat.com, linux-cluster@redhat.com, joel.becker@oracle.com
-Subject: [PATCH] DLM: fix a couple of races
-Message-ID: <Pine.LNX.4.64.0705042119510.16239@cselinux1.cse.iitk.ac.in>
+	Fri, 4 May 2007 12:04:15 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:59125 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755347AbXEDQEO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 12:04:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VDqDQJeL4MAuZXhGZBVAv/jF+MFLqe6EzfWPNmWlETbOsyYeW5X9RoXoJ9XS7qY2YdmQ23ogeiyG9TusmqxV49GzFcAz1XWWF4BYdSjypSGpAin9r3GToRKAkC48Flon9RKm6Ar4zrIqE8HWyfpBCq/S5Ri7AoTh6+xviLzX2+A=
+Message-ID: <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
+Date: Fri, 4 May 2007 18:04:08 +0200
+From: "Antonino Ingargiola" <tritemio@gmail.com>
+To: "Paul Fulghum" <paulkf@microgate.com>
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1178290160.3913.2.camel@amdx2.microgate.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
+	 <200705041049.20989.oliver@neukum.org>
+	 <5486cca80705040229g53933671m658bd028cadca155@mail.gmail.com>
+	 <5486cca80705040233y70915a27yf7cbbc08a617e3ba@mail.gmail.com>
+	 <463B46F4.6090906@microgate.com> <463B4988.9090005@microgate.com>
+	 <1178290160.3913.2.camel@amdx2.microgate.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On 5/4/07, Paul Fulghum <paulkf@microgate.com> wrote:
+> Here is a patch against 2.6.21 which flushes the tty flip buffer
+> on ioctl(TCFLSH) for input.
+>
+> --- a/drivers/char/tty_io.c     2007-04-25 22:08:32.000000000 -0500
+> +++ b/drivers/char/tty_io.c     2007-05-04 09:30:01.000000000 -0500
+<snip>
 
-There are the following two trivially-fixed races in fs/dlm/config.c:
+Thanks! I've applied the patch and I'm building the kernel. I'll
+report the result.
 
-1. The configfs subsystem semaphore must be held by the caller when 
-calling config_group_find_obj(). It's needed to walk the subsystem 
-hierarchy without racing with a simultaneous mkdir(2) or rmdir(2). I 
-looked around to see if there was some other way we were avoiding this 
-race, but couldn't find any.
 
-2. get_comm() does hold the subsystem semaphore but lets go too soon -- 
-before grabbing a reference on the found config_item. A concurrent 
-rmdir(2) could come and release the comm after the up() but before the 
-config_item_get().
+Regards,
 
-Patch that fixes both these bugs below.
-
-Cheers,
-S
-
-PS: For some reason, configfs still uses a struct semaphore (as a binary 
-semaphore) for configfs_subsystem.su_sem. Someone with free time should 
-convert that to a struct mutex, say configfs_subsystem.su_mtx -- which is 
-the preferred way to use (binary) mutexes presently. CC'ing Joel Becker on 
-this.
-
----
-
-Fix two races in fs/dlm/config.c:
-
-(1) Grab the configfs subsystem semaphore before calling 
-config_group_find_obj() in get_space(). This solves a potential race 
-between get_space() and concurrent mkdir(2) or rmdir(2).
-
-(2) Grab a reference on the found config_item _while_ holding the configfs 
-subsystem semaphore in get_comm(), and not after it. This solves a 
-potential race between get_comm() and concurrent rmdir(2).
-
-  fs/dlm/config.c |   15 +++++++++++----
-  1 file changed, 11 insertions(+), 4 deletions(-)
-
- 	Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-
----
-
-diff -ruNp linux-2.6.21.1/fs/dlm/config.c linux-2.6.21.1~patch/fs/dlm/config.c
---- linux-2.6.21.1/fs/dlm/config.c	2007-04-26 08:38:32.000000000 +0530
-+++ linux-2.6.21.1~patch/fs/dlm/config.c	2007-05-04 21:08:54.000000000 +0530
-@@ -744,9 +744,16 @@ static ssize_t node_weight_write(struct
-
-  static struct space *get_space(char *name)
-  {
-+	struct config_item *i;
-+
-  	if (!space_list)
-  		return NULL;
--	return to_space(config_group_find_obj(space_list, name));
-+
-+	down(&space_list->cg_subsys->su_sem);
-+	i = config_group_find_obj(space_list, name);
-+	up(&space_list->cg_subsys->su_sem);
-+
-+	return to_space(i);
-  }
-
-  static void put_space(struct space *sp)
-@@ -772,20 +779,20 @@ static struct comm *get_comm(int nodeid,
-  			if (cm->nodeid != nodeid)
-  				continue;
-  			found = 1;
-+			config_item_get(i);
-  			break;
-  		} else {
-  			if (!cm->addr_count ||
-  			    memcmp(cm->addr[0], addr, sizeof(*addr)))
-  				continue;
-  			found = 1;
-+			config_item_get(i);
-  			break;
-  		}
-  	}
-  	up(&clusters_root.subsys.su_sem);
-
--	if (found)
--		config_item_get(i);
--	else
-+	if (!found)
-  		cm = NULL;
-  	return cm;
-  }
-
+  ~ Antonio
