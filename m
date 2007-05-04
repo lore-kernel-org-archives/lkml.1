@@ -1,70 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbXEDMwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754596AbXEDM54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754431AbXEDMwa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 08:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbXEDMwa
+	id S1754596AbXEDM54 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 08:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbXEDM54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 08:52:30 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:22694 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754431AbXEDMw3 convert rfc822-to-8bit (ORCPT
+	Fri, 4 May 2007 08:57:56 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51842 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754596AbXEDM5y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 08:52:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=InxkuitcJCRBYy7Flz1HMeQxb1r9zo6JPoszqO/6PSBS0IoIFPoewR/XpWN8LcSBv6vsCbrjW7gOFAg5zXJVNJdi7G4EiynhRAg8ey8RcketwPz3dCfIcsMddiQ03ihmx2s9R/MzwJqHwsmBRT56lh46SDhCJB3VnOtiTanqOjc=
-Message-ID: <4240b9160705040552n222126a2iadef5452c722b63@mail.gmail.com>
-Date: Fri, 4 May 2007 14:52:26 +0200
-From: "Jerome Glisse" <j.glisse@gmail.com>
-To: "=?ISO-8859-1?Q?Thomas_Hellstr=F6m?=" <thomas@tungstengraphics.com>
-Subject: Re: [RFC] [PATCH] DRM TTM Memory Manager patch
-Cc: "Keith Packard" <keithp@keithp.com>, dri-devel@lists.sourceforge.net,
-       "Dave Airlie" <airlied@gmail.com>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       "Jesse Barnes" <jbarnes@virtuousgeek.org>
-In-Reply-To: <463B27C4.3040304@tungstengraphics.com>
+	Fri, 4 May 2007 08:57:54 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Chinner <dgc@sgi.com>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+References: <20070424222105.883597089@sgi.com>
+	<20070426190438.3a856220.akpm@linux-foundation.org>
+	<20070427022731.GF65285596@melbourne.sgi.com>
+	<20070426195357.597ffd7e.akpm@linux-foundation.org>
+	<20070427042046.GI65285596@melbourne.sgi.com>
+	<20070426221528.655d79cb.akpm@linux-foundation.org>
+	<20070427060921.GA77450368@melbourne.sgi.com>
+	<20070427000403.6013d1fa.akpm@linux-foundation.org>
+	<20070427080321.GG32602149@melbourne.sgi.com>
+	<20070427014849.41f383f7.akpm@linux-foundation.org>
+Date: Fri, 04 May 2007 06:57:18 -0600
+In-Reply-To: <20070427014849.41f383f7.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Fri, 27 Apr 2007 01:48:49 -0700")
+Message-ID: <m1irb8u4pd.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-References: <21d7e9970704252355m4765b65fyb547b9ba2763b103@mail.gmail.com>
-	 <1178137279.53297.114.camel@vonnegut>
-	 <46391860.3070409@tungstengraphics.com>
-	 <1178251621.27028.9.camel@neko.keithp.com>
-	 <463AE9AE.7070806@tungstengraphics.com>
-	 <4240b9160705040149v3c97413fg54f1486f55ffbc11@mail.gmail.com>
-	 <463B12F9.8060900@tungstengraphics.com>
-	 <4240b9160705040457n46be9b62p7c760fb54898ba37@mail.gmail.com>
-	 <463B27C4.3040304@tungstengraphics.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/4/07, Thomas Hellström <thomas@tungstengraphics.com> wrote:
-> I was actually referring to an example where two clients need to have a
-> buffer mapped and access it at exactly the same time.
-> If there is such a situation, we have no other choice than to drop the
-> buffer locking on map. If there isn't we can at least consider other
-> alternatives that resolve the deadlock issue but that also will help
-> clients synchronize and keep data coherent.
+Andrew Morton <akpm@linux-foundation.org> writes:
+
+> On Fri, 27 Apr 2007 18:03:21 +1000 David Chinner <dgc@sgi.com> wrote:
 >
-> /Thomas
+>> > > > > You basically have to
+>> > > > > jump through nasty, nasty hoops, to handle corner cases that are
+> introduced
+>> > > > > because the generic code can no longer reliably lock out access to a
+>> > > > > filesystem block.
+>> > > 
+>> > > This way lies insanity.
+>> > 
+>> > You're addressing Christoph's straw man here.
+>> 
+>> No, I'm speaking from years of experience working on a
+>> page/buffer/chunk cache capable of using both large pages and
+>> aggregating multiple pages. It has, at times, almost driven me
+>> insane and I don't want to go back there.
+>
+> We're talking about two separate things here - let us not conflate them.
+>
+> 1: The arguably-crippled HBA which wants bigger SG lists.
+>
+> 2: The late-breaking large-blocksizes-in-the-fs thing.
 
-One might be a texture where a portion is updated by one thread
-and another portion update by another one, i believe the application
-will know better than us if such concurrent access will conflict or not.
-If this both thread access different pixel it make sense to let them
-work together at the same time on the texture. If they are writing
-to same pixel then they will have to sync between them so they
-don't do somethings stupid.
+Well from other parts of the conversation there is a third issue.
+  3: large-sectorsize-on-disk.
 
-My point is that the user space will know better if sync is needed
-or not and how to sync access to the same buffer. Moreover we
-can still add a locking mechanism in user space (in libdrm for
-instance).
+There are a handful of devices in the kernel that could benefit
+and be cleaned up a great deal if they could assume they always
+received data in their sg lists that were full sectors.  Nothing
+needs to be physically contiguous to handle that case though.
 
-There is very likely others use case for such concurrent access which
-i can't think off right now.
+If we support large sector sizes for raw block devices we would
+still have an issue of what to do with filesystems that want
+to live on them directly.
 
-best,
-Jerome Glisse
+> None of this multiple-page-locking stuff we're discussing here is relevant
+> to the HBA performance problem.  It's pretty simple (I think) for us to
+> ensure that, for the great majority of the time, contiguous pages in a file
+> are also physically contiguous.  Problem solved, HBA go nice and quick,
+> move on.
+
+I suspect we will still need Jens > 128 page linux scatter gather list
+work to fully take advantage of this.
+
+> Now, we have this the second and completely unrelated requirement:
+> supporting fs-blocksize > PAGE_SIZE.  One way to address this is via the
+> mangle-multiple-pages-into-one approach.  And it's obviously the best way
+> to do it, if mangle-multiple-pages is already available.
+
+Yep.
+
+> But I don't know how important requirement 2 is.  XFS already has
+> presumably-working private code to do it, and there is simplification and
+> perhaps modest performance gain in the block allocator to be had here.
+>
+> And other filesystems (ie: ext4) _might_ use it.  But ext4 is extent-based,
+> so perhaps it's not work churning the on-disk format to get a bit of a
+> boost in the block allocator.
+>
+> So I _think_ what this boils down to is offering some simplifications in
+> XFS, by adding complexications to core VFS and MM.  I dunno if that's a
+> good deal.
+
+Agreed.
+
+When we are doing things optimistically and absolutely require large pages
+this approach seems pretty sane.   When we start requiring large 64k
+pages I get nervous.
+
+> So...  tell us why you want feature 2?
+
+A good question.
+
+Eric
