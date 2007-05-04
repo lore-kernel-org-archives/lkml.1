@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031429AbXEDRFg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031426AbXEDRIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031429AbXEDRFg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:05:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031426AbXEDRFg
+	id S1031426AbXEDRIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031435AbXEDRIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:05:36 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36594 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031429AbXEDRFe (ORCPT
+	Fri, 4 May 2007 13:08:18 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:46840 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031426AbXEDRIR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:05:34 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] i386: always clear bss
-References: <463AED07.1000505@goop.org>
-	<m1r6pwu806.fsf@ebiederm.dsl.xmission.com> <463B49F0.401@goop.org>
-	<463B5643.1040204@zytor.com>
-Date: Fri, 04 May 2007 11:05:17 -0600
-In-Reply-To: <463B5643.1040204@zytor.com> (H. Peter Anvin's message of "Fri,
-	04 May 2007 08:50:27 -0700")
-Message-ID: <m1ejlwr036.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 4 May 2007 13:08:17 -0400
+Message-ID: <463B683C.5090308@zytor.com>
+Date: Fri, 04 May 2007 10:07:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 3/3] boot bzImages under paravirt
+References: <1178283582.23670.67.camel@localhost.localdomain>	<1178283724.23670.70.camel@localhost.localdomain>	<1178284052.23670.75.camel@localhost.localdomain>	<m1ps5gslfm.fsf@ebiederm.dsl.xmission.com> <463B4E12.50703@goop.org>	<463B551E.8030701@zytor.com> <463B5B90.20308@goop.org> <m1irb8r0gl.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1irb8r0gl.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+Eric W. Biederman wrote:
+> 
+> We have real mystery historical cases in Gujin and ELILO.  So it
+> probably makes sense at this point to force a gdt reload if we can and
+> otherwise require all of the segments %ds, %es, %fs, %gs to be loaded
+> with a valid segment, that we can reach everything we need to touch
+> from.
+> 
 
-> Jeremy Fitzhardinge wrote:
->> 
->> Yes, that's more or less the same code, aside from using 0x40(%esi) as a
->> stack.  Would that be OK here?
->> 
->
-> I saw the 0x40(%esi) stack stuff, and I'm utterly puzzled by it.  There
-> is no reason one can't set up %esp to point to a hunk in ordinary memory
-> and use it?
+I think we should avoid using %fs and %gs (no use for them, anyway); but
+ I think it's a decent expectation to have %cs, %ds, %es, and %ss set up.
 
-That is what we are doing, remind me to make certain we have this
-field of the boot protocol documented as permanently reserved for
-this.
+Gujin seems to have a near-zero user community, so if they have to rev
+their code it wouldn't be a big deal (the author keeps trying to push
+some crack-smoking "Gujin native" patches into the kernel, too), but
+breaking ELILO would hurt anyone using Intel Macs.
 
-This comes from the relocatable kernel patches where we run the
-kernel where the bootloader chooses to put it assuming we are >= 1M.
-
-The problem is that we don't have any IP relative data access
-instructions, we don't have a stack, and so the only valid address
-that we know is valid is %esi.  Once we compute where we are running
-we can setup a base address register and a stack and everything is
-easy, but the bootstrap to figure out where we are is just a little
-tricky.
-
-Eric
+	-hpa
