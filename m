@@ -1,120 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422889AbXEDXnG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422952AbXEDXnH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422889AbXEDXnG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 19:43:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422952AbXEDXmi
+	id S1422952AbXEDXnH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 19:43:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423001AbXEDXnG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 19:42:38 -0400
-Received: from 116.sub-75-210-58.myvzw.com ([75.210.58.116]:33787 "EHLO
+	Fri, 4 May 2007 19:43:06 -0400
+Received: from 116.sub-75-210-58.myvzw.com ([75.210.58.116]:46284 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1422889AbXEDXmd (ORCPT
+	with ESMTP id S1422954AbXEDXmy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 19:42:33 -0400
-Message-Id: <20070504232120.983312060@goop.org>
+	Fri, 4 May 2007 19:42:54 -0400
+Message-Id: <20070504232119.326992367@goop.org>
 References: <20070504232051.411946839@goop.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 04 May 2007 16:21:11 -0700
+Date: Fri, 04 May 2007 16:20:54 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 20/29] xen: Add early printk support via hvc console
-Content-Disposition: inline; filename=xen-hvc-earlyprintk.patch
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Zachary Amsden <zach@vmware.com>, Roland McGrath <roland@redhat.com>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: [patch 03/29] xen: Add nosegneg capability to the vsyscall page notes
+Content-Disposition: inline; filename=xen-vsyscall-note.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add early printk support via hvc console, enable using
-"earlyprintk=xen" on the kernel command line.
+Add the "nosegneg" fake capabilty to the vsyscall page notes. This is
+used by the runtime linker to select a glibc version which then
+disables negative-offset accesses to the thread-local segment via
+%gs. These accesses require emulation in Xen (because segments are
+truncated to protect the hypervisor address space) and avoiding them
+provides a measurable performance boost.
 
-From: Gerd Hoffmann <kraxel@suse.de>
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Acked-by: Zachary Amsden <zach@vmware.com>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
 
 ---
- arch/x86_64/kernel/early_printk.c |    5 +++++
- drivers/char/hvc_xen.c            |   25 +++++++++++++++++++++++++
- drivers/xen/Makefile              |    1 +
- include/xen/hvc-console.h         |    6 ++++++
- 4 files changed, 37 insertions(+)
+ arch/i386/kernel/vsyscall-note.S |   23 +++++++++++++++++++++++
+ include/asm-i386/elf.h           |   14 ++++++++++----
+ 2 files changed, 33 insertions(+), 4 deletions(-)
 
 ===================================================================
---- a/arch/x86_64/kernel/early_printk.c
-+++ b/arch/x86_64/kernel/early_printk.c
-@@ -6,6 +6,7 @@
- #include <asm/io.h>
- #include <asm/processor.h>
- #include <asm/fcntl.h>
-+#include <xen/hvc-console.h>
- 
- /* Simple VGA output */
- 
-@@ -242,6 +243,10 @@ static int __init setup_early_printk(cha
-  		simnow_init(buf + 6);
-  		early_console = &simnow_console;
-  		keep_early = 1;
+--- a/arch/i386/kernel/vsyscall-note.S
++++ b/arch/i386/kernel/vsyscall-note.S
+@@ -12,3 +12,26 @@ ELFNOTE_START(Linux, 0, "a")
+ ELFNOTE_START(Linux, 0, "a")
+ 	.long LINUX_VERSION_CODE
+ ELFNOTE_END
++
 +#ifdef CONFIG_XEN
-+	} else if (!strncmp(buf, "xen", 3)) {
-+ 		early_console = &xenboot_console;
++#include <asm/elf.h>
++
++/*
++ * Add a special note telling glibc's dynamic linker a fake hardware
++ * flavor that it will use to choose the search path for libraries in the
++ * same way it uses real hardware capabilities like "mmx".
++ * We supply "nosegneg" as the fake capability, to indicate that we
++ * do not like negative offsets in instructions using segment overrides,
++ * since we implement those inefficiently.  This makes it possible to
++ * install libraries optimized to avoid those access patterns in someplace
++ * like /lib/i686/tls/nosegneg.  Note that an /etc/ld.so.conf.d/file
++ * corresponding to the bits here is needed to make ldconfig work right.
++ * It should contain:
++ *	hwcap 0 nosegneg
++ * to match the mapping of bit to name that we give here.
++ */
++ELFNOTE_START(GNU, 2, "a")
++	.long 1, 1<<VDSO_NOTE_NONEGSEG_BIT		/* ncaps, mask */
++	.byte VDSO_NOTE_NONEGSEG_BIT; .asciz "nosegneg"	/* bit, name */
++ELFNOTE_END
 +#endif
- 	}
- 	register_console(early_console);
- 	return 0;
 ===================================================================
---- a/drivers/char/hvc_xen.c
-+++ b/drivers/char/hvc_xen.c
-@@ -28,6 +28,7 @@
- #include <xen/page.h>
- #include <xen/events.h>
- #include <xen/interface/io/console.h>
-+#include <xen/hvc-console.h>
+--- a/include/asm-i386/elf.h
++++ b/include/asm-i386/elf.h
+@@ -1,10 +1,12 @@
+ #ifndef __ASMi386_ELF_H
+ #define __ASMi386_ELF_H
  
- #include "hvc_console.h"
+-/*
+- * ELF register definitions..
+- */
++/* Bit used for the pseudo-hwcap for non-negative segments.  We use
++   bit 1 to avoid bugs in some versions of glibc when bit 0 is
++   used. */
++#define VDSO_NOTE_NONEGSEG_BIT	1
  
-@@ -132,3 +133,27 @@ module_init(xen_init);
- module_init(xen_init);
- module_exit(xen_fini);
- console_initcall(xen_cons_init);
-+
-+static void xenboot_write_console(struct console *console, const char *string,
-+				  unsigned len)
-+{
-+	unsigned int linelen, off = 0;
-+	const char *pos;
-+
-+	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
-+		linelen = pos-string+off;
-+		if (off + linelen > len)
-+			break;
-+		write_console(0, string+off, linelen);
-+		write_console(0, "\r\n", 2);
-+		off += linelen + 1;
-+	}
-+	if (off < len)
-+		write_console(0, string+off, len-off);
-+}
-+
-+struct console xenboot_console = {
-+	.name		= "xenboot",
-+	.write		= xenboot_write_console,
-+	.flags		= CON_PRINTBUFFER | CON_BOOT,
-+};
-===================================================================
---- /dev/null
-+++ b/drivers/xen/Makefile
-@@ -0,0 +1,1 @@
-+obj-y	+= grant-table.o
-===================================================================
---- /dev/null
-+++ b/include/xen/hvc-console.h
-@@ -0,0 +1,6 @@
-+#ifndef XEN_HVC_CONSOLE_H
-+#define XEN_HVC_CONSOLE_H
-+
-+extern struct console xenboot_console;
-+
-+#endif	/* XEN_HVC_CONSOLE_H */
++#ifndef __ASSEMBLY__
+ #include <asm/ptrace.h>
+ #include <asm/user.h>
+ #include <asm/auxvec.h>
+@@ -24,6 +26,9 @@
+ #define R_386_GOTPC	10
+ #define R_386_NUM	11
+ 
++/*
++ * ELF register definitions..
++ */
+ typedef unsigned long elf_greg_t;
+ 
+ #define ELF_NGREG (sizeof (struct user_regs_struct) / sizeof(elf_greg_t))
+@@ -160,6 +165,7 @@ do if (vdso_enabled) {							\
+ 		NEW_AUX_ENT(AT_SYSINFO_EHDR, VDSO_CURRENT_BASE);	\
+ } while (0)
+ 
+-#endif
++#endif	/* ARCH_DLINFO */
++#endif	/* __ASSEMBLY__ */
+ 
+ #endif
 
 -- 
 
