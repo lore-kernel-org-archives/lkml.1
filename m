@@ -1,106 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754598AbXEDH2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767596AbXEDHbN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754598AbXEDH2U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 03:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbXEDH2U
+	id S1767596AbXEDHbN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:31:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767598AbXEDHbN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 03:28:20 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41324 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754590AbXEDH2R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 03:28:17 -0400
-Date: Fri, 4 May 2007 17:27:42 +1000
-From: David Chinner <dgc@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070504072742.GK32602149@melbourne.sgi.com>
-References: <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070503212955.b1b6443c.akpm@linux-foundation.org> <20070504060731.GJ32602149@melbourne.sgi.com> <20070503232815.2f62a75e.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Fri, 4 May 2007 03:31:13 -0400
+Received: from ns.suse.de ([195.135.220.2]:39482 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767596AbXEDHbM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 03:31:12 -0400
+To: "Miquel van Smoorenburg" <miquels@cistron.nl>
+Cc: lorrides@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
+References: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com>
+	<20070503205341.GB943@1wt.eu>
+	<Pine.LNX.4.61.0705032255080.18504@yvahk01.tjqt.qr>
+	<d20c3b7d0705031412y11f18288t321c097aaad4b38b@mail.gmail.com>
+	<20070503222334.GD943@1wt.eu> <E1Hjrtj-0001pQ-Tl@n2o.xs4all.nl>
+From: Andi Kleen <andi@firstfloor.org>
+Date: 04 May 2007 10:28:41 +0200
+In-Reply-To: <E1Hjrtj-0001pQ-Tl@n2o.xs4all.nl>
+Message-ID: <p73lkg5vvpi.fsf@bingen.suse.de>
+User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070503232815.2f62a75e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 11:28:15PM -0700, Andrew Morton wrote:
-> On Fri, 4 May 2007 16:07:31 +1000 David Chinner <dgc@sgi.com> wrote:
-> > On Thu, May 03, 2007 at 09:29:55PM -0700, Andrew Morton wrote:
-> > > On Thu, 26 Apr 2007 23:33:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > This patch implements the fallocate() system call and adds support for
-> > > > i386, x86_64 and powerpc.
-> > > > 
-> > > > ...
-> > > > +{
-> > > > +	struct file *file;
-> > > > +	struct inode *inode;
-> > > > +	long ret = -EINVAL;
-> > > > +
-> > > > +	if (len == 0 || offset < 0)
-> > > > +		goto out;
-> > > 
-> > > The posix spec implies that negative `len' is permitted - presumably "allocate
-> > > ahead of `offset'".  How peculiar.
-> > 
-> > I just checked the man page for posix_fallocate() and it says:
-> > 
-> >       EINVAL  offset or len was less than zero.
-> > 
-> > We should probably follow this lead.
-> 
-> Yes, I think so.  I'm suspecting that
-> http://www.opengroup.org/onlinepubs/009695399/functions/posix_fallocate.html
-> is just buggy.  Or I can't read.
-> 
-> I mean, if we're going to support negative `len' then is the byte at
-> `offset' inside or outside the segment?  Head spins.
+"Miquel van Smoorenburg" <miquels@cistron.nl> writes:
 
-I don't think we should care. If we provide a syscall with the
-semantics of "allocate from offset to offset+len" then glibc's
-implementation can turn negative length into two separate
-fallocate syscalls....
+> And
+> if you need to route more than say 3 gbit/s, PC hardware just
+> won't cut it.
 
-> > > > +	ret = -ENODEV;
-> > > > +	if (!S_ISREG(inode->i_mode))
-> > > > +		goto out_fput;
-> > > 
-> > > So we return ENODEV against an S_ISBLK fd, as per the posix spec.  That
-> > > seems a bit silly of them.
-> > 
-> > Hmmmm - I thought that the intention of sys_fallocate() was to
-> > be generic enough to eventually allow preallocation on directories.
-> > If that is the case, then this check will prevent that....
-> 
-> The above opengroup page only permits S_ISREG.  Preallocating directories
-> sounds quite useful to me, although it's something which would be pretty
-> hard to emulate if the FS doesn't support it.  And there's a decent case to
-> be made for emulating it - run-anywhere reasons.  Does glibc emulation support
-> directories?  Quite unlikely.
-> 
-> But yes, sounds like a desirable thing.  Would XFS support it easily if the above
-> check was relaxed?
+Each new x86 hardware generation normally can route more than the previous
+generation. If you give out such a dubious number you would always need to give
+it a (short) expiry date.
 
-No - right now empty blocks are pruned from the directory immediately so I
-don't think we really have a concept of empty blocks in the btree structure.
-dir2 is bloody complex, so adding preallocation is probably not going to
-be simple to do.
-
-It's not high on my list to add, either, because we can typically avoid the
-worst case directory fragmentation by using larger directory block sizes
-(e.g. 16k instead of the default 4k on a 4k block size fs).
-
-IIRC directory preallocation has been talked about more for ext3/4....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+-Andi
