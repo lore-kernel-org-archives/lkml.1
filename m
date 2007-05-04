@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161323AbXEDVce@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161531AbXEDVdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161323AbXEDVce (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:32:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161531AbXEDVce
+	id S1161531AbXEDVdy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161590AbXEDVdy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:32:34 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:55103 "EHLO atlrel6.hp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161323AbXEDVcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:32:32 -0400
-Date: Fri, 4 May 2007 15:32:27 -0600
-From: Mike Stroyan <mike.stroyan@hp.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Rohit Seth <rohitseth@google.com>, "'Hugh Dickins'" <hugh@veritas.com>,
-       "'Mike Stroyan'" <mike.stroyan@hp.com>,
-       "'Andrew Morton'" <akpm@linux-foundation.org>,
-       "'Luck, Tony'" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
-Message-ID: <20070504213227.GA2965@ldl.fc.hp.com>
-References: <200704281805.l3SI5JQx030827@smtp.corp.google.com> <463727E1.3090203@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <463727E1.3090203@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 4 May 2007 17:33:54 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:55131 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161531AbXEDVdx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 17:33:53 -0400
+Date: Fri, 4 May 2007 14:33:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: Remove constructor from buffer_head
+Message-Id: <20070504143347.9a1d6a34.akpm@linux-foundation.org>
+In-Reply-To: <20070504134212.c18d2d65.akpm@linux-foundation.org>
+References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
+	<20070504134212.c18d2d65.akpm@linux-foundation.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 09:43:29PM +1000, Nick Piggin wrote:
-> Rohit Seth wrote:
-...
-> >Caches on Itanium are physical.  So, it doesn't matter what virtual address
-> >you use to flush a cache line, cache line containing specific physical
-> >memory will be flushed. 
-> 
-> Really? I was under the vague impression that L1 i/d caches were virtual
-> and required this flushing... but I guess so long as the ISA says that
-> fc/fc.i flushes all caches corresponding to the physical address of the
-> provided virtual address, then that's what matters.
+On Fri, 4 May 2007 13:42:12 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-  The L1 caches on Itanium have interesting behavior.  The cache lines
-are indexed by virtual address.  But those L1 cache lines are invalidated
-whenever their corresponding L1 TLB entry is evicted or replaced.
-That means that old L1 icache lines will be invalidated by TLB changes
-even before a fc.i instruction flushed those icache lines.  That would
-help make old kernels work on pre-montecito processors without correctly
-ordered fc.i instructions.  The L1 icache was flushed by TLB inserts
-and the L2 icache was unified.
+> I'd investigate further, but someone has gone and broken oprofile.
 
-  fc.i is also defined to make an address coherent between data and
-instruction caches at all levels of cache.  That handles the update of
-L1 icache lines during a st,fc.i,sync.i,srlz.i sequence.
+Damn, we went and merged that bustage?
 
-  I see these details in section 6.1.1 of "Intel® Itanium® 2 Processor
-Reference Manual".  But I haven't found them in a general Itanium
-Architecture reference.
 
--- 
-Mike Stroyan, mike.stroyan@hp.com
+2.6.20:
+
+akpm2:/home/akpm> opcontrol --start-daemon
+/usr/bin/opcontrol: line 1098: /dev/oprofile/0/enabled: No such file or directory
+/usr/bin/opcontrol: line 1098: /dev/oprofile/0/event: No such file or directory
+/usr/bin/opcontrol: line 1098: /dev/oprofile/0/count: No such file or directory
+/usr/bin/opcontrol: line 1098: /dev/oprofile/0/kernel: No such file or directory
+/usr/bin/opcontrol: line 1098: /dev/oprofile/0/user: No such file or directory
+/usr/bin/opcontrol: line 1098: /dev/oprofile/0/unit_mask: No such file or directory
+
+2.6.21:
+
+akpm2:/home/akpm# opreport -l /boot/vmlinux-$(uname -r) | head -50
+opreport error: No sample file found: try running opcontrol --dump
+or specify a session containing sample files
+
+
+
+This is an FC6 machine.  `yum update oprofile' says
+
+Could not find update match for oprofile
+No Packages marked for Update/Obsoletion
+
+akpm2:/home/akpm> rpm -q oprofile
+oprofile-0.9.2-3.fc6
+
+
+I'm quite stunned that we did this.
+
+Now what?
