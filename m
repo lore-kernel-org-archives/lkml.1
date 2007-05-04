@@ -1,62 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767663AbXEDFQr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767680AbXEDFac@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767663AbXEDFQr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 01:16:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767672AbXEDFQr
+	id S1767680AbXEDFac (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 01:30:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767692AbXEDFac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 01:16:47 -0400
-Received: from ozlabs.org ([203.10.76.45]:43077 "EHLO ozlabs.org"
+	Fri, 4 May 2007 01:30:32 -0400
+Received: from 1wt.eu ([62.212.114.60]:2486 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767663AbXEDFQp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 01:16:45 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17978.47502.786970.196554@cargo.ozlabs.ibm.com>
-Date: Fri, 4 May 2007 14:41:50 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and
- powerpc
-In-Reply-To: <20070503212955.b1b6443c.akpm@linux-foundation.org>
-References: <20070321120425.GA27273@amitarora.in.ibm.com>
-	<20070329115126.GB7374@amitarora.in.ibm.com>
-	<20070329101010.7a2b8783.akpm@linux-foundation.org>
-	<20070330071417.GI355@devserv.devel.redhat.com>
-	<20070417125514.GA7574@amitarora.in.ibm.com>
-	<20070418130600.GW5967@schatzie.adilger.int>
-	<20070420135146.GA21352@amitarora.in.ibm.com>
-	<20070420145918.GY355@devserv.devel.redhat.com>
-	<20070424121632.GA10136@amitarora.in.ibm.com>
-	<20070426175056.GA25321@amitarora.in.ibm.com>
-	<20070426180332.GA7209@amitarora.in.ibm.com>
-	<20070503212955.b1b6443c.akpm@linux-foundation.org>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+	id S1767680AbXEDFab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 01:30:31 -0400
+Date: Fri, 4 May 2007 07:30:27 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: =?iso-8859-1?Q?=D8yvind_V=E5gen_J=E6gtnes?= <lorrides@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
+Message-ID: <20070504053027.GA32604@1wt.eu>
+References: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com> <20070503205341.GB943@1wt.eu> <Pine.LNX.4.61.0705032255080.18504@yvahk01.tjqt.qr> <d20c3b7d0705031412y11f18288t321c097aaad4b38b@mail.gmail.com> <20070503222334.GD943@1wt.eu> <d20c3b7d0705032048l8c10d11i98a13881b1c8b3f3@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <d20c3b7d0705032048l8c10d11i98a13881b1c8b3f3@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
-
-> On Thu, 26 Apr 2007 23:33:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+On Fri, May 04, 2007 at 05:48:18AM +0200, Øyvind Vågen Jægtnes wrote:
+> Hi again :)
 > 
-> > This patch implements the fallocate() system call and adds support for
-> > i386, x86_64 and powerpc.
-> > 
-> > ...
+> On 5/4/07, Willy Tarreau <w@1wt.eu> wrote:
+> >On Thu, May 03, 2007 at 11:12:09PM +0200, Øyvind Vågen Jægtnes wrote:
+> >> On 5/3/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+> >> >
+> >> >On May 3 2007 22:53, Willy Tarreau wrote:
+> >> >>> For the rest all we see in the arp cache is (incomplete)
+> >> >>
+> >> >>I suspect that your arp cache is full (128 entries by default).
+> >> >>Check /proc/sys/net/ipv4/neigh/gc_thresh1 (128 for me). You can
+> >> >>set it as high as gc_thresh2 (512 for me), and I don't know what
+> >> >>happens above.
+> >> >
+> >> >Above, you will perhaps need the not-so-elegant userspace arpd :-/
+> >>
+> >> Yes, i was suspecting that the arp cache got full, but i will try
+> >> increasing it :)
+> >> Would there be any huge bugs if i change these lines in arp.c:
+> >>
+> >>        .gc_thresh1 =   128,
+> >>        .gc_thresh2 =   512,
+> >>
+> >> to
+> >>
+> >>        .gc_thresh1 =   700,
+> >>        .gc_thresh2 =   700,
+> >>
+> >> under the definition for struct arp_tbl?
 > >
-> > +asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
+> >I don't think it could cause a problem, but network people will surely
+> >correct me if I'm wrong.
 > 
-> Please add a comment over this function which specifies its behaviour. 
-> Really it should be enough material from which a full manpage can be
-> written.
+> System is up and running perfectly now, it is routing everything at
+> about 200 mbps now with only 5% load avg with the above changes to
+> arp.c
+> 
+> So the real question now is, why is this number so low by default?
+> It would probably be much better if this could be handled dynamically
+> in the kernel.
 
-This looks like it will have the same problem on s390 as
-sys_sync_file_range.  Maybe the prototype should be:
+I remember I read an argument against this a long time ago, but I
+don't remember where. I think it was some arbitrary decision that
+people using more than X ARP entries will need arpd. Most probably
+the code path in the ARP updates is/was not much optimized to handle
+large number of entries. Think about cable operators who may have
+10-20000 entries !
 
-asmlinkage long sys_fallocate(loff_t offset, loff_t len, int fd, int mode)
+> Its a Juniper M7i
+> It comes default with a 5400 rpm laptop 2.5" harddrive but now we
+> bought a more robust "server" 2.5" harddrive.
 
-Paul.
+The "server" ones are not necessarily more robust, often they are faster.
+
+> It still barfs on the OS
+> install, so the linux is doing all the job now. Will get a juniper guy
+> to come and fix :)
+> 
+> As a side note, i'm starting to wonder if it was worth the $20k when i
+> could just have a linux machine to do the job with a clone for backup
+> ;)
+
+That's often how linux penetrates the enterprise ;-)
+
+Willy
+
