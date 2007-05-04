@@ -1,56 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161889AbXEDTG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422704AbXEDTJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161889AbXEDTG0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 15:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161888AbXEDTG0
+	id S1422704AbXEDTJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 15:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422717AbXEDTJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 15:06:26 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:37795 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031498AbXEDTGY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 15:06:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=VNuY0UJfmDLTXFBKQcc0yC+YP0xqcNJwgx7zl6MtKXkkaDqPJMn2MWyLsDK4jl7tLcXZ1sVZc9z26geRfdjvPCsCbkFIV65+MDoJW6v5qMvRz3hZnLuQorDfim6Zfqd2fo3lUb8L7xxp1clYFP0G2sA3AlNPKXe4LjiDJ6GG7Gc=
-Message-ID: <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
-Date: Fri, 4 May 2007 21:06:23 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Paul Fulghum" <paulkf@microgate.com>
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
+	Fri, 4 May 2007 15:09:29 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52517 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422704AbXEDTJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 15:09:27 -0400
+Date: Fri, 4 May 2007 21:09:23 +0200
+From: Tomas Janousek <tjanouse@redhat.com>
+To: john stultz <johnstul@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, tsmetana@redhat.com, riel@redhat.com
+Subject: Re: Broken process startup times after suspend (regression)
+Message-ID: <20070504190923.GA24554@redhat.com>
+References: <20070503150320.GA21471@redhat.com> <1178222360.6085.14.camel@localhost.localdomain> <20070504161302.GA8962@redhat.com> <1178302732.5929.23.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <1178290160.3913.2.camel@amdx2.microgate.com>
-	 <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
-	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
-	 <463B7534.6000207@microgate.com>
-	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
-	 <1178299247.3769.0.camel@amdx2.microgate.com>
-	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
-	 <1178300493.3619.1.camel@amdx2.microgate.com>
-	 <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
+In-Reply-To: <1178302732.5929.23.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/4/07, Antonino Ingargiola <tritemio@gmail.com> wrote:
-[cut]
-> I'm quite confident the system blocks on "Setting consoles fonts and
-> modes.", and thus during the boot script console-screen.h. I'll try to
-> see which commands blocks...
+Hi,
 
-Filling with echo console-screen.sh I've found that the blocking command is:
+On Fri, May 04, 2007 at 11:18:52AM -0700, john stultz wrote:
+> > diff --git a/kernel/fork.c b/kernel/fork.c
+> > index 6af959c..b10d9b7 100644
+> > --- a/kernel/fork.c
+> > +++ b/kernel/fork.c
+> > @@ -1056,6 +1056,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
+> >  
+> >  	p->lock_depth = -1;		/* -1 = no lock */
+> >  	do_posix_clock_monotonic_gettime(&p->start_time);
+> > +	bbtime_get_ts(&p->real_start_time);
+> >  	p->security = NULL;
+> >  	p->io_context = NULL;
+> >  	p->io_wait = NULL;
+> 
+> Since both do_posix_clock_monotonic_gettime and bbtime_get_ts actually
+> read the timekeeping hardware (which could cost around 1.5us each), we
+> probably will want to optimize this down to a single read, or just avoid
+> the hardware read and take lower-granularity xtime value.
+> 
+> However, I'm not sure how fine-grained the start_time values need to be.
 
-    unicode_start 2> /dev/null || true
+We can add a function like monotonic_to_bb probably? Nothing else crossed my
+mind.
 
-or at least the echo before this command is the last shown.
+> > diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
+> > index b74860a..cd744a1 100644
+> > --- a/kernel/hrtimer.c
+> > +++ b/kernel/hrtimer.c
+> > @@ -128,6 +128,33 @@ void ktime_get_ts(struct timespec *ts)
+> >  }
+> >  EXPORT_SYMBOL_GPL(ktime_get_ts);
+> >  
+> > +/**
+> > + * bbtime_get_ts - get the boot based clock in timespec format
+> > + * @ts:		pointer to timespec variable
+> > + *
+> > + * The function calculates the boot based clock from the realtime
+> > + * clock, the wall_to_monotonic offset and the total sleep time and
+> > + * stores the result in normalized timespec format in the variable
+> > + * pointed to by @ts.
+> 
+> You might want to clarify this as being the "monotonic boot time", or
+> the time the system has been running including sleep time and that calls
+> to settimeofday() will not affect this value.
 
-Regards,
+I just copied the text from the ktime_get_ts, but yes, why not.
 
-  ~ Antonio
+> > + */
+> > +void bbtime_get_ts(struct timespec *ts)
+> 
+> Any reason you added this in hrtimer.c instead of timer.c? I think
+> keeping the new functions closer together would make the subtle
+> difference between them more clear, and would allow total_sleep_time to
+> be static to one file.
+
+The same as above, I copied the ktime_get_ts and put it under that. Will doing
+the diff against -mm solve this automagically? :)
+
+> > @@ -832,6 +836,21 @@ void getnstimeofday(struct timespec *ts)
+> >  EXPORT_SYMBOL(getnstimeofday);
+> >  
+> >  /**
+> > + * getboottime - Return the real time of system boot.
+> > + * @ts: 	pointer to the timespec to be set
+> 
+> Might want to clarify this as being the "boot time" based on the current
+> CLOCK_REALTIME clock, noting that calls to settimeofday() would affect
+> this value.
+
+Ok.
+
+> The only other gotcha is that this patch conflicts with a 2.6.22 queued
+> patch in -mm that moves the majority of timekeeping code in
+> kernel/timer.c to kernel/time/timekeeping.c
+> 
+> So it might be easiest to re-diff this against -mm and send it to Andrew
+> for inclusion along with the cleanups. However, since this is a fix, it
+> should have priority over cleanups. I just don't want to upset Andrew's
+> tree too much :)
+> 
+> Your thoughts?
+
+I'll look at that and will see.
+
+Thanks for the comments,
+-- 
+TJ. (Brno, CZ), BaseOS, Red Hat
