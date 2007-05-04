@@ -1,93 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767586AbXEDHUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767588AbXEDH1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767586AbXEDHUi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 03:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767598AbXEDHUh
+	id S1767588AbXEDH1J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767596AbXEDH1J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 03:20:37 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:56974 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767586AbXEDHUg (ORCPT
+	Fri, 4 May 2007 03:27:09 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:46506 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767588AbXEDH1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 03:20:36 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Fri, 4 May 2007 03:20:04 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Rewrite the MAJOR() macro as a call to imajor().
-In-Reply-To: <20070503231814.e12ad2d7.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705040315410.19399@localhost.localdomain>
-References: <Pine.LNX.4.64.0704280621350.516@localhost.localdomain>
- <20070503231814.e12ad2d7.akpm@linux-foundation.org>
+	Fri, 4 May 2007 03:27:08 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: linux-kernel@vger.kernel.org
+Subject: [patch]clarification of coding style regarding conditional statements with two branches
+Date: Fri, 4 May 2007 09:26:55 +0200
+User-Agent: KMail/1.9.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705040926.55257.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 3 May 2007, Andrew Morton wrote:
+Hi,
 
-> On Sat, 28 Apr 2007 06:23:54 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
->
-> > Replace the MAJOR() macro invocation with a call to the inline
-> > imajor() routine.
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> >
-> > ---
-> >
-> > diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-> > index 6b5b642..08da15b 100644
-> > --- a/drivers/block/loop.c
-> > +++ b/drivers/block/loop.c
-> > @@ -710,7 +710,7 @@ static inline int is_loop_device(struct file *file)
-> >  {
-> >  	struct inode *i = file->f_mapping->host;
-> >
-> > -	return i && S_ISBLK(i->i_mode) && MAJOR(i->i_rdev) == LOOP_MAJOR;
-> > +	return i && S_ISBLK(i->i_mode) && imajor(i) == LOOP_MAJOR;
-> >  }
->
-> there's no runtime change, and I count a couple hundred MAJORs in
-> the tree.
->
-> I don't want to receive 200 one-line patches please.  If you're
-> going to do this then please do decent-sized per-subsystem patches
-> and see if you can persuade the subsystem maintainers to take them
-> directly.
+I suggest that the coding style should state that if either branch of
+an 'if' statement needs braces, both branches should use them.
 
-  you misunderstand the point of that patch.  it's not to replace all
-instances of MAJOR(), only those that are being used in specifically
-that context -- to extract the major (or minor) number from an inode,
-and there's a *very* small number of those:
+	Regards
+		Oliver
+Signed-off-by: Oliver Neukum <oneukum@suse.de>
+----
 
-$ grep -Er "(MINOR|MAJOR).*i_rdev" *
-arch/sh/boards/landisk/landisk_pwb.c:   minor = MINOR(inode->i_rdev);
-arch/sh/boards/landisk/landisk_pwb.c:   minor = MINOR(inode->i_rdev);
-drivers/block/loop.c:   return i && S_ISBLK(i->i_mode) && MAJOR(i->i_rdev) == LOOP_MAJOR;
-drivers/media/video/ivtv/ivtv-fileops.c:        int minor = MINOR(inode->i_rdev);
-include/linux/fs.h:     return MINOR(inode->i_rdev);
-include/linux/fs.h:     return MAJOR(inode->i_rdev);
-sound/oss/au1550_ac97.c:        int             minor = MINOR(inode->i_rdev);
-
-  it's just standardizing on using the imajor() and iminor() inlines
-defined in include/linux/fs.h.
-
-rday
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+--- a/Documentation/CodingStyle	2007-04-20 13:08:17.000000000 +0200
++++ b/Documentation/CodingStyle	2007-04-20 13:16:14.000000000 +0200
+@@ -160,6 +160,21 @@
+ 25-line terminal screens here), you have more empty lines to put
+ comments on.
+ 
++Do not unnecessarily use braces where a single statement will do.
++
++if (condition)
++	action();
++
++This does not apply if one branch of a conditional statement is a single
++statement. Use braces in both branches.
++
++if (condition) {
++	do_this();
++	do_that();
++} else {
++	otherwise();
++}
++
+ 		3.1:  Spaces
+ 
+ Linux kernel style for use of spaces depends (mostly) on
