@@ -1,140 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031468AbXEDSCf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031463AbXEDSCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031468AbXEDSCf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031465AbXEDSCf
+	id S1031463AbXEDSCk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031472AbXEDSCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:02:35 -0400
-Received: from master.altlinux.org ([62.118.250.235]:1576 "EHLO
-	master.altlinux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031461AbXEDSCd (ORCPT
+	Fri, 4 May 2007 14:02:39 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42112 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031463AbXEDSCg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:02:33 -0400
-X-Greylist: delayed 1800 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 14:02:32 EDT
-Date: Fri, 4 May 2007 21:32:11 +0400
-From: Sergey Vlasov <vsu@altlinux.ru>
-To: Pallai Roland <dap@mail.index.hu>
-Cc: "Sergey Y. Afonin" <asy@altlinux.ru>, linux-pci@atrey.karlin.mff.cuni.cz,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: D-Link DFE-580TX 4 port Server Adapter problem: only 2 of 4
- ports
-Message-Id: <20070504213211.02d8e9bd.vsu@altlinux.ru>
-In-Reply-To: <200704130348.22852.dap@mail.index.hu>
-References: <200704130348.22852.dap@mail.index.hu>
-X-Mailer: Sylpheed version 2.2.9 (GTK+ 2.10.6; x86_64-alt-linux-gnu)
+	Fri, 4 May 2007 14:02:36 -0400
+Date: Fri, 4 May 2007 11:01:58 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       viro@ftp.linux.org.uk, linux-ext4@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-git4 Scheduler, NOHZ, VFS bugs
+Message-Id: <20070504110158.d2808170.akpm@linux-foundation.org>
+In-Reply-To: <463B5D63.2030109@googlemail.com>
+References: <463B5D63.2030109@googlemail.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__4_May_2007_21_32_11_+0400_6r6dDwZJozlwzJC3"
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__4_May_2007_21_32_11_+0400_6r6dDwZJozlwzJC3
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Fri, 04 May 2007 18:20:51 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
 
-On Fri, 13 Apr 2007 03:48:22 +0200 Pallai Roland wrote:
+> I ran this script tree times,
+> 
+> #! /bin/sh
+> 
+> for i in `find /sys/ -type f`
+> do
+>     echo "wyświetlam $i"
+>     sudo cat $i > /dev/null
+> done
+> 
+> First run - scheduler bug
+> Second run - NOHZ bug
+> Third - VFS bug
+> 
+> Hmmmm...
+> 
+> [93298.252601] BUG: at /mnt/md0/devel/linux-git/kernel/sched.c:3241 add_preempt_count()
+> [93298.260334]  [<c0105039>] show_trace_log_lvl+0x1a/0x2f
+> [93298.265507]  [<c0105720>] show_trace+0x12/0x14
+> [93298.269974]  [<c01057d2>] dump_stack+0x16/0x18
+> [93298.274434]  [<c011d18a>] add_preempt_count+0x89/0x8b
+> [93298.279501]  [<c0126492>] irq_enter+0xd/0x2e
+> [93298.283788]  [<c0114c1e>] smp_apic_timer_interrupt+0x2a/0x84
+> [93298.289458]  [<c0104b2b>] apic_timer_interrupt+0x33/0x38
+> [93298.294783]  [<c0257b79>] show_uevent+0x58/0xcd
+> [93298.299329]  =======================
+> [93390.468056] NOHZ: local_softirq_pending 22
+> [93447.105850] NOHZ: local_softirq_pending 22
+> [93450.332884] BUG: unable to handle kernel paging request at virtual address 3e343c0c
+> [93450.340626]  printing eip:
+> [93450.343333] c018e2bc
+> [93450.345520] *pde = 00000000
+> [93450.348314] Oops: 0000 [#1]
 
->  I've got a problem with my DFE-580TX cards when I installed thoose into
-> a new server box. One card has been worked before in a test box,
-> it's sure, here is a dmesg snippet when everything was OK:
->
-> Apr  3 22:10:38 cyrax kernel: sundance.c:v1.2 11-Sep-2006  Written by Donald Becker
-> Apr  3 22:10:38 cyrax kernel:   http://www.scyld.com/network/sundance.html
-> Apr  3 22:10:38 cyrax kernel: ACPI: PCI Interrupt 0000:02:04.0[A] -> GSI 21 (level, low) -> IRQ 23
-> Apr  3 22:10:38 cyrax kernel: eth2: D-Link DFE-580TX 4 port Server Adapter at 0001a800, 00:0d:88:cc:da:dc, IRQ 23.
-> Apr  3 22:10:38 cyrax kernel: eth2: MII PHY found at address 1, status 0x7809 advertising 01e1.
-> Apr  3 22:10:38 cyrax kernel: ACPI: PCI Interrupt 0000:02:05.0[A] -> GSI 22 (level, low) -> IRQ 18
-> Apr  3 22:10:39 cyrax kernel: eth3: D-Link DFE-580TX 4 port Server Adapter at 0001b000, 00:0d:88:cc:da:dd, IRQ 18.
-> Apr  3 22:10:39 cyrax kernel: eth3: MII PHY found at address 1, status 0x7809 advertising 01e1.
-> Apr  3 22:10:39 cyrax kernel: ACPI: PCI Interrupt 0000:02:06.0[A] -> GSI 23 (level, low) -> IRQ 19
-> Apr  3 22:10:39 cyrax kernel: eth4: D-Link DFE-580TX 4 port Server Adapter at 0001b400, 00:0d:88:cc:da:de, IRQ 19.
-> Apr  3 22:10:39 cyrax kernel: eth4: MII PHY found at address 1, status 0x7809 advertising 01e1.
-> Apr  3 22:10:39 cyrax kernel: ACPI: PCI Interrupt 0000:02:07.0[A] -> GSI 20 (level, low) -> IRQ 20
-> Apr  3 22:10:39 cyrax kernel: eth5: D-Link DFE-580TX 4 port Server Adapter at 0001b800, 00:0d:88:cc:da:df, IRQ 20.
-> Apr  3 22:10:39 cyrax kernel: eth5: MII PHY found at address 1, status 0x7809 advertising 01e1.
->
->  And the current dmesg from the new box, when I've only 2 of 4 ports on each card:
->
-> sundance.c:v1.2 11-Sep-2006  Written by Donald Becker
->   http://www.scyld.com/network/sundance.html
-> ACPI: PCI Interrupt 0000:05:04.0[A] -> GSI 21 (level, low) -> IRQ 22
-> eth2: D-Link DFE-580TX 4 port Server Adapter at 00012180, 00:00:00:00:00:00, IRQ 22.
-> eth2: No MII transceiver found, aborting.  ASIC status ffffffff
-> ACPI: PCI Interrupt 0000:05:05.0[A] -> GSI 22 (level, low) -> IRQ 23
-> eth2: D-Link DFE-580TX 4 port Server Adapter at 00012100, 00:00:00:00:00:00, IRQ 23.
-> eth2: No MII transceiver found, aborting.  ASIC status ffffffff
-> ACPI: PCI Interrupt 0000:05:06.0[A] -> GSI 23 (level, low) -> IRQ 19
-> eth2: D-Link DFE-580TX 4 port Server Adapter at 00012080, 00:0d:88:cc:da:ee, IRQ 19.
-> eth2: MII PHY found at address 1, status 0x7809 advertising 01e1.
-> ACPI: PCI Interrupt 0000:05:07.0[A] -> GSI 20 (level, low) -> IRQ 21
-> eth3: D-Link DFE-580TX 4 port Server Adapter at 00012000, 00:0d:88:cc:da:ef, IRQ 21.
-> eth3: MII PHY found at address 1, status 0x7809 advertising 01e1.
-> ACPI: PCI Interrupt 0000:06:04.0[A] -> GSI 22 (level, low) -> IRQ 23
-> eth4: D-Link DFE-580TX 4 port Server Adapter at 00011180, 00:00:00:00:00:00, IRQ 23.
-> eth4: No MII transceiver found, aborting.  ASIC status ffffffff
-> ACPI: PCI Interrupt 0000:06:05.0[A] -> GSI 21 (level, low) -> IRQ 22
-> eth4: D-Link DFE-580TX 4 port Server Adapter at 00011100, 00:00:00:00:00:00, IRQ 22.
-> eth4: No MII transceiver found, aborting.  ASIC status ffffffff
-> ACPI: PCI Interrupt 0000:06:06.0[A] -> GSI 20 (level, low) -> IRQ 21
-> eth4: D-Link DFE-580TX 4 port Server Adapter at 00011080, 00:0d:88:cc:da:de, IRQ 21.
-> eth4: MII PHY found at address 1, status 0x7809 advertising 01e1.
-> ACPI: PCI Interrupt 0000:06:07.0[A] -> GSI 23 (level, low) -> IRQ 19
-> eth5: D-Link DFE-580TX 4 port Server Adapter at 00011000, 00:0d:88:cc:da:df, IRQ 19.
-> eth5: MII PHY found at address 1, status 0x7809 advertising 01e1.
->
->
->  Kernel version is vanilla 2.6.20.3, Sundance MMIO disabled in the
->  config. I can send lspci, full dmesg, .config if anyone interested
->  in. Maybe it's a BIOS problem?  What should I try?
+Nice.  What was the last file which it read before crashing?
 
-Sergey Afonin (cc'd) ran into the same problem when trying to use the
-DFE-580TX card on a new machine with the Intel 945G chipset (I don't
-have exact motherboard info - PCI subsystem ID matches Intel D945GTP)
-and 2.6.18-based x86_64 kernel.
-
-ALT Linux Bugzilla entry (sorry - it's in Russian):
-https://bugzilla.altlinux.org/show_bug.cgi?id=11687
-
-Full dmesg output:	https://bugzilla.altlinux.org/attachment.cgi?id=1940
-lspci -vvxxx output:	https://bugzilla.altlinux.org/attachment.cgi?id=1942
-
-I have tracked down this problem to a bad I/O base address assignment
-for network chips.  As you may find from the lspci -vvxxx info, the
-following addresses were assigned to region 0 of these chips:
-
-  05:04.0 - 0x1180
-  05:05.0 - 0x1100
-  05:06.0 - 0x1080
-  05:07.0 - 0x1000
-
-Chips at 0x1000 and 0x1080 work fine; however, chips at 0x1100 and
-0x1180 are not reachable, because the PCI-PCI bridge 04:00.0 has the
-NoISA bit in the BridgeCtl register set, and these addresses are being
-treated as ISA port aliases and not forwarded to the internal PCI bus of
-the card.  (The bridge at 00:1e.0 also has NoISA set, but this is not a
-problem, because that bridge is transparent.)  Turning off the NoISA bit
-with "setpci -s 04:00.0 3e.b=00" makes all Ethernet ports work.
-
-For comparison, the lspci -vvxxx output from an older machine, where
-this card works: https://bugzilla.altlinux.org/attachment.cgi?id=1944
-In this case the I/O port addresses for network chips are assigned
-correctly: 0x9000, 0x9400, 0x9800, 0x9c00, and all ports work.
-
-The problem looks like a BIOS bug - apparently the PCI config set up by
-the BIOS is bogus.  However, can Linux at least warn, or (even better)
-apply some workaround in such cases?
-
---Signature=_Fri__4_May_2007_21_32_11_+0400_6r6dDwZJozlwzJC3
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.1 (GNU/Linux)
-
-iD8DBQFGO24mW82GfkQfsqIRAqPeAJ40AqGQHAadr7PRRUXGf5i8pkPfiACfehlu
-5SNK3ExyUcD2xXAJlrUE8ew=
-=A4U6
------END PGP SIGNATURE-----
-
---Signature=_Fri__4_May_2007_21_32_11_+0400_6r6dDwZJozlwzJC3--
+Are you able to consistently crash it by reading just that file?
