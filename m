@@ -1,108 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031275AbXEDWnD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767441AbXEDWtn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031275AbXEDWnD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 18:43:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031442AbXEDWnC
+	id S1767441AbXEDWtn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 18:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767461AbXEDWtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 18:43:02 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:58802 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031275AbXEDWnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 18:43:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
-Date: Sat, 5 May 2007 00:47:24 +0200
-User-Agent: KMail/1.9.5
-Cc: "Johannes Berg" <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>
-References: <200705041132.32227.rjw@sisk.pl> <a781481a0705041022jdc163fg20882d450338fb53@mail.gmail.com>
-In-Reply-To: <a781481a0705041022jdc163fg20882d450338fb53@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 4 May 2007 18:49:43 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:38502 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767441AbXEDWtm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 18:49:42 -0400
+Subject: Re: cpufreq longhaul locks up
+From: john stultz <johnstul@us.ibm.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: davej@codemonkey.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk
+In-Reply-To: <Pine.LNX.4.61.0705042259160.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
+	 <1178311052.6094.0.camel@localhost.localdomain>
+	 <Pine.LNX.4.61.0705042259160.18504@yvahk01.tjqt.qr>
+Content-Type: text/plain
+Date: Fri, 04 May 2007 15:49:38 -0700
+Message-Id: <1178318978.6094.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705050047.25517.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 4 May 2007 19:22, Satyam Sharma wrote:
-> Trivial suggestions:
+On Fri, 2007-05-04 at 23:02 +0200, Jan Engelhardt wrote:
+> On May 4 2007 13:37, john stultz wrote:
+> >> 
+> >> I found that setting the cpufreq governor to ondemand making the box 
+> >> lock up solid in 2.6.20.2 and 2.6.21 after a few seconds. Sysrq 
+> >> does not work anymore, and the last messages are:
+> >> 
+> >> May  3 19:16:58 cn kernel: longhaul: VIA C3 'Nehemiah C' [C5P] CPU 
+> >> detected.  Powersaver supported.
+> >> May  3 19:16:58 cn kernel: longhaul: Using northbridge support.
+> >> May  3 19:17:22 cn kernel: Time: acpi_pm clocksource has been installed.
+> >> May  3 19:17:22 cn kernel: Clocksource tsc unstable (delta = -136422685 
+> >> ns)
+> >
+> >What happens if you boot wihtout the ondemand governor but w/
+> >clocksource=acpi_pm ?
 > 
-> On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > --- linux-2.6.21.orig/include/linux/suspend.h   2007-05-02 22:08:58.000000000 +0200
-> > +++ linux-2.6.21/include/linux/suspend.h        2007-05-03 15:22:24.000000000 +0200
-> > [...]
-> > +/**
-> > + * hibernation_set_ops - set the global hibernate operations
-> > + * @ops: the hibernation operations to use in subsequent hibernation transitions
-> > + */
-> > +extern void hibernation_set_ops(struct hibernation_ops *ops);
+> I always let it boot with the default gov (performance), then
+> use cpufreq-set to change it.
 > 
-> Comment must go near code, not with prototype in header.
+> acpi_pm+performance behaves like tsc+performance, which works
 > 
-> > +/**
-> > + * hibernate - hibernate the system
-> > + */
-> > +extern int hibernate(void);
-> 
-> Pointless comment. You've already written a doc-book comment in the
-> code for this function anyway, so could just as well remove this.
+> When switching from tsc+performance to (tsc+)ondemand, acpi_pm gets
+> used because of the unstable tsc (of course, since we changed
+> frequency and the cpu does NOT have constant_tsc), so it's
+> becoming acpi_pm+ondemand naturally.
 
-The appended patch fixes these problems.
+Ok. I just wanted to make sure it wasn't the ACPI PM that was broken and
+when the system switched to it it was causing the hang.
 
-Greetings,
-Rafael
+> Switching from acpi_pm+performance to acpi_pm+ondemand also
+> locks up after a few minutes.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Yep. Sounds like an ondemand issue. Thanks for verifying this for me.
 
-Remove unnecessary comments in include/linux/suspend.h and  add a comment
-describing hibernation_set_ops() in kernel/power/disk.c .
+-john
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- include/linux/suspend.h |    8 --------
- kernel/power/disk.c     |    5 +++++
- 2 files changed, 5 insertions(+), 8 deletions(-)
-
-Index: linux-2.6.21/include/linux/suspend.h
-===================================================================
---- linux-2.6.21.orig/include/linux/suspend.h	2007-05-05 00:39:53.000000000 +0200
-+++ linux-2.6.21/include/linux/suspend.h	2007-05-05 00:43:39.000000000 +0200
-@@ -58,15 +58,7 @@ extern void swsusp_set_page_free(struct 
- extern void swsusp_unset_page_free(struct page *);
- extern unsigned long get_safe_page(gfp_t gfp_mask);
- 
--/**
-- * hibernation_set_ops - set the global hibernate operations
-- * @ops: the hibernation operations to use in subsequent hibernation transitions
-- */
- extern void hibernation_set_ops(struct hibernation_ops *ops);
--
--/**
-- * hibernate - hibernate the system
-- */
- extern int hibernate(void);
- #else
- static inline void register_nosave_region(unsigned long b, unsigned long e) {}
-Index: linux-2.6.21/kernel/power/disk.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/disk.c	2007-05-05 00:40:02.000000000 +0200
-+++ linux-2.6.21/kernel/power/disk.c	2007-05-05 00:43:32.000000000 +0200
-@@ -47,6 +47,11 @@ enum {
- 
- struct hibernation_ops *hibernation_ops;
- 
-+/**
-+ * hibernation_set_ops - set the global hibernate operations
-+ * @ops: the hibernation operations to use in subsequent hibernation transitions
-+ */
-+
- void hibernation_set_ops(struct hibernation_ops *ops)
- {
- 	if (ops && !(ops->prepare && ops->enter && ops->finish)) {
