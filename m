@@ -1,52 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031403AbXEDRjg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031397AbXEDRlm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031403AbXEDRjg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:39:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031413AbXEDRjg
+	id S1031397AbXEDRlm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031402AbXEDRlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:39:36 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:50136 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031403AbXEDRjf (ORCPT
+	Fri, 4 May 2007 13:41:42 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:38335
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031397AbXEDRll (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:39:35 -0400
-Date: Fri, 4 May 2007 10:02:46 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Hugh Dickins <hugh@veritas.com>,
-       Christoph Lameter <clameter@engr.sgi.com>,
-       "David S. Miller" <davem@davemloft.net>, Andi Kleen <ak@suse.de>,
-       "Luck, Tony" <tony.luck@intel.com>, Rik van Riel <riel@redhat.com>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Roland McGrath <roland@redhat.com>, Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: incoming
-Message-ID: <20070504170246.GA23069@kroah.com>
-References: <20070502150252.7ddf67ac.akpm@linux-foundation.org> <20070504133728.GA19460@kroah.com> <20070504091434.106ad04d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070504091434.106ad04d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Fri, 4 May 2007 13:41:41 -0400
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial
+	possible bug]
+From: Paul Fulghum <paulkf@microgate.com>
+To: Antonino Ingargiola <tritemio@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
+	 <5486cca80705040233y70915a27yf7cbbc08a617e3ba@mail.gmail.com>
+	 <463B46F4.6090906@microgate.com> <463B4988.9090005@microgate.com>
+	 <1178290160.3913.2.camel@amdx2.microgate.com>
+	 <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
+	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
+	 <463B7534.6000207@microgate.com>
+	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
+	 <1178299247.3769.0.camel@amdx2.microgate.com>
+	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 04 May 2007 12:41:33 -0500
+Message-Id: <1178300493.3619.1.camel@amdx2.microgate.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 09:14:34AM -0700, Andrew Morton wrote:
-> On Fri, 4 May 2007 06:37:28 -0700 Greg KH <greg@kroah.com> wrote:
-> 
-> > On Wed, May 02, 2007 at 03:02:52PM -0700, Andrew Morton wrote:
-> > > - One little security patch
-> > 
-> > Care to cc: linux-stable with it so we can do a new 2.6.21 release with
-> > it if needed?
-> > 
-> 
-> Ah.  The patch affects security code, but it doesn't actually address any
-> insecurity.  I didn't think it was needed for -stable?
+On Fri, 2007-05-04 at 19:25 +0200, Antonino Ingargiola wrote:
 
-Ah, ok, I read "security" as fixing a insecure problem, my mistake :)
+> No. Ehmm ... I've an usb keybord and vga monitor on a standard desktop pc.
 
-thanks,
+OK, I'm stumped.
 
-greg k-h
+I don't see how my patch could cause the machine to not boot
+and I'm not seeing that behavior here.
+
+-- 
+Paul Fulghum
+Microgate Systems, Ltd
+
