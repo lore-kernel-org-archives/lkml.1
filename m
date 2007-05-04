@@ -1,172 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767739AbXEDIwS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767747AbXEDIxk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767739AbXEDIwS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:52:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933036AbXEDIwS
+	id S1767747AbXEDIxk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:53:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767749AbXEDIxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:52:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53825 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933030AbXEDIwQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:52:16 -0400
-Date: Fri, 4 May 2007 10:52:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Con Kolivas <kernel@kolivas.org>
-Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
-Message-ID: <20070504085201.GA24666@elte.hu>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070503155407.GA7536@elte.hu> <463AE1EB.1020909@yahoo.com.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 4 May 2007 04:53:40 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.161]:45851 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767747AbXEDIxj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 04:53:39 -0400
+From: Stefan Roese <ml@stefan-roese.de>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Subject: Re: Correct location for ADC/DAC drivers
+Date: Fri, 4 May 2007 10:54:05 +0200
+User-Agent: KMail/1.9.5
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <200705011435.45046.ml@stefan-roese.de> <20070504082434.GA22585@pengutronix.de>
+In-Reply-To: <20070504082434.GA22585@pengutronix.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <463AE1EB.1020909@yahoo.com.au>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200705041054.05650.ml@stefan-roese.de>
+X-RZG-AUTH: j/Xgg0n2J5AIUJCkqLmy+bJbs1jMc+ebRMH8X0gX2f46QMnUI4cTITA7kWi4b/tFeJ1A
+X-RZG-CLASS-ID: mo00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-
-> > i'm wondering about swap-prefetch:
-
-> Being able to config all these core heuristics changes is really not 
-> that much of a positive. The fact that we might _need_ to config 
-> something out, and double the configuration range isn't too pleasing.
-
-Well, to the desktop user this is a speculative performance feature that 
-he is willing to potentially waste CPU and IO capacity, in expectation 
-of better performance.
-
-On the conceptual level it is _precisely the same thing as regular file 
-readahead_. (with the difference that to me swapahead seems to be quite 
-a bit more intelligent than our current file readahead logic.)
-
-This feature has no API or ABI impact at all, it's a pure performance 
-feature. (besides the trivial sysctl to turn it runtime on/off).
-
-> Here were some of my concerns, and where our discussion got up to.
-
-> > Yes.  Perhaps it just doesn't help with the updatedb thing.  Or 
-> > maybe with normal system activity we get enough free pages to kick 
-> > the thing off and running.  Perhaps updatedb itself has a lot of 
-> > rss, for example.
-> 
-> Could be, but I don't know. I'd think it unlikely to allow _much_ 
-> swapin, if huge amounts of the desktop have been swapped out. But 
-> maybe... as I said, nobody seems to have a recipe for these things.
-
-can i take this one as a "no fundamental objection"? There are really 
-only 2 maintainance options left:
-
-  1) either you can do it better or at least have a _very_ clearly
-     described idea outlined about how to do it differently
-
-  2) or you should let others try it
-
-#1 you've not done for 2-3 years since swap-prefetch was waiting for
-integration so it's not an option at this stage anymore. Then you are 
-pretty much obliged to do #2. ;-)
-
-And let me be really blunt about this, there is no option #3 to say: "I 
-have no real better idea, I have no code, I have no time, but hey, lets 
-not merge this because it 'could in theory' be possible to do it better" 
-=B-)
-
-really, we are likely be better off by risking the merge of _bad_ code 
-(which in the swap-prefetch case is the exact opposite of the truth), 
-than to let code stagnate. People are clearly unhappy about certain 
-desktop aspects of swapping, and the only way out of that is to let more 
-people hack that code. Merging code involves more people. It will cause 
-'noise' and could cause regressions, but at least in this case the only 
-impact is 'performance' and the feature is trivial to disable.
-
-The maintainance drag outside of swap_prefetch.c is essentially _zero_. 
-If the feature doesnt work it ends up on Con's desk. If it turns out to 
-not work at all (despite years of testing and happy users) it still only 
-ends up on Con's desk. A clear win/win scenario for you i think :-)
-
-> > Would be useful to see this claim substantiated with a real 
-> > testcase, description of results and an explanation of how and why 
-> > it worked.
-> 
-> Yes... and then try to first improve regular page reclaim and use-once 
-> handling.
-
-agreed. Con, IIRC you wrote a testcase for this, right? Could you please 
-send us the results of that testing?
-
-> >>2) It is a _highly_ speculative operation, and in workloads where periods
-> >>    of low and high page usage with genuinely unused anonymous / tmpfs
-> >>    pages, it could waste power, memory bandwidth, bus bandwidth, disk
-> >>    bandwidth...
-> > 
-> > Yes.  I suspect that's a matter of waiting for the corner-case 
-> > reporters to complain, then add more heuristics.
-> 
-> Ugh. Well it is a pretty fundamental problem. Basically swap-prefetch 
-> is happy to do a _lot_ of work for these things which we have already 
-> decided are least likely to be used again.
-
-i see no real problem here. We've had heuristics for a _long_ time in 
-various areas of the code. Sometimes they work, sometimes they suck.
-
-the flow of this is really easy: distro looking for a feature edge turns 
-it on and announces it, if the feature does not work out for users then 
-user turns it off and complains to distro, if enough users complain then 
-distro turns it off for next release, upstream forgets about this 
-performance feature and eventually removes it once someone notices that 
-it wouldnt even compile in the past 2 main releases. I see no problem 
-here, we did that in the past too with performance features. The 
-networking stack has literally dozens of such small tunable things which 
-get experimented with, and whose defaults do get tuned carefully. Some 
-of the knobs help bandwidth, some help latency.
-
-I do not even see any risk of "splitup of mindshare" - swap-prefetch is 
-so clearly speculative that it's not really a different view about how 
-to do swapping (which would split the tester base, etc.), it's simply a 
-"do you want your system to speculate about the future or not" add-on 
-decision. Every system has a pretty clear idea about that: desktops 
-generally want to do it, clusters generally dont want to do it.
-
-> >>3) I haven't seen a single set of numbers out of it. Feedback seems to
-> >>    have mostly come from people who
+On Friday 04 May 2007 10:24, Robert Schwebel wrote:
+> On Tue, May 01, 2007 at 02:35:44PM +0200, Stefan Roese wrote:
+> > I'm in the stage of integrating some ADC and DAC drivers for the AMCC
+> > 405EZ PPC and looking for the correct location to place these drivers
+> > in the Linux source tree. The drivers are basically character-drivers,
+> > so my first thought is to put them in "drivers/char/adc/foo.c" or
+> > "drivers/char/adc_foo.c". Is this a good solution?
 > >
-> > Yup.  But can we come up with a testcase?  It's hard.
+> > Any suggestions welcome (could be that I missed an already existing
+> > example).
+> >
+> > BTW: I am aware of the hwmon subsystem, but I don't think it fits my
+> > needs in this case.
+>
+> Could you elaborate the requirements a bit more? ADC is not ADC, because
+> slow i2c ADCs which measure a temperature every five minutes have other
+> requirements than multi-megabyte-per-second-dma-driven ADCs.
 
-i think Con has a testcase.
+The hardware (PPC405EZ) actually implements an high speed, dma capable, ADC 
+controller with 10-bit resolution and up to 4MHz sample rate. The current 
+driver doesn't support all these features though (dma is not supported right 
+now for example). Could be that this will be added in future releases. It 
+would be good though, to have the driver located at the "correct" place in 
+the kernel tree right away.
 
-> >>4) If this is helpful, wouldn't it be equally important for things like
-> >>    mapped file pages? Seems like half a solution.
-[...]
-> > (otoh the akpm usersapce implementation is swapoff -a;swapon -a)
-> 
-> Perhaps. You may need a few indicators to see whether the system is 
-> idle... but OTOH, we've already got a lot of indicators for memory, 
-> disk usage, etc. So, maybe :)
-
-The time has passed for this. Let others play too. Please :-)
-
-> I could be wrong, but IIRC there is no good way to know which cpuset 
-> to bring the page back into, (and I guess similarly it would be hard 
-> to know what container to account it to, if doing 
-> account-on-allocate).
-
-(i think cpusets are totally uninteresting in this context: nobody in 
-their right mind is going to use swap-prefetch on a big NUMA box. Nor 
-can i see any fundamental impediment to making this more cpuset-aware, 
-just like other subsystems were made cpuset-aware, once the requests 
-from actual users came in and people started getting interested in it.)
-
-I think the "lack of testcase and numbers" is the only valid technical 
-objection i've seen so far. Con might be able to help us with that?
-
-	Ingo
+Best regards,
+Stefan
