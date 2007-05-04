@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755360AbXEDOe2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbXEDOhw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755360AbXEDOe2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 10:34:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbXEDOe2
+	id S1755356AbXEDOhw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 10:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbXEDOhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 10:34:28 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:21762 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755355AbXEDOe0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 10:34:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=TPiFsqGNBA4A+WWfOh3zHb+dstVW2w6/dqnH6s3WOiiB63NCmEs0z2zPul6VzFN+2fW9SX3KoWIWQk0w1hKIrpB7Q829/AzdwMcVrT8yHhdQnLZydDQtR/QukiB7d0d02nh1n2VlcZp8CngvXSyDKv7gge136oN5aEJV9BDEMyc=
-Date: Fri, 4 May 2007 16:33:26 +0200
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Strange soft lockup detected message (looks like spin_lock bug in pcnet32)
-Message-ID: <20070504143326.GD24769@slug>
-References: <20070503203143.GA8753@csclub.uwaterloo.ca> <20070504141024.GB8753@csclub.uwaterloo.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070504141024.GB8753@csclub.uwaterloo.ca>
-User-Agent: mutt-ng/devel-r804 (Linux)
+	Fri, 4 May 2007 10:37:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:39550 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755359AbXEDOhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 10:37:51 -0400
+Subject: Re: [PATCH] Revert "[PATCH] paravirt: Add startup infrastructure
+	for paravirtualization"
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <m1y7k4smmo.fsf@ebiederm.dsl.xmission.com>
+References: <m1mz0ku7je.fsf@ebiederm.dsl.xmission.com>
+	 <1178280770.23670.61.camel@localhost.localdomain>
+	 <m1y7k4smmo.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Sat, 05 May 2007 00:37:30 +1000
+Message-Id: <1178289450.23670.100.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 10:10:24AM -0400, Lennart Sorensen wrote:
-> On Thu, May 03, 2007 at 04:31:43PM -0400, Lennart Sorensen wrote:
-[...]
-> Should line 2563 be a spin_lock_irqsave instead along with the
-> appropriate unluck later?
-IIRC, when you enable lockdep, it will complain about spinlocks used in
-an invalid context.
+On Fri, 2007-05-04 at 08:13 -0600, Eric W. Biederman wrote:
+> We don't have any working code, there are no in tree users.
 
-Regards,
-Frederik
-> 
-> --
-> Len Sorensen
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Hi Eric,
+
+	Lack of in-tree code is definitely not due to me.  The code which uses
+it has been sitting in -mm for three months.  Suddenly ripping this out
+and breaking all that work without replacing it is rude.
+
+> Therefore the code should go.
+
+Then put the patch is -mm, behind lguest.  Or better, help me refine my
+patches and I'll happily do it for you.
+
+Of course, I expect that Andrew is about to push my patches to Linus....
+any day now... right Andrew?  Then we don't need this argument.
+
+Rusty.
+
+
