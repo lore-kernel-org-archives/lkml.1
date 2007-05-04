@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161621AbXEDSu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161622AbXEDSxV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161621AbXEDSu0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161622AbXEDSu0
+	id S1161622AbXEDSxV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:53:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161624AbXEDSxV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:50:26 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:51699 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161621AbXEDSuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:50:23 -0400
-Date: Fri, 4 May 2007 20:48:27 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: cpufreq longhaul locks up
-In-Reply-To: <463B687D.1020600@interia.pl>
-Message-ID: <Pine.LNX.4.61.0705042042270.18504@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
- <463B687D.1020600@interia.pl>
+	Fri, 4 May 2007 14:53:21 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:54151 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161622AbXEDSxU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 14:53:20 -0400
+Message-ID: <463B812D.5090009@cs.helsinki.fi>
+Date: Fri, 04 May 2007 21:53:33 +0300
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Christoph Lameter <clameter@sgi.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>
+Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
+References: <20070504102651.923946304@chello.nl>  <20070504103157.215424767@chello.nl>  <Pine.LNX.4.64.0705040932200.22033@schroedinger.engr.sgi.com>  <1178301545.24217.56.camel@twins>  <Pine.LNX.4.64.0705041104110.23539@schroedinger.engr.sgi.com> <1178302904.2767.6.camel@lappy> <Pine.LNX.4.64.0705041128270.24283@schroedinger.engr.sgi.com> <463B7E5C.8030201@cs.helsinki.fi> <Pine.LNX.4.64.0705041142350.24625@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0705041142350.24625@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Christoph Lameter wrote:
+> SLAB can calculate exactly how many pages are needed. The per 
+> cpu and per node stuff is setup at boot and does not change. We are 
+> talking about the worst case scenario here. True in case of an off slab
+> we have additional overhead that would also have to go into worst case 
+> scenario.
 
-On May 4 2007 19:08, Rafał Bilski wrote:
->
->Btw. I've been writting many times: if You want to use ondemand with 
->Longhaul You don't need cpufreq at all.
+Fair enough. But there's no way it can take into account any slab 
+management structures it needs to allocate. The slab simply doesn't know 
+how many pages are needed to _allocate n amount of objects_.
 
-Does VIA Nehemiah do hardware-driven autoregulation like Transmeta
-Crusoe too? (I suspect no, have not seen that happen.)
+Peter is interested in a _rough estimate_ so I don't see the point of 
+adding that kind of logic in the slab. It's an API that simply cannot 
+satisfy all its callers which is why I suggested exposing buffer size in 
+the first place (the slab certainly knows how many bytes it needs for 
+one object).
 
->It is just one another cool gadget for You.
->Longhaul wasn't designed to change frequency often. 
-
-Is there a way I can start with a specific governor (powersave) right
-from the start so that all devices that Linux will initialize assume
-the CPU runs at <choose something> MHz?
-
->It has big latency and requires so much preparation that it isn't worth 
->if You don't need to save power or cool down CPU. 
-
-I found frequency switching on my VIA to be fast enough.
-
-
-Jan
--- 
+			Pekka
