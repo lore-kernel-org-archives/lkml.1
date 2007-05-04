@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755147AbXEDNIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755146AbXEDNLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755147AbXEDNIm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 09:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbXEDNIm
+	id S1755146AbXEDNLW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 09:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755153AbXEDNLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 09:08:42 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:38390 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755147AbXEDNIk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 09:08:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nis2YogBhPQxFb9z7LQDQAurQ8XI/PNEjuSzR+fPnPdHBvR1h/NprdOosMQO0PJjeFI6WorY60hH9/6xOOf+0mhyrmxvCfydRXF+b8oDfS/YxgT+KEHTisstUcjpi8iGRFEaDCKQdykDxFUXbA7BcHBPHXBqHuBVD1fzwydZ0ag=
-Message-ID: <a781481a0705040608l45aeb106nc75365689dc51ec9@mail.gmail.com>
-Date: Fri, 4 May 2007 18:38:37 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] SCSI: Remove redundant GFP_KERNEL type flag in kmalloc().
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org,
-       "James Bottomley" <James.Bottomley@steeleye.com>
-In-Reply-To: <20070504011535.ff7181fb.akpm@linux-foundation.org>
+	Fri, 4 May 2007 09:11:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59275 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755146AbXEDNLU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 09:11:20 -0400
+Message-ID: <463B30CC.8070305@redhat.com>
+Date: Fri, 04 May 2007 09:10:36 -0400
+From: Peter Staubach <staubach@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>
+Subject: Re: [PATCH 30/40] nfs: fixup missing error code
+References: <20070504102651.923946304@chello.nl> <20070504103202.468420061@chello.nl>
+In-Reply-To: <20070504103202.468420061@chello.nl>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0704300434460.3703@localhost.localdomain>
-	 <20070504011535.ff7181fb.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/4/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> [...]
-> >
-> > -  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
-> > +  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC);
+Peter Zijlstra wrote:
+> Commit 0b67130149b006628389ff3e8f46be9957af98aa lost the setting of tk_status
+> to -EIO when there was no progress with short reads.
 >
-> No, this converts the allocation from a robust one which can sleep into a
-> flakey one which cannot.
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  fs/nfs/read.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
 >
-> If we want to just clean this code up, we should switch to
->
->         GFP_KERNEL|__GFP_HIGH
->
-> and add a comment explaining why we're turning on __GFP_HIGH (pointlessly,
-> I suspect).
->
-> However I suspect what the code really meant to do was to use just
-> GFP_KERNEL.
+> Index: linux-2.6-git/fs/nfs/read.c
+> ===================================================================
+> --- linux-2.6-git.orig/fs/nfs/read.c	2007-03-13 14:35:53.000000000 +0100
+> +++ linux-2.6-git/fs/nfs/read.c	2007-03-13 14:36:05.000000000 +0100
+> @@ -384,8 +384,10 @@ static int nfs_readpage_retry(struct rpc
+>  	/* This is a short read! */
+>  	nfs_inc_stats(data->inode, NFSIOS_SHORTREAD);
+>  	/* Has the server at least made some progress? */
+> -	if (resp->count == 0)
+> +	if (resp->count == 0) {
+> +		task->tk_status = -EIO;
+>  		return 0;
+> +	}
+>  
+>  	/* Yes, so retry the read at the end of the data */
+>  	argp->offset += resp->count;
 
-Yes.
+This doesn't look right to me.  It is not an error for the NFS server
+to return 0 bytes.  It is usually an indication of EOF.  If an error
+occured, then the NFS server would have returned an error.
 
-A recap from http://lkml.org/lkml/2007/4/28/160 ...
+    Thanx...
 
-> > So combining GFP_ATOMIC with GFP_KERNEL gives you
-> > "allow io, allow fs, allow waiting, and use emergency pools when it's
-> > getting tight" which to me looks like a valid, but probably unwanted
-> > combination.
-
-and:
-
-> As a matter of style, the author there could've written (GFP_KERNEL |
-> __GFP_HIGH) instead, but I'm not sure how much sense that makes
-> because once we specify GFP_KERNEL, we essentially bring out the heavy
-> weaponry to *make* some free space for ourselves if it isn't there
-> already (and we're prepared to sleep when all that happens) -- so
-> where's the need left to scavenge into emergency pools anymore?
-> __GFP_HIGH only makes sense for poor atomic contexts for whom sleeping
-> (when we try_to_free other pages to satisfy our allocation request) is
-> not an option, which is precisely how things are presently.
->
-> [...]
-> 1. If you're in_atomic() context, that GFP_KERNEL is a BUG and *must*
-> be removed.
->
-> 2. If not, that GFP_ATOMIC is redundant / nonsensical and *can* be removed.
-
-It _was_ established towards the end of that thread that neither of the two
-cases are atomic contexts. And it would still make sense to remove the redundant
-__GFP_HIGH, as we don't want to unnecessarily deplete the emergency
-reserve pool for normal GFP_KERNEL cases thus making ENOMEM on some future
-kmalloc(GFP_ATOMIC) more likely. I'll send out the patches.
+       ps
