@@ -1,49 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767485AbXEDACK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422625AbXEDAEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767485AbXEDACK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 20:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767486AbXEDACK
+	id S1422625AbXEDAEy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 20:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422626AbXEDAEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 20:02:10 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:57454 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767485AbXEDACJ (ORCPT
+	Thu, 3 May 2007 20:04:54 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:49193 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1422625AbXEDAEx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 20:02:09 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
-Date: Fri, 4 May 2007 02:01:56 +0200
-User-Agent: KMail/1.9.6
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-References: <20070503235747.29275.37271.stgit@localhost.localdomain>
-In-Reply-To: <20070503235747.29275.37271.stgit@localhost.localdomain>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 3 May 2007 20:04:53 -0400
+Date: Thu, 3 May 2007 17:04:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] revoke: change revoke_table to fileset and
+ revoke_details
+Message-Id: <20070503170447.8520da9c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705032329220.14781@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0705031752440.6505@sbz-30.cs.Helsinki.FI>
+	<20070503132253.7b6fe5fe.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705032329220.14781@sbz-30.cs.Helsinki.FI>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705040201.57284.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/4AY98TaInIhbZ2xPRRHVh5BvlzeaVNQ11DO4
- QFQpQvpUb1xTqqFmOXRyPuYZVgTZOkHBMBZ/WRXrBpPaKiXWTs
- g2HwvReWqDd3KJvqzbrZA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 04 May 2007, Vitaly Bordug wrote:
-> Adds support for PowerQuicc on-chip PCMCIA. The driver is implemented as
-> of_device, so only arch/powerpc stuff is capable to use it, which now
-> implies only mpc885ads reference board.
-> 
-> To cope with the code that should be hooked inside driver, but is really
-> board specific (like set_voltage), global structure mpc8xx_pcmcia_ops
-> holds necessary function pointers that are filled in the BSP code.
-> 
-> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org> 
+On Thu, 3 May 2007 23:32:28 +0300 (EEST)
+Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+> On Thu, 3 May 2007, Andrew Morton wrote:
+> > > +/**
+> > > + * fileset - an array of file pointers.
+> > > + * @files:    the array of file pointers
+> > > + * @nr:               number of elements in the array
+> > > + * @end:      index to next unused file pointer
+> > > + */
+> > > +struct fileset {
+> > > +	struct file	**files;
+> > > +	unsigned long	nr;
+> > > +	unsigned long	end;
+> > > +};
+> > 
+> > What's the locking protocol for all this?
+> 
+> What do you mean? There is no concurrent access going on here.
+
+Well that's the "locking" protocol then: each instance of this structure is
+only ever touched by a single thread, yes?
+
+> On Thu, 3 May 2007, Andrew Morton wrote:
+> > > +static void free_fset(struct fileset *fset)
+> > > +{
+> > > +      int i;
+> > > +
+> > > +      for (i = fset->end; i < fset->nr; i++)
+> > > +              fput(fset->files[i]);
+> > > +
+> > > +      kfree(fset->files);
+> > > +      kfree(fset);
+> > > +}
+> > 
+> > Confused.  Shouldn't it be
+> > 
+> > 	for (i = 0; i < fset->end; i++)
+> 
+> No. The fset->end is an index to the first _unused_ file pointer. All 
+> entries before that are in use by revoked file descriptors so we don't 
+> want to fput() them.
+> 
+
+OK.
