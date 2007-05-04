@@ -1,36 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031386AbXEDQtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031396AbXEDQtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031386AbXEDQtV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 12:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031395AbXEDQtV
+	id S1031396AbXEDQtq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031398AbXEDQtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 12:49:21 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40731 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031386AbXEDQtU (ORCPT
+	Fri, 4 May 2007 12:49:46 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:37270 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031396AbXEDQtp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 12:49:20 -0400
-Date: Fri, 4 May 2007 09:49:19 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Frank van Maarseveen <frankvm@frankvm.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.20.6 kernel BUG at mm/slab.c:2877
-In-Reply-To: <20070504145236.GA23954@janus>
-Message-ID: <Pine.LNX.4.64.0705040948310.22097@schroedinger.engr.sgi.com>
-References: <20070504145236.GA23954@janus>
+	Fri, 4 May 2007 12:49:45 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 1/3] Replace paravirt_probe with "platform type" boot header field
+References: <1178283582.23670.67.camel@localhost.localdomain>
+	<m1zm4ksn5o.fsf@ebiederm.dsl.xmission.com>
+	<1178288329.23670.86.camel@localhost.localdomain>
+	<m1tzussm4z.fsf@ebiederm.dsl.xmission.com>
+	<463B56A0.7090805@zytor.com>
+Date: Fri, 04 May 2007 10:48:38 -0600
+In-Reply-To: <463B56A0.7090805@zytor.com> (H. Peter Anvin's message of "Fri,
+	04 May 2007 08:52:00 -0700")
+Message-ID: <m1mz0kr0ux.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Frank van Maarseveen wrote:
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> 2.6.20.6, FYI,
-> 
-> This suddenly cropped up after starting to use the i915 and drm module
-> but maybe it is unrelated to that:
+> Eric W. Biederman wrote:
+>> 
+>> Unlikely.  Unless we expect that this offset will come in non-zero.
+>> 
+>
+> You might have to worry about that.  Historically, the "zero-page" was
+> really just the setup code overwritten, and it's still true for a big
+> chunk of it.
+>
+> One of the major changes in my setup code rewrite is to start out with
+> an all-zero chunk of memory for this.
 
-Scribble? Looks like the slab metadata structurs were corrupted. This may 
-occur if the slab metadata at the beginning of a slab page gets corrupted.
+Well as long as we are in sync with setup.S we are fine.  The issue
+is people generating the real-mode data from scratch, when using the
+32bit entry point.
 
+Eric
