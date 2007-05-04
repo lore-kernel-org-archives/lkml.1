@@ -1,161 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161940AbXEDVm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376145AbXEDVoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161940AbXEDVm1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161938AbXEDVm1
+	id S376145AbXEDVoY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376156AbXEDVoY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:42:27 -0400
-Received: from static-72-92-88-10.phlapa.fios.verizon.net ([72.92.88.10]:59198
-	"EHLO smtp.roinet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031718AbXEDVmU (ORCPT
+	Fri, 4 May 2007 17:44:24 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:47792 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S376145AbXEDVoX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:42:20 -0400
-Message-ID: <463BA906.30205@roinet.com>
-Date: Fri, 04 May 2007 17:43:34 -0400
-From: David Acker <dacker@roinet.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-CC: Scott Feldman <sfeldma@pobox.com>, Jeff Garzik <jeff@garzik.org>,
-       e1000-devel@lists.sourceforge.net, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       Auke Kok <auke-jan.h.kok@intel.com>
-Subject: Re: [PATCH] e100 rx: or s and el bits
-References: <200705011124.l41BOEG4007662@sullivan.realtime.net> <46375664.8030701@roinet.com> <4638F2B2.2000103@roinet.com>
-In-Reply-To: <4638F2B2.2000103@roinet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 4 May 2007 17:44:23 -0400
+Date: Fri, 4 May 2007 14:44:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: john stultz <johnstul@us.ibm.com>
+Cc: "Guilherme M. Schroeder" <guilherme@centralinf.com.br>,
+       lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] Blacklist Dell Optiplex 320 from using the HPET
+Message-Id: <20070504144408.c041d8df.akpm@linux-foundation.org>
+In-Reply-To: <1178314144.6094.7.camel@localhost.localdomain>
+References: <1178314144.6094.7.camel@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Acker wrote:
-> So far my testing has shown both the original and the new version of the 
-> S-bit patch work in that no corruption seemed to occur over long term 
-> runs.
+On Fri, 04 May 2007 14:29:04 -0700
+john stultz <johnstul@us.ibm.com> wrote:
 
-I spoke too soon.  Further testing has not gone well.  If I use the 
-default settings for CPU saver and drop the receive pool down to 16 
-buffers I can cause problems with various forms of the patch.  With the 
-original S-bit patch I can get:
-e100: eth0: e100_update_stats: exec cuc_dump_reset failed
+> One of the 2.6.21 regressions was Guilherme's problem seeing his box
+> lock up when the system detected an unstable TSC and dropped back to
+> using the HPET.
+> 
+> In digging deeper, we found the HPET is not actually incrementing on
+> this system. And in fact, the reason why this issue just cropped up was
+> because of Thomas's clocksource watchdog code was comparing the TSC to
+> the HPET (which wasn't moving) and thought the TSC was broken.
+> 
+> Anyway, Guliherme checked for a BIOS update and did not find one, so
+> I've added a DMI blacklist against his system so the HPET is not used.
+> 
+> Many thanks to Guilherme for the slow and laborious testing that finally
+> narrowed down this issue.
+> 
 
-At this point sends and receives are failing and their counters are not
-changing.  When a raw socket opened on the port tries to send it gets
-errno 11, Resource temporarily unavailable.
+OK, I tagged that for -stable too.
 
-When this error occurred, I added a reset call through the tx timeout
-schedule_work(&nic->tx_timeout_task);
+> 
+> diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
+> index 17d7345..1ae27f3 100644
+> --- a/arch/i386/kernel/hpet.c
+> +++ b/arch/i386/kernel/hpet.c
+> @@ -5,6 +5,7 @@
+>  #include <linux/init.h>
+>  #include <linux/sysdev.h>
+>  #include <linux/pm.h>
+> +#include <linux/dmi.h>
+>  
+>  #include <asm/hpet.h>
+>  #include <asm/io.h>
+> @@ -48,6 +49,31 @@ static int __init hpet_setup(char* str)
+>  }
+>  __setup("hpet=", hpet_setup);
+>  
+> +
+> +/* DMI Blacklist for bad HPETs */
+> +static int __init dmi_mark_hpet_broken(struct dmi_system_id *d)
+> +{
+> +	printk(KERN_NOTICE "%s detected: HPET does not function.\n",
+> +		       d->ident);
+> +	boot_hpet_disable = 1;
+> +	return 0;
+> +}
+> +
+> +/* List of systems that have known HPETproblems */
+> +static struct dmi_system_id bad_hpet_dmi_table[] = {
+> +	{
+> +	 .callback = dmi_mark_hpet_broken,
+> +	 .ident = "Dell OptiPlex 320",
+> +	 .matches = {
+> +		     DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 320"),
+> +		     DMI_MATCH(DMI_BOARD_VENDOR, "Dell Inc."),
+> +		     DMI_MATCH(DMI_BOARD_NAME, "0UT237"),
+> +		     },
+> +	 },
+> +	 {}
+> +};
+> +
+> +
+>  static inline int is_hpet_capable(void)
+>  {
+>  	return (!boot_hpet_disable && hpet_address);
+> @@ -228,6 +254,8 @@ int __init hpet_enable(void)
+>  	uint64_t hpet_freq;
+>  	u64 tmp;
+>  
+> +	dmi_check_system(bad_hpet_dmi_table);
+> +
+>  	if (!is_hpet_capable())
+>  		return 0;
 
-This made the port come back but obviously this is somewhat of a kludge 
-and eventually, the entire system hangs or get an oops from memory 
-corruption.
-
-Apparently my earlier tests got lucky with a large receive pool size.
-The only way the original patch was stable for me was by disabling CPU
-saver, and setting the NAPI weight (default of 16) as large as the
-default receive pool size (256) so that all buffers were claimed and
-reallocated in one NAPI call.  None of this should be needed so there is 
-  definitely a problem with the original patch.
-
-The updated patch produced a different issue.  We got an RNR interrupt
-indicating the receive unit got ahead of the software.  The S-bit patch
-removed any handling of this issue as it assumed the hardware would spin
-on the sbit.  Apparently if both the S-bit and the EL-bit are set on the 
-same RFD, it follows the EL-bit handling.  Printing the stat/ack and 
-status bytes on the RNR interrupts I get:
-status
-01001000 = 0x48 = RUS of 0010 = No Resources, CUS of 01 = Suspended
-
-stat/ack
-01010000 = 0x50 = FR, RNR
-or
-00010000 = 0x10 = RNR
-
-Notice that the RUS went into No Resources and not suspended.  Thus 
-clearing the S-bit does not wake it up; it needs a new start command. 
-I could not find documentation that states that the S-bit need only be 
-cleared to take the RU out of suspended state.  Before the S-bit patch 
-the driver tried to track this need but that version of the driver 
-didn't work for me either.  By the way, I am using, "Intel 8255x 10/100 
-Mbps Ethernet Controller Family, Open Source Software Developer Manual, 
-January 2006" as my documentation.
-
-This got me looking at just how in the world this worked on the old
-eepro100 driver.  It had another difference; it did not reap the last rx
-buffer in the chain.  It set a postponed bit and then picked it up on
-the next interrupt after more buffers had been allocated.  It then
-noticed that the RU was in a suspended or no resources state and did a
-softreset.
-
-I don't believe this avoid the last buffer trick really fixes the race. 
-  Imagine the following:
-1. 4 buffers in receive pool, all freshly allocated
-2. Hardware consumes 3 buffers
-3. Software processes 3 buffers, begins to allocate new buffers
-4. Hardware writes status bits into buffer 4 while software updates link 
-and command word bits in buffer 4.  They share a cache line and corrupt 
-each other.
-
-This appears to be possible with any of the versions of this driver I 
-have seen.  The problem is one of packet ownership.  Once the driver 
-gives a list of buffers to hardware, hardware owns them all.  The driver 
-can not safely change these buffers.  Sadly, this means that the idea of 
-the driver "staying ahead" of the hardware such that the hardware never 
-runs out of resources will not work here.  Once the driver gives the 
-hardware a packet with S or EL bits set, it must let the hardware 
-encounter the packet and return it to software.
-
-I think the driver needs to protect the last entry in the ring by 
-putting the S-bit on the entry before it.  The first time the driver 
-allocates a block of packets, it writes a new S-bit out on the next to 
-last packet.  As buffers complete it allocates more packets in the chain 
-but does not set a new S-bit since the old one will stop hardware.  It 
-can not clear the old S-bit because the driver does not own the buffer, 
-hardware does.  After processing the s-bit packet the hardware will 
-interrupt with a stat/ack of RNR and RUS of suspended.
-When software processes a packet with an old S-bit it allocates new 
-buffers and sets the s-bit on the new next to last packet.
-
-The above case changes now:
-1. 4 buffers numbered 1-4 in a receive pool, all freshly allocated. 
-S-bit is on buffer 3.
-2. Hardware consumes 3 buffers, hits S-bit, RNR interrupts
-3. Software processes 3 buffers, begins to allocate new buffers
-4. Software sends resume once buffers are allocated, S-bit is on buffer 2.
-5. Hardware gets resume.  When it processed buffer 3, it saved the link 
-to buffer 4 and thus resumes at buffer 4.
+The table can be __initdata, can't it?
 
 
-Here is a different flow where the software stays ahead:
-1. 4 buffers numbered 1-4 in a receive pool, all freshly allocated. 
-S-bit is on buffer 3.
-2. Hardware consumes 2 buffers (1, 2).
-3. Software processes buffers 1, 2, begins to allocate new buffers
-4. Software buffers 1, 2 are allocated
-5. Hardware consumes 1 buffer (#3) and hits S-bit, RNR interrupts.
-6. Software consumes 1 buffer, (#3) and finds the old S-bit.  It 
-allocates a new buffer 3 and sets the S-bit on buffer 2.
-7. Software sends resume, hardware continues at buffer 4.
+--- a/arch/i386/kernel/hpet.c~blacklist-dell-optiplex-320-from-using-the-hpet-fix
++++ a/arch/i386/kernel/hpet.c
+@@ -60,7 +60,7 @@ static int __init dmi_mark_hpet_broken(s
+ }
+ 
+ /* List of systems that have known HPETproblems */
+-static struct dmi_system_id bad_hpet_dmi_table[] = {
++static struct dmi_system_id __initdata bad_hpet_dmi_table[] = {
+ 	{
+ 	 .callback = dmi_mark_hpet_broken,
+ 	 .ident = "Dell OptiPlex 320",
+@@ -73,7 +73,6 @@ static struct dmi_system_id bad_hpet_dmi
+ 	 {}
+ };
+ 
+-
+ static inline int is_hpet_capable(void)
+ {
+ 	return (!boot_hpet_disable && hpet_address);
+_
 
-In this setup, software will send a resume command every RING_SIZE 
-packets.  RNR interrupts will also occur every RING_SIZE packets.  When 
-hardware is faster than software, it will process RING_SIZE packets, RNR 
-interrupt and wait for software to process all of them.  When software 
-is faster then hardware, hardware will still process RING_SIZE packets 
-before interrupting but software will only need to allocate 1 packet or 
-so before sending the resume so hardware will wait much less time.
-
-This will probably slow things down since on a fast CPU, software will 
-normally stay ahead of the hardware and the only PCI operations from the 
-driver would be interrupt acks.  With this change, we have PCI 
-operations every 256 packets.  I don't see how else to do this in a safe 
-way on ARM (at least PXA255).
-
-I am testing this over the weekend with a 16-buffer receive pool.  If 
-all goes well, I will send a patch early next week.  It will basically 
-back out the S-bit patch and then make the changes noted above.
-
--Ack
