@@ -1,245 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031404AbXEDQzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbXEDQ47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031404AbXEDQzv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 12:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031407AbXEDQzD
+	id S1755432AbXEDQ47 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755427AbXEDQ47
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 12:55:03 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:13440 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755442AbXEDQwS (ORCPT
+	Fri, 4 May 2007 12:56:59 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:46141 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755419AbXEDQ45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 12:52:18 -0400
-Message-Id: <20070504165242.971424674@de.ibm.com>
-References: <20070504165016.908033855@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 04 May 2007 18:50:25 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 9/9] add hardware capability support (ELF_HWCAP).
-Content-Disposition: inline; filename=100-hwcap.diff
+	Fri, 4 May 2007 12:56:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=nQ22w9hBBz8edBtMiQ7XUqe08jKLjqrkaKbu4cFQo4l9QYkDcU7lcHQjIPW7N4vZ85uhPWQD8W5kj4yXpPmYROlR5bgqJsnJehXHV+RBdwrG2u8YMIcfoqHF3m9YcMIiIqfG9OR83h5fOycoDbFkfPgYSGCi93ndF7l9TqGfQug=
+Message-ID: <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
+Date: Fri, 4 May 2007 18:56:53 +0200
+From: "Antonino Ingargiola" <tritemio@gmail.com>
+To: "Paul Fulghum" <paulkf@microgate.com>
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_52488_18375891.1178297813915"
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
+	 <200705041049.20989.oliver@neukum.org>
+	 <5486cca80705040229g53933671m658bd028cadca155@mail.gmail.com>
+	 <5486cca80705040233y70915a27yf7cbbc08a617e3ba@mail.gmail.com>
+	 <463B46F4.6090906@microgate.com> <463B4988.9090005@microgate.com>
+	 <1178290160.3913.2.camel@amdx2.microgate.com>
+	 <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+------=_Part_52488_18375891.1178297813915
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+On 5/4/07, Antonino Ingargiola <tritemio@gmail.com> wrote:
+> On 5/4/07, Paul Fulghum <paulkf@microgate.com> wrote:
+> > Here is a patch against 2.6.21 which flushes the tty flip buffer
+> > on ioctl(TCFLSH) for input.
+> >
+> > --- a/drivers/char/tty_io.c     2007-04-25 22:08:32.000000000 -0500
+> > +++ b/drivers/char/tty_io.c     2007-05-04 09:30:01.000000000 -0500
+> <snip>
+>
+> Thanks! I've applied the patch and I'm building the kernel. I'll
+> report the result.
 
- arch/s390/kernel/setup.c   |  109 +++++++++++++++++++++++++++++++++++++++++++++
- include/asm-s390/elf.h     |    7 ++
- include/asm-s390/lowcore.h |   10 ++--
- 3 files changed, 120 insertions(+), 6 deletions(-)
+The system blocks during booting. I can unblock it with SysReq+K but
+then I'm unable to log into X.
 
-Index: quilt-2.6/arch/s390/kernel/setup.c
-===================================================================
---- quilt-2.6.orig/arch/s390/kernel/setup.c	2007-05-04 18:50:14.000000000 +0200
-+++ quilt-2.6/arch/s390/kernel/setup.c	2007-05-04 18:50:16.000000000 +0200
-@@ -74,6 +74,8 @@
- unsigned int console_devno = -1;
- unsigned int console_irq = -1;
- unsigned long machine_flags = 0;
-+unsigned long elf_hwcap = 0;
-+char elf_platform[ELF_PLATFORM_SIZE];
- 
- struct mem_chunk __initdata memory_chunk[MEMORY_CHUNKS];
- volatile int __cpu_logical_map[NR_CPUS]; /* logical cpu to cpu address */
-@@ -749,6 +751,98 @@
- #endif
- }
- 
-+static __init unsigned int stfl(void)
-+{
-+	asm volatile(
-+		"	.insn	s,0xb2b10000,0(0)\n" /* stfl */
-+		"0:\n"
-+		EX_TABLE(0b,0b));
-+	return S390_lowcore.stfl_fac_list;
-+}
-+
-+static __init int stfle(unsigned long long *list, int doublewords)
-+{
-+	typedef struct { unsigned long long _[doublewords]; } addrtype;
-+	register unsigned long __nr asm("0") = doublewords - 1;
-+
-+	asm volatile(".insn s,0xb2b00000,%0" /* stfle */
-+		     : "=m" (*(addrtype *) list), "+d" (__nr) : : "cc");
-+	return __nr + 1;
-+}
-+
-+/*
-+ * Setup hardware capabilities.
-+ */
-+static void __init setup_hwcaps(void)
-+{
-+	static const int stfl_bits[6] = { 0, 2, 7, 17, 19, 21 };
-+	struct cpuinfo_S390 *cpuinfo = &S390_lowcore.cpu_data;
-+	unsigned long long facility_list_extended;
-+	unsigned int facility_list;
-+	int i;
-+
-+	facility_list = stfl();
-+	/*
-+	 * The store facility list bits numbers as found in the principles
-+	 * of operation are numbered with bit 1UL<<31 as number 0 to
-+	 * bit 1UL<<0 as number 31.
-+	 *   Bit 0: instructions named N3, "backported" to esa-mode
-+	 *   Bit 2: z/Architecture mode is active
-+	 *   Bit 7: the store-facility-list-extended facility is installed
-+	 *   Bit 17: the message-security assist is installed
-+	 *   Bit 19: the long-displacement facility is installed
-+	 *   Bit 21: the extended-immediate facility is installed
-+	 * These get translated to:
-+	 *   HWCAP_S390_ESAN3 bit 0, HWCAP_S390_ZARCH bit 1,
-+	 *   HWCAP_S390_STFLE bit 2, HWCAP_S390_MSA bit 3,
-+	 *   HWCAP_S390_LDISP bit 4, and HWCAP_S390_EIMM bit 5.
-+	 */
-+	for (i = 0; i < 6; i++)
-+		if (facility_list & (1UL << (31 - stfl_bits[i])))
-+			elf_hwcap |= 1UL << i;
-+
-+	/*
-+	 * Check for additional facilities with store-facility-list-extended.
-+	 * stfle stores doublewords (8 byte) with bit 1ULL<<63 as bit 0
-+	 * and 1ULL<<0 as bit 63. Bits 0-31 contain the same information
-+	 * as stored by stfl, bits 32-xxx contain additional facilities.
-+	 * How many facility words are stored depends on the number of
-+	 * doublewords passed to the instruction. The additional facilites
-+	 * are:
-+	 *   Bit 43: decimal floating point facility is installed
-+	 * translated to:
-+	 *   HWCAP_S390_DFP bit 6.
-+	 */
-+	if ((elf_hwcap & (1UL << 2)) &&
-+	    stfle(&facility_list_extended, 1) > 0) {
-+		if (facility_list_extended & (1ULL << (64 - 43)))
-+			elf_hwcap |= 1UL << 6;
-+	}
-+
-+	switch (cpuinfo->cpu_id.machine) {
-+	case 0x9672:
-+#if !defined(CONFIG_64BIT)
-+	default:	/* Use "g5" as default for 31 bit kernels. */
-+#endif
-+		strcpy(elf_platform, "g5");
-+		break;
-+	case 0x2064:
-+	case 0x2066:
-+#if defined(CONFIG_64BIT)
-+	default:	/* Use "z900" as default for 64 bit kernels. */
-+#endif
-+		strcpy(elf_platform, "z900");
-+		break;
-+	case 0x2084:
-+	case 0x2086:
-+		strcpy(elf_platform, "z990");
-+		break;
-+	case 0x2094:
-+		strcpy(elf_platform, "z9-109");
-+		break;
-+	}
-+}
-+
- /*
-  * Setup function called from init/main.c just after the banner
-  * was printed.
-@@ -805,6 +899,11 @@
- 	smp_setup_cpu_possible_map();
- 
- 	/*
-+	 * Setup capabilities (ELF_HWCAP & ELF_PLATFORM).
-+	 */
-+	setup_hwcaps();
-+
-+	/*
- 	 * Create kernel page tables and switch to virtual addressing.
- 	 */
-         paging_init();
-@@ -839,8 +938,12 @@
- 
- static int show_cpuinfo(struct seq_file *m, void *v)
- {
-+	static const char *hwcap_str[7] = {
-+		"esan3", "zarch", "stfle", "msa", "ldisp", "eimm", "dfp"
-+	};
-         struct cpuinfo_S390 *cpuinfo;
- 	unsigned long n = (unsigned long) v - 1;
-+	int i;
- 
- 	s390_adjust_jiffies();
- 	preempt_disable();
-@@ -850,7 +953,13 @@
- 			       "bogomips per cpu: %lu.%02lu\n",
- 			       num_online_cpus(), loops_per_jiffy/(500000/HZ),
- 			       (loops_per_jiffy/(5000/HZ))%100);
-+		seq_puts(m, "features\t: ");
-+		for (i = 0; i < 7; i++)
-+			if (hwcap_str[i] && (elf_hwcap & (1UL << i)))
-+				seq_printf(m, "%s ", hwcap_str[i]);
-+		seq_puts(m, "\n");
- 	}
-+
- 	if (cpu_online(n)) {
- #ifdef CONFIG_SMP
- 		if (smp_processor_id() == n)
-Index: quilt-2.6/include/asm-s390/elf.h
-===================================================================
---- quilt-2.6.orig/include/asm-s390/elf.h	2007-05-04 18:48:36.000000000 +0200
-+++ quilt-2.6/include/asm-s390/elf.h	2007-05-04 18:50:16.000000000 +0200
-@@ -188,7 +188,8 @@
- /* This yields a mask that user programs can use to figure out what
-    instruction set this CPU supports. */
- 
--#define ELF_HWCAP (0)
-+extern unsigned long elf_hwcap;
-+#define ELF_HWCAP (elf_hwcap)
- 
- /* This yields a string that ld.so will use to load implementation
-    specific libraries for optimization.  This is more specific in
-@@ -197,7 +198,9 @@
-    For the moment, we have only optimizations for the Intel generations,
-    but that could change... */
- 
--#define ELF_PLATFORM (NULL)
-+#define ELF_PLATFORM_SIZE 8
-+extern char elf_platform[];
-+#define ELF_PLATFORM (elf_platform)
- 
- #ifndef __s390x__
- #define SET_PERSONALITY(ex, ibcs2) set_personality((ibcs2)?PER_SVR4:PER_LINUX)
-Index: quilt-2.6/include/asm-s390/lowcore.h
-===================================================================
---- quilt-2.6.orig/include/asm-s390/lowcore.h	2007-05-04 18:48:36.000000000 +0200
-+++ quilt-2.6/include/asm-s390/lowcore.h	2007-05-04 18:50:16.000000000 +0200
-@@ -229,17 +229,19 @@
- 	__u16        subchannel_nr;            /* 0x0ba */
- 	__u32        io_int_parm;              /* 0x0bc */
- 	__u32        io_int_word;              /* 0x0c0 */
--        __u8         pad3[0xD4-0xC4];          /* 0x0c4 */
-+	__u8	     pad3[0xc8-0xc4];	       /* 0x0c4 */
-+	__u32	     stfl_fac_list;	       /* 0x0c8 */
-+	__u8	     pad4[0xd4-0xcc];	       /* 0x0cc */
- 	__u32        extended_save_area_addr;  /* 0x0d4 */
- 	__u32        cpu_timer_save_area[2];   /* 0x0d8 */
- 	__u32        clock_comp_save_area[2];  /* 0x0e0 */
- 	__u32        mcck_interruption_code[2]; /* 0x0e8 */
--	__u8         pad4[0xf4-0xf0];          /* 0x0f0 */
-+	__u8	     pad5[0xf4-0xf0];	       /* 0x0f0 */
- 	__u32        external_damage_code;     /* 0x0f4 */
- 	__u32        failing_storage_address;  /* 0x0f8 */
--	__u8         pad5[0x100-0xfc];         /* 0x0fc */
-+	__u8	     pad6[0x100-0xfc];	       /* 0x0fc */
- 	__u32        st_status_fixed_logout[4];/* 0x100 */
--	__u8         pad6[0x120-0x110];        /* 0x110 */
-+	__u8	     pad7[0x120-0x110];        /* 0x110 */
- 	__u32        access_regs_save_area[16];/* 0x120 */
- 	__u32        floating_pt_save_area[8]; /* 0x160 */
- 	__u32        gpregs_save_area[16];     /* 0x180 */
+The boot messages  seems ok (full gzipped boot log attached):
 
--- 
-blue skies,
-   Martin.
+Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing disabled
+kernel: serial8250: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+kernel: serial8250: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
+kernel: 00:08: ttyS0 at I/O 0x3f8 (irq = 4) is a 16550A
+kernel: 00:09: ttyS1 at I/O 0x2f8 (irq = 3) is a 16550A
 
-"Reality continues to ruin my life." - Calvin.
+and when I pres the emergency keys:
 
+kernel: EXT3-fs: mounted filesystem with ordered data mode.
+kernel: eth0: link up, 10Mbps, half-duplex, lpa 0x0000
+kernel: NET: Registered protocol family 10
+kernel: SysRq : SAK
+kernel: SAK: killed process 1511 (vt-is-UTF8): process_session(p)==tty->session
+kernel: SAK: killed process 1508 (unicode_start):
+process_session(p)==tty->session
+kernel: SAK: killed process 1409 (sh): process_session(p)==tty->session
+kernel: SAK: killed process 301 (rc): process_session(p)==tty->session
+kernel: SAK: killed process 298 (init): process_session(p)==tty->session
+kernel: SAK: killed process 298 (init): process_session(p)==tty->session
+kernel: SAK: killed process 301 (rc): process_session(p)==tty->session
+kernel: SAK: killed process 1409 (sh): process_session(p)==tty->session
+kernel: SAK: killed process 1508 (unicode_start):
+process_session(p)==tty->session
+kernel: SAK: killed process 1511 (vt-is-UTF8): process_session(p)==tty->session
+kernel: ACPI: Processor [CPU0] (supports 2 throttling states)
+kernel: [drm] Initialized drm 1.1.0 20060810
+kernel: [drm] Initialized radeon 1.25.0 20060524 on minor 0
+kernel: input: Power Button (FF) as /class/input/input4
+kernel: ACPI: Power Button (FF) [PWRF]
+kernel: input: Power Button (CM) as /class/input/input5
+
+I'll try if I can make some serial test nevertheless from the console.
+
+
+Regards,
+
+  ~ Antonio
+
+------=_Part_52488_18375891.1178297813915
+Content-Type: application/x-gzip; name=boot.log.gz
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f1aw2h7d
+Content-Disposition: attachment; filename="boot.log.gz"
+
+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
+
+------=_Part_52488_18375891.1178297813915--
