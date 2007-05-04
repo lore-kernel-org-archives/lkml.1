@@ -1,44 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030185AbXEDHm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767711AbXEDHpM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030185AbXEDHm5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 03:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965698AbXEDHm5
+	id S1767711AbXEDHpM (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:45:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767700AbXEDHpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 03:42:57 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:38847 "EHLO aun.it.uu.se"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964792AbXEDHm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 03:42:56 -0400
-Date: Fri, 4 May 2007 09:42:19 +0200 (MEST)
-Message-Id: <200705040742.l447gJPR027148@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: johnstul@us.ibm.com, mikpe@it.uu.se
-Subject: Re: Fw: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
-Cc: ak@suse.de, len.brown@intel.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
+	Fri, 4 May 2007 03:45:12 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3857 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767711AbXEDHpK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 03:45:10 -0400
+Date: Fri, 4 May 2007 08:44:53 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Stefan Roese <ml@stefan-roese.de>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Correct location for ADC/DAC drivers
+Message-ID: <20070504074453.GA18212@flint.arm.linux.org.uk>
+Mail-Followup-To: Stefan Roese <ml@stefan-roese.de>,
+	Robert Schwebel <r.schwebel@pengutronix.de>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+References: <200705011435.45046.ml@stefan-roese.de> <20070502133512.GK22585@pengutronix.de> <20070502191101.GB16696@flint.arm.linux.org.uk> <200705040811.43312.ml@stefan-roese.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705040811.43312.ml@stefan-roese.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 May 2007 19:38:50 -0700, john stultz wrote:
-> > 	So that slow acpi_pm on x86_64 seems to be connected w/ the idle loop.
-> > I'm guessing the chipset halts the ACPI PM in lower C states. Do you
-> > have any guesses as to what might differ between x86_64 and i386 ACPI
-> > idle loops? Or might this be something different in what the BIOS
-> > exports in x86_64 mode or i386 mode?
+On Fri, May 04, 2007 at 08:11:42AM +0200, Stefan Roese wrote:
+> On Wednesday 02 May 2007 21:11, Russell King wrote:
+> > > > Is there a maintainer for this "drivers/mfd" directory?
+> > >
+> > > rmk
+> >
+> > I wouldn't go that far.  There's no real infrastructure there
+> > to maintain, so I'd actually say that the directory was
+> > maintainerless.  However, I'll own up to the UCB/MCP drivers
+> > in there.
 > 
-> Mikael,
-> 	Just trying to dig a bit more through the acpi_processor_idle code.
-> Could you run "cat /proc/acpi/processor/CPU1/power" and reply w/ the
-> output?
+> So perhaps you could answer is you feel that these ADC & DAC chrdev device 
+> drivers would fit into this drivers/mfd directory, or are better suited for 
+> the drivers/char directory?
 
-Here's that file with the x86-64 kernel:
+No idea; firstly I've long since deleted the email, secondly I've not much
+interest in the directory itself, and thirdly I've enough patches to review
+already.  Finally, I'm out all day today, including the evening.  I doubt
+I'll read any further email until the weekend.
 
-active state:            C2
-max_cstate:              C8
-bus master activity:     00000000
-maximum allowed latency: 20000 usec
-states:
-    C1:                  type[C1] promotion[C2] demotion[--] latency[000] usage[00107840] duration[00000000000000000000]
-   *C2:                  type[C2] promotion[--] demotion[C1] latency[010] usage[-1987043693] duration[00000000003044809185]
-
-/Mikael
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
