@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754518AbXEDCi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767585AbXEDCmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754518AbXEDCi5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 22:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbXEDCi5
+	id S1767585AbXEDCmG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 22:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767586AbXEDCmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 22:38:57 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:43093 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754518AbXEDCi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 22:38:56 -0400
-Subject: Re: Fw: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
-From: john stultz <johnstul@us.ibm.com>
-To: Mikael Pettersson <mikpe@it.uu.se>
-Cc: Len Brown <len.brown@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>
-In-Reply-To: <1178129409.6183.12.camel@localhost.localdomain>
-References: <200704291524.l3TFOL9j013216@harpo.it.uu.se>
-	 <1178129409.6183.12.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 19:38:50 -0700
-Message-Id: <1178246331.7460.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 3 May 2007 22:42:06 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47162 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1767585AbXEDCmF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 3 May 2007 22:42:05 -0400
+Date: Thu, 3 May 2007 19:42:03 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Chen, Tim C" <tim.c.chen@intel.com>
+cc: Tim Chen <tim.c.chen@linux.intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: RE: Regression with SLUB on Netperf and Volanomark
+In-Reply-To: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
+Message-ID: <Pine.LNX.4.64.0705031937560.16542@schroedinger.engr.sgi.com>
+References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-02 at 11:10 -0700, john stultz wrote:
-> On Sun, 2007-04-29 at 17:24 +0200, Mikael Pettersson wrote:
-> > On Thu, 26 Apr 2007 15:42:44 -0700, john stultz wrote:
-> > >Another shot in the dark:
-> > >
-> > >I wonder if the ACPI PM counter is halting in idle. Does booting w/
-> > >idle=poll change the behavior? (Please do this while your laptop is
-> > >plugged in, as it will run the cpu at full speed all the time).
-> > 
-> > Bingo!
-> 
-> Awesome! Finally, some progress! Thanks again for putting up w/ all my
-> testing requests.
-> 
-> > I booted the x86-64 2.6.21 final kernel with idle=poll and let the
-> > laptop idle for an hour. The ondemand cpufreq governor did reduce
-> > the CPU's clock frequency, but that shouldn't have affected the
-> > chipset or the ACPI PM counter.
-> > 
-> > Anyway, after 60 minutes `date' and `hwclock' were still in perfect
-> > sync and matched actual time.
-> > 
-> > Any ideas why this halting in idle doesn't happen with the 32-bit kernel?
-> 
-> No clue. Time to ask Len. :)
-> 
-> Hey Len,
-> 	So that slow acpi_pm on x86_64 seems to be connected w/ the idle loop.
-> I'm guessing the chipset halts the ACPI PM in lower C states. Do you
-> have any guesses as to what might differ between x86_64 and i386 ACPI
-> idle loops? Or might this be something different in what the BIOS
-> exports in x86_64 mode or i386 mode?
+Hmmmm... I do not see a regression (up to date slub with all outstanding 
+patches applied). This is without any options enabled (but antifrag 
+patches are present so slub_max_order=4 slub_min_objects=16) Could you 
+post a .config? Missing patches against 2.6.21-rc7-mm2 can be found at 
+http://ftp.kernel.org/pub/linux/kernel/peopl/christoph/slub-patches
 
-Mikael,
-	Just trying to dig a bit more through the acpi_processor_idle code.
-Could you run "cat /proc/acpi/processor/CPU1/power" and reply w/ the
-output?
+slab
 
-thanks
--john
+TCP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to localhost 
+(127.0.0.1) port 0 AF_INET
+Recv   Send    Send
+Socket Socket  Message  Elapsed
+Size   Size    Size     Time     Throughput
+bytes  bytes   bytes    secs.    10^6bits/sec
 
+ 87380  16384  16384    10.01    6068.61
+ 87380  16384  16384    10.01    5877.91
+ 87380  16384  16384    10.01    5835.68
+ 87380  16384  16384    10.01    5840.58
 
+slub
+
+TCP STREAM TEST from 0.0.0.0 (0.0.0.0) port 0 AF_INET to localhost (127.0.0.1) port 0 AF_INET
+Recv   Send    Send
+Socket Socket  Message  Elapsed
+Size   Size    Size     Time     Throughput
+bytes  bytes   bytes    secs.    10^6bits/sec
+
+ 87380  16384  16384    10.53    5646.53
+ 87380  16384  16384    10.01    6073.09
+ 87380  16384  16384    10.01    6094.68
+ 87380  16384  16384    10.01    6088.50
 
 
