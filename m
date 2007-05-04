@@ -1,133 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161523AbXEDSgo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161599AbXEDShV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161523AbXEDSgo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:36:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161599AbXEDSgo
+	id S1161599AbXEDShV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161608AbXEDShU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:36:44 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:8735 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161603AbXEDSgm (ORCPT
+	Fri, 4 May 2007 14:37:20 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:4820 "EHLO
+	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1161605AbXEDShR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:36:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=DkZD5k+47EuDsdLfUsD91fRs7FulNDk3IH1MQfB3+YEnZE1DpYYwSv3NS78kwZzbQd/rOIaO/YoMc42IdC1IImc9grToUVgZ6ToMxnM6vImJ4+L7BEYUH0T7rCeMJxDuL/MtRx8B1cPYUeDMTIcGGkOr0azN0V21khG12yfSwgw=
-Message-ID: <8f8ff01d0705041136r18315079w13f95dc3c627a53b@mail.gmail.com>
-Date: Fri, 4 May 2007 22:36:41 +0400
-From: "Alexey Starikovskiy" <aystarik@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [linux-pm] [RFT][PATCH] swsusp: Change code ordering related to ACPI
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Tobias Diedrich" <ranma+kernel@tdiedrich.de>,
-       "pm list" <linux-pm@lists.linux-foundation.org>,
-       "Pavel Machek" <pavel@ucw.cz>, "Marcus Better" <marcus@better.se>
-In-Reply-To: <200705041143.02451.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 4 May 2007 14:37:17 -0400
+Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0705041128270.24283@schroedinger.engr.sgi.com>
+References: <20070504102651.923946304@chello.nl>
+	 <20070504103157.215424767@chello.nl>
+	 <Pine.LNX.4.64.0705040932200.22033@schroedinger.engr.sgi.com>
+	 <1178301545.24217.56.camel@twins>
+	 <Pine.LNX.4.64.0705041104110.23539@schroedinger.engr.sgi.com>
+	 <1178302904.2767.6.camel@lappy>
+	 <Pine.LNX.4.64.0705041128270.24283@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Fri, 04 May 2007 20:32:18 +0200
+Message-Id: <1178303538.2767.9.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705041143.02451.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Doing _WAK (from pm_finish) before device_resume will brake almost all
-ACPI devices.
+On Fri, 2007-05-04 at 11:30 -0700, Christoph Lameter wrote:
+> On Fri, 4 May 2007, Peter Zijlstra wrote:
+> 
+> > > Ok so you really need the number of objects per page? If you know the 
+> > > number of objects then you can calculate the pages needed which would be 
+> > > the maximum memory needed?
+> > 
+> > Yes, that would work.
+> 
+> Hmmm... Maybe lets have
+> 
+> unsigned kmem_estimate_pages(struct kmem_cache *slab_cache, int objects)
+> 
+> which would calculate the worst case memory scenario for allocation the 
+> number of indicated objects?
 
-Regards,
-Alex.
+Perfectly fine with me, Pekka, any objections?
 
-On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> Hi,
->
-> The change of the hibernation/suspend code ordering made before 2.6.21 has
-> caused some systems to have problems related to ACPI.  In particular, the
-> 'platform' hibernation mode doesn't work any more on some systems.
->
-> It has been confirmed that the appended patch fixes the problem, but it's not
-> certain if this changes don't break some other systems.  For this reason, all
-> users of hibernation (swsusp, uswsusp) are gently requested to verify if this
-> patch doesn't break their systems.
->
-> Greetings,
-> Rafael
->
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
->
-> The current code ordering in the hibernation code paths causes some systems to
-> have problems.  It has been confirmed by testers that these problems do not
-> appear if the acpi_pm_finish() function (called via platform_finish()) is
-> executed after device_suspend().
->
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/power/disk.c |    4 ++--
->  kernel/power/user.c |    8 ++++----
->  2 files changed, 6 insertions(+), 6 deletions(-)
->
-> Index: linux-2.6.21/kernel/power/disk.c
-> ===================================================================
-> --- linux-2.6.21.orig/kernel/power/disk.c       2007-05-04 10:31:51.000000000 +0200
-> +++ linux-2.6.21/kernel/power/disk.c    2007-05-04 10:32:12.000000000 +0200
-> @@ -195,9 +195,9 @@ int hibernate(void)
->
->         if (in_suspend) {
->                 enable_nonboot_cpus();
-> -               platform_finish();
->                 device_resume();
->                 resume_console();
-> +               platform_finish();
->                 pr_debug("PM: writing image.\n");
->                 error = swsusp_write();
->                 if (!error)
-> @@ -214,9 +214,9 @@ int hibernate(void)
->   Enable_cpus:
->         enable_nonboot_cpus();
->   Resume_devices:
-> -       platform_finish();
->         device_resume();
->         resume_console();
-> +       platform_finish();
->   Thaw:
->         mutex_unlock(&pm_mutex);
->         unprepare_processes();
-> Index: linux-2.6.21/kernel/power/user.c
-> ===================================================================
-> --- linux-2.6.21.orig/kernel/power/user.c       2007-05-04 10:31:51.000000000 +0200
-> +++ linux-2.6.21/kernel/power/user.c    2007-05-04 10:32:12.000000000 +0200
-> @@ -169,11 +169,11 @@ static inline int snapshot_suspend(int p
->         }
->         enable_nonboot_cpus();
->   Resume_devices:
-> +       device_resume();
-> +       resume_console();
->         if (platform_suspend)
->                 platform_finish();
->
-> -       device_resume();
-> -       resume_console();
->   Finish:
->         mutex_unlock(&pm_mutex);
->         return error;
-> @@ -201,11 +201,11 @@ static inline int snapshot_restore(int p
->
->         enable_nonboot_cpus();
->   Resume_devices:
-> +       device_resume();
-> +       resume_console();
->         if (platform_suspend)
->                 platform_finish();
->
-> -       device_resume();
-> -       resume_console();
->   Finish:
->         pm_restore_console();
->         mutex_unlock(&pm_mutex);
-> _______________________________________________
-> linux-pm mailing list
-> linux-pm@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
->
