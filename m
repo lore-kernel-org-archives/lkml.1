@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161395AbXEDXLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767768AbXEDXR0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161395AbXEDXLT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 19:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161486AbXEDXLT
+	id S1767768AbXEDXR0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 19:17:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767774AbXEDXR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 19:11:19 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:24335 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161395AbXEDXLS (ORCPT
+	Fri, 4 May 2007 19:17:26 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:55310 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767768AbXEDXRZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 19:11:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=UR+WvTg5ac5+jyDOUUDpJldm88NtfOwb5R/fYVSoq0cw4BzZ4MXsBNfR9lD8EoENyKtOhXR3iEnk/+oF2iwdyREVNvuuJKi6jCrqKj7D2HRg+A0qq1TANRbOdnp3jCW/s7RpOl8Of1XwRYMbmn2/NPsV4ARrm+zQwpJClx4CFU4=
-Message-ID: <2c0942db0705041611u2d82fbb7m4719c1bcf8bcdbf7@mail.gmail.com>
-Date: Fri, 4 May 2007 16:11:17 -0700
-From: "Ray Lee" <ray-lk@madrabbit.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: [RFT][PATCH] swsusp: Change code ordering related to ACPI
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Marcus Better" <marcus@better.se>, "Pavel Machek" <pavel@ucw.cz>,
-       "Tobias Diedrich" <ranma+kernel@tdiedrich.de>,
-       "pm list" <linux-pm@lists.linux-foundation.org>
-In-Reply-To: <200705041143.02451.rjw@sisk.pl>
+	Fri, 4 May 2007 19:17:25 -0400
+Message-ID: <463BBEEE.3000903@zytor.com>
+Date: Fri, 04 May 2007 16:17:02 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: always clear bss
+References: <463AED07.1000505@goop.org>	<m1r6pwu806.fsf@ebiederm.dsl.xmission.com> <463B49F0.401@goop.org>	<463B5643.1040204@zytor.com>	<m1ejlwr036.fsf@ebiederm.dsl.xmission.com> <463B6888.20001@zytor.com>	<m17iroqzlq.fsf@ebiederm.dsl.xmission.com>	<463B6CCE.4050800@zytor.com> <m1hcqspg7c.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1hcqspg7c.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705041143.02451.rjw@sisk.pl>
-X-Google-Sender-Auth: b1e6b7f337e18ffa
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> The change of the hibernation/suspend code ordering made before 2.6.21 has
-> caused some systems to have problems related to ACPI.  In particular, the
-> 'platform' hibernation mode doesn't work any more on some systems.
+Eric W. Biederman wrote:
+> 
+> My notes show 0x5c reserved for additional apm_bios_info, although
+> of the top of my head I don't know how realistic that is.
+> 
+> 0x1e4 does look available.
+> 
+> It has been a long time since I made that choice, and I do see that
+> looking at struct screen_info I did remember to document that I was
+> using 0x3c, even in your structure.
+> 
+> It is all internal to our boot process and external code isn't going
+> to use it so we can change it if we feel like.
+> 
 
-It seems that somewhere between 2.6.21-rc4 and 2.6.21 final my laptop
-stopped being able to come out of suspend to RAM. Before I start
-bisecting (again, sigh), is this ringing any bells for anyone? In
-particular your, patch (snipped) that deals with hibernation, would it
-also affect suspend to RAM?
+I don't see the actual instruction that does that anywhere in my tree,
+which was branched from Andi's "for-linus" git tree, but I have reserved
+0x1e4 for that purpose as "scratch".
 
-Ray
+	-hpa
