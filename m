@@ -1,90 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbXEDPJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755291AbXEDPK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbXEDPJH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 11:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbXEDPJH
+	id S1755291AbXEDPK5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 11:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbXEDPK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 11:09:07 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58690 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754649AbXEDPJG (ORCPT
+	Fri, 4 May 2007 11:10:57 -0400
+Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:51666 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755291AbXEDPK4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 11:09:06 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert "[PATCH] paravirt: Add startup infrastructure for paravirtualization"
-References: <m1mz0ku7je.fsf@ebiederm.dsl.xmission.com>
-	<1178280770.23670.61.camel@localhost.localdomain>
-	<m1y7k4smmo.fsf@ebiederm.dsl.xmission.com>
-	<1178289450.23670.100.camel@localhost.localdomain>
-Date: Fri, 04 May 2007 09:07:48 -0600
-In-Reply-To: <1178289450.23670.100.camel@localhost.localdomain> (Rusty
-	Russell's message of "Sat, 05 May 2007 00:37:30 +1000")
-Message-ID: <m1lkg4sk3f.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 4 May 2007 11:10:56 -0400
+Message-ID: <463B4C5C.1000507@vmware.com>
+Date: Fri, 04 May 2007 08:08:12 -0700
+From: Zachary Amsden <zach@vmware.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Petr Vandrovec <petr@vmware.com>, nigel@nigel.suspend2.net,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: VMware, x86_64 and 2.6.21.
+References: <1177998147.8981.16.camel@nigel.suspend2.net>	<1178031475.3448.0.camel@laptopd505.fenrus.org>	<1178032456.13953.12.camel@nigel.suspend2.net>	<46385A18.30804@vmware.com> <m1slacu88z.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1slacu88z.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell <rusty@rustcorp.com.au> writes:
-
-> On Fri, 2007-05-04 at 08:13 -0600, Eric W. Biederman wrote:
->> We don't have any working code, there are no in tree users.
+Eric W. Biederman wrote:
+> I don't even want to think about how a kernel module gets far enough
+> into the kernel to be affected by our vector layout.  These are internal
+> implementation details, without anything exported to modules.
 >
-> Hi Eric,
->
-> 	Lack of in-tree code is definitely not due to me.  The code which uses
-> it has been sitting in -mm for three months.  Suddenly ripping this out
-> and breaking all that work without replacing it is rude.
+> Can I please see the source of the code in vmware that is doing this?
+>   
 
-My memory is very fuzzy now, but I know it at least came up early on
-that everyone should be using %esi to point to real mode data and
-that didn't happen.  None of the usual bootloader folks (myself
-or HPA) appear to have been on the CC when this code was merged into
-the kernel.  Ignoring review comments, skipping the people who know
-the code and the bootloader requirements and putting in code that is
-so brittle no one can change it is another kind of rude.
+Sorry, that code is not part of the kernel or any kernel module.  It is 
+part of a fixed set of assumptions about the platform coded in the 
+hypervisor, which is not open source.  This code runs completely outside 
+the scope of Linux, and uses a platform dependent set of IDT software 
+vectors which are known not to collide with IDT IRQ vectors.  We use 
+these software vectors for internal purposes; they are never visible to 
+any Linux software, but are handled and trapped by the hypervisor.  
+Nevertheless, since we must distinguish between software IRQs and 
+hardware IRQs, we must find vectors that do not collide with the set of 
+hardware IRQs or processor exceptions.
 
-I'm wondering how much of the paravirt code is getting in through
-reviewer exhaustion?
+To avoid this dependence on fixed assumtions about vector layout, what 
+is needed is a mechanism to reserve and allocate software IDT vectors.  
+It may be a GPL'd interface; it certainly is interfacing with the kernel 
+at a low-level.
 
-The interface for bootloaders is as hard to change as the user space
-syscall interface.  I'm doing my best to nip this horror in the bud
-now that I have looked into it enough to see what is going on.
+An interface that would likely looking something like:
 
-The interface to bootloaders is quite different from the internal
-kernel interfaces that we have all of the users captive so can change
-it just by updating all of the users.  Except when we are first adding
-the interface anyway.
+int idt_allocate_swirq(int best_irq);
+void idt_release_swirq(int irq);
+int __init idt_reserve_irqs(int count);
+void idt_set_swirq_handler (int irq, int is_user, void (*handle)(struct 
+pt_regs *regs, unsigned long error_code));
+EXPORT_SYMBOL_GPL(idt_allocate_swirq);
+EXPORT_SYMBOL_GPL(idt_release_swirq);
+EXPORT_SYMBOL_GPL(idt_set_swirq_handler);
 
-The only reason this is even changeable is that we don't have any
-users, and the code is dead weight.
+Now you can set aside a fixed number of IRQs to be used for software 
+IRQs at boot time, and allocate them as required.  You can even create 
+software IRQs which can be handled by userspace applications, or reserve 
+software IRQs for other uses - from within the kernel itself, or from 
+outside any kernel context (for example an IPI invoked from a non-kernel 
+CPU).  There are cases where this would be a useful feature for us; 
+being able to issue IPIs directly to a hypervisor mode CPU would be a 
+significant speedup (alternatively, having a kernel module handle the 
+IPI when the CPU is in kernel mode and schedule the vmx process to run 
+and forward the IPI).
 
-So since I didn't get the opportunity to NAK the code.  I sent
-a patch to revert once I understood it.
+The thought of running non-kernel code in ring-0 on some CPU is scary, 
+certainly.  Nevertheless it is required for running a hypervisor which 
+does not live in the kernel address space and must handle its own page 
+faults and other exceptions.
 
->> Therefore the code should go.
->
-> Then put the patch is -mm, behind lguest.  Or better, help me refine my
-> patches and I'll happily do it for you.
-
-Before lguest.  Thank you very much.  This code should never ever
-have been in a stable kernel.  It is a very ill conceived interface.
-
-I have no problems helping you refine your patches, and am working
-in that direction now.
-
-I just think it is irresponsible to let something as potentially
-problematic as this piece of code is to sit.
-
-And frankly I don't think lguest should be merged until we are as
-close to certain as human beings can get that have the ABI reviewed
-and sorted out.  ABIs unfortunately are very very hard to change.
-
-Eric
+Zach
