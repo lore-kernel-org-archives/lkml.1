@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbXEDMro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbXEDMwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755101AbXEDMro (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 08:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755117AbXEDMro
+	id S1754431AbXEDMwa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 08:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbXEDMwa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 08:47:44 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:60382 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755021AbXEDMrn (ORCPT
+	Fri, 4 May 2007 08:52:30 -0400
+Received: from wr-out-0506.google.com ([64.233.184.236]:22694 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754431AbXEDMw3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 08:47:43 -0400
-Subject: Re: [PATCH 2/5] jffs2: Add LZO compression support to jffs2
-From: David Woodhouse <dwmw2@infradead.org>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: Richard Purdie <rpurdie@openedhand.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       linux-mtd <linux-mtd@lists.infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070504144146.6a91d974@dhcp-252-105.norway.atmel.com>
-References: <1178278255.5839.47.camel@localhost.localdomain>
-	 <1178278532.11120.274.camel@pmac.infradead.org>
-	 <20070504144146.6a91d974@dhcp-252-105.norway.atmel.com>
-Content-Type: text/plain
-Date: Fri, 04 May 2007 13:47:32 +0100
-Message-Id: <1178282852.11120.282.camel@pmac.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 4 May 2007 08:52:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=InxkuitcJCRBYy7Flz1HMeQxb1r9zo6JPoszqO/6PSBS0IoIFPoewR/XpWN8LcSBv6vsCbrjW7gOFAg5zXJVNJdi7G4EiynhRAg8ey8RcketwPz3dCfIcsMddiQ03ihmx2s9R/MzwJqHwsmBRT56lh46SDhCJB3VnOtiTanqOjc=
+Message-ID: <4240b9160705040552n222126a2iadef5452c722b63@mail.gmail.com>
+Date: Fri, 4 May 2007 14:52:26 +0200
+From: "Jerome Glisse" <j.glisse@gmail.com>
+To: "=?ISO-8859-1?Q?Thomas_Hellstr=F6m?=" <thomas@tungstengraphics.com>
+Subject: Re: [RFC] [PATCH] DRM TTM Memory Manager patch
+Cc: "Keith Packard" <keithp@keithp.com>, dri-devel@lists.sourceforge.net,
+       "Dave Airlie" <airlied@gmail.com>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>,
+       "Jesse Barnes" <jbarnes@virtuousgeek.org>
+In-Reply-To: <463B27C4.3040304@tungstengraphics.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+References: <21d7e9970704252355m4765b65fyb547b9ba2763b103@mail.gmail.com>
+	 <1178137279.53297.114.camel@vonnegut>
+	 <46391860.3070409@tungstengraphics.com>
+	 <1178251621.27028.9.camel@neko.keithp.com>
+	 <463AE9AE.7070806@tungstengraphics.com>
+	 <4240b9160705040149v3c97413fg54f1486f55ffbc11@mail.gmail.com>
+	 <463B12F9.8060900@tungstengraphics.com>
+	 <4240b9160705040457n46be9b62p7c760fb54898ba37@mail.gmail.com>
+	 <463B27C4.3040304@tungstengraphics.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 14:41 +0200, Haavard Skinnemoen wrote:
-> 
-> Hmm...everything else in lib/Kconfig is supposed to be _selected_, not
-> depended upon. And the only three items in there which can actually be
-> selected by the user all begin their helptexts with
-> 
-> "This option is provided for the case where no in-kernel-tree modules
-> require FOO functions".
-> 
-> Are you sure it's a good idea to break with existing practice? I'm
-> concerned that nobody will ever find the JFFS2_LZO option if it means
-> they will have to go all the way down to the "Library functions" menu
-> and select something to make the option visible...
+On 5/4/07, Thomas Hellström <thomas@tungstengraphics.com> wrote:
+> I was actually referring to an example where two clients need to have a
+> buffer mapped and access it at exactly the same time.
+> If there is such a situation, we have no other choice than to drop the
+> buffer locking on map. If there isn't we can at least consider other
+> alternatives that resolve the deadlock issue but that also will help
+> clients synchronize and keep data coherent.
+>
+> /Thomas
 
-That would seem be a tools problem.
+One might be a texture where a portion is updated by one thread
+and another portion update by another one, i believe the application
+will know better than us if such concurrent access will conflict or not.
+If this both thread access different pixel it make sense to let them
+work together at the same time on the texture. If they are writing
+to same pixel then they will have to sync between them so they
+don't do somethings stupid.
 
-Nevertheless, if I merge it with 'select', won't it break while the core
-LZO patches aren't yet upstream?
+My point is that the user space will know better if sync is needed
+or not and how to sync access to the same buffer. Moreover we
+can still add a locking mechanism in user space (in libdrm for
+instance).
 
-Of course, one could argue that that's also a tools problem. All this
-proliferation of 'select' is doing is moving problems around rather than
-solving them.
+There is very likely others use case for such concurrent access which
+i can't think off right now.
 
--- 
-dwmw2
-
+best,
+Jerome Glisse
