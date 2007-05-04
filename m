@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767813AbXEDKkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754946AbXEDKkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767813AbXEDKkG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 06:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423699AbXEDKkB
+	id S1754946AbXEDKkU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 06:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbXEDKj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 06:40:01 -0400
+	Fri, 4 May 2007 06:39:58 -0400
 Received: from amsfep17-int.chello.nl ([213.46.243.15]:3563 "EHLO
 	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1767837AbXEDKjG (ORCPT
+	by vger.kernel.org with ESMTP id S1767844AbXEDKjE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 06:39:06 -0400
-Message-Id: <20070504103200.331926063@chello.nl>
+	Fri, 4 May 2007 06:39:04 -0400
+Message-Id: <20070504103200.092467721@chello.nl>
 References: <20070504102651.923946304@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 May 2007 12:27:12 +0200
+Date: Fri, 04 May 2007 12:27:11 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -22,54 +22,182 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        James Bottomley <James.Bottomley@SteelEye.com>,
        Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>, Jeff Dike <jdike@addtoit.com>
-Subject: [PATCH 21/40] uml: rename arch/um remove_mapping()
-Content-Disposition: inline; filename=uml_remove_mapping.patch
+       Daniel Phillips <phillips@google.com>
+Subject: [PATCH 20/40] netvm: skb processing
+Content-Disposition: inline; filename=netvm.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When 'include/linux/mm.h' includes 'include/linux/swap.h', the global
-remove_mapping() definition clashes with the arch/um one.
+In order to make sure emergency packets receive all memory needed to proceed
+ensure processing of emergency skbs happens under PF_MEMALLOC.
 
-Rename the arch/um one.
+Use the (new) sk_backlog_rcv() wrapper to ensure this for backlog processing.
+
+Skip taps, since those are user-space again.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Jeff Dike <jdike@addtoit.com>
 ---
- arch/um/kernel/physmem.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ include/net/sock.h |    4 ++++
+ net/core/dev.c     |   42 +++++++++++++++++++++++++++++++++++++-----
+ net/core/sock.c    |   19 +++++++++++++++++++
+ 3 files changed, 60 insertions(+), 5 deletions(-)
 
-Index: linux-2.6-git/arch/um/kernel/physmem.c
+Index: linux-2.6-git/net/core/dev.c
 ===================================================================
---- linux-2.6-git.orig/arch/um/kernel/physmem.c	2007-02-12 09:40:47.000000000 +0100
-+++ linux-2.6-git/arch/um/kernel/physmem.c	2007-02-12 11:17:47.000000000 +0100
-@@ -160,7 +160,7 @@ int physmem_subst_mapping(void *virt, in
+--- linux-2.6-git.orig/net/core/dev.c
++++ linux-2.6-git/net/core/dev.c
+@@ -1756,10 +1756,23 @@ int netif_receive_skb(struct sk_buff *sk
+ 	struct net_device *orig_dev;
+ 	int ret = NET_RX_DROP;
+ 	__be16 type;
++	unsigned long pflags = current->flags;
++
++	/* Emergency skb are special, they should
++	 *  - be delivered to SOCK_VMIO sockets only
++	 *  - stay away from userspace
++	 *  - have bounded memory usage
++	 *
++	 * Use PF_MEMALLOC as a poor mans memory pool - the grouping kind.
++	 * This saves us from propagating the allocation context down to all
++	 * allocation sites.
++	 */
++	if (skb_emergency(skb))
++		current->flags |= PF_MEMALLOC;
  
- static int physmem_fd = -1;
+ 	/* if we've gotten here through NAPI, check netpoll */
+ 	if (skb->dev->poll && netpoll_rx(skb))
+-		return NET_RX_DROP;
++		goto out;
  
--static void remove_mapping(struct phys_desc *desc)
-+static void um_remove_mapping(struct phys_desc *desc)
- {
- 	void *virt = desc->virt;
- 	int err;
-@@ -184,7 +184,7 @@ int physmem_remove_mapping(void *virt)
- 	if(desc == NULL)
- 		return 0;
+ 	if (!skb->tstamp.tv64)
+ 		net_timestamp(skb);
+@@ -1770,7 +1783,7 @@ int netif_receive_skb(struct sk_buff *sk
+ 	orig_dev = skb_bond(skb);
  
--	remove_mapping(desc);
-+	um_remove_mapping(desc);
- 	return 1;
+ 	if (!orig_dev)
+-		return NET_RX_DROP;
++		goto out;
+ 
+ 	__get_cpu_var(netdev_rx_stat).total++;
+ 
+@@ -1789,6 +1802,9 @@ int netif_receive_skb(struct sk_buff *sk
+ 	}
+ #endif
+ 
++	if (skb_emergency(skb))
++		goto skip_taps;
++
+ 	list_for_each_entry_rcu(ptype, &ptype_all, list) {
+ 		if (!ptype->dev || ptype->dev == skb->dev) {
+ 			if (pt_prev)
+@@ -1797,6 +1813,7 @@ int netif_receive_skb(struct sk_buff *sk
+ 		}
+ 	}
+ 
++skip_taps:
+ #ifdef CONFIG_NET_CLS_ACT
+ 	if (pt_prev) {
+ 		ret = deliver_skb(skb, pt_prev, orig_dev);
+@@ -1809,16 +1826,28 @@ int netif_receive_skb(struct sk_buff *sk
+ 
+ 	if (ret == TC_ACT_SHOT || (ret == TC_ACT_STOLEN)) {
+ 		kfree_skb(skb);
+-		goto out;
++		goto unlock;
+ 	}
+ 
+ 	skb->tc_verd = 0;
+ ncls:
+ #endif
+ 
++	if (skb_emergency(skb))
++		switch(skb->protocol) {
++			case __constant_htons(ETH_P_ARP):
++			case __constant_htons(ETH_P_IP):
++			case __constant_htons(ETH_P_IPV6):
++			case __constant_htons(ETH_P_8021Q):
++				break;
++
++			default:
++				goto drop;
++		}
++
+ 	skb = handle_bridge(skb, &pt_prev, &ret, orig_dev);
+ 	if (!skb)
+-		goto out;
++		goto unlock;
+ 
+ 	type = skb->protocol;
+ 	list_for_each_entry_rcu(ptype, &ptype_base[ntohs(type)&15], list) {
+@@ -1833,6 +1862,7 @@ ncls:
+ 	if (pt_prev) {
+ 		ret = pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
+ 	} else {
++drop:
+ 		kfree_skb(skb);
+ 		/* Jamal, now you will not able to escape explaining
+ 		 * me how you were going to use this. :-)
+@@ -1840,8 +1870,10 @@ ncls:
+ 		ret = NET_RX_DROP;
+ 	}
+ 
+-out:
++unlock:
+ 	rcu_read_unlock();
++out:
++	tsk_restore_flags(current, pflags, PF_MEMALLOC);
+ 	return ret;
  }
  
-@@ -205,7 +205,7 @@ void physmem_forget_descriptor(int fd)
- 		page = list_entry(ele, struct phys_desc, list);
- 		offset = page->offset;
- 		addr = page->virt;
--		remove_mapping(page);
-+		um_remove_mapping(page);
- 		err = os_seek_file(fd, offset);
- 		if(err)
- 			panic("physmem_forget_descriptor - failed to seek "
+Index: linux-2.6-git/include/net/sock.h
+===================================================================
+--- linux-2.6-git.orig/include/net/sock.h
++++ linux-2.6-git/include/net/sock.h
+@@ -527,10 +527,14 @@ static inline void sk_add_backlog(struct
+ 	skb->next = NULL;
+ }
+ 
++#ifndef CONFIG_NETVM
+ static inline int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
+ {
+ 	return sk->sk_backlog_rcv(sk, skb);
+ }
++#else
++extern int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb);
++#endif
+ 
+ #define sk_wait_event(__sk, __timeo, __condition)		\
+ ({	int rc;							\
+Index: linux-2.6-git/net/core/sock.c
+===================================================================
+--- linux-2.6-git.orig/net/core/sock.c
++++ linux-2.6-git/net/core/sock.c
+@@ -332,6 +332,25 @@ int sk_clear_vmio(struct sock *sk)
+ }
+ EXPORT_SYMBOL_GPL(sk_clear_vmio);
+ 
++#ifdef CONFIG_NETVM
++int sk_backlog_rcv(struct sock *sk, struct sk_buff *skb)
++{
++	if (skb_emergency(skb)) {
++		int ret;
++		unsigned long pflags = current->flags;
++	       	/* these should have been dropped before queueing */
++		BUG_ON(!sk_has_vmio(sk));
++		current->flags |= PF_MEMALLOC;
++		ret = sk->sk_backlog_rcv(sk, skb);
++		tsk_restore_flags(current, pflags, PF_MEMALLOC);
++		return ret;
++	}
++
++	return sk->sk_backlog_rcv(sk, skb);
++}
++EXPORT_SYMBOL(sk_backlog_rcv);
++#endif
++
+ static int sock_set_timeout(long *timeo_p, char __user *optval, int optlen)
+ {
+ 	struct timeval tv;
 
 --
 
