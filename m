@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423706AbXEDKpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423667AbXEDKpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423706AbXEDKpA (ORCPT <rfc822;w@1wt.eu>);
+	id S1423667AbXEDKpA (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 4 May 2007 06:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993230AbXEDKfx
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993292AbXEDKft
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 06:35:53 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:37027 "EHLO
-	amsfep12-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2993238AbXEDKfE (ORCPT
+	Fri, 4 May 2007 06:35:49 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:18601 "EHLO
+	amsfep13-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S2993230AbXEDKfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 4 May 2007 06:35:04 -0400
-Message-Id: <20070504103201.987245048@chello.nl>
+Message-Id: <20070504103203.181287020@chello.nl>
 References: <20070504102651.923946304@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 May 2007 12:27:19 +0200
+Date: Fri, 04 May 2007 12:27:24 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -22,262 +22,113 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        James Bottomley <James.Bottomley@SteelEye.com>,
        Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>
-Subject: [PATCH 28/40] nfs: enable swap on NFS
-Content-Disposition: inline; filename=nfs-swapfile.patch
+       Daniel Phillips <phillips@google.com>, Jeff Dike <jdike@addtoit.com>
+Subject: [PATCH 33/40] uml: enable scsi and add iscsi config
+Content-Disposition: inline; filename=uml_iscsi.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Provide an a_ops->swapfile() implementation for NFS. This will set the
-NFS socket to SOCK_VMIO and run socket reconnect under PF_MEMALLOC as well
-as reset SOCK_VMIO before engaging the protocol ->connect() method.
-
-PF_MEMALLOC should allow the allocation of struct socket and related objects
-and the early (re)setting of SOCK_VMIO should allow us to receive the packets
-required for the TCP connection buildup.
-
-(swapping continues over a server reset during heavy network traffic)
+Enable (i)SCSI on UML, dunno why SCSI was deemed broken, it works like a charm.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+Acked-by: Jeff Dike <jdike@addtoit.com>
+Cc: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Mike Christie <michaelc@cs.wisc.edu>
 ---
- fs/Kconfig                  |   19 +++++++++++++++
- fs/nfs/file.c               |   10 ++++++++
- include/linux/sunrpc/xprt.h |    5 +++-
- net/sunrpc/sched.c          |    7 ++++-
- net/sunrpc/xprtsock.c       |   54 ++++++++++++++++++++++++++++++++++++++++++++
- 5 files changed, 92 insertions(+), 3 deletions(-)
+ arch/um/Kconfig      |   16 --------------
+ arch/um/Kconfig.scsi |   58 ---------------------------------------------------
+ 2 files changed, 1 insertion(+), 73 deletions(-)
 
-Index: linux-2.6-git/fs/nfs/file.c
+Index: linux-2.6-git/arch/um/Kconfig
 ===================================================================
---- linux-2.6-git.orig/fs/nfs/file.c
-+++ linux-2.6-git/fs/nfs/file.c
-@@ -324,6 +324,13 @@ static int nfs_launder_page(struct page 
- 	return nfs_wb_page(page_file_mapping(page)->host, page);
- }
+--- linux-2.6-git.orig/arch/um/Kconfig	2006-12-11 14:39:09.000000000 +0100
++++ linux-2.6-git/arch/um/Kconfig	2007-01-16 14:14:45.000000000 +0100
+@@ -317,21 +317,7 @@ source "crypto/Kconfig"
  
-+#ifdef CONFIG_NFS_SWAP
-+static int nfs_swapfile(struct address_space *mapping, int enable)
-+{
-+	return xs_swapper(NFS_CLIENT(mapping->host)->cl_xprt, enable);
-+}
-+#endif
-+
- const struct address_space_operations nfs_file_aops = {
- 	.readpage = nfs_readpage,
- 	.readpages = nfs_readpages,
-@@ -338,6 +345,9 @@ const struct address_space_operations nf
- 	.direct_IO = nfs_direct_IO,
- #endif
- 	.launder_page = nfs_launder_page,
-+#ifdef CONFIG_NFS_SWAP
-+	.swapfile = nfs_swapfile,
-+#endif
- };
+ source "lib/Kconfig"
  
- static ssize_t nfs_file_write(struct kiocb *iocb, const struct iovec *iov,
-Index: linux-2.6-git/include/linux/sunrpc/xprt.h
+-menu "SCSI support"
+-depends on BROKEN
+-
+-config SCSI
+-	tristate "SCSI support"
+-
+-# This gives us free_dma, which scsi.c wants.
+-config GENERIC_ISA_DMA
+-	bool
+-	depends on SCSI
+-	default y
+-
+-source "arch/um/Kconfig.scsi"
+-
+-endmenu
++source "drivers/scsi/Kconfig"
+ 
+ source "drivers/md/Kconfig"
+ 
+Index: linux-2.6-git/arch/um/Kconfig.scsi
 ===================================================================
---- linux-2.6-git.orig/include/linux/sunrpc/xprt.h
-+++ linux-2.6-git/include/linux/sunrpc/xprt.h
-@@ -151,7 +151,9 @@ struct rpc_xprt {
- 	unsigned int		max_reqs;	/* total slots */
- 	unsigned long		state;		/* transport state */
- 	unsigned char		shutdown   : 1,	/* being shut down */
--				resvport   : 1; /* use a reserved port */
-+				resvport   : 1, /* use a reserved port */
-+				swapper    : 1; /* we're swapping over this
-+						   transport */
- 	unsigned int		bind_index;	/* bind function index */
- 
- 	/*
-@@ -244,6 +246,7 @@ void			xprt_disconnect(struct rpc_xprt *
-  */
- struct rpc_xprt *	xs_setup_udp(struct sockaddr *addr, size_t addrlen, struct rpc_timeout *to);
- struct rpc_xprt *	xs_setup_tcp(struct sockaddr *addr, size_t addrlen, struct rpc_timeout *to);
-+int			xs_swapper(struct rpc_xprt *xprt, int enable);
- 
- /*
-  * Reserved bit positions in xprt->state
-Index: linux-2.6-git/net/sunrpc/sched.c
-===================================================================
---- linux-2.6-git.orig/net/sunrpc/sched.c
-+++ linux-2.6-git/net/sunrpc/sched.c
-@@ -755,7 +755,10 @@ static void rpc_async_schedule(struct wo
- void *rpc_malloc(struct rpc_task *task, size_t size)
- {
- 	size_t *buf;
--	gfp_t gfp = RPC_IS_SWAPPER(task) ? GFP_ATOMIC : GFP_NOWAIT;
-+	gfp_t gfp = GFP_NOWAIT;
-+
-+	if (RPC_IS_SWAPPER(task))
-+		gfp |= __GFP_EMERGENCY;
- 
- 	size += sizeof(size_t);
- 	if (size <= RPC_BUFFER_MAXSIZE)
-@@ -837,7 +840,7 @@ void rpc_init_task(struct rpc_task *task
- static struct rpc_task *
- rpc_alloc_task(void)
- {
--	return (struct rpc_task *)mempool_alloc(rpc_task_mempool, GFP_NOFS);
-+	return (struct rpc_task *)mempool_alloc(rpc_task_mempool, GFP_NOIO);
- }
- 
- static void rpc_free_task(struct rcu_head *rcu)
-Index: linux-2.6-git/net/sunrpc/xprtsock.c
-===================================================================
---- linux-2.6-git.orig/net/sunrpc/xprtsock.c
-+++ linux-2.6-git/net/sunrpc/xprtsock.c
-@@ -1215,11 +1215,15 @@ static void xs_udp_connect_worker(struct
- 		container_of(work, struct sock_xprt, connect_worker.work);
- 	struct rpc_xprt *xprt = &transport->xprt;
- 	struct socket *sock = transport->sock;
-+	unsigned long pflags = current->flags;
- 	int err, status = -EIO;
- 
- 	if (xprt->shutdown || !xprt_bound(xprt))
- 		goto out;
- 
-+	if (xprt->swapper)
-+		current->flags |= PF_MEMALLOC;
-+
- 	/* Start by resetting any existing state */
- 	xs_close(xprt);
- 
-@@ -1257,6 +1261,9 @@ static void xs_udp_connect_worker(struct
- 		transport->sock = sock;
- 		transport->inet = sk;
- 
-+		if (xprt->swapper)
-+			sk_set_vmio(sk);
-+
- 		write_unlock_bh(&sk->sk_callback_lock);
- 	}
- 	xs_udp_do_set_buffer_size(xprt);
-@@ -1264,6 +1271,7 @@ static void xs_udp_connect_worker(struct
- out:
- 	xprt_wake_pending_tasks(xprt, status);
- 	xprt_clear_connecting(xprt);
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
- }
- 
- /*
-@@ -1302,11 +1310,15 @@ static void xs_tcp_connect_worker(struct
- 		container_of(work, struct sock_xprt, connect_worker.work);
- 	struct rpc_xprt *xprt = &transport->xprt;
- 	struct socket *sock = transport->sock;
-+	unsigned long pflags = current->flags;
- 	int err, status = -EIO;
- 
- 	if (xprt->shutdown || !xprt_bound(xprt))
- 		goto out;
- 
-+	if (xprt->swapper)
-+		current->flags |= PF_MEMALLOC;
-+
- 	if (!sock) {
- 		/* start from scratch */
- 		if ((err = sock_create_kern(PF_INET, SOCK_STREAM, IPPROTO_TCP, &sock)) < 0) {
-@@ -1356,6 +1368,10 @@ static void xs_tcp_connect_worker(struct
- 		write_unlock_bh(&sk->sk_callback_lock);
- 	}
- 
-+
-+	if (xprt->swapper)
-+		sk_set_vmio(transport->inet);
-+
- 	/* Tell the socket layer to start connecting... */
- 	xprt->stat.connect_count++;
- 	xprt->stat.connect_start = jiffies;
-@@ -1383,6 +1399,7 @@ out:
- 	xprt_wake_pending_tasks(xprt, status);
- out_clear:
- 	xprt_clear_connecting(xprt);
-+	tsk_restore_flags(current, pflags, PF_MEMALLOC);
- }
- 
- /**
-@@ -1642,6 +1659,43 @@ int init_socket_xprt(void)
- 	return 0;
- }
- 
-+#ifdef CONFIG_SUNRPC_SWAP
-+#define RPC_BUF_RESERVE_PAGES	\
-+	DIV_ROUND_UP((RPC_MAX_SLOT_TABLE * \
-+				kobjsize(sizeof(struct rpc_rqst))), \
-+			PAGE_SIZE)
-+#define RPC_RESERVE_PAGES	(RPC_BUF_RESERVE_PAGES + TX_RESERVE_PAGES)
-+
-+/**
-+ * xs_swapper - Tag this transport as being used for swap.
-+ * @xprt: transport to tag
-+ * @enable: enable/disable
-+ *
-+ */
-+int xs_swapper(struct rpc_xprt *xprt, int enable)
-+{
-+	struct sock_xprt *transport = container_of(xprt, struct sock_xprt, xprt);
-+	int err = 0;
-+
-+	if (enable) {
-+		/*
-+		 * keep one extra sock reference so the reserve won't dip
-+		 * when the socket gets reconnected.
-+		 */
-+		sk_adjust_memalloc(1, RPC_RESERVE_PAGES);
-+		sk_set_vmio(transport->inet);
-+		xprt->swapper = 1;
-+	} else if (xprt->swapper) {
-+		xprt->swapper = 0;
-+		sk_clear_vmio(transport->inet);
-+		sk_adjust_memalloc(-1, -RPC_RESERVE_PAGES);
-+	}
-+
-+	return err;
-+}
-+EXPORT_SYMBOL_GPL(xs_swapper);
-+#endif
-+
- /**
-  * cleanup_socket_xprt - remove xprtsock's sysctls
-  *
-Index: linux-2.6-git/fs/Kconfig
-===================================================================
---- linux-2.6-git.orig/fs/Kconfig
-+++ linux-2.6-git/fs/Kconfig
-@@ -1621,6 +1621,18 @@ config NFS_DIRECTIO
- 	  causes open() to return EINVAL if a file residing in NFS is
- 	  opened with the O_DIRECT flag.
- 
-+config NFS_SWAP
-+	bool "Provide swap over NFS support"
-+	default n
-+	depends on NFS_FS
-+	select SUNRPC_SWAP
-+	help
-+	  This option enables swapon to work on files located on NFS mounts.
-+
-+	  For more details, see Documentation/vm_deadlock.txt
-+
-+	  If unsure, say N.
-+
- config NFSD
- 	tristate "NFS server support"
- 	depends on INET
-@@ -1746,6 +1758,13 @@ config SUNRPC_BIND34
- 	  If unsure, say N to get traditional behavior (version 2 rpcbind
- 	  requests only).
- 
-+config SUNRPC_SWAP
-+	def_bool n
-+	depends on SUNRPC
-+	select SLAB_FAIR
-+	select NETVM
-+	select SWAP_FILE
-+
- config RPCSEC_GSS_KRB5
- 	tristate "Secure RPC: Kerberos V mechanism (EXPERIMENTAL)"
- 	depends on SUNRPC && EXPERIMENTAL
+--- linux-2.6-git.orig/arch/um/Kconfig.scsi	2006-09-05 15:30:39.000000000 +0200
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,58 +0,0 @@
+-comment "SCSI support type (disk, tape, CD-ROM)"
+-	depends on SCSI
+-
+-config BLK_DEV_SD
+-	tristate "SCSI disk support"
+-	depends on SCSI
+-
+-config SD_EXTRA_DEVS
+-	int "Maximum number of SCSI disks that can be loaded as modules"
+-	depends on BLK_DEV_SD
+-	default "40"
+-
+-config CHR_DEV_ST
+-	tristate "SCSI tape support"
+-	depends on SCSI
+-
+-config BLK_DEV_SR
+-	tristate "SCSI CD-ROM support"
+-	depends on SCSI
+-
+-config BLK_DEV_SR_VENDOR
+-	bool "Enable vendor-specific extensions (for SCSI CDROM)"
+-	depends on BLK_DEV_SR
+-
+-config SR_EXTRA_DEVS
+-	int "Maximum number of CDROM devices that can be loaded as modules"
+-	depends on BLK_DEV_SR
+-	default "2"
+-
+-config CHR_DEV_SG
+-	tristate "SCSI generic support"
+-	depends on SCSI
+-
+-comment "Some SCSI devices (e.g. CD jukebox) support multiple LUNs"
+-	depends on SCSI
+-
+-#if [ "$CONFIG_EXPERIMENTAL" = "y" ]; then
+-config SCSI_DEBUG_QUEUES
+-	bool "Enable extra checks in new queueing code"
+-	depends on SCSI
+-
+-#fi
+-config SCSI_MULTI_LUN
+-	bool "Probe all LUNs on each SCSI device"
+-	depends on SCSI
+-
+-config SCSI_CONSTANTS
+-	bool "Verbose SCSI error reporting (kernel size +=12K)"
+-	depends on SCSI
+-
+-config SCSI_LOGGING
+-	bool "SCSI logging facility"
+-	depends on SCSI
+-
+-config SCSI_DEBUG
+-	tristate "SCSI debugging host simulator (EXPERIMENTAL)"
+-	depends on SCSI
+-
 
 --
 
