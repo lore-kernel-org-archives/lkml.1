@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767822AbXEDKin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767836AbXEDKjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767822AbXEDKin (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 06:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993233AbXEDKiM
+	id S1767836AbXEDKjD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 06:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767810AbXEDKi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 06:38:12 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:46698 "EHLO
-	amsfep12-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2993308AbXEDKf5 (ORCPT
+	Fri, 4 May 2007 06:38:56 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:3563 "EHLO
+	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1767828AbXEDKiu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 06:35:57 -0400
-Message-Id: <20070504103201.055800212@chello.nl>
+	Fri, 4 May 2007 06:38:50 -0400
+Message-Id: <20070504103158.425942315@chello.nl>
 References: <20070504102651.923946304@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 May 2007 12:27:15 +0200
+Date: Fri, 04 May 2007 12:27:04 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -23,90 +23,160 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Daniel Phillips <phillips@google.com>
-Subject: [PATCH 24/40] mm: methods for teaching filesystems about PG_swapcache pages
-Content-Disposition: inline; filename=mm-page_file_methods.patch
+Subject: [PATCH 13/40] net: sk_allocation() - concentrate socket related allocations
+Content-Disposition: inline; filename=net-sk_allocation.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to teach filesystems to handle swap cache pages, two new page
-functions are introduced:
-
-  pgoff_t page_file_index(struct page *);
-  struct address_space *page_file_mapping(struct page *);
-
-page_file_index - gives the offset of this page in the file in PAGE_CACHE_SIZE
-blocks. Like page->index is for mapped pages, this function also gives the
-correct index for PG_swapcache pages.
-
-page_file_mapping - gives the mapping backing the actual page; that is for
-swap cache pages it will give swap_file->f_mapping.
-
-page_offset() is modified to use page_file_index(), so that it will give the
-expected result, even for PG_swapcache pages.
+Introduce sk_allocation(), this function allows to inject sock specific
+flags to each sock related allocation.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>
 ---
- include/linux/mm.h      |   25 +++++++++++++++++++++++++
- include/linux/pagemap.h |    2 +-
- 2 files changed, 26 insertions(+), 1 deletion(-)
+ include/net/sock.h    |    7 ++++++-
+ net/ipv4/tcp_output.c |   11 ++++++-----
+ net/ipv6/tcp_ipv6.c   |   14 +++++++++-----
+ 3 files changed, 21 insertions(+), 11 deletions(-)
 
-Index: linux-2.6-git/include/linux/mm.h
+Index: linux-2.6-git/net/ipv4/tcp_output.c
 ===================================================================
---- linux-2.6-git.orig/include/linux/mm.h	2007-02-21 12:15:01.000000000 +0100
-+++ linux-2.6-git/include/linux/mm.h	2007-02-21 12:15:07.000000000 +0100
-@@ -594,6 +594,16 @@ static inline struct swap_info_struct *p
- 	return get_swap_info_struct(swp_type(swap));
+--- linux-2.6-git.orig/net/ipv4/tcp_output.c
++++ linux-2.6-git/net/ipv4/tcp_output.c
+@@ -2011,7 +2011,7 @@ void tcp_send_fin(struct sock *sk)
+ 	} else {
+ 		/* Socket is locked, keep trying until memory is available. */
+ 		for (;;) {
+-			skb = alloc_skb_fclone(MAX_TCP_HEADER, GFP_KERNEL);
++			skb = alloc_skb_fclone(MAX_TCP_HEADER, sk->sk_allocation);
+ 			if (skb)
+ 				break;
+ 			yield();
+@@ -2044,7 +2044,7 @@ void tcp_send_active_reset(struct sock *
+ 	struct sk_buff *skb;
+ 
+ 	/* NOTE: No TCP options attached and we never retransmit this. */
+-	skb = alloc_skb(MAX_TCP_HEADER, priority);
++	skb = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, priority));
+ 	if (!skb) {
+ 		NET_INC_STATS(LINUX_MIB_TCPABORTFAILED);
+ 		return;
+@@ -2117,7 +2117,8 @@ struct sk_buff * tcp_make_synack(struct 
+ 	__u8 *md5_hash_location;
+ #endif
+ 
+-	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1, GFP_ATOMIC);
++	skb = sock_wmalloc(sk, MAX_TCP_HEADER + 15, 1,
++			sk_allocation(sk, GFP_ATOMIC));
+ 	if (skb == NULL)
+ 		return NULL;
+ 
+@@ -2376,7 +2377,7 @@ void tcp_send_ack(struct sock *sk)
+ 		 * tcp_transmit_skb() will set the ownership to this
+ 		 * sock.
+ 		 */
+-		buff = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
++		buff = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, GFP_ATOMIC));
+ 		if (buff == NULL) {
+ 			inet_csk_schedule_ack(sk);
+ 			inet_csk(sk)->icsk_ack.ato = TCP_ATO_MIN;
+@@ -2418,7 +2419,7 @@ static int tcp_xmit_probe_skb(struct soc
+ 	struct sk_buff *skb;
+ 
+ 	/* We don't queue it, tcp_transmit_skb() sets ownership. */
+-	skb = alloc_skb(MAX_TCP_HEADER, GFP_ATOMIC);
++	skb = alloc_skb(MAX_TCP_HEADER, sk_allocation(sk, GFP_ATOMIC));
+ 	if (skb == NULL)
+ 		return -1;
+ 
+Index: linux-2.6-git/include/net/sock.h
+===================================================================
+--- linux-2.6-git.orig/include/net/sock.h
++++ linux-2.6-git/include/net/sock.h
+@@ -415,6 +415,11 @@ static inline int sock_flag(struct sock 
+ 	return test_bit(flag, &sk->sk_flags);
  }
  
-+static inline
-+struct address_space *page_file_mapping(struct page *page)
++static inline gfp_t sk_allocation(struct sock *sk, gfp_t gfp_mask)
 +{
-+#ifdef CONFIG_SWAP_FILE
-+	if (unlikely(PageSwapCache(page)))
-+		return page_swap_info(page)->swap_file->f_mapping;
-+#endif
-+	return page->mapping;
++	return gfp_mask;
 +}
 +
- static inline int PageAnon(struct page *page)
+ static inline void sk_acceptq_removed(struct sock *sk)
  {
- 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
-@@ -611,6 +621,21 @@ static inline pgoff_t page_index(struct 
- }
+ 	sk->sk_ack_backlog--;
+@@ -1207,7 +1212,7 @@ static inline struct sk_buff *sk_stream_
+ 	int hdr_len;
  
- /*
-+ * Return the file index of the page. Regular pagecache pages use ->index
-+ * whereas swapcache pages use swp_offset(->private)
-+ */
-+static inline pgoff_t page_file_index(struct page *page)
-+{
-+#ifdef CONFIG_SWAP_FILE
-+	if (unlikely(PageSwapCache(page))) {
-+		swp_entry_t swap = { .val = page_private(page) };
-+		return swp_offset(swap);
-+	}
-+#endif
-+	return page->index;
-+}
-+
-+/*
-  * The atomic page->_mapcount, like _count, starts from -1:
-  * so that transitions both from it and to it can be tracked,
-  * using atomic_inc_and_test and atomic_add_negative(-1).
-Index: linux-2.6-git/include/linux/pagemap.h
+ 	hdr_len = SKB_DATA_ALIGN(sk->sk_prot->max_header);
+-	skb = alloc_skb_fclone(size + hdr_len, gfp);
++	skb = alloc_skb_fclone(size + hdr_len, sk_allocation(sk, gfp));
+ 	if (skb) {
+ 		skb->truesize += mem;
+ 		if (sk_stream_wmem_schedule(sk, skb->truesize)) {
+Index: linux-2.6-git/net/ipv6/tcp_ipv6.c
 ===================================================================
---- linux-2.6-git.orig/include/linux/pagemap.h	2007-02-21 12:14:54.000000000 +0100
-+++ linux-2.6-git/include/linux/pagemap.h	2007-02-21 12:15:07.000000000 +0100
-@@ -120,7 +120,7 @@ extern void __remove_from_page_cache(str
-  */
- static inline loff_t page_offset(struct page *page)
- {
--	return ((loff_t)page->index) << PAGE_CACHE_SHIFT;
-+	return ((loff_t)page_file_index(page)) << PAGE_CACHE_SHIFT;
- }
+--- linux-2.6-git.orig/net/ipv6/tcp_ipv6.c
++++ linux-2.6-git/net/ipv6/tcp_ipv6.c
+@@ -581,7 +581,8 @@ static int tcp_v6_md5_do_add(struct sock
+ 	} else {
+ 		/* reallocate new list if current one is full. */
+ 		if (!tp->md5sig_info) {
+-			tp->md5sig_info = kzalloc(sizeof(*tp->md5sig_info), GFP_ATOMIC);
++			tp->md5sig_info = kzalloc(sizeof(*tp->md5sig_info),
++					sk_allocation(sk, GFP_ATOMIC));
+ 			if (!tp->md5sig_info) {
+ 				kfree(newkey);
+ 				return -ENOMEM;
+@@ -590,7 +591,8 @@ static int tcp_v6_md5_do_add(struct sock
+ 		tcp_alloc_md5sig_pool();
+ 		if (tp->md5sig_info->alloced6 == tp->md5sig_info->entries6) {
+ 			keys = kmalloc((sizeof (tp->md5sig_info->keys6[0]) *
+-				       (tp->md5sig_info->entries6 + 1)), GFP_ATOMIC);
++				       (tp->md5sig_info->entries6 + 1)),
++				       sk_allocation(sk, GFP_ATOMIC));
  
- static inline pgoff_t linear_page_index(struct vm_area_struct *vma,
+ 			if (!keys) {
+ 				tcp_free_md5sig_pool();
+@@ -715,7 +717,7 @@ static int tcp_v6_parse_md5_keys (struct
+ 		struct tcp_sock *tp = tcp_sk(sk);
+ 		struct tcp_md5sig_info *p;
+ 
+-		p = kzalloc(sizeof(struct tcp_md5sig_info), GFP_KERNEL);
++		p = kzalloc(sizeof(struct tcp_md5sig_info), sk->allocation);
+ 		if (!p)
+ 			return -ENOMEM;
+ 
+@@ -1011,7 +1013,7 @@ static void tcp_v6_send_reset(struct soc
+ 	 */
+ 
+ 	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
+-			 GFP_ATOMIC);
++			 sk_allocation(sk, GFP_ATOMIC));
+ 	if (buff == NULL)
+ 		return;
+ 
+@@ -1090,10 +1092,12 @@ static void tcp_v6_send_ack(struct tcp_t
+ 	struct tcp_md5sig_key *key;
+ 	struct tcp_md5sig_key tw_key;
+ #endif
++	gfp_t gfp_mask = GFP_ATOMIC;
+ 
+ #ifdef CONFIG_TCP_MD5SIG
+ 	if (!tw && skb->sk) {
+ 		key = tcp_v6_md5_do_lookup(skb->sk, &ipv6_hdr(skb)->daddr);
++		gfp_mask = sk_allocation(skb->sk, gfp_mask);
+ 	} else if (tw && tw->tw_md5_keylen) {
+ 		tw_key.key = tw->tw_md5_key;
+ 		tw_key.keylen = tw->tw_md5_keylen;
+@@ -1111,7 +1115,7 @@ static void tcp_v6_send_ack(struct tcp_t
+ #endif
+ 
+ 	buff = alloc_skb(MAX_HEADER + sizeof(struct ipv6hdr) + tot_len,
+-			 GFP_ATOMIC);
++			 gfp_mask);
+ 	if (buff == NULL)
+ 		return;
+ 
 
 --
 
