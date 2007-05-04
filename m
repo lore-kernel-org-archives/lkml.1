@@ -1,59 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161614AbXEDSpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161619AbXEDSqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161614AbXEDSpn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161610AbXEDSpn
+	id S1161619AbXEDSqa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161610AbXEDSq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:45:43 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:52839 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161600AbXEDSpm (ORCPT
+	Fri, 4 May 2007 14:46:29 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:17499 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161619AbXEDSq2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:45:42 -0400
-Message-ID: <463B7F63.8070508@cs.helsinki.fi>
-Date: Fri, 04 May 2007 21:45:55 +0300
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
+	Fri, 4 May 2007 14:46:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=HzvGE0UoezMY+gWtV6JUpN4kwNT2XrLoGBc7WhufcS4AwZeqM574pVK8qNOeekV3Xtp/wSDRUK05BteGx2tO/g3BM/ASZuUVoIVE09Tq0EmeLwvjOa3eGpsYqDK3ijLPdgJSPY4/FWEF04OwD2CpX7t+FLf29XPLxPQMzDum6vI=
+Message-ID: <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
+Date: Fri, 4 May 2007 20:46:27 +0200
+From: "Antonino Ingargiola" <tritemio@gmail.com>
+To: "Paul Fulghum" <paulkf@microgate.com>
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1178300493.3619.1.camel@amdx2.microgate.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>
-Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
-References: <20070504102651.923946304@chello.nl>	 <20070504103157.215424767@chello.nl>	 <Pine.LNX.4.64.0705040932200.22033@schroedinger.engr.sgi.com>	 <1178301545.24217.56.camel@twins>	 <Pine.LNX.4.64.0705041104110.23539@schroedinger.engr.sgi.com>	 <1178302904.2767.6.camel@lappy>	 <Pine.LNX.4.64.0705041128270.24283@schroedinger.engr.sgi.com> <1178303538.2767.9.camel@lappy>
-In-Reply-To: <1178303538.2767.9.camel@lappy>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
+	 <463B4988.9090005@microgate.com>
+	 <1178290160.3913.2.camel@amdx2.microgate.com>
+	 <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
+	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
+	 <463B7534.6000207@microgate.com>
+	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
+	 <1178299247.3769.0.camel@amdx2.microgate.com>
+	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
+	 <1178300493.3619.1.camel@amdx2.microgate.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 11:30 -0700, Christoph Lameter wrote:
-> > Hmmm... Maybe lets have
-> >
-> > unsigned kmem_estimate_pages(struct kmem_cache *slab_cache, int objects)
-> >
-> > which would calculate the worst case memory scenario for allocation the 
-> > number of indicated objects?
+On 5/4/07, Paul Fulghum <paulkf@microgate.com> wrote:
+> On Fri, 2007-05-04 at 19:25 +0200, Antonino Ingargiola wrote:
+>
+> > No. Ehmm ... I've an usb keybord and vga monitor on a standard desktop pc.
+>
+> OK, I'm stumped.
+>
+> I don't see how my patch could cause the machine to not boot
+> and I'm not seeing that behavior here.
 
-On Fri, 4 May 2007, Peter Zijlstra wrote:
-> Perfectly fine with me, Pekka, any objections?
+I can boot it hitting SysReq+K, but only in text mode. X start but I
+can't do login (the mouse moves but I cant enter username and
+password). Furthermore if I hit some key in GDM I can't switch to text
+console anymore. If I switch to text-mode after boot all seems to
+work. Maybe this is related to some important process I kill with the
+SysReq key.
 
-Again, slab has no way of actually estimating how many pages you need 
-for a given number of objects. So we end up calculating some upper bound 
-which doesn't belong in mm/slab.c. I am perfectly okay with:
+I'm quite confident the system blocks on "Setting consoles fonts and
+modes.", and thus during the boot script console-screen.h. I'll try to
+see which commands blocks...
 
-   (1) kmem_nr_bytes_per_object which is what Peter has now
+BTW, I've tried the serial port in text mode. With the patch, flushing
+the input results effectively in a complete flush. However after doing
+the flush I can't read any char anymore without closing and reopening
+the port. I've verified this behavior both communicating between two
+serial port and both communicating with an usb-serial device (driver
+cdc-acm).
 
-or alternatively,
+Regards,
 
-   (2) kmem_nr_objects_per_page which I think Christoph suggested
-
-Both of them, the slab knows the answer, and doesn't need to guess. It's 
-up to the caller to figure out what the acceptable upper bound is.
-
-			Pekka
+  ~ Antonio
