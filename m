@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031410AbXEDQwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031395AbXEDQxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031410AbXEDQwz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 12:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031398AbXEDQw1
+	id S1031395AbXEDQxU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031418AbXEDQwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 12:52:27 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:5980 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755432AbXEDQwR (ORCPT
+	Fri, 4 May 2007 12:52:55 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:13257 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031395AbXEDQwq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 12:52:17 -0400
-Message-Id: <20070504165242.072091897@de.ibm.com>
-References: <20070504165016.908033855@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 04 May 2007 18:50:21 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 5/9] cio: Deprecate read_dev_chars() and read_conf_data{,_lpm}().
-Content-Disposition: inline; filename=010-cio-deprecate1.diff
+	Fri, 4 May 2007 12:52:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=JpjUusOULDOi3UghPT4M8LRMCdY606uQMhrNyCzYoF3PZTV3uGW9WGwmir0m0EMoyAF2K1zDlkEiOkRsfk0RfEWpX+jgqtyQtANvkrWGFgboZn/YCGFT3dT8jjbs/mgQskYLlawLsfZ2SW4e5QE3VLmijFArSV9dAL84HB7clUk=
+Message-ID: <463B64D1.9080007@gmail.com>
+Date: Fri, 04 May 2007 18:52:33 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] KBUILD: Drop tty.h and isicom.h from include/linux/Kbuild.
+References: <Pine.LNX.4.64.0705041242490.27723@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0705041242490.27723@localhost.localdomain>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Alan Cox
 
-These helper functions are a leftover from 2.4 sync I/O and are a
-notorious source for bugs. They lead to device driver specific code
-creeping into cio, and some issues can't really be fixed at all.
+Robert P. J. Day napsal(a):
+> Drop the entries for tty.h and isicom.h from the include/linux/Kbuild
+> file, since "make headers_install" just generates empty files for
+> them.
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-Device drivers can easily implement those functions themselves in a
-more robust manner, so let's get rid of them.
+Acked-by: Jiri Slaby <jirislaby@gmail.com> (isicom part)
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
+Unsure for tty.h -- won't this break too much of apps' builds?
 
- Documentation/feature-removal-schedule.txt |   17 +++++++++++++++++
- include/asm-s390/ccwdev.h                  |    6 +++---
- 2 files changed, 20 insertions(+), 3 deletions(-)
+> ---
+> 
+> i've submitted a patch to do this at least twice before.  is there
+> some reason those empty generated header are being so tenacious?
+> 
+> diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+> index 4ff0f57..63de91a 100644
+> --- a/include/linux/Kbuild
+> +++ b/include/linux/Kbuild
+> @@ -239,7 +239,6 @@ unifdef-y += ipv6_route.h
+>  unifdef-y += isdn.h
+>  unifdef-y += isdnif.h
+>  unifdef-y += isdn_ppp.h
+> -unifdef-y += isicom.h
+>  unifdef-y += jbd.h
+>  unifdef-y += joystick.h
+>  unifdef-y += kdev_t.h
+> @@ -320,7 +319,6 @@ unifdef-y += sysctl.h
+>  unifdef-y += tcp.h
+>  unifdef-y += time.h
+>  unifdef-y += timex.h
+> -unifdef-y += tty.h
+>  unifdef-y += types.h
+>  unifdef-y += udf_fs_i.h
+>  unifdef-y += udp.h
 
-Index: quilt-2.6/Documentation/feature-removal-schedule.txt
-===================================================================
---- quilt-2.6.orig/Documentation/feature-removal-schedule.txt	2007-05-04 18:48:36.000000000 +0200
-+++ quilt-2.6/Documentation/feature-removal-schedule.txt	2007-05-04 18:50:15.000000000 +0200
-@@ -314,3 +314,20 @@
- Who:	David S. Miller <davem@davemloft.net>
- 
- ---------------------------
-+
-+What:	read_dev_chars(), read_conf_data{,_lpm}() (s390 common I/O layer)
-+When:	December 2007
-+Why:	These functions are a leftover from 2.4 times. They have several
-+	problems:
-+	- Duplication of checks that are done in the device driver's
-+	  interrupt handler
-+	- common I/O layer can't do device specific error recovery
-+	- device driver can't be notified for conditions happening during
-+	  execution of the function
-+	Device drivers should issue the read device characteristics and read
-+	configuration data ccws and do the appropriate error handling
-+	themselves.
-+Who:	Cornelia Huck <cornelia.huck@de.ibm.com>
-+
-+---------------------------
-+
-Index: quilt-2.6/include/asm-s390/ccwdev.h
-===================================================================
---- quilt-2.6.orig/include/asm-s390/ccwdev.h	2007-05-04 18:48:36.000000000 +0200
-+++ quilt-2.6/include/asm-s390/ccwdev.h	2007-05-04 18:50:15.000000000 +0200
-@@ -164,9 +164,9 @@
- extern int ccw_device_halt(struct ccw_device *, unsigned long);
- extern int ccw_device_clear(struct ccw_device *, unsigned long);
- 
--extern int read_dev_chars(struct ccw_device *cdev, void **buffer, int length);
--extern int read_conf_data(struct ccw_device *cdev, void **buffer, int *length);
--extern int read_conf_data_lpm(struct ccw_device *cdev, void **buffer,
-+extern int __deprecated read_dev_chars(struct ccw_device *cdev, void **buffer, int length);
-+extern int __deprecated read_conf_data(struct ccw_device *cdev, void **buffer, int *length);
-+extern int __deprecated read_conf_data_lpm(struct ccw_device *cdev, void **buffer,
- 			      int *length, __u8 lpm);
- 
- extern int ccw_device_set_online(struct ccw_device *cdev);
-
+regards,
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
