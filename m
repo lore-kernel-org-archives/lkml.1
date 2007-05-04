@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S376136AbXEDU1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031549AbXEDU3L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S376136AbXEDU1P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 16:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376137AbXEDU1P
+	id S1031549AbXEDU3L (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 16:29:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031547AbXEDU3L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 16:27:15 -0400
-Received: from 1wt.eu ([62.212.114.60]:2493 "EHLO 1wt.eu"
+	Fri, 4 May 2007 16:29:11 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:51499 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S376136AbXEDU1O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 16:27:14 -0400
-Date: Fri, 4 May 2007 22:27:07 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: =?iso-8859-1?Q?=D8yvind_V=E5gen_J=E6gtnes?= <lorrides@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
-Message-ID: <20070504202707.GE943@1wt.eu>
-References: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com> <20070503205341.GB943@1wt.eu> <Pine.LNX.4.61.0705032255080.18504@yvahk01.tjqt.qr> <d20c3b7d0705031412y11f18288t321c097aaad4b38b@mail.gmail.com> <20070503222334.GD943@1wt.eu> <Pine.LNX.4.61.0705040049520.18504@yvahk01.tjqt.qr> <20070504001147.GA31125@1wt.eu> <Pine.LNX.4.61.0705040947170.18504@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0705040947170.18504@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.5.11
+	id S1031535AbXEDU3J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 16:29:09 -0400
+Message-ID: <463B978C.6050303@garzik.org>
+Date: Fri, 04 May 2007 16:29:00 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>, a.p.zijlstra@chello.nl
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
+       trond.myklebust@fys.uio.no, tgraf@suug.ch, James.Bottomley@SteelEye.com,
+       michaelc@cs.wisc.edu, akpm@linux-foundation.org, phillips@google.com
+Subject: Re: [PATCH 00/40] Swap over Networked storage -v12
+References: <20070504102651.923946304@chello.nl>	<20070504.122716.31641374.davem@davemloft.net>	<1178307709.2767.19.camel@lappy> <20070504.130239.38710262.davem@davemloft.net>
+In-Reply-To: <20070504.130239.38710262.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jan,
-
-On Fri, May 04, 2007 at 09:53:31AM +0200, Jan Engelhardt wrote:
+David Miller wrote:
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Fri, 04 May 2007 21:41:49 +0200
 > 
-> On May 4 2007 02:11, Willy Tarreau wrote:
-> >> 
-> >> Haha. Would you be happy if it ran on a CF card instead? :>
-> >
-> >Yes, because at least when you design a system to run on a CF card, you
-> >ensure never to write on it because you know that would kill it. Then
-> >since you never write on it, it does not wear out and has no problem
-> >running for years (unless you bought cheap end-user CF of course).
+>> How would you prefer I present these?
 > 
-> Funny, I just installed a 'full' Linux distro on a CF, like with a
-> regular harddisk, and it runs in full rw mode. Packing it up in a
-> squashfs and running the thing with aufs did not seem worth
-> the hassle of setting up a specialized initrd. And then, when you
-> need to make one change (firewall), it's faster than recreating the
-> sqfs image.
-> Will see how it long that lasts.
+> How about 8 or 9 at a time?  You are building infrastructure
+> and therefore you could post them 1 at a time for review
+> since each patch should be able to stand on it's own.
 
-This is acceptable for a single machine. I do have something similar
-(though mostly read-only and with home dirs on NFS) at home as an
-always-on browser. But managing a lot of remote machines that way is
-often a difficult work, and the risk of losing remote machines increases
-with the number of machines, the frequency of updates and the write
-rates on the flash.
+Indeed.  Just glancing over the patchset, there are quite a few "easy to 
+apply" cleanup patches that could be fast-forwarded to upstream, without 
+requiring deep thought on the swap-over-storage MM changes or net 
+allocator changes.
 
-Packaging an easily upgradable and remotely testable system really
-is worth it even for a few tens of machines.
+	Jeff
 
-Cheers,
-Willy
+
 
