@@ -1,67 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767722AbXEDIPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767724AbXEDIQD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767722AbXEDIPY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767723AbXEDIPY
+	id S1767724AbXEDIQD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:16:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767715AbXEDIQB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:15:24 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:45428 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767722AbXEDIPV (ORCPT
+	Fri, 4 May 2007 04:16:01 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:48062 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767724AbXEDIPl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:15:21 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <E1HjjyF-00022D-00@calista.eckenfels.net>
-References: <E1HjjyF-00022D-00@calista.eckenfels.net>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0733FB88-3E6E-47B7-A55D-704B5C0DB239@cam.ac.uk>
-Cc: linux-kernel@vger.kernel.org
+	Fri, 4 May 2007 04:15:41 -0400
+Date: Fri, 4 May 2007 01:15:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org,
+       James Bottomley <James.Bottomley@steeleye.com>
+Subject: Re: [PATCH] SCSI: Remove redundant GFP_KERNEL type flag in
+ kmalloc().
+Message-Id: <20070504011535.ff7181fb.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0704300434460.3703@localhost.localdomain>
+References: <Pine.LNX.4.64.0704300434460.3703@localhost.localdomain>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: Ext3 vs NTFS performance
-Date: Fri, 4 May 2007 09:12:31 +0100
-To: Bernd Eckenfels <ecki@lina.inka.de>
-X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3 May 2007, at 23:40, Bernd Eckenfels wrote:
-> In article <20070503211450.GA3869@nifty> you wrote:
->> For this particular case, Ted is probably right and the only place
->> we'll ever see this insane poor man's pre-allocate pattern is from  
->> the
->> Windows CIFS client, in which case fixing this in Samba makes sense -
->> although I'm a bit horrified by the idea of writing 128K of zeroes to
->> pre-allocate... oh well, it's temporary, and what we care about here
->> is the read performance, more than the write performance.
->
-> What about an ioctl or advice to avoid holes? Which could be issued by
-> samba? Is that related to SetFileValidData and SetEndOfFile win32  
-> functions?
-> What is the windows client calling, and what command is transmitted  
-> by smb?
 
-Nothing to do with win32 functions.  Windows does NOT create sparse  
-files therefore it never can have an issue like ext3 does in this  
-scenario.  Windows will cause nice allocations to happen because of  
-this and the 1-byte writes are perfectly sensible in this regard.   
-(Although a little odd as Windows has a proper API for doing  
-preallocation so I don't get why it is not using that instead...)
+Please be careful to add the appropriate cc's.
 
-As far as I know the only time Windows will create sparse files is if  
-you specifically mark a file as sparse using the FSCTL_SET_SPARSE  
-ioctl and then create a sparse region using the FSCTL_SET_ZERO_DATA  
-ioctl.
+On Mon, 30 Apr 2007 04:37:22 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
 
-Best regards,
+> 
+> Remove the apparently redundant GFP_KERNEL type flag in the call to
+> kmalloc().
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
+> ---
+> 
+> diff --git a/drivers/scsi/aic7xxx_old.c b/drivers/scsi/aic7xxx_old.c
+> index a988d5a..765ded0 100644
+> --- a/drivers/scsi/aic7xxx_old.c
+> +++ b/drivers/scsi/aic7xxx_old.c
+> @@ -6581,7 +6581,7 @@ aic7xxx_slave_alloc(struct scsi_device *SDptr)
+>    struct aic7xxx_host *p = (struct aic7xxx_host *)SDptr->host->hostdata;
+>    struct aic_dev_data *aic_dev;
+> 
+> -  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
+> +  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC);
 
-	Anton
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
+No, this converts the allocation from a robust one which can sleep into a
+flakey one which cannot.
 
+If we want to just clean this code up, we should switch to
 
+	GFP_KERNEL|__GFP_HIGH
+
+and add a comment explaining why we're turning on __GFP_HIGH (pointlessly,
+I suspect).
+
+However I suspect what the code really meant to do was to use just
+GFP_KERNEL.  It's been that way since
+
+commit 5c9342ceb292ac5c619db6eef4ef427a64bcd436
+Author: torvalds <torvalds>
+Date:   Thu Nov 7 04:54:32 2002 +0000
+
+    Merge bk://linux-scsi.bkbits.net/scsi-dledford
+    into home.transmeta.com:/home/torvalds/v2.5/linux
+    
+    2002/11/06 16:40:20-05:00 dledford
+    aic7xxx_old: multiple updates and fixes, driver ported to scsi
+        mid-layer new error handling scheme
