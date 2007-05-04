@@ -1,67 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767682AbXEDFMK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754558AbXEDFNQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767682AbXEDFMK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 01:12:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767680AbXEDFMK
+	id S1754558AbXEDFNQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 01:13:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbXEDFNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 01:12:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51848 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767663AbXEDFMJ (ORCPT
+	Fri, 4 May 2007 01:13:16 -0400
+Received: from mail6.sea5.speakeasy.net ([69.17.117.8]:50660 "EHLO
+	mail6.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754558AbXEDFNP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 01:12:09 -0400
-Date: Thu, 3 May 2007 22:12:06 -0700
-From: Paul Jackson <pj@sgi.com>
-To: "Ken Chen" <kenchen@google.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, agl@us.ibm.com,
-       hermes@gibson.dropbear.id.au, wli@holomorphy.com, clameter@sgi.com
-Subject: Re: + per-cpuset-hugetlb-accounting-and-administration.patch added
- to -mm tree
-Message-Id: <20070503221206.880b1ec8.pj@sgi.com>
-In-Reply-To: <b040c32a0705032149t2a380f82t8145c1d0f8f6736@mail.gmail.com>
-References: <200705040104.l4414YFR026322@shell0.pdx.osdl.net>
-	<20070503183821.b75e8f57.pj@sgi.com>
-	<b040c32a0705032149t2a380f82t8145c1d0f8f6736@mail.gmail.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 May 2007 01:13:15 -0400
+Date: Thu, 3 May 2007 22:13:13 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Markus Rechberger <mrechberger@gmail.com>, linux-dvb@linuxtv.org,
+       linux-kernel@vger.kernel.org, Manu Abraham <abraham.manu@gmail.com>
+Subject: Re: [linux-dvb] Re: DST/BT878 module customization (..	was:	Critical
+ points about ...)
+In-Reply-To: <1178200976.12651.104.camel@localhost>
+Message-ID: <Pine.LNX.4.58.0705032123340.32689@shell2.speakeasy.net>
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com> 
+ <1178031333.3958.63.camel@localhost>  <Pine.LNX.4.58.0705011606070.309@shell2.speakeasy.net>
+  <1178071431.11109.62.camel@localhost>  <Pine.LNX.4.58.0705020348080.309@shell2.speakeasy.net>
+ <1178200976.12651.104.camel@localhost>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ken wrote:
-> If this is odd, do you have any suggestions for alternative?
+On Thu, 3 May 2007, Mauro Carvalho Chehab wrote:
+> Em Qua, 2007-05-02 às 04:10 -0700, Trent Piepho escreveu:
+> > I promise, this time it's right!
+> > http://linuxtv.org/hg/~tap/dst-new
+>
+> Confirmed. Now the patch is properly working. My tests were done with a
+> board with DST. Those are the results:
+>
+> 1) when DST is unselected, on a board with DST, it will print the errors
+> indicating that the Kconfig items were not selected:
+>
+> DVB: registering new adapter (bttv0).
+> DVB: Unable to find symbol dst_attach()
+> frontend_init: Could not find a Twinhan DST.
+> dvb-bt8xx: A frontend driver was not found for device 109e/0878 subsystem fbfb/f800
+>
+> The only issue is the wrong printk msg, stating that a "frontend driver"
+> were not found. As this issue also happens with the current driver, due
+> the usage of dvb_attach() macro, I don't see any regressions.
+>
+> It would be nice, however, to have a patch making dvb_attach more
+> generic, by e.g. having a variant that allows passing another message.
 
-No, I don't.  Sorry.
+Only this message is from dvb_attach():
+> DVB: Unable to find symbol dst_attach()
 
-It's a touchy problem, and I'm not enough of an expert to know what the
-right tradeoffs are in this matter.
+Is it saying that it cannot load the module that dst_attach() is in (it
+doesn't know what module that is, modprobe knows that).  If you enabled dst
+support and deleted the module, it would be the same.
 
-I agree with your point that if you realize what's going on, namely
-that what cpuset the task reading meminfo is in affects the HugePages
-values that are read, then one can use the interface easily enough.
+If you turn off dvb_attach() and also disable dst, you should instead get
+this message:
+dst_attach: driver disabled by Kconfig
 
-... how about:
+Maybe that would look nicer with a "DVB:  " prefix?  That would easier if it
+wasn't necessary to update the printk in each boilerplate stub function.  What
+if one macro created these stubs....
 
- 1) don't change the existing HugePages_* values - keep them
-    system-wide, and
+> frontend_init: Could not find a Twinhan DST.
+> dvb-bt8xx: A frontend driver was not found for device 109e/0878 subsystem fbfb/f800
 
- 2) adding two new values, by such names as:
+These two messages are printed by the dvb-bt8xx driver, not by dvb_attach().
+It would be trivial to change of course, but I'm not sure what would be
+pedantically correct for both dst and non-dst based hardware.
 
-	Current_Cpuset_HugePages_Total:    0
-	Current_Cpuset_HugePages_Free:     0
+> There's an argument against the prototype changes on dst_attach and
+> dst_ca_attach since they aren't frontend.
 
-That's certainly an uglier proposal than yours ;).  But at least it
-seems clearer, and doesn't make incompatible changes to what's there.
+The reason I changed that, is the dst_attach() already did return a
+dvb_frontend pointer, it was just inside an enclosing structure.  i.e. what
+existed before:
 
-It does require user level code change to actually benefit from the
-new values, whereas your patch sort of sneaks them in, on the assumption
-that the majority of reads of these values would really prefer getting
-the cpuset relative totals instead.
+{
+	struct dst_state *state;
+	state = dst_attach(...);
+	card->fe = &state->frontend;
+} /* state goes out of scope */
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+The frontend is inside the state struct and the state pointer isn't saved
+anywhere.  dvb-bt8xx just saves a frontend pointer from inside the dst state
+and tosses the state pointer away.  So I changed that to:
+
+	card->fe = dst_attach(...);
