@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767839AbXEDKoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031366AbXEDKol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767839AbXEDKoA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 06:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S2993305AbXEDKf4
+	id S1031366AbXEDKol (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 06:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423622AbXEDKoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 06:35:56 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:43126 "EHLO
+	Fri, 4 May 2007 06:44:04 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:46698 "EHLO
 	amsfep12-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2993260AbXEDKfW (ORCPT
+	by vger.kernel.org with ESMTP id S2993290AbXEDKfz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 06:35:22 -0400
-Message-Id: <20070504103200.579029249@chello.nl>
+	Fri, 4 May 2007 06:35:55 -0400
+Message-Id: <20070504103203.911980306@chello.nl>
 References: <20070504102651.923946304@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 May 2007 12:27:13 +0200
+Date: Fri, 04 May 2007 12:27:27 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -23,183 +23,80 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Daniel Phillips <phillips@google.com>
-Subject: [PATCH 22/40] mm: prepare swap entry methods for use in page methods
-Content-Disposition: inline; filename=mm-swap_entry_methods.patch
+Subject: [PATCH 36/40] iscsi: fixup of the ep_connect patch
+Content-Disposition: inline; filename=iscsi_ep_connect_fix.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move around the swap entry methods in preparation for use from
-page methods.
-
-Also provide a function to obtain the swap_info_struct backing
-a swap cache page.
+Make sure a malicious user-space program cannot crash the kernel module
+by prematurely closing the filedesc.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>
+Acked-by: Mike Christie <michaelc@cs.wisc.edu>
 ---
- include/linux/mm.h      |    8 ++++++++
- include/linux/swap.h    |   48 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/swapops.h |   44 --------------------------------------------
- mm/swapfile.c           |    1 +
- 4 files changed, 57 insertions(+), 44 deletions(-)
+ drivers/scsi/iscsi_tcp.c |   23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-git/include/linux/mm.h
+Index: linux-2.6-git/drivers/scsi/iscsi_tcp.c
 ===================================================================
---- linux-2.6-git.orig/include/linux/mm.h	2007-02-21 12:15:00.000000000 +0100
-+++ linux-2.6-git/include/linux/mm.h	2007-02-21 12:15:01.000000000 +0100
-@@ -17,6 +17,7 @@
- #include <linux/debug_locks.h>
- #include <linux/backing-dev.h>
- #include <linux/mm_types.h>
-+#include <linux/swap.h>
- 
- struct mempolicy;
- struct anon_vma;
-@@ -586,6 +587,13 @@ static inline struct address_space *page
- 	return mapping;
+--- linux-2.6-git.orig/drivers/scsi/iscsi_tcp.c	2007-01-16 14:15:50.000000000 +0100
++++ linux-2.6-git/drivers/scsi/iscsi_tcp.c	2007-01-16 14:24:05.000000000 +0100
+@@ -1830,11 +1830,25 @@ tcp_conn_alloc_fail:
  }
  
-+static inline struct swap_info_struct *page_swap_info(struct page *page)
+ static void
++iscsi_tcp_release_conn(struct iscsi_conn *conn)
 +{
-+	swp_entry_t swap = { .val = page_private(page) };
-+	BUG_ON(!PageSwapCache(page));
-+	return get_swap_info_struct(swp_type(swap));
++	struct iscsi_tcp_conn *tcp_conn = conn->dd_data;
++
++	if (!tcp_conn->sock)
++		return;
++
++	sockfd_put(tcp_conn->sock);
++	tcp_conn->sock = NULL;
++	conn->recv_lock = NULL;
 +}
 +
- static inline int PageAnon(struct page *page)
++static void
+ iscsi_tcp_conn_destroy(struct iscsi_cls_conn *cls_conn)
  {
- 	return ((unsigned long)page->mapping & PAGE_MAPPING_ANON) != 0;
-Index: linux-2.6-git/include/linux/swap.h
-===================================================================
---- linux-2.6-git.orig/include/linux/swap.h	2007-02-21 12:15:00.000000000 +0100
-+++ linux-2.6-git/include/linux/swap.h	2007-02-21 12:15:01.000000000 +0100
-@@ -79,6 +79,50 @@ typedef struct {
- } swp_entry_t;
+ 	struct iscsi_conn *conn = cls_conn->dd_data;
+ 	struct iscsi_tcp_conn *tcp_conn = conn->dd_data;
  
- /*
-+ * swapcache pages are stored in the swapper_space radix tree.  We want to
-+ * get good packing density in that tree, so the index should be dense in
-+ * the low-order bits.
-+ *
-+ * We arrange the `type' and `offset' fields so that `type' is at the five
-+ * high-order bits of the swp_entry_t and `offset' is right-aligned in the
-+ * remaining bits.
-+ *
-+ * swp_entry_t's are *never* stored anywhere in their arch-dependent format.
-+ */
-+#define SWP_TYPE_SHIFT(e)	(sizeof(e.val) * 8 - MAX_SWAPFILES_SHIFT)
-+#define SWP_OFFSET_MASK(e)	((1UL << SWP_TYPE_SHIFT(e)) - 1)
-+
-+/*
-+ * Store a type+offset into a swp_entry_t in an arch-independent format
-+ */
-+static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
-+{
-+	swp_entry_t ret;
-+
-+	ret.val = (type << SWP_TYPE_SHIFT(ret)) |
-+			(offset & SWP_OFFSET_MASK(ret));
-+	return ret;
-+}
-+
-+/*
-+ * Extract the `type' field from a swp_entry_t.  The swp_entry_t is in
-+ * arch-independent format
-+ */
-+static inline unsigned swp_type(swp_entry_t entry)
-+{
-+	return (entry.val >> SWP_TYPE_SHIFT(entry));
-+}
-+
-+/*
-+ * Extract the `offset' field from a swp_entry_t.  The swp_entry_t is in
-+ * arch-independent format
-+ */
-+static inline pgoff_t swp_offset(swp_entry_t entry)
-+{
-+	return entry.val & SWP_OFFSET_MASK(entry);
-+}
-+
-+/*
-  * current->reclaim_state points to one of these when a task is running
-  * memory reclaim
-  */
-@@ -326,6 +370,10 @@ static inline int valid_swaphandles(swp_
- 	return 0;
++	iscsi_tcp_release_conn(conn);
+ 	iscsi_conn_teardown(cls_conn);
+ 	if (tcp_conn->tx_hash.tfm)
+ 		crypto_free_hash(tcp_conn->tx_hash.tfm);
+@@ -1851,6 +1865,7 @@ iscsi_tcp_conn_stop(struct iscsi_cls_con
+ 	struct iscsi_tcp_conn *tcp_conn = conn->dd_data;
+ 
+ 	iscsi_conn_stop(cls_conn, flag);
++	iscsi_tcp_release_conn(conn);
+ 	tcp_conn->hdr_size = sizeof(struct iscsi_hdr);
  }
  
-+static inline struct swap_info_struct *get_swap_info_struct(unsigned type)
-+{
-+	return NULL;
-+}
- #define can_share_swap_page(p)			(page_mapcount(p) == 1)
+@@ -1873,8 +1888,10 @@ iscsi_tcp_conn_bind(struct iscsi_cls_ses
+ 	}
  
- static inline int move_to_swap_cache(struct page *page, swp_entry_t entry)
-Index: linux-2.6-git/include/linux/swapops.h
-===================================================================
---- linux-2.6-git.orig/include/linux/swapops.h	2007-02-21 12:15:00.000000000 +0100
-+++ linux-2.6-git/include/linux/swapops.h	2007-02-21 12:15:01.000000000 +0100
-@@ -1,48 +1,4 @@
- /*
-- * swapcache pages are stored in the swapper_space radix tree.  We want to
-- * get good packing density in that tree, so the index should be dense in
-- * the low-order bits.
-- *
-- * We arrange the `type' and `offset' fields so that `type' is at the five
-- * high-order bits of the swp_entry_t and `offset' is right-aligned in the
-- * remaining bits.
-- *
-- * swp_entry_t's are *never* stored anywhere in their arch-dependent format.
-- */
--#define SWP_TYPE_SHIFT(e)	(sizeof(e.val) * 8 - MAX_SWAPFILES_SHIFT)
--#define SWP_OFFSET_MASK(e)	((1UL << SWP_TYPE_SHIFT(e)) - 1)
--
--/*
-- * Store a type+offset into a swp_entry_t in an arch-independent format
-- */
--static inline swp_entry_t swp_entry(unsigned long type, pgoff_t offset)
--{
--	swp_entry_t ret;
--
--	ret.val = (type << SWP_TYPE_SHIFT(ret)) |
--			(offset & SWP_OFFSET_MASK(ret));
--	return ret;
--}
--
--/*
-- * Extract the `type' field from a swp_entry_t.  The swp_entry_t is in
-- * arch-independent format
-- */
--static inline unsigned swp_type(swp_entry_t entry)
--{
--	return (entry.val >> SWP_TYPE_SHIFT(entry));
--}
--
--/*
-- * Extract the `offset' field from a swp_entry_t.  The swp_entry_t is in
-- * arch-independent format
-- */
--static inline pgoff_t swp_offset(swp_entry_t entry)
--{
--	return entry.val & SWP_OFFSET_MASK(entry);
--}
--
--/*
-  * Convert the arch-dependent pte representation of a swp_entry_t into an
-  * arch-independent swp_entry_t.
-  */
-Index: linux-2.6-git/mm/swapfile.c
-===================================================================
---- linux-2.6-git.orig/mm/swapfile.c	2007-02-21 12:15:00.000000000 +0100
-+++ linux-2.6-git/mm/swapfile.c	2007-02-21 12:15:01.000000000 +0100
-@@ -1764,6 +1764,7 @@ get_swap_info_struct(unsigned type)
- {
- 	return &swap_info[type];
+ 	err = iscsi_conn_bind(cls_session, cls_conn, is_leading, transport_eph);
+-	if (err)
+-		goto done;
++	if (err) {
++		sockfd_put(sock);
++		return err;
++	}
+ 
+ 	/* bind iSCSI connection and socket */
+ 	tcp_conn->sock = sock;
+@@ -1898,8 +1915,6 @@ iscsi_tcp_conn_bind(struct iscsi_cls_ses
+ 	 */
+ 	tcp_conn->in_progress = IN_PROGRESS_WAIT_HEADER;
+ 
+-done:
+-	sockfd_put(sock);
+ 	return err;
  }
-+EXPORT_SYMBOL_GPL(get_swap_info_struct);
  
- /*
-  * swap_lock prevents swap_map being freed. Don't grab an extra
 
 --
 
