@@ -1,50 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXEDIc3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030357AbXEDIgx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932785AbXEDIc3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:32:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932812AbXEDIc3
+	id S1030357AbXEDIgx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:36:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031356AbXEDIgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:32:29 -0400
-Received: from wx-out-0506.google.com ([66.249.82.237]:34004 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932785AbXEDIc2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:32:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=T1AWzHEYH25Xr7vEG9BRI1At+yf0nrmiMKXlDVSP0S/uoyeIu8onvtpgFUfULsqCdsjVRZiTdG27raC87gnyCLd3++wLm72IU/ZZca6YXTcPa4JQVEktN2Bze2yDRUGw7UdsSQC7xb0gTgpC7aq0VZURUFNy12jyzm3u4nVyxk8=
-Message-ID: <99e4df080705040132m41116db3y50c73c79528d6206@mail.gmail.com>
-Date: Fri, 4 May 2007 16:32:27 +0800
-From: "la deng" <ladeng.mimi@gmail.com>
-To: torvalds@linux-foundation.org
-Subject: c 's OOP in VFS vs c++'s OOP
-Cc: linux-kernel@vger.kernel.org
+	Fri, 4 May 2007 04:36:53 -0400
+Received: from gw.ac.upc.es ([147.83.30.3]:57911 "EHLO gw.ac.upc.edu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030357AbXEDIgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 04:36:52 -0400
+Message-ID: <463AF095.30406@ac.upc.edu>
+Date: Fri, 04 May 2007 10:36:37 +0200
+From: "Julio M. Merino Vidal" <jmerino@ac.upc.edu>
+User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-2022-JP; format=flowed
+To: Andi Kleen <andi@firstfloor.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Per-CPU data as a structure
+References: <16C35E62-A26F-49FC-9CD8-7BADFCD97BA5@ac.upc.edu> <p73ps5hx1t2.fsf@bingen.suse.de>
+In-Reply-To: <p73ps5hx1t2.fsf@bingen.suse.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-reference to the c++'s father's interview
+Andi Kleen wrote:
+>> As far as I can tell, the advantage of percpu is that you can define
+>> new "fields" anywhere in the code and independently from the rest of
+>> the system. 
+>>     
+>
+> - Independent maintenance as you noted
+> - Fast access and relatively compact code
+> - Avoids false sharing by keeping cache lines of different CPUs separate
+> - Doesn't waste a lot of memory in padding like NR_CPUs arrays usually
+> need to to avoid the previous point.
+>
+> Any replacement that doesn't have these properties too will probably
+> be not useful.
+>   
+Thank you for the details.  I'll try to stick to per-cpu wherever 
+possible for now.
 
-http://www.artima.com/intv/abstreffi.html
+Anyway, what do you think about adding the above text to the code (percpu.h
+maybe) as documentation?  See the patch below.  (Dunno if the Signed-off-by
+line is appropriate as most of the text is yours.)
 
- fortran and c++ can  achive good performance for they can abstract in
-higher level and  their compiler can think in higher level to avoid
-the cache miss (like in the array vs vector )or to achive the "no
-code" Optimization
+Signed-off-by: Julio M. Merino Vidal <jmerino@ac.upc.edu>
 
-The vfs using c to OOP but c compiler can't have the high level
-Intelligence as the c++ or fortran's compiler to help at the high
-level Optimization
+diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+index 600e3d3..b8e8b8c 100644
+--- a/include/linux/percpu.h
++++ b/include/linux/percpu.h
+@@ -1,6 +1,21 @@
+ #ifndef __LINUX_PERCPU_H
+ #define __LINUX_PERCPU_H
+ 
++/*
++ * percpu provides a mechanism to define variables that are specific to 
+each
++ * CPU in the system.
++ *
++ * Each variable is defined as an independent array of NR_CPUS elements.
++ * This approach is used instead of a per-CPU structure because it has the
++ * following advantages:
++ * - Independent maintenance: a source file can define new per-CPU
++ *   variables without distorting others.
++ * - Fast access and relatively compact code.
++ * - Avoids false sharing by keeping cache lines of different CPUs 
+separate.
++ * - Doesn't waste a lot of memory in padding like NR_CPUs arrays usually
++ *   need to to avoid the previous point.
++ */
++
+ #include <linux/spinlock.h> /* For preempt_disable() */
+ #include <linux/slab.h> /* For kmalloc() */
+ #include <linux/smp.h>
 
 
-one benchmark showed the c insert in the array will slow by speed of   1/17
-
-
-Then ,what's the power of c OOP vs c++ with the compiler's
-Intelligence in OOP?or maybe the c compiler have Outdated？
-
-any input will be appreciated.
+Kind regards.
