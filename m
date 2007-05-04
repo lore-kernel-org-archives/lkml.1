@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbXEDKj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbXEDKm7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbXEDKj5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 06:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767824AbXEDKjd
+	id S1755023AbXEDKm7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 06:42:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767788AbXEDKiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 06:39:33 -0400
+	Fri, 4 May 2007 06:38:50 -0400
 Received: from amsfep17-int.chello.nl ([213.46.243.15]:3563 "EHLO
 	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1767843AbXEDKjP (ORCPT
+	by vger.kernel.org with ESMTP id S1767810AbXEDKim (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 06:39:15 -0400
-Message-Id: <20070504103202.950175722@chello.nl>
+	Fri, 4 May 2007 06:38:42 -0400
+Message-Id: <20070504103157.687590214@chello.nl>
 References: <20070504102651.923946304@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 May 2007 12:27:23 +0200
+Date: Fri, 04 May 2007 12:27:01 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -22,91 +22,33 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        James Bottomley <James.Bottomley@SteelEye.com>,
        Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 32/40] block: add a swapdev callback to the request_queue
-Content-Disposition: inline; filename=blk_queue_swapdev.patch
+       Daniel Phillips <phillips@google.com>, James Morris <jmorris@namei.org>
+Subject: [PATCH 10/40] selinux: tag avc cache alloc as non-critical
+Content-Disposition: inline; filename=mm-selinux-emergency.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Networked storage devices need a swap-on/off callback in order to setup
-some state and reserve memory. Place the block device callback in the
-request_queue as suggested by James Bottomley.
+Failing to allocate a cache entry will only harm performance not correctness.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>
+Acked-by: James Morris <jmorris@namei.org>
 ---
- include/linux/blkdev.h |   19 +++++++++++++++++++
- mm/swapfile.c          |    4 ++++
- 2 files changed, 23 insertions(+)
+ security/selinux/avc.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6-git/include/linux/blkdev.h
+Index: linux-2.6-git/security/selinux/avc.c
 ===================================================================
---- linux-2.6-git.orig/include/linux/blkdev.h	2007-01-08 11:53:13.000000000 +0100
-+++ linux-2.6-git/include/linux/blkdev.h	2007-01-16 14:14:50.000000000 +0100
-@@ -341,6 +341,7 @@ typedef int (merge_bvec_fn) (request_que
- typedef int (issue_flush_fn) (request_queue_t *, struct gendisk *, sector_t *);
- typedef void (prepare_flush_fn) (request_queue_t *, struct request *);
- typedef void (softirq_done_fn)(struct request *);
-+typedef int (swapdev_fn)(void*, int);
+--- linux-2.6-git.orig/security/selinux/avc.c	2007-02-14 08:31:13.000000000 +0100
++++ linux-2.6-git/security/selinux/avc.c	2007-02-14 10:10:47.000000000 +0100
+@@ -332,7 +332,7 @@ static struct avc_node *avc_alloc_node(v
+ {
+ 	struct avc_node *node;
  
- enum blk_queue_state {
- 	Queue_down,
-@@ -379,6 +380,8 @@ struct request_queue
- 	issue_flush_fn		*issue_flush_fn;
- 	prepare_flush_fn	*prepare_flush_fn;
- 	softirq_done_fn		*softirq_done_fn;
-+	swapdev_fn		*swapdev_fn;
-+	void			*swapdev_obj;
+-	node = kmem_cache_zalloc(avc_node_cachep, GFP_ATOMIC);
++	node = kmem_cache_zalloc(avc_node_cachep, GFP_ATOMIC|__GFP_NOMEMALLOC);
+ 	if (!node)
+ 		goto out;
  
- 	/*
- 	 * Dispatch queue sorting
-@@ -766,6 +769,22 @@ request_queue_t *blk_alloc_queue(gfp_t);
- request_queue_t *blk_alloc_queue_node(gfp_t, int);
- extern void blk_put_queue(request_queue_t *);
- 
-+static inline
-+void blk_queue_swapdev(struct request_queue *rq,
-+		       swapdev_fn *swapdev_fn, void *swapdev_obj)
-+{
-+	rq->swapdev_fn = swapdev_fn;
-+	rq->swapdev_obj = swapdev_obj;
-+}
-+
-+static inline
-+int blk_queue_swapdev_fn(struct request_queue *rq, int enable)
-+{
-+	if (rq->swapdev_fn)
-+		return rq->swapdev_fn(rq->swapdev_obj, enable);
-+	return 0;
-+}
-+
- /*
-  * tag stuff
-  */
-Index: linux-2.6-git/mm/swapfile.c
-===================================================================
---- linux-2.6-git.orig/mm/swapfile.c	2007-01-15 09:59:02.000000000 +0100
-+++ linux-2.6-git/mm/swapfile.c	2007-01-16 14:14:50.000000000 +0100
-@@ -1305,6 +1305,7 @@ asmlinkage long sys_swapoff(const char _
- 	inode = mapping->host;
- 	if (S_ISBLK(inode->i_mode)) {
- 		struct block_device *bdev = I_BDEV(inode);
-+		blk_queue_swapdev_fn(bdev->bd_disk->queue, 0);
- 		set_blocksize(bdev, p->old_block_size);
- 		bd_release(bdev);
- 	} else {
-@@ -1524,6 +1525,9 @@ asmlinkage long sys_swapon(const char __
- 		error = set_blocksize(bdev, PAGE_SIZE);
- 		if (error < 0)
- 			goto bad_swap;
-+		error = blk_queue_swapdev_fn(bdev->bd_disk->queue, 1);
-+		if (error < 0)
-+			goto bad_swap;
- 		p->bdev = bdev;
- 	} else if (S_ISREG(inode->i_mode)) {
- 		p->bdev = inode->i_sb->s_bdev;
 
 --
 
