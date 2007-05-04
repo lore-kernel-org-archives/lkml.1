@@ -1,68 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031463AbXEDSCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031462AbXEDSDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031463AbXEDSCk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031472AbXEDSCj
+	id S1031462AbXEDSDz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031454AbXEDSDy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:02:39 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:42112 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031463AbXEDSCg (ORCPT
+	Fri, 4 May 2007 14:03:54 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46116 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031465AbXEDSDx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:02:36 -0400
-Date: Fri, 4 May 2007 11:01:58 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       viro@ftp.linux.org.uk, linux-ext4@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-git4 Scheduler, NOHZ, VFS bugs
-Message-Id: <20070504110158.d2808170.akpm@linux-foundation.org>
-In-Reply-To: <463B5D63.2030109@googlemail.com>
-References: <463B5D63.2030109@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Fri, 4 May 2007 14:03:53 -0400
+Date: Fri, 4 May 2007 11:03:52 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
+Subject: Re: [PATCH] change global zonelist order v4 [0/2]
+In-Reply-To: <200705041036.01904.jbarnes@virtuousgeek.org>
+Message-ID: <Pine.LNX.4.64.0705041055370.23539@schroedinger.engr.sgi.com>
+References: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com>
+ <1178299460.5236.35.camel@localhost> <Pine.LNX.4.64.0705041027030.22643@schroedinger.engr.sgi.com>
+ <200705041036.01904.jbarnes@virtuousgeek.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 May 2007 18:20:51 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+On Fri, 4 May 2007, Jesse Barnes wrote:
 
-> I ran this script tree times,
-> 
-> #! /bin/sh
-> 
-> for i in `find /sys/ -type f`
-> do
->     echo "wyświetlam $i"
->     sudo cat $i > /dev/null
-> done
-> 
-> First run - scheduler bug
-> Second run - NOHZ bug
-> Third - VFS bug
-> 
-> Hmmmm...
-> 
-> [93298.252601] BUG: at /mnt/md0/devel/linux-git/kernel/sched.c:3241 add_preempt_count()
-> [93298.260334]  [<c0105039>] show_trace_log_lvl+0x1a/0x2f
-> [93298.265507]  [<c0105720>] show_trace+0x12/0x14
-> [93298.269974]  [<c01057d2>] dump_stack+0x16/0x18
-> [93298.274434]  [<c011d18a>] add_preempt_count+0x89/0x8b
-> [93298.279501]  [<c0126492>] irq_enter+0xd/0x2e
-> [93298.283788]  [<c0114c1e>] smp_apic_timer_interrupt+0x2a/0x84
-> [93298.289458]  [<c0104b2b>] apic_timer_interrupt+0x33/0x38
-> [93298.294783]  [<c0257b79>] show_uevent+0x58/0xcd
-> [93298.299329]  =======================
-> [93390.468056] NOHZ: local_softirq_pending 22
-> [93447.105850] NOHZ: local_softirq_pending 22
-> [93450.332884] BUG: unable to handle kernel paging request at virtual address 3e343c0c
-> [93450.340626]  printing eip:
-> [93450.343333] c018e2bc
-> [93450.345520] *pde = 00000000
-> [93450.348314] Oops: 0000 [#1]
+> You mentioned that if node 0 has a small ZONE_NORMAL and the ZONE_DMA for 
+> the system, defaulting to using ZONE_NORMAL on all nodes first would be a 
+> bad idea.  Is that really true?  Maybe for ZONE_DMA32 it is since that 
+> first node could have a few gigs of memory, but for regular ZONE_DMA it's 
+> probably the right thing to do...
 
-Nice.  What was the last file which it read before crashing?
+If the fallback sequence is f.e. Node 0 NORMAL (500m) Node 1 NORMAL(4G) 
+node 2 Normal (4G) ... many more ... Node 0 DMA32 (~4G) Node 0 DMA then 
+memory is frequently going to be not optimally placed for allocations from 
+processes running on node 0 because node 0 is memory starved. 
+Allocations will be made from node 1 which may create a shortage there 
+which fall again. Could be a cascade effect because the symmetry in 
+memory is no longer there.
 
-Are you able to consistently crash it by reading just that file?
+The proposal to create an additional node may solve that to some extend by placing the 
+DMA node nearer to node 0.
+
+Maybe the best approach is to leave things as is and just be careful with 
+I/O to 32 bits? I do not think there is an easy solution. A 64 bit NUMA 
+platforms should have I/O that is 64 bit capable and not restricted to DMA 
+zones.
+
+> > So aside from the comment issues Lee already pointed out, I think 
+> Kamezawa-san's patch from 
+> http://marc.info/?l=linux-mm&m=117758484122663&w=4 seems reasonable.
+
+If we are going to do this then the patch needs to be fine tuned first and 
+the impact on core code needs to be minimized. I want to make really sure 
+that platforms without DMA zones work right, if zones are empty it should 
+work right and weird x86_64 combinations of NORMAL, DMA and DMA32 
+distributed over various nodes would need to be covered and tested first.
+
+How will this affect NUMAQ (32 bit NUMA) where we have HIGHMEM on the 
+(most) nodes and NORMAL/DMA on node 0?
