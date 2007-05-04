@@ -1,156 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161369AbXEDSVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161469AbXEDSZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161369AbXEDSVj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161483AbXEDSVV
+	id S1161469AbXEDSZq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161474AbXEDSZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:21:21 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:15335 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161434AbXEDSUw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:20:52 -0400
-Date: Fri, 4 May 2007 11:22:30 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Pekka Enberg" <penberg@cs.helsinki.fi>, hugh@veritas.com
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, jwboyer@linux.vnet.ibm.com,
-       grant.likely@secretlab.ca, jketreno@linux.intel.com
-Subject: Re: [PATCH v2] lib/hexdump update on feedback
-Message-Id: <20070504112230.d24b00b6.randy.dunlap@oracle.com>
-In-Reply-To: <84144f020705040239l757b35b5jf3ab4cb0d4b1a016@mail.gmail.com>
-References: <20070502153556.3c995de7.randy.dunlap@oracle.com>
-	<20070502154557.b463c9c3.akpm@linux-foundation.org>
-	<46391730.2080003@oracle.com>
-	<20070502160635.31dd91e6.akpm@linux-foundation.org>
-	<20070502161533.cbf38b4b.randy.dunlap@oracle.com>
-	<20070503174924.d0cbafa3.randy.dunlap@oracle.com>
-	<84144f020705040239l757b35b5jf3ab4cb0d4b1a016@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 May 2007 14:25:46 -0400
+Received: from mga09.intel.com ([134.134.136.24]:20273 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161469AbXEDSZp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 14:25:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,493,1170662400"; 
+   d="scan'208";a="83838545"
+Message-ID: <463B7AA7.9050302@intel.com>
+Date: Fri, 04 May 2007 11:25:43 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+MIME-Version: 1.0
+To: Michel Lespinasse <walken@zoy.org>
+CC: "Kok, Auke" <auke-jan.h.kok@intel.com>, Chuck Ebbert <cebbert@redhat.com>,
+       linux-kernel@vger.kernel.org, Dave Jones <davej@redhat.com>,
+       Jeb Cramer <cramerj@intel.com>, John Ronciak <john.ronciak@intel.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+Subject: Re: e1000 issue on DQ965GF board (was 24 lost ticks with 2.6.20.10
+ kernel)
+References: <20070501130715.GB29131@zoy.org> <46375E04.5030506@redhat.com> <20070501214912.GA4048@zoy.org> <4637BA70.8000108@intel.com> <20070502084146.GA6089@zoy.org> <4638D51C.7010603@intel.com> <20070503062701.GA22255@zoy.org>
+In-Reply-To: <20070503062701.GA22255@zoy.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-OriginalArrivalTime: 04 May 2007 18:25:43.0854 (UTC) FILETIME=[A083FCE0:01C78E79]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Michel Lespinasse wrote:
+> On Wed, May 02, 2007 at 11:14:52AM -0700, Kok, Auke wrote:
+>> I just checked and the fix I was referring to earlier didn't make it into 
+>> 2.6.21-final. You can get 2.6.21-git1 from kernel.org which has the fix. See
+>>
+>> http://www.kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git1.log
+> 
+> Good. So I tried that patch (well, actually only the change visible at
+> http://lkml.org/lkml/2007/3/6/268). I patched it into a 2.6.20.11 kernel,
+> using the same config file as previously. The good news is that this fixes
+> my issue: there are no lost ticks anymore, and the link does negotiate a
+> gigabit connection. This is a great improvement for me :)
+> 
+> I still seem to hit an issue if using the ethtool command, though.
+> when using 'ethtool -s eth0 autoneg on', the link comes up at gigabit speed,
+> but a couple seconds later is comes down again, and then up at 100 megabits:
+> 
+> e1000: eth0: e1000_watchdog: NIC Link is Up 1000 Mbps Full Duplex
+> e1000: eth0: e1000_watchdog: NIC Link is Down
+> e1000: eth0: e1000_watchdog: NIC Link is Up 100 Mbps Full Duplex
+> e1000: eth0: e1000_watchdog: 10/100 speed: disabling TSO
+> 
+> The same thing happens if I use ifdown eth0; ifup eth0 too. Once again,
+> I only observe this on my DQ965GF motherboard, the DG965RY board is fine
+> (stays at gigabit speed when I issue these commands).
+> 
+> Is this something you could easily reproduce at Intel or would you want me
+> to look into that issue on my system ?
 
-Rename hex_dumper() to hex_dump_to_buffer().
-Rename hextoasc() macro to hex_asc()
-	[remove conflicts with sky/skfp/skge drivers].
-Change output format to remove '-' in middle of ASCII output and
-	add space between hex and ASCII output.
+can you try turning off the "management enable" function in the BIOS of the 
+DQ965GF? That fixes this issue for us in our labs. A fix for this is also 
+available in our standalone 7.5.5.1 driver (obtainable from e1000.sf.net), but 
+it hasn't made it upstream yet.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- include/linux/kernel.h |    4 ++--
- lib/hexdump.c          |   40 ++++++++++++++++++++--------------------
- 2 files changed, 22 insertions(+), 22 deletions(-)
-
---- linux-2.6.21-git4.orig/include/linux/kernel.h
-+++ linux-2.6.21-git4/include/linux/kernel.h
-@@ -207,11 +207,11 @@ enum {
- 	DUMP_PREFIX_ADDRESS,
- 	DUMP_PREFIX_OFFSET
- };
--extern void hex_dumper(const void *buf, size_t len, char *linebuf,
-+extern void hex_dump_to_buffer(const void *buf, size_t len, char *linebuf,
- 				size_t linebuflen);
- extern void print_hex_dump(const char *level, int prefix_type,
- 				void *buf, size_t len);
--#define hextoasc(x)	"0123456789abcdef"[x]
-+#define hex_asc(x)	"0123456789abcdef"[x]
- 
- #ifdef DEBUG
- /* If you are writing a driver, please use dev_dbg instead */
---- linux-2.6.21-git4.orig/lib/hexdump.c
-+++ linux-2.6.21-git4/lib/hexdump.c
-@@ -13,26 +13,27 @@
- #include <linux/module.h>
- 
- /**
-- * hex_dumper - convert a blob of data to "hex ASCII" in memory
-+ * hex_dump_to_buffer - convert a blob of data to "hex ASCII" in memory
-  * @buf: data blob to dump
-  * @len: number of bytes in the @buf
-  * @linebuf: where to put the converted data
-  * @linebuflen: total size of @linebuf, including space for terminating NUL
-  *
-- * hex_dumper() works on one "line" of output at a time, i.e.,
-+ * hex_dump_to_buffer() works on one "line" of output at a time, i.e.,
-  * 16 bytes of input data converted to hex + ASCII output.
-  *
-- * Given a buffer of u8 data, hex_dumper() converts the input data to a
-- * hex + ASCII dump at the supplied memory location.
-+ * Given a buffer of u8 data, hex_dump_to_buffer() converts the input data
-+ * to a hex + ASCII dump at the supplied memory location.
-  * The converted output is always NUL-terminated.
-  *
-  * E.g.:
-- *	hex_dumper(frame->data, frame->len, linebuf, sizeof(linebuf));
-+ *	hex_dump_to_buffer(frame->data, frame->len, linebuf, sizeof(linebuf));
-  *
-- * Prints the offsets of the block of memory, not addresses:
-- * 0009ab42: 40414243 44454647 48494a4b 4c4d4e4f-@ABCDEFG HIJKLMNO
-+ * example output buffer:
-+ * 40414243 44454647 48494a4b 4c4d4e4f  @ABCDEFGHIJKLMNO
-  */
--void hex_dumper(const void *buf, size_t len, char *linebuf, size_t linebuflen)
-+void hex_dump_to_buffer(const void *buf, size_t len, char *linebuf,
-+			size_t linebuflen)
- {
- 	const u8 *ptr = buf;
- 	u8 ch;
-@@ -42,19 +43,18 @@ void hex_dumper(const void *buf, size_t 
- 		if (j && !(j % 4))
- 			linebuf[lx++] = ' ';
- 		ch = ptr[j];
--		linebuf[lx++] = hextoasc(ch >> 4);
--		linebuf[lx++] = hextoasc(ch & 0x0f);
-+		linebuf[lx++] = hex_asc(ch >> 4);
-+		linebuf[lx++] = hex_asc(ch & 0x0f);
- 	}
--	if (lx < linebuflen)
--		linebuf[lx++] = '-';
--	for (j = 0; (j < 16) && (j < len) && (lx + 2) < linebuflen; j++) {
--		linebuf[lx++] = isprint(ptr[j]) ?  ptr[j] : '.';
--		if (j == 7)
--			linebuf[lx++] = ' ';
-+	if ((lx + 2) < linebuflen) {
-+		linebuf[lx++] = ' ';
-+		linebuf[lx++] = ' ';
- 	}
-+	for (j = 0; (j < 16) && (j < len) && (lx + 2) < linebuflen; j++)
-+		linebuf[lx++] = isprint(ptr[j]) ? ptr[j] : '.';
- 	linebuf[lx++] = '\0';
- }
--EXPORT_SYMBOL(hex_dumper);
-+EXPORT_SYMBOL(hex_dump_to_buffer);
- 
- /**
-  * print_hex_dump - print a text hex dump to syslog for a binary blob of data
-@@ -72,9 +72,9 @@ EXPORT_SYMBOL(hex_dumper);
-  *   print_hex_dump(KERN_DEBUG, DUMP_PREFIX_ADDRESS, frame->data, frame->len);
-  *
-  * Example output using %DUMP_PREFIX_OFFSET:
-- * 0009ab42: 40414243 44454647 48494a4b 4c4d4e4f-@ABCDEFG HIJKLMNO
-+ * 0009ab42: 40414243 44454647 48494a4b 4c4d4e4f  @ABCDEFGHIJKLMNO
-  * Example output using %DUMP_PREFIX_ADDRESS:
-- * ffffffff88089af0: 70717273 74757677 78797a7b 7c7d7e7f-pqrstuvw xyz{|}~.
-+ * ffffffff88089af0: 70717273 74757677 78797a7b 7c7d7e7f  pqrstuvwxyz{|}~.
-  */
- void print_hex_dump(const char *level, int prefix_type, void *buf, size_t len)
- {
-@@ -85,7 +85,7 @@ void print_hex_dump(const char *level, i
- 	for (i = 0; i < len; i += 16) {
- 		linelen = min(remaining, 16);
- 		remaining -= 16;
--		hex_dumper(ptr + i, linelen, linebuf, sizeof(linebuf));
-+		hex_dump_to_buffer(ptr + i, linelen, linebuf, sizeof(linebuf));
- 
- 		switch (prefix_type) {
- 		case DUMP_PREFIX_ADDRESS:
+Auke
