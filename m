@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423704AbXEDKj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbXEDKj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423704AbXEDKj4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 06:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767849AbXEDKjp
+	id S1754925AbXEDKj5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 06:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767841AbXEDKjG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 06:39:45 -0400
+	Fri, 4 May 2007 06:39:06 -0400
 Received: from amsfep17-int.chello.nl ([213.46.243.15]:3563 "EHLO
 	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1767845AbXEDKjI (ORCPT
+	by vger.kernel.org with ESMTP id S1767835AbXEDKi4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 06:39:08 -0400
-Message-Id: <20070504103155.582370247@chello.nl>
-References: <20070504102651.923946304@chello.nl>
+	Fri, 4 May 2007 06:38:56 -0400
+Message-Id: <20070504102651.923946304@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 May 2007 12:26:52 +0200
+Date: Fri, 04 May 2007 12:26:51 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -23,238 +22,82 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Daniel Phillips <phillips@google.com>
-Subject: [PATCH 01/40] mm: page allocation rank
-Content-Disposition: inline; filename=mm-page_alloc-rank.patch
+Subject: [PATCH 00/40] Swap over Networked storage -v12
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce page allocation rank.
+There is a fundamental deadlock associated with paging; when writing out a page
+to free memory requires free memory to complete. The usually solution is to
+keep a small amount of memory available at all times so we can overcome this
+problem. This however assumes the amount of memory needed for writeout is
+(constant and) smaller than the provided reserve.
 
-This allocation rank is an measure of the 'hardness' of the page allocation.
-Where hardness refers to how deep we have to reach (and thereby if reclaim 
-was activated) to obtain the page.
+It is this latter assumption that breaks when doing writeout over network.
+Network can take up an unspecified amount of memory while waiting for a reply
+to our write request. This re-introduces the deadlock; we might never complete
+the writeout, for we might not have enough memory to receive the completion
+message.
 
-It basically is a mapping from the ALLOC_/gfp flags into a scalar quantity,
-which allows for comparisons of the kind: 
-  'would this allocation have succeeded using these gfp flags'.
+The proposed solution is simple, only allow traffic servicing the VM to make
+use of the reserves.
 
-For the gfp -> alloc_flags mapping we use the 'hardest' possible, those
-used by __alloc_pages() right before going into direct reclaim.
+This however implies you know what packets are for whom, which generally
+speaking you don't. Hence we need to receive all packets but discard them as
+soon as we encounter a non VM bound packet allocated from the reserves.
 
-The alloc_flags -> rank mapping is given by: 2*2^wmark - harder - 2*high
-where wmark = { min = 1, low, high } and harder, high are booleans.
-This gives:
-  0 is the hardest possible allocation - ALLOC_NO_WATERMARK,
-  1 is ALLOC_WMARK_MIN|ALLOC_HARDER|ALLOC_HIGH,
-  ...
-  15 is ALLOC_WMARK_HIGH|ALLOC_HARDER,
-  16 is the softest allocation - ALLOC_WMARK_HIGH.
+Also knowing it is headed towards the VM needs a little help, hence we
+introduce the socket flag SOCK_VMIO to mark sockets with.
 
-Rank <= 4 will have woke up kswapd and when also > 0 might have ran into
-direct reclaim.
+Of course, since we are paging all this has to happen in kernel-space, since
+user-space might just not be there.
 
-Rank > 8 rarely happens and means lots of memory free (due to parallel oom kill).
+Since packet processing might also require memory, this all also implies that
+those auxiliary allocations may use the reserves when an emergency packet is
+processed. This is accomplished by using PF_MEMALLOC.
 
-The allocation rank is stored in page->index for successful allocations.
+How much memory is to be reserved is also an issue, enough memory to saturate
+both the route cache and IP fragment reassembly, along with various constants.
 
-'offline' testing of the rank is made impossible by direct reclaim and
-fragmentation issues. That is, it is impossible to tell if a given allocation
-will succeed without actually doing it.
+This patch-set comes in 6 parts:
 
-The purpose of this measure is to introduce some fairness into the slab
-allocator.
+1) introduce the memory reserve and make the SLAB allocator play nice with it.
+   patches 01-10
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- mm/internal.h   |   70 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- mm/page_alloc.c |   58 +++++++++++++---------------------------------
- 2 files changed, 87 insertions(+), 41 deletions(-)
+2) add some needed infrastructure to the network code
+   patches 11-13
 
-Index: linux-2.6-git/mm/internal.h
-===================================================================
---- linux-2.6-git.orig/mm/internal.h	2007-02-22 13:56:00.000000000 +0100
-+++ linux-2.6-git/mm/internal.h	2007-02-22 14:08:41.000000000 +0100
-@@ -12,6 +12,7 @@
- #define __MM_INTERNAL_H
- 
- #include <linux/mm.h>
-+#include <linux/hardirq.h>
- 
- static inline void set_page_count(struct page *page, int v)
- {
-@@ -37,4 +38,73 @@ static inline void __put_page(struct pag
- extern void fastcall __init __free_pages_bootmem(struct page *page,
- 						unsigned int order);
- 
-+#define ALLOC_HARDER		0x01 /* try to alloc harder */
-+#define ALLOC_HIGH		0x02 /* __GFP_HIGH set */
-+#define ALLOC_WMARK_MIN		0x04 /* use pages_min watermark */
-+#define ALLOC_WMARK_LOW		0x08 /* use pages_low watermark */
-+#define ALLOC_WMARK_HIGH	0x10 /* use pages_high watermark */
-+#define ALLOC_NO_WATERMARKS	0x20 /* don't check watermarks at all */
-+#define ALLOC_CPUSET		0x40 /* check for correct cpuset */
-+
-+/*
-+ * get the deepest reaching allocation flags for the given gfp_mask
-+ */
-+static int inline gfp_to_alloc_flags(gfp_t gfp_mask)
-+{
-+	struct task_struct *p = current;
-+	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
-+	const gfp_t wait = gfp_mask & __GFP_WAIT;
-+
-+	/*
-+	 * The caller may dip into page reserves a bit more if the caller
-+	 * cannot run direct reclaim, or if the caller has realtime scheduling
-+	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
-+	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
-+	 */
-+	if (gfp_mask & __GFP_HIGH)
-+		alloc_flags |= ALLOC_HIGH;
-+
-+	if (!wait) {
-+		alloc_flags |= ALLOC_HARDER;
-+		/*
-+		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
-+		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
-+		 */
-+		alloc_flags &= ~ALLOC_CPUSET;
-+	} else if (unlikely(rt_task(p)) && !in_interrupt())
-+		alloc_flags |= ALLOC_HARDER;
-+
-+	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
-+		if (!in_interrupt() &&
-+		    ((p->flags & PF_MEMALLOC) ||
-+		     unlikely(test_thread_flag(TIF_MEMDIE))))
-+			alloc_flags |= ALLOC_NO_WATERMARKS;
-+	}
-+
-+	return alloc_flags;
-+}
-+
-+#define MAX_ALLOC_RANK	16
-+
-+/*
-+ * classify the allocation: 0 is hardest, 16 is easiest.
-+ */
-+static inline int alloc_flags_to_rank(int alloc_flags)
-+{
-+	int rank;
-+
-+	if (alloc_flags & ALLOC_NO_WATERMARKS)
-+		return 0;
-+
-+	rank = alloc_flags & (ALLOC_WMARK_MIN|ALLOC_WMARK_LOW|ALLOC_WMARK_HIGH);
-+	rank -= alloc_flags & (ALLOC_HARDER|ALLOC_HIGH);
-+
-+	return rank;
-+}
-+
-+static inline int gfp_to_rank(gfp_t gfp_mask)
-+{
-+	return alloc_flags_to_rank(gfp_to_alloc_flags(gfp_mask));
-+}
-+
- #endif
-Index: linux-2.6-git/mm/page_alloc.c
-===================================================================
---- linux-2.6-git.orig/mm/page_alloc.c	2007-02-22 13:56:00.000000000 +0100
-+++ linux-2.6-git/mm/page_alloc.c	2007-02-22 14:08:41.000000000 +0100
-@@ -892,14 +892,6 @@ failed:
- 	return NULL;
- }
- 
--#define ALLOC_NO_WATERMARKS	0x01 /* don't check watermarks at all */
--#define ALLOC_WMARK_MIN		0x02 /* use pages_min watermark */
--#define ALLOC_WMARK_LOW		0x04 /* use pages_low watermark */
--#define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
--#define ALLOC_HARDER		0x10 /* try to alloc harder */
--#define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
--#define ALLOC_CPUSET		0x40 /* check for correct cpuset */
--
- #ifdef CONFIG_FAIL_PAGE_ALLOC
- 
- static struct fail_page_alloc_attr {
-@@ -1190,6 +1182,7 @@ zonelist_scan:
- 
- 		page = buffered_rmqueue(zonelist, zone, order, gfp_mask);
- 		if (page)
-+			page->index = alloc_flags_to_rank(alloc_flags);
- 			break;
- this_zone_full:
- 		if (NUMA_BUILD)
-@@ -1263,48 +1256,27 @@ restart:
- 	 * OK, we're below the kswapd watermark and have kicked background
- 	 * reclaim. Now things get more complex, so set up alloc_flags according
- 	 * to how we want to proceed.
--	 *
--	 * The caller may dip into page reserves a bit more if the caller
--	 * cannot run direct reclaim, or if the caller has realtime scheduling
--	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
--	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
- 	 */
--	alloc_flags = ALLOC_WMARK_MIN;
--	if ((unlikely(rt_task(p)) && !in_interrupt()) || !wait)
--		alloc_flags |= ALLOC_HARDER;
--	if (gfp_mask & __GFP_HIGH)
--		alloc_flags |= ALLOC_HIGH;
--	if (wait)
--		alloc_flags |= ALLOC_CPUSET;
-+	alloc_flags = gfp_to_alloc_flags(gfp_mask);
- 
--	/*
--	 * Go through the zonelist again. Let __GFP_HIGH and allocations
--	 * coming from realtime tasks go deeper into reserves.
--	 *
--	 * This is the last chance, in general, before the goto nopage.
--	 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
--	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
--	 */
--	page = get_page_from_freelist(gfp_mask, order, zonelist, alloc_flags);
-+	/* This is the last chance, in general, before the goto nopage. */
-+	page = get_page_from_freelist(gfp_mask, order, zonelist,
-+			alloc_flags & ~ALLOC_NO_WATERMARKS);
- 	if (page)
- 		goto got_pg;
- 
- 	/* This allocation should allow future memory freeing. */
--
- rebalance:
--	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
--			&& !in_interrupt()) {
--		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
-+	if (alloc_flags & ALLOC_NO_WATERMARKS) {
- nofail_alloc:
--			/* go through the zonelist yet again, ignoring mins */
--			page = get_page_from_freelist(gfp_mask, order,
-+		/* go through the zonelist yet again, ignoring mins */
-+		page = get_page_from_freelist(gfp_mask, order,
- 				zonelist, ALLOC_NO_WATERMARKS);
--			if (page)
--				goto got_pg;
--			if (gfp_mask & __GFP_NOFAIL) {
--				congestion_wait(WRITE, HZ/50);
--				goto nofail_alloc;
--			}
-+		if (page)
-+			goto got_pg;
-+		if (wait && (gfp_mask & __GFP_NOFAIL)) {
-+			congestion_wait(WRITE, HZ/50);
-+			goto nofail_alloc;
- 		}
- 		goto nopage;
- 	}
-@@ -1313,6 +1285,10 @@ nofail_alloc:
- 	if (!wait)
- 		goto nopage;
- 
-+	/* Avoid recursion of direct reclaim */
-+	if (p->flags & PF_MEMALLOC)
-+		goto nopage;
-+
- 	cond_resched();
- 
- 	/* We now go into synchronous reclaim */
+3) implement the idea outlined above
+   patches 14-20
+
+4) teach the swap machinery to use generic address_spaces
+   patches 21-24
+
+5) implement swap over NFS using all the new stuff
+   patches 25-31
+
+6) implement swap over iSCSI
+   patches 32-40
+
+Patches can also be found here:
+  http://programming.kicks-ass.net/kernel-patches/vm_deadlock/v12/
+
+If I receive no feedback, I will assume the various maintainers do not object
+and I will respin the series against -mm and submit for inclusion.
+
+There is interest in this feature from the stateless linux world; that is both
+the virtualization world, and the cluster world.
+
+I have been contacted by various groups, some have just expressed their
+interest, others have been testing this work in their environments.
+
+Various hardware vendors have also expressed interest, and, of course, my
+employer finds it important enough to have me work on it.
+
+Also, while it doesn't present a full-fledged reserve-based allocator API yet,
+it does lay most of the groundwork for it. There is a GFP_NOFAIL elimination
+project wanting to use this as a foundation. Elimination of GFP_NOFAIL will
+greatly improve the basic soundness and stability of the code that currently
+uses that construct - most disk based filesystems.
 
 --
 
