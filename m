@@ -1,93 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755366AbXEDOt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbXEDOu0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755366AbXEDOt3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 10:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbXEDOt3
+	id S1755372AbXEDOu0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 10:50:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbXEDOu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 10:49:29 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:36629
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755366AbXEDOt2 (ORCPT
+	Fri, 4 May 2007 10:50:26 -0400
+Received: from ppsw-9.csi.cam.ac.uk ([131.111.8.139]:57782 "EHLO
+	ppsw-9.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755372AbXEDOuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 10:49:28 -0400
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial
-	possible bug]
-From: Paul Fulghum <paulkf@microgate.com>
-To: Antonino Ingargiola <tritemio@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <463B4988.9090005@microgate.com>
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <200705041049.20989.oliver@neukum.org>
-	 <5486cca80705040229g53933671m658bd028cadca155@mail.gmail.com>
-	 <5486cca80705040233y70915a27yf7cbbc08a617e3ba@mail.gmail.com>
-	 <463B46F4.6090906@microgate.com>  <463B4988.9090005@microgate.com>
-Content-Type: text/plain
-Date: Fri, 04 May 2007 09:49:20 -0500
-Message-Id: <1178290160.3913.2.camel@amdx2.microgate.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
+	Fri, 4 May 2007 10:50:25 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <20070504094610.GA31607@infradead.org>
+References: <E1HjjyF-00022D-00@calista.eckenfels.net> <0733FB88-3E6E-47B7-A55D-704B5C0DB239@cam.ac.uk> <20070504094610.GA31607@infradead.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <784B7DF1-6633-4356-80F2-A93A5A148F6A@cam.ac.uk>
+Cc: Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org
 Content-Transfer-Encoding: 7bit
+From: Anton Altaparmakov <aia21@cam.ac.uk>
+Subject: Re: Ext3 vs NTFS performance
+Date: Fri, 4 May 2007 15:47:33 +0100
+To: Christoph Hellwig <hch@infradead.org>
+X-Mailer: Apple Mail (2.752.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here is a patch against 2.6.21 which flushes the tty flip buffer
-on ioctl(TCFLSH) for input.
+On 4 May 2007, at 10:46, Christoph Hellwig wrote:
 
---- a/drivers/char/tty_io.c	2007-04-25 22:08:32.000000000 -0500
-+++ b/drivers/char/tty_io.c	2007-05-04 09:30:01.000000000 -0500
-@@ -365,6 +365,28 @@ static void tty_buffer_free(struct tty_s
- }
- 
- /**
-+ *	tty_buffer_flush		-	flush full tty buffers
-+ *	@tty: tty to flush
-+ *
-+ *	flush all the buffers containing receive data
-+ *
-+ *	Locking: none
-+ */
-+
-+static void tty_buffer_flush(struct tty_struct *tty)
-+{
-+	struct tty_buffer *thead;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&tty->buf.lock, flags);
-+	while((thead = tty->buf.head) != NULL) {
-+		tty->buf.head = thead->next;
-+		tty_buffer_free(tty, thead);
-+	}
-+	spin_unlock_irqrestore(&tty->buf.lock, flags);
-+}
-+
-+/**
-  *	tty_buffer_find		-	find a free tty buffer
-  *	@tty: tty owning the buffer
-  *	@size: characters wanted
-@@ -1240,6 +1262,7 @@ void tty_ldisc_flush(struct tty_struct *
- 			ld->flush_buffer(tty);
- 		tty_ldisc_deref(ld);
- 	}
-+	tty_buffer_flush(tty);
- }
- 
- EXPORT_SYMBOL_GPL(tty_ldisc_flush);
-@@ -3336,6 +3359,15 @@ int tty_ioctl(struct inode * inode, stru
- 		case TIOCMBIC:
- 		case TIOCMBIS:
- 			return tty_tiocmset(tty, file, cmd, p);
-+		case TCFLSH:
-+			switch (arg) {
-+			case TCIFLUSH:
-+			case TCIOFLUSH:
-+				/* flush tty buffer and allow ldisc to process ioctl */
-+				tty_buffer_flush(tty);
-+				break;
-+			}
-+			break;
- 	}
- 	if (tty->driver->ioctl) {
- 		retval = (tty->driver->ioctl)(tty, file, cmd, arg);
+> On Fri, May 04, 2007 at 09:12:31AM +0100, Anton Altaparmakov wrote:
+>> Nothing to do with win32 functions.  Windows does NOT create sparse
+>> files therefore it never can have an issue like ext3 does in this
+>> scenario.  Windows will cause nice allocations to happen because of
+>> this and the 1-byte writes are perfectly sensible in this regard.
+>> (Although a little odd as Windows has a proper API for doing
+>> preallocation so I don't get why it is not using that instead...)
+>
+> Which means the right place to fix this is samba.
+
+Absolutely, agreed.
+
+> Samba just need
+> to intersept lseek and pread/pwrite to never allocate sparse files
+> but do the right thing instead.  Now what the right thing would  
+> probably
+> be a preallocate instead of writing zeroes, and we need to provide the
+> infrastructure for them to do it, which is in progress currently.
+> (And in fact samba already does the right thing for XFS if you use
+> the prealloc samba vfs module, which AFAIK is not the default)
+
+Best regards,
+
+	Anton
+-- 
+Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
+Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
+Linux NTFS maintainer, http://www.linux-ntfs.org/
 
 
