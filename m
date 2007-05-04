@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161531AbXEDVdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031708AbXEDVhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161531AbXEDVdy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161590AbXEDVdy
+	id S1031708AbXEDVhf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031711AbXEDVhf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:33:54 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:55131 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161531AbXEDVdx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:33:53 -0400
-Date: Fri, 4 May 2007 14:33:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-Subject: Re: Remove constructor from buffer_head
-Message-Id: <20070504143347.9a1d6a34.akpm@linux-foundation.org>
-In-Reply-To: <20070504134212.c18d2d65.akpm@linux-foundation.org>
-References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
-	<20070504134212.c18d2d65.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 May 2007 17:37:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57452 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031708AbXEDVhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 17:37:33 -0400
+Message-ID: <463BA772.9070203@redhat.com>
+Date: Fri, 04 May 2007 18:36:50 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+Organization: Red Hat Inc.
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Daniel Walker <dwalker@mvista.com>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>
+Subject: Re: [PATCH 00/40] Swap over Networked storage -v12
+References: <20070504102651.923946304@chello.nl> <1178292179.7997.12.camel@imap.mvista.com>
+In-Reply-To: <1178292179.7997.12.camel@imap.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007 13:42:12 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Daniel Walker wrote:
+> On Fri, 2007-05-04 at 12:26 +0200, Peter Zijlstra wrote:
+>
+>   
+>> 1) introduce the memory reserve and make the SLAB allocator play nice with it.
+>>    patches 01-10
+>>
+>> 2) add some needed infrastructure to the network code
+>>    patches 11-13
+>>
+>> 3) implement the idea outlined above
+>>    patches 14-20
+>>
+>> 4) teach the swap machinery to use generic address_spaces
+>>    patches 21-24
+>>
+>> 5) implement swap over NFS using all the new stuff
+>>    patches 25-31
+>>
+>> 6) implement swap over iSCSI
+>>    patches 32-40
+>>     
+>
+> This is kind of a lot of patches all at once .. Have you release any of
+> these patch sets prior to this release ? 
+>   
 
-> I'd investigate further, but someone has gone and broken oprofile.
+Yes, several times AFAIK.
 
-Damn, we went and merged that bustage?
-
-
-2.6.20:
-
-akpm2:/home/akpm> opcontrol --start-daemon
-/usr/bin/opcontrol: line 1098: /dev/oprofile/0/enabled: No such file or directory
-/usr/bin/opcontrol: line 1098: /dev/oprofile/0/event: No such file or directory
-/usr/bin/opcontrol: line 1098: /dev/oprofile/0/count: No such file or directory
-/usr/bin/opcontrol: line 1098: /dev/oprofile/0/kernel: No such file or directory
-/usr/bin/opcontrol: line 1098: /dev/oprofile/0/user: No such file or directory
-/usr/bin/opcontrol: line 1098: /dev/oprofile/0/unit_mask: No such file or directory
-
-2.6.21:
-
-akpm2:/home/akpm# opreport -l /boot/vmlinux-$(uname -r) | head -50
-opreport error: No sample file found: try running opcontrol --dump
-or specify a session containing sample files
-
-
-
-This is an FC6 machine.  `yum update oprofile' says
-
-Could not find update match for oprofile
-No Packages marked for Update/Obsoletion
-
-akpm2:/home/akpm> rpm -q oprofile
-oprofile-0.9.2-3.fc6
-
-
-I'm quite stunned that we did this.
-
-Now what?
+- Arnaldo
