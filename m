@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031292AbXEDQXK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031080AbXEDQZK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031292AbXEDQXK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 12:23:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031341AbXEDQXK
+	id S1031080AbXEDQZK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:25:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031346AbXEDQZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 12:23:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39126 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031080AbXEDQXG (ORCPT
+	Fri, 4 May 2007 12:25:10 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:41117 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031080AbXEDQZG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 12:23:06 -0400
-Date: Fri, 4 May 2007 09:23:04 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@steeleye.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>
-Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
-In-Reply-To: <1178295355.24217.49.camel@twins>
-Message-ID: <Pine.LNX.4.64.0705040919560.21436@schroedinger.engr.sgi.com>
-References: <20070504102651.923946304@chello.nl>  <20070504103157.215424767@chello.nl>
-  <84144f020705040354r5cb74c5fj6cb8698f93ffcb83@mail.gmail.com> 
- <Pine.LNX.4.64.0705040908480.21436@schroedinger.engr.sgi.com>
- <1178295355.24217.49.camel@twins>
+	Fri, 4 May 2007 12:25:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Cz4Eows5AggP/WBR3ZHOJah9ah5zAEpt4kU84fLqwXMCDeBrS91/DMqJ2vJiUdIOfxLLEXFmT9ltsCtqs5P3Z/tyHvUccD3xFrluX/Zrfz2gqGaYui/UY6zJ5quDI/G854SJjy7Q+ix5MdowuVoRi01Kw0ve1p3JWZoCDtRvAZU=
+Message-ID: <463B5E4F.2060900@gmail.com>
+Date: Fri, 04 May 2007 18:24:47 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Oliver Neukum <oliver@neukum.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch]clarification of coding style regarding conditional statements
+ with two branches
+References: <200705040926.55257.oliver@neukum.org> <463B47AF.4010503@gmail.com> <200705041729.04771.oliver@neukum.org>
+In-Reply-To: <200705041729.04771.oliver@neukum.org>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Peter Zijlstra wrote:
-
-> On Fri, 2007-05-04 at 09:09 -0700, Christoph Lameter wrote:
-> > On Fri, 4 May 2007, Pekka Enberg wrote:
-> > 
-> > > On 5/4/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > > > Expost buffer_size in order to allow fair estimates on the actual space
-> > > > used/needed.
-> > 
-> > We already have ksize?
+Oliver Neukum napsal(a):
+> Am Freitag, 4. Mai 2007 16:48 schrieb Jiri Slaby:
+>> Why, what's wrong with
+>> if (condition) {
+>>         do_this();
+>>         do_that();
+>> } else
+>>         otherwise();
+>>
+>> ? It's more readable/nicer in my eyes than
 > 
-> ksize gives the internal size, whereas these give the external size.
-> 
-> I need to know how much space I need to reserve, hence I need the
-> external size; whereas normally you want to know how much space you have
-> available, which is what ksize gives.
-> 
-> Didn't we have this discussion last time?
+> Than I am afraid we need to agree to disagree. But then I would
+> insist that neither side give the other a hard to time over this issue.
 
-I was cced on that as far as I can tell.
+Then I would just let it undefined to let subsys maintainers (or coders
+themselves) to decide what they want in their subtree like ton of other things...
 
-The name objsize suggests the size of the object not the slab size.
-If you want this then maybe call it kmem_cache_slab_size. SLUB 
-distinguishes between obj_size which is the size of the struct that is 
-used and slab_size which is the size of the object after alignment, adding 
-debug information etc etc. See also slabinfo.c for a way to calculate 
-theses sizes from user space.
-
-If we really drop SLAB then we wont need this. SLUBs data structures are 
-not opaque.
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
