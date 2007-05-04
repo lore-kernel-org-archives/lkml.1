@@ -1,45 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161691AbXEDSrq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161603AbXEDStb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161691AbXEDSrq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:47:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161625AbXEDSrp
+	id S1161603AbXEDStb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161605AbXEDStb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:47:45 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48911 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1161605AbXEDSrm (ORCPT
+	Fri, 4 May 2007 14:49:31 -0400
+Received: from mta11.adelphia.net ([68.168.78.205]:64252 "EHLO
+	mta11.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161603AbXEDSta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:47:42 -0400
-Date: Fri, 4 May 2007 11:47:41 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>
-Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
-In-Reply-To: <463B7F63.8070508@cs.helsinki.fi>
-Message-ID: <Pine.LNX.4.64.0705041147000.24625@schroedinger.engr.sgi.com>
-References: <20070504102651.923946304@chello.nl>  <20070504103157.215424767@chello.nl>
-  <Pine.LNX.4.64.0705040932200.22033@schroedinger.engr.sgi.com> 
- <1178301545.24217.56.camel@twins>  <Pine.LNX.4.64.0705041104110.23539@schroedinger.engr.sgi.com>
-  <1178302904.2767.6.camel@lappy>  <Pine.LNX.4.64.0705041128270.24283@schroedinger.engr.sgi.com>
- <1178303538.2767.9.camel@lappy> <463B7F63.8070508@cs.helsinki.fi>
+	Fri, 4 May 2007 14:49:30 -0400
+Message-ID: <463B8037.70701@acm.org>
+Date: Fri, 04 May 2007 13:49:27 -0500
+From: Corey Minyard <minyard@acm.org>
+User-Agent: Icedove 1.5.0.10 (X11/20070328)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH (trivial)] Fix wrong identifier name in Documentation/kref.txt
+References: <Pine.LNX.4.64.0705041949130.14683@cselinux1.cse.iitk.ac.in>
+In-Reply-To: <Pine.LNX.4.64.0705041949130.14683@cselinux1.cse.iitk.ac.in>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Pekka Enberg wrote:
+Yes, please add this.  Thanks.
 
-> Again, slab has no way of actually estimating how many pages you need for a
-> given number of objects. So we end up calculating some upper bound which
-> doesn't belong in mm/slab.c. I am perfectly okay with:
+-corey
 
-It can give a worst case number and that is what he wants.
+Satyam Sharma wrote:
+> Here's another trivial one I've been meaning to send since ... a long 
+> time back.
+>
+> Cheers,
+> Satyam
+>
+> ---
+>
+> There's a typo / wrong identifier name in Documentation/kref.txt. Fix it.
+>
+>     Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+>
+> ---
+>
+> diff -ruNp linux-2.6.21.1/Documentation/kref.txt 
+> linux-2.6.21.1~patch/Documentation/kref.txt
+> --- linux-2.6.21.1/Documentation/kref.txt    2007-05-04 
+> 19:40:01.000000000 +0530
+> +++ linux-2.6.21.1~patch/Documentation/kref.txt    2007-05-04 
+> 19:41:04.000000000 +0530
+> @@ -67,7 +67,7 @@ void more_data_handling(void *cb_data)
+>      .
+>      . do stuff with data here
+>      .
+> -    kref_put(data, data_release);
+> +    kref_put(&data->refcount, data_release);
+>  }
+>
+>  int my_data_handler(void)
 
