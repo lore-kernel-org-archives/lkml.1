@@ -1,42 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423096AbXEDT1a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423094AbXEDT1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423096AbXEDT1a (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 15:27:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423079AbXEDT1a
+	id S1423094AbXEDT1g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 15:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766586AbXEDT1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 15:27:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50091
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1423078AbXEDT13 (ORCPT
+	Fri, 4 May 2007 15:27:35 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42469 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423094AbXEDT1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 15:27:29 -0400
-Date: Fri, 04 May 2007 12:27:16 -0700 (PDT)
-Message-Id: <20070504.122716.31641374.davem@davemloft.net>
-To: a.p.zijlstra@chello.nl
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
-       trond.myklebust@fys.uio.no, tgraf@suug.ch, James.Bottomley@SteelEye.com,
-       michaelc@cs.wisc.edu, akpm@linux-foundation.org, phillips@google.com
-Subject: Re: [PATCH 00/40] Swap over Networked storage -v12
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070504102651.923946304@chello.nl>
-References: <20070504102651.923946304@chello.nl>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 4 May 2007 15:27:34 -0400
+Date: Fri, 4 May 2007 12:24:07 -0700
+From: Greg KH <greg@kroah.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Hugh Dickins <hugh@veritas.com>,
+       Christoph Lameter <clameter@engr.sgi.com>,
+       "David S. Miller" <davem@davemloft.net>, Andi Kleen <ak@suse.de>,
+       "Luck, Tony" <tony.luck@intel.com>, Rik van Riel <riel@redhat.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Stephen Smalley <sds@tycho.nsa.gov>
+Subject: Re: incoming
+Message-ID: <20070504192407.GA32235@kroah.com>
+References: <20070504091434.106ad04d.akpm@linux-foundation.org> <20070504185721.3CB7C1800A0@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070504185721.3CB7C1800A0@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Fri, 04 May 2007 12:26:51 +0200
+On Fri, May 04, 2007 at 11:57:21AM -0700, Roland McGrath wrote:
+> > Ah.  The patch affects security code, but it doesn't actually address any
+> > insecurity.  I didn't think it was needed for -stable?
+> 
+> I would not recommend it for -stable.  
+> It is an ABI change for the case of a security refusal.
 
-> There is a fundamental deadlock associated with paging;
+ABI changes are not a problem for -stable, so don't let that stop anyone
+:)
 
-I know you'd really like people like myself to review this work, but a
-set of 40 patches is just too much to try and digest at once
-especially when I have other things going on.  When I have lots of
-other things already on my plate, when I see a huge patch set like
-this I have to just say "delete" because I don't kid myself since
-I know I'll never get to it.
+thanks,
 
-Sorry there's now way I can review this with my current workload.
+greg k-h
