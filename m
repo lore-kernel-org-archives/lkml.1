@@ -1,78 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767694AbXEDG5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbXEDHCr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767694AbXEDG5l (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 02:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767700AbXEDG5i
+	id S1754078AbXEDHCr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:02:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbXEDHCr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 02:57:38 -0400
-Received: from mail.chehov.net ([80.71.245.247]:58526 "EHLO mail.rialcom.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767694AbXEDG53 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 02:57:29 -0400
-X-Spam-Flag: SKIP
-X-Spam-Yversion: Spamooborona 1.6.1
-Message-ID: <463AD948.9090103@clusterfs.com>
-Date: Fri, 04 May 2007 10:57:12 +0400
-From: Alex Tomas <alex@clusterfs.com>
-Organization: Cluster Filesystems, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070302 Fedora/1.5.0.10-1.fc6 pango-text Thunderbird/1.5.0.10 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andreas Dilger <adilger@clusterfs.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Marat Buharov <marat.buharov@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
- FS is under heavy write load (massive starvation)
-References: <1177660767.6567.41.camel@Homer.simpson.net>	<20070427013350.d0d7ac38.akpm@linux-foundation.org>	<698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>	<alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>	<20070427193130.GD5967@schatzie.adilger.int>	<20070427151837.f1439639.akpm@linux-foundation.org>	<463A1E02.8020506@clusterfs.com>	<20070503165428.855eb7d7.akpm@linux-foundation.org>	<463AD024.6060208@clusterfs.com> <20070503233804.9dace4a7.akpm@linux-foundation.org>
-In-Reply-To: <20070503233804.9dace4a7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 4 May 2007 03:02:47 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:43533 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754078AbXEDHCq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 03:02:46 -0400
+Date: Fri, 4 May 2007 00:02:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josef Sipek <jsipek@cs.sunysb.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, viro@ftp.linux.org.uk, Trond.Myklebust@netapp.com,
+       mhalcrow@us.ibm.com
+Subject: Re: [PATCH 1/1] fs: add 4th case to do_path_lookup
+Message-Id: <20070504000200.d14bd8d9.akpm@linux-foundation.org>
+In-Reply-To: <20070430033012.GB32047@filer.fsl.cs.sunysb.edu>
+References: <20070430032624.GA32047@filer.fsl.cs.sunysb.edu>
+	<20070430033012.GB32047@filer.fsl.cs.sunysb.edu>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 04 May 2007 10:18:12 +0400 Alex Tomas <alex@clusterfs.com> wrote:
+On Sun, 29 Apr 2007 23:30:12 -0400 Josef Sipek <jsipek@cs.sunysb.edu> wrote:
+
+> Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
 > 
->> Andrew Morton wrote:
->>> Yes, there can be issues with needing to allocate journal space within the
->>> context of a commit.  But
->> no-no, this isn't required. we only need to mark pages/blocks within
->> transaction, otherwise race is possible when we allocate blocks in transaction,
->> then transacton starts to commit, then we mark pages/blocks to be flushed
->> before commit.
-> 
-> I don't understand.  Can you please describe the race in more detail?
+> diff --git a/fs/namei.c b/fs/namei.c
+> index 2995fba..1516a9b 100644
+> --- a/fs/namei.c
+> +++ b/fs/namei.c
+> @@ -1125,6 +1125,10 @@ static int fastcall do_path_lookup(int dfd, const char *name,
+>  		nd->mnt = mntget(fs->rootmnt);
+>  		nd->dentry = dget(fs->root);
+>  		read_unlock(&fs->lock);
+> +	} else if (flags & LOOKUP_ONE) {
+> +		/* nd->mnt and nd->dentry already set, just grab references */
+> +		mntget(nd->mnt);
+> +		dget(nd->dentry);
+>  	} else if (dfd == AT_FDCWD) {
+>  		read_lock(&fs->lock);
+>  		nd->mnt = mntget(fs->pwdmnt);
+> diff --git a/include/linux/namei.h b/include/linux/namei.h
+> index 92b422b..aa89d97 100644
+> --- a/include/linux/namei.h
+> +++ b/include/linux/namei.h
+> @@ -48,6 +48,7 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT, LAST_BIND};
+>   *  - internal "there are more path compnents" flag
+>   *  - locked when lookup done with dcache_lock held
+>   *  - dentry cache is untrusted; force a real lookup
+> + *  - lookup path from given dentry/vfsmount pair
+>   */
+>  #define LOOKUP_FOLLOW		 1
+>  #define LOOKUP_DIRECTORY	 2
+> @@ -55,6 +56,7 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT, LAST_BIND};
+>  #define LOOKUP_PARENT		16
+>  #define LOOKUP_NOALT		32
+>  #define LOOKUP_REVAL		64
+> +#define LOOKUP_ONE	       128
 
-if I understood your idea right, then in data=ordered mode, commit thread writes
-all dirty mapped blocks before real commit.
+Well the patch passes my too-small-to-care-about test ;)
 
-say, we have two threads: t1 is a thread doing flushing and t2 is a commit thread
-
-t1					t2
-find dirty inode I
-find some dirty unallocated blocks
-journal_start()
-allocate blocks
-attach them to I
-journal_stop()
-
-					going to commit
-					find inode I dirty
-					do NOT find these blocks because they're
-					  allocated only, but pages/bhs aren't mapped
-					  to them
-					start commit
-
-
-map pages/bhs to just allocate blocks
-
-
-so, either we mark pages/bhs someway within journal_start()--journal_stop() or
-commit thread should do lookup for all dirty pages. the latter doesn't sound nice, IMHO.
-
-thanks, Alex
-
-
-
+Unless someone objects I'd suggest that you add it to the unionfs tree.
