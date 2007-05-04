@@ -1,75 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161595AbXEDSfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161523AbXEDSgo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161595AbXEDSfr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161599AbXEDSfr
+	id S1161523AbXEDSgo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:36:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161599AbXEDSgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:35:47 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:7031 "EHLO
+	Fri, 4 May 2007 14:36:44 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:8735 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161595AbXEDSfp (ORCPT
+	with ESMTP id S1161603AbXEDSgm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:35:45 -0400
+	Fri, 4 May 2007 14:36:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=XrfiPS94V5ffZjizn3Ea+ZrVxTCobLlJo3DjsxJxejcFwgc1NpIwYtHs3CuypbSecVGe+SuMnedYSpX7Ytr+zISq293Ffk6iyt0B22Aq8VzeVICcbj6gzL/0eM4LlunLniN2MwWhxBgJFR2QXXV9bwXZYiiK6C08F8p8cvvv7CQ=
-Message-ID: <524f69650705041135i7633cd34xd0b03bc2abd25c2@mail.gmail.com>
-Date: Fri, 4 May 2007 13:35:44 -0500
-From: "Steve French" <smfrench@gmail.com>
-To: "Jeremy Allison" <jra@samba.org>
-Subject: Re: [linux-cifs-client] Re: SMB2 file system - should it be a distinct module
-Cc: "Gerald Carter" <coffeedude.jerry@gmail.com>, simo <idra@samba.org>,
-       "Christoph Hellwig" <hch@infradead.org>,
-       linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070504171200.GE31976@samba1>
+        b=DkZD5k+47EuDsdLfUsD91fRs7FulNDk3IH1MQfB3+YEnZE1DpYYwSv3NS78kwZzbQd/rOIaO/YoMc42IdC1IImc9grToUVgZ6ToMxnM6vImJ4+L7BEYUH0T7rCeMJxDuL/MtRx8B1cPYUeDMTIcGGkOr0azN0V21khG12yfSwgw=
+Message-ID: <8f8ff01d0705041136r18315079w13f95dc3c627a53b@mail.gmail.com>
+Date: Fri, 4 May 2007 22:36:41 +0400
+From: "Alexey Starikovskiy" <aystarik@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [linux-pm] [RFT][PATCH] swsusp: Change code ordering related to ACPI
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Tobias Diedrich" <ranma+kernel@tdiedrich.de>,
+       "pm list" <linux-pm@lists.linux-foundation.org>,
+       "Pavel Machek" <pavel@ucw.cz>, "Marcus Better" <marcus@better.se>
+In-Reply-To: <200705041143.02451.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com>
-	 <20070501090657.GA17949@infradead.org>
-	 <1178198489.28758.14.camel@localhost.localdomain>
-	 <20070503141742.GB20328@infradead.org>
-	 <1178203013.28758.29.camel@localhost.localdomain>
-	 <4639F5AD.20807@gmail.com> <20070504171200.GE31976@samba1>
+References: <200705041143.02451.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/4/07, Jeremy Allison <jra@samba.org> wrote:
-> On Thu, May 03, 2007 at 09:46:05AM -0500, Gerald Carter wrote:
-> > Long term I agree that CIFS and SMB2 should be in the same .ko
+Doing _WAK (from pm_finish) before device_resume will brake almost all
+ACPI devices.
+
+Regards,
+Alex.
+
+On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Hi,
 >
-> Actually I disagree. I think Christoph is correct. These
-> are two independent protocols and should be in two different
-> modules.
+> The change of the hibernation/suspend code ordering made before 2.6.21 has
+> caused some systems to have problems related to ACPI.  In particular, the
+> 'platform' hibernation mode doesn't work any more on some systems.
 >
-> > But NTLM 0.12 still works for Vista and DFS referrals.
-> > Breaking out SMB2 initially means that it will not clutter
-> > the working cifs.ko code.  Remember that an SMB2 client fs is
-> > mostly research at this point, and not engineering.
+> It has been confirmed that the appended patch fixes the problem, but it's not
+> certain if this changes don't break some other systems.  For this reason, all
+> users of hibernation (swsusp, uswsusp) are gently requested to verify if this
+> patch doesn't break their systems.
 >
-> Long term the common functions should be factored out
-> and put into a lower-level module that both cifs and
-> SMB2 are dependent upon.
+> Greetings,
+> Rafael
 >
-> That's the cleaner solution IMHO.
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 >
-> Jeremy.
-
-There is also the obvious tradeoff of  "easier to update frequently"
-vs. "easier to write" which is a primary factor.
-
-1) as distinct .ko files smb2 and cifs can be updated independently
-(the former marked broken/experimental).  Updating smb2 won't
-risk breaking cifs
-
-2)  but implemented in the same module, there is somewhat less code to write.
-
-
-
-
--- 
-Thanks,
-
-Steve
+> The current code ordering in the hibernation code paths causes some systems to
+> have problems.  It has been confirmed by testers that these problems do not
+> appear if the acpi_pm_finish() function (called via platform_finish()) is
+> executed after device_suspend().
+>
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/power/disk.c |    4 ++--
+>  kernel/power/user.c |    8 ++++----
+>  2 files changed, 6 insertions(+), 6 deletions(-)
+>
+> Index: linux-2.6.21/kernel/power/disk.c
+> ===================================================================
+> --- linux-2.6.21.orig/kernel/power/disk.c       2007-05-04 10:31:51.000000000 +0200
+> +++ linux-2.6.21/kernel/power/disk.c    2007-05-04 10:32:12.000000000 +0200
+> @@ -195,9 +195,9 @@ int hibernate(void)
+>
+>         if (in_suspend) {
+>                 enable_nonboot_cpus();
+> -               platform_finish();
+>                 device_resume();
+>                 resume_console();
+> +               platform_finish();
+>                 pr_debug("PM: writing image.\n");
+>                 error = swsusp_write();
+>                 if (!error)
+> @@ -214,9 +214,9 @@ int hibernate(void)
+>   Enable_cpus:
+>         enable_nonboot_cpus();
+>   Resume_devices:
+> -       platform_finish();
+>         device_resume();
+>         resume_console();
+> +       platform_finish();
+>   Thaw:
+>         mutex_unlock(&pm_mutex);
+>         unprepare_processes();
+> Index: linux-2.6.21/kernel/power/user.c
+> ===================================================================
+> --- linux-2.6.21.orig/kernel/power/user.c       2007-05-04 10:31:51.000000000 +0200
+> +++ linux-2.6.21/kernel/power/user.c    2007-05-04 10:32:12.000000000 +0200
+> @@ -169,11 +169,11 @@ static inline int snapshot_suspend(int p
+>         }
+>         enable_nonboot_cpus();
+>   Resume_devices:
+> +       device_resume();
+> +       resume_console();
+>         if (platform_suspend)
+>                 platform_finish();
+>
+> -       device_resume();
+> -       resume_console();
+>   Finish:
+>         mutex_unlock(&pm_mutex);
+>         return error;
+> @@ -201,11 +201,11 @@ static inline int snapshot_restore(int p
+>
+>         enable_nonboot_cpus();
+>   Resume_devices:
+> +       device_resume();
+> +       resume_console();
+>         if (platform_suspend)
+>                 platform_finish();
+>
+> -       device_resume();
+> -       resume_console();
+>   Finish:
+>         pm_restore_console();
+>         mutex_unlock(&pm_mutex);
+> _______________________________________________
+> linux-pm mailing list
+> linux-pm@lists.linux-foundation.org
+> https://lists.linux-foundation.org/mailman/listinfo/linux-pm
+>
