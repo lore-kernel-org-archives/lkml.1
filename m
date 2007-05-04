@@ -1,41 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161560AbXEDXbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161558AbXEDXd4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161560AbXEDXbs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 19:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbXEDXbs
+	id S1161558AbXEDXd4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 19:33:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbXEDXd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 19:31:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:57536 "EHLO mail.goop.org"
+	Fri, 4 May 2007 19:33:56 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:54449 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754140AbXEDXbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 19:31:47 -0400
-Message-ID: <463BC265.7050507@goop.org>
-Date: Fri, 04 May 2007 16:31:49 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1754275AbXEDXdz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 19:33:55 -0400
+Date: Sat, 5 May 2007 01:32:04 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: john stultz <johnstul@us.ibm.com>
+cc: davej@codemonkey.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       cpufreq@lists.linux.org.uk
+Subject: Re: cpufreq longhaul locks up
+In-Reply-To: <1178318978.6094.29.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.61.0705050130090.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr> 
+ <1178311052.6094.0.camel@localhost.localdomain> 
+ <Pine.LNX.4.61.0705042259160.18504@yvahk01.tjqt.qr>
+ <1178318978.6094.29.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Quentin Godfroy <godfroy@clipper.ens.fr>
-CC: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       "David A. Madore" <David.Madore@ens.fr>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: patch: VFS: fix passing of AT_PHDR value in auxv to ELF interpreter
-References: <20070504140921.GA23122@goelette.ens.fr>
-In-Reply-To: <20070504140921.GA23122@goelette.ens.fr>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quentin Godfroy wrote:
-> +	elf_ppnt = elf_phdata;
-> +	for (i = 0; i< loc->elf_ex.e_phnum; i++, elf_ppnt++)
-> +		if (elf_ppnt->p_type == PT_PHDR) {
-> +			phdr_addr = elf_ppnt->p_vaddr;
->   
 
-Won't this break with ET_DYN executables?  And besides, isn't this the
-same thing?  Shouldn't PT_PHDR->p_vaddr point to the vaddr of the Phdr
-table itself?
+On May 4 2007 15:49, john stultz wrote:
+>
+>> Switching from acpi_pm+performance to acpi_pm+ondemand also
+>> locks up after a few minutes.
+>
+>Yep. Sounds like an ondemand issue. Thanks for verifying this for me.
 
-    J
+Nah, it also happens with cpufreq_powersave. I just need to check 
+through some archives and try booting with governor=powersave so that it 
+always stays low. Though, lowering the frequency does not really buy any 
+temperature improvement in 60 seconds, so I don't think I will need 
+cpufreq anyway (other processors have a noticable jump in core 
+temperature between 100%idle and a busy loop).
+
+
+Jan
+-- 
