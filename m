@@ -1,157 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754604AbXEDIop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754605AbXEDIoz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754604AbXEDIop (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754605AbXEDIoo
+	id S1754605AbXEDIoz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:44:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbXEDIoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:44:44 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:48975 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754604AbXEDIon (ORCPT
+	Fri, 4 May 2007 04:44:55 -0400
+Received: from frankvm.xs4all.nl ([80.126.170.174]:34552 "EHLO
+	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754605AbXEDIoy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:44:43 -0400
-Date: Fri, 4 May 2007 10:47:47 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Greg K-H <greg@kroah.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
-       Michael Holzheu <holzheu@de.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>,
-       linux-s390 <linux-s390@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [Patch driver tree] s390: fix subsystem removal fallout
-Message-ID: <20070504104747.14e10211@gondolin.boeblingen.de.ibm.com>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
+	Fri, 4 May 2007 04:44:54 -0400
+X-Greylist: delayed 437 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 04:44:53 EDT
+Date: Fri, 4 May 2007 10:44:52 +0200
+From: Frank van Maarseveen <frankvm@frankvm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Frank van Maarseveen <frankvm@frankvm.com>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>,
+       bzolnier@gmail.com
+Subject: Re: libata /dev/scd0 problem: mount after burn fails without eject
+Message-ID: <20070504084452.GA20388@janus>
+References: <20070501135951.GA17072@janus> <46374C11.1010702@rtr.ca> <6bffcb0e0705010731v44cfad1awf4342121245f7ab3@mail.gmail.com> <463AEBE0.7010506@gmail.com> <20070504083735.GA20072@janus> <463AF1C5.4090401@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <463AF1C5.4090401@gmail.com>
+User-Agent: Mutt/1.4.1i
+X-BotBait: val@frankvm.com, kuil@frankvm.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg!
+On Fri, May 04, 2007 at 10:41:41AM +0200, Tejun Heo wrote:
+> Frank van Maarseveen wrote:
+> > On Fri, May 04, 2007 at 10:16:32AM +0200, Tejun Heo wrote:
+> >> Michal Piotrowski wrote:
+> >>> On 01/05/07, Mark Lord <lkml@rtr.ca> wrote:
+> >>>> Forwarding to linux-scsi and linux-ide mailing lists.
+> >>>>
+> >>>> Frank van Maarseveen wrote:
+> >>>>> Tested on 2.6.20.6 and 2.6.21.1
+> >>>>>
+> >>>>> I decided to swich from the old IDE drivers to libata and now there
+> >>>>> seems to be a little but annoying problem: cannot mount an ISO image
+> >>>>> after burning it.
+> >>>>>
+> >>>>> May  1 14:32:55 kernel: attempt to access beyond end of device
+> >>>>> May  1 14:32:55 kernel: sr0: rw=0, want=68, limit=4
+> >>>>> May  1 14:32:55 kernel: isofs_fill_super: bread failed, dev=sr0,
+> >>>> iso_blknum=16, block=16
+> >>>>> an "eject" command seems to fix the state of the PATA DVD writer
+> >>>>> or driver. The problem occurs for burning a CD and for DVD too with
+> >>>>> identical error messages.
+> >> Right after burning, if you run 'fuser -v /dev/sr0', what does it say?
+> > 
+> > Tried the fuser as root to be sure but it didn't show anything.
+> 
+> I guess sr is forgetting to set media changed flag somewhere.
 
-This patch fixes compilation on s390 in the current driver tree. It
-should probably be merged into
-remove-struct-subsystem-as-it-is-no-longer-needed.patch.
+Plausible. I get the same kernel messages when I try to mount the CD
+before burning.
 
-Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
-
----
- arch/s390/hypfs/inode.c |    2 +-
- arch/s390/kernel/ipl.c  |   26 +++++++++++++-------------
- 2 files changed, 14 insertions(+), 14 deletions(-)
-
---- linux.orig/arch/s390/hypfs/inode.c
-+++ linux/arch/s390/hypfs/inode.c
-@@ -477,7 +477,7 @@ static int __init hypfs_init(void)
- 			goto fail_diag;
- 		}
- 	}
--	kset_set_kset_s(&s390_subsys, hypervisor_subsys);
-+	kobj_set_kset_s(&s390_subsys, hypervisor_subsys);
- 	rc = subsystem_register(&s390_subsys);
- 	if (rc)
- 		goto fail_sysfs;
---- linux.orig/arch/s390/kernel/ipl.c
-+++ linux/arch/s390/kernel/ipl.c
-@@ -816,23 +816,23 @@ static int __init ipl_register_fcp_files
- {
- 	int rc;
- 
--	rc = sysfs_create_group(&ipl_subsys.kset.kobj,
-+	rc = sysfs_create_group(&ipl_subsys.kobj,
- 				&ipl_fcp_attr_group);
- 	if (rc)
- 		goto out;
--	rc = sysfs_create_bin_file(&ipl_subsys.kset.kobj,
-+	rc = sysfs_create_bin_file(&ipl_subsys.kobj,
- 				   &ipl_parameter_attr);
- 	if (rc)
- 		goto out_ipl_parm;
--	rc = sysfs_create_bin_file(&ipl_subsys.kset.kobj,
-+	rc = sysfs_create_bin_file(&ipl_subsys.kobj,
- 				   &ipl_scp_data_attr);
- 	if (!rc)
- 		goto out;
- 
--	sysfs_remove_bin_file(&ipl_subsys.kset.kobj, &ipl_parameter_attr);
-+	sysfs_remove_bin_file(&ipl_subsys.kobj, &ipl_parameter_attr);
- 
- out_ipl_parm:
--	sysfs_remove_group(&ipl_subsys.kset.kobj, &ipl_fcp_attr_group);
-+	sysfs_remove_group(&ipl_subsys.kobj, &ipl_fcp_attr_group);
- out:
- 	return rc;
- }
-@@ -846,7 +846,7 @@ static int __init ipl_init(void)
- 		return rc;
- 	switch (ipl_info.type) {
- 	case IPL_TYPE_CCW:
--		rc = sysfs_create_group(&ipl_subsys.kset.kobj,
-+		rc = sysfs_create_group(&ipl_subsys.kobj,
- 					&ipl_ccw_attr_group);
- 		break;
- 	case IPL_TYPE_FCP:
-@@ -854,11 +854,11 @@ static int __init ipl_init(void)
- 		rc = ipl_register_fcp_files();
- 		break;
- 	case IPL_TYPE_NSS:
--		rc = sysfs_create_group(&ipl_subsys.kset.kobj,
-+		rc = sysfs_create_group(&ipl_subsys.kobj,
- 					&ipl_nss_attr_group);
- 		break;
- 	default:
--		rc = sysfs_create_group(&ipl_subsys.kset.kobj,
-+		rc = sysfs_create_group(&ipl_subsys.kobj,
- 					&ipl_unknown_attr_group);
- 		break;
- 	}
-@@ -885,7 +885,7 @@ static int __init reipl_nss_init(void)
- 
- 	if (!MACHINE_IS_VM)
- 		return 0;
--	rc = sysfs_create_group(&reipl_subsys.kset.kobj, &reipl_nss_attr_group);
-+	rc = sysfs_create_group(&reipl_subsys.kobj, &reipl_nss_attr_group);
- 	if (rc)
- 		return rc;
- 	strncpy(reipl_nss_name, kernel_nss_name, NSS_NAME_SIZE + 1);
-@@ -900,7 +900,7 @@ static int __init reipl_ccw_init(void)
- 	reipl_block_ccw = (void *) get_zeroed_page(GFP_KERNEL);
- 	if (!reipl_block_ccw)
- 		return -ENOMEM;
--	rc = sysfs_create_group(&reipl_subsys.kset.kobj, &reipl_ccw_attr_group);
-+	rc = sysfs_create_group(&reipl_subsys.kobj, &reipl_ccw_attr_group);
- 	if (rc) {
- 		free_page((unsigned long)reipl_block_ccw);
- 		return rc;
-@@ -938,7 +938,7 @@ static int __init reipl_fcp_init(void)
- 	reipl_block_fcp = (void *) get_zeroed_page(GFP_KERNEL);
- 	if (!reipl_block_fcp)
- 		return -ENOMEM;
--	rc = sysfs_create_group(&reipl_subsys.kset.kobj, &reipl_fcp_attr_group);
-+	rc = sysfs_create_group(&reipl_subsys.kobj, &reipl_fcp_attr_group);
- 	if (rc) {
- 		free_page((unsigned long)reipl_block_fcp);
- 		return rc;
-@@ -990,7 +990,7 @@ static int __init dump_ccw_init(void)
- 	dump_block_ccw = (void *) get_zeroed_page(GFP_KERNEL);
- 	if (!dump_block_ccw)
- 		return -ENOMEM;
--	rc = sysfs_create_group(&dump_subsys.kset.kobj, &dump_ccw_attr_group);
-+	rc = sysfs_create_group(&dump_subsys.kobj, &dump_ccw_attr_group);
- 	if (rc) {
- 		free_page((unsigned long)dump_block_ccw);
- 		return rc;
-@@ -1014,7 +1014,7 @@ static int __init dump_fcp_init(void)
- 	dump_block_fcp = (void *) get_zeroed_page(GFP_KERNEL);
- 	if (!dump_block_fcp)
- 		return -ENOMEM;
--	rc = sysfs_create_group(&dump_subsys.kset.kobj, &dump_fcp_attr_group);
-+	rc = sysfs_create_group(&dump_subsys.kobj, &dump_fcp_attr_group);
- 	if (rc) {
- 		free_page((unsigned long)dump_block_fcp);
- 		return rc;
+-- 
+Frank
