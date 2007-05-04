@@ -1,52 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXEDHIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbXEDHRX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S964784AbXEDHIP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 03:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964792AbXEDHIP
+	id S1754589AbXEDHRX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:17:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbXEDHRX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 03:08:15 -0400
-Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:2312 "EHLO
-	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S964784AbXEDHIO (ORCPT
+	Fri, 4 May 2007 03:17:23 -0400
+Received: from smtp.nokia.com ([131.228.20.171]:46626 "EHLO
+	mgw-ext12.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754589AbXEDHRW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 03:08:14 -0400
-From: "Miquel van Smoorenburg" <miquels@cistron.nl>
-To: lorrides@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
-X-Newsgroups: lists.linux.kernel
-In-Reply-To: <d20c3b7d0705032048l8c10d11i98a13881b1c8b3f3@mail.gmail.com>
-References: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com>
-	 <20070503205341.GB943@1wt.eu>
-	 <Pine.LNX.4.61.0705032255080.18504@yvahk01.tjqt.qr>
-	 <d20c3b7d0705031412y11f18288t321c097aaad4b38b@mail.gmail.com>
-	 <20070503222334.GD943@1wt.eu>
-Organization: 
+	Fri, 4 May 2007 03:17:22 -0400
+Subject: Re: [PATCH] UBI: dereference after kfree in create_vtbl
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Florin Malita <fmalita@gmail.com>
+Cc: linux-mtd@lists.infradead.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <463A04A5.5030103@gmail.com>
+References: <463A04A5.5030103@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 04 May 2007 10:17:10 +0300
+Message-Id: <1178263030.3659.15.camel@sauron>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <E1Hjrtj-0001pQ-Tl@n2o.xs4all.nl>
-Date: Fri, 04 May 2007 09:08:11 +0200
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 04 May 2007 07:17:10.0492 (UTC) FILETIME=[3B16B1C0:01C78E1C]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <d20c3b7d0705032048l8c10d11i98a13881b1c8b3f3@mail.gmail.com> you write:
->Its a Juniper M7i
->It comes default with a 5400 rpm laptop 2.5" harddrive but now we
->bought a more robust "server" 2.5" harddrive. It still barfs on the OS
->install, so the linux is doing all the job now. Will get a juniper guy
->to come and fix :)
->
->As a side note, i'm starting to wonder if it was worth the $20k when i
->could just have a linux machine to do the job with a clone for backup
->;)
+On Thu, 2007-05-03 at 11:49 -0400, Florin Malita wrote:
+> Coverity (CID 1614) spotted new_seb being dereferenced after kfree() in 
+> create_vtbl's write_error path.
 
-Well, the features and esp. the JunOS cli are worth a lot. And
-if you need to route more than say 3 gbit/s, PC hardware just
-won't cut it.
+Applied with minor trailing white-space cleanup, thanks.
 
-Then again, if you like the CLI, don't need to route more
-than 1 gbit/s, and don't need to do fancy stuff like MPLS,
-QoS or shaping, there's always solutions like http://www.vyatta.com/
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-Mike.
