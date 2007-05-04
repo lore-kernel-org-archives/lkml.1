@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767701AbXEDFyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932117AbXEDF6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767701AbXEDFyi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 01:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767703AbXEDFyi
+	id S932117AbXEDF6k (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 01:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932179AbXEDF6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 01:54:38 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4550 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767701AbXEDFyh (ORCPT
+	Fri, 4 May 2007 01:58:40 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37841 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932117AbXEDF6k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 01:54:37 -0400
-Date: Fri, 4 May 2007 06:54:26 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "David M. Lloyd" <dmlloyd@flurg.com>
-Cc: Chris Friesen <cfriesen@nortel.com>, Glen Turner <gdt@gdt.id.au>,
-       Linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Detecting process death for anycast named process monitoring
-Message-ID: <20070504055425.GA24362@flint.arm.linux.org.uk>
-Mail-Followup-To: "David M. Lloyd" <dmlloyd@flurg.com>,
-	Chris Friesen <cfriesen@nortel.com>, Glen Turner <gdt@gdt.id.au>,
-	Linux kernel <linux-kernel@vger.kernel.org>
-References: <4638FCEA.4010806@gdt.id.au> <4639111A.70202@nortel.com> <1178147547.26507.96.camel@localhost>
+	Fri, 4 May 2007 01:58:40 -0400
+Date: Thu, 3 May 2007 22:58:32 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: kenchen@google.com, linux-kernel@vger.kernel.org, agl@us.ibm.com,
+       hermes@gibson.dropbear.id.au, wli@holomorphy.com, clameter@sgi.com
+Subject: Re: + per-cpuset-hugetlb-accounting-and-administration.patch added
+ to -mm tree
+Message-Id: <20070503225832.972057ef.pj@sgi.com>
+In-Reply-To: <20070503220331.8fd70ca5.akpm@linux-foundation.org>
+References: <200705040104.l4414YFR026322@shell0.pdx.osdl.net>
+	<20070503183821.b75e8f57.pj@sgi.com>
+	<b040c32a0705032149t2a380f82t8145c1d0f8f6736@mail.gmail.com>
+	<20070503220331.8fd70ca5.akpm@linux-foundation.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178147547.26507.96.camel@localhost>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 06:12:27PM -0500, David M. Lloyd wrote:
-> On Wed, 2007-05-02 at 16:30 -0600, Chris Friesen wrote:
-> > Glen Turner wrote:
-> > 
-> > > The question is, how can a process with no relationship to another
-> > > process detect that process unexpectedly dying?  If named goes
-> > > away to a better place, we want to shut down the interface
-> > > which causes Quagga to inject the anycast route.
-> 
-> > We did something similar where arbitrary processes can register to be 
-> > sent an arbitrary signal when the state of other processes change.
-> 
-> What about something like inotify, but for processes?  That would be
-> cool...
+Andrew wrote:
+> If it's per-cpuset information then shouldn't it be presented in
+> /dev/cpuset/something?
 
-Or maybe just ignoring the SIGHUP before exec'ing the named process as
-a child.
+Yeah - if huge pages were mainline future, rather than the more
+controversial sideline they are now, then it would make more sense
+to put in these stats in each cpuset.
+
+Note, Ken, that if we did that, the calculation of these new Total and
+Free stats would be a little different than your new code.  Instead of
+looping over the memory nodes in the current tasks mems_allowed mask,
+we would loop over the memory nodes allowed in the cpuset being queried
+(the cpuset whose 'hugepages_total' or 'hugepages_free' special
+file we were reading, not the current tasks cpuset.)
+
+But I'm reluctant to entertain such cpuset additions until I see more
+of where my colleague Christoph is going in related work.
+
+Clearly as can be seen on one of his posts on the parallel lkml thread:
+
+  Re: + pretend-cpuset-has-some-form-of-hugetlb-page-reservation.patch added to -mm tree
+
+earlier today, Christoph is no great fan of the current implementation
+of huge pages.
+
+And clearly as memory continues to get bigger, we will be putting more
+stress on these page size related mechanisms.
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
