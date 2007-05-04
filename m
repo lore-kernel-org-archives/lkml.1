@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422756AbXEDHFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXEDHIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422756AbXEDHFh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 03:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422770AbXEDHFh
+	id S964784AbXEDHIP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:08:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964792AbXEDHIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 03:05:37 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:33383
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422756AbXEDHFg (ORCPT
+	Fri, 4 May 2007 03:08:15 -0400
+Received: from smtp-vbr4.xs4all.nl ([194.109.24.24]:2312 "EHLO
+	smtp-vbr4.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S964784AbXEDHIO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 03:05:36 -0400
-Date: Fri, 4 May 2007 09:08:40 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/5] Power Management: use mutexes instead of semaphores
-Message-ID: <20070504070840.GD3234@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
-	linux-kernel@vger.kernel.org
-References: <20070427083857.GB4213@traven> <20070427084322.GC4213@traven> <20070503225432.97dad06e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070503225432.97dad06e.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Fri, 4 May 2007 03:08:14 -0400
+From: "Miquel van Smoorenburg" <miquels@cistron.nl>
+To: lorrides@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
+X-Newsgroups: lists.linux.kernel
+In-Reply-To: <d20c3b7d0705032048l8c10d11i98a13881b1c8b3f3@mail.gmail.com>
+References: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com>
+	 <20070503205341.GB943@1wt.eu>
+	 <Pine.LNX.4.61.0705032255080.18504@yvahk01.tjqt.qr>
+	 <d20c3b7d0705031412y11f18288t321c097aaad4b38b@mail.gmail.com>
+	 <20070503222334.GD943@1wt.eu>
+Organization: 
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-Id: <E1Hjrtj-0001pQ-Tl@n2o.xs4all.nl>
+Date: Fri, 04 May 2007 09:08:11 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-El Thu, May 03, 2007 at 10:54:32PM -0700 Andrew Morton ha dit:
+In article <d20c3b7d0705032048l8c10d11i98a13881b1c8b3f3@mail.gmail.com> you write:
+>Its a Juniper M7i
+>It comes default with a 5400 rpm laptop 2.5" harddrive but now we
+>bought a more robust "server" 2.5" harddrive. It still barfs on the OS
+>install, so the linux is doing all the job now. Will get a juniper guy
+>to come and fix :)
+>
+>As a side note, i'm starting to wonder if it was worth the $20k when i
+>could just have a linux machine to do the job with a clone for backup
+>;)
 
-> On Fri, 27 Apr 2007 10:43:22 +0200 Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
-> 
-> > the Power Management code uses semaphores as mutexes. use the mutex
-> > API instead of the (binary) semaphores
-> 
-> I know it's a little thing, but given a choice between
-> 
-> a) changelogs which use capital letters and fullstops and
-> 
-> b) changelogs which do not,
-> 
-> I think a) gives a better result.
+Well, the features and esp. the JunOS cli are worth a lot. And
+if you need to route more than say 3 gbit/s, PC hardware just
+won't cut it.
 
-thanks for your suggestion, i'll take it into account for future patches
- 
-> I note that none of these patches added a #include <linux/mutex.h>.  Each C
-> file which uses mutexes should do that, rather than relying upon accidental
-> nested includes.  I hope you're checking for that.
+Then again, if you like the CLI, don't need to route more
+than 1 gbit/s, and don't need to do fancy stuff like MPLS,
+QoS or shaping, there's always solutions like http://www.vyatta.com/
 
-initially i added the include line (i think at least one patch still
-contains it), but then i realized that in most cases the original code
-doesn't include semaphore.h and i (mis-)interpreted that it should be
-handled the same way (relying upon nested includes) for mutexes. 
-
-do you want me to send you a version of the patches containing the
-include?
-
-regards
-
--- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-      The assumption that what currently exists must necessarily
-        exist is the acid that corrodes all visionary thinking
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+Mike.
