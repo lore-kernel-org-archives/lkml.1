@@ -1,92 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965539AbXEDHjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030185AbXEDHm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965539AbXEDHjp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 03:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964792AbXEDHjp
+	id S1030185AbXEDHm5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965698AbXEDHm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 03:39:45 -0400
-Received: from mail.chehov.net ([80.71.245.247]:56229 "EHLO mail.rialcom.ru"
+	Fri, 4 May 2007 03:42:57 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:38847 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754596AbXEDHjn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 03:39:43 -0400
-X-Spam-Flag: SKIP
-X-Spam-Yversion: Spamooborona 1.6.1
-Message-ID: <463AE32A.5000902@clusterfs.com>
-Date: Fri, 04 May 2007 11:39:22 +0400
-From: Alex Tomas <alex@clusterfs.com>
-Organization: Cluster Filesystems, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.10) Gecko/20070302 Fedora/1.5.0.10-1.fc6 pango-text Thunderbird/1.5.0.10 Mnenhy/0.7.5.666
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Andreas Dilger <adilger@clusterfs.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Marat Buharov <marat.buharov@gmail.com>, Mike Galbraith <efault@gmx.de>,
-       LKML <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: [ext3][kernels >= 2.6.20.7 at least] KDE going comatose when
- FS is under heavy write load (massive starvation)
-References: <1177660767.6567.41.camel@Homer.simpson.net>	<20070427013350.d0d7ac38.akpm@linux-foundation.org>	<698310e10704270459t7663d39dp977cf055b8db9d2a@mail.gmail.com>	<alpine.LFD.0.98.0704270819500.9964@woody.linux-foundation.org>	<20070427193130.GD5967@schatzie.adilger.int>	<20070427151837.f1439639.akpm@linux-foundation.org>	<463A1E02.8020506@clusterfs.com>	<20070503165428.855eb7d7.akpm@linux-foundation.org>	<463AD024.6060208@clusterfs.com>	<20070503233804.9dace4a7.akpm@linux-foundation.org>	<463AD948.9090103@clusterfs.com> <20070504001802.0e86e9dd.akpm@linux-foundation.org>
-In-Reply-To: <20070504001802.0e86e9dd.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S964792AbXEDHm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 03:42:56 -0400
+Date: Fri, 4 May 2007 09:42:19 +0200 (MEST)
+Message-Id: <200705040742.l447gJPR027148@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: johnstul@us.ibm.com, mikpe@it.uu.se
+Subject: Re: Fw: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
+Cc: ak@suse.de, len.brown@intel.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> I'm still not understanding.  The terms you're using are a bit ambiguous.
+On Thu, 03 May 2007 19:38:50 -0700, john stultz wrote:
+> > 	So that slow acpi_pm on x86_64 seems to be connected w/ the idle loop.
+> > I'm guessing the chipset halts the ACPI PM in lower C states. Do you
+> > have any guesses as to what might differ between x86_64 and i386 ACPI
+> > idle loops? Or might this be something different in what the BIOS
+> > exports in x86_64 mode or i386 mode?
 > 
-> What does "find some dirty unallocated blocks" mean?  Find a page which is
-> dirty and which does not have a disk mapping?
-> 
-> Normally the above operation would be implemented via
-> ext4_writeback_writepage(), and it runs under lock_page().
+> Mikael,
+> 	Just trying to dig a bit more through the acpi_processor_idle code.
+> Could you run "cat /proc/acpi/processor/CPU1/power" and reply w/ the
+> output?
 
-I'm mostly worried about delayed allocation case. My impression was that
-holding number of pages locked isn't a good idea, even if they're locked
-in index order. so, I was going to turn number of pages writeback, then
-allocate blocks for all of them at once, then put proper blocknr's into
-bh's (or PG_mappedtodisk?).
+Here's that file with the x86-64 kernel:
 
-> 
-> 
->> 					going to commit
->> 					find inode I dirty
->> 					do NOT find these blocks because they're
->> 					  allocated only, but pages/bhs aren't mapped
->> 					  to them
->> 					start commit
-> 
-> I think you're assuming here that commit would be using ->t_sync_datalist
-> to locate dirty buffer_heads.
+active state:            C2
+max_cstate:              C8
+bus master activity:     00000000
+maximum allowed latency: 20000 usec
+states:
+    C1:                  type[C1] promotion[C2] demotion[--] latency[000] usage[00107840] duration[00000000000000000000]
+   *C2:                  type[C2] promotion[--] demotion[C1] latency[010] usage[-1987043693] duration[00000000003044809185]
 
-nope, I mean sb->inode->page walk.
-
-> But under this proposal, t_sync_datalist just gets removed: the new
-> ordered-data mode _only_ need to do the sb->inode->page walk.  So if I'm
-> understanding you, the way in which we'd handle any such race is to make
-> kjournald's writeback of the dirty pages block in lock_page().  Once it
-> gets the page lock it can look to see if some other thread has mapped the
-> page to disk.
-
-if I'm right holding number of pages locked, then they won't be locked, but
-writeback. of course kjournald can block on writeback as well, but how does
-it find pages with *newly allocated* blocks only?
-
-> It may turn out that kjournald needs a private way of getting at the
-> I_DIRTY_PAGES inodes to do this properly, but I don't _think_ so.  If we
-> had the radix-tree-of-dirty-inodes thing then that's easy enough to do
-> anyway, with a tagged search.  But I expect that a single pass through the
-> superblock's dirty inodes would suffice for ordered-data.  Files which
-> have chattr +j would screw things up, as usual.
-
-not dirty inodes only, but rather some fast way to find pages with newly
-allocated pages.
-
-> I assume (hope) that your delayed allocation code implements
-> ->writepages()?  Doing the allocation one-page-at-a-time sounds painful...
-
-indeed. this is a root cause of all this complexity.
-
-thanks, Alex
-
-
+/Mikael
