@@ -1,61 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754535AbXEDGqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767713AbXEDG5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754535AbXEDGqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 02:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbXEDGqT
+	id S1767713AbXEDG5G (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 02:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767700AbXEDG5F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 02:46:19 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:44225 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754535AbXEDGqS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 02:46:18 -0400
-Date: Thu, 3 May 2007 23:45:53 -0700
-From: Bill Irwin <bill.irwin@oracle.com>
-To: Paul Jackson <pj@sgi.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       mm-commits@vger.kernel.org, kenchen@google.com, agl@us.ibm.com,
-       hermes@gibson.dropbear.id.au, clameter@sgi.com
-Subject: Re: + per-cpuset-hugetlb-accounting-and-administration.patch added to -mm tree
-Message-ID: <20070504064553.GK26598@holomorphy.com>
-Mail-Followup-To: Bill Irwin <bill.irwin@oracle.com>,
-	Paul Jackson <pj@sgi.com>, linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org, mm-commits@vger.kernel.org,
-	kenchen@google.com, agl@us.ibm.com, hermes@gibson.dropbear.id.au,
-	clameter@sgi.com
-References: <200705040104.l4414YFR026322@shell0.pdx.osdl.net> <20070503183821.b75e8f57.pj@sgi.com>
-MIME-Version: 1.0
+	Fri, 4 May 2007 02:57:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36807 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767698AbXEDG5D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 02:57:03 -0400
+Date: Fri, 4 May 2007 02:56:26 -0400
+From: Jakub Jelinek <jakub@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ulrich Drepper <drepper@redhat.com>, David Chinner <dgc@sgi.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070504065626.GW355@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070503212955.b1b6443c.akpm@linux-foundation.org> <20070504060731.GJ32602149@melbourne.sgi.com> <20070503232815.2f62a75e.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070503183821.b75e8f57.pj@sgi.com>
-User-Agent: Mutt/1.5.11
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+In-Reply-To: <20070503232815.2f62a75e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 06:38:21PM -0700, Paul Jackson wrote:
-> Adding Christoph Lameter <clameter@sgi.com> to the cc list, as he knows
-> more about hugetlb pages than I do.
-> This patch strikes me as a bit odd.
-> Granted, it's solving what could be a touchy problem with a fairly
-> simple solution, which is usually a Good Thing(tm).
-> However, the idea that different tasks would see different values for
-> the following fields in /proc/meminfo:
-> 	HugePages_Total:     0
-> 	HugePages_Free:      0
-> strikes me as odd, and risky.  I would have thought that usually, all
-> tasks in the system should see the same values in the files in /proc
-> (as opposed to the files in particular task subdirectories /proc/<pid>.)
-> This patch strikes me as a bit of a hack, good for compatibility, but
-> hiding a booby trap that will bite some user code in the long run.
-> But I'm not enough of an expert to know what the right tradeoffs are
-> in this matter.
+On Thu, May 03, 2007 at 11:28:15PM -0700, Andrew Morton wrote:
+> > > The posix spec implies that negative `len' is permitted - presumably "allocate
+> > > ahead of `offset'".  How peculiar.
+> > 
+> > I just checked the man page for posix_fallocate() and it says:
+> > 
+> >       EINVAL  offset or len was less than zero.
 
-The semantics of the global /proc/meminfo should not change; a separate
-per-cpuset reporting mechanism should really be used.
+That describes the current glibc implementation.
 
 
--- wli
+> > We should probably follow this lead.
+> 
+> Yes, I think so.  I'm suspecting that
+> http://www.opengroup.org/onlinepubs/009695399/functions/posix_fallocate.html
+> is just buggy.  Or I can't read.
+> 
+> I mean, if we're going to support negative `len' then is the byte at
+> `offset' inside or outside the segment?  Head spins.
+> 
+> However it would be neat if someone could test $OTHER_OS and, perhaps more
+> importantly, the present glibc emulation (which I assume your manpage is
+> referring to, so this would be a manpage test ;)).
+
+int
+posix_fallocate (int fd, __off_t offset, __off_t len)
+{
+  struct stat64 st;
+  struct statfs f;
+
+  /* `off_t' is a signed type.  Therefore we can determine whether
+     OFFSET + LEN is too large if it is a negative value.  */
+  if (offset < 0 || len < 0)
+    return EINVAL;
+  if (offset + len < 0)
+    return EFBIG;
+
+  /* First thing we have to make sure is that this is really a regular
+     file.  */
+  if (__fxstat64 (_STAT_VER, fd, &st) != 0)
+    return EBADF;
+  if (S_ISFIFO (st.st_mode))
+    return ESPIPE;
+  if (! S_ISREG (st.st_mode))
+    return ENODEV;
+
+  if (len == 0)
+    {
+      if (st.st_size < offset)
+        {
+          int ret = __ftruncate (fd, offset);
+
+          if (ret != 0)
+            ret = errno;
+          return ret;
+        }
+      return 0;
+    }
+...
+
+is what glibc does ATM.  Seems we violate the case where len == 0, as
+EINVAL in that case is "shall fail".  But reading the standard to imply
+negative len is ok is too much guessing, there is no word what it means
+when len is negative and
+"required storage for regular file data starting at offset and continuing for len bytes"
+doesn't make sense for negative size.  
+And given the general
+"Implementations may support additional errors not included in this list,
+may generate errors included in this list under circumstances other than
+those described here, or may contain extensions or limitations that prevent
+some errors from occurring."
+I believe returning EINVAL for len < 0 is not a POSIX violation.
+That doesn't mean the standard shouldn't be clarified, whether by saying
+EINVAL must be returned for non-positive len or saying that using negative
+len has undefined or implementation defined behavior.
+
+> The above opengroup page only permits S_ISREG.  Preallocating directories
+> sounds quite useful to me, although it's something which would be pretty
+> hard to emulate if the FS doesn't support it.  And there's a decent case to
+> be made for emulating it - run-anywhere reasons.  Does glibc emulation support
+> directories?  Quite unlikely.
+
+No, see above.
+
+	Jakub
