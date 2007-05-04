@@ -1,18 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754925AbXEDKj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754917AbXEDKj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754925AbXEDKj5 (ORCPT <rfc822;w@1wt.eu>);
+	id S1754917AbXEDKj5 (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 4 May 2007 06:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767841AbXEDKjG
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767842AbXEDKjD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 06:39:06 -0400
+	Fri, 4 May 2007 06:39:03 -0400
 Received: from amsfep17-int.chello.nl ([213.46.243.15]:3563 "EHLO
 	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1767835AbXEDKi4 (ORCPT
+	by vger.kernel.org with ESMTP id S1767837AbXEDKi6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 06:38:56 -0400
-Message-Id: <20070504102651.923946304@chello.nl>
+	Fri, 4 May 2007 06:38:58 -0400
+Message-Id: <20070504103204.628880236@chello.nl>
+References: <20070504102651.923946304@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 May 2007 12:26:51 +0200
+Date: Fri, 04 May 2007 12:27:30 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -22,82 +23,104 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Daniel Phillips <phillips@google.com>
-Subject: [PATCH 00/40] Swap over Networked storage -v12
+Subject: [PATCH 39/40] mm: a process flags to avoid blocking allocations
+Content-Disposition: inline; filename=pf_mem_nowait.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a fundamental deadlock associated with paging; when writing out a page
-to free memory requires free memory to complete. The usually solution is to
-keep a small amount of memory available at all times so we can overcome this
-problem. This however assumes the amount of memory needed for writeout is
-(constant and) smaller than the provided reserve.
+PF_MEM_NOWAIT - will make allocations fail before blocking. This is usefull
+to convert process behaviour to non-blocking.
 
-It is this latter assumption that breaks when doing writeout over network.
-Network can take up an unspecified amount of memory while waiting for a reply
-to our write request. This re-introduces the deadlock; we might never complete
-the writeout, for we might not have enough memory to receive the completion
-message.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Mike Christie <michaelc@cs.wisc.edu>
+---
+ include/linux/sched.h |    1 +
+ kernel/softirq.c      |    4 ++--
+ mm/internal.h         |   11 ++++++++++-
+ mm/page_alloc.c       |    4 ++--
+ 4 files changed, 15 insertions(+), 5 deletions(-)
 
-The proposed solution is simple, only allow traffic servicing the VM to make
-use of the reserves.
-
-This however implies you know what packets are for whom, which generally
-speaking you don't. Hence we need to receive all packets but discard them as
-soon as we encounter a non VM bound packet allocated from the reserves.
-
-Also knowing it is headed towards the VM needs a little help, hence we
-introduce the socket flag SOCK_VMIO to mark sockets with.
-
-Of course, since we are paging all this has to happen in kernel-space, since
-user-space might just not be there.
-
-Since packet processing might also require memory, this all also implies that
-those auxiliary allocations may use the reserves when an emergency packet is
-processed. This is accomplished by using PF_MEMALLOC.
-
-How much memory is to be reserved is also an issue, enough memory to saturate
-both the route cache and IP fragment reassembly, along with various constants.
-
-This patch-set comes in 6 parts:
-
-1) introduce the memory reserve and make the SLAB allocator play nice with it.
-   patches 01-10
-
-2) add some needed infrastructure to the network code
-   patches 11-13
-
-3) implement the idea outlined above
-   patches 14-20
-
-4) teach the swap machinery to use generic address_spaces
-   patches 21-24
-
-5) implement swap over NFS using all the new stuff
-   patches 25-31
-
-6) implement swap over iSCSI
-   patches 32-40
-
-Patches can also be found here:
-  http://programming.kicks-ass.net/kernel-patches/vm_deadlock/v12/
-
-If I receive no feedback, I will assume the various maintainers do not object
-and I will respin the series against -mm and submit for inclusion.
-
-There is interest in this feature from the stateless linux world; that is both
-the virtualization world, and the cluster world.
-
-I have been contacted by various groups, some have just expressed their
-interest, others have been testing this work in their environments.
-
-Various hardware vendors have also expressed interest, and, of course, my
-employer finds it important enough to have me work on it.
-
-Also, while it doesn't present a full-fledged reserve-based allocator API yet,
-it does lay most of the groundwork for it. There is a GFP_NOFAIL elimination
-project wanting to use this as a foundation. Elimination of GFP_NOFAIL will
-greatly improve the basic soundness and stability of the code that currently
-uses that construct - most disk based filesystems.
+Index: linux-2.6-git/include/linux/sched.h
+===================================================================
+--- linux-2.6-git.orig/include/linux/sched.h	2007-03-26 12:03:07.000000000 +0200
++++ linux-2.6-git/include/linux/sched.h	2007-03-26 12:03:09.000000000 +0200
+@@ -1158,6 +1158,7 @@ static inline void put_task_struct(struc
+ #define PF_SPREAD_SLAB	0x02000000	/* Spread some slab caches over cpuset */
+ #define PF_MEMPOLICY	0x10000000	/* Non-default NUMA mempolicy */
+ #define PF_MUTEX_TESTER	0x20000000	/* Thread belongs to the rt mutex tester */
++#define PF_MEM_NOWAIT	0x40000000	/* Make allocations fail instead of block */
+ 
+ /*
+  * Only the _current_ task can read/write to tsk->flags, but other
+Index: linux-2.6-git/mm/page_alloc.c
+===================================================================
+--- linux-2.6-git.orig/mm/page_alloc.c	2007-03-26 12:03:07.000000000 +0200
++++ linux-2.6-git/mm/page_alloc.c	2007-03-26 12:03:09.000000000 +0200
+@@ -1234,11 +1234,11 @@ struct page * fastcall
+ __alloc_pages(gfp_t gfp_mask, unsigned int order,
+ 		struct zonelist *zonelist)
+ {
+-	const gfp_t wait = gfp_mask & __GFP_WAIT;
++	struct task_struct *p = current;
++	const bool wait = gfp_wait(gfp_mask);
+ 	struct zone **z;
+ 	struct page *page;
+ 	struct reclaim_state reclaim_state;
+-	struct task_struct *p = current;
+ 	int do_retry;
+ 	int alloc_flags;
+ 	int did_some_progress;
+Index: linux-2.6-git/mm/internal.h
+===================================================================
+--- linux-2.6-git.orig/mm/internal.h	2007-03-26 12:03:07.000000000 +0200
++++ linux-2.6-git/mm/internal.h	2007-03-26 12:03:09.000000000 +0200
+@@ -46,6 +46,15 @@ extern void fastcall __init __free_pages
+ #define ALLOC_NO_WATERMARKS	0x20 /* don't check watermarks at all */
+ #define ALLOC_CPUSET		0x40 /* check for correct cpuset */
+ 
++static bool inline gfp_wait(gfp_t gfp_mask)
++{
++	bool wait = gfp_mask & __GFP_WAIT;
++	if (wait && !in_irq() && (current->flags & PF_MEM_NOWAIT))
++		wait = false;
++
++	return wait;
++}
++
+ /*
+  * get the deepest reaching allocation flags for the given gfp_mask
+  */
+@@ -53,7 +62,7 @@ static int inline gfp_to_alloc_flags(gfp
+ {
+ 	struct task_struct *p = current;
+ 	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
+-	const gfp_t wait = gfp_mask & __GFP_WAIT;
++	const bool wait = gfp_wait(gfp_mask);
+ 
+ 	/*
+ 	 * The caller may dip into page reserves a bit more if the caller
+Index: linux-2.6-git/kernel/softirq.c
+===================================================================
+--- linux-2.6-git.orig/kernel/softirq.c	2007-03-26 12:03:07.000000000 +0200
++++ linux-2.6-git/kernel/softirq.c	2007-03-26 12:12:58.000000000 +0200
+@@ -211,7 +211,7 @@ asmlinkage void __do_softirq(void)
+ 	int max_restart = MAX_SOFTIRQ_RESTART;
+ 	int cpu;
+ 	unsigned long pflags = current->flags;
+-	current->flags &= ~PF_MEMALLOC;
++	current->flags &= ~(PF_MEMALLOC|PF_MEM_NOWAIT);
+ 
+ 	pending = local_softirq_pending();
+ 	account_system_vtime(current);
+@@ -250,7 +250,7 @@ restart:
+ 
+ 	account_system_vtime(current);
+ 	_local_bh_enable();
+-	tsk_restore_flags(current, pflags, PF_MEMALLOC);
++	tsk_restore_flags(current, pflags, (PF_MEMALLOC|PF_MEM_NOWAIT));
+ }
+ 
+ #ifndef __ARCH_HAS_DO_SOFTIRQ
 
 --
 
