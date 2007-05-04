@@ -1,98 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965698AbXEDHu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031349AbXEDHwJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965698AbXEDHu0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 03:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965706AbXEDHu0
+	id S1031349AbXEDHwJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:52:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030187AbXEDHwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 03:50:26 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:59958 "EHLO mailer.gwdg.de"
+	Fri, 4 May 2007 03:52:09 -0400
+Received: from s2.ukfsn.org ([217.158.120.143]:55486 "EHLO mail.ukfsn.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965698AbXEDHuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 03:50:25 -0400
-Date: Fri, 4 May 2007 09:46:22 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Trent Piepho <xyzzy@speakeasy.org>
-cc: Roman Zippel <zippel@linux-m68k.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>,
-       v4l-dvb maintainer list <v4l-dvb-maintainer@linuxtv.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [v4l-dvb-maintainer] [PATCH 35/36] Use menuconfig objects II -
- DVB
-In-Reply-To: <Pine.LNX.4.58.0705031826360.32689@shell2.speakeasy.net>
-Message-ID: <Pine.LNX.4.61.0705040944550.18504@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
- <Pine.LNX.4.61.0704301429450.29151@yvahk01.tjqt.qr> <1178129426.29579.17.camel@localhost>
- <Pine.LNX.4.58.0705021436050.504@shell2.speakeasy.net>
- <Pine.LNX.4.61.0705030855000.18504@yvahk01.tjqt.qr> <1178195820.12651.28.camel@localhost>
- <Pine.LNX.4.61.0705031453360.18504@yvahk01.tjqt.qr>
- <Pine.LNX.4.58.0705031247300.32689@shell2.speakeasy.net>
- <20070503204942.GB18539@uranus.ravnborg.org> <Pine.LNX.4.64.0705040212080.1479@scrub.home>
- <Pine.LNX.4.58.0705031826360.32689@shell2.speakeasy.net>
+	id S965706AbXEDHwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 03:52:07 -0400
+Message-ID: <463AE623.60501@dgreaves.com>
+Date: Fri, 04 May 2007 08:52:03 +0100
+From: David Greaves <david@dgreaves.com>
+User-Agent: Icedove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Kyle Moffett <mrmacman_g4@mac.com>
+Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+References: <1177567481.5025.211.camel@nigel.suspend2.net> <1177654110.4737.91.camel@nigel.suspend2.net> <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI> <200704272324.43359.rjw@sisk.pl> <alpine.LFD.0.98.0704271442160.9964@woody.linux-foundation.org> <1177711666.4737.176.camel@nigel.suspend2.net> <35EFC5BA-D16B-41BE-A641-AEA8CCC9E0BE@mac.com> <20070503151047.GB3866@ucw.cz> <E92E80B1-2D3F-4942-A17B-AED903F535C6@mac.com>
+In-Reply-To: <E92E80B1-2D3F-4942-A17B-AED903F535C6@mac.com>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Kyle Moffett wrote:
+> On May 03, 2007, at 11:10:47, Pavel Machek wrote:
+>> How mature is freezing filesystems -- will it work on at least ext2/3
+>> and vfat?
+> 
+> I'm pretty sure it works on ext2/3 and xfs and possibly others, I don't
+> know either way about VFAT though.  Essentially the "freeze" part
+> involves telling the filesystem to sync all data, flush the journal, and
+> mark the filesystem clean.  The intent under dm/LVM was to allow you to
+> make snapshots without having to fsck the just-created snapshot before
+> you mounted it.
+> 
+>> What happens if you try to boot and filesystems are frozen from
+>> previous run?
+> 
+> If you're just doing a fresh boot then the filesystem is already clean
+> due to the dm freeze and so it mounts up normally.  All you need to do
+> then is have a little startup script which purges the saved image before
+> you fsck or remount things read-write since either case means the image
+> is no longer safe to resume.
 
-On May 3 2007 18:40, Trent Piepho wrote:
->
->How about these examples:
->
->menuconfig FOO
->if FOO
->config A
->	depends on FOO
->endif
->config B
->if FOO
->config C
->	depends on FOO
->endif
+Wouldn't it be better if freeze wrote a freeze-ID to the fs and returned it?
+This would naturally be kept in the image and a UUID mismatch would be
+detectable - seems safer and more flexible than 'a script'.
 
-This does not work as expected in ncurses-menuconfig either.
-It does not even need a "menuconfig" object for that, something
-as simple as
+"This isn't the freeze you're looking for, move along"
 
-config A
-config B
-config C
-  depends on A
-
-prints it
-
-A
-B
-C
-
-rather than
-
-A
-\_ C
-B
-
-which is why some of my menuconfig patches _move_ C to not come after B.
-
->How does it show the first one, keeping the config entries in the correct
->order and put them into the menu at the same time?
->
->And which of what should the second be show?
->
->foo
->\-bar
->  \-baz
->
->or
->
->foo
->|-bar
->\-baz
->
->There is no question with menus, as the menu tree is clearly lexically
->defined by the matching menu / endmenu pairs.  But menuconfig doesn't work
->that way, and it seems like it would make more sense if it did.
->
-
-Jan
--- 
+David
