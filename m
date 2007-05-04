@@ -1,153 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031033AbXEDQfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031371AbXEDQg2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031033AbXEDQfw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 12:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031187AbXEDQfw
+	id S1031371AbXEDQg2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:36:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031379AbXEDQg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 12:35:52 -0400
-Received: from styx.suse.cz ([82.119.242.94]:33287 "EHLO duck.suse.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031033AbXEDQfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 12:35:51 -0400
-Date: Fri, 4 May 2007 18:45:34 +0200
-From: Jan Kara <jack@suse.cz>
-To: linux-kernel@vger.kernel.org
-Cc: jbenc@suse.cz, greg@kroah.com
-Subject: [PATCH] Implement renaming for debugs (version 2)
-Message-ID: <20070504164534.GB32264@duck.suse.cz>
+	Fri, 4 May 2007 12:36:27 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:55268 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031187AbXEDQgT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 12:36:19 -0400
+Date: Fri, 4 May 2007 09:36:16 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
+In-Reply-To: <20070504103157.215424767@chello.nl>
+Message-ID: <Pine.LNX.4.64.0705040932200.22033@schroedinger.engr.sgi.com>
+References: <20070504102651.923946304@chello.nl> <20070504103157.215424767@chello.nl>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="xgyAXRrhYN0wYx8y"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 4 May 2007, Peter Zijlstra wrote:
 
---xgyAXRrhYN0wYx8y
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> Expost buffer_size in order to allow fair estimates on the actual space 
+> used/needed.
 
-  Hello,
+If its just an estimate that you are after then I think ksize is 
+sufficient.
 
-  attached patch implements renaming for debugfs. I was asked for this
-feature by WLAN guys and I guess it makes sence (they have some debug info
-in the directory identified by interface name and that can change...).
-Thanks.
+The buffer size does not include the other per slab overhead that SLAB 
+needs nor the alignment overhead or the padding. For SLUB you'd be more 
+lucky but there it does not include the per slab padding that exist.
 
-                                                          Honza
+Need to check how this is going to be used. It is difficult to estimate 
+slab use because this depends on the availability of object slots in 
+partial slabs.
 
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
-
---xgyAXRrhYN0wYx8y
-Content-Type: text/x-patch; charset=us-ascii
-Content-Disposition: attachment; filename="debugfs-2.6.21-rc6-1-rename2.diff"
-
-Implement debugfs_rename() to allow renaming files/directories in debugfs.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.21-rc6/fs/debugfs/inode.c linux-2.6.21-rc6-1-debugfs_rename_string/fs/debugfs/inode.c
---- linux-2.6.21-rc6/fs/debugfs/inode.c	2007-04-10 17:09:55.000000000 +0200
-+++ linux-2.6.21-rc6-1-debugfs_rename_string/fs/debugfs/inode.c	2007-05-04 18:15:42.000000000 +0200
-@@ -368,6 +368,71 @@ void debugfs_remove(struct dentry *dentr
- }
- EXPORT_SYMBOL_GPL(debugfs_remove);
- 
-+/**
-+ * debugfs_rename - rename a file/directory in the debugfs filesystem
-+ * @old_dir: a pointer to the parent dentry for the renamed object. This
-+ *          should be a directory dentry.
-+ * @old_name: a pointer to a string containing name of an object to be renamed.
-+ * @new_dir: a pointer to the parent dentry where the object should be
-+ *          moved. This should be a directory dentry.
-+ * @new_name: a pointer to a string containing the target name.
-+ *
-+ * This function renames a file/directory in debugfs.  The target must not
-+ * exist for rename to succeed.
-+ *
-+ * This function will return a pointer to a dentry if it succeeds.
-+ * If an error occurs, %NULL will be returned.
-+ *
-+ * If debugfs is not enabled in the kernel, the value -%ENODEV will be
-+ * returned.
-+ */
-+struct dentry *debugfs_rename(struct dentry *old_dir, const char *old_name,
-+		struct dentry *new_dir, const char *new_name)
-+{
-+	int error;
-+	struct dentry *dentry = NULL, *trap, *old_dentry = NULL;
-+
-+	error = simple_pin_fs(&debug_fs_type, &debugfs_mount,
-+			      &debugfs_mount_count);
-+	if (error)
-+		return NULL;
-+	trap = lock_rename(new_dir, old_dir);
-+	/* Source or destination directories don't exist? */
-+	if (!old_dir->d_inode || !new_dir->d_inode)
-+		goto exit;
-+	old_dentry = lookup_one_len(old_name, old_dir, strlen(old_name));
-+	/* Source does not exist, cyclic rename, or mountpoint? */
-+	if (IS_ERR(old_dentry) || !old_dentry->d_inode || old_dentry == trap
-+	    || d_mountpoint(old_dentry))
-+		goto exit;
-+	dentry = lookup_one_len(new_name, new_dir, strlen(new_name));
-+	/* Lookup failed, cyclic rename or target exists? */
-+	if (IS_ERR(dentry) || dentry == trap || dentry->d_inode)
-+		goto exit;
-+
-+	error = simple_rename(old_dir->d_inode, old_dentry, new_dir->d_inode,
-+		dentry);
-+	if (error)
-+		goto exit;
-+	/* Assigns old_dentry the new name and destroy dentry... */
-+	d_move(old_dentry, dentry);
-+	fsnotify_move(old_dir->d_inode, new_dir->d_inode, old_name,
-+		old_dentry->d_name.name, S_ISDIR(dentry->d_inode->i_mode),
-+		dentry->d_inode, old_dentry->d_inode);
-+	unlock_rename(new_dir, old_dir);
-+	dput(dentry);
-+	return old_dentry;
-+exit:
-+	if (old_dentry && !IS_ERR(old_dentry))
-+		dput(old_dentry);
-+	if (dentry && !IS_ERR(dentry))
-+		dput(dentry);
-+	unlock_rename(new_dir, old_dir);
-+	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(debugfs_rename);
-+
- static decl_subsys(debug, NULL, NULL);
- 
- static int __init debugfs_init(void)
-diff -rupX /home/jack/.kerndiffexclude linux-2.6.21-rc6/include/linux/debugfs.h linux-2.6.21-rc6-1-debugfs_rename_string/include/linux/debugfs.h
---- linux-2.6.21-rc6/include/linux/debugfs.h	2007-04-10 17:09:58.000000000 +0200
-+++ linux-2.6.21-rc6-1-debugfs_rename_string/include/linux/debugfs.h	2007-05-04 18:09:25.000000000 +0200
-@@ -38,6 +38,9 @@ struct dentry *debugfs_create_symlink(co
- 
- void debugfs_remove(struct dentry *dentry);
- 
-+struct dentry *debugfs_rename(struct dentry *old_dir, const char *old_name,
-+                struct dentry *new_dir, const char *new_name);
-+
- struct dentry *debugfs_create_u8(const char *name, mode_t mode,
- 				 struct dentry *parent, u8 *value);
- struct dentry *debugfs_create_u16(const char *name, mode_t mode,
-@@ -83,6 +86,12 @@ static inline struct dentry *debugfs_cre
- static inline void debugfs_remove(struct dentry *dentry)
- { }
- 
-+static inline struct dentry *debugfs_rename(struct dentry *old_dir, struct dentry *old_dentry,
-+                struct dentry *new_dir, char *new_name)
-+{
-+	return ERR_PTR(-ENODEV);
-+}
-+
- static inline struct dentry *debugfs_create_u8(const char *name, mode_t mode,
- 					       struct dentry *parent,
- 					       u8 *value)
-
---xgyAXRrhYN0wYx8y--
+I could add a function that tells you how many object you could allocate 
+from a slab without the page allocator becoming involved? It would count 
+the object slots available on the partial slabs.
