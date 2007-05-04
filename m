@@ -1,91 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161172AbXEDVVw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422720AbXEDV3K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161172AbXEDVVw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:21:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031434AbXEDVVw
+	id S1422720AbXEDV3K (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:29:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422743AbXEDV3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:21:52 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43678 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031707AbXEDVVu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:21:50 -0400
-Date: Fri, 4 May 2007 14:21:46 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
+	Fri, 4 May 2007 17:29:09 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47420 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1422720AbXEDV3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 17:29:08 -0400
+Subject: [PATCH] Blacklist Dell Optiplex 320 from using the HPET
+From: john stultz <johnstul@us.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Andy Whitcroft <apw@shadowen.org>, gregkh@suse.de, paulus@samba.org,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Christoph Lameter <clameter@cthulhu.engr.sgi.com>
-Subject: Re: [PATCH] Re: 2.6.21-rc7-mm2 -- hvsi console driver registration
- failure
-In-Reply-To: <20070504130952.b43fc676.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705041410440.25716@schroedinger.engr.sgi.com>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org>
- <4fe4528cb20beb569a8f2ac817c776e5@pinky> <20070504130952.b43fc676.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "Guilherme M. Schroeder" <guilherme@centralinf.com.br>,
+       lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain
+Date: Fri, 04 May 2007 14:29:04 -0700
+Message-Id: <1178314144.6094.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Andrew Morton wrote:
+One of the 2.6.21 regressions was Guilherme's problem seeing his box
+lock up when the system detected an unstable TSC and dropped back to
+using the HPET.
 
-> Better, we should be emitting loud warnigns which then disable themselves
-> and then succeeding the allocation so that people can proceed with their
-> kernel testing.
-> 
-> When all the loud-warning sites have been fixed, we can take that code out
-> again.
-> 
-> The present situation is maximally tester-hostile.
-i
+In digging deeper, we found the HPET is not actually incrementing on
+this system. And in fact, the reason why this issue just cropped up was
+because of Thomas's clocksource watchdog code was comparing the TSC to
+the HPET (which wasn't moving) and thought the TSC was broken.
 
-SLUB: Allocate smallest object size if the user asks for 0 bytes.
+Anyway, Guliherme checked for a BIOS update and did not find one, so
+I've added a DMI blacklist against his system so the HPET is not used.
 
-Makes SLUB behave like SLAB in this area to avoid issues....
+Many thanks to Guilherme for the slow and laborious testing that finally
+narrowed down this issue.
 
-Throw a stack dump to alert people.
+thanks
+-john
 
-At some point the behavior should be switched back. NULL is no
-memory as far as I can tell and if the use asked for 0 bytes then
-he need to get no memory.
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- include/linux/slub_def.h |    8 ++++++--
- mm/slub.c                |    2 +-
- 2 files changed, 7 insertions(+), 3 deletions(-)
-
-Index: slub/mm/slub.c
-===================================================================
---- slub.orig/mm/slub.c	2007-05-04 14:17:22.000000000 -0700
-+++ slub/mm/slub.c	2007-05-04 14:19:36.000000000 -0700
-@@ -2009,7 +2009,7 @@ static struct kmem_cache *get_slab(size_
- {
- 	int index = kmalloc_index(size);
+diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
+index 17d7345..1ae27f3 100644
+--- a/arch/i386/kernel/hpet.c
++++ b/arch/i386/kernel/hpet.c
+@@ -5,6 +5,7 @@
+ #include <linux/init.h>
+ #include <linux/sysdev.h>
+ #include <linux/pm.h>
++#include <linux/dmi.h>
  
--	if (!size)
-+	if (!index)
- 		return NULL;
+ #include <asm/hpet.h>
+ #include <asm/io.h>
+@@ -48,6 +49,31 @@ static int __init hpet_setup(char* str)
+ }
+ __setup("hpet=", hpet_setup);
  
- 	/* Allocation too large? */
-Index: slub/include/linux/slub_def.h
-===================================================================
---- slub.orig/include/linux/slub_def.h	2007-05-04 14:13:40.000000000 -0700
-+++ slub/include/linux/slub_def.h	2007-05-04 14:18:25.000000000 -0700
-@@ -81,8 +81,12 @@ extern struct kmem_cache kmalloc_caches[
-  */
- static inline int kmalloc_index(int size)
- {
--	if (size == 0)
--		return 0;
-+	/*
-+	 * We should return 0 if size == 0 but we use the smallest object
-+	 * here for SLAB legacy reasons.
-+	 */
-+	WARN_ON(size == 0);
 +
- 	if (size > 64 && size <= 96)
- 		return 1;
- 	if (size > 128 && size <= 192)
++/* DMI Blacklist for bad HPETs */
++static int __init dmi_mark_hpet_broken(struct dmi_system_id *d)
++{
++	printk(KERN_NOTICE "%s detected: HPET does not function.\n",
++		       d->ident);
++	boot_hpet_disable = 1;
++	return 0;
++}
++
++/* List of systems that have known HPETproblems */
++static struct dmi_system_id bad_hpet_dmi_table[] = {
++	{
++	 .callback = dmi_mark_hpet_broken,
++	 .ident = "Dell OptiPlex 320",
++	 .matches = {
++		     DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 320"),
++		     DMI_MATCH(DMI_BOARD_VENDOR, "Dell Inc."),
++		     DMI_MATCH(DMI_BOARD_NAME, "0UT237"),
++		     },
++	 },
++	 {}
++};
++
++
+ static inline int is_hpet_capable(void)
+ {
+ 	return (!boot_hpet_disable && hpet_address);
+@@ -228,6 +254,8 @@ int __init hpet_enable(void)
+ 	uint64_t hpet_freq;
+ 	u64 tmp;
+ 
++	dmi_check_system(bad_hpet_dmi_table);
++
+ 	if (!is_hpet_capable())
+ 		return 0;
+ 
+
+
+
+
