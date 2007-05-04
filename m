@@ -1,59 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031349AbXEDHwJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767700AbXEDHyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031349AbXEDHwJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 03:52:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030187AbXEDHwJ
+	id S1767700AbXEDHyW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 03:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767709AbXEDHyW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 03:52:09 -0400
-Received: from s2.ukfsn.org ([217.158.120.143]:55486 "EHLO mail.ukfsn.org"
+	Fri, 4 May 2007 03:54:22 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:34933 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965706AbXEDHwH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 03:52:07 -0400
-Message-ID: <463AE623.60501@dgreaves.com>
-Date: Fri, 04 May 2007 08:52:03 +0100
-From: David Greaves <david@dgreaves.com>
-User-Agent: Icedove 1.5.0.10 (X11/20070329)
+	id S1767700AbXEDHyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 03:54:21 -0400
+Date: Fri, 4 May 2007 09:53:31 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Willy Tarreau <w@1wt.eu>
+cc: =?iso-8859-1?Q?=D8yvind_V=E5gen_J=E6gtnes?= <lorrides@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
+In-Reply-To: <20070504001147.GA31125@1wt.eu>
+Message-ID: <Pine.LNX.4.61.0705040947170.18504@yvahk01.tjqt.qr>
+References: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com>
+ <20070503205341.GB943@1wt.eu> <Pine.LNX.4.61.0705032255080.18504@yvahk01.tjqt.qr>
+ <d20c3b7d0705031412y11f18288t321c097aaad4b38b@mail.gmail.com>
+ <20070503222334.GD943@1wt.eu> <Pine.LNX.4.61.0705040049520.18504@yvahk01.tjqt.qr>
+ <20070504001147.GA31125@1wt.eu>
 MIME-Version: 1.0
-To: Kyle Moffett <mrmacman_g4@mac.com>
-Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <1177654110.4737.91.camel@nigel.suspend2.net> <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI> <200704272324.43359.rjw@sisk.pl> <alpine.LFD.0.98.0704271442160.9964@woody.linux-foundation.org> <1177711666.4737.176.camel@nigel.suspend2.net> <35EFC5BA-D16B-41BE-A641-AEA8CCC9E0BE@mac.com> <20070503151047.GB3866@ucw.cz> <E92E80B1-2D3F-4942-A17B-AED903F535C6@mac.com>
-In-Reply-To: <E92E80B1-2D3F-4942-A17B-AED903F535C6@mac.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyle Moffett wrote:
-> On May 03, 2007, at 11:10:47, Pavel Machek wrote:
->> How mature is freezing filesystems -- will it work on at least ext2/3
->> and vfat?
-> 
-> I'm pretty sure it works on ext2/3 and xfs and possibly others, I don't
-> know either way about VFAT though.  Essentially the "freeze" part
-> involves telling the filesystem to sync all data, flush the journal, and
-> mark the filesystem clean.  The intent under dm/LVM was to allow you to
-> make snapshots without having to fsck the just-created snapshot before
-> you mounted it.
-> 
->> What happens if you try to boot and filesystems are frozen from
->> previous run?
-> 
-> If you're just doing a fresh boot then the filesystem is already clean
-> due to the dm freeze and so it mounts up normally.  All you need to do
-> then is have a little startup script which purges the saved image before
-> you fsck or remount things read-write since either case means the image
-> is no longer safe to resume.
 
-Wouldn't it be better if freeze wrote a freeze-ID to the fs and returned it?
-This would naturally be kept in the image and a UUID mismatch would be
-detectable - seems safer and more flexible than 'a script'.
+On May 4 2007 02:11, Willy Tarreau wrote:
+>> 
+>> Haha. Would you be happy if it ran on a CF card instead? :>
+>
+>Yes, because at least when you design a system to run on a CF card, you
+>ensure never to write on it because you know that would kill it. Then
+>since you never write on it, it does not wear out and has no problem
+>running for years (unless you bought cheap end-user CF of course).
 
-"This isn't the freeze you're looking for, move along"
+Funny, I just installed a 'full' Linux distro on a CF, like with a
+regular harddisk, and it runs in full rw mode. Packing it up in a
+squashfs and running the thing with aufs did not seem worth
+the hassle of setting up a specialized initrd. And then, when you
+need to make one change (firewall), it's faster than recreating the
+sqfs image.
+Will see how it long that lasts.
 
-David
+
+Jan
+-- 
