@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031693AbXEDVDp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031701AbXEDVFl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031693AbXEDVDp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:03:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031701AbXEDVDp
+	id S1031701AbXEDVFl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:05:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031707AbXEDVFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:03:45 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:40233 "EHLO mailer.gwdg.de"
+	Fri, 4 May 2007 17:05:41 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:40878 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031693AbXEDVDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:03:44 -0400
-Date: Fri, 4 May 2007 23:02:07 +0200 (MEST)
+	id S1031701AbXEDVFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 17:05:40 -0400
+Date: Fri, 4 May 2007 23:03:46 +0200 (MEST)
 From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: john stultz <johnstul@us.ibm.com>
-cc: davej@codemonkey.org.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       cpufreq@lists.linux.org.uk
+To: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+cc: Dave Jones <davej@codemonkey.org.uk>, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org
 Subject: Re: cpufreq longhaul locks up
-In-Reply-To: <1178311052.6094.0.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.61.0705042259160.18504@yvahk01.tjqt.qr>
+In-Reply-To: <463B9380.5090503@interia.pl>
+Message-ID: <Pine.LNX.4.61.0705042303030.18504@yvahk01.tjqt.qr>
 References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
- <1178311052.6094.0.camel@localhost.localdomain>
+ <463B687D.1020600@interia.pl> <Pine.LNX.4.61.0705042042270.18504@yvahk01.tjqt.qr>
+ <463B9380.5090503@interia.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 X-Spam-Report: Content analysis: 0.0 points, 6.0 required
 	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On May 4 2007 13:37, john stultz wrote:
+On May 4 2007 22:11, Rafał Bilski wrote:
 >> 
->> I found that setting the cpufreq governor to ondemand making the box 
->> lock up solid in 2.6.20.2 and 2.6.21 after a few seconds. Sysrq 
->> does not work anymore, and the last messages are:
+>>> It has big latency and requires so much preparation that it isn't worth 
+>>> if You don't need to save power or cool down CPU. 
 >> 
->> May  3 19:16:58 cn kernel: longhaul: VIA C3 'Nehemiah C' [C5P] CPU 
->> detected.  Powersaver supported.
->> May  3 19:16:58 cn kernel: longhaul: Using northbridge support.
->> May  3 19:17:22 cn kernel: Time: acpi_pm clocksource has been installed.
->> May  3 19:17:22 cn kernel: Clocksource tsc unstable (delta = -136422685 
->> ns)
+>> I found frequency switching on my VIA to be fast enough.
 >
->What happens if you boot wihtout the ondemand governor but w/
->clocksource=acpi_pm ?
+>Timer frequency equal to 1000Hz? 
 
-I always let it boot with the default gov (performance), then
-use cpufreq-set to change it.
-
-acpi_pm+performance behaves like tsc+performance, which works
-
-When switching from tsc+performance to (tsc+)ondemand, acpi_pm gets
-used because of the unstable tsc (of course, since we changed
-frequency and the cpu does NOT have constant_tsc), so it's
-becoming acpi_pm+ondemand naturally.
-
-Switching from acpi_pm+performance to acpi_pm+ondemand also
-locks up after a few minutes.
+The regular irq0 timer ticks at 250. What I meant is that I do not have
+to wait more than 0.5 seconds for cpufreq-set to finish.
 
 
 Jan
