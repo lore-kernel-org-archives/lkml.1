@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbXEDJqN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031360AbXEDJqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752921AbXEDJqN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 05:46:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbXEDJqN
+	id S1031360AbXEDJqt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 05:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031368AbXEDJqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 05:46:13 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:56671 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752921AbXEDJqL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 05:46:11 -0400
-Date: Fri, 4 May 2007 10:46:10 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Anton Altaparmakov <aia21@cam.ac.uk>
-Cc: Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-Message-ID: <20070504094610.GA31607@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Anton Altaparmakov <aia21@cam.ac.uk>,
-	Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org
-References: <E1HjjyF-00022D-00@calista.eckenfels.net> <0733FB88-3E6E-47B7-A55D-704B5C0DB239@cam.ac.uk>
+	Fri, 4 May 2007 05:46:49 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41679 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031361AbXEDJqs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 05:46:48 -0400
+Date: Fri, 4 May 2007 11:47:40 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Christian Hesse <mail@earthworm.de>
+Cc: linux-kernel@vger.kernel.org, James Ketrenos <jketreno@linux.intel.com>
+Subject: Re: build system: no module target ending with slash?
+Message-ID: <20070504094740.GA23800@uranus.ravnborg.org>
+References: <200705030043.49208.mail@earthworm.de> <200705030917.19630.mail@earthworm.de> <20070503193736.GA18216@uranus.ravnborg.org> <200705041056.19286.mail@earthworm.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0733FB88-3E6E-47B7-A55D-704B5C0DB239@cam.ac.uk>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <200705041056.19286.mail@earthworm.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 09:12:31AM +0100, Anton Altaparmakov wrote:
-> Nothing to do with win32 functions.  Windows does NOT create sparse  
-> files therefore it never can have an issue like ext3 does in this  
-> scenario.  Windows will cause nice allocations to happen because of  
-> this and the 1-byte writes are perfectly sensible in this regard.   
-> (Although a little odd as Windows has a proper API for doing  
-> preallocation so I don't get why it is not using that instead...)
+On Fri, May 04, 2007 at 10:56:14AM +0200, Christian Hesse wrote:
+> Agreed that it is not really needed. But if you don't build it you should not 
+> try to link it later...
+> 
+> > The quick-and-dirty workaround is to add a single
+> > obj-n := xx
+> > in mac80211/Makefile and kbuild is happy again.
+> >
+> > I could teach kbuild to create built-in.o also in the case
+> > where we refer to a subdirectory only. But then we would end up with a
+> > built-in.o in all directories where we have a kbuild MAkefile (almost) and
+> > that is not desireable.
+> 
+> I would prefer to teach it not to link object files that are not built.
 
-Which means the right place to fix this is samba.  Samba just need
-to intersept lseek and pread/pwrite to never allocate sparse files
-but do the right thing instead.  Now what the right thing would probably
-be a preallocate instead of writing zeroes, and we need to provide the
-infrastructure for them to do it, which is in progress currently.
-(And in fact samba already does the right thing for XFS if you use
-the prealloc samba vfs module, which AFAIK is not the default)
+But you already _told_ kbuild that mac80211/ would contain a built-in.o
+using following statement in drivers/net/wireless/Makefile:
+obj-y += mac80211/
 
+Changing this to obj-$(CONFIG_IWLWIFI) += mac80211/ would
+give kbuild the _correct_ info.
+
+obj-m += dir/
+tell kbuild this directory contains a module so it will descend and build
+obj-y += dir/
+tall kbuild that directory contains stuff to be built-in and _maybe_ a module so
+it will descend and build.
+
+Note that when kbuild has entered a subdirectory it has lost knowledge of _how_
+it came there so if you have lied to kbuild it will not detect it.
+So in your case you told kbuild that there is stuff to be build in
+in the mac80211/ dir which was incorrect.
+
+	Sam
