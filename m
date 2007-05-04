@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767019AbXEDVHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161292AbXEDVPk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767019AbXEDVHb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766626AbXEDVHa
+	id S1161292AbXEDVPk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:15:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161333AbXEDVPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:07:30 -0400
-Received: from smtp-outbound-1.vmware.com ([65.113.40.141]:45833 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767019AbXEDVH2 (ORCPT
+	Fri, 4 May 2007 17:15:39 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:39490 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1161292AbXEDVPi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:07:28 -0400
-Message-ID: <463B9FEA.8@vmware.com>
-Date: Fri, 04 May 2007 14:04:42 -0700
-From: Zachary Amsden <zach@vmware.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Petr Vandrovec <petr@vmware.com>, nigel@nigel.suspend2.net,
-       Arjan van de Ven <arjan@infradead.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: VMware, x86_64 and 2.6.21.
-References: <1177998147.8981.16.camel@nigel.suspend2.net>	<1178031475.3448.0.camel@laptopd505.fenrus.org>	<1178032456.13953.12.camel@nigel.suspend2.net>	<46385A18.30804@vmware.com> <m1slacu88z.fsf@ebiederm.dsl.xmission.com>	<463B4C5C.1000507@vmware.com> <m13b2cpcr2.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m13b2cpcr2.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 4 May 2007 17:15:38 -0400
+Date: Fri, 4 May 2007 14:14:41 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Duncan Sands <duncan.sands@math.u-psud.fr>,
+       Krzysztof Lichota <krzysiek@lichota.net>
+Subject: Re: [PATCH 1/2] cxacru: Create sysfs attributes in atm_start
+ instead of bind
+Message-Id: <20070504141441.6e327140.akpm@linux-foundation.org>
+In-Reply-To: <463B675A.10900@simon.arlott.org.uk>
+References: <463B675A.10900@simon.arlott.org.uk>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+On Fri, 04 May 2007 18:03:22 +0100
+Simon Arlott <simon@fire.lp0.eu> wrote:
 
-> Is this linux running on vmware or vmware running on linux?
->   
+> Since usbatm doesn't set the usb_interface driver data until after calling bind 
+> and heavy_init, it would be NULL when the sysfs attributes are read. Reading the 
+> MAC address from atm_dev before atm_dev exists would have been be possible too.
+> 
+> Calling create_device_file in atm_start will avoid this problem, and the data 
+> is useless until the first status poll runs. However, it must be ready before a 
+> status poll does a printk on line status change otherwise userspace could react 
+> before the files exist.
+> 
+> For completeness I've moved remove_device_file to atm_stop so it's not called in 
+> unbind when it's not needed.
+> 
 
-VMware running on Linux.
+This patch is mysteriously mangled.
 
-> This sounds like playing with fire.  Although I suppose you could do it generally
-> by making software irqs trigger a general protection fault.
->   
+> 
+> drivers/usb/atm/cxacru.c |   45 +++++++++++++++++++++++++--------------------
+> 1 files changed, 25 insertions(+), 20 deletions(-)
+> 
+> diff --git a/drivers/usb/atm/cxacru.c b/drivers/usb/atm/cxacru.c
+> index 0b12ace..4ecb4c7 100644
+> --- a/drivers/usb/atm/cxacru.c
+> +++ b/drivers/usb/atm/cxacru.c
+> @@ -618,10 +618,22 @@ static int cxacru_card_status(struct cxacru_data *instance)
+> 	return 0;
+> }
+> 
+> +static void cxacru_remove_device_files(struct usbatm_data *usbatm_instance,
+> +		struct atm_dev *atm_dev)
+> +{
+> +	struct usb_interface *intf = usbatm_instance->usb_intf;
+> +
+> +	#define CXACRU_DEVICE_REMOVE_FILE(_name) \
+> +		device_remove_file(&intf->dev, &dev_attr_##_name);
+> +	CXACRU_ALL_FILES(REMOVE);
+> +	#undef CXACRU_DEVICE_REMOVE_FILE
+> +}
+> +
+> static int cxacru_atm_start(struct usbatm_data *usbatm_instance,
+> 		struct atm_dev *atm_dev)
+> {
 
-Better if you don't have to; the whole point of the swirq is faster 
-handling.
+See, that "^{" should have been "^ {".  Something has gobbled the leading
+space.
 
-> What we currently have is: 
-> int assign_irq_vector(int irq, cpumask_t);
->
-> It has a number of interesting properties such as you can change
-> the vector assignment at runtime, and we can migrate the irq
-> between cpus.
->   
+Anyway, after some futzing around I was able to determine that this patch
+is identical to the one I already have.  Ho hum.
 
-Yes, but still not enough here.
-
-> That is pretty much the architecture we have to support msi.  Although
-> irq != vector not even at a fixed offset.
->   
-
-It doesn't look like you can safely allocate an exclusive IRQ here 
-however - the IO-APIC could always route a hardware IRQ for the matching 
-vector right on top of you unless, I'm misreading something.
-
-Zach
