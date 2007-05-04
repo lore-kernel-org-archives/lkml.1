@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbXEDO1O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbXEDOag@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbXEDO1O (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 10:27:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbXEDO1N
+	id S1755354AbXEDOag (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 10:30:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbXEDOag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 10:27:13 -0400
-Received: from lw.wurtel.net ([82.192.92.211]:3882 "EHLO lw.wurtel.net"
+	Fri, 4 May 2007 10:30:36 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:46205 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755349AbXEDO1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 10:27:11 -0400
-X-Greylist: delayed 1504 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 10:27:11 EDT
-Date: Fri, 4 May 2007 16:02:01 +0200
-From: Paul Slootman <paul+nospam@wurtel.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
-Message-ID: <20070504140201.GA8621@msgid.wurtel.net>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	id S1755354AbXEDOaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 10:30:35 -0400
+Date: Fri, 4 May 2007 16:30:18 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Salvatore De Paolis <depaolis.salvatore@libero.it>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Kernel parameters: root
+In-Reply-To: <20070504153701.43123c02@debian>
+Message-ID: <Pine.LNX.4.61.0705041628400.18504@yvahk01.tjqt.qr>
+References: <20070504153701.43123c02@debian>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.12-2006-07-14
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Øyvind Vågen Jægtnes <lorrides@gmail.com> wrote:
->
->Yes, i was suspecting that the arp cache got full, but i will try
->increasing it :)
->Would there be any huge bugs if i change these lines in arp.c:
->
->        .gc_thresh1 =   128,
->        .gc_thresh2 =   512,
->
->to
->
->        .gc_thresh1 =   700,
->        .gc_thresh2 =   700,
->
->under the definition for struct arp_tbl?
 
-Why not simply update the /proc/sys values?
-No need to recompile the kernel.....
-We have this in the /etc/sysctl.conf for our firewall:
+On May 4 2007 15:37, Salvatore De Paolis wrote:
+>
+>I hope this is the right place to ask this question, if not please redirect me
+>to the right ML.
+>
+>I would like to know more about kernel parameters and in particular about the
+>root parameter.
+>I'm booting the kernel from usb pen and the root could change while the pen is
+>plugged in different machines with different hardware.
+>I was trying to find info about "how to make this unique". 
 
-net/ipv4/neigh/default/gc_thresh1=32768
-net/ipv4/neigh/default/gc_thresh2=65536
-net/ipv4/neigh/default/gc_thresh3=262144
-net/ipv4/route/gc_elasticity=8
-net/ipv4/route/gc_interval=30
-net/ipv4/route/gc_min_interval=2
+By using root=/dev/disk/by-id/scsi-SATA_iCreate_CF_Card000000001-part1
+for example. Requires an initramfs with udev.
+
+>Does the kernel see only /dev/* ? There's no way to pass /dev/disk/*?
+
+The kernel has special logic to translate some (not ALL)
+/dev/[hs]d[abcd..] into device numbers if it cannot find
+a device node.
 
 
-Paul Slootman
+Jan
+-- 
