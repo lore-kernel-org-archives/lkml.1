@@ -1,97 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031443AbXEDRpH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031439AbXEDRpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031443AbXEDRpH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:45:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031455AbXEDRpG
+	id S1031439AbXEDRpQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031453AbXEDRpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:45:06 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:33839 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031447AbXEDRo5 (ORCPT
+	Fri, 4 May 2007 13:45:09 -0400
+Received: from [198.99.130.12] ([198.99.130.12]:51069 "EHLO
+	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1031435AbXEDRor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:44:57 -0400
-Date: Fri, 4 May 2007 13:44:56 -0400
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: Strange soft lockup detected message (looks like spin_lock bug in pcnet32)
-Message-ID: <20070504174456.GC8753@csclub.uwaterloo.ca>
-References: <20070503203143.GA8753@csclub.uwaterloo.ca> <20070504141024.GB8753@csclub.uwaterloo.ca> <20070504143326.GD24769@slug> <20070504151934.GA8754@csclub.uwaterloo.ca> <20070504153438.GE24769@slug> <20070504154009.GE8751@csclub.uwaterloo.ca>
-MIME-Version: 1.0
+	Fri, 4 May 2007 13:44:47 -0400
+Date: Fri, 4 May 2007 13:39:57 -0400
+From: Jeff Dike <jdike@addtoit.com>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Alberto Bertogli <albertito@gmail.com>,
+       Blaisorblade <blaisorblade@yahoo.it>,
+       LKML <linux-kernel@vger.kernel.org>,
+       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
+Subject: [PATCH 1/3] UML - Make hostfs_setattr() support operations on unlinked open files.
+Message-ID: <20070504173957.GA7953@c2.user-mode-linux.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070504154009.GE8751@csclub.uwaterloo.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 11:40:09AM -0400, Lennart Sorensen wrote:
-> On Fri, May 04, 2007 at 05:34:38PM +0200, Frederik Deweerdt wrote:
-> > For the "what" part, see Documentation/lockdep-design.txt. You'll enable
-> > it by with SPINLOCK_DEBUG, indeed.
-> 
-> Well I hope to see it hit the BUG again soon then to see what it has to
-> say.
+From: Alberto Bertogli <albertito@gmail.com>
 
-Well I didn't see anything for a while with SPINLOCK_DEBUG enabled
-(maybe I didn't wait long enough).  So I tried changing it to
-spin_lock_irqsave, and that didn't go well.  I got this as the result
-now:
+This patch allows hostfs_setattr() to work on unlinked open files by
+calling set_attr() (the userspace part) with the inode's fd.
 
-onfiguring network interfaces...eth1: link up, 100Mbps, full-duplex
-BUG: spinlock recursion on CPU#0, ifconfig/962
- lock: cf7a3304, .magic: dead4ead, .owner: ifconfig/962, .owner_cpu: 0
- [<c0104024>] dump_stack+0x24/0x30
- [<c01e3947>] _raw_spin_lock+0x137/0x140
- [<c02981ec>] _spin_lock_irqsave+0x1c/0x30
- [<d084eb86>] pcnet32_interrupt+0x216/0x290 [pcnet32]
- [<c013b95d>] handle_IRQ_event+0x3d/0x70
- [<c013ba2c>] __do_IRQ+0x9c/0x120
- [<c0105025>] do_IRQ+0x25/0x60
- [<c010316a>] common_interrupt+0x1a/0x20
- [<c011927a>] __do_softirq+0x3a/0xa0
- [<c011930d>] do_softirq+0x2d/0x30
- [<c0119557>] irq_exit+0x37/0x40
- [<c010502a>] do_IRQ+0x2a/0x60
- [<c010316a>] common_interrupt+0x1a/0x20
- [<c02983c0>] _spin_unlock_irqrestore+0x10/0x40
- [<d08517ea>] pcnet32_open+0x27a/0x390 [pcnet32]
- [<c02343e9>] dev_open+0x39/0x80
- [<c0232b5a>] dev_change_flags+0xfa/0x130
- [<c0277b7f>] devinet_ioctl+0x4ff/0x6f0
- [<c0227b24>] sock_ioctl+0xf4/0x1f0
- [<c017027c>] do_ioctl+0x2c/0x80
- [<c0170322>] vfs_ioctl+0x52/0x2f0
- [<c017062f>] sys_ioctl+0x6f/0x80
- [<c0102f27>] syscall_call+0x7/0xb
- [<b7eebd04>] 0xb7eebd04
-BUG: spinlock lockup on CPU#0, ifconfig/962, cf7a3304
- [<c0104024>] dump_stack+0x24/0x30
- [<c01e391f>] _raw_spin_lock+0x10f/0x140
- [<c02981ec>] _spin_lock_irqsave+0x1c/0x30
- [<d084eb86>] pcnet32_interrupt+0x216/0x290 [pcnet32]
- [<c013b95d>] handle_IRQ_event+0x3d/0x70
- [<c013ba2c>] __do_IRQ+0x9c/0x120
- [<c0105025>] do_IRQ+0x25/0x60
- [<c010316a>] common_interrupt+0x1a/0x20
- [<c011927a>] __do_softirq+0x3a/0xa0
- [<c011930d>] do_softirq+0x2d/0x30
- [<c0119557>] irq_exit+0x37/0x40
- [<c010502a>] do_IRQ+0x2a/0x60
- [<c010316a>] common_interrupt+0x1a/0x20
- [<c02983c0>] _spin_unlock_irqrestore+0x10/0x40
- [<d08517ea>] pcnet32_open+0x27a/0x390 [pcnet32]
- [<c02343e9>] dev_open+0x39/0x80
- [<c0232b5a>] dev_change_flags+0xfa/0x130
- [<c0277b7f>] devinet_ioctl+0x4ff/0x6f0
- [<c0227b24>] sock_ioctl+0xf4/0x1f0
- [<c017027c>] do_ioctl+0x2c/0x80
- [<c0170322>] vfs_ioctl+0x52/0x2f0
- [<c017062f>] sys_ioctl+0x6f/0x80
- [<c0102f27>] syscall_call+0x7/0xb
- [<b7eebd04>] 0xb7eebd04
+Without this, applications that depend on doing attribute changes to
+unlinked open files will fail.
 
-Obviously that wasn't so good.
+It works by using the fd versions instead of the path ones (for example
+fchmod() instead of chmod(), fchown() instead of chown()) when an fd is
+available.
 
+Signed-off-by: Alberto Bertogli <albertito@gmail.com>
+Signed-off-by: Jeff Dike <jdike@linux.intel.com>
 --
-Len Sorensen
+ fs/hostfs/hostfs.h      |    4 -
+ fs/hostfs/hostfs_kern.c |    6 +-
+ fs/hostfs/hostfs_user.c |  106 ++++++++++++++++++++++++++++++------------------
+ 3 files changed, 73 insertions(+), 43 deletions(-)
+
+Index: linux-2.6.21-mm/fs/hostfs/hostfs.h
+===================================================================
+--- linux-2.6.21-mm.orig/fs/hostfs/hostfs.h	2007-02-04 13:44:54.000000000 -0500
++++ linux-2.6.21-mm/fs/hostfs/hostfs.h	2007-05-01 15:10:39.000000000 -0400
+@@ -55,7 +55,7 @@ extern int stat_file(const char *path, u
+ 		     int *mode_out, int *nlink_out, int *uid_out, int *gid_out,
+ 		     unsigned long long *size_out, struct timespec *atime_out,
+ 		     struct timespec *mtime_out, struct timespec *ctime_out,
+-		     int *blksize_out, unsigned long long *blocks_out);
++		     int *blksize_out, unsigned long long *blocks_out, int fd);
+ extern int access_file(char *path, int r, int w, int x);
+ extern int open_file(char *path, int r, int w, int append);
+ extern int file_type(const char *path, int *maj, int *min);
+@@ -71,7 +71,7 @@ extern int lseek_file(int fd, long long 
+ extern int fsync_file(int fd, int datasync);
+ extern int file_create(char *name, int ur, int uw, int ux, int gr,
+ 		       int gw, int gx, int or, int ow, int ox);
+-extern int set_attr(const char *file, struct hostfs_iattr *attrs);
++extern int set_attr(const char *file, struct hostfs_iattr *attrs, int fd);
+ extern int make_symlink(const char *from, const char *to);
+ extern int unlink_file(const char *file);
+ extern int do_mkdir(const char *file, int mode);
+Index: linux-2.6.21-mm/fs/hostfs/hostfs_kern.c
+===================================================================
+--- linux-2.6.21-mm.orig/fs/hostfs/hostfs_kern.c	2007-04-27 11:27:15.000000000 -0400
++++ linux-2.6.21-mm/fs/hostfs/hostfs_kern.c	2007-05-01 15:10:39.000000000 -0400
+@@ -147,7 +147,7 @@ static int read_name(struct inode *ino, 
+ 
+ 	err = stat_file(name, &i_ino, &i_mode, &i_nlink, &ino->i_uid,
+ 			&ino->i_gid, &i_size, &ino->i_atime, &ino->i_mtime,
+-			&ino->i_ctime, &i_blksize, &i_blocks);
++			&ino->i_ctime, &i_blksize, &i_blocks, -1);
+ 	if(err)
+ 		return(err);
+ 
+@@ -820,6 +820,8 @@ int hostfs_setattr(struct dentry *dentry
+ 	char *name;
+ 	int err;
+ 
++	int fd = HOSTFS_I(dentry->d_inode)->fd;
++
+ 	err = inode_change_ok(dentry->d_inode, attr);
+ 	if (err)
+ 		return err;
+@@ -864,7 +866,7 @@ int hostfs_setattr(struct dentry *dentry
+ 	}
+ 	name = dentry_name(dentry, 0);
+ 	if(name == NULL) return(-ENOMEM);
+-	err = set_attr(name, &attrs);
++	err = set_attr(name, &attrs, fd);
+ 	kfree(name);
+ 	if(err)
+ 		return(err);
+Index: linux-2.6.21-mm/fs/hostfs/hostfs_user.c
+===================================================================
+--- linux-2.6.21-mm.orig/fs/hostfs/hostfs_user.c	2007-04-26 17:41:19.000000000 -0400
++++ linux-2.6.21-mm/fs/hostfs/hostfs_user.c	2007-05-01 15:10:39.000000000 -0400
+@@ -21,12 +21,16 @@ int stat_file(const char *path, unsigned
+ 	      int *nlink_out, int *uid_out, int *gid_out,
+ 	      unsigned long long *size_out, struct timespec *atime_out,
+ 	      struct timespec *mtime_out, struct timespec *ctime_out,
+-	      int *blksize_out, unsigned long long *blocks_out)
++	      int *blksize_out, unsigned long long *blocks_out, int fd)
+ {
+ 	struct stat64 buf;
+ 
+-	if(lstat64(path, &buf) < 0)
++	if(fd >= 0) {
++		if (fstat64(fd, &buf) < 0)
++			return(-errno);
++	} else if(lstat64(path, &buf) < 0) {
+ 		return(-errno);
++	}
+ 
+ 	if(inode_out != NULL) *inode_out = buf.st_ino;
+ 	if(mode_out != NULL) *mode_out = buf.st_mode;
+@@ -202,58 +206,82 @@ int file_create(char *name, int ur, int 
+ 	return(fd);
+ }
+ 
+-int set_attr(const char *file, struct hostfs_iattr *attrs)
++int set_attr(const char *file, struct hostfs_iattr *attrs, int fd)
+ {
+-	struct utimbuf buf;
++	struct timeval times[2];
++	struct timespec atime_ts, mtime_ts;
+ 	int err, ma;
+ 
+-	if(attrs->ia_valid & HOSTFS_ATTR_MODE){
+-		if(chmod(file, attrs->ia_mode) != 0) return(-errno);
+-	}
+-	if(attrs->ia_valid & HOSTFS_ATTR_UID){
+-		if(chown(file, attrs->ia_uid, -1)) return(-errno);
++	if (attrs->ia_valid & HOSTFS_ATTR_MODE) {
++		if (fd >= 0) {
++			if (fchmod(fd, attrs->ia_mode) != 0)
++				return (-errno);
++		} else if (chmod(file, attrs->ia_mode) != 0) {
++			return (-errno);
++		}
+ 	}
+-	if(attrs->ia_valid & HOSTFS_ATTR_GID){
+-		if(chown(file, -1, attrs->ia_gid)) return(-errno);
++	if (attrs->ia_valid & HOSTFS_ATTR_UID) {
++		if (fd >= 0) {
++			if (fchown(fd, attrs->ia_uid, -1))
++				return (-errno);
++		} else if(chown(file, attrs->ia_uid, -1)) {
++			return (-errno);
++		}
+ 	}
+-	if(attrs->ia_valid & HOSTFS_ATTR_SIZE){
+-		if(truncate(file, attrs->ia_size)) return(-errno);
++	if (attrs->ia_valid & HOSTFS_ATTR_GID) {
++		if (fd >= 0) {
++			if (fchown(fd, -1, attrs->ia_gid))
++				return (-errno);
++		} else if (chown(file, -1, attrs->ia_gid)) {
++			return (-errno);
++		}
+ 	}
+-	ma = HOSTFS_ATTR_ATIME_SET | HOSTFS_ATTR_MTIME_SET;
+-	if((attrs->ia_valid & ma) == ma){
+-		buf.actime = attrs->ia_atime.tv_sec;
+-		buf.modtime = attrs->ia_mtime.tv_sec;
+-		if(utime(file, &buf) != 0) return(-errno);
++	if (attrs->ia_valid & HOSTFS_ATTR_SIZE) {
++		if (fd >= 0) {
++			if (ftruncate(fd, attrs->ia_size))
++				return (-errno);
++		} else if (truncate(file, attrs->ia_size)) {
++			return (-errno);
++		}
+ 	}
+-	else {
+-		struct timespec ts;
+ 
+-		if(attrs->ia_valid & HOSTFS_ATTR_ATIME_SET){
+-			err = stat_file(file, NULL, NULL, NULL, NULL, NULL,
+-					NULL, NULL, &ts, NULL, NULL, NULL);
+-			if(err != 0)
+-				return(err);
+-			buf.actime = attrs->ia_atime.tv_sec;
+-			buf.modtime = ts.tv_sec;
+-			if(utime(file, &buf) != 0)
+-				return(-errno);
++	/* Update accessed and/or modified time, in two parts: first set
++	 * times according to the changes to perform, and then call futimes()
++	 * or utimes() to apply them. */
++	ma = (HOSTFS_ATTR_ATIME_SET | HOSTFS_ATTR_MTIME_SET);
++	if (attrs->ia_valid & ma) {
++		err = stat_file(file, NULL, NULL, NULL, NULL, NULL, NULL,
++				&atime_ts, &mtime_ts, NULL, NULL, NULL, fd);
++		if (err != 0)
++			return err;
++
++		times[0].tv_sec = atime_ts.tv_sec;
++		times[0].tv_usec = atime_ts.tv_nsec * 1000;
++		times[1].tv_sec = mtime_ts.tv_sec;
++		times[1].tv_usec = mtime_ts.tv_nsec * 1000;
++
++		if (attrs->ia_valid & HOSTFS_ATTR_ATIME_SET) {
++			times[0].tv_sec = attrs->ia_atime.tv_sec;
++			times[0].tv_usec = attrs->ia_atime.tv_nsec * 1000;
+ 		}
+-		if(attrs->ia_valid & HOSTFS_ATTR_MTIME_SET){
+-			err = stat_file(file, NULL, NULL, NULL, NULL, NULL,
+-					NULL, &ts, NULL, NULL, NULL, NULL);
+-			if(err != 0)
+-				return(err);
+-			buf.actime = ts.tv_sec;
+-			buf.modtime = attrs->ia_mtime.tv_sec;
+-			if(utime(file, &buf) != 0)
+-				return(-errno);
++		if (attrs->ia_valid & HOSTFS_ATTR_MTIME_SET) {
++			times[1].tv_sec = attrs->ia_mtime.tv_sec;
++			times[1].tv_usec = attrs->ia_mtime.tv_nsec * 1000;
++		}
++
++		if (fd >= 0) {
++			if (futimes(fd, times) != 0)
++				return (-errno);
++		} else if (utimes(file, times) != 0) {
++			return (-errno);
+ 		}
+ 	}
++
+ 	if(attrs->ia_valid & HOSTFS_ATTR_CTIME) ;
+ 	if(attrs->ia_valid & (HOSTFS_ATTR_ATIME | HOSTFS_ATTR_MTIME)){
+ 		err = stat_file(file, NULL, NULL, NULL, NULL, NULL, NULL,
+ 				&attrs->ia_atime, &attrs->ia_mtime, NULL,
+-				NULL, NULL);
++				NULL, NULL, fd);
+ 		if(err != 0) return(err);
+ 	}
+ 	return(0);
