@@ -1,117 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161891AbXEDTEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161889AbXEDTG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161891AbXEDTEM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 15:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161893AbXEDTEM
+	id S1161889AbXEDTG0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 15:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161888AbXEDTG0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 15:04:12 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:56863 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161891AbXEDTEK (ORCPT
+	Fri, 4 May 2007 15:06:26 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:37795 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031498AbXEDTGY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 15:04:10 -0400
-Date: Fri, 4 May 2007 14:04:08 -0500
-To: Andy Whitcroft <apw@shadowen.org>
-Cc: gregkh@suse.de, paulus@samba.org, Andrew Morton <akpm@osdl.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Re: 2.6.21-rc7-mm2 -- hvsi console driver registration failure
-Message-ID: <20070504190408.GN6193@austin.ibm.com>
-References: <20070425225716.8e9b28ca.akpm@linux-foundation.org> <4fe4528cb20beb569a8f2ac817c776e5@pinky>
+	Fri, 4 May 2007 15:06:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VNuY0UJfmDLTXFBKQcc0yC+YP0xqcNJwgx7zl6MtKXkkaDqPJMn2MWyLsDK4jl7tLcXZ1sVZc9z26geRfdjvPCsCbkFIV65+MDoJW6v5qMvRz3hZnLuQorDfim6Zfqd2fo3lUb8L7xxp1clYFP0G2sA3AlNPKXe4LjiDJ6GG7Gc=
+Message-ID: <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
+Date: Fri, 4 May 2007 21:06:23 +0200
+From: "Antonino Ingargiola" <tritemio@gmail.com>
+To: "Paul Fulghum" <paulkf@microgate.com>
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4fe4528cb20beb569a8f2ac817c776e5@pinky>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
+	 <1178290160.3913.2.camel@amdx2.microgate.com>
+	 <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
+	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
+	 <463B7534.6000207@microgate.com>
+	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
+	 <1178299247.3769.0.camel@amdx2.microgate.com>
+	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
+	 <1178300493.3619.1.camel@amdx2.microgate.com>
+	 <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 12:38:58PM +0100, Andy Whitcroft wrote:
-> 
-> Trying to get 2.6.21-rc7-mm2 to boot on large PPC64 seems to be a
-> bit of a challenge.  We have been seeing panics on boot from the
-> hvsi driver:
-> 
-> 	Couldn't register hvsi console driver
-> 
-> Tracking this back, this seems to come from hvsi driver trying to
-> register itself via tty_register_driver() with a zero units.
-> 
-> The failure is triggered by a change in semantics for kmalloc()
-> between SLAB and SLUB; kmalloc(0) now returns NULL rather than an
-> allocation at the smallest size.  Looking at the code in question
-> even when the allocation succeeds we will not actually use the
-> memory when device->num is zero.
-> 
-> It is not clear to me if this is a bug in the hvsi driver in that
-> it should specify some units.  It seems we will try and reserve zero
-> devices in this case, which seems pointless.
+On 5/4/07, Antonino Ingargiola <tritemio@gmail.com> wrote:
+[cut]
+> I'm quite confident the system blocks on "Setting consoles fonts and
+> modes.", and thus during the boot script console-screen.h. I'll try to
+> see which commands blocks...
 
-Yes, it seems pointless to me ... 
+Filling with echo console-screen.sh I've found that the blocking command is:
 
-> I have tested with the patch below which seems safe to me and stops
-> the errors and even seems to make the console work.  But perhaps
-> someone with more driver fu, could verify if driver->num of zero
-> has any meaning and kick this to the hvsi people if not.
+    unicode_start 2> /dev/null || true
 
-Hollis nominated me to be "hvsi people", although I'm near-totally
-ignorant of the thing.
+or at least the echo before this command is the last shown.
 
-If hvsi_count is zero, then the device tree did not have any
-"serial" nodes that speak "hvterm-protocol". The hvsi should not 
-have even tried to register anything. The attached patch seems more 
-to the point.
+Regards,
 
---linas
-
-
-The hvsi driver is used whenever the device-tree contains
-nodes for serial ports, and those serial ports speak the hvterm
-protocol. However, if no such nodes are found, then the hvsi
-driver should not even register. 
-
-This patch avoids a kernel panic with "Couldn't register hvsi 
-console driver". 
-
-In addition, this patch makes tty_register_driver refuse
-to do anything, if there are no actual tty ports to be 
-registered.
-
-Utterly & completely untested.
-
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-
-----
- drivers/char/hvsi.c   |    4 ++++
- drivers/char/tty_io.c |    3 +++
- 2 files changed, 7 insertions(+)
-
-Index: linux-2.6.21-rc7-mm2/drivers/char/hvsi.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/char/hvsi.c	2007-04-26 15:37:33.000000000 -0500
-+++ linux-2.6.21-rc7-mm2/drivers/char/hvsi.c	2007-05-04 13:55:56.000000000 -0500
-@@ -1148,6 +1148,10 @@ static int __init hvsi_init(void)
- {
- 	int i;
- 
-+	/* No serial hvterm-protocol device-tree nodes found. */
-+	if (hvsi_count == 0)
-+		return 0;
-+
- 	hvsi_driver = alloc_tty_driver(hvsi_count);
- 	if (!hvsi_driver)
- 		return -ENOMEM;
-Index: linux-2.6.21-rc7-mm2/drivers/char/tty_io.c
-===================================================================
---- linux-2.6.21-rc7-mm2.orig/drivers/char/tty_io.c	2007-04-26 15:37:33.000000000 -0500
-+++ linux-2.6.21-rc7-mm2/drivers/char/tty_io.c	2007-05-04 13:54:14.000000000 -0500
-@@ -3724,6 +3724,9 @@ int tty_register_driver(struct tty_drive
- 	if (driver->flags & TTY_DRIVER_INSTALLED)
- 		return 0;
- 
-+	if (driver->num == 0)
-+		return -ENODEV;
-+
- 	if (!(driver->flags & TTY_DRIVER_DEVPTS_MEM)) {
- 		p = kmalloc(driver->num * 3 * sizeof(void *), GFP_KERNEL);
- 		if (!p)
+  ~ Antonio
