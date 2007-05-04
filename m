@@ -1,76 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423097AbXEDTdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423103AbXEDTdN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423097AbXEDTdE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 15:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423103AbXEDTdD
+	id S1423103AbXEDTdN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 15:33:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423104AbXEDTdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 15:33:03 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:58034 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423097AbXEDTdA (ORCPT
+	Fri, 4 May 2007 15:33:12 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:61021 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423103AbXEDTdK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 15:33:00 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+	Fri, 4 May 2007 15:33:10 -0400
+Subject: Re: [PATCH 00/40] Swap over Networked storage -v12
+From: Daniel Walker <dwalker@mvista.com>
+To: Mike Snitzer <snitzer@gmail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 1/3] Replace paravirt_probe with "platform type" boot header field
-References: <1178283582.23670.67.camel@localhost.localdomain>
-	<m1zm4ksn5o.fsf@ebiederm.dsl.xmission.com>
-	<1178288329.23670.86.camel@localhost.localdomain>
-	<m1tzussm4z.fsf@ebiederm.dsl.xmission.com>
-	<463B56A0.7090805@zytor.com>
-	<m1mz0kr0ux.fsf@ebiederm.dsl.xmission.com>
-	<463B69AB.2030706@zytor.com>
-	<m1vef8phjy.fsf@ebiederm.dsl.xmission.com>
-	<463B81BC.1030504@zytor.com>
-	<m1d51gpfqn.fsf@ebiederm.dsl.xmission.com>
-	<463B8629.3090309@zytor.com>
-Date: Fri, 04 May 2007 13:31:47 -0600
-In-Reply-To: <463B8629.3090309@zytor.com> (H. Peter Anvin's message of "Fri,
-	04 May 2007 12:14:49 -0700")
-Message-ID: <m14pmspeqk.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+       Daniel Phillips <phillips@google.com>
+In-Reply-To: <170fa0d20705041109j1d130456p4b7cef3633f8edb4@mail.gmail.com>
+References: <20070504102651.923946304@chello.nl>
+	 <1178292179.7997.12.camel@imap.mvista.com>
+	 <1178293081.24217.46.camel@twins>
+	 <1178294379.7997.26.camel@imap.mvista.com>
+	 <170fa0d20705041109j1d130456p4b7cef3633f8edb4@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 04 May 2007 12:31:26 -0700
+Message-Id: <1178307086.7997.75.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+On Fri, 2007-05-04 at 14:09 -0400, Mike Snitzer wrote:
+> On 5/4/07, Daniel Walker <dwalker@mvista.com> wrote:
+> > On Fri, 2007-05-04 at 17:38 +0200, Peter Zijlstra wrote:
+> > > >
+> > > > This is kind of a lot of patches all at once .. Have you release any of
+> > > > these patch sets prior to this release ?
+> > >
+> > > Like the -v12 suggests, this is the 12th posting of this patch set.
+> > > Some is the same, some has changed.
+> >
+> > I can find one prior release with this subject (-v11) , what was the
+> > subject prior to that release? It's not a hard rule, but usually >15
+> > patches is too many (check Documentation/SubmittingPatches under
+> > references).. You might want to consider submitting a URL instead.
+> 
+> Previous subjects were like:
+> [PATCH 00/20] vm deadlock avoidance for NFS, NBD and iSCSI (take 7)
+> 
+> A URL doesn't allow for true discussion about a particular patch
+> unless the reviewer takes the initiative to create a new thread to
+> discuss the Nth patch it a patchset; whereby taking on the burden of a
+> structured subject and so on.  It would get out of control on a large
+> patchset that actually got a lot of simultaneous feedback... reviewers
+> don't have a forum to talk about each individual change without
+> stepping on each others' toes.
 
-> Indeed.  I think, yes, what has been there up to now has pretty much
-> been at least in part experimental, and I fear there will be unavoidable
-> breakage as part of sanitizing it.  C'est la vie, I guess.
+True ..
 
-The one significant one I left out I think is the VISWS.  I'm not certain
-what we do there, but I know it never went through setup.S
+> > I think it's a benefit to release less since a developer (like myself)
+> > might know very little about "Swap over Networked storage", but if you
+> > submit 10 patches that developer might still review it, 40 patches they
+> > likely wouldn't review it.
+> 
+> The _suggestions_ in Documentation/SubmittingPatches are nice and all
+> but the quantity of patches shouldn't _really_ matter.
 
-Yes.  At the same time we have been sufficiently disciplined (baring
-paravirt) that the changes should be quite small, and we have a big
-enough sample size now that we can pretty clearly see ways in which
-the code will vary.
+I guess I take the documentation more seriously than your do. It's
+clearly not mandatory, but for my reviewing I appreciate less then 15
+sets of "logical changes".
 
->>>> And 4K seems to be our maximum size for backwards compatibility.  Although
->>>> we use it in a fairly sparse way, so we should be ok.
->>> Sort of.  It's pretty full.
->> 
->> True.  For small little extensions we have room.  For big things probably
->> not.
->
-> For big extensions we'll probably have to go the pointer route already
-> done with the command line.
+Daniel
 
-Likely.  It is tricky because if we actually have to do a normal BIOS
-query to get it things a little sticky, because we can't allocate
-memory.  Hmm.  It looks like we need a way to export the size of
-our parameter area to the bootloader.  We have setup_sects for 16bit
-real mode bootloaders and that should be good enough, but we need
-something equivalent for the 32bit entry point.
-
-Requirements analysis here we come.
-
-Eric
