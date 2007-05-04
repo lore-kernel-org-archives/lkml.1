@@ -1,297 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755382AbXEDO4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755384AbXEDO5w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755382AbXEDO4x (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 10:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbXEDO4x
+	id S1755384AbXEDO5w (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 10:57:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755390AbXEDO5w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 10:56:53 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37471 "EHLO mx1.redhat.com"
+	Fri, 4 May 2007 10:57:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:49703 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755373AbXEDO4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 10:56:51 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] AF_RXRPC: Sort out MTU handling
-To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       dhowells@redhat.com
-Date: Fri, 04 May 2007 15:56:47 +0100
-Message-ID: <20070504145647.19125.99441.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	id S1755384AbXEDO5v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 10:57:51 -0400
+Message-ID: <463B49F0.401@goop.org>
+Date: Fri, 04 May 2007 07:57:52 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] i386: always clear bss
+References: <463AED07.1000505@goop.org> <m1r6pwu806.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1r6pwu806.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sort out the MTU determination and handling in AF_RXRPC:
+Eric W. Biederman wrote:
+> Jeremy Fitzhardinge <jeremy@goop.org> writes:
+>
+>   
+>> When the paravirt dispatcher gets run immediately on entry to
+>> startup_32, the bss isn't cleared.  This happens to work if the
+>> hypervisor's domain builder loaded the complete kernel image and
+>> cleared the bss for us, but this may not always be true (for example,
+>> if we're running out of a decompressed bzImage).
+>>
+>> Change head.S so that it unconditionally clears the bss before doing
+>> the paravirt dispatch or continuing on to normal native boot.
+>>
+>> There are a couple of points to note:
+>>  - We can't, in general, load the segment registers before paravirt
+>>    dispatch, because we could be running with a non-standard gdt and
+>>    segment selectors.  In practice though, all code which ends up
+>>    jumping into startup_32 will have already set the segment registers
+>>    up to sane values, so we don't need to do it again.
+>>  - Paging may or may not be enabled, and if enabled we may or may not
+>>    be mapped to the proper kernel virtual address.  To deal with this,
+>>    we compare the kernel's linked address with where we're actually
+>>    running, and use that to offset the bss pointer.
+>>     
 
- (1) If it's present, parse the additional information supplied by the peer at
-     the end of the ACK packet (struct ackinfo) to determine the MTU sizes
-     that peer is willing to support.
+BTW, I should have marked this as an RFC comment, rather than an actual
+submission.  We don't need it for .22.
 
- (2) Initialise the MTU size to that peer from the kernel's routing records.
+> NAK.  
+>
+> Skipping the segment register load is likely fine.
+> Supporting V!=P at startup_32 is not.
+>   
 
- (3) Send ACKs rather than ACKALLs as the former carry the additional info,
-     and the latter do not.
+Why?
 
- (4) Declare the interface MTU size in outgoing ACKs as a maximum amount of
-     data that can be stuffed into an RxRPC packet without it having to be
-     fragmented to come in this computer's NIC.
+> Assuming that we have a stack at startup_32 is not.
+>
+> If you want to figure out where the kernel is loaded you can do
+> (from arch/i386/boot/head.S)
+>   
 
- (5) If sendmsg() is given MSG_MORE then it should allocate an skb of the
-     maximum size rather than one just big enough for the data it's got left
-     to process on the theory that there is more data to come that it can
-     append to that packet.
+Yes, that's more or less the same code, aside from using 0x40(%esi) as a
+stack.  Would that be OK here?
 
-     This means, for example, that if AFS does a large StoreData op, all the
-     packets barring the last will be filled to the maximum unfragmented size.
-
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- net/rxrpc/ar-ack.c    |   80 ++++++++++++++++++++++++++++++++++++++++++-------
- net/rxrpc/ar-error.c  |    2 +
- net/rxrpc/ar-output.c |    2 +
- net/rxrpc/ar-peer.c   |   45 +++++++++++++++++++++++++++-
- 4 files changed, 115 insertions(+), 14 deletions(-)
-
-diff --git a/net/rxrpc/ar-ack.c b/net/rxrpc/ar-ack.c
-index fc07a92..657ee69 100644
---- a/net/rxrpc/ar-ack.c
-+++ b/net/rxrpc/ar-ack.c
-@@ -543,6 +543,38 @@ static void rxrpc_zap_tx_window(struct rxrpc_call *call)
- }
- 
- /*
-+ * process the extra information that may be appended to an ACK packet
-+ */
-+static void rxrpc_extract_ackinfo(struct rxrpc_call *call, struct sk_buff *skb,
-+				  unsigned latest, int nAcks)
-+{
-+	struct rxrpc_ackinfo ackinfo;
-+	struct rxrpc_peer *peer;
-+	unsigned mtu;
-+
-+	if (skb_copy_bits(skb, nAcks + 3, &ackinfo, sizeof(ackinfo)) < 0) {
-+		_leave(" [no ackinfo]");
-+		return;
-+	}
-+
-+	_proto("Rx ACK %%%u Info { rx=%u max=%u rwin=%u jm=%u }",
-+	       latest,
-+	       ntohl(ackinfo.rxMTU), ntohl(ackinfo.maxMTU),
-+	       ntohl(ackinfo.rwind), ntohl(ackinfo.jumbo_max));
-+
-+	mtu = min(ntohl(ackinfo.rxMTU), ntohl(ackinfo.maxMTU));
-+
-+	peer = call->conn->trans->peer;
-+	if (mtu < peer->maxdata) {
-+		spin_lock_bh(&peer->lock);
-+		peer->maxdata = mtu;
-+		peer->mtu = mtu + peer->hdrsize;
-+		spin_unlock_bh(&peer->lock);
-+		_net("Net MTU %u (maxdata %u)", peer->mtu, peer->maxdata);
-+	}
-+}
-+
-+/*
-  * process packets in the reception queue
-  */
- static int rxrpc_process_rx_queue(struct rxrpc_call *call,
-@@ -606,6 +638,8 @@ process_further:
- 		       rxrpc_acks[ack.reason],
- 		       ack.nAcks);
- 
-+		rxrpc_extract_ackinfo(call, skb, latest, ack.nAcks);
-+
- 		if (ack.reason == RXRPC_ACK_PING) {
- 			_proto("Rx ACK %%%u PING Request", latest);
- 			rxrpc_propose_ACK(call, RXRPC_ACK_PING_RESPONSE,
-@@ -801,9 +835,9 @@ void rxrpc_process_call(struct work_struct *work)
- 	struct msghdr msg;
- 	struct kvec iov[5];
- 	unsigned long bits;
--	__be32 data;
-+	__be32 data, pad;
- 	size_t len;
--	int genbit, loop, nbit, ioc, ret;
-+	int genbit, loop, nbit, ioc, ret, mtu;
- 	u32 abort_code = RX_PROTOCOL_ERROR;
- 	u8 *acks = NULL;
- 
-@@ -899,9 +933,30 @@ void rxrpc_process_call(struct work_struct *work)
- 	}
- 
- 	if (test_bit(RXRPC_CALL_ACK_FINAL, &call->events)) {
--		hdr.type = RXRPC_PACKET_TYPE_ACKALL;
- 		genbit = RXRPC_CALL_ACK_FINAL;
--		goto send_message;
-+
-+		ack.bufferSpace	= htons(8);
-+		ack.maxSkew	= 0;
-+		ack.serial	= 0;
-+		ack.reason	= RXRPC_ACK_IDLE;
-+		ack.nAcks	= 0;
-+		call->ackr_reason = 0;
-+
-+		spin_lock_bh(&call->lock);
-+		ack.serial = call->ackr_serial;
-+		ack.previousPacket = call->ackr_prev_seq;
-+		ack.firstPacket = htonl(call->rx_data_eaten + 1);
-+		spin_unlock_bh(&call->lock);
-+
-+		pad = 0;
-+
-+		iov[1].iov_base = &ack;
-+		iov[1].iov_len	= sizeof(ack);
-+		iov[2].iov_base = &pad;
-+		iov[2].iov_len	= 3;
-+		iov[3].iov_base = &ackinfo;
-+		iov[3].iov_len	= sizeof(ackinfo);
-+		goto send_ACK;
- 	}
- 
- 	if (call->events & ((1 << RXRPC_CALL_RCVD_BUSY) |
-@@ -971,8 +1026,6 @@ void rxrpc_process_call(struct work_struct *work)
- 
- 	/* consider sending an ordinary ACK */
- 	if (test_bit(RXRPC_CALL_ACK, &call->events)) {
--		__be32 pad;
--
- 		_debug("send ACK: window: %d - %d { %lx }",
- 		       call->rx_data_eaten, call->ackr_win_top,
- 		       call->ackr_window[0]);
-@@ -997,12 +1050,6 @@ void rxrpc_process_call(struct work_struct *work)
- 		ack.serial	= 0;
- 		ack.reason	= 0;
- 
--		ackinfo.rxMTU	= htonl(5692);
--//		ackinfo.rxMTU	= htonl(call->conn->trans->peer->maxdata);
--		ackinfo.maxMTU	= htonl(call->conn->trans->peer->maxdata);
--		ackinfo.rwind	= htonl(32);
--		ackinfo.jumbo_max = htonl(4);
--
- 		spin_lock_bh(&call->lock);
- 		ack.reason = call->ackr_reason;
- 		ack.serial = call->ackr_serial;
-@@ -1116,6 +1163,15 @@ send_ACK_with_skew:
- 	ack.maxSkew = htons(atomic_read(&call->conn->hi_serial) -
- 			    ntohl(ack.serial));
- send_ACK:
-+	mtu = call->conn->trans->peer->if_mtu;
-+	mtu -= call->conn->trans->peer->hdrsize;
-+	ackinfo.maxMTU	= htonl(mtu);
-+	ackinfo.rwind	= htonl(32);
-+
-+	/* permit the peer to send us jumbo packets if it wants to */
-+	ackinfo.rxMTU	= htonl(5692);
-+	ackinfo.jumbo_max = htonl(4);
-+
- 	hdr.serial = htonl(atomic_inc_return(&call->conn->serial));
- 	_proto("Tx ACK %%%u { m=%hu f=#%u p=#%u s=%%%u r=%s n=%u }",
- 	       ntohl(hdr.serial),
-diff --git a/net/rxrpc/ar-error.c b/net/rxrpc/ar-error.c
-index 2c27df1..6cb3e88 100644
---- a/net/rxrpc/ar-error.c
-+++ b/net/rxrpc/ar-error.c
-@@ -100,8 +100,10 @@ void rxrpc_UDP_error_report(struct sock *sk)
- 		}
- 
- 		if (mtu < peer->mtu) {
-+			spin_lock_bh(&peer->lock);
- 			peer->mtu = mtu;
- 			peer->maxdata = peer->mtu - peer->hdrsize;
-+			spin_unlock_bh(&peer->lock);
- 			_net("Net MTU %u (maxdata %u)",
- 			     peer->mtu, peer->maxdata);
- 		}
-diff --git a/net/rxrpc/ar-output.c b/net/rxrpc/ar-output.c
-index 5cdde4a..591c442 100644
---- a/net/rxrpc/ar-output.c
-+++ b/net/rxrpc/ar-output.c
-@@ -582,7 +582,7 @@ static int rxrpc_send_data(struct kiocb *iocb,
- 			max &= ~(call->conn->size_align - 1UL);
- 
- 			chunk = max;
--			if (chunk > len)
-+			if (chunk > len && !more)
- 				chunk = len;
- 
- 			space = chunk + call->conn->size_align;
-diff --git a/net/rxrpc/ar-peer.c b/net/rxrpc/ar-peer.c
-index d399de4..ce08b78 100644
---- a/net/rxrpc/ar-peer.c
-+++ b/net/rxrpc/ar-peer.c
-@@ -19,6 +19,7 @@
- #include <net/sock.h>
- #include <net/af_rxrpc.h>
- #include <net/ip.h>
-+#include <net/route.h>
- #include "ar-internal.h"
- 
- static LIST_HEAD(rxrpc_peers);
-@@ -28,6 +29,47 @@ static DECLARE_WAIT_QUEUE_HEAD(rxrpc_peer_wq);
- static void rxrpc_destroy_peer(struct work_struct *work);
- 
- /*
-+ * assess the MTU size for the network interface through which this peer is
-+ * reached
-+ */
-+static void rxrpc_assess_MTU_size(struct rxrpc_peer *peer)
-+{
-+	struct rtable *rt;
-+	struct flowi fl;
-+	int ret;
-+
-+	peer->if_mtu = 1500;
-+
-+	memset(&fl, 0, sizeof(fl));
-+
-+	switch (peer->srx.transport.family) {
-+	case AF_INET:
-+		fl.oif = 0;
-+		fl.proto = IPPROTO_UDP,
-+		fl.nl_u.ip4_u.saddr = 0;
-+		fl.nl_u.ip4_u.daddr = peer->srx.transport.sin.sin_addr.s_addr;
-+		fl.nl_u.ip4_u.tos = 0;
-+		/* assume AFS.CM talking to AFS.FS */
-+		fl.uli_u.ports.sport = htons(7001);
-+		fl.uli_u.ports.dport = htons(7000);
-+		break;
-+	default:
-+		BUG();
-+	}
-+
-+	ret = ip_route_output_key(&rt, &fl);
-+	if (ret < 0) {
-+		kleave(" [route err %d]", ret);
-+		return;
-+	}
-+
-+	peer->if_mtu = dst_mtu(&rt->u.dst);
-+	dst_release(&rt->u.dst);
-+
-+	kleave(" [if_mtu %u]", peer->if_mtu);
-+}
-+
-+/*
-  * allocate a new peer
-  */
- static struct rxrpc_peer *rxrpc_alloc_peer(struct sockaddr_rxrpc *srx,
-@@ -47,7 +89,8 @@ static struct rxrpc_peer *rxrpc_alloc_peer(struct sockaddr_rxrpc *srx,
- 		peer->debug_id = atomic_inc_return(&rxrpc_debug_id);
- 		memcpy(&peer->srx, srx, sizeof(*srx));
- 
--		peer->mtu = peer->if_mtu = 65535;
-+		rxrpc_assess_MTU_size(peer);
-+		peer->mtu = peer->if_mtu;
- 
- 		if (srx->transport.family == AF_INET) {
- 			peer->hdrsize = sizeof(struct iphdr);
-
+    J
