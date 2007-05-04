@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767842AbXEDKpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767861AbXEDKo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767842AbXEDKpS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 06:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767832AbXEDKpP
+	id S1767861AbXEDKo7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 06:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767841AbXEDKoA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 06:45:15 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:46698 "EHLO
-	amsfep12-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S2993223AbXEDKfs (ORCPT
+	Fri, 4 May 2007 06:44:00 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:3563 "EHLO
+	amsfep14-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1767819AbXEDKiq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 06:35:48 -0400
-Message-Id: <20070504103200.815617316@chello.nl>
+	Fri, 4 May 2007 06:38:46 -0400
+Message-Id: <20070504103157.465884989@chello.nl>
 References: <20070504102651.923946304@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Fri, 04 May 2007 12:27:14 +0200
+Date: Fri, 04 May 2007 12:27:00 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
@@ -23,263 +23,87 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Mike Christie <michaelc@cs.wisc.edu>,
        Andrew Morton <akpm@linux-foundation.org>,
        Daniel Phillips <phillips@google.com>
-Subject: [PATCH 23/40] mm: add support for non block device backed swap files
-Content-Disposition: inline; filename=mm-swapfile.patch
+Subject: [PATCH 09/40] mm: optimize gfp_to_rank()
+Content-Disposition: inline; filename=mm-optimize-gtp_to_rank.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A new addres_space_operations method is added:
-  int swapfile(struct address_space *, int)
+The gfp_to_rank() call in the slab allocator severely impacts performance.
+Hence reduce it to the bone, keeping only what is needed to make the reserve
+work.
 
-When during sys_swapon() this method is found and returns no error the 
-swapper_space.a_ops will proxy to sis->swap_file->f_mapping->a_ops.
+[more AIM9 results go here]
 
-The swapfile method will be used to communicate to the address_space that the
-VM relies on it, and the address_space should take adequate measures (like 
-reserving memory for mempools or the like).
+ AIM9 test          2.6.21-rc5            2.6.21-rc5-slab1             
+                                         CONFIG_SLAB_FAIR=y            
+
+54 tcp_test      2124.48 +/-  10.85    2137.43 +/-  9.22    12.95      
+55 udp_test      5204.43 +/-  45.13    5231.59 +/- 56.66    27.16      
+56 fifo_test    20991.42 +/-  46.71   19675.97 +/- 56.35  1315.44      
+57 stream_pipe  10024.16 +/- 119.88    9912.53 +/- 75.52   111.63      
+58 dgram_pipe    9460.18 +/- 119.50    9502.75 +/- 89.06    42.57      
+59 pipe_cpy     30719.81 +/- 117.01   27885.52 +/- 46.81  2834.28      
+
+                                          2.6.21-rc5-slab2    
+                                         CONFIG_SLAB_FAIR=y   
+                                                              
+54 tcp_test      2124.48 +/-  10.85    2122.80 +/-   4.70     1.68
+55 udp_test      5204.43 +/-  45.13    5136.98 +/-  62.31    67.45
+56 fifo_test    20991.42 +/-  46.71   19646.81 +/-  53.61  1344.60
+57 stream_pipe  10024.16 +/- 119.88    9940.87 +/- 280.73    83.29
+58 dgram_pipe    9460.18 +/- 119.50    9432.69 +/- 250.27    27.49
+59 pipe_cpy     30719.81 +/- 117.01   27870.70 +/-  65.50  2849.10
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Trond Myklebust <trond.myklebust@fys.uio.no>
 ---
- Documentation/filesystems/Locking |    9 ++++++
- include/linux/fs.h                |    1 
- include/linux/swap.h              |    3 ++
- mm/Kconfig                        |    4 ++
- mm/page_io.c                      |   55 ++++++++++++++++++++++++++++++++++++++
- mm/swap_state.c                   |    5 +++
- mm/swapfile.c                     |   22 ++++++++++++++-
- 7 files changed, 98 insertions(+), 1 deletion(-)
+ mm/internal.h |   33 +++++++++++++++++++++++++++++++--
+ 1 file changed, 31 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-git/include/linux/swap.h
+Index: linux-2.6-git/mm/internal.h
 ===================================================================
---- linux-2.6-git.orig/include/linux/swap.h	2007-03-26 13:40:38.000000000 +0200
-+++ linux-2.6-git/include/linux/swap.h	2007-03-26 13:40:43.000000000 +0200
-@@ -163,6 +163,7 @@ enum {
- 	SWP_USED	= (1 << 0),	/* is slot in swap_info[] used? */
- 	SWP_WRITEOK	= (1 << 1),	/* ok to write to this swap?	*/
- 	SWP_ACTIVE	= (SWP_USED | SWP_WRITEOK),
-+	SWP_FILE	= (1 << 2),	/* file swap area */
- 					/* add others here before... */
- 	SWP_SCANNING	= (1 << 8),	/* refcount in scan_swap_map */
- };
-@@ -264,6 +265,8 @@ extern void swap_unplug_io_fn(struct bac
- /* linux/mm/page_io.c */
- extern int swap_readpage(struct file *, struct page *);
- extern int swap_writepage(struct page *page, struct writeback_control *wbc);
-+extern void swap_sync_page(struct page *page);
-+extern int swap_set_page_dirty(struct page *page);
- extern int end_swap_bio_read(struct bio *bio, unsigned int bytes_done, int err);
- 
- /* linux/mm/swap_state.c */
-Index: linux-2.6-git/mm/page_io.c
-===================================================================
---- linux-2.6-git.orig/mm/page_io.c	2007-03-26 13:34:51.000000000 +0200
-+++ linux-2.6-git/mm/page_io.c	2007-03-26 13:40:43.000000000 +0200
-@@ -17,6 +17,7 @@
- #include <linux/bio.h>
- #include <linux/swapops.h>
- #include <linux/writeback.h>
-+#include <linux/buffer_head.h>
- #include <asm/pgtable.h>
- 
- static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
-@@ -110,6 +111,18 @@ int swap_writepage(struct page *page, st
- 		unlock_page(page);
- 		goto out;
- 	}
-+#ifdef CONFIG_SWAP_FILE
-+	{
-+		struct swap_info_struct *sis = page_swap_info(page);
-+		if (sis->flags & SWP_FILE) {
-+			ret = sis->swap_file->f_mapping->
-+				a_ops->writepage(page, wbc);
-+			if (!ret)
-+				count_vm_event(PSWPOUT);
-+			return ret;
-+		}
-+	}
-+#endif
- 	bio = get_swap_bio(GFP_NOIO, page_private(page), page,
- 				end_swap_bio_write);
- 	if (bio == NULL) {
-@@ -128,6 +141,36 @@ out:
- 	return ret;
+--- linux-2.6-git.orig/mm/internal.h	2007-02-22 14:09:39.000000000 +0100
++++ linux-2.6-git/mm/internal.h	2007-02-22 14:24:34.000000000 +0100
+@@ -105,9 +105,38 @@ static inline int alloc_flags_to_rank(in
+ 	return rank;
  }
  
-+#ifdef CONFIG_SWAP_FILE
-+void swap_sync_page(struct page *page)
-+{
-+	struct swap_info_struct *sis = page_swap_info(page);
-+
-+	if (sis->flags & SWP_FILE) {
-+		const struct address_space_operations * a_ops =
-+			sis->swap_file->f_mapping->a_ops;
-+		if (a_ops->sync_page)
-+			a_ops->sync_page(page);
-+	} else
-+		block_sync_page(page);
-+}
-+
-+int swap_set_page_dirty(struct page *page)
-+{
-+	struct swap_info_struct *sis = page_swap_info(page);
-+
-+	if (sis->flags & SWP_FILE) {
-+		const struct address_space_operations * a_ops =
-+			sis->swap_file->f_mapping->a_ops;
-+		if (a_ops->set_page_dirty)
-+			return a_ops->set_page_dirty(page);
-+		return __set_page_dirty_buffers(page);
-+	}
-+
-+	return __set_page_dirty_nobuffers(page);
-+}
-+#endif
-+
- int swap_readpage(struct file *file, struct page *page)
+-static inline int gfp_to_rank(gfp_t gfp_mask)
++static __always_inline int gfp_to_rank(gfp_t gfp_mask)
  {
- 	struct bio *bio;
-@@ -135,6 +178,18 @@ int swap_readpage(struct file *file, str
- 
- 	BUG_ON(!PageLocked(page));
- 	ClearPageUptodate(page);
-+#ifdef CONFIG_SWAP_FILE
-+	{
-+		struct swap_info_struct *sis = page_swap_info(page);
-+		if (sis->flags & SWP_FILE) {
-+			ret = sis->swap_file->f_mapping->
-+				a_ops->readpage(sis->swap_file, page);
-+			if (!ret)
-+				count_vm_event(PSWPIN);
-+			return ret;
-+		}
+-	return alloc_flags_to_rank(gfp_to_alloc_flags(gfp_mask));
++	/*
++	 * Although correct this full version takes a ~3% performance hit
++	 * on the network test in aim9.
++	 *
++	 * return alloc_flags_to_rank(gfp_to_alloc_flags(gfp_mask));
++	 *
++	 * So we go cheat a little. We'll only focus on the correctness of
++	 * rank 0.
++	 */
++
++	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
++		if (gfp_mask & __GFP_EMERGENCY)
++			return 0;
++		else if (!in_irq() && (current->flags & PF_MEMALLOC))
++			return 0;
++		/*
++		 * We skip the TIF_MEMDIE test:
++		 *
++		 * if (!in_interrupt() && unlikely(test_thread_flag(TIF_MEMDIE)))
++		 * 	return 0;
++		 *
++		 * this will force an alloc but since we are allowed the memory
++		 * that will succeed. This will make this very rare occurence
++		 * very expensive when under severe memory pressure, but it
++		 * seems a valid tradeoff.
++		 */
 +	}
-+#endif
- 	bio = get_swap_bio(GFP_KERNEL, page_private(page), page,
- 				end_swap_bio_read);
- 	if (bio == NULL) {
-Index: linux-2.6-git/mm/swap_state.c
-===================================================================
---- linux-2.6-git.orig/mm/swap_state.c	2007-03-26 13:34:51.000000000 +0200
-+++ linux-2.6-git/mm/swap_state.c	2007-03-26 13:40:43.000000000 +0200
-@@ -26,8 +26,13 @@
-  */
- static const struct address_space_operations swap_aops = {
- 	.writepage	= swap_writepage,
-+#ifdef CONFIG_SWAP_FILE
-+	.sync_page	= swap_sync_page,
-+	.set_page_dirty	= swap_set_page_dirty,
-+#else
- 	.sync_page	= block_sync_page,
- 	.set_page_dirty	= __set_page_dirty_nobuffers,
-+#endif
- 	.migratepage	= migrate_page,
- };
- 
-Index: linux-2.6-git/mm/swapfile.c
-===================================================================
---- linux-2.6-git.orig/mm/swapfile.c	2007-03-26 13:40:38.000000000 +0200
-+++ linux-2.6-git/mm/swapfile.c	2007-03-26 13:40:43.000000000 +0200
-@@ -981,6 +981,13 @@ static void destroy_swap_extents(struct 
- 		list_del(&se->list);
- 		kfree(se);
- 	}
-+#ifdef CONFIG_SWAP_FILE
-+	if (sis->flags & SWP_FILE) {
-+		sis->flags &= ~SWP_FILE;
-+		sis->swap_file->f_mapping->a_ops->
-+			swapfile(sis->swap_file->f_mapping, 0);
-+	}
-+#endif
++
++	/* Cheat by lumping everybody else in rank 1. */
++	return 1;
  }
  
- /*
-@@ -1073,6 +1080,19 @@ static int setup_swap_extents(struct swa
- 		goto done;
- 	}
- 
-+#ifdef CONFIG_SWAP_FILE
-+	if (sis->swap_file->f_mapping->a_ops->swapfile) {
-+		ret = sis->swap_file->f_mapping->a_ops->
-+			swapfile(sis->swap_file->f_mapping, 1);
-+		if (!ret) {
-+			sis->flags |= SWP_FILE;
-+			ret = add_swap_extent(sis, 0, sis->max, 0);
-+			*span = sis->pages;
-+		}
-+		goto done;
-+	}
-+#endif
-+
- 	blkbits = inode->i_blkbits;
- 	blocks_per_page = PAGE_SIZE >> blkbits;
- 
-@@ -1640,7 +1660,7 @@ asmlinkage long sys_swapon(const char __
- 
- 	mutex_lock(&swapon_mutex);
- 	spin_lock(&swap_lock);
--	p->flags = SWP_ACTIVE;
-+	p->flags |= SWP_WRITEOK;
- 	nr_swap_pages += nr_good_pages;
- 	total_swap_pages += nr_good_pages;
- 
-Index: linux-2.6-git/include/linux/fs.h
-===================================================================
---- linux-2.6-git.orig/include/linux/fs.h	2007-03-26 13:34:51.000000000 +0200
-+++ linux-2.6-git/include/linux/fs.h	2007-03-26 13:40:43.000000000 +0200
-@@ -428,6 +428,7 @@ struct address_space_operations {
- 	int (*migratepage) (struct address_space *,
- 			struct page *, struct page *);
- 	int (*launder_page) (struct page *);
-+	int (*swapfile)(struct address_space *, int);
- };
- 
- struct backing_dev_info;
-Index: linux-2.6-git/Documentation/filesystems/Locking
-===================================================================
---- linux-2.6-git.orig/Documentation/filesystems/Locking	2007-03-26 13:34:51.000000000 +0200
-+++ linux-2.6-git/Documentation/filesystems/Locking	2007-03-26 13:40:43.000000000 +0200
-@@ -172,6 +172,7 @@ prototypes:
- 	int (*direct_IO)(int, struct kiocb *, const struct iovec *iov,
- 			loff_t offset, unsigned long nr_segs);
- 	int (*launder_page) (struct page *);
-+	int (*swapfile) (struct address_space *, int);
- 
- locking rules:
- 	All except set_page_dirty may block
-@@ -190,6 +191,7 @@ invalidatepage:		no	yes
- releasepage:		no	yes
- direct_IO:		no
- launder_page:		no	yes
-+swapfile		no
- 
- 	->prepare_write(), ->commit_write(), ->sync_page() and ->readpage()
- may be called from the request handler (/dev/loop).
-@@ -289,6 +291,13 @@ cleaned, or an error value if not. Note 
- getting mapped back in and redirtied, it needs to be kept locked
- across the entire operation.
- 
-+	->swapfile() will be called with a non zero argument on address spaces
-+backing non block device backed swapfiles. A return value of zero indicates
-+success. In which case this address space can be used for backing swapspace.
-+The swapspace operations will be proxied to the address space operations.
-+Swapoff will call this method with a zero argument to release the address
-+space.
-+
- 	Note: currently almost all instances of address_space methods are
- using BKL for internal serialization and that's one of the worst sources
- of contention. Normally they are calling library functions (in fs/buffer.c)
-Index: linux-2.6-git/mm/Kconfig
-===================================================================
---- linux-2.6-git.orig/mm/Kconfig	2007-03-26 13:36:32.000000000 +0200
-+++ linux-2.6-git/mm/Kconfig	2007-03-26 13:41:22.000000000 +0200
-@@ -166,3 +166,6 @@ config ZONE_DMA_FLAG
- config SLAB_FAIR
- 	def_bool n
- 	depends on SLAB
-+
-+config SWAP_FILE
-+	def_bool n
+ #endif
 
 --
 
