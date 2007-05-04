@@ -1,74 +1,253 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755086AbXEDLqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755102AbXEDLtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755086AbXEDLqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 07:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755097AbXEDLqc
+	id S1755102AbXEDLtQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 07:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755104AbXEDLtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 07:46:32 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:53033 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755086AbXEDLqb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 07:46:31 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] i386: always clear bss
-References: <463AED07.1000505@goop.org>
-Date: Fri, 04 May 2007 05:46:01 -0600
-In-Reply-To: <463AED07.1000505@goop.org> (Jeremy Fitzhardinge's message of
-	"Fri, 04 May 2007 01:21:27 -0700")
-Message-ID: <m1r6pwu806.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 4 May 2007 07:49:16 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:47664 "EHLO
+	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755096AbXEDLtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 07:49:15 -0400
+Subject: [PATCH 2/5] jffs2: Add LZO compression support to jffs2
+From: Richard Purdie <rpurdie@openedhand.com>
+To: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
+Cc: linux-mtd <linux-mtd@lists.infradead.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Fri, 04 May 2007 12:45:00 +0100
+Message-Id: <1178279100.5839.55.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge <jeremy@goop.org> writes:
+Add LZO1X compression/decompression support to jffs2.
 
-> When the paravirt dispatcher gets run immediately on entry to
-> startup_32, the bss isn't cleared.  This happens to work if the
-> hypervisor's domain builder loaded the complete kernel image and
-> cleared the bss for us, but this may not always be true (for example,
-> if we're running out of a decompressed bzImage).
->
-> Change head.S so that it unconditionally clears the bss before doing
-> the paravirt dispatch or continuing on to normal native boot.
->
-> There are a couple of points to note:
->  - We can't, in general, load the segment registers before paravirt
->    dispatch, because we could be running with a non-standard gdt and
->    segment selectors.  In practice though, all code which ends up
->    jumping into startup_32 will have already set the segment registers
->    up to sane values, so we don't need to do it again.
->  - Paging may or may not be enabled, and if enabled we may or may not
->    be mapped to the proper kernel virtual address.  To deal with this,
->    we compare the kernel's linked address with where we're actually
->    running, and use that to offset the bss pointer.
+LZO's interface doesn't entirely match that required by jffs2 so a
+buffer and memcpy is unavoidable.
 
-NAK.  
+Signed-off-by: Richard Purdie <rpurdie@openedhand.com>
+---
+ fs/Kconfig            |   10 ++++
+ fs/jffs2/Makefile     |    1 +
+ fs/jffs2/compr.c      |    6 +++
+ fs/jffs2/compr.h      |    7 +++-
+ fs/jffs2/compr_lzo.c  |  110 +++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/jffs2.h |    1 +
+ 6 files changed, 134 insertions(+), 1 deletions(-)
 
-Skipping the segment register load is likely fine.
-Supporting V!=P at startup_32 is not.
-Assuming that we have a stack at startup_32 is not.
+diff --git a/fs/Kconfig b/fs/Kconfig
+index a42f767..6e7095f 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -1310,6 +1310,16 @@ config JFFS2_ZLIB
+ 
+           Say 'Y' if unsure.
+ 
++config JFFS2_LZO
++	bool "JFFS2 LZO compression support" if JFFS2_COMPRESSION_OPTIONS
++	depends on JFFS2_FS && LZO
++	default y
++	help
++	  LZO based compression. Generally works faster than Zlib with 
++	  a slightly lower compression ratio.
++
++	  Say 'Y' if unsure.
++
+ config JFFS2_RTIME
+ 	bool "JFFS2 RTIME compression support" if JFFS2_COMPRESSION_OPTIONS
+ 	depends on JFFS2_FS
+diff --git a/fs/jffs2/Makefile b/fs/jffs2/Makefile
+index c32b241..60e5d49 100644
+--- a/fs/jffs2/Makefile
++++ b/fs/jffs2/Makefile
+@@ -17,4 +17,5 @@ jffs2-$(CONFIG_JFFS2_FS_POSIX_ACL)	+= acl.o
+ jffs2-$(CONFIG_JFFS2_RUBIN)	+= compr_rubin.o
+ jffs2-$(CONFIG_JFFS2_RTIME)	+= compr_rtime.o
+ jffs2-$(CONFIG_JFFS2_ZLIB)	+= compr_zlib.o
++jffs2-$(CONFIG_JFFS2_LZO)	+= compr_lzo.o
+ jffs2-$(CONFIG_JFFS2_SUMMARY)   += summary.o
+diff --git a/fs/jffs2/compr.c b/fs/jffs2/compr.c
+index 485d065..6a23408 100644
+--- a/fs/jffs2/compr.c
++++ b/fs/jffs2/compr.c
+@@ -285,6 +285,9 @@ int __init jffs2_compressors_init(void)
+         jffs2_rubinmips_init();
+         jffs2_dynrubin_init();
+ #endif
++#ifdef CONFIG_JFFS2_LZO
++        jffs2_lzo_init();
++#endif
+ /* Setting default compression mode */
+ #ifdef CONFIG_JFFS2_CMODE_NONE
+         jffs2_compression_mode = JFFS2_COMPR_MODE_NONE;
+@@ -303,6 +306,9 @@ int __init jffs2_compressors_init(void)
+ int jffs2_compressors_exit(void)
+ {
+ /* Unregistering compressors */
++#ifdef CONFIG_JFFS2_LZO
++        jffs2_lzo_exit();
++#endif
+ #ifdef CONFIG_JFFS2_RUBIN
+         jffs2_dynrubin_exit();
+         jffs2_rubinmips_exit();
+diff --git a/fs/jffs2/compr.h b/fs/jffs2/compr.h
+index 68cc701..8c6b2af 100644
+--- a/fs/jffs2/compr.h
++++ b/fs/jffs2/compr.h
+@@ -27,9 +27,10 @@
+ #define JFFS2_RUBINMIPS_PRIORITY 10
+ #define JFFS2_DYNRUBIN_PRIORITY  20
+ #define JFFS2_LZARI_PRIORITY     30
+-#define JFFS2_LZO_PRIORITY       40
+ #define JFFS2_RTIME_PRIORITY     50
+ #define JFFS2_ZLIB_PRIORITY      60
++#define JFFS2_LZO_PRIORITY       80
++
+ 
+ #define JFFS2_RUBINMIPS_DISABLED /* RUBINs will be used only */
+ #define JFFS2_DYNRUBIN_DISABLED  /*        for decompression */
+@@ -90,5 +91,9 @@ void jffs2_rtime_exit(void);
+ int jffs2_zlib_init(void);
+ void jffs2_zlib_exit(void);
+ #endif
++#ifdef CONFIG_JFFS2_LZO
++int jffs2_lzo_init(void);
++void jffs2_lzo_exit(void);
++#endif
+ 
+ #endif /* __JFFS2_COMPR_H__ */
+diff --git a/fs/jffs2/compr_lzo.c b/fs/jffs2/compr_lzo.c
+new file mode 100644
+index 0000000..6396682
+--- /dev/null
++++ b/fs/jffs2/compr_lzo.c
+@@ -0,0 +1,110 @@
++/*
++ * JFFS2 -- Journalling Flash File System, Version 2.
++ *
++ * LZO Compression Interface
++ *
++ * Copyright © 2007 Nokia Corporation. All rights reserved.
++ *
++ * Created by Richard Purdie <rpurdie@openedhand.com>
++ *
++ * For licensing information, see the file 'LICENCE' in this directory.
++ *
++ */
++
++#include <linux/kernel.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/vmalloc.h>
++#include <linux/init.h>
++#include <linux/lzo.h>
++#include "compr.h"
++
++static void *lzo_mem;
++static void *lzo_compress_buf;
++static DEFINE_MUTEX(deflate_mutex);
++
++static void free_workspace(void)
++{
++	vfree(lzo_mem);
++	vfree(lzo_compress_buf);
++}
++
++static int __init alloc_workspace(void)
++{
++	lzo_mem = vmalloc(LZO1X_MEM_COMPRESS);
++	lzo_compress_buf = vmalloc(lzo1x_worst_compress(PAGE_SIZE));
++
++	if (!lzo_mem || !lzo_compress_buf) {
++		printk(KERN_WARNING "Failed to allocate lzo deflate workspace\n");
++		free_workspace();
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++
++static int jffs2_lzo_compress(unsigned char *data_in, unsigned char *cpage_out,
++			      uint32_t *sourcelen, uint32_t *dstlen, void *model)
++{
++	unsigned long compress_size;
++	int ret;
++
++	mutex_lock(&deflate_mutex);
++	ret = lzo1x_1_compress(data_in, *sourcelen, lzo_compress_buf, &compress_size, lzo_mem);
++	mutex_unlock(&deflate_mutex);
++
++	if (ret != LZO_E_OK)
++		return -1;
++
++	if (compress_size > *dstlen)
++		return -1;
++
++	memcpy(cpage_out, lzo_compress_buf, compress_size);
++	*dstlen = compress_size;
++
++	return 0;
++}
++
++static int jffs2_lzo_decompress(unsigned char *data_in, unsigned char *cpage_out,
++				 uint32_t srclen, uint32_t destlen, void *model)
++{
++	unsigned long dl = destlen;
++	int ret;
++
++	ret = lzo1x_decompress_safe(data_in, srclen, cpage_out, &dl, NULL);
++
++	if (ret != LZO_E_OK || dl != destlen)
++		return -1;
++
++	return 0;
++}
++
++static struct jffs2_compressor jffs2_lzo_comp = {
++	.priority = JFFS2_LZO_PRIORITY,
++	.name = "lzo",
++	.compr = JFFS2_COMPR_LZO,
++	.compress = &jffs2_lzo_compress,
++	.decompress = &jffs2_lzo_decompress,
++	.disabled = 0,
++};
++
++int __init jffs2_lzo_init(void)
++{
++	int ret;
++
++	ret = alloc_workspace();
++	if (ret < 0)
++		return ret;
++
++	ret = jffs2_register_compressor(&jffs2_lzo_comp);
++	if (ret)
++		free_workspace();
++
++	return ret;
++}
++
++void jffs2_lzo_exit(void)
++{
++	jffs2_unregister_compressor(&jffs2_lzo_comp);
++	free_workspace();
++}
+diff --git a/include/linux/jffs2.h b/include/linux/jffs2.h
+index 840631f..6b563ca 100644
+--- a/include/linux/jffs2.h
++++ b/include/linux/jffs2.h
+@@ -46,6 +46,7 @@
+ #define JFFS2_COMPR_COPY	0x04
+ #define JFFS2_COMPR_DYNRUBIN	0x05
+ #define JFFS2_COMPR_ZLIB	0x06
++#define JFFS2_COMPR_LZO		0x07
+ /* Compatibility flags. */
+ #define JFFS2_COMPAT_MASK 0xc000      /* What do to if an unknown nodetype is found */
+ #define JFFS2_NODE_ACCURATE 0x2000
 
-If you want to figure out where the kernel is loaded you can do
-(from arch/i386/boot/head.S)
-> 
-> /* Calculate the delta between where we were compiled to run
->  * at and where we were actually loaded at.  This can only be done
->  * with a short local call on x86.  Nothing  else will tell us what
->  * address we are running at.  The reserved chunk of the real-mode
->  * data at 0x34-0x3f are used as the stack for this calculation.
->  * Only 4 bytes are needed.
->  */
-> 	leal 0x40(%esi), %esp
-> 	call 1f
-> 1:	popl %ebp
-> 	subl $1b, %ebp
-> 
 
-Eric
+
