@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767487AbXECX6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767485AbXEDACK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767487AbXECX6j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 19:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767492AbXECX6j
+	id S1767485AbXEDACK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 20:02:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767486AbXEDACK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 19:58:39 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:50339 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767487AbXECX6f (ORCPT
+	Thu, 3 May 2007 20:02:10 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:57454 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1767485AbXEDACJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 19:58:35 -0400
-Date: Thu, 3 May 2007 16:58:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Stas Sergeev <stsp@aknet.ru>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [patch] export hrtimer_forward
-Message-Id: <20070503165800.5b7cd3fd.akpm@linux-foundation.org>
-In-Reply-To: <463A338A.2010909@aknet.ru>
-References: <463A2296.7000804@aknet.ru>
-	<1178218674.24217.14.camel@twins>
-	<463A338A.2010909@aknet.ru>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 3 May 2007 20:02:09 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
+Date: Fri, 4 May 2007 02:01:56 +0200
+User-Agent: KMail/1.9.6
+Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linux-pcmcia@lists.infradead.org,
+       linux-kernel@vger.kernel.org
+References: <20070503235747.29275.37271.stgit@localhost.localdomain>
+In-Reply-To: <20070503235747.29275.37271.stgit@localhost.localdomain>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705040201.57284.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/4AY98TaInIhbZ2xPRRHVh5BvlzeaVNQ11DO4
+ QFQpQvpUb1xTqqFmOXRyPuYZVgTZOkHBMBZ/WRXrBpPaKiXWTs
+ g2HwvReWqDd3KJvqzbrZA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 May 2007 23:10:02 +0400
-Stas Sergeev <stsp@aknet.ru> wrote:
-
-> Hello.
+On Friday 04 May 2007, Vitaly Bordug wrote:
+> Adds support for PowerQuicc on-chip PCMCIA. The driver is implemented as
+> of_device, so only arch/powerpc stuff is capable to use it, which now
+> implies only mpc885ads reference board.
 > 
-> Peter Zijlstra wrote:
-> >> It seems hrtimer_forward was forgotten to
-> >> export - other symbols of the hrtimers API
-> > Are there actual in-tree users of this symbol? Without we usually leave
-> > the symbol unexported, this saves some space.
-> Do you mean it was really left intentional?
-> Unbeleivable! But why the other parts of a
-> hrtimer API are exported nevertheless, and
-> only this particular function not?
+> To cope with the code that should be hooked inside driver, but is really
+> board specific (like set_voltage), global structure mpc8xx_pcmcia_ops
+> holds necessary function pointers that are filled in the BSP code.
+> 
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org> 
 
-It was probably an oversight - generally we take the position that all the
-formal interface of a subsystem is exported to modules rather than a
-piecemeal whichever-bits-kernel.org-happens-to-use-today approach.
-
-Thomas, is hrtimer_forward() considered part of the hrtimer public API? 
-And are you OK with the patch?
-
-
-> As for the users - I am porting my pcsp driver to
-> it and I need that function.
-> It is not exactly in-tree stuff, but it was
-> in an ALSA tree for years already, so it is a
-> close one.
+Acked-by: Arnd Bergmann <arnd@arndb.de>
