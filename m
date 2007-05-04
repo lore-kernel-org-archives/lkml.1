@@ -1,85 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161368AbXEDTLA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422717AbXEDTLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161368AbXEDTLA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 15:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161894AbXEDTLA
+	id S1422717AbXEDTLX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 15:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422942AbXEDTLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 15:11:00 -0400
-Received: from ironport2.mynow.co.uk ([81.91.192.236]:49063 "EHLO
-	ironport2.mynow.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161368AbXEDTK6 (ORCPT
+	Fri, 4 May 2007 15:11:22 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:48642 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1422717AbXEDTLS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 15:10:58 -0400
-X-Greylist: delayed 661 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 15:10:58 EDT
-X-BrightmailFiltered: true
-From: "David J. Wallace" <katana@onetel.com>
-To: ck@vds.kolivas.org
-Subject: Re: [ck] 2.6.21-ck1
-Date: Fri, 4 May 2007 19:59:41 +0100
-User-Agent: KMail/1.8.2
-Cc: Con Kolivas <kernel@kolivas.org>,
-       linux kernel mailing list <linux-kernel@vger.kernel.org>
-References: <200705042301.01305.kernel@kolivas.org>
-In-Reply-To: <200705042301.01305.kernel@kolivas.org>
+	Fri, 4 May 2007 15:11:18 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 1/3] Replace paravirt_probe with "platform type" boot header field
+References: <1178283582.23670.67.camel@localhost.localdomain>
+	<m1zm4ksn5o.fsf@ebiederm.dsl.xmission.com>
+	<1178288329.23670.86.camel@localhost.localdomain>
+	<m1tzussm4z.fsf@ebiederm.dsl.xmission.com>
+	<463B56A0.7090805@zytor.com>
+	<m1mz0kr0ux.fsf@ebiederm.dsl.xmission.com>
+	<463B69AB.2030706@zytor.com>
+	<m1vef8phjy.fsf@ebiederm.dsl.xmission.com>
+	<463B81BC.1030504@zytor.com>
+Date: Fri, 04 May 2007 13:10:08 -0600
+In-Reply-To: <463B81BC.1030504@zytor.com> (H. Peter Anvin's message of "Fri,
+	04 May 2007 11:55:56 -0700")
+Message-ID: <m1d51gpfqn.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart3322948.ejAd9zrHme";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705041959.47686.katana@onetel.com>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart3322948.ejAd9zrHme
-Content-Type: text/plain;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-On Friday 04 May 2007 14:00, Con Kolivas wrote:
-> This patchset is designed to improve system responsiveness and
-> interactivity. It is configurable to any workload but the default -ck pat=
-ch
-> is aimed at the desktop and -cks is available with more emphasis on
-> serverspace.
+> Eric W. Biederman wrote:
+>> 
+>> You should be able to just include linux/screen_info.h instead of duplicating
+>> it inline.
+>> 
+>
+> I'm working on it!!!!!
 
-Hi Con,=20
+Sure. I meant that linux/screen_info.h should already be safe.
 
-I have 2.6.21-ck1 running happily on a variety of machines. Everything seem=
-s=20
-fine on both uniprocessor and SMP machines.=20
+>> I like the use of struct header in the middle of boot_params that
+>> seems like a nice maintenance device, although I'm not quite certain about
+>> 
+>> However you haven't documented the old swap_dev field in struct header.
+>> At least rdev still knows about it, so it is probably inappropriate to
+>> merge it with syssize.  Not that syssize is actually useful for anything
+>> in a modern system.
+>
+> Actually, ROM bootloaders care about it, which is why it was expanded
+> out in boot loader protocol 2.04; see the documentation.
 
-I've been running SD for a couple of weeks now, including alternating betwe=
-en=20
-a SD patched kernel and an "old" staircase based kernel for a week of that.=
-=20
-SD seems perfectly smooth. In fact on going back to the old kernel for a da=
-y=20
-I'm sure it felt more "choppy". I don't really do benchmarks, "feel" is mor=
-e=20
-relevant to me. Right now I'd say my R4 "feels" better with SD than it has=
-=20
-for a long time. Nice Job. Thanks for persisiting.
+Interesting. I missed that one.
 
-As an aside I realized whilst trying non ck kernels the last few weeks just=
-=20
-how much of a difference swap prefetch actually makes on a lowish memory=20
-machine such as this.
+>> So I just looked at what /sbin/kexec does so we know what to expect.
+>> If I have a bzImage I just grab the first setup_sects (i.e. setup.S) and make
+>> it the initial linux boot parameters, placing the command line immediately
+>> afterwards.
+>> 
+>> If I just have a vmlinux so I have to fake it I memset
+> x86_linux_faked_param_header
+>> to zero, before placing in the values I care about.  And the size.  4K aka 1
+> page.
+>> Although I due put the command line at 2K, I think that is actually the
+> historical
+>> kernel usage of the zero page.
+>
+> Oh flippin' hell.  *STABBITY STAB STAB STAB*.
 
-Arigatou gozaimashita
+Yep, a real pain.
 
-David
+At this point it looks like a bug in kexec to me, and the bzImage loader
+which is the primary way to boot linux doesn't have this problem.  Yea.
 
---nextPart3322948.ejAd9zrHme
-Content-Type: application/pgp-signature
+> All of which is just evil.  So much for "oh, the definition of the
+> zeropage never changes, so it doesn't matter."
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+>> elilo does something similar but starts with a 16K pages and then backs up
+>> 2K for the command line.
+>> 
+>> Gujin does something similar but also seems to place a command line at 2K.
+>> 
+>> So short of the first 2K we can reasonably expect new parameters to be zero
+>> initialized.  Past that we need to be a little more careful.
+>
+> Oh flippin' hell.
 
-iD8DBQBGO4KdKsvwCXwmAPgRAlIPAJ9+0wbs/hftk6W0hRgguTtGmHGRcwCbBq2M
-rnsqV2tTSAqsdam2FQQf/cA=
-=pkOr
------END PGP SIGNATURE-----
+And now you understand why I am surveying these things and want to get
+the 32bit entry point well documented.  So the situation doesn't get worse.
 
---nextPart3322948.ejAd9zrHme--
+Frankly while I consider what we are doing pretty sane I have always considered
+the 32bit entry point at least partly experimental.  But we have enough users
+of it now and enough reasons to have users of it, that it looks like we need to
+do things a little more methodically.
+
+>> And 4K seems to be our maximum size for backwards compatibility.  Although
+>> we use it in a fairly sparse way, so we should be ok.
+>
+> Sort of.  It's pretty full.
+
+True.  For small little extensions we have room.  For big things probably
+not.
+
+Eric
