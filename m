@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423135AbXEEAfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423708AbXEEAmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423135AbXEEAfJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 20:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161615AbXEEAfJ
+	id S1423708AbXEEAmb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 20:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423710AbXEEAmb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 20:35:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:6631 "EHLO mga09.intel.com"
+	Fri, 4 May 2007 20:42:31 -0400
+Received: from thunk.org ([69.25.196.29]:49122 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161609AbXEEAfI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 20:35:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,494,1170662400"; 
-   d="scan'208";a="83988447"
-Subject: RE: Regression with SLUB on Netperf and Volanomark
-From: Tim Chen <tim.c.chen@linux.intel.com>
-Reply-To: tim.c.chen@linux.intel.com
-To: Christoph Lameter <clameter@sgi.com>
-Cc: "Chen, Tim C" <tim.c.chen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-In-Reply-To: <Pine.LNX.4.64.0705041658350.28260@schroedinger.engr.sgi.com>
-References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
-	 <Pine.LNX.4.64.0705031937560.16542@schroedinger.engr.sgi.com>
-	 <1178298897.23795.195.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0705041118490.24283@schroedinger.engr.sgi.com>
-	 <1178318609.23795.214.camel@localhost.localdomain>
-	 <Pine.LNX.4.64.0705041658350.28260@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: Intel
-Date: Fri, 04 May 2007 16:42:56 -0700
-Message-Id: <1178322176.23795.219.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-8) 
-Content-Transfer-Encoding: 7bit
+	id S1423708AbXEEAmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 20:42:31 -0400
+Date: Fri, 4 May 2007 14:49:43 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Bernd Schubert <bs@q-leap.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: mkfs.ext2 triggerd RAM corruption
+Message-ID: <20070504184943.GC25339@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Bernd Schubert <bs@q-leap.de>, linux-kernel@vger.kernel.org
+References: <200705041659.51675.bs@q-leap.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705041659.51675.bs@q-leap.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 16:59 -0700, Christoph Lameter wrote:
-
-> > 
-> > to run the tests.  The results are about the same as the non-NUMA case,
-> > with slab about 5% better than slub.  
+On Fri, May 04, 2007 at 04:59:51PM +0200, Bernd Schubert wrote:
 > 
-> Hmmmm... both tests were run in the same context? NUMA has additional 
-> overhead in other areas.
+> I'm presently rather puzzled, if this is really a kernel bug, its a big bug. 
+> 
+> Summary: The system ramdisk (initrd) gets corrupted while running
+> mkfs.ext2 on a local sata disk partition.
 
-Both slab and slub tests are tested with the same NUMA options and
-config.
+What distribution are you using?  What's the hardware configuration,
+including amount of memory?  What is the partition table look
+like for /dev/sda?  What filesystems are mounted?  If you have any
+soft RAID partitions, are any of them using part of /dev/sda?  What
+swap partitions are you using?  And do any of the swap partitions
+overlap with /dev/sda?  :-)
 
-Tim
+						- Ted
