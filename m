@@ -1,78 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161224AbXEDRYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161228AbXEDRZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161224AbXEDRYZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161228AbXEDRYZ
+	id S1161228AbXEDRZc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161303AbXEDRZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:24:25 -0400
-Received: from atlrel9.hp.com ([156.153.255.214]:53231 "EHLO atlrel9.hp.com"
+	Fri, 4 May 2007 13:25:32 -0400
+Received: from gw.goop.org ([64.81.55.164]:57214 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161224AbXEDRYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:24:24 -0400
-Subject: Re: [PATCH] change global zonelist order v4 [0/2]
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+	id S1161228AbXEDRZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 13:25:31 -0400
+Message-ID: <463B6C8A.9080206@goop.org>
+Date: Fri, 04 May 2007 10:25:30 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-In-Reply-To: <Pine.LNX.4.64.0705040913340.21436@schroedinger.engr.sgi.com>
-References: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20070503224730.3bc6f8a8.akpm@linux-foundation.org>
-	 <200705040826.23687.jbarnes@virtuousgeek.org>
-	 <Pine.LNX.4.64.0705040913340.21436@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 04 May 2007 13:24:19 -0400
-Message-Id: <1178299460.5236.35.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 3/3] boot bzImages under paravirt
+References: <1178283582.23670.67.camel@localhost.localdomain>	<1178283724.23670.70.camel@localhost.localdomain>	<1178284052.23670.75.camel@localhost.localdomain>	<m1ps5gslfm.fsf@ebiederm.dsl.xmission.com> <463B4E12.50703@goop.org> <m1r6pwr0yy.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1r6pwr0yy.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 09:18 -0700, Christoph Lameter wrote:
-> On Fri, 4 May 2007, Jesse Barnes wrote:
-> 
-> > I think the idea is to avoid exhausting ZONE_DMA on some NUMA boxes by 
-> > ordering the fallback list first by zone, then by node distance (e.g. 
-> > ZONE_NORMAL of local node, then ZONE_NORMAL of next nearest node etc., 
-> > followed by ZONE_DMA of local node, ZONE_DMA of next nearest node, etc.).
-> 
-> Maybe it would be cleaner to setup a DMA and DMA32 "node" up and define 
-> them at a certain distance to the rest of the nodes that only contain 
-> ZONE_NORMAL (or the zone that is replicated on all nodes). Then we would 
-> have that effect without reworking zone list generation. Plus in the long 
-> run we may then be able to get to 1 zone per node avoiding the 
-> difficulties coming zone fallback altogether.
-> 
-> > Another option would be to make this behavior automatic if both ZONE_DMA 
-> > and ZONE_NORMAL had pages.  I initially wrote this stuff with the idea 
-> > that machines that really needed it would have all their memory in 
-> > ZONE_DMA, but obviously that's not the case, so some more smarts are 
-> > needed.
-> 
-> I think what would work is to first setup nodes that use the highest zone. 
-> Then add virtual nodes for the lower zones that may only exist on a single 
-> node.
-> 
-> I.e. a 4 node x86_64 box may have
-> 
-> Node
-> 0	ZONE_NORMAL
-> 1	ZONE_NORMAL
-> 2	ZONE_NORMAL
-> 3	ZONE_NORMAL
-> 4	ZONE_DMA32
-> 5	[additional ZONE_DMA32 if zone DMA32 is split over multiple nodes]
-> 6	ZONE_DMA
-> 
-> The SLIT information can be used to control how the nodes fallback to the 
-> DMA32 nodes on 4 and 5. Node 6 would be given a very high SLIT distance so 
-> that it would be used only if an actual __GFP_DMA occurs or the system 
-> really runs into memory difficulties.
+Eric W. Biederman wrote:
+> Hmm. If we made that:
+> 	mov	%cs, %eax
+> 	add	$0x10, %eax
+> 	mov	%eax, %ds
+>
+> That is likely even backwards compatible.  If you don't mind having a fixed
+> offset between the code and the data segments.  As I recall code and data
+> are not interchangeable.
+>   
 
-Hmmm...  "serious hackery", indeed!  ;-)
+Yes, that's just bogus thinko on my part.
 
-Lee
+> I'm trying to remember the reason for the reloads.
+>
+> As I recall loadlin intercepts code32_start from head.S and so it
+> can do things just after we have switched to protected mode.  Because
+> historically we didn't load the segments before this jump loadlin had
+> to do it.  The code of loadlin appears to reload all of the segments
+> just like head.S does and then not touch them.
+>
+> My two bootloaders that enter the kernel at the 32bit entry point already
+> load the segments as well.
+>
+> Gujin looks like it loads just %es and %ds.
+>   
 
+We should be able to make do with that until we've got our own gdt.
+
+> It is hard to tell with elilo what it sets up, it preserves the
+> descriptors from EFI, but sets up a linux boot protocol gdt.
+>   
+
+? But the cached descriptors are still the EFI ones?
+
+> Since setup.S finally does the right thing in loading segment
+> registers.  It looks to me like we need to sit down and document
+> the 32bit kernel interface, as it is today, and then extend
+> things to just replicate %ds into the other segments, and kill
+> any lss instructions.
+>   
+
+Yes.
+
+> At the same time we are doing this it would be good to drop our
+> boot protocol version into an ELF note so people booting vmlinux
+> can discover when we have relaxed various restrictions and which
+> fields in the real mode data we support.
+>   
+
+Do you mean the have the kernel expose its max supported version for
+bootloaders to inspect?
+
+    J
