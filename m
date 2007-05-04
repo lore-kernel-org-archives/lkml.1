@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161893AbXEDTPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161904AbXEDTPw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161893AbXEDTPV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 15:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161894AbXEDTPV
+	id S1161904AbXEDTPw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 15:15:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161907AbXEDTPw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 15:15:21 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:4797 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161893AbXEDTPT (ORCPT
+	Fri, 4 May 2007 15:15:52 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:48935 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161904AbXEDTPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 15:15:19 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Fri, 4 May 2007 12:15:17 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Ulrich Drepper <drepper@gmail.com>
-cc: Davi Arnaut <davi@haxent.com.br>, Eric Dumazet <dada1@cosmosbay.com>,
+	Fri, 4 May 2007 15:15:50 -0400
+Message-ID: <463B8629.3090309@zytor.com>
+Date: Fri, 04 May 2007 12:14:49 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 14/22] pollfs: pollable futex
-In-Reply-To: <a36005b50705040828l28f1d039oe58224ff18286ecd@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705041201390.6958@alien.or.mcafeemobile.com>
-References: <20070502052235.914764000@haxent.com.br>  <4638C37D.7050503@haxent.com.br>
-  <a36005b50705021010l5c7badc6ub61228f14fdbb28a@mail.gmail.com> 
- <Pine.LNX.4.64.0705021028520.7176@alien.or.mcafeemobile.com> 
- <a36005b50705021053r2fcaf225l956921570dff20e8@mail.gmail.com> 
- <Pine.LNX.4.64.0705021059430.7176@alien.or.mcafeemobile.com> 
- <a36005b50705030646v5b729838pe8dc7b91dc9bee2b@mail.gmail.com> 
- <Pine.LNX.4.64.0705031111320.6502@alien.or.mcafeemobile.com> 
- <a36005b50705031203w14df6f1fp26e186056b0fdef7@mail.gmail.com> 
- <Pine.LNX.4.64.0705031433470.6502@alien.or.mcafeemobile.com>
- <a36005b50705040828l28f1d039oe58224ff18286ecd@mail.gmail.com>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 1/3] Replace paravirt_probe with "platform type" boot
+ header field
+References: <1178283582.23670.67.camel@localhost.localdomain>	<m1zm4ksn5o.fsf@ebiederm.dsl.xmission.com>	<1178288329.23670.86.camel@localhost.localdomain>	<m1tzussm4z.fsf@ebiederm.dsl.xmission.com>	<463B56A0.7090805@zytor.com>	<m1mz0kr0ux.fsf@ebiederm.dsl.xmission.com>	<463B69AB.2030706@zytor.com>	<m1vef8phjy.fsf@ebiederm.dsl.xmission.com>	<463B81BC.1030504@zytor.com> <m1d51gpfqn.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1d51gpfqn.fsf@ebiederm.dsl.xmission.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Ulrich Drepper wrote:
-
-> On 5/3/07, Davide Libenzi <davidel@xmailserver.org> wrote:
-> > Why is that futexes *must* be part of the "whole solution"? Ppl needs
-> > solutions to specific problems, not an bloated interface that, like a
-> > giant blob, includes everything just because it exists.
+Eric W. Biederman wrote:
 > 
-> Sync objects are essential parts of many programs today and most
-> programs tomorrow.  Currently you cannot efficiently implement working
-> on multiple independent areas which are protected through some sync
-> object (mutex, condvar, ...).  You have to create a separate thread
-> for each.  Looping with the nonlocking mutex, for instance, is no
-> possibility.  This is solved by being able to get events for the
-> availability of the sync object.
+> And now you understand why I am surveying these things and want to get
+> the 32bit entry point well documented.  So the situation doesn't get worse.
 > 
-> And before you start and claim that this is no common cases take a
-> look at the waitformultipleobjects (with studdly caps somewhere) for
-> windows' API.  The actual interface is horrible, but the concept is
-> sound (it comes from VMS).  This is the basis of many programs on that
-> platform.  Basically, the central loop contains such a call.
-> Currently programs would have to be completely redesigned when ported
-> to Linux if they use any object which cannot be waited on.
+> Frankly while I consider what we are doing pretty sane I have always considered
+> the 32bit entry point at least partly experimental.  But we have enough users
+> of it now and enough reasons to have users of it, that it looks like we need to
+> do things a little more methodically.
 > 
-> There is much more.  As I tried to point out in last year's OLS paper,
-> central loops around such a call are the perfect scalability mechanism
-> and this is what is needed for the processors from today and tomorrow.
 
-This is a pretty specific case, that is not very typical to find in the 
-usual common event loop dispatch application design.
-But strange you went even there, because, as you know, WaitForMultipleObjects
-works with HANDLEs, that are the closest thing to the Unix file you can 
-find. They can be read (ReadFile/read), written (WriteFile/write), closed 
-(CloseHandle/close), duplicated (DuplicateHandle/dup) and waited 
-(WaitForMultipleObjects/poll), with a common interface.
-And if you *really* want your truly generic WaitForMultipleObjects 
-implementation, your only way is to base it on files. Files are our almost 
-perfect match to HANDLEs in our world. We have the basic infrastructure 
-already there.
+Indeed.  I think, yes, what has been there up to now has pretty much
+been at least in part experimental, and I fear there will be unavoidable
+breakage as part of sanitizing it.  C'est la vie, I guess.
 
+>>> And 4K seems to be our maximum size for backwards compatibility.  Although
+>>> we use it in a fairly sparse way, so we should be ok.
+>> Sort of.  It's pretty full.
+> 
+> True.  For small little extensions we have room.  For big things probably
+> not.
 
+For big extensions we'll probably have to go the pointer route already
+done with the command line.
 
-
-- Davide
-
-
+	-hpa
