@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754588AbXEDGEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161876AbXEDGIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754588AbXEDGEP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 02:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbXEDGEP
+	id S1161876AbXEDGIK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 02:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161868AbXEDGIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 02:04:15 -0400
-Received: from elasmtp-curtail.atl.sa.earthlink.net ([209.86.89.64]:38334 "EHLO
-	elasmtp-curtail.atl.sa.earthlink.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754588AbXEDGEO convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 02:04:14 -0400
-X-Greylist: delayed 557 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 02:04:14 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=dk20050327; d=mindspring.com;
-  b=TJjyOrG+8dgeZnlbCS8mFnL5Igh5EaE6y0x7fljVaKeiZxv9iaZ3gsuHSbXyDM0I;
-  h=Received:Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-ELNK-Trace:X-Originating-IP;
-Date: Fri, 4 May 2007 01:54:43 -0400
-From: Bill Fink <billfink@mindspring.com>
-To: Kristian =?ISO-8859-1?Q?H=F8gsberg?= <krh@redhat.com>
-Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org,
-       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>, Olaf Hering <olh@suse.de>,
-       akpm@linux-foundation.org, linux1394-devel@lists.sourceforge.net,
-       torvalds@linux-foundation.org
-Subject: Re: [git pull] New firewire stack
-Message-Id: <20070504015443.43fd4544.billfink@mindspring.com>
-In-Reply-To: <463A1CD3.2060200@redhat.com>
-References: <200705030004.l4304l8h012587@turbo.physics.adelaide.edu.au>
-	<46399BDE.4040605@s5r6.in-berlin.de>
-	<20070503114854.GA12731@suse.de>
-	<4639E3FC.8060107@s5r6.in-berlin.de>
-	<20070503163442.GK3531@stusta.de>
-	<463A1CD3.2060200@redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; powerpc-yellowdog-linux-gnu)
+	Fri, 4 May 2007 02:08:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53879 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932231AbXEDGIG (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 02:08:06 -0400
+Date: Fri, 4 May 2007 16:07:31 +1000
+From: David Chinner <dgc@sgi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070504060731.GJ32602149@melbourne.sgi.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070503212955.b1b6443c.akpm@linux-foundation.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-ELNK-Trace: c598f748b88b6fd49c7f779228e2f6aeda0071232e20db4dbac26fbc3ae365eedb2e81a1e06e035d350badd9bab72f9c350badd9bab72f9c350badd9bab72f9c
-X-Originating-IP: 68.55.21.22
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070503212955.b1b6443c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 May 2007, Kristian Høgsberg wrote:
-
-> Adrian Bunk wrote:
-> >> | An advantage of changing the names is that they are now prefixed.
-> >>
-> >> Is the opportunity to clean up module names compelling enough, vs. (the
-> >> wish for) minimized trouble with scripts which refer to module names?
-> >> ...
+On Thu, May 03, 2007 at 09:29:55PM -0700, Andrew Morton wrote:
+> On Thu, 26 Apr 2007 23:33:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+> 
+> > This patch implements the fallocate() system call and adds support for
+> > i386, x86_64 and powerpc.
 > > 
-> > How big is the trouble actually?
+> > ...
+> > +{
+> > +	struct file *file;
+> > +	struct inode *inode;
+> > +	long ret = -EINVAL;
+> > +
+> > +	if (len == 0 || offset < 0)
+> > +		goto out;
 > 
-> Exactly.  In Fedora we've just added a fw-sbp2 case to mkinitrd, it's only a 
-> couple of lines of extra shell code:
-> 
->      elif [ "$modName" = "fw-sbp2" ]; then
->          findmodule fw-core
->          findmodule fw-ohci
->          modName="fw-sbp2"
-> 
-> and that's the extent of the changes.  The sbp2 case for the old drivers is 
-> still in there and in the end mkinitrd works with either stack.
-> 
-> Kristian
+> The posix spec implies that negative `len' is permitted - presumably "allocate
+> ahead of `offset'".  How peculiar.
 
-I also think both stacks should be provided in the mainline kernel,
-preferably in their own separate directories.  I still need the old
-stack for dv1394, which isn't available in the new stack.  But if
-the new stack is also there, I might be motivated for example to try
-out the new sbp2 module, to see how well it works and how it compares
-in performance to the old sbp2 module.  If it's not there, I'm probably
-not going to go out of my way to download it from the net, since my
-existing setup is working just fine for me.
+I just checked the man page for posix_fallocate() and it says:
 
-						-Bill
+      EINVAL  offset or len was less than zero.
+
+We should probably follow this lead.
+
+> > +
+> > +	ret = -ENODEV;
+> > +	if (!S_ISREG(inode->i_mode))
+> > +		goto out_fput;
+> 
+> So we return ENODEV against an S_ISBLK fd, as per the posix spec.  That
+> seems a bit silly of them.
+
+Hmmmm - I thought that the intention of sys_fallocate() was to
+be generic enough to eventually allow preallocation on directories.
+If that is the case, then this check will prevent that....
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
