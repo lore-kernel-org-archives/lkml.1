@@ -1,56 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767895AbXEDXWN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376160AbXEDXXE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767895AbXEDXWN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 19:22:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767898AbXEDXWN
+	id S376160AbXEDXXE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 19:23:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376164AbXEDXXC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 19:22:13 -0400
-Received: from mx1.suse.de ([195.135.220.2]:38600 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767895AbXEDXWL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 19:22:11 -0400
-From: Andi Kleen <ak@suse.de>
-Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Remove constructor from buffer_head
-Date: Sat, 5 May 2007 01:22:05 +0200
-User-Agent: KMail/1.9.6
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com> <20070504134212.c18d2d65.akpm@linux-foundation.org> <20070504143347.9a1d6a34.akpm@linux-foundation.org>
-In-Reply-To: <20070504143347.9a1d6a34.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 4 May 2007 19:23:02 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44880 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S376160AbXEDXW6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 19:22:58 -0400
+Date: Fri, 4 May 2007 16:22:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Quentin Godfroy <godfroy@clipper.ens.fr>
+Cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "David A. Madore" <David.Madore@ens.fr>,
+       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: patch: VFS: fix passing of AT_PHDR value in auxv to ELF
+ interpreter
+Message-Id: <20070504162208.6f4b38b0.akpm@linux-foundation.org>
+In-Reply-To: <20070504140921.GA23122@goelette.ens.fr>
+References: <20070504140921.GA23122@goelette.ens.fr>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705050122.05275.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 04 May 2007 23:33:47 Andrew Morton wrote:
-> On Fri, 4 May 2007 13:42:12 -0700
+On Fri, 4 May 2007 10:09:21 -0400
+Quentin Godfroy <godfroy@clipper.ens.fr> wrote:
 
+> On a dynamic ELF executable, the current kernel loader gives to the
+> interpreter (in the AUXV vector) the AT_PHDR argument as :
+> offset_of_phdr_in_file + first address.
 > 
-> 2.6.20:
+> It can be wrong for an executable where the program headers are not located 
+> in the first loaded segment.
 > 
-> akpm2:/home/akpm> opcontrol --start-daemon
-> /usr/bin/opcontrol: line 1098: /dev/oprofile/0/enabled: No such file or directory
-> /usr/bin/opcontrol: line 1098: /dev/oprofile/0/event: No such file or directory
-> /usr/bin/opcontrol: line 1098: /dev/oprofile/0/count: No such file or directory
-> /usr/bin/opcontrol: line 1098: /dev/oprofile/0/kernel: No such file or directory
-> /usr/bin/opcontrol: line 1098: /dev/oprofile/0/user: No such file or directory
-> /usr/bin/opcontrol: line 1098: /dev/oprofile/0/unit_mask: No such file or directory
-
-This isn't a problem anymore since the nmi watchdog is off by default now.
-
-> 2.6.21:
+> This patch corrects the behaviour.
 > 
-> akpm2:/home/akpm# opreport -l /boot/vmlinux-$(uname -r) | head -50
-> opreport error: No sample file found: try running opcontrol --dump
-> or specify a session containing sample files
+> Signed-off-by: Quentin Godfroy <godfroy@clipper.ens.fr>
+> ---
+>  Here is an example of such an ELF executable which the current code
+>  fails on :
+>  ftp://quatramaran.ens.fr/pub/godfroy/addrpath/broken-sample
+> 
+> --- linux-2.6.21.1/fs/binfmt_elf.c	2007-05-04 03:20:00.000000000 -0400
+> +++ linux-2.6.21.1-patch/fs/binfmt_elf.c	2007-05-04 08:02:18.000000000 -0400
+> @@ -134,6 +134,7 @@ static int padzero(unsigned long elf_bss
+>  static int
+>  create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+>  		int interp_aout, unsigned long load_addr,
+> +		unsigned long phdr_addr,
+>  		unsigned long interp_load_addr)
+>  {
+>  	unsigned long p = bprm->p;
+> @@ -190,7 +191,7 @@ create_elf_tables(struct linux_binprm *b
+>  	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
+>  	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
+>  	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);
+> -	NEW_AUX_ENT(AT_PHDR, load_addr + exec->e_phoff);
+> +	NEW_AUX_ENT(AT_PHDR, phdr_addr);
+>  	NEW_AUX_ENT(AT_PHENT, sizeof(struct elf_phdr));
+>  	NEW_AUX_ENT(AT_PHNUM, exec->e_phnum);
+>  	NEW_AUX_ENT(AT_BASE, interp_load_addr);
+> @@ -529,7 +530,7 @@ static unsigned long randomize_stack_top
+>  static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  {
+>  	struct file *interpreter = NULL; /* to shut gcc up */
+> - 	unsigned long load_addr = 0, load_bias = 0;
+> + 	unsigned long load_addr = 0, load_bias = 0, phdr_addr = 0;
+>  	int load_addr_set = 0;
+>  	char * elf_interpreter = NULL;
+>  	unsigned int interpreter_type = INTERPRETER_NONE;
+> @@ -718,6 +719,16 @@ static int load_elf_binary(struct linux_
+>  			break;
+>  		}
+>  
+> +	elf_ppnt = elf_phdata;
+> +	for (i = 0; i< loc->elf_ex.e_phnum; i++, elf_ppnt++)
+> +		if (elf_ppnt->p_type == PT_PHDR) {
+> +			phdr_addr = elf_ppnt->p_vaddr;
+> +			break;
+> +		}
+> +	retval = -ENOEXEC;
+> +	if (!phdr_addr)
+> +		goto out_free_dentry;
+> +
+>  	/* Some simple consistency checks for the interpreter */
+>  	if (elf_interpreter) {
+>  		interpreter_type = INTERPRETER_ELF | INTERPRETER_AOUT;
+> @@ -987,7 +998,7 @@ static int load_elf_binary(struct linux_
+>  	current->flags &= ~PF_FORKNOEXEC;
+>  	create_elf_tables(bprm, &loc->elf_ex,
+>  			  (interpreter_type == INTERPRETER_AOUT),
+> -			  load_addr, interp_load_addr);
+> +			  load_addr, phdr_addr, interp_load_addr);
+>  	/* N.B. passed_fileno might not be initialized? */
+>  	if (interpreter_type == INTERPRETER_AOUT)
+>  		current->mm->arg_start += strlen(passed_fileno) + 1;
 
-For me it works on a slightly post 2.6.21 kernel with suse oprofile-0.9.2-21
+This patch kills my FC6 machine (using a config which was derived from RH's
+original):
 
-Did you try opcontrol --dump? 
+Freeing unused kernel memory: 368k freed
+Write protecting the kernel read-only data: 959k
+request_module: runaway loop modprobe binfmt-464c
+request_module: runaway loop modprobe binfmt-464c
+request_module: runaway loop modprobe binfmt-464c
+request_module: runaway loop modprobe binfmt-464c
+request_module: runaway loop modprobe binfmt-464c
 
--Andi
+
+.config: http://userweb.kernel.org/~akpm/config-akpm2.txt
