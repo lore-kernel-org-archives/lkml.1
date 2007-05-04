@@ -1,216 +1,416 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755065AbXEDLbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755083AbXEDLby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755065AbXEDLbq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 07:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932561AbXEDLbU
+	id S1755083AbXEDLby (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 07:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755067AbXEDLbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 07:31:20 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:47144 "EHLO
+	Fri, 4 May 2007 07:31:49 -0400
+Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:47158 "EHLO
 	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933068AbXEDLbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 07:31:14 -0400
-Subject: [PATCH 4/5] jffs2: Allow selection of compression mode via a sysfs
-	attribute
+	id S933078AbXEDLbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 07:31:18 -0400
+Subject: [PATCH 5/5] crypto: Add LZO compression support to the crypto
+	interface
 From: Richard Purdie <rpurdie@openedhand.com>
-To: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>
-Cc: linux-mtd <linux-mtd@lists.infradead.org>,
+To: LKML <linux-kernel@vger.kernel.org>, David Woodhouse <dwmw2@infradead.org>,
+       herbert@gondor.apana.org.au
+Cc: linux-mtd <linux-mtd@lists.infradead.org>, linux-crypto@vger.kernel.org,
        Randy Dunlap <randy.dunlap@oracle.com>,
        Satyam Sharma <satyam.sharma@gmail.com>
 Content-Type: text/plain
-Date: Fri, 04 May 2007 12:31:00 +0100
-Message-Id: <1178278261.5839.51.camel@localhost.localdomain>
+Date: Fri, 04 May 2007 12:31:08 +0100
+Message-Id: <1178278268.5839.53.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow selection of the compression mode for jffs2 via a sysfs
-attribute. This establishes a sysfs presence for jffs2 through
-which other compression options could easily be exported too.
+Add LZO1X compression support to the crypto interface, including
+a couple of tests.
+
+Also convert test_deflate into a more generic test_compress() and
+avoid duplicating the data for compression and decompression tests
+since this can always work both ways in the compression case.
 
 Signed-off-by: Richard Purdie <rpurdie@openedhand.com>
 ---
- fs/Kconfig       |    9 ++++++++
- fs/jffs2/compr.c |   40 +++++++++++++++++++++++++++++++++++
- fs/jffs2/compr.h |    6 +++++
- fs/jffs2/super.c |   61 ++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 116 insertions(+), 0 deletions(-)
+ crypto/Kconfig      |    8 +++
+ crypto/Makefile     |    1 +
+ crypto/crypto_lzo.c |  121 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ crypto/tcrypt.c     |   43 ++++++++----------
+ crypto/tcrypt.h     |   75 ++++++++++++++++++--------------
+ 5 files changed, 191 insertions(+), 57 deletions(-)
 
-diff --git a/fs/Kconfig b/fs/Kconfig
-index b8d2c58..4b801ac 100644
---- a/fs/Kconfig
-+++ b/fs/Kconfig
-@@ -1283,6 +1283,15 @@ config JFFS2_FS_SECURITY
- 	  If you are not using a security module that requires using
- 	  extended attributes for file security labels, say N.
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index 086fcec..8a479d5 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -406,6 +406,14 @@ config CRYPTO_DEFLATE
+ 	  
+ 	  You will most probably want this if using IPSec.
  
-+config JFFS2_SYSFS
-+	bool "JFFS2 sysfs attributes"
-+	depends on JFFS2_FS
-+	default n
++config CRYPTO_LZO
++	tristate "LZO compression algorithm"
++	depends on CRYPTO
++	select LZO
 +	help
-+	  Enable control of jffs2 features through sysfs.
++	  Enable use of the LZO compression algorithm through the crypto
++	  subsystem.
 +
-+	  If unsure, say 'N'.
-+
- config JFFS2_COMPRESSION_OPTIONS
- 	bool "Advanced compression options for JFFS2"
- 	depends on JFFS2_FS
-diff --git a/fs/jffs2/compr.c b/fs/jffs2/compr.c
-index 477ec97..2e8e3c1 100644
---- a/fs/jffs2/compr.c
-+++ b/fs/jffs2/compr.c
-@@ -297,6 +297,46 @@ int jffs2_unregister_compressor(struct jffs2_compressor *comp)
-         return 0;
- }
+ config CRYPTO_MICHAEL_MIC
+ 	tristate "Michael MIC keyed digest algorithm"
+ 	select CRYPTO_ALGAPI
+diff --git a/crypto/Makefile b/crypto/Makefile
+index 12f93f5..b4bc7ca 100644
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -44,6 +44,7 @@ obj-$(CONFIG_CRYPTO_TEA) += tea.o
+ obj-$(CONFIG_CRYPTO_KHAZAD) += khazad.o
+ obj-$(CONFIG_CRYPTO_ANUBIS) += anubis.o
+ obj-$(CONFIG_CRYPTO_DEFLATE) += deflate.o
++obj-$(CONFIG_CRYPTO_LZO) += crypto_lzo.o
+ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += michael_mic.o
+ obj-$(CONFIG_CRYPTO_CRC32C) += crc32c.o
  
-+#ifdef CONFIG_JFFS2_SYSFS
+diff --git a/crypto/crypto_lzo.c b/crypto/crypto_lzo.c
+new file mode 100644
+index 0000000..a99c42a
+--- /dev/null
++++ b/crypto/crypto_lzo.c
+@@ -0,0 +1,121 @@
++/*
++ * Cryptographic API for LZO compression.
++ *
++ * Copyright (C) 2007 Nokia Corporation. All rights reserved.
++ *
++ * Author: Richard Purdie <rpurdie@openedhand.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * version 2 as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA
++ *
++ */
 +
-+char *jffs2_get_compression_mode_name(void)
-+{
-+	switch (jffs2_compression_mode) {
-+	case JFFS2_COMPR_MODE_NONE:
-+		return "none";
-+	case JFFS2_COMPR_MODE_PRIORITY:
-+		return "priority";
-+	case JFFS2_COMPR_MODE_SIZE:
-+		return "size";
-+	case JFFS2_COMPR_MODE_FAVOURLZO:
-+		return "favourlzo";
-+	}
-+	return "unkown";
-+}
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/crypto.h>
++#include <linux/vmalloc.h>
++#include <linux/interrupt.h>
++#include <linux/mm.h>
++#include <linux/lzo.h>
 +
-+int jffs2_set_compression_mode_name(const char *name)
-+{
-+	if (!strncmp("none", name, 4)) {
-+		jffs2_compression_mode = JFFS2_COMPR_MODE_NONE;
-+		return 0;
-+	}
-+	if (!strncmp("priority", name, 8)) {
-+		jffs2_compression_mode = JFFS2_COMPR_MODE_PRIORITY;
-+		return 0;
-+	}
-+	if (!strncmp("size", name, 4)) {
-+		jffs2_compression_mode = JFFS2_COMPR_MODE_SIZE;
-+		return 0;
-+	}
-+	if (!strncmp("favourlzo", name, 9)) {
-+		jffs2_compression_mode = JFFS2_COMPR_MODE_FAVOURLZO;
-+		return 0;
-+	}
-+	return -EINVAL;
-+}
-+
-+#endif
-+
- void jffs2_free_comprbuf(unsigned char *comprbuf, unsigned char *orig)
- {
-         if (orig != comprbuf)
-diff --git a/fs/jffs2/compr.h b/fs/jffs2/compr.h
-index 2b66941..917f0d6 100644
---- a/fs/jffs2/compr.h
-+++ b/fs/jffs2/compr.h
-@@ -77,6 +77,12 @@ int jffs2_decompress(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
- 
- void jffs2_free_comprbuf(unsigned char *comprbuf, unsigned char *orig);
- 
-+#ifdef CONFIG_JFFS2_SYSFS
-+int jffs2_set_compression_mode_name(const char *mode_name);
-+char *jffs2_get_compression_mode_name(void);
-+#endif
-+
-+
- /* Compressor modules */
- /* These functions will be called by jffs2_compressors_init/exit */
- 
-diff --git a/fs/jffs2/super.c b/fs/jffs2/super.c
-index e51164a..9a67113 100644
---- a/fs/jffs2/super.c
-+++ b/fs/jffs2/super.c
-@@ -322,6 +322,54 @@ static struct file_system_type jffs2_fs_type = {
- 	.kill_sb =	jffs2_kill_sb,
- };
- 
-+#ifdef CONFIG_JFFS2_SYSFS
-+
-+static struct attribute jffs2_attr_mode = {
-+	.name = "compression_mode",
-+	.mode = S_IRUGO | S_IWUSR,
++struct lzo_ctx {
++	void *lzo_mem;
 +};
 +
-+static struct attribute *jffs2_attrs[] = {
-+	&jffs2_attr_mode,
-+	NULL,
-+};
-+
-+static ssize_t jffs2_attr_show(struct kobject *kobj, struct attribute *attr,
-+		char *page)
++static int lzo_init(struct crypto_tfm *tfm)
 +{
-+	if (!strcmp("compression_mode", attr->name))
-+		return sprintf(page, "%s\n", jffs2_get_compression_mode_name());
++	struct lzo_ctx *ctx = crypto_tfm_ctx(tfm);
++
++	ctx->lzo_mem = vmalloc(LZO1X_MEM_COMPRESS);
++
++	if (!ctx->lzo_mem)
++		return -ENOMEM;
++
 +	return 0;
 +}
 +
-+static ssize_t jffs2_attr_store(struct kobject *kobj, struct attribute *attr,
-+		const char *page, size_t count)
++static void lzo_exit(struct crypto_tfm *tfm)
 +{
-+	int ret = -EINVAL;
++	struct lzo_ctx *ctx = crypto_tfm_ctx(tfm);
 +
-+	if (!strcmp("compression_mode", attr->name)) {
-+		ret = jffs2_set_compression_mode_name(page);
-+		if (ret >= 0)
-+			return count;
-+	}
-+	return ret;
++	vfree(ctx->lzo_mem);
 +}
 +
-+static struct sysfs_ops jffs2_sysfs_ops = {
-+	.show	=	jffs2_attr_show,
-+	.store	=	jffs2_attr_store,
++static int lzo_compress(struct crypto_tfm *tfm, const u8 *src,
++			    unsigned int slen, u8 *dst, unsigned int *dlen)
++{
++	struct lzo_ctx *ctx = crypto_tfm_ctx(tfm);
++	unsigned long compress_size;
++	int ret;
++
++	/* Check if enough space in dst buffer for worst case expansion */
++	if (*dlen < lzo1x_worst_compress(slen))
++		return -EINVAL;
++
++	ret = lzo1x_1_compress(src, slen, dst, &compress_size, ctx->lzo_mem);
++
++	if (ret != LZO_E_OK)
++		return -EINVAL;
++
++	*dlen = compress_size;
++
++	return 0;
++}
++
++static int lzo_decompress(struct crypto_tfm *tfm, const u8 *src,
++			      unsigned int slen, u8 *dst, unsigned int *dlen)
++{
++	int ret;
++	unsigned long dest_len = *dlen;
++
++	ret = lzo1x_decompress_safe(src, slen, dst, &dest_len, NULL);
++
++	*dlen = dest_len;
++
++	if (ret != LZO_E_OK)
++		return -EINVAL;
++
++	return 0;
++}
++
++static struct crypto_alg alg = {
++	.cra_name		= "lzo1x",
++	.cra_flags		= CRYPTO_ALG_TYPE_COMPRESS,
++	.cra_ctxsize		= sizeof(struct lzo_ctx),
++	.cra_module		= THIS_MODULE,
++	.cra_list		= LIST_HEAD_INIT(alg.cra_list),
++	.cra_init		= lzo_init,
++	.cra_exit		= lzo_exit,
++	.cra_u			= { .compress = {
++	.coa_compress 		= lzo_compress,
++	.coa_decompress  	= lzo_decompress } }
 +};
 +
-+static struct kobj_type jffs2_subsys_type = {
-+	.default_attrs	= jffs2_attrs,
-+	.sysfs_ops	= &jffs2_sysfs_ops,
-+};
++static int __init init(void)
++{
++	return crypto_register_alg(&alg);
++}
 +
-+/* gives us jffs2_subsys */
-+static decl_subsys(jffs2, NULL, NULL);
++static void __exit fini(void)
++{
++	crypto_unregister_alg(&alg);
++}
 +
-+#endif
++module_init(init);
++module_exit(fini);
 +
- static int __init init_jffs2_fs(void)
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("LZO Compression Algorithm");
++MODULE_AUTHOR("Richard Purdie <rpurdie@openedhand.com>");
++
+diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+index 8eaa5aa..5eb97dd 100644
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -747,7 +747,7 @@ out:
+ 	crypto_free_hash(tfm);
+ }
+ 
+-static void test_deflate(void)
++static void test_compress(char *algo, struct comp_testvec *testvec, int num_tests)
  {
- 	int ret;
-@@ -371,6 +419,16 @@ static int __init init_jffs2_fs(void)
- 		printk(KERN_ERR "JFFS2 error: Failed to register filesystem\n");
- 		goto out_slab;
+ 	unsigned int i;
+ 	char result[COMP_BUF_SIZE];
+@@ -755,25 +755,25 @@ static void test_deflate(void)
+ 	struct comp_testvec *tv;
+ 	unsigned int tsize;
+ 
+-	printk("\ntesting deflate compression\n");
++	printk("\ntesting %s compression\n", algo);
+ 
+-	tsize = sizeof (deflate_comp_tv_template);
++	tsize = sizeof(struct comp_testvec) * num_tests;
+ 	if (tsize > TVMEMSIZE) {
+ 		printk("template (%u) too big for tvmem (%u)\n", tsize,
+ 		       TVMEMSIZE);
+ 		return;
  	}
-+
-+#ifdef CONFIG_JFFS2_SYSFS
-+	/* Errors here are not fatal */
-+	kset_set_kset_s(&jffs2_subsys, fs_subsys);
-+	jffs2_subsys.kset.kobj.ktype = &jffs2_subsys_type;
-+	ret = subsystem_register(&jffs2_subsys);
-+	if (ret)
-+		printk(KERN_WARNING "Error registering JFFS2 sysfs attributes\n");
-+#endif
-+
- 	return 0;
  
-  out_slab:
-@@ -384,6 +442,9 @@ static int __init init_jffs2_fs(void)
+-	memcpy(tvmem, deflate_comp_tv_template, tsize);
++	memcpy(tvmem, testvec, tsize);
+ 	tv = (void *)tvmem;
  
- static void __exit exit_jffs2_fs(void)
- {
-+#ifdef CONFIG_JFFS2_SYSFS
-+	subsystem_unregister(&jffs2_subsys);
-+#endif
- 	unregister_filesystem(&jffs2_fs_type);
- 	jffs2_destroy_slab_caches();
- 	jffs2_compressors_exit();
-
+-	tfm = crypto_alloc_comp("deflate", 0, CRYPTO_ALG_ASYNC);
++	tfm = crypto_alloc_comp(algo, 0, CRYPTO_ALG_ASYNC);
+ 	if (IS_ERR(tfm)) {
+-		printk("failed to load transform for deflate\n");
++		printk("failed to load transform for %s\n", algo);
+ 		return;
+ 	}
+ 
+-	for (i = 0; i < DEFLATE_COMP_TEST_VECTORS; i++) {
++	for (i = 0; i < num_tests; i++) {
+ 		int ilen, ret, dlen = COMP_BUF_SIZE;
+ 
+ 		printk("test %u:\n", i + 1);
+@@ -792,26 +792,16 @@ static void test_deflate(void)
+ 		       ilen, dlen);
+ 	}
+ 
+-	printk("\ntesting deflate decompression\n");
++	printk("\ntesting %s decompression\n", algo);
+ 
+-	tsize = sizeof (deflate_decomp_tv_template);
+-	if (tsize > TVMEMSIZE) {
+-		printk("template (%u) too big for tvmem (%u)\n", tsize,
+-		       TVMEMSIZE);
+-		goto out;
+-	}
+-
+-	memcpy(tvmem, deflate_decomp_tv_template, tsize);
+-	tv = (void *)tvmem;
+-
+-	for (i = 0; i < DEFLATE_DECOMP_TEST_VECTORS; i++) {
++	for (i = 0; i < num_tests; i++) {
+ 		int ilen, ret, dlen = COMP_BUF_SIZE;
+ 
+ 		printk("test %u:\n", i + 1);
+ 		memset(result, 0, sizeof (result));
+ 
+-		ilen = tv[i].inlen;
+-		ret = crypto_comp_decompress(tfm, tv[i].input,
++		ilen = tv[i].outlen;
++		ret = crypto_comp_decompress(tfm, tv[i].output,
+ 		                             ilen, result, &dlen);
+ 		if (ret) {
+ 			printk("fail: ret=%d\n", ret);
+@@ -819,7 +809,7 @@ static void test_deflate(void)
+ 		}
+ 		hexdump(result, dlen);
+ 		printk("%s (ratio %d:%d)\n",
+-		       memcmp(result, tv[i].output, dlen) ? "fail" : "pass",
++		       memcmp(result, tv[i].input, dlen) ? "fail" : "pass",
+ 		       ilen, dlen);
+ 	}
+ out:
+@@ -994,7 +984,8 @@ static void do_test(void)
+ 		test_hash("tgr192", tgr192_tv_template, TGR192_TEST_VECTORS);
+ 		test_hash("tgr160", tgr160_tv_template, TGR160_TEST_VECTORS);
+ 		test_hash("tgr128", tgr128_tv_template, TGR128_TEST_VECTORS);
+-		test_deflate();
++		test_compress("deflate", deflate_tv_template, DEFLATE_TEST_VECTORS);
++		test_compress("lzo1x", lzo1x_tv_template, LZO1X_TEST_VECTORS);
+ 		test_hash("crc32c", crc32c_tv_template, CRC32C_TEST_VECTORS);
+ 		test_hash("hmac(md5)", hmac_md5_tv_template,
+ 			  HMAC_MD5_TEST_VECTORS);
+@@ -1100,7 +1091,7 @@ static void do_test(void)
+ 		break;
+ 
+ 	case 13:
+-		test_deflate();
++		test_compress("deflate", deflate_tv_template, DEFLATE_TEST_VECTORS);
+ 		break;
+ 
+ 	case 14:
+@@ -1225,6 +1216,10 @@ static void do_test(void)
+ 			    CAMELLIA_CBC_DEC_TEST_VECTORS);
+ 		break;
+ 
++	case 33:
++		test_compress("lzo1x", lzo1x_tv_template, LZO1X_TEST_VECTORS);
++		break;
++
+ 	case 100:
+ 		test_hash("hmac(md5)", hmac_md5_tv_template,
+ 			  HMAC_MD5_TEST_VECTORS);
+diff --git a/crypto/tcrypt.h b/crypto/tcrypt.h
+index 887527b..01eb33c 100644
+--- a/crypto/tcrypt.h
++++ b/crypto/tcrypt.h
+@@ -3846,10 +3846,9 @@ struct comp_testvec {
+  * Deflate test vectors (null-terminated strings).
+  * Params: winbits=11, Z_DEFAULT_COMPRESSION, MAX_MEM_LEVEL.
+  */
+-#define DEFLATE_COMP_TEST_VECTORS 2
+-#define DEFLATE_DECOMP_TEST_VECTORS 2
++#define DEFLATE_TEST_VECTORS 2
+ 
+-static struct comp_testvec deflate_comp_tv_template[] = {
++static struct comp_testvec deflate_tv_template[] = {
+ 	{
+ 		.inlen	= 70,
+ 		.outlen	= 38,
+@@ -3885,39 +3884,49 @@ static struct comp_testvec deflate_comp_tv_template[] = {
+ 	},
+ };
+ 
+-static struct comp_testvec deflate_decomp_tv_template[] = {
++/*
++ * LZO test vectors
++ */
++#define LZO1X_TEST_VECTORS 2
++
++static struct comp_testvec lzo1x_tv_template[] = {
+ 	{
+-		.inlen	= 122,
+-		.outlen	= 191,
+-		.input	= { 0x5d, 0x8d, 0x31, 0x0e, 0xc2, 0x30, 0x10, 0x04,
+-			    0xbf, 0xb2, 0x2f, 0xc8, 0x1f, 0x10, 0x04, 0x09,
+-			    0x89, 0xc2, 0x85, 0x3f, 0x70, 0xb1, 0x2f, 0xf8,
+-			    0x24, 0xdb, 0x67, 0xd9, 0x47, 0xc1, 0xef, 0x49,
+-			    0x68, 0x12, 0x51, 0xae, 0x76, 0x67, 0xd6, 0x27,
+-			    0x19, 0x88, 0x1a, 0xde, 0x85, 0xab, 0x21, 0xf2,
+-			    0x08, 0x5d, 0x16, 0x1e, 0x20, 0x04, 0x2d, 0xad,
+-			    0xf3, 0x18, 0xa2, 0x15, 0x85, 0x2d, 0x69, 0xc4,
+-			    0x42, 0x83, 0x23, 0xb6, 0x6c, 0x89, 0x71, 0x9b,
+-			    0xef, 0xcf, 0x8b, 0x9f, 0xcf, 0x33, 0xca, 0x2f,
+-			    0xed, 0x62, 0xa9, 0x4c, 0x80, 0xff, 0x13, 0xaf,
+-			    0x52, 0x37, 0xed, 0x0e, 0x52, 0x6b, 0x59, 0x02,
+-			    0xd9, 0x4e, 0xe8, 0x7a, 0x76, 0x1d, 0x02, 0x98,
+-			    0xfe, 0x8a, 0x87, 0x83, 0xa3, 0x4f, 0x56, 0x8a,
+-			    0xb8, 0x9e, 0x8e, 0x5c, 0x57, 0xd3, 0xa0, 0x79,
+-			    0xfa, 0x02 },
+-		.output	= "This document describes a compression method based on the DEFLATE"
++		.inlen	= 70,
++		.outlen	= 46,
++		.input	= "Join us now and share the software "
++			  "Join us now and share the software ",
++		.output	= { 0x00, 0x0d, 0x4a, 0x6f, 0x69, 0x6e, 0x20, 0x75,
++			    0x73, 0x20, 0x6e, 0x6f, 0x77, 0x20, 0x61, 0x6e,
++			    0x64, 0x20, 0x73, 0x68, 0x61, 0x72, 0x65, 0x20,
++			    0x74, 0x68, 0x65, 0x20, 0x73, 0x6f, 0x66, 0x74,
++			    0x77, 0x70, 0x01, 0x01, 0x4a, 0x6f, 0x69, 0x6e,
++			    0x3d, 0x88, 0x00, 0x11, 0x00, 0x00 },
++	}, {
++		.inlen	= 191,
++		.outlen	= 153,
++		.input	= "This document describes a compression method based on the DEFLATE"
+ 			  "compression algorithm.  This document defines the application of "
+ 			  "the DEFLATE algorithm to the IP Payload Compression Protocol.",
+-	}, {
+-		.inlen	= 38,
+-		.outlen	= 70,
+-		.input	= { 0xf3, 0xca, 0xcf, 0xcc, 0x53, 0x28, 0x2d, 0x56,
+-			    0xc8, 0xcb, 0x2f, 0x57, 0x48, 0xcc, 0x4b, 0x51,
+-			    0x28, 0xce, 0x48, 0x2c, 0x4a, 0x55, 0x28, 0xc9,
+-			    0x48, 0x55, 0x28, 0xce, 0x4f, 0x2b, 0x29, 0x07,
+-			    0x71, 0xbc, 0x08, 0x2b, 0x01, 0x00 },
+-		.output	= "Join us now and share the software "
+-			  "Join us now and share the software ",
++		.output	= { 0x00, 0x2f, 0x54, 0x68, 0x69, 0x73, 0x20, 0x64,
++			    0x6f, 0x63, 0x75, 0x6d, 0x65, 0x6e, 0x74, 0x20,
++			    0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x62, 0x65,
++			    0x73, 0x20, 0x61, 0x20, 0x63, 0x6f, 0x6d, 0x70,
++			    0x72, 0x65, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x20,
++			    0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x20, 0x62,
++			    0x61, 0x73, 0x65, 0x64, 0x20, 0x6f, 0x6e, 0x20,
++			    0x74, 0x68, 0x65, 0x20, 0x44, 0x45, 0x46, 0x4c,
++			    0x41, 0x54, 0x45, 0x2a, 0x98, 0x00, 0x0d, 0x61,
++			    0x6c, 0x67, 0x6f, 0x72, 0x69, 0x74, 0x68, 0x6d,
++			    0x2e, 0x20, 0x20, 0x54, 0x68, 0x69, 0x73, 0x2a,
++			    0x60, 0x01, 0x02, 0x66, 0x69, 0x6e, 0x65, 0x73,
++			    0x80, 0x07, 0x05, 0x61, 0x70, 0x70, 0x6c, 0x69,
++			    0x63, 0x61, 0x74, 0x62, 0x0b, 0x6f, 0x66, 0x88,
++			    0x02, 0xcd, 0x09, 0x20, 0x27, 0x03, 0x01, 0x20,
++			    0x74, 0x6f, 0x80, 0x03, 0x09, 0x49, 0x50, 0x20,
++			    0x50, 0x61, 0x79, 0x6c, 0x6f, 0x61, 0x64, 0x20,
++			    0x43, 0x29, 0x3c, 0x02, 0x06, 0x50, 0x72, 0x6f,
++			    0x74, 0x6f, 0x63, 0x6f, 0x6c, 0x2e, 0x11, 0x00,
++			    0x00 },
+ 	},
+ };
+ 
 
 
