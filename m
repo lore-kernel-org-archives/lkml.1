@@ -1,79 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423017AbXEEFOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423110AbXEEFYN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423017AbXEEFOr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 01:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXEEFOr
+	id S1423110AbXEEFYN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 01:24:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXEEFYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 01:14:47 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:58358 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423017AbXEEFOr (ORCPT
+	Sat, 5 May 2007 01:24:13 -0400
+Received: from 50.sub-75-208-68.myvzw.com ([75.208.68.50]:33047 "EHLO
+	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754641AbXEEFYN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 01:14:47 -0400
-Date: Fri, 4 May 2007 22:14:46 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, dgc@sgi.com,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC 0/3] Slab Defrag / Slab Targeted Reclaim and general Slab
- API changes
-In-Reply-To: <463C10F8.4040803@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0705042209050.14211@schroedinger.engr.sgi.com>
-References: <20070504221555.642061626@sgi.com> <463C10F8.4040803@cosmosbay.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 5 May 2007 01:24:13 -0400
+X-Greylist: delayed 4997 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 May 2007 01:24:12 EDT
+Message-Id: <20070504232119.196309373@goop.org>
+References: <20070504232051.411946839@goop.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 04 May 2007 16:20:53 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       "Jan Beulich" <JBeulich@novell.com>, "Andi Kleen" <ak@muc.de>
+Subject: [patch 02/29] xen: Allocate and free vmalloc areas
+Content-Disposition: inline; filename=alloc-vm-area.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 May 2007, Eric Dumazet wrote:
+Allocate/destroy a 'vmalloc' VM area: alloc_vm_area and free_vm_area
+The alloc function ensures that page tables are constructed for the
+region of kernel virtual address space and mapped into init_mm.
 
-> > C. Introduces a slab_ops structure that allows a slab user to provide
-> >    operations on slabs.
-> 
-> Could you please make it const ?
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Cc: "Jan Beulich" <JBeulich@novell.com>
+Cc: "Andi Kleen" <ak@muc.de>
 
-Sure. Done.
+---
+ include/linux/vmalloc.h |    4 +++
+ mm/vmalloc.c            |   51 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 55 insertions(+)
 
-> > All of this is really not necessary since the compiler knows how to align
-> > structures and we should use this information instead of having the user
-> > specify an alignment. I would like to get rid of SLAB_HWCACHE_ALIGN
-> > and kmem_cache_create. Instead one would use the following macros (that
-> > then result in a call to __kmem_cache_create).
-> 
-> Hum, the problem is the compiler sometimes doesnt know the target processor
-> alignment.
-> 
-> Adding ____cacheline_aligned to 'struct ...' definitions might be overkill if
-> you compile a generic kernel and happens to boot a Pentium III with it.
+===================================================================
+--- a/include/linux/vmalloc.h
++++ b/include/linux/vmalloc.h
+@@ -68,6 +68,10 @@ extern int map_vm_area(struct vm_struct 
+ 			struct page ***pages);
+ extern void unmap_vm_area(struct vm_struct *area);
+ 
++/* Allocate/destroy a 'vmalloc' VM area. */
++extern struct vm_struct *alloc_vm_area(unsigned long size);
++extern void free_vm_area(struct vm_struct *area);
++
+ /*
+  *	Internals.  Dont't use..
+  */
+===================================================================
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -757,3 +757,54 @@ out_einval_locked:
+ }
+ EXPORT_SYMBOL(remap_vmalloc_range);
+ 
++static int f(pte_t *pte, struct page *pmd_page, unsigned long addr, void *data)
++{
++	/* apply_to_page_range() does all the hard work. */
++	return 0;
++}
++
++/**
++ *	alloc_vm_area - allocate a range of kernel address space
++ *	@size:		size of the area
++ *	@returns:	NULL on failure, vm_struct on success
++ *
++ *	This function reserves a range of kernel address space, and
++ *	allocates pagetables to map that range.  No actual mappings
++ *	are created.  If the kernel address space is not shared
++ *	between processes, it syncs the pagetable across all
++ *	processes.
++ */
++struct vm_struct *alloc_vm_area(unsigned long size)
++{
++	struct vm_struct *area;
++
++	area = get_vm_area(size, VM_IOREMAP);
++	if (area == NULL)
++		return NULL;
++
++	/*
++	 * This ensures that page tables are constructed for this region
++	 * of kernel virtual address space and mapped into init_mm.
++	 */
++	if (apply_to_page_range(&init_mm, (unsigned long)area->addr,
++				area->size, f, NULL)) {
++		free_vm_area(area);
++		return NULL;
++	}
++
++	/* Make sure the pagetables are constructed in process kernel
++	   mappings */
++	vmalloc_sync_all();
++
++	return area;
++}
++EXPORT_SYMBOL_GPL(alloc_vm_area);
++
++void free_vm_area(struct vm_struct *area)
++{
++	struct vm_struct *ret;
++	ret = remove_vm_area(area->addr);
++	BUG_ON(ret != area);
++	kfree(area);
++}
++EXPORT_SYMBOL_GPL(free_vm_area);
 
-Then add ___cacheline_aligned_in_smp or specify the alignment in the 
-various other ways that exist. Practice is that most slabs specify 
-SLAB_HWCACHE_ALIGN. So most slabs are cache aligned today.
-
-> G. Being able to track the number of pages in a kmem_cache
-> 
-> 
-> If you look at fs/buffer.c, you'll notice the bh_accounting, recalc_bh_state()
-> that might be overkill for large SMP configurations, when the real concern is
-> to be able to limit the bh's not to exceed 10% of LOWMEM.
-> 
-> Adding a callback in slab_ops to track total number of pages in use by a given
-> kmem_cache would be good.
-
-Such functionality exists internal to SLUB and in the reporting tool. 
-I can export that function if you need it.
-
-> Same thing for fs/file_table.c : nr_file logic
-> (percpu_counter_dec()/percpu_counter_inc() for each file open/close) could be
-> simplified if we could just count the pages in use by filp_cachep kmem_cache.
-> The get_nr_files() thing is not worth the pain.
-
-Sure. What exactly do you want? The absolute number of pages of memory 
-that the slab is using?
-
-	kmem_cache_pages_in_use(struct kmem_cache *) ?
-
-The call will not be too lightweight since we will have to loop over all 
-nodes and add the counters in each per node struct for allocates slabs.
+-- 
 
