@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767532AbXEDAy2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767574AbXEDBPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767532AbXEDAy2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 3 May 2007 20:54:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767562AbXEDAy2
+	id S1767574AbXEDBPn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 3 May 2007 21:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767575AbXEDBPn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 3 May 2007 20:54:28 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:43823 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1767532AbXEDAy1 (ORCPT
+	Thu, 3 May 2007 21:15:43 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42245 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767574AbXEDBPm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 3 May 2007 20:54:27 -0400
-Date: Thu, 3 May 2007 17:54:26 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Hugh Dickins <hugh@veritas.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: 2.6.22 -mm merge plans: slub on PowerPC
-In-Reply-To: <1178238344.6353.79.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0705031744560.15240@schroedinger.engr.sgi.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0705011846590.10660@blonde.wat.veritas.com> 
- <20070501125559.9ab42896.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0705012101410.26170@blonde.wat.veritas.com> 
- <Pine.LNX.4.64.0705011403470.26819@schroedinger.engr.sgi.com> 
- <Pine.LNX.4.64.0705021330001.16517@blonde.wat.veritas.com> 
- <Pine.LNX.4.64.0705021017270.32635@schroedinger.engr.sgi.com> 
- <20070503011515.0d89082b.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0705030936120.5165@blonde.wat.veritas.com> 
- <20070503015729.7496edff.akpm@linux-foundation.org> 
- <Pine.LNX.4.64.0705031011020.9826@blonde.wat.veritas.com> 
- <Pine.LNX.4.64.0705032143420.7589@blonde.wat.veritas.com>
- <1178238344.6353.79.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 3 May 2007 21:15:42 -0400
+Date: Thu, 3 May 2007 18:15:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: David Chinner <dgc@sgi.com>, David Howells <dhowells@redhat.com>,
+       Gautham Shenoy <ego@in.ibm.com>, Jarek Poplawski <jarkao2@o2.pl>,
+       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+Message-Id: <20070503181513.0b0aa4fb.akpm@linux-foundation.org>
+In-Reply-To: <20070503204226.GA212@tv-sign.ru>
+References: <20070503204226.GA212@tv-sign.ru>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Benjamin Herrenschmidt wrote:
+On Fri, 4 May 2007 00:42:26 +0400
+Oleg Nesterov <oleg@tv-sign.ru> wrote:
 
-> > The SLUB allocator relies on struct page fields first_page and slab,
-> > overwritten by ptl when SPLIT_PTLOCK: so the SLUB allocator cannot then
-> > be used for the lowest level of pagetable pages.  This was obstructing
-> > SLUB on PowerPC, which uses kmem_caches for its pagetables.  So convert
-> > its pte level to use quicklist pages (whereas pmd, pud and 64k-page pgd
-> > want partpages, so continue to use kmem_caches for pmd, pud and pgd).
-> > But to keep up appearances for pgtable_free, we still need PTE_CACHE_NUM.
+> Thanks to Jarek Poplawski for the ideas and for spotting the bug in the
+> initial draft patch.
 > 
-> Interesting... I'll have a look asap.
+> cancel_rearming_delayed_work() currently has many limitations, because it
+> requires that dwork always re-arms itself via queue_delayed_work(). So it
+> hangs forever if dwork doesn't do this, or cancel_rearming_delayed_work/
+> cancel_delayed_work was already called. It uses flush_workqueue() in a loop,
+> so it can't be used if workqueue was freezed, and it is potentially live-
+> lockable on busy system if delay is small.
+> 
+> With this patch cancel_rearming_delayed_work() doesn't make any assumptions
+> about dwork, it can re-arm itself via queue_delayed_work(), or queue_work(),
+> or do nothing.
+> 
+> As a "side effect", cancel_work_sync() was changed to handle re-arming works
+> as well.
+> 
+> Disadvantages:
+> 
+> 	- this patch adds wmb() to insert_work().
+> 
+> 	- slowdowns the fast path (when del_timer() succeeds on entry) of
+> 	  cancel_rearming_delayed_work(), because wait_on_work() is called
+> 	  unconditionally. In that case, compared to the old version, we are
+> 	  doing "unneeded" lock/unlock for each online CPU.
+> 
+> 	  On the other hand, this means we don't need to use cancel_work_sync()
+> 	  after cancel_rearming_delayed_work().
+> 
+> 	- complicates the code (.text grows by 130 bytes).
+> 
 
-I would also recommend looking at removing the constructors for the 
-remaining slabs. A constructor requires that SLUB never touch the object 
-(same situation as is resulting from enabling debugging). So it must 
-increase the object size in order to put the free pointer after the 
-object. In case of a order of 2 cache this has a particularly bad effect 
-of doubling object size. If the objects can be overwritten on free (no 
-constructor) then we can use the first word of the object as a freepointer 
-on kfree. Meaning we can use a hot cacheline so no cache miss. On 
-alloc we have already touched the first cacheline which also avoids a 
-cacheline fetch there. This is the optimal way of operation for SLUB.
+hm, this is getting complex.
 
-Hmmm.... We could add an option to allow the use of a constructor while
-keeping the free pointer at the beginning of the object? Then we would 
-have to zap the first word on alloc. Would work like quicklists.
+> +	while (!try_to_grab_pending(work))
+> +		;
 
-Add SLAB_FREEPOINTER_MAY_OVERLAP?
+The patch adds a couple of spinloops.  Normally we put a cpu_relax() into
+such loops.  It can make a very large difference under some circumstances.
+
+
+> +	while (!del_timer(&dwork->timer) &&
+> +	       !try_to_grab_pending(&dwork->work))
+> +		;
 
