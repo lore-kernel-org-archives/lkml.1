@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031708AbXEDVhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031710AbXEDVhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031708AbXEDVhf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031711AbXEDVhf
+	id S1031710AbXEDVhm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031711AbXEDVhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:37:35 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57452 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031708AbXEDVhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:37:33 -0400
-Message-ID: <463BA772.9070203@redhat.com>
-Date: Fri, 04 May 2007 18:36:50 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-Organization: Red Hat Inc.
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, netdev@vger.kernel.org,
-       Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
-       James Bottomley <James.Bottomley@SteelEye.com>,
-       Mike Christie <michaelc@cs.wisc.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>
-Subject: Re: [PATCH 00/40] Swap over Networked storage -v12
-References: <20070504102651.923946304@chello.nl> <1178292179.7997.12.camel@imap.mvista.com>
-In-Reply-To: <1178292179.7997.12.camel@imap.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 4 May 2007 17:37:42 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:32328 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031710AbXEDVhl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 17:37:41 -0400
+Date: Fri, 4 May 2007 14:41:21 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: akpm <akpm@linux-foundation.org>
+Subject: [PATCH -mm] doc. fixes for readahead
+Message-Id: <20070504144121.22b20030.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> On Fri, 2007-05-04 at 12:26 +0200, Peter Zijlstra wrote:
->
->   
->> 1) introduce the memory reserve and make the SLAB allocator play nice with it.
->>    patches 01-10
->>
->> 2) add some needed infrastructure to the network code
->>    patches 11-13
->>
->> 3) implement the idea outlined above
->>    patches 14-20
->>
->> 4) teach the swap machinery to use generic address_spaces
->>    patches 21-24
->>
->> 5) implement swap over NFS using all the new stuff
->>    patches 25-31
->>
->> 6) implement swap over iSCSI
->>    patches 32-40
->>     
->
-> This is kind of a lot of patches all at once .. Have you release any of
-> these patch sets prior to this release ? 
->   
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Yes, several times AFAIK.
+Fix mm/readahead.c & filemap.c kernel-doc warnings (goes with readahead
+patch when it's submitted).
 
-- Arnaldo
+Warning(/tester/linsrc/linux-2621-rc7mm2//mm/readahead.c:1633): No description found for parameter 'mapping'
+Warning(/tester/linsrc/linux-2621-rc7mm2//mm/readahead.c:1633): No description found for parameter 'ra'
+Warning(/tester/linsrc/linux-2621-rc7mm2//mm/readahead.c:1633): No description found for parameter 'filp'
+Warning(/tester/linsrc/linux-2621-rc7mm2//mm/readahead.c:1633): No description found for parameter 'offset'
+Warning(/tester/linsrc/linux-2621-rc7mm2//mm/readahead.c:1633): No description found for parameter 'req_size'
+Warning(/tester/linsrc/linux-2621-rc7mm2//mm/filemap.c:1394): No description found for parameter 'vma'
+Warning(/tester/linsrc/linux-2621-rc7mm2//mm/filemap.c:1394): No description found for parameter 'fdata'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ mm/filemap.c   |    3 ++-
+ mm/readahead.c |    7 ++++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+--- linux-2621-rc7mm2.orig/mm/readahead.c
++++ linux-2621-rc7mm2/mm/readahead.c
+@@ -1610,8 +1610,13 @@ thrashing_recovery_readahead(struct addr
+ 
+ /**
+  * page_cache_readahead_adaptive - thrashing safe adaptive read-ahead
+- * @mapping, @ra, @filp, @offset, @req_size: the same as page_cache_readahead()
++ * @mapping: address_space which holds the pagecache and I/O vectors
++ * @ra: file_ra_state which holds the readahead state
++ * @filp: passed on to ->readpage() and ->readpages()
+  * @page: the page at @offset, or NULL if non-present
++ * @offset: start offset into @mapping, in PAGE_CACHE_SIZE units
++ * @req_size: hint: total size of the read which the caller is performing in
++ *            PAGE_CACHE_SIZE units
+  *
+  * page_cache_readahead_adaptive() is the entry point of the adaptive
+  * read-ahead logic. It tries a set of methods in turn to determine the
+--- linux-2621-rc7mm2.orig/mm/filemap.c
++++ linux-2621-rc7mm2/mm/filemap.c
+@@ -1381,7 +1381,8 @@ static int fastcall page_cache_read(stru
+ 
+ /**
+  * filemap_fault - read in file data for page fault handling
+- * @data:	the applicable fault_data
++ * @vma:	user vma (not used)
++ * @fdata:	the applicable fault_data
+  *
+  * filemap_fault() is invoked via the vma operations vector for a
+  * mapped memory region to read in file data during a page fault.
