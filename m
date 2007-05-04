@@ -1,75 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031562AbXEDWNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031713AbXEDWOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031562AbXEDWNu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 18:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031705AbXEDWNt
+	id S1031713AbXEDWOo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 18:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031705AbXEDWOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 18:13:49 -0400
-Received: from nwd2mail10.analog.com ([137.71.25.55]:14319 "EHLO
-	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031562AbXEDWNs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 18:13:48 -0400
-X-IronPort-AV: i="4.14,494,1170651600"; 
-   d="scan'208"; a="37476097:sNHT23559739"
-From: Robin Getz <rgetz@blackfin.uclinux.org>
-Organization: Blackfin uClinux org
-To: "Robert Schwebel" <r.schwebel@pengutronix.de>
-Subject: Re: Correct location for ADC/DAC drivers
-Date: Fri, 4 May 2007 18:16:01 -0400
-User-Agent: KMail/1.9.5
-Cc: "Stefan Roese" <ml@stefan-roese.de>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-References: <200705011435.45046.ml@stefan-roese.de> <200705041421.50830.rgetz@blackfin.uclinux.org> <20070504205213.GQ22585@pengutronix.de>
-In-Reply-To: <20070504205213.GQ22585@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+	Fri, 4 May 2007 18:14:43 -0400
+Received: from pat.uio.no ([129.240.10.15]:50702 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031713AbXEDWOm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 18:14:42 -0400
+Subject: Re: [GIT] NFS client updates for 2.6.22...
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, nfs@lists.sourceforge.net
+In-Reply-To: <1178219691.24217.20.camel@twins>
+References: <1178117571.5435.10.camel@heimdal.trondhjem.org>
+	 <1178219691.24217.20.camel@twins>
+Content-Type: text/plain
+Date: Fri, 04 May 2007 18:14:33 -0400
+Message-Id: <1178316873.6533.24.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705041816.01572.rgetz@blackfin.uclinux.org>
-X-OriginalArrivalTime: 04 May 2007 22:13:46.0974 (UTC) FILETIME=[7C4A67E0:01C78E99]
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.4, required=12.0, autolearn=disabled, AWL=-0.392)
+X-UiO-Scanned: AAACE5E1477B28C630B051C7EC6FC3FB67D39263
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -3 maxlevel 200 minaction 2 bait 0 mail/h: 253 total 1519046 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 4 May 2007 16:52, Robert Schwebel pondered:
-> Robin,
->
-> On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
-> > We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
-> > that would be nice to put in the "right" place  - I don't think that
-> > drivers/char is the right place, nor drivers/misc - I also don't think
-> > that /adc is a descriptive place for DAC or mixed signal front ends
-> > (MxFE).
->
-> What userspace interface do your drivers have?
+On Thu, 2007-05-03 at 21:14 +0200, Peter Zijlstra wrote:
+> On Wed, 2007-05-02 at 07:52 -0700, Trond Myklebust wrote:
+> > Hi Linus,
+> > 
+> > Please pull from the repository at
+> > 
+> >    git pull git://git.linux-nfs.org/pub/linux/nfs-2.6.git
+> 
+> I can confirm that this solves my missing IO completions problem; or at
+> least, my test has been running for 8h+ and still going strong, whereas
+> previous I would be lucky to get 1h.
+> 
+> Would it be reasonable to include the relevant patches in a
+> later .21-stable release?
+> 
 
-Right now, it is a little rudimentary char interface, it needs a little care 
-to be a bit more general purpose, but it suited needs of what the people who 
-were using it.
+Well... The read/write fixes turn out to be 7 patches, doing ~ 350
+insertions and 420 deletions. I dunno if that is really something the
+stable folks will want to take on...
 
-http://blackfin.uclinux.org/gf/project/linux-kernel/scmsvn/?view=markup&path=/trunk/drivers/char/ad9960.c
+Cheers
+  Trond
 
-> I don't think that there 
-> is anything generic available at the moment, other than COMEDI (which is
-> rather outdated as far as I know).
-
-I would be interested in having a detailed discussion/random thoughts on 
-this - what is the best way to expose these types of devices?
-
-I never actually used COMEDI, to understand the pro/cons of what it did.
-
-> > What about /drivers/char/daq or just drivers/daq - drivers for
-> > non-PCI/USB/ISA/PCMCIA Data Acquisition Hardware, D/A and A/D
-> > converters, Analog Front ends, etc.
->
-> I'd like drivers/daq better, because it doesn't have anything to do with
-> the bus it is connected to; a chipselect bus connectable ADC may be
-> connected to a SoC CS-bus or to a PCI bridge and you want to use the
-> same driver for it.
-
-That makes sense - I have seen more and more parts with selectable interfaces 
-(I2C or SPI), and you should be able to use the same base driver, independent 
-of the bus - so drivers/daq would suite me fine. 
-
--Robin
