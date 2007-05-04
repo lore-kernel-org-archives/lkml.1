@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031433AbXEDRoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031443AbXEDRpH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031433AbXEDRoo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031435AbXEDRon
+	id S1031443AbXEDRpH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:45:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031455AbXEDRpG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:44:43 -0400
-Received: from [198.99.130.12] ([198.99.130.12]:51065 "EHLO
-	saraswathi.solana.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1031433AbXEDRom (ORCPT
+	Fri, 4 May 2007 13:45:06 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:33839 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031447AbXEDRo5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:44:42 -0400
-Date: Fri, 4 May 2007 13:39:58 -0400
-From: Jeff Dike <jdike@addtoit.com>
-To: Andrew Morton <akpm@osdl.org>
-Cc: caker@linode.com, LKML <linux-kernel@vger.kernel.org>,
-       uml-devel <user-mode-linux-devel@lists.sourceforge.net>
-Subject: [PATCH 3/3] UML - An idle system should have zero load average
-Message-ID: <20070504173958.GA7948@c2.user-mode-linux.org>
-Mime-Version: 1.0
+	Fri, 4 May 2007 13:44:57 -0400
+Date: Fri, 4 May 2007 13:44:56 -0400
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Strange soft lockup detected message (looks like spin_lock bug in pcnet32)
+Message-ID: <20070504174456.GC8753@csclub.uwaterloo.ca>
+References: <20070503203143.GA8753@csclub.uwaterloo.ca> <20070504141024.GB8753@csclub.uwaterloo.ca> <20070504143326.GD24769@slug> <20070504151934.GA8754@csclub.uwaterloo.ca> <20070504153438.GE24769@slug> <20070504154009.GE8751@csclub.uwaterloo.ca>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20070504154009.GE8751@csclub.uwaterloo.ca>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ever-vigilant users of linode.com noticed that an idle 2.6 UML has
-a persistent load average of ~.4.
+On Fri, May 04, 2007 at 11:40:09AM -0400, Lennart Sorensen wrote:
+> On Fri, May 04, 2007 at 05:34:38PM +0200, Frederik Deweerdt wrote:
+> > For the "what" part, see Documentation/lockdep-design.txt. You'll enable
+> > it by with SPINLOCK_DEBUG, indeed.
+> 
+> Well I hope to see it hit the BUG again soon then to see what it has to
+> say.
 
-It turns out that because the UML timer handler processed softirqs
-before actually delivering the tick, the tick was counted in the
-context of the idle thread about half the time.
+Well I didn't see anything for a while with SPINLOCK_DEBUG enabled
+(maybe I didn't wait long enough).  So I tried changing it to
+spin_lock_irqsave, and that didn't go well.  I got this as the result
+now:
 
-Signed-off-by: Jeff Dike <jdike@linux.intel.com>
+onfiguring network interfaces...eth1: link up, 100Mbps, full-duplex
+BUG: spinlock recursion on CPU#0, ifconfig/962
+ lock: cf7a3304, .magic: dead4ead, .owner: ifconfig/962, .owner_cpu: 0
+ [<c0104024>] dump_stack+0x24/0x30
+ [<c01e3947>] _raw_spin_lock+0x137/0x140
+ [<c02981ec>] _spin_lock_irqsave+0x1c/0x30
+ [<d084eb86>] pcnet32_interrupt+0x216/0x290 [pcnet32]
+ [<c013b95d>] handle_IRQ_event+0x3d/0x70
+ [<c013ba2c>] __do_IRQ+0x9c/0x120
+ [<c0105025>] do_IRQ+0x25/0x60
+ [<c010316a>] common_interrupt+0x1a/0x20
+ [<c011927a>] __do_softirq+0x3a/0xa0
+ [<c011930d>] do_softirq+0x2d/0x30
+ [<c0119557>] irq_exit+0x37/0x40
+ [<c010502a>] do_IRQ+0x2a/0x60
+ [<c010316a>] common_interrupt+0x1a/0x20
+ [<c02983c0>] _spin_unlock_irqrestore+0x10/0x40
+ [<d08517ea>] pcnet32_open+0x27a/0x390 [pcnet32]
+ [<c02343e9>] dev_open+0x39/0x80
+ [<c0232b5a>] dev_change_flags+0xfa/0x130
+ [<c0277b7f>] devinet_ioctl+0x4ff/0x6f0
+ [<c0227b24>] sock_ioctl+0xf4/0x1f0
+ [<c017027c>] do_ioctl+0x2c/0x80
+ [<c0170322>] vfs_ioctl+0x52/0x2f0
+ [<c017062f>] sys_ioctl+0x6f/0x80
+ [<c0102f27>] syscall_call+0x7/0xb
+ [<b7eebd04>] 0xb7eebd04
+BUG: spinlock lockup on CPU#0, ifconfig/962, cf7a3304
+ [<c0104024>] dump_stack+0x24/0x30
+ [<c01e391f>] _raw_spin_lock+0x10f/0x140
+ [<c02981ec>] _spin_lock_irqsave+0x1c/0x30
+ [<d084eb86>] pcnet32_interrupt+0x216/0x290 [pcnet32]
+ [<c013b95d>] handle_IRQ_event+0x3d/0x70
+ [<c013ba2c>] __do_IRQ+0x9c/0x120
+ [<c0105025>] do_IRQ+0x25/0x60
+ [<c010316a>] common_interrupt+0x1a/0x20
+ [<c011927a>] __do_softirq+0x3a/0xa0
+ [<c011930d>] do_softirq+0x2d/0x30
+ [<c0119557>] irq_exit+0x37/0x40
+ [<c010502a>] do_IRQ+0x2a/0x60
+ [<c010316a>] common_interrupt+0x1a/0x20
+ [<c02983c0>] _spin_unlock_irqrestore+0x10/0x40
+ [<d08517ea>] pcnet32_open+0x27a/0x390 [pcnet32]
+ [<c02343e9>] dev_open+0x39/0x80
+ [<c0232b5a>] dev_change_flags+0xfa/0x130
+ [<c0277b7f>] devinet_ioctl+0x4ff/0x6f0
+ [<c0227b24>] sock_ioctl+0xf4/0x1f0
+ [<c017027c>] do_ioctl+0x2c/0x80
+ [<c0170322>] vfs_ioctl+0x52/0x2f0
+ [<c017062f>] sys_ioctl+0x6f/0x80
+ [<c0102f27>] syscall_call+0x7/0xb
+ [<b7eebd04>] 0xb7eebd04
+
+Obviously that wasn't so good.
+
 --
- arch/um/kernel/time.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.21-mm/arch/um/kernel/time.c
-===================================================================
---- linux-2.6.21-mm.orig/arch/um/kernel/time.c	2007-05-04 12:40:52.000000000 -0400
-+++ linux-2.6.21-mm/arch/um/kernel/time.c	2007-05-04 13:13:39.000000000 -0400
-@@ -177,6 +177,8 @@ int do_settimeofday(struct timespec *tv)
- 
- void timer_handler(int sig, union uml_pt_regs *regs)
- {
-+	if(current_thread->cpu == 0)
-+		timer_irq(regs);
- 	local_irq_disable();
- 	irq_enter();
- 	update_process_times(CHOOSE_MODE(
-@@ -184,6 +186,4 @@ void timer_handler(int sig, union uml_pt
- 			     (regs)->skas.is_user));
- 	irq_exit();
- 	local_irq_enable();
--	if(current_thread->cpu == 0)
--		timer_irq(regs);
- }
+Len Sorensen
