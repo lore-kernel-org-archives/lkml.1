@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161876AbXEDGIK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754170AbXEDGLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161876AbXEDGIK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 02:08:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161868AbXEDGIK
+	id S1754170AbXEDGLT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 02:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754137AbXEDGLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 02:08:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53879 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932231AbXEDGIG (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 02:08:06 -0400
-Date: Fri, 4 May 2007 16:07:31 +1000
-From: David Chinner <dgc@sgi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070504060731.GJ32602149@melbourne.sgi.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070503212955.b1b6443c.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 4 May 2007 02:11:19 -0400
+Received: from mo-p00-ob.rzone.de ([81.169.146.161]:51630 "EHLO
+	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754170AbXEDGLS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 02:11:18 -0400
+From: Stefan Roese <ml@stefan-roese.de>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Subject: Re: Correct location for ADC/DAC drivers
+Date: Fri, 4 May 2007 08:11:42 +0200
+User-Agent: KMail/1.9.5
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+References: <200705011435.45046.ml@stefan-roese.de> <20070502133512.GK22585@pengutronix.de> <20070502191101.GB16696@flint.arm.linux.org.uk>
+In-Reply-To: <20070502191101.GB16696@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070503212955.b1b6443c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200705040811.43312.ml@stefan-roese.de>
+X-RZG-AUTH: j/Xgg0n2J5AIUJCkqLmy+bJbs1jMc+ebRMH8X0gX2f46QMnUI4cTITA7kWi4b/tFeJ1A
+X-RZG-CLASS-ID: mo00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 09:29:55PM -0700, Andrew Morton wrote:
-> On Thu, 26 Apr 2007 23:33:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
-> 
-> > This patch implements the fallocate() system call and adds support for
-> > i386, x86_64 and powerpc.
-> > 
-> > ...
-> > +{
-> > +	struct file *file;
-> > +	struct inode *inode;
-> > +	long ret = -EINVAL;
-> > +
-> > +	if (len == 0 || offset < 0)
-> > +		goto out;
-> 
-> The posix spec implies that negative `len' is permitted - presumably "allocate
-> ahead of `offset'".  How peculiar.
+On Wednesday 02 May 2007 21:11, Russell King wrote:
+> > > Is there a maintainer for this "drivers/mfd" directory?
+> >
+> > rmk
+>
+> I wouldn't go that far.  There's no real infrastructure there
+> to maintain, so I'd actually say that the directory was
+> maintainerless.  However, I'll own up to the UCB/MCP drivers
+> in there.
 
-I just checked the man page for posix_fallocate() and it says:
+So perhaps you could answer is you feel that these ADC & DAC chrdev device 
+drivers would fit into this drivers/mfd directory, or are better suited for 
+the drivers/char directory?
 
-      EINVAL  offset or len was less than zero.
+Thanks.
 
-We should probably follow this lead.
-
-> > +
-> > +	ret = -ENODEV;
-> > +	if (!S_ISREG(inode->i_mode))
-> > +		goto out_fput;
-> 
-> So we return ENODEV against an S_ISBLK fd, as per the posix spec.  That
-> seems a bit silly of them.
-
-Hmmmm - I thought that the intention of sys_fallocate() was to
-be generic enough to eventually allow preallocation on directories.
-If that is the case, then this check will prevent that....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Best regards,
+Stefan
