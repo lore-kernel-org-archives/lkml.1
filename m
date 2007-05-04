@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767747AbXEDIxk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933036AbXEDIza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767747AbXEDIxk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:53:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767749AbXEDIxk
+	id S933036AbXEDIza (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933030AbXEDIza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:53:40 -0400
-Received: from mo-p00-ob.rzone.de ([81.169.146.161]:45851 "EHLO
-	mo-p00-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767747AbXEDIxj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:53:39 -0400
-From: Stefan Roese <ml@stefan-roese.de>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Subject: Re: Correct location for ADC/DAC drivers
-Date: Fri, 4 May 2007 10:54:05 +0200
-User-Agent: KMail/1.9.5
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-References: <200705011435.45046.ml@stefan-roese.de> <20070504082434.GA22585@pengutronix.de>
-In-Reply-To: <20070504082434.GA22585@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Fri, 4 May 2007 04:55:30 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:55619 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933036AbXEDIz2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 04:55:28 -0400
+Date: Fri, 4 May 2007 10:55:26 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: "Julio M. Merino Vidal" <jmerino@ac.upc.edu>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: Per-CPU data as a structure
+Message-Id: <20070504105526.e5ea950b.dada1@cosmosbay.com>
+In-Reply-To: <463AF095.30406@ac.upc.edu>
+References: <16C35E62-A26F-49FC-9CD8-7BADFCD97BA5@ac.upc.edu>
+	<p73ps5hx1t2.fsf@bingen.suse.de>
+	<463AF095.30406@ac.upc.edu>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705041054.05650.ml@stefan-roese.de>
-X-RZG-AUTH: j/Xgg0n2J5AIUJCkqLmy+bJbs1jMc+ebRMH8X0gX2f46QMnUI4cTITA7kWi4b/tFeJ1A
-X-RZG-CLASS-ID: mo00
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 04 May 2007 10:24, Robert Schwebel wrote:
-> On Tue, May 01, 2007 at 02:35:44PM +0200, Stefan Roese wrote:
-> > I'm in the stage of integrating some ADC and DAC drivers for the AMCC
-> > 405EZ PPC and looking for the correct location to place these drivers
-> > in the Linux source tree. The drivers are basically character-drivers,
-> > so my first thought is to put them in "drivers/char/adc/foo.c" or
-> > "drivers/char/adc_foo.c". Is this a good solution?
-> >
-> > Any suggestions welcome (could be that I missed an already existing
-> > example).
-> >
-> > BTW: I am aware of the hwmon subsystem, but I don't think it fits my
-> > needs in this case.
->
-> Could you elaborate the requirements a bit more? ADC is not ADC, because
-> slow i2c ADCs which measure a temperature every five minutes have other
-> requirements than multi-megabyte-per-second-dma-driven ADCs.
+On Fri, 04 May 2007 10:36:37 +0200
+"Julio M. Merino Vidal" <jmerino@ac.upc.edu> wrote:
 
-The hardware (PPC405EZ) actually implements an high speed, dma capable, ADC 
-controller with 10-bit resolution and up to 4MHz sample rate. The current 
-driver doesn't support all these features though (dma is not supported right 
-now for example). Could be that this will be added in future releases. It 
-would be good though, to have the driver located at the "correct" place in 
-the kernel tree right away.
 
-Best regards,
-Stefan
+> 
+> Anyway, what do you think about adding the above text to the code (percpu.h
+> maybe) as documentation?  See the patch below.  (Dunno if the Signed-off-by
+> line is appropriate as most of the text is yours.)
+> 
+> Signed-off-by: Julio M. Merino Vidal <jmerino@ac.upc.edu>
+> 
+> diff --git a/include/linux/percpu.h b/include/linux/percpu.h
+> index 600e3d3..b8e8b8c 100644
+> --- a/include/linux/percpu.h
+> +++ b/include/linux/percpu.h
+> @@ -1,6 +1,21 @@
+>  #ifndef __LINUX_PERCPU_H
+>  #define __LINUX_PERCPU_H
+>  
+> +/*
+> + * percpu provides a mechanism to define variables that are specific to 
+> each
+> + * CPU in the system.
+> + *
+> + * Each variable is defined as an independent array of NR_CPUS elements.
+> + * This approach is used instead of a per-CPU structure because it has the
+> + * following advantages:
+> + * - Independent maintenance: a source file can define new per-CPU
+> + *   variables without distorting others.
+> + * - Fast access and relatively compact code.
+> + * - Avoids false sharing by keeping cache lines of different CPUs 
+> separate.
+> + * - Doesn't waste a lot of memory in padding like NR_CPUs arrays usually
+> + *   need to to avoid the previous point.
+> + */
+> +
+>  #include <linux/spinlock.h> /* For preempt_disable() */
+>  #include <linux/slab.h> /* For kmalloc() */
+>  #include <linux/smp.h>
+
+Documentation is good, and percpu probably misses one, but please add it in a Documentation/percpu.txt file, because it's the right place.
+
+You then can really have an extensive documentation, and you wont slow down kernel compiles...
+
+I suggest you document all variants (get_cpu_var(), __get_cpu_var(), ...) with examples of use
+
+Also, please note that per cpu data is not allocated * NR_CPUS, but depends on possible cpus. So if you boot an SMP kernel on a one CPU desktop, kernel allocates only the needed space.
+
+So per_cpu data has also a space saving argument against structures declared with [NR_CPUS] arrays.
+
+Thank you
+
