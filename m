@@ -1,51 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031432AbXEDRgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031401AbXEDRht@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031432AbXEDRgN (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031433AbXEDRgN
+	id S1031401AbXEDRht (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:37:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031402AbXEDRht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:36:13 -0400
-Received: from outbound-mail-45.bluehost.com ([69.89.18.14]:41150 "HELO
-	outbound-mail-45.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1031432AbXEDRgM (ORCPT
+	Fri, 4 May 2007 13:37:49 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:50414 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031401AbXEDRhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:36:12 -0400
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Christoph Lameter <clameter@sgi.com>
-Subject: Re: [PATCH] change global zonelist order v4 [0/2]
-Date: Fri, 4 May 2007 10:36:01 -0700
-User-Agent: KMail/1.9.6
-Cc: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+	Fri, 4 May 2007 13:37:47 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>, Zachary Amsden <zach@vmware.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>
-References: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com> <1178299460.5236.35.camel@localhost> <Pine.LNX.4.64.0705041027030.22643@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0705041027030.22643@schroedinger.engr.sgi.com>
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 3/3] boot bzImages under paravirt
+References: <1178283582.23670.67.camel@localhost.localdomain>
+	<1178283724.23670.70.camel@localhost.localdomain>
+	<1178284052.23670.75.camel@localhost.localdomain>
+	<m1ps5gslfm.fsf@ebiederm.dsl.xmission.com> <463B4E12.50703@goop.org>
+	<m1r6pwr0yy.fsf@ebiederm.dsl.xmission.com> <463B6C8A.9080206@goop.org>
+Date: Fri, 04 May 2007 11:36:37 -0600
+In-Reply-To: <463B6C8A.9080206@goop.org> (Jeremy Fitzhardinge's message of
+	"Fri, 04 May 2007 10:25:30 -0700")
+Message-ID: <m11whwqymy.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705041036.01904.jbarnes@virtuousgeek.org>
-X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 67.161.73.10 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, May 04, 2007, Christoph Lameter wrote:
-> On Fri, 4 May 2007, Lee Schermerhorn wrote:
-> > Hmmm...  "serious hackery", indeed!  ;-)
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
+
+> Eric W. Biederman wrote:
+>> Hmm. If we made that:
+>> 	mov	%cs, %eax
+>> 	add	$0x10, %eax
+>> 	mov	%eax, %ds
+>>
+>> That is likely even backwards compatible.  If you don't mind having a fixed
+>> offset between the code and the data segments.  As I recall code and data
+>> are not interchangeable.
+>>   
 >
-> Maybe on the arch level but minimal changes to core code.
-> And it is a step towards avoiding zones in NUMA.
+> Yes, that's just bogus thinko on my part.
+>
+>> I'm trying to remember the reason for the reloads.
+>>
+>> As I recall loadlin intercepts code32_start from head.S and so it
+>> can do things just after we have switched to protected mode.  Because
+>> historically we didn't load the segments before this jump loadlin had
+>> to do it.  The code of loadlin appears to reload all of the segments
+>> just like head.S does and then not touch them.
+>>
+>> My two bootloaders that enter the kernel at the 32bit entry point already
+>> load the segments as well.
+>>
+>> Gujin looks like it loads just %es and %ds.
+>>   
+>
+> We should be able to make do with that until we've got our own gdt.
 
-You mentioned that if node 0 has a small ZONE_NORMAL and the ZONE_DMA for 
-the system, defaulting to using ZONE_NORMAL on all nodes first would be a 
-bad idea.  Is that really true?  Maybe for ZONE_DMA32 it is since that 
-first node could have a few gigs of memory, but for regular ZONE_DMA it's 
-probably the right thing to do...
+Right after the segments loads we have:
+	leal 0x40(%esi), %esp
+	call 1f
+1:	popl %ebp
+	subl $1b, %ebp
 
-So aside from the comment issues Lee already pointed out, I think 
-Kamezawa-san's patch from 
-http://marc.info/?l=linux-mm&m=117758484122663&w=4 seems reasonable.
+That uses %ss and %ds.  Can we use a segment override on a call
+instruction?
 
-Jesse
+>> It is hard to tell with elilo what it sets up, it preserves the
+>> descriptors from EFI, but sets up a linux boot protocol gdt.
+>>   
+>
+> ? But the cached descriptors are still the EFI ones?
+
+Yep.  Which means we can reload with our know good linux descriptors
+but we can't reload the descriptors we are currently running with. 
+
+>> At the same time we are doing this it would be good to drop our
+>> boot protocol version into an ELF note so people booting vmlinux
+>> can discover when we have relaxed various restrictions and which
+>> fields in the real mode data we support.
+>>   
+>
+> Do you mean the have the kernel expose its max supported version for
+> bootloaders to inspect?
+
+Yes.  Exactly like we do for real mode code, and with exactly the same
+values.  Just in a little different format.
+
+Eric
