@@ -1,72 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161619AbXEDSqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161623AbXEDSq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161619AbXEDSqa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161610AbXEDSq3
+	id S1161623AbXEDSq6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161618AbXEDSq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:46:29 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:17499 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161619AbXEDSq2 (ORCPT
+	Fri, 4 May 2007 14:46:58 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34932 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161610AbXEDSq4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:46:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HzvGE0UoezMY+gWtV6JUpN4kwNT2XrLoGBc7WhufcS4AwZeqM574pVK8qNOeekV3Xtp/wSDRUK05BteGx2tO/g3BM/ASZuUVoIVE09Tq0EmeLwvjOa3eGpsYqDK3ijLPdgJSPY4/FWEF04OwD2CpX7t+FLf29XPLxPQMzDum6vI=
-Message-ID: <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
-Date: Fri, 4 May 2007 20:46:27 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Paul Fulghum" <paulkf@microgate.com>
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1178300493.3619.1.camel@amdx2.microgate.com>
+	Fri, 4 May 2007 14:46:56 -0400
+Date: Fri, 4 May 2007 11:46:54 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>
+Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
+In-Reply-To: <463B7E5C.8030201@cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0705041142350.24625@schroedinger.engr.sgi.com>
+References: <20070504102651.923946304@chello.nl>  <20070504103157.215424767@chello.nl>
+  <Pine.LNX.4.64.0705040932200.22033@schroedinger.engr.sgi.com> 
+ <1178301545.24217.56.camel@twins>  <Pine.LNX.4.64.0705041104110.23539@schroedinger.engr.sgi.com>
+ <1178302904.2767.6.camel@lappy> <Pine.LNX.4.64.0705041128270.24283@schroedinger.engr.sgi.com>
+ <463B7E5C.8030201@cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <463B4988.9090005@microgate.com>
-	 <1178290160.3913.2.camel@amdx2.microgate.com>
-	 <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
-	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
-	 <463B7534.6000207@microgate.com>
-	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
-	 <1178299247.3769.0.camel@amdx2.microgate.com>
-	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
-	 <1178300493.3619.1.camel@amdx2.microgate.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/4/07, Paul Fulghum <paulkf@microgate.com> wrote:
-> On Fri, 2007-05-04 at 19:25 +0200, Antonino Ingargiola wrote:
->
-> > No. Ehmm ... I've an usb keybord and vga monitor on a standard desktop pc.
->
-> OK, I'm stumped.
->
-> I don't see how my patch could cause the machine to not boot
-> and I'm not seeing that behavior here.
+On Fri, 4 May 2007, Pekka Enberg wrote:
 
-I can boot it hitting SysReq+K, but only in text mode. X start but I
-can't do login (the mouse moves but I cant enter username and
-password). Furthermore if I hit some key in GDM I can't switch to text
-console anymore. If I switch to text-mode after boot all seems to
-work. Maybe this is related to some important process I kill with the
-SysReq key.
+> > which would calculate the worst case memory scenario for allocation the
+> > number of indicated objects?
+> 
+> IIRC this looks more or less what Peter had initially. I don't like the API
+> because there's no way for slab (perhaps this is different for slub) how many
+> pages you really need due to per-node and per-cpu caches, etc.
 
-I'm quite confident the system blocks on "Setting consoles fonts and
-modes.", and thus during the boot script console-screen.h. I'll try to
-see which commands blocks...
+SLAB can calculate exactly how many pages are needed. The per 
+cpu and per node stuff is setup at boot and does not change. We are 
+talking about the worst case scenario here. True in case of an off slab
+we have additional overhead that would also have to go into worst case 
+scenario.
 
-BTW, I've tried the serial port in text mode. With the patch, flushing
-the input results effectively in a complete flush. However after doing
-the flush I can't read any char anymore without closing and reopening
-the port. I've verified this behavior both communicating between two
-serial port and both communicating with an usb-serial device (driver
-cdc-acm).
+> It's better that the slab tells you what it actually knows and lets the
+> callers figure out what a worst-case upper bound is.
 
-Regards,
+They do not have the data. For that they would need to know how to deal 
+with alignments, (in case of SLAB) the location of the struct slab, the 
+distinction between the differrent sizes, padding etc. I think this has to 
+be done by the allocator. If we ever have another allocator with another 
+structure then this will nicely isolate that functionality. Otherwise we 
+may have to change the callers depending on how the slab organizes its 
+data.
 
-  ~ Antonio
+SLUB organizes its data more effectively so SLUB will return a lower 
+number than SLAB f.e.
