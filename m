@@ -1,98 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422722AbXEDG2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767611AbXEDGe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422722AbXEDG2g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 02:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423609AbXEDG2f
+	id S1767611AbXEDGe6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 02:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767678AbXEDGe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 02:28:35 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:60358 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1422709AbXEDG2d (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 02:28:33 -0400
-Date: Thu, 3 May 2007 23:28:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Chinner <dgc@sgi.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and
- powerpc
-Message-Id: <20070503232815.2f62a75e.akpm@linux-foundation.org>
-In-Reply-To: <20070504060731.GJ32602149@melbourne.sgi.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
-	<20070330071417.GI355@devserv.devel.redhat.com>
-	<20070417125514.GA7574@amitarora.in.ibm.com>
-	<20070418130600.GW5967@schatzie.adilger.int>
-	<20070420135146.GA21352@amitarora.in.ibm.com>
-	<20070420145918.GY355@devserv.devel.redhat.com>
-	<20070424121632.GA10136@amitarora.in.ibm.com>
-	<20070426175056.GA25321@amitarora.in.ibm.com>
-	<20070426180332.GA7209@amitarora.in.ibm.com>
-	<20070503212955.b1b6443c.akpm@linux-foundation.org>
-	<20070504060731.GJ32602149@melbourne.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 May 2007 02:34:57 -0400
+Received: from holomorphy.com ([66.93.40.71]:39300 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767611AbXEDGe5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 02:34:57 -0400
+Date: Thu, 3 May 2007 23:35:34 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: Remove constructor from buffer_head
+Message-ID: <20070504063534.GX19966@holomorphy.com>
+References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007 16:07:31 +1000 David Chinner <dgc@sgi.com> wrote:
+On Thu, May 03, 2007 at 08:08:41PM -0700, Christoph Lameter wrote:
+> Performance tests show a slight improvements in netperf (not a
+> strong case for a performance improvement but removing the
+> constructor has definitely no negative impact so why keep
+> this around?).
 
-> On Thu, May 03, 2007 at 09:29:55PM -0700, Andrew Morton wrote:
-> > On Thu, 26 Apr 2007 23:33:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
-> > 
-> > > This patch implements the fallocate() system call and adds support for
-> > > i386, x86_64 and powerpc.
-> > > 
-> > > ...
-> > > +{
-> > > +	struct file *file;
-> > > +	struct inode *inode;
-> > > +	long ret = -EINVAL;
-> > > +
-> > > +	if (len == 0 || offset < 0)
-> > > +		goto out;
-> > 
-> > The posix spec implies that negative `len' is permitted - presumably "allocate
-> > ahead of `offset'".  How peculiar.
-> 
-> I just checked the man page for posix_fallocate() and it says:
-> 
->       EINVAL  offset or len was less than zero.
-> 
-> We should probably follow this lead.
+Cache effects are not so easily visible. Cache profile results from
+more realistic workloads (e.g. major macrobenchmarks) are more
+appropriate for gauging this.
 
-Yes, I think so.  I'm suspecting that
-http://www.opengroup.org/onlinepubs/009695399/functions/posix_fallocate.html
-is just buggy.  Or I can't read.
 
-I mean, if we're going to support negative `len' then is the byte at
-`offset' inside or outside the segment?  Head spins.
-
-However it would be neat if someone could test $OTHER_OS and, perhaps more
-importantly, the present glibc emulation (which I assume your manpage is
-referring to, so this would be a manpage test ;)).
-
-> > > +
-> > > +	ret = -ENODEV;
-> > > +	if (!S_ISREG(inode->i_mode))
-> > > +		goto out_fput;
-> > 
-> > So we return ENODEV against an S_ISBLK fd, as per the posix spec.  That
-> > seems a bit silly of them.
-> 
-> Hmmmm - I thought that the intention of sys_fallocate() was to
-> be generic enough to eventually allow preallocation on directories.
-> If that is the case, then this check will prevent that....
-
-The above opengroup page only permits S_ISREG.  Preallocating directories
-sounds quite useful to me, although it's something which would be pretty
-hard to emulate if the FS doesn't support it.  And there's a decent case to
-be made for emulating it - run-anywhere reasons.  Does glibc emulation support
-directories?  Quite unlikely.
-
-But yes, sounds like a desirable thing.  Would XFS support it easily if the above
-check was relaxed?
+-- wli
