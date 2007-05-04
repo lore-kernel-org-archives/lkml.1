@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767680AbXEDFac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161826AbXEDFf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767680AbXEDFac (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 01:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767692AbXEDFac
+	id S1161826AbXEDFf3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 01:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161856AbXEDFf3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 01:30:32 -0400
-Received: from 1wt.eu ([62.212.114.60]:2486 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767680AbXEDFab (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 01:30:31 -0400
-Date: Fri, 4 May 2007 07:30:27 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: =?iso-8859-1?Q?=D8yvind_V=E5gen_J=E6gtnes?= <lorrides@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Routing 600+ vlan's via linux problems (looks like arp problems)
-Message-ID: <20070504053027.GA32604@1wt.eu>
-References: <d20c3b7d0705031325r13834382r38ea31f26965c50@mail.gmail.com> <20070503205341.GB943@1wt.eu> <Pine.LNX.4.61.0705032255080.18504@yvahk01.tjqt.qr> <d20c3b7d0705031412y11f18288t321c097aaad4b38b@mail.gmail.com> <20070503222334.GD943@1wt.eu> <d20c3b7d0705032048l8c10d11i98a13881b1c8b3f3@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Fri, 4 May 2007 01:35:29 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:14001 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161826AbXEDFf1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 01:35:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:to:cc:subject:message-id:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:from;
+        b=GrAUIdc0P2sjf4de5CR0YKqitKhBFivr1ov3rSioC1SISQW2xnGlIfNYv2EMdRkrqskeVceDLSXUNOTUa7JW8dMDgVxZDZqbfZ+VGmhkQfGcHn/JRwEwe+cBq3rWssDIiStVHCJdhkkWPE+klRT8gaqgSP613sz5lHnBbKAe1kw=
+Date: Fri, 4 May 2007 01:35:30 -0400
+To: William Lee Irwin III <wli@holomorphy.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Christoph Hellwig <hch@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, David Chinner <dgc@sgi.com>,
+       Zan Lynx <zlynx@acm.org>, Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [2/6] add config option to vmalloc stacks (was: Re: [-mm patch] i386: enable 4k stacks by default)
+Message-ID: <20070504053529.GA3245@nineveh.rivenstone.net>
+Mail-Followup-To: William Lee Irwin III <wli@holomorphy.com>,
+	Andi Kleen <andi@firstfloor.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, David Chinner <dgc@sgi.com>,
+	Zan Lynx <zlynx@acm.org>, Adrian Bunk <bunk@stusta.de>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070428191927.GN3468@stusta.de> <1177795118.7828.6.camel@localhost> <20070430035838.GC77450368@melbourne.sgi.com> <20070430091754.24df88df@the-village.bc.nu> <p73wszuyx7h.fsf@bingen.suse.de> <20070430104806.GA14944@infradead.org> <p73slaiys9v.fsf@bingen.suse.de> <20070430173819.GC19966@holomorphy.com> <20070430174310.GE19966@holomorphy.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d20c3b7d0705032048l8c10d11i98a13881b1c8b3f3@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070430174310.GE19966@holomorphy.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: jfannin@gmail.com (Joseph Fannin)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 05:48:18AM +0200, Øyvind Vågen Jægtnes wrote:
-> Hi again :)
-> 
-> On 5/4/07, Willy Tarreau <w@1wt.eu> wrote:
-> >On Thu, May 03, 2007 at 11:12:09PM +0200, Øyvind Vågen Jægtnes wrote:
-> >> On 5/3/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> >> >
-> >> >On May 3 2007 22:53, Willy Tarreau wrote:
-> >> >>> For the rest all we see in the arp cache is (incomplete)
-> >> >>
-> >> >>I suspect that your arp cache is full (128 entries by default).
-> >> >>Check /proc/sys/net/ipv4/neigh/gc_thresh1 (128 for me). You can
-> >> >>set it as high as gc_thresh2 (512 for me), and I don't know what
-> >> >>happens above.
-> >> >
-> >> >Above, you will perhaps need the not-so-elegant userspace arpd :-/
-> >>
-> >> Yes, i was suspecting that the arp cache got full, but i will try
-> >> increasing it :)
-> >> Would there be any huge bugs if i change these lines in arp.c:
-> >>
-> >>        .gc_thresh1 =   128,
-> >>        .gc_thresh2 =   512,
-> >>
-> >> to
-> >>
-> >>        .gc_thresh1 =   700,
-> >>        .gc_thresh2 =   700,
-> >>
-> >> under the definition for struct arp_tbl?
-> >
-> >I don't think it could cause a problem, but network people will surely
-> >correct me if I'm wrong.
-> 
-> System is up and running perfectly now, it is routing everything at
-> about 200 mbps now with only 5% load avg with the above changes to
-> arp.c
-> 
-> So the real question now is, why is this number so low by default?
-> It would probably be much better if this could be handled dynamically
-> in the kernel.
+On Mon, Apr 30, 2007 at 10:43:10AM -0700, William Lee Irwin III wrote:
 
-I remember I read an argument against this a long time ago, but I
-don't remember where. I think it was some arbitrary decision that
-people using more than X ARP entries will need arpd. Most probably
-the code path in the ARP updates is/was not much optimized to handle
-large number of entries. Think about cable operators who may have
-10-20000 entries !
+> +	  Allocates the stack physically discontiguously and from high
+> +	  memory. Furthermore an unmapped guard page follows the stack.
+> +	  This is not for end-users. It's intended to trigger fatal
+> +	  system errors under various forms of stack abuse.
 
-> Its a Juniper M7i
-> It comes default with a 5400 rpm laptop 2.5" harddrive but now we
-> bought a more robust "server" 2.5" harddrive.
+    Why is this not for end-users?  Will it not trigger anything
+useful unless set up properly, or is a big performace hit -- and how,
+or what?
 
-The "server" ones are not necessarily more robust, often they are faster.
+    All the kernel debug options are underdocumented this way -- I'd
+like to have as many of them on as I can without absolutely killing
+performance, (or rather, *you* would) -- but I can never tell without
+grovelling all over for the info, which... well, I haven't done it
+yet, anyway.
 
-> It still barfs on the OS
-> install, so the linux is doing all the job now. Will get a juniper guy
-> to come and fix :)
-> 
-> As a side note, i'm starting to wonder if it was worth the $20k when i
-> could just have a linux machine to do the job with a clone for backup
-> ;)
+    "End-user" is just insufficently defined for anyone compiling
+their own kernel.  Could you add a bit more text here describing what
+the effect of physically discontiguous high-memory stacks is?  An
+additional frobnitz dereference on every badda-bing badda-bang, likely
+to double the time it takes to dance the hokey pokey?
 
-That's often how linux penetrates the enterprise ;-)
+   *shrug*  Some of those debug options probably don't get set very
+often on kernels that are run for more than to see if it boots.
 
-Willy
-
+--
+Joseph Fannin
+jfannin@gmail.com
