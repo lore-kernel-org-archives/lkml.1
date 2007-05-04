@@ -1,58 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755182AbXEDN2J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbXEDNbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755182AbXEDN2J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 09:28:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbXEDN2J
+	id S1755218AbXEDNbk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 09:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbXEDNbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 09:28:09 -0400
-Received: from smtpout.mac.com ([17.250.248.177]:59580 "EHLO smtpout.mac.com"
+	Fri, 4 May 2007 09:31:39 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:38825 "EHLO mail4.iitk.ac.in"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755182AbXEDN2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 09:28:08 -0400
-In-Reply-To: <463AE623.60501@dgreaves.com>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <1177654110.4737.91.camel@nigel.suspend2.net> <Pine.LNX.4.64.0704270910190.18521@sbz-30.cs.Helsinki.FI> <200704272324.43359.rjw@sisk.pl> <alpine.LFD.0.98.0704271442160.9964@woody.linux-foundation.org> <1177711666.4737.176.camel@nigel.suspend2.net> <35EFC5BA-D16B-41BE-A641-AEA8CCC9E0BE@mac.com> <20070503151047.GB3866@ucw.cz> <E92E80B1-2D3F-4942-A17B-AED903F535C6@mac.com> <463AE623.60501@dgreaves.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <58479992-BA7D-4CE6-B03A-A1D6B7A7CF4F@mac.com>
-Cc: Pavel Machek <pavel@ucw.cz>, nigel@nigel.suspend2.net,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Back to the future.
-Date: Fri, 4 May 2007 09:27:20 -0400
-To: David Greaves <david@dgreaves.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	id S1755218AbXEDNbi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 09:31:38 -0400
+X-Greylist: delayed 1236 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 09:31:38 EDT
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Fri, 4 May 2007 18:58:23 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: linux-kernel@vger.kernel.org
+cc: akpm@linux-foundation.org, rpjday@mindspring.com, alan@lxorguk.ukuu.org.uk,
+       markus.lidel@shadowconnect.com
+Subject: [PATCH] drivers/message/i2o/device.c: remove redundant GFP_ATOMIC
+ from kmalloc
+Message-ID: <Pine.LNX.4.64.0705041835530.13758@cselinux1.cse.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 04, 2007, at 03:52:03, David Greaves wrote:
-> Kyle Moffett wrote:
->> On May 03, 2007, at 11:10:47, Pavel Machek wrote:
->>> What happens if you try to boot and filesystems are frozen from  
->>> previous run?
->>
->> If you're just doing a fresh boot then the filesystem is already  
->> clean due to the dm freeze and so it mounts up normally.  All you  
->> need to do then is have a little startup script which purges the  
->> saved image before you fsck or remount things read-write since  
->> either case means the image is no longer safe to resume.
->
-> Wouldn't it be better if freeze wrote a freeze-ID to the fs and  
-> returned it? This would naturally be kept in the image and a UUID  
-> mismatch would be detectable - seems safer and more flexible than  
-> 'a script'.
->
-> "This isn't the freeze you're looking for, move along"
+drivers/message/i2o/device.c:i2o_parm_field_get() unnecessarily passes 
+GFP_ATOMIC (along with GFP_KERNEL) to kmalloc() from a context that is not 
+atomic. Remove the pointless GFP_ATOMIC.
 
-Possibly, but I was referring to the _current_ behavior of the device- 
-mapper freezing.  While perhaps not ideal, it's currently very easily  
-usable.
+ 	Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
 
-Cheers,
-Kyle Moffett
+---
+
+diff -ruNp linux-2.6.21.1/drivers/message/i2o/device.c linux-2.6.21.1~patch/drivers/message/i2o/device.c
+--- linux-2.6.21.1/drivers/message/i2o/device.c	2007-04-26 08:38:32.000000000 +0530
++++ linux-2.6.21.1~patch/drivers/message/i2o/device.c	2007-05-04 17:48:30.000000000 +0530
+@@ -485,7 +485,7 @@ int i2o_parm_field_get(struct i2o_device
+  	u8 *resblk;		/* 8 bytes for header */
+  	int rc;
+
+-	resblk = kmalloc(buflen + 8, GFP_KERNEL | GFP_ATOMIC);
++	resblk = kmalloc(buflen + 8, GFP_KERNEL);
+  	if (!resblk)
+  		return -ENOMEM;
 
