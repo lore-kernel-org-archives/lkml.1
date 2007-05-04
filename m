@@ -1,62 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755372AbXEDOu0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755268AbXEDOug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755372AbXEDOu0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 10:50:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbXEDOu0
+	id S1755268AbXEDOug (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 10:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbXEDOug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 10:50:26 -0400
-Received: from ppsw-9.csi.cam.ac.uk ([131.111.8.139]:57782 "EHLO
-	ppsw-9.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755372AbXEDOuZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 10:50:25 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <20070504094610.GA31607@infradead.org>
-References: <E1HjjyF-00022D-00@calista.eckenfels.net> <0733FB88-3E6E-47B7-A55D-704B5C0DB239@cam.ac.uk> <20070504094610.GA31607@infradead.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <784B7DF1-6633-4356-80F2-A93A5A148F6A@cam.ac.uk>
-Cc: Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 7bit
-From: Anton Altaparmakov <aia21@cam.ac.uk>
-Subject: Re: Ext3 vs NTFS performance
-Date: Fri, 4 May 2007 15:47:33 +0100
-To: Christoph Hellwig <hch@infradead.org>
-X-Mailer: Apple Mail (2.752.3)
+	Fri, 4 May 2007 10:50:36 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:3102 "EHLO nef2.ens.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755268AbXEDOue (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 10:50:34 -0400
+X-Greylist: delayed 2468 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 10:50:34 EDT
+Date: Fri, 4 May 2007 10:09:21 -0400
+From: Quentin Godfroy <godfroy@clipper.ens.fr>
+To: linux-kernel@vger.kernel.org
+Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "David A. Madore" <David.Madore@ens.fr>
+Subject: patch: VFS: fix passing of AT_PHDR value in auxv to ELF interpreter
+Message-ID: <20070504140921.GA23122@goelette.ens.fr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Fri, 04 May 2007 16:09:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 4 May 2007, at 10:46, Christoph Hellwig wrote:
+On a dynamic ELF executable, the current kernel loader gives to the
+interpreter (in the AUXV vector) the AT_PHDR argument as :
+offset_of_phdr_in_file + first address.
 
-> On Fri, May 04, 2007 at 09:12:31AM +0100, Anton Altaparmakov wrote:
->> Nothing to do with win32 functions.  Windows does NOT create sparse
->> files therefore it never can have an issue like ext3 does in this
->> scenario.  Windows will cause nice allocations to happen because of
->> this and the 1-byte writes are perfectly sensible in this regard.
->> (Although a little odd as Windows has a proper API for doing
->> preallocation so I don't get why it is not using that instead...)
->
-> Which means the right place to fix this is samba.
+It can be wrong for an executable where the program headers are not located 
+in the first loaded segment.
 
-Absolutely, agreed.
+This patch corrects the behaviour.
 
-> Samba just need
-> to intersept lseek and pread/pwrite to never allocate sparse files
-> but do the right thing instead.  Now what the right thing would  
-> probably
-> be a preallocate instead of writing zeroes, and we need to provide the
-> infrastructure for them to do it, which is in progress currently.
-> (And in fact samba already does the right thing for XFS if you use
-> the prealloc samba vfs module, which AFAIK is not the default)
+Signed-off-by: Quentin Godfroy <godfroy@clipper.ens.fr>
+---
+ Here is an example of such an ELF executable which the current code
+ fails on :
+ ftp://quatramaran.ens.fr/pub/godfroy/addrpath/broken-sample
 
-Best regards,
-
-	Anton
--- 
-Anton Altaparmakov <aia21 at cam.ac.uk> (replace at with @)
-Unix Support, Computing Service, University of Cambridge, CB2 3QH, UK
-Linux NTFS maintainer, http://www.linux-ntfs.org/
-
-
+--- linux-2.6.21.1/fs/binfmt_elf.c	2007-05-04 03:20:00.000000000 -0400
++++ linux-2.6.21.1-patch/fs/binfmt_elf.c	2007-05-04 08:02:18.000000000 -0400
+@@ -134,6 +134,7 @@ static int padzero(unsigned long elf_bss
+ static int
+ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 		int interp_aout, unsigned long load_addr,
++		unsigned long phdr_addr,
+ 		unsigned long interp_load_addr)
+ {
+ 	unsigned long p = bprm->p;
+@@ -190,7 +191,7 @@ create_elf_tables(struct linux_binprm *b
+ 	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
+ 	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
+ 	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);
+-	NEW_AUX_ENT(AT_PHDR, load_addr + exec->e_phoff);
++	NEW_AUX_ENT(AT_PHDR, phdr_addr);
+ 	NEW_AUX_ENT(AT_PHENT, sizeof(struct elf_phdr));
+ 	NEW_AUX_ENT(AT_PHNUM, exec->e_phnum);
+ 	NEW_AUX_ENT(AT_BASE, interp_load_addr);
+@@ -529,7 +530,7 @@ static unsigned long randomize_stack_top
+ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ {
+ 	struct file *interpreter = NULL; /* to shut gcc up */
+- 	unsigned long load_addr = 0, load_bias = 0;
++ 	unsigned long load_addr = 0, load_bias = 0, phdr_addr = 0;
+ 	int load_addr_set = 0;
+ 	char * elf_interpreter = NULL;
+ 	unsigned int interpreter_type = INTERPRETER_NONE;
+@@ -718,6 +719,16 @@ static int load_elf_binary(struct linux_
+ 			break;
+ 		}
+ 
++	elf_ppnt = elf_phdata;
++	for (i = 0; i< loc->elf_ex.e_phnum; i++, elf_ppnt++)
++		if (elf_ppnt->p_type == PT_PHDR) {
++			phdr_addr = elf_ppnt->p_vaddr;
++			break;
++		}
++	retval = -ENOEXEC;
++	if (!phdr_addr)
++		goto out_free_dentry;
++
+ 	/* Some simple consistency checks for the interpreter */
+ 	if (elf_interpreter) {
+ 		interpreter_type = INTERPRETER_ELF | INTERPRETER_AOUT;
+@@ -987,7 +998,7 @@ static int load_elf_binary(struct linux_
+ 	current->flags &= ~PF_FORKNOEXEC;
+ 	create_elf_tables(bprm, &loc->elf_ex,
+ 			  (interpreter_type == INTERPRETER_AOUT),
+-			  load_addr, interp_load_addr);
++			  load_addr, phdr_addr, interp_load_addr);
+ 	/* N.B. passed_fileno might not be initialized? */
+ 	if (interpreter_type == INTERPRETER_AOUT)
+ 		current->mm->arg_start += strlen(passed_fileno) + 1;
