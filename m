@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031364AbXEDIKc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031365AbXEDIKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031364AbXEDIKc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:10:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031366AbXEDIKb
+	id S1031365AbXEDIKa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031366AbXEDIK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:10:31 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:60210 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031364AbXEDIKU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:10:20 -0400
-Date: Fri, 4 May 2007 01:10:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Move sig_kernel_* et al macros to linux/signal.h
-Message-Id: <20070504011003.113b1580.akpm@linux-foundation.org>
-In-Reply-To: <20070430040238.B5B971801A4@magilla.sf.frob.com>
-References: <20070430040238.B5B971801A4@magilla.sf.frob.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 4 May 2007 04:10:29 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:54745 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031361AbXEDIJ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 04:09:59 -0400
+Date: Fri, 4 May 2007 10:09:06 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Rewrite the MAJOR() macro as a call to imajor().
+In-Reply-To: <20070503231814.e12ad2d7.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.61.0705041008180.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.64.0704280621350.516@localhost.localdomain>
+ <20070503231814.e12ad2d7.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Apr 2007 21:02:38 -0700 (PDT) Roland McGrath <roland@redhat.com> wrote:
 
-> This patch moves the sig_kernel_* and related macros from kernel/signal.c
-> to linux/signal.h, and cleans them up slightly.  I need the sig_kernel_*
-> macros for default signal behavior in the utrace code, and want to avoid
-> duplication or overhead to share the knowledge.
-> 
-> ...
+On May 3 2007 23:18, Andrew Morton wrote:
+>>  	struct inode *i = file->f_mapping->host;
+>> 
+>> -	return i && S_ISBLK(i->i_mode) && MAJOR(i->i_rdev) == LOOP_MAJOR;
+>> +	return i && S_ISBLK(i->i_mode) && imajor(i) == LOOP_MAJOR;
+>>  }
 >
-> +#ifdef SIGEMT
-> +#define SIGEMT_MASK	rt_sigmask(SIGEMT)
-> +#else
-> +#define SIGEMT_MASK	0
-> +#endif
-> +
-> +#if SIGRTMIN > BITS_PER_LONG
-> +#define rt_sigmask(sig)	(1ULL << ((sig)-1))
-> +#else
-> +#define rt_sigmask(sig)	sigmask(sig)
-> +#endif
-> +#define siginmask(sig, mask) (rt_sigmask(sig) & (mask))
+>there's no runtime change, and I count a couple hundred MAJORs in the tree.
 
-Should we undef rt_sigmask and siginmask after using them here?
+Why do we even have imajor() if all it does is calling the MAJOR()
+macro?
 
+
+Jan
+-- 
