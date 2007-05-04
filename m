@@ -1,110 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161383AbXEDSUS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161358AbXEDSWa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161383AbXEDSUS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:20:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161386AbXEDSUB
+	id S1161358AbXEDSWa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:22:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161434AbXEDSWa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:20:01 -0400
-Received: from mga01.intel.com ([192.55.52.88]:26819 "EHLO mga01.intel.com"
+	Fri, 4 May 2007 14:22:30 -0400
+Received: from gw.goop.org ([64.81.55.164]:44255 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161430AbXEDSTl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:19:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,493,1170662400"; 
-   d="scan'208";a="242028550"
-Date: Fri, 4 May 2007 11:17:09 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: jeff@garzik.org
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, Tejun Heo <htejun@gmail.com>,
-       akpm@linux-foundation.org
-Subject: Re: [patch 5/7] genhd: send async notification on media change
-Message-Id: <20070504111709.99d2cce9.kristen.c.accardi@intel.com>
-In-Reply-To: <462DBDB3.9010102@gmail.com>
-References: <20070424074856.005152262@intel.com>
-	<20070423170010.5514072e.kristen.c.accardi@intel.com>
-	<462DBDB3.9010102@gmail.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1161358AbXEDSW2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 14:22:28 -0400
+Message-ID: <463B79E6.8000908@goop.org>
+Date: Fri, 04 May 2007 11:22:30 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       Andi Kleen <ak@suse.de>, Chris Wright <chrisw@sous-sol.org>,
+       Zachary Amsden <zach@vmware.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 3/3] boot bzImages under paravirt
+References: <1178283582.23670.67.camel@localhost.localdomain>	<1178283724.23670.70.camel@localhost.localdomain>	<1178284052.23670.75.camel@localhost.localdomain>	<m1ps5gslfm.fsf@ebiederm.dsl.xmission.com> <463B4E12.50703@goop.org>	<463B551E.8030701@zytor.com> <463B5B90.20308@goop.org>	<m1irb8r0gl.fsf@ebiederm.dsl.xmission.com>	<463B683C.5090308@zytor.com> <m16478qyxx.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m16478qyxx.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Send an uevent to user space to indicate that a media change event has occurred.
+Eric W. Biederman wrote:
+>> Gujin seems to have a near-zero user community, so if they have to rev
+>> their code it wouldn't be a big deal (the author keeps trying to push
+>> some crack-smoking "Gujin native" patches into the kernel, too), 
+>> breaking ELILO would hurt anyone using Intel Macs.
+>>     
+>
+> I'm thinking we just make the code start.
+> startup_32:
+> 	movl	%cs, %eax
+>         testl   $3, %eax
+>         jnz     1f
+>   
 
-Changes from last version:
-* use get/put_device to increment reference count on the device struct
+I'm not really happy about using this as a way to distinguish paravirt
+from non-paravirt in general.  At some point we're going to be running
+paravirt kernels in ring0 within a VT/SVM container - but they'll still
+be completely paravirtualized kernels.
 
-Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+I think a better approach is to just do it purely based on the boot
+params platform field.  Ie, something along the lines of:
 
-Index: 2.6-git/block/genhd.c
-===================================================================
---- 2.6-git.orig/block/genhd.c
-+++ 2.6-git/block/genhd.c
-@@ -643,6 +643,27 @@ struct seq_operations diskstats_op = {
- 	.show	= diskstats_show
- };
- 
-+static void media_change_notify_thread(struct work_struct *work)
-+{
-+	struct gendisk *gd = container_of(work, struct gendisk, async_notify);
-+	char event[] = "MEDIA_CHANGE=1";
-+	char *envp[] = { event, NULL };
-+
-+	/*
-+	 * set enviroment vars to indicate which event this is for
-+	 * so that user space will know to go check the media status.
-+	 */
-+	kobject_uevent_env(&gd->kobj, KOBJ_CHANGE, envp);
-+	put_device(gd->driverfs_dev);
-+}
-+
-+void genhd_media_change_notify(struct gendisk *disk)
-+{
-+	get_device(disk->driverfs_dev);
-+	schedule_work(&disk->async_notify);
-+}
-+EXPORT_SYMBOL_GPL(genhd_media_change_notify);
-+
- struct gendisk *alloc_disk(int minors)
- {
- 	return alloc_disk_node(minors, -1);
-@@ -672,6 +693,8 @@ struct gendisk *alloc_disk_node(int mino
- 		kobj_set_kset_s(disk,block_subsys);
- 		kobject_init(&disk->kobj);
- 		rand_initialize_disk(disk);
-+		INIT_WORK(&disk->async_notify,
-+			media_change_notify_thread);
- 	}
- 	return disk;
- }
-Index: 2.6-git/include/linux/genhd.h
-===================================================================
---- 2.6-git.orig/include/linux/genhd.h
-+++ 2.6-git/include/linux/genhd.h
-@@ -66,6 +66,7 @@ struct partition {
- #include <linux/smp.h>
- #include <linux/string.h>
- #include <linux/fs.h>
-+#include <linux/workqueue.h>
- 
- struct partition {
- 	unsigned char boot_ind;		/* 0x80 - active */
-@@ -139,6 +140,7 @@ struct gendisk {
- #else
- 	struct disk_stats dkstats;
- #endif
-+	struct work_struct async_notify;
- };
- 
- /* Structure for sysfs attributes on block devices */
-@@ -419,7 +421,7 @@ extern struct gendisk *alloc_disk_node(i
- extern struct gendisk *alloc_disk(int minors);
- extern struct kobject *get_disk(struct gendisk *disk);
- extern void put_disk(struct gendisk *disk);
--
-+extern void genhd_media_change_notify(struct gendisk *disk);
- extern void blk_register_region(dev_t dev, unsigned long range,
- 			struct module *module,
- 			struct kobject *(*probe)(dev_t, int *, void *),
+	if (boot_params.version < new_enough)
+		goto native_boot;
+	else {
+		for (int i = 0; i < nplatforms; i++)
+			if (boot_params.platform == platforms[i].id)
+				goto *platforms[i].startup
+		panic();
+	}
+
+
+> But that won't work if we want to support relocatability.
+> Because we can't load a gdt if we don't know where we are.
+>
+> To find out where we are we need %ss and %ds, at which point
+> we might as well assume we have %es to.
+>   
+
+Yes, we won't make it far without ss and ds, and while we could avoid
+string instructions, you'd have to be a pretty short-sighted bootloader
+author to set ss and ds without also setting es.
+
+> So be it then.  The next rev of the boot protocol gets to be partially
+> incompatible, and we just assume that %cs, %ds, %es, %ss meet our
+> basic requirements.  I'm pretty certain from what I saw only Gujin
+> is going to suffer  :(
+>   
+
+I missed what Gujin does wrong here?
+
+
+    J
