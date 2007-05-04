@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422720AbXEDV3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161323AbXEDVce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422720AbXEDV3K (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422743AbXEDV3J
+	id S1161323AbXEDVce (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161531AbXEDVce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:29:09 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:47420 "EHLO e6.ny.us.ibm.com"
+	Fri, 4 May 2007 17:32:34 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:55103 "EHLO atlrel6.hp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1422720AbXEDV3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:29:08 -0400
-Subject: [PATCH] Blacklist Dell Optiplex 320 from using the HPET
-From: john stultz <johnstul@us.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Guilherme M. Schroeder" <guilherme@centralinf.com.br>,
-       lkml <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain
-Date: Fri, 04 May 2007 14:29:04 -0700
-Message-Id: <1178314144.6094.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1161323AbXEDVcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 17:32:32 -0400
+Date: Fri, 4 May 2007 15:32:27 -0600
+From: Mike Stroyan <mike.stroyan@hp.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Rohit Seth <rohitseth@google.com>, "'Hugh Dickins'" <hugh@veritas.com>,
+       "'Mike Stroyan'" <mike.stroyan@hp.com>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Luck, Tony'" <tony.luck@intel.com>, linux-ia64@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Fw: [PATCH] ia64: race flushing icache in do_no_page path
+Message-ID: <20070504213227.GA2965@ldl.fc.hp.com>
+References: <200704281805.l3SI5JQx030827@smtp.corp.google.com> <463727E1.3090203@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <463727E1.3090203@yahoo.com.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-One of the 2.6.21 regressions was Guilherme's problem seeing his box
-lock up when the system detected an unstable TSC and dropped back to
-using the HPET.
+On Tue, May 01, 2007 at 09:43:29PM +1000, Nick Piggin wrote:
+> Rohit Seth wrote:
+...
+> >Caches on Itanium are physical.  So, it doesn't matter what virtual address
+> >you use to flush a cache line, cache line containing specific physical
+> >memory will be flushed. 
+> 
+> Really? I was under the vague impression that L1 i/d caches were virtual
+> and required this flushing... but I guess so long as the ISA says that
+> fc/fc.i flushes all caches corresponding to the physical address of the
+> provided virtual address, then that's what matters.
 
-In digging deeper, we found the HPET is not actually incrementing on
-this system. And in fact, the reason why this issue just cropped up was
-because of Thomas's clocksource watchdog code was comparing the TSC to
-the HPET (which wasn't moving) and thought the TSC was broken.
+  The L1 caches on Itanium have interesting behavior.  The cache lines
+are indexed by virtual address.  But those L1 cache lines are invalidated
+whenever their corresponding L1 TLB entry is evicted or replaced.
+That means that old L1 icache lines will be invalidated by TLB changes
+even before a fc.i instruction flushed those icache lines.  That would
+help make old kernels work on pre-montecito processors without correctly
+ordered fc.i instructions.  The L1 icache was flushed by TLB inserts
+and the L2 icache was unified.
 
-Anyway, Guliherme checked for a BIOS update and did not find one, so
-I've added a DMI blacklist against his system so the HPET is not used.
+  fc.i is also defined to make an address coherent between data and
+instruction caches at all levels of cache.  That handles the update of
+L1 icache lines during a st,fc.i,sync.i,srlz.i sequence.
 
-Many thanks to Guilherme for the slow and laborious testing that finally
-narrowed down this issue.
+  I see these details in section 6.1.1 of "Intel® Itanium® 2 Processor
+Reference Manual".  But I haven't found them in a general Itanium
+Architecture reference.
 
-thanks
--john
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
-index 17d7345..1ae27f3 100644
---- a/arch/i386/kernel/hpet.c
-+++ b/arch/i386/kernel/hpet.c
-@@ -5,6 +5,7 @@
- #include <linux/init.h>
- #include <linux/sysdev.h>
- #include <linux/pm.h>
-+#include <linux/dmi.h>
- 
- #include <asm/hpet.h>
- #include <asm/io.h>
-@@ -48,6 +49,31 @@ static int __init hpet_setup(char* str)
- }
- __setup("hpet=", hpet_setup);
- 
-+
-+/* DMI Blacklist for bad HPETs */
-+static int __init dmi_mark_hpet_broken(struct dmi_system_id *d)
-+{
-+	printk(KERN_NOTICE "%s detected: HPET does not function.\n",
-+		       d->ident);
-+	boot_hpet_disable = 1;
-+	return 0;
-+}
-+
-+/* List of systems that have known HPETproblems */
-+static struct dmi_system_id bad_hpet_dmi_table[] = {
-+	{
-+	 .callback = dmi_mark_hpet_broken,
-+	 .ident = "Dell OptiPlex 320",
-+	 .matches = {
-+		     DMI_MATCH(DMI_PRODUCT_NAME, "OptiPlex 320"),
-+		     DMI_MATCH(DMI_BOARD_VENDOR, "Dell Inc."),
-+		     DMI_MATCH(DMI_BOARD_NAME, "0UT237"),
-+		     },
-+	 },
-+	 {}
-+};
-+
-+
- static inline int is_hpet_capable(void)
- {
- 	return (!boot_hpet_disable && hpet_address);
-@@ -228,6 +254,8 @@ int __init hpet_enable(void)
- 	uint64_t hpet_freq;
- 	u64 tmp;
- 
-+	dmi_check_system(bad_hpet_dmi_table);
-+
- 	if (!is_hpet_capable())
- 		return 0;
- 
-
-
-
-
+-- 
+Mike Stroyan, mike.stroyan@hp.com
