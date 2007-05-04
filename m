@@ -1,66 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933148AbXEDPc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933142AbXEDPdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933148AbXEDPc2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 11:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933152AbXEDPc2
+	id S933142AbXEDPdP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 11:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933152AbXEDPdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 11:32:28 -0400
-Received: from home.keithp.com ([63.227.221.253]:3821 "EHLO keithp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933148AbXEDPc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 11:32:27 -0400
-Subject: Re: [RFC] [PATCH] DRM TTM Memory Manager patch
-From: Keith Packard <keithp@keithp.com>
-To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
-Cc: keithp@keithp.com, Jerome Glisse <j.glisse@gmail.com>,
-       dri-devel@lists.sourceforge.net, Dave Airlie <airlied@gmail.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-In-Reply-To: <463B27C4.3040304@tungstengraphics.com>
-References: <21d7e9970704252355m4765b65fyb547b9ba2763b103@mail.gmail.com>
-	 <1178137279.53297.114.camel@vonnegut>
-	 <46391860.3070409@tungstengraphics.com>
-	 <1178251621.27028.9.camel@neko.keithp.com>
-	 <463AE9AE.7070806@tungstengraphics.com>
-	 <4240b9160705040149v3c97413fg54f1486f55ffbc11@mail.gmail.com>
-	 <463B12F9.8060900@tungstengraphics.com>
-	 <4240b9160705040457n46be9b62p7c760fb54898ba37@mail.gmail.com>
-	 <463B27C4.3040304@tungstengraphics.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-cbkDLrRFaSyNOo4CUzND"
-Date: Fri, 04 May 2007 08:32:06 -0700
-Message-Id: <1178292726.27028.45.camel@neko.keithp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 4 May 2007 11:33:15 -0400
+Received: from outbound-mail-44.bluehost.com ([69.89.18.13]:33751 "HELO
+	outbound-mail-44.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933142AbXEDPdO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 11:33:14 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 11:33:13 EDT
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] change global zonelist order v4 [0/2]
+Date: Fri, 4 May 2007 08:26:23 -0700
+User-Agent: KMail/1.9.6
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+       Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com
+References: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com> <20070503224730.3bc6f8a8.akpm@linux-foundation.org>
+In-Reply-To: <20070503224730.3bc6f8a8.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705040826.23687.jbarnes@virtuousgeek.org>
+X-Identified-User: {642:box128.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 67.161.73.10 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday, May 03, 2007, Andrew Morton wrote:
+> On Fri, 27 Apr 2007 14:45:30 +0900 KAMEZAWA Hiroyuki 
+<kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > Hi, this is version 4. including Lee Schermerhon's good rework.
+> > and automatic configuration at boot time.
+>
+> hm, this adds rather a lot of code.  Have we established that it's worth
+> it?
+>
+> And it's complex - how do poor users know what to do with this new
+> control?
+>
+>
+> This:
+>
+> + *	= "[dD]efault | "0"	- default, automatic configuration.
+> + *	= "[nN]ode"|"1" 	- order by node locality,
+> + *         			  then zone within node.
+> + *	= "[zZ]one"|"2" - order by zone, then by locality within zone
+>
+> seems a bit excessive.  I think just the 0/1/2 plus documentation would
+> suffice?
+>
+>
+> I haven't followed this discussion very closely I'm afraid.  If we came
+> up with a good reason why Linux needs this feature then could someone
+> please (re)describe it?
 
---=-cbkDLrRFaSyNOo4CUzND
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+I think the idea is to avoid exhausting ZONE_DMA on some NUMA boxes by 
+ordering the fallback list first by zone, then by node distance (e.g. 
+ZONE_NORMAL of local node, then ZONE_NORMAL of next nearest node etc., 
+followed by ZONE_DMA of local node, ZONE_DMA of next nearest node, etc.).
 
-On Fri, 2007-05-04 at 14:32 +0200, Thomas Hellstr=C3=B6m wrote:
->  If there isn't we can at least consider other=20
-> alternatives that resolve the deadlock issue but that also will help=20
-> clients synchronize and keep data coherent.
+As for documentation, it would be good if the "default" behavior was 
+described as well (it's mostly by node first, then by zone iirc, but has a 
+few other tweaks).
 
-If clients want coherence, they're welcome to implement their own
-locking. Let's make sure we separate the semantics required for GPU
-operation from semantics required by DRM users.
+Another option would be to make this behavior automatic if both ZONE_DMA 
+and ZONE_NORMAL had pages.  I initially wrote this stuff with the idea 
+that machines that really needed it would have all their memory in 
+ZONE_DMA, but obviously that's not the case, so some more smarts are 
+needed.
 
---=20
-keith.packard@intel.com
+Jesse
 
---=-cbkDLrRFaSyNOo4CUzND
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGO1H2Qp8BWwlsTdMRAkcbAKDIXJR+8y7hgVF1bBFq8cyGXE/2kgCgw4cY
-+ShgJ+YzcrhyVsSMT2jWg90=
-=VAsA
------END PGP SIGNATURE-----
-
---=-cbkDLrRFaSyNOo4CUzND--
