@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767691AbXEDFsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767702AbXEDFyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767691AbXEDFsA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 01:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767694AbXEDFr7
+	id S1767702AbXEDFyj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 01:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767703AbXEDFyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 01:47:59 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59120 "EHLO
+	Fri, 4 May 2007 01:54:39 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42552 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767691AbXEDFru (ORCPT
+	by vger.kernel.org with ESMTP id S1767702AbXEDFyi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 01:47:50 -0400
-Date: Thu, 3 May 2007 22:47:30 -0700
+	Fri, 4 May 2007 01:54:38 -0400
+Date: Thu, 3 May 2007 22:54:32 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
-       Christoph Lameter <clameter@sgi.com>, Lee.Schermerhorn@hp.com
-Subject: Re: [PATCH] change global zonelist order v4 [0/2]
-Message-Id: <20070503224730.3bc6f8a8.akpm@linux-foundation.org>
-In-Reply-To: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070427144530.ae42ee25.kamezawa.hiroyu@jp.fujitsu.com>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] Power Management: use mutexes instead of semaphores
+Message-Id: <20070503225432.97dad06e.akpm@linux-foundation.org>
+In-Reply-To: <20070427084322.GC4213@traven>
+References: <20070427083857.GB4213@traven>
+	<20070427084322.GC4213@traven>
 X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -26,30 +26,20 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007 14:45:30 +0900 KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+On Fri, 27 Apr 2007 10:43:22 +0200 Matthias Kaehlcke <matthias.kaehlcke@gmail.com> wrote:
 
-> Hi, this is version 4. including Lee Schermerhon's good rework.
-> and automatic configuration at boot time.
+> the Power Management code uses semaphores as mutexes. use the mutex
+> API instead of the (binary) semaphores
 
-hm, this adds rather a lot of code.  Have we established that it's worth
-it?
+I know it's a little thing, but given a choice between
 
-And it's complex - how do poor users know what to do with this new control?
+a) changelogs which use capital letters and fullstops and
 
+b) changelogs which do not,
 
-This:
+I think a) gives a better result.
 
-+ *	= "[dD]efault | "0"	- default, automatic configuration.
-+ *	= "[nN]ode"|"1" 	- order by node locality,
-+ *         			  then zone within node.
-+ *	= "[zZ]one"|"2" - order by zone, then by locality within zone
+I note that none of these patches added a #include <linux/mutex.h>.  Each C
+file which uses mutexes should do that, rather than relying upon accidental
+nested includes.  I hope you're checking for that.
 
-seems a bit excessive.  I think just the 0/1/2 plus documentation would
-suffice?
-
-
-I haven't followed this discussion very closely I'm afraid.  If we came up
-with a good reason why Linux needs this feature then could someone please
-(re)describe it?
-
-Thanks.
