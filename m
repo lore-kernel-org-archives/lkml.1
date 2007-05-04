@@ -1,83 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933115AbXEDPaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933148AbXEDPc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933115AbXEDPaa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 11:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933145AbXEDPaa
+	id S933148AbXEDPc2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 11:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933152AbXEDPc2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 11:30:30 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:50499 "EHLO mail.q-leap.de"
+	Fri, 4 May 2007 11:32:28 -0400
+Received: from home.keithp.com ([63.227.221.253]:3821 "EHLO keithp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933115AbXEDPa3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 11:30:29 -0400
-X-Greylist: delayed 1834 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 11:30:29 EDT
-From: Bernd Schubert <bs@q-leap.de>
-To: linux-kernel@vger.kernel.org
-Subject: mkfs.ext2 triggerd RAM corruption
-Date: Fri, 4 May 2007 16:59:51 +0200
-User-Agent: KMail/1.9.6
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705041659.51675.bs@q-leap.de>
+	id S933148AbXEDPc1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 11:32:27 -0400
+Subject: Re: [RFC] [PATCH] DRM TTM Memory Manager patch
+From: Keith Packard <keithp@keithp.com>
+To: Thomas =?ISO-8859-1?Q?Hellstr=F6m?= <thomas@tungstengraphics.com>
+Cc: keithp@keithp.com, Jerome Glisse <j.glisse@gmail.com>,
+       dri-devel@lists.sourceforge.net, Dave Airlie <airlied@gmail.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+In-Reply-To: <463B27C4.3040304@tungstengraphics.com>
+References: <21d7e9970704252355m4765b65fyb547b9ba2763b103@mail.gmail.com>
+	 <1178137279.53297.114.camel@vonnegut>
+	 <46391860.3070409@tungstengraphics.com>
+	 <1178251621.27028.9.camel@neko.keithp.com>
+	 <463AE9AE.7070806@tungstengraphics.com>
+	 <4240b9160705040149v3c97413fg54f1486f55ffbc11@mail.gmail.com>
+	 <463B12F9.8060900@tungstengraphics.com>
+	 <4240b9160705040457n46be9b62p7c760fb54898ba37@mail.gmail.com>
+	 <463B27C4.3040304@tungstengraphics.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-cbkDLrRFaSyNOo4CUzND"
+Date: Fri, 04 May 2007 08:32:06 -0700
+Message-Id: <1178292726.27028.45.camel@neko.keithp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-I'm presently rather puzzled, if this is really a kernel bug, its a big bug. 
+--=-cbkDLrRFaSyNOo4CUzND
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Summary: The system ramdisk (initrd) gets corrupted while running mkfs.ext2 on 
-a local sata disk partition.
+On Fri, 2007-05-04 at 14:32 +0200, Thomas Hellstr=C3=B6m wrote:
+>  If there isn't we can at least consider other=20
+> alternatives that resolve the deadlock issue but that also will help=20
+> clients synchronize and keep data coherent.
 
-Reproduced on kernel versions: vanilla 2.6.16 - 2.6.20 (<2.6.16 doesn't run on 
-any of the systems I can do tests with).
-Please note: I could reproduce this on serveral systems, all of them use ECC 
-memory and the memory of most of them the memory is monitored using EDAC. 
+If clients want coherence, they're welcome to implement their own
+locking. Let's make sure we separate the semantics required for GPU
+operation from semantics required by DRM users.
 
-Details:
+--=20
+keith.packard@intel.com
 
-1.) Our systems boot from an initrd, all system services are running from the 
-initrd/ramdisk.
+--=-cbkDLrRFaSyNOo4CUzND
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-2.) While setting up a lustre meta data storage server, lustre runs 
-mkfs.ext2 -j -b 4096 -F -i 4096 -J size=400 -I 512 /dev/sda4
-(Please note, I first observed this while using a lustre patched kernel, but I 
-could reproduce this with vanilla kernels).
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQBGO1H2Qp8BWwlsTdMRAkcbAKDIXJR+8y7hgVF1bBFq8cyGXE/2kgCgw4cY
++ShgJ+YzcrhyVsSMT2jWg90=
+=VAsA
+-----END PGP SIGNATURE-----
 
-While this mkfs.ext2 command was running, suddenly running commands such as 
-ps, top, ls, etc. resulted in segmentation faults.
-
-To see whats going on, I copied the entire / (so the initrd) into a tmpfs 
-root, chrooted into it, also bind mounted the main / into this chroot and 
-compared several times /bin of chroot/bin and the bind-mounted /bin while the 
-mkfs.ext2 command was running.
-
-beo-05:/# diff -r /bin /oldroot/bin/
-beo-05:/# diff -r /bin /oldroot/bin/
-beo-05:/# diff -r /bin /oldroot/bin/
-Binary files /bin/sleep and /oldroot/bin/sleep differ
-beo-05:/# diff -r /bin /oldroot/bin/
-Binary files /bin/bsd-csh and /oldroot/bin/bsd-csh differ
-Binary files /bin/cat and /oldroot/bin/cat differ
-...
-
-Also tested different schedulers, at least happens with deadline and 
-anticipatory.
-
-The corruption does NOT happen on running the mkfs command on /dev/sda1, but 
-happens with sda2, sda3 and sda3. Also doesn't happen with extended 
-partitions of sda1.
-
-Any idea whats going on?
-
-
-Thanks,
-Bernd
-
-
--- 
-Bernd Schubert
-Q-Leap Networks GmbH
+--=-cbkDLrRFaSyNOo4CUzND--
