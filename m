@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031446AbXEDRJe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031430AbXEDRMK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031446AbXEDRJe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 13:09:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031447AbXEDRJe
+	id S1031430AbXEDRMK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 13:12:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031435AbXEDRMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 13:09:34 -0400
-Received: from mail.screens.ru ([213.234.233.54]:40918 "EHLO mail.screens.ru"
+	Fri, 4 May 2007 13:12:10 -0400
+Received: from mail.samba.org ([66.70.73.150]:53288 "EHLO lists.samba.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031446AbXEDRJc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 13:09:32 -0400
-Date: Fri, 4 May 2007 21:09:16 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, David Howells <dhowells@redhat.com>,
-       Gautham Shenoy <ego@in.ibm.com>, Jarek Poplawski <jarkao2@o2.pl>,
-       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+	id S1031430AbXEDRMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 13:12:08 -0400
+Date: Fri, 4 May 2007 10:12:00 -0700
+From: Jeremy Allison <jra@samba.org>
+To: Gerald Carter <coffeedude.jerry@gmail.com>
+Cc: simo <idra@samba.org>, Christoph Hellwig <hch@infradead.org>,
+       Steve French <smfrench@gmail.com>, linux-cifs-client@lists.samba.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
-Message-ID: <20070504170916.GA95@tv-sign.ru>
-References: <20070503204226.GA212@tv-sign.ru> <20070503181513.0b0aa4fb.akpm@linux-foundation.org>
-Mime-Version: 1.0
+Subject: Re: [linux-cifs-client] Re: SMB2 file system - should it be a	distinct module
+Message-ID: <20070504171200.GE31976@samba1>
+Reply-To: Jeremy Allison <jra@samba.org>
+References: <524f69650704301552j13cd46e5y53a233af753e0548@mail.gmail.com> <20070501090657.GA17949@infradead.org> <1178198489.28758.14.camel@localhost.localdomain> <20070503141742.GB20328@infradead.org> <1178203013.28758.29.camel@localhost.localdomain> <4639F5AD.20807@gmail.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070503181513.0b0aa4fb.akpm@linux-foundation.org>
+In-Reply-To: <4639F5AD.20807@gmail.com>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/03, Andrew Morton wrote:
->
-> On Fri, 4 May 2007 00:42:26 +0400
-> Oleg Nesterov <oleg@tv-sign.ru> wrote:
+On Thu, May 03, 2007 at 09:46:05AM -0500, Gerald Carter wrote:
+> -----BEGIN PGP SIGNED MESSAGE-----
+> Hash: SHA1
 > 
-> > Disadvantages:
-> > 
-> > 	- this patch adds wmb() to insert_work().
-> > 
-> > 	- slowdowns the fast path (when del_timer() succeeds on entry) of
-> > 	  cancel_rearming_delayed_work(), because wait_on_work() is called
-> > 	  unconditionally. In that case, compared to the old version, we are
-> > 	  doing "unneeded" lock/unlock for each online CPU.
-> > 
-> > 	  On the other hand, this means we don't need to use cancel_work_sync()
-> > 	  after cancel_rearming_delayed_work().
-> > 
-> > 	- complicates the code (.text grows by 130 bytes).
-> > 
+> Simo,
 > 
-> hm, this is getting complex.
-
-Yes, and I can't say I like this patch very much.
-
-First, I am not really sure it is terribly useful. Yes, cancel_rearming_delayed_work
-sucks, but did we have any problem in practice? The most annoying problem is that it
-cant't cancel @dwork which doesn't re-arm itself unconditionally. But this is not so
-common, and ata_port_flush_task() shows an example how to do this. However, it also
-shows that this is not so trivial, and work->func() should participate.
-
-Also, we can solve this problem in more simple way. For example, we can shift
-"timer->function = delayed_work_timer_fn" from queue_delayed_work() to INIT_DELAYED_WORK().
-Then, roughly,
-
-	cancel_rearming_delayed_work(dwork)
-	{
-		dwork->timer->function = do_nothing_timer_fn;
-		del_timer_sync(&dwork->timer);
-		wait_on_work(&dwork->work);
-		dwork->timer->function = delayed_work_timer_fn;
-		del_timer(&dwork->timer);
-		work_clear_pending(&dwork->work
-	}
-	
-But this is so hackish, and doesn't work if work->func() use queue_work() or
-queue_delayed_work(delay = 0) to re-arm itself. Perhaps we can forbid this,
-and make a simpler patch.
-
-> > +	while (!try_to_grab_pending(work))
-> > +		;
+> > I guess DFS referrals can work cross protocol, so if you are redirected
+> > from a longhorn server to a windoes 2000 or a samba server you want to
+> > be able to follow the DFS referral and not return an error.
+> > To do that you need to have either 1 module that support both protocols
+> > or a way from one module to call the other. Just separating the 2
+> > without any glue will not work (or you will have to add some userspace
+> > upcall hack to make it work).
 > 
-> The patch adds a couple of spinloops.  Normally we put a cpu_relax() into
-> such loops.  It can make a very large difference under some circumstances.
+> Long term I agree that CIFS and SMB2 should be in the same .ko
 
-Ah, yes. I'll send a fix along with a little comments update.
+Actually I disagree. I think Christoph is correct. These
+are two independent protocols and should be in two different
+modules.
 
-Oleg.
+> But NTLM 0.12 still works for Vista and DFS referrals.
+> Breaking out SMB2 initially means that it will not clutter
+> the working cifs.ko code.  Remember that an SMB2 client fs is
+> mostly research at this point, and not engineering.
 
+Long term the common functions should be factored out
+and put into a lower-level module that both cifs and
+SMB2 are dependent upon.
+
+That's the cleaner solution IMHO.
+
+Jeremy.
