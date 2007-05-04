@@ -1,113 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161590AbXEDVwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031562AbXEDWNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161590AbXEDVwl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161934AbXEDVwl
+	id S1031562AbXEDWNu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 18:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031705AbXEDWNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:52:41 -0400
-Received: from neon.samage.net ([85.17.153.66]:35941 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1161590AbXEDVwj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:52:39 -0400
-Message-ID: <3052.81.207.0.53.1178315528.squirrel@secure.samage.net>
-In-Reply-To: <20070503120637.GA3866@ucw.cz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net>
-    <200704272107.28565.oliver@neukum.org>
-    <84144f020704280222s42ff99ddg3eea3cb353c8882e@mail.gmail.com>
-    <200704281537.53479.oliver@neukum.org> <20070503120637.GA3866@ucw.cz>
-Date: Fri, 4 May 2007 23:52:08 +0200 (CEST)
-Subject: Re: Back to the future.
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Pavel Machek" <pavel@ucw.cz>
-Cc: "Oliver Neukum" <oliver@neukum.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.8
+	Fri, 4 May 2007 18:13:49 -0400
+Received: from nwd2mail10.analog.com ([137.71.25.55]:14319 "EHLO
+	nwd2mail10.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031562AbXEDWNs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 18:13:48 -0400
+X-IronPort-AV: i="4.14,494,1170651600"; 
+   d="scan'208"; a="37476097:sNHT23559739"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Robert Schwebel" <r.schwebel@pengutronix.de>
+Subject: Re: Correct location for ADC/DAC drivers
+Date: Fri, 4 May 2007 18:16:01 -0400
+User-Agent: KMail/1.9.5
+Cc: "Stefan Roese" <ml@stefan-roese.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+References: <200705011435.45046.ml@stefan-roese.de> <200705041421.50830.rgetz@blackfin.uclinux.org> <20070504205213.GQ22585@pengutronix.de>
+In-Reply-To: <20070504205213.GQ22585@pengutronix.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: bc82d6a2e188773012c482ed32290af0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705041816.01572.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 04 May 2007 22:13:46.0974 (UTC) FILETIME=[7C4A67E0:01C78E99]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 3, 2007 14:06, Pavel Machek wrote:
->> > > The kernel can already do compression and encryption.
->> >
->> > Yes, if we all could agree on _which_ compression and encryption
->>
->> Any of those available in the kernel. Where's the problem?
+On Fri 4 May 2007 16:52, Robert Schwebel pondered:
+> Robin,
 >
-> gzip is too slow for this. lzf works okay. Oh and swsusp wants rsa
-> crypto.
+> On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
+> > We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
+> > that would be nice to put in the "right" place  - I don't think that
+> > drivers/char is the right place, nor drivers/misc - I also don't think
+> > that /adc is a descriptive place for DAC or mixed signal front ends
+> > (MxFE).
+>
+> What userspace interface do your drivers have?
 
-Then port lzf to the kernel, or help with the lzo port.
+Right now, it is a little rudimentary char interface, it needs a little care 
+to be a bit more general purpose, but it suited needs of what the people who 
+were using it.
 
-Swsusp might want RSA crypto, but it doesn't really need it. Currently
-it only uses it to be able to suspend without asking for a passphrase.
+http://blackfin.uclinux.org/gf/project/linux-kernel/scmsvn/?view=markup&path=/trunk/drivers/char/ad9960.c
 
-So the current sequence is:
+> I don't think that there 
+> is anything generic available at the moment, other than COMEDI (which is
+> rather outdated as far as I know).
 
-1) Generate RSA keys + ask for a passphrase. (Once)
+I would be interested in having a detailed discussion/random thoughts on 
+this - what is the best way to expose these types of devices?
 
-...
+I never actually used COMEDI, to understand the pro/cons of what it did.
 
-2) Suspend. (Encrypt snapshot with public RSA key).
+> > What about /drivers/char/daq or just drivers/daq - drivers for
+> > non-PCI/USB/ISA/PCMCIA Data Acquisition Hardware, D/A and A/D
+> > converters, Analog Front ends, etc.
+>
+> I'd like drivers/daq better, because it doesn't have anything to do with
+> the bus it is connected to; a chipselect bus connectable ADC may be
+> connected to a SoC CS-bus or to a PCI bridge and you want to use the
+> same driver for it.
 
-...
+That makes sense - I have seen more and more parts with selectable interfaces 
+(I2C or SPI), and you should be able to use the same base driver, independent 
+of the bus - so drivers/daq would suite me fine. 
 
-3) Ask for the passphrase.
-
-4) Resume.
-
-RSA is used so that the passphrase can be thrown away between 1 and 2.
-
-
-But the same functionality can be achieved by doing:
-
-1) Define a user password (e.g. /etc/shadow thing). (Once)
-
-2) When a user logs in: get random data and encrypt it with the password,
-this becomes the AES key. Store both the data and key in a secure way in
-memory, e.g. using the existing kernel key infrastructure.
-
-...
-
-3) Suspend.
-   (Encrypt snapshot with the AES key and store the random data.)
-
-...
-
-3) Ask for the passphrase.
-   (To get the AES key, encrypt the stored random data.)
-
-4) Resume.
-
-Variants are possible of course, but this is the main idea.
-
-
-This is secure because the key infrastructure is secure, and even if
-it isn't the system must be compromised to get the suspend key before
-the suspend is done. But at that point the attacker already has all
-information that can be found in the suspend image, and could have done
-all kind of things to inflict damage (like installing a key logger).
-
-Advantage of this scheme is that it only need AES and can be done (mostly)
-in kernel space. It's also faster and simpler than the current RSA scheme.
-Disadvantage is that it wastes at least 32 bytes of memory when the system
-is running, to store the data and key.
-
-Only thing that needs to be done in userspace is setting the random data
-and AES key, but there exist a suitable interface for that (the key system).
-As user login is already done in user space, this can be integrated with
-that in a nice way.
-
-Greetings,
-
-Indan
-
-
+-Robin
