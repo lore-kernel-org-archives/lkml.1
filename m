@@ -1,86 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932500AbXEDIaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932785AbXEDIc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932500AbXEDIaW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbXEDIaW
+	id S932785AbXEDIc3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932812AbXEDIc3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:30:22 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:59636 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932500AbXEDI37 (ORCPT
+	Fri, 4 May 2007 04:32:29 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:34004 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932785AbXEDIc2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:29:59 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Fri, 4 May 2007 04:29:37 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org,
-       James Bottomley <James.Bottomley@steeleye.com>
-Subject: Re: [PATCH] SCSI: Remove redundant GFP_KERNEL type flag in kmalloc().
-In-Reply-To: <20070504011535.ff7181fb.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705040426460.22990@localhost.localdomain>
-References: <Pine.LNX.4.64.0704300434460.3703@localhost.localdomain>
- <20070504011535.ff7181fb.akpm@linux-foundation.org>
+	Fri, 4 May 2007 04:32:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=T1AWzHEYH25Xr7vEG9BRI1At+yf0nrmiMKXlDVSP0S/uoyeIu8onvtpgFUfULsqCdsjVRZiTdG27raC87gnyCLd3++wLm72IU/ZZca6YXTcPa4JQVEktN2Bze2yDRUGw7UdsSQC7xb0gTgpC7aq0VZURUFNy12jyzm3u4nVyxk8=
+Message-ID: <99e4df080705040132m41116db3y50c73c79528d6206@mail.gmail.com>
+Date: Fri, 4 May 2007 16:32:27 +0800
+From: "la deng" <ladeng.mimi@gmail.com>
+To: torvalds@linux-foundation.org
+Subject: c 's OOP in VFS vs c++'s OOP
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-2022-JP; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Andrew Morton wrote:
+reference to the c++'s father's interview
 
->
-> Please be careful to add the appropriate cc's.
->
-> On Mon, 30 Apr 2007 04:37:22 -0400 (EDT) "Robert P. J. Day" <rpjday@mindspring.com> wrote:
->
-> >
-> > Remove the apparently redundant GFP_KERNEL type flag in the call to
-> > kmalloc().
-> >
-> > Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-> >
-> > ---
-> >
-> > diff --git a/drivers/scsi/aic7xxx_old.c b/drivers/scsi/aic7xxx_old.c
-> > index a988d5a..765ded0 100644
-> > --- a/drivers/scsi/aic7xxx_old.c
-> > +++ b/drivers/scsi/aic7xxx_old.c
-> > @@ -6581,7 +6581,7 @@ aic7xxx_slave_alloc(struct scsi_device *SDptr)
-> >    struct aic7xxx_host *p = (struct aic7xxx_host *)SDptr->host->hostdata;
-> >    struct aic_dev_data *aic_dev;
-> >
-> > -  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
-> > +  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC);
->
-> No, this converts the allocation from a robust one which can sleep into a
-> flakey one which cannot.
+http://www.artima.com/intv/abstreffi.html
 
-... snip ...
+ fortran and c++ can  achive good performance for they can abstract in
+higher level and  their compiler can think in higher level to avoid
+the cache miss (like in the array vs vector )or to achive the "no
+code" Optimization
 
-at this point, i'd be happier to leave the appropriate patches in the
-hands of those who have a better handle on this.  as i posted earlier,
-there's only two examples of this in the entire tree:
+The vfs using c to OOP but c compiler can't have the high level
+Intelligence as the c++ or fortran's compiler to help at the high
+level Optimization
 
-drivers/scsi/aic7xxx_old.c:  aic_dev = kmalloc(sizeof(struct aic_dev_data), GFP_ATOMIC | GFP_KERNEL);
-drivers/message/i2o/device.c:   resblk = kmalloc(buflen + 8, GFP_KERNEL | GFP_ATOMIC);
 
-it's all yours.
+one benchmark showed the c insert in the array will slow by speed of   1/17
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Then ,what's the power of c OOP vs c++ with the compiler's
+Intelligence in OOP?or maybe the c compiler have Outdated？
+
+any input will be appreciated.
