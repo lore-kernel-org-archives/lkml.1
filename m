@@ -1,60 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1766618AbXEDUjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1766602AbXEDUjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1766618AbXEDUjU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 16:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766611AbXEDUjT
+	id S1766602AbXEDUjY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 16:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1766611AbXEDUjX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 16:39:19 -0400
-Received: from mga01.intel.com ([192.55.52.88]:40542 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1766579AbXEDUjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 16:39:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,494,1170662400"; 
-   d="scan'208";a="242093562"
-Date: Fri, 4 May 2007 13:36:45 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com, akpm@linux-foundation.org
-Subject: Re: [patch 0/7] Asynchronous Notification for ATAPI devices (v2) -
- resend
-Message-Id: <20070504133645.7d053549.kristen.c.accardi@intel.com>
-In-Reply-To: <1178310603.3711.54.camel@mulgrave.il.steeleye.com>
-References: <20070504111222.c2e373cf.kristen.c.accardi@intel.com>
-	<1178310603.3711.54.camel@mulgrave.il.steeleye.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 May 2007 16:39:23 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:14486 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1766602AbXEDUjV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 16:39:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=WendJpeezIVmk6xC2YtFGRZ+VGPNUBsFeZGeTLuqcMwv4DfFjqd765iEtTxjXvlXq1Hy5kUkr7+NxcDjtXnwj+JfQN+fPvmgjO5sJCuVhrhUNbJ4xcAtLEF9WnBCFOBV+/EmJcINKzHPi+L3lnTwkvolJeF0KA4yD4PiIrfAPHg=
+Message-ID: <463B99EE.2090001@gmail.com>
+Date: Fri, 04 May 2007 22:39:10 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Phillip Susi <psusi@cfl.rr.com>
+CC: Francesco Pretto <ceztko@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>  <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca> <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com> <463B858E.6060002@cfl.rr.com>
+In-Reply-To: <463B858E.6060002@cfl.rr.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 04 May 2007 15:30:03 -0500
-James Bottomley <James.Bottomley@SteelEye.com> wrote:
+Phillip Susi wrote:
+> Did anything ever come of this?  We still have users complaining about
+> this.  Does this patch resolve the issue?  I can't seem to load it up
+> right now; the site says it is down for maintenance.
 
-> On Fri, 2007-05-04 at 11:12 -0700, Kristen Carlson Accardi wrote:
-> > This patch series implements Asynchronous Notification (AN) for SATA
-> > ATAPI devices as defined in SATA 2.5 and AHCI 1.1 and higher.  Drives
-> > which support this feature will send a notification when new media is
-> > inserted and removed, preventing the need for user space to poll for
-> > new media.  This support is exposed to user space via a flag that will
-> > be set in /sys/block/sr*/capability_flags.  If the flag is set, user
-> > space can disable polling for the new media, and the genhd driver will
-> > send a KOBJ_CHANGE event with the envp set to MEDIA_CHANGE_EVENT=1.
-> > 
-> > Note that this patch only implements support for directly attached
-> > drives - AN with drives attached to a port multiplier requires 
-> > additional changes.
-> 
-> I seem to remember when this came up before, the observation was made
-> that AENs occur for many more things than simple media change notices,
-> so we should probably have a more generic AEN handling mechanism.  Is
-> there any plan to move in this direction
-> 
-> James
-> 
-In this implementation, we use kobject_uevent_env (vs. just 
-kobject_uevent in the original implementation) to send a KOBJ_CHANGE
-with the enviroment value of MEDIA_CHANGE=1.  For other asynchronous
-events, you could still use KOBJ_CHANGE with a different env value.
+Yeap, the third iteration of the patch just got submitted.
+
+  http://thread.gmane.org/gmane.linux.ide/18485
+
+Unfortunately, there doesn't seem to be an easy way out.  We'll need
+userland shutdown(8) update.
+
+-- 
+tejun
