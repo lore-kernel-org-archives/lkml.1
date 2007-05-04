@@ -1,80 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161618AbXEDSr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161691AbXEDSrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161618AbXEDSr3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161605AbXEDSr3
+	id S1161691AbXEDSrq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161625AbXEDSrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:47:29 -0400
-Received: from mta16.mail.adelphia.net ([68.168.78.211]:47480 "EHLO
-	mta16.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161618AbXEDSr1 (ORCPT
+	Fri, 4 May 2007 14:47:45 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48911 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1161605AbXEDSrm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:47:27 -0400
-Message-ID: <463B7FBC.3090907@acm.org>
-Date: Fri, 04 May 2007 13:47:24 -0500
-From: Corey Minyard <minyard@acm.org>
-User-Agent: Icedove 1.5.0.10 (X11/20070328)
+	Fri, 4 May 2007 14:47:42 -0400
+Date: Fri, 4 May 2007 11:47:41 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>
+Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
+In-Reply-To: <463B7F63.8070508@cs.helsinki.fi>
+Message-ID: <Pine.LNX.4.64.0705041147000.24625@schroedinger.engr.sgi.com>
+References: <20070504102651.923946304@chello.nl>  <20070504103157.215424767@chello.nl>
+  <Pine.LNX.4.64.0705040932200.22033@schroedinger.engr.sgi.com> 
+ <1178301545.24217.56.camel@twins>  <Pine.LNX.4.64.0705041104110.23539@schroedinger.engr.sgi.com>
+  <1178302904.2767.6.camel@lappy>  <Pine.LNX.4.64.0705041128270.24283@schroedinger.engr.sgi.com>
+ <1178303538.2767.9.camel@lappy> <463B7F63.8070508@cs.helsinki.fi>
 MIME-Version: 1.0
-To: Gene Heskett <gene.heskett@gmail.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] Serial 8250: Handle saving the clear-on-read bits from
- the LSR and MSR
-References: <20070504131532.GA12265@localdomain> <200705041304.02618.gene.heskett@gmail.com>
-In-Reply-To: <200705041304.02618.gene.heskett@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gene Heskett wrote:
-> On Friday 04 May 2007, Corey Minyard wrote:
->   
->> I did think of one other thing: if you clear the MSR delta flags while
->> polling the serial console, you need to call the routine to check the
->> modem status since the interrupt will not happen.  So here's the
->> patch...
->>
->> Subject: Serial 8250: Handle saving the clear-on-read bits from the LSR and
->> MSR
->>
->>     
-> I applied this patch because I was curious to see what effect if any it had on 
-> some serial based acessories I use here, like a cm11 x10 controller with 
-> heyu, and a belkin ups with its supplied software.
->
-> But at first boot, its not 100% operationally safe, but please read on.
->
-> 1) heyu (the x10 control program) is now stuck in a loop, repeating the last 
-> command issued, at about 40 second repeat intervals.  AND it is using 90%+ of 
-> the cpu while it executes each loop, which takes about 7 to 10 seconds each 
-> time.  heyu is interfacing to the world via /dev/ttyUSB0, through an FTDI 
-> adapter so I'm not able to make a mental connection here between this patch 
-> and that effect.
->
-> 2) HOWEVER!  The belkin upsd daemon, which started being a cpu hog, using 40% 
-> of the cpu continuously since something in the 2.6.20 to 2.6.21 time frame, 
-> and this was regardless of whether it was talking through a /dev/ttyUSB# port 
-> and either a pl2303, or an FTDI adaptor, or direct through /dev/ttyS0, is at 
-> least for /dev/ttyS0, now operating normally and apparently 100% stable.  So 
-> I pulled out another FTDI adaptor, and reconfigured the daemon to 
-> use /dev/ttyUSB1, and that is also operating 100% normally now.
->
-> Can someone explain 1) above?  Even odder still, I'd killed and restarted heyu 
-> several times to no avail before I tried putting upsd on /dev/ttyUSB1, but 
-> after moving the upsd access from /dev/ttyS0 to /dev/ttyUSB1, then heyu, 
-> running through /dev/ttyUSB0, is now operating 100% normally.  ???
->
-> Does anyone have any idea what kind of bait I should put out to kill this 
-> nilmerg?  I'm happy, its all working again for a change, but I'll be damned 
-> if I ain't totally bumfuzzled.  And I wonder if it will survive a reboot...
->
->   
-I really doubt that this patch had anything to do with these issues, 
-especially
-the ones over USB.  However, if you can reliably remove the patch, test, and
-reapply the patch, and test, and the issues remain the same, then it's 
-perhaps
-something significant, though I would be at a loss to know what it was.
+On Fri, 4 May 2007, Pekka Enberg wrote:
 
--corey
+> Again, slab has no way of actually estimating how many pages you need for a
+> given number of objects. So we end up calculating some upper bound which
+> doesn't belong in mm/slab.c. I am perfectly okay with:
+
+It can give a worst case number and that is what he wants.
+
