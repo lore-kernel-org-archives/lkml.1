@@ -1,81 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030357AbXEDIgx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932478AbXEDIhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030357AbXEDIgx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 04:36:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031356AbXEDIgx
+	id S932478AbXEDIhi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 04:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbXEDIhi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 04:36:53 -0400
-Received: from gw.ac.upc.es ([147.83.30.3]:57911 "EHLO gw.ac.upc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030357AbXEDIgw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 04:36:52 -0400
-Message-ID: <463AF095.30406@ac.upc.edu>
-Date: Fri, 04 May 2007 10:36:37 +0200
-From: "Julio M. Merino Vidal" <jmerino@ac.upc.edu>
-User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Per-CPU data as a structure
-References: <16C35E62-A26F-49FC-9CD8-7BADFCD97BA5@ac.upc.edu> <p73ps5hx1t2.fsf@bingen.suse.de>
-In-Reply-To: <p73ps5hx1t2.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 4 May 2007 04:37:38 -0400
+Received: from frankvm.xs4all.nl ([80.126.170.174]:52426 "EHLO
+	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932478AbXEDIhh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 04:37:37 -0400
+Date: Fri, 4 May 2007 10:37:35 +0200
+From: Frank van Maarseveen <frankvm@frankvm.com>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Frank van Maarseveen <frankvm@frankvm.com>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, Alan Cox <alan@redhat.com>
+Subject: Re: libata /dev/scd0 problem: mount after burn fails without eject
+Message-ID: <20070504083735.GA20072@janus>
+References: <20070501135951.GA17072@janus> <46374C11.1010702@rtr.ca> <6bffcb0e0705010731v44cfad1awf4342121245f7ab3@mail.gmail.com> <463AEBE0.7010506@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <463AEBE0.7010506@gmail.com>
+User-Agent: Mutt/1.4.1i
+X-BotBait: val@frankvm.com, kuil@frankvm.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->> As far as I can tell, the advantage of percpu is that you can define
->> new "fields" anywhere in the code and independently from the rest of
->> the system. 
->>     
->
-> - Independent maintenance as you noted
-> - Fast access and relatively compact code
-> - Avoids false sharing by keeping cache lines of different CPUs separate
-> - Doesn't waste a lot of memory in padding like NR_CPUs arrays usually
-> need to to avoid the previous point.
->
-> Any replacement that doesn't have these properties too will probably
-> be not useful.
->   
-Thank you for the details.  I'll try to stick to per-cpu wherever 
-possible for now.
+On Fri, May 04, 2007 at 10:16:32AM +0200, Tejun Heo wrote:
+> Michal Piotrowski wrote:
+> > On 01/05/07, Mark Lord <lkml@rtr.ca> wrote:
+> >> Forwarding to linux-scsi and linux-ide mailing lists.
+> >>
+> >> Frank van Maarseveen wrote:
+> >> > Tested on 2.6.20.6 and 2.6.21.1
+> >> >
+> >> > I decided to swich from the old IDE drivers to libata and now there
+> >> > seems to be a little but annoying problem: cannot mount an ISO image
+> >> > after burning it.
+> >> >
+> >> > May  1 14:32:55 kernel: attempt to access beyond end of device
+> >> > May  1 14:32:55 kernel: sr0: rw=0, want=68, limit=4
+> >> > May  1 14:32:55 kernel: isofs_fill_super: bread failed, dev=sr0,
+> >> iso_blknum=16, block=16
+> >> >
+> >> > an "eject" command seems to fix the state of the PATA DVD writer
+> >> > or driver. The problem occurs for burning a CD and for DVD too with
+> >> > identical error messages.
+> 
+> Right after burning, if you run 'fuser -v /dev/sr0', what does it say?
 
-Anyway, what do you think about adding the above text to the code (percpu.h
-maybe) as documentation?  See the patch below.  (Dunno if the Signed-off-by
-line is appropriate as most of the text is yours.)
+Tried the fuser as root to be sure but it didn't show anything.
 
-Signed-off-by: Julio M. Merino Vidal <jmerino@ac.upc.edu>
-
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index 600e3d3..b8e8b8c 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -1,6 +1,21 @@
- #ifndef __LINUX_PERCPU_H
- #define __LINUX_PERCPU_H
- 
-+/*
-+ * percpu provides a mechanism to define variables that are specific to 
-each
-+ * CPU in the system.
-+ *
-+ * Each variable is defined as an independent array of NR_CPUS elements.
-+ * This approach is used instead of a per-CPU structure because it has the
-+ * following advantages:
-+ * - Independent maintenance: a source file can define new per-CPU
-+ *   variables without distorting others.
-+ * - Fast access and relatively compact code.
-+ * - Avoids false sharing by keeping cache lines of different CPUs 
-separate.
-+ * - Doesn't waste a lot of memory in padding like NR_CPUs arrays usually
-+ *   need to to avoid the previous point.
-+ */
-+
- #include <linux/spinlock.h> /* For preempt_disable() */
- #include <linux/slab.h> /* For kmalloc() */
- #include <linux/smp.h>
-
-
-Kind regards.
+-- 
+Frank
