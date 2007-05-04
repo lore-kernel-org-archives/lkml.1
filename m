@@ -1,76 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423072AbXEDXsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423132AbXEDXsW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423072AbXEDXsW (ORCPT <rfc822;w@1wt.eu>);
+	id S1423132AbXEDXsW (ORCPT <rfc822;w@1wt.eu>);
 	Fri, 4 May 2007 19:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423135AbXEDXsV
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423055AbXEDXoM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 19:48:21 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:23955 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1423120AbXEDXsN (ORCPT
+	Fri, 4 May 2007 19:44:12 -0400
+Received: from 116.sub-75-210-58.myvzw.com ([75.210.58.116]:46309 "EHLO
+	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423051AbXEDXnd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 19:48:13 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=R6Ecl8HwGKlPLe91eQdFtLPs3sGDIviCn2gnkN2yva42R1FahfhzG3TNQa5LOrSF9FSkahric1flDPCW5M2U5eerXg4GEeglFKKce9iHTC9z0+qY9kUyoc3CKORpaXezbeHQVeqKGNskIT4rYoisg1QpP7CD/UQrm9T6Xmini48=  ;
-X-YMail-OSG: ELCCVaMVM1kP8jlZxqedu8f6bdNNWKL.H5P7j8RsgBUW.fRTInGjP.vvocBhckqqEZ9UOLog7g--
-Message-ID: <463BC62C.3060605@yahoo.com.au>
-Date: Sat, 05 May 2007 09:47:56 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Ulrich Drepper <drepper@redhat.com>
-CC: Rik van Riel <riel@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>
-Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
-References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au> <463B598B.80200@redhat.com>
-In-Reply-To: <463B598B.80200@redhat.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 4 May 2007 19:43:33 -0400
+Message-Id: <20070504232120.686965680@goop.org>
+References: <20070504232051.411946839@goop.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 04 May 2007 16:21:08 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 17/29] xen: lazy-mmu operations
+Content-Disposition: inline; filename=xen-lazy-mmu.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> Nick Piggin wrote:
-> 
->>What I found is that, on this system, MADV_FREE performance improvement
->>was in the noise when you look at it on top of the MADV_DONTNEED glibc
->>and down_read(mmap_sem) patch in sysbench.
-> 
-> 
-> I don't want to judge the numbers since I cannot but I want to make an
-> observations: even if in the SMP case MADV_FREE turns out to not be a
-> bigger boost then there is still the UP case to keep in mind where Rik
-> measured a significant speed-up.  As long as the SMP case isn't hurt
-> this is reaosn enough to use the patch.  With more and more cores on one
-> processor SMP systems are pushed evermore to the high-end side.  You'll
-> find many installations which today use SMP will be happy enough with
-> many-core UP machines.
+This patch uses the lazy-mmu hooks to batch mmu operations where
+possible.  This is primarily useful for batching operations applied to
+active pagetables, which happens during mprotect, munmap, mremap and
+the like (mmap does not do bulk pagetable operations, so it isn't
+helped).
 
-OK, sure. I think we need more numbers though.
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Acked-by: Chris Wright <chrisw@sous-sol.org>
 
-And even if this was a patch with _no_ possibility for regressions and it
-was a completely trivial one that improves performance in some cases...
-one big problem is that it uses another page flag.
+---
+ arch/i386/xen/enlighten.c  |   56 +++++++++++++++++++++++++++-----------------
+ arch/i386/xen/mmu.c        |   56 ++++++++++++++++++++++++++++++++------------
+ arch/i386/xen/multicalls.c |    4 +--
+ 3 files changed, 78 insertions(+), 38 deletions(-)
 
-I literally have about 4 or 5 new page flags I'd like to add today :) I
-can't of course, because we have very few spare ones left.
-
- From the MySQL numbers on this system, it seems like performance is in the
-noise, and MADV_DONTNEED makes the _vast_ majority of the improvement.
-This is also the case with Rik's benchmarks, and while he did see some
-improvement, I found the runs to be quite variable, so it would be ideal
-to get a larger sample.
-
-And the fact that the poor behaviour of the old style malloc/free went
-unnoticed for so long indicates that it won't be the end of the world if
-we didn't merge MADV_FREE right now.
+===================================================================
+--- a/arch/i386/xen/enlighten.c
++++ b/arch/i386/xen/enlighten.c
+@@ -451,28 +451,38 @@ static void xen_apic_write(unsigned long
+ 
+ static void xen_flush_tlb(void)
+ {
+-	struct mmuext_op op;
+-
+-	op.cmd = MMUEXT_TLB_FLUSH_LOCAL;
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++	struct mmuext_op *op;
++	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
++
++	op = mcs.args;
++	op->cmd = MMUEXT_TLB_FLUSH_LOCAL;
++	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ }
+ 
+ static void xen_flush_tlb_single(unsigned long addr)
+ {
+-	struct mmuext_op op;
+-
+-	op.cmd = MMUEXT_INVLPG_LOCAL;
+-	op.arg1.linear_addr = addr & PAGE_MASK;
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++	struct mmuext_op *op;
++	struct multicall_space mcs = xen_mc_entry(sizeof(*op));
++
++	op = mcs.args;
++	op->cmd = MMUEXT_INVLPG_LOCAL;
++	op->arg1.linear_addr = addr & PAGE_MASK;
++	MULTI_mmuext_op(mcs.mc, op, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ }
+ 
+ static void xen_flush_tlb_others(const cpumask_t *cpus, struct mm_struct *mm,
+ 				 unsigned long va)
+ {
+-	struct mmuext_op op;
++	struct {
++		struct mmuext_op op;
++		cpumask_t mask;
++	} *args;
+ 	cpumask_t cpumask = *cpus;
++	struct multicall_space mcs;
+ 
+ 	/*
+ 	 * A couple of (to be removed) sanity checks:
+@@ -489,17 +499,21 @@ static void xen_flush_tlb_others(const c
+ 	if (cpus_empty(cpumask))
+ 		return;
+ 
++	mcs = xen_mc_entry(sizeof(*args));
++	args = mcs.args;
++	args->mask = cpumask;
++	args->op.arg2.vcpumask = &args->mask;
++
+ 	if (va == TLB_FLUSH_ALL) {
+-		op.cmd = MMUEXT_TLB_FLUSH_MULTI;
+-		op.arg2.vcpumask = (void *)cpus;
++		args->op.cmd = MMUEXT_TLB_FLUSH_MULTI;
+ 	} else {
+-		op.cmd = MMUEXT_INVLPG_MULTI;
+-		op.arg1.linear_addr = va;
+-		op.arg2.vcpumask = (void *)cpus;
+-	}
+-
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++		args->op.cmd = MMUEXT_INVLPG_MULTI;
++		args->op.arg1.linear_addr = va;
++	}
++
++	MULTI_mmuext_op(mcs.mc, &args->op, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
+ }
+ 
+ static unsigned long xen_read_cr2(void)
+===================================================================
+--- a/arch/i386/xen/mmu.c
++++ b/arch/i386/xen/mmu.c
+@@ -56,12 +56,20 @@ void make_lowmem_page_readwrite(void *va
+ 
+ void xen_set_pmd(pmd_t *ptr, pmd_t val)
+ {
+-	struct mmu_update u;
+-
+-	u.ptr = virt_to_machine(ptr).maddr;
+-	u.val = pmd_val_ma(val);
+-	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
+-		BUG();
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	preempt_disable();
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++	u->ptr = virt_to_machine(ptr).maddr;
++	u->val = pmd_val_ma(val);
++	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++
++	preempt_enable();
+ }
+ 
+ /*
+@@ -104,20 +112,38 @@ void xen_set_pte_at(struct mm_struct *mm
+ void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 		    pte_t *ptep, pte_t pteval)
+ {
+-	if ((mm != current->mm && mm != &init_mm) ||
+-	    HYPERVISOR_update_va_mapping(addr, pteval, 0) != 0)
+-		xen_set_pte(ptep, pteval);
++	if (mm == current->mm || mm == &init_mm) {
++		if (xen_get_lazy_mode() == PARAVIRT_LAZY_MMU) {
++			struct multicall_space mcs;
++			mcs = xen_mc_entry(0);
++
++			MULTI_update_va_mapping(mcs.mc, addr, pteval, 0);
++			xen_mc_issue(PARAVIRT_LAZY_MMU);
++			return;
++		} else
++			if (HYPERVISOR_update_va_mapping(addr, pteval, 0) == 0)
++				return;
++	}
++	xen_set_pte(ptep, pteval);
+ }
+ 
+ #ifdef CONFIG_X86_PAE
+ void xen_set_pud(pud_t *ptr, pud_t val)
+ {
+-	struct mmu_update u;
+-
+-	u.ptr = virt_to_machine(ptr).maddr;
+-	u.val = pud_val_ma(val);
+-	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
+-		BUG();
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	preempt_disable();
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++	u->ptr = virt_to_machine(ptr).maddr;
++	u->val = pud_val_ma(val);
++	MULTI_mmu_update(mcs.mc, u, 1, NULL, DOMID_SELF);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++
++	preempt_enable();
+ }
+ 
+ void xen_set_pte(pte_t *ptep, pte_t pte)
+===================================================================
+--- a/arch/i386/xen/multicalls.c
++++ b/arch/i386/xen/multicalls.c
+@@ -5,8 +5,8 @@
+ 
+ #include "multicalls.h"
+ 
+-#define MC_BATCH	8
+-#define MC_ARGS		(MC_BATCH * 32 / sizeof(u64))
++#define MC_BATCH	32
++#define MC_ARGS		(MC_BATCH * 16 / sizeof(u64))
+ 
+ struct mc_buffer {
+ 	struct multicall_entry entries[MC_BATCH];
 
 -- 
-SUSE Labs, Novell Inc.
+
