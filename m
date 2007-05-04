@@ -1,42 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031718AbXEDVsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161535AbXEDVwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031718AbXEDVsF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 17:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031721AbXEDVsF
+	id S1161535AbXEDVwV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 17:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161560AbXEDVwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 17:48:05 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:39508 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031720AbXEDVsC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 17:48:02 -0400
-Date: Fri, 4 May 2007 14:47:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org
+	Fri, 4 May 2007 17:52:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60005 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1161535AbXEDVwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 17:52:20 -0400
+Message-ID: <463BAB0F.60304@redhat.com>
+Date: Fri, 04 May 2007 17:52:15 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
 Subject: Re: Remove constructor from buffer_head
-Message-Id: <20070504144756.90d3b41d.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705041439040.25764@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com>
-	<20070504134212.c18d2d65.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705041439040.25764@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com> <20070504134212.c18d2d65.akpm@linux-foundation.org>
+In-Reply-To: <20070504134212.c18d2d65.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007 14:42:02 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Fri, 4 May 2007, Andrew Morton wrote:
+Andrew Morton wrote:
 > 
-> > So the patch took the average system time from 4.42 seconds up to 4.582
-> > seconds.  Nice slowdown!
+> I'd investigate further, but someone has gone and broken oprofile.
 > 
-> All of that from a memset and a list head init on a cacheline we already 
-> use?
 
-Seems unlikely, especially when you consider all the other stuff which a write()
-has to do.
+Did you just notice that? Apparently it's been broken since 2.6.21-final.
+
