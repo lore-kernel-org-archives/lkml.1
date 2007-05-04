@@ -1,53 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422665AbXEDTqv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1422716AbXEDTtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422665AbXEDTqv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 15:46:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422744AbXEDTqu
+	id S1422716AbXEDTtl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 15:49:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161535AbXEDTtl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 15:46:50 -0400
-Received: from amsfep17-int.chello.nl ([213.46.243.15]:9938 "EHLO
-	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1422665AbXEDTqt (ORCPT
+	Fri, 4 May 2007 15:49:41 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:49673
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161295AbXEDTtj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 15:46:49 -0400
-Subject: Re: [PATCH 00/40] Swap over Networked storage -v12
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
-       trond.myklebust@fys.uio.no, tgraf@suug.ch, James.Bottomley@SteelEye.com,
-       michaelc@cs.wisc.edu, akpm@linux-foundation.org, phillips@google.com
-In-Reply-To: <20070504.122716.31641374.davem@davemloft.net>
-References: <20070504102651.923946304@chello.nl>
-	 <20070504.122716.31641374.davem@davemloft.net>
+	Fri, 4 May 2007 15:49:39 -0400
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial
+	possible bug]
+From: Paul Fulghum <paulkf@microgate.com>
+To: Antonino Ingargiola <tritemio@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
+	 <1178290160.3913.2.camel@amdx2.microgate.com>
+	 <5486cca80705040904v786f13dh5614174fcc51c202@mail.gmail.com>
+	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
+	 <463B7534.6000207@microgate.com>
+	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
+	 <1178299247.3769.0.camel@amdx2.microgate.com>
+	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
+	 <1178300493.3619.1.camel@amdx2.microgate.com>
+	 <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
+	 <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
 Content-Type: text/plain
-Date: Fri, 04 May 2007 21:41:49 +0200
-Message-Id: <1178307709.2767.19.camel@lappy>
+Date: Fri, 04 May 2007 14:49:33 -0500
+Message-Id: <1178308173.3743.14.camel@amdx2.microgate.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+X-Mailer: Evolution 2.2.3 (2.2.3-4.fc4) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 12:27 -0700, David Miller wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Fri, 04 May 2007 12:26:51 +0200
+On Fri, 2007-05-04 at 21:06 +0200, Antonino Ingargiola wrote:
+
+> Filling with echo console-screen.sh I've found that the blocking command is:
 > 
-> > There is a fundamental deadlock associated with paging;
+>     unicode_start 2> /dev/null || true
 > 
-> I know you'd really like people like myself to review this work, but a
-> set of 40 patches is just too much to try and digest at once
-> especially when I have other things going on.
+> or at least the echo before this command is the last shown.
 
-I realize this, however I expected you to mainly look at the the 10
-network related patches, namely: 11/40 - 20/40.
+I still don't know what is blocking.
 
-I know they build upon the previous 10 patches, which are mostly VM, and
-you seem to have an interest in that as well, so that would be 20
-patches to look at. Still a sizable set.
+It is possible some tty device is operating with an improperly
+initialized tty structure. I vaguely remember some console code
+creating its own minimally initialized 'dummy' tty structure.
 
-How would you prefer I present these?
+This might be causing the new flush code to hang.
 
-The other patches are NFS and iSCSI, I'd not expect you to review those
-in depth.
+Try this patch which does not call the flush unless a line
+discipline is attached to the tty. That should indicate
+a normally initialized tty structure.
+
+--- a/drivers/char/tty_io.c	2007-04-25 22:08:32.000000000 -0500
++++ b/drivers/char/tty_io.c	2007-05-04 12:15:18.000000000 -0500
+@@ -365,6 +365,28 @@ static void tty_buffer_free(struct tty_s
+ }
+ 
+ /**
++ *	tty_buffer_flush		-	flush full tty buffers
++ *	@tty: tty to flush
++ *
++ *	flush all the buffers containing receive data
++ *
++ *	Locking: none
++ */
++
++static void tty_buffer_flush(struct tty_struct *tty)
++{
++	struct tty_buffer *thead;
++	unsigned long flags;
++
++	spin_lock_irqsave(&tty->buf.lock, flags);
++	while((thead = tty->buf.head) != NULL) {
++		tty->buf.head = thead->next;
++		tty_buffer_free(tty, thead);
++	}
++	spin_unlock_irqrestore(&tty->buf.lock, flags);
++}
++
++/**
+  *	tty_buffer_find		-	find a free tty buffer
+  *	@tty: tty owning the buffer
+  *	@size: characters wanted
+@@ -1236,8 +1258,10 @@ void tty_ldisc_flush(struct tty_struct *
+ {
+ 	struct tty_ldisc *ld = tty_ldisc_ref(tty);
+ 	if(ld) {
+-		if(ld->flush_buffer)
++		if(ld->flush_buffer) {
+ 			ld->flush_buffer(tty);
++			tty_buffer_flush(tty);
++		}
+ 		tty_ldisc_deref(ld);
+ 	}
+ }
+@@ -3336,6 +3360,20 @@ int tty_ioctl(struct inode * inode, stru
+ 		case TIOCMBIC:
+ 		case TIOCMBIS:
+ 			return tty_tiocmset(tty, file, cmd, p);
++		case TCFLSH:
++			switch (arg) {
++			case TCIFLUSH:
++			case TCIOFLUSH:
++				/* flush tty buffer and allow ldisc to process ioctl */
++				ld = tty_ldisc_ref_wait(tty);
++				if (ld) {
++					if (ld->ioctl)
++						tty_buffer_flush(tty);
++					tty_ldisc_deref(ld);
++				}
++				break;
++			}
++			break;
+ 	}
+ 	if (tty->driver->ioctl) {
+ 		retval = (tty->driver->ioctl)(tty, file, cmd, arg);
 
 
