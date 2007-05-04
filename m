@@ -1,51 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030224AbXEDPyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030943AbXEDP5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030224AbXEDPyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 11:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030951AbXEDPyT
+	id S1030943AbXEDP5T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 11:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030945AbXEDP5T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 11:54:19 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:43655 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1030224AbXEDPyS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 11:54:18 -0400
-Message-ID: <463B56F8.5070007@zytor.com>
-Date: Fri, 04 May 2007 08:53:28 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 4 May 2007 11:57:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59366 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1030943AbXEDP5S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 11:57:18 -0400
+Date: Fri, 4 May 2007 11:57:11 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: "Steve French (smfltc)" <smfltc@us.ibm.com>
+Cc: linux-cifs-client@lists.samba.org,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jeff Layton <jlayton@redhat.com>, hch@infradead.org
+Subject: Re: [PATCH] CIFS: make sec=none force an anonymous mount
+Message-ID: <20070504155710.GB18522@dantu.rdu.redhat.com>
+References: <20070504024910.CE97B1638AF@lists.samba.org> <463B50A5.3070500@us.ibm.com>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 1/3] Replace paravirt_probe with "platform type"	boot
- header field
-References: <1178283582.23670.67.camel@localhost.localdomain>	 <m1zm4ksn5o.fsf@ebiederm.dsl.xmission.com> <1178288329.23670.86.camel@localhost.localdomain>
-In-Reply-To: <1178288329.23670.86.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <463B50A5.3070500@us.ibm.com>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
->>
->> ENTRY(startup_32)
->> #ifdef CONFIG_LGUEST_GUEST
->>         cmpl	$1, 0x23c(%esi)
->> 	je      lguest_init
->> #endif
+On Fri, May 04, 2007 at 10:26:29AM -0500, Steve French (smfltc) wrote:
+> Jeff Layton wrote:
+> >We had a customer report that attempting to make CIFS mount with a null
+> >username (i.e. doing an anonymous mount) doesn't work. Looking through the
+> >code, it looks like CIFS expects a NULL username from userspace in order
+> >to trigger an anonymous mount. The mount.cifs code doesn't seem to ever
+> >pass a null username to the kernel, however.
+> Yes - cifs kernel code expects a NULL username (e.g. "username=") if 
+> you really don't want to pass the default username of the uid of 
+> the current process and you don't set the username explicitly
+> (e.g. in a credential file or mount parameter).
 > 
-> Hi Eric!
+> Samba userspace tools (and smbfs) handled this by first trying to
+> setup the SMB session using the default user, and if that fails 
+> with access denied then retrying sessionsetup with a null username 
+> string.  This would be easy to change in mount.cifs (ie as long 
+> as username was not explicitly passed on mount then if mount fails
+> with access denied simply add a retry with "username=").  This was
+> discussed at SambaXP.
 > 
-> 	Makes sense to me, but I wasn't sure... do we need to check for old
-> bootloader versions and such?
 
-So, in summary, yes, you have to check the version number before
-assigning any meaning to this field.
+Does this mean you're NAK'ing this patch in favor of a userspace fix? My
+perspective is that if someone explicitly requests sec=none, then we ought
+to do an anonymous mount regardless of how the username is set. Would
+you agree that that behavior is what you would want?
 
-	-hpa
+> 
+> Christoph Hellwig wrote:
+> >Looks useful.  In case you have some spare time at your hand it would
+> >be really nice to convert cifs option parsing to the lib/parser.c code
+> >and move all validation of the arguments into one place, so it's easily
+> >understanable and better to maintain.
+> 
+> Yes - that would be excellent.  The parse_mount_options badly needs to
+> be rewritten now that the number of mount options needed has grown.   
+> This is something Alex Bokovoy and I discussed last week at SambaXP 
+> for both the kernel code and the user space mount.cifs code.
+> Alex had volunteered to rewrite the user space cifs mount option
+> parsing code (and also change to use the safer talloc library)
+> 
+
+Definitely, though that sounds like a big project and I don't have the time to
+tackle it at the moment :-)
+
+Thanks,
+Jeff
+
