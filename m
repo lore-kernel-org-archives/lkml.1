@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755355AbXEDOmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754943AbXEDOsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755355AbXEDOmS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 10:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755365AbXEDOmS
+	id S1754943AbXEDOsT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 10:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbXEDOsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 10:42:18 -0400
-Received: from defg501.nifty.com ([202.248.238.128]:22905 "EHLO
-	defg501.nifty.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755355AbXEDOmR (ORCPT
+	Fri, 4 May 2007 10:48:19 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:39931 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754943AbXEDOsR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 10:42:17 -0400
-X-Greylist: delayed 573 seconds by postgrey-1.27 at vger.kernel.org; Fri, 04 May 2007 10:42:16 EDT
-DomainKey-Signature: a=rsa-sha1; s=userg503; d=nifty.com; c=nofws; q=dns;
-	b=M+coxQiyMB5CwdYg+WJhyJl5rGuGBTSY7C7gha9y3OnSBaU2FQMBGNaTE3zNw/aT+
-	cc8+YbLTReuEJzJ75MhIQ==
-Date: Fri, 4 May 2007 23:32:38 +0900
-From: Komuro <komurojun-mbn@nifty.com>
-To: Richard Kennedy <richard@rsk.demon.co.uk>
-Cc: linux-ide@vger.kernel.org, linux-pcmcia@lists.infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: [FW  ide-cs] Re: jvc cdrom drive
-Message-Id: <20070504233238.ca55c2d1.komurojun-mbn@nifty.com>
-In-Reply-To: <1178202559.3767.21.camel@localhost.localdomain>
-References: <1178202559.3767.21.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.4; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 4 May 2007 10:48:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=CpEqlL7IH4jP4WheZduAam3VSldo/mfNmiLIt5UM98KYBF4h2n6ziouVtqKxq8Tcips3Fy4FfqZ4IWPMIQEVrtRG7O8i89Bkq2cudfQTw4+DEqq+AUtEVmn0dnnLWkrFEIkHn/MR3R0en3PR5sRtHy0Ie9lyBANISif4GwOOQ88=
+Message-ID: <463B47AF.4010503@gmail.com>
+Date: Fri, 04 May 2007 16:48:15 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Oliver Neukum <oliver@neukum.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [patch]clarification of coding style regarding conditional statements
+ with two branches
+References: <200705040926.55257.oliver@neukum.org>
+In-Reply-To: <200705040926.55257.oliver@neukum.org>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 03 May 2007 15:29:19 +0100
-Richard Kennedy <richard@rsk.demon.co.uk> wrote:
+Oliver Neukum napsal(a):
+> Hi,
+> 
+> I suggest that the coding style should state that if either branch of
+> an 'if' statement needs braces, both branches should use them.
+> 
+> 	Regards
+> 		Oliver
+> Signed-off-by: Oliver Neukum <oneukum@suse.de>
+> ----
+> 
+> --- a/Documentation/CodingStyle	2007-04-20 13:08:17.000000000 +0200
+> +++ b/Documentation/CodingStyle	2007-04-20 13:16:14.000000000 +0200
+> @@ -160,6 +160,21 @@
+>  25-line terminal screens here), you have more empty lines to put
+>  comments on.
+>  
+> +Do not unnecessarily use braces where a single statement will do.
+> +
+> +if (condition)
+> +	action();
+> +
+> +This does not apply if one branch of a conditional statement is a single
+> +statement. Use braces in both branches.
 
+Why, what's wrong with
+if (condition) {
+	do_this();
+	do_that();
+} else
+	otherwise();
 
-IDE bugs should be posted to the linux-ide mailing list.
+? It's more readable/nicer in my eyes than
 
+> +if (condition) {
+> +	do_this();
+> +	do_that();
+> +} else {
+> +	otherwise();
+> +}
+> +
 
-> Hi all, 
-> I have a JVC MP-CDX1 cdrom drive that came with my laptop which used to
-> work with ide-cs but stopped working with newer kernels.
-> 
-> I added its ident to ide-cs.c (see patch below) and the drive now is
-> detected and gets mounted when plugged in and seems to work correctly.
-> 
-> But when I eject the card, pccardctl eject 0, the laptop locks up
-> completely, there are no messages in the log, and the fan goes to full
-> speed so I guess the cpu is running at 100%.
-> Any ideas what's going wrong or how to debug it ? 
-> Is there anything else I need to patch to get this working ?
-> 
-> Thanks
-> Richard
-> 
-> card info :- 
-> 
-> PRODID_1="KME"
-> PRODID_2="KXLC005"
-> PRODID_3="00"
-> PRODID_4=""
-> MANFID=0032,2904
-> FUNCID=8
-> 
-> log messages on insert :- 
-> 
-> May  3 11:22:52 mininote kernel: pccard: PCMCIA card inserted into slot 0
-> May  3 11:22:52 mininote kernel: cs: memory probe 0xa0000000-0xa0ffffff: clean.
-> May  3 11:22:52 mininote kernel: pcmcia: registering new device pcmcia0.0
-> May  3 11:22:53 mininote kernel: hdc: UJDB130, ATAPI CD/DVD-ROM drive
-> May  3 11:22:53 mininote kernel: ide1 at 0x190-0x197,0x396 on irq 3
-> May  3 11:22:53 mininote kernel: ide-cs: hdc: Vpp = 0.0
-> May  3 11:22:54 mininote kernel: hdc: ATAPI 20X CD-ROM drive, 128kB Cache
-> May  3 11:22:54 mininote kernel: Uniform CD-ROM driver Revision: 3.20
-> May  3 11:23:04 mininote hald: mounted /dev/hdc on behalf of uid 500
-> May  3 11:23:34 mininote hald: unmounted /dev/hdc from '/media/FC_4 i386 ftp #1' on behalf of uid 500
-> May  3 11:24:17 mininote kernel: pccard: card ejected from slot 0
-> << lockup happened here >>
-> 
-> patch
-> --- linux-2.6.21.1/drivers/ide/legacy/ide-cs.c.orig	2007-05-02 12:09:57.000000000 +0100
-> +++ linux-2.6.21.1/drivers/ide/legacy/ide-cs.c	2007-05-02 12:12:40.000000000 +0100
-> @@ -362,6 +362,7 @@
->  	PCMCIA_DEVICE_MANF_CARD(0x000a, 0x0000),	/* I-O Data CFA */
->  	PCMCIA_DEVICE_MANF_CARD(0x001c, 0x0001),	/* Mitsubishi CFA */
->  	PCMCIA_DEVICE_MANF_CARD(0x0032, 0x0704),
-> +	PCMCIA_DEVICE_MANF_CARD(0x0032, 0x2904),        /* KME KXLCOO5 JVC MP-CDX1 */
->  	PCMCIA_DEVICE_MANF_CARD(0x0045, 0x0401),	/* SanDisk CFA */
->  	PCMCIA_DEVICE_MANF_CARD(0x0098, 0x0000),	/* Toshiba */
->  	PCMCIA_DEVICE_MANF_CARD(0x00a4, 0x002d),
-> 
->    
-> 
+and not only in mine according to fast grep.
 
-Best Regards
-Komuro
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
