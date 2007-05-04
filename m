@@ -1,53 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031020AbXEDQI2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031061AbXEDQJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031020AbXEDQI2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 12:08:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031039AbXEDQI2
+	id S1031061AbXEDQJQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031046AbXEDQJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 12:08:28 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38095 "EHLO
+	Fri, 4 May 2007 12:09:16 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38133 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031020AbXEDQI1 (ORCPT
+	with ESMTP id S1031061AbXEDQJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 12:08:27 -0400
-Date: Fri, 4 May 2007 09:08:25 -0700 (PDT)
+	Fri, 4 May 2007 12:09:14 -0400
+Date: Fri, 4 May 2007 09:09:13 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, sct@redhat.com,
-       akpm@linux-foundation.org, adilger@clusterfs.com
-Subject: Re: [RFC/PATCH] ext3: remove inode constructor
-In-Reply-To: <Pine.LNX.4.64.0705041311230.1455@sbz-30.cs.Helsinki.FI>
-Message-ID: <Pine.LNX.4.64.0705040907180.21436@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0705041311230.1455@sbz-30.cs.Helsinki.FI>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@steeleye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>
+Subject: Re: [PATCH 08/40] mm: kmem_cache_objsize
+In-Reply-To: <84144f020705040354r5cb74c5fj6cb8698f93ffcb83@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705040908480.21436@schroedinger.engr.sgi.com>
+References: <20070504102651.923946304@chello.nl>  <20070504103157.215424767@chello.nl>
+ <84144f020705040354r5cb74c5fj6cb8698f93ffcb83@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Pekka J Enberg wrote:
+On Fri, 4 May 2007, Pekka Enberg wrote:
 
-> Index: 2.6/fs/ext3/super.c
-> ===================================================================
-> --- 2.6.orig/fs/ext3/super.c	2007-05-04 12:57:09.000000000 +0300
-> +++ 2.6/fs/ext3/super.c	2007-05-04 13:01:27.000000000 +0300
-> @@ -444,17 +444,26 @@ static struct kmem_cache *ext3_inode_cac
->  static struct inode *ext3_alloc_inode(struct super_block *sb)
->  {
->  	struct ext3_inode_info *ei;
-> +	struct inode *inode;
->  
->  	ei = kmem_cache_alloc(ext3_inode_cachep, GFP_NOFS);
->  	if (!ei)
->  		return NULL;
-> +        INIT_LIST_HEAD(&ei->i_orphan);
-> +#ifdef CONFIG_EXT3_FS_XATTR
-> +        init_rwsem(&ei->xattr_sem);
-> +#endif
-> +        mutex_init(&ei->truncate_mutex);
+> On 5/4/07, Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > Expost buffer_size in order to allow fair estimates on the actual space
+> > used/needed.
 
-^^^ whitespace issues
-
-Also could this be generalized to also apply to the generic inode 
-allocation in fs/inode.c?
+We already have ksize?
 
