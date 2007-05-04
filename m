@@ -1,41 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030945AbXEDP7P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030576AbXEDQBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030945AbXEDP7P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 11:59:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030995AbXEDP7P
+	id S1030576AbXEDQBY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 12:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030950AbXEDQBY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 11:59:15 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:51962 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1030945AbXEDP7O (ORCPT
+	Fri, 4 May 2007 12:01:24 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:58819 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1030576AbXEDQBX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 11:59:14 -0400
-Date: Fri, 4 May 2007 08:58:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Revert
- "[PATCH] paravirt: Add startup infrastructure for paravirtualization"
-Message-Id: <20070504085818.2762b160.akpm@linux-foundation.org>
-In-Reply-To: <1178289450.23670.100.camel@localhost.localdomain>
-References: <m1mz0ku7je.fsf@ebiederm.dsl.xmission.com>
-	<1178280770.23670.61.camel@localhost.localdomain>
-	<m1y7k4smmo.fsf@ebiederm.dsl.xmission.com>
-	<1178289450.23670.100.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Fri, 4 May 2007 12:01:23 -0400
+Subject: Re: [PATCH 00/40] Swap over Networked storage -v12
+From: Daniel Walker <dwalker@mvista.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, netdev@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       James Bottomley <James.Bottomley@SteelEye.com>,
+       Mike Christie <michaelc@cs.wisc.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>
+In-Reply-To: <1178293081.24217.46.camel@twins>
+References: <20070504102651.923946304@chello.nl>
+	 <1178292179.7997.12.camel@imap.mvista.com>
+	 <1178293081.24217.46.camel@twins>
+Content-Type: text/plain
+Date: Fri, 04 May 2007 08:59:39 -0700
+Message-Id: <1178294379.7997.26.camel@imap.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 05 May 2007 00:37:30 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+On Fri, 2007-05-04 at 17:38 +0200, Peter Zijlstra wrote:
+> > 
+> > This is kind of a lot of patches all at once .. Have you release any of
+> > these patch sets prior to this release ? 
+> 
+> Like the -v12 suggests, this is the 12th posting of this patch set.
+> Some is the same, some has changed.
 
-> Of course, I expect that Andrew is about to push my patches to Linus....
-> any day now... right Andrew?  Then we don't need this argument.
+I can find one prior release with this subject (-v11) , what was the
+subject prior to that release? It's not a hard rule, but usually >15
+patches is too many (check Documentation/SubmittingPatches under
+references).. You might want to consider submitting a URL instead. 
 
-It would be about a week off.  I'll resend the paches out for rereview.
+I think it's a benefit to release less since a developer (like myself)
+might know very little about "Swap over Networked storage", but if you
+submit 10 patches that developer might still review it, 40 patches they
+likely wouldn't review it.
+
+Daniel
+
