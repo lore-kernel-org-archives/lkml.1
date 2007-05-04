@@ -1,104 +1,302 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161509AbXEDScp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161492AbXEDSeL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161509AbXEDScp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 14:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161505AbXEDScp
+	id S1161492AbXEDSeL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 14:34:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161599AbXEDSeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 14:32:45 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39789 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161509AbXEDScn (ORCPT
+	Fri, 4 May 2007 14:34:11 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:5691 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161529AbXEDSeI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 14:32:43 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 1/3] Replace paravirt_probe with "platform type" boot header field
-References: <1178283582.23670.67.camel@localhost.localdomain>
-	<m1zm4ksn5o.fsf@ebiederm.dsl.xmission.com>
-	<1178288329.23670.86.camel@localhost.localdomain>
-	<m1tzussm4z.fsf@ebiederm.dsl.xmission.com>
-	<463B56A0.7090805@zytor.com>
-	<m1mz0kr0ux.fsf@ebiederm.dsl.xmission.com>
-	<463B69AB.2030706@zytor.com>
-Date: Fri, 04 May 2007 12:30:57 -0600
-In-Reply-To: <463B69AB.2030706@zytor.com> (H. Peter Anvin's message of "Fri,
-	04 May 2007 10:13:15 -0700")
-Message-ID: <m1vef8phjy.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	Fri, 4 May 2007 14:34:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=NbQpcZqHRh4Dc9mxRi7dlR5+oXJDofBSVNOXurpcyHe54H5AJs+gjjJziIRkWllQrndi8ZdMjfuIKA1Y8Lg218TlzB+Wx1nX+HgC/RkfxfvI5a8Y2MBYBOtsb8SX8tOPk38ANbofueLWQBtJ+sUBHm+mUHkHycJ/NgpAWo4aAo0=
+Message-ID: <8f8ff01d0705041134s66148077p7bdb216556f90c25@mail.gmail.com>
+Date: Fri, 4 May 2007 22:34:07 +0400
+From: "Alexey Starikovskiy" <aystarik@gmail.com>
+To: "Lennart Poettering" <mzxreary@0pointer.de>
+Subject: Re: [PATCH] acpi,msi-laptop: Fall back to EC polling mode for MSI laptop specific EC commands
+Cc: len.brown@intel.com, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070504121617.GA23312@tango.0pointer.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070504121617.GA23312@tango.0pointer.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"H. Peter Anvin" <hpa@zytor.com> writes:
+Ugly, but harmless. ACK.
 
-> Eric W. Biederman wrote:
->> "H. Peter Anvin" <hpa@zytor.com> writes:
->> 
->>> Eric W. Biederman wrote:
->>>> Unlikely.  Unless we expect that this offset will come in non-zero.
->>>>
->>> You might have to worry about that.  Historically, the "zero-page" was
->>> really just the setup code overwritten, and it's still true for a big
->>> chunk of it.
->>>
->>> One of the major changes in my setup code rewrite is to start out with
->>> an all-zero chunk of memory for this.
->> 
->> Well as long as we are in sync with setup.S we are fine.  The issue
->> is people generating the real-mode data from scratch, when using the
->> 32bit entry point.
+Regards,
+Alex.
+
+On 5/4/07, Lennart Poettering <mzxreary@0pointer.de> wrote:
+> From: Lennart Poettering <mzxreary@0pointer.de>
 >
-> Point.  I'd like that interface to specify that any undefined fields
-> should be zero, or we have a hopeless situation on our hands.
+> The ACPI EC that is used in MSI laptops knows some non-standard
+> commands for changing the screen brighntess and a few other things,
+> which are used by the msi-laptop.c driver. Unfortunately for these
+> commands no GPE events for IBF and OBF are triggered. Since nowadays
+> the EC code uses the ec_intr=1 mode by default, this causes these
+> operations to timeout, although they don't fail. In result, all
+> operations that you can do with the msi-laptop.c driver take more or
+> less 1s to complete, which is awfully slow.
 >
-> By the way, see the following for the structure definition; prepare to barf:
+> In one of the more recent kernels (2.6.20?) the EC subsystem has been
+> revamped. With that change the EC timeout has been increased. before
+> that increase the MSI EC accesses were slow -- but not *that* slow,
+> hence I took notice of this limitation of the MSI EC hardware only very
+> recently.
 >
-> http://git.kernel.org/?p=linux/kernel/git/hpa/linux-2.6-newsetup.git;a=blob;f=arch/i386/boot/boot.h;h=41a16f96ac3476cbd969aabe5e6a792ffe8c64a0;hb=HEAD
+> The standard EC operations on the MSI EC as defined in the ACPI spec
+> support GPE events properly.
 >
-> [I intend to move this into include/asm-i386/boot.h, but haven't gotten
-> that far yet.  I just yesterday got the code booting on both i386 and
-> x86-64, but haven't committed all the include/asm-* mods that went a
-> long with that yet.  I'm also waiting for a Kbuild fix so that the boot
-> directory can be shared between i386 and x86-64 without requiring a
-> symlink in the source tarball.]
-
-You should be able to just include linux/screen_info.h instead of duplicating
-it inline.
-
-I like the use of struct header in the middle of boot_params that
-seems like a nice maintenance device, although I'm not quite certain about
-
-However you haven't documented the old swap_dev field in struct header.
-At least rdev still knows about it, so it is probably inappropriate to
-merge it with syssize.  Not that syssize is actually useful for anything
-in a modern system.
-
-So I just looked at what /sbin/kexec does so we know what to expect.
-If I have a bzImage I just grab the first setup_sects (i.e. setup.S) and make
-it the initial linux boot parameters, placing the command line immediately
-afterwards.
-
-If I just have a vmlinux so I have to fake it I memset x86_linux_faked_param_header
-to zero, before placing in the values I care about.  And the size.  4K aka 1 page.
-Although I due put the command line at 2K, I think that is actually the historical
-kernel usage of the zero page.
-
-elilo does something similar but starts with a 16K pages and then backs up
-2K for the command line.
-
-Gujin does something similar but also seems to place a command line at 2K.
-
-So short of the first 2K we can reasonably expect new parameters to be zero
-initialized.  Past that we need to be a little more careful.
-
-And 4K seems to be our maximum size for backwards compatibility.  Although
-we use it in a fairly sparse way, so we should be ok.
-
-Eric
+> The following patch adds a new argument "force_poll" to the
+> ec_transaction() function (and friends). If set to 1, the function
+> will poll for IBF/OBF even if ec_intr=1 is enabled. If set to 0 the
+> current behaviour is used. The msi-laptop driver is modified to make
+> use of this new flag, so that OBF/IBF is polled for the special MSI EC
+> transactions -- but only for them.
+>
+> Patch is against Linus' current git kernel. Should also apply against
+> Len's current linux-acpi kernel.
+>
+> Len, please merge!
+>
+> Signed-off-by: Lennart Poettering <mzxreary@0pointer.de>
+> ---
+>  drivers/acpi/ec.c         |   39 +++++++++++++++++++++++----------------
+>  drivers/misc/msi-laptop.c |   12 ++++++------
+>  include/linux/acpi.h      |    3 ++-
+>  3 files changed, 31 insertions(+), 23 deletions(-)
+>
+> diff --git a/drivers/acpi/ec.c b/drivers/acpi/ec.c
+> index e08cf98..82f496c 100644
+> --- a/drivers/acpi/ec.c
+> +++ b/drivers/acpi/ec.c
+> @@ -147,9 +147,10 @@ static inline int acpi_ec_check_status(struct acpi_ec *ec, enum ec_event event,
+>         return 0;
+>  }
+>
+> -static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event, unsigned count)
+> +static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event,
+> +                        unsigned count, int force_poll)
+>  {
+> -       if (acpi_ec_mode == EC_POLL) {
+> +       if (unlikely(force_poll) || acpi_ec_mode == EC_POLL) {
+>                 unsigned long delay = jiffies + msecs_to_jiffies(ACPI_EC_DELAY);
+>                 while (time_before(jiffies, delay)) {
+>                         if (acpi_ec_check_status(ec, event, 0))
+> @@ -173,14 +174,15 @@ static int acpi_ec_wait(struct acpi_ec *ec, enum ec_event event, unsigned count)
+>
+>  static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
+>                                         const u8 * wdata, unsigned wdata_len,
+> -                                       u8 * rdata, unsigned rdata_len)
+> +                                       u8 * rdata, unsigned rdata_len,
+> +                                       int force_poll)
+>  {
+>         int result = 0;
+>         unsigned count = atomic_read(&ec->event_count);
+>         acpi_ec_write_cmd(ec, command);
+>
+>         for (; wdata_len > 0; --wdata_len) {
+> -               result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, count);
+> +               result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, count, force_poll);
+>                 if (result) {
+>                         printk(KERN_ERR PREFIX
+>                                "write_cmd timeout, command = %d\n", command);
+> @@ -191,7 +193,7 @@ static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
+>         }
+>
+>         if (!rdata_len) {
+> -               result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, count);
+> +               result = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, count, force_poll);
+>                 if (result) {
+>                         printk(KERN_ERR PREFIX
+>                                "finish-write timeout, command = %d\n", command);
+> @@ -202,7 +204,7 @@ static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
+>         }
+>
+>         for (; rdata_len > 0; --rdata_len) {
+> -               result = acpi_ec_wait(ec, ACPI_EC_EVENT_OBF_1, count);
+> +               result = acpi_ec_wait(ec, ACPI_EC_EVENT_OBF_1, count, force_poll);
+>                 if (result) {
+>                         printk(KERN_ERR PREFIX "read timeout, command = %d\n",
+>                                command);
+> @@ -217,7 +219,8 @@ static int acpi_ec_transaction_unlocked(struct acpi_ec *ec, u8 command,
+>
+>  static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
+>                                const u8 * wdata, unsigned wdata_len,
+> -                              u8 * rdata, unsigned rdata_len)
+> +                              u8 * rdata, unsigned rdata_len,
+> +                              int force_poll)
+>  {
+>         int status;
+>         u32 glk;
+> @@ -240,7 +243,7 @@ static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
+>         /* Make sure GPE is enabled before doing transaction */
+>         acpi_enable_gpe(NULL, ec->gpe, ACPI_NOT_ISR);
+>
+> -       status = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, 0);
+> +       status = acpi_ec_wait(ec, ACPI_EC_EVENT_IBF_0, 0, 0);
+>         if (status) {
+>                 printk(KERN_DEBUG PREFIX
+>                        "input buffer is not empty, aborting transaction\n");
+> @@ -249,7 +252,8 @@ static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
+>
+>         status = acpi_ec_transaction_unlocked(ec, command,
+>                                               wdata, wdata_len,
+> -                                             rdata, rdata_len);
+> +                                             rdata, rdata_len,
+> +                                             force_poll);
+>
+>        end:
+>
+> @@ -267,12 +271,12 @@ static int acpi_ec_transaction(struct acpi_ec *ec, u8 command,
+>  int acpi_ec_burst_enable(struct acpi_ec *ec)
+>  {
+>         u8 d;
+> -       return acpi_ec_transaction(ec, ACPI_EC_BURST_ENABLE, NULL, 0, &d, 1);
+> +       return acpi_ec_transaction(ec, ACPI_EC_BURST_ENABLE, NULL, 0, &d, 1, 0);
+>  }
+>
+>  int acpi_ec_burst_disable(struct acpi_ec *ec)
+>  {
+> -       return acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE, NULL, 0, NULL, 0);
+> +       return acpi_ec_transaction(ec, ACPI_EC_BURST_DISABLE, NULL, 0, NULL, 0, 0);
+>  }
+>
+>  static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
+> @@ -281,7 +285,7 @@ static int acpi_ec_read(struct acpi_ec *ec, u8 address, u8 * data)
+>         u8 d;
+>
+>         result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_READ,
+> -                                    &address, 1, &d, 1);
+> +                                    &address, 1, &d, 1, 0);
+>         *data = d;
+>         return result;
+>  }
+> @@ -290,7 +294,7 @@ static int acpi_ec_write(struct acpi_ec *ec, u8 address, u8 data)
+>  {
+>         u8 wdata[2] = { address, data };
+>         return acpi_ec_transaction(ec, ACPI_EC_COMMAND_WRITE,
+> -                                  wdata, 2, NULL, 0);
+> +                                  wdata, 2, NULL, 0, 0);
+>  }
+>
+>  /*
+> @@ -349,13 +353,15 @@ EXPORT_SYMBOL(ec_write);
+>
+>  int ec_transaction(u8 command,
+>                    const u8 * wdata, unsigned wdata_len,
+> -                  u8 * rdata, unsigned rdata_len)
+> +                  u8 * rdata, unsigned rdata_len,
+> +                  int force_poll)
+>  {
+>         if (!first_ec)
+>                 return -ENODEV;
+>
+>         return acpi_ec_transaction(first_ec, command, wdata,
+> -                                  wdata_len, rdata, rdata_len);
+> +                                  wdata_len, rdata, rdata_len,
+> +                                  force_poll);
+>  }
+>
+>  EXPORT_SYMBOL(ec_transaction);
+> @@ -374,7 +380,7 @@ static int acpi_ec_query(struct acpi_ec *ec, u8 * data)
+>          * bit to be cleared (and thus clearing the interrupt source).
+>          */
+>
+> -       result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_QUERY, NULL, 0, &d, 1);
+> +       result = acpi_ec_transaction(ec, ACPI_EC_COMMAND_QUERY, NULL, 0, &d, 1, 0);
+>         if (result)
+>                 return result;
+>
+> @@ -410,6 +416,7 @@ static u32 acpi_ec_gpe_handler(void *data)
+>         acpi_status status = AE_OK;
+>         u8 value;
+>         struct acpi_ec *ec = data;
+> +
+>         atomic_inc(&ec->event_count);
+>
+>         if (acpi_ec_mode == EC_INTR) {
+> diff --git a/drivers/misc/msi-laptop.c b/drivers/misc/msi-laptop.c
+> index 68c4b58..41e901f 100644
+> --- a/drivers/misc/msi-laptop.c
+> +++ b/drivers/misc/msi-laptop.c
+> @@ -85,7 +85,7 @@ static int set_lcd_level(int level)
+>         buf[0] = 0x80;
+>         buf[1] = (u8) (level*31);
+>
+> -       return ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, buf, sizeof(buf), NULL, 0);
+> +       return ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, buf, sizeof(buf), NULL, 0, 1);
+>  }
+>
+>  static int get_lcd_level(void)
+> @@ -93,7 +93,7 @@ static int get_lcd_level(void)
+>         u8 wdata = 0, rdata;
+>         int result;
+>
+> -       result = ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, &wdata, 1, &rdata, 1);
+> +       result = ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, &wdata, 1, &rdata, 1, 1);
+>         if (result < 0)
+>                 return result;
+>
+> @@ -105,7 +105,7 @@ static int get_auto_brightness(void)
+>         u8 wdata = 4, rdata;
+>         int result;
+>
+> -       result = ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, &wdata, 1, &rdata, 1);
+> +       result = ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, &wdata, 1, &rdata, 1, 1);
+>         if (result < 0)
+>                 return result;
+>
+> @@ -119,14 +119,14 @@ static int set_auto_brightness(int enable)
+>
+>         wdata[0] = 4;
+>
+> -       result = ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, wdata, 1, &rdata, 1);
+> +       result = ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, wdata, 1, &rdata, 1, 1);
+>         if (result < 0)
+>                 return result;
+>
+>         wdata[0] = 0x84;
+>         wdata[1] = (rdata & 0xF7) | (enable ? 8 : 0);
+>
+> -       return ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, wdata, 2, NULL, 0);
+> +       return ec_transaction(MSI_EC_COMMAND_LCD_LEVEL, wdata, 2, NULL, 0, 1);
+>  }
+>
+>  static int get_wireless_state(int *wlan, int *bluetooth)
+> @@ -134,7 +134,7 @@ static int get_wireless_state(int *wlan, int *bluetooth)
+>         u8 wdata = 0, rdata;
+>         int result;
+>
+> -       result = ec_transaction(MSI_EC_COMMAND_WIRELESS, &wdata, 1, &rdata, 1);
+> +       result = ec_transaction(MSI_EC_COMMAND_WIRELESS, &wdata, 1, &rdata, 1, 1);
+>         if (result < 0)
+>                 return -1;
+>
+> diff --git a/include/linux/acpi.h b/include/linux/acpi.h
+> index 8bcfaa4..fccd8b5 100644
+> --- a/include/linux/acpi.h
+> +++ b/include/linux/acpi.h
+> @@ -182,7 +182,8 @@ extern int ec_read(u8 addr, u8 *val);
+>  extern int ec_write(u8 addr, u8 val);
+>  extern int ec_transaction(u8 command,
+>                            const u8 *wdata, unsigned wdata_len,
+> -                          u8 *rdata, unsigned rdata_len);
+> +                          u8 *rdata, unsigned rdata_len,
+> +                         int force_poll);
+>
+>  #endif /*CONFIG_ACPI_EC*/
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
