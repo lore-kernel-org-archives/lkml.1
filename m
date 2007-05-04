@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767768AbXEDXR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767774AbXEDXS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767768AbXEDXR0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 19:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767774AbXEDXR0
+	id S1767774AbXEDXS6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 19:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767782AbXEDXS5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 19:17:26 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:55310 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1767768AbXEDXRZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 19:17:25 -0400
-Message-ID: <463BBEEE.3000903@zytor.com>
-Date: Fri, 04 May 2007 16:17:02 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 4 May 2007 19:18:57 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42291 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767774AbXEDXS4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 19:18:56 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: john stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH] Blacklist Dell Optiplex 320 from using the HPET
+Date: Sat, 5 May 2007 01:18:34 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Guilherme M. Schroeder" <guilherme@centralinf.com.br>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+References: <1178314144.6094.7.camel@localhost.localdomain>
+In-Reply-To: <1178314144.6094.7.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] i386: always clear bss
-References: <463AED07.1000505@goop.org>	<m1r6pwu806.fsf@ebiederm.dsl.xmission.com> <463B49F0.401@goop.org>	<463B5643.1040204@zytor.com>	<m1ejlwr036.fsf@ebiederm.dsl.xmission.com> <463B6888.20001@zytor.com>	<m17iroqzlq.fsf@ebiederm.dsl.xmission.com>	<463B6CCE.4050800@zytor.com> <m1hcqspg7c.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1hcqspg7c.fsf@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705050118.34711.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+On Friday 04 May 2007 23:29:04 john stultz wrote:
+> One of the 2.6.21 regressions was Guilherme's problem seeing his box
+> lock up when the system detected an unstable TSC and dropped back to
+> using the HPET.
 > 
-> My notes show 0x5c reserved for additional apm_bios_info, although
-> of the top of my head I don't know how realistic that is.
+> In digging deeper, we found the HPET is not actually incrementing on
+> this system. And in fact, the reason why this issue just cropped up was
+> because of Thomas's clocksource watchdog code was comparing the TSC to
+> the HPET (which wasn't moving) and thought the TSC was broken.
 > 
-> 0x1e4 does look available.
+> Anyway, Guliherme checked for a BIOS update and did not find one, so
+> I've added a DMI blacklist against his system so the HPET is not used.
 > 
-> It has been a long time since I made that choice, and I do see that
-> looking at struct screen_info I did remember to document that I was
-> using 0x3c, even in your structure.
-> 
-> It is all internal to our boot process and external code isn't going
-> to use it so we can change it if we feel like.
-> 
+> Many thanks to Guilherme for the slow and laborious testing that finally
+> narrowed down this issue.
 
-I don't see the actual instruction that does that anywhere in my tree,
-which was branched from Andi's "for-linus" git tree, but I have reserved
-0x1e4 for that purpose as "scratch".
+Before going to hard to maintain DMI black lists we should first check 
+if it's a more general problem and can't it be solved better? Most likely
+that system isn't the one with this issue and I don't want to apply
+DMI patches forever.
 
-	-hpa
+In particular: what lspci chipset does it have?  If it's Intel it might be
+worth checking the datasheet if there is some "HPET stop" bit -- perhaps it 
+could be fixed up.
+
+We seem to have a couple of Intel systems recently with HPET trouble.
+
+-Andi
