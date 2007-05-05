@@ -1,56 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767983AbXEEEPf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767986AbXEEEYF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767983AbXEEEPf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 00:15:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767984AbXEEEPf
+	id S1767986AbXEEEYF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 00:24:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767984AbXEEEYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 00:15:35 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:35482 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031733AbXEEEPe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 00:15:34 -0400
-Message-ID: <463C04C6.7000205@cosmosbay.com>
-Date: Sat, 05 May 2007 06:15:02 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Sat, 5 May 2007 00:24:05 -0400
+Received: from gw.goop.org ([64.81.55.164]:48111 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1767981AbXEEEYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 00:24:04 -0400
+Message-ID: <463C06E5.8050201@goop.org>
+Date: Fri, 04 May 2007 21:24:05 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Davi Arnaut <davi@haxent.com.br>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Davide Libenzi <davidel@xmailserver.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
-References: <20070504225730.490334000@haxent.com.br> <463BC3CA.6050109@haxent.com.br>
-In-Reply-To: <463BC3CA.6050109@haxent.com.br>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 05 May 2007 06:15:09 +0200 (CEST)
+To: Quentin Godfroy <godfroy@clipper.ens.fr>
+CC: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "David A. Madore" <David.Madore@ens.fr>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: patch: VFS: fix passing of AT_PHDR value in auxv to ELF interpreter
+References: <20070504140921.GA23122@goelette.ens.fr> <463BC265.7050507@goop.org> <20070505032348.GA30453@goelette.ens.fr>
+In-Reply-To: <20070505032348.GA30453@goelette.ens.fr>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davi Arnaut a écrit :
-> Hi,
-> 
-> If multiple threads are parked on epoll_wait (on a single epoll fd) and
-> events become available, epoll performs a wake up of all threads of the
-> poll wait list, causing a thundering herd of processes trying to grab
-> the eventpoll lock.
-> 
-> This patch addresses this by using exclusive waiters (wake one). Once
-> the exclusive thread finishes transferring it's events, a new thread
-> is woken if there are more events available.
-> 
-> Makes sense?
-> 
+Quentin Godfroy wrote:
+>> Won't this break with ET_DYN executables?  And besides, isn't this the
+>> same thing?                                                           
+>>     
+>
+> Indeed, I haven't seen that. For ET_DYN executables, it could be done a
+> thing like load_addr+elf_ppnt->p_vaddr (in the function that creates the
+> auxv, as ity has access to the elf header), and for ET_EXEC do what I
+> propose. I think this is trivial to do. I'll do it as soon as I come back
+> in front of my machine.
+>   
 
-Yes it makes sense.
-
-But... what happens if the thread that was chosen exits from the loop in 
-ep_poll() with res = -EINTR (because of signal_pending(current))
+I don't think you need to special-case it.  You can compute the offset
+between the linked address and the load address (first
+PT_LOAD[0]->p_vaddr - load_addr) and use that to offset all the other
+addresses.
 
 
-Me thinks in this case some ready events can wait forever (up to next 
-ep_poll_callback() or another thread enters ep_poll())
+> I don't understand. Yes it is what it is supposed to be, and the kernel
+> is supposed to give the vaddr of the phdr table to the interpreter and
+> not load addr + offset of phdr in file, which is sometimes wrong.
+>   
 
+How can it be wrong?  Does the PT_PHDR point to a different array of
+Phdr entries?
 
+    J
