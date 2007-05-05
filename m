@@ -1,96 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1161657AbXEEPhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161670AbXEEPiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1161657AbXEEPhb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 11:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161659AbXEEPha
+	id S1161670AbXEEPiW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 11:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161663AbXEEPiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 11:37:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:1732 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1161648AbXEEPh1 (ORCPT
+	Sat, 5 May 2007 11:38:22 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:29479 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1161670AbXEEPiU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 11:37:27 -0400
-Message-ID: <a781481a0705050648l19b316acyf3d52b0545e18344@mail.gmail.com>
-Date: Sat, 5 May 2007 19:18:25 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: dedekind@infradead.org
-Subject: Re: [PATCH] UBI: dereference after kfree in create_vtbl
-Cc: "Florin Malita" <fmalita@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-mtd@lists.infradead.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1178371103.3659.115.camel@sauron>
+	Sat, 5 May 2007 11:38:20 -0400
+Date: Sat, 5 May 2007 15:19:31 +0200
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Greg KH <gregkh@suse.de>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org
+Subject: [patch] s390: fix subsystem removal fallout.
+Message-ID: <20070505131931.GB13660@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <463A04A5.5030103@gmail.com>
-	 <a781481a0705041442h37453fb6k26d04eb5356e9dc0@mail.gmail.com>
-	 <463BC019.40305@gmail.com>
-	 <a781481a0705042055u5e9ba060w95da83b0fbeff76a@mail.gmail.com>
-	 <1178351711.3659.54.camel@sauron>
-	 <a781481a0705050526r13445d60j737a6c2015402dcc@mail.gmail.com>
-	 <1178371103.3659.115.camel@sauron>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/5/07, Artem Bityutskiy <dedekind@infradead.org> wrote:
-> On Sat, 2007-05-05 at 17:56 +0530, Satyam Sharma wrote:
-> > > And it is fine to use list_add_tail() directly in vtbl.c. Will be fixed.
-> > Ah, good to know that, but please keep list_add_tail (or whatever is
-> > the implementation abstraction of the various ubi_scan_info lists)
-> > local to scan.c -- you could expose a version of ubi_scan_add_to_list
-> > that does not do kmalloc through scan.h and use that in vtbl.c. That
-> > way you won't lose those debug printk's when adding an eraseblock to a
-> > list, for example, and it's always much cleaner not exposing an
-> > object's implementation innards to others.
->
-> It's error path and that print is not really needed. We'll see other
-> complaints in that case. And this is _the only_ place outside scan.c, so
-> it makes sense to use list_add_tail(). We do not really need to hide
-> this behind some other call (ubi_scan_add_to_list())
+[patch] s390: fix subsystem removal fallout.
 
-Well, you're developing / maintaining this right now, so it's your
-call. Though I bet most people would find keeping that list_add_tail
-local to scan.c more tasteful.
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
 
-> >  Physical eraseblocks are allocated in ubi_scan_add_to_list
-> > (which shouldn't be doing that)
-> Yes, per-PEB scanning information is allocated in ubi_scan_add_to_list()
-> and ubi_scan_add_to_used(). I do not see why it shouldn't be doing that.
->
-> >  and ubi_scan_add_used (which is a maze)
-> It actually is rather complex because it does a rather complex thing.
+This patch fixes compilation on s390.
 
-I wish you'd commented it better than "This function returns zero in
-case of success and a negative error code in case of failure." in that
-case :-)
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Greg KH <gregkh@suse.de>
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+---
+ arch/s390/hypfs/inode.c |    2 +-
+ arch/s390/kernel/ipl.c  |   26 +++++++++++++-------------
+ 2 files changed, 14 insertions(+), 14 deletions(-)
 
-> But any patch/idea to make it simpler is welcome.
-> > and freed pretty much all over the place
-> It is only freed in ubi_scan_destroy_si(). Yes, there is one exception
-> in create_vtbl, but this is because I did not want to introduce any
-> special version of ubi_scan_add_used().
->
-> It does not hurt at all that we do one extra allocation, because it is
-> called _only_ 2 times (once for each volume table copy).
->
-> >  (because we allocate
-> > new seb's for ourselves to add to the lists, we need to go about
-> > kfree'ing all of them when destroying a ubi_scan_destroy_si too, for
-> > example -- perhaps this driver needs to be told about krefs).
->
-> Sorry. not sure what you mean. They are allocated in 2 places, and freed
-> in one, with one exception in vtbl_create() which does not matter much.
->
-> >  So it
-> > makes life easier if you know there's only one place when/where an
-> > object is born,
-> May be it is, but I have 2 places and do not see any problem.
-
-Again, you're developing and maintaining this right now, so it's your
-call. Though it would be easier on you if you remove these exceptions
-that could be quite easily removed, actually.
-
-Thanks,
-Satyam
+Index: linux-2.6/arch/s390/hypfs/inode.c
+===================================================================
+--- linux-2.6.orig/arch/s390/hypfs/inode.c
++++ linux-2.6/arch/s390/hypfs/inode.c
+@@ -477,7 +477,7 @@ static int __init hypfs_init(void)
+ 			goto fail_diag;
+ 		}
+ 	}
+-	kset_set_kset_s(&s390_subsys, hypervisor_subsys);
++	kobj_set_kset_s(&s390_subsys, hypervisor_subsys);
+ 	rc = subsystem_register(&s390_subsys);
+ 	if (rc)
+ 		goto fail_sysfs;
+Index: linux-2.6/arch/s390/kernel/ipl.c
+===================================================================
+--- linux-2.6.orig/arch/s390/kernel/ipl.c
++++ linux-2.6/arch/s390/kernel/ipl.c
+@@ -816,23 +816,23 @@ static int __init ipl_register_fcp_files
+ {
+ 	int rc;
+ 
+-	rc = sysfs_create_group(&ipl_subsys.kset.kobj,
++	rc = sysfs_create_group(&ipl_subsys.kobj,
+ 				&ipl_fcp_attr_group);
+ 	if (rc)
+ 		goto out;
+-	rc = sysfs_create_bin_file(&ipl_subsys.kset.kobj,
++	rc = sysfs_create_bin_file(&ipl_subsys.kobj,
+ 				   &ipl_parameter_attr);
+ 	if (rc)
+ 		goto out_ipl_parm;
+-	rc = sysfs_create_bin_file(&ipl_subsys.kset.kobj,
++	rc = sysfs_create_bin_file(&ipl_subsys.kobj,
+ 				   &ipl_scp_data_attr);
+ 	if (!rc)
+ 		goto out;
+ 
+-	sysfs_remove_bin_file(&ipl_subsys.kset.kobj, &ipl_parameter_attr);
++	sysfs_remove_bin_file(&ipl_subsys.kobj, &ipl_parameter_attr);
+ 
+ out_ipl_parm:
+-	sysfs_remove_group(&ipl_subsys.kset.kobj, &ipl_fcp_attr_group);
++	sysfs_remove_group(&ipl_subsys.kobj, &ipl_fcp_attr_group);
+ out:
+ 	return rc;
+ }
+@@ -846,7 +846,7 @@ static int __init ipl_init(void)
+ 		return rc;
+ 	switch (ipl_info.type) {
+ 	case IPL_TYPE_CCW:
+-		rc = sysfs_create_group(&ipl_subsys.kset.kobj,
++		rc = sysfs_create_group(&ipl_subsys.kobj,
+ 					&ipl_ccw_attr_group);
+ 		break;
+ 	case IPL_TYPE_FCP:
+@@ -854,11 +854,11 @@ static int __init ipl_init(void)
+ 		rc = ipl_register_fcp_files();
+ 		break;
+ 	case IPL_TYPE_NSS:
+-		rc = sysfs_create_group(&ipl_subsys.kset.kobj,
++		rc = sysfs_create_group(&ipl_subsys.kobj,
+ 					&ipl_nss_attr_group);
+ 		break;
+ 	default:
+-		rc = sysfs_create_group(&ipl_subsys.kset.kobj,
++		rc = sysfs_create_group(&ipl_subsys.kobj,
+ 					&ipl_unknown_attr_group);
+ 		break;
+ 	}
+@@ -885,7 +885,7 @@ static int __init reipl_nss_init(void)
+ 
+ 	if (!MACHINE_IS_VM)
+ 		return 0;
+-	rc = sysfs_create_group(&reipl_subsys.kset.kobj, &reipl_nss_attr_group);
++	rc = sysfs_create_group(&reipl_subsys.kobj, &reipl_nss_attr_group);
+ 	if (rc)
+ 		return rc;
+ 	strncpy(reipl_nss_name, kernel_nss_name, NSS_NAME_SIZE + 1);
+@@ -900,7 +900,7 @@ static int __init reipl_ccw_init(void)
+ 	reipl_block_ccw = (void *) get_zeroed_page(GFP_KERNEL);
+ 	if (!reipl_block_ccw)
+ 		return -ENOMEM;
+-	rc = sysfs_create_group(&reipl_subsys.kset.kobj, &reipl_ccw_attr_group);
++	rc = sysfs_create_group(&reipl_subsys.kobj, &reipl_ccw_attr_group);
+ 	if (rc) {
+ 		free_page((unsigned long)reipl_block_ccw);
+ 		return rc;
+@@ -938,7 +938,7 @@ static int __init reipl_fcp_init(void)
+ 	reipl_block_fcp = (void *) get_zeroed_page(GFP_KERNEL);
+ 	if (!reipl_block_fcp)
+ 		return -ENOMEM;
+-	rc = sysfs_create_group(&reipl_subsys.kset.kobj, &reipl_fcp_attr_group);
++	rc = sysfs_create_group(&reipl_subsys.kobj, &reipl_fcp_attr_group);
+ 	if (rc) {
+ 		free_page((unsigned long)reipl_block_fcp);
+ 		return rc;
+@@ -990,7 +990,7 @@ static int __init dump_ccw_init(void)
+ 	dump_block_ccw = (void *) get_zeroed_page(GFP_KERNEL);
+ 	if (!dump_block_ccw)
+ 		return -ENOMEM;
+-	rc = sysfs_create_group(&dump_subsys.kset.kobj, &dump_ccw_attr_group);
++	rc = sysfs_create_group(&dump_subsys.kobj, &dump_ccw_attr_group);
+ 	if (rc) {
+ 		free_page((unsigned long)dump_block_ccw);
+ 		return rc;
+@@ -1014,7 +1014,7 @@ static int __init dump_fcp_init(void)
+ 	dump_block_fcp = (void *) get_zeroed_page(GFP_KERNEL);
+ 	if (!dump_block_fcp)
+ 		return -ENOMEM;
+-	rc = sysfs_create_group(&dump_subsys.kset.kobj, &dump_fcp_attr_group);
++	rc = sysfs_create_group(&dump_subsys.kobj, &dump_fcp_attr_group);
+ 	if (rc) {
+ 		free_page((unsigned long)dump_block_fcp);
+ 		return rc;
