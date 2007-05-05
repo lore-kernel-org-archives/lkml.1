@@ -1,94 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423152AbXEEAPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423130AbXEEAWc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423152AbXEEAPE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 20:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423346AbXEEAPE
+	id S1423130AbXEEAWc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 20:22:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423143AbXEEAWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 20:15:04 -0400
-Received: from mga09.intel.com ([134.134.136.24]:6015 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423152AbXEEAOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 20:14:48 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,494,1170662400"; 
-   d="scan'208";a="83983192"
-Date: Fri, 4 May 2007 17:12:31 -0700
-From: Fenghua Yu <fenghua.yu@intel.com>
-To: akpm@linux-foundation.org, suresh.b.siddha@intel.com,
-       linux-kernel@vger.kernel.org
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Subject: [PATCH 2/2] Call percpu smp cacheline algin interface
-Message-ID: <20070505001231.GA27263@linux-os.sc.intel.com>
-References: <33E1C72C74DBE747B7B59C1740F7443701A2F0AB@orsmsx417.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <33E1C72C74DBE747B7B59C1740F7443701A2F0AB@orsmsx417.amr.corp.intel.com>
-User-Agent: Mutt/1.4.1i
+	Fri, 4 May 2007 20:22:32 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:19936 "EHLO
+	pd4mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423130AbXEEAWb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 20:22:31 -0400
+Date: Fri, 04 May 2007 18:22:19 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [RFC PATCH] PCI MMCONFIG: add validation against ACPI motherboard
+ resources
+In-reply-to: <200705041406.59584.jesse.barnes@intel.com>
+To: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Olivier Galibert <galibert@pobox.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       Chuck Ebbert <cebbert@redhat.com>, Len Brown <lenb@kernel.org>
+Message-id: <463BCE3B.8090007@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <4635510D.4060103@shaw.ca> <4639229C.4030208@shaw.ca>
+ <200705021654.23730.jbarnes@virtuousgeek.org>
+ <200705041406.59584.jesse.barnes@intel.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jesse Barnes wrote:
+> On Wednesday, May 2, 2007 4:54 pm Jesse Barnes wrote:
+>>> What happens if you take out the chipset register detection, does
+>>> the MCFG table give you the same result? Wonder if they're doing
+>>> something funny with start/end bus values or something in their
+>>> table. There's some code in my patch that prints out the important
+>>> data from the MCFG table, can you tell me what that shows with the
+>>> chipset detection taken out?
+>> Yeah, I'll look a little more closely.  It could also be that another
+>> register needs tweaking somewhere to actually get the bridge to
+>> decode the space.
+>>
+>>> If that doesn't provide any useful information, I think we may need
+>>> some assistance from Intel chipset/motherboard people to figure out
+>>> what is going on here..
+>> I'm talking with them now, hopefully they'll shed some light on it.
+> 
+> I did a little more debugging this morning, and found that I can 
+> actually do reads from the space described by ACPI and the device 
+> register, but later when ACPI actually scans the root bridges, it 
+> hangs.  Specifically the call to pci_acpi_scan_root in 
+> pci_root.c:acpi_pci_root_add() never seems to return.
+> 
+> I'll walk through that logic when I get back to my test box, but it's 
+> also worth noting that Vista's MCFG on this machine apparently works ok 
+> too.
 
-Call percpu smp cacheline align interface.
+I would try sticking some debug in arch/x86_64/pci/mmconfig.c at the 
+beginning and end of pci_mmcfg_read and pci_mmcfg_write to print the 
+seg, bus, devfn and reg for each read and write. Hopefully that will 
+track down the one that is causing the lockup, if it is an actual 
+MMCONFIG access that's doing it..
 
-Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
-Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
-
-diff -Nurp linux-2.6.21-rc7.0/arch/i386/kernel/init_task.c linux-2.6.21-rc7.1/arch/i386/kernel/init_task.c
---- linux-2.6.21-rc7.0/arch/i386/kernel/init_task.c	2007-04-15 16:50:57.000000000 -0700
-+++ linux-2.6.21-rc7.1/arch/i386/kernel/init_task.c	2007-05-02 17:00:34.000000000 -0700
-@@ -42,5 +42,5 @@ EXPORT_SYMBOL(init_task);
-  * per-CPU TSS segments. Threads are completely 'soft' on Linux,
-  * no more per-task TSS's.
-  */ 
--DEFINE_PER_CPU(struct tss_struct, init_tss) ____cacheline_internodealigned_in_smp = INIT_TSS;
-+DEFINE_PER_CPU_CACHELINE_ALIGNED_IN_SMP(struct tss_struct, init_tss) = INIT_TSS;
- 
-diff -Nurp linux-2.6.21-rc7.0/arch/i386/kernel/irq.c linux-2.6.21-rc7.1/arch/i386/kernel/irq.c
---- linux-2.6.21-rc7.0/arch/i386/kernel/irq.c	2007-05-01 07:32:59.000000000 -0700
-+++ linux-2.6.21-rc7.1/arch/i386/kernel/irq.c	2007-05-02 17:00:34.000000000 -0700
-@@ -21,7 +21,7 @@
- #include <asm/apic.h>
- #include <asm/uaccess.h>
- 
--DEFINE_PER_CPU(irq_cpustat_t, irq_stat) ____cacheline_internodealigned_in_smp;
-+DEFINE_PER_CPU_CACHELINE_ALIGNED_IN_SMP(irq_cpustat_t, irq_stat);
- EXPORT_PER_CPU_SYMBOL(irq_stat);
- 
- DEFINE_PER_CPU(struct pt_regs *, irq_regs);
-diff -Nurp linux-2.6.21-rc7.0/arch/ia64/kernel/smp.c linux-2.6.21-rc7.1/arch/ia64/kernel/smp.c
---- linux-2.6.21-rc7.0/arch/ia64/kernel/smp.c	2007-04-15 16:50:57.000000000 -0700
-+++ linux-2.6.21-rc7.1/arch/ia64/kernel/smp.c	2007-05-02 17:00:34.000000000 -0700
-@@ -70,7 +70,7 @@ static volatile struct call_data_struct 
- #define IPI_KDUMP_CPU_STOP	3
- 
- /* This needs to be cacheline aligned because it is written to by *other* CPUs.  */
--static DEFINE_PER_CPU(u64, ipi_operation) ____cacheline_aligned;
-+static DEFINE_PER_CPU_CACHELINE_ALIGNED_IN_SMP(u64, ipi_operation);
- 
- extern void cpu_halt (void);
- 
-diff -Nurp linux-2.6.21-rc7.0/arch/x86_64/kernel/init_task.c linux-2.6.21-rc7.1/arch/x86_64/kernel/init_task.c
---- linux-2.6.21-rc7.0/arch/x86_64/kernel/init_task.c	2007-04-15 16:50:57.000000000 -0700
-+++ linux-2.6.21-rc7.1/arch/x86_64/kernel/init_task.c	2007-05-02 17:00:34.000000000 -0700
-@@ -44,7 +44,7 @@ EXPORT_SYMBOL(init_task);
-  * section. Since TSS's are completely CPU-local, we want them
-  * on exact cacheline boundaries, to eliminate cacheline ping-pong.
-  */ 
--DEFINE_PER_CPU(struct tss_struct, init_tss) ____cacheline_internodealigned_in_smp = INIT_TSS;
-+DEFINE_PER_CPU_CACHELINE_ALIGNED_IN_SMP(struct tss_struct, init_tss) = INIT_TSS;
- 
- /* Copies of the original ist values from the tss are only accessed during
-  * debugging, no special alignment required.
-diff -Nurp linux-2.6.21-rc7.0/kernel/sched.c linux-2.6.21-rc7.1/kernel/sched.c
---- linux-2.6.21-rc7.0/kernel/sched.c	2007-05-01 07:33:07.000000000 -0700
-+++ linux-2.6.21-rc7.1/kernel/sched.c	2007-05-02 17:00:34.000000000 -0700
-@@ -263,7 +263,7 @@ struct rq {
- 	struct lock_class_key rq_lock_key;
- };
- 
--static DEFINE_PER_CPU(struct rq, runqueues) ____cacheline_aligned_in_smp;
-+static DEFINE_PER_CPU_CACHELINE_ALIGNED_IN_SMP(struct rq, runqueues);
- static DEFINE_MUTEX(sched_hotcpu_mutex);
- 
- static inline int cpu_of(struct rq *rq)
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
