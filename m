@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933883AbXEEVmV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933907AbXEEVoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933883AbXEEVmV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 17:42:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933907AbXEEVmV
+	id S933907AbXEEVoX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 17:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933921AbXEEVoX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 17:42:21 -0400
-Received: from haxent.com ([65.99.219.155]:3964 "EHLO haxent.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933883AbXEEVmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 17:42:20 -0400
-Message-ID: <463CFA37.3020809@haxent.com.br>
-Date: Sat, 05 May 2007 18:42:15 -0300
-From: Davi Arnaut <davi@haxent.com.br>
-MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
-References: <20070504225730.490334000@haxent.com.br> <463BC3CA.6050109@haxent.com.br> <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com>
-In-Reply-To: <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 5 May 2007 17:44:23 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59891 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933907AbXEEVoW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 17:44:22 -0400
+Date: Sat, 5 May 2007 22:48:03 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Colin Leroy <colin@colino.net>
+Cc: Richard Purdie <rpurdie@openedhand.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] led-class.c permission change
+Message-ID: <20070505224803.67f76749@the-village.bc.nu>
+In-Reply-To: <20070505124954.0e2bcf53@localhost.localdomain>
+References: <20070505124954.0e2bcf53@localhost.localdomain>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi wrote:
-> On Fri, 4 May 2007, Davi Arnaut wrote:
+On Sat, 5 May 2007 12:49:54 +0200
+Colin Leroy <colin@colino.net> wrote:
+
+> Hi,
 > 
->> Hi,
->>
->> If multiple threads are parked on epoll_wait (on a single epoll fd) and
->> events become available, epoll performs a wake up of all threads of the
->> poll wait list, causing a thundering herd of processes trying to grab
->> the eventpoll lock.
->>
->> This patch addresses this by using exclusive waiters (wake one). Once
->> the exclusive thread finishes transferring it's events, a new thread
->> is woken if there are more events available.
->>
->> Makes sense?
-> 
-> Theorically, make sense. I said theorically because all the use 
-> epoll_wait MT use cases I've heard of, use a single thread that does the 
-> epoll_wait, and then dispatch to worker threads. So thundering herd is not 
-> in the picture. OTOH, it does not hurt either.
+> This patch changes the led brightness file's permissions to 0666, so that a 
+> user's MUA can light up the mail LED without needing root permissions.
 
-A google search turns up a few users. It also addresses some complaints
-from Drepper.
+NAK.
 
-> But, that code is completely changed with the new single-pass epoll delivery 
-> code that is in -mm. So, I'd either wait for that code to go in, or I 
-> (or you, if you like) can make a patch against -mm.
+The management of user specific temporary permissions belongs in user
+space with a safe "no" default value to stop background daemons doing
+silly things.
 
-Fell free to update the patch for -mm and to include my signed-of-by.
-Thanks.
+Take a look at the various pam console management modules (and also beat
+people up to get revoke() support into the kernel).
 
---
-Davi Arnaut
-
+Alan
