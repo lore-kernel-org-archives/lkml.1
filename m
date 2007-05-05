@@ -1,65 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933982AbXEEQo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934061AbXEEQpU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933982AbXEEQo0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933966AbXEEQo0
+	id S934061AbXEEQpU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:45:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934067AbXEEQpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:44:26 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:38916 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933947AbXEEQoZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:44:25 -0400
-Date: Sat, 5 May 2007 18:44:23 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, trond.myklebust@fys.uio.no,
-       davem@davemloft.net, David Howells <dhowells@redhat.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [-mm patch] fix fs/nfs/nfsroot.c compile error
-Message-ID: <20070505164422.GD8975@stusta.de>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+	Sat, 5 May 2007 12:45:20 -0400
+Received: from dev.prealable.org ([87.98.219.90]:2884 "EHLO dev.prealable.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934061AbXEEQpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 12:45:18 -0400
+X-Greylist: delayed 4000 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 May 2007 12:45:18 EDT
+Message-ID: <463C971A.1080501@prealable.org>
+Date: Sat, 05 May 2007 16:39:22 +0200
+From: Damien Tournoud <damz@prealable.org>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Paul Sokolovsky <pmiscml@gmail.com>
+CC: Anton Vorontsov <cbou@mail.ru>, kernel-discuss@handhelds.org,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Shem Multinymous <multinymous@gmail.com>
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/8] Universal power supply class
+ (was: battery class)
+References: <20070503213139.GC20067@zarina>	<41840b750705032155w21d98b5g6236daf9bff66606@mail.gmail.com>	<20070505035413.GB21359@khazad-dum.debian.net>	<20070505123230.GA6460@zarina> <67630751.20070505172956@gmail.com>
+In-Reply-To: <67630751.20070505172956@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.21-rc7-mm2:
->...
->  git-net.patch
->...
->  git trees
->...
+Paul Sokolovsky wrote:
+> There's actually a nice and terse term for that - mains,
+> but I wonder how well non-English speaking people are familiar with it
+> (I personally saw them only in manuals, which, as well known, nobody
+> reads).
 
-match_table_t was made "const" and gcc doesn't like "const __initdata":
+I, for one, wasn't :)
 
-<--  snip  -->
+My 2 cents: ADAPTER seems better than AC, which is, as you pointed out, 
+technically incorrect.
 
-...
-  CC      fs/nfs/nfsroot.o
-/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/nfs/nfsroot.c:131: error: tokens causes a section type conflict
-make[3]: *** [fs/nfs/nfsroot.o] Error 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-
----
-
-BTW: Why is this change to include/linux/parser.h in the net tree?
-
---- linux-2.6.21-mm1/fs/nfs/nfsroot.c.old	2007-05-05 18:36:26.000000000 +0200
-+++ linux-2.6.21-mm1/fs/nfs/nfsroot.c	2007-05-05 18:36:44.000000000 +0200
-@@ -128,7 +128,7 @@
- 	Opt_err
- };
- 
--static match_table_t __initdata tokens = {
-+static match_table_t tokens = {
- 	{Opt_port, "port=%u"},
- 	{Opt_rsize, "rsize=%u"},
- 	{Opt_wsize, "wsize=%u"},
+- Damien Tournoud
