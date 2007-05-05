@@ -1,81 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755558AbXEEQPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbXEEQQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755558AbXEEQPm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755561AbXEEQPm
+	id S1755568AbXEEQQo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755569AbXEEQQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:15:42 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:2062 "EHLO mail.z-net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755558AbXEEQPl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:15:41 -0400
-Date: Sat, 5 May 2007 16:32:30 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Shem Multinymous <multinymous@gmail.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 3/8] Universal power supply class (was: battery class)
-Message-ID: <20070505123230.GA6460@zarina>
-Reply-To: cbou@mail.ru
-References: <20070503213139.GC20067@zarina> <41840b750705032155w21d98b5g6236daf9bff66606@mail.gmail.com> <20070505035413.GB21359@khazad-dum.debian.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20070505035413.GB21359@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Sat, 5 May 2007 12:16:44 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:58733
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755568AbXEEQQm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 12:16:42 -0400
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial
+	possible bug]
+From: Paul Fulghum <paulkf@microgate.com>
+To: Antonino Ingargiola <tritemio@gmail.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb-users@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <463BC223.2040304@microgate.com>
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
+	 <5486cca80705040956g47f634ddp80d67038e8e3305a@mail.gmail.com>
+	 <463B7534.6000207@microgate.com>
+	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
+	 <1178299247.3769.0.camel@amdx2.microgate.com>
+	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
+	 <1178300493.3619.1.camel@amdx2.microgate.com>
+	 <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
+	 <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
+	 <1178308173.3743.14.camel@amdx2.microgate.com>
+	 <5486cca80705041421y4fcaec01l7acafed1cea4b509@mail.gmail.com>
+	 <463BC223.2040304@microgate.com>
+Content-Type: text/plain
+Date: Sat, 05 May 2007 03:26:58 -0500
+Message-Id: <1178353618.3472.1.camel@x2>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Henrique, Shem,
+On Fri, 2007-05-04 at 17:30 -0600, Paul Fulghum wrote:
+> OK, this behavior is so unexpected I must be missing
+> something basic.
 
-On Sat, May 05, 2007 at 12:54:13AM -0300, Henrique de Moraes Holschuh wrote:
-> On Fri, 04 May 2007, Shem Multinymous wrote:
-> > >+enum power_supply_type {
-> > >+       POWER_SUPPLY_TYPE_BATTERY = 0,
-> > >+       POWER_SUPPLY_TYPE_UPS,
-> > >+       POWER_SUPPLY_TYPE_AC,
-> > >+       POWER_SUPPLY_TYPE_USB,
-> > >+};
-> > 
-> > How about dumb (non-USB) DC power? Any reason to distinguish it from AC?
-> 
-> Hmm, if it should not be distinguished, it is better to rename AC to
-> something that means continuous power.  But I'd rather have it AC and DC, as
-> something might have both supplies separate, and you might want to
-> differentiate them for some (human interface) reason.  After all, USB and DC
-> are not really different anyway...
-> 
-> Anyway, what IS the difference between UPS and battery, or UPS and AC/DC for
-> that matter?  When should UPS be used?  If you have UPS there, should not
-> MGG (motor-generator group) also be provided?
-> 
-> Given that USB-power *is* usually also "dumb" (i.e. it doesn't do any
-> control signaling over the USB bus for power-control purposes), IMHO it
-> might be better to have just battery, AC and DC as types.  And a primary and
-> secondary notion too, as that is common.  It would be generic.
-> 
-> Or maybe I just didn't get the idea behind the "type" attribute :-)
-> 
-> I'd appreciate if these were documented in the text file.
+And so I was. Try this patch.
 
-I think I got the start point of confusion. It's indeed bad to call such
-power supply type as AC. Maybe I should it rename to ADAPTER? Or WALL?
+--- a/drivers/char/tty_io.c	2007-05-04 05:46:55.000000000 -0500
++++ b/drivers/char/tty_io.c	2007-05-05 03:23:46.000000000 -0500
+@@ -365,6 +365,29 @@ static void tty_buffer_free(struct tty_s
+ }
+ 
+ /**
++ *	tty_buffer_flush		-	flush full tty buffers
++ *	@tty: tty to flush
++ *
++ *	flush all the buffers containing receive data
++ *
++ *	Locking: none
++ */
++
++static void tty_buffer_flush(struct tty_struct *tty)
++{
++	struct tty_buffer *thead;
++	unsigned long flags;
++
++	spin_lock_irqsave(&tty->buf.lock, flags);
++	while((thead = tty->buf.head) != NULL) {
++		tty->buf.head = thead->next;
++		tty_buffer_free(tty, thead);
++	}
++	tty->buf.tail = NULL;
++	spin_unlock_irqrestore(&tty->buf.lock, flags);
++}
++
++/**
+  *	tty_buffer_find		-	find a free tty buffer
+  *	@tty: tty owning the buffer
+  *	@size: characters wanted
+@@ -1240,6 +1263,7 @@ void tty_ldisc_flush(struct tty_struct *
+ 			ld->flush_buffer(tty);
+ 		tty_ldisc_deref(ld);
+ 	}
++	tty_buffer_flush(tty);
+ }
+ 
+ EXPORT_SYMBOL_GPL(tty_ldisc_flush);
+@@ -3336,6 +3360,15 @@ int tty_ioctl(struct inode * inode, stru
+ 		case TIOCMBIC:
+ 		case TIOCMBIS:
+ 			return tty_tiocmset(tty, file, cmd, p);
++		case TCFLSH:
++			switch (arg) {
++			case TCIFLUSH:
++			case TCIOFLUSH:
++				/* flush tty buffer and allow ldisc to process ioctl */
++				tty_buffer_flush(tty);
++				break;
++			}
++			break;
+ 	}
+ 	if (tty->driver->ioctl) {
+ 		retval = (tty->driver->ioctl)(tty, file, cmd, arg);
 
-type, is really `type' of power supply: imagine icon GUI application will
-use for different types. Type is not alternating/direct current stuff,
-it will be better to impelemnt `current_type' attribute for such matter.
 
-As for Battery/UPS difference.. yes, they're quite similar.. but again,
-imagine laptop with battery, and connected to UPS. ;-) How userspace
-will differ internal battery from UPS? Yup, by type attribute. I hope
-it makes sense... If not, we simply can remove UPS type.
-
-
-And again, much thanks for your review and ideas!
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
