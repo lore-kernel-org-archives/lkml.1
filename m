@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754106AbXEEX20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbXEEXhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754106AbXEEX20 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 19:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754145AbXEEX20
+	id S1755401AbXEEXhG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 19:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbXEEXhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 19:28:26 -0400
-Received: from dialup.esmr.ru ([85.94.3.83]:37042 "EHLO localhost.localdomain"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754106AbXEEX2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 19:28:25 -0400
-Date: Sun, 6 May 2007 03:27:47 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
-Message-ID: <20070506032747.07171caf@localhost.localdomain>
-In-Reply-To: <20070504123543.5e3fd908.akpm@linux-foundation.org>
-References: <20070503235747.29275.37271.stgit@localhost.localdomain>
-	<20070504123543.5e3fd908.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.9.1cvs42 (GTK+ 2.10.9; i686-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 5 May 2007 19:37:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:31074 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755401AbXEEXhE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 19:37:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=nrKtPgJ4eYQCUVwJiEh30EaUYQAv+SrfcNcBv/90UHBgkclLuhcJG8WgtXfdheZFeheF9Ua5ZeVho42tNMP8wlhrgQjxQTHnJYlinIcRShxRqBNQU0SEjNOL1Sv7Mis6TiOzbM5KqVpWgCfgivOgsVbDs+eHpOjmnc90F54pMAg=
+Message-ID: <6bffcb0e0705051637k6e39bcds76456ea5ff5f11c5@mail.gmail.com>
+Date: Sun, 6 May 2007 01:37:02 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Srihari Vijayaraghavan" <sriharivijayaraghavan@yahoo.com.au>
+Subject: Re: [PROBLEM] 2.6.21-git oops
+Cc: lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <4968.12298.qm@web52606.mail.re2.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4968.12298.qm@web52606.mail.re2.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007 12:35:43 -0700
-Andrew Morton wrote:
+Hi Srihari,
 
-> On Fri, 04 May 2007 03:57:51 +0400
-> Vitaly Bordug <vitb@kernel.crashing.org> wrote:
-> 
-> > 
-> > Adds support for PowerQuicc on-chip PCMCIA. The driver is
-> > implemented as of_device, so only arch/powerpc stuff is capable to
-> > use it, which now implies only mpc885ads reference board.
-> > 
-> > To cope with the code that should be hooked inside driver, but is
-> > really board specific (like set_voltage), global structure
-> > mpc8xx_pcmcia_ops holds necessary function pointers that are filled
-> > in the BSP code.
-> > 
-> 
-> argh.
-> 
-> akpm:/home/akpm> grep '^.*        ' x | wc -l 
-> 72
-> 
-> please, Linux uses hard-tabs, not
-> spacespacespacespacespacespacespacespace everywhere.
+On 06/05/07, Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au> wrote:
+> [Sorry to reply to my own email, but I had some good development on this
+> problem]
+>
+> --- Srihari Vijayaraghavan <sriharivijayaraghavan@yahoo.com.au> wrote:
+> > Here's the first one (there a couple following this;
+> > the complete dmesg is at the bottom of this email):
+>
+> It turns out the system is no go with 4 GB of RAM (4 * 1 GB modules): system
+> instability & SATA controller doesn't detect the drives (as I reported to
+> linux-ide:
+> http://www.mail-archive.com/linux-ide@vger.kernel.org/msg06174.html).
+>
+> With only 2 GB of RAM (with either pairs), system is very stable (surviving
+> many parallel kernel compiles for over 3 times longer than that of 4 GB), and
+> it detects & works fine with the SATA drives also.
+>
+> Any advice on getting all of 4 GB to work reliably with SATA also?
+>
+> Thanks
+>
+> PS: Here's a dmesg of the all stably working 2 GB system, & the oopsy one with
+> 4 GB.
 >
 
-Whoops. That must've survived being copypasted from the original m8xx_pcmcia.c.
-That reminds me to do Lindent on the affected sources but that is subject for another patch.
-Sorry for the hassle. 
+This looks like a bad RAM problem too me. Check the RAM memory
+http://www.memtest.org/
 
-Apparently all the issues were correct, and I'll follow-up with the reworked patch. Thanks for looking at it.
+(Removed from the list of known regressions
+http://kernelnewbies.org/known_regressions)
+
+Regards,
+Michal
 
 -- 
-Sincerely, Vitaly
-
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
