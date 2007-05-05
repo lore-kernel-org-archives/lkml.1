@@ -1,123 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934041AbXEEWRN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752929AbXEEWUh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934041AbXEEWRN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 18:17:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934045AbXEEWRN
+	id S1752929AbXEEWUh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 18:20:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXEEWUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 18:17:13 -0400
-Received: from mail.screens.ru ([213.234.233.54]:34283 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934041AbXEEWRM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 18:17:12 -0400
-Date: Sun, 6 May 2007 02:17:09 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Howells <dhowells@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH -mm] libata-core: convert to use cancel_rearming_delayed_work()
-Message-ID: <20070505221709.GA3955@tv-sign.ru>
+	Sat, 5 May 2007 18:20:37 -0400
+Received: from paperstreet.colino.net ([213.41.244.236]:54684 "EHLO
+	paperstreet.colino.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752929AbXEEWUf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 18:20:35 -0400
+Date: Sun, 6 May 2007 00:20:28 +0200
+From: Colin Leroy <colin@colino.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Richard Purdie <rpurdie@openedhand.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] led-class.c permission change
+Message-ID: <20070506002028.53230d56@localhost.localdomain>
+In-Reply-To: <20070505224803.67f76749@the-village.bc.nu>
+References: <20070505124954.0e2bcf53@localhost.localdomain>
+	<20070505224803.67f76749@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1cvs43 (GTK+ 2.10.11; i686-pc-linux-gnu)
+X-Face: Fy:*XpRna1/tz}cJ@O'0^:qYs:8b[Rg`*8,+o^[fI?<%5LeB,Xz8ZJK[r7V0hBs8G)*&C+XA0qHoR=LoTohe@7X5K$A-@cN6n~~J/]+{[)E4h'lK$13WQf$.R+Pi;E09tk&{t|;~dakRD%CLHrk6m!?gA,5|Sb=fJ=>[9#n1Bu8?VngkVM4{'^'V_qgdA.8yn3)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEUAAwASFBYfISMyMTRGRUdaWFdxb2yJhoKrqaPOzMT19Ow5JzfkAAACW0lEQVQ4y6WTP1PbMBjGo6T/RkmmLWxIotCxtkRpmYqVMLAFY2i7AU0DbEDACVOvd6aED9DYnntg61NWCo0tt2N1vpyjn5/30ftIajT+Z4BVLLw3/0w7a+MsVXln8a/5x+E47fXT5FLW55ubP0ZFViTj6KImcXb7l5Pr4XD4JQo3bNDSVdIbLgLhd3ZssLwXHyUXwheACWnXivrx13bHRU3ECHMt6yjsDA8XIWygJsZeBZ5E/mrHBwAgpB9W1XodSw+Dh3cEvA8lODrQVR5i0Q8pTUB0Dq3I3LKTR/3cQyXC5KzM6b1Kugj9+YfI91LxWaUHej1gqsL0vAzkSiUHZqXGFToWuFUTSRHExEiarAsrcO1ThPDUpuVszAC4KgbcI7plQ5q4Cus2Dzh30e72w3ekbCnpSSERXpJGAdhs4Y35ImZiLVNn0y7RyqxzcKvUwDtRKne5JnhuFmJLKXXnZ/p3X0tAZQ4MONUy1UWgAXG1H/rj/HRLA1fbQuCUYN1Ueakp0UkCwMqgW1mhTvFxca67hxDxEoCtvNhHDtd5IQAc65Qs5PcSMbHjasD96iyA+TymlEujcIoza5tfFGlAKOceQm9VYG2/KFRAGeeUoOXUPtRsMupxJrkutTSuXYPonT4MbaNYOq6BlVHAPWEA34O1i5YGQmoPXWsP1a7aeEI5oxRj9LEOtu449SgmBB6FtVpPB9rBDChuagDs8Okg4FVG7Ft7eRKLtmnEWc66Fvg0Wc/boeQu7u6Ovln2PwcL6ZdO2yOrz3ujX6BySA6fpXEovbntcHNwb9x/A34/oQVbOAIKAAAAAElFTkSuQmCC
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+Content-Type: multipart/signed; boundary="Sig_xt.g+S5w7/0Cfzl8N7mIjEu";
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Compile tested, depends on
+--Sig_xt.g+S5w7/0Cfzl8N7mIjEu
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-	make-cancel_rearming_delayed_work-reliable.patch
+On 05 May 2007 at 22h05, Alan Cox wrote:
 
-We should not use cancel_work_sync(delayed_work->work). This works, but not
-good. We can use cancel_rearming_delayed_work(), this also simplifies the
-code.
+Hi,=20
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
+> > This patch changes the led brightness file's permissions to 0666,
+> > so that a user's MUA can light up the mail LED without needing root
+> > permissions. =20
+>=20
+> NAK.
+>=20
+> The management of user specific temporary permissions belongs in user
+> space with a safe "no" default value to stop background daemons doing
+> silly things.
 
- drivers/ata/libata-core.c |   44 ++++----------------------------------------
- include/linux/libata.h    |    1 -
- 2 files changed, 4 insertions(+), 41 deletions(-)
+Mmh, ok... My usage pattern for this is for an MUA plugin[1] that does
+write 1 to /sys/class/leds/asus:mail/brightness, for example, when new
+mail comes. The MUA typically runs as user and until now most of the
+handled LEDs had no such permission problems
+(/proc/acpi/asus/mled, /proc/acpi/acer/mailled etc).=20
 
---- OLD/include/linux/libata.h~ATA	2007-04-05 12:20:35.000000000 +0400
-+++ OLD/include/linux/libata.h	2007-05-06 01:41:10.000000000 +0400
-@@ -192,7 +192,6 @@ enum {
- 	ATA_PFLAG_UNLOADING	= (1 << 5), /* module is unloading */
- 	ATA_PFLAG_SCSI_HOTPLUG	= (1 << 6), /* SCSI hotplug scheduled */
- 
--	ATA_PFLAG_FLUSH_PORT_TASK = (1 << 16), /* flush port task */
- 	ATA_PFLAG_SUSPENDED	= (1 << 17), /* port is suspended (power) */
- 	ATA_PFLAG_PM_PENDING	= (1 << 18), /* PM operation pending */
- 
---- OLD/drivers/ata/libata-core.c~ATA	2007-04-05 12:20:34.000000000 +0400
-+++ OLD/drivers/ata/libata-core.c	2007-05-06 01:53:43.000000000 +0400
-@@ -1079,18 +1079,11 @@ static unsigned int ata_id_xfermask(cons
- void ata_port_queue_task(struct ata_port *ap, work_func_t fn, void *data,
- 			 unsigned long delay)
- {
--	int rc;
--
--	if (ap->pflags & ATA_PFLAG_FLUSH_PORT_TASK)
--		return;
--
- 	PREPARE_DELAYED_WORK(&ap->port_task, fn);
- 	ap->port_task_data = data;
- 
--	rc = queue_delayed_work(ata_wq, &ap->port_task, delay);
--
--	/* rc == 0 means that another user is using port task */
--	WARN_ON(rc == 0);
-+	/* may fail if ata_port_flush_task() in progress */
-+	queue_delayed_work(ata_wq, &ap->port_task, delay);
- }
- 
- /**
-@@ -1105,32 +1098,9 @@ void ata_port_queue_task(struct ata_port
-  */
- void ata_port_flush_task(struct ata_port *ap)
- {
--	unsigned long flags;
--
- 	DPRINTK("ENTER\n");
- 
--	spin_lock_irqsave(ap->lock, flags);
--	ap->pflags |= ATA_PFLAG_FLUSH_PORT_TASK;
--	spin_unlock_irqrestore(ap->lock, flags);
--
--	DPRINTK("flush #1\n");
--	cancel_work_sync(&ap->port_task.work); /* akpm: seems unneeded */
--
--	/*
--	 * At this point, if a task is running, it's guaranteed to see
--	 * the FLUSH flag; thus, it will never queue pio tasks again.
--	 * Cancel and flush.
--	 */
--	if (!cancel_delayed_work(&ap->port_task)) {
--		if (ata_msg_ctl(ap))
--			ata_port_printk(ap, KERN_DEBUG, "%s: flush #2\n",
--					__FUNCTION__);
--		cancel_work_sync(&ap->port_task.work);
--	}
--
--	spin_lock_irqsave(ap->lock, flags);
--	ap->pflags &= ~ATA_PFLAG_FLUSH_PORT_TASK;
--	spin_unlock_irqrestore(ap->lock, flags);
-+	cancel_rearming_delayed_work(&ap->port_task);
- 
- 	if (ata_msg_ctl(ap))
- 		ata_port_printk(ap, KERN_DEBUG, "%s: EXIT\n", __FUNCTION__);
-@@ -6094,13 +6064,7 @@ void ata_port_detach(struct ata_port *ap
- 	spin_unlock_irqrestore(ap->lock, flags);
- 
- 	ata_port_wait_eh(ap);
--
--	/* Flush hotplug task.  The sequence is similar to
--	 * ata_port_flush_task().
--	 */
--	cancel_work_sync(&ap->hotplug_task.work); /* akpm: why? */
--	cancel_delayed_work(&ap->hotplug_task);
--	cancel_work_sync(&ap->hotplug_task.work);
-+	cancel_rearming_delayed_work(&ap->hotplug_task);
- 
-  skip_eh:
- 	/* remove the associated SCSI host */
+So, I've got to find a way to write into that file as user so that
+things automatically work.
 
+> Take a look at the various pam console management modules (and also
+> beat people up to get revoke() support into the kernel).
+
+So, you suggest me to link my plugin to libpam and find something that
+allows the plugin to write into /brightness?=20
+
+Thanks,
+
+[1] http://www.claws-mail.org/plugin.php?plugin=3Dacpinotifier
+--=20
+Colin
+
+--Sig_xt.g+S5w7/0Cfzl8N7mIjEu
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGPQMvS3OlVpbZQYkRAkn7AJ9+zQDgJwZpUbv9rFes3a7f0OjQ0ACgkKM0
+WvbIE69hoBeRzht6zHQ4N2s=
+=9bSB
+-----END PGP SIGNATURE-----
+
+--Sig_xt.g+S5w7/0Cfzl8N7mIjEu--
