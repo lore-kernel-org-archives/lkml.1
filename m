@@ -1,115 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934126AbXEERkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934127AbXEERpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934126AbXEERkU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 13:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934127AbXEERkU
+	id S934127AbXEERpt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 13:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934139AbXEERpt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 13:40:20 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:54115 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934126AbXEERkS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 13:40:18 -0400
-Date: Sat, 5 May 2007 19:38:15 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-cc: David Johnson <dj@david-web.co.uk>, cpufreq@lists.linux.org.uk,
-       linux-kernel@vger.kernel.org
-Subject: Re: cpufreq longhaul locks up
-In-Reply-To: <463C9070.7020007@interia.pl>
-Message-ID: <Pine.LNX.4.61.0705051932210.18504@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>
- <200705042320.41278.dj@david-web.co.uk> <Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>
- <463C18C4.7030304@interia.pl> <Pine.LNX.4.61.0705051114130.18504@yvahk01.tjqt.qr>
- <463C9070.7020007@interia.pl>
+	Sat, 5 May 2007 13:45:49 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:36662 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934127AbXEERps (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 13:45:48 -0400
+Date: Sat, 5 May 2007 10:44:28 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Esben Nielsen <nielsen.esben@googlemail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v8
+In-Reply-To: <Pine.LNX.4.64.0705051016420.12880@frodo.shire>
+Message-ID: <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org>
+References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com>
+ <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com>
+ <20070502111742.GA18132@elte.hu>
+ <Pine.LNX.4.64.0705051016420.12880@frodo.shire>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On May 5 2007 16:10, Rafał Bilski wrote:
->
->>> Can You send output of x86info program and output of 
->> 
->> Where do I find this?
->
->http://www.codemonkey.org.uk/projects/x86info/
->It needs msr device support in kernel.
 
-I just wonder why x86info says I have a C5XL while `modprobe longhaul`
-says it is a C5P.
+On Sat, 5 May 2007, Esben Nielsen wrote:
+> 
+> I have been wondering why you use usigned for timers anyway. It is also like
+> that in hrtimers. Why not use signed and avoid (almost) all worries about wrap
+> around issues. The trick is that when all
+>   a < b
+> is be replaced by
+>   a - b < 0
+> the code will work on all 2-complement machines even if the (signed!) integers
+> a and b wrap around.
 
+No. BOTH of the above are buggy.
 
-cn:/dev/shm # ./x86info -v -v
-x86info v1.20.  Dave Jones 2001-2006
-Feedback to <davej@redhat.com>.
+The C language definition doesn't allow signed integers to wrap (ie it's 
+undefined behaviour), so "a-b < 0" can be rewritten by the compiler as a 
+simple signed "a < b".
 
-Found 1 CPU
---------------------------------------------------------------------------
-Family: 6 Model: 9 Stepping: 8
-CPU Model : VIA C3 (Nehemiah) [C5XL]
-Feature flags:
-        Onboard FPU
-        Virtual Mode Extensions
-        Debugging Extensions
-        Page Size Extensions
-        Time Stamp Counter
-        Model-Specific Registers
-        CMPXCHG8 instruction
-        Memory Type Range Registers
-        Page Global Enable
-        CMOV instruction
-        Page Attribute Table
-        MMX support
-        FXSAVE and FXRESTORE instructions
-        SSE support
+And the unsigned (or signed) "a < b" is just broken wrt any kind of 
+wrap-around (whether wrapping around zero or the sign bit).
 
-Extended feature flags:
- [0] RNGp RNGe [4] ACEp ACEe
-Cache info
- L1 Instruction cache: 64KB, 4-way associative, 1 lines per tag, line size=32
-bytes.
- L1 Data cache: 64KB 4-way associative, 1 lines per tag, line size=32 bytes.
- L2 (on CPU) cache: 64KB 8-way associative, 1 lines per tag, line size=32
-bytes.
-TLB info
- Instruction TLB: 8-way associative. 128 entries.
- Data TLB: 8-way associative. 128 entries.
+So the _only_ valid way to handle timers is to
+ - either not allow wrapping at all (in which case "unsigned" is better, 
+   since it is bigger)
+ - or use wrapping explicitly, and use unsigned arithmetic (which is 
+   well-defined in C) and do something like "(long)(a-b) > 0".
 
-(Without -v it's:)
-Feature flags:
- fpu vme de pse tsc msr cx8 mtrr pge cmov pat mmx fxsr sse
+Notice? The signed variant is basically _never_ correct.
 
-
-cn:/dev/shm # cat /proc/cpuinfo 
-processor       : 0
-vendor_id       : CentaurHauls
-cpu family      : 6
-model           : 9
-model name      : VIA Nehemiah
-stepping        : 8
-cpu MHz         : 731.000
-cache size      : 64 KB
-fdiv_bug        : no
-hlt_bug         : no
-f00f_bug        : no
-coma_bug        : no
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr cx8 mtrr pge cmov pat mmx fxsr sse up
-rng rng_en ace ace_en
-bogomips        : 1468.17
-clflush size    : 32
-
-
-And the BIOS announces it as a "Via Eden ESP 6000" (as does the manufacturer).
-
-
-
-Jan
--- 
+		Linus
