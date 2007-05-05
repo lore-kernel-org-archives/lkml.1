@@ -1,113 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934210AbXEEXJL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754247AbXEEXMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934210AbXEEXJL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 19:09:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934216AbXEEXJL
+	id S1754247AbXEEXMS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 19:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbXEEXMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 19:09:11 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:34827 "EHLO mail.q-leap.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934210AbXEEXJK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 19:09:10 -0400
-Date: Sun, 6 May 2007 01:09:07 +0200
-From: Bernd Schubert <bs@q-leap.de>
-To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org
-Cc: bernd-schubert@gmx.de, Jan Engelhardt <jengelh@linux01.gwdg.de>
-Subject: Re: mkfs.ext2 triggerd RAM corruption
-Message-ID: <20070505230907.GA27188@lanczos.q-leap.de>
-References: <200705041659.51675.bs@q-leap.de> <20070504184943.GC25339@thunk.org> <20070505013637.GA23803@lanczos.q-leap.de> <20070505185735.GB21049@thunk.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070505185735.GB21049@thunk.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 5 May 2007 19:12:18 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:55113 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753306AbXEEXMR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 19:12:17 -0400
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, hch@infradead.org,
+       akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       Trond.Myklebust@netapp.com, neilb@suse.de, mhalcrow@us.ibm.com
+Subject: [PATCH 0/4] [RFC] New path lookup function
+Date: Sat,  5 May 2007 19:09:30 -0400
+Message-Id: <11784065741163-git-send-email-jsipek@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.0.3.1043.g4342
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 05, 2007 at 02:57:35PM -0400, Theodore Tso wrote:
-> On Sat, May 05, 2007 at 03:36:37AM +0200, Bernd Schubert wrote:
-> > distribution: modified debian sarge, in which aspect is the distribution
-> > important for this problem? mkfs2.ext2 is supposed to write to /dev/sdaX
-> > and not /dev/rd/0. Stracing it and grepping for open calls shows that
-> > only /dev/sdaX is opened in read-write mode.
-> 
-> /dev/rd/0?  What's this?  Is this the partition where your root
-> partition is found?  What is it?  Is it a ramdisk?  Or is it some kind
-> of persistent storage device?
-> 
-> If it is a persistant storage device, do the corrupted files stay
-> corrupted when you reboot?  (If it's a ramdisk which you load, then
-> obviously it's getting reloaded on reboot.)  You didn't give enough
-> information to be sure exactly what's going on.
+Stackable file systems, among others, frequently need to lookup paths or
+path components starting from an arbitrary point in the namespace
+(identified by a dentry and a vfsmount).  Currently, such file systems use
+lookup_one_len, which is frowned upon [1] as it does not pass the lookup
+intent along; not passing a lookup intent, for example, can trigger BUG_ON's
+when stacking on top of NFSv4.
 
-Sorry, should have expressed myself more clearly, /dev/rd/0 is the
-devfs-style name of the first ram disk device (don't like those devfs
-names myself, but since I'm rather new in this group I couldn't convice
-my boss to switch to short names yet ;) ). However, its only the
-devfs-style of udev and not devfs itself.
+The first patch introduces a new lookup function to allow lookup starting
+from an arbitrary point in the namespace.  This approach has been suggested
+by Christoph Hellwig [2].
 
-> 
-> The next thing to ask is how the files are corrupted.  Can you see
-> save a copy of the corrupted files to stable storage, so you can see
-> *how* they were corrupted.  Were large swaths of zeros getting written
-> into it?
+The second patch changes sunrpc to use path_component_lookup.
 
-Yes, many zeros. Binary files, hexdump and diff are here:
-http://www.q-leap.com/~bschubert/data-corruption
+The third patch changes nfsctl.c to use path_component_lookup.
 
-> 
-> Next question; if you don't use these mke2fs parameters, can you
-> reproduce the corruption?
-> 
-> 	mkfs.ext2 -j -b 4096 -F -i 4096 -J size=400 -I 512 /dev/sda4
-> 
-> What if you change the it to:
-> 
-> 	mkfs.ext2 -j -b 4096  /dev/sda4
-> 
-> Do you still see corruption problems?
+The fourth, and last patch, unexports path_walk because it is no longer
+unnecessary to call it directly, and using the new path_component_lookup is
+cleaner.
 
-No, no observable corruption.
+For example, the following snippet of code, looks up "some/path/component"
+in a directory pointed to by parent_{dentry,vfsmnt}:
 
-> 
-> > I already tested several partition types, e.g. something like this for a
-> > test on sda3
-> > 
-> > beo-05:~# sfdisk -d /dev/sda
-> > # partition table of /dev/sda
-> > unit: sectors
-> > 
-> > /dev/sda1 : start=       63, size=  4208967, Id=83
-> > /dev/sda2 : start=  4209030, size=  4209030, Id=83
-> > /dev/sda3 : start=  8418060, size=313251435, Id=83
-> > /dev/sda4 : start=        0, size=        0, Id= 0
-> 
-> What if the partition size is smaller; does that make the problem go
-> away?  If so, can you do a binary search on the partition size where
-> the problem appears?
+err = path_component_lookup(parent_dentry, parent_vfsmnt,
+			    "some/path/component", 0, &nd);
+if (!err) {
+	/* exits */
 
-Need to test this thouroughly, but will do it tomorrow, its too late
-here for this kind of tests.
+	...
 
-> 
-> And what can you say about the SATA driver you were using; were all of
-> the machines that you tested this on using the same SATA controller
-> and same driver?  
+	/* once done, release the references */
+	path_release(&nd);
+} else if (err == -ENOENT) {
+	/* doesn't exist */
+} else {
+	/* other error */
+}
 
-As you can see from my previous reply ;) tested with at least two
-different controllers - intel and nvidia (will reboot on the 4th system on Monday to
-figure out its hardware, once the corruption happened, the system tend to
-stop working).
+VFS functions such as lookup_create can be used on the nameidata structure
+to pass the create intent to the file system.
 
-> 
-> Obviously if this were a generic kernel problem, we'd been hearing
-> about this from a lot more people.  So there has to be something
-> unique to your setup, and we need to figure out what that might happen
-> to be.
+Currently, there is no easy way to pass the LOOKUP_OPEN intent.  The proper
+way would be to call open_namei.
 
-I also still have problems to believe its a generic problem...
+We'd like to get comments about what's necessary to make stackable file
+systems do lookups right: this includes potential changes to open_namei.
 
+Josef 'Jeff' Sipek.
 
-Thanks for your help,
-Bernd
+[1] http://lkml.org/lkml/2007/3/9/95
+[2] http://lkml.org/lkml/2007/5/4/51
 
