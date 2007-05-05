@@ -1,44 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767991AbXEEE1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767990AbXEEEpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767991AbXEEE1z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 00:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767990AbXEEE1z
+	id S1767990AbXEEEpp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 00:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767992AbXEEEpp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 00:27:55 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:50781 "EHLO
+	Sat, 5 May 2007 00:45:45 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:59308 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767985AbXEEE1y (ORCPT
+	by vger.kernel.org with ESMTP id S1767990AbXEEEpo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 00:27:54 -0400
-Date: Fri, 4 May 2007 21:27:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Quentin Godfroy <godfroy@clipper.ens.fr>
-Cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       "David A. Madore" <David.Madore@ens.fr>,
-       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
-Subject: Re: patch: VFS: fix passing of AT_PHDR value in auxv to ELF
- interpreter
-Message-Id: <20070504212735.9b5698c2.akpm@linux-foundation.org>
-In-Reply-To: <20070505033408.GB30453@goelette.ens.fr>
-References: <20070504140921.GA23122@goelette.ens.fr>
-	<20070504162208.6f4b38b0.akpm@linux-foundation.org>
-	<20070505033408.GB30453@goelette.ens.fr>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 5 May 2007 00:45:44 -0400
+Date: Fri, 4 May 2007 21:44:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Davi Arnaut <davi@haxent.com.br>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
+In-Reply-To: <463C04C6.7000205@cosmosbay.com>
+Message-ID: <alpine.LFD.0.98.0705042131040.3819@woody.linux-foundation.org>
+References: <20070504225730.490334000@haxent.com.br> <463BC3CA.6050109@haxent.com.br>
+ <463C04C6.7000205@cosmosbay.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007 23:34:08 -0400 Quentin Godfroy <godfroy@clipper.ens.fr> wrote:
 
-> By the way, is init 32 bits or 64 bits? It could break the ia32
-> emulation thing, but not the 64bit native mode.
 
-akpm2:/home/akpm> file /sbin/init      
-/sbin/init: ELF 64-bit LSB executable, AMD x86-64, version 1 (SYSV), for GNU/Linux 2.6.9, dynamically linked (uses shared libs), for GNU/Linux 2.6.9, stripped
+On Sat, 5 May 2007, Eric Dumazet wrote:
+> 
+> But... what happens if the thread that was chosen exits from the loop in
+> ep_poll() with res = -EINTR (because of signal_pending(current))
 
-akpm2:/home/akpm> cat /etc/issue
-Fedora Core release 6 (Zod)
-Kernel \r on an \m
+Not a problem.
+
+What happens is that an exclusive wake-up stops on the first entry in the 
+wait-queue that it actually *wakes*up*, but if some task has just marked 
+itself as being TASK_UNINTERRUPTIBLE, but is still on the run-queue, it 
+will just be marked TASK_RUNNING and that in itself isn't enough to cause 
+the "exclusive" test to trigger.
+
+The code in sched.c is subtle, but worth understanding if you care about 
+these things. You should look at:
+
+ - try_to_wake_up() - this is the default wakeup function (and the one 
+   that should work correctly - I'm not going to guarantee that any of the 
+   other specialty-wakeup-functions do so)
+
+   The return value is the important thing. Returning non-zero is 
+   "success", and implies that we actually activated it.
+
+   See the "goto out_running" case for the case where the process was 
+   still actually on the run-queues, and we just ended up setting 
+   "p->state = TASK_RUNNING" - we still return 0, and the "exclusive" 
+   logic will not trigger.
+
+ - __wake_up_common: this is the thing that _calls_ the above, and which 
+   cares about the return value above. It does
+
+	if (curr->func(curr, mode, sync, key) &&
+		(flags & WQ_FLAG_EXCLUSIVE) && !--nr_exclusive)
+
+
+   ie it only decrements (and triggers) the nr_exclusive thing when the 
+   wakeup-function returned non-zero (and when the waitqueue entry was 
+   marked exclusive, of course).
+
+So what does all this subtlety *mean*?
+
+Walk through it. It means that it is safe to do the
+
+	if (signal_pending())
+		return -EINTR;
+
+kind of thing, because *when* you do this, you obviously are always on the 
+run-queue (otherwise the process wouldn't be running, and couldn't be 
+doing the test). So if there is somebody else waking you up right then and 
+there, they'll never count your wakeup as an exclusive one, and they will 
+wake up at least one other real exclusive waiter.
+
+(IOW, you get a very very small probability of a very very small 
+"thundering herd" - obviously it won't be "thundering" any more, it will 
+be more of a "whispering herdlet").
+
+The Linux kernel sleep/wakeup thing is really quite nifty and smart. And 
+very few people realize just *how* nifty and elegant (and efficient) it 
+is. Hopefully a few more people appreciate its beauty and subtlety now ;)
+
+		Linus
