@@ -1,95 +1,188 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031752AbXEEPcE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031760AbXEEPdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031752AbXEEPcE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 11:32:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031761AbXEEPcD
+	id S1031760AbXEEPdo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 11:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031783AbXEEPdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 11:32:03 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:51596 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031752AbXEEPcA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 11:32:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
-        b=QvUo/GiyNOLhoONjKc9RLj4AdsJwljRRaluKzY8PIu8iZmjVHxBC8Npn99aNqR3lb4S5VMLkg/dALO/PjvMewXeIgWwP5AoqLlmwvbWxi7fCkY9xM9gp0feeFdYB5qW4Go+jYzYl4S7pzSYAntCZ7bQXzmwQanSOtfjDpQ9OcIM=
-Date: Sat, 5 May 2007 17:29:56 +0300
-From: Paul Sokolovsky <pmiscml@gmail.com>
-X-Priority: 3 (Normal)
-Message-ID: <67630751.20070505172956@gmail.com>
-To: Anton Vorontsov <cbou@mail.ru>
-CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Greg KH <gregkh@suse.de>,
-       David Woodhouse <dwmw2@infradead.org>, <linux-kernel@vger.kernel.org>,
-       Shem Multinymous <multinymous@gmail.com>,
-       <kernel-discuss@handhelds.org>
-Subject: Re: [Kernel-discuss] Re: [PATCH 3/8] Universal power supply class (was: battery class)
-In-Reply-To: <20070505123230.GA6460@zarina>
-References: <20070503213139.GC20067@zarina> <41840b750705032155w21d98b5g6236daf9bff66606@mail.gmail.com> <20070505035413.GB21359@khazad-dum.debian.net> <20070505123230.GA6460@zarina>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 5 May 2007 11:33:44 -0400
+Received: from ozlabs.org ([203.10.76.45]:51284 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031760AbXEEPdm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 11:33:42 -0400
+Subject: [PATCH] lguest: don't use paravirt_probe, it's dying
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <1178335341.12284.99.camel@localhost.localdomain>
+References: <m1mz0ku7je.fsf@ebiederm.dsl.xmission.com>
+	 <1178280770.23670.61.camel@localhost.localdomain>
+	 <m1y7k4smmo.fsf@ebiederm.dsl.xmission.com>
+	 <1178289450.23670.100.camel@localhost.localdomain>
+	 <m1lkg4sk3f.fsf@ebiederm.dsl.xmission.com>
+	 <1178328168.12284.11.camel@localhost.localdomain>
+	 <m18xc4nfqf.fsf@ebiederm.dsl.xmission.com>
+	 <1178335341.12284.99.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 05 May 2007 21:18:43 +1000
+Message-Id: <1178363923.12284.164.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Anton,
+On Sat, 2007-05-05 at 13:22 +1000, Rusty Russell wrote:
+> On Fri, 2007-05-04 at 20:53 -0600, Eric W. Biederman wrote:
+> > Frankly I think the least risk of problems comes from just doing a
+> > separate entry point for lguest for now.  It means we don't even have
+> > to touch the common code path and later dropping will be trivially 
+> > lguest specific, and certain to not break anything else.
+> 
+> Hmm, I railed for so long against Xen doing that, it feels... wrong...
+> to do that now 8)
 
-Saturday, May 5, 2007, 3:32:30 PM, you wrote:
+And here's the patch.  It's pretty trivial actually.  It even worked
+first time.  It applies against -mm (ie. before the "boot with P=V"
+patches I showed before).
 
-> Hello Henrique, Shem,
+Thanks!
+Rusty.
+==
+paravirt_probe() and its infrastructure proved as popular as it was
+pretty.  In anticipation of its imminent demise, this switches lguest to
+use a magic string to identify a different entry point.
 
-> On Sat, May 05, 2007 at 12:54:13AM -0300, Henrique de Moraes Holschuh wrote:
->> On Fri, 04 May 2007, Shem Multinymous wrote:
->> > >+enum power_supply_type {
->> > >+       POWER_SUPPLY_TYPE_BATTERY = 0,
->> > >+       POWER_SUPPLY_TYPE_UPS,
->> > >+       POWER_SUPPLY_TYPE_AC,
->> > >+       POWER_SUPPLY_TYPE_USB,
->> > >+};
->> > 
->> > How about dumb (non-USB) DC power? Any reason to distinguish it from AC?
->> 
+This is not the long-term solution: that will take a new bootloader rev
+and will hopefully be done in the next few months.
 
-[]
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-> I think I got the start point of confusion. It's indeed bad to call such
-> power supply type as AC.
+diff -r 9cfbf629088e Documentation/lguest/lguest.c
+--- a/Documentation/lguest/lguest.c	Sat May 05 13:06:53 2007 +1000
++++ b/Documentation/lguest/lguest.c	Sat May 05 17:33:25 2007 +1000
+@@ -96,6 +96,19 @@ static void *map_zeroed_pages(unsigned l
+ 	return (void *)addr;
+ }
+ 
++/* Find magic string marking entry point, return entry point. */
++static unsigned long entry_point(void *start, void *end,
++				 unsigned long page_offset)
++{
++	void *p;
++
++	for (p = start; p < end; p++)
++		if (memcmp(p, "GenuineLguest", strlen("GenuineLguest")) == 0)
++			return (long)p + strlen("GenuineLguest") + page_offset;
++
++	err(1, "Is this image a genuine lguest?");
++}
++
+ /* Returns the entry point */
+ static unsigned long map_elf(int elf_fd, const Elf32_Ehdr *ehdr,
+ 			     unsigned long *page_offset)
+@@ -103,6 +116,7 @@ static unsigned long map_elf(int elf_fd,
+ 	void *addr;
+ 	Elf32_Phdr phdr[ehdr->e_phnum];
+ 	unsigned int i;
++	unsigned long start = -1UL, end = 0;
+ 
+ 	/* Sanity checks. */
+ 	if (ehdr->e_type != ET_EXEC
+@@ -131,6 +145,11 @@ static unsigned long map_elf(int elf_fd,
+ 			*page_offset = phdr[i].p_vaddr - phdr[i].p_paddr;
+ 		else if (*page_offset != phdr[i].p_vaddr - phdr[i].p_paddr)
+ 			errx(1, "Page offset of section %i different", i);
++
++		if (phdr[i].p_paddr < start)
++			start = phdr[i].p_paddr;
++		if (phdr[i].p_paddr + phdr[i].p_filesz > end)
++			end = phdr[i].p_paddr + phdr[i].p_filesz;
+ 
+ 		/* We map everything private, writable. */
+ 		addr = mmap((void *)phdr[i].p_paddr,
+@@ -143,8 +162,7 @@ static unsigned long map_elf(int elf_fd,
+ 			    i, addr, (void *)phdr[i].p_paddr);
+ 	}
+ 
+-	/* Entry is physical address: convert to virtual */
+-	return ehdr->e_entry + *page_offset;
++	return entry_point((void *)start, (void *)end, *page_offset);
+ }
+ 
+ /* This is amazingly reliable. */
+@@ -175,8 +193,7 @@ static unsigned long unpack_bzimage(int 
+ 	verbose("Unpacked size %i addr %p\n", len, img);
+ 	*page_offset = intuit_page_offset(img, len);
+ 
+-	/* Entry is physical address: convert to virtual */
+-	return (unsigned long)img + *page_offset;
++	return entry_point(img, img + len, *page_offset);
+ }
+ 
+ static unsigned long load_bzimage(int fd, unsigned long *page_offset)
+diff -r 9cfbf629088e drivers/lguest/lguest.c
+--- a/drivers/lguest/lguest.c	Sat May 05 13:06:53 2007 +1000
++++ b/drivers/lguest/lguest.c	Sat May 05 17:21:44 2007 +1000
+@@ -43,7 +43,6 @@ extern const char lgstart_popf[], lgend_
+ extern const char lgstart_popf[], lgend_popf[];
+ extern const char lgstart_pushf[], lgend_pushf[];
+ extern const char lgstart_iret[], lgend_iret[];
+-extern asmlinkage void lguest_maybe_init(void);
+ extern void lguest_iret(void);
+ 
+ struct lguest_data lguest_data = {
+@@ -497,4 +496,3 @@ __init void lguest_init(void)
+ 	pm_power_off = lguest_power_off;
+ 	start_kernel();
+ }
+-paravirt_probe(lguest_maybe_init);
+diff -r 9cfbf629088e drivers/lguest/lguest_asm.S
+--- a/drivers/lguest/lguest_asm.S	Sat May 05 13:06:53 2007 +1000
++++ b/drivers/lguest/lguest_asm.S	Sat May 05 17:21:38 2007 +1000
+@@ -1,29 +1,24 @@
+ #include <linux/linkage.h>
+ #include <linux/lguest.h>
+ #include <asm/asm-offsets.h>
++#include <asm/thread_info.h>
+ 
+ /* FIXME: Once asm/processor-flags.h goes in, include that */
+ #define X86_EFLAGS_IF 0x00000200
+ 
+ /*
+- * This is where we begin: head.S notes that paging is already enabled (which
+- * doesn't happen in native boot) and calls the registered paravirt_probe
+- * functions one at a time.  Ours is a simple assembler test for magic
+- * registers.  If they're correct we jump to lguest_init.
++ * This is where we begin: we have a magic signature which the launcher looks
++ * for.  The plan is that the Linux boot protocol will be extended with a
++ * "platform type" field which will guide us here from the normal entry point,
++ * but for the moment this suffices.
+  *
+  * We put it in .init.text will be discarded after boot.
+  */
+ .section .init.text, "ax", @progbits
+-ENTRY(lguest_maybe_init)
+-	cmpl $LGUEST_MAGIC_EBP, %ebp
+-	jne out
+-	cmpl $LGUEST_MAGIC_EDI, %edi
+-	jne out
+-	cmpl $LGUEST_MAGIC_ESI, %esi
+-	jne out
+-	je lguest_init
+-out:
+-	ret
++.ascii "GenuineLguest"
++	/* Set up initial stack. */
++ 	movl $(init_thread_union+THREAD_SIZE),%esp
++	jmp lguest_init
+ 
+ /* The templates for inline patching. */
+ #define LGUEST_PATCH(name, insns...)			\
 
-        Ok, let's try to at least find the root of this confusion. Of
-course, course, what we mean by "AC" is exactly continuous, "infinite"
-power source. Of course, from real physicist point of view, this is
-incorrect - hardly any device in topic domain (i.e.
-portable/battery-power) has AC cord sticking out of case. There's usually
-an AC/DC adapter, and DC is what really fed into device.
-
-        But in real world, it's rather common to colloquially name
-such kind of power "AC", and that's "term" is known to many-many
-people, and intuitively understood even for those, who didn't hit it yet.
-Actually, this discussion is good confirmation that's the case -
-people understand in what meaning it is used here, and go to point
-that it's not "scientifically" correct.
-
-> Maybe I should it rename to ADAPTER? Or WALL?
-
-        Well-well, above was pointed out, that "AC" even if not fully
-correct, that at least colloquial term of choice for the phenomena inq
-question. Words above on the other hand seems like out-of-scope and
-ambiguous. There's actually a nice and terse term for that - mains,
-but I wonder how well non-English speaking people are familiar with it
-(I personally saw them only in manuals, which, as well known, nobody
-reads).
 
 
-        Summing up, it may be worth a quick thought, should it be
-"absolutely correct and absolutely useless", or just well-understood
-up to the level that even elementary school pupil could write an
-eloquence essay criticizing it ;-).
-
-
-[]
-
-
--- 
-Best regards,
- Paul                            mailto:pmiscml@gmail.com
 
