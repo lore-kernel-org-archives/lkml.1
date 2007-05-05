@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933454AbXEEVFU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933638AbXEEVJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933454AbXEEVFU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 17:05:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933541AbXEEVFU
+	id S933638AbXEEVJt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 17:09:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933541AbXEEVJt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 17:05:20 -0400
-Received: from ftp.linux-mips.org ([194.74.144.162]:34749 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933454AbXEEVFT (ORCPT
+	Sat, 5 May 2007 17:09:49 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:58824 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933638AbXEEVJs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 17:05:19 -0400
-Date: Sat, 5 May 2007 22:05:11 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix nfsroot build
-Message-ID: <20070505210511.GA11342@linux-mips.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 5 May 2007 17:09:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=hV27tPyAlvgcSz7mPzTt/wRWhStHaVdrLunZ6CEvFYo0RhE/gSDA1zml3so7JKlDFK2VsRUq7k3ZUeWQzkC0kCFiNnHKVdockaowfhxx+ZvBpDSY3jWGY2mIrfM9Z55TazL+eAvthDo/jzHePGIUZ4RXotOs7nEKc+1p4JOQTaY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH pata-2.6 fix queue] hpt366: don't check enablebits for HPT36x
+Date: Sat, 5 May 2007 23:20:16 +0200
+User-Agent: KMail/1.9.6
+Cc: michal.kepien@poczta.onet.pl, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200705042318.37367.sshtylyov@ru.mvista.com> <200705052130.53793.bzolnier@gmail.com> <463CE681.9050000@ru.mvista.com>
+In-Reply-To: <463CE681.9050000@ru.mvista.com>
+MIME-Version: 1.0
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Message-Id: <200705052320.16144.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  CC      fs/nfs/nfsroot.o
-fs/nfs/nfsroot.c:131: error: tokens causes a section type conflict
-make[2]: *** [fs/nfs/nfsroot.o] Error 1
+On Saturday 05 May 2007, Sergei Shtylyov wrote:
+> Hello.
+> 
+> Bartlomiej Zolnierkiewicz wrote:
+> 
+> >>HPT36x chip don't seem to have the channel enable bits, so prevent the IDE core
+> >>from checking them...
+> 
+> >>Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> 
+> > applied
+> 
+>     I'm getting "403 Forbidden" trying to browse this patch (and 
+> ide-cs-recognize-2gb-compactflash-from-transcend.patch as well).
 
-This is due to mixing const and non-const content in the same section
-which halfway recent gccs absolutely hate.  Fixed by dropping the const.
+Should be fixed now - sorry for that.
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+While at it I replaced mine version of "the hpt366: simplify UltraDMA
+filtering (take 2)" with the official one ;) and fixed my damn scripts
+to always do "chmod 644 pata-2.6/patches/*.patch" before pushing updates
+to kernel.org.
 
-diff --git a/include/linux/parser.h b/include/linux/parser.h
-index 86676f6..26b2bdf 100644
---- a/include/linux/parser.h
-+++ b/include/linux/parser.h
-@@ -14,7 +14,7 @@ struct match_token {
- 	const char *pattern;
- };
- 
--typedef const struct match_token match_table_t[];
-+typedef struct match_token match_table_t[];
- 
- /* Maximum number of arguments that match_token will find in a pattern */
- enum {MAX_OPT_ARGS = 3};
+Bart
