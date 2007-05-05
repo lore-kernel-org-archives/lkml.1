@@ -1,120 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423110AbXEEFYN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbXEEFbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423110AbXEEFYN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 01:24:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423102AbXEEFYN
+	id S1754648AbXEEFbi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 01:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbXEEFbi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 01:24:13 -0400
-Received: from 50.sub-75-208-68.myvzw.com ([75.208.68.50]:33047 "EHLO
-	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754641AbXEEFYN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 01:24:13 -0400
-X-Greylist: delayed 4997 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 May 2007 01:24:12 EDT
-Message-Id: <20070504232119.196309373@goop.org>
-References: <20070504232051.411946839@goop.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 04 May 2007 16:20:53 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       "Jan Beulich" <JBeulich@novell.com>, "Andi Kleen" <ak@muc.de>
-Subject: [patch 02/29] xen: Allocate and free vmalloc areas
-Content-Disposition: inline; filename=alloc-vm-area.patch
+	Sat, 5 May 2007 01:31:38 -0400
+Received: from holomorphy.com ([66.93.40.71]:53209 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754648AbXEEFbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 01:31:37 -0400
+Date: Fri, 4 May 2007 22:32:11 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: clameter@sgi.com
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, dgc@sgi.com,
+       Eric Dumazet <dada1@cosmosbay.com>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC 2/3] SLUB: Implement targeted reclaim and partial list defragmentation
+Message-ID: <20070505053211.GZ19966@holomorphy.com>
+References: <20070504221555.642061626@sgi.com> <20070504221708.596112123@sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070504221708.596112123@sgi.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allocate/destroy a 'vmalloc' VM area: alloc_vm_area and free_vm_area
-The alloc function ensures that page tables are constructed for the
-region of kernel virtual address space and mapped into init_mm.
+On Fri, May 04, 2007 at 03:15:57PM -0700, clameter@sgi.com wrote:
+> 2. kick_object(void *)
+> After SLUB has established references to the remaining objects in a slab it
+> will drop all locks and then use kick_object on each of the objects for which
+> we obtained a reference. The existence of the objects is guaranteed by
+> virtue of the earlier obtained reference. The callback may perform any
+> slab operation since no locks are held at the time of call.
+> The callback should remove the object from the slab in some way. This may
+> be accomplished by reclaiming the object and then running kmem_cache_free()
+> or reallocating it and then running kmem_cache_free(). Reallocation
+> is advantageous at this point because it will then allocate from the partial
+> slabs with the most objects because we have just finished slab shrinking.
+> NOTE: This patch is for conceptual review. I'd appreciate any feedback
+> especially on the locking approach taken here. It will be critical to
+> resolve the locking issue for this approach to become feasable.
+> Signed-off-by: Christoph Lameter <clameter@sgi.com>
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Cc: "Jan Beulich" <JBeulich@novell.com>
-Cc: "Andi Kleen" <ak@muc.de>
+kick_object() doesn't return an indicator of success, which might be
+helpful for determining whether an object was successfully removed. The
+later-added kick_dentry_object(), for instance, can't remove dentries
+where reference counts are still held.
 
----
- include/linux/vmalloc.h |    4 +++
- mm/vmalloc.c            |   51 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 55 insertions(+)
+I suppose one could check to see if the ->inuse counter decreased, too.
 
-===================================================================
---- a/include/linux/vmalloc.h
-+++ b/include/linux/vmalloc.h
-@@ -68,6 +68,10 @@ extern int map_vm_area(struct vm_struct 
- 			struct page ***pages);
- extern void unmap_vm_area(struct vm_struct *area);
- 
-+/* Allocate/destroy a 'vmalloc' VM area. */
-+extern struct vm_struct *alloc_vm_area(unsigned long size);
-+extern void free_vm_area(struct vm_struct *area);
-+
- /*
-  *	Internals.  Dont't use..
-  */
-===================================================================
---- a/mm/vmalloc.c
-+++ b/mm/vmalloc.c
-@@ -757,3 +757,54 @@ out_einval_locked:
- }
- EXPORT_SYMBOL(remap_vmalloc_range);
- 
-+static int f(pte_t *pte, struct page *pmd_page, unsigned long addr, void *data)
-+{
-+	/* apply_to_page_range() does all the hard work. */
-+	return 0;
-+}
-+
-+/**
-+ *	alloc_vm_area - allocate a range of kernel address space
-+ *	@size:		size of the area
-+ *	@returns:	NULL on failure, vm_struct on success
-+ *
-+ *	This function reserves a range of kernel address space, and
-+ *	allocates pagetables to map that range.  No actual mappings
-+ *	are created.  If the kernel address space is not shared
-+ *	between processes, it syncs the pagetable across all
-+ *	processes.
-+ */
-+struct vm_struct *alloc_vm_area(unsigned long size)
-+{
-+	struct vm_struct *area;
-+
-+	area = get_vm_area(size, VM_IOREMAP);
-+	if (area == NULL)
-+		return NULL;
-+
-+	/*
-+	 * This ensures that page tables are constructed for this region
-+	 * of kernel virtual address space and mapped into init_mm.
-+	 */
-+	if (apply_to_page_range(&init_mm, (unsigned long)area->addr,
-+				area->size, f, NULL)) {
-+		free_vm_area(area);
-+		return NULL;
-+	}
-+
-+	/* Make sure the pagetables are constructed in process kernel
-+	   mappings */
-+	vmalloc_sync_all();
-+
-+	return area;
-+}
-+EXPORT_SYMBOL_GPL(alloc_vm_area);
-+
-+void free_vm_area(struct vm_struct *area)
-+{
-+	struct vm_struct *ret;
-+	ret = remove_vm_area(area->addr);
-+	BUG_ON(ret != area);
-+	kfree(area);
-+}
-+EXPORT_SYMBOL_GPL(free_vm_area);
+In either event, it would probably be helpful to abort the operation if
+there was a reclamation failure for an object within the slab.
 
--- 
+This is a relatively minor optimization concern. I think this patch
+series is great and a significant foray into the problem of slab
+reclaim vs. fragmentation.
 
+
+-- wli
