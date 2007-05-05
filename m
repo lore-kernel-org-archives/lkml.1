@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933232AbXEETxA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754238AbXEETz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933232AbXEETxA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 15:53:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933251AbXEETxA
+	id S1754238AbXEETz5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 15:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933219AbXEETz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 15:53:00 -0400
-Received: from www.osadl.org ([213.239.205.134]:51544 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933232AbXEETw7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 15:52:59 -0400
-Subject: Re: Interrupt-Handling in User Space
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Clifford Wolf <clifford@clifford.at>
-Cc: lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070505191707.GA9300@clifford.at>
-References: <20070505191707.GA9300@clifford.at>
-Content-Type: text/plain
-Date: Sat, 05 May 2007 21:55:33 +0200
-Message-Id: <1178394933.31213.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 5 May 2007 15:55:57 -0400
+Received: from v05705.home.net.pl ([212.85.118.117]:65323 "HELO
+	v05705.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754238AbXEETz4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 15:55:56 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 May 2007 15:55:55 EDT
+Date: Sat, 5 May 2007 21:49:22 +0200
+From: Zbigniew Baniewski <zb@ispid.com.pl>
+To: linux-kernel@vger.kernel.org
+Subject: "modularized" 2.4.34.4  ->  ide-core "unresolved symbols"
+Message-ID: <20070505194922.GA13176@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-05 at 21:17 +0200, Clifford Wolf wrote:
-> afaics there is no mechanism in the official kernel tree to handle
-> interrupts in user space yet. I'd need that for an embedded project I'm
-> woking on atm and are so far not sure if I'm going to implement such a
-> generic interface or just write a simple driver that does the job for my
-> application. So I'd like to find out what the chances are that such a
-> feature will get accepted in the official kernel..
+Hallo,
 
-Please take a look at drivers/uio, which is currently in -mm and on the
-way to mainline.
+I was trying to make "modularized kernel" (s.c. "Debian way") recently, yes,
+I made even kernel.deb package - but at the installation, I'm still getting
+an error: "ide-core: unresolved symbols".
 
-	tglx
+Making a quick search with Google I could see, it did occur to many other
+people even long ago. There was even a patch introduced - which, I believe,
+is in the 2.4.34.4 "drivers/ide" sub-dir - unfortunately it seems, that the
+patch is working no more.
 
+Perhaps there is another patch available for 2.4.34.4 ?
+-- 
+				pozdrawiam / regards
 
+						Zbigniew Baniewski
