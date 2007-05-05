@@ -1,59 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755213AbXEETAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932318AbXEETJE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755213AbXEETAb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 15:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbXEETAb
+	id S932318AbXEETJE (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 15:09:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932985AbXEETJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 15:00:31 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3962 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755213AbXEETAa (ORCPT
+	Sat, 5 May 2007 15:09:04 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:39055 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S932318AbXEETJD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 15:00:30 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sat, 5 May 2007 12:00:29 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Davi Arnaut <davi@haxent.com.br>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
-In-Reply-To: <463BC3CA.6050109@haxent.com.br>
-Message-ID: <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com>
-References: <20070504225730.490334000@haxent.com.br> <463BC3CA.6050109@haxent.com.br>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Sat, 5 May 2007 15:09:03 -0400
+Date: Sat, 5 May 2007 21:09:01 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: jsipek@cs.sunysb.edu, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, unionfs@filesystems.org
+Subject: Re: [-mm patch] fix unionfs compilation
+Message-ID: <20070505190901.GJ8975@stusta.de>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <20070505170012.GF8975@stusta.de> <20070505115718.a1a0b61e.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070505115718.a1a0b61e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Davi Arnaut wrote:
-
-> Hi,
+On Sat, May 05, 2007 at 11:57:18AM -0700, Andrew Morton wrote:
+> On Sat, 5 May 2007 19:00:12 +0200 Adrian Bunk <bunk@stusta.de> wrote:
 > 
-> If multiple threads are parked on epoll_wait (on a single epoll fd) and
-> events become available, epoll performs a wake up of all threads of the
-> poll wait list, causing a thundering herd of processes trying to grab
-> the eventpoll lock.
+> > On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
+> > >...
+> > > Changes since 2.6.21-rc7-mm2:
+> > >...
+> > >  git-unionfs.patch
+> > >...
+> > >  git trees
+> > >...
+> > 
+> > <--  snip  -->
+> > 
+> > ...
+> >   CC      fs/unionfs/super.o
+> > /home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c: In function ‘init_once’:
+> > /home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: ‘SLAB_CTOR_VERIFY’ undeclared (first use in this function)
+> > /home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: (Each undeclared identifier is reported only once
+> > /home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: for each function it appears in.)
+> > make[3]: *** [fs/unionfs/super.o] Error 1
+> > 
+> > <--  snip  -->
+> > 
+> > Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> > 
+> > ---
+> > --- linux-2.6.21-mm1/fs/unionfs/super.c.old	2007-05-05 18:45:25.000000000 +0200
+> > +++ linux-2.6.21-mm1/fs/unionfs/super.c	2007-05-05 18:46:03.000000000 +0200
+> > @@ -819,8 +819,7 @@
+> >  {
+> >  	struct unionfs_inode_info *i = v;
+> >  
+> > -	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) ==
+> > -	    SLAB_CTOR_CONSTRUCTOR)
+> > +	if (flags & SLAB_CTOR_CONSTRUCTOR)
+> >  		inode_init_once(&i->vfs_inode);
+> >  }
 > 
-> This patch addresses this by using exclusive waiters (wake one). Once
-> the exclusive thread finishes transferring it's events, a new thread
-> is woken if there are more events available.
+> Bah, that was hidden from my allmodconfig because CONFIG_UNIONFS is inexplicably
+> dependent upon CONFIG_SLAB.
 > 
-> Makes sense?
+> How come?
 
-Theorically, make sense. I said theorically because all the use 
-epoll_wait MT use cases I've heard of, use a single thread that does the 
-epoll_wait, and then dispatch to worker threads. So thundering herd is not 
-in the picture. OTOH, it does not hurt either.
-But, that code is completely changed with the new single-pass epoll delivery 
-code that is in -mm. So, I'd either wait for that code to go in, or I 
-(or you, if you like) can make a patch against -mm.
+http://lkml.org/lkml/2007/2/19/326
 
+cu
+Adrian
 
+-- 
 
-- Davide
-
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
