@@ -1,52 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933936AbXEEQg2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933262AbXEEQkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933936AbXEEQg2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:36:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933940AbXEEQg1
+	id S933262AbXEEQkU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933955AbXEEQkU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:36:27 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:39590 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933936AbXEEQg1 (ORCPT
+	Sat, 5 May 2007 12:40:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:52583 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933262AbXEEQkT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:36:27 -0400
-Message-ID: <463C785B.10007@web.de>
-Date: Sat, 05 May 2007 14:28:11 +0200
-From: Niklas Steinkamp <NiSteinkamp@web.de>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 5 May 2007 12:40:19 -0400
+Message-ID: <463C625C.8040405@googlemail.com>
+Date: Sat, 05 May 2007 12:54:20 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-To: garloff@suse.de, linux-kernel@vger.kernel.org
-Subject: DC390: replace pci_module_init in dc390_module_init
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm1
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX19Prv+GN91C63+OHdi30TK0wjLxPz5412/le006
-	BGcKmgE0gGXYkO3HDaENdIpkR8mR9SZo9RrPGGccGiXpE+ZqG5
-	nwADspp4g=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Andrew Morton wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+>
+>   
+Some warnings again on i386.
 
-while compiling the DC930 SCSI driver, i got this message:
+...
 
-drivers/built-in.o: In function `dc390_module_init':
-tmscsim.c:(.init.text+0x124c4): undefined reference to `pci_module_init'
-make: *** [.tmp_vmlinux1] Fehler 1
+scripts/kconfig/mconf arch/i386/Kconfig
+drivers/macintosh/Kconfig:116:warning: 'select' used by config symbol 
+'PMAC_APM_EMU' refers to undefined symbol 'SYS_SUPPORTS_APM_EMULATION'
+drivers/net/Kconfig:2336:warning: 'select' used by config symbol 
+'UCC_GETH' refers to undefined symbol 'UCC_FAST'
 
-so i replaced "pci_module_init" with "pci_register_device"
-and it works just fine.
---------------------------
+...
 
-diff --git a/drivers/scsi/tmscsim.c b/drivers/scsi/tmscsim.c
-index a583e89..3158949 100644
---- a/drivers/scsi/tmscsim.c
-+++ b/drivers/scsi/tmscsim.c
-@@ -2680,7 +2680,7 @@ static int __init dc390_module_init(void)
-                 printk (KERN_INFO "DC390: Using safe settings.\n");
-         }
 
--       return pci_module_init(&dc390_driver);
-+       return pci_register_driver(&dc390_driver);
-  }
-
-  static void __exit dc390_module_exit(void)
+Gabriel
