@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933980AbXEEVtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933929AbXEEVwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933980AbXEEVtK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 17:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933979AbXEEVtK
+	id S933929AbXEEVwd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 17:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933965AbXEEVwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 17:49:10 -0400
-Received: from static-ip-62-75-166-246.inaddr.intergenia.de ([62.75.166.246]:41222
-	"EHLO vs166246.vserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933962AbXEEVtI (ORCPT
+	Sat, 5 May 2007 17:52:33 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:63445 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933929AbXEEVwc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 17:49:08 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-mm1
-Date: Sat, 5 May 2007 23:48:49 +0200
-User-Agent: KMail/1.9.6
-Cc: Maciej Rutecki <maciej.rutecki@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org,
-       "John W. Linville" <linville@tuxdriver.com>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <463CA74C.8080008@gmail.com> <20070505114811.f824c902.akpm@linux-foundation.org>
-In-Reply-To: <20070505114811.f824c902.akpm@linux-foundation.org>
+	Sat, 5 May 2007 17:52:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=q6h4a4YOf2pkIBLRfEB+XbaimabV5qj6cCtRher7tciywpz3B3hj5pC87Fw/S/4TfMG7NacuOWeAsPMa0jj1pBy4x+mf3PB515o0jIAztbTy97JN78/xbl2WNArexL8zAQL26OJUnM47TlXJU1ZfMLwalKg8ggliSdcSl006FvU=
+Message-ID: <9a8748490705051452rc47492elc78be0015ca81c35@mail.gmail.com>
+Date: Sat, 5 May 2007 23:52:29 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Shahbaz Khan" <shaz.linux@gmail.com>
+Subject: Re: lxr problem - newbie needs help
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20cbb9450705051345t16784d28k824c9a7c38891615@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705052348.49994.mb@bu3sch.de>
+References: <20cbb9450705051345t16784d28k824c9a7c38891615@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 May 2007 20:48:11 Andrew Morton wrote:
-> On Sat, 05 May 2007 17:48:28 +0200 Maciej Rutecki <maciej.rutecki@gmail.com> wrote:
-> 
-> > Andrew Morton pisze:
-> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
-> > > 
-> > > 
-> > 
-> > CC [M]  lib/zlib_deflate/deflate_syms.o
-> >   LD [M]  lib/zlib_deflate/zlib_deflate.o
-> >   Building modules, stage 2.
-> >   MODPOST 791 modules
-> > ERROR: "ssb_pcihost_register" [drivers/net/b44.ko] undefined!
-> > ERROR: "ssb_pcihost_unregister" [drivers/net/b44.ko] undefined!
-> > make[2]: *** [__modpost] Error 1
-> > make[1]: *** [modules] Error 2
-> > make[1]: Leaving directory `/usr/src/linux-mm'
-> > make: *** [debian/stamp-build-kernel] Error 2
+On 05/05/07, Shahbaz Khan <shaz.linux@gmail.com> wrote:
+> I am using Fedora core 6. I have configured lxr 0.3 with the latest
 
-config B44_PCI
-	bool "Broadcom 4400 PCI device support"
-	depends on B44 && NET_PCI
+I'm no expert on 'lxr', but as far as I can see version 0.3 is quite
+old - according to http://sourceforge.net/projects/lxr - the latest
+version is 0.9.4 - try upgrading to the latest version.
 
-We simply need a SELECT SSB_PCIHOST here. Not sure why it's not there.
-I thought it used to be there.
+> glimpse but I get the following in the browser:
+>
+> -> Parent Directory
+>   -  fileidx
+>   -  xref
+>
+> when i click the files it gives me some wierd source code with lots of
+> funny faces like ones in the ascii command line screens (if that makes
+> sense at all!).
+>
+> lxr installprefix is /var/www/lxr/
+> My document root for apache is /var/www/
+> attached is my lxr configuration.
+>
+I think you'll have better luck with your query if you ask on one of
+the lxr mailing lists, see http://sourceforge.net/mail/?group_id=27350
+for details. The linux-kernel mailing list is for discussing technical
+details of the Linux kernel itself, not for asking questions about
+various other tools.
+
 
 -- 
-Greetings Michael.
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
