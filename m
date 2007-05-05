@@ -1,87 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755328AbXEEIbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755451AbXEEImy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755328AbXEEIbo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 04:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbXEEIbn
+	id S1755451AbXEEImy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 04:42:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbXEEImy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 04:31:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:4395 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755328AbXEEIbm (ORCPT
+	Sat, 5 May 2007 04:42:54 -0400
+Received: from mail34.syd.optusnet.com.au ([211.29.133.218]:50010 "EHLO
+	mail34.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755451AbXEEImw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 04:31:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
-        b=G3aTXZD/1WTec0HCR5kgGXhPE0m/h6bdfDyLuqi5mSkdEeNQWb/FGMcALMyai6fO1hPhHi6J0Qu6COKEmwHOIincYcMUPiT5gS+lMCSVN4uW1LAnc+37/Jt2L++heXxmV0gsnIJ9I68IjAIj+3QcIEM0s3pmbcCVW6XYdqOwClo=
-Date: Sat, 5 May 2007 10:31:25 +0200 (CEST)
-From: Esben Nielsen <nielsen.esben@googlemail.com>
-X-X-Sender: simlo@frodo.shire
-To: Ingo Molnar <mingo@elte.hu>
-cc: Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v8
-In-Reply-To: <20070502111742.GA18132@elte.hu>
-Message-ID: <Pine.LNX.4.64.0705051016420.12880@frodo.shire>
-References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com>
- <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com>
- <20070502111742.GA18132@elte.hu>
+	Sat, 5 May 2007 04:42:52 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>
+Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
+Date: Sat, 5 May 2007 18:42:31 +1000
+User-Agent: KMail/1.9.5
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070504085201.GA24666@elte.hu> <200705042210.15953.kernel@kolivas.org>
+In-Reply-To: <200705042210.15953.kernel@kolivas.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_4NEPGuQWzoRUlD2"
+Message-Id: <200705051842.32328.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Boundary-00=_4NEPGuQWzoRUlD2
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-
-On Wed, 2 May 2007, Ingo Molnar wrote:
-
+On Friday 04 May 2007 22:10, Con Kolivas wrote:
+> On Friday 04 May 2007 18:52, Ingo Molnar wrote:
+> > agreed. Con, IIRC you wrote a testcase for this, right? Could you please
+> > send us the results of that testing?
 >
-> * Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
->
->> The problem is with comparing a s64 values with (s64)ULONG_MAX, which
->> evaluates to -1. Then we check if exec_delta64 and fair_delta64 are
->> greater than (s64)ULONG_MAX (-1), if so we assign (s64)ULONG_MAX to
->> the respective values.
->
-> ah, indeed ...
->
->> The fix is to compare these values against (s64)LONG_MAX and assign
->> (s64)LONG_MAX to exec_delta64 and fair_delta64 if they are greater
->> than (s64)LONG_MAX.
->>
->> Tested on PowerPC, the regression is gone, tasks are load balanced as
->> they were in v7.
->
-> thanks, applied!
->
-> 	Ingo
+> Yes, sorry it's a crappy test app but works on 32bit. Timed with prefetch
+> disabled and then enabled swap prefetch saves ~5 seconds on average
+> hardware on this one test case. I had many users try this and the results
+> were between 2 and 10 seconds, but always showed a saving on this testcase.
+> This effect easily occurs on printing a big picture, editing a large file,
+> compressing an iso image or whatever in real world workloads. Smaller, but
+> much more frequent effects of this over the course of a day obviously also
+> occur and do add up.
 
-I have been wondering why you use usigned for timers anyway. It is also 
-like that in hrtimers. Why not use signed and avoid (almost) all worries 
-about wrap around issues. The trick is that when all
-   a < b
-is be replaced by
-   a - b < 0
-the code will work on all 2-complement machines even if the (signed!) 
-integers a and b wrap around.
+Here's a better swap prefetch tester. Instructions in file.
 
-In both the hrtimer and CFS patch 32 bit timers could be used internally 
-on 32 bit architectures to avoid expensive 64 bit integer calculations.
-The only thing is: timeouts can not be bigger than 2^31 in the chosen 
-units.
+Machine with 2GB ram and 2GB swapfile
 
-I have successfully coded a (much more primitive) hrtimer system for 
-another OS on both ARM and PPC using the above trick in my former job. 
-On both I used the machine's internal clock as the internal 
-representation of time and I only scaled to a struct timespec in the user 
-interface.
+Prefetch disabled:
+./sp_tester
+Ram 2060352000  Swap 1973420000
+Total ram to be malloced: 3047062000 bytes
+Starting first malloc of 1523531000 bytes
+Starting 1st read of first malloc
+Touching this much ram takes 809 milliseconds
+Starting second malloc of 1523531000 bytes
+Completed second malloc and free
+Sleeping for 600 seconds
+Important part - starting reread of first malloc
+Completed read of first malloc
+Timed portion 53397 milliseconds
 
-Esben
+Enabled:
+./sp_tester
+Ram 2060352000  Swap 1973420000
+Total ram to be malloced: 3047062000 bytes
+Starting first malloc of 1523531000 bytes
+Starting 1st read of first malloc
+Touching this much ram takes 676 milliseconds
+Starting second malloc of 1523531000 bytes
+Completed second malloc and free
+Sleeping for 600 seconds
+Important part - starting reread of first malloc
+Completed read of first malloc
+Timed portion 26351 milliseconds
+
+Note huge time difference.
+
+-- 
+-ck
+
+--Boundary-00=_4NEPGuQWzoRUlD2
+Content-Type: text/x-csrc;
+  charset="utf-8";
+  name="sp_tester.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+	filename="sp_tester.c"
+
+/*
+sp_tester.c
+
+Build with:
+gcc -o sp_tester sp_tester.c -lrt -W -Wall -O2
+
+How to use:
+echo 1 > /proc/sys/vm/overcommit_memory
+swapoff -a
+swapon -a
+./sp_tester
+
+then repeat with changed conditions eg
+echo 0 > /proc/sys/vm/swap_prefetch
+
+Each Test takes 10 minutes
+*/
+
+#include <stdio.h>
+#include <stdarg.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/mman.h>
+#include <time.h>
+
+void fatal(const char *format, ...)
+{
+	va_list ap;
+
+	if (format) {
+		va_start(ap, format);
+		vfprintf(stderr, format, ap);
+		va_end(ap);
+	}
+
+	fprintf(stderr, "Fatal error - exiting\n");
+	exit(1);
+}
+
+unsigned long ramsize, swapsize;
+
+size_t get_ram(void)
+{
+	FILE *meminfo;
+        char aux[256];
+
+	if(!(meminfo = fopen("/proc/meminfo", "r")))
+		fatal("fopen\n");
+
+	while( !feof(meminfo) && !fscanf(meminfo, "MemTotal: %lu kB", &ramsize) )
+		fgets(aux,sizeof(aux),meminfo);
+	while( !feof(meminfo) && !fscanf(meminfo, "SwapTotal: %lu kB", &swapsize) )
+		fgets(aux,sizeof(aux),meminfo);
+	if (fclose(meminfo) == -1)
+		fatal("fclose");
+	ramsize *= 1000;
+	swapsize *= 1000;
+	printf("Ram %lu  Swap %lu\n", ramsize, swapsize);
+	return ramsize + (swapsize / 2);
+}
+
+unsigned long get_usecs(struct timespec *myts)
+{
+	if (clock_gettime(CLOCK_REALTIME, myts))
+		fatal("clock_gettime");
+	return (myts->tv_sec * 1000000 + myts->tv_nsec / 1000 );
+}
+
+int main(void)
+{
+	unsigned long current_time, time_diff;
+	struct timespec myts;
+	char *buf1, *buf2, *buf3, *buf4;
+	size_t size = get_ram();
+	int sleep_seconds = 600;
+
+	if (size > ramsize / 2 * 3)
+		size = ramsize / 2 * 3;
+	printf("Total ram to be malloced: %u bytes\n", size);
+	size /= 2;
+	printf("Starting first malloc of %u bytes\n", size);
+	buf1 = malloc(size);
+	buf4 = malloc(1);
+	if (buf1 == (char *)-1)
+		fatal("Failed to malloc 1st buffer\n");
+	memset(buf1, 0, size);
+	time_diff = current_time = get_usecs(&myts);
+	for (buf3 = buf1; buf3 < buf1 + size; buf3++)
+		*buf4 = *buf3;
+	printf("Starting 1st read of first malloc\n");
+	current_time = get_usecs(&myts);
+	time_diff = current_time - time_diff;
+	printf("Touching this much ram takes %lu milliseconds\n",time_diff / 1000);
+	printf("Starting second malloc of %u bytes\n", size);
+
+	buf2 = malloc(size);
+	if (buf2 == (char *)-1)
+		fatal("Failed to malloc 2nd buffer\n");
+	memset(buf2, 0, size);
+	for (buf3 = buf2 + size; buf3 > buf2; buf3--)
+		*buf4 = *buf3;
+	free(buf2);
+	printf("Completed second malloc and free\n");
+
+	printf("Sleeping for %u seconds\n", sleep_seconds);
+	sleep(sleep_seconds);
+
+	printf("Important part - starting reread of first malloc\n");
+	time_diff = current_time = get_usecs(&myts);
+	for (buf3 = buf1; buf3 < buf1 + size; buf3++)
+		*buf4 = *buf3;
+	current_time = get_usecs(&myts);
+	time_diff = current_time - time_diff;
+	printf("Completed read of first malloc\n");
+	printf("Timed portion %lu milliseconds\n",time_diff / 1000);
+
+	free(buf1);
+	free(buf4);
+
+	return 0;
+}
+
+--Boundary-00=_4NEPGuQWzoRUlD2--
