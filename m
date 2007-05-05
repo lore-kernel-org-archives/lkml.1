@@ -1,116 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934246AbXEESH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934249AbXEESIK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934246AbXEESH5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 14:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934249AbXEESH5
+	id S934249AbXEESIK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 14:08:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934253AbXEESIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 14:07:57 -0400
+	Sat, 5 May 2007 14:08:10 -0400
 Received: from an-out-0708.google.com ([209.85.132.242]:20319 "EHLO
 	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934246AbXEESH4 (ORCPT
+	with ESMTP id S934249AbXEESIG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 14:07:56 -0400
-Message-ID: <5486cca80705050319q57cfcdb0n646c56097c789c28@mail.gmail.com>
-Date: Sat, 5 May 2007 12:19:51 +0200
+	Sat, 5 May 2007 14:08:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Kthl8sE/uvJx7XSJ4lm49pX1G7MlI0aVk5Xhy49tSYUbJ5IObD/QlVQiNQ218jkHziCLKQZPMxY+dsHjT/lVmqqnvpSDo53OT2wG9c4EQ9KNxn5vrJOOTQlr0tqzbpCU7haHsg2piOyJfpJU8ZD7uJF9dJ2ccpaBZ0CoKKhjfSI=
+Message-ID: <5486cca80705051108p55b2cddfydce54aa15dd317f4@mail.gmail.com>
+Date: Sat, 5 May 2007 20:08:05 +0200
 From: "Antonino Ingargiola" <tritemio@gmail.com>
 To: "Paul Fulghum" <paulkf@microgate.com>
 Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
 Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <5486cca80705050253u35731411ma7c09b3a678c2d49@mail.gmail.com>
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       "Oliver Neukum" <oliver@neukum.org>
+In-Reply-To: <1178384675.3379.26.camel@x2>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <1178299247.3769.0.camel@amdx2.microgate.com>
-	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
-	 <1178300493.3619.1.camel@amdx2.microgate.com>
-	 <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
-	 <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
-	 <1178308173.3743.14.camel@amdx2.microgate.com>
-	 <5486cca80705041421y4fcaec01l7acafed1cea4b509@mail.gmail.com>
-	 <1178276265.3417.3.camel@x2>
-	 <5486cca80705050253u35731411ma7c09b3a678c2d49@mail.gmail.com>
+	 <463BC223.2040304@microgate.com> <1178353618.3472.1.camel@x2>
+	 <5486cca80705050811k2903710y2bf9054434d8da4b@mail.gmail.com>
+	 <463CB429.6050201@microgate.com> <1178381287.3379.8.camel@x2>
+	 <1178381739.3379.11.camel@x2>
+	 <5486cca80705050926j5c33eaf3m8723b76d4759fc5a@mail.gmail.com>
+	 <5486cca80705050958g397db6fepbe1e62b7e190a3f@mail.gmail.com>
+	 <1178384675.3379.26.camel@x2>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/5/07, Antonino Ingargiola <tritemio@gmail.com> wrote:
-> On 5/4/07, Paul Fulghum <paulkf@microgate.com> wrote:
-> > Antonino:
-> >
-> > Can you try two tests (with my patch applied):
-> >
-> > 1. comment out the tty_flush_buffer() call in tty_ldisc_flush() and test
-> >
-> > 2. uncomment (reenable) the above call and comment out the
-> > tty_flush_buffer() call in tty_ioctl() and test
+2007/5/5, Paul Fulghum <paulkf@microgate.com>:
+> On Sat, 2007-05-05 at 18:58 +0200, Antonino Ingargiola wrote:
+> > This patch does not solve the problem with the cdc_acd driver. I still
+> > need to flush two times to really flush the input. And the "secondary
+> > buffer" still seems 26 bytes (as before).
 >
-> I assume you meant tty_buffer_flush(). I've built kernel 1). In kernel
-> 2), do you mean:
+> I missed a bit, try this.
 >
->     /*if (ld->ioctl)
->             tty_buffer_flush(tty);*/
->     tty_ldisc_deref(ld);
->
-> right? This is what I'm building... I'll report these new tests soon.
 
-Ok test done.
+Tried and this one work right. A single flush is sufficient to
+completely flush the input buffer. Again, thanks a lot :).
 
-With kernel 1. the behavior is the same as with your plain second
-patch only (flush input works but I cannot read anymore from the
-serial that was flushed without closing and reopening the port). See
-previous mail for the details of the test.
+Now I don't want to abuse your kindness, but I (personally) would be
+*really* interested in a similar fix for the FTDI usb-serial driver,
+because many measurements I do use an FTDI device.
 
-With kernel 2 the behavior is the same as mainline (multiple flushes
-are needed to completely empty the buffers). And I _can_ read further
-chars from the serial line after the flush. Here it is the ipython
-session that document the test with kernel 2:
-
-	In [1]: import serial
-
-	In [2]: s0 = serial.Serial(0, timeout=1)
-
-	In [3]: s1 = serial.Serial(1, timeout=1)
-
-	In [4]: s0.write('test\n')
-
-	In [5]: s1.inWaiting()
-	Out[5]: 5L
-
-	In [6]: s1.readline()
-	Out[6]: 'test\n'
-
-	In [7]: for i in xrange(1000):
-	   ...:     s0.write(str(i).zfill(8)+'\n')
-	   ...:
-
-	In [8]: s1.inWaiting()
-	Out[8]: 4095L
-
-	In [9]: s1.flushInput()
-
-	In [10]: s1.inWaiting()
-	Out[10]: 4095L                               # NOTE the buffer is still full!
-
-	In [11]: s1.flushInput()
-
-	In [12]: s1.inWaiting()
-	Out[12]: 810L                                # The buffer beginning
-to be drained
-
-	In [13]: s1.flushInput()
-
-	In [14]: s1.inWaiting()
-	Out[14]: 0L                                   # Now the buffer is empty
-
-	In [15]: s0.write('test\n')                  # An reading further chars works
-
-	In [16]: s1.inWaiting()
-	Out[16]: 5L
-
-	In [17]: s1.readline()
-	Out[17]: 'test\n'
+However, if I understood well seems that many drives have to be
+checked against this problem.
 
 
 Regards,
