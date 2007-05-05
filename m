@@ -1,44 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933864AbXEEQw3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934008AbXEEQy2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933864AbXEEQw3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:52:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933949AbXEEQw3
+	id S934008AbXEEQy2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:54:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934003AbXEEQy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:52:29 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49580 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933864AbXEEQw2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:52:28 -0400
-Date: Sat, 5 May 2007 09:52:27 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Fenghua Yu <fenghua.yu@intel.com>
-cc: akpm@linux-foundation.org, suresh.b.siddha@intel.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] Add percpu smp cacheline align section
-In-Reply-To: <20070505001222.GA26142@linux-os.sc.intel.com>
-Message-ID: <Pine.LNX.4.64.0705050951040.27326@schroedinger.engr.sgi.com>
-References: <33E1C72C74DBE747B7B59C1740F7443701A2F0AB@orsmsx417.amr.corp.intel.com>
- <20070505001222.GA26142@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 5 May 2007 12:54:28 -0400
+Received: from cacti.profiwh.com ([85.93.165.66]:42079 "EHLO smtp.wsc.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933975AbXEEQy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 12:54:27 -0400
+Message-id: <248077021012417739@wsc.cz>
+Subject: [PATCH 1/2] ATA: sata_promise, do not freeze ports
+From: Jiri Slaby <jirislaby@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: <linux-kernel@vger.kernel.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>
+Cc: <linux-ide@vger.kernel.org>
+Date: Sat,  5 May 2007 16:50:05 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Fenghua Yu wrote:
+If no objections, here comes the revert of the return 1 issue.
 
-> This is follow-up for Suresh's runqueue align in smp patch at:
-> http://www.uwsg.iu.edu/hypermail/linux/kernel/0704.1/0340.html
-> 
-> The patches place all of smp cacheline aligned percpu data into 
-> .data.percpu.cacheline_aligned_in_smp. Other percpu data is still in 
-> data.percpu section. The patches can reduce cache line access in SMP and 
-> reduce alignment gap waste. The patches also define PERCPU macro for 
-> vmlinux.lds.S for code clean up.
+--
 
-Ummm... The per cpu area is for exclusive use of a particular processor. 
-If there is contention in the per cpu area then a data object needs to be 
-removed from the per cpu area because the object is *not* accessed only 
-from a certain cpu.
+sata_promise, do not freeze ports
 
+revert return 1 thing in the error isr, that causes port freezing, so that the
+system is unusable when exception is thrown.
+
+See http://lkml.org/lkml/2007/4/30/268
+
+Cc: Jeff Garzik <jgarzik@pobox.com>
+Cc: Mikael Pettersson <mikpe@it.uu.se>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+
+---
+commit a38d21f4b5d5029b0b083fe2651e78c7657fda3b
+tree 0a2019a34227906bc5fb0e60d90cc7f4759ee934
+parent b5c1fc64195b18d3919bfa7dddfb76e9f2a05786
+author Jiri Slaby <jirislaby@gmail.com> Sat, 05 May 2007 16:43:22 +0200
+committer Jiri Slaby <jirislaby@gmail.com> Sat, 05 May 2007 16:43:22 +0200
+
+ drivers/ata/sata_promise.c |    4 +---
+ 1 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/ata/sata_promise.c b/drivers/ata/sata_promise.c
+index f56549b..a0024ae 100644
+--- a/drivers/ata/sata_promise.c
++++ b/drivers/ata/sata_promise.c
+@@ -668,10 +668,8 @@ static inline unsigned int pdc_host_intr( struct ata_port *ap,
+ 	else
+ 		err_mask &= ~PDC2_ERR_MASK;
+ 	port_status = readl(port_mmio + PDC_GLOBAL_CTL);
+-	if (unlikely(port_status & err_mask)) {
++	if (unlikely(port_status & err_mask))
+ 		pdc_error_intr(ap, qc, port_status, err_mask);
+-		return 1;
+-	}
+ 
+ 	switch (qc->tf.protocol) {
+ 	case ATA_PROT_DMA:
