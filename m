@@ -1,44 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933159AbXEETTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933174AbXEETWf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933159AbXEETTo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 15:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933174AbXEETTo
+	id S933174AbXEETWf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 15:22:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933185AbXEETWf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 15:19:44 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:47123 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933159AbXEETTn (ORCPT
+	Sat, 5 May 2007 15:22:35 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46536 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933174AbXEETWe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 15:19:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=OSqtttFqXFLgf2gA0H8G0t0m0Nu4ZcLiuzTAxDrQ0EhDHR6KVKT+FNQUxX/ShTfMnvT5Y5EDdjU0io2txjaaNHyEtuZIrAR6hscaEsGPhRSiRm9WuVIST8NyBo/7fLkM0uXUkbiYi+RED1hLMdgHZEYhKeleP50RNsTsnAy+fvc=
-Message-ID: <84144f020705051219m15d3828bp6e4697c74a3005ce@mail.gmail.com>
-Date: Sat, 5 May 2007 22:19:42 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [-mm patch] fix unionfs compilation
-Cc: "Adrian Bunk" <bunk@stusta.de>, jsipek@cs.sunysb.edu,
-       "Christoph Lameter" <clameter@sgi.com>, linux-kernel@vger.kernel.org,
+	Sat, 5 May 2007 15:22:34 -0400
+Date: Sat, 5 May 2007 12:22:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+Cc: Adrian Bunk <bunk@stusta.de>, jsipek@cs.sunysb.edu,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
        unionfs@filesystems.org
-In-Reply-To: <20070505115718.a1a0b61e.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Subject: Re: [-mm patch] fix unionfs compilation
+Message-Id: <20070505122213.fa8fc210.akpm@linux-foundation.org>
+In-Reply-To: <20070505191313.GA5834@filer.fsl.cs.sunysb.edu>
 References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-	 <20070505170012.GF8975@stusta.de>
-	 <20070505115718.a1a0b61e.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 3b888c9e4b3baf5f
+	<20070505170012.GF8975@stusta.de>
+	<20070505115718.a1a0b61e.akpm@linux-foundation.org>
+	<20070505191313.GA5834@filer.fsl.cs.sunysb.edu>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/5/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> Bah, that was hidden from my allmodconfig because CONFIG_UNIONFS is inexplicably
-> dependent upon CONFIG_SLAB.
->
-> How come?
+On Sat, 5 May 2007 15:13:13 -0400 Josef Sipek <jsipek@fsl.cs.sunysb.edu> wrote:
 
-I think Adrian added it before we introduced krealloc() to fix uniofs
-from poking slab internals.
+> As it was discussed a while back on the mailing lists, Unionfs is trying to
+> be smart and tries to do reallocation on its own. The way it does it makes
+> it depend on some internals of the SLAB allocator. There have been some
+> patches out there for a realloc function (by Pekka Enberg, IIRC), but as far
+> as I can tell, they haven't been merged in.
+
+krealloc should be in mainline within a couple of days.
