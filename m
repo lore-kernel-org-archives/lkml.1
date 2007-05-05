@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934061AbXEEQpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934067AbXEEQrM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934061AbXEEQpU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934067AbXEEQpU
+	id S934067AbXEEQrM (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:47:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934069AbXEEQrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:45:20 -0400
-Received: from dev.prealable.org ([87.98.219.90]:2884 "EHLO dev.prealable.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934061AbXEEQpS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:45:18 -0400
-X-Greylist: delayed 4000 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 May 2007 12:45:18 EDT
-Message-ID: <463C971A.1080501@prealable.org>
-Date: Sat, 05 May 2007 16:39:22 +0200
-From: Damien Tournoud <damz@prealable.org>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sat, 5 May 2007 12:47:11 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:34025 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934067AbXEEQrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 12:47:10 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Paul Fulghum <paulkf@microgate.com>
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+Date: Sat, 5 May 2007 18:46:56 +0200
+User-Agent: KMail/1.9.1
+Cc: Antonino Ingargiola <tritemio@gmail.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com> <463CB429.6050201@microgate.com> <1178381287.3379.8.camel@x2>
+In-Reply-To: <1178381287.3379.8.camel@x2>
 MIME-Version: 1.0
-To: Paul Sokolovsky <pmiscml@gmail.com>
-CC: Anton Vorontsov <cbou@mail.ru>, kernel-discuss@handhelds.org,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Shem Multinymous <multinymous@gmail.com>
-Subject: Re: [Kernel-discuss] Re: [PATCH 3/8] Universal power supply class
- (was: battery class)
-References: <20070503213139.GC20067@zarina>	<41840b750705032155w21d98b5g6236daf9bff66606@mail.gmail.com>	<20070505035413.GB21359@khazad-dum.debian.net>	<20070505123230.GA6460@zarina> <67630751.20070505172956@gmail.com>
-In-Reply-To: <67630751.20070505172956@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705051846.57112.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Sokolovsky wrote:
-> There's actually a nice and terse term for that - mains,
-> but I wonder how well non-English speaking people are familiar with it
-> (I personally saw them only in manuals, which, as well known, nobody
-> reads).
+Am Samstag, 5. Mai 2007 18:08 schrieb Paul Fulghum:
 
-I, for one, wasn't :)
+> If the line discipline throttles the driver input,
+> the cdc-acm driver stops giving data to the tty buffering
+> and instead stores them internally.
 
-My 2 cents: ADAPTER seems better than AC, which is, as you pointed out, 
-technically incorrect.
+So do usb serial drivers.
 
-- Damien Tournoud
+> In the serial driver this usually just results in dropping
+> RTS to signal the remote end to stop sending. The serial
+
+This may take considerable time in the case of usb devices.
+
+> driver always immediately gives receive data to the tty buffering
+> without regard to the throttled state.
+> 
+> I would argue that cdc-acm should do the same as the serial driver.
+
+Has this been tested?
+If so we could reduce the complexity of the throtteling logic in the usb
+drivers.
+
+	Regards
+		Oliver
