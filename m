@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752314AbXEEGhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754178AbXEEG6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752314AbXEEGhl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 02:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753896AbXEEGhl
+	id S1754178AbXEEG6k (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 02:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030811AbXEEG6k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 02:37:41 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:47460 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752314AbXEEGhk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 02:37:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=niRozXvbDQiVvVcPl0UVFBMIETA5UTOQT/cKhRvq6gOb/b0jgYAbQJL3zUh/IRQFC3mz8wzBoxqyHhM3gpUAhWFPuho8rCg27qn3dIoeO0BOmx7jVFHm99qkzQW3QCamg53tueGyOUXx6iCNpj3EhN5vymO5JdmfcE1WFdCpwNU=
-Message-ID: <99e4df080705042337y7a79b321j3e5e23d83aa15b03@mail.gmail.com>
-Date: Sat, 5 May 2007 14:37:39 +0800
-From: "la deng" <ladeng.mimi@gmail.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Subject: Re: c 's OOP in VFS vs c++'s OOP
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.61.0705041613580.18504@yvahk01.tjqt.qr>
+	Sat, 5 May 2007 02:58:40 -0400
+Received: from ns1.suse.de ([195.135.220.2]:56747 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754083AbXEEG6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 02:58:40 -0400
+Date: Fri, 4 May 2007 23:03:38 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Dmitry Torokhov <dtor@insightbb.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git pull] Input patches for 2.6.20
+Message-ID: <20070505060338.GA27713@suse.de>
+References: <200702180204.48643.dtor@insightbb.com> <200705030107.44990.dtor@insightbb.com> <alpine.LFD.0.98.0705041806210.3808@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <99e4df080705040132m41116db3y50c73c79528d6206@mail.gmail.com>
-	 <20070504101129.GA5482@localhost.localdomain>
-	 <99e4df080705040400p66819117sec7f7d88d3794871@mail.gmail.com>
-	 <Pine.LNX.4.61.0705041339220.18504@yvahk01.tjqt.qr>
-	 <20070504123047.GA2255@localhost.localdomain>
-	 <99e4df080705040653l38daa61aw3883b7c55c8e9de7@mail.gmail.com>
-	 <Pine.LNX.4.61.0705041613580.18504@yvahk01.tjqt.qr>
+In-Reply-To: <alpine.LFD.0.98.0705041806210.3808@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/4/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
->
-> On May 4 2007 21:53, la deng wrote:
-> >>
-> >> C gives you the power to control nearly everything. You can, of course,
-> >> control the registers via inserting assembly code. That's not the fault of
-> >> C.
-> > I think you don't understand me correctly
+On Fri, May 04, 2007 at 06:19:49PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Thu, 3 May 2007, Dmitry Torokhov wrote:
+> > 
+> > If you have not pulled yet please pull from:
 > >
-> > I know c can inline assmebly to control registers
-> >
-> > but,this control not the globe Analysis of control register like
-> > internal of c++ compiler or lisp 's compiler language,c can't
->
-> Using __asm__ in C++ is the same thing as in C. If you want to
-> make GCC aware of registers you could use
->
->
->      register int *p1 asm ("r0") = ...;
->
-> See chapter "5.37 Variables in Specified Registers" in `info gcc`.
->
->
-> Jan
-> --
->
-hmm,thanks
+> > ?? ?? ?? ?? master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+> > 
+> > because master branch will have extra stuff in the next minute or so.
+> 
+> Hmm. That thing had a conflict with the driver core changes I just pulled 
+> from Greg due to Greg removing "struct subsystem".
+> 
+> The conflict looked really trivial, and I fixed up the obvious places, 
+> probably correctly. Please verify.
+> 
+> Martin, in the process I noticed that the new file
+> 
+> 	arch/s390/kernel/ipl.c
+> 
+> seems to be broken by the same thing after the driver core merge. The fix 
+> _looks_ equally trivial (change *subsys.kset.kobj into just *subsys.kobj), 
+> but I didn't do that trivial thing, because I cannot even test-compile the 
+> end result. So can you give it a quick look, please?
 
-I found gcc has some extensions can help this
+Martin, Cornelia already sent me (and lkml) a patch to fix this all up
+if you want to just use that instead.
 
-very thanks
+> Greg - maybe more of a heads-up to people next time you do something like 
+> this? Did this removal hit -mm? Anyway, it looks like something trivial to 
+> fix up after, but ..
+
+Yes, this was in -mm for quite a while, and yes, I knew about the
+conflict with the input tree, that's why I waited to send this to you
+separate from the first merge set and in the second batch, thinking that
+either had already sent his stuff, or was going to do so afterwards, and
+would be trivial to fix up.
+
+Sorry about that, sometimes core changes like this take a bit of
+coordination across subsystems.
+
+thanks,
+
+greg k-h
