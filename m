@@ -1,116 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933231AbXEEQFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbXEEQId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933231AbXEEQFJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933232AbXEEQFI
+	id S1754546AbXEEQId (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755224AbXEEQId
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:05:08 -0400
-Received: from neon.samage.net ([85.17.153.66]:34868 "EHLO neon.samage.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933231AbXEEQFF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:05:05 -0400
-Message-ID: <2470.81.207.0.53.1178366553.squirrel@secure.samage.net>
-In-Reply-To: <20070505091643.GA25704@elf.ucw.cz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net>
-    <200704272107.28565.oliver@neukum.org>
-    <84144f020704280222s42ff99ddg3eea3cb353c8882e@mail.gmail.com>
-    <200704281537.53479.oliver@neukum.org> <20070503120637.GA3866@ucw.cz>
-    <3052.81.207.0.53.1178315528.squirrel@secure.samage.net>
-    <20070505091643.GA25704@elf.ucw.cz>
-Date: Sat, 5 May 2007 14:02:33 +0200 (CEST)
-Subject: Re: Back to the future.
-From: "Indan Zupancic" <indan@nul.nu>
-To: "Pavel Machek" <pavel@ucw.cz>
-Cc: "Oliver Neukum" <oliver@neukum.org>,
-       "Pekka Enberg" <penberg@cs.helsinki.fi>,
-       "Nigel Cunningham" <nigel@nigel.suspend2.net>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "LKML" <linux-kernel@vger.kernel.org>
-User-Agent: SquirrelMail/1.4.8
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-X-Spam-Score: -1.8
-X-Scan-Signature: cf96151651da5a5ace2e908a4273e1b9
+	Sat, 5 May 2007 12:08:33 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56576 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754546AbXEEQIc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 12:08:32 -0400
+Date: Sat, 5 May 2007 12:57:46 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, sct@redhat.com, adilger@clusterfs.com,
+       clameter@sgi.com
+Subject: [PATCH 1/4] ext2: remove inode constructor
+Message-ID: <Pine.LNX.4.64.0705051256530.20886@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-On Sat, May 5, 2007 11:16, Pavel Machek wrote:
->> But the same functionality can be achieved by doing:
->>
->> 1) Define a user password (e.g. /etc/shadow thing). (Once)
->>
->> 2) When a user logs in: get random data and encrypt it with the password,
->> this becomes the AES key. Store both the data and key in a secure way in
->> memory, e.g. using the existing kernel key infrastructure.
->
->
->
->> Advantage of this scheme is that it only need AES and can be done (mostly)
->> in kernel space. It's also faster and simpler than the current RSA scheme.
->> Disadvantage is that it wastes at least 32 bytes of memory when the system
->> is running, to store the data and key.
->
-> Another disadvantage is that you need to hack into PAM infrastructure,
-> that your suspend password needs to be same as someone's login
-> password, and that it will really only work with single-user machine.
+As alloc_inode() touches the same cache line as init_once(), we gain
+nothing from using slab constructors.
 
-The first two are only true if you want to integrate it with user login, so
-that a user only needs to sign in once, which seems like a convenient thing.
-But if you don't want to integrate with the existing login infrastructure,
-then just don't. And those disadvantages are true for any system that wants
-users to login once.
+Cc: Stephen C. Tweedie <sct@redhat.com>
+Cc: Andreas Dilger <adilger@clusterfs.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/ext2/super.c |   32 +++++++++++++-------------------
+ 1 file changed, 13 insertions(+), 19 deletions(-)
 
-Then the disadvantage is reduced to a user needing to provide the password
-at suspend if the system wasn't booted from a snapshot. But no need for
-users to generate any files, just to choose a resume password.
-
-If the resume key is stored per user instead of a single global instance, it
-will work with a multi-user system too. A more interesting question is what
-should happen when one user did the suspend and the other wants to resume.
-Throw away the snapshot? Refuse booting? Or boot and switch "active user"?
-
-If you don't want people to resume each other's suspends then a key per user
-works. If you want them to, then it becomes a bit tricky, especially if you
-don't integrate with the login system. You don't want that a user can resume
-someone else's snapshot and have access to everything that other user left
-open. Nor do you want users to give a password twice.
-
-If you want users to be able to resume each other's snapshots, you probably
-also want the system to switch users after the resume. No matter what scheme
-is used, this becomes hairy and hard to get watertight. (Perhaps "impossible"
-is more realistic: how to be able to read the suspend image and copying it
-to RAM again, without having access to all data within?)
-
-But if it's an "us" against "them" case, and you want users to resume each
-other's snapshots, you're right that the scheme I proposed will fall apart.
-In which case it needs to be adjusted a bit to handle this case:
-
-Have one global suspend/resume key, and for each user store it on disk,
-encrypted with that user's password. Also store the key in memory as
-before. Now when the system is suspended any user needs to have provided
-his password once for everyone to be able to suspend without giving a
-password. Also everyone can resume, if they have access to the file with
-the list of encrypted keys and provide the right password. (Notice that
-this looks more like the current scheme, where the private part of the
-RSA key is encrypted with a passphrase and all stored in a file.)
-
-Though it seems that using suspend to disk on a real multi-user system is
-always asking for problems, because the suspend image may contain valuable
-data which shouldn't be thrown away, but easily can by other users. Nor do
-you want users to claim the machine, so it's a lose/lose situation. Also
-with resume every user effectively gets root access, because of all the
-memory access. So inter-user security is down the drain anyway.
-
-Only sane usage I can see is when the users trust each other, in which case
-they can as well agree on one resume password. ;-)
-
-Greetings,
-
-Indan
-
-
+Index: 26-mm/fs/ext2/super.c
+===================================================================
+--- 26-mm.orig/fs/ext2/super.c	2007-05-05 12:26:15.000000000 +0300
++++ 26-mm/fs/ext2/super.c	2007-05-05 12:30:50.000000000 +0300
+@@ -140,16 +140,24 @@ static struct kmem_cache * ext2_inode_ca
+ static struct inode *ext2_alloc_inode(struct super_block *sb)
+ {
+ 	struct ext2_inode_info *ei;
+-	ei = (struct ext2_inode_info *)kmem_cache_alloc(ext2_inode_cachep,
+-						GFP_KERNEL|__GFP_RECLAIMABLE);
++	struct inode *inode;
++
++	ei = kmem_cache_alloc(ext2_inode_cachep, GFP_KERNEL|__GFP_RECLAIMABLE);
+ 	if (!ei)
+ 		return NULL;
++	rwlock_init(&ei->i_meta_lock);
++#ifdef CONFIG_EXT2_FS_XATTR
++	init_rwsem(&ei->xattr_sem);
++#endif
++	mutex_init(&ei->truncate_mutex);
+ #ifdef CONFIG_EXT2_FS_POSIX_ACL
+ 	ei->i_acl = EXT2_ACL_NOT_CACHED;
+ 	ei->i_default_acl = EXT2_ACL_NOT_CACHED;
+ #endif
+-	ei->vfs_inode.i_version = 1;
+-	return &ei->vfs_inode;
++	inode = &ei->vfs_inode;
++	inode_init_once(inode);
++	inode->i_version = 1;
++	return inode;
+ }
+ 
+ static void ext2_destroy_inode(struct inode *inode)
+@@ -157,27 +165,13 @@ static void ext2_destroy_inode(struct in
+ 	kmem_cache_free(ext2_inode_cachep, EXT2_I(inode));
+ }
+ 
+-static void init_once(void * foo, struct kmem_cache * cachep, unsigned long flags)
+-{
+-	struct ext2_inode_info *ei = (struct ext2_inode_info *) foo;
+-
+-	if (flags & SLAB_CTOR_CONSTRUCTOR) {
+-		rwlock_init(&ei->i_meta_lock);
+-#ifdef CONFIG_EXT2_FS_XATTR
+-		init_rwsem(&ei->xattr_sem);
+-#endif
+-		mutex_init(&ei->truncate_mutex);
+-		inode_init_once(&ei->vfs_inode);
+-	}
+-}
+- 
+ static int init_inodecache(void)
+ {
+ 	ext2_inode_cachep = kmem_cache_create("ext2_inode_cache",
+ 					     sizeof(struct ext2_inode_info),
+ 					     0, (SLAB_RECLAIM_ACCOUNT|
+ 						SLAB_MEM_SPREAD),
+-					     init_once, NULL);
++					     NULL, NULL);
+ 	if (ext2_inode_cachep == NULL)
+ 		return -ENOMEM;
+ 	return 0;
