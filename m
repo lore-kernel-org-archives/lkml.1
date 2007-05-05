@@ -1,60 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbXEEXsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751311AbXEFAYG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbXEEXsX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 19:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbXEEXsX
+	id S1751311AbXEFAYG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 20:24:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXEFAYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 19:48:23 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:50792 "EHLO aun.it.uu.se"
+	Sat, 5 May 2007 20:24:06 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:17122 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755442AbXEEXsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 19:48:22 -0400
-Date: Sun, 6 May 2007 01:46:54 +0200 (MEST)
-Message-Id: <200705052346.l45NksOb022632@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: htejun@gmail.com, mikpe@it.uu.se
-Subject: Re: 2.6.21-mm1: many processes end up in D state
-Cc: akpm@osdl.org, jgarzik@pobox.com, jirislaby@gmail.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
+	id S1751311AbXEFAYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 20:24:05 -0400
+X-IronPort-AV: i="4.14,497,1170662400"; 
+   d="scan'208"; a="57553419:sNHT81389476"
+Subject: Re: [PATCH 2/4] sunrpc: Use path_component_lookup
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       neilb@suse.de, mhalcrow@us.ibm.com
+In-Reply-To: <11784065741393-git-send-email-jsipek@cs.sunysb.edu>
+References: <11784065741163-git-send-email-jsipek@cs.sunysb.edu>
+	 <11784065741393-git-send-email-jsipek@cs.sunysb.edu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Sat, 05 May 2007 19:52:24 -0400
+Message-Id: <1178409144.6561.73.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 05 May 2007 23:52:38.0485 (UTC) FILETIME=[7628E850:01C78F70]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 05 May 2007 17:30:51 +0200, Tejun Heo wrote:
-> Mikael Pettersson wrote:
-> >> I.e. no freezing of ports...
-> > 
-> > Your patch to delete the 'return 1;' on error is correct,
-> > and makes the code match exactly the behaviour of previous
-> > versions of sata_promise, except for the additional error
-> > decoding.
-> > 
-> > ahci and sata_sil24 do the return in this situation. I don't
-> > yet understand why they can get away with it while sata_promise
-> > cannot, but for now the return should be removed.
+On Sat, 2007-05-05 at 19:09 -0400, Josef 'Jeff' Sipek wrote:
+> use path_component_lookup instead of open-coding the necessary
+> functionality.
 > 
-> That's because sata_sil24 and ahci call either ata_port_abort() or
-> ata_port_freeze() prior to finishing error_intr routine.  Both functions
-> abort all in-flight command and schedule EH.
+> Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+> ---
+>  net/sunrpc/rpc_pipe.c |   16 +++++++---------
+>  1 files changed, 7 insertions(+), 9 deletions(-)
+> 
+> diff --git a/net/sunrpc/rpc_pipe.c b/net/sunrpc/rpc_pipe.c
+> index 9b9ea50..b67cb54 100644
+> --- a/net/sunrpc/rpc_pipe.c
+> +++ b/net/sunrpc/rpc_pipe.c
+> @@ -451,21 +451,19 @@ void rpc_put_mount(void)
+>  static int
+>  rpc_lookup_parent(char *path, struct nameidata *nd)
+>  {
+> +	struct vfsmount *mnt;
+> +
+>  	if (path[0] == '\0')
+>  		return -ENOENT;
+> -	nd->mnt = rpc_get_mount();
+> -	if (IS_ERR(nd->mnt)) {
+> +
+> +	mnt = rpc_get_mount();
+> +	if (IS_ERR(mnt)) {
+>  		printk(KERN_WARNING "%s: %s failed to mount "
+>  			       "pseudofilesystem \n", __FILE__, __FUNCTION__);
+> -		return PTR_ERR(nd->mnt);
+> +		return PTR_ERR(mnt);
+>  	}
+> -	mntget(nd->mnt);
+> -	nd->dentry = dget(rpc_mount->mnt_root);
+> -	nd->last_type = LAST_ROOT;
+> -	nd->flags = LOOKUP_PARENT;
+> -	nd->depth = 0;
+>  
+> -	if (path_walk(path, nd)) {
+> +	if (path_component_lookup(rpc_mount->mnt_root, mnt, path, LOOKUP_PARENT, nd)) {
+>  		printk(KERN_WARNING "%s: %s failed to find path %s\n",
+>  				__FILE__, __FUNCTION__, path);
+>  		rpc_put_mount();
 
-Ah. Thanks, that clarifies things.
+Just one minor nit: could you make that
 
-Jiri: please test the patch below instead. That is, revert to
-the original code _with_ the 'return 1;', and then add this
-patch to it. It should have pretty much the same effect as
-removing the 'return 1;', however calling ata_port_abort()
-is more in line with libata's new-style error handling.
+	if (path_component_lookup(mnt->mnt_root, mnt, path, LOOKUP_PARENT, nd)) {
 
-/Mikael
+instead. It really is a bug even for the existing code to be referencing
+rpc_mount directly.
 
---- linux-2.6.21-mm1/drivers/ata/sata_promise.c.~1~	2007-05-05 22:24:41.000000000 +0200
-+++ linux-2.6.21-mm1/drivers/ata/sata_promise.c	2007-05-05 22:25:21.000000000 +0200
-@@ -653,6 +653,8 @@ static void pdc_error_intr(struct ata_po
- 	qc->err_mask |= ac_err_mask;
- 
- 	pdc_reset_port(ap);
-+
-+	ata_port_abort(ap);
- }
- 
- static inline unsigned int pdc_host_intr( struct ata_port *ap,
+Cheers
+  Trond
