@@ -1,36 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933921AbXEEV4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933965AbXEEWFu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933921AbXEEV4S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 17:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933965AbXEEV4S
+	id S933965AbXEEWFu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 18:05:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934024AbXEEWFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 17:56:18 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48744 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933921AbXEEV4R (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 17:56:17 -0400
-Date: Sat, 5 May 2007 23:00:26 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Clifford Wolf <clifford@clifford.at>
-Cc: lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Interrupt-Handling in User Space
-Message-ID: <20070505230026.4b2f4030@the-village.bc.nu>
-In-Reply-To: <20070505191707.GA9300@clifford.at>
-References: <20070505191707.GA9300@clifford.at>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 5 May 2007 18:05:50 -0400
+Received: from ns2.suse.de ([195.135.220.15]:60202 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933965AbXEEWFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 18:05:49 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: tglx@linutronix.de
+Subject: Re: [PATCH] Blacklist Dell Optiplex 320 from using the HPET
+Date: Sun, 6 May 2007 00:05:37 +0200
+User-Agent: KMail/1.9.6
+Cc: john stultz <johnstul@us.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "Guilherme M. Schroeder" <guilherme@centralinf.com.br>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <1178314144.6094.7.camel@localhost.localdomain> <200705051924.14258.ak@suse.de> <1178392501.31213.18.camel@localhost.localdomain>
+In-Reply-To: <1178392501.31213.18.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705060005.38122.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> afaics there is no mechanism in the official kernel tree to handle
-> interrupts in user space yet. I'd need that for an embedded project I'm
+On Saturday 05 May 2007 21:15:01 Thomas Gleixner wrote:
+> On Sat, 2007-05-05 at 19:24 +0200, Andi Kleen wrote:
+> > >  	if (!is_hpet_capable())
+> > > @@ -278,6 +279,14 @@ int __init hpet_enable(void)
+> > >  	/* Start the counter */
+> > >  	hpet_start_counter();
+> > >  
+> > > +	/* Verify whether hpet counter works */
+> > > +	t1 = hpet_read();
+> > > +	udelay(50);
+> > 
+> > Are you sure udelay is calibrated at this point? I didn't think so.
+> > In fact it needs the external clocks and it's a chicken and egg problem.
+> 
+> Oops. You are right. OTOH it does not matter whether it is accurate or
+> not.
 
-Its basically not possible to do with most hardware because you get
-deadlocks when there are shared interrupts.
+It might be very short if you're very unlucky and the CPU is fast
+and then trigger the check incorrectly.
 
-However see drivers/uio in the current GIT tree (or recent -mm kernels),
-that assumes you write a truely minimal IRQ handler/board driver in the
-kernel and it then exposes the memory spaces and IRQ stream to user space.
+-Andi
