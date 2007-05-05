@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933958AbXEEVsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933960AbXEEVs5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933958AbXEEVsl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 17:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933921AbXEEVsl
+	id S933960AbXEEVs5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 17:48:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933929AbXEEVs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 17:48:41 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:56563 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933960AbXEEVsk (ORCPT
+	Sat, 5 May 2007 17:48:57 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:21734 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933960AbXEEVsz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 17:48:40 -0400
-Date: Sat, 5 May 2007 22:52:41 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: Paul Fulghum <paulkf@microgate.com>,
-       Antonino Ingargiola <tritemio@gmail.com>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial
- possible bug]
-Message-ID: <20070505225241.54a5d01d@the-village.bc.nu>
-In-Reply-To: <200705052007.16742.oliver@neukum.org>
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	<1178381287.3379.8.camel@x2>
-	<20070505173647.544f6707@the-village.bc.nu>
-	<200705052007.16742.oliver@neukum.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 5 May 2007 17:48:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=PmlGEkJuyYMwAMPpPjRSMJdEbtAE4dAW8as252Y9W+0tL+lu++R/NI/d9tjG8c867T0mwQoYPwyeWQS9QwSKgcpYtOrz5AWs94SVuJKp+iVfClEIDOzGbgbeUEYqwHk7xJDt4FInI0NCPzAvbzmxqHCy1+xZvhmBFqmMIj0hGUE=
+Date: Sat, 5 May 2007 23:47:52 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [-mm patch] do_revoke error handling (was Re: 2.6.21-mm1)
+Message-ID: <20070505214752.GA29299@slug>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <20070505211318.GA28912@slug> <Pine.LNX.4.64.0705060017320.21257@sbz-30.cs.Helsinki.FI>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705060017320.21257@sbz-30.cs.Helsinki.FI>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 May 2007 20:07:15 +0200
-Oliver Neukum <oliver@neukum.org> wrote:
-
-> Am Samstag, 5. Mai 2007 18:36 schrieb Alan Cox:
-> > > In the serial driver this usually just results in dropping
-> > > RTS to signal the remote end to stop sending. The serial
-> > > driver always immediately gives receive data to the tty buffering
-> > > without regard to the throttled state.
+On Sun, May 06, 2007 at 12:23:15AM +0300, Pekka J Enberg wrote:
+> On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
 > > > 
-> > > I would argue that cdc-acm should do the same as the serial driver.
-> > 
-> > This is a bug in cdc-acm really. It should not double buffer, but to be
-> > fair to the authors prior to the new tty buffering it *had* to do this.
+> > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+> > > 
+> > fs/revoke.c: In function 'do_revoke':
+> > fs/revoke.c:563: warning: 'details.fset' may be used uninitialized in this function
+> > fs/revoke.c:563: warning: 'details.restore_start' may be used uninitialized in this function
 > 
-> Hi,
+> On Sat, 5 May 2007, Frederik Deweerdt wrote:
+> > It seems that we should goto 'out_free_table' if an error happens in
+> > the mainloop. Otherwise 'details' is passed to restore_files() without
+> > being initialized.
 > 
-> should I understand this so that, if tty_buffer_request_room() returns
-> less than requested, the rest of the data should be dropped on the
-> floor?
+> Good catch. The patch is wrong, though. Wwe must restore the file 
+> descriptors in case revoke fails; otherwise we'll leave non-revoked files 
+> hanging. The proper fix is to move initialization before the 
+> do_each_thread() bit. Care to make a new patch, Frederik?
+>
+OK, thanks for the explanation. Here it is.
+Frederik
 
-If it returns NULL then either there is > 64K buffered (we can adjust
-that if anyone shows need - its just for sanity) or the system is out of
-RAM. 
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
 
-Alan
+diff --git a/fs/revoke.c b/fs/revoke.c
+index 1f2e3ef..86a2842 100644
+--- a/fs/revoke.c
++++ b/fs/revoke.c
+@@ -597,6 +597,9 @@ static int do_revoke(struct inode *inode, struct file *to_exclude)
+ 		goto retry;
+ 	}
+ 
++	details.fset = fset;
++	details.restore_start = 0;
++
+ 	/*
+ 	 * First revoke the descriptors. After we are done, no one can start
+ 	 * new operations on them.
+@@ -625,9 +628,6 @@ static int do_revoke(struct inode *inode, struct file *to_exclude)
+ 	if (err)
+ 		goto out_restore;
+ 
+-	details.fset = fset;
+-	details.restore_start = 0;
+-
+ 	/*
+ 	 * Now, revoke the files for good.
+ 	 */
