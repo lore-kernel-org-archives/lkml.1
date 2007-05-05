@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933911AbXEEVBq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933454AbXEEVFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933911AbXEEVBq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 17:01:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933908AbXEEVBq
+	id S933454AbXEEVFU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 17:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933541AbXEEVFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 17:01:46 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43848 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933869AbXEEVBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 17:01:44 -0400
-Date: Sat, 5 May 2007 23:01:39 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
-Message-ID: <20070505210139.GA26652@elf.ucw.cz>
-References: <200705041132.32227.rjw@sisk.pl> <200705051421.31067.rjw@sisk.pl> <1178368028.7408.93.camel@johannes.berg> <200705051550.53436.rjw@sisk.pl>
-MIME-Version: 1.0
+	Sat, 5 May 2007 17:05:20 -0400
+Received: from ftp.linux-mips.org ([194.74.144.162]:34749 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933454AbXEEVFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 17:05:19 -0400
+Date: Sat, 5 May 2007 22:05:11 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix nfsroot build
+Message-ID: <20070505210511.GA11342@linux-mips.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705051550.53436.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+  CC      fs/nfs/nfsroot.o
+fs/nfs/nfsroot.c:131: error: tokens causes a section type conflict
+make[2]: *** [fs/nfs/nfsroot.o] Error 1
 
-> > > Power off the system instead of halting it if the 'platform' mode of
-> > > hibernation
-> > > has been requested, but hibernation_ops is not set. 
-> > 
-> > Ehm, unless you made a mistake in the patch then that shouldn't be
-> > possible.
-> 
-> Hmm, right, but the patch is correct nevertheless. :-)
-> 
-> I see where the problem is.  hibernation_mode is 0 by default
-> (HIBERNATION_INVALID) and it's not changed to anything else later if
-> defaults are used.
+This is due to mixing const and non-const content in the same section
+which halfway recent gccs absolutely hate.  Fixed by dropping the const.
 
-> Something like this is necessary, I think:
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Make sure that hibernation_mode is set to a reasonable value by default.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-ACK.
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/include/linux/parser.h b/include/linux/parser.h
+index 86676f6..26b2bdf 100644
+--- a/include/linux/parser.h
++++ b/include/linux/parser.h
+@@ -14,7 +14,7 @@ struct match_token {
+ 	const char *pattern;
+ };
+ 
+-typedef const struct match_token match_table_t[];
++typedef struct match_token match_table_t[];
+ 
+ /* Maximum number of arguments that match_token will find in a pattern */
+ enum {MAX_OPT_ARGS = 3};
