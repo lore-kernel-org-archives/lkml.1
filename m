@@ -1,164 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbXEEJYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423188AbXEEJba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754556AbXEEJYl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 05:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754652AbXEEJYl
+	id S1423188AbXEEJba (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 05:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423212AbXEEJba
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 05:24:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49180 "EHLO mx2.mail.elte.hu"
+	Sat, 5 May 2007 05:31:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33816 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754556AbXEEJYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 05:24:40 -0400
-Date: Sat, 5 May 2007 11:24:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Greg KH <gregkh@suse.de>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>, Linus Torvalds <torvalds@osdl.org>,
-       linux-pm@lists.osdl.org
-Subject: Re: [patch] suspend/resume debugging: device filter
-Message-ID: <20070505092425.GA23125@elte.hu>
-References: <20070125110501.GA25151@elte.hu> <20070126015536.GA14917@suse.de>
+	id S1423188AbXEEJba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 05:31:30 -0400
+Date: Sat, 5 May 2007 11:31:20 +0200
+From: Andi Kleen <ak@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
+       linux-kernel@vger.kernel.org, Chuck Ebbert <76306.1226@compuserve.com>
+Subject: Re: Remove constructor from buffer_head
+Message-ID: <20070505093119.GC26000@wotan.suse.de>
+References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com> <20070504134212.c18d2d65.akpm@linux-foundation.org> <20070504143347.9a1d6a34.akpm@linux-foundation.org> <200705050122.05275.ak@suse.de> <20070504164529.f64a2985.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070126015536.GA14917@suse.de>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070504164529.f64a2985.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Greg KH <gregkh@suse.de> wrote:
-
-> Here's a (compile tested only) patch that does this on a per-device 
-> basis, which is smaller, and should work just as well as your patch.
+On Fri, May 04, 2007 at 04:45:29PM -0700, Andrew Morton wrote:
+> On Sat, 5 May 2007 01:22:05 +0200
+> Andi Kleen <ak@suse.de> wrote:
 > 
-> It creates a new file in the power/ directory for every device called 
-> "can_suspend".  Write a '0' to it to prevent that device from being 
-> suspended.
+> > > 2.6.21:
+> > > 
+> > > akpm2:/home/akpm# opreport -l /boot/vmlinux-$(uname -r) | head -50
+> > > opreport error: No sample file found: try running opcontrol --dump
+> > > or specify a session containing sample files
+> > 
+> > For me it works on a slightly post 2.6.21 kernel with suse oprofile-0.9.2-21
+> > 
+> > Did you try opcontrol --dump? 
 > 
-> Does this work for you?
+> Yes, tried various things.  There's just nothing turning up in /var/lib/oprofile.
+> 
+> Chuck appears to be claiming that 2.6.21 oprofile is known to be broken,
+> but I never heard anything about that.
 
-yeah, i was able to use this too to debug suspend/resume problems. But 
-i've added the check to the resume path too - for example sw-suspend 
-does a resume of devices during its suspend cycle, cutting off much of 
-the netconsole output.
+Hmm, after a opcontrol --reset i see the same issue now. Don't know what's 
+wrong, but it must be something different from the .20 perfctr allocation
+problem.
 
-which makes the can_suspend flag mis-named - perhaps rename it to 
-exclude_pm ?
+It looks like the daemon doesn't get any data from the kernel
 
-updated patch below, against v2.6.21. Could we get this into v2.6.22 
-please? It's a real time-saver.
 
-	Ingo
-
----
- drivers/base/power/resume.c  |    6 ++++++
- drivers/base/power/suspend.c |    2 +-
- drivers/base/power/sysfs.c   |   30 ++++++++++++++++++++++++++++++
- include/linux/device.h       |    1 +
- 4 files changed, 38 insertions(+), 1 deletion(-)
-
-Index: linux/drivers/base/power/resume.c
-===================================================================
---- linux.orig/drivers/base/power/resume.c
-+++ linux/drivers/base/power/resume.c
-@@ -24,6 +24,9 @@ int resume_device(struct device * dev)
- {
- 	int error = 0;
- 
-+	if (dev->no_suspend)
-+		return 0;
-+
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 	down(&dev->sem);
-@@ -52,6 +55,9 @@ static int resume_device_early(struct de
- {
- 	int error = 0;
- 
-+	if (dev->no_suspend)
-+		return 0;
-+
- 	TRACE_DEVICE(dev);
- 	TRACE_RESUME(0);
- 	if (dev->bus && dev->bus->resume_early) {
-Index: linux/drivers/base/power/suspend.c
-===================================================================
---- linux.orig/drivers/base/power/suspend.c
-+++ linux/drivers/base/power/suspend.c
-@@ -78,7 +78,7 @@ int suspend_device(struct device * dev, 
- 		suspend_report_result(dev->class->suspend, error);
- 	}
- 
--	if (!error && dev->bus && dev->bus->suspend && !dev->power.power_state.event) {
-+	if (!error && !dev->no_suspend && dev->bus && dev->bus->suspend && !dev->power.power_state.event) {
- 		dev_dbg(dev, "%s%s\n",
- 			suspend_verb(state.event),
- 			((state.event == PM_EVENT_SUSPEND)
-Index: linux/drivers/base/power/sysfs.c
-===================================================================
---- linux.orig/drivers/base/power/sysfs.c
-+++ linux/drivers/base/power/sysfs.c
-@@ -141,12 +141,42 @@ wake_store(struct device * dev, struct d
- 
- static DEVICE_ATTR(wakeup, 0644, wake_show, wake_store);
- 
-+static ssize_t can_suspend_show(struct device *dev,
-+				struct device_attribute *attr, char *buf)
-+{
-+	return sprintf(buf, "%s\n", dev->no_suspend ? "no" : "yes");
-+}
-+
-+static ssize_t can_suspend_store(struct device *dev,
-+				 struct device_attribute *attr,
-+				 const char *buf, size_t n)
-+{
-+	if (!n)
-+		return -EINVAL;
-+
-+	switch (buf[0]) {
-+	case 'y':
-+	case 'Y':
-+	case '1':
-+		dev->no_suspend = 0;
-+		break;
-+	case 'n':
-+	case 'N':
-+	case '0':
-+		dev->no_suspend = 1;
-+		break;
-+	}
-+
-+	return n;
-+}
-+static DEVICE_ATTR(can_suspend, 0644, can_suspend_show, can_suspend_store);
- 
- static struct attribute * power_attrs[] = {
- #ifdef	CONFIG_PM_SYSFS_DEPRECATED
- 	&dev_attr_state.attr,
- #endif
- 	&dev_attr_wakeup.attr,
-+	&dev_attr_can_suspend.attr,
- 	NULL,
- };
- static struct attribute_group pm_attr_group = {
-Index: linux/include/linux/device.h
-===================================================================
---- linux.orig/include/linux/device.h
-+++ linux/include/linux/device.h
-@@ -402,6 +402,7 @@ struct device {
- 	char	bus_id[BUS_ID_SIZE];	/* position on parent bus */
- 	struct device_type	*type;
- 	unsigned		is_registered:1;
-+	unsigned		no_suspend:1;
- 	struct device_attribute uevent_attr;
- 	struct device_attribute *devt_attr;
- 
+-Andi
