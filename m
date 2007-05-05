@@ -1,58 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423313AbXEEJnK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754672AbXEEPYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423313AbXEEJnK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 05:43:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423307AbXEEJnK
+	id S1754672AbXEEPYr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 11:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbXEEPYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 05:43:10 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40660 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1423300AbXEEJnI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 05:43:08 -0400
-Date: Sat, 5 May 2007 10:43:00 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: David Miller <davem@davemloft.net>
-Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       netdev@vger.kernel.org, trond.myklebust@fys.uio.no, tgraf@suug.ch,
-       James.Bottomley@SteelEye.com, michaelc@cs.wisc.edu,
-       akpm@linux-foundation.org, phillips@google.com
-Subject: Re: [PATCH 00/40] Swap over Networked storage -v12
-Message-ID: <20070505094300.GA9592@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	David Miller <davem@davemloft.net>, a.p.zijlstra@chello.nl,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	netdev@vger.kernel.org, trond.myklebust@fys.uio.no, tgraf@suug.ch,
-	James.Bottomley@SteelEye.com, michaelc@cs.wisc.edu,
-	akpm@linux-foundation.org, phillips@google.com
-References: <20070504102651.923946304@chello.nl> <20070504.122716.31641374.davem@davemloft.net>
+	Sat, 5 May 2007 11:24:47 -0400
+Received: from www.osadl.org ([213.239.205.134]:42295 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752897AbXEEPYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 11:24:46 -0400
+Subject: Re: [PATCH] Blacklist Dell Optiplex 320 from using the HPET
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: john stultz <johnstul@us.ibm.com>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "Guilherme M. Schroeder" <guilherme@centralinf.com.br>,
+       lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <1178321228.6094.34.camel@localhost.localdomain>
+References: <1178314144.6094.7.camel@localhost.localdomain>
+	 <200705050118.34711.ak@suse.de>
+	 <1178321228.6094.34.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Sat, 05 May 2007 16:26:54 +0200
+Message-Id: <1178375214.31213.13.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070504.122716.31641374.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 12:27:16PM -0700, David Miller wrote:
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Fri, 04 May 2007 12:26:51 +0200
-> 
-> > There is a fundamental deadlock associated with paging;
-> 
-> I know you'd really like people like myself to review this work, but a
-> set of 40 patches is just too much to try and digest at once
-> especially when I have other things going on.  When I have lots of
-> other things already on my plate, when I see a huge patch set like
-> this I have to just say "delete" because I don't kid myself since
-> I know I'll never get to it.
-> 
-> Sorry there's now way I can review this with my current workload.
+Guilherme,
 
-There also quite alot of only semi-related thing in there.  It would
-be much better to only do the network stack and iscsi parts first
-and leave nfs out for a while.  Especially as the former are definitively
-useful while I strongly doubt that for swap over nfs.
+On Fri, 2007-05-04 at 16:27 -0700, john stultz wrote: 
+> > Before going to hard to maintain DMI black lists we should first check 
+> > if it's a more general problem and can't it be solved better? Most likely
+> > that system isn't the one with this issue and I don't want to apply
+> > DMI patches forever.
+> 
+> We can give it a whirl, I just didn't want to add yet another "compare
+> with some other counter that may or may not work" check. In this case,
+> probably reading three times in a row and getting the same result would
+> be a clearly broken box. 
+
+can you please undo John's patch and check whether the patch below works
+for you.
+
+Thanks,
+
+	tglx
+
+Index: linux-2.6.21/arch/i386/kernel/hpet.c
+===================================================================
+--- linux-2.6.21.orig/arch/i386/kernel/hpet.c
++++ linux-2.6.21/arch/i386/kernel/hpet.c
+@@ -231,6 +231,7 @@ int __init hpet_enable(void)
+ {
+ 	unsigned long id;
+ 	uint64_t hpet_freq;
++	cycle_t t1;
+ 	u64 tmp;
+ 
+ 	if (!is_hpet_capable())
+@@ -278,6 +279,14 @@ int __init hpet_enable(void)
+ 	/* Start the counter */
+ 	hpet_start_counter();
+ 
++	/* Verify whether hpet counter works */
++	t1 = hpet_read();
++	udelay(50);
++	if (t1 == hpet_read()) {
++		printk(KERN_WARNING "HPET counter is defect\n");
++		goto out_nohpet;
++	}
++
+ 	/* Initialize and register HPET clocksource
+ 	 *
+ 	 * hpet period is in femto seconds per cycle
+
 
