@@ -1,91 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423264AbXEEPo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423291AbXEEPvo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423264AbXEEPo7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 11:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423238AbXEEPo6
+	id S1423291AbXEEPvo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 11:51:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423298AbXEEPvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 11:44:58 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60597 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423283AbXEEPot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 11:44:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
-Date: Sat, 5 May 2007 15:50:52 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-References: <200705041132.32227.rjw@sisk.pl> <200705051421.31067.rjw@sisk.pl> <1178368028.7408.93.camel@johannes.berg>
-In-Reply-To: <1178368028.7408.93.camel@johannes.berg>
+	Sat, 5 May 2007 11:51:44 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:59830 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423291AbXEEPvl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 11:51:41 -0400
+Message-ID: <5486cca80705050253u35731411ma7c09b3a678c2d49@mail.gmail.com>
+Date: Sat, 5 May 2007 11:53:39 +0200
+From: "Antonino Ingargiola" <tritemio@gmail.com>
+To: "Paul Fulghum" <paulkf@microgate.com>
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1178276265.3417.3.camel@x2>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705051550.53436.rjw@sisk.pl>
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
+	 <5486cca80705041013pf481c2an9e639fc9285ba88e@mail.gmail.com>
+	 <1178299247.3769.0.camel@amdx2.microgate.com>
+	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
+	 <1178300493.3619.1.camel@amdx2.microgate.com>
+	 <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
+	 <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
+	 <1178308173.3743.14.camel@amdx2.microgate.com>
+	 <5486cca80705041421y4fcaec01l7acafed1cea4b509@mail.gmail.com>
+	 <1178276265.3417.3.camel@x2>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 5 May 2007 14:27, Johannes Berg wrote:
-> On Sat, 2007-05-05 at 14:21 +0200, Rafael J. Wysocki wrote:
-> > 
-> > Power off the system instead of halting it if the 'platform' mode of
-> > hibernation
-> > has been requested, but hibernation_ops is not set. 
-> 
-> Ehm, unless you made a mistake in the patch then that shouldn't be
-> possible.
+On 5/4/07, Paul Fulghum <paulkf@microgate.com> wrote:
+> Antonino:
+>
+> Can you try two tests (with my patch applied):
+>
+> 1. comment out the tty_flush_buffer() call in tty_ldisc_flush() and test
+>
+> 2. uncomment (reenable) the above call and comment out the
+> tty_flush_buffer() call in tty_ioctl() and test
 
-Hmm, right, but the patch is correct nevertheless. :-)
+I assume you meant tty_buffer_flush(). I've built kernel 1). In kernel
+2), do you mean:
 
-I see where the problem is.  hibernation_mode is 0 by default
-(HIBERNATION_INVALID) and it's not changed to anything else later if
-defaults are used.
+    /*if (ld->ioctl)
+            tty_buffer_flush(tty);*/
+    tty_ldisc_deref(ld);
 
-Something like this is necessary, I think:
+right? This is what I'm building... I'll report these new tests soon.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
+While waiting for kernel building I'll document the testing procedure.
+In this way someone else can easily try to reproduce the problem.
 
-Make sure that hibernation_mode is set to a reasonable value by default.
+1. Hardware.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/disk.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+Two serial ports required. Connect the two port witth a null-modem
+cable, or patch, for each port the Tx pin with the Rx of the other
+port[0].
 
-Index: linux-2.6.21/kernel/power/disk.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/disk.c	2007-05-05 13:51:45.000000000 +0200
-+++ linux-2.6.21/kernel/power/disk.c	2007-05-05 15:45:23.000000000 +0200
-@@ -30,8 +30,6 @@ char resume_file[256] = CONFIG_PM_STD_PA
- dev_t swsusp_resume_device;
- sector_t swsusp_resume_block;
- 
--static int hibernation_mode;
--
- enum {
- 	HIBERNATION_INVALID,
- 	HIBERNATION_PLATFORM,
-@@ -45,6 +43,8 @@ enum {
- #define HIBERNATION_MAX (__HIBERNATION_AFTER_LAST-1)
- #define HIBERNATION_FIRST (HIBERNATION_INVALID + 1)
- 
-+static int hibernation_mode = HIBERNATION_SHUTDOWN;
-+
- struct hibernation_ops *hibernation_ops;
- 
- /**
-@@ -60,6 +60,9 @@ void hibernation_set_ops(struct hibernat
- 	}
- 	mutex_lock(&pm_mutex);
- 	hibernation_ops = ops;
-+	if (ops)
-+		hibernation_mode = HIBERNATION_PLATFORM;
-+
- 	mutex_unlock(&pm_mutex);
- }
- 
+2. Software
+
+I assume python is installed. Install also pyserial[1] (in debian
+python-serial), if you manually download the package you can put the
+"serial" dir in the dir you use to perform the test (no need to
+install system-wide). If you can, install also the ipython shell that
+has colored output and auto-completition.
+
+3. Test
+
+>From the python shell:
+
+    import serial
+    s0 = serial.Serial(0, timeout=1)
+
+open the /dev/ttyS0 port with default values, hit 's0' [enter] to see
+the serial parameters.
+
+    s1 = serial.Serial(1, timeout=1)
+
+with the previous comma we open /dev/ttyS1 with the same serial port
+settings. To write to one serial port:
+
+    s0.write('test\n')
+
+and to read use the .read() or .readline() method:
+
+    s1.readline()
+
+The .inWaiting() methods gives the numbers of bytes in the input
+buffer. The .flushInput() method flushes the input buffer:
+
+	In [6]: s0.write('test\n')
+
+	In [7]: s1.inWaiting()
+	Out[7]: 5L
+
+	In [8]: s1.readline()
+	Out[8]: 'test\n'
+
+	In [9]: s1.inWaiting()
+	Out[9]: 0L
+
+If all works, now fill one serial port with a bunch of data (an
+increasing 8-digit number):
+
+    for i in xrange(10000):
+        s0.write(str(i).zfill(8)+'\n')
+
+we can see that the s1 input buffer is full:
+
+    s1.inWaiting()
+    Out[21]: 4095L
+
+then empty the buffer and see what happens:
+
+	In [22]: s1.flushInput()
+	In [23]: s1.inWaiting()
+	Out[23]: 4095L
+
+the buffer is still full. You have to flush the buffer more then once
+to completely flush all the buffer chain (including the flip buffer).
+With the patched kernel at this point I get correctly:
+
+	In [22]: s1.flushInput()
+	In [23]: s1.inWaiting()
+	Out[23]: 0L
+
+but then I can't read any other byte from the serial without closing
+and reopening it:
+
+	In [24]: s0.write('test\n')
+
+	In [25]: s1.inWaiting()
+	Out[25]: 0L
+
+	In [26]: s1.read()
+	Out[26]: ''
+
+	In [27]: s1.close()
+
+	In [28]: s1.open()
+
+	In [29]: s1.inWaiting()
+	Out[29]: 0L
+
+	In [30]: s0.write('test\n')
+
+	In [31]: s1.inWaiting()
+	Out[31]: 5L
+
+	In [32]: s1.readline()
+	Out[32]: 'test\n'
+
+Hope the explanation is clear If someone else want to try...
+
+Regards,
+
+  ~ Antonio
