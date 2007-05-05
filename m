@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933306AbXEEUrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933330AbXEEUwh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933306AbXEEUrj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 16:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933387AbXEEUrj
+	id S933330AbXEEUwh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 16:52:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933354AbXEEUwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 16:47:39 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:58736 "EHLO e3.ny.us.ibm.com"
+	Sat, 5 May 2007 16:52:37 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:39782 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933306AbXEEUri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 16:47:38 -0400
-Message-ID: <463CED7B.5000803@us.ibm.com>
-Date: Sat, 05 May 2007 15:47:55 -0500
-From: "Steve French (smfltc)" <smfltc@us.ibm.com>
-User-Agent: Mozilla Thunderbird 1.0 (Windows/20041206)
-X-Accept-Language: en-us, en
+	id S933330AbXEEUwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 16:52:36 -0400
+Date: Sat, 5 May 2007 22:50:05 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+cc: Wander Winkelhorst <w.winkelhorst@gmail.com>,
+       David Johnson <dj@david-web.co.uk>, linux-kernel@vger.kernel.org,
+       cpufreq@lists.linux.org.uk
+Subject: Re: cpufreq longhaul locks up
+In-Reply-To: <463CE1FB.4050305@interia.pl>
+Message-ID: <Pine.LNX.4.61.0705052237580.18504@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr> 
+ <200705042320.41278.dj@david-web.co.uk>  <Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>
+  <463C18C4.7030304@interia.pl> <5699f8f00705050144s5c00a455s8f7dba9258d83986@mail.gmail.com>
+ <463CC380.3060603@interia.pl> <Pine.LNX.4.61.0705052028560.18504@yvahk01.tjqt.qr>
+ <463CE1FB.4050305@interia.pl>
 MIME-Version: 1.0
-To: Shirish S Pargaonkar <shirishp@us.ibm.com>
-CC: smfltc@linux.vnet.ibm.com, hch@infradead.org,
-       Jeff Layton <jlayton@redhat.com>, linux-cifs-client@lists.samba.org,
-       linux-cifs-client-bounces+shirishp=us.ibm.com@lists.samba.org,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       samba-technical@lists.samba.org
-Subject: Re: [linux-cifs-client] Re: [PATCH] CIFS: make sec=none force an
- anonymous mount
-References: <OFEFD715DD.89A7A57F-ON872572D2.003A0BCE-862572D2.003AC6CA@us.ibm.com>
-In-Reply-To: <OFEFD715DD.89A7A57F-ON872572D2.003A0BCE-862572D2.003AC6CA@us.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Spam-Report: Content analysis: 4.0 points, 6.0 required
+	4.0 HOT_NASTY              BODY: Possible porn - Hot, Nasty, Wild, Young
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shirish S Pargaonkar wrote:
 
->
->
-> When a session setup request is sent as an anonymous user (NUL user), 
-> should/could there be
-> password associated with that?
-> Right now, sec=none option, will prompt you for a password.
-> And when we add code to retry session setup as anonymous user if the 
-> first session setup request
-> fails, should that retry request be sent with the password or without 
-> password?
->
-> When smbfs sends requests as an anonymous user, it does not send a 
-> password along with it.
->
-> Regards,
->
-> Shirish
->
-We should allow a password to be specified (presumably it is not common 
-for a server to have a password associated with a null user),
-but probably not prompt (similar to "guest" - except for the case of 
-guest, we start with the username of uid of current process, and
-only if it fails with access denied do we try "user=" (or equivalently 
-sec=none))
+On May 5 2007 21:58, Rafał Bilski wrote:
+
+>:-/ Weird. Nothing new in datasheet. Longhaul MSR seems to be OK too. 
+>Would be good to check if PLL really can go downto x4,0. Can You 
+>limit minimal CPU multiplier to 5,0 and check if is stable? If it 
+>is check 4,5.
+
+I directly wrote to /sys/devices/system/cpu/cpu0/cpufreq, which
+worked better than `cpufreq -u xxx -d xxx`.
+
+Lockup after 9 minutes. (Perhaps the longest time so far.)
+
+
+Jan
+-- 
