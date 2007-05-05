@@ -1,66 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933211AbXEERAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933575AbXEERAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933211AbXEERAO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 13:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933580AbXEERAO
+	id S933575AbXEERAp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 13:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933606AbXEERAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 13:00:14 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:38926 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933211AbXEERAM (ORCPT
+	Sat, 5 May 2007 13:00:45 -0400
+Received: from m-relay.rz.uni-saarland.de ([134.96.7.3]:11824 "EHLO
+	m-relay.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933575AbXEERAn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 13:00:12 -0400
-Date: Sat, 5 May 2007 19:00:12 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Andrew Morton <akpm@linux-foundation.org>, jsipek@cs.sunysb.edu,
-       Christoph Lameter <clameter@sgi.com>
-Cc: linux-kernel@vger.kernel.org, unionfs@filesystems.org
-Subject: [-mm patch] fix unionfs compilation
-Message-ID: <20070505170012.GF8975@stusta.de>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Sat, 5 May 2007 13:00:43 -0400
+X-Greylist: delayed 3448 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 May 2007 13:00:43 EDT
+Date: Sat, 5 May 2007 12:44:52 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] Make bootsector stub 16-bit-only (i386)
+Message-ID: <20070505104452.GA30944@mailshack.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.5.1 (m-relay.rz.uni-saarland.de [134.96.7.3]); Sat, 05 May 2007 12:46:50 +0200 (CEST)
+X-AntiVirus: checked by AntiVir Milter (version: 1.1.3-1; AVE: 7.3.1.53; VDF: 6.38.1.19; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.21-rc7-mm2:
->...
->  git-unionfs.patch
->...
->  git trees
->...
+Hi!
 
-<--  snip  -->
+The x86 bzImage contains a stub to inform people that it is not possible
+any more to run a Linux kernel by catting it to a floppy and then
+booting from it. This was meant to be all 16-bit code. The first
+instruction, however, ended up as being coded as a 16:32-bit far jump. I
+assume the intention was a 16:16-bit far jump.
 
-...
-  CC      fs/unionfs/super.o
-/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c: In function ‘init_once’:
-/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: ‘SLAB_CTOR_VERIFY’ undeclared (first use in this function)
-/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: (Each undeclared identifier is reported only once
-/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: for each function it appears in.)
-make[3]: *** [fs/unionfs/super.o] Error 1
+This patch changes only i386.
 
-<--  snip  -->
+Greetings,
+	Alexander
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Alexander van Heukelum <heukelum@mailshack.com>
 
 ---
---- linux-2.6.21-mm1/fs/unionfs/super.c.old	2007-05-05 18:45:25.000000000 +0200
-+++ linux-2.6.21-mm1/fs/unionfs/super.c	2007-05-05 18:46:03.000000000 +0200
-@@ -819,8 +819,7 @@
- {
- 	struct unionfs_inode_info *i = v;
- 
--	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) ==
--	    SLAB_CTOR_CONSTRUCTOR)
-+	if (flags & SLAB_CTOR_CONSTRUCTOR)
- 		inode_init_once(&i->vfs_inode);
- }
- 
 
+diff --git a/arch/i386/boot/bootsect.S b/arch/i386/boot/bootsect.S
+index 011b7a4..ae9df0d 100644
+--- a/arch/i386/boot/bootsect.S
++++ b/arch/i386/boot/bootsect.S
+@@ -44,7 +44,7 @@ #endif
+ _start:
+ 
+ 	# Normalize the start address
+-	jmpl	$BOOTSEG, $start2
++	jmpw	$BOOTSEG, $start2
+ 
+ start2:
+ 	movw	%cs, %ax
