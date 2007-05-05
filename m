@@ -1,71 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbXEEQJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755443AbXEEQJt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755447AbXEEQJw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbXEEQJw
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:09:52 -0400
-Received: from wx-out-0506.google.com ([66.249.82.228]:43773 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755447AbXEEQJt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	id S1755443AbXEEQJt (ORCPT <rfc822;w@1wt.eu>);
 	Sat, 5 May 2007 12:09:49 -0400
-Message-ID: <a781481a0705050526r13445d60j737a6c2015402dcc@mail.gmail.com>
-Date: Sat, 5 May 2007 17:56:50 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: dedekind@infradead.org
-Subject: Re: [PATCH] UBI: dereference after kfree in create_vtbl
-Cc: "Florin Malita" <fmalita@gmail.com>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       linux-mtd@lists.infradead.org,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1178351711.3659.54.camel@sauron>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755441AbXEEQJs
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sat, 5 May 2007 12:09:48 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:56576 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933278AbXEEQJr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 12:09:47 -0400
+Date: Sat, 5 May 2007 12:59:13 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, sct@redhat.com, adilger@clusterfs.com,
+       clameter@sgi.com
+Subject: [PATCH 3/4] ext4: remove inode constructor
+Message-ID: <Pine.LNX.4.64.0705051258310.20886@sbz-30.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <463A04A5.5030103@gmail.com>
-	 <a781481a0705041442h37453fb6k26d04eb5356e9dc0@mail.gmail.com>
-	 <463BC019.40305@gmail.com>
-	 <a781481a0705042055u5e9ba060w95da83b0fbeff76a@mail.gmail.com>
-	 <1178351711.3659.54.camel@sauron>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/5/07, Artem Bityutskiy <dedekind@infradead.org> wrote:
-> [...]
-> On Sat, 2007-05-05 at 09:25 +0530, Satyam Sharma wrote:
-> > Artem would have to step in here to verify if there really is a good
-> > reason why we kmalloc a fresh ubi_scan_leb every time we want to add
-> > one to a list.
-> Particularly in vtbl.c there is no good reason. Leftover of itsy-bitsy
-> units. I'll make ubi_scan_add_to_list static, as well as
-> ubi_scan_add_used(). And I'll rename them to something shorter. They are
-> only useful in scan.c.
->
-> And it is fine to use list_add_tail() directly in vtbl.c. Will be fixed.
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Ah, good to know that, but please keep list_add_tail (or whatever is
-the implementation abstraction of the various ubi_scan_info lists)
-local to scan.c -- you could expose a version of ubi_scan_add_to_list
-that does not do kmalloc through scan.h and use that in vtbl.c. That
-way you won't lose those debug printk's when adding an eraseblock to a
-list, for example, and it's always much cleaner not exposing an
-object's implementation innards to others.
+As alloc_inode() touches the same cache line as init_once(), we gain
+nothing from using slab constructors.
 
-> > >though this likely requires a
-> > major cleanup of this driver w.r.t. ubi_scan_leb lifetime semantics.
-> What is wrong with the semantics, please be more specific.
+Cc: Stephen C. Tweedie <sct@redhat.com>
+Cc: Andreas Dilger <adilger@clusterfs.com>
+Cc: Christoph Lameter <clameter@sgi.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ fs/ext4/super.c |   28 +++++++++++-----------------
+ 1 file changed, 11 insertions(+), 17 deletions(-)
 
-It's wrong to be allocating and freeing any object in more than one
-place . Physical eraseblocks are allocated in ubi_scan_add_to_list
-(which shouldn't be doing that) and ubi_scan_add_used (which is a
-maze) and freed pretty much all over the place (because we allocate
-new seb's for ourselves to add to the lists, we need to go about
-kfree'ing all of them when destroying a ubi_scan_destroy_si too, for
-example -- perhaps this driver needs to be told about krefs). So it
-makes life easier if you know there's only one place when/where an
-object is born, if you know that it'll remain alive as long as you
-need it and have a reference on it, and if you destroy it a known
-single time/location too. I wish I could be more specific than this,
-but I've only spent a few hours with ubi :-)
+Index: 26-mm/fs/ext4/super.c
+===================================================================
+--- 26-mm.orig/fs/ext4/super.c	2007-05-05 12:26:44.000000000 +0300
++++ 26-mm/fs/ext4/super.c	2007-05-05 12:28:56.000000000 +0300
+@@ -496,16 +496,21 @@ static struct kmem_cache *ext4_inode_cac
+ static struct inode *ext4_alloc_inode(struct super_block *sb)
+ {
+ 	struct ext4_inode_info *ei;
++	struct inode *inode;
+ 
+ 	ei = kmem_cache_alloc(ext4_inode_cachep, GFP_NOFS);
+ 	if (!ei)
+ 		return NULL;
++	INIT_LIST_HEAD(&ei->i_orphan);
++#ifdef CONFIG_EXT4DEV_FS_XATTR
++	init_rwsem(&ei->xattr_sem);
++#endif
++	mutex_init(&ei->truncate_mutex);
+ #ifdef CONFIG_EXT4DEV_FS_POSIX_ACL
+ 	ei->i_acl = EXT4_ACL_NOT_CACHED;
+ 	ei->i_default_acl = EXT4_ACL_NOT_CACHED;
+ #endif
+ 	ei->i_block_alloc_info = NULL;
+-	ei->vfs_inode.i_version = 1;
+ 	memset(&ei->i_cached_extent, 0, sizeof(struct ext4_ext_cache));
+ 
+ 	/* FIXME: these wb-related fields could be initialized once */
+@@ -514,7 +519,10 @@ 	ei->i_md_reserved = 0;
+ 	atomic_set(&ei->i_wb_writers, 0);
+ 	spin_lock_init(&ei->i_wb_reserved_lock);
+ 
+-	return &ei->vfs_inode;
++	inode = &ei->vfs_inode;
++	inode_init_once(inode);
++	inode->i_version = 1;
++	return inode;
+ }
+ 
+ static void ext4_destroy_inode(struct inode *inode)
+@@ -522,27 +530,13 @@ static void ext4_destroy_inode(struct in
+ 	kmem_cache_free(ext4_inode_cachep, EXT4_I(inode));
+ }
+ 
+-static void init_once(void * foo, struct kmem_cache * cachep, unsigned long flags)
+-{
+-	struct ext4_inode_info *ei = (struct ext4_inode_info *) foo;
+-
+-	if (flags & SLAB_CTOR_CONSTRUCTOR) {
+-		INIT_LIST_HEAD(&ei->i_orphan);
+-#ifdef CONFIG_EXT4DEV_FS_XATTR
+-		init_rwsem(&ei->xattr_sem);
+-#endif
+-		mutex_init(&ei->truncate_mutex);
+-		inode_init_once(&ei->vfs_inode);
+-	}
+-}
+-
+ static int init_inodecache(void)
+ {
+ 	ext4_inode_cachep = kmem_cache_create("ext4_inode_cache",
+ 					     sizeof(struct ext4_inode_info),
+ 					     0, (SLAB_RECLAIM_ACCOUNT|
+ 						SLAB_MEM_SPREAD),
+-					     init_once, NULL);
++					     NULL, NULL);
+ 	if (ext4_inode_cachep == NULL)
+ 		return -ENOMEM;
+ 	return 0;
