@@ -1,68 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423346AbXEEBUH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031029AbXEEBcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423346AbXEEBUH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 21:20:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161630AbXEEBUG
+	id S1031029AbXEEBcR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 21:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031094AbXEEBcR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 21:20:06 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:45777 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1161615AbXEEBUF (ORCPT
+	Fri, 4 May 2007 21:32:17 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:13306 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031029AbXEEBcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 21:20:05 -0400
-Date: Fri, 4 May 2007 18:19:49 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dmitry Torokhov <dtor@insightbb.com>, Greg KH <gregkh@suse.de>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git pull] Input patches for 2.6.20
-In-Reply-To: <200705030107.44990.dtor@insightbb.com>
-Message-ID: <alpine.LFD.0.98.0705041806210.3808@woody.linux-foundation.org>
-References: <200702180204.48643.dtor@insightbb.com>
- <200705030107.44990.dtor@insightbb.com>
+	Fri, 4 May 2007 21:32:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=krjxKCjrgT0dTrbEXahWAkagLV5UX7PLP80B1ywvlfwq4rLIPOYKmAhfIGWDFjQQDSDJl7rXOBdrG3kVg3Pze9gvqXQQuMGgFJ2KZDJEthiZnxrweTtzxXfzTan/TYJw6L3SK4wTjxEnd7sYttIzu1JbEwNmvqaywS6WZNU9ZVE=
+Message-ID: <5d6222a80705041832tb3cda12w3d164fe276c30a6b@mail.gmail.com>
+Date: Fri, 4 May 2007 22:32:14 -0300
+From: "Glauber de Oliveira Costa" <glommer@gmail.com>
+To: "Arnaldo Carvalho de Melo" <acme@redhat.com>
+Subject: Re: [RELEASE] linux-2.6.21 backport: 269 version
+Cc: "Rusty Russell" <rusty@rustcorp.com.au>,
+       "lkml - Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+In-Reply-To: <463BA7DE.1050605@redhat.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463790079-1215937223-1178327228=:3808"
-Content-ID: <alpine.LFD.0.98.0705041807160.3808@woody.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1178287745.23670.80.camel@localhost.localdomain>
+	 <1178288000.23670.83.camel@localhost.localdomain>
+	 <463BA7DE.1050605@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----1463790079-1215937223-1178327228=:3808
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Transfer-Encoding: 8BIT
-Content-ID: <alpine.LFD.0.98.0705041807161.3808@woody.linux-foundation.org>
-
-
-
-On Thu, 3 May 2007, Dmitry Torokhov wrote:
-> 
-> If you have not pulled yet please pull from:
+> > The URL?  Well, I'm glad you asked:
+> >
+> >       http://lguest.ozlabs.org/lguest-2.6.21-269.patch.gz
+> >
+> >
 >
->         master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
-> 
-> because master branch will have extra stuff in the next minute or so.
+> No, I have not. Thanks anyway, will try it. Finally. 8-)
+>
+But he was talking about me! ;-)
+(kidding)
+-- 
+Glauber de Oliveira Costa.
+"Free as in Freedom"
 
-Hmm. That thing had a conflict with the driver core changes I just pulled 
-from Greg due to Greg removing "struct subsystem".
-
-The conflict looked really trivial, and I fixed up the obvious places, 
-probably correctly. Please verify.
-
-Martin, in the process I noticed that the new file
-
-	arch/s390/kernel/ipl.c
-
-seems to be broken by the same thing after the driver core merge. The fix 
-_looks_ equally trivial (change *subsys.kset.kobj into just *subsys.kobj), 
-but I didn't do that trivial thing, because I cannot even test-compile the 
-end result. So can you give it a quick look, please?
-
-Greg - maybe more of a heads-up to people next time you do something like 
-this? Did this removal hit -mm? Anyway, it looks like something trivial to 
-fix up after, but ..
-
-		Linus
----1463790079-1215937223-1178327228=:3808--
+"The less confident you are, the more serious you have to act."
