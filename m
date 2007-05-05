@@ -1,71 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755306AbXEES5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755428AbXEES6M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755306AbXEES5o (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 14:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755302AbXEES5n
+	id S1755428AbXEES6M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 14:58:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755273AbXEES6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 14:57:43 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53016 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755406AbXEES5m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 14:57:42 -0400
-Date: Sat, 5 May 2007 11:57:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: jsipek@cs.sunysb.edu, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, unionfs@filesystems.org
-Subject: Re: [-mm patch] fix unionfs compilation
-Message-Id: <20070505115718.a1a0b61e.akpm@linux-foundation.org>
-In-Reply-To: <20070505170012.GF8975@stusta.de>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-	<20070505170012.GF8975@stusta.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sat, 5 May 2007 14:58:12 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:44484 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755213AbXEES5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 14:57:54 -0400
+Date: Sat, 5 May 2007 20:50:38 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+cc: cbou@mail.ru, Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
+       Greg KH <gregkh@suse.de>, David Woodhouse <dwmw2@infradead.org>,
+       linux-kernel@vger.kernel.org, Shem Multinymous <multinymous@gmail.com>,
+       kernel-discuss@handhelds.org
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/8] Universal power supply class
+ (was: battery class)
+In-Reply-To: <74d0deb30705050639s4166a2acm5fd0947c5c1a8cb8@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705052046350.18504@yvahk01.tjqt.qr>
+References: <20070503213139.GC20067@zarina>  <41840b750705032155w21d98b5g6236daf9bff66606@mail.gmail.com>
+  <20070505035413.GB21359@khazad-dum.debian.net>  <20070505123230.GA6460@zarina>
+ <74d0deb30705050639s4166a2acm5fd0947c5c1a8cb8@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 May 2007 19:00:12 +0200 Adrian Bunk <bunk@stusta.de> wrote:
 
-> On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
-> >...
-> > Changes since 2.6.21-rc7-mm2:
-> >...
-> >  git-unionfs.patch
-> >...
-> >  git trees
-> >...
-> 
-> <--  snip  -->
-> 
-> ...
->   CC      fs/unionfs/super.o
-> /home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c: In function ‘init_once’:
-> /home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: ‘SLAB_CTOR_VERIFY’ undeclared (first use in this function)
-> /home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: (Each undeclared identifier is reported only once
-> /home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: for each function it appears in.)
-> make[3]: *** [fs/unionfs/super.o] Error 1
-> 
-> <--  snip  -->
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> ---
-> --- linux-2.6.21-mm1/fs/unionfs/super.c.old	2007-05-05 18:45:25.000000000 +0200
-> +++ linux-2.6.21-mm1/fs/unionfs/super.c	2007-05-05 18:46:03.000000000 +0200
-> @@ -819,8 +819,7 @@
->  {
->  	struct unionfs_inode_info *i = v;
->  
-> -	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) ==
-> -	    SLAB_CTOR_CONSTRUCTOR)
-> +	if (flags & SLAB_CTOR_CONSTRUCTOR)
->  		inode_init_once(&i->vfs_inode);
->  }
+On May 5 2007 15:39, pHilipp Zabel wrote:
+>> > > > +enum power_supply_type {
+>> > > > +       POWER_SUPPLY_TYPE_BATTERY = 0,
+>> > > > +       POWER_SUPPLY_TYPE_UPS,
+>> > > > +       POWER_SUPPLY_TYPE_AC,
+>> > > > +       POWER_SUPPLY_TYPE_USB,
+>> > > > +};
+>> > > 
+>> > > How about dumb (non-USB) DC power? Any reason to distinguish it
+>> > > from AC?
+>> > 
+>> > Hmm, if it should not be distinguished, it is better to rename
+>> > AC to something that means continuous power.  But I'd rather
+>> > have it AC and DC, as something might have both supplies
+>> > separate, and you might want to differentiate them for some
+>> > (human interface) reason.  After all, USB and DC are not really
+>> > different anyway...
+>> > 
+>> > Anyway, what IS the difference between UPS and battery, or UPS
+>> > and AC/DC for that matter?  When should UPS be used?  If you
+>> > have UPS there, should not MGG (motor-generator group) also be
+>> > provided?
 
-Bah, that was hidden from my allmodconfig because CONFIG_UNIONFS is inexplicably
-dependent upon CONFIG_SLAB.
+Sorry for jumping in late... there is basically no way to know whether 
+you are on AC or DC, unless you have a *really smart* power supply. 
+Embedded or near-embedded devices usually have a "12V DC" connector on 
+the mainboard. "Home" use usually requires a small PSU as are common for 
+laptops to transform from 230V to whatever is needed. So the mainboard 
+technically is always on 12VDC (what could be called "DC"), even if you 
+power it up with using the 230VAC->12VDC PSU (what people call "AC").
 
-How come?
+
+Jan
+-- 
