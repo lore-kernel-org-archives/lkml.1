@@ -1,74 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933320AbXEEUVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933327AbXEEUXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933320AbXEEUVr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 16:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933409AbXEEUVr
+	id S933327AbXEEUXW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 16:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933340AbXEEUXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 16:21:47 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:48977 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933320AbXEEUVp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 16:21:45 -0400
-From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Adrian Bunk <bunk@stusta.de>,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 3/3] [PATCH] fix unionfs compilation
-Date: Sat,  5 May 2007 16:18:25 -0400
-Message-Id: <1178396305843-git-send-email-jsipek@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.0.3.1043.g4342
-In-Reply-To: <11783963052286-git-send-email-jsipek@cs.sunysb.edu>
-References: <11783963052286-git-send-email-jsipek@cs.sunysb.edu>
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+	Sat, 5 May 2007 16:23:21 -0400
+Received: from mail.gmx.net ([213.165.64.20]:38426 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S933327AbXEEUXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 16:23:20 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX18bms00jaMbLmt1WiiPxaX4pWHvJhOxxS42jlsiEf
+	BUZoiKE9qDrTQZ
+Date: Sat, 5 May 2007 22:23:20 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Niklas Steinkamp <NiSteinkamp@web.de>
+cc: garloff@suse.de, linux-kernel@vger.kernel.org
+Subject: Re: DC390: replace pci_module_init in dc390_module_init
+In-Reply-To: <463C785B.10007@web.de>
+Message-ID: <Pine.LNX.4.60.0705052221460.4773@poirot.grange>
+References: <463C785B.10007@web.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Adrian Bunk <bunk@stusta.de>
+On Sat, 5 May 2007, Niklas Steinkamp wrote:
 
-On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
->...
-> Changes since 2.6.21-rc7-mm2:
->...
->  git-unionfs.patch
->...
->  git trees
->...
+> while compiling the DC930 SCSI driver, i got this message:
+> 
+> drivers/built-in.o: In function `dc390_module_init':
+> tmscsim.c:(.init.text+0x124c4): undefined reference to `pci_module_init'
+> make: *** [.tmp_vmlinux1] Fehler 1
+> 
+> so i replaced "pci_module_init" with "pci_register_device"
+> and it works just fine.
+> --------------------------
+> 
+> diff --git a/drivers/scsi/tmscsim.c b/drivers/scsi/tmscsim.c
+> index a583e89..3158949 100644
+> --- a/drivers/scsi/tmscsim.c
+> +++ b/drivers/scsi/tmscsim.c
+> @@ -2680,7 +2680,7 @@ static int __init dc390_module_init(void)
+>                 printk (KERN_INFO "DC390: Using safe settings.\n");
+>         }
+> 
+> -       return pci_module_init(&dc390_driver);
+> +       return pci_register_driver(&dc390_driver);
+>  }
+> 
+>  static void __exit dc390_module_exit(void)
 
-<--  snip  -->
+Thanks for the patch, but this is already fixed in -mm tree: 
+http://marc.info/?l=linux-scsi&m=117757368229767&w=2
 
-...
-  CC      fs/unionfs/super.o
-/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c: In function ‘init_once’:
-/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: ‘SLAB_CTOR_VERIFY’ undeclared (first use in this function)
-/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: (Each undeclared identifier is reported only once
-/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: for each function it appears in.)
-make[3]: *** [fs/unionfs/super.o] Error 1
-
-<--  snip  -->
-
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+Thanks
+Guennadi
 ---
- fs/unionfs/super.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
-index 02c0cc8..af5a1c5 100644
---- a/fs/unionfs/super.c
-+++ b/fs/unionfs/super.c
-@@ -821,8 +821,7 @@ static void init_once(void *v, struct kmem_cache * cachep, unsigned long flags)
- {
- 	struct unionfs_inode_info *i = v;
- 
--	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) ==
--	    SLAB_CTOR_CONSTRUCTOR)
-+	if (flags & SLAB_CTOR_CONSTRUCTOR)
- 		inode_init_once(&i->vfs_inode);
- }
- 
--- 
-1.5.0.3.1043.g4342
-
+Guennadi Liakhovetski
