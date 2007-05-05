@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933317AbXEEQYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933546AbXEEQ0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933317AbXEEQYq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933318AbXEEQYq
+	id S933546AbXEEQ0i (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933351AbXEEQ0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:24:46 -0400
-Received: from fallback.mail.elte.hu ([157.181.151.13]:32776 "EHLO
-	fallback.mail.elte.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933317AbXEEQYp (ORCPT
+	Sat, 5 May 2007 12:26:17 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:18419 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933331AbXEEQ0N (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:24:45 -0400
-Date: Sat, 5 May 2007 13:51:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [patch 3/3] clockevents: Fix resume logic
-Message-ID: <20070505115127.GA17815@elte.hu>
-References: <20070430102837.748238000@linutronix.de> <20070430102852.042964000@linutronix.de> <20070505003421.00ec45ba.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 5 May 2007 12:26:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=oaQWO+jeAoK23z/MO37DGYh1cU+DykCBdBGZQoxQi27mOGVE/KWONaai0xlSzVLRwzu+ZxxYlxrrXM6DltntVLkGGIt/YO4LXZ3QfR+sqvNaI9aOPHgXWeiAUVJIYRoFtODkhGky+KcZMrPoeYvuClHRqu0J33s/t1IFnESmh9k=
+Message-ID: <5486cca80705050926j5c33eaf3m8723b76d4759fc5a@mail.gmail.com>
+Date: Sat, 5 May 2007 18:26:12 +0200
+From: "Antonino Ingargiola" <tritemio@gmail.com>
+To: "Paul Fulghum" <paulkf@microgate.com>
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1178381739.3379.11.camel@x2>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070505003421.00ec45ba.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
+	 <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
+	 <1178308173.3743.14.camel@amdx2.microgate.com>
+	 <5486cca80705041421y4fcaec01l7acafed1cea4b509@mail.gmail.com>
+	 <463BC223.2040304@microgate.com> <1178353618.3472.1.camel@x2>
+	 <5486cca80705050811k2903710y2bf9054434d8da4b@mail.gmail.com>
+	 <463CB429.6050201@microgate.com> <1178381287.3379.8.camel@x2>
+	 <1178381739.3379.11.camel@x2>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2007/5/5, Paul Fulghum <paulkf@microgate.com>:
+> On Sat, 2007-05-05 at 11:08 -0500, Paul Fulghum wrote:
+> > I would argue that cdc-acm should do the same as the serial driver.
+>
+> Try this patch for the usb ports. (I don't have that hardware)
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Building... thanks.
 
-> > Fixup the existing users.
-> 
-> This one makes the Vaio-of-fun hang during suspend to disk.  It gets 
-> up to "swsusp: critical section/: done (%d pages copied)" then it 
-> freezes.
+The HW is a cypress demo-board for their micro-controllers with an USB
+interface. Linux had recognized it as a cdc_acm modem, but it's only a
+very simple serial device that can stream data on request.
 
-after trying to reproduce it on 2 boxes without success it did trigger 
-some sw-suspend weirdness on a third box :) We are debugging it now.
-
-	Ingo
+  ~ Antonio
