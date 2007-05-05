@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933673AbXEERRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933753AbXEERTC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933673AbXEERRo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 13:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933741AbXEERRo
+	id S933753AbXEERTC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 13:19:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933766AbXEERTB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 13:17:44 -0400
-Received: from mx2.math.uh.edu ([129.7.128.33]:35900 "EHLO mx2.math.uh.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933673AbXEERRn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 13:17:43 -0400
-X-Greylist: delayed 1291 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 May 2007 13:17:43 EDT
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
-References: <200705041132.32227.rjw@sisk.pl>
-	<20070504233135.4671cd98.akpm@linux-foundation.org>
-From: Jason L Tibbitts III <tibbs@math.uh.edu>
-Date: 05 May 2007 11:55:50 -0500
-In-Reply-To: <20070504233135.4671cd98.akpm@linux-foundation.org>
-Message-ID: <ufa1whvtdk9.fsf@epithumia.math.uh.edu>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+	Sat, 5 May 2007 13:19:01 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:18154 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933753AbXEERTB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 13:19:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=RVyDXTAkR2dUzqsvyz5Dhvj0CRQ9k8M+88aNCPIYedJeHxoOsGtdepWp/gBi/3xQgWIDh1UdZ+vqvUU9POEApHCj00lW3yZCnRgiYNMXuL2V/J5DMc4LmpaaKP3kM6Qp4x+poPO2i9Wq/hYAGD4Aig8AMhxDyu9JhVq7zNE+HnM=
+Message-ID: <463CBC57.5000303@googlemail.com>
+Date: Sat, 05 May 2007 19:18:15 +0200
+From: Gabriel C <nix.or.die@googlemail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Spam-Score: -2.6 (--)
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: 2.6.21-mm1
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <84144f020705050336p5988f21fv9b7cd628c0ef6c87@mail.gmail.com>
+In-Reply-To: <84144f020705050336p5988f21fv9b7cd628c0ef6c87@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>> "AM" == Andrew Morton <akpm@linux-foundation.org> writes:
+Pekka Enberg wrote:
+> On 5/5/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+>   
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+>>     
+>
+> Someone broke UML.
+>
+>   
 
-AM> This causes the long-suffering Vaio to fail to power off during
-AM> suspend to disk.  It says "Please power me down manually".
+I guess it is x86_64-mm-i386-verify-cpu.patch.
 
-Interesting; I'm seeing exactly the same thing on a Vaio TXN17P, which
-popped up somewhere between Fedora's 2.6.21-1.2116 and 2.6.21-1.2125
-kernels, but the changelog there shows little more than wireless fixes
-and the 2.6.21.1 patch.
 
-AM> However `halt -p' still works OK.
+> $ make ARCH=um defconfig
+> $ make
+>
+> [snip]
+>
+>   UPD     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   UPD     include/linux/utsrelease.h
+>   SYMLINK include/asm -> include/asm-um
+>   CC      arch/um/kernel/asm-offsets.s
+> In file included from include/asm/cpufeature.h:4,
+>                  from include/asm/arch/system.h:6,
+>                  from include/asm/system-generic.h:4,
+>                  from include/asm/system.h:4,
+>                  from include/linux/spinlock.h:57,
+>                  from include/linux/capability.h:73,
+>                  from include/linux/sched.h:46,
+>                  from arch/um/include/sysdep/kernel-offsets.h:2,
+>                  from arch/um/kernel/asm-offsets.c:1:
+> include/asm/arch/cpufeature.h:13:35: error: asm/required-features.h:
+> No such file or directory
+> make[1]: *** [arch/um/kernel/asm-offsets.s] Error 1
+>   
 
-The same for me.  It's odd to think that identical symptoms are caused
-by something completely different, but I guess this is the kernel.
+Gabriel
 
- - J<
