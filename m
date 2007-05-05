@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbXEEQLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbXEEQN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbXEEQLr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755549AbXEEQLr
+	id S1755472AbXEEQN0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755551AbXEEQN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:11:47 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:29895 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755550AbXEEQLp (ORCPT
+	Sat, 5 May 2007 12:13:26 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:53067 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755472AbXEEQNZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:11:45 -0400
-Message-ID: <84144f020705050336p5988f21fv9b7cd628c0ef6c87@mail.gmail.com>
-Date: Sat, 5 May 2007 13:36:14 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: 2.6.21-mm1
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-X-Google-Sender-Auth: 5f6f3bdb96628666
+	Sat, 5 May 2007 12:13:25 -0400
+Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <200705051421.31067.rjw@sisk.pl>
+References: <200705041132.32227.rjw@sisk.pl>
+	 <20070504233135.4671cd98.akpm@linux-foundation.org>
+	 <200705051216.39780.rjw@sisk.pl>  <200705051421.31067.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-+6z9x+nJYMKy2kQJKFvh"
+Date: Sat, 05 May 2007 14:27:08 +0200
+Message-Id: <1178368028.7408.93.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/5/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
 
-Someone broke UML.
+--=-+6z9x+nJYMKy2kQJKFvh
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-$ make ARCH=um defconfig
-$ make
+On Sat, 2007-05-05 at 14:21 +0200, Rafael J. Wysocki wrote:
+>=20
+> Power off the system instead of halting it if the 'platform' mode of
+> hibernation
+> has been requested, but hibernation_ops is not set.=20
 
-[snip]
+Ehm, unless you made a mistake in the patch then that shouldn't be
+possible.
 
-  UPD     include/linux/version.h
-  CHK     include/linux/utsrelease.h
-  UPD     include/linux/utsrelease.h
-  SYMLINK include/asm -> include/asm-um
-  CC      arch/um/kernel/asm-offsets.s
-In file included from include/asm/cpufeature.h:4,
-                 from include/asm/arch/system.h:6,
-                 from include/asm/system-generic.h:4,
-                 from include/asm/system.h:4,
-                 from include/linux/spinlock.h:57,
-                 from include/linux/capability.h:73,
-                 from include/linux/sched.h:46,
-                 from arch/um/include/sysdep/kernel-offsets.h:2,
-                 from arch/um/kernel/asm-offsets.c:1:
-include/asm/arch/cpufeature.h:13:35: error: asm/required-features.h:
-No such file or directory
-make[1]: *** [arch/um/kernel/asm-offsets.s] Error 1
+johannes
+
+--=-+6z9x+nJYMKy2kQJKFvh
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGPHgc/ETPhpq3jKURAm5lAJ9V5s8ecKNe+DmNPhzK0ZyGdrHLIgCfQUlh
+uhnf7TVcyevX+oNsUnZ2Z5E=
+=xmRt
+-----END PGP SIGNATURE-----
+
+--=-+6z9x+nJYMKy2kQJKFvh--
+
