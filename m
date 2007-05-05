@@ -1,142 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbXEEFle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423102AbXEEFru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbXEEFle (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 01:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbXEEFle
+	id S1423102AbXEEFru (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 01:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423125AbXEEFru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 01:41:34 -0400
-Received: from gw1.cosmosbay.com ([86.65.150.130]:48877 "EHLO
+	Sat, 5 May 2007 01:47:50 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:59025 "EHLO
 	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755453AbXEEFld (ORCPT
+	with ESMTP id S1423102AbXEEFrt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 01:41:33 -0400
-Message-ID: <463C1900.7060409@cosmosbay.com>
-Date: Sat, 05 May 2007 07:41:20 +0200
+	Sat, 5 May 2007 01:47:49 -0400
+Message-ID: <463C1A66.3080806@cosmosbay.com>
+Date: Sat, 05 May 2007 07:47:18 +0200
 From: Eric Dumazet <dada1@cosmosbay.com>
 User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, dgc@sgi.com,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC 0/3] Slab Defrag / Slab Targeted Reclaim and general Slab
- API changes
-References: <20070504221555.642061626@sgi.com> <463C10F8.4040803@cosmosbay.com> <Pine.LNX.4.64.0705042209050.14211@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0705042209050.14211@schroedinger.engr.sgi.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Davi Arnaut <davi@haxent.com.br>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
+References: <20070504225730.490334000@haxent.com.br> <463BC3CA.6050109@haxent.com.br> <463C04C6.7000205@cosmosbay.com> <alpine.LFD.0.98.0705042131040.3819@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705042131040.3819@woody.linux-foundation.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 05 May 2007 07:41:27 +0200 (CEST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 05 May 2007 07:47:25 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter a écrit :
+Linus Torvalds a écrit :
+> 
 > On Sat, 5 May 2007, Eric Dumazet wrote:
+>> But... what happens if the thread that was chosen exits from the loop in
+>> ep_poll() with res = -EINTR (because of signal_pending(current))
 > 
->>> C. Introduces a slab_ops structure that allows a slab user to provide
->>>    operations on slabs.
->> Could you please make it const ?
+> Not a problem.
 > 
-> Sure. Done.
-
-thanks :)
-
+> What happens is that an exclusive wake-up stops on the first entry in the 
+> wait-queue that it actually *wakes*up*, but if some task has just marked 
+> itself as being TASK_UNINTERRUPTIBLE, but is still on the run-queue, it 
+> will just be marked TASK_RUNNING and that in itself isn't enough to cause 
+> the "exclusive" test to trigger.
 > 
->>> All of this is really not necessary since the compiler knows how to align
->>> structures and we should use this information instead of having the user
->>> specify an alignment. I would like to get rid of SLAB_HWCACHE_ALIGN
->>> and kmem_cache_create. Instead one would use the following macros (that
->>> then result in a call to __kmem_cache_create).
->> Hum, the problem is the compiler sometimes doesnt know the target processor
->> alignment.
->>
->> Adding ____cacheline_aligned to 'struct ...' definitions might be overkill if
->> you compile a generic kernel and happens to boot a Pentium III with it.
+> The code in sched.c is subtle, but worth understanding if you care about 
+> these things. You should look at:
 > 
-> Then add ___cacheline_aligned_in_smp or specify the alignment in the 
-> various other ways that exist. Practice is that most slabs specify 
-> SLAB_HWCACHE_ALIGN. So most slabs are cache aligned today.
-
-Yes but this alignement is dynamic, not at compile time.
-
-include/asm-i386/processor.h:739:#define cache_line_size() 
-(boot_cpu_data.x86_cache_alignment)
-
-So adding ____cacheline_aligned  to 'struct file' for example would be a 
-regression for people with PII or PIII
-
+>  - try_to_wake_up() - this is the default wakeup function (and the one 
+>    that should work correctly - I'm not going to guarantee that any of the 
+>    other specialty-wakeup-functions do so)
 > 
->> G. Being able to track the number of pages in a kmem_cache
->>
->>
->> If you look at fs/buffer.c, you'll notice the bh_accounting, recalc_bh_state()
->> that might be overkill for large SMP configurations, when the real concern is
->> to be able to limit the bh's not to exceed 10% of LOWMEM.
->>
->> Adding a callback in slab_ops to track total number of pages in use by a given
->> kmem_cache would be good.
+>    The return value is the important thing. Returning non-zero is 
+>    "success", and implies that we actually activated it.
 > 
-> Such functionality exists internal to SLUB and in the reporting tool. 
-> I can export that function if you need it.
+>    See the "goto out_running" case for the case where the process was 
+>    still actually on the run-queues, and we just ended up setting 
+>    "p->state = TASK_RUNNING" - we still return 0, and the "exclusive" 
+>    logic will not trigger.
 > 
->> Same thing for fs/file_table.c : nr_file logic
->> (percpu_counter_dec()/percpu_counter_inc() for each file open/close) could be
->> simplified if we could just count the pages in use by filp_cachep kmem_cache.
->> The get_nr_files() thing is not worth the pain.
+>  - __wake_up_common: this is the thing that _calls_ the above, and which 
+>    cares about the return value above. It does
 > 
-> Sure. What exactly do you want? The absolute number of pages of memory 
-> that the slab is using?
-> 
-> 	kmem_cache_pages_in_use(struct kmem_cache *) ?
-> 
-> The call will not be too lightweight since we will have to loop over all 
-> nodes and add the counters in each per node struct for allocates slabs.
+> 	if (curr->func(curr, mode, sync, key) &&
+> 		(flags & WQ_FLAG_EXCLUSIVE) && !--nr_exclusive)
 > 
 > 
+>    ie it only decrements (and triggers) the nr_exclusive thing when the 
+>    wakeup-function returned non-zero (and when the waitqueue entry was 
+>    marked exclusive, of course).
+> 
+> So what does all this subtlety *mean*?
+> 
+> Walk through it. It means that it is safe to do the
+> 
+> 	if (signal_pending())
+> 		return -EINTR;
+> 
+> kind of thing, because *when* you do this, you obviously are always on the 
+> run-queue (otherwise the process wouldn't be running, and couldn't be 
+> doing the test). So if there is somebody else waking you up right then and 
+> there, they'll never count your wakeup as an exclusive one, and they will 
+> wake up at least one other real exclusive waiter.
+> 
+> (IOW, you get a very very small probability of a very very small 
+> "thundering herd" - obviously it won't be "thundering" any more, it will 
+> be more of a "whispering herdlet").
+> 
+> The Linux kernel sleep/wakeup thing is really quite nifty and smart. And 
+> very few people realize just *how* nifty and elegant (and efficient) it 
+> is. Hopefully a few more people appreciate its beauty and subtlety now ;)
+> 
 
-On a typical system, number of pages for 'filp' kmem_cache tends to be stable
+Thank you Linus for these detailed explanations.
 
--bash-2.05b# grep filp /proc/slabinfo
-filp              234727 374100    256   15    1 : tunables  120   60    8 : 
-slabdata  24940  24940    135
--bash-2.05b# grep filp /proc/slabinfo
-filp              234776 374100    256   15    1 : tunables  120   60    8 : 
-slabdata  24940  24940    168
--bash-2.05b# grep filp /proc/slabinfo
-filp              234728 374100    256   15    1 : tunables  120   60    8 : 
-slabdata  24940  24940    180
--bash-2.05b# grep filp /proc/slabinfo
-filp              234724 374100    256   15    1 : tunables  120   60    8 : 
-slabdata  24940  24940    174
+I think I was frightened not by the wakeup logic, but by the possibility in 
+SMP that a signal could be delivered to the thread just after it has been 
+selected.
 
-So revert nr_files logic to a single integer would be enough, even for NUMA
+Looking again at ep_poll(), I see  :
 
-int nr_pages_used_by_filp;
-int nr_pages_filp_limit;
-int filp_in_danger __read_mostly;
+			set_current_state(TASK_INTERRUPTIBLE);
+[*]                     if (!list_empty(&ep->rdllist) || !jtimeout)
+                                 break;
+                         if (signal_pending(current)) {
+                                 res = -EINTR;
+                                 break;
+                         }
 
-static void callback_pages_in_use_by_filp(int inc)
-{
-     int in_danger;
-
-     nr_pages_used_by_filp += inc;
-
-     in_danger = nr_pages_used_by_filp >= nr_pages_filp_limit;
-     if (in_danger != filp_in_danger)
-         filp_in_danger = in_danger;
-}
-
-struct file *get_empty_filp(void)
-{
-...
-if (filp_in_danger && !capable(CAP_SYS_ADMIN))
-	goto over;
-
-...
-}
+So the test against signal_pending() is not done if an event is present in 
+ready list : It should be delivered even if a signal is pending. I missed this 
+bit ealier...
 
 
-void __init files_init(unsigned long mempages)
-{
-...
-nr_pages_filp_limit = (mempages * 10) / 100; /* 10% for filp use */
-...
-}
+
