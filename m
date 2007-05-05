@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933760AbXEERT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933769AbXEERTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933760AbXEERT0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 13:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933859AbXEERT0
+	id S933769AbXEERTi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 13:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933859AbXEERTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 13:19:26 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3431 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933760AbXEERTZ (ORCPT
+	Sat, 5 May 2007 13:19:37 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38952 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933769AbXEERTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 13:19:25 -0400
-Date: Sat, 5 May 2007 13:27:50 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@osdl.org>, ben-linux@fluff.org
-Subject: Re: [PATCH] ARM:  Remove unused header file.
-Message-ID: <20070505122749.GA9410@flint.arm.linux.org.uk>
-Mail-Followup-To: "Robert P. J. Day" <rpjday@mindspring.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Andrew Morton <akpm@osdl.org>, ben-linux@fluff.org
-References: <Pine.LNX.4.64.0703101603360.26603@CPE00045a9c397f-CM001225dbafb6>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 5 May 2007 13:19:35 -0400
+Date: Sat, 5 May 2007 19:19:35 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Andrew Morton <akpm@linux-foundation.org>, Anton Vorontsov <cbou@mail.ru>,
+       David Woodhouse <dwmw2@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [-mm patch] drivers/battery/olpc_battery.c: fix compilation
+Message-ID: <20070505171935.GG8975@stusta.de>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0703101603360.26603@CPE00045a9c397f-CM001225dbafb6>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 10, 2007 at 04:09:11PM -0500, Robert P. J. Day wrote:
+On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
 > 
->   Delete the apparently unused header file
-> arch/arm/mach-s3c2410/bast.h.
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
 > 
-> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> 
+> - Added the git-battery tree to the -mm lineup (Anton Vorontsov
+>   <cbou@mail.ru>).  It presently generates mysterious depmod error messages.
+>...
+> Changes since 2.6.21-rc7-mm2:
+>...
+>  git-battery.patch
+>...
+>  git trees
+>...
 
-I've been trying to get a positive acked-by from Ben Dooks for quite
-a number of days now and failing.
+This patch fixes the following compile error:
 
-Timed out, patch dropped.
+<--  snip  -->
 
-Sorry.
+...
+  CC      drivers/battery/olpc_battery.o
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/drivers/battery/olpc_battery.c: In function ‘lock_ec’:
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/drivers/battery/olpc_battery.c:42: error: ‘jiffies’ undeclared (first use in this function)
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/drivers/battery/olpc_battery.c:42: error: (Each undeclared identifier is reported only once
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/drivers/battery/olpc_battery.c:42: error: for each function it appears in.)
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/drivers/battery/olpc_battery.c:42: error: ‘HZ’ undeclared (first use in this function)
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/drivers/battery/olpc_battery.c:48: error: implicit declaration of function ‘time_after’
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/drivers/battery/olpc_battery.c:53: error: implicit declaration of function ‘yield’
+make[3]: *** [drivers/battery/olpc_battery.o] Error 1
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+
+---
+--- linux-2.6.21-mm1/drivers/battery/olpc_battery.c.old	2007-05-05 19:05:17.000000000 +0200
++++ linux-2.6.21-mm1/drivers/battery/olpc_battery.c	2007-05-05 19:07:30.000000000 +0200
+@@ -13,6 +13,8 @@
+ #include <linux/platform_device.h>
+ #include <linux/external_power.h>
+ #include <linux/battery.h>
++#include <linux/jiffies.h>
++#include <linux/sched.h>
+ #include <asm/io.h>
+ 
+ #define wBAT_VOLTAGE     0xf900  /* *9.76/32,    mV   */
+
