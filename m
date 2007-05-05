@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934098AbXEER1X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934089AbXEER2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934098AbXEER1X (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 13:27:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934089AbXEER1X
+	id S934089AbXEER2T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 13:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934101AbXEER2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 13:27:23 -0400
-Received: from pat.uio.no ([129.240.10.15]:34920 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934086AbXEER1W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 13:27:22 -0400
-Subject: Re: [-mm patch] fix fs/nfs/nfsroot.c compile error
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, davem@davemloft.net,
-       David Howells <dhowells@redhat.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-In-Reply-To: <1178385646.6561.46.camel@heimdal.trondhjem.org>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-	 <20070505164422.GD8975@stusta.de>
-	 <1178385646.6561.46.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Date: Sat, 05 May 2007 13:27:14 -0400
-Message-Id: <1178386034.6561.53.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=12.0, autolearn=disabled, AWL=-0.171)
-X-UiO-Scanned: A4C373152250432970BC2C9A983140303EDA2605
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 152 total 1526572 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	Sat, 5 May 2007 13:28:19 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:51843 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934089AbXEER2S convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 13:28:18 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Paul Fulghum <paulkf@microgate.com>
+Subject: Re: [PATCH] synclink_gt add compat_ioctl
+Date: Sat, 5 May 2007 12:58:01 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <1178215277.4369.6.camel@amdx2.microgate.com> <20070503175305.e46ed8b7.akpm@linux-foundation.org> <463BA0D8.3050403@microgate.com>
+In-Reply-To: <463BA0D8.3050403@microgate.com>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705051258.01743.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX191usF7UfF1Bl2fm5yb0pKmzbMTSxUyO6n3FUD
+ QKMvn86L/rpbbZPQqL8p59ZvObwKq3sC2AFMEH/YlYQ0kjmGVl
+ Gy8Xnje/TSrJFn8QQ5wdQ==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-05 at 13:20 -0400, Trond Myklebust wrote:
-> On Sat, 2007-05-05 at 18:44 +0200, Adrian Bunk wrote:
-> > On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
-> > >...
-> > > Changes since 2.6.21-rc7-mm2:
-> > >...
-> > >  git-net.patch
-> > >...
-> > >  git trees
-> > >...
-> > 
-> > match_table_t was made "const" and gcc doesn't like "const __initdata":
+On Friday 04 May 2007, Paul Fulghum wrote:
 > 
-> Then please revert the "fix" to match_table_t...
+> > - It is fishy that apart from one outlier in kexec.h, synclink.h is the
+> >   only header file which uses compat_ulong_t.  Are we doing this right?
 > 
-> There is no reason for something like the nfsroot parser to be kept in
-> memory after the system has booted. That would be code bloat.
+> Arnd, do you have any comment on this?
+
+I think most others just define the compat data structures in the
+same file that implements the headers, inside the same #ifdef that
+hides the functions using them.
+This makes sense, because the data structures here don't define
+an interface, but rather describe what the interface looks like
+in the 32 bit case.
+
+> It seems like the compatible types should be available
+> in something that is already commonly used like linux/types.h
 > 
-> Trond
+> I'm fine with it either way. I'm not in
+> a position to be making those kinds of decisions
+> for widely used infrastructure, so I'll leave
+> that for someone further up the food chain.
 
-Alternatively, please change the nfsroot parser to use
+All common compat_* data structures are defined in 
+include/{linux,asm}/compat.h, which are empty if CONFIG_COMPAT=n.
+It's against our normal conventions to hide declarations
+inside an #ifdef, but I can see that it does keep the code
+size down to make it impossible to compile code that is used
+for compat on architectures that don't need it.
 
-        static struct match_token tokens[] __initdata = {
-
-That is in any case cleaner than using a typedef.
-
-Trond
-
+	Arnd <><
