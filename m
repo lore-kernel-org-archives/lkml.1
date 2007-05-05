@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423188AbXEEJba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423239AbXEEJfJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423188AbXEEJba (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 05:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423212AbXEEJba
+	id S1423239AbXEEJfJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 05:35:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423241AbXEEJfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 05:31:30 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33816 "EHLO mx2.suse.de"
+	Sat, 5 May 2007 05:35:09 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59943 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423188AbXEEJba (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 05:31:30 -0400
-Date: Sat, 5 May 2007 11:31:20 +0200
-From: Andi Kleen <ak@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andi Kleen <ak@suse.de>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, Chuck Ebbert <76306.1226@compuserve.com>
-Subject: Re: Remove constructor from buffer_head
-Message-ID: <20070505093119.GC26000@wotan.suse.de>
-References: <Pine.LNX.4.64.0705032007540.16627@schroedinger.engr.sgi.com> <20070504134212.c18d2d65.akpm@linux-foundation.org> <20070504143347.9a1d6a34.akpm@linux-foundation.org> <200705050122.05275.ak@suse.de> <20070504164529.f64a2985.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1423239AbXEEJfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 05:35:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] suspend/resume debugging: device filter
+Date: Sat, 5 May 2007 11:39:32 +0200
+User-Agent: KMail/1.9.5
+Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@osdl.org>,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Linus Torvalds <torvalds@osdl.org>, linux-pm@lists.osdl.org
+References: <20070125110501.GA25151@elte.hu> <20070126015536.GA14917@suse.de> <20070505092425.GA23125@elte.hu>
+In-Reply-To: <20070505092425.GA23125@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070504164529.f64a2985.akpm@linux-foundation.org>
+Message-Id: <200705051139.33008.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 04:45:29PM -0700, Andrew Morton wrote:
-> On Sat, 5 May 2007 01:22:05 +0200
-> Andi Kleen <ak@suse.de> wrote:
+On Saturday, 5 May 2007 11:24, Ingo Molnar wrote:
 > 
-> > > 2.6.21:
-> > > 
-> > > akpm2:/home/akpm# opreport -l /boot/vmlinux-$(uname -r) | head -50
-> > > opreport error: No sample file found: try running opcontrol --dump
-> > > or specify a session containing sample files
+> * Greg KH <gregkh@suse.de> wrote:
+> 
+> > Here's a (compile tested only) patch that does this on a per-device 
+> > basis, which is smaller, and should work just as well as your patch.
 > > 
-> > For me it works on a slightly post 2.6.21 kernel with suse oprofile-0.9.2-21
+> > It creates a new file in the power/ directory for every device called 
+> > "can_suspend".  Write a '0' to it to prevent that device from being 
+> > suspended.
 > > 
-> > Did you try opcontrol --dump? 
+> > Does this work for you?
 > 
-> Yes, tried various things.  There's just nothing turning up in /var/lib/oprofile.
+> yeah, i was able to use this too to debug suspend/resume problems. But 
+> i've added the check to the resume path too - for example sw-suspend 
+> does a resume of devices during its suspend cycle, cutting off much of 
+> the netconsole output.
 > 
-> Chuck appears to be claiming that 2.6.21 oprofile is known to be broken,
-> but I never heard anything about that.
+> which makes the can_suspend flag mis-named - perhaps rename it to 
+> exclude_pm ?
+> 
+> updated patch below, against v2.6.21. Could we get this into v2.6.22 
+> please? It's a real time-saver.
 
-Hmm, after a opcontrol --reset i see the same issue now. Don't know what's 
-wrong, but it must be something different from the .20 perfctr allocation
-problem.
+ACK
 
-It looks like the daemon doesn't get any data from the kernel
-
-
--Andi
+Greetings,
+Rafael
