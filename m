@@ -1,40 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767984AbXEEEZr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1767991AbXEEE1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767984AbXEEEZr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 00:25:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767985AbXEEEZr
+	id S1767991AbXEEE1z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 00:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767990AbXEEE1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 00:25:47 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:40265 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1767984AbXEEEZq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 00:25:46 -0400
-Message-ID: <463C0704.8010809@drzeus.cx>
-Date: Sat, 05 May 2007 06:24:36 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] MMC updates
-References: <46375B18.4080802@drzeus.cx>
-In-Reply-To: <46375B18.4080802@drzeus.cx>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 5 May 2007 00:27:55 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:50781 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1767985AbXEEE1y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 00:27:54 -0400
+Date: Fri, 4 May 2007 21:27:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Quentin Godfroy <godfroy@clipper.ens.fr>
+Cc: linux-kernel@vger.kernel.org, Alexander Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "David A. Madore" <David.Madore@ens.fr>,
+       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: patch: VFS: fix passing of AT_PHDR value in auxv to ELF
+ interpreter
+Message-Id: <20070504212735.9b5698c2.akpm@linux-foundation.org>
+In-Reply-To: <20070505033408.GB30453@goelette.ens.fr>
+References: <20070504140921.GA23122@goelette.ens.fr>
+	<20070504162208.6f4b38b0.akpm@linux-foundation.org>
+	<20070505033408.GB30453@goelette.ens.fr>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Linus, please pull from
-> 
->         git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
-> 
+On Fri, 4 May 2007 23:34:08 -0400 Quentin Godfroy <godfroy@clipper.ens.fr> wrote:
 
-*ping*
+> By the way, is init 32 bits or 64 bits? It could break the ia32
+> emulation thing, but not the 64bit native mode.
 
--- 
-     -- Pierre Ossman
+akpm2:/home/akpm> file /sbin/init      
+/sbin/init: ELF 64-bit LSB executable, AMD x86-64, version 1 (SYSV), for GNU/Linux 2.6.9, dynamically linked (uses shared libs), for GNU/Linux 2.6.9, stripped
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+akpm2:/home/akpm> cat /etc/issue
+Fedora Core release 6 (Zod)
+Kernel \r on an \m
