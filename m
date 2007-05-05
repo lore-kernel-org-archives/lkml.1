@@ -1,85 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934268AbXEESLI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934267AbXEESPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934268AbXEESLI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 14:11:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934267AbXEESLH
+	id S934267AbXEESPS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 14:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934280AbXEESPS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 14:11:07 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52538 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934268AbXEESLG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 14:11:06 -0400
-Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
-	points about ...)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org,
-       Johannes Stezenbach <js@linuxtv.org>
-In-Reply-To: <463A31EE.20907@gmail.com>
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
-	 <46389278.1070208@gmail.com> <20070502155125.280320@gmx.net>
-	 <4638C046.1020005@gmail.com> <20070503112013.272380@gmx.net>
-	 <4639F554.1040505@gmail.com> <20070503153129.268110@gmx.net>
-	 <463A0462.5070106@gmail.com>
-	 <d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>
-	 <463A0B36.5080204@gmail.com>
-	 <d9def9db0705031019l5083d1c1h607b0829ab526f1@mail.gmail.com>
-	 <1178215045.12651.124.camel@localhost>  <463A31EE.20907@gmail.com>
-Content-Type: text/plain; charset=utf-8
-Date: Sat, 05 May 2007 15:06:41 -0300
-Message-Id: <1178388401.12541.115.camel@localhost>
+	Sat, 5 May 2007 14:15:18 -0400
+Received: from h80ad2754.async.vt.edu ([128.173.39.84]:60705 "EHLO
+	h80ad2754.async.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934267AbXEESPR (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 14:15:17 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm1
+In-Reply-To: Your message of "Sat, 05 May 2007 01:49:55 PDT."
+             <20070505014955.8f3990b5.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 8bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: multipart/signed; boundary="==_Exmh_1178388611_3690P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Sat, 05 May 2007 14:10:11 -0400
+Message-ID: <4521.1178388611@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Manu,
+--==_Exmh_1178388611_3690P
+Content-Type: text/plain; charset=us-ascii
 
-Em Qui, 2007-05-03 às 23:03 +0400, Manu Abraham escreveu:
-> Mauro Carvalho Chehab wrote:
-> > Enough. Let's stop arguing non technical issues.
-> > 
-> > If either one of you have any technical argue against the Trent's
-> > patches, please point where the fix is wrong. Otherwise, if you wish,
-> > you may send an acked-by agreeing with the fix.
-> > 
+On Sat, 05 May 2007 01:49:55 PDT, Andrew Morton said:
 > 
-> Why don't you stop this childish behaviour ?
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
 
-I just want to solve the current issue, and decide the proper way for Trent's fixes. 
+'make silentoldconfig' produces:
 
-I consider you a very skilled programmer. Unfortunately, it seems that
-you're not interested anymore on submitting kernel patches, since your
-last contribution, as an author, were back on Aug, 8, 2006:
+SCSI debugging host simulator (SCSI_DEBUG) [N/m/y/?] n
+ESP Scsi Driver Core (SCSI_ESP_CORE) [N/m/y] (NEW) ?
 
-        commit bbdd11fa957913d6648cabbca59be1da479180ed
-        Author: Manu Abraham <abraham.manu@gmail.com>
-        Date:   Tue Aug 8 15:48:08 2006 -0300
+Sorry, no help available for this option yet.
 
-            V4L/DVB (4432): Fix Circular dependencies
+ESP Scsi Driver Core (SCSI_ESP_CORE) [N/m/y] (NEW) 
 
-            Signed-off-by: Manu Abraham <manu@linuxtv.org>
-            Signed-off-by: Mauro Carvalho Chehab <mchehab@infradead.org> 
+and grovelling around inside origin.patch find a nicely done driver calling
+itself esp_scsi[ch].  Unfortunately, the only hint as to what devices this
+applies to (or whether it's in fact a new driver *CORE*, similar to the
+recent FireWire and mac80211 driver core rewrites), is found in this array:
 
-It would be a pleasure to have you contributing again. However, we need to fix the pointed issues.
+static const char *esp_chip_names[] = {
+       "ESP100",
+       "ESP100A",
+       "ESP236",
+       "FAS236",
+       "FAS100A",
+       "FAST",
+       "FASHME",
+};
 
-Also, considering that:
+I'm presuming some Kconfig help will land before the 2.6.22 merge window
+closes? :)
 
-1) the Trent patches addressing the issues exists since august, 2006;
 
-2) nobody pointed any troubles at the current approach;
+--==_Exmh_1178388611_3690P
+Content-Type: application/pgp-signature
 
-3) the patch does provide a proper fix for module removal, working well on both hardwares with and without DST;
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-4) I'm responsible for reviewing and forwarding patches for /drivers/media stuff;
+iD8DBQFGPMiDcC3lWbTT17ARAqOvAKCzyczzvXze3WIyM63hbq9+ENz4NQCfSujk
+EpwFnV+r2b7Y5IV4ugrugnc=
+=lIYJ
+-----END PGP SIGNATURE-----
 
-I think there's no reason for me to not forward the proper fixes to mainstream.
-
--- 
-Cheers,
-Mauro
-
+--==_Exmh_1178388611_3690P--
