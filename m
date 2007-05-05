@@ -1,176 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S376159AbXEEBlI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376165AbXEEBnQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S376159AbXEEBlI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 21:41:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031416AbXEEBlI
+	id S376165AbXEEBnQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 21:43:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031416AbXEEBnP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 21:41:08 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39383 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1031094AbXEEBlH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 21:41:07 -0400
-Date: Fri, 4 May 2007 18:41:05 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Tim Chen <tim.c.chen@linux.intel.com>
-cc: "Chen, Tim C" <tim.c.chen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: RE: Regression with SLUB on Netperf and Volanomark
-In-Reply-To: <1178322176.23795.219.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0705041839550.28664@schroedinger.engr.sgi.com>
-References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
-  <Pine.LNX.4.64.0705031937560.16542@schroedinger.engr.sgi.com> 
- <1178298897.23795.195.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0705041118490.24283@schroedinger.engr.sgi.com> 
- <1178318609.23795.214.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0705041658350.28260@schroedinger.engr.sgi.com>
- <1178322176.23795.219.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 4 May 2007 21:43:15 -0400
+Received: from sp604001mt.neufgp.fr ([84.96.92.60]:64231 "EHLO Smtp.neuf.fr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1031332AbXEEBnO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 21:43:14 -0400
+Date: Sat, 05 May 2007 03:43:10 +0200
+From: Florian Loitsch <linux@florian.loitsch.com>
+Subject: appletouch position calculation
+To: linux-input@atrey.karlin.mff.cuni.cz, linux-kernel@vger.kernel.org
+Message-id: <200705050343.10647.linux@florian.loitsch.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If you want to test some more: Here is a patch that removes the atomic ops 
-from the allocation patch. But I only see minor improvements on my amd64 
-box here.
+Two patches for the macbook touchpad (appletouch.c):
 
+The first one avoids the interpolation when the number of fingers changes. 
+This way user-space programs can filter the jumps that happen at that time.
+A patch for the xorg synaptics driver that does exactly that can be found 
+here:
+http://florian.loitsch.com/touchpad/synaptics/
 
+The second one implements different modes for calculating the position of the 
+touchpad configurable through the x_position_mode and y_position_mode 
+parameters. The default (0) is the average of all activated sensors (which 
+is, what has been done before). The other modes (1, 2 or 3) take into account 
+the position of each finger (resp. left-most/top finger, mean of all fingers 
+or right-most/bottom finger).
 
-Avoid the use of atomics in slab_alloc
+I would appreciate any comments before sending them to the appletouch 
+maintainer. (btw is the maintainer Dmitry Torokhov or Alessandro Rubini?)
 
-This only increases netperf performance by 1%. Wonder why?
+The patches have been tested on 2.6.20.10 but apply fine on the official 
+git-repository dc87c3985e9b442c60994308a96f887579addc39
+and the linux-input git-repository 3f07d8796262f6aee135c8dd9a91210da9f888e4
 
-What we do is add the last free field in the page struct to setup
-a separate per cpu freelist. From that one we can allocate without
-taking the slab lock because we checkout the complete list of fre
-objects when we first touch the slab.
+mfg,
+// florian loitsch
 
-This allows concurrent allocations and frees from the same slab using
-two mutually exclusive freelists. If the allocator is running out of
-its per cpu freelist then it will consult the per slab freelist and reload
-if objects were freed in it.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+>From 8e3a295013b18ca8ef2d45fe881103b90afbcea5 Mon Sep 17 00:00:00 2001
+From: Florian Loitsch <oss@florian.loitsch.com>
+Date: Sat, 5 May 2007 00:28:01 +0200
+Subject: [PATCH] don't interpolate movement on finger-change.
 
 ---
- include/linux/mm_types.h |    5 ++++-
- mm/slub.c                |   44 +++++++++++++++++++++++++++++++++++---------
- 2 files changed, 39 insertions(+), 10 deletions(-)
+ drivers/usb/input/appletouch.c |   17 ++++++++++-------
+ 1 files changed, 10 insertions(+), 7 deletions(-)
 
-Index: slub/include/linux/mm_types.h
-===================================================================
---- slub.orig/include/linux/mm_types.h	2007-05-04 17:39:33.000000000 -0700
-+++ slub/include/linux/mm_types.h	2007-05-04 17:58:38.000000000 -0700
-@@ -50,9 +50,12 @@ struct page {
- 	    spinlock_t ptl;
- #endif
- 	    struct {			/* SLUB uses */
--		struct page *first_page;	/* Compound pages */
-+	    	void **active_freelist;		/* Allocation freelist */
- 		struct kmem_cache *slab;	/* Pointer to slab */
- 	    };
-+	    struct {
-+		struct page *first_page;	/* Compound pages */
-+	    };
- 	};
- 	union {
- 		pgoff_t index;		/* Our offset within mapping. */
-Index: slub/mm/slub.c
-===================================================================
---- slub.orig/mm/slub.c	2007-05-04 17:40:50.000000000 -0700
-+++ slub/mm/slub.c	2007-05-04 18:14:23.000000000 -0700
-@@ -845,6 +845,7 @@ static struct page *new_slab(struct kmem
- 	page->offset = s->offset / sizeof(void *);
- 	page->slab = s;
- 	page->inuse = 0;
-+	page->active_freelist = NULL;
- 	start = page_address(page);
- 	end = start + s->objects * s->size;
+diff --git a/drivers/usb/input/appletouch.c b/drivers/usb/input/appletouch.c
+index c77291d..7ffe8e7 100644
+--- a/drivers/usb/input/appletouch.c
++++ b/drivers/usb/input/appletouch.c
+@@ -147,6 +147,7 @@ struct atp {
+ 	int			valid;		/* are the sensors valid ? */
+ 	int			x_old;		/* last reported x/y, */
+ 	int			y_old;		/* used for smoothing */
++	int			fingers_old;	/* used for smoothing too */
+ 						/* current value of the sensors */
+ 	signed char		xy_cur[ATP_XSENSORS + ATP_YSENSORS];
+ 						/* last value of the sensors */
+@@ -275,7 +276,7 @@ static inline void atp_report_fingers(struct input_dev 
+*input, int fingers)
  
-@@ -1137,6 +1138,19 @@ static void putback_slab(struct kmem_cac
-  */
- static void deactivate_slab(struct kmem_cache *s, struct page *page, int cpu)
+ static void atp_complete(struct urb* urb)
  {
-+	/* Two freelists that are now to be consolidated */
-+	while (unlikely(page->active_freelist)) {
-+		void **object;
-+
-+		/* Retrieve object from active_freelist */
-+		object = page->active_freelist;
-+		page->active_freelist = page->active_freelist[page->offset];
-+
-+		/* And put onto the regular freelist */
-+		object[page->offset] = page->freelist;
-+		page->freelist = object;
-+		page->inuse--;
-+	}
- 	s->cpu_slab[cpu] = NULL;
- 	ClearPageActive(page);
+-	int x, y, x_z, y_z, x_f, y_f;
++	int x, y, x_z, y_z, x_f, y_f, fingers;
+ 	int retval, i, j;
+ 	struct atp *dev = urb->context;
  
-@@ -1206,25 +1220,32 @@ static void *slab_alloc(struct kmem_cach
- 	local_irq_save(flags);
- 	cpu = smp_processor_id();
- 	page = s->cpu_slab[cpu];
--	if (!page)
-+	if (unlikely(!page))
- 		goto new_slab;
+@@ -371,7 +372,7 @@ static void atp_complete(struct urb* urb)
+ 	if (!dev->valid) {
+ 		/* first sample */
+ 		dev->valid = 1;
+-		dev->x_old = dev->y_old = -1;
++		dev->fingers_old = dev->x_old = dev->y_old = -1;
+ 		memcpy(dev->xy_old, dev->xy_cur, sizeof(dev->xy_old));
  
-+	if (likely(page->active_freelist)) {
-+fast_object:
-+		object = page->active_freelist;
-+		page->active_freelist = object[page->offset];
-+		local_irq_restore(flags);
-+		return object;
-+	}
-+
- 	slab_lock(page);
- 	if (unlikely(node != -1 && page_to_nid(page) != node))
- 		goto another_slab;
- redo:
--	object = page->freelist;
--	if (unlikely(!object))
-+	if (unlikely(!page->freelist))
- 		goto another_slab;
- 	if (unlikely(PageError(page)))
- 		goto debug;
+ 		if (atp_is_geyser_3(dev)) /* No 17" Macbooks (yet) */
+@@ -418,12 +419,13 @@ static void atp_complete(struct urb* urb)
+ 	y = atp_calculate_abs(dev->xy_acc + ATP_XSENSORS, ATP_YSENSORS,
+ 			      ATP_YFACT, &y_z, &y_f);
  
--have_object:
--	page->inuse++;
--	page->freelist = object[page->offset];
-+	/* Reload the active freelist */
-+	page->active_freelist = page->freelist;
-+	page->freelist = NULL;
-+	page->inuse = s->objects;
- 	slab_unlock(page);
--	local_irq_restore(flags);
--	return object;
-+	goto fast_object;
++	fingers = max(x_f, y_f);
+ 	if (x && y) {
+ 		if (dev->x_old != -1) {
+-			x = (dev->x_old * 3 + x) >> 2;
+-			y = (dev->y_old * 3 + y) >> 2;
+-			dev->x_old = x;
+-			dev->y_old = y;
++			if (fingers == dev->fingers_old) {
++				x = (dev->x_old * 3 + x) >> 2;
++				y = (dev->y_old * 3 + y) >> 2;
++			}
  
- another_slab:
- 	deactivate_slab(s, page, cpu);
-@@ -1267,6 +1288,7 @@ have_slab:
- 	local_irq_restore(flags);
- 	return NULL;
- debug:
-+	object = page->freelist;
- 	if (!alloc_object_checks(s, page, object))
- 		goto another_slab;
- 	if (s->flags & SLAB_STORE_USER)
-@@ -1278,7 +1300,11 @@ debug:
- 		dump_stack();
+ 			if (debug > 1)
+ 				printk("appletouch: X: %3d Y: %3d "
+@@ -435,8 +437,9 @@ static void atp_complete(struct urb* urb)
+ 			input_report_abs(dev->input, ABS_Y, y);
+ 			input_report_abs(dev->input, ABS_PRESSURE,
+ 					 min(ATP_PRESSURE, x_z + y_z));
+-			atp_report_fingers(dev->input, max(x_f, y_f));
++			atp_report_fingers(dev->input, fingers);
+ 		}
++		dev->fingers_old = fingers;
+ 		dev->x_old = x;
+ 		dev->y_old = y;
  	}
- 	init_object(s, object, 1);
--	goto have_object;
-+	page->freelist = object[page->offset];
-+	page->inuse++;
-+	slab_unlock(page);
-+	local_irq_restore(flags);
-+	return object;
+-- 
+1.5.1
+
+
+>From b94b05b1e90e6edc30422a62f4d2cde945a8dace Mon Sep 17 00:00:00 2001
+From: Florian Loitsch <oss@florian.loitsch.com>
+Date: Sat, 5 May 2007 01:41:51 +0200
+Subject: [PATCH] different modes to calculate the position.
+
+---
+ drivers/usb/input/appletouch.c |  123 +++++++++++++++++++++++++--------------
+ 1 files changed, 79 insertions(+), 44 deletions(-)
+
+diff --git a/drivers/usb/input/appletouch.c b/drivers/usb/input/appletouch.c
+index 7ffe8e7..863ac08 100644
+--- a/drivers/usb/input/appletouch.c
++++ b/drivers/usb/input/appletouch.c
+@@ -136,6 +136,11 @@ MODULE_DEVICE_TABLE (usb, atp_table);
+ #define ATP_GEYSER3_MODE_REQUEST_INDEX 0
+ #define ATP_GEYSER3_MODE_VENDOR_VALUE 0x04
+ 
++#define ATP_MEAN_POS 0
++#define ATP_FIRST_FINGER_POS 1
++#define ATP_MEAN_FINGER_POS 2
++#define ATP_LAST_FINGER_POS 3
++
+ /* Structure to hold all of our device specific stuff */
+ struct atp {
+ 	char			phys[64];
+@@ -183,6 +188,13 @@ static int threshold = ATP_THRESHOLD;
+ module_param(threshold, int, 0644);
+ MODULE_PARM_DESC(threshold, "Discards any change in data from a sensor 
+(trackpad has hundreds of these sensors) less than this value");
+ 
++static int x_position_mode = ATP_MEAN_POS;
++module_param(x_position_mode, int, 0644);
++MODULE_PARM_DESC(x_position_mode, "0 == mean, 1 == left-most finger, 2 == 
+mean of all fingers, 3 == right-most finger");
++static int y_position_mode = ATP_MEAN_POS;
++module_param(y_position_mode, int, 0644);
++MODULE_PARM_DESC(y_position_mode, "0 == mean, 1 == top finger, 2 == mean of 
+all fingers, 3 == bottom finger");
++
+ static int debug = 1;
+ module_param(debug, int, 0644);
+ MODULE_PARM_DESC(debug, "Activate debugging output");
+@@ -209,62 +221,85 @@ static inline int atp_is_geyser_3(struct atp *dev)
+ 		(productId == GEYSER4_JIS_PRODUCT_ID);
  }
  
- void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
++/*
++ * depending on the mode either:
++ * - calculates the mean position of all active sensors (ATP_MEAN_POS)
++ * - or calculates the position of each finger and returns
++ *   * the position of the first found finger (ATP_FIRST_FINGER_POS)
++ *   * the mean position of all found fingers (ATP_MEAN_FINGER_POS)
++ *   * the position of the last found finger (ATP_LAST_FINGER_POS)
++ */
+ static int atp_calculate_abs(int *xy_sensors, int nb_sensors, int fact,
+-			     int *z, int *fingers)
++			     int mode, int *z, int *fingers)
+ {
+ 	int i;
+ 	/* values to calculate mean */
+-	int pcum = 0, psum = 0;
+-	int is_increasing = 0;
++	int finger_pcum, finger_psum;
++
++	int finger_pos;
++	int res_pos = 0; /* used as tmp-accumulator too */
++	int first_finger = 1;
+ 
+ 	*fingers = 0;
+ 
+-	for (i = 0; i < nb_sensors; i++) {
+-		if (xy_sensors[i] < threshold) {
+-			if (is_increasing)
+-				is_increasing = 0;
++	i = 0;
++	*z = 0;
++	/*
++	 * As introduced by Jason Parekh still searches for humps on the sensors
++	 * (transitions from nonincreasing to increasing) instead of transitions
++	 * from low sensors (no finger reading) to high sensors (finger above
++	 * sensor) to detect fingers.
++	 */
++	do {
++		/* search first/next finger */
++		while (i < nb_sensors && xy_sensors[i] <= threshold) i++;
++		if (i >= nb_sensors)
++			break;
+ 
+-			continue;
++		/* found finger */
++		finger_pcum = (xy_sensors[i] - threshold) * i;
++		finger_psum = (xy_sensors[i] - threshold);
++		i++;
++		/* continue while increasing */
++		while (i < nb_sensors && xy_sensors[i-1] <= xy_sensors[i]) {
++			finger_pcum += (xy_sensors[i] - threshold) * i;
++			finger_psum += (xy_sensors[i] - threshold);
++			i++;
+ 		}
+ 
+-		/*
+-		 * Makes the finger detection more versatile.  For example,
+-		 * two fingers with no gap will be detected.  Also, my
+-		 * tests show it less likely to have intermittent loss
+-		 * of multiple finger readings while moving around (scrolling).
+-		 *
+-		 * Changes the multiple finger detection to counting humps on
+-		 * sensors (transitions from nonincreasing to increasing)
+-		 * instead of counting transitions from low sensors (no
+-		 * finger reading) to high sensors (finger above
+-		 * sensor)
+-		 *
+-		 * - Jason Parekh <jasonparekh@gmail.com>
+-		 */
+-		if (i < 1 || (!is_increasing && xy_sensors[i - 1] < xy_sensors[i])) {
+-			(*fingers)++;
+-			is_increasing = 1;
+-		} else if (i > 0 && xy_sensors[i - 1] >= xy_sensors[i]) {
+-			is_increasing = 0;
++		/* continue while decreasing (and staying above threshold) */
++		while (i < nb_sensors &&
++		       xy_sensors[i] > threshold &&
++		       xy_sensors[i-1] >= xy_sensors[i])
++		{
++			finger_pcum += (xy_sensors[i] - threshold) * i;
++			finger_psum += (xy_sensors[i] - threshold);
++			i++;
+ 		}
+ 
+-		/*
+-		 * Subtracts threshold so a high sensor that just passes the threshold
+-		 * won't skew the calculated absolute coordinate.  Fixes an issue
+-		 * where slowly moving the mouse would occassionaly jump a number of
+-		 * pixels (let me restate--slowly moving the mouse makes this issue
+-		 * most apparent).
+-		 */
+-		pcum += (xy_sensors[i] - threshold) * i;
+-		psum += (xy_sensors[i] - threshold);
+-	}
++		if (mode == ATP_MEAN_POS)
++			res_pos += finger_pcum;
++		else {
++			finger_pos = finger_pcum * fact / finger_psum;
++			if ((first_finger && mode == ATP_FIRST_FINGER_POS) ||
++			    mode == ATP_LAST_FINGER_POS)
++				res_pos = finger_pos;
++			else if (mode == ATP_MEAN_FINGER_POS)
++				res_pos += finger_pos;
++		}
+ 
+-	if (psum > 0) {
+-		*z = psum;
+-		return pcum * fact / psum;
+-	}
++		(*fingers)++;
++		*z += finger_psum;
+ 
+-	return 0;
++		first_finger = 0;
++	} while (i < nb_sensors);
++
++	if (mode == ATP_MEAN_POS && *fingers > 0)
++		res_pos = res_pos * fact / *z;
++	else if (mode == ATP_MEAN_FINGER_POS && *fingers > 0)
++		res_pos /= *fingers;
++
++	return res_pos;
+ }
+ 
+ static inline void atp_report_fingers(struct input_dev *input, int fingers)
+@@ -415,9 +450,9 @@ static void atp_complete(struct urb* urb)
+ 	dbg_dump("accumulator", dev->xy_acc);
+ 
+ 	x = atp_calculate_abs(dev->xy_acc, ATP_XSENSORS,
+-			      ATP_XFACT, &x_z, &x_f);
++			      ATP_XFACT, x_position_mode, &x_z, &x_f);
+ 	y = atp_calculate_abs(dev->xy_acc + ATP_XSENSORS, ATP_YSENSORS,
+-			      ATP_YFACT, &y_z, &y_f);
++			      ATP_YFACT, y_position_mode, &y_z, &y_f);
+ 
+ 	fingers = max(x_f, y_f);
+ 	if (x && y) {
+-- 
+1.5.1
+
