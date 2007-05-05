@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933630AbXEERGR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933634AbXEERGs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933630AbXEERGR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 13:06:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933631AbXEERGR
+	id S933634AbXEERGs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 13:06:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933632AbXEERGr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 13:06:17 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:40897
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933630AbXEERGQ (ORCPT
+	Sat, 5 May 2007 13:06:47 -0400
+Received: from paperstreet.colino.net ([213.41.244.236]:50077 "EHLO
+	paperstreet.colino.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933634AbXEERGq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 13:06:16 -0400
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial
-	possible bug]
-From: Paul Fulghum <paulkf@microgate.com>
-To: Antonino Ingargiola <tritemio@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb-users@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <5486cca80705050958g397db6fepbe1e62b7e190a3f@mail.gmail.com>
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <1178308173.3743.14.camel@amdx2.microgate.com>
-	 <5486cca80705041421y4fcaec01l7acafed1cea4b509@mail.gmail.com>
-	 <463BC223.2040304@microgate.com> <1178353618.3472.1.camel@x2>
-	 <5486cca80705050811k2903710y2bf9054434d8da4b@mail.gmail.com>
-	 <463CB429.6050201@microgate.com> <1178381287.3379.8.camel@x2>
-	 <1178381739.3379.11.camel@x2>
-	 <5486cca80705050926j5c33eaf3m8723b76d4759fc5a@mail.gmail.com>
-	 <5486cca80705050958g397db6fepbe1e62b7e190a3f@mail.gmail.com>
-Content-Type: text/plain
-Date: Sat, 05 May 2007 12:04:35 -0500
-Message-Id: <1178384675.3379.26.camel@x2>
+	Sat, 5 May 2007 13:06:46 -0400
+X-Greylist: delayed 5000 seconds by postgrey-1.27 at vger.kernel.org; Sat, 05 May 2007 13:06:46 EDT
+Date: Sat, 5 May 2007 12:49:54 +0200
+From: Colin Leroy <colin@colino.net>
+To: Richard Purdie <rpurdie@openedhand.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] led-class.c permission change
+Message-ID: <20070505124954.0e2bcf53@localhost.localdomain>
+X-Mailer: Claws Mail 2.9.1cvs43 (GTK+ 2.10.11; i686-pc-linux-gnu)
+X-Face: Fy:*XpRna1/tz}cJ@O'0^:qYs:8b[Rg`*8,+o^[fI?<%5LeB,Xz8ZJK[r7V0hBs8G)*&C+XA0qHoR=LoTohe@7X5K$A-@cN6n~~J/]+{[)E4h'lK$13WQf$.R+Pi;E09tk&{t|;~dakRD%CLHrk6m!?gA,5|Sb=fJ=>[9#n1Bu8?VngkVM4{'^'V_qgdA.8yn3)
+Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAIVBMVEUAAwASFBYfISMyMTRGRUdaWFdxb2yJhoKrqaPOzMT19Ow5JzfkAAACW0lEQVQ4y6WTP1PbMBjGo6T/RkmmLWxIotCxtkRpmYqVMLAFY2i7AU0DbEDACVOvd6aED9DYnntg61NWCo0tt2N1vpyjn5/30ftIajT+Z4BVLLw3/0w7a+MsVXln8a/5x+E47fXT5FLW55ubP0ZFViTj6KImcXb7l5Pr4XD4JQo3bNDSVdIbLgLhd3ZssLwXHyUXwheACWnXivrx13bHRU3ECHMt6yjsDA8XIWygJsZeBZ5E/mrHBwAgpB9W1XodSw+Dh3cEvA8lODrQVR5i0Q8pTUB0Dq3I3LKTR/3cQyXC5KzM6b1Kugj9+YfI91LxWaUHej1gqsL0vAzkSiUHZqXGFToWuFUTSRHExEiarAsrcO1ThPDUpuVszAC4KgbcI7plQ5q4Cus2Dzh30e72w3ekbCnpSSERXpJGAdhs4Y35ImZiLVNn0y7RyqxzcKvUwDtRKne5JnhuFmJLKXXnZ/p3X0tAZQ4MONUy1UWgAXG1H/rj/HRLA1fbQuCUYN1Ueakp0UkCwMqgW1mhTvFxca67hxDxEoCtvNhHDtd5IQAc65Qs5PcSMbHjasD96iyA+TymlEujcIoza5tfFGlAKOceQm9VYG2/KFRAGeeUoOXUPtRsMupxJrkutTSuXYPonT4MbaNYOq6BlVHAPWEA34O1i5YGQmoPXWsP1a7aeEI5oxRj9LEOtu449SgmBB6FtVpPB9rBDChuagDs8Okg4FVG7Ft7eRKLtmnEWc66Fvg0Wc/boeQu7u6Ovln2PwcL6ZdO2yOrz3ujX6BySA6fpXEovbntcHNwb9x/A34/oQVbOAIKAAAAAElFTkSuQmCC
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-05 at 18:58 +0200, Antonino Ingargiola wrote:
-> This patch does not solve the problem with the cdc_acd driver. I still
-> need to flush two times to really flush the input. And the "secondary
-> buffer" still seems 26 bytes (as before).
+Hi,
 
-I missed a bit, try this.
+This patch changes the led brightness file's permissions to 0666, so that a 
+user's MUA can light up the mail LED without needing root permissions.
 
---- a/drivers/usb/class/cdc-acm.c	2007-04-25 22:08:32.000000000 -0500
-+++ b/drivers/usb/class/cdc-acm.c	2007-05-05 12:03:19.000000000 -0500
-@@ -335,8 +335,6 @@ static void acm_rx_tasklet(unsigned long
- 	spin_lock_irqsave(&acm->throttle_lock, flags);
- 	throttled = acm->throttle;
- 	spin_unlock_irqrestore(&acm->throttle_lock, flags);
--	if (throttled)
--		return;
+Thanks! 
+
+Signed-Off-By: Colin Leroy <colin@colino.net>
+--- a/drivers/leds/led-class.c	2007-05-05 12:45:20.000000000 +0200
++++ b/drivers/leds/led-class.c	2007-05-05 12:41:28.000000000 +0200
+@@ -56,7 +56,7 @@ static ssize_t led_brightness_store(stru
+ 	return ret;
+ }
  
- next_buffer:
- 	spin_lock_irqsave(&acm->read_lock, flags);
-@@ -355,18 +353,9 @@ next_buffer:
- 	spin_lock_irqsave(&acm->throttle_lock, flags);
- 	throttled = acm->throttle;
- 	spin_unlock_irqrestore(&acm->throttle_lock, flags);
--	if (!throttled)
--		tty_insert_flip_string(tty, buf->base, buf->size);
-+	tty_insert_flip_string(tty, buf->base, buf->size);
- 	tty_flip_buffer_push(tty);
- 
--	if (throttled) {
--		dbg("Throttling noticed");
--		spin_lock_irqsave(&acm->read_lock, flags);
--		list_add(&buf->list, &acm->filled_read_bufs);
--		spin_unlock_irqrestore(&acm->read_lock, flags);
--		return;
--	}
--
- 	spin_lock_irqsave(&acm->read_lock, flags);
- 	list_add(&buf->list, &acm->spare_read_bufs);
- 	spin_unlock_irqrestore(&acm->read_lock, flags);
-
+-static CLASS_DEVICE_ATTR(brightness, 0644, led_brightness_show,
++static CLASS_DEVICE_ATTR(brightness, 0666, led_brightness_show,
+ 			led_brightness_store);
+ #ifdef CONFIG_LEDS_TRIGGERS
+ static CLASS_DEVICE_ATTR(trigger, 0644, led_trigger_show, led_trigger_store);
 
