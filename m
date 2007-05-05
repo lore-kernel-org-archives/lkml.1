@@ -1,43 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1767994AbXEEEqD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1768038AbXEEFHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1767994AbXEEEqD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 00:46:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1767993AbXEEEqB
+	id S1768038AbXEEFHZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 01:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1768042AbXEEFHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 00:46:01 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:49907 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1767994AbXEEEqA (ORCPT
+	Sat, 5 May 2007 01:07:25 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:56371 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1768038AbXEEFHY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 00:46:00 -0400
-Date: Fri, 4 May 2007 21:45:52 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] MMC updates
-In-Reply-To: <463C0704.8010809@drzeus.cx>
-Message-ID: <alpine.LFD.0.98.0705042145090.3819@woody.linux-foundation.org>
-References: <46375B18.4080802@drzeus.cx> <463C0704.8010809@drzeus.cx>
+	Sat, 5 May 2007 01:07:24 -0400
+Message-ID: <463C10F8.4040803@cosmosbay.com>
+Date: Sat, 05 May 2007 07:07:04 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: clameter@sgi.com
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, dgc@sgi.com,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC 0/3] Slab Defrag / Slab Targeted Reclaim and general Slab
+ API changes
+References: <20070504221555.642061626@sgi.com>
+In-Reply-To: <20070504221555.642061626@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Sat, 05 May 2007 07:07:11 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 5 May 2007, Pierre Ossman wrote:
-
-> Pierre Ossman wrote:
-> > Linus, please pull from
-> > 
-> >         git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
-> > 
+clameter@sgi.com a écrit :
+> I originally intended this for the 2.6.23 development cycle but since there
+> is an aggressive push for SLUB I thought that we may want to introduce this earlier.
+> Note that this covers new locking approaches that we may need to talk
+> over before going any further.
 > 
-> *ping*
+> This is an RFC for patches that do major changes to the way that slab
+> allocations are handled in order to introduce some more advanced features
+> and in order to get rid of some things that are no longer used or awkward.
+> 
+> A. Add Slab fragmentation
+> 
+> On kmem_cache_shrink SLUB will not only sort the partial slabs by object
+> number but attempt to free objects out of partial slabs that have a low
+> number of objects. Doing so increases the object density in the remaining
+> partial slabs and frees up memory. Ideally kmem_cache_shrink would be
+> able to completely defrag the partial list so that only one partial
+> slab is left over. But it is advantageous to have slabs with a few free
+> objects since that speeds up kfree. Also going to the extreme on this one
+> would mean that the reclaimable slabs would have to be able to move objects
+> in a reliable way. So we just free objects in slabs with a low population ratio
+> and tolerate if a attempt to move an object fails.
 
-*pong*.
+nice idea
 
-Thanks for reminding me. I was away for a couple of days, missed some 
-emails, just pulled and pushed out.
+> 
+> B. Targeted Reclaim
+> 
+> Mainly to support antifragmentation / defragmentation methods. The slab adds
+> a new function kmem_cache_vacate(struct page *) which can be used to request
+> that a page be cleared of all objects. This makes it possible to reduce the
+> size of the RECLAIMABLE fragmentation area and move slabs into the MOVABLE
+> area enhancing the capabilities of antifragmentation significantly.
+> 
+> C. Introduces a slab_ops structure that allows a slab user to provide
+>    operations on slabs.
 
-		Linus
+Could you please make it const ?
+
+> 
+> This replaces the current constructor / destructor scheme. It is necessary
+> in order to support additional methods needed to support targeted reclaim
+> and slab defragmentation. A slab supporting targeted reclaim and
+> slab defragmentation must support the following additional methods:
+> 
+> 	1. get_reference(void *)
+> 		Get a reference on a particular slab object.
+> 
+> 	2. kick_object(void *)
+> 		Kick an object off a slab. The object is either reclaimed
+> 		(easiest) or a new object is alloced using kmem_cache_alloc()
+> 		and then the object is moved to the new location.
+> 
+> D. Slab creation is no longer done using kmem_cache_create
+> 
+> kmem_cache_create is not a clean API since it has only 2 call backs for
+> constructor and destructor, does not allow the specification of a slab ops
+> structure. Parameters are confusing.
+> 
+> F.e. It is possible to specify alignment information in the alignment
+> field and in addition in the flags field (SLAB_HWCACHE_ALIGN). The semantics
+> of SLAB_HWCACHE_ALIGN are fuzzy because it only aligns object if
+> larger than 1/2 cache line.
+> 
+> All of this is really not necessary since the compiler knows how to align
+> structures and we should use this information instead of having the user
+> specify an alignment. I would like to get rid of SLAB_HWCACHE_ALIGN
+> and kmem_cache_create. Instead one would use the following macros (that
+> then result in a call to __kmem_cache_create).
+
+Hum, the problem is the compiler sometimes doesnt know the target processor 
+alignment.
+
+Adding ____cacheline_aligned to 'struct ...' definitions might be overkill if 
+you compile a generic kernel and happens to boot a Pentium III with it.
+
+
+> 
+> 	KMEM_CACHE(<struct-name>, flags)
+> 
+> The macro will determine the slab name from the struct name and use that for
+> /sys/slab, will use the size of the struct for slab size and the alignment
+> of the structure for alignment. This means one will be able to set slab
+> object alignment by specifying the usual alignment options for static
+> allocations when defining the structure.
+> 
+> Since the name is derived from the struct name it will much easier to
+> find the source code for slabs listed in /sys/slab.
+> 
+> An additional macro is provided if the slab also supports slab operations.
+> 
+> 	KMEM_CACHE_OPS(<struct-name>, flags, slab_ops)
+> 
+> It is likely that this macro will be rarely used.
+> 
+> E. kmem_cache_create() SLAB_HWCACHE_ALIGN legacy interface
+> 
+> In order to avoid having to modify all slab creation calls throughout
+> the kernel we will provide a kmem_cache_create emulation. That function
+> is the only call that will still understand SLAB_HWCACHE_ALIGN. If that
+> parameter is specified then it will set up the proper alignment (the slab
+> allocators never see that flag).
+> 
+> If constructor or destructor are specified then we will allocate a slab_ops
+> structure and populate it with the values specified. Note that this will
+> cause a memory leak if the slab is disposed of later. If you need disposable
+> slabs then the new API must be used.
+> 
+> F. Remove destructor support from all slab allocators?
+> 
+> I am only aware of two call sites left after all the changes that are
+> scheduled to go into 2.6.22-rc1 have been merged. These are in FRV and sh
+> arch code. The one in FRV will go away if they switch to quicklists like
+> i386. Sh contains another use but a single user is no justification for keeping
+> destructors around.
+> 
+> 
+> 
+
+G. Being able to track the number of pages in a kmem_cache
+
+
+If you look at fs/buffer.c, you'll notice the bh_accounting, recalc_bh_state() 
+that might be overkill for large SMP configurations, when the real concern is 
+to be able to limit the bh's not to exceed 10% of LOWMEM.
+
+Adding a callback in slab_ops to track total number of pages in use by a given 
+kmem_cache would be good.
+
+Same thing for fs/file_table.c : nr_file logic 
+(percpu_counter_dec()/percpu_counter_inc() for each file open/close) could be 
+simplified if we could just count the pages in use by filp_cachep kmem_cache. 
+The get_nr_files() thing is not worth the pain.
+
+
