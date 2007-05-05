@@ -1,74 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933351AbXEEUpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933455AbXEEUqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933351AbXEEUpl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 16:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933404AbXEEUpl
+	id S933455AbXEEUqQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 16:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933463AbXEEUqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 16:45:41 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:53224 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933351AbXEEUpk (ORCPT
+	Sat, 5 May 2007 16:46:16 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:27813 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933455AbXEEUqO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 16:45:40 -0400
+	Sat, 5 May 2007 16:46:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type;
-        b=H8rHt2EBfIMXVDlh1709mB/92Jg3BYYA+ePZ6fGDbdBRQ5NUZZeJm8/Bt43X5UrqHAzD5JO3cLPCNAnwKt5Lidq7B3MIe+1+N4ZCxN1xCky78ai0t67Uuvj1/5U6fyccgigL84x00P4+SVA0ecNMWSqifL4hjMaVtatTS5L6WuA=
-Message-ID: <20cbb9450705051345t16784d28k824c9a7c38891615@mail.gmail.com>
-Date: Sun, 6 May 2007 01:45:39 +0500
-From: "Shahbaz Khan" <shaz.linux@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: lxr problem - newbie needs help
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=aIpDH+7mCsratYWu9UA6S8w3ojG9hImgVVnhNoN1tFhV7ioW4Sqe0DlUBPX7RvQ4qx9CSyvTSC2TP39pQV9dFe1PUxl6qbvzg4HIKOI548NCACF7OUX58eYNVzIcrCuH+a9BOC3Wqr2IKCUzx0HxLEnS5ZDaLX+0Xv42dIFNc98=
+Message-ID: <2c0942db0705051346jabd14bam170cf4cf8b54d473@mail.gmail.com>
+Date: Sat, 5 May 2007 13:46:14 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: [RFT][PATCH] swsusp: Change code ordering related to ACPI
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Marcus Better" <marcus@better.se>, "Pavel Machek" <pavel@ucw.cz>,
+       "Tobias Diedrich" <ranma+kernel@tdiedrich.de>,
+       "pm list" <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <200705051150.22108.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_64631_24240252.1178397939963"
-Sender: linux-kernel-owner@vger.kernel.org
-X-Mailing-List: linux-kernel@vger.kernel.org
-
-------=_Part_64631_24240252.1178397939963
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <200705041143.02451.rjw@sisk.pl>
+	 <2c0942db0705041611u2d82fbb7m4719c1bcf8bcdbf7@mail.gmail.com>
+	 <200705051150.22108.rjw@sisk.pl>
+X-Google-Sender-Auth: 2436f7521b380d10
+Sender: linux-kernel-owner@vger.kernel.org
+X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am using Fedora core 6. I have configured lxr 0.3 with the latest
-glimpse but I get the following in the browser:
+On 5/5/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Saturday, 5 May 2007 01:11, Ray Lee wrote:
+> > On 5/4/07, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > > The change of the hibernation/suspend code ordering made before 2.6.21 has
+> > > caused some systems to have problems related to ACPI.  In particular, the
+> > > 'platform' hibernation mode doesn't work any more on some systems.
+> >
+> > It seems that somewhere between 2.6.21-rc4 and 2.6.21 final my laptop
+> > stopped being able to come out of suspend to RAM. Before I start
+> > bisecting (again, sigh), is this ringing any bells for anyone? In
+> > particular your, patch (snipped) that deals with hibernation, would it
+> > also affect suspend to RAM?
+>
+> Not this particular one, but you may try to move pm_finish() after
+> resume_console() in kernel/power/main.c:suspend_prepare() and see if that
+> helps.
+>
+> If it doesn't help, then try to compile the kernel with NO_HZ and
+> HIGH_RES_TIMERS unset.  If that doesn't help, you may try with HPET_TIMER
+> unset additionally.
 
--> Parent Directory
-  -  fileidx
-  -  xref
+Okay, my system is doing it with a known good kernel as well
+(2.6.21-rc4), so this is something else. Please ignore my report for
+now. In the meantime, I'll be downgrading my hal and drm to what they
+were a week ago to see if that fixes the problem.
 
-when i click the files it gives me some wierd source code with lots of
-funny faces like ones in the ascii command line screens (if that makes
-sense at all!).
+(I knew better than to change more than one thing at a time, really I
+did. Sigh.)
 
-lxr installprefix is /var/www/lxr/
-My document root for apache is /var/www/
-attached is my lxr configuration.
+Thanks for your help regardless,
 
-------=_Part_64631_24240252.1178397939963
-Content-Type: application/octet-stream; name="lxr.conf"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="lxr.conf"
-X-Attachment-Id: f_f1cjybxj
-
-IyBDb25maWd1cmF0aW9uIGZpbGUuCgojIERlZmluZSB0eXBlZCB2YXJpYWJsZSAidiIsIHJlYWQg
-dmFsdWVzZXQgZnJvbSBmaWxlLgp2YXJpYWJsZTogdiwgVmVyc2lvbiwgWy92YXIvd3d3L2x4ci9z
-b3VyY2UvdmVyc2lvbnNdLCBbL3Zhci93d3cvbHhyL3NvdXJjZS9kZWZ2ZXJzaW9uXQoKIyBEZWZp
-bmUgdHlwZWQgdmFyaWFibGUgImEiLiAgRmlyc3QgdmFsdWUgaXMgZGVmYXVsdC4KdmFyaWFibGU6
-IGEsIEFyY2hpdGVjdHVyZSwgKGkzODYsIGFscGhhLCBtNjhrLCBtaXBzLCBwcGMsIHNwYXJjLCBz
-cGFyYzY0KQoKIyBEZWZpbmUgdGhlIGJhc2UgdXJsIGZvciB0aGUgTFhSIGZpbGVzLgpiYXNldXJs
-OiBodHRwOi8vMTI3LjAuMC4xL2x4ci9odHRwLwoKIyBUaGVzZSBhcmUgdGhlIHRlbXBsYXRlcyBm
-b3IgdGhlIEhUTUwgaGVhZGluZywgZGlyZWN0b3J5IGxpc3RpbmcgYW5kCiMgZm9vdGVyLCByZXNw
-ZWN0aXZlbHkuCmh0bWxoZWFkOiAvdmFyL3d3dy9seHIvaHR0cC90ZW1wbGF0ZS1oZWFkCmh0bWx0
-YWlsOiAvdmFyL3d3dy9seHIvaHR0cC90ZW1wbGF0ZS10YWlsCmh0bWxkaXI6ICAvdmFyL3d3dy9s
-eHIvaHR0cC90ZW1wbGF0ZS1kaXIKCiMgVGhlIHNvdXJjZSBpcyBoZXJlLgpzb3VyY2Vyb290OiAv
-dmFyL3d3dy9seHIvc291cmNlLyR2L2xpbnV4LwpzcmNyb290bmFtZTogTGludXgKCiMgIiNpbmNs
-dWRlIDxmb28uaD4iIGlzIG1hcHBlZCB0byB0aGlzIGRpcmVjdG9yeSAoaW4gdGhlIExYUiBzb3Vy
-Y2UKIyB0cmVlKQppbmNwcmVmaXg6IC9pbmNsdWRlCgojIFRoZSBkYXRhYmFzZSBmaWxlcyBnbyBo
-ZXJlLgpkYmRpcjogL3Zhci93d3cvbHhyL3NvdXJjZS8kdi8KCiMgR2xpbXBzZSBjYW4gYmUgZm91
-bmQgaGVyZS4KZ2xpbXBzZWJpbjogL3Vzci9sb2NhbC9iaW4vZ2xpbXBzZQoKIyBUaGUgcG93ZXIg
-b2YgcmVnZXhwcy4gIFRoaXMgaXMgcHJldHR5IExpbnV4LXNwZWNpZmljLCBidXQgcXVpdGUKIyB1
-c2VmdWwuICBUaW5rZXIgd2l0aCBpdCBhbmQgc2VlIHdoYXQgaXQgZG9lcy4gIChIb3cncyB0aGF0
-IGZvcgojIGRvY3VtZW50YXRpb24/KQptYXA6IC9pbmNsdWRlL2FzbVteXC9dKi8gL2luY2x1ZGUv
-YXNtLSRhLwptYXA6IC9hcmNoL1teXC9dKy8gL2FyY2gvJGEvCgo=
-------=_Part_64631_24240252.1178397939963--
+Ray
