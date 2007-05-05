@@ -1,89 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1422696AbXEEBiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S376159AbXEEBlI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1422696AbXEEBiX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 21:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031332AbXEEBiX
+	id S376159AbXEEBlI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 21:41:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031416AbXEEBlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 21:38:23 -0400
-Received: from ns1.q-leap.de ([153.94.51.193]:54444 "EHLO mail.q-leap.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031094AbXEEBiW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 21:38:22 -0400
-Date: Sat, 5 May 2007 03:38:19 +0200
-From: Bernd Schubert <bs@q-leap.de>
-To: linux-kernel@vger.kernel.org
-Cc: bernd-schubert@gmx.de
-Subject: Re: mkfs.ext2 triggerd RAM corruption
-Message-ID: <20070505013819.GB23803@lanczos.q-leap.de>
-References: <200705041659.51675.bs@q-leap.de> <20070504203956.GL25077@lug-owl.de>
+	Fri, 4 May 2007 21:41:08 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39383 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1031094AbXEEBlH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 21:41:07 -0400
+Date: Fri, 4 May 2007 18:41:05 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Tim Chen <tim.c.chen@linux.intel.com>
+cc: "Chen, Tim C" <tim.c.chen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: RE: Regression with SLUB on Netperf and Volanomark
+In-Reply-To: <1178322176.23795.219.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0705041839550.28664@schroedinger.engr.sgi.com>
+References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
+  <Pine.LNX.4.64.0705031937560.16542@schroedinger.engr.sgi.com> 
+ <1178298897.23795.195.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0705041118490.24283@schroedinger.engr.sgi.com> 
+ <1178318609.23795.214.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0705041658350.28260@schroedinger.engr.sgi.com>
+ <1178322176.23795.219.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070504203956.GL25077@lug-owl.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan-Benedict Glaw wrote:
-
-> On Fri, 2007-05-04 16:59:51 +0200, Bernd Schubert <bs@q-leap.de>
-> wrote:
->> To see whats going on, I copied the entire / (so the initrd) into a
->> tmpfs
->> root, chrooted into it, also bind mounted the main / into this chroot
->> and
->> compared several times /bin of chroot/bin and the bind-mounted /bin
->> while
->> the mkfs.ext2 command was running.
->> 
->> beo-05:/# diff -r /bin /oldroot/bin/
->> beo-05:/# diff -r /bin /oldroot/bin/
->> beo-05:/# diff -r /bin /oldroot/bin/
->> Binary files /bin/sleep and /oldroot/bin/sleep differ
->> beo-05:/# diff -r /bin /oldroot/bin/
->> Binary files /bin/bsd-csh and /oldroot/bin/bsd-csh differ
->> Binary files /bin/cat and /oldroot/bin/cat differ
->> ...
->> 
->> Also tested different schedulers, at least happens with deadline and
->> anticipatory.
->> 
->> The corruption does NOT happen on running the mkfs command on
->> /dev/sda1,
->> but happens with sda2, sda3 and sda3. Also doesn't happen with
->> extended
->> partitions of sda1.
-> 
-> Is sda2 the largest filesystem out of sda2, sda3 (and the logical
-> partitions within the extended sda1, if these get mkfs'ed, too)?
-
-I tested it that way:
-
-- test on sda1, no further partitions
-- test on sda2, sda1: ~2MB, everything else for sda2
-- test on sda3, sda1: ~2MB, sda2: ~2MB, everything else for sda3
-...
-test on sda5: sda1: partition that has the extended partition,
-everything in
-sda5
-
-> 
-> I'm not too sure that this is a kernel bug, but probably a bad RAM
-> chip. Did you run memtest86 for a while? ...and can you reproduce this
-> problem on different machines?
-
-Reproducible on 4 test-systems (2 with identical hardware, but then the
-2 + 1 + 1 with entirely different hardware combinations) with ECC memory,
-which is monitored by EDAC. Memory, CPU, etc. are already real life stress
-tested with several applications, e.g. linpack. 
-Though I don't entirely agree, my colleagues in this group are always
-telling me, that their real life stress test shows more memory
-corruptions than memtest. As soon as I have physical access again, I can also 
-do a memtest86 run (would like to do it over the weekend, but don't know how
-to convince stupid rembo how to boot memtest).
-Anyway, a memory corruption is more than unlikely on these systems for
-several reasons.
+If you want to test some more: Here is a patch that removes the atomic ops 
+from the allocation patch. But I only see minor improvements on my amd64 
+box here.
 
 
-Thanks,
-Bernd
+
+Avoid the use of atomics in slab_alloc
+
+This only increases netperf performance by 1%. Wonder why?
+
+What we do is add the last free field in the page struct to setup
+a separate per cpu freelist. From that one we can allocate without
+taking the slab lock because we checkout the complete list of fre
+objects when we first touch the slab.
+
+This allows concurrent allocations and frees from the same slab using
+two mutually exclusive freelists. If the allocator is running out of
+its per cpu freelist then it will consult the per slab freelist and reload
+if objects were freed in it.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ include/linux/mm_types.h |    5 ++++-
+ mm/slub.c                |   44 +++++++++++++++++++++++++++++++++++---------
+ 2 files changed, 39 insertions(+), 10 deletions(-)
+
+Index: slub/include/linux/mm_types.h
+===================================================================
+--- slub.orig/include/linux/mm_types.h	2007-05-04 17:39:33.000000000 -0700
++++ slub/include/linux/mm_types.h	2007-05-04 17:58:38.000000000 -0700
+@@ -50,9 +50,12 @@ struct page {
+ 	    spinlock_t ptl;
+ #endif
+ 	    struct {			/* SLUB uses */
+-		struct page *first_page;	/* Compound pages */
++	    	void **active_freelist;		/* Allocation freelist */
+ 		struct kmem_cache *slab;	/* Pointer to slab */
+ 	    };
++	    struct {
++		struct page *first_page;	/* Compound pages */
++	    };
+ 	};
+ 	union {
+ 		pgoff_t index;		/* Our offset within mapping. */
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-05-04 17:40:50.000000000 -0700
++++ slub/mm/slub.c	2007-05-04 18:14:23.000000000 -0700
+@@ -845,6 +845,7 @@ static struct page *new_slab(struct kmem
+ 	page->offset = s->offset / sizeof(void *);
+ 	page->slab = s;
+ 	page->inuse = 0;
++	page->active_freelist = NULL;
+ 	start = page_address(page);
+ 	end = start + s->objects * s->size;
+ 
+@@ -1137,6 +1138,19 @@ static void putback_slab(struct kmem_cac
+  */
+ static void deactivate_slab(struct kmem_cache *s, struct page *page, int cpu)
+ {
++	/* Two freelists that are now to be consolidated */
++	while (unlikely(page->active_freelist)) {
++		void **object;
++
++		/* Retrieve object from active_freelist */
++		object = page->active_freelist;
++		page->active_freelist = page->active_freelist[page->offset];
++
++		/* And put onto the regular freelist */
++		object[page->offset] = page->freelist;
++		page->freelist = object;
++		page->inuse--;
++	}
+ 	s->cpu_slab[cpu] = NULL;
+ 	ClearPageActive(page);
+ 
+@@ -1206,25 +1220,32 @@ static void *slab_alloc(struct kmem_cach
+ 	local_irq_save(flags);
+ 	cpu = smp_processor_id();
+ 	page = s->cpu_slab[cpu];
+-	if (!page)
++	if (unlikely(!page))
+ 		goto new_slab;
+ 
++	if (likely(page->active_freelist)) {
++fast_object:
++		object = page->active_freelist;
++		page->active_freelist = object[page->offset];
++		local_irq_restore(flags);
++		return object;
++	}
++
+ 	slab_lock(page);
+ 	if (unlikely(node != -1 && page_to_nid(page) != node))
+ 		goto another_slab;
+ redo:
+-	object = page->freelist;
+-	if (unlikely(!object))
++	if (unlikely(!page->freelist))
+ 		goto another_slab;
+ 	if (unlikely(PageError(page)))
+ 		goto debug;
+ 
+-have_object:
+-	page->inuse++;
+-	page->freelist = object[page->offset];
++	/* Reload the active freelist */
++	page->active_freelist = page->freelist;
++	page->freelist = NULL;
++	page->inuse = s->objects;
+ 	slab_unlock(page);
+-	local_irq_restore(flags);
+-	return object;
++	goto fast_object;
+ 
+ another_slab:
+ 	deactivate_slab(s, page, cpu);
+@@ -1267,6 +1288,7 @@ have_slab:
+ 	local_irq_restore(flags);
+ 	return NULL;
+ debug:
++	object = page->freelist;
+ 	if (!alloc_object_checks(s, page, object))
+ 		goto another_slab;
+ 	if (s->flags & SLAB_STORE_USER)
+@@ -1278,7 +1300,11 @@ debug:
+ 		dump_stack();
+ 	}
+ 	init_object(s, object, 1);
+-	goto have_object;
++	page->freelist = object[page->offset];
++	page->inuse++;
++	slab_unlock(page);
++	local_irq_restore(flags);
++	return object;
+ }
+ 
+ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
