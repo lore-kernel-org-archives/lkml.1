@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754648AbXEEFbi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754653AbXEEFkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754648AbXEEFbi (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 01:31:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754653AbXEEFbi
+	id S1754653AbXEEFkl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 01:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbXEEFkl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 01:31:38 -0400
-Received: from holomorphy.com ([66.93.40.71]:53209 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754648AbXEEFbh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 01:31:37 -0400
-Date: Fri, 4 May 2007 22:32:11 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: clameter@sgi.com
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, dgc@sgi.com,
-       Eric Dumazet <dada1@cosmosbay.com>, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC 2/3] SLUB: Implement targeted reclaim and partial list defragmentation
-Message-ID: <20070505053211.GZ19966@holomorphy.com>
-References: <20070504221555.642061626@sgi.com> <20070504221708.596112123@sgi.com>
+	Sat, 5 May 2007 01:40:41 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:47935 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754653AbXEEFkk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 01:40:40 -0400
+Message-ID: <463C18C4.7030304@interia.pl>
+Date: Sat, 05 May 2007 07:40:20 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070504221708.596112123@sgi.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: David Johnson <dj@david-web.co.uk>, cpufreq@lists.linux.org.uk,
+       linux-kernel@vger.kernel.org
+Subject: Re: cpufreq longhaul locks up
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>	<200705042320.41278.dj@david-web.co.uk> <Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+X-EMID: cd86cacc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 03:15:57PM -0700, clameter@sgi.com wrote:
-> 2. kick_object(void *)
-> After SLUB has established references to the remaining objects in a slab it
-> will drop all locks and then use kick_object on each of the objects for which
-> we obtained a reference. The existence of the objects is guaranteed by
-> virtue of the earlier obtained reference. The callback may perform any
-> slab operation since no locks are held at the time of call.
-> The callback should remove the object from the slab in some way. This may
-> be accomplished by reclaiming the object and then running kmem_cache_free()
-> or reallocating it and then running kmem_cache_free(). Reallocation
-> is advantageous at this point because it will then allocate from the partial
-> slabs with the most objects because we have just finished slab shrinking.
-> NOTE: This patch is for conceptual review. I'd appreciate any feedback
-> especially on the locking approach taken here. It will be critical to
-> resolve the locking issue for this approach to become feasable.
-> Signed-off-by: Christoph Lameter <clameter@sgi.com>
+Jan,
 
-kick_object() doesn't return an indicator of success, which might be
-helpful for determining whether an object was successfully removed. The
-later-added kick_dentry_object(), for instance, can't remove dentries
-where reference counts are still held.
+Can You send output of x86info program and output of 
+lspci command? Longhaul wasn't working for You since 2.6.18 right?
+I'm going to work now, but I will be available after 14:00 UTC.
 
-I suppose one could check to see if the ->inuse counter decreased, too.
+If You have problem with longhaul+powersave there may be one thing 
+related. When I started to change Longhaul it was causing lockups 
+on Epia 800. I added transition protection. Helped, but not for 
+long. After one or two hours machine locked up anyway. I found 
+datasheet in Google and changed "disable BMDMA bit on PCI device" to 
+northbridge support. Problem fixed. Somehow CLE133 chipset didn't 
+like touching "BMDMA master" bits.
+Second: I didn't get answer from VIA why they are blocking ACPI C3 on CPU's 
+faster then 1GHz. I don't know if it is standard practice and if
+Intel and AMD are doing it too.
 
-In either event, it would probably be helpful to abort the operation if
-there was a reclamation failure for an object within the slab.
+Things worth checking: disable PREEMPT, change it to "Voluntary preemption". 
+Check if using conservative governor makes any difference. I know that 
+this may sound strange, but transition latency is directly proportional to 
+difference between current and destination frequency. Maybe for faster 
+processors it isn't allowed to change frequency directly from min to max?
 
-This is a relatively minor optimization concern. I think this patch
-series is great and a significant foray into the problem of slab
-reclaim vs. fragmentation.
+Rafa³
 
 
--- wli
+
+----------------------------------------------------------------------
+NIE KUPUJ!!!
+...zanim nie porownasz cen >> http://link.interia.pl/f1a5e
+
+
+
