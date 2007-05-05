@@ -1,49 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934354AbXEESgE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934324AbXEESgK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934354AbXEESgE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 14:36:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934326AbXEESgE
+	id S934324AbXEESgK (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 14:36:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934356AbXEESgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 14:36:04 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3562 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934324AbXEESgC (ORCPT
+	Sat, 5 May 2007 14:36:10 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:36641 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934325AbXEESgF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 14:36:02 -0400
-Date: Sat, 5 May 2007 20:23:05 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-Subject: Re: [patch 25/29] xen: Add the Xen virtual network device driver.
-Message-ID: <20070505102305.GA12771@gondor.apana.org.au>
-References: <20070504232051.411946839@goop.org> <20070504232121.492190579@goop.org> <20070505091624.GA8890@infradead.org> <463C56D3.8060609@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 5 May 2007 14:36:05 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: "Antonino Ingargiola" <tritemio@gmail.com>
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+Date: Sat, 5 May 2007 20:35:57 +0200
+User-Agent: KMail/1.9.1
+Cc: "Paul Fulghum" <paulkf@microgate.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com> <1178384675.3379.26.camel@x2> <5486cca80705051108p55b2cddfydce54aa15dd317f4@mail.gmail.com>
+In-Reply-To: <5486cca80705051108p55b2cddfydce54aa15dd317f4@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <463C56D3.8060609@goop.org>
-User-Agent: Mutt/1.5.9i
+Message-Id: <200705052035.58782.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 05, 2007 at 03:05:07AM -0700, Jeremy Fitzhardinge wrote:
->
-> Sorry, I forgot about it.  I was waiting to hear back from network
-> people about what this is actually for, and whether we really need it. 
+Am Samstag, 5. Mai 2007 20:08 schrieb Antonino Ingargiola:
+> Now I don't want to abuse your kindness, but I (personally) would be
+> *really* interested in a similar fix for the FTDI usb-serial driver,
+> because many measurements I do use an FTDI device.
 
-We should just change this to use netif_device_attach and
-netif_device_detach.
+Does this work?
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+	Regards
+		Oliver
+----
+
+--- a/drivers/usb/serial/ftdi_sio.c	2007-05-05 20:21:41.000000000 +0200
++++ b/drivers/usb/serial/ftdi_sio.c	2007-05-05 20:27:09.000000000 +0200
+@@ -1749,10 +1749,6 @@ static void ftdi_process_read (struct wo
+ 			length = 0;
+ 		}
+ 
+-		if (priv->rx_flags & THROTTLED) {
+-			dbg("%s - throttled", __FUNCTION__);
+-			break;
+-		}
+ 		if (tty_buffer_request_room(tty, length) < length) {
+ 			/* break out & wait for throttling/unthrottling to happen */
+ 			dbg("%s - receive room low", __FUNCTION__);
+@@ -1825,16 +1821,6 @@ static void ftdi_process_read (struct wo
+ 		dbg("%s - incomplete, %d bytes processed, %d remain",
+ 				__FUNCTION__, packet_offset,
+ 				urb->actual_length - packet_offset);
+-		/* check if we were throttled while processing */
+-		spin_lock_irqsave(&priv->rx_lock, flags);
+-		if (priv->rx_flags & THROTTLED) {
+-			priv->rx_flags |= ACTUALLY_THROTTLED;
+-			spin_unlock_irqrestore(&priv->rx_lock, flags);
+-			dbg("%s - deferring remainder until unthrottled",
+-					__FUNCTION__);
+-			return;
+-		}
+-		spin_unlock_irqrestore(&priv->rx_lock, flags);
+ 		/* if the port is closed stop trying to read */
+ 		if (port->open_count > 0){
+ 			/* delay processing of remainder */
+@@ -1856,9 +1842,15 @@ static void ftdi_process_read (struct wo
+ 			      port->read_urb->transfer_buffer, port->read_urb->transfer_buffer_length,
+ 			      ftdi_read_bulk_callback, port);
+ 
+-		result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
+-		if (result)
+-			err("%s - failed resubmitting read urb, error %d", __FUNCTION__, result);
++		spin_lock_irqsave(&priv->rx_lock, flags);
++		if (priv->rx_flags & THROTTLED) {
++			priv->rx_flags |= ACTUALLY_THROTTLED;
++		} else {
++			result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
++			if (result)
++				err("%s - failed resubmitting read urb, error %d", __FUNCTION__, result);
++		}
++		spin_unlock_irqrestore(&priv->rx_lock, flags);
+ 	}
+ 
+ 	return;
