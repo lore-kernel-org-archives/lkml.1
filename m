@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754145AbXEEXol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbXEEXsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754145AbXEEXol (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 19:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbXEEXol
+	id S1755467AbXEEXsX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 19:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755465AbXEEXsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 19:44:41 -0400
-Received: from pat.uio.no ([129.240.10.15]:52879 "EHLO pat.uio.no"
+	Sat, 5 May 2007 19:48:23 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:50792 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754145AbXEEXok (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 19:44:40 -0400
-Subject: Re: [PATCH] Fix nfsroot build
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070505210511.GA11342@linux-mips.org>
-References: <20070505210511.GA11342@linux-mips.org>
-Content-Type: text/plain
-Date: Sat, 05 May 2007 19:44:29 -0400
-Message-Id: <1178408669.6561.69.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.1, required=12.0, autolearn=disabled, AWL=-0.104)
-X-UiO-Scanned: C28181D14B73F8F23DE91B81F76D2E23166D83F4
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: 0 maxlevel 200 minaction 2 bait 0 mail/h: 120 total 1528814 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+	id S1755442AbXEEXsW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 19:48:22 -0400
+Date: Sun, 6 May 2007 01:46:54 +0200 (MEST)
+Message-Id: <200705052346.l45NksOb022632@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: htejun@gmail.com, mikpe@it.uu.se
+Subject: Re: 2.6.21-mm1: many processes end up in D state
+Cc: akpm@osdl.org, jgarzik@pobox.com, jirislaby@gmail.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-05 at 22:05 +0100, Ralf Baechle wrote:
-> CC      fs/nfs/nfsroot.o
-> fs/nfs/nfsroot.c:131: error: tokens causes a section type conflict
-> make[2]: *** [fs/nfs/nfsroot.o] Error 1
+On Sat, 05 May 2007 17:30:51 +0200, Tejun Heo wrote:
+> Mikael Pettersson wrote:
+> >> I.e. no freezing of ports...
+> > 
+> > Your patch to delete the 'return 1;' on error is correct,
+> > and makes the code match exactly the behaviour of previous
+> > versions of sata_promise, except for the additional error
+> > decoding.
+> > 
+> > ahci and sata_sil24 do the return in this situation. I don't
+> > yet understand why they can get away with it while sata_promise
+> > cannot, but for now the return should be removed.
 > 
-> This is due to mixing const and non-const content in the same section
-> which halfway recent gccs absolutely hate.  Fixed by dropping the const.
-> 
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-Acked-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-> 
-> diff --git a/include/linux/parser.h b/include/linux/parser.h
-> index 86676f6..26b2bdf 100644
-> --- a/include/linux/parser.h
-> +++ b/include/linux/parser.h
-> @@ -14,7 +14,7 @@ struct match_token {
->  	const char *pattern;
->  };
->  
-> -typedef const struct match_token match_table_t[];
-> +typedef struct match_token match_table_t[];
->  
->  /* Maximum number of arguments that match_token will find in a pattern */
->  enum {MAX_OPT_ARGS = 3};
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> That's because sata_sil24 and ahci call either ata_port_abort() or
+> ata_port_freeze() prior to finishing error_intr routine.  Both functions
+> abort all in-flight command and schedule EH.
 
+Ah. Thanks, that clarifies things.
+
+Jiri: please test the patch below instead. That is, revert to
+the original code _with_ the 'return 1;', and then add this
+patch to it. It should have pretty much the same effect as
+removing the 'return 1;', however calling ata_port_abort()
+is more in line with libata's new-style error handling.
+
+/Mikael
+
+--- linux-2.6.21-mm1/drivers/ata/sata_promise.c.~1~	2007-05-05 22:24:41.000000000 +0200
++++ linux-2.6.21-mm1/drivers/ata/sata_promise.c	2007-05-05 22:25:21.000000000 +0200
+@@ -653,6 +653,8 @@ static void pdc_error_intr(struct ata_po
+ 	qc->err_mask |= ac_err_mask;
+ 
+ 	pdc_reset_port(ap);
++
++	ata_port_abort(ap);
+ }
+ 
+ static inline unsigned int pdc_host_intr( struct ata_port *ap,
