@@ -1,49 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933330AbXEEUwh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933911AbXEEVBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933330AbXEEUwh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 16:52:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933354AbXEEUwh
+	id S933911AbXEEVBq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 17:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933908AbXEEVBq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 16:52:37 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:39782 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933330AbXEEUwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 16:52:36 -0400
-Date: Sat, 5 May 2007 22:50:05 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
-cc: Wander Winkelhorst <w.winkelhorst@gmail.com>,
-       David Johnson <dj@david-web.co.uk>, linux-kernel@vger.kernel.org,
-       cpufreq@lists.linux.org.uk
-Subject: Re: cpufreq longhaul locks up
-In-Reply-To: <463CE1FB.4050305@interia.pl>
-Message-ID: <Pine.LNX.4.61.0705052237580.18504@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr> 
- <200705042320.41278.dj@david-web.co.uk>  <Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>
-  <463C18C4.7030304@interia.pl> <5699f8f00705050144s5c00a455s8f7dba9258d83986@mail.gmail.com>
- <463CC380.3060603@interia.pl> <Pine.LNX.4.61.0705052028560.18504@yvahk01.tjqt.qr>
- <463CE1FB.4050305@interia.pl>
+	Sat, 5 May 2007 17:01:46 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:43848 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S933869AbXEEVBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 17:01:44 -0400
+Date: Sat, 5 May 2007 23:01:39 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
+Message-ID: <20070505210139.GA26652@elf.ucw.cz>
+References: <200705041132.32227.rjw@sisk.pl> <200705051421.31067.rjw@sisk.pl> <1178368028.7408.93.camel@johannes.berg> <200705051550.53436.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Spam-Report: Content analysis: 4.0 points, 6.0 required
-	4.0 HOT_NASTY              BODY: Possible porn - Hot, Nasty, Wild, Young
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705051550.53436.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-On May 5 2007 21:58, Rafał Bilski wrote:
+> > > Power off the system instead of halting it if the 'platform' mode of
+> > > hibernation
+> > > has been requested, but hibernation_ops is not set. 
+> > 
+> > Ehm, unless you made a mistake in the patch then that shouldn't be
+> > possible.
+> 
+> Hmm, right, but the patch is correct nevertheless. :-)
+> 
+> I see where the problem is.  hibernation_mode is 0 by default
+> (HIBERNATION_INVALID) and it's not changed to anything else later if
+> defaults are used.
 
->:-/ Weird. Nothing new in datasheet. Longhaul MSR seems to be OK too. 
->Would be good to check if PLL really can go downto x4,0. Can You 
->limit minimal CPU multiplier to 5,0 and check if is stable? If it 
->is check 4,5.
+> Something like this is necessary, I think:
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> Make sure that hibernation_mode is set to a reasonable value by default.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-I directly wrote to /sys/devices/system/cpu/cpu0/cpufreq, which
-worked better than `cpufreq -u xxx -d xxx`.
+ACK.
 
-Lockup after 9 minutes. (Perhaps the longest time so far.)
-
-
-Jan
 -- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
