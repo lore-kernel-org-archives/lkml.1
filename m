@@ -1,54 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S376173AbXEEB4b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1161630AbXEECFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S376173AbXEEB4b (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 4 May 2007 21:56:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S376170AbXEEB4b
+	id S1161630AbXEECFG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 4 May 2007 22:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1161615AbXEECFG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 4 May 2007 21:56:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:32787 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S376171AbXEEB4a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 4 May 2007 21:56:30 -0400
-Subject: Re: [PATCH] Revert "[PATCH] paravirt: Add startup infrastructure
-	for paravirtualization"
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>, Andi Kleen <ak@suse.de>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zachary Amsden <zach@vmware.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070504085818.2762b160.akpm@linux-foundation.org>
-References: <m1mz0ku7je.fsf@ebiederm.dsl.xmission.com>
-	 <1178280770.23670.61.camel@localhost.localdomain>
-	 <m1y7k4smmo.fsf@ebiederm.dsl.xmission.com>
-	 <1178289450.23670.100.camel@localhost.localdomain>
-	 <20070504085818.2762b160.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 05 May 2007 11:55:51 +1000
-Message-Id: <1178330151.12284.29.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 4 May 2007 22:05:06 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53878 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1423906AbXEECFE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 4 May 2007 22:05:04 -0400
+Date: Fri, 4 May 2007 19:05:01 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Tim Chen <tim.c.chen@linux.intel.com>
+cc: "Chen, Tim C" <tim.c.chen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: RE: Regression with SLUB on Netperf and Volanomark
+In-Reply-To: <1178322176.23795.219.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0705041903020.28757@schroedinger.engr.sgi.com>
+References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
+  <Pine.LNX.4.64.0705031937560.16542@schroedinger.engr.sgi.com> 
+ <1178298897.23795.195.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0705041118490.24283@schroedinger.engr.sgi.com> 
+ <1178318609.23795.214.camel@localhost.localdomain> 
+ <Pine.LNX.4.64.0705041658350.28260@schroedinger.engr.sgi.com>
+ <1178322176.23795.219.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-04 at 08:58 -0700, Andrew Morton wrote:
-> On Sat, 05 May 2007 00:37:30 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
-> 
-> > Of course, I expect that Andrew is about to push my patches to Linus....
-> > any day now... right Andrew?  Then we don't need this argument.
-> 
-> It would be about a week off.  I'll resend the paches out for rereview.
+Got something.... If I remove the atomics from both alloc and free then I 
+get a performance jump. But maybe also a runtime variation????
 
-Unfortunately, it's becoming clear that we need to know what's going to
-happen with the boot code first.  The details are both nasty and
-important.
+Avoid the use of atomics in slab_alloc
 
-Hopefully this will all occur in the next few days so we can put
-something small in w/o blocking lguest.  But if not, so be it: at least
-we're making progress.
+About 5-7% performance gain. Or am I also seeing runtime variations?
 
-Sorry,
-Rusty.
+What we do is add the last free field in the page struct to setup
+a separate per cpu freelist. From that one we can allocate without
+taking the slab lock because we checkout the complete list of free
+objects when we first touch the slab. If we have an active list
+then we can also free to that list if we run on that processor
+without taking the slab lock.
 
+This allows even concurrent allocations and frees from the same slab using
+two mutually exclusive freelists. If the allocator is running out of
+its per cpu freelist then it will consult the per slab freelist and reload
+if objects were freed in it.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ include/linux/mm_types.h |    5 +++-
+ mm/slub.c                |   54 +++++++++++++++++++++++++++++++++++++++--------
+ 2 files changed, 49 insertions(+), 10 deletions(-)
+
+Index: slub/include/linux/mm_types.h
+===================================================================
+--- slub.orig/include/linux/mm_types.h	2007-05-04 18:58:06.000000000 -0700
++++ slub/include/linux/mm_types.h	2007-05-04 18:59:42.000000000 -0700
+@@ -50,9 +50,12 @@ struct page {
+ 	    spinlock_t ptl;
+ #endif
+ 	    struct {			/* SLUB uses */
+-		struct page *first_page;	/* Compound pages */
++	    	void **cpu_freelist;		/* Per cpu freelist */
+ 		struct kmem_cache *slab;	/* Pointer to slab */
+ 	    };
++	    struct {
++		struct page *first_page;	/* Compound pages */
++	    };
+ 	};
+ 	union {
+ 		pgoff_t index;		/* Our offset within mapping. */
+Index: slub/mm/slub.c
+===================================================================
+--- slub.orig/mm/slub.c	2007-05-04 18:58:06.000000000 -0700
++++ slub/mm/slub.c	2007-05-04 19:02:33.000000000 -0700
+@@ -845,6 +845,7 @@ static struct page *new_slab(struct kmem
+ 	page->offset = s->offset / sizeof(void *);
+ 	page->slab = s;
+ 	page->inuse = 0;
++	page->cpu_freelist = NULL;
+ 	start = page_address(page);
+ 	end = start + s->objects * s->size;
+ 
+@@ -1137,6 +1138,23 @@ static void putback_slab(struct kmem_cac
+  */
+ static void deactivate_slab(struct kmem_cache *s, struct page *page, int cpu)
+ {
++	/*
++	 * Merge cpu freelist into freelist. Typically we get here
++	 * because both freelists are empty. So this is unlikely
++	 * to occur.
++	 */
++	while (unlikely(page->cpu_freelist)) {
++		void **object;
++
++		/* Retrieve object from cpu_freelist */
++		object = page->cpu_freelist;
++		page->cpu_freelist = page->cpu_freelist[page->offset];
++
++		/* And put onto the regular freelist */
++		object[page->offset] = page->freelist;
++		page->freelist = object;
++		page->inuse--;
++	}
+ 	s->cpu_slab[cpu] = NULL;
+ 	ClearPageActive(page);
+ 
+@@ -1206,25 +1224,32 @@ static void *slab_alloc(struct kmem_cach
+ 	local_irq_save(flags);
+ 	cpu = smp_processor_id();
+ 	page = s->cpu_slab[cpu];
+-	if (!page)
++	if (unlikely(!page))
+ 		goto new_slab;
+ 
++	if (likely(page->cpu_freelist)) {
++fast_object:
++		object = page->cpu_freelist;
++		page->cpu_freelist = object[page->offset];
++		local_irq_restore(flags);
++		return object;
++	}
++
+ 	slab_lock(page);
+ 	if (unlikely(node != -1 && page_to_nid(page) != node))
+ 		goto another_slab;
+ redo:
+-	object = page->freelist;
+-	if (unlikely(!object))
++	if (unlikely(!page->freelist))
+ 		goto another_slab;
+ 	if (unlikely(PageError(page)))
+ 		goto debug;
+ 
+-have_object:
+-	page->inuse++;
+-	page->freelist = object[page->offset];
++	/* Reload the cpu freelist */
++	page->cpu_freelist = page->freelist;
++	page->freelist = NULL;
++	page->inuse = s->objects;
+ 	slab_unlock(page);
+-	local_irq_restore(flags);
+-	return object;
++	goto fast_object;
+ 
+ another_slab:
+ 	deactivate_slab(s, page, cpu);
+@@ -1267,6 +1292,7 @@ have_slab:
+ 	local_irq_restore(flags);
+ 	return NULL;
+ debug:
++	object = page->freelist;
+ 	if (!alloc_object_checks(s, page, object))
+ 		goto another_slab;
+ 	if (s->flags & SLAB_STORE_USER)
+@@ -1278,7 +1304,11 @@ debug:
+ 		dump_stack();
+ 	}
+ 	init_object(s, object, 1);
+-	goto have_object;
++	page->freelist = object[page->offset];
++	page->inuse++;
++	slab_unlock(page);
++	local_irq_restore(flags);
++	return object;
+ }
+ 
+ void *kmem_cache_alloc(struct kmem_cache *s, gfp_t gfpflags)
+@@ -1309,6 +1339,12 @@ static void slab_free(struct kmem_cache 
+ 	unsigned long flags;
+ 
+ 	local_irq_save(flags);
++	if (!PageError(page) && page == s->cpu_slab[smp_processor_id()]) {
++		object[page->offset] = page->cpu_freelist;
++		page->cpu_freelist = object;
++		local_irq_restore(flags);
++		return;
++	}
+ 	slab_lock(page);
+ 
+ 	if (unlikely(PageError(page)))
