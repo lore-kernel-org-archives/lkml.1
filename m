@@ -1,78 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423217AbXEEPoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423229AbXEEPoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423217AbXEEPoW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 11:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423192AbXEEPoV
+	id S1423229AbXEEPoy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 11:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423288AbXEEPox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 11:44:21 -0400
-Received: from thunk.org ([69.25.196.29]:40466 "EHLO thunker.thunk.org"
+	Sat, 5 May 2007 11:44:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60596 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423229AbXEEPoL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 11:44:11 -0400
-Date: Sat, 5 May 2007 09:45:05 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Xu CanHao <xucanhao@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Ext3 vs NTFS performance
-Message-ID: <20070505134504.GA21049@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Xu CanHao <xucanhao@gmail.com>, linux-kernel@vger.kernel.org
-References: <6ec7a4340705042013r4a78a705s43f07da97ec43569@mail.gmail.com>
+	id S1423229AbXEEPot (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 11:44:49 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
+Date: Sat, 5 May 2007 14:21:30 +0200
+User-Agent: KMail/1.9.5
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+References: <200705041132.32227.rjw@sisk.pl> <20070504233135.4671cd98.akpm@linux-foundation.org> <200705051216.39780.rjw@sisk.pl>
+In-Reply-To: <200705051216.39780.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <6ec7a4340705042013r4a78a705s43f07da97ec43569@mail.gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200705051421.31067.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 05, 2007 at 11:13:36AM +0800, Xu CanHao wrote:
-> On 5 Mai, 10:20, Theodore Tso <t...@mit.edu> wrote:
-> >
-> >This is being worked on already.  XFS has a per-filesystem ioctl, but
-> >we want to create a filesystem-independent system call,
-> >sys_fallocate(), that would wired into the already existing
-> >posix_fallocate() function exported by glibc.
+On Saturday, 5 May 2007 12:16, Rafael J. Wysocki wrote:
+> On Saturday, 5 May 2007 08:31, Andrew Morton wrote:
+> > On Fri, 4 May 2007 11:32:31 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > Separate the hibernation (aka suspend to disk code) from the other suspend code.
+> > > In particular:
+> > >  * Remove the definitions related to hibernation from include/linux/pm.h
+> > >  * Introduce struct hibernation_ops and a new hibernate() function to hibernate
+> > >    the system, defined in include/linux/suspend.h
+> > >  * Separate suspend code in kernel/power/main.c from hibernation-related code
+> > >    in kernel/power/disk.c and kernel/power/user.c (with the help of
+> > >    hibernation_ops)
+> > >  * Switch ACPI (the only user of pm_ops.pm_disk_mode) to hibernation_ops
+> > 
+> > This causes the long-suffering Vaio to fail to power off during suspend
+> > to disk.  It says "Please power me down manually".
 > 
-> The story told us: an application must look to the file-systems, ext3
-> is good at aaa, is not good at bbb; XFS is good at ccc, is not good at
-> ddd; reiserfs is good at eee, is not good at fff........
-> 
-> For this scenario, XFS is good at dealing with fragmentation while ext3 not.
+> Hmm, looks like a failure of acpi_hibernation_enter().  Can you please put a
+> printk() in there, after local_irq_restore()?
 
-That's true.  XFS has the ability to do delayed allocations, so that
-the blocks don't get allocated until they are written out.  Hence, a
-workload that writes a pattern which uses random access writes in
-strides of 128k, and then goes back to fill them in, will result in
-fragmentation given ext3's current block reservation allocation
-algorithm --- but, as long as the system isn't under high memory
-pressure, XFS will do better in this particular scenario.
+Anyway, we should power off the system rather than halt it if hibernation_ops
+is not set.
 
-Actually, ext3 does have a block reservation system, which will
-prevent this scenario if the random access writes are within a range
-of 32k or so --- which is enough to protect against the bad effects of
-more common random access write patterns, such as those used when
-writing out ELF object files, for example.  Increasing
-EXT3_DEFAULT_RESERVE_BLOCKS by a factor of 4 would adaopt the ext3
-block reservation system to this pathalogical workload, and we could
-easily add a tunable mount option to change the reservation size used
-by ext3.  Unfortunately, this could make fragmentation work for other
-workloads.  So adding delayed allocation to ext4 is a better solution.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-But as has already been discussed on this thread, in situations where
-the fileserver is under high memory pressure, any filesystem (XFS or
-ext4) would still end up allocating blocks out of order, resulting in
-fragmentation.  Explicit preallocation, as opposed to delayed
-allocation, is really the best long-term solution; and in order to do
-that, Samba needs to detect this scenario --- which as has been noted,
-there appears to be no good reason for the Windows CIFS client (or any
-other application)to be doing this, other than perhaps to deliberate
-trigger a worst case allocation pattern in ext3 --- and translate it
-into a explicit preallocation request.
+Power off the system instead of halting it if the 'platform' mode of hibernation
+has been requested, but hibernation_ops is not set.
 
-Regards,
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-						- Ted
+Index: linux-2.6.21/kernel/power/disk.c
+===================================================================
+--- linux-2.6.21.orig/kernel/power/disk.c	2007-05-05 12:24:33.000000000 +0200
++++ linux-2.6.21/kernel/power/disk.c	2007-05-05 13:51:45.000000000 +0200
+@@ -99,9 +99,6 @@ static void power_down(void)
+ 	case HIBERNATION_TEST:
+ 	case HIBERNATION_TESTPROC:
+ 		break;
+-	case HIBERNATION_SHUTDOWN:
+-		kernel_power_off();
+-		break;
+ 	case HIBERNATION_REBOOT:
+ 		kernel_restart(NULL);
+ 		break;
+@@ -111,6 +108,9 @@ static void power_down(void)
+ 			hibernation_ops->enter();
+ 			break;
+ 		}
++	case HIBERNATION_SHUTDOWN:
++		kernel_power_off();
++		break;
+ 	}
+ 	kernel_halt();
+ 	/*
