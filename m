@@ -1,43 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934105AbXEERgB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934119AbXEERgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934105AbXEERgB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 13:36:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934107AbXEERgB
+	id S934119AbXEERgp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 13:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934107AbXEERgp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 13:36:01 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:64261 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934105AbXEERgA (ORCPT
+	Sat, 5 May 2007 13:36:45 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:38967 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934119AbXEERgo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 13:36:00 -0400
-Message-ID: <5486cca80705050256i7c018831ib96ba86da7f35497@mail.gmail.com>
-Date: Sat, 5 May 2007 11:56:28 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Paul Fulghum" <paulkf@microgate.com>
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-Cc: "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <5486cca80705050253u35731411ma7c09b3a678c2d49@mail.gmail.com>
+	Sat, 5 May 2007 13:36:44 -0400
+Date: Sat, 5 May 2007 19:36:45 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.51-rc1
+Message-ID: <20070505173645.GI8975@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <1178299247.3769.0.camel@amdx2.microgate.com>
-	 <5486cca80705041025k46ccf716t8dcd1e6f29e2376e@mail.gmail.com>
-	 <1178300493.3619.1.camel@amdx2.microgate.com>
-	 <5486cca80705041146x5c5bda70s96ce74e389cc1635@mail.gmail.com>
-	 <5486cca80705041206q3a077dedyedb5ac2fbf434ba8@mail.gmail.com>
-	 <1178308173.3743.14.camel@amdx2.microgate.com>
-	 <5486cca80705041421y4fcaec01l7acafed1cea4b509@mail.gmail.com>
-	 <1178276265.3417.3.camel@x2>
-	 <5486cca80705050253u35731411ma7c09b3a678c2d49@mail.gmail.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forgot to include the links in the previous mail:
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/people/bunk/linux-2.6.16.y/testing/
 
-[0] http://www.lammertbies.nl/comm/info/RS-232_null_modem.html
-[1] http://pyserial.sourceforge.net/
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
 
-  ~ Antonio
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+
+
+Changes since 2.6.16.50:
+
+Adrian Bunk (2):
+      x86_64: ACPI_CPU_FREQ must select CPU_FREQ_TABLE
+      Linux 2.6.16.51-rc1
+
+Andrew Hendry (1):
+      [X.25]: Add missing sock_put in x25_receive_data
+
+Hugh Dickins (4):
+      holepunch: fix shmem_truncate_range punching too far
+      holepunch: fix shmem_truncate_range punch locking
+      holepunch: fix disconnected pages after second truncate
+      holepunch: fix mmap_sem i_mutex deadlock
+
+Jaroslav Kysela (1):
+      [NETFILTER]: ipt_CLUSTERIP: fix oops in checkentry function
+
+Jean Delvare (1):
+      hwmon/w83627ehf: Don't redefine REGION_OFFSET
+
+Jorge Boncompte (1):
+      [NETFILTER]: ip_nat_proto_gre: do not modify/corrupt GREv0 packets through NAT
+
+
+ Makefile                                              |    2 
+ arch/x86_64/kernel/cpufreq/Kconfig                    |    1 
+ drivers/hwmon/w83627ehf.c                             |   14 -
+ include/linux/netfilter_ipv4/ip_conntrack_proto_gre.h |   19 -
+ mm/madvise.c                                          |   19 +
+ mm/shmem.c                                            |  132 +++++++---
+ net/ipv4/netfilter/ip_nat_proto_gre.c                 |   21 -
+ net/ipv4/netfilter/ipt_CLUSTERIP.c                    |    2 
+ net/x25/x25_dev.c                                     |    1 
+ 9 files changed, 132 insertions(+), 79 deletions(-)
+
