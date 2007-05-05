@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933638AbXEEVJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753944AbXEEVOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933638AbXEEVJt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 17:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933541AbXEEVJt
+	id S1753944AbXEEVOW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 17:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754047AbXEEVOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 17:09:49 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:58824 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933638AbXEEVJs (ORCPT
+	Sat, 5 May 2007 17:14:22 -0400
+Received: from hu-out-0506.google.com ([72.14.214.227]:28548 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753944AbXEEVOV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 17:09:48 -0400
+	Sat, 5 May 2007 17:14:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
-        b=hV27tPyAlvgcSz7mPzTt/wRWhStHaVdrLunZ6CEvFYo0RhE/gSDA1zml3so7JKlDFK2VsRUq7k3ZUeWQzkC0kCFiNnHKVdockaowfhxx+ZvBpDSY3jWGY2mIrfM9Z55TazL+eAvthDo/jzHePGIUZ4RXotOs7nEKc+1p4JOQTaY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH pata-2.6 fix queue] hpt366: don't check enablebits for HPT36x
-Date: Sat, 5 May 2007 23:20:16 +0200
-User-Agent: KMail/1.9.6
-Cc: michal.kepien@poczta.onet.pl, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200705042318.37367.sshtylyov@ru.mvista.com> <200705052130.53793.bzolnier@gmail.com> <463CE681.9050000@ru.mvista.com>
-In-Reply-To: <463CE681.9050000@ru.mvista.com>
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=Q50IOYwM8HZpp5JWKXKqpfg5gU2hHd5vFUKEUg3S/f8976v+b69e7N8xzciwNL+GV861GsaMO7BPdJ0BgVtyO2IOFiy8rvVhKUasH4e1D3gdDW6wmhbdSO4DGoLrEuNL4pksKlPncsSvGMlRKsGyy4SGvM82ewoE2Es85leOKRo=
+Date: Sat, 5 May 2007 23:13:18 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, penberg@cs.helsinki.fi
+Subject: [-mm patch] do_revoke error handling (was Re: 2.6.21-mm1)
+Message-ID: <20070505211318.GA28912@slug>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705052320.16144.bzolnier@gmail.com>
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 May 2007, Sergei Shtylyov wrote:
-> Hello.
+On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
 > 
-> Bartlomiej Zolnierkiewicz wrote:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
 > 
-> >>HPT36x chip don't seem to have the channel enable bits, so prevent the IDE core
-> >>from checking them...
-> 
-> >>Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> 
-> > applied
-> 
->     I'm getting "403 Forbidden" trying to browse this patch (and 
-> ide-cs-recognize-2gb-compactflash-from-transcend.patch as well).
+fs/revoke.c: In function 'do_revoke':
+fs/revoke.c:563: warning: 'details.fset' may be used uninitialized in this function
+fs/revoke.c:563: warning: 'details.restore_start' may be used uninitialized in this function
 
-Should be fixed now - sorry for that.
+It seems that we should goto 'out_free_table' if an error happens in
+the mainloop. Otherwise 'details' is passed to restore_files() without
+being initialized.
 
-While at it I replaced mine version of "the hpt366: simplify UltraDMA
-filtering (take 2)" with the official one ;) and fixed my damn scripts
-to always do "chmod 644 pata-2.6/patches/*.patch" before pushing updates
-to kernel.org.
+Regards,
+Frederik
 
-Bart
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+diff --git a/fs/revoke.c b/fs/revoke.c
+index 1f2e3ef..6ab5223 100644
+--- a/fs/revoke.c
++++ b/fs/revoke.c
+@@ -611,7 +611,7 @@ static int do_revoke(struct inode *inode, struct file *to_exclude)
+ 	read_unlock(&tasklist_lock);
+ 
+ 	if (err)
+-		goto out_restore;
++		goto out_free_table;
+ 
+ 	/*
+ 	 * Take down shared memory mappings.
+@@ -623,7 +623,7 @@ static int do_revoke(struct inode *inode, struct file *to_exclude)
+  	 */
+ 	err = revoke_break_cow(fset, inode, to_exclude);
+ 	if (err)
+-		goto out_restore;
++		goto out_free_table;
+ 
+ 	details.fset = fset;
+ 	details.restore_start = 0;
