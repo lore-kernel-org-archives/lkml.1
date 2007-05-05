@@ -1,89 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933790AbXEEVcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933816AbXEEVcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933790AbXEEVcg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 17:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933793AbXEEVcg
+	id S933816AbXEEVcw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 17:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933822AbXEEVcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 17:32:36 -0400
-Received: from mail.screens.ru ([213.234.233.54]:42838 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933790AbXEEVcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 17:32:36 -0400
-Date: Sun, 6 May 2007 01:32:13 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Chinner <dgc@sgi.com>, David Howells <dhowells@redhat.com>,
-       Gautham Shenoy <ego@in.ibm.com>, Jarek Poplawski <jarkao2@o2.pl>,
-       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] make-cancel_rearming_delayed_work-reliable-fix
-Message-ID: <20070505213213.GA1013@tv-sign.ru>
-References: <20070503204226.GA212@tv-sign.ru> <20070503181513.0b0aa4fb.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070503181513.0b0aa4fb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.11
+	Sat, 5 May 2007 17:32:52 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:8678 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933816AbXEEVcv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 17:32:51 -0400
+Message-ID: <463CF7F8.7080007@interia.pl>
+Date: Sat, 05 May 2007 23:32:40 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Wander Winkelhorst <w.winkelhorst@gmail.com>,
+       David Johnson <dj@david-web.co.uk>, linux-kernel@vger.kernel.org,
+       cpufreq@lists.linux.org.uk
+Subject: Re: cpufreq longhaul locks up
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>  <200705042320.41278.dj@david-web.co.uk>  <Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>  <463C18C4.7030304@interia.pl> <5699f8f00705050144s5c00a455s8f7dba9258d83986@mail.gmail.com> <463CC380.3060603@interia.pl> <Pine.LNX.4.61.0705052028560.18504@yvahk01.tjqt.qr> <463CE1FB.4050305@interia.pl> <Pine.LNX.4.61.0705052237580.18504@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705052237580.18504@yvahk01.tjqt.qr>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+X-EMID: 92112acc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-on top of
-	make-cancel_rearming_delayed_work-reliable-spelling.patch
+Is patch attached below making things better?
+You should see in log that You are using VT8235 support now.
 
-Add cpu-relax() into spinloops, and a comments update.
+---
+ arch/i386/kernel/cpu/cpufreq/longhaul.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-Small note. The new implementation has another downside. Suppose that rearming
-work->func() gets a preemtion after setting WORK_STRUCT_PENDING but before
-add_timer/__queue_work. In that case cancel_rearming_delayed_work() will burn
-CPU in a busy-wait loop. Fortunately this can happen only with CONFIG_PREEMPT
-and we spin with preemption enabled.
+diff --git a/arch/i386/kernel/cpu/cpufreq/longhaul.c b/arch/i386/kernel/cpu/cpufreq/longhaul.c
+index 5548e5b..c3c9096 100644
+--- a/arch/i386/kernel/cpu/cpufreq/longhaul.c
++++ b/arch/i386/kernel/cpu/cpufreq/longhaul.c
+@@ -635,6 +635,8 @@ static int longhaul_setup_vt8235(void)
+ 
+ 	/* Find VT8235 southbridge */
+ 	dev = pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8235, NULL);
++	if (dev == NULL)
++		dev = pci_find_device(PCI_VENDOR_ID_VIA, PCI_DEVICE_ID_VIA_8237, NULL);
+ 	if (dev != NULL) {
+ 		/* Set transition time to max */
+ 		pci_read_config_byte(dev, 0xec, &pci_cmd);
+@@ -771,11 +773,11 @@ static int __init longhaul_cpu_init(struct cpufreq_policy *policy)
+ 		}
+ 	}
+ 	/* Check if northbridge is friendly */
+-	if (enable_arbiter_disable()) {
++/*	if (enable_arbiter_disable()) {
+ 		longhaul_flags |= USE_NORTHBRIDGE;
+ 		goto print_support_type;
+ 	}
+-	/* Use VT8235 southbridge if present */
++*/	/* Use VT8235 southbridge if present */
+ 	if (longhaul_version == TYPE_POWERSAVER && vt8235_present) {
+ 		longhaul_flags |= USE_VT8235;
+ 		goto print_support_type;
+-- 
 
-We can avoid this,
 
-	void cancel_rearming_delayed_work(struct delayed_work *dwork)
-	{
-		int retry;
 
-		do {
-			retry = !del_timer(&dwork->timer) &&
-				!try_to_grab_pending(&dwork->work);
-			wait_on_work(&dwork->work);
-		} while (retry);
-
-		work_clear_pending(&dwork->work);
-	}
-
-but I don't think this is worth fixing.
-
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- OLD/kernel/workqueue.c~2_RELAX	2007-05-05 23:17:48.000000000 +0400
-+++ OLD/kernel/workqueue.c	2007-05-05 23:59:59.000000000 +0400
-@@ -475,13 +475,16 @@ static void wait_on_work(struct work_str
-  * case it only guarantees that work->func() has completed on the last queued
-  * workqueue.
-  *
-+ * cancel_work_sync(&delayed_work->work) should be used only if ->timer is not
-+ * pending, otherwise it goes into a busy-wait loop until the timer expires.
-+ *
-  * The caller must ensure that workqueue_struct on which this work was last
-  * queued can't be destroyed before this function returns.
-  */
- void cancel_work_sync(struct work_struct *work)
- {
- 	while (!try_to_grab_pending(work))
--		;
-+		cpu_relax();
- 	wait_on_work(work);
- 	work_clear_pending(work);
- }
-@@ -498,7 +501,7 @@ void cancel_rearming_delayed_work(struct
- {
- 	while (!del_timer(&dwork->timer) &&
- 	       !try_to_grab_pending(&dwork->work))
--		;
-+		cpu_relax();
- 	wait_on_work(&dwork->work);
- 	work_clear_pending(&dwork->work);
- }
+----------------------------------------------------------------------
+Wicie, rozumicie....
+Zobacz >>> http://link.interia.pl/f1a74
 
