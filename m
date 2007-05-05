@@ -1,48 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423163AbXEEPju@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423166AbXEEPko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423163AbXEEPju (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 11:39:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1422991AbXEEPjj
+	id S1423166AbXEEPko (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 11:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423174AbXEEPko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 11:39:39 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:47217 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1423083AbXEEPjU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 11:39:20 -0400
-Date: Sat, 5 May 2007 08:39:19 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Eric Dumazet <dada1@cosmosbay.com>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, dgc@sgi.com,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [RFC 0/3] Slab Defrag / Slab Targeted Reclaim and general Slab
- API changes
-In-Reply-To: <463C1900.7060409@cosmosbay.com>
-Message-ID: <Pine.LNX.4.64.0705050835480.26574@schroedinger.engr.sgi.com>
-References: <20070504221555.642061626@sgi.com> <463C10F8.4040803@cosmosbay.com>
- <Pine.LNX.4.64.0705042209050.14211@schroedinger.engr.sgi.com>
- <463C1900.7060409@cosmosbay.com>
+	Sat, 5 May 2007 11:40:44 -0400
+Received: from iucha.net ([209.98.146.184]:50654 "EHLO mail.iucha.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1423166AbXEEPkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 11:40:42 -0400
+Date: Sat, 5 May 2007 10:40:37 -0500
+To: Neil Brown <neilb@suse.de>, Trond Myklebust <Trond.Myklebust@netapp.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: REGRESSION: cannot change file access permissions on files NFS-mounted
+Message-ID: <20070505154037.GA5459@iucha.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
+Content-Disposition: inline
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: florin@iucha.net (Florin Iucha)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 May 2007, Eric Dumazet wrote:
 
-> > Then add ___cacheline_aligned_in_smp or specify the alignment in the various
-> > other ways that exist. Practice is that most slabs specify
-> > SLAB_HWCACHE_ALIGN. So most slabs are cache aligned today.
-> 
-> Yes but this alignement is dynamic, not at compile time.
-> 
-> include/asm-i386/processor.h:739:#define cache_line_size()
-> (boot_cpu_data.x86_cache_alignment)
+--n8g4imXOkfNTN/H1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Ahh.. I did not see that before.
+Hello,
 
-> So adding ____cacheline_aligned  to 'struct file' for example would be a
-> regression for people with PII or PIII
+This morning I updated the kernel on my workstation to the current git=20
+tree (62ea6d80211ecc88ef516927ecebf64cb505be3f).   Upon reboot, I
+cannot change file access permissions of files in a directory that is
+nfs mounted (using NFS4):
 
-Yuck.
+   $ chmod 0600 $path
+   chmod: Changing permissions of `$path': Input/output error
 
+In the kernel log I am getting these gems:
+
+   [  275.990233] decode_attr_group: reply buffer overflowed in line
+   2678.<4>decode
+   _attr_group: reply buffer overflowed in line
+   2678.<4>decode_attr_group: reply bu
+   ffer overflowed in line 2678.<4>decode_attr_group: reply buffer
+   overflowed in li
+   ne 2678.<4>decode_attr_group: reply buffer overflowed in line
+   2678.<4>decode_att
+   r_group: reply buffer overflowed in line 2678.
+
+The server is Linux running Debian testing with the kernel updated to=20
+2.6.20-1-686 from
+(http://ftp.us.debian.org/debian/pool/main/l/linux-2.6/linux-image-2.6.20-1=
+-686_2.6.20-3_i386.deb)
+
+Kernel 2.6.21 works fine on the client.
+
+Cheers,
+florin
+
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
+
+--n8g4imXOkfNTN/H1
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGPKV1ND0rFCN2b1sRArY9AJ4gt23+sD9TIET6g0+ORcXl5L7vzgCeOX2k
+6D7Dz0tZ0MS7AfBN+XR6Dvw=
+=HlVo
+-----END PGP SIGNATURE-----
+
+--n8g4imXOkfNTN/H1--
