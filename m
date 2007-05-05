@@ -1,55 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423175AbXEEJQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423204AbXEEJVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423175AbXEEJQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 05:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423189AbXEEJQ5
+	id S1423204AbXEEJVW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 05:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423188AbXEEJVW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 05:16:57 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:56097 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1423179AbXEEJQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 05:16:54 -0400
-Date: Sat, 5 May 2007 11:16:43 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Indan Zupancic <indan@nul.nu>
-Cc: Oliver Neukum <oliver@neukum.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-Message-ID: <20070505091643.GA25704@elf.ucw.cz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704272107.28565.oliver@neukum.org> <84144f020704280222s42ff99ddg3eea3cb353c8882e@mail.gmail.com> <200704281537.53479.oliver@neukum.org> <20070503120637.GA3866@ucw.cz> <3052.81.207.0.53.1178315528.squirrel@secure.samage.net>
-MIME-Version: 1.0
+	Sat, 5 May 2007 05:21:22 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33579 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754546AbXEEJVV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 05:21:21 -0400
+Date: Sat, 5 May 2007 12:21:19 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: Christoph Lameter <clameter@sgi.com>
+cc: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org, sct@redhat.com,
+       akpm@linux-foundation.org, adilger@clusterfs.com
+Subject: Re: [RFC/PATCH] ext3: remove inode constructor
+In-Reply-To: <Pine.LNX.4.64.0705040907180.21436@schroedinger.engr.sgi.com>
+Message-ID: <Pine.LNX.4.64.0705051214110.20425@sbz-30.cs.Helsinki.FI>
+References: <Pine.LNX.4.64.0705041311230.1455@sbz-30.cs.Helsinki.FI>
+ <Pine.LNX.4.64.0705040907180.21436@schroedinger.engr.sgi.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3052.81.207.0.53.1178315528.squirrel@secure.samage.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Fri, 4 May 2007, Christoph Lameter wrote:
+> Also could this be generalized to also apply to the generic inode 
+> allocation in fs/inode.c?
 
-> But the same functionality can be achieved by doing:
-> 
-> 1) Define a user password (e.g. /etc/shadow thing). (Once)
-> 
-> 2) When a user logs in: get random data and encrypt it with the password,
-> this becomes the AES key. Store both the data and key in a secure way in
-> memory, e.g. using the existing kernel key infrastructure.
+I think we want to stick inode_init_ince() in alloc_inode() but we can't 
+do that until all filesystems are converted over.
 
-
-
-> Advantage of this scheme is that it only need AES and can be done (mostly)
-> in kernel space. It's also faster and simpler than the current RSA scheme.
-> Disadvantage is that it wastes at least 32 bytes of memory when the system
-> is running, to store the data and key.
-
-Another disadvantage is that you need to hack into PAM infrastructure,
-that your suspend password needs to be same as someone's login
-password, and that it will really only work with single-user machine.
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+			Pekka
