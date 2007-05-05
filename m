@@ -1,94 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933304AbXEEQXH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933313AbXEEQYL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933304AbXEEQXH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:23:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933298AbXEEQXG
+	id S933313AbXEEQYL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:24:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933251AbXEEQYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:23:06 -0400
-Received: from gw.goop.org ([64.81.55.164]:37205 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933287AbXEEQXE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:23:04 -0400
-Message-ID: <463C56D3.8060609@goop.org>
-Date: Sat, 05 May 2007 03:05:07 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Sat, 5 May 2007 12:24:10 -0400
+Received: from postfix2-g20.free.fr ([212.27.60.43]:38800 "EHLO
+	postfix2-g20.free.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933313AbXEEQYJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 12:24:09 -0400
+Message-ID: <463C7C4C.60208@free.fr>
+Date: Sat, 05 May 2007 14:45:00 +0200
+From: matthieu castet <castet.matthieu@free.fr>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070217 Iceape/1.1.1 (Debian-1.1.1-2)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-Subject: Re: [patch 25/29] xen: Add the Xen virtual network device driver.
-References: <20070504232051.411946839@goop.org> <20070504232121.492190579@goop.org> <20070505091624.GA8890@infradead.org>
-In-Reply-To: <20070505091624.GA8890@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Linux and Kernel Video <video4linux-list@redhat.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: PATCH : tuner-simple.c add suport for SECAM-BG with FI1216MF
+Content-Type: multipart/mixed;
+ boundary="------------080703020302030703020304"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> There only seems to be a module description but no actual paramter for
-> this.  I wish people would have listened to me back then and made the
-> description part of the modular_param statement..
->   
+This is a multi-part message in MIME format.
+--------------080703020302030703020304
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Uh, what did I miss?  Oh, I see, I need a module_param(rx_mode, int,
-0600) or something?  Or maybe with a callback if we can change it on the
-fly?  And enum type?  Or maybe I string?
+Hi,
 
-I'll sort it out.
+this patch allow to use SECAM-BG with the FI1216MF tuner.
 
->> +
->> +#define RX_COPY_THRESHOLD 256
->> +
->> +#define GRANT_INVALID_REF	0
->> +
->> +#define NET_TX_RING_SIZE __RING_SIZE((struct xen_netif_tx_sring *)0, PAGE_SIZE)
->> +#define NET_RX_RING_SIZE __RING_SIZE((struct xen_netif_rx_sring *)0, PAGE_SIZE)
->>     
->
-> __RING_SIZE is not in my tree, so it seems to be some kind of Xen
-> addition.  Can you make that clear in the name and give it a less
-> awkware calling convention, e.g. only pass in the type, not a null
-> pointer of the given type?
->   
 
-Yeah.  The Xen ring stuff is a bit full of magic macros, so I was going
-to look at inlineizing/re-namespacing it in a separate patch.
+Matthieu
 
->> +/*
->> + * Implement our own carrier flag: the network stack's version causes delays
->> + * when the carrier is re-enabled (in particular, dev_activate() may not
->> + * immediately be called, which can cause packet loss).
->> + */
->> +#define netfront_carrier_on(netif)	((netif)->carrier = 1)
->> +#define netfront_carrier_off(netif)	((netif)->carrier = 0)
->> +#define netfront_carrier_ok(netif)	((netif)->carrier)
->>     
->
-> This doesn't implement my review suggestion despite you ACKing
-> them.  Didn't you like it in the end or did you simply forget
-> about it?
->   
 
-Sorry, I forgot about it.  I was waiting to hear back from network
-people about what this is actually for, and whether we really need it. 
-Rusty said in his review:
-> Well, you only call netfront_carrier_on() from one place, so it's pretty
-> easy to do "netif_carrier_on(); dev_activate();" there.
->
-> I don't think this is critical though.
->   
+--------------080703020302030703020304
+Content-Type: text/plain;
+ name="FI1216MF_secam_bg"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="FI1216MF_secam_bg"
 
-It wasn't obvious to me whether this meant that we could avoid having a
-netfront-private carrier flag but still get quick response by using
-"netif_carrier_on(); dev_activate();".
-
-    J
+YWxsb3cgdG8gdXNlIFNFQ0FNLUJHIHdpdGggdGhlIEZJMTIxNk1GIHR1bmVyLgoKVGhlIHNl
+bGVjdGlvbiBpcyBkb25lIHdpdGggdGhlIHNlY2FtPUIgbW9kdWxlIGFyZ3VtZW50LgpUaGUg
+ZGVmYXVsdCBiZWhhdmlvdXIgc2hvdWxkIGJlIHRoZSBzYW1lIGFzIGJlZm9yZS4KClNpZ25l
+ZC1vZmYtYnk6IE1hdHRoaWV1IENBU1RFVCA8Y2FzdGV0Lm1hdHRoaWV1QGZyZWUuZnI+Cklu
+ZGV4OiBsaW51eC0yLjYuMjEvZHJpdmVycy9tZWRpYS92aWRlby90dW5lci1zaW1wbGUuYwo9
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09Ci0tLSBsaW51eC0yLjYuMjEub3JpZy9kcml2ZXJzL21lZGlhL3ZpZGVv
+L3R1bmVyLXNpbXBsZS5jCTIwMDctMDUtMDUgMTQ6MjE6NTYuMDAwMDAwMDAwICswMjAwCisr
+KyBsaW51eC0yLjYuMjEvZHJpdmVycy9tZWRpYS92aWRlby90dW5lci1zaW1wbGUuYwkyMDA3
+LTA1LTA1IDE0OjMzOjU4LjAwMDAwMDAwMCArMDIwMApAQCAtMjA1LDkgKzIwNSwxMyBAQAog
+CQkvKiAweDAxIC0+ID8/PyBubyBjaGFuZ2UgPz8/ICovCiAJCS8qIDB4MDIgLT4gUEFMIEJE
+R0hJIC8gU0VDQU0gTCAqLwogCQkvKiAweDA0IC0+ID8/PyBQQUwgb3RoZXJzIC8gU0VDQU0g
+b3RoZXJzID8/PyAqLwotCQljYiAmPSB+MHgwMjsKLQkJaWYgKHQtPnN0ZCAmIFY0TDJfU1RE
+X1NFQ0FNKQotCQkJY2IgfD0gMHgwMjsKKwkJY2IgJj0gfjB4MDM7CisJCWlmICh0LT5zdGQg
+JiBWNEwyX1NURF9TRUNBTV9MKSAvL2Fsc28gdmFsaWQgZm9yIFY0TDJfU1REX1NFQ0FNIAor
+CQkJY2IgfD0gUEhJTElQU19NRl9TRVRfUEFMX0w7CisJCWVsc2UgaWYgKHQtPnN0ZCAmIFY0
+TDJfU1REX1NFQ0FNX0xDKSAKKwkJCWNiIHw9IFBISUxJUFNfTUZfU0VUX1BBTF9MMjsKKwkJ
+ZWxzZSAvKiBWNEwyX1NURF9CfFY0TDJfU1REX0dIICovCisJCQljYiB8PSBQSElMSVBTX01G
+X1NFVF9CRzsKIAkJYnJlYWs7CiAKIAljYXNlIFRVTkVSX1RFTUlDXzQwNDZGTTU6Cg==
+--------------080703020302030703020304--
