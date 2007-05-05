@@ -1,40 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423075AbXEEH3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751672AbXEEHef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423075AbXEEH3e (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 03:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbXEEH3e
+	id S1751672AbXEEHef (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 03:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbXEEHef
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 03:29:34 -0400
-Received: from wx-out-0506.google.com ([66.249.82.239]:63959 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754640AbXEEH3d (ORCPT
+	Sat, 5 May 2007 03:34:35 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46908 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751672AbXEEHef (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 03:29:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MQ/Ld1DztwziWgNthsIMZ6dRxjVwIopwTcunlCqEG0GdCDjVqgkljuKJDBKjMp8khDG64Tmo59IEznYrhaIrt+wIHXImFQqJCMsmYNccq87aXL7Y2tf6aRvlo4gSZr8NiIXyEvJmx9KQN5v1jHI2klaGO+FcnSje/eflfHbLMXA=
-Message-ID: <99e4df080705050029p7b194deelcbf8e66b12bb3060@mail.gmail.com>
-Date: Sat, 5 May 2007 15:29:33 +0800
-From: "la deng" <ladeng.mimi@gmail.com>
-To: "WANG Cong" <xiyou.wangcong@gmail.com>, "la deng" <ladeng.mimi@gmail.com>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: c 's OOP in VFS vs c++'s OOP
-In-Reply-To: <99e4df080705040400p66819117sec7f7d88d3794871@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 5 May 2007 03:34:35 -0400
+Date: Sat, 5 May 2007 00:34:21 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: [patch 3/3] clockevents: Fix resume logic
+Message-Id: <20070505003421.00ec45ba.akpm@linux-foundation.org>
+In-Reply-To: <20070430102852.042964000@linutronix.de>
+References: <20070430102837.748238000@linutronix.de>
+	<20070430102852.042964000@linutronix.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <99e4df080705040132m41116db3y50c73c79528d6206@mail.gmail.com>
-	 <20070504101129.GA5482@localhost.localdomain>
-	 <99e4df080705040400p66819117sec7f7d88d3794871@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Analysis,giveing c the penalty of 1/17 speed as normal
->
-> What's you think about it?
->
-> Thanks
->
-I think I mean   the "side effect" of C
+On Mon, 30 Apr 2007 10:43:34 -0000 Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> We need to make sure, that the clockevent devices are resumed, before
+> the tick is resumed. The current resume logic does not guarantee this.
+> 
+> Add CLOCK_EVT_MODE_RESUME and call the set mode functions of the clock
+> event devices before resuming the tick / oneshot functionality.
+> 
+> Fixup the existing users.
+
+This one makes the Vaio-of-fun hang during suspend to disk.  It gets up to
+"swsusp: critical section/: done (%d pages copied)" then it freezes.
+
+I retested only 2.6.21 plus
+
+origin
+clocksource-fix-resume-logic
+clockevents-fix-resume-logic
+
+and that hung in the same fashion. 
+Config at http://userweb.kernel.org/~akpm/config-sony.txt
