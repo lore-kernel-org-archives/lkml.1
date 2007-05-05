@@ -1,83 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1423166AbXEEPko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1423083AbXEEPm6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1423166AbXEEPko (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 11:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423174AbXEEPko
+	id S1423083AbXEEPm6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 11:42:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1423214AbXEEPm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 11:40:44 -0400
-Received: from iucha.net ([209.98.146.184]:50654 "EHLO mail.iucha.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1423166AbXEEPkm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 11:40:42 -0400
-Date: Sat, 5 May 2007 10:40:37 -0500
-To: Neil Brown <neilb@suse.de>, Trond Myklebust <Trond.Myklebust@netapp.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: REGRESSION: cannot change file access permissions on files NFS-mounted
-Message-ID: <20070505154037.GA5459@iucha.net>
+	Sat, 5 May 2007 11:42:57 -0400
+Received: from py-out-1112.google.com ([64.233.166.179]:58228 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1423083AbXEEPm4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 11:42:56 -0400
+Date: Sat, 5 May 2007 17:06:03 +0300
+From: Paul Sokolovsky <pmiscml@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <1609424106.20070505170603@gmail.com>
+To: ian <spyro@f2s.com>
+CC: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, kernel-discuss@handhelds.org,
+       Greg KH <gregkh@suse.de>, <linux-kernel@vger.kernel.org>,
+       Anton Vorontsov <cbou@mail.ru>, David Woodhouse <dwmw2@infradead.org>,
+       Shem Multinymous <multinymous@gmail.com>
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/8] Universal power supply class (was: battery class)
+In-Reply-To: <1178372786.3901.4.camel@wirenth>
+References: <20070503213139.GC20067@zarina> <41840b750705032155w21d98b5g6236daf9bff66606@mail.gmail.com> <20070505035413.GB21359@khazad-dum.debian.net> <1178372786.3901.4.camel@wirenth>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="n8g4imXOkfNTN/H1"
-Content-Disposition: inline
-X-GPG-Key: http://iucha.net/florin_iucha.gpg
-X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: florin@iucha.net (Florin Iucha)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello ian,
 
---n8g4imXOkfNTN/H1
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Saturday, May 5, 2007, 4:46:26 PM, you wrote:
 
-Hello,
+> On Sat, 2007-05-05 at 00:54 -0300, Henrique de Moraes Holschuh wrote:
 
-This morning I updated the kernel on my workstation to the current git=20
-tree (62ea6d80211ecc88ef516927ecebf64cb505be3f).   Upon reboot, I
-cannot change file access permissions of files in a directory that is
-nfs mounted (using NFS4):
+>> Given that USB-power *is* usually also "dumb" (i.e. it doesn't do any
+>> control signaling over the USB bus for power-control purposes),
 
-   $ chmod 0600 $path
-   chmod: Changing permissions of `$path': Input/output error
+> it might be dumb, but it is useful to know wether the PDA is charging
+> from usb or mains power. and some devices allow one to switch on / off
+> the ability to charge via usb
 
-In the kernel log I am getting these gems:
+        And USB does have power budgetting requirements, etc. (like
+was already pointed in own of initial review messages). So, USB
+is definitely not the same thing as "dumb DC".
 
-   [  275.990233] decode_attr_group: reply buffer overflowed in line
-   2678.<4>decode
-   _attr_group: reply buffer overflowed in line
-   2678.<4>decode_attr_group: reply bu
-   ffer overflowed in line 2678.<4>decode_attr_group: reply buffer
-   overflowed in li
-   ne 2678.<4>decode_attr_group: reply buffer overflowed in line
-   2678.<4>decode_att
-   r_group: reply buffer overflowed in line 2678.
 
-The server is Linux running Debian testing with the kernel updated to=20
-2.6.20-1-686 from
-(http://ftp.us.debian.org/debian/pool/main/l/linux-2.6/linux-image-2.6.20-1=
--686_2.6.20-3_i386.deb)
+-- 
+Best regards,
+ Paul                            mailto:pmiscml@gmail.com
 
-Kernel 2.6.21 works fine on the client.
-
-Cheers,
-florin
-
---=20
-Bruce Schneier expects the Spanish Inquisition.
-      http://geekz.co.uk/schneierfacts/fact/163
-
---n8g4imXOkfNTN/H1
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGPKV1ND0rFCN2b1sRArY9AJ4gt23+sD9TIET6g0+ORcXl5L7vzgCeOX2k
-6D7Dz0tZ0MS7AfBN+XR6Dvw=
-=HlVo
------END PGP SIGNATURE-----
-
---n8g4imXOkfNTN/H1--
