@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933753AbXEERTC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933760AbXEERT0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933753AbXEERTC (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 13:19:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933766AbXEERTB
+	id S933760AbXEERT0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 13:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933859AbXEERT0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 13:19:01 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:18154 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933753AbXEERTB (ORCPT
+	Sat, 5 May 2007 13:19:26 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3431 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933760AbXEERTZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 13:19:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=RVyDXTAkR2dUzqsvyz5Dhvj0CRQ9k8M+88aNCPIYedJeHxoOsGtdepWp/gBi/3xQgWIDh1UdZ+vqvUU9POEApHCj00lW3yZCnRgiYNMXuL2V/J5DMc4LmpaaKP3kM6Qp4x+poPO2i9Wq/hYAGD4Aig8AMhxDyu9JhVq7zNE+HnM=
-Message-ID: <463CBC57.5000303@googlemail.com>
-Date: Sat, 05 May 2007 19:18:15 +0200
-From: Gabriel C <nix.or.die@googlemail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
-MIME-Version: 1.0
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.21-mm1
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <84144f020705050336p5988f21fv9b7cd628c0ef6c87@mail.gmail.com>
-In-Reply-To: <84144f020705050336p5988f21fv9b7cd628c0ef6c87@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sat, 5 May 2007 13:19:25 -0400
+Date: Sat, 5 May 2007 13:27:50 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, ben-linux@fluff.org
+Subject: Re: [PATCH] ARM:  Remove unused header file.
+Message-ID: <20070505122749.GA9410@flint.arm.linux.org.uk>
+Mail-Followup-To: "Robert P. J. Day" <rpjday@mindspring.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Andrew Morton <akpm@osdl.org>, ben-linux@fluff.org
+References: <Pine.LNX.4.64.0703101603360.26603@CPE00045a9c397f-CM001225dbafb6>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0703101603360.26603@CPE00045a9c397f-CM001225dbafb6>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pekka Enberg wrote:
-> On 5/5/07, Andrew Morton <akpm@linux-foundation.org> wrote:
->   
->> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
->>     
->
-> Someone broke UML.
->
->   
+On Sat, Mar 10, 2007 at 04:09:11PM -0500, Robert P. J. Day wrote:
+> 
+>   Delete the apparently unused header file
+> arch/arm/mach-s3c2410/bast.h.
+> 
+> Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-I guess it is x86_64-mm-i386-verify-cpu.patch.
+I've been trying to get a positive acked-by from Ben Dooks for quite
+a number of days now and failing.
 
+Timed out, patch dropped.
 
-> $ make ARCH=um defconfig
-> $ make
->
-> [snip]
->
->   UPD     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   UPD     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-um
->   CC      arch/um/kernel/asm-offsets.s
-> In file included from include/asm/cpufeature.h:4,
->                  from include/asm/arch/system.h:6,
->                  from include/asm/system-generic.h:4,
->                  from include/asm/system.h:4,
->                  from include/linux/spinlock.h:57,
->                  from include/linux/capability.h:73,
->                  from include/linux/sched.h:46,
->                  from arch/um/include/sysdep/kernel-offsets.h:2,
->                  from arch/um/kernel/asm-offsets.c:1:
-> include/asm/arch/cpufeature.h:13:35: error: asm/required-features.h:
-> No such file or directory
-> make[1]: *** [arch/um/kernel/asm-offsets.s] Error 1
->   
+Sorry.
 
-Gabriel
-
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
