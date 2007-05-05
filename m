@@ -1,55 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934067AbXEEQrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933864AbXEEQw3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934067AbXEEQrM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 12:47:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934069AbXEEQrL
+	id S933864AbXEEQw3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 12:52:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933949AbXEEQw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 12:47:11 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:34025 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934067AbXEEQrK (ORCPT
+	Sat, 5 May 2007 12:52:29 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:49580 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933864AbXEEQw2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 12:47:10 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Paul Fulghum <paulkf@microgate.com>
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-Date: Sat, 5 May 2007 18:46:56 +0200
-User-Agent: KMail/1.9.1
-Cc: Antonino Ingargiola <tritemio@gmail.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com> <463CB429.6050201@microgate.com> <1178381287.3379.8.camel@x2>
-In-Reply-To: <1178381287.3379.8.camel@x2>
+	Sat, 5 May 2007 12:52:28 -0400
+Date: Sat, 5 May 2007 09:52:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Fenghua Yu <fenghua.yu@intel.com>
+cc: akpm@linux-foundation.org, suresh.b.siddha@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] Add percpu smp cacheline align section
+In-Reply-To: <20070505001222.GA26142@linux-os.sc.intel.com>
+Message-ID: <Pine.LNX.4.64.0705050951040.27326@schroedinger.engr.sgi.com>
+References: <33E1C72C74DBE747B7B59C1740F7443701A2F0AB@orsmsx417.amr.corp.intel.com>
+ <20070505001222.GA26142@linux-os.sc.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705051846.57112.oliver@neukum.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Samstag, 5. Mai 2007 18:08 schrieb Paul Fulghum:
+On Fri, 4 May 2007, Fenghua Yu wrote:
 
-> If the line discipline throttles the driver input,
-> the cdc-acm driver stops giving data to the tty buffering
-> and instead stores them internally.
-
-So do usb serial drivers.
-
-> In the serial driver this usually just results in dropping
-> RTS to signal the remote end to stop sending. The serial
-
-This may take considerable time in the case of usb devices.
-
-> driver always immediately gives receive data to the tty buffering
-> without regard to the throttled state.
+> This is follow-up for Suresh's runqueue align in smp patch at:
+> http://www.uwsg.iu.edu/hypermail/linux/kernel/0704.1/0340.html
 > 
-> I would argue that cdc-acm should do the same as the serial driver.
+> The patches place all of smp cacheline aligned percpu data into 
+> .data.percpu.cacheline_aligned_in_smp. Other percpu data is still in 
+> data.percpu section. The patches can reduce cache line access in SMP and 
+> reduce alignment gap waste. The patches also define PERCPU macro for 
+> vmlinux.lds.S for code clean up.
 
-Has this been tested?
-If so we could reduce the complexity of the throtteling logic in the usb
-drivers.
+Ummm... The per cpu area is for exclusive use of a particular processor. 
+If there is contention in the per cpu area then a data object needs to be 
+removed from the per cpu area because the object is *not* accessed only 
+from a certain cpu.
 
-	Regards
-		Oliver
