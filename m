@@ -1,44 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933537AbXEEUTw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933320AbXEEUVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933537AbXEEUTw (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 16:19:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933482AbXEEUTw
+	id S933320AbXEEUVr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 16:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933409AbXEEUVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 16:19:52 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:34402 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933460AbXEEUTv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 16:19:51 -0400
-Date: Sat, 5 May 2007 22:20:38 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Clifford Wolf <clifford@clifford.at>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Interrupt-Handling in User Space
-Message-ID: <20070505202038.GA15168@uranus.ravnborg.org>
-References: <20070505191707.GA9300@clifford.at> <1178394933.31213.22.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178394933.31213.22.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 5 May 2007 16:21:47 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:48977 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933320AbXEEUVp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 16:21:45 -0400
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Adrian Bunk <bunk@stusta.de>,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 3/3] [PATCH] fix unionfs compilation
+Date: Sat,  5 May 2007 16:18:25 -0400
+Message-Id: <1178396305843-git-send-email-jsipek@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.0.3.1043.g4342
+In-Reply-To: <11783963052286-git-send-email-jsipek@cs.sunysb.edu>
+References: <11783963052286-git-send-email-jsipek@cs.sunysb.edu>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 05, 2007 at 09:55:33PM +0200, Thomas Gleixner wrote:
-> On Sat, 2007-05-05 at 21:17 +0200, Clifford Wolf wrote:
-> > afaics there is no mechanism in the official kernel tree to handle
-> > interrupts in user space yet. I'd need that for an embedded project I'm
-> > woking on atm and are so far not sure if I'm going to implement such a
-> > generic interface or just write a simple driver that does the job for my
-> > application. So I'd like to find out what the chances are that such a
-> > feature will get accepted in the official kernel..
-> 
-> Please take a look at drivers/uio, which is currently in -mm and on the
-> way to mainline.
+From: Adrian Bunk <bunk@stusta.de>
 
-UIO is featured in latest LWN kernel edition (subscribers only until Thursday).
-That may help to get an overview.
+On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
+>...
+> Changes since 2.6.21-rc7-mm2:
+>...
+>  git-unionfs.patch
+>...
+>  git trees
+>...
 
-http://lwn.net
+<--  snip  -->
 
-	Sam
+...
+  CC      fs/unionfs/super.o
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c: In function ‘init_once’:
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: ‘SLAB_CTOR_VERIFY’ undeclared (first use in this function)
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: (Each undeclared identifier is reported only once
+/home/bunk/linux/kernel-2.6/linux-2.6.21-mm1/fs/unionfs/super.c:822: error: for each function it appears in.)
+make[3]: *** [fs/unionfs/super.o] Error 1
+
+<--  snip  -->
+
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
+Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+---
+ fs/unionfs/super.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
+
+diff --git a/fs/unionfs/super.c b/fs/unionfs/super.c
+index 02c0cc8..af5a1c5 100644
+--- a/fs/unionfs/super.c
++++ b/fs/unionfs/super.c
+@@ -821,8 +821,7 @@ static void init_once(void *v, struct kmem_cache * cachep, unsigned long flags)
+ {
+ 	struct unionfs_inode_info *i = v;
+ 
+-	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) ==
+-	    SLAB_CTOR_CONSTRUCTOR)
++	if (flags & SLAB_CTOR_CONSTRUCTOR)
+ 		inode_init_once(&i->vfs_inode);
+ }
+ 
+-- 
+1.5.0.3.1043.g4342
+
