@@ -1,72 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbXEFXnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752338AbXEFXqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752342AbXEFXnV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 19:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbXEFXnV
+	id S1752338AbXEFXqm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 19:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbXEFXqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 19:43:21 -0400
-Received: from nef2.ens.fr ([129.199.96.40]:3256 "EHLO nef2.ens.fr"
+	Sun, 6 May 2007 19:46:42 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38094 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752316AbXEFXnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 19:43:20 -0400
-Date: Sun, 6 May 2007 19:43:01 -0400
-From: Quentin Godfroy <godfroy@clipper.ens.fr>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Quentin Godfroy <godfroy@clipper.ens.fr>, linux-kernel@vger.kernel.org,
-       Alexander Viro <viro@zeniv.linux.org.uk>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       "David A. Madore" <David.Madore@ens.fr>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: patch: VFS: fix passing of AT_PHDR value in auxv to ELF interpreter
-Message-ID: <20070506234301.GA29699@goelette.ens.fr>
-References: <20070504140921.GA23122@goelette.ens.fr> <463BC265.7050507@goop.org> <20070505032348.GA30453@goelette.ens.fr> <463C06E5.8050201@goop.org>
-Mime-Version: 1.0
+	id S1752338AbXEFXql (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 19:46:41 -0400
+To: Jeff Garzik <jeff@garzik.org>, Russell King <rmk@arm.linux.org.uk>
+Cc: lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: [PATCH 0/3] Intel IXP4xx network drivers
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 07 May 2007 01:46:39 +0200
+Message-ID: <m3abwhcy74.fsf@maximus.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <463C06E5.8050201@goop.org>
-User-Agent: Mutt/1.4.2.2i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Mon, 07 May 2007 01:43:15 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 09:24:05PM -0700, Jeremy Fitzhardinge wrote:
-> > Indeed, I haven't seen that. For ET_DYN executables, it could be done a
-> > thing like load_addr+elf_ppnt->p_vaddr (in the function that creates the
-> > auxv, as ity has access to the elf header), and for ET_EXEC do what I
-> > propose. I think this is trivial to do. I'll do it as soon as I come back
-> > in front of my machine.
-> >   
-> 
-> I don't think you need to special-case it.  You can compute the offset
-> between the linked address and the load address (first
-> PT_LOAD[0]->p_vaddr - load_addr) and use that to offset all the other
-> addresses.
+Hi,
 
-Indeed. And it has the advantage to work for prelinked objects. (but I
-have to understand anyway how does the kernel handles prelinked (or not) pie
-executables)
+The next 3 patches:
+[1/3] changes "depends on HDLC" to "select HDLC" for WAN/generic HDLC
+      network drivers
+[2/3] adds "fuse" functions to help determine installed IXP4xx CPU
+      components and to reset/disable/enable them.
+[3/3] adds IXP4xx drivers for: hardware queue manager, NPE (on-chip
+      network coprocessors), built-in Ethernet ports, built-in HSS
+      (sync serial) ports (currently only non-channelized HDLC).
 
-> 
-> 
-> > I don't understand. Yes it is what it is supposed to be, and the kernel
-> > is supposed to give the vaddr of the phdr table to the interpreter and
-> > not load addr + offset of phdr in file, which is sometimes wrong.
-> >   
-> 
-> How can it be wrong?  Does the PT_PHDR point to a different array of
-> Phdr entries?
+Patch [3/3] requires patches [1/3] and [2/3]
 
-No, of course, but in my case I wanted to build an executable with a
-modified rpath. I had to add a new PT_LOAD segment. To do so, as the
-program header is generally located at the very beginning of the
-executable, I had to copy it to the end, and so the address where it was
-loaded was completely different.
+The code is based on publicly available information:
+- Intel IXP4xx Developer's Manual and others e-papers
+- Intel IXP400 Access Library Software (BSD license)
+- previous works by Christian Hohnstaedt <chohnstaedt@innominate.com>
+  While I have decided to rewrite most things from scratch, his patch
+  was a great help in understanding what's going on within the IXP400
+  code (I took some fragments of his code as well).
+  Thanks, Christian.
 
-The load address was typically 0x08048000, and the phdr location was
-0x0804a570. But the kernel gave to the ld.so in the auxv the addr
-0x08048570 for the phdr. And it provoked a segfault because of the .bss
-which was between the segments. (and even if there was no .bss, it would
-have worked only by chance because the segments could all fit in a page
-of 4kb)
+The code is tested with IXP425 CPU.
 
-Quentin
+[1/3]
+ drivers/net/wan/Kconfig                   |   31 +-
+
+[2/3]
+ include/asm-arm/arch-ixp4xx/ixp4xx-regs.h |   47 ++
+
+[3/3]
+ arch/arm/mach-ixp4xx/ixdp425-setup.c      |   27 +
+ drivers/net/Kconfig                       |   34 +
+ drivers/net/Makefile                      |    1 
+ drivers/net/ixp4xx/Makefile               |    4 
+ drivers/net/ixp4xx/ixp4xx_eth.c           | 1002 +++++++++++++++++++++++++++
+ drivers/net/ixp4xx/ixp4xx_hss.c           | 1048 ++++++++++++++++++++++++++++
+ drivers/net/ixp4xx/ixp4xx_npe.c           |  731 +++++++++++++++++++++
+ drivers/net/ixp4xx/ixp4xx_qmgr.c          |  273 +++++++
+ drivers/net/ixp4xx/npe.h                  |   41 +
+ drivers/net/ixp4xx/qmgr.h                 |  124 +++
+ drivers/net/wan/Kconfig                   |   10 
+ include/asm-arm/arch-ixp4xx/platform.h    |   19 
+-- 
+Krzysztof Halasa
