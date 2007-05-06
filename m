@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933669AbXEFMz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753881AbXEFNUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933669AbXEFMz6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 08:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933663AbXEFMz6
+	id S1753881AbXEFNUg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 09:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbXEFNUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 08:55:58 -0400
-Received: from smtp4.pp.htv.fi ([213.243.153.38]:33773 "EHLO smtp4.pp.htv.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933662AbXEFMz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 08:55:57 -0400
-Date: Sun, 6 May 2007 15:55:55 +0300
-From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-m68k@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/33] m68k: CROSS_COMPILE = m68k-linux-gnu-
-Message-ID: <20070506125555.GA9866@sci.fi>
-References: <20070501203234.252205858@mail.of.borg> <20070501203330.778353898@mail.of.borg> <20070501225605.GA5533@sci.fi> <Pine.LNX.4.64.0705061323270.4741@anakin>
+	Sun, 6 May 2007 09:20:36 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:3205 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753881AbXEFNUg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 09:20:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:x-priority:message-id:to:cc:subject:in-reply-to:references:mime-version:content-type:content-transfer-encoding;
+        b=cy1VowrPWmJLYHb1WZbZT+1OzDkj8fGCpRXYiCFqqgq/o0DHZZCBzNZAw6P+LurzRzzdacza8g0QB3NWAWvx2MvMUGz3gijEgiNXE2GEbGuQiL86c41Zhovy64wDi1HwDEbthvygje4U7Ap+s/X92Hde7YE7JuVbUPauB6V2W4Q=
+Date: Sun, 6 May 2007 16:20:35 +0300
+From: Paul Sokolovsky <pmiscml@gmail.com>
+X-Priority: 3 (Normal)
+Message-ID: <1258712175.20070506162035@gmail.com>
+To: Bodo Eggert <7eggert@gmx.de>, Anton Vorontsov <cbou@mail.ru>
+CC: Robin Getz <rgetz@blackfin.uclinux.org>,
+       Robert Schwebel <r.schwebel@pengutronix.de>,
+       Stefan Roese <ml@stefan-roese.de>, <linuxppc-dev@ozlabs.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: Correct location for ADC/DAC drivers
+In-Reply-To: <E1Hkfia-0000cJ-18@be1.lrz>
+References: <8fZXU-3EI-11@gated-at.bofh.it> <8haHG-6zd-19@gated-at.bofh.it> <8hd2U-1Ca-39@gated-at.bofh.it> <8heii-3GM-37@gated-at.bofh.it> <E1Hkfia-0000cJ-18@be1.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0705061323270.4741@anakin>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 06, 2007 at 01:26:17PM +0200, Geert Uytterhoeven wrote:
-> On Wed, 2 May 2007, Ville Syrj?l? wrote:
-> > On Tue, May 01, 2007 at 10:32:40PM +0200, Geert Uytterhoeven wrote:
-> > > Recent cross-compilers are called m68k-linux-gnu-gcc instead of m68k-linux-gcc
-> > > 
-> > > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > > ---
-> > >  arch/m68k/Makefile |    2 +-
-> > >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > > 
-> > > --- linux-m68k-2.6.21.orig/arch/m68k/Makefile
-> > > +++ linux-m68k-2.6.21/arch/m68k/Makefile
-> > > @@ -21,7 +21,7 @@ AS += -m68020
-> > >  LDFLAGS := -m m68kelf
-> > >  ifneq ($(COMPILE_ARCH),$(ARCH))
-> > >  	# prefix for cross-compiling binaries
-> > > -	CROSS_COMPILE = m68k-linux-
-> > > +	CROSS_COMPILE = m68k-linux-gnu-
-> > >  endif
-> > >  
-> > >  ifdef CONFIG_SUN3
-> > 
-> > What about using ?= so the user can override it. I sent a patch doing
-> > just that but never got any response.
-> 
-> I just gave it a try, and compilation failed because it used plain gcc
-> instead of m68k-linux-gnu-gcc.
+Hello Bodo,
 
-Argh. You're correct of course. Apparently I never tried it without
-setting CROSS_COMPILE. The problem is in the top level Makefile:
-CROSS_COMPILE ?=
-and
-export CROSS_COMPILE
+Sunday, May 6, 2007, 3:19:59 PM, you wrote:
 
-If I remove those it works, but I don't know if removing them is a good
-idea in general (especially the export). Maybe the ?= thing can be
-removed and the export can be moved after including the arch Makefile?
+> Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+>> On Fri 4 May 2007 16:52, Robert Schwebel pondered:
+>>> On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
+
+>>> > We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
+>>> > that would be nice to put in the "right" place  - I don't think that
+>>> > drivers/char is the right place, nor drivers/misc - I also don't think
+>>> > that /adc is a descriptive place for DAC or mixed signal front ends
+>>> > (MxFE).
+>>>
+>>> What userspace interface do your drivers have?
+>> 
+>> Right now, it is a little rudimentary char interface, it needs a little care
+>> to be a bit more general purpose, but it suited needs of what the people who
+>> were using it.
+
+> [...]
+
+>> I would be interested in having a detailed discussion/random thoughts on
+>> this - what is the best way to expose these types of devices?
+
+> Since you ask for random thoughts:
+
+> IO of data streams from or to a DAC/ADC is essentially what soundcards do.
+> I'm wondering if these cards are similar enough to use alsa, and if using
+> that interface would ease or hinder programming the driver.
+
+
+        FYI, within handhelds.org kernel project, we also saw the need
+for consistent ADC infrastructure, and developed such, based on
+classdev concept, on todo to be submitted for review. Our
+API/userspace interface however optimized for individual (or
+fixed-batch) readings over stream operations, our target usage
+are touchscreen, battery, hwmon drivers.
+
+
+
 
 -- 
-Ville Syrjälä
-syrjala@sci.fi
-http://www.sci.fi/~syrjala/
+Best regards,
+ Paul                            mailto:pmiscml@gmail.com
+
