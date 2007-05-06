@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754718AbXEFHmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755321AbXEFHoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754718AbXEFHmi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 03:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbXEFHmi
+	id S1755321AbXEFHoy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 03:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbXEFHoy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 03:42:38 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:49722 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754718AbXEFHmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 03:42:37 -0400
-Date: Sun, 6 May 2007 09:43:31 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Marcin Garski <mgarski@post.pl>
-Subject: kconfig: fix mconf segmentation fault
-Message-ID: <20070506074331.GD6492@uranus.ravnborg.org>
-References: <20070502201741.GD9044@uranus.ravnborg.org> <20070506073615.GA6492@uranus.ravnborg.org>
+	Sun, 6 May 2007 03:44:54 -0400
+Received: from dialup.esmr.ru ([85.94.3.83]:40319 "EHLO localhost.localdomain"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755321AbXEFHox (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 03:44:53 -0400
+Date: Sun, 6 May 2007 11:44:29 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org
+Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
+Message-ID: <20070506114429.5c631864@localhost.localdomain>
+In-Reply-To: <67c6bf6b7d37f5e133398ea83edeac78@kernel.crashing.org>
+References: <20070506004737.31233.52611.stgit@localhost.localdomain>
+	<67c6bf6b7d37f5e133398ea83edeac78@kernel.crashing.org>
+X-Mailer: Claws Mail 2.9.1cvs42 (GTK+ 2.10.9; i686-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070506073615.GA6492@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have found small bug in mconf, when you run it without any argument it
-will sigsegv.
+On Sun, 6 May 2007 03:04:14 +0200
+Segher Boessenkool wrote:
 
-Without patch:
-$ scripts/kconfig/mconf
-Segmentation fault
+> > +		pcmcia@0080 {
+> 
+> > +			#interrupt-cells = <1>;
+> 
+> > +			interrupt-parent = <ff000000>;
+> > +			interrupts = <d 1>;
+> > +		};
+> 
+> Since this node's children's interrupt representation
+> is different from the node's parent's, you need an
+> interrupt-map in here.  You also forgot "#address-cells"
+> and I think you need "ranges" too?
+> 
+Well, in fact it does not introduce SoC device different from any others
+represented inside soc885 node. mk_int_int_mask() is just special
+way of enabling irq for PCMCIA stuff, in addition to normal pic stuff.
 
-With patch:
-$ scripts/kconfig/mconf
-can't find file (null)
+Emm. Why would I need #address-cells and ranges here? it uses parent bus address space...
 
-Signed-off-by: Marcin Garski <mgarski@post.pl>
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
----
- scripts/kconfig/lex.zconf.c_shipped |    2 +-
- scripts/kconfig/zconf.l             |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/scripts/kconfig/lex.zconf.c_shipped b/scripts/kconfig/lex.zconf.c_shipped
-index 800f8c7..0fdc904 100644
---- a/scripts/kconfig/lex.zconf.c_shipped
-+++ b/scripts/kconfig/lex.zconf.c_shipped
-@@ -2264,7 +2264,7 @@ FILE *zconf_fopen(const char *name)
- 	FILE *f;
- 
- 	f = fopen(name, "r");
--	if (!f && name[0] != '/') {
-+	if (!f && name != NULL && name[0] != '/') {
- 		env = getenv(SRCTREE);
- 		if (env) {
- 			sprintf(fullname, "%s/%s", env, name);
-diff --git a/scripts/kconfig/zconf.l b/scripts/kconfig/zconf.l
-index cfa4607..187d38c 100644
---- a/scripts/kconfig/zconf.l
-+++ b/scripts/kconfig/zconf.l
-@@ -265,7 +265,7 @@ FILE *zconf_fopen(const char *name)
- 	FILE *f;
- 
- 	f = fopen(name, "r");
--	if (!f && name[0] != '/') {
-+	if (!f && name != NULL && name[0] != '/') {
- 		env = getenv(SRCTREE);
- 		if (env) {
- 			sprintf(fullname, "%s/%s", env, name);
 -- 
-1.5.1.rc3.20.gaa453
+Sincerely, Vitaly
 
