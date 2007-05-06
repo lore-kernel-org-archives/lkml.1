@@ -1,80 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbXEFUcA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752979AbXEFUeB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751131AbXEFUcA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 16:32:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbXEFUcA
+	id S1752979AbXEFUeB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 16:34:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbXEFUeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 16:32:00 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:2912 "EHLO mail.z-net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751131AbXEFUb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 16:31:59 -0400
-Date: Mon, 7 May 2007 00:27:28 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Kconfig text confusion: Battery Class Support?
-Message-ID: <20070506202728.GA9520@zarina>
-Reply-To: cbou@mail.ru
-References: <1178453212.7731.10.camel@localhost.localdomain>
+	Sun, 6 May 2007 16:34:00 -0400
+Received: from europa.telenet-ops.be ([195.130.137.75]:44350 "EHLO
+	europa.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752979AbXEFUd7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 16:33:59 -0400
+Date: Sun, 6 May 2007 22:33:56 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] m68k: <asm/scatterlist.h> needs <asm/types.h>
+Message-ID: <Pine.LNX.4.64.0705062233160.4741@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <1178453212.7731.10.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Rusty,
+The recent <linux/pci.h> cleanup uncovered that include/asm-m68k/scatterlist.h
+needs to include <asm/types.h>
 
-On Sun, May 06, 2007 at 10:06:52PM +1000, Rusty Russell wrote:
-> Hi all,
-> 
-> 	I know writing decent Kconfig help entries is an obscure art, but can
-> we please try harder to make the help, y'know, helpful?  See below for
-> my experience with 2.6.21-mm1.
-> 
-> 	How come the Kconfig help for EXTERNAL_POWER says "is mandatory for
-> battery class support" and I still get prompted for "Battery class
-> support" when I say N?
-> 
-> 	How come both these entries are of form "Foo (FOO)? -- Say Y here to
-> enable foo."?   Shouldn't we assume the reader knows what Y means?
-> 
-> How about:
-> 
->         Battery class support (BATTERY) [N/m/y/?] (NEW) ?     
->         
->         This allows battery monitoring by userspace via sysfs (if
->         available) and/or APM kernel interface (if selected below).  Say
->         Y or M if building a kernel for a laptop.
-> 
-> I don't even understand the CONFIG_EXTERNAL_POWER enough to comment on
-> that one 8(
-> 
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ include/asm-m68k/scatterlist.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-Thank you for the message, Rusty. It's "fixed" already in battery2-2.6.git.
+--- linux-m68k-2.6.21.orig/include/asm-m68k/scatterlist.h
++++ linux-m68k-2.6.21/include/asm-m68k/scatterlist.h
+@@ -1,6 +1,8 @@
+ #ifndef _M68K_SCATTERLIST_H
+ #define _M68K_SCATTERLIST_H
+ 
++#include <asm/types.h>
++
+ struct scatterlist {
+ 	struct page *page;
+ 	unsigned int offset;
 
-Yes, battery/external power separation was a complicated part of whole
-battery stuff. Now, thanks to David Woodhouse, external power and
-battery classes merged, and there is much simpler configuration now:
+Gr{oetje,eeting}s,
 
-*
-* Power supply class support
-*
-Power supply class support (POWER_SUPPLY) [N/m/y/?] (NEW) m
-  Power supply debug (POWER_SUPPLY_DEBUG) [N/y/?] (NEW) y
-  Generic PDA/phone power driver (PDA_POWER) [N/m/?] (NEW) m
-  DS2760 battery driver (HP iPAQ & others) (BATTERY_DS2760) [N/m/?] (NEW) m
-  One Laptop Per Child battery (BATTERY_OLPC) [N/m/?] (NEW) m
+						Geert
 
-That's all you have to answer.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-Thanks,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
