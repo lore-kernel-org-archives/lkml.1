@@ -1,65 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbXEFEdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753745AbXEFEgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbXEFEdu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 00:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXEFEdu
+	id S1753745AbXEFEgu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 00:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbXEFEgu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 00:33:50 -0400
-Received: from wr-out-0506.google.com ([64.233.184.231]:20599 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754100AbXEFEdt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 00:33:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SwhHEe8b6zsBRLiJzd6whNdUmd1CNAQnm9rhCuXk9ReBZh5+m+UJ1rV7LZr7jnt8+qvq/2F27CE9TSpITnWNIZ93fySq/JhwUvhXJHDSszGvNjtq0UISLUGygWHYEER9QmTOZaKZ+Ac1VRyJiAN1G4sDqzNR2/eofsHHn7ToBIQ=
-Message-ID: <a8f16e2b0705052133pf8db82eoaae32281bedeafd6@mail.gmail.com>
-Date: Sun, 6 May 2007 08:33:48 +0400
-From: "Dan Kruchinin" <dubalom@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm1
-In-Reply-To: <a8f16e2b0705052130g37307df1vb7bd8a178d3130a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 6 May 2007 00:36:50 -0400
+Received: from 1wt.eu ([62.212.114.60]:2497 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753745AbXEFEgt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 00:36:49 -0400
+Date: Sun, 6 May 2007 06:36:45 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Zbigniew Baniewski <zb@ispid.com.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: "modularized" 2.4.34.4  ->  ide-core "unresolved symbols"
+Message-ID: <20070506043645.GF943@1wt.eu>
+References: <20070505194922.GA13176@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-	 <463D11A8.3090708@simon.arlott.org.uk>
-	 <a8f16e2b0705052130g37307df1vb7bd8a178d3130a@mail.gmail.com>
+In-Reply-To: <20070505194922.GA13176@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+On Sat, May 05, 2007 at 09:49:22PM +0200, Zbigniew Baniewski wrote:
+> Hallo,
+> 
+> I was trying to make "modularized kernel" (s.c. "Debian way") recently, yes,
+> I made even kernel.deb package - but at the installation, I'm still getting
+> an error: "ide-core: unresolved symbols".
+> 
+> Making a quick search with Google I could see, it did occur to many other
+> people even long ago. There was even a patch introduced - which, I believe,
+> is in the 2.4.34.4 "drivers/ide" sub-dir - unfortunately it seems, that the
+> patch is working no more.
+> 
+> Perhaps there is another patch available for 2.4.34.4 ?
 
-I have the following message after kernel compilation:
+Could you please be a bit more precise :
+  - config
+  - what are the unresolved symbols ?
+  - link to the patch you are talking about ?
 
- ---
- ...
- WARNING: init/built-in.o - Section mismatch: reference to .init.text:
- from .text between 'rest_init' (at offset 0x11e) and 'try_name'
- ...
- ...
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x20)
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x24)
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x28)
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x2c)
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x30)
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x34)
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x38)
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x3c)
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x40)
- WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
- .init.data: from .data after 'channel_table' (at offset 0x44)
--- 
+Thanks,
+Willy
 
-Dan Kruchinin.
