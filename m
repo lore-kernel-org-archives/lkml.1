@@ -1,70 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750897AbXEFWov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750888AbXEFWrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750897AbXEFWov (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 18:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbXEFWov
+	id S1750888AbXEFWrf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 18:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbXEFWrf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 18:44:51 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:53189 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750897AbXEFWou (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 18:44:50 -0400
-Message-ID: <463E5A5D.1070509@simon.arlott.org.uk>
-Date: Sun, 06 May 2007 23:44:45 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	Sun, 6 May 2007 18:47:35 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:52218 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbXEFWre (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 18:47:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=G3wE9Q1QpVFZ2jUJmgP7NddvvOunC+LCy/3p303dHP4ASbJ4cl6/H0UapF8QsSMbk+7N+AH2U5FcHgK+lTe+CV8zVR0V/FLJeKI2fAtwVBvtATk/TMsMx+qzV7uCe6+44/apEC/ssNW61xE5xeYae3Rp8DEFF4aDHfeB8A0GW6A=
+Message-ID: <e9c3a7c20705061547u7de21fas6ccad4258da57a9e@mail.gmail.com>
+Date: Sun, 6 May 2007 15:47:32 -0700
+From: "Dan Williams" <dan.j.williams@gmail.com>
+To: "Wim Van Sebroeck" <wim@iguana.be>
+Subject: Re: [2.6.22 patch] iop: combined watchdog timer driver for iop3xx and iop13xx
+Cc: "Curt E. Bruns" <curt.e.bruns@intel.com>,
+       "Peter Milne" <peter.milne@d-tacq.com>,
+       "Russell King" <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       "Lennert Buytenhek" <buytenh@wantstofly.org>
+In-Reply-To: <20070506205320.GA6486@infomag.infomag.iguana.be>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: xfs@oss.sgi.com, xfs-masters@oss.sgi.com
-Subject: xfs_ilock: possible recursive locking detected
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1177952240.12134.10.camel@dwillia2-linux.ch.intel.com>
+	 <20070506095256.GA2521@infomag.infomag.iguana.be>
+	 <e9c3a7c20705061313g2b110c4ai478bd3d345de3114@mail.gmail.com>
+	 <20070506205320.GA6486@infomag.infomag.iguana.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[  119.948000] =============================================
-[  119.948000] [ INFO: possible recursive locking detected ]
-[  119.948000] 2.6.21-git #185
-[  119.948000] ---------------------------------------------
-[  119.948000] cc1/6496 is trying to acquire lock:
-[  119.948000]  (&(&ip->i_lock)->mr_lock){----}, at: [<b025d230>] xfs_ilock+0x60/0xb0
-[  119.948000]
-[  119.948000] but task is already holding lock:
-[  119.948000]  (&(&ip->i_lock)->mr_lock){----}, at: [<b025d230>] xfs_ilock+0x60/0xb0
-[  119.948000]
-[  119.948000] other info that might help us debug this:
-[  119.948000] 2 locks held by cc1/6496:
-[  119.948000]  #0:  (&inode->i_mutex){--..}, at: [<b051585c>] mutex_lock+0x1c/0x20
-[  119.948000]  #1:  (&(&ip->i_lock)->mr_lock){----}, at: [<b025d230>] xfs_ilock+0x60/0xb0
-[  119.948000]
-[  119.948000] stack backtrace:
-[  119.948000]  [<b0104f4a>] show_trace_log_lvl+0x1a/0x30
-[  119.948000]  [<b0104f72>] show_trace+0x12/0x20
-[  119.948000]  [<b0105086>] dump_stack+0x16/0x20
-[  119.948000]  [<b013dcb7>] print_deadlock_bug+0xc7/0xe0
-[  119.948000]  [<b013dd3b>] check_deadlock+0x6b/0x80
-[  119.948000]  [<b013f772>] __lock_acquire+0x352/0xbb0
-[  119.948000]  [<b0140452>] lock_acquire+0x62/0x80
-[  119.948000]  [<b013825a>] down_write+0x3a/0x60
-[  119.948000]  [<b025d230>] xfs_ilock+0x60/0xb0
-[  119.948000]  [<b025c9c1>] xfs_iget_core+0x2a1/0x5f0
-[  119.948000]  [<b025cdc1>] xfs_iget+0xb1/0x110
-[  119.948000]  [<b02776a8>] xfs_trans_iget+0xa8/0x140
-[  119.948000]  [<b025ef8f>] xfs_ialloc+0xaf/0x4c0
-[  119.948000]  [<b02780fd>] xfs_dir_ialloc+0x6d/0x280
-[  119.948000]  [<b027df19>] xfs_create+0x249/0x670
-[  119.948000]  [<b0289b7a>] xfs_vn_mknod+0x20a/0x350
-[  119.948000]  [<b0289cd2>] xfs_vn_create+0x12/0x20
-[  119.948000]  [<b0174f26>] vfs_create+0xb6/0x100
-[  119.948000]  [<b017518e>] open_namei_create+0x4e/0xa0
-[  119.948000]  [<b0175733>] open_namei+0x553/0x590
-[  119.948000]  [<b016b05c>] do_filp_open+0x2c/0x60
-[  119.948000]  [<b016b3c0>] do_sys_open+0x50/0xe0
-[  119.948000]  [<b016b46c>] sys_open+0x1c/0x20
-[  119.948000]  [<b010416c>] sysenter_past_esp+0x5d/0x99
-[  119.948000]  =======================
+On 5/6/07, Wim Van Sebroeck <wim@iguana.be> wrote:
+> Hi Dan,
+>
+> > >Could you split this patch into 2 patches: one that deals with the moving
+> > >of
+> > >the architecture dependant code (and explaining why) and one with the new
+> > >watchdog drivers? I will continue my review today.
+> > >
+> >
+> > I am one of the maintainers of this architecture, (Lennert Buytenhek
+> > is the other).  I will go ahead and split this up so you can sign-off
+> > on the watchdog specific bits.  The intent is to move all hardware
+> > definitions under #include <asm/hardware.h>.  You are right this
+> > should have been a separate patch.
+>
+> I reviewed the rest of the code. Looks OK to me. One small remark though:
+> Can we change the ifdef's in the code as described in section 2 point 2 of
+> the Documentation/SubmittingPatches document?
+>
+Ok, I can add this cleanup.
 
--- 
-Simon Arlott
+Barring any objections I'll go ahead and submit the revised patch with
+an "Acked-by: Wim Van Sebroeck <wim at iguana dot be>" to Russell's
+ARM patch tracker.
+
+> Thanks,
+> Wim.
+>
+
+Dan
