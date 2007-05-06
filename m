@@ -1,54 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbXEFSTb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbXEFSXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754861AbXEFSTb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 14:19:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbXEFSTb
+	id S1754929AbXEFSXp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 14:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754931AbXEFSXp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 14:19:31 -0400
-Received: from wr-out-0506.google.com ([64.233.184.227]:35001 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754861AbXEFSTa (ORCPT
+	Sun, 6 May 2007 14:23:45 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:28410 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754928AbXEFSXo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 14:19:30 -0400
+	Sun, 6 May 2007 14:23:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V6A8IAKBpUU4Jq87REk7CHoBI+uP8uJPztjmG/62ZQn/E1ea4IgqJFK1JDlTb45VNAkNpHj6Y5cTu0I3trUZjY7cmW9t4G47b/IZOI9VZ3l5QPZ9PFrFO2c0+CsAHE2XTJbu2xnogNgn8s/NjCycWjPGxkTlQB8yeT2CDaEDD0M=
-Message-ID: <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com>
-Date: Sun, 6 May 2007 20:19:28 +0200
-From: "Francesco Pretto" <ceztko@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-Cc: "Phillip Susi" <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <463B99EE.2090001@gmail.com>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=YO7iydcqhtEe7pKvXpbyltnlOy3R0cvUHYnaBvxpy6Rj+1c8MpT1dWOk73w050S5G78Ks+ebHlYKwKuXDSE7M8vseMNU5C8oSPYaHemFqEUPhESw89WcqlXABv23XFzE6A8gLs1sVnOvtIzzWdIR7Had4Z2hCKdMJ/+HOTD1kyQ=
+Message-ID: <463E1CE3.6010908@gmail.com>
+Date: Sun, 06 May 2007 13:22:27 -0500
+From: "Jory A. Pratt" <geekypenguin@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070422)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Con Kolivas <kernel@kolivas.org>
+CC: Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: [ck] Re: swap-prefetch: 2.6.22 -mm merge plans
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>	<20070504085201.GA24666@elte.hu>	<200705042210.15953.kernel@kolivas.org> <200705051842.32328.kernel@kolivas.org>
+In-Reply-To: <200705051842.32328.kernel@kolivas.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>
-	 <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca>
-	 <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com>
-	 <463B858E.6060002@cfl.rr.com> <463B99EE.2090001@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/4, Tejun Heo <htejun@gmail.com>:
-> Yeap, the third iteration of the patch just got submitted.
+Con Kolivas wrote:
+> Here's a better swap prefetch tester. Instructions in file.
 >
->   http://thread.gmane.org/gmane.linux.ide/18485
+> Machine with 2GB ram and 2GB swapfile
 >
-> Unfortunately, there doesn't seem to be an easy way out.  We'll need
-> userland shutdown(8) update.
+> Prefetch disabled:
+> ./sp_tester
+> Ram 2060352000  Swap 1973420000
+> Total ram to be malloced: 3047062000 bytes
+> Starting first malloc of 1523531000 bytes
+> Starting 1st read of first malloc
+> Touching this much ram takes 809 milliseconds
+> Starting second malloc of 1523531000 bytes
+> Completed second malloc and free
+> Sleeping for 600 seconds
+> Important part - starting reread of first malloc
+> Completed read of first malloc
+> Timed portion 53397 milliseconds
 >
-> --
-> tejun
->
+> Enabled:
+> ./sp_tester
+> Ram 2060352000  Swap 1973420000
+> Total ram to be malloced: 3047062000 bytes
+> Starting first malloc of 1523531000 bytes
+> Starting 1st read of first malloc
+> Touching this much ram takes 676 milliseconds
+> Starting second malloc of 1523531000 bytes
+> Completed second malloc and free
+> Sleeping for 600 seconds
+> Important part - starting reread of first malloc
+> Completed read of first malloc
+> Timed portion 26351 milliseconds
+>   
+echo 1 > /proc/sys/vm/overcommit_memory
+swapoff -a
+swapon -a
+./sp_tester
 
-Ok, i can't understand if the patch will be included in 2.6.22 (i
-didn't see it in the Andrew Morton merge plan). However, if you can
-confirm the inclusion, i can send bug reports for ubuntu and gentoo. I
-can even send an email to Miquel van Smoorenburg, who should be the
-mainstream sysvinit developer (and probably the last maintainer).
+Ram 1153644000  Swap 1004052000
+Total ram to be malloced: 1655670000 bytes
+Starting first malloc of 827835000 bytes
+Starting 1st read of first malloc
+Touching this much ram takes 937 milliseconds
+Starting second malloc of 827835000 bytes
+Completed second malloc and free
+Sleeping for 600 seconds
+Important part - starting reread of first malloc
+Completed read of first malloc
+Timed portion 15011 milliseconds
 
-Francesco
+echo 0 > /proc/sys/vm/overcommit_memory
+swapoff -a
+swapon -a
+./sp_tester
+
+Ram 1153644000  Swap 1004052000
+Total ram to be malloced: 1655670000 bytes
+Starting first malloc of 827835000 bytes
+Starting 1st read of first malloc
+Touching this much ram takes 1125 milliseconds
+Starting second malloc of 827835000 bytes
+Completed second malloc and free
+Sleeping for 600 seconds
+Important part - starting reread of first malloc
+Completed read of first malloc
+Timed portion 14611 milliseconds
+
