@@ -1,63 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933587AbXEFKVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933591AbXEFK0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933587AbXEFKVx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 06:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933591AbXEFKVx
+	id S933591AbXEFK0A (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 06:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933599AbXEFK0A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 06:21:53 -0400
-Received: from frankvm.xs4all.nl ([80.126.170.174]:47137 "EHLO
-	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S933587AbXEFKVw (ORCPT
+	Sun, 6 May 2007 06:26:00 -0400
+Received: from smtp35.poczta.interia.pl ([80.48.65.35]:10174 "EHLO
+	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933591AbXEFKZ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 06:21:52 -0400
-Date: Sun, 6 May 2007 12:21:51 +0200
-From: Frank van Maarseveen <frankvm@frankvm.com>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: lkml123@s2y4n2c.de, linux-kernel@vger.kernel.org
-Subject: Re: unprivileged mount problems: device permissions ignored, mount sharing
-Message-ID: <20070506102150.GA20740@janus>
-References: <1177873151.4343.29.camel@segv.aura.of.mankind> <E1Hj9hk-00019p-00@dorka.pomaz.szeredi.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Hj9hk-00019p-00@dorka.pomaz.szeredi.hu>
-User-Agent: Mutt/1.4.1i
-X-BotBait: val@frankvm.com, kuil@frankvm.com
+	Sun, 6 May 2007 06:25:59 -0400
+Message-ID: <463DAD29.20004@interia.pl>
+Date: Sun, 06 May 2007 12:25:45 +0200
+From: =?ISO-8859-2?Q?Rafa=B3_Bilski?= <rafalbilski@interia.pl>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Wander Winkelhorst <w.winkelhorst@gmail.com>,
+       David Johnson <dj@david-web.co.uk>, linux-kernel@vger.kernel.org,
+       cpufreq@lists.linux.org.uk
+Subject: Re: cpufreq longhaul locks up
+References: <Pine.LNX.4.61.0705041200370.18504@yvahk01.tjqt.qr>  <200705042320.41278.dj@david-web.co.uk>  <Pine.LNX.4.61.0705050132410.18504@yvahk01.tjqt.qr>  <463C18C4.7030304@interia.pl> <5699f8f00705050144s5c00a455s8f7dba9258d83986@mail.gmail.com> <463CC380.3060603@interia.pl> <Pine.LNX.4.61.0705052028560.18504@yvahk01.tjqt.qr> <463CE1FB.4050305@interia.pl> <Pine.LNX.4.61.0705052237580.18504@yvahk01.tjqt.qr> <463D63D8.8010901@interia.pl> <Pine.LNX.4.61.0705060959200.23047@yvahk01.tjqt.qr> <463D9E8E.8040500@interia.pl> <Pine.LNX.4.61.0705061125010.8623@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705061125010.8623@yvahk01.tjqt.qr>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+X-EMID: fcd4acc
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 02, 2007 at 09:56:52AM +0200, Miklos Szeredi wrote:
-> > I tried the unprivileged mount v5 patches with 2.6.21.1. I made some
-> > experiments with normal filesystems (ext3, xfs, iso9660). I removed the
-> > FS_SAFE checks for that.
-> 
-> Thanks for looking at this.
-> 
-> > Mounting and umounting as unprivileged user (user1) works, e.g.
-> > (/mnt/user1 is a mount owned by user1)
-> > 
-> > [user1@segv ~]$ mmount -t xfs /dev/mapper/vg00-test /mnt/user1
-> > 
-> > But the device permissions are ignored. The unprivileged user can mount
-> > the block device even there are no permissions to access it:
-> > 
-> > brw------- 1 root root 253, 5 Apr 29 18:32 /dev/mapper/vg00-test
-> 
-> Yes, I'm aware of this.  Before we enable FS_SAFE for block
-> filesystems, this must be addressed.
-> 
-> But I'm not sure _if_ we'll ever want this.  It is very likely that
-> there are some other security holes in most filesystems that are
-> difficult to address.  One example is checking for hard-linked
-> directories, which is normally only done during an fsck.
+> Nevermind, it does not look like it gets any cooler at lower frequencies,
+> so it's a nobrainer to run it at the default 733.
+Well. You have very good CPU - 4,4W typical and 6,0W is a factory maximum.
+My is eating 6,78W while *sleeping* at 1GHz or about 5W while *sleeping* at 
+533MHz.
+> Jan
+Rafa³
 
-Some filesystems are not hardened against mounting a corrupted image and
-can Oops. This is also a problem for automounting USB sticks except that
-in that case you're (probably) sitting next to the hardware so there
-are other ways to do bad things.
 
->From a security point of view I'd like to restrict unprivileged mounts
-to a configurable list of filesystem types.
 
--- 
-Frank
+----------------------------------------------------------------------
+Wicie, rozumicie....
+Zobacz >>> http://link.interia.pl/f1a74
+
