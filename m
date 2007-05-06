@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755254AbXEFUSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755258AbXEFUUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755254AbXEFUSz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 16:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755258AbXEFUSy
+	id S1755258AbXEFUUe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 16:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbXEFUUe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 16:18:54 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:47734 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755254AbXEFUSy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 16:18:54 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=NELGQx/eDeOS3fTD+1mTbc6YsZCqnzw5fTixgd7dH0+b6qfWRmSVAi2hEIT0q
-	33pY3QAlrGSfkEpGWIJFONWnQ==
-Date: Sun, 6 May 2007 22:18:48 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Dan Williams <dan.j.williams@gmail.com>
-Cc: Wim Van Sebroeck <wim@iguana.be>, "Curt E. Bruns" <curt.e.bruns@intel.com>,
-       Peter Milne <peter.milne@d-tacq.com>,
-       Russell King <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.22 patch] iop: combined watchdog timer driver for iop3xx and iop13xx
-Message-ID: <20070506201848.GE19339@xi.wantstofly.org>
-References: <1177952240.12134.10.camel@dwillia2-linux.ch.intel.com> <20070506095256.GA2521@infomag.infomag.iguana.be> <e9c3a7c20705061313g2b110c4ai478bd3d345de3114@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e9c3a7c20705061313g2b110c4ai478bd3d345de3114@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+	Sun, 6 May 2007 16:20:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56093 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755258AbXEFUUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 16:20:33 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19elDc1+iheIBdDjsq5ed1xv565NAfGUo9/z3WPJJ
+	ZOVRFP2evGVFxk
+Date: Sun, 6 May 2007 22:20:36 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Bodo Eggert <7eggert@gmx.de>
+cc: Robin Getz <rgetz@blackfin.uclinux.org>,
+       Robert Schwebel <r.schwebel@pengutronix.de>,
+       Stefan Roese <ml@stefan-roese.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Correct location for ADC/DAC drivers
+In-Reply-To: <E1Hkfia-0000cJ-18@be1.lrz>
+Message-ID: <Pine.LNX.4.60.0705062219310.6650@poirot.grange>
+References: <8fZXU-3EI-11@gated-at.bofh.it> <8haHG-6zd-19@gated-at.bofh.it>
+ <8hd2U-1Ca-39@gated-at.bofh.it> <8heii-3GM-37@gated-at.bofh.it>
+ <E1Hkfia-0000cJ-18@be1.lrz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 06, 2007 at 01:13:58PM -0700, Dan Williams wrote:
+On Sun, 6 May 2007, Bodo Eggert wrote:
 
-> >> Here is a new watchdog driver for your review.  It supports two flavors
-> >> of the iop watchdog timer.  The iop13xx watchdog can be stopped while
-> >> the iop3xx version cannot.
-> >
-> >I started reviewing this patch yesterday. First thing I noticed was that
-> >you seem to be moving some code from include/asm-arm/arch-iop13xx/system.h
-> >to include/asm-arm/arch-iop13xx/iop13xx.h .
-> >This should not be part of this patch since it is touching architecture
-> >dependant code for which I do not have enough knowledge about this specific
-> >architecture to tell if this is indeed the correct way to do this.
-> >The maintainers of this architecture should imho comment on this.
-> >Could you split this patch into 2 patches: one that deals with the moving 
-> >of
-> >the architecture dependant code (and explaining why) and one with the new
-> >watchdog drivers? I will continue my review today.
+> Robin Getz <rgetz@blackfin.uclinux.org> wrote:
+> > On Fri 4 May 2007 16:52, Robert Schwebel pondered:
+> >> On Fri, May 04, 2007 at 02:21:50PM -0400, Robin Getz wrote:
 > 
-> I am one of the maintainers of this architecture, (Lennert Buytenhek
-> is the other).
+> >> > We also have DAC and ADC drivers (up to 16 bits @ 64MS/s, via DMA),
+> >> > that would be nice to put in the "right" place  - I don't think that
+> >> > drivers/char is the right place, nor drivers/misc - I also don't think
+> >> > that /adc is a descriptive place for DAC or mixed signal front ends
+> >> > (MxFE).
+> >>
+> >> What userspace interface do your drivers have?
+> > 
+> > Right now, it is a little rudimentary char interface, it needs a little care
+> > to be a bit more general purpose, but it suited needs of what the people who
+> > were using it.
 
-Dan has done more work on iop13xx than I have, and I'm OK with his
-changes.
+If I were thinking about a DAC / ADC API I would have a look at Comedi - 
+somehow I think it should be pretty well designed...
 
-It's true that ARM-specific changes generally should go through the ARM
-tree, but IMHO sometimes it makes sense to have one patch touch both
-stuff under drivers/ and stuff under arch/arm/mach-foo, especially if
-the changes are dependent and cause compile breakage if applied
-separately.  Not sure whether that's the case here.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
