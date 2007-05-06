@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751570AbXEFVpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751559AbXEFVrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751570AbXEFVpV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 17:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751571AbXEFVpV
+	id S1751559AbXEFVrT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 17:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751580AbXEFVrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 17:45:21 -0400
-Received: from gate.crashing.org ([63.228.1.57]:49630 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751559AbXEFVpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 17:45:20 -0400
-Subject: Re: [-mm patch] get_unmapped_area: remove now unused ret variable
-	(was Re: 2.6.21-mm1)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070506090333.GB29299@slug>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-	 <20070506090333.GB29299@slug>
-Content-Type: text/plain
-Date: Mon, 07 May 2007 07:45:07 +1000
-Message-Id: <1178487908.6353.187.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sun, 6 May 2007 17:47:18 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:40459 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751571AbXEFVrR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 17:47:17 -0400
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: linux-kernel@vger.kernel.org
+Cc: hch@infradead.org, linux-fsdevel@vger.kernel.org,
+       akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       Trond.Myklebust@netapp.com, neilb@suse.de, mhalcrow@us.ibm.com,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 4/5] fs: Mark link_path_walk static
+Date: Sun,  6 May 2007 17:46:38 -0400
+Message-Id: <11784879981515-git-send-email-jsipek@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.rc1.20.g86b9
+In-Reply-To: "<20070506212010.GD13333@infradead.org>"
+References: "<20070506212010.GD13333@infradead.org>"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-05-06 at 11:03 +0200, Frederik Deweerdt wrote:
-> On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
-> > 
-> 
-> mm/mmap.c:1393: warning: unused variable 'ret'
-> 
-> The get_unmapped_area-doesnt-need-hugetlbfs-hacks-anymore.patch and
-> get_unmapped_area-handles-map_fixed-in-generic-code.patch rendered the ret
-> variable useless.
+Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+---
+ fs/namei.c            |    4 +++-
+ include/linux/namei.h |    1 -
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-Ah good catch.. I wonder why my gcc didn't spot it...
-
-> Regards,
-> Frederik
-> 
-> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> diff --git a/mm/mmap.c b/mm/mmap.c
-> index b0f6eb8..fabf7f4 100644
-> --- a/mm/mmap.c
-> +++ b/mm/mmap.c
-> @@ -1390,7 +1390,6 @@ unsigned long
->  get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
->  		unsigned long pgoff, unsigned long flags)
->  {
-> -	unsigned long ret;
->  	unsigned long (*get_area)(struct file *, unsigned long,
->  				  unsigned long, unsigned long, unsigned long);
->  
+diff --git a/fs/namei.c b/fs/namei.c
+index 090cce4..925c62e 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -108,6 +108,8 @@
+  * any extra contention...
+  */
+ 
++static int fastcall link_path_walk(const char *name, struct nameidata *nd);
++
+ /* In order to reduce some races, while at the same time doing additional
+  * checking and hopefully speeding things up, we copy filenames to the
+  * kernel data space before using them..
+@@ -999,7 +1001,7 @@ return_err:
+  * Retry the whole path once, forcing real lookup requests
+  * instead of relying on the dcache.
+  */
+-int fastcall link_path_walk(const char *name, struct nameidata *nd)
++static int fastcall link_path_walk(const char *name, struct nameidata *nd)
+ {
+ 	struct nameidata save = *nd;
+ 	int result;
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index 4718788..d60a5eb 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -73,7 +73,6 @@ extern int FASTCALL(path_lookup(const char *, unsigned, struct nameidata *));
+ extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
+ 			   const char *, unsigned int, struct nameidata *);
+ extern int FASTCALL(path_walk(const char *, struct nameidata *));
+-extern int FASTCALL(link_path_walk(const char *, struct nameidata *));
+ extern void path_release(struct nameidata *);
+ extern void path_release_on_umount(struct nameidata *);
+ 
+-- 
+1.5.2.rc1.20.g86b9
 
