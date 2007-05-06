@@ -1,86 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbXEFVNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbXEFVN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759251AbXEFVNO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 17:13:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759248AbXEFVNO
+	id S1759290AbXEFVN1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 17:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759295AbXEFVN0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 17:13:14 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:50665 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759241AbXEFVNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 17:13:12 -0400
-Message-ID: <463E44E0.2010308@simon.arlott.org.uk>
-Date: Sun, 06 May 2007 22:13:04 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org,
-       satyam.sharma@gmail.com
+	Sun, 6 May 2007 17:13:26 -0400
+Received: from ik-out-1112.google.com ([66.249.90.183]:2050 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756411AbXEFVNZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 17:13:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ShzgHqGnTVq9UGS5zFV7HPUB9KqJdP4AUfFEwGC90RyPtDHB56zJf647pzcOy9MUZER5X1uNvfV7RgHSsY7mjq/3MkLFiPsTdEQfx8IM29Edp986A1YfY1huOu+7MiWA/1XRd2ZIWTjkgqG0i2VsevfCa/Q4WHntNmtzpC4y8ZY=
+Message-ID: <a781481a0705061413w6c390de6ge4736d5448f84cd1@mail.gmail.com>
+Date: Mon, 7 May 2007 02:43:23 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: 2.6.21-mm1
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>	<463DED69.4020507@simon.arlott.org.uk> <20070506130821.b6bed03b.akpm@linux-foundation.org>
-In-Reply-To: <20070506130821.b6bed03b.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: "Simon Arlott" <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       linux-dvb@linuxtv.org
+In-Reply-To: <a781481a0705061404t20417f72u3c900c74ce12127f@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+	 <463DED69.4020507@simon.arlott.org.uk>
+	 <20070506130821.b6bed03b.akpm@linux-foundation.org>
+	 <a781481a0705061404t20417f72u3c900c74ce12127f@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/05/07 21:08, Andrew Morton wrote:
-> On Sun, 06 May 2007 15:59:53 +0100 Simon Arlott <simon@fire.lp0.eu> wrote:
-> 
->> On 05/05/07 09:49, Andrew Morton wrote:
->>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
->> I'm currently in the middle of a bisect over the last week of commits to linus' 
+Hi Simon,
 
-Don't accidentally switch from SLAB to SLOB.
+On 5/7/07, Satyam Sharma <satyam.sharma@gmail.com> wrote:
+> On 5/7/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> > On Sun, 06 May 2007 15:59:53 +0100 Simon Arlott <simon@fire.lp0.eu> wrote:
+> >
+> > > On 05/05/07 09:49, Andrew Morton wrote:
+> > > > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+> > >
+> > > I'm currently in the middle of a bisect over the last week of commits to linus'
+> > > tree, but I got the following with -mm1 that isn't showing up in the latest
+> > > 2.6.21-git:
+> > >
+> > > [   15.644778] BUG: sleeping function called from invalid context at kernel/mutex.c:86
+> > > [   15.644873] in_atomic():1, irqs_disabled():1
+> > > [   15.644882] 2 locks held by modprobe/2765:
+> > > [   15.644889]  #0:  (devlist_lock){--..}, at: [<b052dc7f>] mutex_lock+0x1f/0x30
+> > > [   15.645058]  #1:  (modlist_lock){....}, at: [<b0147b1d>] __symbol_get+0x1d/0x90
+> > > [   15.645207] irq event stamp: 11772
+> > > [   15.645271] hardirqs last  enabled at (11771): [<b016d793>] slab_free+0xc3/0x200
+> > > [   15.645289] hardirqs last disabled at (11772): [<b052f476>] _spin_lock_irqsave+0x16/0x60
+> > > [   15.645364] softirqs last  enabled at (11216): [<b0125286>] __do_softirq+0x96/0xb0
+> > > [   15.645439] softirqs last disabled at (11211): [<b01069f2>] do_softirq+0x82/0x100
+> > > [   15.645517]  [<b0104f0a>] show_trace_log_lvl+0x1a/0x30
+> > > [   15.645586]  [<b0104f32>] show_trace+0x12/0x20
+> > > [   15.645654]  [<b0105045>] dump_stack+0x15/0x20
+> > > [   15.645665]  [<b011d6ad>] __might_sleep+0xcd/0xf0
+> > > [   15.645737]  [<b052dc78>] mutex_lock+0x18/0x30
+> > > [   15.645806]  [<b01b1b7c>] sysfs_create_link+0x6c/0x130
+> > > [   15.645823]  [<b0146dba>] use_module+0x11a/0x170
+> > > [   15.645892]  [<b0147b6c>] __symbol_get+0x6c/0x90
+> > > [   15.645904]  [<f086ac2c>] dvb_init+0x98c/0xd70 [saa7134_dvb]
+> > > [   15.645984]  [<b036861d>] mpeg_ops_attach+0x3d/0x50
+> > > [   15.646058]  [<b0369109>] saa7134_ts_register+0x29/0x70
+> > > [   15.646070]  [<f086f010>] dvb_register+0x10/0x12 [saa7134_dvb]
+> > > [   15.646141]  [<b01491b7>] sys_init_module+0xf7/0x150
+> > > [   15.646153]  [<b0104172>] sysenter_past_esp+0x5f/0x99
+> > > [   15.646221]  =======================
+> >
+> > Looks like a locking error in the DVB code.
+>
+> Actually, kernel/module.c:__symbol_get() does
+> spinlock_irq_save(&modlist_lock) and then calls use_module().
+>
+> But when CONFIG_MODULE_UNLOAD=y, use_module() wants to
+> sysfs_create_link() (I wonder why) which will clearly blow up.
 
->> tree, but I got the following with -mm1 that isn't showing up in the latest 
->> 2.6.21-git:
->>
->> [   15.644778] BUG: sleeping function called from invalid context at kernel/mutex.c:86
->> [   15.644873] in_atomic():1, irqs_disabled():1
->> [   15.644882] 2 locks held by modprobe/2765:
->> [   15.644889]  #0:  (devlist_lock){--..}, at: [<b052dc7f>] mutex_lock+0x1f/0x30
->> [   15.645058]  #1:  (modlist_lock){....}, at: [<b0147b1d>] __symbol_get+0x1d/0x90
->> [   15.645207] irq event stamp: 11772
->> [   15.645271] hardirqs last  enabled at (11771): [<b016d793>] slab_free+0xc3/0x200
->> [   15.645289] hardirqs last disabled at (11772): [<b052f476>] _spin_lock_irqsave+0x16/0x60
->> [   15.645364] softirqs last  enabled at (11216): [<b0125286>] __do_softirq+0x96/0xb0
->> [   15.645439] softirqs last disabled at (11211): [<b01069f2>] do_softirq+0x82/0x100
->> [   15.645517]  [<b0104f0a>] show_trace_log_lvl+0x1a/0x30
->> [   15.645586]  [<b0104f32>] show_trace+0x12/0x20
->> [   15.645654]  [<b0105045>] dump_stack+0x15/0x20
->> [   15.645665]  [<b011d6ad>] __might_sleep+0xcd/0xf0
->> [   15.645737]  [<b052dc78>] mutex_lock+0x18/0x30
->> [   15.645806]  [<b01b1b7c>] sysfs_create_link+0x6c/0x130
->> [   15.645823]  [<b0146dba>] use_module+0x11a/0x170
->> [   15.645892]  [<b0147b6c>] __symbol_get+0x6c/0x90
->> [   15.645904]  [<f086ac2c>] dvb_init+0x98c/0xd70 [saa7134_dvb]
->> [   15.645984]  [<b036861d>] mpeg_ops_attach+0x3d/0x50
->> [   15.646058]  [<b0369109>] saa7134_ts_register+0x29/0x70
->> [   15.646070]  [<f086f010>] dvb_register+0x10/0x12 [saa7134_dvb]
->> [   15.646141]  [<b01491b7>] sys_init_module+0xf7/0x150
->> [   15.646153]  [<b0104172>] sysenter_past_esp+0x5f/0x99
->> [   15.646221]  =======================
-> 
-> Looks like a locking error in the DVB code.
-> 
->> And this fantastic Oops:
->> [   40.965119] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000080
->> [   40.965252]  printing eip:
->> [   40.965252] b016d4a5
->> [   40.965300] *pde = 00000000
->> [   40.965352] Oops: 0000 [#1]
->> [   40.965467] PREEMPT 
->>
->> It occurs when racoon is started so must be IPSEC related, I'll have more information 
->> once I finish bisecting and merge -mm1 again.
-> 
-> Thanks.
-
-Unfortunately I can't reproduce either of these anymore...
-
--- 
-Simon Arlott
+Ah, at first I thought you had CONFIG_MODULE_UNLOAD=y for 21-mm and =n
+for 21-git which is why you weren't able to reproduce this on 21-git.
+But on checking I found 21-git has a different __symbol_get which
+calls strong_try_module_get(owner) directly and not use_module().
+Perhaps Andrew missed this patch?
