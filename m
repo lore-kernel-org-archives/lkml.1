@@ -1,74 +1,343 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbXEFPAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754926AbXEFPAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbXEFPAA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 11:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754772AbXEFPAA
+	id S1754926AbXEFPAb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 11:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXEFPAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 11:00:00 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:33688 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754761AbXEFO77 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 10:59:59 -0400
-Message-ID: <463DED69.4020507@simon.arlott.org.uk>
-Date: Sun, 06 May 2007 15:59:53 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm1
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sun, 6 May 2007 11:00:31 -0400
+Received: from www.osadl.org ([213.239.205.134]:57875 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754772AbXEFPAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 11:00:25 -0400
+Subject: [patch 3/3] clockevents: Fix resume logic - updated version
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>
+In-Reply-To: <20070505115127.GA17815@elte.hu>
+References: <20070430102837.748238000@linutronix.de>
+	 <20070430102852.042964000@linutronix.de>
+	 <20070505003421.00ec45ba.akpm@linux-foundation.org>
+	 <20070505115127.GA17815@elte.hu>
+Content-Type: text/plain
+Date: Sun, 06 May 2007 17:03:03 +0200
+Message-Id: <1178463784.31213.46.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/05/07 09:49, Andrew Morton wrote:
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+Andrew,
 
-I'm currently in the middle of a bisect over the last week of commits to linus' 
-tree, but I got the following with -mm1 that isn't showing up in the latest 
-2.6.21-git:
+On Sat, 2007-05-05 at 13:51 +0200, Ingo Molnar wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> 
+> > > Fixup the existing users.
+> > 
+> > This one makes the Vaio-of-fun hang during suspend to disk.  It gets 
+> > up to "swsusp: critical section/: done (%d pages copied)" then it 
+> > freezes.
+> 
+> after trying to reproduce it on 2 boxes without success it did trigger 
+> some sw-suspend weirdness on a third box :) We are debugging it now.
 
-[   15.644778] BUG: sleeping function called from invalid context at kernel/mutex.c:86
-[   15.644873] in_atomic():1, irqs_disabled():1
-[   15.644882] 2 locks held by modprobe/2765:
-[   15.644889]  #0:  (devlist_lock){--..}, at: [<b052dc7f>] mutex_lock+0x1f/0x30
-[   15.645058]  #1:  (modlist_lock){....}, at: [<b0147b1d>] __symbol_get+0x1d/0x90
-[   15.645207] irq event stamp: 11772
-[   15.645271] hardirqs last  enabled at (11771): [<b016d793>] slab_free+0xc3/0x200
-[   15.645289] hardirqs last disabled at (11772): [<b052f476>] _spin_lock_irqsave+0x16/0x60
-[   15.645364] softirqs last  enabled at (11216): [<b0125286>] __do_softirq+0x96/0xb0
-[   15.645439] softirqs last disabled at (11211): [<b01069f2>] do_softirq+0x82/0x100
-[   15.645517]  [<b0104f0a>] show_trace_log_lvl+0x1a/0x30
-[   15.645586]  [<b0104f32>] show_trace+0x12/0x20
-[   15.645654]  [<b0105045>] dump_stack+0x15/0x20
-[   15.645665]  [<b011d6ad>] __might_sleep+0xcd/0xf0
-[   15.645737]  [<b052dc78>] mutex_lock+0x18/0x30
-[   15.645806]  [<b01b1b7c>] sysfs_create_link+0x6c/0x130
-[   15.645823]  [<b0146dba>] use_module+0x11a/0x170
-[   15.645892]  [<b0147b6c>] __symbol_get+0x6c/0x90
-[   15.645904]  [<f086ac2c>] dvb_init+0x98c/0xd70 [saa7134_dvb]
-[   15.645984]  [<b036861d>] mpeg_ops_attach+0x3d/0x50
-[   15.646058]  [<b0369109>] saa7134_ts_register+0x29/0x70
-[   15.646070]  [<f086f010>] dvb_register+0x10/0x12 [saa7134_dvb]
-[   15.646141]  [<b01491b7>] sys_init_module+0xf7/0x150
-[   15.646153]  [<b0104172>] sysenter_past_esp+0x5f/0x99
-[   15.646221]  =======================
+find an updated patch below. It fixes the problem on Ingo's
+VAIO-of-fun-emulator and I got confirmation from several other affected
+users, that the patch series is still solving their problems.
 
-And this fantastic Oops:
-[   40.965119] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000080
-[   40.965252]  printing eip:
-[   40.965252] b016d4a5
-[   40.965300] *pde = 00000000
-[   40.965352] Oops: 0000 [#1]
-[   40.965467] PREEMPT 
+	tglx
 
-It occurs when racoon is started so must be IPSEC related, I'll have more information 
-once I finish bisecting and merge -mm1 again.
+------------------------>
 
--- 
-Simon Arlott
+Subject: clockevents: Fix resume logic
+
+We need to make sure, that the clockevent devices are resumed, before
+the tick is resumed. The current resume logic does not guarantee this.
+
+Add CLOCK_EVT_MODE_RESUME and call the set mode functions of the clock
+event devices before resuming the tick / oneshot functionality.
+
+Fixup the existing users.
+
+Fix the PIT handling of CLOCK_EVT_SHUTDOWN by disabling the interrupt
+instead of switching to oneshot mode, as this causes slowness on a couple
+of systems.
+
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+
+---
+ arch/i386/kernel/apic.c      |    3 +
+ arch/i386/kernel/hpet.c      |   71 +++----------------------------------------
+ arch/i386/kernel/i8253.c     |   43 +++++++++++++++++---------
+ include/linux/clockchips.h   |    1 
+ kernel/time/tick-broadcast.c |    4 +-
+ kernel/time/tick-common.c    |   16 ++++++---
+ 6 files changed, 51 insertions(+), 87 deletions(-)
+
+Index: linux-2.6.21/arch/i386/kernel/apic.c
+===================================================================
+--- linux-2.6.21.orig/arch/i386/kernel/apic.c
++++ linux-2.6.21/arch/i386/kernel/apic.c
+@@ -242,6 +242,9 @@ static void lapic_timer_setup(enum clock
+ 		v |= (APIC_LVT_MASKED | LOCAL_TIMER_VECTOR);
+ 		apic_write_around(APIC_LVTT, v);
+ 		break;
++	case CLOCK_EVT_MODE_RESUME:
++		/* Nothing to do here */
++		break;
+ 	}
+ 
+ 	local_irq_restore(flags);
+Index: linux-2.6.21/arch/i386/kernel/hpet.c
+===================================================================
+--- linux-2.6.21.orig/arch/i386/kernel/hpet.c
++++ linux-2.6.21/arch/i386/kernel/hpet.c
+@@ -187,6 +187,10 @@ static void hpet_set_mode(enum clock_eve
+ 		cfg &= ~HPET_TN_ENABLE;
+ 		hpet_writel(cfg, HPET_T0_CFG);
+ 		break;
++
++	case CLOCK_EVT_MODE_RESUME:
++		hpet_enable_int();
++		break;
+ 	}
+ }
+ 
+@@ -217,6 +221,7 @@ static struct clocksource clocksource_hp
+ 	.mask		= HPET_MASK,
+ 	.shift		= HPET_SHIFT,
+ 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
++	.resume		= hpet_start_counter,
+ };
+ 
+ /*
+@@ -291,7 +296,6 @@ int __init hpet_enable(void)
+ 
+ 	clocksource_register(&clocksource_hpet);
+ 
+-
+ 	if (id & HPET_ID_LEGSUP) {
+ 		hpet_enable_int();
+ 		hpet_reserve_platform_timers(id);
+@@ -524,68 +528,3 @@ irqreturn_t hpet_rtc_interrupt(int irq, 
+ 	return IRQ_HANDLED;
+ }
+ #endif
+-
+-
+-/*
+- * Suspend/resume part
+- */
+-
+-#ifdef CONFIG_PM
+-
+-static int hpet_suspend(struct sys_device *sys_device, pm_message_t state)
+-{
+-	unsigned long cfg = hpet_readl(HPET_CFG);
+-
+-	cfg &= ~(HPET_CFG_ENABLE|HPET_CFG_LEGACY);
+-	hpet_writel(cfg, HPET_CFG);
+-
+-	return 0;
+-}
+-
+-static int hpet_resume(struct sys_device *sys_device)
+-{
+-	unsigned int id;
+-
+-	hpet_start_counter();
+-
+-	id = hpet_readl(HPET_ID);
+-
+-	if (id & HPET_ID_LEGSUP)
+-		hpet_enable_int();
+-
+-	return 0;
+-}
+-
+-static struct sysdev_class hpet_class = {
+-	set_kset_name("hpet"),
+-	.suspend	= hpet_suspend,
+-	.resume		= hpet_resume,
+-};
+-
+-static struct sys_device hpet_device = {
+-	.id		= 0,
+-	.cls		= &hpet_class,
+-};
+-
+-
+-static __init int hpet_register_sysfs(void)
+-{
+-	int err;
+-
+-	if (!is_hpet_capable())
+-		return 0;
+-
+-	err = sysdev_class_register(&hpet_class);
+-
+-	if (!err) {
+-		err = sysdev_register(&hpet_device);
+-		if (err)
+-			sysdev_class_unregister(&hpet_class);
+-	}
+-
+-	return err;
+-}
+-
+-device_initcall(hpet_register_sysfs);
+-
+-#endif
+Index: linux-2.6.21/arch/i386/kernel/i8253.c
+===================================================================
+--- linux-2.6.21.orig/arch/i386/kernel/i8253.c
++++ linux-2.6.21/arch/i386/kernel/i8253.c
+@@ -3,11 +3,11 @@
+  *
+  */
+ #include <linux/clockchips.h>
+-#include <linux/spinlock.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
+ #include <linux/jiffies.h>
+-#include <linux/sysdev.h>
+ #include <linux/module.h>
+-#include <linux/init.h>
++#include <linux/spinlock.h>
+ 
+ #include <asm/smp.h>
+ #include <asm/delay.h>
+@@ -25,6 +25,24 @@ EXPORT_SYMBOL(i8253_lock);
+  */
+ struct clock_event_device *global_clock_event;
+ 
++/* Status of the PIT interrupt */
++static int pit_irq_disabled;
++
++/*
++ * Control pit interrupt enable / disable
++ */
++static void pit_control_irq(int disable)
++{
++	if (pit_irq_disabled == disable)
++		return;
++
++	pit_irq_disabled = disable;
++	if (disable)
++		disable_irq(0);
++	else
++		enable_irq(0);
++}
++
+ /*
+  * Initialize the PIT timer.
+  *
+@@ -41,26 +59,23 @@ static void init_pit_timer(enum clock_ev
+ 	case CLOCK_EVT_MODE_PERIODIC:
+ 		/* binary, mode 2, LSB/MSB, ch 0 */
+ 		outb_p(0x34, PIT_MODE);
+-		udelay(10);
+ 		outb_p(LATCH & 0xff , PIT_CH0);	/* LSB */
+-		udelay(10);
+ 		outb(LATCH >> 8 , PIT_CH0);	/* MSB */
++		pit_control_irq(0);
+ 		break;
+ 
+-	/*
+-	 * Avoid unnecessary state transitions, as it confuses
+-	 * Geode / Cyrix based boxen.
+-	 */
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
+-		if (evt->mode == CLOCK_EVT_MODE_UNUSED)
+-			break;
+ 	case CLOCK_EVT_MODE_UNUSED:
+-		if (evt->mode == CLOCK_EVT_MODE_SHUTDOWN)
+-			break;
++		pit_control_irq(1);
++		break;
+ 	case CLOCK_EVT_MODE_ONESHOT:
+ 		/* One shot setup */
+ 		outb_p(0x38, PIT_MODE);
+-		udelay(10);
++		pit_control_irq(0);
++		break;
++
++	case CLOCK_EVT_MODE_RESUME:
++		/* Nothing to do here */
+ 		break;
+ 	}
+ 	spin_unlock_irqrestore(&i8253_lock, flags);
+Index: linux-2.6.21/include/linux/clockchips.h
+===================================================================
+--- linux-2.6.21.orig/include/linux/clockchips.h
++++ linux-2.6.21/include/linux/clockchips.h
+@@ -23,6 +23,7 @@ enum clock_event_mode {
+ 	CLOCK_EVT_MODE_SHUTDOWN,
+ 	CLOCK_EVT_MODE_PERIODIC,
+ 	CLOCK_EVT_MODE_ONESHOT,
++	CLOCK_EVT_MODE_RESUME,
+ };
+ 
+ /* Clock event notification values */
+Index: linux-2.6.21/kernel/time/tick-broadcast.c
+===================================================================
+--- linux-2.6.21.orig/kernel/time/tick-broadcast.c
++++ linux-2.6.21/kernel/time/tick-broadcast.c
+@@ -292,7 +292,7 @@ void tick_suspend_broadcast(void)
+ 	spin_lock_irqsave(&tick_broadcast_lock, flags);
+ 
+ 	bc = tick_broadcast_device.evtdev;
+-	if (bc && tick_broadcast_device.mode == TICKDEV_MODE_PERIODIC)
++	if (bc)
+ 		clockevents_set_mode(bc, CLOCK_EVT_MODE_SHUTDOWN);
+ 
+ 	spin_unlock_irqrestore(&tick_broadcast_lock, flags);
+@@ -309,6 +309,8 @@ int tick_resume_broadcast(void)
+ 	bc = tick_broadcast_device.evtdev;
+ 
+ 	if (bc) {
++		clockevents_set_mode(bc, CLOCK_EVT_MODE_RESUME);
++
+ 		switch (tick_broadcast_device.mode) {
+ 		case TICKDEV_MODE_PERIODIC:
+ 			if(!cpus_empty(tick_broadcast_mask))
+Index: linux-2.6.21/kernel/time/tick-common.c
+===================================================================
+--- linux-2.6.21.orig/kernel/time/tick-common.c
++++ linux-2.6.21/kernel/time/tick-common.c
+@@ -318,12 +318,17 @@ static void tick_resume(void)
+ {
+ 	struct tick_device *td = &__get_cpu_var(tick_cpu_device);
+ 	unsigned long flags;
++	int broadcast = tick_resume_broadcast();
+ 
+ 	spin_lock_irqsave(&tick_device_lock, flags);
+-	if (td->mode == TICKDEV_MODE_PERIODIC)
+-		tick_setup_periodic(td->evtdev, 0);
+-	else
+-		tick_resume_oneshot();
++	clockevents_set_mode(td->evtdev, CLOCK_EVT_MODE_RESUME);
++
++	if (!broadcast) {
++		if (td->mode == TICKDEV_MODE_PERIODIC)
++			tick_setup_periodic(td->evtdev, 0);
++		else
++			tick_resume_oneshot();
++	}
+ 	spin_unlock_irqrestore(&tick_device_lock, flags);
+ }
+ 
+@@ -360,8 +365,7 @@ static int tick_notify(struct notifier_b
+ 		break;
+ 
+ 	case CLOCK_EVT_NOTIFY_RESUME:
+-		if (!tick_resume_broadcast())
+-			tick_resume();
++		tick_resume();
+ 		break;
+ 
+ 	default:
+
+
