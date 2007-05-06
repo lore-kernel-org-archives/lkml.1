@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752068AbXEFXJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbXEFXPE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752068AbXEFXJr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 19:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752072AbXEFXJr
+	id S1752151AbXEFXPE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 19:15:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752145AbXEFXPE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 19:09:47 -0400
-Received: from mail.tmr.com ([64.65.253.246]:34387 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752068AbXEFXJq convert rfc822-to-8bit (ORCPT
+	Sun, 6 May 2007 19:15:04 -0400
+Received: from py-out-1112.google.com ([64.233.166.181]:4215 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752151AbXEFXPC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 19:09:46 -0400
-Message-ID: <463E603D.3090000@tmr.com>
-Date: Sun, 06 May 2007 19:09:49 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Sun, 6 May 2007 19:15:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=uK+VVfNT8oD4Zzl6FzsHY7PIsZXLJOob1b++UTExf8frwja8pSV/4Ebw56ywCecVcraP+yQVFE4ZZdgMHHwhmDcaI9yuHTsHsJyFx4mOk54ZQfeFSDxcEtslwLbgxYJk2g6LriIB6XUnFaanxigFoXe0j0wA2dOzXOtDWS8TyJY=
+Message-ID: <2c0942db0705061615i1c6147a1h6aca54012c3509aa@mail.gmail.com>
+Date: Sun, 6 May 2007 16:15:00 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Alan Stern" <stern@rowland.harvard.edu>
+Subject: Re: [PATCH] make hci_notifier a blocking notifier (was Re: BUG: sleeping function called from invalid context at net/core/sock.c:1523)
+Cc: "Satyam Sharma" <satyam.sharma@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@suse.cz>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Max Krasnyansky" <maxk@qualcomm.com>, marcel@holtmann.org,
+       "pm list" <linux-pm@lists.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0705061801330.21407-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Randy Dunlap <randy.dunlap@oracle.com>
-CC: =?ISO-8859-1?Q?Markus_Ko=DFmann?= <mkossmann_ml1@gmx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: parallel port problems with 2.6.21_rc5 and   2.6.21_rc6_git3-20070410174235
-References: <200704112040.23505.mkossmann_ml1@gmx.de> <20070503132513.e3db44e9.randy.dunlap@oracle.com>
-In-Reply-To: <20070503132513.e3db44e9.randy.dunlap@oracle.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <a781481a0705060816v59c1ae70m1d5067fcaba5a25d@mail.gmail.com>
+	 <Pine.LNX.4.44L0.0705061801330.21407-100000@netrider.rowland.org>
+X-Google-Sender-Auth: fa430e3155a3d133
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Randy Dunlap wrote:
-> On Wed, 11 Apr 2007 20:40:23 +0200 Markus Koßmann wrote:
-> 
->> When using either the unpatched  2.6.21_rc5   or SUSEs patched 
->> 2.6.21_rc6_git3-20070410174235 on a SUSE-10.2 x86_64 system the parallel port 
->> doesn't work right. If I "cat some_asciifile >/dev/lp0"  the output on my 
->> Epson Stylus Color 880 is unreadable.  "cat /dev/zero >/dev/lp0"  creates 
->> random characters on the paper. Printing using cups also doesn't work any 
->> more. 
->> Switching back to SUSEs  2.6.18.8-0.1 kernel fixes the problem.
->> Any Ideas, what might be broken here ? 
-> 
-> Nope, but I have the same problem.
-> I'll dig into it some day, but it's not very high priority for me.
-> 
-At some point that could be a problem, I have a shared printer on 
-parallel (and replacing a printer for 11x17 work isn't cheap), as well 
-as one PL/IP requirement, which is embedded in industrial machinery not 
-likely to be upgraded.
+On 5/6/07, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Sun, 6 May 2007, Satyam Sharma wrote:
+>
+> > Anyway, the hci_notifier is called from the following six call sites:
+> >
+> > hci_dev_open() and hci_dev_close() -> both called from
+> > hci_sock_ioctl() => both can sleep
+> > hci_register_dev() and hci_unregister_dev() => again both are capable
+> > of sleeping
+> > hci_suspend_dev() and hci_resume_dev() -> called from the .suspend()
+> > and .resume() of the hci_usb_driver, and again both of these can sleep
+> >
+> > Is there any other reason why hci_notifier must be an atomic notifier?
+> >
+> > (CC'ing Alan Stern just in case, apparently hci_notifier became atomic
+> > when notifier chains were classified into atomic / blocking)
+>
+> I don't remember exactly why this particular choice was made.  Perhaps we
+> found that the notifier callout routines didn't use any blocking
+> primitives (we may have been mistaken about this -- there was a lot of
+> code to check) and so therefore the choice didn't matter.  In that case we
+> probably just decided to make it an atomic notifier to keep things simple.
+>
+> As you found, changing it to a blocking notifier is very easy.  Provided
+> all the callers are non-atomic it should work just fine.
 
-Non-critical in the sense that I'm sure I can run old kernels for a 
-decade if needed, but hopefully something to be fixed. Since there's no 
-regressions list any more, I guess we will all have to complain about 
-problems individually. :-(
+Okay, I'll go ahead and try the patch, then, and report back.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+Thanks,
 
+Ray
