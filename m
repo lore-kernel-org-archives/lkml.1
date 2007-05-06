@@ -1,66 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbXEFUOD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbXEFUSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755240AbXEFUOD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 16:14:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbXEFUOD
+	id S1755252AbXEFUSu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 16:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbXEFUSu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 16:14:03 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:54029 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755240AbXEFUOB (ORCPT
+	Sun, 6 May 2007 16:18:50 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2286 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755252AbXEFUSt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 16:14:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TmOcTNMagtASmmODBomWVIY3Zd1pd2iBtZ5EVgvT5MF9GQE2LgYkwuLmJZH2LhsuTt+qCd/fxmyQB3OL+v2Y7HJlWrQaj3dHZlCAOSCZvY8NkZIS2VCz6ga7NhLv9WJdR3HqrWU3XuLKSKNyFNYha+S0Qkl5KcCGe4R0frbsZ44=
-Message-ID: <e9c3a7c20705061313g2b110c4ai478bd3d345de3114@mail.gmail.com>
-Date: Sun, 6 May 2007 13:13:58 -0700
-From: "Dan Williams" <dan.j.williams@gmail.com>
-To: "Wim Van Sebroeck" <wim@iguana.be>
-Subject: Re: [2.6.22 patch] iop: combined watchdog timer driver for iop3xx and iop13xx
-Cc: "Curt E. Bruns" <curt.e.bruns@intel.com>,
-       "Peter Milne" <peter.milne@d-tacq.com>,
-       "Russell King" <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
-       "Lennert Buytenhek" <buytenh@wantstofly.org>
-In-Reply-To: <20070506095256.GA2521@infomag.infomag.iguana.be>
+	Sun, 6 May 2007 16:18:49 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 6 May 2007 13:18:47 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Ulrich Drepper <drepper@gmail.com>, Davi Arnaut <davi@haxent.com.br>,
+       Eric Dumazet <dada1@cosmosbay.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 14/22] pollfs: pollable futex
+In-Reply-To: <20070506125451.aac4b68f.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705061309410.25331@alien.or.mcafeemobile.com>
+References: <20070502052235.914764000@haxent.com.br>
+ <Pine.LNX.4.64.0705021059430.7176@alien.or.mcafeemobile.com>
+ <a36005b50705030646v5b729838pe8dc7b91dc9bee2b@mail.gmail.com>
+ <Pine.LNX.4.64.0705031111320.6502@alien.or.mcafeemobile.com>
+ <a36005b50705031203w14df6f1fp26e186056b0fdef7@mail.gmail.com>
+ <Pine.LNX.4.64.0705031433470.6502@alien.or.mcafeemobile.com>
+ <a36005b50705040828l28f1d039oe58224ff18286ecd@mail.gmail.com>
+ <Pine.LNX.4.64.0705041201390.6958@alien.or.mcafeemobile.com>
+ <a36005b50705041638h37cd0654q442e7d50f1e63040@mail.gmail.com>
+ <Pine.LNX.4.64.0705051118030.19104@alien.or.mcafeemobile.com>
+ <a36005b50705060050q512462edoe53efbc18f754471@mail.gmail.com>
+ <20070506125451.aac4b68f.akpm@linux-foundation.org>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1177952240.12134.10.camel@dwillia2-linux.ch.intel.com>
-	 <20070506095256.GA2521@infomag.infomag.iguana.be>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/6/07, Wim Van Sebroeck <wim@iguana.be> wrote:
-> Hi Dan,
->
-> > Here is a new watchdog driver for your review.  It supports two flavors
-> > of the iop watchdog timer.  The iop13xx watchdog can be stopped while
-> > the iop3xx version cannot.
->
-> I started reviewing this patch yesterday. First thing I noticed was that
-> you seem to be moving some code from include/asm-arm/arch-iop13xx/system.h
-> to include/asm-arm/arch-iop13xx/iop13xx.h .
-> This should not be part of this patch since it is touching architecture
-> dependant code for which I do not have enough knowledge about this specific
-> architecture to tell if this is indeed the correct way to do this.
-> The maintainers of this architecture should imho comment on this.
-> Could you split this patch into 2 patches: one that deals with the moving of
-> the architecture dependant code (and explaining why) and one with the new
-> watchdog drivers? I will continue my review today.
->
+On Sun, 6 May 2007, Andrew Morton wrote:
 
-I am one of the maintainers of this architecture, (Lennert Buytenhek
-is the other).  I will go ahead and split this up so you can sign-off
-on the watchdog specific bits.  The intent is to move all hardware
-definitions under #include <asm/hardware.h>.  You are right this
-should have been a separate patch.
+> On Sun, 6 May 2007 00:50:47 -0700 "Ulrich Drepper" <drepper@gmail.com> wrote:
+> 
+> > > I really do not understand your point. You're too smart to not appreciate
+> > > the beauty and the simmetry of objects that responds to a common interface
+> > > (our files, win32 handles), and that fits our existing kernel infrastructure.
+> > 
+> > You're blinded by this symmetry.  Not everything that looks like a
+> > good fit is a good idea.  This is one case.  Get over it, poll is not
+> > powerful enough to serve as the unifying event mechanism.
+> 
+> What is your position on the timerfd/signalfd/etc patches?
+> 
+> Seems to me that if we were to have fancy new event-delivery machinery
+> like kevent then the timerfd/signalfd work is heading in the other
+> direction and ultimately would prove to have been unneeded?
 
-> Thanks,
-> Wim.
->
+Yes, of course. If we're heading to yet-another monolitic interface, we're 
+heading with no valid reasons given if other than some handwaving. While 
+there are quite a few (modularity, compatibilty, plus the other ones that 
+came in my mind and that I explained in the way-too-many emails) to back a 
+file-based approach.
+Conversation with Uli, as often happen when arguing about software, got 
+stuck. And since noone else seems interested in bringing valid points in 
+one way or another, I'll leave the discussion as is, and I'll let you sort 
+it out.
 
-Thanks for your help,
-Dan
+
+
+- Davide
+
+
