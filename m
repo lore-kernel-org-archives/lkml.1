@@ -1,101 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754929AbXEFSXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbXEFSYW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754929AbXEFSXp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 14:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754931AbXEFSXp
+	id S1754884AbXEFSYW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 14:24:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbXEFSYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 14:23:45 -0400
-Received: from wx-out-0506.google.com ([66.249.82.224]:28410 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754928AbXEFSXo (ORCPT
+	Sun, 6 May 2007 14:24:22 -0400
+Received: from wr-out-0506.google.com ([64.233.184.233]:36539 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754951AbXEFSYV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 14:23:44 -0400
+	Sun, 6 May 2007 14:24:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=YO7iydcqhtEe7pKvXpbyltnlOy3R0cvUHYnaBvxpy6Rj+1c8MpT1dWOk73w050S5G78Ks+ebHlYKwKuXDSE7M8vseMNU5C8oSPYaHemFqEUPhESw89WcqlXABv23XFzE6A8gLs1sVnOvtIzzWdIR7Had4Z2hCKdMJ/+HOTD1kyQ=
-Message-ID: <463E1CE3.6010908@gmail.com>
-Date: Sun, 06 May 2007 13:22:27 -0500
-From: "Jory A. Pratt" <geekypenguin@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070422)
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=F66O09dM2owOaet7xMMPSdyflSY6xLqaxWie2jnsPcJQQICSulOZK37AmH4nRju4PlXQQJcJizRNPqo/5nIa2GReDygbIAuQqNU0C1tC5G1rGVFQkVtLgkswHDebrvBD2ZM/IbHT7xETfwxvae0lPTCadEFtEWRzDiQ3JrlYXBM=
+Message-ID: <463E1D49.1060705@gmail.com>
+Date: Sun, 06 May 2007 20:24:09 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: Re: [ck] Re: swap-prefetch: 2.6.22 -mm merge plans
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>	<20070504085201.GA24666@elte.hu>	<200705042210.15953.kernel@kolivas.org> <200705051842.32328.kernel@kolivas.org>
-In-Reply-To: <200705051842.32328.kernel@kolivas.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Francesco Pretto <ceztko@gmail.com>
+CC: Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>	 <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca>	 <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com>	 <463B858E.6060002@cfl.rr.com> <463B99EE.2090001@gmail.com> <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com>
+In-Reply-To: <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> Here's a better swap prefetch tester. Instructions in file.
->
-> Machine with 2GB ram and 2GB swapfile
->
-> Prefetch disabled:
-> ./sp_tester
-> Ram 2060352000  Swap 1973420000
-> Total ram to be malloced: 3047062000 bytes
-> Starting first malloc of 1523531000 bytes
-> Starting 1st read of first malloc
-> Touching this much ram takes 809 milliseconds
-> Starting second malloc of 1523531000 bytes
-> Completed second malloc and free
-> Sleeping for 600 seconds
-> Important part - starting reread of first malloc
-> Completed read of first malloc
-> Timed portion 53397 milliseconds
->
-> Enabled:
-> ./sp_tester
-> Ram 2060352000  Swap 1973420000
-> Total ram to be malloced: 3047062000 bytes
-> Starting first malloc of 1523531000 bytes
-> Starting 1st read of first malloc
-> Touching this much ram takes 676 milliseconds
-> Starting second malloc of 1523531000 bytes
-> Completed second malloc and free
-> Sleeping for 600 seconds
-> Important part - starting reread of first malloc
-> Completed read of first malloc
-> Timed portion 26351 milliseconds
->   
-echo 1 > /proc/sys/vm/overcommit_memory
-swapoff -a
-swapon -a
-./sp_tester
+Francesco Pretto wrote:
+> Ok, i can't understand if the patch will be included in 2.6.22 (i
+> didn't see it in the Andrew Morton merge plan). However, if you can
+> confirm the inclusion, i can send bug reports for ubuntu and gentoo. I
+> can even send an email to Miquel van Smoorenburg, who should be the
+> mainstream sysvinit developer (and probably the last maintainer).
 
-Ram 1153644000  Swap 1004052000
-Total ram to be malloced: 1655670000 bytes
-Starting first malloc of 827835000 bytes
-Starting 1st read of first malloc
-Touching this much ram takes 937 milliseconds
-Starting second malloc of 827835000 bytes
-Completed second malloc and free
-Sleeping for 600 seconds
-Important part - starting reread of first malloc
-Completed read of first malloc
-Timed portion 15011 milliseconds
+It hasn't generated too much response yet.  Anyways, yeap, merging it
+for 2.6.22 is definitely the plan.  This thing can shorten lifespan of
+harddisks.  :-(  I'll let you know if something changes.
 
-echo 0 > /proc/sys/vm/overcommit_memory
-swapoff -a
-swapon -a
-./sp_tester
+Thanks.
 
-Ram 1153644000  Swap 1004052000
-Total ram to be malloced: 1655670000 bytes
-Starting first malloc of 827835000 bytes
-Starting 1st read of first malloc
-Touching this much ram takes 1125 milliseconds
-Starting second malloc of 827835000 bytes
-Completed second malloc and free
-Sleeping for 600 seconds
-Important part - starting reread of first malloc
-Completed read of first malloc
-Timed portion 14611 milliseconds
-
+-- 
+tejun
