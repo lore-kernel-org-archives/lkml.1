@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754309AbXEFRSR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbXEFRmK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754309AbXEFRSR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 13:18:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754393AbXEFRSR
+	id S1754116AbXEFRmK (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 13:42:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753639AbXEFRmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 13:18:17 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:22348 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754309AbXEFRSQ (ORCPT
+	Sun, 6 May 2007 13:42:10 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:60157 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbXEFRmI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 13:18:16 -0400
-Date: Sun, 06 May 2007 11:18:11 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: select-like implementation for kernel sockets
-In-reply-to: <1178449075.942407.164040@q75g2000hsh.googlegroups.com>
-To: eitanr@audiocodes.com, linux-kernel <linux-kernel@vger.kernel.org>
-Message-id: <463E0DD3.9050909@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <1178449075.942407.164040@q75g2000hsh.googlegroups.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sun, 6 May 2007 13:42:08 -0400
+From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fsdevel@vger.kernel.org, hch@infradead.org,
+       akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       Trond.Myklebust@netapp.com, neilb@suse.de, mhalcrow@us.ibm.com,
+       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Subject: [PATCH 1/5] fs: Introduce vfs_path_lookup
+Date: Sun,  6 May 2007 13:41:25 -0400
+Message-Id: <1178473289264-git-send-email-jsipek@cs.sunysb.edu>
+X-Mailer: git-send-email 1.5.2.rc1.20.g86b9
+In-Reply-To: <1178473289617-git-send-email-jsipek@cs.sunysb.edu>
+References: <1178473289617-git-send-email-jsipek@cs.sunysb.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-eitanr@audiocodes.com wrote:
-> Hi,
-> 
-> I'm using kernel sockets to Tx and Rx UDP packets between my hardware
-> device (DSP) to the external network (this is part of a VoIP
-> implementation). The motivation for using kernel sockets rather than
-> user-space sockets is to avoid the copying of data between kernel and
-> user spaces.
+Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+---
+ fs/namei.c            |   32 ++++++++++++++++++++++++++++++++
+ include/linux/namei.h |    2 ++
+ 2 files changed, 34 insertions(+), 0 deletions(-)
 
-I think we are zero-copy in many cases for UDP these days, so this 
-doesn't necessarily buy you anything..
-
-> 
-> I have no problems on the Tx side (I simply call sock_sendmsg on one
-> of the sockets), but for the Rx side I want to listen-in on multiple
-> sockets in blocking mode (I don't want to use polling).
-> 
-> Is there a way to listen-in on multiple kernel sockets from one kernel
-> thread? In the user space I would have used select(), but I am not
-> familiar with a similar solution for the kernel space.
-> 
-> Thanks,
-> Eitan.
-> 
-> Eitan Richardson
-> AudioCodes Ltd.
-> 
-
+diff --git a/fs/namei.c b/fs/namei.c
+index 3449e0a..090cce4 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1175,6 +1175,37 @@ int fastcall path_lookup(const char *name, unsigned int flags,
+ 	return do_path_lookup(AT_FDCWD, name, flags, nd);
+ }
+ 
++/**
++ * vfs_path_lookup - lookup a file path relative to a dentry-vfsmount pair
++ * @dentry:  pointer to dentry of the base directory
++ * @mnt: pointer to vfs mount of the base directory
++ * @name: pointer to file name
++ * @flags: lookup flags
++ * @nd: pointer to nameidata
++ */
++int vfs_path_lookup(struct dentry *dentry, struct vfsmount *mnt,
++		    const char *name, unsigned int flags, 
++		    struct nameidata *nd)
++{
++	int retval;
++
++	/* same as do_path_lookup */
++	nd->last_type = LAST_ROOT;
++	nd->flags = flags;
++	nd->depth = 0;
++
++	nd->mnt = mntget(mnt);
++	nd->dentry = dget(dentry);
++
++	retval = path_walk(name, nd);
++	if (unlikely(!retval && !audit_dummy_context() && nd->dentry &&
++				nd->dentry->d_inode))
++		audit_inode(name, nd->dentry->d_inode);
++
++	return retval;
++
++}
++
+ static int __path_lookup_intent_open(int dfd, const char *name,
+ 		unsigned int lookup_flags, struct nameidata *nd,
+ 		int open_flags, int create_mode)
+@@ -2799,6 +2830,7 @@ EXPORT_SYMBOL(__page_symlink);
+ EXPORT_SYMBOL(page_symlink);
+ EXPORT_SYMBOL(page_symlink_inode_operations);
+ EXPORT_SYMBOL(path_lookup);
++EXPORT_SYMBOL(vfs_path_lookup);
+ EXPORT_SYMBOL(path_release);
+ EXPORT_SYMBOL(path_walk);
+ EXPORT_SYMBOL(permission);
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index 0ab27ba..4718788 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -70,6 +70,8 @@ extern int FASTCALL(__user_walk_fd(int dfd, const char __user *, unsigned, struc
+ #define user_path_walk_link(name,nd) \
+ 	__user_walk_fd(AT_FDCWD, name, 0, nd)
+ extern int FASTCALL(path_lookup(const char *, unsigned, struct nameidata *));
++extern int vfs_path_lookup(struct dentry *, struct vfsmount *,
++			   const char *, unsigned int, struct nameidata *);
+ extern int FASTCALL(path_walk(const char *, struct nameidata *));
+ extern int FASTCALL(link_path_walk(const char *, struct nameidata *));
+ extern void path_release(struct nameidata *);
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+1.5.2.rc1.20.g86b9
 
