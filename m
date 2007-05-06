@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933539AbXEFJth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933498AbXEFJvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933539AbXEFJth (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 05:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbXEFJth
+	id S933498AbXEFJvy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 05:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933559AbXEFJvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 05:49:37 -0400
-Received: from dialup.esmr.ru ([85.94.3.83]:60447 "EHLO localhost.localdomain"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933539AbXEFJtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 05:49:36 -0400
-Date: Sun, 6 May 2007 13:48:50 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
-Message-ID: <20070506134850.13689bf9@localhost.localdomain>
-In-Reply-To: <20070506020427.GA22162@localhost.localdomain>
-References: <20070506004737.31233.52611.stgit@localhost.localdomain>
-	<67c6bf6b7d37f5e133398ea83edeac78@kernel.crashing.org>
-	<20070506020427.GA22162@localhost.localdomain>
-X-Mailer: Claws Mail 2.9.1cvs42 (GTK+ 2.10.9; i686-redhat-linux-gnu)
+	Sun, 6 May 2007 05:51:53 -0400
+Received: from outmx025.isp.belgacom.be ([195.238.4.49]:37388 "EHLO
+	outmx025.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933498AbXEFJvx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 05:51:53 -0400
+Date: Sun, 6 May 2007 11:52:56 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: "Curt E. Bruns" <curt.e.bruns@intel.com>,
+       Peter Milne <peter.milne@d-tacq.com>,
+       Russell King <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.22 patch] iop: combined watchdog timer driver for iop3xx and iop13xx
+Message-ID: <20070506095256.GA2521@infomag.infomag.iguana.be>
+References: <1177952240.12134.10.camel@dwillia2-linux.ch.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1177952240.12134.10.camel@dwillia2-linux.ch.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 May 2007 12:04:27 +1000
-David Gibson wrote:
+Hi Dan,
 
-> On Sun, May 06, 2007 at 03:04:14AM +0200, Segher Boessenkool wrote:
-> > > +		pcmcia@0080 {
-> > 
-> > > +			#interrupt-cells = <1>;
-> > 
-> > > +			interrupt-parent = <ff000000>;
-> > > +			interrupts = <d 1>;
-> > > +		};
-> > 
-> > Since this node's children's interrupt representation
-> > is different from the node's parent's, you need an
-> > interrupt-map in here.  You also forgot "#address-cells"
-> > and I think you need "ranges" too?
-> 
-> And we should use a reference, instead of an implicit phandle for the
-> interrupt-parent.
-> 
-I  have one more patch for this - I think it makes sense to append it to the series...
-Thinking it would be better to do the phandles->labels transition in one step for all the relevant
-stuff in dts as well.  
+> Here is a new watchdog driver for your review.  It supports two flavors
+> of the iop watchdog timer.  The iop13xx watchdog can be stopped while
+> the iop3xx version cannot.
 
--- 
-Sincerely, Vitaly
+I started reviewing this patch yesterday. First thing I noticed was that
+you seem to be moving some code from include/asm-arm/arch-iop13xx/system.h
+to include/asm-arm/arch-iop13xx/iop13xx.h .
+This should not be part of this patch since it is touching architecture
+dependant code for which I do not have enough knowledge about this specific
+architecture to tell if this is indeed the correct way to do this.
+The maintainers of this architecture should imho comment on this.
+Could you split this patch into 2 patches: one that deals with the moving of
+the architecture dependant code (and explaining why) and one with the new
+watchdog drivers? I will continue my review today.
+
+Thanks,
+Wim.
 
