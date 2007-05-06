@@ -1,61 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbXEFU4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbXEFVCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbXEFU4j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 16:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbXEFU4j
+	id S1756041AbXEFVCc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 17:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbXEFVCb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 16:56:39 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:54230 "EHLO pasmtpA.tele.dk"
+	Sun, 6 May 2007 17:02:31 -0400
+Received: from ra.tuxdriver.com ([70.61.120.52]:3392 "EHLO ra.tuxdriver.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754483AbXEFU4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 16:56:38 -0400
-Date: Sun, 6 May 2007 22:57:32 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Valdis.Kletnieks@vt.edu
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm1
-Message-ID: <20070506205732.GC10396@uranus.ravnborg.org>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <17296.1178434189@turing-police.cc.vt.edu>
+	id S1756025AbXEFVC3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 17:02:29 -0400
+Date: Sun, 6 May 2007 16:48:26 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Jiri Benc <jbenc@suse.cz>, netdev@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] mac80211: include <linux/delay.h> instead of <asm/delay.h>
+Message-ID: <20070506204826.GA11238@tuxdriver.com>
+References: <Pine.LNX.4.64.0705062236030.4741@anakin>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <17296.1178434189@turing-police.cc.vt.edu>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0705062236030.4741@anakin>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 06, 2007 at 02:49:49AM -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Sat, 05 May 2007 01:49:55 PDT, Andrew Morton said:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+On Sun, May 06, 2007 at 10:37:17PM +0200, Geert Uytterhoeven wrote:
+> |   CC      net/mac80211/ieee80211_sta.o
+> | In file included from linux/net/mac80211/ieee80211_sta.c:31:
+> | include2/asm/delay.h: In function '__const_udelay':
+> | include2/asm/delay.h:33: error: 'loops_per_jiffy' undeclared (first use in this function)
+> | include2/asm/delay.h:33: error: (Each undeclared identifier is reported only once
+> | include2/asm/delay.h:33: error: for each function it appears in.)
 > 
->   MODPOST vmlinux
-> WARNING: mm/built-in.o - Section mismatch: reference to .init.text: from .text between 'kmem_cache_create' (at offset 0x20dff) and 'cache_reap'
-> WARNING: mm/built-in.o - Section mismatch: reference to .init.text: from .text between 'kmem_cache_create' (at offset 0x20e41) and 'cache_reap'
-> 
-> Built with CONFIG_SLAB, CONFIG_SMP, x86_64.
+> mac80211: include <linux/delay.h> instead of <asm/delay.h>
 
-It comes from this code (mm/slab.c):
-/*
- * For setting up all the kmem_list3s for cache whose buffer_size is same as
- * size of kmem_list3.
- */
-static void __init set_up_list3s(struct kmem_cache *cachep, int index)
-{
-	int node;
+Got it, thanks!
 
-	for_each_online_node(node) {
-		cachep->nodelists[node] = &initkmem_list3[index + node];
-		cachep->nodelists[node]->next_reap = jiffies +
-		    REAPTIMEOUT_LIST3 +
-		    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
-	}
-}
+Please send/copy to linux-wireless@vger.kernel.org in the future.
 
-It is supposed to be used only during early init and thus marked __init.
-And initkmem_list3 is marked __initdata so that matches.
-
-But set_up_list3s() is used outside __init marked functions and thus result in an error.
-
-I do not know how to fix this.
-
-	Sam
+John
+-- 
+John W. Linville
+linville@tuxdriver.com
