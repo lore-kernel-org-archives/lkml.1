@@ -1,160 +1,247 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753569AbXEFQ6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbXEFRNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753569AbXEFQ6j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 12:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753566AbXEFQ6j
+	id S1754214AbXEFRNY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 13:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754233AbXEFRNY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 12:58:39 -0400
-Received: from vms040pub.verizon.net ([206.46.252.40]:56043 "EHLO
-	vms040pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753508AbXEFQ6h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 12:58:37 -0400
-Date: Sun, 06 May 2007 12:58:25 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: [PATCH] Serial 8250: Handle saving the clear-on-read bits from the
- LSR and MSR
-In-reply-to: <463B7FBC.3090907@acm.org>
-To: Corey Minyard <minyard@acm.org>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Russell King <rmk+lkml@arm.linux.org.uk>
-Message-id: <200705061258.25351.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-References: <20070504131532.GA12265@localdomain>
- <200705041304.02618.gene.heskett@gmail.com> <463B7FBC.3090907@acm.org>
-User-Agent: KMail/1.9.6
+	Sun, 6 May 2007 13:13:24 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:54656 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754214AbXEFRNX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 13:13:23 -0400
+Date: Sun, 6 May 2007 19:13:07 +0200 (CEST)
+From: Jan Kratochvil <honza@jikos.cz>
+To: linux-kernel@vger.kernel.org
+cc: Ingo Molnar <mingo@elte.hu>, Marcus Meissner <meissner@suse.de>
+Subject: [PATCH] PIE randomization
+Message-ID: <alpine.LRH.0.98.0705061806160.22353@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 04 May 2007, Corey Minyard wrote:
->Gene Heskett wrote:
->> On Friday 04 May 2007, Corey Minyard wrote:
->>> I did think of one other thing: if you clear the MSR delta flags while
->>> polling the serial console, you need to call the routine to check the
->>> modem status since the interrupt will not happen.  So here's the
->>> patch...
->>>
->>> Subject: Serial 8250: Handle saving the clear-on-read bits from the LSR
->>> and MSR
->>
->> I applied this patch because I was curious to see what effect if any it
->> had on some serial based acessories I use here, like a cm11 x10 controller
->> with heyu, and a belkin ups with its supplied software.
->>
->> But at first boot, its not 100% operationally safe, but please read on.
->>
->> 1) heyu (the x10 control program) is now stuck in a loop, repeating the
->> last command issued, at about 40 second repeat intervals.  AND it is using
->> 90%+ of the cpu while it executes each loop, which takes about 7 to 10
->> seconds each time.  heyu is interfacing to the world via /dev/ttyUSB0,
->> through an FTDI adapter so I'm not able to make a mental connection here
->> between this patch and that effect.
->>
->> 2) HOWEVER!  The belkin upsd daemon, which started being a cpu hog, using
->> 40% of the cpu continuously since something in the 2.6.20 to 2.6.21 time
->> frame, and this was regardless of whether it was talking through a
->> /dev/ttyUSB# port and either a pl2303, or an FTDI adaptor, or direct
->> through /dev/ttyS0, is at least for /dev/ttyS0, now operating normally and
->> apparently 100% stable.  So I pulled out another FTDI adaptor, and
->> reconfigured the daemon to use /dev/ttyUSB1, and that is also operating
->> 100% normally now.
->>
->> Can someone explain 1) above?  Even odder still, I'd killed and restarted
->> heyu several times to no avail before I tried putting upsd on
->> /dev/ttyUSB1, but after moving the upsd access from /dev/ttyS0 to
->> /dev/ttyUSB1, then heyu, running through /dev/ttyUSB0, is now operating
->> 100% normally.  ???
->>
->> Does anyone have any idea what kind of bait I should put out to kill this
->> nilmerg?  I'm happy, its all working again for a change, but I'll be
->> damned if I ain't totally bumfuzzled.  And I wonder if it will survive a
->> reboot...
->
->I really doubt that this patch had anything to do with these issues,
->especially
->the ones over USB.  However, if you can reliably remove the patch, test, and
->reapply the patch, and test, and the issues remain the same, then it's
->perhaps
->something significant, though I would be at a loss to know what it was.
->
->-corey
+Hi,
+   this is something like reaction to this thread:
+http://lkml.org/lkml/2007/1/6/124. I hope I was able to separate the PIE 
+randomization part correctly.
 
-Well, I believe it is.  Or did, see below.
+There is platform specific (__i386__ only) part in exec shield, I am not 
+pretty sure why is it there, but wasn't brave enough to touch it. Can 
+someone comment the #ifdef out and test it on some other platform?
 
-I've been testing the two competing schedulers, and just now got around to 
-testing Con's last 0.48 version, which at first feel isn't that bad.
+It will be nice to follow with brk randomization, but in exec-shield it is 
+afaik i386 only. Right?
 
-And I also have to bitch because everytime I change schedulers, all my USB 
-stuff jumps around and I have to reconfigure everything to use whatever the 
-hell random ttyUSB# it gets with this particular scheduler at boot time.
+Randomizes -pie compiled binaries. The implementation is part of Redhat's 
+exec-shield (http://people.redhat.com/mingo/exec-shield/).
 
-For instance, with Con's scheduler, the FTDI device feeding a cm11a from heyu 
-consistently gets /dev/ttyUSB1, and the FTDI device connecting my ups always 
-gets /dev/ttyUSB0.
+Signed-off-by: Jan Kratochvil <honza@jikos.cz>
+---
+  fs/binfmt_elf.c |   96 ++++++++++++++++++++++++++++++++++++++++++------------
+  1 files changed, 74 insertions(+), 22 deletions(-)
 
-Now, I built this kernel without that patch.  Heyu, once reconfigured for the 
-new address, works, but its a very low traffic connection.
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index 9cc4f0a..1156f41 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -45,7 +45,7 @@
 
-upsd OTOH is attempting to talk to the ups, I can see the leds on the FTDI 
-trying to establish the usual once per second sort of a gallumph, and failing, 
-and upsd is now using 40 to 50% of the cpu.  I can't feel it though, so thats 
-to the sd-0.48 patches credit, its working quite well so far.
+  static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs);
+  static int load_elf_library(struct file *);
+-static unsigned long elf_map (struct file *, unsigned long, struct elf_phdr *, int, int);
++static unsigned long elf_map (struct file *, unsigned long, struct elf_phdr *, int, int, unsigned long);
 
-So now, I'm going to apply that patch in the subject line to this 
-2.6.21.1-sd-0.48 kernel and reboot.
+  /*
+   * If we don't support core dumping, then supply a NULL so we
+@@ -80,7 +80,7 @@ static struct linux_binfmt elf_format =
+  		.hasvdso	= 1
+  };
 
-Ok, done.  And everything usb serial is running normally except upsd, its 
-working, but using 45% of the cpu.  So your patch DOES fix SOME of the serial 
-usb problems here, in that upsd can now talk to the ups.
+-#define BAD_ADDR(x) ((unsigned long)(x) >= TASK_SIZE)
++#define BAD_ADDR(x) ((unsigned long)(x) >= PAGE_MASK)
 
-Now, I'm going to revert this same patch that I had applied to 2.6.21.1-CFS-v9 
-and see if my problems come back.
+  static int set_brk(unsigned long start, unsigned long end)
+  {
+@@ -285,33 +285,70 @@ create_elf_tables(struct linux_binprm *b
+  #ifndef elf_map
 
-Rebooted to that, and I'm bumfuzzled, everything is working, and I didn't have 
-to reconfigure everything because the ports were swapped.  Jelly side up?  
-Damnedifiknow...  heyu is spending quite a bit of time at the top of the list 
-in htop at about 2% cpu, so I tail the log, the motion sensor is going 
-banannas, but when I check for the cause, I found the missus is sitting in 
-the porch swing yakking on the phone, which is tripping it. :-)
+  static unsigned long elf_map(struct file *filep, unsigned long addr,
+-		struct elf_phdr *eppnt, int prot, int type)
++		struct elf_phdr *eppnt, int prot, int type,
++		unsigned long total_size)
+  {
+  	unsigned long map_addr;
+-	unsigned long pageoffset = ELF_PAGEOFFSET(eppnt->p_vaddr);
++	unsigned long size = eppnt->p_filesz + ELF_PAGEOFFSET(eppnt->p_vaddr);
++	unsigned long off = eppnt->p_offset - ELF_PAGEOFFSET(eppnt->p_vaddr);
++	addr = ELF_PAGESTART(addr);
++	size = ELF_PAGEALIGN(size);
 
-And, just to come full circle, I re-applied that patch to 2.6.21.1-CFS-v9 and 
-rebooted yet again, so I'm back to where I started.  The thing I note most is 
-that while heyu is still logging the missus on the porch swing, it never even 
-gets to the top page of the htop display, without the patch, it was using 
-about 2% of the cpu and was often the top item in he display.
+-	down_write(&current->mm->mmap_sem);
+  	/* mmap() will return -EINVAL if given a zero size, but a
+  	 * segment with zero filesize is perfectly valid */
+-	if (eppnt->p_filesz + pageoffset)
+-		map_addr = do_mmap(filep, ELF_PAGESTART(addr),
+-				   eppnt->p_filesz + pageoffset, prot, type,
+-				   eppnt->p_offset - pageoffset);
+-	else
+-		map_addr = ELF_PAGESTART(addr);
++	if (!size)
++		return addr;
++
++	down_write(&current->mm->mmap_sem);
++	/*
++	* total_size is the size of the ELF (interpreter) image.
++	* The _first_ mmap needs to know the full size, otherwise
++	* randomization might put this image into an overlapping
++	* position with the ELF binary image. (since size < total_size)
++	* So we first map the 'big' image - and unmap the remainder at
++	* the end. (which unmap is needed for ELF images with holes.)
++	*/
++	if (total_size) {
++		total_size = ELF_PAGEALIGN(total_size);
++		map_addr = do_mmap(filep, addr, total_size, prot, type, off);
++		if (!BAD_ADDR(map_addr))
++			do_munmap(current->mm, map_addr+size, total_size-size);
++	} else
++		map_addr = do_mmap(filep, addr, size, prot, type, off);
++
+  	up_write(&current->mm->mmap_sem);
+  	return(map_addr);
+  }
 
-Hopefully you can sort something meaningfull out of the above.  I'm too close 
-to the forest to see the trees I think.
+  #endif /* !elf_map */
 
-Now, there has been an even longer thread discussing the throwing away of data 
-over usb serial in particular going on here, and I've NDI if this patch would 
-correct the problems they are seeing, which in that case appear to be a 
-situation where the data is being fed in a constant stream, but only read 
-intermittently, resulting in the need to cleanly throw away data, vs this 
-situation where in both cases here, any data input is read immediately by one 
-or the other of the monitoring clients.
++static inline unsigned long total_mapping_size(struct elf_phdr *cmds, int nr)
++{
++	int i, first_idx = -1, last_idx = -1;
++
++	for (i = 0; i < nr; i++)
++		if (cmds[i].p_type == PT_LOAD) {
++			last_idx = i;
++			if (first_idx == -1)
++				first_idx = i;
++		}
++
++	if (first_idx == -1)
++		return 0;
++
++	return cmds[last_idx].p_vaddr + cmds[last_idx].p_memsz -
++				ELF_PAGESTART(cmds[first_idx].p_vaddr);
++}
++
++
+  /* This is much more generalized than the library routine read function,
+     so we keep this separate.  Technically the library read function
+     is only provided so that we can read a.out libraries that have
+     an ELF header */
 
-Previously I was having all sorts of problems & miss-comm with this kernel 
-until I appled this patch, now I've reversed it and things are still working.
+  static unsigned long load_elf_interp(struct elfhdr *interp_elf_ex,
+-		struct file *interpreter, unsigned long *interp_load_addr)
++		struct file *interpreter, unsigned long *interp_load_addr,
++		unsigned long no_base)
+  {
+  	struct elf_phdr *elf_phdata;
+  	struct elf_phdr *eppnt;
+@@ -319,6 +356,7 @@ static unsigned long load_elf_interp(str
+  	int load_addr_set = 0;
+  	unsigned long last_bss = 0, elf_bss = 0;
+  	unsigned long error = ~0UL;
++	unsigned long total_size;
+  	int retval, i, size;
 
-I'll continue to run this CFS kernel, with this patch until the next scheduler 
-test patch comes by I guess, or we have a 22-rc1 to beat on.
+  	/* First of all, some simple consistency checks */
+@@ -357,6 +395,10 @@ static unsigned long load_elf_interp(str
+  		goto out_close;
+  	}
 
-Con's sd-0.48 feels great, but leaves upsd swinging in the breeze totally 
-without this patch, and with it, upsd works but still uses 45% of the cpu, so 
-this is the only viable combination of the 2 schedulers and with or without 
-this patch.  Whatever it does, with Ingo's scheduler, its a fix, with Con's 
-its still a day late & a dollar short.
++	total_size = total_mapping_size(elf_phdata, interp_elf_ex->e_phnum);
++	if (!total_size)
++		goto out_close;
++
+  	eppnt = elf_phdata;
+  	for (i = 0; i < interp_elf_ex->e_phnum; i++, eppnt++) {
+  		if (eppnt->p_type == PT_LOAD) {
+@@ -374,9 +416,11 @@ static unsigned long load_elf_interp(str
+  			vaddr = eppnt->p_vaddr;
+  			if (interp_elf_ex->e_type == ET_EXEC || load_addr_set)
+  				elf_type |= MAP_FIXED;
++			else if (no_base && interp_elf_ex->e_type == ET_DYN)
++				load_addr = -vaddr;
 
-Thanks for your patience Corey.
+  			map_addr = elf_map(interpreter, load_addr + vaddr,
+-					   eppnt, elf_prot, elf_type);
++					   eppnt, elf_prot, elf_type, total_size);
+  			error = map_addr;
+  			if (BAD_ADDR(map_addr))
+  				goto out_close;
+@@ -442,8 +486,7 @@ static unsigned long load_elf_interp(str
+  			goto out_close;
+  	}
 
+-	*interp_load_addr = load_addr;
+-	error = ((unsigned long)interp_elf_ex->e_entry) + load_addr;
++	error = load_addr;
+
+  out_close:
+  	kfree(elf_phdata);
+@@ -540,7 +583,7 @@ static int load_elf_binary(struct linux_
+  	int elf_exec_fileno;
+  	int retval, i;
+  	unsigned int size;
+-	unsigned long elf_entry, interp_load_addr = 0;
++	unsigned long elf_entry, interp_load_addr = 0, interp_map_addr = 0;
+  	unsigned long start_code, end_code, start_data, end_data;
+  	unsigned long reloc_func_desc = 0;
+  	char passed_fileno[6];
+@@ -808,9 +851,7 @@ static int load_elf_binary(struct linux_
+  	current->mm->start_stack = bprm->p;
+
+  	/* Now we do a little grungy work by mmaping the ELF image into
+-	   the correct location in memory.  At this point, we assume that
+-	   the image should be loaded at fixed address, not at a variable
+-	   address. */
++	   the correct location in memory. */
+  	for(i = 0, elf_ppnt = elf_phdata;
+  	    i < loc->elf_ex.e_phnum; i++, elf_ppnt++) {
+  		int elf_prot = 0, elf_flags;
+@@ -864,11 +905,15 @@ static int load_elf_binary(struct linux_
+  			 * default mmap base, as well as whatever program they
+  			 * might try to exec.  This is because the brk will
+  			 * follow the loader, and is not movable.  */
++#if defined(__i386__) || defined(__x86_64__)
++			load_bias = 0;
++#else
+  			load_bias = ELF_PAGESTART(ELF_ET_DYN_BASE - vaddr);
++#endif
+  		}
+
+  		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
+-				elf_prot, elf_flags);
++				elf_prot, elf_flags,0);
+  		if (BAD_ADDR(error)) {
+  			send_sig(SIGKILL, current, 0);
+  			goto out_free_dentry;
+@@ -944,10 +989,17 @@ static int load_elf_binary(struct linux_
+  		if (interpreter_type == INTERPRETER_AOUT)
+  			elf_entry = load_aout_interp(&loc->interp_ex,
+  						     interpreter);
+-		else
++		else {
+  			elf_entry = load_elf_interp(&loc->interp_elf_ex,
+  						    interpreter,
+-						    &interp_load_addr);
++						    &interp_map_addr,
++						    load_bias);
++			if (!BAD_ADDR(elf_entry)) {
++				/* load_elf_interp() returns relocation adjustment */
++				interp_load_addr = elf_entry;
++				elf_entry += loc->interp_elf_ex.e_entry;
++			}
++		}
+  		if (BAD_ADDR(elf_entry)) {
+  			force_sig(SIGSEGV, current);
+  			retval = IS_ERR((void *)elf_entry) ?
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Death is nature's way of saying `Howdy'.
+1.4.3.4
+
