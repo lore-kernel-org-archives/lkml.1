@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933590AbXEFKsF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933602AbXEFLI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933590AbXEFKsF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 06:48:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933593AbXEFKsF
+	id S933602AbXEFLI1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 07:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933609AbXEFLI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 06:48:05 -0400
-Received: from il.qumranet.com ([82.166.9.18]:55539 "EHLO il.qumranet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933590AbXEFKsE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 06:48:04 -0400
-Message-ID: <463DB261.3000007@qumranet.com>
-Date: Sun, 06 May 2007 13:48:01 +0300
-From: Avi Kivity <avi@qumranet.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: kvm-devel <kvm-devel@lists.sourceforge.net>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [ANNOUNCE] kvm-22 release
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 6 May 2007 07:08:27 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47143 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933602AbXEFLI0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 07:08:26 -0400
+Date: Sun, 6 May 2007 12:08:21 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Arjan van de Ven <arjan@infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: VMware, x86_64 and 2.6.21.
+Message-ID: <20070506110821.GA1166@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Valdis.Kletnieks@vt.edu,
+	Nigel Cunningham <nigel@nigel.suspend2.net>,
+	Arjan van de Ven <arjan@infradead.org>,
+	LKML <linux-kernel@vger.kernel.org>
+References: <1177998147.8981.16.camel@nigel.suspend2.net> <1178031475.3448.0.camel@laptopd505.fenrus.org> <1178032456.13953.12.camel@nigel.suspend2.net> <20070505095609.GB9935@infradead.org> <18248.1178435773@turing-police.cc.vt.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18248.1178435773@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The happy theme of today's kvm is the significant performance 
-improvements, brought to you by a growing team of developers.  I've 
-clocked kbuild at within 25% of native.  This release also introduces 
-support for 32-bit Windows Vista.
+On Sun, May 06, 2007 at 03:16:13AM -0400, Valdis.Kletnieks@vt.edu wrote:
+> I'm not convinced it's *totally* off-topic.  I'll agree that third-party
+> binaries are on their own as far as active support goes, but I don't see
+> that it's off-topic to post a simple statement-of-fact like "2.6.mumble-rc1
+> breaks <popular-driver-FOO>" just so it's a *known* issue and people who
+> search the list archives don't spend forever re-inventing the wheel.  Also,
+> it's quite *possible* that the binary module has tripped over a geniune
+> regression or bug in the kernel.
 
-Changes from kvm-21:
-- Significant performance improvements (Anthony Liguori, Eddie Dong, 
-Qing He, me)
-- Fix longstanding bug: time runs at double speed on x86_64 Linux (Qing He)
-- Windows Vista 32-bit support (Qing He, Jun Nakajima)
-- Support for kvm abi 10 modules
-- Minor updates
+Actually it's totally offtopic.  Not only are prorpitary module not
+on the agenda at all here, but ones that poke into deep down kernel
+internals should be expected to break every time.  Note to mention that
+they are on the almost black side of the illegality scala for propritary
+modules.
 
-Notes:
-   If you use the modules from kvm-22, you can use any version of Linux
-from 2.6.9 upwards.
-   If you use the modules from Linux 2.6.20, you need to use kvm-12.
-   If you use the modules from Linux 2.6.21, you need to use kvm-17.
 
-   API/ABI stability is planned for Linux 2.6.22.
-
-http://kvm.qumranet.com
-
--- 
-error compiling committee.c: too many arguments to function
-
+---end quoted text---
