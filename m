@@ -1,85 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755280AbXEFUYr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751131AbXEFUcA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755280AbXEFUYr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 16:24:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755281AbXEFUYr
+	id S1751131AbXEFUcA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 16:32:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbXEFUcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 16:24:47 -0400
-Received: from smtp35.poczta.interia.pl ([80.48.65.35]:30997 "EHLO
-	smtp4.poczta.interia.pl" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755280AbXEFUYq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 16:24:46 -0400
-Message-ID: <463E3985.6030002@interia.pl>
-Date: Sun, 06 May 2007 22:24:37 +0200
-From: =?UTF-8?B?UmFmYcWCIEJpbHNraQ==?= <rafalbilski@interia.pl>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070321)
+	Sun, 6 May 2007 16:32:00 -0400
+Received: from mail.z-net.ru ([89.113.80.10]:2912 "EHLO mail.z-net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751131AbXEFUb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 16:31:59 -0400
+Date: Mon, 7 May 2007 00:27:28 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Kconfig text confusion: Battery Class Support?
+Message-ID: <20070506202728.GA9520@zarina>
+Reply-To: cbou@mail.ru
+References: <1178453212.7731.10.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Dave Jones <davej@codemonkey.org.uk>
-Cc: linux-kernel@vger.kernel.org, cpufreq@lists.linux.org.uk
-Subject: [PATCH] Longhaul - Broken again
-X-Enigmail-Version: 0.94.3.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-EMID: f6f8acc
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <1178453212.7731.10.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Not so long ago Longhaul was marked broken, because to protect system 
-from lockup it was clearing BMDMA master bit on each device. Later I came 
-with patches which make use of hardware support present in VIA north and 
-south bridges. Unfortunately after some time this support seems to be broken 
-for many cases. First report was for older model of Epia mainboard and seemed 
-to be only case. There is no explanation for it. Hardware is exactly the same 
-as for my M10000, with exception of one additional NIC. There is no way to 
-detect broken chipsets. All hardware revisions are exactly the same as on 
-perfectly working system.
+Hello Rusty,
 
-Yesterday Longhaul was reported as broken for VIA Eden ESP 7000 CPU 
-(http://lkml.org/lkml/2007/5/4/115). Transition is successful, but lock up is 
-only question of short time. CPU has Nehemiah core and it is claiming that it 
-is supporting Longhaul MSR. And it is true. Info in Longhaul MSR is correct.
+On Sun, May 06, 2007 at 10:06:52PM +1000, Rusty Russell wrote:
+> Hi all,
+> 
+> 	I know writing decent Kconfig help entries is an obscure art, but can
+> we please try harder to make the help, y'know, helpful?  See below for
+> my experience with 2.6.21-mm1.
+> 
+> 	How come the Kconfig help for EXTERNAL_POWER says "is mandatory for
+> battery class support" and I still get prompted for "Battery class
+> support" when I say N?
+> 
+> 	How come both these entries are of form "Foo (FOO)? -- Say Y here to
+> enable foo."?   Shouldn't we assume the reader knows what Y means?
+> 
+> How about:
+> 
+>         Battery class support (BATTERY) [N/m/y/?] (NEW) ?     
+>         
+>         This allows battery monitoring by userspace via sysfs (if
+>         available) and/or APM kernel interface (if selected below).  Say
+>         Y or M if building a kernel for a laptop.
+> 
+> I don't even understand the CONFIG_EXTERNAL_POWER enough to comment on
+> that one 8(
+> 
 
-Yesterday Longhaul was reported to cause lockup. Looks like chipset is blocking 
-AGP DMA, internal PCI DMA and processor access to PCI bus, but it is granting 
-DMA request to additional PCI card (Hauppauge PVR150). Reported by Wander 
-Winkelhorst.
+Thank you for the message, Rusty. It's "fixed" already in battery2-2.6.git.
 
-Yesterday Longhaul was reported to cause lockup after 2 or 3 hours of use
-(http://lkml.org/lkml/2007/5/4/513). It may sound great on Windows(tm) based 
-systems, but for Linux it is unacceptable short time.
+Yes, battery/external power separation was a complicated part of whole
+battery stuff. Now, thanks to David Woodhouse, external power and
+battery classes merged, and there is much simpler configuration now:
 
-Probably there are many more systems on which Longhaul is causing trouble 
-directly, by lockup during transition, or triggering bug in other hardware. 
-Simply it wasn't reported as broken so far. Even if there are systems on 
-which Longhaul is perfectly OK (I'm writting from such system now) there is 
-no place for it in the kernel because there is no way to know how to setup 
-hardware to correct state (looks like it is more than one bit or register) 
-and there is no way to detect broken hardware (looks like there is more then 
-one revision).
+*
+* Power supply class support
+*
+Power supply class support (POWER_SUPPLY) [N/m/y/?] (NEW) m
+  Power supply debug (POWER_SUPPLY_DEBUG) [N/y/?] (NEW) y
+  Generic PDA/phone power driver (PDA_POWER) [N/m/?] (NEW) m
+  DS2760 battery driver (HP iPAQ & others) (BATTERY_DS2760) [N/m/?] (NEW) m
+  One Laptop Per Child battery (BATTERY_OLPC) [N/m/?] (NEW) m
 
-Signed-off-by: Rafal Bilski <rafalbilski@interia.pl>
----
- arch/i386/kernel/cpu/cpufreq/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+That's all you have to answer.
 
-diff --git a/arch/i386/kernel/cpu/cpufreq/Kconfig b/arch/i386/kernel/cpu/cpufreq/Kconfig
---- a/arch/i386/kernel/cpu/cpufreq/Kconfig
-+++ b/arch/i386/kernel/cpu/cpufreq/Kconfig
-@@ -206,7 +206,7 @@ config X86_LONGRUN
- config X86_LONGHAUL
- 	tristate "VIA Cyrix III Longhaul"
- 	select CPU_FREQ_TABLE
--	depends on ACPI_PROCESSOR
-+	depends on ACPI_PROCESSOR && BROKEN
- 	help
- 	  This adds the CPUFreq driver for VIA Samuel/CyrixIII,
- 	  VIA Cyrix Samuel/C3, VIA Cyrix Ezra and VIA Cyrix Ezra-T
+Thanks,
+
 -- 
-
-
-
-----------------------------------------------------------------------
-Kasia Cichopek eksponuje biust  
->>> http://link.interia.pl/f1a6f
-
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
