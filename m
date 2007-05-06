@@ -1,105 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754731AbXEFOXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754644AbXEFOl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754731AbXEFOXj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 10:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754752AbXEFOXj
+	id S1754644AbXEFOl7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 10:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbXEFOl7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 10:23:39 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3926 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754731AbXEFOXi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 10:23:38 -0400
-Date: Sun, 6 May 2007 15:23:29 +0100
-From: Russell King <rmk@arm.linux.org.uk>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: LED stuff - why bother with error handling
-Message-ID: <20070506142329.GA21158@flint.arm.linux.org.uk>
-Mail-Followup-To: Linux Kernel List <linux-kernel@vger.kernel.org>,
-	Richard Purdie <rpurdie@rpsys.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Sun, 6 May 2007 10:41:59 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:49161 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754644AbXEFOl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 10:41:58 -0400
+Date: Sun, 6 May 2007 16:41:51 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Folkert van Heusden <folkert@vanheusden.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.21] kernel panic
+In-Reply-To: <20070506115651.GA13183@vanheusden.com>
+Message-ID: <Pine.LNX.4.64.0705061632500.16923@twin.jikos.cz>
+References: <20070506115651.GA13183@vanheusden.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While reviewing 4359/2, I found the following issue.  Let's remove all
-the irrelevant lines of code to illustrate the problem.
+On Sun, 6 May 2007, Folkert van Heusden wrote:
 
-void led_trigger_register_simple(const char *name, struct led_trigger **tp)
-{
-        struct led_trigger *trigger;
+> A few moments ago a system of mine running 2.6.21 on a P4 with
+> hyperthreading, 2GB ram, IDE disk, crashed:
+> [10371.128320] BUG: unable to handle kernel paging request at virtual address 00100100
+> [10371.128419]  printing eip:
+[...]
+> [10371.131825] EIP is at hiddev_send_event+0xa1/0xd3
 
-        trigger = kzalloc(sizeof(struct led_trigger), GFP_KERNEL);
-...
-        *tp = trigger;
-}
+Hi,
 
-void led_trigger_unregister(struct led_trigger *trigger)
-{
-        list_del(&trigger->next_trig);
-}
+I will look into it. Are you able to reproduce the problem, or did it 
+happen just randomly? Is there any userspace driver using the hiddev 
+interface at the moment it crashes?
 
-The thing to note is that led_trigger_register_simple() can fail but it's
-a void function.  There's a very good school of thought which says that
-functions which can fail should never have a return type of void.
+There have been no changes in the hiddev code for a pretty long time.
 
-However, let's continue.  Looking at patch 4359/2 in the ARM patch
-system:
-
-+static int __init h1940bt_probe(struct platform_device *pdev)
-+{
-...
-+#ifdef CONFIG_LEDS_H1940
-+	led_trigger_register_simple("h1940-bluetooth", &bt_led_trigger);
-+#endif
-+	err = device_create_file(&pdev->dev, &dev_attr_enable);
-+
-+	return err;
-+}
-+
-+static int h1940bt_remove(struct platform_device *pdev)
-+{
-+#ifdef CONFIG_LEDS_H1940
-+	led_trigger_unregister_simple(bt_led_trigger);
-+#endif
-+	return 0;
-+}
-
-Notice the lack of checking to see if bt_led_trigger is NULL or not - if
-the kzalloc fails, we happily return success from the probe function.
-However, when the driver is removed, we call led_trigger_unregister_simple()
-which consequently does a NULL dereference.
-
-This seems to be an endemic problem to led_trigger_register_simple() - 100%
-of the merged uses of this function suffer from the same issue, eg:
-
-static int __init ledtrig_ide_init(void)
-{
-        led_trigger_register_simple("ide-disk", &ledtrig_ide);
-        return 0;
-}
-
-static void __exit ledtrig_ide_exit(void)
-{
-        led_trigger_unregister_simple(ledtrig_ide);
-}
-
-See also nand_base_init and sharpsl_pm_probe.
-
-If we want people to detect errors then we must *not* return values by
-reference.  It stops people thinking about "what if this returns a non-
-zero error value" or "what if it returns NULL?".  Adding __must_check
-gives extra persuasion to check the return value.
-
-Can the LED trigger API be fixed please?
-
-I'm not going to merge 4359/2 because it's just going to spread this
-problem over a wider area.
+Thanks,
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Jiri Kosina
