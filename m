@@ -1,57 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758962AbXEFVMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbXEFVNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758962AbXEFVMZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 17:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758968AbXEFVMY
+	id S1759251AbXEFVNO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 17:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759248AbXEFVNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 17:12:24 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:2008 "EHLO mail.z-net.ru"
+	Sun, 6 May 2007 17:13:14 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:50665 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758957AbXEFVMW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 17:12:22 -0400
-Date: Mon, 7 May 2007 01:07:54 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: ian <spyro@f2s.com>, Shem Multinymous <multinymous@gmail.com>,
-       Greg KH <gregkh@suse.de>, David Woodhouse <dwmw2@infradead.org>,
-       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org
-Subject: Re: [Kernel-discuss] Re: [PATCH 3/8] Universal power supply class
-	(was: battery class)
-Message-ID: <20070506210754.GB10236@zarina>
-Reply-To: cbou@mail.ru
-References: <20070503213139.GC20067@zarina> <41840b750705032155w21d98b5g6236daf9bff66606@mail.gmail.com> <20070505035413.GB21359@khazad-dum.debian.net> <1178372786.3901.4.camel@wirenth> <20070506180937.GB31940@khazad-dum.debian.net>
+	id S1759241AbXEFVNM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 17:13:12 -0400
+Message-ID: <463E44E0.2010308@simon.arlott.org.uk>
+Date: Sun, 06 May 2007 22:13:04 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20070506180937.GB31940@khazad-dum.debian.net>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org,
+       satyam.sharma@gmail.com
+Subject: Re: 2.6.21-mm1
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>	<463DED69.4020507@simon.arlott.org.uk> <20070506130821.b6bed03b.akpm@linux-foundation.org>
+In-Reply-To: <20070506130821.b6bed03b.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 06, 2007 at 03:09:37PM -0300, Henrique de Moraes Holschuh wrote:
-> On Sat, 05 May 2007, ian wrote:
-> > On Sat, 2007-05-05 at 00:54 -0300, Henrique de Moraes Holschuh wrote:
-> > 
-> > > Given that USB-power *is* usually also "dumb" (i.e. it doesn't do any
-> > > control signaling over the USB bus for power-control purposes),
-> > 
-> > it might be dumb, but it is useful to know wether the PDA is charging
-> > from usb or mains power. and some devices allow one to switch on / off
-> > the ability to charge via usb
+On 06/05/07 21:08, Andrew Morton wrote:
+> On Sun, 06 May 2007 15:59:53 +0100 Simon Arlott <simon@fire.lp0.eu> wrote:
 > 
-> Which, at the proper abstraction level provided by this class, means that it
-> allows one to switch on or off a power supply channel.
-> 
-> Laptops let one do this with their batteries, too.  It is the same thing.  I
-> didn't check if the class comes with an attribute for "enable/disable this
-> power source", but if doesn't, we need to add one: it *is* a generic and
-> widely used capability in laptops, and according to you, also on PDAs.
+>> On 05/05/07 09:49, Andrew Morton wrote:
+>>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+>> I'm currently in the middle of a bisect over the last week of commits to linus' 
 
-Yup, this is simple matter of adding such attribute (plus implemention
-of set_property function, which is trivial).
+Don't accidentally switch from SLAB to SLOB.
+
+>> tree, but I got the following with -mm1 that isn't showing up in the latest 
+>> 2.6.21-git:
+>>
+>> [   15.644778] BUG: sleeping function called from invalid context at kernel/mutex.c:86
+>> [   15.644873] in_atomic():1, irqs_disabled():1
+>> [   15.644882] 2 locks held by modprobe/2765:
+>> [   15.644889]  #0:  (devlist_lock){--..}, at: [<b052dc7f>] mutex_lock+0x1f/0x30
+>> [   15.645058]  #1:  (modlist_lock){....}, at: [<b0147b1d>] __symbol_get+0x1d/0x90
+>> [   15.645207] irq event stamp: 11772
+>> [   15.645271] hardirqs last  enabled at (11771): [<b016d793>] slab_free+0xc3/0x200
+>> [   15.645289] hardirqs last disabled at (11772): [<b052f476>] _spin_lock_irqsave+0x16/0x60
+>> [   15.645364] softirqs last  enabled at (11216): [<b0125286>] __do_softirq+0x96/0xb0
+>> [   15.645439] softirqs last disabled at (11211): [<b01069f2>] do_softirq+0x82/0x100
+>> [   15.645517]  [<b0104f0a>] show_trace_log_lvl+0x1a/0x30
+>> [   15.645586]  [<b0104f32>] show_trace+0x12/0x20
+>> [   15.645654]  [<b0105045>] dump_stack+0x15/0x20
+>> [   15.645665]  [<b011d6ad>] __might_sleep+0xcd/0xf0
+>> [   15.645737]  [<b052dc78>] mutex_lock+0x18/0x30
+>> [   15.645806]  [<b01b1b7c>] sysfs_create_link+0x6c/0x130
+>> [   15.645823]  [<b0146dba>] use_module+0x11a/0x170
+>> [   15.645892]  [<b0147b6c>] __symbol_get+0x6c/0x90
+>> [   15.645904]  [<f086ac2c>] dvb_init+0x98c/0xd70 [saa7134_dvb]
+>> [   15.645984]  [<b036861d>] mpeg_ops_attach+0x3d/0x50
+>> [   15.646058]  [<b0369109>] saa7134_ts_register+0x29/0x70
+>> [   15.646070]  [<f086f010>] dvb_register+0x10/0x12 [saa7134_dvb]
+>> [   15.646141]  [<b01491b7>] sys_init_module+0xf7/0x150
+>> [   15.646153]  [<b0104172>] sysenter_past_esp+0x5f/0x99
+>> [   15.646221]  =======================
+> 
+> Looks like a locking error in the DVB code.
+> 
+>> And this fantastic Oops:
+>> [   40.965119] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000080
+>> [   40.965252]  printing eip:
+>> [   40.965252] b016d4a5
+>> [   40.965300] *pde = 00000000
+>> [   40.965352] Oops: 0000 [#1]
+>> [   40.965467] PREEMPT 
+>>
+>> It occurs when racoon is started so must be IPSEC related, I'll have more information 
+>> once I finish bisecting and merge -mm1 again.
+> 
+> Thanks.
+
+Unfortunately I can't reproduce either of these anymore...
 
 -- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
+Simon Arlott
