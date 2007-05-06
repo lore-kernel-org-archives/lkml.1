@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752277AbXEFXf7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752342AbXEFXnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752277AbXEFXf7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 19:35:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXEFXf7
+	id S1752342AbXEFXnV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 19:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbXEFXnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 19:35:59 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50825 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752221AbXEFXf7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 19:35:59 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: console font limits
-Date: Sun, 6 May 2007 19:35:53 -0400
-User-Agent: KMail/1.9.6
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Kyle Moffett <mrmacman_g4@mac.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Albert Cahalan <acahalan@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, aeb@cwi.nl
-References: <787b0d920704302109r352e6653wc71a0638cbfbdcce@mail.gmail.com> <1178254748.4722.4.camel@daplas> <200705040834.41000.jbarnes@virtuousgeek.org>
-In-Reply-To: <200705040834.41000.jbarnes@virtuousgeek.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Sun, 6 May 2007 19:43:21 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:3256 "EHLO nef2.ens.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752316AbXEFXnU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 19:43:20 -0400
+Date: Sun, 6 May 2007 19:43:01 -0400
+From: Quentin Godfroy <godfroy@clipper.ens.fr>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Quentin Godfroy <godfroy@clipper.ens.fr>, linux-kernel@vger.kernel.org,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "David A. Madore" <David.Madore@ens.fr>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: patch: VFS: fix passing of AT_PHDR value in auxv to ELF interpreter
+Message-ID: <20070506234301.GA29699@goelette.ens.fr>
+References: <20070504140921.GA23122@goelette.ens.fr> <463BC265.7050507@goop.org> <20070505032348.GA30453@goelette.ens.fr> <463C06E5.8050201@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705061935.53601.dhazelton@enter.net>
+In-Reply-To: <463C06E5.8050201@goop.org>
+User-Agent: Mutt/1.4.2.2i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Mon, 07 May 2007 01:43:15 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 04 May 2007 11:34:40 Jesse Barnes wrote:
-> On Thursday, May 03, 2007, Antonino A. Daplas wrote:
-> > On Thu, 2007-05-03 at 23:58 -0400, Daniel Hazelton wrote:
-> > > On Thursday 03 May 2007 20:39:05 H. Peter Anvin wrote:
-> > > > Kyle Moffett wrote:
-> > >
-> > > I guess I could start on that work again - shouldn't take me all that
-> > > long to recover the stuff I lost when a blackout caused my hard drive
-> > > to get corrupted beyond recovery (and the automated journal replay
-> > > didn't do a damned thing - I think it actually *added* to the
-> > > corruption, but I don't think any filesystem would have survived that)
-> >
-> > You might want to look at the modesetting-101 branch of DRM.  It's goal
-> > is similar to yours.  They even have a drm framebuffer.  I don't know
-> > how far they are with their goal, but I can see some progress.
-> >
-> > Here's their git tree:
-> >
-> > git://git.freedesktop.org/git/mesa/drm#modesetting-101
+On Fri, May 04, 2007 at 09:24:05PM -0700, Jeremy Fitzhardinge wrote:
+> > Indeed, I haven't seen that. For ET_DYN executables, it could be done a
+> > thing like load_addr+elf_ppnt->p_vaddr (in the function that creates the
+> > auxv, as ity has access to the elf header), and for ET_EXEC do what I
+> > propose. I think this is trivial to do. I'll do it as soon as I come back
+> > in front of my machine.
+> >   
+> 
+> I don't think you need to special-case it.  You can compute the offset
+> between the linked address and the load address (first
+> PT_LOAD[0]->p_vaddr - load_addr) and use that to offset all the other
+> addresses.
 
-Nope. Address doesn't work for me. 
+Indeed. And it has the advantage to work for prelinked objects. (but I
+have to understand anyway how does the kernel handles prelinked (or not) pie
+executables)
 
-> It sounds like we'll need a new KD_* flag for this work too, something like
-> KD_TEXT_BUT_ONLY_ON_PANIC, sine with the above tree, the kernel will have
-> intimite knowledge of the current graphics mode, framebuffer location,
-> etc.  It should be enough to clear the scanout buffer and output the
-> printk, though if there's a lot of rendering going on, the DRM driver
-> might have to be pretty smart about it.
+> 
+> 
+> > I don't understand. Yes it is what it is supposed to be, and the kernel
+> > is supposed to give the vaddr of the phdr table to the interpreter and
+> > not load addr + offset of phdr in file, which is sometimes wrong.
+> >   
+> 
+> How can it be wrong?  Does the PT_PHDR point to a different array of
+> Phdr entries?
 
-Yeah, I had thought about this. What I was thinking was that, on panic, the 
-kernel could either kill the graphics mode entirely or do something like what 
-the Amiga used to do - ie: scroll the screeen *down* and insert the error 
-output at the top. (well, the opposite, really - scroll up and insert, just 
-to keep the code simple and elegant)
+No, of course, but in my case I wanted to build an executable with a
+modified rpath. I had to add a new PT_LOAD segment. To do so, as the
+program header is generally located at the very beginning of the
+executable, I had to copy it to the end, and so the address where it was
+loaded was completely different.
 
-Other than that, well... I figure that if the kernel is using DRM internally 
-it can easily tell DRM to cancel out all extended rendering contexts - 
-OpenGL, overlays and such - when the panic happens.
+The load address was typically 0x08048000, and the phdr location was
+0x0804a570. But the kernel gave to the ld.so in the auxv the addr
+0x08048570 for the phdr. And it provoked a segfault because of the .bss
+which was between the segments. (and even if there was no .bss, it would
+have worked only by chance because the segments could all fit in a page
+of 4kb)
 
-DRH
-
+Quentin
