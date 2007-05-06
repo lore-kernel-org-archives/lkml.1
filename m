@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754339AbXEFCOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754498AbXEFCmA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754339AbXEFCOd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 22:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbXEFCOd
+	id S1754498AbXEFCmA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 22:42:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbXEFCmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 22:14:33 -0400
-Received: from ozlabs.org ([203.10.76.45]:43616 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754335AbXEFCOc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 22:14:32 -0400
-Date: Sun, 6 May 2007 12:04:27 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Vitaly Bordug <vitb@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
-Message-ID: <20070506020427.GA22162@localhost.localdomain>
-Mail-Followup-To: Segher Boessenkool <segher@kernel.crashing.org>,
-	Vitaly Bordug <vitb@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-	linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20070506004737.31233.52611.stgit@localhost.localdomain> <67c6bf6b7d37f5e133398ea83edeac78@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <67c6bf6b7d37f5e133398ea83edeac78@kernel.crashing.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sat, 5 May 2007 22:42:00 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:64214 "EHLO
+	pd4mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754498AbXEFCl7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 5 May 2007 22:41:59 -0400
+Date: Sat, 05 May 2007 20:41:52 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: "modularized" 2.4.34.4  ->  ide-core "unresolved symbols"
+In-reply-to: <fa.rg7bSh1mNv1yib9QUzNuRvWTPe8@ifi.uio.no>
+To: Zbigniew Baniewski <zb@ispid.com.pl>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <463D4070.4080802@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-2; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.rg7bSh1mNv1yib9QUzNuRvWTPe8@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 06, 2007 at 03:04:14AM +0200, Segher Boessenkool wrote:
-> > +		pcmcia@0080 {
+Zbigniew Baniewski wrote:
+> Hallo,
 > 
-> > +			#interrupt-cells = <1>;
+> I was trying to make "modularized kernel" (s.c. "Debian way") recently, yes,
+> I made even kernel.deb package - but at the installation, I'm still getting
+> an error: "ide-core: unresolved symbols".
 > 
-> > +			interrupt-parent = <ff000000>;
-> > +			interrupts = <d 1>;
-> > +		};
+> Making a quick search with Google I could see, it did occur to many other
+> people even long ago. There was even a patch introduced - which, I believe,
+> is in the 2.4.34.4 "drivers/ide" sub-dir - unfortunately it seems, that the
+> patch is working no more.
 > 
-> Since this node's children's interrupt representation
-> is different from the node's parent's, you need an
-> interrupt-map in here.  You also forgot "#address-cells"
-> and I think you need "ranges" too?
+> Perhaps there is another patch available for 2.4.34.4 ?
 
-And we should use a reference, instead of an implicit phandle for the
-interrupt-parent.
+I don't think drivers/ide ever really played well when built modular, at 
+least not in 2.4, quite possibly in 2.6 as well. Things like DMA not 
+getting turned on automatically when the low-level driver was a module, 
+etc. Likely why Red Hat/Fedora never built it modular when they did 
+everything else..
 
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
+
