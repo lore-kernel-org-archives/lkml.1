@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753205AbXEFUj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753564AbXEFUng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753205AbXEFUj3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 16:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbXEFUj3
+	id S1753564AbXEFUng (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 16:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXEFUng
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 16:39:29 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1374 "EHLO scrub.xs4all.nl"
+	Sun, 6 May 2007 16:43:36 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:34984 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753205AbXEFUj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 16:39:28 -0400
-Date: Sun, 6 May 2007 22:39:25 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] m68k: <asm/scatterlist.h> needs <asm/types.h>
-In-Reply-To: <Pine.LNX.4.64.0705062233160.4741@anakin>
-Message-ID: <Pine.LNX.4.64.0705062238360.2956@scrub.home>
-References: <Pine.LNX.4.64.0705062233160.4741@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1753564AbXEFUng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 16:43:36 -0400
+Date: Sun, 6 May 2007 22:44:29 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Dan Kruchinin <dubalom@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm1
+Message-ID: <20070506204429.GB10396@uranus.ravnborg.org>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <463D11A8.3090708@simon.arlott.org.uk> <a8f16e2b0705052130g37307df1vb7bd8a178d3130a@mail.gmail.com> <a8f16e2b0705052133pf8db82eoaae32281bedeafd6@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a8f16e2b0705052133pf8db82eoaae32281bedeafd6@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-On Sun, 6 May 2007, Geert Uytterhoeven wrote:
-
-> The recent <linux/pci.h> cleanup uncovered that include/asm-m68k/scatterlist.h
-> needs to include <asm/types.h>
+On Sun, May 06, 2007 at 08:33:48AM +0400, Dan Kruchinin wrote:
+> > 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
 > 
-> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> I have the following message after kernel compilation:
+> 
 > ---
->  include/asm-m68k/scatterlist.h |    2 ++
->  1 file changed, 2 insertions(+)
-> 
-> --- linux-m68k-2.6.21.orig/include/asm-m68k/scatterlist.h
-> +++ linux-m68k-2.6.21/include/asm-m68k/scatterlist.h
-> @@ -1,6 +1,8 @@
->  #ifndef _M68K_SCATTERLIST_H
->  #define _M68K_SCATTERLIST_H
->  
-> +#include <asm/types.h>
-> +
+> ...
+> WARNING: init/built-in.o - Section mismatch: reference to .init.text:
+> from .text between 'rest_init' (at offset 0x11e) and 'try_name'
 
-Unless required otherwise please use <linux/types.h>
+Covered in another mail.
 
-bye, Roman
+> ...
+> ...
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x20)
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x24)
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x28)
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x2c)
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x30)
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x34)
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x38)
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x3c)
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x40)
+> WARNING: drivers/dma/async_tx.o - Section mismatch: reference to
+> .init.data: from .data after 'channel_table' (at offset 0x44)
+
+We have following code:
+/* guarantee that calls that happen before init will not find a channel */
+static struct chan_ref_percpu __initdata null_chan_ref[NR_CPUS];
+
+static struct chan_ref_percpu *channel_table[] = {
+	DMA_TX_ARRAY_INIT(null_chan_ref)
+};
+
+The DMA_TX_ARRAY_INIT is some macro obscufation that serves no
+real use and just hide a few assignements.
+What happens here is that we assign channel_table a value
+that are used as cover-up until the real assignment happens
+in the init function.
+So the only real way to fix this seems to remove the otherwise correct
+__initdata mark on null_chan_ref.
+Thats one pointer wasted pr. cpu (in total NR_CPUS).
+
+	Sam
