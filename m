@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbXEFUJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755240AbXEFUOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755225AbXEFUJY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 16:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbXEFUJY
+	id S1755240AbXEFUOD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 16:14:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755243AbXEFUOD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 16:09:24 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:38307 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755225AbXEFUJX (ORCPT
+	Sun, 6 May 2007 16:14:03 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:54029 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755240AbXEFUOB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 16:09:23 -0400
-Date: Sun, 6 May 2007 13:08:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Simon Arlott <simon@fire.lp0.eu>
-Cc: linux-kernel@vger.kernel.org, linux-dvb@linuxtv.org
-Subject: Re: 2.6.21-mm1
-Message-Id: <20070506130821.b6bed03b.akpm@linux-foundation.org>
-In-Reply-To: <463DED69.4020507@simon.arlott.org.uk>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-	<463DED69.4020507@simon.arlott.org.uk>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 6 May 2007 16:14:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TmOcTNMagtASmmODBomWVIY3Zd1pd2iBtZ5EVgvT5MF9GQE2LgYkwuLmJZH2LhsuTt+qCd/fxmyQB3OL+v2Y7HJlWrQaj3dHZlCAOSCZvY8NkZIS2VCz6ga7NhLv9WJdR3HqrWU3XuLKSKNyFNYha+S0Qkl5KcCGe4R0frbsZ44=
+Message-ID: <e9c3a7c20705061313g2b110c4ai478bd3d345de3114@mail.gmail.com>
+Date: Sun, 6 May 2007 13:13:58 -0700
+From: "Dan Williams" <dan.j.williams@gmail.com>
+To: "Wim Van Sebroeck" <wim@iguana.be>
+Subject: Re: [2.6.22 patch] iop: combined watchdog timer driver for iop3xx and iop13xx
+Cc: "Curt E. Bruns" <curt.e.bruns@intel.com>,
+       "Peter Milne" <peter.milne@d-tacq.com>,
+       "Russell King" <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       "Lennert Buytenhek" <buytenh@wantstofly.org>
+In-Reply-To: <20070506095256.GA2521@infomag.infomag.iguana.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1177952240.12134.10.camel@dwillia2-linux.ch.intel.com>
+	 <20070506095256.GA2521@infomag.infomag.iguana.be>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 06 May 2007 15:59:53 +0100 Simon Arlott <simon@fire.lp0.eu> wrote:
+On 5/6/07, Wim Van Sebroeck <wim@iguana.be> wrote:
+> Hi Dan,
+>
+> > Here is a new watchdog driver for your review.  It supports two flavors
+> > of the iop watchdog timer.  The iop13xx watchdog can be stopped while
+> > the iop3xx version cannot.
+>
+> I started reviewing this patch yesterday. First thing I noticed was that
+> you seem to be moving some code from include/asm-arm/arch-iop13xx/system.h
+> to include/asm-arm/arch-iop13xx/iop13xx.h .
+> This should not be part of this patch since it is touching architecture
+> dependant code for which I do not have enough knowledge about this specific
+> architecture to tell if this is indeed the correct way to do this.
+> The maintainers of this architecture should imho comment on this.
+> Could you split this patch into 2 patches: one that deals with the moving of
+> the architecture dependant code (and explaining why) and one with the new
+> watchdog drivers? I will continue my review today.
+>
 
-> On 05/05/07 09:49, Andrew Morton wrote:
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
-> 
-> I'm currently in the middle of a bisect over the last week of commits to linus' 
-> tree, but I got the following with -mm1 that isn't showing up in the latest 
-> 2.6.21-git:
-> 
-> [   15.644778] BUG: sleeping function called from invalid context at kernel/mutex.c:86
-> [   15.644873] in_atomic():1, irqs_disabled():1
-> [   15.644882] 2 locks held by modprobe/2765:
-> [   15.644889]  #0:  (devlist_lock){--..}, at: [<b052dc7f>] mutex_lock+0x1f/0x30
-> [   15.645058]  #1:  (modlist_lock){....}, at: [<b0147b1d>] __symbol_get+0x1d/0x90
-> [   15.645207] irq event stamp: 11772
-> [   15.645271] hardirqs last  enabled at (11771): [<b016d793>] slab_free+0xc3/0x200
-> [   15.645289] hardirqs last disabled at (11772): [<b052f476>] _spin_lock_irqsave+0x16/0x60
-> [   15.645364] softirqs last  enabled at (11216): [<b0125286>] __do_softirq+0x96/0xb0
-> [   15.645439] softirqs last disabled at (11211): [<b01069f2>] do_softirq+0x82/0x100
-> [   15.645517]  [<b0104f0a>] show_trace_log_lvl+0x1a/0x30
-> [   15.645586]  [<b0104f32>] show_trace+0x12/0x20
-> [   15.645654]  [<b0105045>] dump_stack+0x15/0x20
-> [   15.645665]  [<b011d6ad>] __might_sleep+0xcd/0xf0
-> [   15.645737]  [<b052dc78>] mutex_lock+0x18/0x30
-> [   15.645806]  [<b01b1b7c>] sysfs_create_link+0x6c/0x130
-> [   15.645823]  [<b0146dba>] use_module+0x11a/0x170
-> [   15.645892]  [<b0147b6c>] __symbol_get+0x6c/0x90
-> [   15.645904]  [<f086ac2c>] dvb_init+0x98c/0xd70 [saa7134_dvb]
-> [   15.645984]  [<b036861d>] mpeg_ops_attach+0x3d/0x50
-> [   15.646058]  [<b0369109>] saa7134_ts_register+0x29/0x70
-> [   15.646070]  [<f086f010>] dvb_register+0x10/0x12 [saa7134_dvb]
-> [   15.646141]  [<b01491b7>] sys_init_module+0xf7/0x150
-> [   15.646153]  [<b0104172>] sysenter_past_esp+0x5f/0x99
-> [   15.646221]  =======================
+I am one of the maintainers of this architecture, (Lennert Buytenhek
+is the other).  I will go ahead and split this up so you can sign-off
+on the watchdog specific bits.  The intent is to move all hardware
+definitions under #include <asm/hardware.h>.  You are right this
+should have been a separate patch.
 
-Looks like a locking error in the DVB code.
+> Thanks,
+> Wim.
+>
 
-> And this fantastic Oops:
-> [   40.965119] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000080
-> [   40.965252]  printing eip:
-> [   40.965252] b016d4a5
-> [   40.965300] *pde = 00000000
-> [   40.965352] Oops: 0000 [#1]
-> [   40.965467] PREEMPT 
-> 
-> It occurs when racoon is started so must be IPSEC related, I'll have more information 
-> once I finish bisecting and merge -mm1 again.
-
-Thanks.
+Thanks for your help,
+Dan
