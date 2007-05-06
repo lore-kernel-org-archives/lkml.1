@@ -1,59 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbXEFJEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933404AbXEFJFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933368AbXEFJEi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 05:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933388AbXEFJEi
+	id S933404AbXEFJFM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 05:05:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933408AbXEFJFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 05:04:38 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:47104 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933368AbXEFJEh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 05:04:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=KHez9ps02BVBL8fWz17Rhg4Dzsug7YG/7JXJJ8RwVdP33cNt9O/Bfc7yqI8yHUkhDrQ8/jy0hHb/napVzH0/IyO1pi9sbnGg+7SEKAvt6e8PPYnlRscBSTYINsHukEwQUYcxXAyfcvI5nJW/ZnHoQsX5F8+P8zh1fLHYv4Jt7bg=
-Date: Sun, 6 May 2007 11:03:33 +0200
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org
-Subject: [-mm patch] get_unmapped_area: remove now unused ret variable (was Re: 2.6.21-mm1)
-Message-ID: <20070506090333.GB29299@slug>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+	Sun, 6 May 2007 05:05:12 -0400
+Received: from il.qumranet.com ([82.166.9.18]:33466 "EHLO il.qumranet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933404AbXEFJFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 05:05:09 -0400
+Message-ID: <463D9A42.6030807@qumranet.com>
+Date: Sun, 06 May 2007 12:05:06 +0300
+From: Avi Kivity <avi@qumranet.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: kvm-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: [GIT PULL][RESEND] KVM updates for Linux 2.6.22
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
-> 
+Linus,
 
-mm/mmap.c:1393: warning: unused variable 'ret'
+Please pull from the repository and branch
 
-The get_unmapped_area-doesnt-need-hugetlbfs-hacks-anymore.patch and
-get_unmapped_area-handles-map_fixed-in-generic-code.patch rendered the ret
-variable useless.
+   git://git.kernel.org/pub/scm/linux/kernel/git/avi/kvm.git for-linus
 
-Regards,
-Frederik
+to receive the pending kvm updates for 2.6.22.  The changes increase
+the range of guests we support, improve performance, fix various bugs,
+and improve the userspace interface.
 
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+Adrian Bunk (1):
+       KVM: fix an if() condition
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index b0f6eb8..fabf7f4 100644
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1390,7 +1390,6 @@ unsigned long
- get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
- 		unsigned long pgoff, unsigned long flags)
- {
--	unsigned long ret;
- 	unsigned long (*get_area)(struct file *, unsigned long,
- 				  unsigned long, unsigned long, unsigned long);
- 
+Anthony Liguori (4):
+       KVM: Lazy FPU support for SVM
+       KVM: VMX: Properly shadow the CR0 register in the vcpu struct
+       KVM: VMX: Add lazy FPU support for VT
+       KVM: SVM: Only save/restore MSRs when needed
+
+Avi Kivity (51):
+       KVM: Use own minor number
+       KVM: Export <linux/kvm.h>
+       KVM: Fix bogus sign extension in mmu mapping audit
+       KVM: Use a shared page for kernel/user communication when runing 
+a vcpu
+       KVM: Do not communicate to userspace through cpu registers during PIO
+       KVM: Handle cpuid in the kernel instead of punting to userspace
+       KVM: Remove the 'emulated' field from the userspace interface
+       KVM: Remove minor wart from KVM_CREATE_VCPU ioctl
+       KVM: Renumber ioctls
+       KVM: Add method to check for backwards-compatible API extensions
+       KVM: Allow userspace to process hypercalls which have no kernel 
+handler
+       KVM: Fold kvm_run::exit_type into kvm_run::exit_reason
+       KVM: Add a special exit reason when exiting due to an interrupt
+       KVM: Initialize the apic_base msr on svm too
+       KVM: Add guest mode signal mask
+       KVM: Allow kernel to select size of mmap() buffer
+       KVM: Future-proof argument-less ioctls
+       KVM: Avoid guest virtual addresses in string pio userspace interface
+       KVM: MMU: Remove unnecessary check for pdptr access
+       KVM: MMU: Remove global pte tracking
+       KVM: Workaround vmx inability to virtualize the reset state
+       KVM: Remove set_cr0_no_modeswitch() arch op
+       KVM: Modify guest segments after potentially switching modes
+       KVM: Hack real-mode segments on vmx from KVM_SET_SREGS
+       KVM: Don't allow the guest to turn off the cpu cache
+       KVM: Remove unused and write-only variables
+       KVM: MMU: Fix hugepage pdes mapping same physical address with 
+different access
+       KVM: SVM: Ensure timestamp counter monotonicity
+       KVM: Use list_move()
+       KVM: Remove debug message
+       KVM: x86 emulator: fix bit string operations operand size
+       KVM: Simply gfn_to_page()
+       KVM: Add physical memory aliasing feature
+       KVM: Add fpu get/set operations
+       KVM: Use kernel-standard types
+       KVM: Initialize cr0 to indicate an fpu is present
+       KVM: Handle partial pae pdptr
+       KVM: Use slab caches to allocate mmu data structures
+       KVM: Retry sleeping allocation if atomic allocation fails
+       KVM: SVM: Report hardware exit reason to userspace instead of dmesg
+       KVM: Handle guest page faults when emulating mmio
+       KVM: VMX: Reduce unnecessary saving of host msrs
+       KVM: VMX: Don't switch 64-bit msrs for 32-bit guests
+       KVM: Fold drivers/kvm/kvm_vmx.h into drivers/kvm/vmx.c
+       KVM: VMX: Only save/restore MSR_K6_STAR if necessary
+       KVM: Per-vcpu statistics
+       KVM: Allow passing 64-bit values to the emulated read/write API
+       KVM: Don't complain about cpu erratum AA15
+       KVM: Remove extraneous guest entry on mmio read
+       KVM: Don't require explicit indication of completion of mmio or pio
+       KVM: Remove unused 'instruction_length'
+
+Dor Laor (3):
+       KVM: Fix guest register corruption on paravirt hypercall
+       KVM: Use the generic skip_emulated_instruction() in hypercall code
+       KVM: Add mmu cache clear function
+
+Eric Sesterhenn / Snakebyte (1):
+       KVM: Fix overflow bug in overflow detection code
+
+Joerg Roedel (2):
+       KVM: SVM: forbid guest to execute monitor/mwait
+       KVM: SVM: enable LBRV virtualization if available
+
+Michal Piotrowski (1):
+       KVM: Remove unused function
+
+Sergey Kiselev (1):
+       KVM: Handle writes to MCG_STATUS msr
+
+Yaozu Dong (2):
+       KVM: MMU: Avoid heavy ASSERT at non debug mode.
+       KVM: VMX: Avoid unnecessary vcpu_load()/vcpu_put() cycles
+
+  drivers/kvm/kvm.h          |  100 ++++--
+  drivers/kvm/kvm_main.c     |  792 
++++++++++++++++++++++++++++++++++++++-------
+  drivers/kvm/kvm_svm.h      |   13 +-
+  drivers/kvm/kvm_vmx.h      |   14 -
+  drivers/kvm/mmu.c          |  154 +++++++---
+  drivers/kvm/paging_tmpl.h  |   12 +-
+  drivers/kvm/svm.c          |  197 +++++++----
+  drivers/kvm/svm.h          |    6 +
+  drivers/kvm/vmx.c          |  273 +++++++++++-----
+  drivers/kvm/x86_emulate.c  |   51 +---
+  drivers/kvm/x86_emulate.h  |   32 +--
+  include/linux/Kbuild       |    1 +
+  include/linux/kvm.h        |  133 ++++++---
+  include/linux/miscdevice.h |    1 +
+  14 files changed, 1301 insertions(+), 478 deletions(-)
+  delete mode 100644 drivers/kvm/kvm_vmx.h
+
+-------------------------------------------------------------------------
+This SF.net email is sponsored by DB2 Express
+Download DB2 Express C - the FREE version of DB2 express and take
+control of your XML. No limits. Just data. Click to get it now.
+http://sourceforge.net/powerbar/db2/
+_______________________________________________
+kvm-devel mailing list
+kvm-devel@lists.sourceforge.net
+https://lists.sourceforge.net/lists/listinfo/kvm-devel
