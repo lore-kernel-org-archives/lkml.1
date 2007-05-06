@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754323AbXEFBqr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933465AbXEFBsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754323AbXEFBqr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 21:46:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbXEFBqr
+	id S933465AbXEFBsh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 21:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934356AbXEFBsh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 21:46:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:50283 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754335AbXEFBqq (ORCPT
+	Sat, 5 May 2007 21:48:37 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:5102 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933465AbXEFBsg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 21:46:46 -0400
+	Sat, 5 May 2007 21:48:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:reply-to:user-agent:mime-version:newsgroups:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ZlNlmVGaE06AmIoD0CjkcXELN3qh2/SR2nu+tiJdyO35tYIyMcg8UEaqOS7qMkEpv6QwTZiP461xHviCz0ZQ/LiLl0Sqlh1M7JOQBCXu3uUovG01MIcJRXxw3aS7SVLDC1g41ecLNoXhf0p7SBZGrLWhQtfsCjWUuPt7y/ll+nQ=
-Message-ID: <463D3356.6060202@gmail.com>
-Date: Sat, 05 May 2007 18:45:58 -0700
-From: "Ryan M." <fumarole@gmail.com>
-Reply-To: fumarole@gmail.com
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=c+JQzT2OL/93w/eH06DKxDUGFMRBjO3gXpIwxUtSVDyKS1zqQlS/L956bZZsGovU41rbUlOkVDb879tE8aKavJ0QdVzz0hB4hiHSWIKruW1YQENRlWR7ZtQun++2jJZBC7GsKFaG5zHodzgsZ2Gkqf0BvghVB2LrYKAFdtSd8IQ=
+Message-ID: <787b0d920705051848u142562a5lb5d581d0e5616cc8@mail.gmail.com>
+Date: Sat, 5 May 2007 21:48:35 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: mason.b.cabot@intel.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, jra@samba.org, tridge@samba.com
+Subject: Re: Ext3 vs NTFS performance
 MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel.ck,gmane.linux.kernel
-To: Con Kolivas <kernel@kolivas.org>
-CC: linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       ck list <ck@vds.kolivas.org>
-Subject: Re: 2.6.21-ck1
-References: <200705042301.01305.kernel@kolivas.org>
-In-Reply-To: <200705042301.01305.kernel@kolivas.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Con,
+Andrew Morton writes:
+> "Cabot, Mason B" <mason.b.cabot@intel.com> wrote:
 
-Con Kolivas wrote:
-> This patchset is designed to improve system responsiveness and interactivity. 
-> It is configurable to any workload but the default -ck patch is aimed at the 
-> desktop and -cks is available with more emphasis on serverspace.
+>> I've been testing the NAS performance of ext3/Openfiler 2.2 against
+>> NTFS/WinXP and have found that NTFS significantly outperforms ext3 for
+>> video workloads. The Windows CIFS client will attempt a poor-man's
+>> pre-allocation of the file on the server by sending 1-byte writes at
+>> 128K-byte strides, breaking block allocation on ext3 and leading to
+>> fragmentation and poor performance. This will happen for many
+>> applications (including iTunes) as the CIFS client issues these
+>> pre-allocates under the application layer.
+>
+> Oh my gawd, what a stupid hack.  Now we know what the
+> MS interoperability lab has been working on.
 
-I have used SD for the first time with this patchset, and I have to say, my experience
-has been very positive over the past four days.  My desktop has been extraordinarily
-smooth during interactive tasks with no audio drop-outs. Best of all, the desktop has
-been completely responsive despite CPU hogging tasks.  I do not need to nice X either.
-This looks like a perfect scheduler.
-
-Swap prefetch continues to work its miracles as I've been doing a lot of work lately with
-a 33"x44" poster that contains many high-resolutions images, while using gimp at the same time!
-
-Thanks so much for all your incredible work!
-
-> 
-> 乾杯 
-> 
-> 
-
-best,
-Ryan
-
+Stupid or not, this is their protocol. The cifs filesystem
+driver needs a patch to do this. Probably that'll help get
+better performance when Linux is writing to a Windows server.
