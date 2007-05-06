@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751473AbXEFVvO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751630AbXEFVzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751473AbXEFVvO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 17:51:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751615AbXEFVvO
+	id S1751630AbXEFVzO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 17:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751648AbXEFVzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 17:51:14 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:3797 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751630AbXEFVvN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 17:51:13 -0400
-Date: Sun, 6 May 2007 17:51:11 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Antonino Ingargiola <tritemio@gmail.com>,
-       Paul Fulghum <paulkf@microgate.com>, Oliver Neukum <oliver@neukum.org>,
-       <linux-kernel@vger.kernel.org>, <linux-usb-users@lists.sourceforge.net>
-Subject: Re: [Linux-usb-users] [SOLVED] Serial buffer corruption [was Re:
- FTDI usb-serial possible bug]
-In-Reply-To: <20070506132849.62e1e218@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.44L0.0705061744540.21407-100000@netrider.rowland.org>
+	Sun, 6 May 2007 17:55:13 -0400
+Received: from mail.z-net.ru ([89.113.80.10]:3296 "EHLO mail.z-net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751642AbXEFVzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 17:55:12 -0400
+Date: Mon, 7 May 2007 01:50:55 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Paul Sokolovsky <pmiscml@gmail.com>
+Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Greg KH <gregkh@suse.de>,
+       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+       Shem Multinymous <multinymous@gmail.com>, kernel-discuss@handhelds.org
+Subject: Re: [Kernel-discuss] Re: [PATCH 3/8] Universal power supply class
+	(was: battery class)
+Message-ID: <20070506215055.GA10538@zarina>
+Reply-To: cbou@mail.ru
+References: <20070503213139.GC20067@zarina> <41840b750705032155w21d98b5g6236daf9bff66606@mail.gmail.com> <20070505035413.GB21359@khazad-dum.debian.net> <20070505123230.GA6460@zarina> <67630751.20070505172956@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <67630751.20070505172956@gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 May 2007, Alan Cox wrote:
+Hi Paul,
 
-> > However, whatever policy the buffer uses, the fundamental point it's that
-> > when I flush the input buffer I should be sure that each byte read
-> > after the flush is *new* (current) data and not old one. This because
+On Sat, May 05, 2007 at 05:29:56PM +0300, Paul Sokolovsky wrote:
+> Hello Anton,
 > 
-> Define "new" and "old" in this case. I don't believe you can give a
-> precise definition or that such a thing is physically possible.
+>         But in real world, it's rather common to colloquially name
+> such kind of power "AC", and that's "term" is known to many-many
+> people, and intuitively understood even for those, who didn't hit it yet.
+> Actually, this discussion is good confirmation that's the case -
+> people understand in what meaning it is used here, and go to point
+> that it's not "scientifically" correct.
 
-One can come close.  It would make sense to say that after a flush,
-subsequent reads should retrieve _contiguous_ bytes from the input stream.  
-In other words, rule out the possibility that the read would get bytes
-1-10 (from some buffer somewhere) followed by bytes 30-60 (because bytes
-11-29 were dropped by the flush).  By contrast, it would be permissible
-for the read to obtain bytes 20-60, even though 20-29 may have been
-entered the input stream before the flush occurred.
+I fully agree here. Yes, AC is common term, but might be really
+confusing for people who really know what AC is. ;-)
 
-> The hardware itself has buffers at both ends of the link, there may be
-> buffers in modems, muxes and the like as well. We can certainly flush
-> input buffers in the kernel but it isn't clear we can always do so at the
-> hardware level, let alone at the remote end or buffers on devices on the
-> link.
+In past review we tried to drop any point of confusions (we agreed to
+separate capacity, charge and energy terms), and now we've found
+another point: AC, DC, MAINS. So, let's again eliminate any possibility
+of confusion, and name things with correct terms.
 
-This is of course the fly in the ointment.
 
-Alan Stern
+Thanks,
 
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
