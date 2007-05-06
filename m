@@ -1,60 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbXEFTqp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbXEFTr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbXEFTqp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 15:46:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbXEFTqp
+	id S1755180AbXEFTr1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 15:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbXEFTr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 15:46:45 -0400
-Received: from ik-out-1112.google.com ([66.249.90.182]:53597 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754630AbXEFTqo (ORCPT
+	Sun, 6 May 2007 15:47:27 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1976 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755180AbXEFTr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 15:46:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=U6rL26VofN+x3dIpjOa0JZaHK9i6BpJ0zM6hOaNeG5l0WgcBHKrY/lo5qx2iW5cUPJu1U+RgfG8+cN6w3gpMIEf0Xzg6i6jGgV7eCkDRNnlnZQ7TBzWh7LKoAJdf37lMWyW9bqXvAn25tECSrg3koEp+712OKB2fczKQI6Vy/rU=
-Message-ID: <a781481a0705061246y10568c25h8d82233dbc43ce5c@mail.gmail.com>
-Date: Mon, 7 May 2007 01:16:42 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Bert Wesarg" <wesarg@informatik.uni-halle.de>
-Subject: Re: [RFC 1/3] SLUB: slab_ops instead of constructors / destructors
-Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       dgc@sgi.com, "Eric Dumazet" <dada1@cosmosbay.com>,
-       "Mel Gorman" <mel@csn.ul.ie>
-In-Reply-To: <463E2A37.2030400@informatik.uni-halle.de>
+	Sun, 6 May 2007 15:47:26 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Sun, 6 May 2007 12:47:21 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ulrich Drepper <drepper@gmail.com>
+cc: Davi Arnaut <davi@haxent.com.br>, Eric Dumazet <dada1@cosmosbay.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 14/22] pollfs: pollable futex
+In-Reply-To: <a36005b50705060050q512462edoe53efbc18f754471@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705061034230.25105@alien.or.mcafeemobile.com>
+References: <20070502052235.914764000@haxent.com.br> 
+ <Pine.LNX.4.64.0705021059430.7176@alien.or.mcafeemobile.com> 
+ <a36005b50705030646v5b729838pe8dc7b91dc9bee2b@mail.gmail.com> 
+ <Pine.LNX.4.64.0705031111320.6502@alien.or.mcafeemobile.com> 
+ <a36005b50705031203w14df6f1fp26e186056b0fdef7@mail.gmail.com> 
+ <Pine.LNX.4.64.0705031433470.6502@alien.or.mcafeemobile.com> 
+ <a36005b50705040828l28f1d039oe58224ff18286ecd@mail.gmail.com> 
+ <Pine.LNX.4.64.0705041201390.6958@alien.or.mcafeemobile.com> 
+ <a36005b50705041638h37cd0654q442e7d50f1e63040@mail.gmail.com> 
+ <Pine.LNX.4.64.0705051118030.19104@alien.or.mcafeemobile.com>
+ <a36005b50705060050q512462edoe53efbc18f754471@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070504221555.642061626@sgi.com>
-	 <20070504221708.363027097@sgi.com>
-	 <463E2A37.2030400@informatik.uni-halle.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/7/07, Bert Wesarg <wesarg@informatik.uni-halle.de> wrote:
-> clameter@sgi.com wrote:
-> > +     if (ctor || dtor) {
-> > +             so = kzalloc(sizeof(struct slab_ops), GFP_KERNEL);
-> > +             so->ctor = ctor;
-> > +             so->dtor = dtor;
-> > +     }
-> > +     return  __kmem_cache_create(s, size, align, flags, so);
-> Is this a memory leak?
+On Sun, 6 May 2007, Ulrich Drepper wrote:
 
-Yes, but see:
+> On 5/5/07, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > But we have our own *sane* version of WaitForMultipleObjects, and it's
+> > called poll(2).
+> 
+> No, we don't.  Don't start all over again.  The interface of poll it
+> to primitive.  See the kevent code, each record is, IIRC, 16 bytes in
+> size to return more data.  For poll you only have bits.
 
-On 5/5/07, clameter@sgi.com <clameter@sgi.com> wrote:
-> If constructor or destructor are specified then we will allocate a slab_ops
-> structure and populate it with the values specified. Note that this will
-> cause a memory leak if the slab is disposed of later. If you need disposable
-> slabs then the new API must be used.
+Yes, event bits plus opaque token are enough for most of it. Then you use 
+POSIX read/write to fetch/store the data. All the files (sockets, pipes, ...)
+works this way. Signals you fetch a siginfo-like structure, through POSIX 
+read. Timers, you fetch a counter, through POSIX read. AIO, you use the 
+native AIO API (that I'd prefer, or you can choose to have a POSIX read 
+too). All these through isolated POSIX read semantics.
+Now let's see how it'd look with a monolitic kevent-like interface. You'll 
+have a mosnter-union ala siginfo_t, with multiple nested structures, and 
+every time you need to extend it, you'll go through pain. Come on, that's 
+beyond ugly. With a file-like interface, each new addition comes to a 
+seaparate isolated interface, with separate POSIX read/write ABI.
+Do you realise that to justify your all new bulk interface, 
+you had to pull out of the hat a Windows WaitForMultipleObjects?
+Please drop the BS. I made you a full list of things that are readily and 
+POSIX-friendly handled/signaled with file-like interfaces.
+Any sockets, pipes, all devices, signals, timers, AIO, and I'm probably 
+forgetting something.
+You pulled "it's slow". False.
+You pulled "it's memory expensive". It's not.
+So far, I did not hear a single valid reason to go with a new, monolitic 
+interface. WaitForMultipleObjects? Please ...
 
-BTW:
 
-> > +     if (ctor || dtor) {
-> > +             so = kzalloc(sizeof(struct slab_ops), GFP_KERNEL);
-> > +             so->ctor = ctor;
 
-It's also a potential oops, actually. kzalloc's return must be checked.
+- Davide
+
+
