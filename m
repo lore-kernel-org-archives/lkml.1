@@ -1,72 +1,199 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755307AbXEFH3h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbXEFHfY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755307AbXEFH3h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 03:29:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755331AbXEFH3h
+	id S1755331AbXEFHfY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 03:35:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbXEFHfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 03:29:37 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:19807 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755307AbXEFH3g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 03:29:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fS22TVJR1rlgP9ZHtKxS+Sct509T38YcMHWSmW5fGMF5xmSq4/uhGRRi30Q/FcSdBp9axo2OWNKcgxSu4+P1f5stiG9i6GR1yHaQHzImztf1Wss19EzY35QZ39IkgVLu+yRbj+daJFDN9oNdFGflRDHhlP5xGw/qcu0wO4CtE7c=
-Message-ID: <5486cca80705060029p433c6acar22faaeced2d7da37@mail.gmail.com>
-Date: Sun, 6 May 2007 09:29:35 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-Cc: "Oliver Neukum" <oliver@neukum.org>, "Paul Fulghum" <paulkf@microgate.com>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <20070505225241.54a5d01d@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 6 May 2007 03:35:24 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:57674 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755331AbXEFHfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 03:35:22 -0400
+Date: Sun, 6 May 2007 09:36:15 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, sam@ravnborg.org
+Subject: [GIT PATCHES #2] kbuild, kconfig + Kconfig updates
+Message-ID: <20070506073615.GA6492@uranus.ravnborg.org>
+References: <20070502201741.GD9044@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <1178381287.3379.8.camel@x2>
-	 <20070505173647.544f6707@the-village.bc.nu>
-	 <200705052007.16742.oliver@neukum.org>
-	 <20070505225241.54a5d01d@the-village.bc.nu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070502201741.GD9044@uranus.ravnborg.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/5, Alan Cox <alan@lxorguk.ukuu.org.uk>:
-> On Sat, 5 May 2007 20:07:15 +0200
-> Oliver Neukum <oliver@neukum.org> wrote:
-[cut]
-> > should I understand this so that, if tty_buffer_request_room() returns
-> > less than requested, the rest of the data should be dropped on the
-> > floor?
->
-> If it returns NULL then either there is > 64K buffered (we can adjust
-> that if anyone shows need - its just for sanity) or the system is out of
-> RAM.
+Hi Linus.
 
-For my use case would be more sensible to accept the new data and
-discard the older one in the tty buffer: the tty buffer would be a
-moving window of the most recent incoming data. This because if
-someone does not read the incoming data maybe he's not interested in
-it. When he finally reads the data (assuming there was buffer
-underrun) he's likely interested to the more recent chunk of incoming
-data and not to an "head" of the data firstly received. Since I
-acquire measurement data from serial this make perfect sense for me.
-But does this make sense in general too?
+On top of the below additional three patches has been pushed out:
 
-However, whatever policy the buffer uses, the fundamental point it's that
-when I flush the input buffer I should be sure that each byte read
-after the flush is *new* (current) data and not old one. This because
-when the input stream can be stopped I can check that there are 0 byte
-in the buffer, but when the stream can't be stopped I must use a
-flush-and-sleep (multiple times) heuristic before I can read a single
-*reliable* byte.
+    kconfig: fix mconf segmentation fault
+    kbuild: enable use of code from a different dir
+    kconfig: error out if recursive dependencies are found
 
-> Alan
->
+Please pull from:
+git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
 
-Regards,
 
-  ~ Antonio
+Diffstat for the NEW patches (see diffstat for the other 35 patches at end of mail)
+
+ scripts/Makefile.build              |   19 +++++++++----------
+ scripts/Makefile.host               |   14 +++++++-------
+ scripts/kconfig/lex.zconf.c_shipped |    2 +-
+ scripts/kconfig/symbol.c            |   13 +++++--------
+ scripts/kconfig/zconf.l             |    2 +-
+ scripts/kconfig/zconf.tab.c_shipped |    6 ++++--
+ scripts/kconfig/zconf.y             |    6 ++++--
+ 7 files changed, 31 insertions(+), 31 deletions(-)
+
+Patches will be sent to lkml only.
+
+	Sam
+
+On Wed, May 02, 2007 at 10:17:41PM +0200, Sam Ravnborg wrote:
+> Hi Linus.
+> 
+> Please pull latest kbuild/kconfig and Kconfig updates.
+> Most of these have been present in -mm although a bunch
+> of trivial updates has been applied the last week too.
+> 
+> 
+> Main changes
+> o Added cleanfile and cleanpatch scripts
+>   Useful to tidy up stuff before submission.
+>   The discussed checkpatch script may be a good third candidate
+> o section mismatch does now include vmlinux so expect a few new warnings
+> o Ignore section mismatch warnings in several cases to bring down false positives significantly
+> o complain about missing system calls
+>   The way to find missing system calls was discussed but in general the current version
+>   was apprecated and triggered davem to add a few to sparc64 for example
+> o It is now possible to override build version and build timestamp using
+>   KBUILD_BUILD_VERSION and KBUILD_BUILD_TIMESTAMP
+> o One patch does some trivial fixes in several Kconfig files which
+>   caused some 'nosie' in the diffstat.
+> o Another patch deals with module alias which explain the changes in input.h
+> 
+> Please pull from
+> git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
+> 
+> shortlog + diffstat below.
+> 
+> 	Sam
+> 
+> 
+> Alex Landau (1):
+>       kbuild: handle compressed cpio initramfs-es
+> 
+> Alexander E. Patrakov (2):
+>       usr/Kconfig: fix typo
+>       kconfig: fix path to modules.txt in Kconfig help
+> 
+> Andreas Dilger (1):
+>       kconfig.debug: clarify CONFIG_DEBUG_INFO help text
+> 
+> Andy Green (1):
+>       kbuild: scripts/basic/fixdep segfault on pathological string-o-death
+> 
+> Anton Blanchard (1):
+>       kbuild: small documentation fix in Documentation/kbuild/modules.txt
+> 
+> Don Mullis (1):
+>       kbuild: move tags from ARCH and include/ ahead of drivers
+> 
+> H. Peter Anvin (2):
+>       cleanfile: a script to clean up stealth whitespace
+>       cleanpatch: a script to clean up stealth whitespace added by a patch
+> 
+> Marco Costalba (1):
+>       kconfig/xconfig: sync main view with search dialog current menu
+> 
+> Matthew Wilcox (1):
+>       kbuild: distinguish between errors and warnings in modpost
+> 
+> Michael Ellerman (1):
+>       kbuild: propagate errors from find in scripts/gen_initramfs_list.sh
+> 
+> Mike Frysinger (1):
+>       menuconfig: dont use obsolete index() function in lxdialog
+> 
+> Randy Dunlap (2):
+>       kbuild: be more explicit on missing .config file
+>       kernel-doc: alphabetically-sorted entries in index.html of 'htmldocs'
+> 
+> Robert P. J. Day (2):
+>       kbuild: clarify the creation of the LOCALVERSION_AUTO string.
+>       kconfig: correct minor typo in Kconfig warning message.
+> 
+> Sam Ravnborg (16):
+>       kbuild: fix section mismatch check for vmlinux
+>       kbuild: whitelist section mismatch in init/main.c
+>       kbuild: fix warnings from .pci_fixup section
+>       kbuild: fix segmentation fault in modpost
+>       kbuild: whitelist logo references from .text to .init.data
+>       kbuild: remove dependency on input.h from file2alias
+>       menuconfig: remember alternate config filename
+>       kbuild: do not emit src version warning for non-modules
+>       kbuild: complain about missing system calls
+>       kbuild: override build timestamp & version
+>       kconfig/menuconfig: do not hardcode '.config'
+>       kbuild: remove kconfig binaries during make mrproper
+>       kbuild: fix make mrproper for Documentation/DocBook/man
+>       kbuild: remove stale comment in modpost.c
+>       kbuild: ignore section mismatch warning for references from .paravirtprobe to .init.text
+>       kconfig: refer to qt3 if we cannot find qt libraries
+> 
+> Uwe Zeisberger (1):
+>       kbuild: add a missing slash in the comments
+> 
+> Uwe kleine-König (1):
+>       kbuild/mkuboot.sh: allow spaces in CROSS_COMPILE
+> 
+>  Documentation/DocBook/Makefile     |    9 +-
+>  Documentation/DocBook/man/Makefile |    3 -
+>  Documentation/kbuild/modules.txt   |    2 +-
+>  Kbuild                             |   11 ++
+>  Makefile                           |   15 ++-
+>  drivers/mtd/devices/Kconfig        |    4 +-
+>  drivers/net/Kconfig                |    6 +-
+>  drivers/net/wireless/Kconfig       |   12 +-
+>  drivers/scsi/Kconfig               |    4 +-
+>  drivers/video/Kconfig              |    8 +-
+>  include/linux/input.h              |    4 +
+>  include/linux/mod_devicetable.h    |    1 +
+>  init/Kconfig                       |   16 ++-
+>  init/main.c                        |    6 +-
+>  lib/Kconfig.debug                  |    3 +
+>  net/ipv6/netfilter/Kconfig         |    2 +-
+>  net/netfilter/Kconfig              |   24 ++--
+>  net/tipc/Kconfig                   |    2 +-
+>  scripts/Makefile.modpost           |    8 +-
+>  scripts/basic/fixdep.c             |    2 +
+>  scripts/checksyscalls.sh           |  118 ++++++++++++++++++++
+>  scripts/cleanfile                  |  126 ++++++++++++++++++++++
+>  scripts/cleanpatch                 |  206 ++++++++++++++++++++++++++++++++++++
+>  scripts/gen_initramfs_list.sh      |   12 ++-
+>  scripts/kconfig/Makefile           |    5 +-
+>  scripts/kconfig/conf.c             |    1 +
+>  scripts/kconfig/lkc.h              |    1 +
+>  scripts/kconfig/lxdialog/dialog.h  |    1 +
+>  scripts/kconfig/lxdialog/util.c    |    9 ++-
+>  scripts/kconfig/mconf.c            |   43 ++++++--
+>  scripts/kconfig/menu.c             |    2 +-
+>  scripts/kconfig/qconf.cc           |    5 +-
+>  scripts/kconfig/qconf.h            |    2 +-
+>  scripts/mkcompile_h                |   27 ++++--
+>  scripts/mkuboot.sh                 |    2 +-
+>  scripts/mod/file2alias.c           |   21 ++--
+>  scripts/mod/modpost.c              |  141 +++++++++++++++++++------
+>  scripts/mod/modpost.h              |    1 +
+>  scripts/mod/sumversion.c           |    5 +-
+>  usr/Kconfig                        |    2 +-
+>  40 files changed, 735 insertions(+), 137 deletions(-)
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
