@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbXEFVRZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbXEFVSZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbXEFVRZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 17:17:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755978AbXEFVRZ
+	id S1756022AbXEFVSZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 17:18:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756012AbXEFVSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 17:17:25 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:3447 "EHLO mail.z-net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755811AbXEFVRY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 17:17:24 -0400
-Date: Mon, 7 May 2007 01:13:07 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: pHilipp Zabel <philipp.zabel@gmail.com>
-Cc: Henrique de Moraes Holschuh <hmh@hmh.eng.br>, Greg KH <gregkh@suse.de>,
-       David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
-       Shem Multinymous <multinymous@gmail.com>, kernel-discuss@handhelds.org
-Subject: Re: [Kernel-discuss] Re: [PATCH 3/8] Universal power supply class
-	(was: battery class)
-Message-ID: <20070506211307.GC10236@zarina>
-Reply-To: cbou@mail.ru
-References: <20070503213139.GC20067@zarina> <41840b750705032155w21d98b5g6236daf9bff66606@mail.gmail.com> <20070505035413.GB21359@khazad-dum.debian.net> <20070505123230.GA6460@zarina> <74d0deb30705050639s4166a2acm5fd0947c5c1a8cb8@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+	Sun, 6 May 2007 17:18:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:42875 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755879AbXEFVSY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 17:18:24 -0400
+Date: Sun, 6 May 2007 22:18:19 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       hch@infradead.org, akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+       Trond.Myklebust@netapp.com, neilb@suse.de, mhalcrow@us.ibm.com
+Subject: Re: [PATCH 1/5] fs: Introduce vfs_path_lookup
+Message-ID: <20070506211819.GA13333@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>,
+	linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+	akpm@linux-foundation.org, viro@ftp.linux.org.uk,
+	Trond.Myklebust@netapp.com, neilb@suse.de, mhalcrow@us.ibm.com
+References: <1178473289617-git-send-email-jsipek@cs.sunysb.edu> <1178473289264-git-send-email-jsipek@cs.sunysb.edu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <74d0deb30705050639s4166a2acm5fd0947c5c1a8cb8@mail.gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <1178473289264-git-send-email-jsipek@cs.sunysb.edu>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 05, 2007 at 03:39:40PM +0200, pHilipp Zabel wrote:
-> > > secondary notion too, as that is common.  It would be generic.
-> > >
-> > > Or maybe I just didn't get the idea behind the "type" attribute :-)
-> > >
-> > > I'd appreciate if these were documented in the text file.
-> >
-> > I think I got the start point of confusion. It's indeed bad to call such
-> > power supply type as AC. Maybe I should it rename to ADAPTER? Or WALL?
-> 
->  or MAINS?
+On Sun, May 06, 2007 at 01:41:25PM -0400, Josef 'Jeff' Sipek wrote:
+> Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
+> ---
+>  fs/namei.c            |   32 ++++++++++++++++++++++++++++++++
+>  include/linux/namei.h |    2 ++
+>  2 files changed, 34 insertions(+), 0 deletions(-)
 
-Philipp, much thanks! MAINS indeed feels perfect for that.
+Looks good to me.
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
