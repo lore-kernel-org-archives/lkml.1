@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933559AbXEFKKO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933570AbXEFKNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933559AbXEFKKO (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 06:10:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933566AbXEFKKN
+	id S933570AbXEFKNf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 06:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933571AbXEFKNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 06:10:13 -0400
-Received: from wx-out-0506.google.com ([66.249.82.233]:53123 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933559AbXEFKKM (ORCPT
+	Sun, 6 May 2007 06:13:35 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:40752 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933570AbXEFKNe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 06:10:12 -0400
+	Sun, 6 May 2007 06:13:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=GBQnD+v+CINCNmLL4iUqV7FXHk1BHBUjfzkmtUqgermKqNc9ypRrNJ7b+tRVAM7LcxCoqMAvgoWmX2xeS82qqIPze765xmOFZwxxeLtopmUyxIOOYb2DmIdj4UCLj2Tq45GCKXvk+UeeEV8UBN5nLy5M6/obOz/jntAvjy9OZUc=
-Message-ID: <a781481a0705060310h3a9cb49asbbc8b7f5ddb38a8e@mail.gmail.com>
-Date: Sun, 6 May 2007 15:40:10 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Tom Zanussi" <zanussi@comcast.net>
-Subject: Re: [PATCH] relay: use plain timer instead of delayed work
-Cc: akpm@linux-foundation.org, oleg@tv-sign.ru, linux-kernel@vger.kernel.org
-In-Reply-To: <1178426780.29337.67.camel@ubuntu>
+        b=nruCjll/nZWtezNP16XNDe0LgvWqA+WtSLFvImXFoCSvNfDm8TPSQrmaxfwCTpzp96tmIlJHOiRG0drRGQE13em0fsQpcdoeEBzlIvw7A8nqLlvzBi88DdaAood/VVSkYPB2ox5WjbinLTLmIXCLzq/JSLrsuTUeUCFjr0SG4TA=
+Message-ID: <5486cca80705060313o65bff1a8v3fd9532361b2a90b@mail.gmail.com>
+Date: Sun, 6 May 2007 12:13:33 +0200
+From: "Antonino Ingargiola" <tritemio@gmail.com>
+To: "Con Kolivas" <kernel@kolivas.org>
+Subject: Re: [ck] Re: swap-prefetch: 2.6.22 -mm merge plans
+Cc: "Ingo Molnar" <mingo@elte.hu>, "ck list" <ck@vds.kolivas.org>,
+       "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <200705051842.32328.kernel@kolivas.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <1178426780.29337.67.camel@ubuntu>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	 <20070504085201.GA24666@elte.hu>
+	 <200705042210.15953.kernel@kolivas.org>
+	 <200705051842.32328.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Tom,
+2007/5/5, Con Kolivas <kernel@kolivas.org>:
+[cut]
+> Here's a better swap prefetch tester. Instructions in file.
 
-On 5/6/07, Tom Zanussi <zanussi@comcast.net> wrote:
-> [...]
-> relay doesn't need to use schedule_delayed_work() for waking readers
-> when a simple timer will do.
->
-> Signed-off-by: Tom Zanussi <zanussi@comcast.net>
-> [...]
-> diff --git a/include/linux/relay.h b/include/linux/relay.h
-> index 759a0f9..cac0732 100644
-> --- a/include/linux/relay.h
-> +++ b/include/linux/relay.h
-> @@ -38,7 +38,7 @@ struct rchan_buf
->         size_t subbufs_consumed;        /* count of sub-buffers consumed */
->         struct rchan *chan;             /* associated channel */
->         wait_queue_head_t read_wait;    /* reader wait queue */
-> -       struct delayed_work wake_readers; /* reader wake-up work struct */
-> +       struct timer_list timer;        /* reader wake-up timer */
->         struct dentry *dentry;          /* channel file dentry */
->         struct kref kref;               /* channel buffer refcount */
->         struct page **page_array;       /* array of current buffer pages */
+The system should be leaved totally inactive for the test duration (10m) right?
 
-I suspect you could now safely get rid of the "#include
-<linux/wait.h>" at the top of relay.h too. And although timer.h comes
-via #include <linux/sched.h>, you might want to do that explicitly
-too.
 
-Satyam
+Regards,
+
+  ~ Antonio
