@@ -1,91 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbXEFU4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbXEFU4j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754441AbXEFU4P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 16:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbXEFU4O
+	id S1754483AbXEFU4j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 16:56:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754620AbXEFU4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 16:56:14 -0400
-Received: from www.osadl.org ([213.239.205.134]:37019 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754348AbXEFU4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 16:56:13 -0400
-Subject: [PATCH] x86-64 highres/dyntick support
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 06 May 2007 22:58:47 +0200
-Message-Id: <1178485128.31213.98.camel@localhost.localdomain>
+	Sun, 6 May 2007 16:56:39 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:54230 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754483AbXEFU4i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 16:56:38 -0400
+Date: Sun, 6 May 2007 22:57:32 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Valdis.Kletnieks@vt.edu
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm1
+Message-ID: <20070506205732.GC10396@uranus.ravnborg.org>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <17296.1178434189@turing-police.cc.vt.edu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <17296.1178434189@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm pleased to announce the first cut of the final x86_64
-highres/dyntick support, which I did based on Chris Wright's patch set,
-which is again based on Arjan van de Ven's initial work:
+On Sun, May 06, 2007 at 02:49:49AM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Sat, 05 May 2007 01:49:55 PDT, Andrew Morton said:
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+> 
+>   MODPOST vmlinux
+> WARNING: mm/built-in.o - Section mismatch: reference to .init.text: from .text between 'kmem_cache_create' (at offset 0x20dff) and 'cache_reap'
+> WARNING: mm/built-in.o - Section mismatch: reference to .init.text: from .text between 'kmem_cache_create' (at offset 0x20e41) and 'cache_reap'
+> 
+> Built with CONFIG_SLAB, CONFIG_SMP, x86_64.
 
-http://www.tglx.de/projects/hrtimers/2.6.21-git2-x86-64/patches-2.6.21-git2.patch.bz2
+It comes from this code (mm/slab.c):
+/*
+ * For setting up all the kmem_list3s for cache whose buffer_size is same as
+ * size of kmem_list3.
+ */
+static void __init set_up_list3s(struct kmem_cache *cachep, int index)
+{
+	int node;
 
-Broken out version:
+	for_each_online_node(node) {
+		cachep->nodelists[node] = &initkmem_list3[index + node];
+		cachep->nodelists[node]->next_reap = jiffies +
+		    REAPTIMEOUT_LIST3 +
+		    ((unsigned long)cachep) % REAPTIMEOUT_LIST3;
+	}
+}
 
-http://www.tglx.de/projects/hrtimers/2.6.21-git2-x86-64/patches-2.6.21-git2.tar.bz2
+It is supposed to be used only during early init and thus marked __init.
+And initkmem_list3 is marked __initdata so that matches.
 
-It applies on top of 2.6.21-git2 and contains the following patches:
+But set_up_list3s() is used outside __init marked functions and thus result in an error.
 
-# Andi's x86_64 queue (already in -mm and pending mainline merges)
-x86_64-2.6.21-git2.patch 
+I do not know how to fix this.
 
-# Outstanding fixups to highres/dyntick core and i386 
-# (-mm and mainline pending)
-highres-dyntick-avoid-xtime-lock-contention.patch
-acpi-keep-tsc-stable-when-lapic-timer-c2-ok-is-set.patch
-clocksource-fix-resume-logic.patch
-clockevents-fix-resume-logic.patch
-
-# x86_64 dyntick support
-x86-64-untangle-hpet-headers.patch
-x86-64-drive-set-rtc-mss.patch
-i386-move-pit-setup-to-i8253-h.patch
-x86-64-remove-dead-code-tsc-c.patch
-x86-64-convert-to-clockevents.patch
-x86-64-prepare-idle-for-dyntick.patch
-x86-64-enable-highres-dyntick.patch
-
-The x86-64-convert-to-clockevents.patch is rather large, but there is no
-way to do this incremental. The clockevents conversion has to be done in
-one go. 
-
-The x86-64 clockevents patch set overall summary is:
-
- 22 files changed, 631 insertions(+), 1199 deletions(-)
-
-due to sharing the code of PIT and HPET with i386.
-
-I did not dare to tackle sharing apic.c yet, but there is definitely a
-chance to get this done some day when I get bored and do a:
-# mkdir arch/x86  :)
-
-I'm going to post the x86_64 set for review to LKML once the outstanding
-highres/dyntick fixups have hit mainline resp. -mm
-
-To create a highres / dyntick enabled kernel for x86_64:
-http://kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.tar.bz2
-http://kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git2.bz2
-http://www.tglx.de/projects/hrtimers/2.6.21-git2-x86-64/patches-2.6.21-git2.patch.bz2
-
-
-Comments, bugreports, patches are welcome as ususal
-
-Thanks,
-
-	tglx
-
-
+	Sam
