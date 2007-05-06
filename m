@@ -1,52 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbXEFRsg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754746AbXEFRwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbXEFRsg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 13:48:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbXEFRsM
+	id S1754746AbXEFRwd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 13:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbXEFRwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 13:48:12 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:60375 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754746AbXEFRsG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 13:48:06 -0400
-From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: hch@infradead.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 2/2] fs: Use path_walk in do_path_lookup
-Date: Sun,  6 May 2007 13:47:56 -0400
-Message-Id: <11784736761029-git-send-email-jsipek@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.2.rc1.20.g86b9
-In-Reply-To: <11784736762516-git-send-email-jsipek@cs.sunysb.edu>
-References: <11784736762516-git-send-email-jsipek@cs.sunysb.edu>
+	Sun, 6 May 2007 13:52:33 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:44995 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754746AbXEFRwd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 13:52:33 -0400
+Date: Sun, 6 May 2007 19:53:26 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Miles Lane <miles.lane@gmail.com>
+Subject: Re: [Patch] Fix section mismatch of memory hotplug related code.
+Message-ID: <20070506175326.GA9855@uranus.ravnborg.org>
+References: <20070405163028.4248.Y-GOTO@jp.fujitsu.com> <20070504170421.b1ab2d16.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070504170421.b1ab2d16.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since, path_walk sets the total_link_count to 0, and calls link_path_walk,
-we can just call path_walk directly.
+On Fri, May 04, 2007 at 05:04:21PM -0700, Andrew Morton wrote:
+> On Thu, 05 Apr 2007 17:01:02 +0900
+> Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+> 
+> > Hello.
+> > 
+> > This is to fix many section mismatches of code related to memory hotplug.
+> > I checked compile with memory hotplug on/off on ia64 and x86-64 box.
+> > 
+> > ..
+> >
+> > ===================================================================
+> > --- meminit.orig/drivers/acpi/numa.c	2007-04-04 20:15:58.000000000 +0900
+> > +++ meminit/drivers/acpi/numa.c	2007-04-04 20:56:34.000000000 +0900
+> > @@ -228,7 +228,7 @@ int __init acpi_numa_init(void)
+> >  	return 0;
+> >  }
+> >  
+> > -int acpi_get_pxm(acpi_handle h)
+> > +int __meminit acpi_get_pxm(acpi_handle h)
+> >  {
+> >  	unsigned long pxm;
+> >  	acpi_status status;
+> > @@ -246,7 +246,7 @@ int acpi_get_pxm(acpi_handle h)
+> >  }
+> >  EXPORT_SYMBOL(acpi_get_pxm);
+> >  
+> > -int acpi_get_node(acpi_handle *handle)
+> > +int __meminit acpi_get_node(acpi_handle *handle)
+> >  {
+> >  	int pxm, node = -1;
+> 
+> It doesn't make a lot of sense to export an __init symbol to modules.  I
+> guess it's OK in this case, but we get warnings:
 
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
----
- fs/namei.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+It seems wrong to me to first tell linker to discard the code after init and
+next to export the symbol to make it available for any module anytime.
 
-diff --git a/fs/namei.c b/fs/namei.c
-index 2a5c232..25aaf8c 100644
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -1156,8 +1156,8 @@ static int fastcall do_path_lookup(int dfd, const char *name,
- 
- 		fput_light(file, fput_needed);
- 	}
--	current->total_link_count = 0;
--	retval = link_path_walk(name, nd);
-+
-+	retval = path_walk(name, nd);
- out:
- 	if (unlikely(!retval && !audit_dummy_context() && nd->dentry &&
- 				nd->dentry->d_inode))
--- 
-1.5.2.rc1.20.g86b9
+Both function are relatively small so better avoid playing games and
+drop the __meminit tag.
 
+	Sam
