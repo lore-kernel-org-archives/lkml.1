@@ -1,73 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932943AbXEFIwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933368AbXEFJEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932943AbXEFIwi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 04:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933368AbXEFIwi
+	id S933368AbXEFJEi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 05:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933388AbXEFJEi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 04:52:38 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37740 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932943AbXEFIwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 04:52:37 -0400
-Date: Sun, 6 May 2007 10:52:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Willy Tarreau <w@1wt.eu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Esben Nielsen <nielsen.esben@googlemail.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Gene Heskett <gene.heskett@gmail.com>, Mark Lord <lkml@rtr.ca>,
-       Zach Carter <linux@zachcarter.com>, buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070506085201.GA5860@elte.hu>
-References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com> <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com> <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire> <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org> <20070506082911.GA32644@elte.hu> <20070506083600.GA16043@1wt.eu>
-Mime-Version: 1.0
+	Sun, 6 May 2007 05:04:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:47104 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933368AbXEFJEh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 05:04:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=KHez9ps02BVBL8fWz17Rhg4Dzsug7YG/7JXJJ8RwVdP33cNt9O/Bfc7yqI8yHUkhDrQ8/jy0hHb/napVzH0/IyO1pi9sbnGg+7SEKAvt6e8PPYnlRscBSTYINsHukEwQUYcxXAyfcvI5nJW/ZnHoQsX5F8+P8zh1fLHYv4Jt7bg=
+Date: Sun, 6 May 2007 11:03:33 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+Subject: [-mm patch] get_unmapped_area: remove now unused ret variable (was Re: 2.6.21-mm1)
+Message-ID: <20070506090333.GB29299@slug>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070506083600.GA16043@1wt.eu>
-User-Agent: Mutt/1.4.2.2i
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -2.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
-	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Willy Tarreau <w@1wt.eu> wrote:
-
-> Just a hint: while your code here is correct, it is a good practise to 
-> check against < 0 instead, so that if for any reason you sometimes 
-> forget to cast to signed, the compiler will emit a warning stating 
-> that the condition is always false. This would simply become :
+On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
 > 
-> -		if (key < entry->fair_key) {
-> +		if ((s64)(key - entry->fair_key) < 0) {
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+> 
 
-done :-) (Btw., the key is still s64 so the cast is technically 
-unnecessary - but now the code would be correct with the key being u64 
-too.)
+mm/mmap.c:1393: warning: unused variable 'ret'
 
-	Ingo
+The get_unmapped_area-doesnt-need-hugetlbfs-hacks-anymore.patch and
+get_unmapped_area-handles-map_fixed-in-generic-code.patch rendered the ret
+variable useless.
 
-Index: linux/kernel/sched_fair.c
-===================================================================
---- linux.orig/kernel/sched_fair.c
-+++ linux/kernel/sched_fair.c
-@@ -60,7 +60,7 @@ static inline void __enqueue_task_fair(s
- 		 * We dont care about collisions. Nodes with
- 		 * the same key stay together.
- 		 */
--		if (key < entry->fair_key) {
-+		if ((s64)(key - entry->fair_key) < 0) {
- 			link = &parent->rb_left;
- 		} else {
- 			link = &parent->rb_right;
+Regards,
+Frederik
+
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+
+diff --git a/mm/mmap.c b/mm/mmap.c
+index b0f6eb8..fabf7f4 100644
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -1390,7 +1390,6 @@ unsigned long
+ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
+ 		unsigned long pgoff, unsigned long flags)
+ {
+-	unsigned long ret;
+ 	unsigned long (*get_area)(struct file *, unsigned long,
+ 				  unsigned long, unsigned long, unsigned long);
+ 
