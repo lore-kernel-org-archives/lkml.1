@@ -1,43 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbXEFSOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754861AbXEFSTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754871AbXEFSOf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 14:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754861AbXEFSOf
+	id S1754861AbXEFSTb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 14:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754865AbXEFSTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 14:14:35 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4517 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754871AbXEFSOe (ORCPT
+	Sun, 6 May 2007 14:19:31 -0400
+Received: from wr-out-0506.google.com ([64.233.184.227]:35001 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754861AbXEFSTa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 14:14:34 -0400
-Date: Sun, 6 May 2007 19:14:22 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Gene Heskett <gene.heskett@gmail.com>
-Cc: Corey Minyard <minyard@acm.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Serial 8250: Handle saving the clear-on-read bits from the LSR and MSR
-Message-ID: <20070506181422.GB21158@flint.arm.linux.org.uk>
-Mail-Followup-To: Gene Heskett <gene.heskett@gmail.com>,
-	Corey Minyard <minyard@acm.org>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20070504131532.GA12265@localdomain> <200705041304.02618.gene.heskett@gmail.com> <463B7FBC.3090907@acm.org> <200705061258.25351.gene.heskett@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 6 May 2007 14:19:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=V6A8IAKBpUU4Jq87REk7CHoBI+uP8uJPztjmG/62ZQn/E1ea4IgqJFK1JDlTb45VNAkNpHj6Y5cTu0I3trUZjY7cmW9t4G47b/IZOI9VZ3l5QPZ9PFrFO2c0+CsAHE2XTJbu2xnogNgn8s/NjCycWjPGxkTlQB8yeT2CDaEDD0M=
+Message-ID: <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com>
+Date: Sun, 6 May 2007 20:19:28 +0200
+From: "Francesco Pretto" <ceztko@gmail.com>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+Cc: "Phillip Susi" <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <463B99EE.2090001@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200705061258.25351.gene.heskett@gmail.com>
-User-Agent: Mutt/1.4.2.1i
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>
+	 <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca>
+	 <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com>
+	 <463B858E.6060002@cfl.rr.com> <463B99EE.2090001@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 06, 2007 at 12:58:25PM -0400, Gene Heskett wrote:
-> [long message snipped]
+2007/5/4, Tejun Heo <htejun@gmail.com>:
+> Yeap, the third iteration of the patch just got submitted.
 >
-> Thanks for your patience Corey.
+>   http://thread.gmane.org/gmane.linux.ide/18485
+>
+> Unfortunately, there doesn't seem to be an easy way out.  We'll need
+> userland shutdown(8) update.
+>
+> --
+> tejun
+>
 
-So, in one sentence or preferably one word, did Corey's patch cause a
-regression?
+Ok, i can't understand if the patch will be included in 2.6.22 (i
+didn't see it in the Andrew Morton merge plan). However, if you can
+confirm the inclusion, i can send bug reports for ubuntu and gentoo. I
+can even send an email to Miquel van Smoorenburg, who should be the
+mainstream sysvinit developer (and probably the last maintainer).
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Francesco
