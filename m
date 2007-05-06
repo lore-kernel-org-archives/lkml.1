@@ -1,71 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755475AbXEFAx2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755507AbXEFBIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755475AbXEFAx2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 5 May 2007 20:53:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755474AbXEFAx2
+	id S1755507AbXEFBIe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 5 May 2007 21:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbXEFBIe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 5 May 2007 20:53:28 -0400
-Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:58118 "EHLO
-	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754512AbXEFAx1 (ORCPT
+	Sat, 5 May 2007 21:08:34 -0400
+Received: from nlpi001.sbcis.sbc.com ([207.115.36.30]:46496 "EHLO
+	nlpi001.sbcis.sbc.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755507AbXEFBId (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 5 May 2007 20:53:27 -0400
-From: "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, hch@infradead.org,
-       akpm@linux-foundation.org, viro@ftp.linux.org.uk, neilb@suse.de,
-       mhalcrow@us.ibm.com, Trond.Myklebust@netapp.com,
-       "Josef 'Jeff' Sipek" <jsipek@cs.sunysb.edu>
-Subject: [PATCH 1/1] sunrpc: Use path_component_lookup
-Date: Sat,  5 May 2007 20:52:46 -0400
-Message-Id: <1178412766906-git-send-email-jsipek@cs.sunysb.edu>
-X-Mailer: git-send-email 1.5.2.rc1.20.g86b9
-In-Reply-To: <1178409144.6561.73.camel@heimdal.trondhjem.org>
-References: <1178409144.6561.73.camel@heimdal.trondhjem.org>
+	Sat, 5 May 2007 21:08:33 -0400
+X-ORBL: [67.117.73.34]
+Date: Sat, 5 May 2007 18:08:05 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: linux-kernel@vger.kernel.org,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: Re: [PATCH 4/10] ARM: OMAP: gpio init section cleanups
+Message-ID: <20070506010804.GA7091@atomide.com>
+References: <11761524713580-git-send-email-tony@atomide.com> <1176152483689-git-send-email-tony@atomide.com> <11761524911912-git-send-email-tony@atomide.com> <1176152494436-git-send-email-tony@atomide.com> <11761525022200-git-send-email-tony@atomide.com> <20070505100426.GA9943@flint.arm.linux.org.uk> <20070505102850.GA22729@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="9amGYk9869ThD9tj"
+Content-Disposition: inline
+In-Reply-To: <20070505102850.GA22729@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-use path_component_lookup instead of open-coding the necessary
-functionality.
 
-Signed-off-by: Josef 'Jeff' Sipek <jsipek@cs.sunysb.edu>
----
- net/sunrpc/rpc_pipe.c |   16 +++++++---------
- 1 files changed, 7 insertions(+), 9 deletions(-)
+--9amGYk9869ThD9tj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/net/sunrpc/rpc_pipe.c b/net/sunrpc/rpc_pipe.c
-index 9b9ea50..c93a454 100644
---- a/net/sunrpc/rpc_pipe.c
-+++ b/net/sunrpc/rpc_pipe.c
-@@ -451,21 +451,19 @@ void rpc_put_mount(void)
- static int
- rpc_lookup_parent(char *path, struct nameidata *nd)
+* Russell King <rmk+lkml@arm.linux.org.uk> [070505 03:29]:
+> On Sat, May 05, 2007 at 11:04:26AM +0100, Russell King wrote:
+> > On Mon, Apr 09, 2007 at 05:01:06PM -0400, Tony Lindgren wrote:
+> > > From: David Brownell <dbrownell@users.sourceforge.net>
+> > > 
+> > > Minor GPIO cleanups:  remove needless #include, and omap_gpio_init()
+> > > should be __init, as well as all the board init code calling it.
+> > > 
+> > > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> > > Signed-off-by: Tony Lindgren <tony@atomide.com>
+> > 
+> > I've applied 8 patches from this series by cherry picking it from your
+> > git tree, minus this patch which git wouldn't apply due to fuzz in
+> > arch/arm/plat-omap/gpio.c.
+
+I wonder what causes the fuzz? Do you have your git tree somewhere
+so I can update this patch against it?
+
+> Incidentally, when doing a build after these patches, I'm seeing:
+> 
+> arch/arm/plat-omap/dma.c: In function `omap_get_dma_src_pos':
+> arch/arm/plat-omap/dma.c:750: warning: 'offset' might be used uninitialized in this function
+> arch/arm/plat-omap/dma.c: In function `omap_get_dma_dst_pos':
+> arch/arm/plat-omap/dma.c:772: warning: 'offset' might be used uninitialized in this function
+> 
+> These look like they're valid warnings to me.
+
+Thanks for letting me know, here's a patch to fix the wardning.
+
+Regards,
+
+Tony
+
+--9amGYk9869ThD9tj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename="patch-fix-dma-addr-warning.txt"
+
+Subject: ARM: OMAP: Fix warning in dma.c
+
+Fix warning: 'offset' might be uninitialized
+
+Signed-off-by: Tony Lindgren <tony@atomide.com>
+
+--- a/arch/arm/plat-omap/dma.c
++++ b/arch/arm/plat-omap/dma.c
+@@ -747,7 +747,7 @@ int omap_set_dma_callback(int lch,
+  */
+ dma_addr_t omap_get_dma_src_pos(int lch)
  {
-+	struct vfsmount *mnt;
-+
- 	if (path[0] == '\0')
- 		return -ENOENT;
--	nd->mnt = rpc_get_mount();
--	if (IS_ERR(nd->mnt)) {
-+
-+	mnt = rpc_get_mount();
-+	if (IS_ERR(mnt)) {
- 		printk(KERN_WARNING "%s: %s failed to mount "
- 			       "pseudofilesystem \n", __FILE__, __FUNCTION__);
--		return PTR_ERR(nd->mnt);
-+		return PTR_ERR(mnt);
- 	}
--	mntget(nd->mnt);
--	nd->dentry = dget(rpc_mount->mnt_root);
--	nd->last_type = LAST_ROOT;
--	nd->flags = LOOKUP_PARENT;
--	nd->depth = 0;
+-	dma_addr_t offset;
++	dma_addr_t offset = 0;
  
--	if (path_walk(path, nd)) {
-+	if (path_component_lookup(mnt->mnt_root, mnt, path, LOOKUP_PARENT, nd)) {
- 		printk(KERN_WARNING "%s: %s failed to find path %s\n",
- 				__FILE__, __FUNCTION__, path);
- 		rpc_put_mount();
--- 
-1.5.2.rc1.20.g86b9
+ 	if (cpu_class_is_omap1())
+ 		offset = (dma_addr_t) (OMAP1_DMA_CSSA_L_REG(lch) |
 
+--9amGYk9869ThD9tj--
