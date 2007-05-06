@@ -1,199 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755331AbXEFHfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754296AbXEFHjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755331AbXEFHfY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 03:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755338AbXEFHfY
+	id S1754296AbXEFHjp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 03:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754536AbXEFHjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 03:35:24 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:57674 "EHLO pasmtpB.tele.dk"
+	Sun, 6 May 2007 03:39:45 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:52837 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755331AbXEFHfW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 03:35:22 -0400
-Date: Sun, 6 May 2007 09:36:15 +0200
+	id S1754296AbXEFHjp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 03:39:45 -0400
+Date: Sun, 6 May 2007 09:40:38 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, sam@ravnborg.org
-Subject: [GIT PATCHES #2] kbuild, kconfig + Kconfig updates
-Message-ID: <20070506073615.GA6492@uranus.ravnborg.org>
-References: <20070502201741.GD9044@uranus.ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Roman Zippel <zippel@linux-m68k.org>
+Subject: kconfig: error out if recursive dependencies are found
+Message-ID: <20070506074038.GB6492@uranus.ravnborg.org>
+References: <20070502201741.GD9044@uranus.ravnborg.org> <20070506073615.GA6492@uranus.ravnborg.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070502201741.GD9044@uranus.ravnborg.org>
+In-Reply-To: <20070506073615.GA6492@uranus.ravnborg.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus.
 
-On top of the below additional three patches has been pushed out:
+Sample:
+config FOO
+	bool "This is foo"
+	depends on BAR
 
-    kconfig: fix mconf segmentation fault
-    kbuild: enable use of code from a different dir
-    kconfig: error out if recursive dependencies are found
+config BAR
+	bool "This is bar"
+	depends on FOO
 
-Please pull from:
-git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
+This will result in following error message:
+error: found recursive dependency: FOO -> BAR -> FOO
 
+And will then exit with exit code equal 1 so make will stop.
+Inspired by patch from: Adrian Bunk <bunk@stusta.de>
 
-Diffstat for the NEW patches (see diffstat for the other 35 patches at end of mail)
-
- scripts/Makefile.build              |   19 +++++++++----------
- scripts/Makefile.host               |   14 +++++++-------
- scripts/kconfig/lex.zconf.c_shipped |    2 +-
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+Cc: Adrian Bunk <bunk@stusta.de>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+---
  scripts/kconfig/symbol.c            |   13 +++++--------
- scripts/kconfig/zconf.l             |    2 +-
  scripts/kconfig/zconf.tab.c_shipped |    6 ++++--
  scripts/kconfig/zconf.y             |    6 ++++--
- 7 files changed, 31 insertions(+), 31 deletions(-)
+ 3 files changed, 13 insertions(+), 12 deletions(-)
 
-Patches will be sent to lkml only.
+diff --git a/scripts/kconfig/symbol.c b/scripts/kconfig/symbol.c
+index 8f06c47..c35dcc5 100644
+--- a/scripts/kconfig/symbol.c
++++ b/scripts/kconfig/symbol.c
+@@ -786,13 +786,15 @@ static struct symbol *sym_check_expr_deps(struct expr *e)
+ 	return NULL;
+ }
+ 
++/* return NULL when dependencies are OK */
+ struct symbol *sym_check_deps(struct symbol *sym)
+ {
+ 	struct symbol *sym2;
+ 	struct property *prop;
+ 
+ 	if (sym->flags & SYMBOL_CHECK) {
+-		printf("Warning! Found recursive dependency: %s", sym->name);
++		fprintf(stderr, "%s:%d:error: found recursive dependency: %s",
++		        sym->prop->file->name, sym->prop->lineno, sym->name);
+ 		return sym;
+ 	}
+ 	if (sym->flags & SYMBOL_CHECKED)
+@@ -816,13 +818,8 @@ struct symbol *sym_check_deps(struct symbol *sym)
+ 			goto out;
+ 	}
+ out:
+-	if (sym2) {
+-		printf(" %s", sym->name);
+-		if (sym2 == sym) {
+-			printf("\n");
+-			sym2 = NULL;
+-		}
+-	}
++	if (sym2)
++		fprintf(stderr, " -> %s%s", sym->name, sym2 == sym? "\n": "");
+ 	sym->flags &= ~SYMBOL_CHECK;
+ 	return sym2;
+ }
+diff --git a/scripts/kconfig/zconf.tab.c_shipped b/scripts/kconfig/zconf.tab.c_shipped
+index d777fe8..9a06b67 100644
+--- a/scripts/kconfig/zconf.tab.c_shipped
++++ b/scripts/kconfig/zconf.tab.c_shipped
+@@ -2132,9 +2132,11 @@ void conf_parse(const char *name)
+ 	}
+ 	menu_finalize(&rootmenu);
+ 	for_all_symbols(i, sym) {
+-		sym_check_deps(sym);
++		if (sym_check_deps(sym))
++			zconfnerrs++;
+         }
+-
++	if (zconfnerrs)
++		exit(1);
+ 	sym_set_change_count(1);
+ }
+ 
+diff --git a/scripts/kconfig/zconf.y b/scripts/kconfig/zconf.y
+index 04a5864..92eb02b 100644
+--- a/scripts/kconfig/zconf.y
++++ b/scripts/kconfig/zconf.y
+@@ -501,9 +501,11 @@ void conf_parse(const char *name)
+ 	}
+ 	menu_finalize(&rootmenu);
+ 	for_all_symbols(i, sym) {
+-		sym_check_deps(sym);
++		if (sym_check_deps(sym))
++			zconfnerrs++;
+         }
+-
++	if (zconfnerrs)
++		exit(1);
+ 	sym_set_change_count(1);
+ }
+ 
+-- 
+1.5.1.rc3.20.gaa453
 
-	Sam
-
-On Wed, May 02, 2007 at 10:17:41PM +0200, Sam Ravnborg wrote:
-> Hi Linus.
-> 
-> Please pull latest kbuild/kconfig and Kconfig updates.
-> Most of these have been present in -mm although a bunch
-> of trivial updates has been applied the last week too.
-> 
-> 
-> Main changes
-> o Added cleanfile and cleanpatch scripts
->   Useful to tidy up stuff before submission.
->   The discussed checkpatch script may be a good third candidate
-> o section mismatch does now include vmlinux so expect a few new warnings
-> o Ignore section mismatch warnings in several cases to bring down false positives significantly
-> o complain about missing system calls
->   The way to find missing system calls was discussed but in general the current version
->   was apprecated and triggered davem to add a few to sparc64 for example
-> o It is now possible to override build version and build timestamp using
->   KBUILD_BUILD_VERSION and KBUILD_BUILD_TIMESTAMP
-> o One patch does some trivial fixes in several Kconfig files which
->   caused some 'nosie' in the diffstat.
-> o Another patch deals with module alias which explain the changes in input.h
-> 
-> Please pull from
-> git://git.kernel.org/pub/scm/linux/kernel/git/sam/kbuild.git
-> 
-> shortlog + diffstat below.
-> 
-> 	Sam
-> 
-> 
-> Alex Landau (1):
->       kbuild: handle compressed cpio initramfs-es
-> 
-> Alexander E. Patrakov (2):
->       usr/Kconfig: fix typo
->       kconfig: fix path to modules.txt in Kconfig help
-> 
-> Andreas Dilger (1):
->       kconfig.debug: clarify CONFIG_DEBUG_INFO help text
-> 
-> Andy Green (1):
->       kbuild: scripts/basic/fixdep segfault on pathological string-o-death
-> 
-> Anton Blanchard (1):
->       kbuild: small documentation fix in Documentation/kbuild/modules.txt
-> 
-> Don Mullis (1):
->       kbuild: move tags from ARCH and include/ ahead of drivers
-> 
-> H. Peter Anvin (2):
->       cleanfile: a script to clean up stealth whitespace
->       cleanpatch: a script to clean up stealth whitespace added by a patch
-> 
-> Marco Costalba (1):
->       kconfig/xconfig: sync main view with search dialog current menu
-> 
-> Matthew Wilcox (1):
->       kbuild: distinguish between errors and warnings in modpost
-> 
-> Michael Ellerman (1):
->       kbuild: propagate errors from find in scripts/gen_initramfs_list.sh
-> 
-> Mike Frysinger (1):
->       menuconfig: dont use obsolete index() function in lxdialog
-> 
-> Randy Dunlap (2):
->       kbuild: be more explicit on missing .config file
->       kernel-doc: alphabetically-sorted entries in index.html of 'htmldocs'
-> 
-> Robert P. J. Day (2):
->       kbuild: clarify the creation of the LOCALVERSION_AUTO string.
->       kconfig: correct minor typo in Kconfig warning message.
-> 
-> Sam Ravnborg (16):
->       kbuild: fix section mismatch check for vmlinux
->       kbuild: whitelist section mismatch in init/main.c
->       kbuild: fix warnings from .pci_fixup section
->       kbuild: fix segmentation fault in modpost
->       kbuild: whitelist logo references from .text to .init.data
->       kbuild: remove dependency on input.h from file2alias
->       menuconfig: remember alternate config filename
->       kbuild: do not emit src version warning for non-modules
->       kbuild: complain about missing system calls
->       kbuild: override build timestamp & version
->       kconfig/menuconfig: do not hardcode '.config'
->       kbuild: remove kconfig binaries during make mrproper
->       kbuild: fix make mrproper for Documentation/DocBook/man
->       kbuild: remove stale comment in modpost.c
->       kbuild: ignore section mismatch warning for references from .paravirtprobe to .init.text
->       kconfig: refer to qt3 if we cannot find qt libraries
-> 
-> Uwe Zeisberger (1):
->       kbuild: add a missing slash in the comments
-> 
-> Uwe kleine-König (1):
->       kbuild/mkuboot.sh: allow spaces in CROSS_COMPILE
-> 
->  Documentation/DocBook/Makefile     |    9 +-
->  Documentation/DocBook/man/Makefile |    3 -
->  Documentation/kbuild/modules.txt   |    2 +-
->  Kbuild                             |   11 ++
->  Makefile                           |   15 ++-
->  drivers/mtd/devices/Kconfig        |    4 +-
->  drivers/net/Kconfig                |    6 +-
->  drivers/net/wireless/Kconfig       |   12 +-
->  drivers/scsi/Kconfig               |    4 +-
->  drivers/video/Kconfig              |    8 +-
->  include/linux/input.h              |    4 +
->  include/linux/mod_devicetable.h    |    1 +
->  init/Kconfig                       |   16 ++-
->  init/main.c                        |    6 +-
->  lib/Kconfig.debug                  |    3 +
->  net/ipv6/netfilter/Kconfig         |    2 +-
->  net/netfilter/Kconfig              |   24 ++--
->  net/tipc/Kconfig                   |    2 +-
->  scripts/Makefile.modpost           |    8 +-
->  scripts/basic/fixdep.c             |    2 +
->  scripts/checksyscalls.sh           |  118 ++++++++++++++++++++
->  scripts/cleanfile                  |  126 ++++++++++++++++++++++
->  scripts/cleanpatch                 |  206 ++++++++++++++++++++++++++++++++++++
->  scripts/gen_initramfs_list.sh      |   12 ++-
->  scripts/kconfig/Makefile           |    5 +-
->  scripts/kconfig/conf.c             |    1 +
->  scripts/kconfig/lkc.h              |    1 +
->  scripts/kconfig/lxdialog/dialog.h  |    1 +
->  scripts/kconfig/lxdialog/util.c    |    9 ++-
->  scripts/kconfig/mconf.c            |   43 ++++++--
->  scripts/kconfig/menu.c             |    2 +-
->  scripts/kconfig/qconf.cc           |    5 +-
->  scripts/kconfig/qconf.h            |    2 +-
->  scripts/mkcompile_h                |   27 ++++--
->  scripts/mkuboot.sh                 |    2 +-
->  scripts/mod/file2alias.c           |   21 ++--
->  scripts/mod/modpost.c              |  141 +++++++++++++++++++------
->  scripts/mod/modpost.h              |    1 +
->  scripts/mod/sumversion.c           |    5 +-
->  usr/Kconfig                        |    2 +-
->  40 files changed, 735 insertions(+), 137 deletions(-)
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
