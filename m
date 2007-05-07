@@ -1,58 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934352AbXEGPWp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934373AbXEGPXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934352AbXEGPWp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 11:22:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934311AbXEGPWo
+	id S934373AbXEGPXR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 11:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934364AbXEGPXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 11:22:44 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:54440 "EHLO atlrel6.hp.com"
+	Mon, 7 May 2007 11:23:14 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46242 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934345AbXEGPWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 11:22:44 -0400
-Subject: [PATCH 2.6.21-mm1]  remove unionfs reference to SLAB_CTOR_VERIFY
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, jsipek@cs.sunysb.edu
-Cc: Eric Whitney <eric.whitney@hp.com>
-Content-Type: text/plain; charset=UTF-8
-Organization: HP/OSLO
-Date: Mon, 07 May 2007 11:22:32 -0400
-Message-Id: <1178551352.5079.25.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 8bit
+	id S934289AbXEGPXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 11:23:12 -0400
+Message-ID: <463F443A.5000306@garzik.org>
+Date: Mon, 07 May 2007 11:22:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "John W. Linville" <linville@tuxdriver.com>
+CC: Dan Williams <dcbw@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-wireless@vger.kernel.org, marcelo@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Please pull 'revert-libertas' branch of wireless-2.6 (was Re:
+ Please pull 'libertas' branch of wireless-2.6)
+References: <20070227205649.GH5826@tuxdriver.com> <45E8CF5E.5090305@garzik.org> <20070303052140.GA31075@infradead.org> <20070507104117.GA31601@infradead.org> <1178539423.3032.24.camel@localhost.localdomain> <20070507141143.GB5125@tuxdriver.com>
+In-Reply-To: <20070507141143.GB5125@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With unionfs included as a module, 2.6.21-mm1 build broke with:
+John W. Linville wrote:
+> On Mon, May 07, 2007 at 08:03:43AM -0400, Dan Williams wrote:
+>> On Mon, 2007-05-07 at 11:41 +0100, Christoph Hellwig wrote:
+> 
+>>> Of course it's not anywhere near good shape.  Almost all items from my
+>>> review were completely ignored, and we have another totoally substandard
+>>> wireless driver with crappy thread handling, a huge number of broken private
+>>> ioctls and partially absymal codingstyle.
+> 
+>> I've already updated libertas-2.6 git with a ton of updates for this.
+>>
+>> In any case, lets push off any merge until 2.6.23 so the rest of the
+>> comments can be dealt with:
+> 
+> Alright...Jeff, would you please pull the following branch for upstream ASAP:
+> 
+> 	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git revert-libertas
 
-fs/unionfs/super.c: In function ‘init_once’:
-fs/unionfs/super.c:822: error: ‘SLAB_CTOR_VERIFY’ undeclared (first use in this function)
-fs/unionfs/super.c:822: error: (Each undeclared identifier is reported only oncefs/unionfs/super.c:822: error: for each function it appears in.)
+This is leading from behind :/  We don't need to blow about in the wind 
+here.  If you reviewed the driver in depth -- which I assumed because of 
+the trust placed in you as wireless maintainer -- then this situation 
+really should not be happening.  You need to know the status of new 
+drivers you are pushing upstream: what work is left to do, what has been 
+done, what state the driver is in.
 
-Looks like it missed the removal of SLAB_CTOR_VERIFY.  
+I view this request as a failure of the trust network :(
 
-This patch matches how the situation was addressed elsewhere
-throughout the kernel.  Fixes the problem for me...
+For my part, I _did_ review it.  Twice.  Once in the early days, and 
+once when I pulled it into my netdev-2.6.git tree.  libertas needs the 
+changes mentioned in this thread.  But the driver is in workable shape 
+to be USED while being improved.  I strongly dislike people being cowed 
+into not merging a driver for years, because the driver in question does 
+not meet Christoph's idea of perfection.
 
-Signed-off-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Open source is about release early, release often.  Not "hide code in a 
+dark corner until Christoph thinks it is perfect."  We have high 
+standards for upstream merged code, but that standard is not perfection. 
+  Perfect is the enemy of good.
 
- fs/unionfs/super.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+I would rather see the libertas-2.6 git changes pulled into upstream, 
+and am not inclined to revert a WORKING DRIVER at this point, a driver 
+that is actively maintained and has seen quite a bit of improvement 
+since it initially appeared.
 
-Index: Linux/fs/unionfs/super.c
-===================================================================
---- Linux.orig/fs/unionfs/super.c	2007-05-07 10:00:21.000000000 -0400
-+++ Linux/fs/unionfs/super.c	2007-05-07 10:40:51.000000000 -0400
-@@ -819,8 +819,7 @@ static void init_once(void *v, struct km
- {
- 	struct unionfs_inode_info *i = v;
- 
--	if ((flags & (SLAB_CTOR_VERIFY | SLAB_CTOR_CONSTRUCTOR)) ==
--	    SLAB_CTOR_CONSTRUCTOR)
-+	if (flags & SLAB_CTOR_CONSTRUCTOR)
- 		inode_init_once(&i->vfs_inode);
- }
- 
+IMO, Linux users best served by avoiding this silly song and dance, now 
+that the driver is upstream.
+
+Plus, that leaves the kernel history less polluted.
+
+	Jeff
+
+
 
 
