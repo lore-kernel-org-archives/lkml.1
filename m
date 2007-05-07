@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754017AbXEGFdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754037AbXEGFqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754017AbXEGFdu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 01:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbXEGFdu
+	id S1754037AbXEGFqF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 01:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754032AbXEGFqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 01:33:50 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:50630 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754017AbXEGFdu (ORCPT
+	Mon, 7 May 2007 01:46:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:44856 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754037AbXEGFqE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 01:33:50 -0400
+	Mon, 7 May 2007 01:46:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ueYQBvff9lR6+L4nBjQIo0KvqclDs7D9d15Zm9EAUH6NxWKl7T8N18qeCAT8PnwfEaWJlmCGwkt2y1OaeU5vK4n4E6EAEw9jYOYVMoQhvgrdL1NXrili/YXJ4s6eFqShSOvjQMTbsMK8ejZadsMOSAKBwg2wswHaNRKscxwWG2Y=
-Message-ID: <a36005b50705062233q2ea1ef3akfa9f182f982e49ec@mail.gmail.com>
-Date: Sun, 6 May 2007 22:33:48 -0700
+        b=Ap+wtkv5+1AL74L62/sYW7TlZ67zDLN7gn0KOLZ5s1548Vv2b3YQ/Lj4k12usBqY91fm1GvUYxNnDxLqql+YFdlkOPYIwy93Tj5h2BB9gMXowp+BQJMiv1sk8MgyFeus8BMYrUA4se9QLAcLGBR0cgM1a/XKwOByMdMKs5oklDk=
+Message-ID: <a36005b50705062246x21d8c3aah9db53b1e0bf4f79a@mail.gmail.com>
+Date: Sun, 6 May 2007 22:46:02 -0700
 From: "Ulrich Drepper" <drepper@gmail.com>
 To: "Andrew Morton" <akpm@linux-foundation.org>
 Subject: Re: [patch 14/22] pollfs: pollable futex
@@ -23,7 +23,8 @@ Cc: "Davide Libenzi" <davidel@xmailserver.org>,
        "Davi Arnaut" <davi@haxent.com.br>,
        "Eric Dumazet" <dada1@cosmosbay.com>,
        "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "David S. Miller" <davem@davemloft.net>
 In-Reply-To: <20070506125451.aac4b68f.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
@@ -44,12 +45,19 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On 5/6/07, Andrew Morton <akpm@linux-foundation.org> wrote:
 > What is your position on the timerfd/signalfd/etc patches?
->
-> Seems to me that if we were to have fancy new event-delivery machinery
-> like kevent then the timerfd/signalfd work is heading in the other
-> direction and ultimately would prove to have been unneeded?
 
-That's my point.  I think we ultimately have to have something like
-kevent and then all this *fd() work is unnecessary and just adds code
-to the kernel which has to be kept around and which might hinder
-further work in this area.
+One more thing: recently in a network-related discussion with DaveM
+et.al. we came across a situation where we want events from the
+kernel.  The requirement is for fast event notification (or
+non-blocking polling) and the event is only implicitly needed.  Having
+a file descriptor open is not an option.  The possibilities are
+
+- open a file in /proc or /sys or a socket for every call to te
+function to check for events
+
+- have a memory-mapped interface like kevent which does not keep file
+descriptors open
+
+File descriptions are problematic when it comes implicitly uses in the
+runtime.  This is, for instance, why we have MAP_ANON instead of
+keeping a /dev/null file descriptor open all the time.
