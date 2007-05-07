@@ -1,61 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967136AbXEGWjp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967153AbXEGWj5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967136AbXEGWjp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 18:39:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966836AbXEGWjm
+	id S967153AbXEGWj5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 18:39:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967147AbXEGWjx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 18:39:42 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59525 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966662AbXEGWjk (ORCPT
+	Mon, 7 May 2007 18:39:53 -0400
+Received: from wx-out-0506.google.com ([66.249.82.234]:31802 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967089AbXEGWjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 18:39:40 -0400
-Date: Mon, 7 May 2007 15:38:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Dilger <adilger@clusterfs.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
-Message-Id: <20070507153856.d56a5133.akpm@linux-foundation.org>
-In-Reply-To: <20070507222103.GJ8181@schatzie.adilger.int>
-References: <20070417125514.GA7574@amitarora.in.ibm.com>
-	<20070418130600.GW5967@schatzie.adilger.int>
-	<20070420135146.GA21352@amitarora.in.ibm.com>
-	<20070420145918.GY355@devserv.devel.redhat.com>
-	<20070424121632.GA10136@amitarora.in.ibm.com>
-	<20070426175056.GA25321@amitarora.in.ibm.com>
-	<20070426181332.GD7209@amitarora.in.ibm.com>
-	<20070503213133.d1559f52.akpm@linux-foundation.org>
-	<20070507113753.GA5439@schatzie.adilger.int>
-	<20070507135825.f8545a65.akpm@linux-foundation.org>
-	<20070507222103.GJ8181@schatzie.adilger.int>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 May 2007 18:39:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Wu3xTecvN0UJjDQaaEymASWXnexNDFSGefCVDNTrGXe5NFPisBLcVbfK8KHVaTLG819U4BWdz+nddJYpRiPg5j+epoKnL79UcD4dokOgsFopDIfAFZ/t+RRTedKkfJO/Nb/xUbZS0OdnRSA1v68Yopc3hRfdemP8dgcAeu+KO8Y=
+Message-ID: <a781481a0705071539o75b256a4p91228a4f8c4a63a7@mail.gmail.com>
+Date: Tue, 8 May 2007 04:09:41 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
+Cc: "Jeff Garzik" <jeff@garzik.org>, "Roman Zippel" <zippel@linux-m68k.org>,
+       "Krzysztof Halasa" <khc@pm.waw.pl>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <20070507135052.cc7e74ca.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <m3abwhcy74.fsf@maximus.localdomain>
+	 <m3r6psc0ee.fsf@maximus.localdomain>
+	 <Pine.LNX.4.64.0705071509290.1479@scrub.home>
+	 <463F27CE.2040008@garzik.org>
+	 <Pine.LNX.4.64.0705071538060.1479@scrub.home>
+	 <m3lkg0a88y.fsf@maximus.localdomain>
+	 <Pine.LNX.4.64.0705071901020.1479@scrub.home>
+	 <a781481a0705071115v5bce9382q166b9c0e0c52c6ef@mail.gmail.com>
+	 <463F8CB4.3040603@garzik.org>
+	 <20070507135052.cc7e74ca.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007 15:21:04 -0700
-Andreas Dilger <adilger@clusterfs.com> wrote:
+On 5/8/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Mon, 07 May 2007 16:31:48 -0400 Jeff Garzik wrote:
+>
+> > Satyam Sharma wrote:
+> > > Yes, mixing select and depends is a recipe for build disasters. Call
+> > > me a rabid fanatic, but I would in fact go as far as to say that this
+> > > whole "select" thing in the Kconfig process is one big BUG, and not a
+> > > feature. People are lazy by nature and would rather just "select" a
+> > > dependency for their config option than burden users with several
+> > > "depends".
+> >
+> > Tough, the kernel community has voted against you.
+>
+> Andrew (usually) implores people not to use "select" and I agree
+> with him.
+>
+> > It makes far more sense to include a driver during kernel configuration,
+> > and have that driver pull in its libraries via 'select'.  The lame
+> > alternative requires developers to know which libraries they need BEFORE
+> > picking their drivers, which is backwards and requires legwork on the
+> > part of the kernel developer.
+>
+> Developers?  If you had said "users," I might agree, but IMO it's
+> OK (or even Good) for developers to know what libraries their code
+> uses/requires.  Yes, that's a good thing.
 
-> On May 07, 2007  13:58 -0700, Andrew Morton wrote:
-> > Final point: it's fairly disappointing that the present implementation is
-> > ext4-only, and extent-only.  I do think we should be aiming at an ext4
-> > bitmap-based implementation and an ext3 implementation.
-> 
-> Actually, this is a non-issue.  The reason that it is handled for extent-only
-> is that this is the only way to allocate space in the filesystem without
-> doing the explicit zeroing.  For other filesystems (including ext3 and
-> ext4 with block-mapped files) the filesystem should return an error (e.g.
-> -EOPNOTSUPP) and glibc will do manual zero-filling of the file in userspace.
+You're absolutely right, but to give Jeff the benefit of the doubt I'm
+sure he _meant_ "users" there although he said "developers". Stating
+the obvious, the developer _has_ to know what stuff his code uses
+anyway, otherwise what does he "select"s or "depends" his config
+option on.
 
-hrm, spose so.
-
-It can be a bit suboptimal from the layout POV.  The reservations code will
-largely save us here, but kernel support might make it a bit better.
-
-Totally blowing pagecache could be a problem.  Fixable in userspace by
-using sync_file_range()+fadvise() or O_DIRECT, but I bet it doesn't.
-
+As for users, we _can_ avoid pitfalls by building a complete
+dependency tree and just selecting _everything_ that we require for a
+particular config option to be selected, but some users could
+conceivably prefer only being _told_ about what else they need to
+successfully pick a config option (than everything just getting in
+behind their backs). Actually (correct me if I'm wrong), this is not
+presently possible: an option is not visible unless dependencies are
+already picked. Just a suggestion, though.
