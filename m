@@ -1,55 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbXEGAFR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752712AbXEGAHB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752595AbXEGAFR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 20:05:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXEGAFQ
+	id S1752712AbXEGAHB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 20:07:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbXEGAHA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 20:05:16 -0400
-Received: from mail.tmr.com ([64.65.253.246]:34461 "EHLO gaimboi.tmr.com"
+	Sun, 6 May 2007 20:07:00 -0400
+Received: from khc.piap.pl ([195.187.100.11]:35105 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752595AbXEGAFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 20:05:15 -0400
-Message-ID: <463E6D18.1080902@tmr.com>
-Date: Sun, 06 May 2007 20:04:40 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1752712AbXEGAG7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 20:06:59 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Russell King <rmk@arm.linux.org.uk>, lkml <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+Subject: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
+References: <m3abwhcy74.fsf@maximus.localdomain>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 07 May 2007 02:06:56 +0200
+In-Reply-To: <m3abwhcy74.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Mon, 07 May 2007 01:46:39 +0200")
+Message-ID: <m3y7k1biov.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Damien Wyart <damien.wyart@free.fr>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [patch] CFS scheduler, -v8
-References: <46399B51.9040608@dunaweb.hu> <20070503130201.GA9000@elte.hu> <20070503132932.GA4204@localhost.localdomain>
-In-Reply-To: <20070503132932.GA4204@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Damien Wyart wrote:
-> Hello,
-> 
-> * Ingo Molnar <mingo@elte.hu> [2007-05-03 15:02]:
->> great! So it seems -v8 does improve OpenGL handling too :-)
-> 
-> What are your thoughts/plans concerning merging CFS into mainline ? Is
-> it a bit premature to get it into 2.6.22 ? I remember Linus was ok to
-> change the default scheduler rapidly (the discussion was about sd at
-> that time) to get more testing than in -mm.
-> 
-It would seem that a number of us are testing the variants and reporting 
-results (I now have to pull all the new versions and redo stuff, but I 
-have a new test I'm going to run as well).
+Allow enabling WAN drivers without selecting generic HDLC first,
+HDLC will be selected automatically.
 
-Given that and the fact that there is another idea which can be tested 
-from Tong Li, I think that decision can be postponed, Linus willing. 
-There appear to be enough testers to be driving evolution now, authors 
-may disagree, of course.
+Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
 
-Several folks added to cc list...
-
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+diff --git a/drivers/net/wan/Kconfig b/drivers/net/wan/Kconfig
+index 8897f53..3a2fe82 100644
+--- a/drivers/net/wan/Kconfig
++++ b/drivers/net/wan/Kconfig
+@@ -171,7 +171,8 @@ comment "X.25/LAPB support is disabled"
+ 
+ config PCI200SYN
+ 	tristate "Goramo PCI200SYN support"
+-	depends on HDLC && PCI
++	depends on PCI
++	select HDLC
+ 	help
+ 	  Driver for PCI200SYN cards by Goramo sp. j.
+ 
+@@ -185,7 +186,8 @@ config PCI200SYN
+ 
+ config WANXL
+ 	tristate "SBE Inc. wanXL support"
+-	depends on HDLC && PCI
++	depends on PCI
++	select HDLC
+ 	help
+ 	  Driver for wanXL PCI cards by SBE Inc.
+ 
+@@ -208,7 +210,8 @@ config WANXL_BUILD_FIRMWARE
+ 
+ config PC300
+ 	tristate "Cyclades-PC300 support (RS-232/V.35, X.21, T1/E1 boards)"
+-	depends on HDLC && PCI
++	depends on PCI
++	select HDLC
+ 	---help---
+ 	  Driver for the Cyclades-PC300 synchronous communication boards.
+ 
+@@ -225,19 +228,21 @@ config PC300
+ 
+ config PC300_MLPPP
+ 	bool "Cyclades-PC300 MLPPP support"
+-	depends on PC300 && PPP_MULTILINK && PPP_SYNC_TTY && HDLC_PPP
++	depends on PC300 && PPP_MULTILINK && PPP_SYNC_TTY
++	select HDLC_PPP
+ 	help
+ 	  Multilink PPP over the PC300 synchronous communication boards.
+ 
+ comment "Cyclades-PC300 MLPPP support is disabled."
+-	depends on WAN && HDLC && PC300 && (PPP=n || !PPP_MULTILINK || PPP_SYNC_TTY=n || !HDLC_PPP)
++	depends on WAN && PC300 && (PPP=n || !PPP_MULTILINK || PPP_SYNC_TTY=n)
+ 
+ comment "Refer to the file README.mlppp, provided by PC300 package."
+-	depends on WAN && HDLC && PC300 && (PPP=n || !PPP_MULTILINK || PPP_SYNC_TTY=n || !HDLC_PPP)
++	depends on WAN && PC300 && (PPP=n || !PPP_MULTILINK || PPP_SYNC_TTY=n)
+ 
+ config PC300TOO
+ 	tristate "Cyclades PC300 RSV/X21 alternative support"
+-	depends on HDLC && PCI
++	depends on PCI
++	select HDLC
+ 	help
+ 	  Alternative driver for PC300 RSV/X21 PCI cards made by
+ 	  Cyclades, Inc. If you have such a card, say Y here and see
+@@ -250,7 +255,8 @@ config PC300TOO
+ 
+ config N2
+ 	tristate "SDL RISCom/N2 support"
+-	depends on HDLC && ISA
++	depends on ISA
++	select HDLC
+ 	help
+ 	  Driver for RISCom/N2 single or dual channel ISA cards by
+ 	  SDL Communications Inc.
+@@ -267,7 +273,8 @@ config N2
+ 
+ config C101
+ 	tristate "Moxa C101 support"
+-	depends on HDLC && ISA
++	depends on ISA
++	select HDLC
+ 	help
+ 	  Driver for C101 SuperSync ISA cards by Moxa Technologies Co., Ltd.
+ 
+@@ -281,7 +288,8 @@ config C101
+ 
+ config FARSYNC
+ 	tristate "FarSync T-Series support"
+-	depends on HDLC && PCI
++	depends on PCI
++	select HDLC
+ 	---help---
+ 	  Support for the FarSync T-Series X.21 (and V.35/V.24) cards by
+ 	  FarSite Communications Ltd.
+@@ -300,7 +308,8 @@ config FARSYNC
+ 
+ config DSCC4
+ 	tristate "Etinc PCISYNC serial board support"
+-	depends on HDLC && PCI && m
++	depends on PCI && m
++	select HDLC
+ 	help
+ 	  Driver for Etinc PCISYNC boards based on the Infineon (ex. Siemens)
+ 	  DSCC4 chipset.
