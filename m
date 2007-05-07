@@ -1,65 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933913AbXEGNqB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933949AbXEGNqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933913AbXEGNqB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 09:46:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933897AbXEGNp5
+	id S933949AbXEGNqQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 09:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933933AbXEGNqN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 09:45:57 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55571 "EHLO mx1.redhat.com"
+	Mon, 7 May 2007 09:46:13 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1137 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933895AbXEGNp5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 09:45:57 -0400
-Date: Mon, 7 May 2007 09:45:52 -0400
-From: Andy Gospodarek <andy@greyhouse.net>
-To: gregkh@suse.de, linux-kernel@vger.kernel.org
-Subject: [PATCH] PCI: disable MSI by default on systems with Serverworks HT1000 chips
-Message-ID: <20070507134552.GA2975@gospo.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.10i
+	id S933928AbXEGNqM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 09:46:12 -0400
+Date: Mon, 7 May 2007 15:46:08 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Jeff Garzik <jeff@garzik.org>
+cc: Krzysztof Halasa <khc@pm.waw.pl>, Russell King <rmk@arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
+In-Reply-To: <463F27CE.2040008@garzik.org>
+Message-ID: <Pine.LNX.4.64.0705071538060.1479@scrub.home>
+References: <m3abwhcy74.fsf@maximus.localdomain> <m3y7k1biov.fsf@maximus.localdomain>
+ <Pine.LNX.4.64.0705070343330.2733@scrub.home> <m3tzupc6wz.fsf@maximus.localdomain>
+ <Pine.LNX.4.64.0705071318150.1479@scrub.home> <m3r6psc0ee.fsf@maximus.localdomain>
+ <Pine.LNX.4.64.0705071509290.1479@scrub.home> <463F27CE.2040008@garzik.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-I've been seeing lots of messages like these:
+On Mon, 7 May 2007, Jeff Garzik wrote:
 
-eth0: No interrupt was generated using MSI, switching to INTx mode.
-Please report this failure to the PCI maintainer and include system
-chipset information.
+> > select seriously screws with the dependencies, it's especially problematic
+> > if the selected symbol has other dependencies as HDLC in this case, it makes
+> > it only more complicated to get the dependencies correct again.
+> > Please use it only if it solves a real problem.
+> 
+> What he's doing is the standard way to deal with library-style code. Nothing
+> wrong with the patch, it's continuing established methods.
 
-On several systems that use the following Severworks HT1000 (also
-sometimes labeled as a Broadcom chipset as well) bridge chips.  It
-doesn't appear MSI works well (if at all) on these systems.
+select was never meant as autoconfiguration tool. It can't be said often 
+enough: select seriously screws with the dependencies, _please_ don't use 
+it as a simple depends replacement.
+HDLC doesn't really look like simple library code, what's up with all the 
+HDLC_* options?
 
-Signed-off-by: Andy Gospodarek <andy@greyhouse.net>
----
-
- drivers/pci/quirks.c    |    1 +
- include/linux/pci_ids.h |    1 +
- 2 files changed, 2 insertions(+)
-
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 3411483..e5ff7e0 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -1636,6 +1636,7 @@ static void __init quirk_svw_msi(struct pci_dev *dev)
- 	printk(KERN_WARNING "PCI: MSI quirk detected. MSI deactivated.\n");
- }
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_GCNB_LE, quirk_svw_msi);
-+DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_SERVERWORKS, PCI_DEVICE_ID_SERVERWORKS_HT1000_PCIX, quirk_svw_msi );
- 
- /* Disable MSI on chipsets that are known to not support it */
- static void __devinit quirk_disable_msi(struct pci_dev *dev)
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 1b0ddbb..8ee55a9 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1431,6 +1431,7 @@
- #define PCI_DEVICE_ID_SERVERWORKS_LE	  0x0009
- #define PCI_DEVICE_ID_SERVERWORKS_GCNB_LE 0x0017
- #define PCI_DEVICE_ID_SERVERWORKS_EPB	  0x0103
-+#define PCI_DEVICE_ID_SERVERWORKS_HT1000_PCIX	0x0104
- #define PCI_DEVICE_ID_SERVERWORKS_HT2000_PCIE	0x0132
- #define PCI_DEVICE_ID_SERVERWORKS_OSB4	  0x0200
- #define PCI_DEVICE_ID_SERVERWORKS_CSB5	  0x0201
+bye, Roman
