@@ -1,100 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966599AbXEGUxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966837AbXEGUxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966599AbXEGUxI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 16:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966557AbXEGUxB
+	id S966837AbXEGUxj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 16:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966608AbXEGUxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 16:53:01 -0400
-Received: from [212.12.190.232] ([212.12.190.232]:32993 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S966542AbXEGUxA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 16:53:00 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Execute in place
-Date: Mon, 7 May 2007 23:56:51 +0300
-User-Agent: KMail/1.5
-Cc: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <200705030211.36293.a1426z@gawab.com> <200705072237.33217.a1426z@gawab.com> <463F80E3.8020204@zytor.com>
-In-Reply-To: <463F80E3.8020204@zytor.com>
+	Mon, 7 May 2007 16:53:38 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:49358 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966560AbXEGUxh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 16:53:37 -0400
+Message-ID: <463F91AF.6060005@zytor.com>
+Date: Mon, 07 May 2007 13:53:03 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH] deflate inflate_dynamic too
+References: <4632AF57.1070102@goop.org> <463F712F.90902@zytor.com> <463F8C22.40902@goop.org>
+In-Reply-To: <463F8C22.40902@goop.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705072356.51283.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Al Boldi wrote:
-> > H. Peter Anvin wrote:
-> >> Al Boldi wrote:
-> >>> Isn't everything really just temporary?
-> >>>
-> >>> Would something like an mmap'd tmpfs be possible?
-> >>
-> >> No.  tmpfs relies on being able to leave data structures in the running
-> >> kernel.  In particular, it has no metadata store at all.
-> >>
-> >> The needs for a persistent filesystem are very different, regardless of
-> >> what the underlying medium is.
-> >
-> > Think Suspend-To-Disk; in that case tmpfs looks pretty persistent to me.
-> >
-> > So what does STD do?  It pushes memory out to swap.
->
-> It pushes ALL of (used) memory out to swap.
+Jeremy Fitzhardinge wrote:
+> H. Peter Anvin wrote:
+>> It might be worth reverting some of the code back to the zlib original.
+>>  The use of stack allocations here is actually a Linux divergence from
+>> zlib (done by Linus), in order to reduce the number of dynamic allocations.
+>>
+>> In general, the use of dynamic allocations is highly dangerous, because
+>> any time you have dynamic allocations you have the choice of either
+>> sleeping or failing, unless you have a pre-reserved memory pool.
+>>   
+> 
+> Well, every time this code is instantiated, it gets its own malloc/free
+> definitions, so they can decide how to handle the dynamic allocations. 
+> Seems better than assuming that every caller will have enough stack
+> space.  If you want to approximate that, it would be easy enough to have
+> a stack-like malloc/free, in which freeing the last allocation will
+> always release space.
 
-Ok.
+Indeed, however, the point still holds:
 
-> > Now, tmpfs could probably do the same thing on its own either to a
-> > private swap or an mmap.  I am suggesting mmap, as swap is currently
-> > really slow with tmpfs, and switching it to use mmap may buy us 2 for
-> > the price of 1.
->
-> No.
->
-> First of all, it would have to map ALL of kernel memory, or you would
-> have to change the way things like dentries, inodes, and namespaces are
-> allocated in the kernel itself.
+- Going to something more like the upstream zlib code makes it
+worthwhile to see whatever else should be merged;
+- Users must be audited for correctness.
 
-That's probably one way of doing it.
+In particular, it would be good to have a "preallocate me enough memory
+so it can be guaranteed that this will succeed" operation.
 
-> Second, you still would have no stability across kernel versions.
-
-No problem.  You could probably convince the user to do a tmpfs backup before 
-an upgrade.
-
-> Third, you would have to accept total data loss on unclean shutdown,
-> because tmpfs doesn't care about coherency, *NOR SHOULD IT*.
-
-I think that's understood.  But this risk could be reduced by instantiating 
-the latest sync'd mmap/swap.
-
-> This is
-> the fundamental reason why allocating a large swap partition and making
-> /tmp a tmpfs can give a *huge* performance boost, even though it still
-> hits disk.
-
-Don't know what you mean here.  Do you mean that tmpfs performance is 
-dependent on free swap-space being larger than some threshold.  If so, what 
-threshold causes a tmpfs slowdown?
-
-> What you're talking about is, *and should be*, a different filesystem.
-> You will relatively quickly find that you have to deal with the same
-> kind of stuff that you have to in any filesystem.
-
-That's exactly what I want to avoid, as this would introduce a performance 
-penalty.
-
-All we need is a periodically synced tmpfs to mmap, with a minimal stream 
-into page-cache algo on mount.
-
-
-Thanks!
-
---
-Al
-
+	-hpa
