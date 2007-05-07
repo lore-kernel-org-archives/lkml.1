@@ -1,61 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965668AbXEGQGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965693AbXEGQG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965668AbXEGQGP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 12:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXEGQGK
+	id S965693AbXEGQG3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 12:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965691AbXEGQGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 12:06:10 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52472 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965440AbXEGQGI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 12:06:08 -0400
-Date: Mon, 7 May 2007 09:06:05 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-cc: David Chinner <dgc@sgi.com>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-In-Reply-To: <m17irlkubc.fsf@ebiederm.dsl.xmission.com>
-Message-ID: <Pine.LNX.4.64.0705070901400.4290@schroedinger.engr.sgi.com>
-References: <20070427042046.GI65285596@melbourne.sgi.com>
- <20070426221528.655d79cb.akpm@linux-foundation.org>
- <20070427060921.GA77450368@melbourne.sgi.com> <20070427000403.6013d1fa.akpm@linux-foundation.org>
- <20070427080321.GG32602149@melbourne.sgi.com> <20070427014849.41f383f7.akpm@linux-foundation.org>
- <20070427164535.GH24852@thunk.org> <m1abwku30d.fsf@ebiederm.dsl.xmission.com>
- <20070507042925.GT32602149@melbourne.sgi.com> <m1tzupkzmw.fsf@ebiederm.dsl.xmission.com>
- <20070507052729.GV32602149@melbourne.sgi.com> <m17irlkubc.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 May 2007 12:06:24 -0400
+Received: from smtp.ono.com ([62.42.230.12]:42341 "EHLO resmaa02.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965472AbXEGQGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 12:06:24 -0400
+Date: Mon, 7 May 2007 18:06:04 +0200
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm1
+Message-ID: <20070507180604.51242492@werewolf-wl>
+In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+X-Mailer: Claws Mail 2.9.1cvs45 (GTK+ 2.10.12; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007, Eric W. Biederman wrote:
+On Sat, 5 May 2007 01:49:55 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> Yes, instead of having to redesign the interface between the
-> fs and the page cache for those filesystems that handle large
-> blocks we instead need to redesign significant parts of the VM interface.
-> Shift the redesign work to another group of people and call it a trivial.
+> 
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+> 
+...
+> - The staircase CPU scheduler was dropped
+> 
 
-To some extend that is true. But then there will then also be additional 
-gain: We can likely get the VM to handle larger pages too which may get 
-rid of hugetlb fs etc. The work is pretty straightforward: No locking 
-changes f.e. So hardly a redesign. I think the crucial point is the 
-antifrag/defrag issue if we want to generalize it.
+Sorry, perhaps I missed the thread in LKML, but... why ?
 
-I have an updated patch here that relies on page reservations. Adds 
-something called page pools. On bootup you need to specify how many pages 
-of each size you want. The page cache will then use those pages for 
-filesystems that need larger blocksize. 
-
-The interesting thing about that one is that it actually enables support 
-foir multiple blocksizes with a single larger pagesize. If f.e. we setup a 
-pool of 64k pages then the block layer can segment that into 16k pieces. 
-So one can actually use 16k 32k and 64k block size with a single larger 
-page size.
-
+--
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2008.0 (Cooker) for i586
+Linux 2.6.20-jam11 (gcc 4.1.2 20070302 (4.1.2-1mdv2007.1)) SMP PREEMPT
+09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
