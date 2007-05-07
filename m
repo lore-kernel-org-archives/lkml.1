@@ -1,60 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbXEGRrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754631AbXEGRrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbXEGRrE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 13:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbXEGRq7
+	id S1754631AbXEGRrl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 13:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754641AbXEGRrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 13:46:59 -0400
-Received: from mga09.intel.com ([134.134.136.24]:26970 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752702AbXEGRq6 convert rfc822-to-8bit (ORCPT
+	Mon, 7 May 2007 13:47:39 -0400
+Received: from filer.fsl.cs.sunysb.edu ([130.245.126.2]:47358 "EHLO
+	filer.fsl.cs.sunysb.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754638AbXEGRri (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 13:46:58 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,502,1170662400"; 
-   d="scan'208";a="84645318"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [patch] removes MAX_ARG_PAGES
-Date: Mon, 7 May 2007 10:46:49 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A01719390@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <65dd6fd50705060151m78bb9b4fpcb941b16a8c4709e@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [patch] removes MAX_ARG_PAGES
-Thread-Index: AcePu9D1QO37NDIaSWKCmmL7DuE5bgBEueqA
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Ollie Wild" <aaw@google.com>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       <linux-kernel@vger.kernel.org>, <parisc-linux@lists.parisc-linux.org>,
-       <linux-mm@kvack.org>, <linux-arch@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>
-X-OriginalArrivalTime: 07 May 2007 17:46:50.0898 (UTC) FILETIME=[B1346720:01C790CF]
+	Mon, 7 May 2007 13:47:38 -0400
+Date: Mon, 7 May 2007 13:47:30 -0400
+From: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: 2.6.22 -mm merge plans
+Message-ID: <20070507174729.GB23382@filer.fsl.cs.sunysb.edu>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070430162007.ad46e153.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We've tested the following architectures: i386, x86_64, um/i386,
-> parisc, and frv.  These are representative of the various scenarios
-> which this patch addresses, but other architecture teams should try it
-> out to make sure there aren't any unexpected gotchas.
+On Mon, Apr 30, 2007 at 04:20:07PM -0700, Andrew Morton wrote:
+...
+>  git-unionfs.patch
+>
+> Does this have a future?
 
-Doesn't build on ia64: complaints from arch/ia64/ia32/binfmt_elf.c
-(which #includes ../../../fs/binfmt_elf.c) ...
+Yes!  There are many active users who use our unioning functionality.
 
-arch/ia64/ia32/binfmt_elf32.c: In function `ia32_setup_arg_pages':
-arch/ia64/ia32/binfmt_elf32.c:206: error: `MAX_ARG_PAGES' undeclared (first use in this function)
-arch/ia64/ia32/binfmt_elf32.c:206: error: (Each undeclared identifier is reported only once
-arch/ia64/ia32/binfmt_elf32.c:206: error: for each function it appears in.)
-arch/ia64/ia32/binfmt_elf32.c:240: error: structure has no member named `page'
-arch/ia64/ia32/binfmt_elf32.c:242: error: structure has no member named `page'
-arch/ia64/ia32/binfmt_elf32.c:243: warning: implicit declaration of function `install_arg_page'
-make[1]: *** [arch/ia64/ia32/binfmt_elf32.o] Error 1
+Namespace unification consists of several major parts:
 
-Turning off CONFIG_IA32-SUPPORT, the kernel built, but oops'd during boot.
-My serial connection to my test machine is currently broken, so I didn't
-get a capture of the stack trace, sorry.
+1) Duplicate elimination: This can be handled in the VFS.  However, it would
+   clutter up the VFS code with a lot of wrappers around key VFS functions
+   to select the appropriate dentry/inode/etc. object from the underlying
+   branch.  (You also need to provide efficient and sane readdir/seekdir
+   semantics which we do with our "On Disk Format" support.)
 
--Tony
+2) Copyup: Having a unified namespace by itself isn't enough.  You also need
+   copy-on-write functionality when the source file is on a read-only
+   branch.  This makes unioning much more useful and is one of the main
+   attractions to unionfs users.
+
+3) Whiteouts: Whiteouts are a key unioning construct.  As it was pointed out
+   at OLS 2006, they are a properly of the union and _NOT_ a branch.
+   Therefore, they should not be stored persistently on a branch but rather
+   in some "external" storage.
+
+4) You also need unique and *persistent* inode numbers for network f/s
+   exports and other unix tools.
+
+5) You need to provide dynamic branch management functionality: adding,
+   removing, and changing the mode of branches in an existing union.
+
+We have considerable experience in unioning file systems for years now; we
+are currently working on the third generation of the code.  All of the above
+features, and more, are USED by users, and are NEEDED by users.
+
+We believe the right approach is the one we've taken, and is the least
+intrusive: a standalone (stackable) file system that doesn't clutter the
+VFS, with some small and gradual changes to the VFS to support stacking.  As
+you may have noticed, we have been successfully submitting VFS patches to
+make the VFS more stacking friendly (not just to Unionfs, but also to
+eCryptfs which has been in since 2.6.19).
+
+The older Union mounts, alas, try to put all that functionality into the
+VFS.  We recognize that some people think that union mounts at the VFS level
+is the "elegant" approach, but we hope people will listen to us and learn
+from our experience: unioning may seem simple in principle, but it is
+difficult in practice.  (See http://unionfs.fileystems.org/ for a lot more
+info.)  So we don't think that is a viable long term approach to have all of
+the unioning functionality in the VFS for two main reasons:
+
+(1) If you want users to use a VFS-level unioning functionality ala
+    union-mounts, then you're going to have to implement *all* of the
+    features we have implemented; the VFS clutter and complexity that will
+    result will be very considerable, and we just don't think that it'd
+    happen.
+
+(2) Some may suggest to have a lightweight union mounts that only offers a
+    subset of the functionality that's suitable for placing in the VFS.  In
+    that case, most unionfs users simply won't use it.  You'd need union
+    mounts to provide ALL of the functionality that we have TODAY, if you
+    want users to it.
+
+As far as we can see the remaining stumbling block right now is cache
+coherency between the layers.  Whether you provide unioning as a stackable
+f/s or shoved into the VFS, coherency will have to be addressed.  In our
+upcoming paper and talk at OLS'07, we plan to bring up and discuss several
+ideas we've explored already on how to resolve this incoherency.  Our ideas
+range from complex graph-based pointer management between objects of all
+sorts, to simple timestamp-based VFS hooks.  (We've been experimenting with
+several approaches and so far we're leaning toward the simple timestamp
+based on, again in the interest of keeping the VFS changes simple.  We hope
+to have more results to report by OLS time.)
+
+Josef "Jeff" Sipek, on behalf of the Unionfs team.
