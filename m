@@ -1,75 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934120AbXEGO1r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934144AbXEGO2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934120AbXEGO1r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 10:27:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934090AbXEGO1n
+	id S934144AbXEGO2Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 10:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934138AbXEGO2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 10:27:43 -0400
-Received: from THUNK.ORG ([69.25.196.29]:55527 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934084AbXEGO1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 10:27:42 -0400
-Date: Mon, 7 May 2007 10:27:36 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Frank van Maarseveen <frankvm@frankvm.com>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: JBD: ext2online wants too many credits (744 > 256)
-Message-ID: <20070507142736.GC17180@thunk.org>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Frank van Maarseveen <frankvm@frankvm.com>,
-	linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-References: <20070506222626.GA25632@janus>
+	Mon, 7 May 2007 10:28:22 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:45940 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934136AbXEGO2W (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 10:28:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:message-id:
+	mime-version:content-type;
+	b=od5RZU5RohgudHPN+AYyc0JiP1AfXblm/5U7NS6yhuqqOXM6qCj+twioyZjBHkY/b
+	DWlXmISu6Q27ut4Y1umpQ==
+Date: Mon, 7 May 2007 07:28:11 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andi Kleen <ak@suse.de>
+cc: linux-kernel@vger.kernel.org
+Subject: [2.6.22 patch 1/4] x86_64: rename and export bad_srat to kernel code
+Message-ID: <Pine.LNX.4.64.0705061703060.27058@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070506222626.GA25632@janus>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@thunk.org
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 12:26:26AM +0200, Frank van Maarseveen wrote:
-> 2.6.20.6, FC4:
-> 
-> |JBD: ext2online wants too many credits (744 > 256)
+Rename bad_srat() to disable_srat() and include it in asm-x86_64/numa.h so 
+that it can be referenced from generic x86-64 boot code.  It's needed for 
+NUMA emulation disabling of active SRAT regions and apicid_to_node[]
+population.
 
-You would be better off using resize2fs from e2fsprogs 1.39, BTW....
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ arch/x86_64/mm/srat.c     |   16 ++++++++--------
+ include/asm-x86_64/numa.h |    6 ++++++
+ 2 files changed, 14 insertions(+), 8 deletions(-)
 
-About the only reason to keep using the ext2resize packages is
-ext2prepare, which is the off-line tool to add a resizing inode after
-the fact, and the main reason that functionality hasn't been absorbed
-into e2fsprogs is that it needs to be completely rewritten before I'm
-willing to trust and maintain it...
-
-> What is the limitation I should be aware of? Has it something to do with
-> the journal log size?
-
-Yes, the problem is the journal log size.  Since the original
-filesystem was so small, the journal was kept small so as not to use a
-huge percentage of the filesystem size.  Of course, with a larger
-filesystem you probably want a larger journal anyway to get better
-performance.  So that brings up a related problem, which is we don't
-have a way of dynamically increasing the size of the journal, which we
-probably would want to do as part of resizing the filesystem size.
-
-So the short-term workaround for now, if you know that you're going to
-take a filesystem which is 22M and increase it to 3G, is to create it
-with largish journal in the first place:
-
-	mke2fs -j -b 4096 -J size=16M /dev/vol1/project 22812
-
-Note that if you were creating a 3G filesystem from scratch, by
-default it would be using a 128M journal --- but it's a little hard to
-fit a 128M journal in a 22M filesystem.  :-/
-
-We're going to have to rethink the defaults of the journal size as it
-relates to on-line resizing, but there might not be a lot of great
-answers here.  We'll also have to look at the on-line resizing code
-and see if there's a way to break up the resize operation into smaller
-transactions as a way of avoiding this problem --- but that would
-still leave the user stuck with a pathetically small 4M journal on a
-3G filesystem.
-
-						- Ted
+diff --git a/arch/x86_64/mm/srat.c b/arch/x86_64/mm/srat.c
+--- a/arch/x86_64/mm/srat.c
++++ b/arch/x86_64/mm/srat.c
+@@ -74,7 +74,7 @@ static __init void cutoff_node(int i, unsigned long start, unsigned long end)
+ 	}
+ }
+ 
+-static __init void bad_srat(void)
++void __init disable_srat(void)
+ {
+ 	int i;
+ 	printk(KERN_ERR "SRAT: SRAT not used.\n");
+@@ -133,7 +133,7 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+ 	if (srat_disabled())
+ 		return;
+ 	if (pa->header.length != sizeof(struct acpi_srat_cpu_affinity)) {
+-		bad_srat();
++		disable_srat();
+ 		return;
+ 	}
+ 	if ((pa->flags & ACPI_SRAT_CPU_ENABLED) == 0)
+@@ -142,7 +142,7 @@ acpi_numa_processor_affinity_init(struct acpi_srat_cpu_affinity *pa)
+ 	node = setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains %x\n", pxm);
+-		bad_srat();
++		disable_srat();
+ 		return;
+ 	}
+ 	apicid_to_node[pa->apic_id] = node;
+@@ -289,7 +289,7 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+ 	if (srat_disabled())
+ 		return;
+ 	if (ma->header.length != sizeof(struct acpi_srat_mem_affinity)) {
+-		bad_srat();
++		disable_srat();
+ 		return;
+ 	}
+ 	if ((ma->flags & ACPI_SRAT_MEM_ENABLED) == 0)
+@@ -303,7 +303,7 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+ 	node = setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains.\n");
+-		bad_srat();
++		disable_srat();
+ 		return;
+ 	}
+ 	i = conflicting_nodes(start, end);
+@@ -316,7 +316,7 @@ acpi_numa_memory_affinity_init(struct acpi_srat_mem_affinity *ma)
+ 		       "SRAT: PXM %d (%lx-%lx) overlaps with PXM %d (%Lx-%Lx)\n",
+ 		       pxm, start, end, node_to_pxm(i),
+ 			nodes[i].start, nodes[i].end);
+-		bad_srat();
++		disable_srat();
+ 		return;
+ 	}
+ 	nd = &nodes[node];
+@@ -407,7 +407,7 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+ 		return -1;
+ 
+ 	if (!nodes_cover_memory()) {
+-		bad_srat();
++		disable_srat();
+ 		return -1;
+ 	}
+ 
+@@ -415,7 +415,7 @@ int __init acpi_scan_nodes(unsigned long start, unsigned long end)
+ 	if (memnode_shift < 0) {
+ 		printk(KERN_ERR
+ 		     "SRAT: No NUMA node hash function found. Contact maintainer\n");
+-		bad_srat();
++		disable_srat();
+ 		return -1;
+ 	}
+ 
+diff --git a/include/asm-x86_64/numa.h b/include/asm-x86_64/numa.h
+--- a/include/asm-x86_64/numa.h
++++ b/include/asm-x86_64/numa.h
+@@ -33,6 +33,12 @@ static inline void clear_node_cpumask(int cpu)
+ #define clear_node_cpumask(cpu) do {} while (0)
+ #endif
+ 
++#ifdef CONFIG_ACPI_NUMA
++extern void __init disable_srat(void);
++#else
++#define disable_srat()	do {} while (0)
++#endif
++
+ #define NUMA_NO_NODE 0xff
+ 
+ #endif
