@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965908AbXEGQvl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934442AbXEGQwP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965908AbXEGQvl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 12:51:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934416AbXEGQvh
+	id S934442AbXEGQwP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 12:52:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934430AbXEGQwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 12:51:37 -0400
-Received: from smtp-out001.kontent.com ([81.88.40.215]:44773 "EHLO
-	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934408AbXEGQvg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 12:51:36 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [Linux-usb-users] [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-Date: Mon, 7 May 2007 18:51:30 +0200
-User-Agent: KMail/1.9.1
-Cc: Diego Zuccato <diego@otello.alma.unibo.it>,
-       Paul Fulghum <paulkf@microgate.com>, linux-kernel@vger.kernel.org,
-       linux-usb-users@lists.sourceforge.net
-References: <Pine.LNX.4.44L0.0705071233590.3429-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0705071233590.3429-100000@iolanthe.rowland.org>
+	Mon, 7 May 2007 12:52:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:45387 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934257AbXEGQwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 12:52:14 -0400
+Message-ID: <463F5926.6020401@redhat.com>
+Date: Mon, 07 May 2007 12:51:50 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ulrich Drepper <drepper@redhat.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
+References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au> <463B598B.80200@redhat.com> <463BC62C.3060605@yahoo.com.au> <463E5A00.6070708@redhat.com> <463E921D.3070407@redhat.com> <463EB169.8030701@redhat.com> <463EB0C4.6060901@redhat.com>
+In-Reply-To: <463EB0C4.6060901@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705071851.31558.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag, 7. Mai 2007 18:34 schrieb Alan Stern:
-> On Mon, 7 May 2007, Diego Zuccato wrote:
+Ulrich Drepper wrote:
+> Rik van Riel wrote:
+>> It's trivial to merge the MADV_FREE #defines into the kernel
+>> though, and aliasing MADV_FREE to MADV_DONTNEED for the time
+>> being is a one-liner - just an extra constant into the big
+>> switch statement in sys_madvise().
 > 
-> > Thinking with a 300bps modem (anybody else remembers such an ancient
-> > thing?):
-> 
-> I used a 110 bps modem for several years!
+> Until the semantics of the implementation is cut into stone by having it 
+> in the kernel I'll not start using it.
 
-I knew 110 bps is slow, but what took you years to transmit?
+The current MADV_DONTNEED implementation conforms to the
+semantics of MADV_FREE :)
 
-	Regards
-		Oliver
+With MADV_FREE you can get back either your old data, or
+a freshly zeroed out new page.  Always getting back the
+second alternative is conformant :)
+
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
