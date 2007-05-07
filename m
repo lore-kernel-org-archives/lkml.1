@@ -1,52 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754260AbXEGJlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbXEGJww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754260AbXEGJlG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 05:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754267AbXEGJlF
+	id S1754268AbXEGJww (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 05:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbXEGJww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 05:41:05 -0400
-Received: from otello.alma.unibo.it ([137.204.24.163]:40335 "EHLO
-	otello.alma.unibo.it" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754260AbXEGJlE (ORCPT
+	Mon, 7 May 2007 05:52:52 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:27833 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754246AbXEGJwv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 05:41:04 -0400
-X-Greylist: delayed 1858 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 May 2007 05:41:04 EDT
-Message-ID: <463EED3F.9080106@otello.alma.unibo.it>
-Date: Mon, 07 May 2007 11:11:27 +0200
-From: Diego Zuccato <diego@otello.alma.unibo.it>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070423)
+	Mon, 7 May 2007 05:52:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=kIU088z2xTG+dCV6wI49zOsq+eAiDYyytAn6g6VDESWkuccjfL5m/C4D1C06n1Yi+57pzQhN+4xqgLiJd7OZ1ukXf1sGiDaqwi38AGwos/E9IZJ/nVXYYRonWOojI6HcRsQQdEplMX5Y4XDNW/5bKz9T07TQnNyzME0zv9j45AE=
+Message-ID: <463EF6ED.7060404@gmail.com>
+Date: Mon, 07 May 2007 11:52:45 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Paul Fulghum <paulkf@microgate.com>
-Cc: linux-kernel@vger.kernel.org, linux-usb-users@lists.sourceforge.net
-Subject: Re: [Linux-usb-users] [SOLVED] Serial buffer corruption [was Re:
- FTDI usb-serial possible bug]
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>		<1178381287.3379.8.camel@x2>		<20070505173647.544f6707@the-village.bc.nu>		<200705052007.16742.oliver@neukum.org>		<20070505225241.54a5d01d@the-village.bc.nu>	<5486cca80705060029p433c6acar22faaeced2d7da37@mail.gmail.com> <463DE7CF.5010400@microgate.com>
-In-Reply-To: <463DE7CF.5010400@microgate.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Mikael Pettersson <mikpe@it.uu.se>
+CC: htejun@gmail.com, akpm@osdl.org, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org
+Subject: Re: 2.6.21-mm1: many processes end up in D state
+References: <200705052346.l45NksOb022632@harpo.it.uu.se>
+In-Reply-To: <200705052346.l45NksOb022632@harpo.it.uu.se>
+X-Enigmail-Version: 0.95b
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Fulghum ha scritto:
-> There is no one policy here that will make everyone happy.
-> Some will want all the data before some was lost,
-> others the data after some was lost.
-IMVHO the only sane thing is ALWAYS avoid "holes" (some old data, then
-the "hole" of lost data, then some new data) after a flush().
-HW buffers (and buffers on the remote end) are not an issue: they
-contain fresher data (usually in "sliding window" mode) than buffered.
+Mikael Pettersson napsal(a):
+> Jiri: please test the patch below instead. That is, revert to
+> the original code _with_ the 'return 1;', and then add this
+> patch to it. It should have pretty much the same effect as
+> removing the 'return 1;', however calling ata_port_abort()
+> is more in line with libata's new-style error handling.
+> 
+> /Mikael
+> 
+> --- linux-2.6.21-mm1/drivers/ata/sata_promise.c.~1~	2007-05-05 22:24:41.000000000 +0200
+> +++ linux-2.6.21-mm1/drivers/ata/sata_promise.c	2007-05-05 22:25:21.000000000 +0200
+> @@ -653,6 +653,8 @@ static void pdc_error_intr(struct ata_po
+>  	qc->err_mask |= ac_err_mask;
+>  
+>  	pdc_reset_port(ap);
+> +
+> +	ata_port_abort(ap);
+>  }
+>  
+>  static inline unsigned int pdc_host_intr( struct ata_port *ap,
+> 
 
-Thinking with a 300bps modem (anybody else remembers such an ancient
-thing?):
-- Sender have to transmit the alphabet;
-- On the sender's modem there's a 4 char buffer
-- On the receiver's modem there's another 4 char buffer
-- The receiver's driver have another 4 char buffer
+Yes, no freezing anymore.
 
-If the receiver issues a flush() after reading 'C', then the next read()
-should return FGHIJKL...Z (or anything IN SEQUENCE), but *NEVER* DEFGKLM
-(skipped H,I and J).
-
-BYtE,
- Diego.
+thanks,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
