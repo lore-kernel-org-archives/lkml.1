@@ -1,65 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965805AbXEGQku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965949AbXEGQmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965805AbXEGQku (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 12:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934399AbXEGQkq
+	id S965949AbXEGQmn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 12:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965907AbXEGQmj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 12:40:46 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:39556 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934386AbXEGQkq (ORCPT
+	Mon, 7 May 2007 12:42:39 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:60931 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965864AbXEGQmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 12:40:46 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <463F5677.4080906@s5r6.in-berlin.de>
-Date: Mon, 07 May 2007 18:40:23 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Mon, 7 May 2007 12:42:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=QkAD8FvNKclFafUbl3UyF1s5gunrb8rDUM+Fr4s7BuPqqlu3PPKuJhpm7g3EUzEsjVzZTIhNHnonPyjt2ilPSLnP3iRYBFtebKQ+d8+BbWP90l7A0TEbVCnvgsodvC0B2W1EgjIs2/XVP1hqbuqEzSkw9YZCfpeggBv7gIYjxmg=
+Message-ID: <463F56F2.3010106@gmail.com>
+Date: Mon, 07 May 2007 18:42:26 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Petr Vandrovec <petr@vandrovec.name>
-CC: dan@dennedy.org, linux1394-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Fix/add raw1394 CONFIG_COMPAT code
-References: <20070507021447.GA22197@vana.vc.cvut.cz>
-In-Reply-To: <20070507021447.GA22197@vana.vc.cvut.cz>
-X-Enigmail-Version: 0.94.1.0
+To: William Thompson <wt@electro-mechanical.com>,
+       Jeff Garzik <jgarzik@pobox.com>
+CC: Mark Lord <liml@rtr.ca>, linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       albertcc@tw.ibm.com
+Subject: [PATCH] libata: fallback to the other IDENTIFY on device error
+References: <20070427175205.GD7809@electro-mechanical.com> <4635C35D.1020807@gmail.com> <20070430202107.GF5942@electro-mechanical.com> <4636C2C7.8090206@gmail.com> <20070501121703.GH5942@electro-mechanical.com> <46373AEE.6070908@rtr.ca> <20070501131818.GA18521@electro-mechanical.com> <46374354.7040307@gmail.com> <20070501172117.GA20328@electro-mechanical.com>
+In-Reply-To: <20070501172117.GA20328@electro-mechanical.com>
+X-Enigmail-Version: 0.95.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Petr Vandrovec wrote:
-[...]
-> * read() always failed with -EFAULT.  This was happening due to
->   raw1394_compat_read copying data to wrong location - access_ok always
->   failed as 'r' is kernel address, not user.  Whole function just tried to
->   copy data from 'r' to 'r', which is not good.
-> 
-> * write(fd, buf, 52) from 32bit app was returning 56.  Most of callers did not
->   care, but some (arm registration) did, and anyway it looks bad if request for
->   writing 52 bytes returns 56.  And returning sizeof anything in 'int' is not
->   good as well.  So all functions now return '0' instead of
->   sizeof(struct raw1394_request) on success, and write() itself provides correct
->   return value (it just returns value it was asked to write on success as raw1394
->   does not do any partial writes at all).
-> 
-> * Related to this was problem that write() could have returned 0 when kernel
->   state would become corrupted and moved to different state than
->   opened/initialized/connected.  Now it returns -EBADFD which seemed appropriate.
-> 
-> * And add compat_ioctl.  Although all structures are more or less same,
->   raw1394_iso_packets got pointer inside, and raw1394_cycle_timer got unwanted
->   padding in the middle.  I did not add any translation for ioctls passing array
->   of integers around as integers seem to have same size (32 bits) on all 
->   architectures supported by Linux.
-[...]
+It seems the world isn't as frank as we thought and some devices lie
+about who they are.  Fallback to the other IDENTIFY if IDENTIFY fails
+with device error.  As this is the strategy used by IDE for a long
+time, it shouldn't cause too much problem.
 
-Thanks for these fixes.  They look good at first glance but I will look
-at them in more detail during the week (and hope that Dan can have a
-look at them too).  I will get back to you once more before I commit
-because I would like to split it into three patches (for
-raw1394_compat_read, for write, and for compat_ioctl).
--- 
-Stefan Richter
--=====-=-=== -=-= --===
-http://arcgraph.de/sr/
+Signed-off-by: Tejun Heo <htejun@gmail.com>
+Cc: William Thompson <wt@electro-mechanical.com>
+---
+Willam, please verify this fixes your problem.  Jeff, after all, we
+seem to need this.  :-(
+
+diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
+index ca67484..f543109 100644
+--- a/drivers/ata/libata-core.c
++++ b/drivers/ata/libata-core.c
+@@ -1652,7 +1652,7 @@ int ata_dev_read_id(struct ata_device *d
+ 	struct ata_taskfile tf;
+ 	unsigned int err_mask = 0;
+ 	const char *reason;
+-	int tried_spinup = 0;
++	int may_fallback = 1, tried_spinup = 0;
+ 	int rc;
+ 
+ 	if (ata_msg_ctl(ap))
+@@ -1696,11 +1696,30 @@ int ata_dev_read_id(struct ata_device *d
+ 			return -ENOENT;
+ 		}
+ 
++		if (may_fallback && (err_mask == AC_ERR_DEV)) {
++			may_fallback = 0;
++
++			/* Device or controller might have reported
++			 * the wrong device class.  Give a shot at then
++			 * other IDENTIFY
++			 */
++			if (class == ATA_DEV_ATA)
++				class = ATA_DEV_ATAPI;
++			else
++				class = ATA_DEV_ATA;
++			goto retry;
++		}
++
+ 		rc = -EIO;
+ 		reason = "I/O error";
+ 		goto err_out;
+ 	}
+ 
++	/* Falling back doesn't make sense if ID data was read
++	 * successfully at least once.
++	 */
++	may_fallback = 0;
++
+ 	swap_buf_le16(id, ATA_ID_WORDS);
+ 
+ 	/* sanity check */
