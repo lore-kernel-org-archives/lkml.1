@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXEGLWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933041AbXEGLWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933012AbXEGLWP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 07:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933041AbXEGLWP
+	id S933041AbXEGLWz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 07:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933099AbXEGLWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 07:22:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:60355 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933012AbXEGLWO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 07:22:14 -0400
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Ext3 vs NTFS performance
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Anton Altaparmakov <aia21@cam.ac.uk>,
-       Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org
-Reply-To: 7eggert@gmx.de
-Date: Mon, 07 May 2007 13:21:28 +0200
-References: <8gShI-3hY-11@gated-at.bofh.it> <8h1bh-8sG-11@gated-at.bofh.it> <8h2Al-280-1@gated-at.bofh.it> <8hW9y-2Lp-3@gated-at.bofh.it>
-User-Agent: KNode/0.7.2
+	Mon, 7 May 2007 07:22:54 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:1298 "EHLO scrub.xs4all.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933041AbXEGLWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 07:22:53 -0400
+Date: Mon, 7 May 2007 13:22:40 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Krzysztof Halasa <khc@pm.waw.pl>
+cc: Jeff Garzik <jeff@garzik.org>, Russell King <rmk@arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
+In-Reply-To: <m3tzupc6wz.fsf@maximus.localdomain>
+Message-ID: <Pine.LNX.4.64.0705071318150.1479@scrub.home>
+References: <m3abwhcy74.fsf@maximus.localdomain> <m3y7k1biov.fsf@maximus.localdomain>
+ <Pine.LNX.4.64.0705070343330.2733@scrub.home> <m3tzupc6wz.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8Bit
-Message-Id: <E1Hl1HU-0000h1-8I@be1.lrz>
-X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
-X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
-X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
-X-Provags-ID: V01U2FsdGVkX1+RS8IeUkD8Mj1mTELfXqmqfcjexZz2vzHLK6U
- PAhVgb6QQkEuyiujoJaJOMgHoBIvHSXKj+madCa2swlx/q/8wi
- i4I1Pe2ki2PY/Jt/75p6Q==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jörn Engel <joern@lazybastard.org> wrote:
-> On Fri, 4 May 2007 10:46:10 +0100, Christoph Hellwig wrote:
+Hi,
 
->> Which means the right place to fix this is samba.  Samba just need
->> to intersept lseek and pread/pwrite to never allocate sparse files
->> but do the right thing instead.  Now what the right thing would probably
->> be a preallocate instead of writing zeroes, and we need to provide the
->> infrastructure for them to do it, which is in progress currently.
+On Mon, 7 May 2007, Krzysztof Halasa wrote:
+
+> Roman Zippel <zippel@linux-m68k.org> writes:
 > 
-> Why do preallocate and not just truncate the file?
+> > What's the advantage? The HDLC option is directly before this?
+> 
+> You don't have to know it's required, you can just select a driver
+> for your hardware, without enabling HDLC first.
 
-If it's done by samba, it's racy. Only the kernel can reliably tell a
-write-beyond-eof from a write-before-eof. Either it should unconditionally
-turn these preallocation-writes into truncates, or have a flag which will
-turn this feature on and which can be used to turn the lseek into a real
-preallocation call.
+Is this a real problem?
+Using select you should also consider removing HDLC as visible option and 
+use only select. Mixing depends and selects is generally a bad idea.
 
-I don't think unconditionally turning these writes into truncate would be
-good, it would change the behaviour of dd bs=1 count=$(($n*$BLOCKSIZE+1)).
--- 
-Top 100 things you don't want the sysadmin to say:
-17. dd if=/dev/null of=/vmunix
-
-Friß, Spammer: Gy9b.pfols@qy4ia.7eggert.dyndns.org rlk@r.7eggert.dyndns.org
+bye, Roman
