@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966856AbXEGUyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966870AbXEGUzB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966856AbXEGUyw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 16:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966590AbXEGUyr
+	id S966870AbXEGUzB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 16:55:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966863AbXEGUy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 16:54:47 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:34886 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966598AbXEGUyq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 16:54:46 -0400
-Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
-	points about ...)
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Manu Abraham <abraham.manu@gmail.com>
-Cc: linux-dvb@linuxtv.org, linux-kernel@vger.kernel.org,
-       Johannes Stezenbach <js@linuxtv.org>
-In-Reply-To: <463CD106.3000706@gmail.com>
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
-	 <46389278.1070208@gmail.com> <20070502155125.280320@gmx.net>
-	 <4638C046.1020005@gmail.com> <20070503112013.272380@gmx.net>
-	 <4639F554.1040505@gmail.com> <20070503153129.268110@gmx.net>
-	 <463A0462.5070106@gmail.com>
-	 <d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>
-	 <463A0B36.5080204@gmail.com>
-	 <d9def9db0705031019l5083d1c1h607b0829ab526f1@mail.gmail.com>
-	 <1178215045.12651.124.camel@localhost>  <463A31EE.20907@gmail.com>
-	 <1178388401.12541.115.camel@localhost>  <463CD106.3000706@gmail.com>
-Content-Type: text/plain
-Date: Mon, 07 May 2007 17:54:29 -0300
-Message-Id: <1178571269.18383.296.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 7 May 2007 16:54:57 -0400
+Received: from khc.piap.pl ([195.187.100.11]:41328 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966860AbXEGUyz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 16:54:55 -0400
+To: Roman Zippel <zippel@linux-m68k.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Russell King <rmk@arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
+References: <m3abwhcy74.fsf@maximus.localdomain>
+	<m3y7k1biov.fsf@maximus.localdomain>
+	<Pine.LNX.4.64.0705070343330.2733@scrub.home>
+	<m3tzupc6wz.fsf@maximus.localdomain>
+	<Pine.LNX.4.64.0705071318150.1479@scrub.home>
+	<m3r6psc0ee.fsf@maximus.localdomain>
+	<Pine.LNX.4.64.0705071509290.1479@scrub.home>
+	<463F27CE.2040008@garzik.org>
+	<Pine.LNX.4.64.0705071538060.1479@scrub.home>
+	<m3lkg0a88y.fsf@maximus.localdomain>
+	<Pine.LNX.4.64.0705071901020.1479@scrub.home>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 07 May 2007 22:54:53 +0200
+In-Reply-To: <Pine.LNX.4.64.0705071901020.1479@scrub.home> (Roman Zippel's message of "Mon, 7 May 2007 19:07:43 +0200 (CEST)")
+Message-ID: <m3k5vkfj6q.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Manu,
+Roman Zippel <zippel@linux-m68k.org> writes:
 
-> From my side, quite some time has been put forward to write that mail.
-> Inspite of that if you feel that you do have to go your own way, then
-> it is completely upto you. I would say: do as you feel in such a case.
+> Normal dependencies, you basically have to manually make sure they are 
+> correct (and it seems with your patch they aren't). Again, _please_ (with 
+> sugar on top) don't use select unless you have a good reason for it.
 
-The point is that those issues are pending for a long time, and they
-should be solved, especially the module removal issue (*)
+You perhaps mean WAN dependency, don't you? I was under impression
+that the "menu" patches have already been merged so the WAN
+dependency would be automatic.
 
-If you are so afraid about applying those changes, maybe the better is
-to apply those patches at v4l-dvb tree and at -mm, asking people to
-test.
+Anything other than that? Sure, I can see now. I can only say,
+in my defense, that I was (and still am) very tired. I'm going to
+get some coffee.
 
-We may hold their commit on kernel mainstream until the next kernel
-release, if nobody complains about, or otherwise revert the changes, if
-they proofed to cause troubles at dst and/or dvb-bt8xx.
+There is still a very good reason for the select.
+CONFIG_HDLC _is_ a simple library, though probably not the most
+simple one. I really feel it's an improvement.
 
-Also, you (or others) may write another approach keeping the fixes with
-an strategy more adequate for dst.
-
-Do you agree with this way?
-
+Attaching two patches, hopefully the double check is enough.
 -- 
-Cheers,
-Mauro
-
-(*) Currently, dst can be removed only with "rmmod -f", due to a wrong
-usage count. With Trent's patches, this were fixed.
-
+Krzysztof Halasa
