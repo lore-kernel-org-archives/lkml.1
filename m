@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934434AbXEGQuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965908AbXEGQvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934434AbXEGQuN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 12:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934429AbXEGQuJ
+	id S965908AbXEGQvl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 12:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934416AbXEGQvh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 12:50:09 -0400
-Received: from khc.piap.pl ([195.187.100.11]:57869 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934362AbXEGQuH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 12:50:07 -0400
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Russell King <rmk@arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
-References: <m3abwhcy74.fsf@maximus.localdomain>
-	<m3y7k1biov.fsf@maximus.localdomain>
-	<Pine.LNX.4.64.0705070343330.2733@scrub.home>
-	<m3tzupc6wz.fsf@maximus.localdomain>
-	<Pine.LNX.4.64.0705071318150.1479@scrub.home>
-	<m3r6psc0ee.fsf@maximus.localdomain>
-	<Pine.LNX.4.64.0705071509290.1479@scrub.home>
-	<463F27CE.2040008@garzik.org>
-	<Pine.LNX.4.64.0705071538060.1479@scrub.home>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 07 May 2007 18:50:05 +0200
-In-Reply-To: <Pine.LNX.4.64.0705071538060.1479@scrub.home> (Roman Zippel's message of "Mon, 7 May 2007 15:46:08 +0200 (CEST)")
-Message-ID: <m3lkg0a88y.fsf@maximus.localdomain>
+	Mon, 7 May 2007 12:51:37 -0400
+Received: from smtp-out001.kontent.com ([81.88.40.215]:44773 "EHLO
+	smtp-out.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934408AbXEGQvg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 12:51:36 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [Linux-usb-users] [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+Date: Mon, 7 May 2007 18:51:30 +0200
+User-Agent: KMail/1.9.1
+Cc: Diego Zuccato <diego@otello.alma.unibo.it>,
+       Paul Fulghum <paulkf@microgate.com>, linux-kernel@vger.kernel.org,
+       linux-usb-users@lists.sourceforge.net
+References: <Pine.LNX.4.44L0.0705071233590.3429-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0705071233590.3429-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705071851.31558.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman Zippel <zippel@linux-m68k.org> writes:
+Am Montag, 7. Mai 2007 18:34 schrieb Alan Stern:
+> On Mon, 7 May 2007, Diego Zuccato wrote:
+> 
+> > Thinking with a 300bps modem (anybody else remembers such an ancient
+> > thing?):
+> 
+> I used a 110 bps modem for several years!
 
-> HDLC doesn't really look like simple library code, what's up with all the 
-> HDLC_* options?
+I knew 110 bps is slow, but what took you years to transmit?
 
-Sub-modules. Anyway, what does the patch "screw" exactly?
--- 
-Krzysztof Halasa
+	Regards
+		Oliver
