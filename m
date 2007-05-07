@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754820AbXEGTyp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbXEGT5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754820AbXEGTyp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 15:54:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754757AbXEGTyo
+	id S1754983AbXEGT5a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbXEGT5Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 15:54:44 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:35705 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754753AbXEGTyn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 15:54:43 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Mon, 7 May 2007 15:54:13 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: why don't top-level menu entries have help info?
-Message-ID: <Pine.LNX.4.64.0705071548240.29393@localhost.localdomain>
+	Mon, 7 May 2007 15:57:25 -0400
+Received: from khc.piap.pl ([195.187.100.11]:58957 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754845AbXEGT5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 15:57:24 -0400
+To: Michael-Luke Jones <mlj28@cam.ac.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH 3/3] Intel IXP4xx network drivers
+References: <m3abwhcy74.fsf@maximus.localdomain>
+	<m3vef5biob.fsf@maximus.localdomain>
+	<5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>
+	<m3hcqoa772.fsf@maximus.localdomain>
+	<86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Mon, 07 May 2007 21:57:21 +0200
+In-Reply-To: <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk> (Michael-Luke Jones's message of "Mon, 7 May 2007 19:14:53 +0100")
+Message-ID: <m33b289zku.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Having thought about it a bit more, a layout similar to the one
+proposed by you may make sense.
 
-  i'd be surprised if this hasn't come up before, but would it be hard
-to add a facility to Kconfig so that "menu" entries have some help
-info?
+Michael-Luke Jones <mlj28@cam.ac.uk> writes:
 
-  after i run "make menuconfig" and i'm sitting at the main menu,
-there's nothing to help me out in understanding what any of those
-choices might mean.
+> Despite their name, Network Processing Engines are independent
+> coprocessors which are only coincidentally attached to MACs for
+> ethernet / WAN purposes. If Intel would allow us to compile code for
+> these coprocessors, we could get them to do lots of things other than
+> networking.
 
-  i might see "Instrumentation Support" and wonder just what that is,
-but if i ask for help (which is, as you can see, clearly available
-at the bottom of the config screen), i get nothing meaningful, just
-the generic README.
+Not sure about that. Intel doesn't say much about it, but I think
+one can safely assume that while NPEs can probably be programmed
+to do other things, their performance comes not from NPE firmware
+but from specialized network coprocessors (not NPEs) which can only
+do (in hardware) things like Ethernet, HDLC, bit sync, CRC16/32,
+and MD5/SHA-1/DES/AES.
 
-  i think it would be helpful if those entries also supported help
-info.  just my $0.02.
+I think you can even use MD5 and SHA-1 without any firmware (but
+would have to check this info).
 
-rday
+Note that while certain CPUs have the same set of NPEs, they are
+missing some network coprocessors and can't do, for example, crypto.
 
+OTOH, yes, they are not, strictly speaking, only network processors.
+
+> Crypto is not networking, and if the
+> kernel gains ixp4xx crypto support, that should be possible to enable
+> independently of networking.
+
+Yep. Unfortunately I don't know in-kernel crypto code.
+
+> They can also function as DMA engines,
+> which should also be independent of networking functionality.
+
+That's what the docs say. Not sure about real-life purpose of
+such DMA engine, though.
+
+> So, the NPE driver (which is basically ixp4xx specific) should be,
+> for practical purposes, networking-code agnostic. As it is a lump of
+> code talking to an architecture specific piece of hardware, it should
+> live in arch/arm/ rather than arch-independent drivers/
+
+Well, I'm told that (compatible) NPEs are present on other IXP CPUs.
+Not sure about details.
+
+> As I understand it, functions to talk to the NPE should appear in the
+> NPE driver. The NPE driver should then be called by ethernet/wan/
+> crypto/dma(?) drivers to carry out the specific firmware-dependent
+> tasks.
+
+Actually, the NPE code does two things:
+a) initialized NPEs and downloades the firmware
+b) exchanges control messages with NPEs.
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+Krzysztof Halasa
