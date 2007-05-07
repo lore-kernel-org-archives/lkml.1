@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966735AbXEGVNd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbXEGVOr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966735AbXEGVNd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 17:13:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbXEGVNa
+	id S1754939AbXEGVOr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 17:14:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbXEGVOn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 17:13:30 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:26975 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754856AbXEGVN3 (ORCPT
+	Mon, 7 May 2007 17:14:43 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:53175 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754401AbXEGVOl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 17:13:29 -0400
-Subject: Re: Need help debugging RT-preempt patch
-From: Daniel Walker <dwalker@mvista.com>
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       dirk.behme@googlemail.com, linux kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <463F93FB.1000908@am.sony.com>
-References: <463F7449.2020509@am.sony.com>
-	 <1178569719.3164.6.camel@imap.mvista.com>  <463F93FB.1000908@am.sony.com>
-Content-Type: text/plain
-Date: Mon, 07 May 2007 14:11:39 -0700
-Message-Id: <1178572299.3164.14.camel@imap.mvista.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Mon, 7 May 2007 17:14:41 -0400
+Message-ID: <463F9640.4080003@zytor.com>
+Date: Mon, 07 May 2007 14:12:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
+CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org
+Subject: Re: Long file names in VFAT broken with iocharset=utf8
+References: <200705072151.20104.arvidjaar@mail.ru> <60F72760-C801-4F60-BF47-C661B4B5BE26@e18.physik.tu-muenchen.de> <87fy685w0m.fsf@duaron.myhome.or.jp> <BD281C0E-5278-4944-ABF0-AF692325945C@e18.physik.tu-muenchen.de>
+In-Reply-To: <BD281C0E-5278-4944-ABF0-AF692325945C@e18.physik.tu-muenchen.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-07 at 14:02 -0700, Tim Bird wrote:
-> Daniel Walker wrote:
-> > Are you sure you don't have HardIRQS in Threads enabled? Also are you
-> > sure the kernel boots without the rt patch applied.
+Roland Kuhn wrote:
+>
+> No, we don't. At least not when looking at the POSIX spec, which
+> explicitly mentions _bytes_ and _not_ unicode characters. So, to be on
+> the safe side, FAT filesystems would need to support a NAME_MAX of
+> roughly 6*255+3=1533 bytes (not to mention the hassles of forbidden
+> sequences, etc.; do we need to count zero-width characters?) and report
+> it through pathconf() to userspace, then userspace could do with that
+> whatever it liked.
 > 
-> Yes on both counts.  I double-checked the configs.  I'm using quilt
-> and the RT patch is at the end of my series, so it was easy to
-> pop the patch and try again (module .config fixups).
+> What happened to: "file names are just sequences of octets, excluding
+> '/' and NUL"? Adding unicode parsing to the kernel is completely useless
+> _and_ a big trouble maker.
 > 
-> I may take a few more blind stabs at different configs before
-> I go diving into the networking code trying to trace something.
-> (or before starting to bisect the patch).  Bisecting the patch
-> will be a bit painful since it's currently an all-in-one.
 
-I'm not sure I'd get into "bisecting" one big patch. Especially if you
-new to the patches inner workings.. 
+"Filenames are just octets" have never applied to alien filesystems like
+VFAT.
 
-You can bisect by kernel version using the older patches but it's
-clearly limited,
-
-http://people.redhat.com/mingo/realtime-preempt/older/
-
-
-Daniel
+	-hpa
 
