@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933264AbXEGLoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933285AbXEGLpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933264AbXEGLoa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 07:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933285AbXEGLoa
+	id S933285AbXEGLpA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 07:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933305AbXEGLpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 07:44:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:35999 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933264AbXEGLo3 (ORCPT
+	Mon, 7 May 2007 07:45:00 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:58792 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933285AbXEGLo7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 07:44:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=SCq4QJqmKgCirK5dggsvJbf9LkrJwUMYv6dglR9SsX8EB+PJ0/LhkL9JEkTrtTwFyw+Hx/q7V/EKnxE/r+3ouB1wbbE0qdTappfSh5egktIWBEjyF45eRJbbCj+oNY3l8KCfM9V2ycdba2qv+y+qJy97TH2zEbmuSwX1lLI8TCk=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix up printing of Linux C Library version in scripts/ver_linux
-Date: Mon, 7 May 2007 13:44:05 +0200
-User-Agent: KMail/1.9.6
-Cc: Sam Ravnborg <sam@ravnborg.org>, jesper.juhl@gmail.com
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705071344.06068.jesper.juhl@gmail.com>
+	Mon, 7 May 2007 07:44:59 -0400
+Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <200705051550.53436.rjw@sisk.pl>
+References: <200705041132.32227.rjw@sisk.pl>
+	 <200705051421.31067.rjw@sisk.pl> <1178368028.7408.93.camel@johannes.berg>
+	 <200705051550.53436.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-otH3NKaaeqLXLiRucHc3"
+Date: Mon, 07 May 2007 13:46:43 +0200
+Message-Id: <1178538404.7261.16.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-I just noticed, when running scripts/ver_linux on a Gentoo system, that the
-line printing the C library version looked a little odd. So I fixed it up
-to be in line with all the rest.
+--=-otH3NKaaeqLXLiRucHc3
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Old output:
-Linux C Library        > libc.2.5
-New output:
-Linux C Library        2.5
+On Sat, 2007-05-05 at 15:50 +0200, Rafael J. Wysocki wrote:
 
+> @@ -60,6 +60,9 @@ void hibernation_set_ops(struct hibernat
+>  	}
+>  	mutex_lock(&pm_mutex);
+>  	hibernation_ops =3D ops;
+> +	if (ops)
+> +		hibernation_mode =3D HIBERNATION_PLATFORM;
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
----
+	else if (hibernation_mode =3D=3D HIBERNATION_PLATFORM)
+		hibernation_mode =3D HIBERNATION_SHUTDOWN;
 
-scripts/ver_linux |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> +
+>  	mutex_unlock(&pm_mutex);
 
-diff --git a/scripts/ver_linux b/scripts/ver_linux
-index 72876df..8f8df93 100755
---- a/scripts/ver_linux
-+++ b/scripts/ver_linux
-@@ -66,8 +66,8 @@ showmount --version 2>&1 | grep nfs-utils | awk \
- 'NR==1{print "nfs-utils             ", $NF}'
- 
- ls -l `ldd /bin/sh | awk '/libc/{print $3}'` | sed \
---e 's/\.so$//' | awk -F'[.-]'   '{print "Linux C Library        " \
--$(NF-2)"."$(NF-1)"."$NF}'
-+-e 's/\.so$//' | sed -e 's/>//' | \
-+awk -F'[.-]' '{print "Linux C Library        "$(NF-1)"."$NF}'
- 
- ldd -v > /dev/null 2>&1 && ldd -v || ldd --version |head -n 1 | awk \
- 'NR==1{print "Dynamic linker (ldd)  ", $NF}'
+johannes
 
+--=-otH3NKaaeqLXLiRucHc3
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGPxGj/ETPhpq3jKURAmgpAKCWrxilIOwgwIqO4dYNYvLiQB6Q2wCfXja+
+hzByLxRnkM0YnTXbb4Mvv+Y=
+=/yKc
+-----END PGP SIGNATURE-----
+
+--=-otH3NKaaeqLXLiRucHc3--
 
