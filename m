@@ -1,106 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754401AbXEGOFQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754430AbXEGOGO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754401AbXEGOFQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 10:05:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754375AbXEGOFL
+	id S1754430AbXEGOGO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 10:06:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbXEGOGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 10:05:11 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1260 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754356AbXEGOFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 10:05:10 -0400
-Date: Mon, 7 May 2007 14:04:54 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Anton Vorontsov <cbou@mail.ru>
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org, David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-Message-ID: <20070507140453.GD3868@ucw.cz>
-References: <20070503213303.GH20067@zarina>
+	Mon, 7 May 2007 10:06:08 -0400
+Received: from main.gmane.org ([80.91.229.2]:44359 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754362AbXEGOGG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 10:06:06 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [patch] CFS scheduler, -v9
+Date: Mon, 07 May 2007 10:03:46 -0400
+Message-ID: <463F31C2.1070809@tmr.com>
+References: <20070503140911.GA21916@elte.hu> <4d47a5d10705070302k3f081074k89f0122cee7ae2e@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070503213303.GH20067@zarina>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, buddabrod <buddabrod@gmail.com>,
+       Balbir Singh <balbir@in.ibm.com>
+X-Gmane-NNTP-Posting-Host: mail.tmr.com
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+In-Reply-To: <4d47a5d10705070302k3f081074k89f0122cee7ae2e@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> This probably should be marked as BROKEN because, according
-> to David Woodhouse, EC-acccess method will change. Plus currently
-> it lacks mutexes. So this driver is just for reference. Converted
-> from the battery-2.6 repository, 1:1.
+Daniel Phillips wrote:
+> Hi Ingo,
 > 
-> But nevertheless it should work.
+> I just thought I would mention this, because it is certainly on my 
+> mind. I can't help wondering if other folks are also concerned about
+> this. The thing is, why don't you just send your patches to Con who
+> got this whole ball rolling and did a bunch of great work, proving
+> beyond any reasonable doubt that he is capable of maintaining this
+> subsystem, whatever algorithm is finally adopted? Are you worried 
+> that Con might steal your thunder? That somehow the scheduler is
+> yours alone? That you might be perceived as less of a genius if
+> somebody else gets credit for their good work? NIH?
 > 
-> Signed-off-by: Anton Vorontsov <cbou@mail.ru>
-> ---
->  drivers/power/Kconfig        |    6 +
->  drivers/power/Makefile       |    1 +
->  drivers/power/olpc_battery.c |  300 ++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 307 insertions(+), 0 deletions(-)
->  create mode 100644 drivers/power/olpc_battery.c
+> My perception is that you barged in to take over just when Con got 
+> things moving after the scheduler sat and rotted for several years.
+> If that is in any way accurate, then shame on you.
 > 
-> diff --git a/drivers/power/Kconfig b/drivers/power/Kconfig
-> index 051724f..3ac79c3 100644
-> --- a/drivers/power/Kconfig
-> +++ b/drivers/power/Kconfig
-> @@ -42,4 +42,10 @@ config BATTERY_PMU
->  	  Say Y here to expose battery information on Apple machines
->  	  through the generic battery class.
->  
-> +config BATTERY_OLPC
-> +	tristate "One Laptop Per Child battery"
-> +	depends on X86_32
-> +	help
-> +	  Say Y to enable support for the battery on the $100 laptop.
-> +
->  endif # POWER_SUPPLY
-> diff --git a/drivers/power/Makefile b/drivers/power/Makefile
-> index 0ebdc6d..62b58ca 100644
-> --- a/drivers/power/Makefile
-> +++ b/drivers/power/Makefile
-> @@ -19,3 +19,4 @@ obj-$(CONFIG_APM_POWER)            += apm_power.o
->  
->  obj-$(CONFIG_BATTERY_DS2760)       += ds2760_battery.o
->  obj-$(CONFIG_BATTERY_PMU)          += pmu_battery.o
-> +obj-$(CONFIG_BATTERY_OLPC)         += olpc_battery.o
-> diff --git a/drivers/power/olpc_battery.c b/drivers/power/olpc_battery.c
-> new file mode 100644
-> index 0000000..40f76bb
-> --- /dev/null
-> +++ b/drivers/power/olpc_battery.c
-> @@ -0,0 +1,300 @@
-> +/*
-> + * Battery driver for One Laptop Per Child ($100 laptop) board.
-> + *
-> + *	Copyright ?? 2006  David Woodhouse <dwmw2@infradead.org>
+Clearly you have no idea what's going on, or how development is done. 
+These are mutually exclusive different ideas on what constitutes an 
+optimal scheduler, and not in any way improvements on the same thing, 
+but total replacements for the algorithm of the scheduler.
 
-Can we stick to ascii in sources?
+And Ingo has been doing scheduler work for a very long time, while until 
+recently Con was working on the staircase scheduler as a solution for 
+desktop use, and it was not (to my taste) a candidate for a general 
+scheduler until the deadline discussion and some ideas from wli resulted 
+in improvements resulting in more robust performance under typical 
+server loads.
 
-> +#define wBAT_VOLTAGE     0xf900  /* *9.76/32,    mV   */
-> +#define wBAT_CURRENT     0xf902  /* *15.625/120, mA   */
-> +#define wBAT_TEMP        0xf906  /* *256/1000,   ??C  */
-> +#define wAMB_TEMP        0xf908  /* *256/1000,   ??C  */
+You also seem to be unaware of the work done by Nick Piggin in 
+nicksched. There are a lot of mutually incompatible approaches being 
+evaluated, and that's good for the future.
 
-Ascii? And those defines seem affected by hungarian convention.
-
-
-> +#define sMBAT_STATUS     0xfaa4
-> +#define	sBAT_PRESENT          1
-> +#define	sBAT_FULL             2
-> +#define	sBAT_DESTROY          4  /* what is this exactly? */
-> +#define	sBAT_LOW             32
-> +#define	sBAT_DISCHG          64
-> +#define sMCHARGE_STATUS  0xfaa5
-> +#define	sBAT_CHARGE           1
-> +#define	sBAT_OVERTEMP         4
-> +#define	sBAT_NiMH             8
-> +#define sPOWER_FLAG      0xfa40
-
-
-							Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
