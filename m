@@ -1,60 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934284AbXEGPYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934393AbXEGPYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934284AbXEGPYM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 11:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934364AbXEGPYH
+	id S934393AbXEGPYu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 11:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934386AbXEGPYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 11:24:07 -0400
-Received: from mga01.intel.com ([192.55.52.88]:14848 "EHLO mga01.intel.com"
+	Mon, 7 May 2007 11:24:45 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:47908 "EHLO e6.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934283AbXEGPYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 11:24:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,501,1170662400"; 
-   d="scan'208";a="242932576"
-Date: Mon, 7 May 2007 08:20:56 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [patch 0/7] Asynchronous Notification for ATAPI devices (v2) -
- resend
-Message-Id: <20070507082056.dd0b2f9e.kristen.c.accardi@intel.com>
-In-Reply-To: <463DAAC6.3060300@gmail.com>
-References: <20070504111222.c2e373cf.kristen.c.accardi@intel.com>
-	<463DAAC6.3060300@gmail.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	id S934364AbXEGPYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 11:24:43 -0400
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+In-Reply-To: <20070507120719.GD7012@amitarora.in.ibm.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
+	 <20070330071417.GI355@devserv.devel.redhat.com>
+	 <20070417125514.GA7574@amitarora.in.ibm.com>
+	 <20070418130600.GW5967@schatzie.adilger.int>
+	 <20070420135146.GA21352@amitarora.in.ibm.com>
+	 <20070420145918.GY355@devserv.devel.redhat.com>
+	 <20070424121632.GA10136@amitarora.in.ibm.com>
+	 <20070426175056.GA25321@amitarora.in.ibm.com>
+	 <20070426181332.GD7209@amitarora.in.ibm.com>
+	 <20070503213133.d1559f52.akpm@linux-foundation.org>
+	 <20070507120719.GD7012@amitarora.in.ibm.com>
+Content-Type: text/plain
+Date: Mon, 07 May 2007 10:24:37 -0500
+Message-Id: <1178551477.12900.6.camel@kleikamp.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 06 May 2007 12:15:34 +0200
-Tejun Heo <htejun@gmail.com> wrote:
+On Mon, 2007-05-07 at 17:37 +0530, Amit K. Arora wrote:
+> On Thu, May 03, 2007 at 09:31:33PM -0700, Andrew Morton wrote:
+> > On Thu, 26 Apr 2007 23:43:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
 
-> Kristen Carlson Accardi wrote:
-> > This patch series implements Asynchronous Notification (AN) for SATA
-> > ATAPI devices as defined in SATA 2.5 and AHCI 1.1 and higher.  Drives
-> > which support this feature will send a notification when new media is
-> > inserted and removed, preventing the need for user space to poll for
-> > new media.  This support is exposed to user space via a flag that will
-> > be set in /sys/block/sr*/capability_flags.  If the flag is set, user
-> > space can disable polling for the new media, and the genhd driver will
-> > send a KOBJ_CHANGE event with the envp set to MEDIA_CHANGE_EVENT=1.
+> > > +int ext4_fallocate(struct inode *inode, int mode, loff_t offset, loff_t len)
+> > > +{
+> > > +	handle_t *handle;
+> > > +	ext4_fsblk_t block, max_blocks;
+> > > +	int ret, ret2, nblocks = 0, retries = 0;
+> > > +	struct buffer_head map_bh;
+> > > +	unsigned int credits, blkbits = inode->i_blkbits;
+> > > +
+> > > +	/* Currently supporting (pre)allocate mode _only_ */
+> > > +	if (mode != FA_ALLOCATE)
+> > > +		return -EOPNOTSUPP;
+> > > +
+> > > +	if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
+> > > +		return -ENOTTY;
 > > 
-> > Note that this patch only implements support for directly attached
-> > drives - AN with drives attached to a port multiplier requires 
-> > additional changes.
+> > So we don't implement fallocate on bitmap-based files!  Well that's huge
+> > news.  The changelog would be an appropriate place to communicate this,
+> > along with reasons why, or a description of the plan to fix it.
 > 
-> No objection from me.  BTW, you're not setting ATA_FLAG_AN anywhere in
-> the patch series, will that be a separate patch?
+> Ok. Will add this in the function description as well.
 > 
-> -- 
-> tejun
+> > Also, posix says nothing about fallocate() returning ENOTTY.
 > 
+> Right. I don't seem to find any suitable error from posix description.
+> Can you please suggest an error code which might make more sense here ?
+> Will -ENOTSUPP be ok ? Since we want to say here that we don't support
+> non-extent files.
 
-Yes - unfortunately I realized I'd forgotten to add that file to my
-quilt patch about 5 minutes after I sent it :).  I thought if there were
-no other revisions to this patch, I'd just send a separate one, otherwise
-I'd incorporate it into the next version.
+Isn't the idea that libc will interpret -ENOTTY, or whatever is returned
+here, and fall back to the current library code to do preallocation?
+This way, the caller of fallocate() will never see this return code, so
+it won't violate posix.
+
+-- 
+David Kleikamp
+IBM Linux Technology Center
+
