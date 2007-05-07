@@ -1,93 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967246AbXEGXcB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967253AbXEGXcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967246AbXEGXcB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 19:32:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967236AbXEGXb4
+	id S967253AbXEGXcJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 19:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967244AbXEGXcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 19:31:56 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:46712 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967186AbXEGXby (ORCPT
+	Mon, 7 May 2007 19:32:00 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60525
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S967219AbXEGXbz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 19:31:54 -0400
-Date: Mon, 7 May 2007 16:31:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Andreas Dilger <adilger@clusterfs.com>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
-Message-Id: <20070507163135.cf455103.akpm@linux-foundation.org>
-In-Reply-To: <20070507231442.GA29907@thunk.org>
-References: <20070420135146.GA21352@amitarora.in.ibm.com>
-	<20070420145918.GY355@devserv.devel.redhat.com>
-	<20070424121632.GA10136@amitarora.in.ibm.com>
-	<20070426175056.GA25321@amitarora.in.ibm.com>
-	<20070426181332.GD7209@amitarora.in.ibm.com>
-	<20070503213133.d1559f52.akpm@linux-foundation.org>
-	<20070507113753.GA5439@schatzie.adilger.int>
-	<20070507135825.f8545a65.akpm@linux-foundation.org>
-	<20070507222103.GJ8181@schatzie.adilger.int>
-	<20070507153856.d56a5133.akpm@linux-foundation.org>
-	<20070507231442.GA29907@thunk.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 7 May 2007 19:31:55 -0400
+Date: Mon, 07 May 2007 16:31:58 -0700 (PDT)
+Message-Id: <20070507.163158.15266850.davem@davemloft.net>
+To: linux-kernel@vger.kernel.org
+CC: torvalds@linux-foundation.org
+Subject: [PATCH]: Fix printk format warnings in timer_list.c
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007 19:14:42 -0400
-Theodore Tso <tytso@mit.edu> wrote:
 
-> On Mon, May 07, 2007 at 03:38:56PM -0700, Andrew Morton wrote:
-> > > Actually, this is a non-issue.  The reason that it is handled for extent-only
-> > > is that this is the only way to allocate space in the filesystem without
-> > > doing the explicit zeroing.  For other filesystems (including ext3 and
-> > > ext4 with block-mapped files) the filesystem should return an error (e.g.
-> > > -EOPNOTSUPP) and glibc will do manual zero-filling of the file in userspace.
-> > 
-> > It can be a bit suboptimal from the layout POV.  The reservations code will
-> > largely save us here, but kernel support might make it a bit better.
-> 
-> Actually, the reservations code won't matter, since glibc will fall
-> back to its current behavior, which is it will do the preallocation by
-> explicitly writing zeros to the file.
+u64 and s64 are not necessarily 'long long' on some 64-bit
+platforms, so explicit the type to kill the compiler warnings.
 
-No!  Reservations code is *critical* here.  Without reservations, we get
-disastrously-bad layout if two processes were running a large fallocate()
-at the same time.  (This is an SMP-only problem, btw: on UP the timeslice
-lengths save us).
+Also consistently use '%Lu' which is unsigned.
 
-My point is that even though reservations save us, we could do even-better
-in-kernel.
+Signed-off-by: David S. Miller <davem@davemloft.net>
 
-But then, a smart application would bypass the glibc() fallocate()
-implementation and would tune the reservation window size and would use
-direct-IO or sync_file_range()+fadvise(FADV_DONTNEED).
-
-> This wlil result in the same
-> layout as if we had done the persistent preallocation, but of course
-> it will mean the posix_fallocate() could potentially take a long time
-> if you're a PVR and you're reserving a gig or two for a two hour movie
-> at high quality.  That seems suboptimal, granted, and ideally the
-> application should be warned about this before it calls
-> posix_fallocate().  On the other hand, it's what happens today, all
-> the time, so applications won't be too badly surprised.
-
-A PVR implementor would take all this over and would do it themselves, for
-sure.
-
-> If we think applications programmers badly need to know in advance if
-> posix_fallocate() will be fast or slow, probably the right thing is to
-> define a new fpathconf() configuration option so they can query to see
-> whether a particular file will support a fast posix_fallocate().  I'm
-> not 100% convinced such complexity is really needed, but I'm willing
-> to be convinced....  what do folks think?
-> 
-
-An application could do sys_fallocate(one-byte) to work out whether it's
-supported in-kernel, I guess.
-
+diff --git a/kernel/time/timer_list.c b/kernel/time/timer_list.c
+index 59df5e8..d7ed3a1 100644
+--- a/kernel/time/timer_list.c
++++ b/kernel/time/timer_list.c
+@@ -70,7 +70,7 @@ print_timer(struct seq_file *m, struct hrtimer *timer, int idx, u64 now)
+ 	SEQ_printf(m, ", %s/%d", tmp, timer->start_pid);
+ #endif
+ 	SEQ_printf(m, "\n");
+-	SEQ_printf(m, " # expires at %Ld nsecs [in %Ld nsecs]\n",
++	SEQ_printf(m, " # expires at %Lu nsecs [in %Lu nsecs]\n",
+ 		(unsigned long long)ktime_to_ns(timer->expires),
+ 		(unsigned long long)(ktime_to_ns(timer->expires) - now));
+ }
+@@ -116,14 +116,14 @@ print_base(struct seq_file *m, struct hrtimer_clock_base *base, u64 now)
+ {
+ 	SEQ_printf(m, "  .index:      %d\n",
+ 			base->index);
+-	SEQ_printf(m, "  .resolution: %Ld nsecs\n",
++	SEQ_printf(m, "  .resolution: %Lu nsecs\n",
+ 			(unsigned long long)ktime_to_ns(base->resolution));
+ 	SEQ_printf(m,   "  .get_time:   ");
+ 	print_name_offset(m, base->get_time);
+ 	SEQ_printf(m,   "\n");
+ #ifdef CONFIG_HIGH_RES_TIMERS
+-	SEQ_printf(m, "  .offset:     %Ld nsecs\n",
+-			ktime_to_ns(base->offset));
++	SEQ_printf(m, "  .offset:     %Lu nsecs\n",
++		   (unsigned long long) ktime_to_ns(base->offset));
+ #endif
+ 	SEQ_printf(m,   "active timers:\n");
+ 	print_active_timers(m, base, now);
+@@ -140,10 +140,11 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
+ 		print_base(m, cpu_base->clock_base + i, now);
+ 	}
+ #define P(x) \
+-	SEQ_printf(m, "  .%-15s: %Ld\n", #x, (u64)(cpu_base->x))
++	SEQ_printf(m, "  .%-15s: %Lu\n", #x, \
++		   (unsigned long long)(cpu_base->x))
+ #define P_ns(x) \
+-	SEQ_printf(m, "  .%-15s: %Ld nsecs\n", #x, \
+-		(u64)(ktime_to_ns(cpu_base->x)))
++	SEQ_printf(m, "  .%-15s: %Lu nsecs\n", #x, \
++		   (unsigned long long)(ktime_to_ns(cpu_base->x)))
+ 
+ #ifdef CONFIG_HIGH_RES_TIMERS
+ 	P_ns(expires_next);
+@@ -155,10 +156,11 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
+ 
+ #ifdef CONFIG_TICK_ONESHOT
+ # define P(x) \
+-	SEQ_printf(m, "  .%-15s: %Ld\n", #x, (u64)(ts->x))
++	SEQ_printf(m, "  .%-15s: %Lu\n", #x, \
++		   (unsigned long long)(ts->x))
+ # define P_ns(x) \
+-	SEQ_printf(m, "  .%-15s: %Ld nsecs\n", #x, \
+-		(u64)(ktime_to_ns(ts->x)))
++	SEQ_printf(m, "  .%-15s: %Lu nsecs\n", #x, \
++		   (unsigned long long)(ktime_to_ns(ts->x)))
+ 	{
+ 		struct tick_sched *ts = tick_get_tick_sched(cpu);
+ 		P(nohz_mode);
+@@ -172,7 +174,8 @@ static void print_cpu(struct seq_file *m, int cpu, u64 now)
+ 		P(last_jiffies);
+ 		P(next_jiffies);
+ 		P_ns(idle_expires);
+-		SEQ_printf(m, "jiffies: %Ld\n", (u64)jiffies);
++		SEQ_printf(m, "jiffies: %Lu\n",
++			   (unsigned long long)jiffies);
+ 	}
+ #endif
+ 
