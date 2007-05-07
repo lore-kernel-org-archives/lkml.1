@@ -1,98 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932290AbXEGLJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932840AbXEGLKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932290AbXEGLJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 07:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932526AbXEGLJ6
+	id S932840AbXEGLKk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 07:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932929AbXEGLKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 07:09:58 -0400
-Received: from wx-out-0506.google.com ([66.249.82.225]:21272 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932290AbXEGLJ5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 07:09:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=beta;
-        h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
-        b=CQWUixGs4VdyW64+4+hN5W4/rcX5X2gAUUClLGtRQlqdRgDk6nmNC9R6B1L8wE2p83nseBt3O/A1pPVO3Gxx1j6f2HP5Tv+kE/6+5A1oJ6cAOqPqh/nDj72kfqANzk+0QQO0qUw9IofIwZi4pG+9RR0NaKEqvk36A1WBtuzUjDU=
-Date: Mon, 7 May 2007 13:09:42 +0200 (CEST)
-From: Esben Nielsen <nielsen.esben@googlemail.com>
-X-X-Sender: simlo@frodo.shire
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Esben Nielsen <nielsen.esben@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v8
-In-Reply-To: <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705071159530.14011@frodo.shire>
-References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com>
- <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com>
- <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire>
- <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Mon, 7 May 2007 07:10:39 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:40250 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932840AbXEGLKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 07:10:38 -0400
+Date: Mon, 7 May 2007 16:40:38 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: David Chinner <dgc@sgi.com>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070507111038.GB7012@amitarora.in.ibm.com>
+References: <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070503212955.b1b6443c.akpm@linux-foundation.org> <20070504060731.GJ32602149@melbourne.sgi.com> <20070503232815.2f62a75e.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070503232815.2f62a75e.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 03, 2007 at 11:28:15PM -0700, Andrew Morton wrote:
+> The above opengroup page only permits S_ISREG.  Preallocating directories
+> sounds quite useful to me, although it's something which would be pretty
+> hard to emulate if the FS doesn't support it.  And there's a decent case to
+> be made for emulating it - run-anywhere reasons.  Does glibc emulation support
+> directories?  Quite unlikely.
+> 
+> But yes, sounds like a desirable thing.  Would XFS support it easily if the above
+> check was relaxed?
 
+I think we may relax the check here and let the individual file system
+decide if they support preallocation for directories or not. What do you
+think ?
 
-On Sat, 5 May 2007, Linus Torvalds wrote:
+One thing to be thought in this case is the error code which should be
+returned by the file system implementation, incase it doesn't support
+preallocation for directories. Should it be -ENODEV (to match with what
+posix says) , or something else (which might make more sense in this
+case) ?
 
->
->
-> On Sat, 5 May 2007, Esben Nielsen wrote:
->>
->> I have been wondering why you use usigned for timers anyway. It is also like
->> that in hrtimers. Why not use signed and avoid (almost) all worries about wrap
->> around issues. The trick is that when all
->>   a < b
->> is be replaced by
->>   a - b < 0
->> the code will work on all 2-complement machines even if the (signed!) integers
->> a and b wrap around.
->
-> No. BOTH of the above are buggy.
->
-> The C language definition doesn't allow signed integers to wrap (ie it's
-> undefined behaviour), so "a-b < 0" can be rewritten by the compiler as a
-> simple signed "a < b".
->
-> And the unsigned (or signed) "a < b" is just broken wrt any kind of
-> wrap-around (whether wrapping around zero or the sign bit).
->
-> So the _only_ valid way to handle timers is to
-> - either not allow wrapping at all (in which case "unsigned" is better,
->   since it is bigger)
-> - or use wrapping explicitly, and use unsigned arithmetic (which is
->   well-defined in C) and do something like "(long)(a-b) > 0".
->
-> Notice? The signed variant is basically _never_ correct.
->
-
-What is (long)(a-b) ? I have tried to look it up in the C99 standeard but 
-I can't find it. Maybe it is in the referred LIA-1 standeard, which I 
-can't find with google.
-
-I think the best would be to use "a-b > ULONG_MAX/2" when you mean "a<b" 
-as that should be completely portable.
-
-According to C99 Appendix H2.2 
-(http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1124.pdf) an 
-implementation can choose to do modulo signed integers as it is 
-mandatory for unsigned integers. If an implementation have choosen 
-to do that it must be a bug to to do the "a-b < 0" -> "a<b" optimization.
-
-I have never experienced a compiler/architecture combination _not_ doing 
-wrapped signed integers.
-
-Esben
-
-
-> 		Linus
->
+--
+Regards,
+Amit Arora
