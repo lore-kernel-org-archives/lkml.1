@@ -1,63 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934174AbXEGPEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934247AbXEGPKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934174AbXEGPEM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 11:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754518AbXEGPEG
+	id S934247AbXEGPKI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 11:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934132AbXEGPKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 11:04:06 -0400
-Received: from seahorse.shentel.net ([204.111.1.244]:60321 "EHLO
-	seahorse.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754515AbXEGPEF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 11:04:05 -0400
-Date: Mon, 7 May 2007 11:03:54 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Matti Aarnio <matti.aarnio@zmailer.org>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: gmail is a bit too popular..
-In-Reply-To: <20070507145555.GG3883@mea-ext.zmailer.org>
-Message-ID: <alpine.DEB.0.98.0705071101510.6512@sigma.j-a-k-j.com>
-References: <20070507145555.GG3883@mea-ext.zmailer.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 7 May 2007 11:10:04 -0400
+Received: from mail.pxnet.com ([195.227.45.3]:45260 "EHLO lx1.pxnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934084AbXEGPKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 11:10:03 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 May 2007 11:10:03 EDT
+Date: Mon, 7 May 2007 17:03:12 +0200
+Message-Id: <200705071503.l47F3C1q015269@lx1.pxnet.com>
+From: Tilman Schmidt <tilman@imap.cc>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: Hansjoerg Lipp <hjlipp@web.de>
+Subject: [PATCH] usb_gigaset: don't kmalloc(0)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> In the  linux-kernel  -list subscribers domain popularity
-> analysis I got following results:
-> 
->    2101 gmail.com
->      49 googlemail.com
->      46 gmx.de
->      41 redhat.com
->      33 yahoo.com
->      23 suse.de
->      22 gmx.net
->      21 comcast.net
-> 
-> 
-> The  gmail  is so popular, that with their somewhat rudimentary 
-> inbound MTA software this kind of recipient masses take horrible
-> time to feed in...  Mere 0.5-0.7 seconds per recipient, but..
-> 
-> So far we have tried to feed all recipients in one go per
-> message - that is sending 2100  RCPT TO -lines in one swoop,
-> and the system has taken some 15-25 minutes per message to
-> feed it to gmail.  We are running the delivery 20 streams in
-> parallel, so it isn't quite as bad as it sounds..
-> 
-> I do have one thing that gmail could enable to speed up the message
-> delivery (a lot!) from VGER and other list delivery sources.
-> That single magic needed thing is called "PIPELINING" support
-> at gmail's inbound MX servers.  With suitably well behaving
-> smtpserver it is really trivial to implement, all real difficult
-> magic is at the sending side smtp client codes.
-> 
-> Once upon a time I implemented that thing for a trans-atlantic
-> SMTP fanout feed -- message delivery time became slashed from
-> hundreds of RTT delays to mere few..
+From: Tilman Schmidt <tilman@imap.cc>
 
-How about some elitism here? Dedicate a certain number of streams to 
-everything-except-gmail, so MTAs from the 21st century can get their mail 
-faster, and set the rest on gmail-only. Slows down gmail and speeds up the 
-rest?
+Zero-sized allocations are pointless anyway, and the SLUB allocator
+complains about them, so stop doing that.
+
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Signed-off-by: Hansjoerg Lipp <hjlipp@web.de>
+
+---
+
+--- a/drivers/isdn/gigaset/usb-gigaset.c	2007-05-07 10:08:41.000000000 +0200
++++ b/drivers/isdn/gigaset/usb-gigaset.c	2007-05-07 12:01:48.000000000 +0200
+@@ -138,8 +138,6 @@ struct usb_cardstate {
+ 	char			bchars[6];		/* for request 0x19 */
+ };
+ 
+-struct usb_bc_state {};
+-
+ static inline unsigned tiocm_to_gigaset(unsigned state)
+ {
+ 	return ((state & TIOCM_DTR) ? 1 : 0) | ((state & TIOCM_RTS) ? 2 : 0);
+@@ -579,25 +577,21 @@ static int gigaset_brkchars(struct cards
+ 
+ static int gigaset_freebcshw(struct bc_state *bcs)
+ {
+-	if (!bcs->hw.usb)
+-		return 0;
+-	//FIXME
+-	kfree(bcs->hw.usb);
++	/* unused */
+ 	return 1;
+ }
+ 
+ /* Initialize the b-channel structure */
+ static int gigaset_initbcshw(struct bc_state *bcs)
+ {
+-	bcs->hw.usb = kmalloc(sizeof(struct usb_bc_state), GFP_KERNEL);
+-	if (!bcs->hw.usb)
+-		return 0;
+-
++	/* unused */
++	bcs->hw.usb = NULL;
+ 	return 1;
+ }
+ 
+ static void gigaset_reinitbcshw(struct bc_state *bcs)
+ {
++	/* nothing to do for M10x */
+ }
+ 
+ static void gigaset_freecshw(struct cardstate *cs)
+
+-- 
+Tilman Schmidt                          E-Mail: tilman@imap.cc
+Bonn, Germany
+- Undetected errors are handled as if no error occurred. (IBM) -
