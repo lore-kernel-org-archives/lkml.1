@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934099AbXEGOda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934157AbXEGOkj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934099AbXEGOda (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 10:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934108AbXEGOd1
+	id S934157AbXEGOkj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 10:40:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934086AbXEGOkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 10:33:27 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4498 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934100AbXEGOdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 10:33:25 -0400
-Date: Mon, 7 May 2007 10:11:43 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Dan Williams <dcbw@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Jeff Garzik <jeff@garzik.org>,
-       linux-wireless@vger.kernel.org, marcelo@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: Please pull 'revert-libertas' branch of wireless-2.6 (was Re: Please pull 'libertas' branch of wireless-2.6)
-Message-ID: <20070507141143.GB5125@tuxdriver.com>
-References: <20070227205649.GH5826@tuxdriver.com> <45E8CF5E.5090305@garzik.org> <20070303052140.GA31075@infradead.org> <20070507104117.GA31601@infradead.org> <1178539423.3032.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178539423.3032.24.camel@localhost.localdomain>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 7 May 2007 10:40:36 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:58912
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933974AbXEGOkf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 10:40:35 -0400
+Date: Mon, 7 May 2007 07:37:57 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Oliver Neukum <oneukum@suse.de>
+cc: Pavel Machek <pavel@ucw.cz>, David Lang <david.lang@digitalinsight.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <200705071452.21969.oneukum@suse.de>
+Message-ID: <Pine.LNX.4.64.0705070736010.18013@asgard.lang.hm>
+References: <1177567481.5025.211.camel@nigel.suspend2.net>
+ <Pine.LNX.4.63.0705061909290.19118@qynat.qvtvafvgr.pbz> <20070507124818.GA18209@elf.ucw.cz>
+ <200705071452.21969.oneukum@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 08:03:43AM -0400, Dan Williams wrote:
-> On Mon, 2007-05-07 at 11:41 +0100, Christoph Hellwig wrote:
+On Mon, 7 May 2007, Oliver Neukum wrote:
 
-> > Of course it's not anywhere near good shape.  Almost all items from my
-> > review were completely ignored, and we have another totoally substandard
-> > wireless driver with crappy thread handling, a huge number of broken private
-> > ioctls and partially absymal codingstyle.
+> Am Montag, 7. Mai 2007 14:48 schrieb Pavel Machek:
+>>>> Including network? Your tcp peers will be really confused, then, if
+>>>> you ACK packets then claim you did not get them. No, you do not want
+>>>> to start network.
+>>>
+>>> anyone who is doing a hibernate or suspend who expect all the network
+>>> connections to be working afterwords is dreaming or smokeing
+>>> something.
+>>
+>> Really? It works today... if the suspend is short enough. And that's
+>> how it should be.
+>
+> If we get very good at Wake-on-Lan it should work for any length
+> of time.
 
-> I've already updated libertas-2.6 git with a ton of updates for this.
-> 
-> In any case, lets push off any merge until 2.6.23 so the rest of the
-> comments can be dealt with:
+for suspend-to-ram this would work, I stand corrected.
 
-Alright...Jeff, would you please pull the following branch for upstream ASAP:
+for hibernate this would almost certinly not work, and I don't think that 
+it's worth raising false hopes.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git revert-libertas
-
-Thanks,
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+David Lang
