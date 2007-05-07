@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754268AbXEGJww@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754271AbXEGJzQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754268AbXEGJww (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 05:52:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbXEGJww
+	id S1754271AbXEGJzQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 05:55:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754274AbXEGJzQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 05:52:52 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:27833 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754246AbXEGJwv (ORCPT
+	Mon, 7 May 2007 05:55:16 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:1918 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754272AbXEGJzP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 05:52:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=kIU088z2xTG+dCV6wI49zOsq+eAiDYyytAn6g6VDESWkuccjfL5m/C4D1C06n1Yi+57pzQhN+4xqgLiJd7OZ1ukXf1sGiDaqwi38AGwos/E9IZJ/nVXYYRonWOojI6HcRsQQdEplMX5Y4XDNW/5bKz9T07TQnNyzME0zv9j45AE=
-Message-ID: <463EF6ED.7060404@gmail.com>
-Date: Mon, 07 May 2007 11:52:45 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 7 May 2007 05:55:15 -0400
+Message-ID: <463EF77A.9020808@imap.cc>
+Date: Mon, 07 May 2007 11:55:06 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-CC: htejun@gmail.com, akpm@osdl.org, jgarzik@pobox.com,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: 2.6.21-mm1: many processes end up in D state
-References: <200705052346.l45NksOb022632@harpo.it.uu.se>
-In-Reply-To: <200705052346.l45NksOb022632@harpo.it.uu.se>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 7bit
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>
+Subject: trying to track a change to drivers/isdn/usb-gigaset.c
+X-Enigmail-Version: 0.94.2.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFAC59309B77127C6526248C7"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikael Pettersson napsal(a):
-> Jiri: please test the patch below instead. That is, revert to
-> the original code _with_ the 'return 1;', and then add this
-> patch to it. It should have pretty much the same effect as
-> removing the 'return 1;', however calling ata_port_abort()
-> is more in line with libata's new-style error handling.
-> 
-> /Mikael
-> 
-> --- linux-2.6.21-mm1/drivers/ata/sata_promise.c.~1~	2007-05-05 22:24:41.000000000 +0200
-> +++ linux-2.6.21-mm1/drivers/ata/sata_promise.c	2007-05-05 22:25:21.000000000 +0200
-> @@ -653,6 +653,8 @@ static void pdc_error_intr(struct ata_po
->  	qc->err_mask |= ac_err_mask;
->  
->  	pdc_reset_port(ap);
-> +
-> +	ata_port_abort(ap);
->  }
->  
->  static inline unsigned int pdc_host_intr( struct ata_port *ap,
-> 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFAC59309B77127C6526248C7
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: quoted-printable
 
-Yes, no freezing anymore.
+While looking for something else I stumbled upon an unfamiliar
+change to the file drivers/isdn/usb-gigaset.c in the current
+git version wrt 2.6.21. git-blame attributes it to d626f62b
+which resolves to:
 
-thanks,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+Author: Arnaldo Carvalho de Melo <acme@redhat.com>
+Date:   Tue Mar 27 18:55:52 2007 -0300
+
+    [SK_BUFF]: Introduce skb_copy_from_linear_data{_offset}
+
+    To clearly state the intent of copying from linear sk_buffs, _offset =
+being a
+    overly long variant but interesting for the sake of saving some bytes=
+=2E
+
+    Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+
+But I cannot remember seeing that patch via the maintainer
+addresses for ISDN or the Gigaset driver, and the LKML archive
+doesn't seem to have it either.
+
+Where was that patch discussed? What is its rationale?
+
+And more generally: is there a way to get notified if someone
+submits a patch that affects a file of which I am a maintainer?
+
+Thanks,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enigFAC59309B77127C6526248C7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFGPvd6MdB4Whm86/kRAus2AJ4x6VDDgJx4EN3H6OEudOdW2rnSWQCfebCx
+qjgHD0TVWDzZPXU3yB2hg9c=
+=bI0W
+-----END PGP SIGNATURE-----
+
+--------------enigFAC59309B77127C6526248C7--
