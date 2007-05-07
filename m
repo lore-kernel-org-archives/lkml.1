@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933977AbXEGNuy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934012AbXEGNxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933977AbXEGNuy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 09:50:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933860AbXEGNux
+	id S934012AbXEGNxO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 09:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933946AbXEGNxM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 09:50:53 -0400
-Received: from py-out-1112.google.com ([64.233.166.176]:22283 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933826AbXEGNuw (ORCPT
+	Mon, 7 May 2007 09:53:12 -0400
+Received: from frankvm.xs4all.nl ([80.126.170.174]:59463 "EHLO
+	janus.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933932AbXEGNxL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 09:50:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=cb+ND5i8TpbMQl+tZVKZwl8KurdFhYr2F4C0Blhy9fkkMm1NfSuU1vZuEDMl7Gm9mDwjZcBOLmwDCWSqbGNrcJiZoTKlYMRYehtT4hZFUOCPkRIQ0yjveyDLsS/2PeaBYoGyXcBn0Q+d94cjE/tCaoE/y4OEOb+vO82SY/0XgyU=
-Message-ID: <170fa0d20705070650g47ede2b6q9d1ad899d55ed57f@mail.gmail.com>
-Date: Mon, 7 May 2007 09:50:52 -0400
-From: "Mike Snitzer" <snitzer@gmail.com>
-To: "Daniel Phillips" <phillips@google.com>
-Subject: Re: [patch] CFS scheduler, -v9
-Cc: "Ingo Molnar" <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Con Kolivas" <kernel@kolivas.org>, "Nick Piggin" <npiggin@suse.de>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Arjan van de Ven" <arjan@infradead.org>,
-       "Peter Williams" <pwil3058@bigpond.net.au>,
-       "Thomas Gleixner" <tglx@linutronix.de>, caglar@pardus.org.tr,
-       "Willy Tarreau" <w@1wt.eu>, "Gene Heskett" <gene.heskett@gmail.com>,
-       "Mark Lord" <lkml@rtr.ca>, buddabrod <buddabrod@gmail.com>,
-       "Balbir Singh" <balbir@in.ibm.com>
-In-Reply-To: <4d47a5d10705070302k3f081074k89f0122cee7ae2e@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 7 May 2007 09:53:11 -0400
+Date: Mon, 7 May 2007 15:53:10 +0200
+From: Frank van Maarseveen <frankvm@frankvm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Frank van Maarseveen <frankvm@frankvm.com>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: JBD: ext2online wants too many credits (744 > 256)
+Message-ID: <20070507135309.GA32476@janus>
+References: <20070506222626.GA25632@janus> <20070506214014.8b7451ba.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20070503140911.GA21916@elte.hu>
-	 <4d47a5d10705070302k3f081074k89f0122cee7ae2e@mail.gmail.com>
+In-Reply-To: <20070506214014.8b7451ba.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+X-BotBait: val@frankvm.com, kuil@frankvm.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/7/07, Daniel Phillips <phillips@google.com> wrote:
-> Hi Ingo,
->
-> I just thought I would mention this, because it is certainly on my
-> mind.  I can't help
-> wondering if other folks are also concerned about this.  The thing is,
-> why don't you
-> just send your patches to Con who got this whole ball rolling and did a bunch of
-> great work, proving beyond any reasonable doubt that he is capable of
-> maintaining
-> this subsystem, whatever algorithm is finally adopted?  Are you worried that Con
-> might steal your thunder?  That somehow the scheduler is yours alone?  That you
-> might be perceived as less of a genius if somebody else gets credit
-> for their good
-> work?  NIH?
->
-> My perception is that you barged in to take over just when Con got things moving
-> after the scheduler sat and rotted for several years.  If that is in
-> any way accurate,
-> then shame on you.
+On Sun, May 06, 2007 at 09:40:14PM -0700, Andrew Morton wrote:
+> On Mon, 7 May 2007 00:26:26 +0200 Frank van Maarseveen <frankvm@frankvm.com> wrote:
+> 
+> > Steps to reproduce:
+> > Create a 3G partition, say /dev/vol1/project
+> > mke2fs -j -b 4096 /dev/vol1/project 22812
+> > mount it
+> > ext2online /dev/vol1/project said:
+> > 
+> > | ext2online v1.1.18 - 2001/03/18 for EXT2FS 0.5b
+> > | ext2online: ext2_ioctl: No space left on device
+> > | 
+> > | ext2online: unable to resize /dev/mapper/vol1-project
+> > 
+> > kernel said:
+> > 
+> > | JBD: ext2online wants too many credits (721 > 256)
 
-Daniel, I can't hold a candle to your abilities and I respect your
-talents and Linux contributions but what are your motives with this
-flame?
+There's a threshold for the problem depending on the initial
+size. This one fails:
 
-I think injecting such uninformed/speculative negativity is an awkward
-and misplaced distraction.  If you look at the archives there was a
-flurry of (sometimes heated) discussion between Con and Ingo.  They
-seemed to bury the hatchet and get back to critical discussion and
-analysis of CFS et al.
+	mke2fs -j -b 4096 /dev/<3GB-blockdev> 32768
+	(mount + ext2online or resize2fs)
+	kernel: JBD: resize2fs wants too many credits (1034 > 1024)
 
-Maybe I'm naive and/or missing something but Ingo doesn't seem to be
-the glory whore type.  He clearly has a strong interest in improving
-Linux and brings his unique abilities to bear on very complex Linux
-subsystems.  We should be grateful that he has elected to dedicate so
-much time to improving the CPU scheduler.  Ingo has injected new
-momentum and innovation, yes he leveraged Con's work.  But to be
-clear: he did so in an open forum and has engaged Con and the rest of
-LKML the entire time.
+Add one block to the initial mke2fs (32768+1 == 32769) and the
+problem is gone.
 
-Mike
+Without the -b 4096 there's another resize problem
+
+	mke2fs -j /dev/loop1 2048
+	mount /dev/loop1 /1
+	resize2fs /dev/loop1
+
+says:
+	resize2fs 1.40-WIP (14-Nov-2006)
+	Filesystem at /dev/loop1 is mounted on /1; on-line resizing required
+	old desc_blocks = 1, new_desc_blocks = 12
+	Performing an on-line resize of /dev/loop1 to 3072000 (1k) blocks.
+	resize2fs: Invalid argument While trying to add group #256
+
+and the kernel says:
+
+May  7 15:36:08 lokka EXT3-fs warning (device loop1): verify_reserved_gdb: 
+May  7 15:36:08 lokka reserved GDT 10 missing grp 1 (8202)
+May  7 15:36:08 lokka  
+
+After that, the filesystem has been resized to 2GB. I recall a 2G
+(?) limit for ext3 resizing with 1k blocksize but trying the above with
+4096 1k blocks seems to work. fsck says it's ok all the time.
+
+-- 
+Frank
