@@ -1,122 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967123AbXEGWfz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967135AbXEGWgI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967123AbXEGWfz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 18:35:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967076AbXEGWfv
+	id S967135AbXEGWgI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 18:36:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967128AbXEGWgF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 18:35:51 -0400
-Received: from ozlabs.org ([203.10.76.45]:56797 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966962AbXEGWfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 18:35:45 -0400
-Subject: Re: [patch 25/29] xen: Add the Xen virtual network device driver.
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-In-Reply-To: <463F9608.40803@goop.org>
-References: <20070504232051.411946839@goop.org>
-	 <20070504232121.492190579@goop.org> <20070505091624.GA8890@infradead.org>
-	 <463F9608.40803@goop.org>
-Content-Type: text/plain
-Date: Tue, 08 May 2007 08:35:22 +1000
-Message-Id: <1178577322.28438.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 May 2007 18:36:05 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:41403 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S967129AbXEGWgE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 18:36:04 -0400
+Date: Tue, 8 May 2007 00:36:04 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: kconfig: error out if recursive dependencies are found
+Message-ID: <20070507223604.GC4226@stusta.de>
+References: <20070502201741.GD9044@uranus.ravnborg.org> <20070506073615.GA6492@uranus.ravnborg.org> <20070506074038.GB6492@uranus.ravnborg.org> <Pine.LNX.4.64.0705070221500.1479@scrub.home> <20070507193707.GA19985@uranus.ravnborg.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070507193707.GA19985@uranus.ravnborg.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-07 at 14:11 -0700, Jeremy Fitzhardinge wrote:
-> Christoph Hellwig wrote:
-> > On Fri, May 04, 2007 at 04:21:16PM -0700, Jeremy Fitzhardinge wrote:
-> >   
-> >> +/*
-> >> + * Mutually-exclusive module options to select receive data path:
-> >> + *  rx_copy : Packets are copied by network backend into local memory
-> >> + *  rx_flip : Page containing packet data is transferred to our ownership
-> >> + * For fully-virtualised guests there is no option - copying must be used.
-> >> + * For paravirtualised guests, flipping is the default.
-> >> + */
-> >> +static enum {
-> >> +	RX_COPY = 0,
-> >> +	RX_FLIP = 1,
-> >> +} rx_mode = RX_FLIP;
-> >> +MODULE_PARM_DESC(rx_mode, "How to get packets from card: 0->copy, 1->flip");
-> >>     
-> >
-> > There only seems to be a module description but no actual paramter for
-> > this.  I wish people would have listened to me back then and made the
-> > description part of the modular_param statement..
+On Mon, May 07, 2007 at 09:37:07PM +0200, Sam Ravnborg wrote:
+> On Mon, May 07, 2007 at 02:38:36AM +0200, Roman Zippel wrote:
+> > Hi,
+> > 
+> > On Sun, 6 May 2007, Sam Ravnborg wrote:
+> > 
+> > >  	if (sym->flags & SYMBOL_CHECK) {
+> > > -		printf("Warning! Found recursive dependency: %s", sym->name);
+> > > +		fprintf(stderr, "%s:%d:error: found recursive dependency: %s",
+> > > +		        sym->prop->file->name, sym->prop->lineno, sym->name);
+> > >  		return sym;
+> > >  	}
+> > 
+> > If it were that simple to print the location, I had done it already. :)
+> > Try this:
+> > 
+> > config FOO
+> >         bool
+> >         select BAR
+> >         depends on BAR
+> > 
+> > config BAR
+> >         bool
+> > 
+> > I looked into this before, for simple properties one could just remember 
+> > the last checked property via a static variable. The problem are the 
+> > selects which are checked before that loop, here the information from 
+> > where they were selected is not available anymore (at least not easily).
 > 
-> Is this correct?
+> We need to point out _one_ of the faulty spots only.
+> But I see that kconfig records file:line for properties and menu entries
+> but not for symbols.
+> Any special reason why file:line is omitted for symbols (except size of allocated
+> memory)?
 > 
-> ---
->  drivers/net/xen-netfront.c |   32 ++++++++++++++++++++++++++++----
->  1 file changed, 28 insertions(+), 4 deletions(-)
-> 
-> ===================================================================
-> --- a/drivers/net/xen-netfront.c
-> +++ b/drivers/net/xen-netfront.c
-> @@ -62,16 +62,40 @@ struct netfront_cb {
->  
->  /*
->   * Mutually-exclusive module options to select receive data path:
-> - *  rx_copy : Packets are copied by network backend into local memory
-> - *  rx_flip : Page containing packet data is transferred to our ownership
-> + *  copy : Packets are copied by network backend into local memory
-> + *  flip : Page containing packet data is transferred to our ownership
->   * For fully-virtualised guests there is no option - copying must be used.
->   * For paravirtualised guests, flipping is the default.
->   */
-> -static enum {
-> +static enum rx_mode {
->  	RX_COPY = 0,
->  	RX_FLIP = 1,
->  } rx_mode = RX_FLIP;
-> -MODULE_PARM_DESC(rx_mode, "How to get packets from card: 0->copy, 1->flip");
-> +MODULE_PARM_DESC(rx_mode, "How to get packets from card: \"copy\" or \"flip\"");
-> +
-> +static int set_rx_mode(const char *val, struct kernel_param *kp)
-> +{
-> +	enum rx_mode *rxmp = kp->arg;
-> +	int ret = 0;
-> +
-> +	if (strcmp(val, "copy") == 0)
-> +		*rxmp = RX_COPY;
-> +	else if (strcmp(val, "flip") == 0)
-> +		*rxmp = RX_FLIP;
-> +	else
-> +		ret = -EINVAL;
-> +
-> +	return ret;
-> +}
-> +
-> +static int get_rx_mode(char *buffer, struct kernel_param *kp)
-> +{
-> +	enum rx_mode *rxmp = kp->arg;
-> +
-> +	return sprintf(buffer, "%s", *rxmp == RX_COPY ? "copy" : "flip");
-> +}
-> +
-> +module_param_call(rx_mode, set_rx_mode, get_rx_mode, &rx_mode, 0400);
+> Without looking into details it looks more relevant to have file:line for symbols
+> rather than for prompts / properties..
 
-Looks good, you can slightly improve it to be the model use of new
-module_param types by calling your functions param_set_rx_mode and
-param_get_rx_mode, then simply using "module_param(rx_mode, rx_mode,
-0400)"
+I'm not getting what problem you are trying to solve.
 
-Cheers,
-Rusty.
+Kconfig has always printed all symbols in the dependency circle, and 
+with this information it was never a problem to locate what went wrong.
 
+The only thing that was missing was that the error often wasn't detected 
+since it scroled away, so we need to error out.
 
->  
->  #define RX_COPY_THRESHOLD 256
->  
+I have no problem with more information being printed, but at least for 
+me it isn't required since grep'ing for it is trivial.
+
+> 	Sam
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
