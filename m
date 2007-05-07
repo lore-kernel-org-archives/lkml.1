@@ -1,135 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750893AbXEGEFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752573AbXEGETV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750893AbXEGEFo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 00:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752159AbXEGEFo
+	id S1752573AbXEGETV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 00:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbXEGETV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 00:05:44 -0400
-Received: from sccrmhc12.comcast.net ([63.240.77.82]:51597 "EHLO
-	sccrmhc12.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbXEGEFn (ORCPT
+	Mon, 7 May 2007 00:19:21 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:16447 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752573AbXEGETU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 00:05:43 -0400
-X-Greylist: delayed 301 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 May 2007 00:05:43 EDT
-Subject: [PATCH] relay: use plain timer instead of delayed work
-From: Tom Zanussi <zanussi@comcast.net>
-To: akpm@linux-foundation.org
-Cc: oleg@tv-sign.ru, satyam.sharma@gmail.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Sun, 06 May 2007 22:35:50 -0500
-Message-Id: <1178508950.4534.10.camel@ubuntu>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 7 May 2007 00:19:20 -0400
+X-IronPort-AV: i="4.14,500,1170662400"; 
+   d="scan'208"; a="145263769:sNHT48829221"
+To: torvalds@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, general@lists.openfabrics.org
+Subject: [GIT PULL] please pull infiniband.git
+X-Message-Flag: Warning: May contain useful information
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sun, 06 May 2007 21:19:18 -0700
+Message-ID: <adaps5d6zax.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 07 May 2007 04:19:18.0932 (UTC) FILETIME=[E1951D40:01C7905E]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch updated to include changes suggested by Oleg Nesterov and Satyam
-Sharma.
+Linus, please pull from
 
----
+    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
-relay doesn't need to use schedule_delayed_work() for waking readers
-when a simple timer will do.
+This tree is also available from kernel.org mirrors at:
 
-Signed-off-by: Tom Zanussi <zanussi@comcast.net>
----
+    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
 
- include/linux/relay.h |    3 ++-
- kernel/relay.c        |   35 ++++++++++++++++-------------------
- 2 files changed, 18 insertions(+), 20 deletions(-)
+This is the second batch of merges for 2.6.22 -- mostly fixes, but
+also the conversion of IPoIB to use NAPI:
 
-diff --git a/include/linux/relay.h b/include/linux/relay.h
-index 759a0f9..6cd8c44 100644
---- a/include/linux/relay.h
-+++ b/include/linux/relay.h
-@@ -12,6 +12,7 @@
- 
- #include <linux/types.h>
- #include <linux/sched.h>
-+#include <linux/timer.h>
- #include <linux/wait.h>
- #include <linux/list.h>
- #include <linux/fs.h>
-@@ -38,7 +39,7 @@ struct rchan_buf
- 	size_t subbufs_consumed;	/* count of sub-buffers consumed */
- 	struct rchan *chan;		/* associated channel */
- 	wait_queue_head_t read_wait;	/* reader wait queue */
--	struct delayed_work wake_readers; /* reader wake-up work struct */
-+	struct timer_list timer; 	/* reader wake-up timer */
- 	struct dentry *dentry;		/* channel file dentry */
- 	struct kref kref;		/* channel buffer refcount */
- 	struct page **page_array;	/* array of current buffer pages */
-diff --git a/kernel/relay.c b/kernel/relay.c
-index 577f251..e804589 100644
---- a/kernel/relay.c
-+++ b/kernel/relay.c
-@@ -310,16 +310,13 @@ static struct rchan_callbacks default_channel_callbacks = {
- 
- /**
-  *	wakeup_readers - wake up readers waiting on a channel
-- *	@work: work struct that contains the the channel buffer
-+ *	@data: contains the the channel buffer
-  *
-- *	This is the work function used to defer reader waking.  The
-- *	reason waking is deferred is that calling directly from write
-- *	causes problems if you're writing from say the scheduler.
-+ *	This is the timer function used to defer reader waking.
-  */
--static void wakeup_readers(struct work_struct *work)
-+static void wakeup_readers(unsigned long data)
- {
--	struct rchan_buf *buf =
--		container_of(work, struct rchan_buf, wake_readers.work);
-+	struct rchan_buf *buf = (struct rchan_buf *)data;
- 	wake_up_interruptible(&buf->read_wait);
- }
- 
-@@ -337,11 +334,9 @@ static void __relay_reset(struct rchan_buf *buf, unsigned int init)
- 	if (init) {
- 		init_waitqueue_head(&buf->read_wait);
- 		kref_init(&buf->kref);
--		INIT_DELAYED_WORK(&buf->wake_readers, NULL);
--	} else {
--		cancel_delayed_work(&buf->wake_readers);
--		flush_scheduled_work();
--	}
-+		setup_timer(&buf->timer, wakeup_readers, (unsigned long)buf);
-+	} else
-+		del_timer_sync(&buf->timer);
- 
- 	buf->subbufs_produced = 0;
- 	buf->subbufs_consumed = 0;
-@@ -447,8 +442,7 @@ end:
- static void relay_close_buf(struct rchan_buf *buf)
- {
- 	buf->finalized = 1;
--	cancel_delayed_work(&buf->wake_readers);
--	flush_scheduled_work();
-+	del_timer_sync(&buf->timer);
- 	kref_put(&buf->kref, relay_remove_buf);
- }
- 
-@@ -608,11 +602,14 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
- 		buf->dentry->d_inode->i_size += buf->chan->subbuf_size -
- 			buf->padding[old_subbuf];
- 		smp_mb();
--		if (waitqueue_active(&buf->read_wait)) {
--			PREPARE_DELAYED_WORK(&buf->wake_readers,
--					     wakeup_readers);
--			schedule_delayed_work(&buf->wake_readers, 1);
--		}
-+		if (waitqueue_active(&buf->read_wait))
-+			/*
-+			 * Calling wake_up_interruptible() from here
-+			 * will deadlock if we happen to be logging
-+			 * from the scheduler (trying to re-grab
-+			 * rq->lock), so defer it.
-+			 */
-+			__mod_timer(&buf->timer, jiffies + 1);
- 	}
- 
- 	old = buf->data;
+Ishai Rabinovitz (1):
+      IB/srp: Add orig_dgid sysfs attribute to scsi_host
 
+Michael S. Tsirkin (4):
+      IB/mthca: Work around kernel QP starvation
+      IPoIB/cm: Fix error handling in ipoib_cm_dev_open()
+      IPoIB/cm: Don't crash if remote side uses one QP for both directions
+      IB: Add CQ comp_vector support
 
+Ralph Campbell (4):
+      IB/ipath: Don't call spin_lock_irq() from interrupt context
+      IB/ipath: Don't put QP in timeout queue if waiting to send
+      IB/ipath: Fix two more spin lock problems
+      IB/ipath: Fix a race condition when generating ACKs
 
+Robert Walsh (1):
+      IB/ipath: Don't corrupt pending mmap list when unmapped objects are freed
+
+Roland Dreier (4):
+      IB/srp: Set proc_name
+      IB/fmr_pool: Add prefix to all printks
+      IB: Return "maybe missed event" hint from ib_req_notify_cq()
+      IPoIB: Convert to NAPI
+
+Steve Wise (4):
+      RDMA/cxgb3: Fix TERM codes
+      RDMA/cxgb3: Fail qp creation if the requested max_inline is too large
+      RDMA/cxgb3: Initialize cpu_idx field in cpl_close_listserv_req message
+      RDMA/cxgb3: Support for new abort logic
+
+ drivers/infiniband/core/fmr_pool.c           |   32 +++++----
+ drivers/infiniband/core/mad.c                |    2 +-
+ drivers/infiniband/core/uverbs_cmd.c         |    1 +
+ drivers/infiniband/core/uverbs_main.c        |    2 +-
+ drivers/infiniband/core/verbs.c              |    4 +-
+ drivers/infiniband/hw/amso1100/c2.h          |    2 +-
+ drivers/infiniband/hw/amso1100/c2_cq.c       |   16 ++++-
+ drivers/infiniband/hw/amso1100/c2_provider.c |    3 +-
+ drivers/infiniband/hw/cxgb3/cxio_hal.c       |    3 +
+ drivers/infiniband/hw/cxgb3/cxio_wr.h        |    1 +
+ drivers/infiniband/hw/cxgb3/iwch_cm.c        |   19 ++++++
+ drivers/infiniband/hw/cxgb3/iwch_cm.h        |    6 ++
+ drivers/infiniband/hw/cxgb3/iwch_provider.c  |   14 +++-
+ drivers/infiniband/hw/cxgb3/iwch_qp.c        |   69 +++++++++++---------
+ drivers/infiniband/hw/ehca/ehca_cq.c         |    2 +-
+ drivers/infiniband/hw/ehca/ehca_iverbs.h     |    4 +-
+ drivers/infiniband/hw/ehca/ehca_main.c       |    3 +-
+ drivers/infiniband/hw/ehca/ehca_reqs.c       |   14 +++-
+ drivers/infiniband/hw/ehca/ipz_pt_fn.h       |    8 ++
+ drivers/infiniband/hw/ipath/ipath_cq.c       |   68 ++++++++++----------
+ drivers/infiniband/hw/ipath/ipath_mmap.c     |   64 +++++++++++++++++--
+ drivers/infiniband/hw/ipath/ipath_qp.c       |   52 +++++++++------
+ drivers/infiniband/hw/ipath/ipath_rc.c       |   55 ++++++++--------
+ drivers/infiniband/hw/ipath/ipath_srq.c      |   55 ++++++++--------
+ drivers/infiniband/hw/ipath/ipath_verbs.c    |    4 +
+ drivers/infiniband/hw/ipath/ipath_verbs.h    |   24 +++++--
+ drivers/infiniband/hw/mthca/mthca_cq.c       |   12 ++--
+ drivers/infiniband/hw/mthca/mthca_dev.h      |    4 +-
+ drivers/infiniband/hw/mthca/mthca_provider.c |    2 +
+ drivers/infiniband/hw/mthca/mthca_qp.c       |   13 ++++
+ drivers/infiniband/ulp/ipoib/ipoib.h         |    1 +
+ drivers/infiniband/ulp/ipoib/ipoib_cm.c      |   14 +++--
+ drivers/infiniband/ulp/ipoib/ipoib_ib.c      |   89 ++++++++++++++++++++------
+ drivers/infiniband/ulp/ipoib/ipoib_main.c    |    2 +
+ drivers/infiniband/ulp/ipoib/ipoib_verbs.c   |    2 +-
+ drivers/infiniband/ulp/iser/iser_verbs.c     |    2 +-
+ drivers/infiniband/ulp/srp/ib_srp.c          |   27 +++++++-
+ drivers/infiniband/ulp/srp/ib_srp.h          |    1 +
+ drivers/net/cxgb3/version.h                  |    4 +-
+ include/rdma/ib_verbs.h                      |   47 +++++++++++---
+ 40 files changed, 508 insertions(+), 239 deletions(-)
