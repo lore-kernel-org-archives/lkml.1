@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934247AbXEGPKI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934294AbXEGPKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934247AbXEGPKI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 11:10:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934132AbXEGPKE
+	id S934294AbXEGPKm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 11:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934280AbXEGPKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 11:10:04 -0400
-Received: from mail.pxnet.com ([195.227.45.3]:45260 "EHLO lx1.pxnet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934084AbXEGPKD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 11:10:03 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 May 2007 11:10:03 EDT
-Date: Mon, 7 May 2007 17:03:12 +0200
-Message-Id: <200705071503.l47F3C1q015269@lx1.pxnet.com>
-From: Tilman Schmidt <tilman@imap.cc>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Hansjoerg Lipp <hjlipp@web.de>
-Subject: [PATCH] usb_gigaset: don't kmalloc(0)
+	Mon, 7 May 2007 11:10:38 -0400
+Received: from www.osadl.org ([213.239.205.134]:54177 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934272AbXEGPKh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 11:10:37 -0400
+Subject: Re: [PATCH] x86-64 highres/dyntick support
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Mats Johannesson <spamcan@bredband.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070507140747.2c68d7c9@loke.fish.not>
+References: <20070507140747.2c68d7c9@loke.fish.not>
+Content-Type: text/plain
+Date: Mon, 07 May 2007 17:13:21 +0200
+Message-Id: <1178550801.3042.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tilman Schmidt <tilman@imap.cc>
+On Mon, 2007-05-07 at 14:07 +0200, Mats Johannesson wrote:
+> This AMD 64 Mobile processor only has a C1 level which isn't used:
+> 
+> root@sleipner:~# cat /proc/acpi/processor/CPU0/power
+> active state:            C1
+> max_cstate:              C8
+> bus master activity:     00000000
+> maximum allowed latency: 2000 usec
+> states:
+>    *C1:                  type[C1] promotion[--] demotion[--]
+> latency[000] usage[00000000] duration[00000000000000000000]
+> 
+> But shouldn't the the kernel 'hlt' routine, or whatever it's called,
+> work in conjunction with dyntick to achieve... something...?
 
-Zero-sized allocations are pointless anyway, and the SLUB allocator
-complains about them, so stop doing that.
+To make real power savings from dynticks you need deeper power states in
+the CPU. Dyntick can give the idle state code an idea how long the sleep
+is going to be, so this code can decide to go into deeper power states
+in one go rather than stepping down over time. On a CPU which has no
+deeper C states the power saving of dynticks is probably not even
+measurable,
 
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
-Signed-off-by: Hansjoerg Lipp <hjlipp@web.de>
+	tglx
 
----
 
---- a/drivers/isdn/gigaset/usb-gigaset.c	2007-05-07 10:08:41.000000000 +0200
-+++ b/drivers/isdn/gigaset/usb-gigaset.c	2007-05-07 12:01:48.000000000 +0200
-@@ -138,8 +138,6 @@ struct usb_cardstate {
- 	char			bchars[6];		/* for request 0x19 */
- };
- 
--struct usb_bc_state {};
--
- static inline unsigned tiocm_to_gigaset(unsigned state)
- {
- 	return ((state & TIOCM_DTR) ? 1 : 0) | ((state & TIOCM_RTS) ? 2 : 0);
-@@ -579,25 +577,21 @@ static int gigaset_brkchars(struct cards
- 
- static int gigaset_freebcshw(struct bc_state *bcs)
- {
--	if (!bcs->hw.usb)
--		return 0;
--	//FIXME
--	kfree(bcs->hw.usb);
-+	/* unused */
- 	return 1;
- }
- 
- /* Initialize the b-channel structure */
- static int gigaset_initbcshw(struct bc_state *bcs)
- {
--	bcs->hw.usb = kmalloc(sizeof(struct usb_bc_state), GFP_KERNEL);
--	if (!bcs->hw.usb)
--		return 0;
--
-+	/* unused */
-+	bcs->hw.usb = NULL;
- 	return 1;
- }
- 
- static void gigaset_reinitbcshw(struct bc_state *bcs)
- {
-+	/* nothing to do for M10x */
- }
- 
- static void gigaset_freecshw(struct cardstate *cs)
-
--- 
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-- Undetected errors are handled as if no error occurred. (IBM) -
