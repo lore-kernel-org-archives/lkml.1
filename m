@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754983AbXEGT5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755002AbXEGT7K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754983AbXEGT5a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 15:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754965AbXEGT5Z
+	id S1755002AbXEGT7K (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:59:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbXEGT7E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 15:57:25 -0400
-Received: from khc.piap.pl ([195.187.100.11]:58957 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754845AbXEGT5Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 15:57:24 -0400
-To: Michael-Luke Jones <mlj28@cam.ac.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH 3/3] Intel IXP4xx network drivers
-References: <m3abwhcy74.fsf@maximus.localdomain>
-	<m3vef5biob.fsf@maximus.localdomain>
-	<5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>
-	<m3hcqoa772.fsf@maximus.localdomain>
-	<86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 07 May 2007 21:57:21 +0200
-In-Reply-To: <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk> (Michael-Luke Jones's message of "Mon, 7 May 2007 19:14:53 +0100")
-Message-ID: <m33b289zku.fsf@maximus.localdomain>
+	Mon, 7 May 2007 15:59:04 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:55662
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754754AbXEGT7D (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 15:59:03 -0400
+Date: Mon, 7 May 2007 12:55:56 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Pavel Machek <pavel@ucw.cz>
+cc: Oliver Neukum <oneukum@suse.de>,
+       David Lang <david.lang@digitalinsight.com>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <20070507195142.GC3981@ucw.cz>
+Message-ID: <Pine.LNX.4.64.0705071250460.21621@asgard.lang.hm>
+References: <1177567481.5025.211.camel@nigel.suspend2.net>
+ <Pine.LNX.4.63.0705061909290.19118@qynat.qvtvafvgr.pbz> <20070507124818.GA18209@elf.ucw.cz>
+ <200705071452.21969.oneukum@suse.de> <Pine.LNX.4.64.0705070736010.18013@asgard.lang.hm>
+ <20070507195142.GC3981@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Having thought about it a bit more, a layout similar to the one
-proposed by you may make sense.
+On Mon, 7 May 2007, Pavel Machek wrote:
 
-Michael-Luke Jones <mlj28@cam.ac.uk> writes:
+>>>> Really? It works today... if the suspend is short
+>>>> enough. And that's
+>>>> how it should be.
+>>>
+>>> If we get very good at Wake-on-Lan it should work for
+>>> any length
+>>> of time.
+>>
+>> for suspend-to-ram this would work, I stand corrected.
+>>
+>> for hibernate this would almost certinly not work, and I
+>> don't think that it's worth raising false hopes.
+>
+> Check the facts. It used to work, and it should work today.
 
-> Despite their name, Network Processing Engines are independent
-> coprocessors which are only coincidentally attached to MACs for
-> ethernet / WAN purposes. If Intel would allow us to compile code for
-> these coprocessors, we could get them to do lots of things other than
-> networking.
+I don't dispute that it sometimes works today.
 
-Not sure about that. Intel doesn't say much about it, but I think
-one can safely assume that while NPEs can probably be programmed
-to do other things, their performance comes not from NPE firmware
-but from specialized network coprocessors (not NPEs) which can only
-do (in hardware) things like Ethernet, HDLC, bit sync, CRC16/32,
-and MD5/SHA-1/DES/AES.
+what I dispute is that makeing it work should be a contraint on a cleaner 
+design that happens to cause tcp connections to fail on suspend-to-disk 
+(hibernate).
 
-I think you can even use MD5 and SHA-1 without any firmware (but
-would have to check this info).
+if you are dong suspend-to-disk for such a short period that TCP 
+connections are able to recover (typically <15 min for most firewalls, in 
+some cases <2 min for connections with keep-alive) is it really worth it?
 
-Note that while certain CPUs have the same set of NPEs, they are
-missing some network coprocessors and can't do, for example, crypto.
+and once you pass the timeframes where the connections are still alive 
+then it shouldn't matter, and in fact the server should gracefully close 
+the connections to be nice to other devices and servers on the network.
 
-OTOH, yes, they are not, strictly speaking, only network processors.
+I dispute the idea that doing a suspend-to-disk and expecting that your 
+network connections will recover when you wake up is a sane expectation.
 
-> Crypto is not networking, and if the
-> kernel gains ixp4xx crypto support, that should be possible to enable
-> independently of networking.
-
-Yep. Unfortunately I don't know in-kernel crypto code.
-
-> They can also function as DMA engines,
-> which should also be independent of networking functionality.
-
-That's what the docs say. Not sure about real-life purpose of
-such DMA engine, though.
-
-> So, the NPE driver (which is basically ixp4xx specific) should be,
-> for practical purposes, networking-code agnostic. As it is a lump of
-> code talking to an architecture specific piece of hardware, it should
-> live in arch/arm/ rather than arch-independent drivers/
-
-Well, I'm told that (compatible) NPEs are present on other IXP CPUs.
-Not sure about details.
-
-> As I understand it, functions to talk to the NPE should appear in the
-> NPE driver. The NPE driver should then be called by ethernet/wan/
-> crypto/dma(?) drivers to carry out the specific firmware-dependent
-> tasks.
-
-Actually, the NPE code does two things:
-a) initialized NPEs and downloades the firmware
-b) exchanges control messages with NPEs.
--- 
-Krzysztof Halasa
+David Lang
