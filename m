@@ -1,215 +1,520 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755214AbXEGW6p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966914AbXEGXBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755214AbXEGW6p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 18:58:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966607AbXEGW6m
+	id S966914AbXEGXBM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 19:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbXEGXBI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 18:58:42 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:60543 "EHLO proxima.lp0.eu"
+	Mon, 7 May 2007 19:01:08 -0400
+Received: from mga09.intel.com ([134.134.136.24]:17602 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755177AbXEGW6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 18:58:41 -0400
-Message-ID: <463FAF1C.8060500@simon.arlott.org.uk>
-Date: Mon, 07 May 2007 23:58:36 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andrew Morton <akpm@linux-foundation.org>
-Subject: sleeping function called from invalid context at block/cfq-iosched.c
- (Was: Re: 2.6.21-mm1)
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>	<463E3C50.9080207@simon.arlott.org.uk> <20070506135403.a6785f7d.akpm@linux-foundation.org>
-In-Reply-To: <20070506135403.a6785f7d.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1754142AbXEGXBH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 19:01:07 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,502,1170662400"; 
+   d="scan'208";a="84738975"
+Date: Mon, 7 May 2007 15:58:41 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: akpm@linux-foundation.org, suresh.b.siddha@intel.com,
+       linux-kernel@vger.kernel.org, clameter@sgi.com
+Cc: fenghua.yu@intel.com
+Subject: Re: [PATCH 1/2] Define percpu smp cacheline align interface
+Message-ID: <20070507225841.GA13872@linux-os.sc.intel.com>
+References: <33E1C72C74DBE747B7B59C1740F7443701A2F0AB@orsmsx417.amr.corp.intel.com> <20070505001218.GA27093@linux-os.sc.intel.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070505001218.GA27093@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 06/05/07 21:54, Andrew Morton wrote:
-> On Sun, 06 May 2007 21:36:32 +0100 Simon Arlott <simon@fire.lp0.eu> wrote:
+On Fri, May 04, 2007 at 05:12:18PM -0700, Fenghua Yu wrote:
 > 
->> On 05/05/07 09:49, Andrew Morton wrote:
->>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
->> Not sure exactly what's going on here, but it happened with a lock held on my 
->> (XFS) filesystem while compiling part of the kernel because I can't do anything 
->> with it now.
->>
->> [ 1128.122000] BUG: sleeping function called from invalid context at block/cfq-iosched.c:1895
->> [ 1128.122000] in_atomic():1, irqs_disabled():0
->> [ 1128.122000] INFO: lockdep is turned off.
->> [ 1128.122000] BUG: unable to handle kernel paging request at virtual address 8b0c4034
->> [ 1128.122000]  printing eip:
->> [ 1128.122000] b0104e36
->> [ 1128.123000] *pde = 00000000
->> [ 1128.123000] Oops: 0000 [#1]
->> [ 1128.123000] PREEMPT
->> [ 1128.123000] Modules linked in: drbd mt352 saa7134_dvb dvb_pll video_buf_dvb dvb_core
->> [ 1128.123000] CPU:    0
->> [ 1128.123000] EIP:    0060:[<b0104e36>]    Not tainted VLI
->> [ 1128.123000] EFLAGS: 00010246   (2.6.21-git #195)
->> [ 1128.123000] EIP is at dump_trace+0x66/0xb0
->> [ 1128.123000] eax: 00000000   ebx: b18f6fd0   ecx: b06323ec   edx: b05afc71
->> [ 1128.123000] esi: 8b0c4000   edi: 8b0c4ffd   ebp: b18f6fd0   esp: b18f6fb8
->> [ 1128.123000] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
->> [ 1128.123000] Process pdflush (pid: 186, ti=b18f6000 task=eff88b10 task.ti=b18f7000)
->> [ 1128.123000] Stack: b000205d 00000000 fffffffc b05b9937 efd1adb4 00000010 b18f6ff0 b0104f3a
->> [ 1128.123000]        b06323ec b05b9937 00000000 b05d33e6 efd1adb4 b05d33e6 b18f7000 b0104f62
->> [ 1128.123000]        b05b9937 b18f700c
->> [ 1128.123000] Call Trace:
->> [ 1128.123000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
->> [ 1128.123000]  [<b0104ffb>] show_stack_log_lvl+0x8b/0xb0
->> [ 1128.123000]  [<b0105243>] show_registers+0x1c3/0x320
->> [ 1128.123000]  [<b0105525>] die+0x105/0x230
->> [ 1128.123000]  [<b011703f>] do_page_fault+0x2cf/0x5b0
->> [ 1128.123000]  [<b04eae3a>] error_code+0x6a/0x70
->> [ 1128.123000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
->> [ 1128.123000]  [<b0104f62>] show_trace+0x12/0x20
->> [ 1128.123000]  =======================
->> [ 1128.123000] Code: 18 8b 4d 08 8b 45 0c 8b 53 04 ff 51 08 8b 03 39 d8 76 06 89 c3 39 f3 77 e4 8b 4d 08 ba 71 fc 5a b0 8b 45 0c ff 51 0c 85 c0 78 38 <8b> 76 34 85 f6 74 31 8d 76 00 e8 bb d7 00 00 eb b3 89 eb eb af
->> [ 1128.123000] EIP: [<b0104e36>] dump_trace+0x66/0xb0 SS:ESP 0068:b18f6fb8
-> 
-> Mess.  Someone incorrectly called the IO scheduler under a spinlock (or
-> similar), CFQ tried to do a dump_stack(), but the dump_stack() code
-> exploded.  Usually this happens when the x86_64 tree contains stacktrace
-> improvements, but the unwinder (at least) wasn't present in -mm1.
-> 
-> How come those addresses are 0xb0......, btw?  You're running a different
-> vm split?
+> Define percpu smp cacheline align interface
 
-I've just got this under mainline too now (0ec54aa8af5e6faa346aa55a1ad15ee6c25bb42d 2007-05-05 22:08:06):
+This is updated patch. Per cpu cacheline aligned data section name and macro name are changed to have better code understanding.
 
-[84567.084000] BUG: scheduling while atomic: pdflush/0xeff84acf/186
-[84567.084000] INFO: lockdep is turned off.
-[84567.084000] do_IRQ: stack overflow: 440
-[84567.084000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
-[84567.084000]  [<b0104f62>] show_trace+0x12/0x20
-[84567.084000]  [<b0105075>] dump_stack+0x15/0x20
-[84567.084000]  [<b01069a8>] do_IRQ+0xd8/0xe0
-[84567.084000]  [<b0104bd6>] common_interrupt+0x2e/0x34
-[84567.084000]  [<b0120a28>] printk+0x18/0x20
-[84567.084000]  [<b0140b33>] debug_show_held_locks+0x23/0x30
-[84567.084000]  [<b04e7fea>] schedule+0x52a/0x680
-[84567.084000]  [<b04e8a0a>] schedule_timeout+0x8a/0x90
-[84567.084000]  [<b026c61e>] xlog_state_sync+0x21e/0x260
-[84567.084000]  [<b0269274>] _xfs_log_force+0x44/0x70
-[84567.084000]  [<b022dd22>] xfs_alloc_search_busy+0xd2/0xe0
-[84567.084000]  [<b022d1e6>] xfs_alloc_get_freelist+0xe6/0x100
-[84567.084000]  [<b022fb7f>] xfs_alloc_split+0x1f/0x4c0
-[84567.084000]  [<b022ec3d>] xfs_alloc_insrec+0x35d/0x3b0
-[84567.084000]  [<b02304f9>] xfs_alloc_insert+0x59/0xd0
-[84567.084000]  [<b022c847>] xfs_free_ag_extent+0x297/0x640
-[84567.084000]  [<b022ce11>] xfs_alloc_fix_freelist+0x1d1/0x4c0
-[84567.084000]  [<b022d73b>] xfs_alloc_vextent+0x1eb/0x4b0
-[84567.084000]  [<b023d4bb>] xfs_bmap_btalloc+0x3bb/0x8f0
-[84567.084000]  [<b023da11>] xfs_bmap_alloc+0x21/0x40
-[84567.084000]  [<b02411bf>] xfs_bmapi+0xdbf/0x1450
-[84567.084000]  [<b0266b4a>] xfs_iomap_write_allocate+0x2ba/0x520
-[84567.084000]  [<b026587b>] xfs_iomap+0x45b/0x470
-[84567.084000]  [<b028d85c>] xfs_bmap+0x2c/0x40
-[84567.084000]  [<b0284a0c>] xfs_map_blocks+0x3c/0x80
-[84567.084000]  [<b0285953>] xfs_page_state_convert+0x2f3/0x670
-[84567.084000]  [<b0285d2a>] xfs_vm_writepage+0x5a/0xf0
-[84567.084000]  [<b01539a6>] generic_writepages+0x226/0x360
-[84567.084000]  [<b0285de4>] xfs_vm_writepages+0x24/0x60
-[84567.084000]  [<b0153b0c>] do_writepages+0x2c/0x50
-[84567.084000]  [<b01887d9>] __sync_single_inode+0x59/0x1f0
-[84567.084000]  [<b01889b4>] __writeback_single_inode+0x44/0x1d0
-[84567.084000]  [<b0188d09>] sync_sb_inodes+0x1c9/0x2e0
-[84567.084000]  [<b0188eee>] writeback_inodes+0xce/0xe0
-[84567.084000]  [<b01535c3>] wb_kupdate+0x73/0xf0
-[84567.084000]  [<b015419e>] __pdflush+0xce/0x1a0
-[84567.084000]  [<b0154295>] pdflush+0x25/0x30
-[84567.084000]  [<b01342b4>] kthread+0x94/0xd0
-[84567.084000]  [<b0104d7b>] kernel_thread_helper+0x7/0x1c
-[84567.084000]  =======================
-[84567.087000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
-[84567.087000]  [<b0104f62>] do_IRQ: stack overflow: 328
-[84567.087000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
-[84567.087000]  [<b0104f62>] show_trace+0x12/0x20
-[84567.087000]  [<b0105075>] dump_stack+0x15/0x20
-[84567.087000]  [<b01069a8>] do_IRQ+0xd8/0xe0
-[84567.087000]  [<b0104bd6>] common_interrupt+0x2e/0x34
-[84567.087000]  [<b0120a28>] printk+0x18/0x20
-[84567.087000]  [<b0104f0d>] print_trace_address+0x1d/0x30
-[84567.087000]  [<b0104e18>] dump_trace+0x48/0xb0
-[84567.087000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
-[84567.087000]  [<b0104f62>] show_trace+0x12/0x20
-[84567.087000]  [<b0105075>] dump_stack+0x15/0x20
-[84567.087000]  [<b04e7ffa>] schedule+0x53a/0x680
-[84567.087000]  [<b04e8a0a>] schedule_timeout+0x8a/0x90
-[84567.087000]  [<b026c61e>] xlog_state_sync+0x21e/0x260
-[84567.087000]  [<b0269274>] _xfs_log_force+0x44/0x70
-[84567.087000]  [<b022dd22>] xfs_alloc_search_busy+0xd2/0xe0
-[84567.087000]  [<b022d1e6>] xfs_alloc_get_freelist+0xe6/0x100
-[84567.087000]  [<b022fb7f>] xfs_alloc_split+0x1f/0x4c0
-[84567.087000]  [<b022ec3d>] xfs_alloc_insrec+0x35d/0x3b0
-[84567.087000]  [<b02304f9>] xfs_alloc_insert+0x59/0xd0
-[84567.087000]  [<b022c847>] xfs_free_ag_extent+0x297/0x640
-[84567.087000]  [<b022ce11>] xfs_alloc_fix_freelist+0x1d1/0x4c0
-[84567.087000]  [<b022d73b>] xfs_alloc_vextent+0x1eb/0x4b0
-[84567.087000]  [<b023d4bb>] xfs_bmap_btalloc+0x3bb/0x8f0
-[84567.087000]  [<b023da11>] xfs_bmap_alloc+0x21/0x40
-[84567.087000]  [<b02411bf>] xfs_bmapi+0xdbf/0x1450
-[84567.087000]  [<b0266b4a>] xfs_iomap_write_allocate+0x2ba/0x520
-[84567.087000]  [<b026587b>] xfs_iomap+0x45b/0x470
-[84567.087000]  [<b028d85c>] xfs_bmap+0x2c/0x40
-[84567.087000]  [<b0284a0c>] xfs_map_blocks+0x3c/0x80
-[84567.087000]  [<b0285953>] xfs_page_state_convert+0x2f3/0x670
-[84567.087000]  [<b0285d2a>] xfs_vm_writepage+0x5a/0xf0
-[84567.087000]  [<b01539a6>] generic_writepages+0x226/0x360
-[84567.087000]  [<b0285de4>] xfs_vm_writepages+0x24/0x60
-[84567.087000]  [<b0153b0c>] do_writepages+0x2c/0x50
-[84567.087000]  [<b01887d9>] __sync_single_inode+0x59/0x1f0
-[84567.087000]  [<b01889b4>] __writeback_single_inode+0x44/0x1d0
-[84567.087000]  [<b0188d09>] sync_sb_inodes+0x1c9/0x2e0
-[84567.087000]  [<b0188eee>] writeback_inodes+0xce/0xe0
-[84567.087000]  [<b01535c3>] wb_kupdate+0x73/0xf0
-[84567.087000]  [<b015419e>] __pdflush+0xce/0x1a0
-[84567.087000]  [<b0154295>] pdflush+0x25/0x30
-[84567.087000]  [<b01342b4>] kthread+0x94/0xd0
-[84567.087000]  [<b0104d7b>] kernel_thread_helper+0x7/0x1c
-[84567.087000] BUG: unable to handle kernel paging request at virtual address 00008034
-[84567.087000]  printing eip:
-[84567.087000] b0104e36
-[84567.087000] *pde = 00000000
-[84567.087000] Oops: 0000 [#1]
-[84567.087000] PREEMPT
-[84567.087000] Modules linked in: drbd mt352 saa7134_dvb dvb_pll video_buf_dvb dvb_core
-[84567.087000] CPU:    0
-[84567.087000] EIP:    0060:[<b0104e36>]    Not tainted VLI
-[84567.087000] EFLAGS: 00010046   (2.6.21-git #197)
-[84567.087000] EIP is at dump_trace+0x66/0xb0
-[84567.087000] eax: 00000000   ebx: b18f6fe0   ecx: b06323ec   edx: b05afc71
-[84567.087000] esi: 00008000   edi: 00008ffd   ebp: b18f6138   esp: b18f6120
-[84567.087000] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-[84567.087000] Process pdflush (pid: 186, ti=b18f5000 task=eff84ad0 task.ti=b18f6000)
-[84567.087000] Stack: b18f6130 b04ea9af 00000001 b05b9937 0000000a b06d656e b18f6158 b0104f3a
-[84567.087000]        b06323ec b05b9937 00000000 b06356a8 b18f6160 b18f622a b18f6168 b0104f62
-[84567.087000]        b05b9937 b06d656e b18f6178 b0105075 b05afeac b18f6184 b18f61a8 b01069a8
-[84567.087000] Call Trace:
-[84567.087000] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000034
-[84567.087000]  printing eip:
-[84567.087000] b0104e36
-[84567.087000] *pde = 00000000
-[84567.087000] Oops: 0000 [#2]
-[84567.087000] PREEMPT
-[84567.087000] Modules linked in: drbd mt352 saa7134_dvb dvb_pll video_buf_dvb dvb_core
-[84567.087000] CPU:    0
-[84567.087000] EIP:    0060:[<b0104e36>]    Not tainted VLI
-[84567.087000] EFLAGS: 00010046   (2.6.21-git #197)
-[84567.087000] EIP is at dump_trace+0x66/0xb0
-[84567.087000] eax: 00000000   ebx: b18f5f60   ecx: b06323ec   edx: b05afc71
-[84567.087000] esi: 00000000   edi: 00000ffd   ebp: b18f5f60   esp: b18f5f48
-[84567.087000] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
-[84567.087000] Process pdflush (pid: 186, ti=b18f5000 task=eff84ad0 task.ti=b18f6000)
-[84567.087000] Stack: 5b3e303c 36353438 38302e37 b05afcde 00000018 00000000 b18f5f80 b0104f3a
-[84567.087000]        b06323ec b05afcde 
+The patches place all of smp cacheline aligned percpu data into .data.percpu.shared_cacheline_aligned. Other percpu data is still in data.percpu section. The patches can reduce cache line access in SMP and reduce alignment gap waste. The patches also define PERCPU macro for vmlinux.lds.S for concise code.
 
-Then it just gave up doing anything sane, presumably because of the stack overflow  in do_IRQ:
-http://redrum.lp0.eu/tmp/100_4037.jpg
-http://redrum.lp0.eu/tmp/100_4038.jpg
+PATCH 1/2: Define percpu smp cacheline align interface
+PATCH 2/2: Call percpu smp cacheline algin interface
 
--- 
-Simon Arlott
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
+
+---
+
+ arch/alpha/kernel/vmlinux.lds.S   |    5 +----
+ arch/arm/kernel/vmlinux.lds.S     |    5 +----
+ arch/cris/arch-v32/vmlinux.lds.S  |    5 +----
+ arch/frv/kernel/vmlinux.lds.S     |    5 +----
+ arch/i386/kernel/vmlinux.lds.S    |    7 +------
+ arch/ia64/kernel/vmlinux.lds.S    |    1 +
+ arch/m32r/kernel/vmlinux.lds.S    |    5 +----
+ arch/mips/kernel/vmlinux.lds.S    |    5 +----
+ arch/parisc/kernel/vmlinux.lds.S  |    7 +++----
+ arch/powerpc/kernel/vmlinux.lds.S |    7 +------
+ arch/ppc/kernel/vmlinux.lds.S     |    5 +----
+ arch/s390/kernel/vmlinux.lds.S    |    5 +----
+ arch/sh/kernel/vmlinux.lds.S      |    5 +----
+ arch/sh64/kernel/vmlinux.lds.S    |    5 +----
+ arch/sparc/kernel/vmlinux.lds.S   |    5 +----
+ arch/sparc64/kernel/vmlinux.lds.S |    5 +----
+ arch/x86_64/kernel/vmlinux.lds.S  |    6 ++----
+ arch/xtensa/kernel/vmlinux.lds.S  |    5 +----
+ include/asm-generic/percpu.h      |    8 ++++++++
+ include/asm-generic/vmlinux.lds.h |   10 ++++++++++
+ include/asm-i386/percpu.h         |    5 +++++
+ include/asm-ia64/percpu.h         |   10 ++++++++++
+ include/asm-powerpc/percpu.h      |    7 +++++++
+ include/asm-s390/percpu.h         |    7 +++++++
+ include/asm-sparc64/percpu.h      |    7 +++++++
+ include/asm-x86_64/percpu.h       |    7 +++++++
+ 26 files changed, 82 insertions(+), 72 deletions(-)
+
+diff -Nurp linux-2.6.21-rc7.0/arch/alpha/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/alpha/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/alpha/kernel/vmlinux.lds.S	2007-05-01 07:32:58.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/alpha/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -69,10 +69,7 @@ SECTIONS
+   . = ALIGN(8);
+   SECURITY_INIT
+ 
+-  . = ALIGN(8192);
+-  __per_cpu_start = .;
+-  .data.percpu : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(8192)
+ 
+   . = ALIGN(2*8192);
+   __init_end = .;
+diff -Nurp linux-2.6.21-rc7.0/arch/arm/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/arm/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/arm/kernel/vmlinux.lds.S	2007-05-01 07:32:58.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/arm/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -59,10 +59,7 @@ SECTIONS
+ 			usr/built-in.o(.init.ramfs)
+ 		__initramfs_end = .;
+ #endif
+-		. = ALIGN(4096);
+-		__per_cpu_start = .;
+-			*(.data.percpu)
+-		__per_cpu_end = .;
++		PERCPU(4096)
+ #ifndef CONFIG_XIP_KERNEL
+ 		__init_begin = _stext;
+ 		*(.init.data)
+diff -Nurp linux-2.6.21-rc7.0/arch/cris/arch-v32/vmlinux.lds.S linux-2.6.21-rc7.1/arch/cris/arch-v32/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/cris/arch-v32/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/cris/arch-v32/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -92,10 +92,7 @@ SECTIONS
+ 	}
+ 	SECURITY_INIT
+ 
+-	. =  ALIGN (8192);
+-	__per_cpu_start = .;
+-	.data.percpu  : { *(.data.percpu) }
+-	__per_cpu_end = .;
++	PERCPU(8192)
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+ 	.init.ramfs : {
+diff -Nurp linux-2.6.21-rc7.0/arch/frv/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/frv/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/frv/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/frv/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -57,10 +57,7 @@ SECTIONS
+   __alt_instructions_end = .;
+  .altinstr_replacement : { *(.altinstr_replacement) }
+ 
+-  . = ALIGN(4096);
+-  __per_cpu_start = .;
+-  .data.percpu  : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(4096)
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+   . = ALIGN(4096);
+diff -Nurp linux-2.6.21-rc7.0/arch/i386/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/i386/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/i386/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/i386/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -185,12 +185,7 @@ SECTIONS
+ 	__initramfs_end = .;
+   }
+ #endif
+-  . = ALIGN(4096);
+-  .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {
+-	__per_cpu_start = .;
+-	*(.data.percpu)
+-	__per_cpu_end = .;
+-  }
++  PERCPU(4096)
+   . = ALIGN(4096);
+   /* freed after init ends here */
+ 	
+diff -Nurp linux-2.6.21-rc7.0/arch/ia64/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/ia64/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/ia64/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/ia64/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -206,6 +206,7 @@ SECTIONS
+ 	{
+ 		__per_cpu_start = .;
+ 		*(.data.percpu)
++		*(.data.percpu.shared_cacheline_aligned)
+ 		__per_cpu_end = .;
+ 	}
+   . = __phys_per_cpu_start + PERCPU_PAGE_SIZE;	/* ensure percpu data fits
+diff -Nurp linux-2.6.21-rc7.0/arch/m32r/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/m32r/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/m32r/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/m32r/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -111,10 +111,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-  . = ALIGN(4096);
+-  __per_cpu_start = .;
+-  .data.percpu  : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(4096)
+   . = ALIGN(4096);
+   __init_end = .;
+   /* freed after init ends here */
+diff -Nurp linux-2.6.21-rc7.0/arch/mips/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/mips/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/mips/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/mips/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -121,10 +121,7 @@ SECTIONS
+   .init.ramfs : { *(.init.ramfs) }
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(_PAGE_SIZE);
+-  __per_cpu_start = .;
+-  .data.percpu  : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(_PAGE_SIZE)
+   . = ALIGN(_PAGE_SIZE);
+   __init_end = .;
+   /* freed after init ends here */
+diff -Nurp linux-2.6.21-rc7.0/arch/parisc/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/parisc/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/parisc/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/parisc/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -182,10 +182,9 @@ SECTIONS
+   .init.ramfs : { *(.init.ramfs) }
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(ASM_PAGE_SIZE);
+-  __per_cpu_start = .;
+-  .data.percpu  : { *(.data.percpu) }
+-  __per_cpu_end = .;
++
++  PERCPU(ASM_PAGE_SIZE)
++
+   . = ALIGN(ASM_PAGE_SIZE);
+   __init_end = .;
+   /* freed after init ends here */
+diff -Nurp linux-2.6.21-rc7.0/arch/powerpc/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/powerpc/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/powerpc/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/powerpc/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -139,12 +139,7 @@ SECTIONS
+ 		__initramfs_end = .;
+ 	}
+ #endif
+-	. = ALIGN(PAGE_SIZE);
+-	.data.percpu : {
+-		__per_cpu_start = .;
+-		*(.data.percpu)
+-		__per_cpu_end = .;
+-	}
++	PERCPU(PAGE_SIZE)
+ 
+ 	. = ALIGN(8);
+ 	.machine.desc : {
+diff -Nurp linux-2.6.21-rc7.0/arch/ppc/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/ppc/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/ppc/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/ppc/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -131,10 +131,7 @@ SECTIONS
+   __ftr_fixup : { *(__ftr_fixup) }
+   __stop___ftr_fixup = .;
+ 
+-  . = ALIGN(4096);
+-  __per_cpu_start = .;
+-  .data.percpu  : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(4096)
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+   . = ALIGN(4096);
+diff -Nurp linux-2.6.21-rc7.0/arch/s390/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/s390/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/s390/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/s390/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -108,10 +108,7 @@ SECTIONS
+   . = ALIGN(2);
+   __initramfs_end = .;
+ #endif
+-  . = ALIGN(4096);
+-  __per_cpu_start = .;
+-  .data.percpu  : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(4096)
+   . = ALIGN(4096);
+   __init_end = .;
+   /* freed after init ends here */
+diff -Nurp linux-2.6.21-rc7.0/arch/sh/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/sh/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/sh/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/sh/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -61,10 +61,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   __nosave_end = .;
+ 
+-  . = ALIGN(PAGE_SIZE);
+-  __per_cpu_start = .;
+-  .data.percpu : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(PAGE_SIZE)
+   .data.cacheline_aligned : { *(.data.cacheline_aligned) }
+ 
+   _edata = .;			/* End of data section */
+diff -Nurp linux-2.6.21-rc7.0/arch/sh64/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/sh64/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/sh64/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/sh64/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -86,10 +86,7 @@ SECTIONS
+   . = ALIGN(PAGE_SIZE);
+   .data.page_aligned : C_PHYS(.data.page_aligned) { *(.data.page_aligned) }
+ 
+-  . = ALIGN(PAGE_SIZE);
+-  __per_cpu_start = .;
+-  .data.percpu : C_PHYS(.data.percpu) { *(.data.percpu) }
+-  __per_cpu_end = . ;
++  PERCPU(PAGE_SIZE)
+   .data.cacheline_aligned : C_PHYS(.data.cacheline_aligned) { *(.data.cacheline_aligned) }
+ 
+   _edata = .;			/* End of data section */
+diff -Nurp linux-2.6.21-rc7.0/arch/sparc/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/sparc/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/sparc/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/sparc/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -66,10 +66,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-  . = ALIGN(4096);
+-  __per_cpu_start = .;
+-  .data.percpu  : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(4096)
+   . = ALIGN(4096);
+   __init_end = .;
+   . = ALIGN(32);
+diff -Nurp linux-2.6.21-rc7.0/arch/sparc64/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/sparc64/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/sparc64/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/sparc64/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -90,10 +90,7 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-  . = ALIGN(8192);
+-  __per_cpu_start = .;
+-  .data.percpu  : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(8192)
+   . = ALIGN(8192);
+   __init_end = .;
+   __bss_start = .;
+diff -Nurp linux-2.6.21-rc7.0/arch/x86_64/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/x86_64/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/x86_64/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/x86_64/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -209,10 +209,8 @@ SECTIONS
+   __initramfs_end = .;
+ #endif
+ 
+-  . = ALIGN(4096);
+-  __per_cpu_start = .;
+-  .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(4096)
++
+   . = ALIGN(4096);
+ 
+   __init_end = .;
+diff -Nurp linux-2.6.21-rc7.0/arch/xtensa/kernel/vmlinux.lds.S linux-2.6.21-rc7.1/arch/xtensa/kernel/vmlinux.lds.S
+--- linux-2.6.21-rc7.0/arch/xtensa/kernel/vmlinux.lds.S	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/xtensa/kernel/vmlinux.lds.S	2007-05-02 17:00:29.000000000 -0700
+@@ -198,10 +198,7 @@ SECTIONS
+   __ftr_fixup : { *(__ftr_fixup) }
+   __stop___ftr_fixup = .;
+ 
+-  . = ALIGN(4096);
+-  __per_cpu_start = .;
+-  .data.percpu  : { *(.data.percpu) }
+-  __per_cpu_end = .;
++  PERCPU(4096)
+ 
+ #ifdef CONFIG_BLK_DEV_INITRD
+   . = ALIGN(4096);
+diff -Nurp linux-2.6.21-rc7.0/include/asm-generic/percpu.h linux-2.6.21-rc7.1/include/asm-generic/percpu.h
+--- linux-2.6.21-rc7.0/include/asm-generic/percpu.h	2007-05-01 07:33:03.000000000 -0700
++++ linux-2.6.21-rc7.1/include/asm-generic/percpu.h	2007-05-04 11:15:26.000000000 -0700
+@@ -14,6 +14,11 @@ extern unsigned long __per_cpu_offset[NR
+ #define DEFINE_PER_CPU(type, name) \
+     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
+ 
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)		  \
++    __attribute__((__section__(".data.percpu.shared_cacheline_aligned"))) \
++    __typeof__(type) per_cpu__##name					  \
++    ____cacheline_aligned_in_smp
++
+ /* var is in discarded region: offset to particular copy we want */
+ #define per_cpu(var, cpu) (*({				\
+ 	extern int simple_identifier_##var(void);	\
+@@ -34,6 +39,9 @@ do {								\
+ #define DEFINE_PER_CPU(type, name) \
+     __typeof__(type) per_cpu__##name
+ 
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)	\
++    DEFINE_PER_CPU(type, name)
++
+ #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
+ #define __get_cpu_var(var)			per_cpu__##var
+ #define __raw_get_cpu_var(var)			per_cpu__##var
+diff -Nurp linux-2.6.21-rc7.0/include/asm-generic/vmlinux.lds.h linux-2.6.21-rc7.1/include/asm-generic/vmlinux.lds.h
+--- linux-2.6.21-rc7.0/include/asm-generic/vmlinux.lds.h	2007-05-01 07:33:03.000000000 -0700
++++ linux-2.6.21-rc7.1/include/asm-generic/vmlinux.lds.h	2007-05-02 17:00:29.000000000 -0700
+@@ -265,3 +265,13 @@
+   	*(.initcall6s.init)						\
+   	*(.initcall7.init)						\
+   	*(.initcall7s.init)
++
++#define PERCPU(align)							\
++  . = ALIGN(align);							\
++  __per_cpu_start = .;							\
++  .data.percpu  : AT(ADDR(.data.percpu) - LOAD_OFFSET) {		\
++	*(.data.percpu)							\
++	*(.data.percpu.shared_cacheline_aligned)			\
++  }									\
++  __per_cpu_end = .;
++
+diff -Nurp linux-2.6.21-rc7.0/include/asm-i386/percpu.h linux-2.6.21-rc7.1/include/asm-i386/percpu.h
+--- linux-2.6.21-rc7.0/include/asm-i386/percpu.h	2007-05-01 07:33:03.000000000 -0700
++++ linux-2.6.21-rc7.1/include/asm-i386/percpu.h	2007-05-02 17:00:29.000000000 -0700
+@@ -54,6 +54,11 @@ extern unsigned long __per_cpu_offset[];
+ #define DEFINE_PER_CPU(type, name) \
+     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
+ 
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)		  \
++    __attribute__((__section__(".data.percpu.shared_cacheline_aligned"))) \
++    __typeof__(type) per_cpu__##name					  \
++    ____cacheline_aligned_in_smp 
++
+ /* We can use this directly for local CPU (faster). */
+ DECLARE_PER_CPU(unsigned long, this_cpu_off);
+ 
+diff -Nurp linux-2.6.21-rc7.0/include/asm-ia64/percpu.h linux-2.6.21-rc7.1/include/asm-ia64/percpu.h
+--- linux-2.6.21-rc7.0/include/asm-ia64/percpu.h	2007-04-15 16:50:57.000000000 -0700
++++ linux-2.6.21-rc7.1/include/asm-ia64/percpu.h	2007-05-04 11:47:45.000000000 -0700
+@@ -29,6 +29,16 @@
+ 	__attribute__((__section__(".data.percpu")))		\
+ 	__SMALL_ADDR_AREA __typeof__(type) per_cpu__##name
+ 
++#ifdef CONFIG_SMP
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)		      \
++	__attribute__((__section__(".data.percpu.shared_cacheline_aligned"))) \
++	__SMALL_ADDR_AREA __typeof__(type) per_cpu__##name		      \
++	____cacheline_aligned_in_smp	
++#else
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)	\
++	DEFINE_PER_CPU(type, name)
++#endif
++
+ /*
+  * Pretty much a literal copy of asm-generic/percpu.h, except that percpu_modcopy() is an
+  * external routine, to avoid include-hell.
+diff -Nurp linux-2.6.21-rc7.0/include/asm-powerpc/percpu.h linux-2.6.21-rc7.1/include/asm-powerpc/percpu.h
+--- linux-2.6.21-rc7.0/include/asm-powerpc/percpu.h	2007-04-15 16:50:57.000000000 -0700
++++ linux-2.6.21-rc7.1/include/asm-powerpc/percpu.h	2007-05-04 11:19:37.000000000 -0700
+@@ -20,6 +20,11 @@
+ #define DEFINE_PER_CPU(type, name) \
+     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
+ 
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)		  \
++    __attribute__((__section__(".data.percpu.shared_cacheline_aligned"))) \
++    __typeof__(type) per_cpu__##name					  \
++    ____cacheline_aligned_in_smp 
++
+ /* var is in discarded region: offset to particular copy we want */
+ #define per_cpu(var, cpu) (*RELOC_HIDE(&per_cpu__##var, __per_cpu_offset(cpu)))
+ #define __get_cpu_var(var) (*RELOC_HIDE(&per_cpu__##var, __my_cpu_offset()))
+@@ -40,6 +45,8 @@ extern void setup_per_cpu_areas(void);
+ 
+ #define DEFINE_PER_CPU(type, name) \
+     __typeof__(type) per_cpu__##name
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)	\
++    DEFINE_PER_CPU(type, name)
+ 
+ #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
+ #define __get_cpu_var(var)			per_cpu__##var
+diff -Nurp linux-2.6.21-rc7.0/include/asm-s390/percpu.h linux-2.6.21-rc7.1/include/asm-s390/percpu.h
+--- linux-2.6.21-rc7.0/include/asm-s390/percpu.h	2007-04-15 16:50:57.000000000 -0700
++++ linux-2.6.21-rc7.1/include/asm-s390/percpu.h	2007-05-04 11:20:19.000000000 -0700
+@@ -41,6 +41,11 @@ extern unsigned long __per_cpu_offset[NR
+     __attribute__((__section__(".data.percpu"))) \
+     __typeof__(type) per_cpu__##name
+ 
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)		  \
++    __attribute__((__section__(".data.percpu.shared_cacheline_aligned"))) \
++    __typeof__(type) per_cpu__##name					  \
++    ____cacheline_aligned_in_smp
++
+ #define __get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
+ #define __raw_get_cpu_var(var) __reloc_hide(var,S390_lowcore.percpu_offset)
+ #define per_cpu(var,cpu) __reloc_hide(var,__per_cpu_offset[cpu])
+@@ -59,6 +64,8 @@ do {								\
+ 
+ #define DEFINE_PER_CPU(type, name) \
+     __typeof__(type) per_cpu__##name
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)	\
++    DEFINE_PER_CPU(type, name)
+ 
+ #define __get_cpu_var(var) __reloc_hide(var,0)
+ #define __raw_get_cpu_var(var) __reloc_hide(var,0)
+diff -Nurp linux-2.6.21-rc7.0/include/asm-sparc64/percpu.h linux-2.6.21-rc7.1/include/asm-sparc64/percpu.h
+--- linux-2.6.21-rc7.0/include/asm-sparc64/percpu.h	2007-05-01 07:33:06.000000000 -0700
++++ linux-2.6.21-rc7.1/include/asm-sparc64/percpu.h	2007-05-04 11:20:51.000000000 -0700
+@@ -17,6 +17,11 @@ extern unsigned long __per_cpu_shift;
+ #define DEFINE_PER_CPU(type, name) \
+     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
+ 
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)		  \
++    __attribute__((__section__(".data.percpu.shared_cacheline_aligned"))) \
++    __typeof__(type) per_cpu__##name					  \
++    ____cacheline_aligned_in_smp 
++
+ register unsigned long __local_per_cpu_offset asm("g5");
+ 
+ /* var is in discarded region: offset to particular copy we want */
+@@ -36,6 +41,8 @@ do {								\
+ 
+ #define DEFINE_PER_CPU(type, name) \
+     __typeof__(type) per_cpu__##name
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)	\
++    DEFINE_PER_CPU(type, name)
+ 
+ #define per_cpu(var, cpu)			(*((void)cpu, &per_cpu__##var))
+ #define __get_cpu_var(var)			per_cpu__##var
+diff -Nurp linux-2.6.21-rc7.0/include/asm-x86_64/percpu.h linux-2.6.21-rc7.1/include/asm-x86_64/percpu.h
+--- linux-2.6.21-rc7.0/include/asm-x86_64/percpu.h	2007-05-01 07:33:06.000000000 -0700
++++ linux-2.6.21-rc7.1/include/asm-x86_64/percpu.h	2007-05-04 11:21:25.000000000 -0700
+@@ -20,6 +20,11 @@
+ #define DEFINE_PER_CPU(type, name) \
+     __attribute__((__section__(".data.percpu"))) __typeof__(type) per_cpu__##name
+ 
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)		  \
++    __attribute__((__section__(".data.percpu.shared_cacheline_aligned"))) \
++    __typeof__(type) per_cpu__##name					  \
++    ____cacheline_internodealigned_in_smp 
++
+ /* var is in discarded region: offset to particular copy we want */
+ #define per_cpu(var, cpu) (*({				\
+ 	extern int simple_identifier_##var(void);	\
+@@ -46,6 +51,8 @@ extern void setup_per_cpu_areas(void);
+ 
+ #define DEFINE_PER_CPU(type, name) \
+     __typeof__(type) per_cpu__##name
++#define DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED(type, name)	\
++    DEFINE_PER_CPU(type, name)
+ 
+ #define per_cpu(var, cpu)			(*((void)(cpu), &per_cpu__##var))
+ #define __get_cpu_var(var)			per_cpu__##var
