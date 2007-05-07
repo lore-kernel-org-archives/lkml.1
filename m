@@ -1,130 +1,218 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966196AbXEGSSi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966209AbXEGSSs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966196AbXEGSSi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 14:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966188AbXEGSSc
+	id S966209AbXEGSSs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 14:18:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966197AbXEGSSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 14:18:32 -0400
-Received: from ppsw-7.csi.cam.ac.uk ([131.111.8.137]:48286 "EHLO
-	ppsw-7.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966184AbXEGSSb (ORCPT
+	Mon, 7 May 2007 14:18:39 -0400
+Received: from ldap.somanetworks.com ([216.126.67.42]:44732 "EHLO
+	mail.somanetworks.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966190AbXEGSSe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 14:18:31 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <m3hcqoa772.fsf@maximus.localdomain>
-References: <m3abwhcy74.fsf@maximus.localdomain> <m3vef5biob.fsf@maximus.localdomain> <5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk> <m3hcqoa772.fsf@maximus.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>
-Cc: Jeff Garzik <jeff@garzik.org>, Russell King <rmk@arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       Lennert Buytenhek <buytenh@wantstofly.org>
-Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: [PATCH 3/3] Intel IXP4xx network drivers
-Date: Mon, 7 May 2007 19:14:53 +0100
-To: Krzysztof Halasa <khc@pm.waw.pl>
-X-Mailer: Apple Mail (2.752.2)
+	Mon, 7 May 2007 14:18:34 -0400
+Date: Mon, 7 May 2007 14:18:29 -0400 (EDT)
+From: Scott Murray <scottm@somanetworks.com>
+X-X-Sender: scottm@rancor.yyz.somanetworks.com
+To: "<Andrew Morton" <akpm@osdl.org>
+cc: Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kristen.c.accardi@intel.com
+Subject: Re: [PATCH] cpci_hotplug: Convert to use the kthread API
+In-Reply-To: <20070504111215.GA3191@infradead.org>
+Message-ID: <Pine.LNX.4.64.0705071412030.3671@rancor.yyz.somanetworks.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+ <11769657702107-git-send-email-ebiederm@xmission.com> <20070422120534.GA20763@infradead.org>
+ <Pine.LNX.4.64.0704271802390.3671@rancor.yyz.somanetworks.com>
+ <20070504111215.GA3191@infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Added Lennert Buytenhek to CC list]
+On Fri, 4 May 2007, Christoph Hellwig wrote:
 
-Hey again,
+> On Fri, Apr 27, 2007 at 06:07:49PM -0400, Scott Murray wrote:
+> > Sorry, it took me a few days to get to testing this out.  It looks good,    
+> > but I had to make a couple of tweaks to avoid a hang when rmmod'ing a
+> > board driver.  The board drivers do:
+> > 
+> > cpci_hp_stop()
+> > cpci_hp_unregister_controller(controller)
+> > 
+> > to shutdown, and the check in cpci_hp_unregister_controller if the thread
+> > is running wasn't working due to a bit too much code being excised.  The
+> > result was kthread_stop being called twice, which hangs.  I've indicated 
+> > my changes to avoid this inline below.
+> 
+> Can you forward the patches with your fix to Andrew to make sure he
+> picks it up?
 
->> Code placement:
->> Queue Manager & NPE code => arch/arm/mach-ixp4xx
->> WAN driver code => drivers/net/wan
->> Eth code => drivers/net/arm
->
-> Why would you want such placement?
-> Potential problems: header files would have to be moved to
-> include/asm-arm = headers pollution.
+Andrew, here is my updated version of Christoph's kthread conversion 
+patch for cpci_hotplug.  I've CC'ed Kristen so she won't be surprised
+when this eventually goes to mainline.
 
-Headers for ixp4xx-specific hardware can surely live in the include/ 
-asm-arm/arch-ixp4xx/ quite happily.
+Signed-off-by: Christoph Hellwig <hch@lst.de>
+Signed-off-by: Scott Murray <scottm@somanetworks.com>
 
-> All 4 drivers are, in fact, network (related) drivers.
+---
 
-Despite their name, Network Processing Engines are independent  
-coprocessors which are only coincidentally attached to MACs for  
-ethernet / WAN purposes. If Intel would allow us to compile code for  
-these coprocessors, we could get them to do lots of things other than  
-networking.
+diff --git a/drivers/pci/hotplug/cpci_hotplug_core.c b/drivers/pci/hotplug/cpci_hotplug_core.c
+index 6845515..ed4d44e 100644
+--- a/drivers/pci/hotplug/cpci_hotplug_core.c
++++ b/drivers/pci/hotplug/cpci_hotplug_core.c
+@@ -35,6 +35,7 @@
+ #include <linux/smp_lock.h>
+ #include <asm/atomic.h>
+ #include <linux/delay.h>
++#include <linux/kthread.h>
+ #include "cpci_hotplug.h"
+ 
+ #define DRIVER_AUTHOR	"Scott Murray <scottm@somanetworks.com>"
+@@ -59,9 +60,8 @@ static int slots;
+ static atomic_t extracting;
+ int cpci_debug;
+ static struct cpci_hp_controller *controller;
+-static struct semaphore event_semaphore;	/* mutex for process loop (up if something to process) */
+-static struct semaphore thread_exit;		/* guard ensure thread has exited before calling it quits */
+-static int thread_finished = 1;
++static struct task_struct *cpci_thread;
++static int thread_finished;
+ 
+ static int enable_slot(struct hotplug_slot *slot);
+ static int disable_slot(struct hotplug_slot *slot);
+@@ -357,9 +357,7 @@ cpci_hp_intr(int irq, void *data)
+ 	controller->ops->disable_irq();
+ 
+ 	/* Trigger processing by the event thread */
+-	dbg("Signal event_semaphore");
+-	up(&event_semaphore);
+-	dbg("exited cpci_hp_intr");
++	wake_up_process(cpci_thread);
+ 	return IRQ_HANDLED;
+ }
+ 
+@@ -521,17 +519,12 @@ event_thread(void *data)
+ {
+ 	int rc;
+ 
+-	lock_kernel();
+-	daemonize("cpci_hp_eventd");
+-	unlock_kernel();
+-
+ 	dbg("%s - event thread started", __FUNCTION__);
+ 	while (1) {
+ 		dbg("event thread sleeping");
+-		down_interruptible(&event_semaphore);
+-		dbg("event thread woken, thread_finished = %d",
+-		    thread_finished);
+-		if (thread_finished || signal_pending(current))
++		set_current_state(TASK_INTERRUPTIBLE);
++		schedule();
++		if (kthread_should_stop())
+ 			break;
+ 		do {
+ 			rc = check_slots();
+@@ -541,18 +534,17 @@ event_thread(void *data)
+ 			} else if (rc < 0) {
+ 				dbg("%s - error checking slots", __FUNCTION__);
+ 				thread_finished = 1;
+-				break;
++				goto out;
+ 			}
+-		} while (atomic_read(&extracting) && !thread_finished);
+-		if (thread_finished)
++		} while (atomic_read(&extracting) && !kthread_should_stop());
++		if (kthread_should_stop())
+ 			break;
+ 
+ 		/* Re-enable ENUM# interrupt */
+ 		dbg("%s - re-enabling irq", __FUNCTION__);
+ 		controller->ops->enable_irq();
+ 	}
+-	dbg("%s - event thread signals exit", __FUNCTION__);
+-	up(&thread_exit);
++ out:
+ 	return 0;
+ }
+ 
+@@ -562,12 +554,8 @@ poll_thread(void *data)
+ {
+ 	int rc;
+ 
+-	lock_kernel();
+-	daemonize("cpci_hp_polld");
+-	unlock_kernel();
+-
+ 	while (1) {
+-		if (thread_finished || signal_pending(current))
++		if (kthread_should_stop() || signal_pending(current))
+ 			break;
+ 		if (controller->ops->query_enum()) {
+ 			do {
+@@ -578,48 +566,36 @@ poll_thread(void *data)
+ 				} else if (rc < 0) {
+ 					dbg("%s - error checking slots", __FUNCTION__);
+ 					thread_finished = 1;
+-					break;
++					goto out;
+ 				}
+-			} while (atomic_read(&extracting) && !thread_finished);
++			} while (atomic_read(&extracting) && !kthread_should_stop());
+ 		}
+ 		msleep(100);
+ 	}
+-	dbg("poll thread signals exit");
+-	up(&thread_exit);
++ out:
+ 	return 0;
+ }
+ 
+ static int
+ cpci_start_thread(void)
+ {
+-	int pid;
+-
+-	/* initialize our semaphores */
+-	init_MUTEX_LOCKED(&event_semaphore);
+-	init_MUTEX_LOCKED(&thread_exit);
+-	thread_finished = 0;
+-
+ 	if (controller->irq)
+-		pid = kernel_thread(event_thread, NULL, 0);
++		cpci_thread = kthread_run(event_thread, NULL, "cpci_hp_eventd");
+ 	else
+-		pid = kernel_thread(poll_thread, NULL, 0);
+-	if (pid < 0) {
++		cpci_thread = kthread_run(poll_thread, NULL, "cpci_hp_polld");
++	if (IS_ERR(cpci_thread)) {
+ 		err("Can't start up our thread");
+-		return -1;
++		return PTR_ERR(cpci_thread);
+ 	}
+-	dbg("Our thread pid = %d", pid);
++	thread_finished = 0;
+ 	return 0;
+ }
+ 
+ static void
+ cpci_stop_thread(void)
+ {
++	kthread_stop(cpci_thread);
+ 	thread_finished = 1;
+-	dbg("thread finish command given");
+-	if (controller->irq)
+-		up(&event_semaphore);
+-	dbg("wait for thread to exit");
+-	down(&thread_exit);
+ }
+ 
+ int
+ 
 
-In fact, we already kind of can. Crypto is not networking, and if the  
-kernel gains ixp4xx crypto support, that should be possible to enable  
-independently of networking. They can also function as DMA engines,  
-which should also be independent of networking functionality.
-
-So, the NPE driver (which is basically ixp4xx specific) should be,  
-for practical purposes, networking-code agnostic. As it is a lump of  
-code talking to an architecture specific piece of hardware, it should  
-live in arch/arm/ rather than arch-independent drivers/
-
-(NB: the publically reviewed version of Christian's ixp4xx_net driver  
-had exactly this file layout, see below)
-
->> Ethernet & HSS code should probably select NPE and QMGR (rather than
->> depend)
->
-> Actually, that's exactly what this patch do.
->
->> but these options should still be exposed in arch/arm/mach-
->> ixp4xx/Kconfig
-
-Sorry, unclear. That sentence was meant as a coherent whole -  
-agreeing with you that the NPE dependency should use select but then  
-pointing out that you should still be able to turn NPE support on in  
-arch/arm/mach/ixp4xx/Kconfig even without selecting any of the  
-network drivers.
-
-> Why exactly? They are network devices, who would expect them there?
-> How about the dependency mess (NET_ETHERNET etc.) that would be
-> created?
-
-For networking devices point, see above.
-
-I don't fully understand the specifics, but Christian appeared to  
-avoid any dependency mess in the publically reviewed version of his  
-driver (as below).
-
-As I understand it, functions to talk to the NPE should appear in the  
-NPE driver. The NPE driver should then be called by ethernet/wan/ 
-crypto/dma(?) drivers to carry out the specific firmware-dependent  
-tasks. I haven't reviewed your code in detail, so I can't comment on  
-whether this is what you actually do or not.
-
-==Links to the review of Christian's driver==
-[1/7] Register & NPE definitions:
-http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2007-January/ 
-038082.html
-[2/7] Platform devices (thought unnecessary by Lennert in his review):
-http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2007-January/ 
-038086.html
-[3/7] Stub for Data/Address-Coherent mode setup:
-http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2007-January/ 
-038083.html
-[4/7] QMGR driver:
-http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2007-January/ 
-038278.html
-[5/7] NPE driver:
-http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2007-January/ 
-038085.html
-[6/7] Ethernet driver:
-http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2007-January/ 
-038087.html
-[7/7] Documentation:
-http://lists.arm.linux.org.uk/pipermail/linux-arm-kernel/2007-January/ 
-038088.html
-
-Sorry if I'm stating the obvious, but this is a public discussion and  
-I want to make sure everyone who reads this can see what I mean. If  
-they disagree with me despite this, so be it :)
-
-Mike-Luke
-
+-- 
+Scott Murray
+SOMA Networks, Inc.
+Toronto, Ontario
+e-mail: scottm@somanetworks.com
