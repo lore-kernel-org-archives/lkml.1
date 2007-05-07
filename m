@@ -1,68 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934156AbXEGO2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934176AbXEGO2p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934156AbXEGO2f (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 10:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934145AbXEGO2c
+	id S934176AbXEGO2p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 10:28:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934168AbXEGO2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 10:28:32 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:45992 "EHLO
+	Mon, 7 May 2007 10:28:41 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:46033 "EHLO
 	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934152AbXEGO2b (ORCPT
+	with ESMTP id S934162AbXEGO2k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 10:28:31 -0400
+	Mon, 7 May 2007 10:28:40 -0400
 DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
 	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
 	message-id:references:mime-version:content-type;
-	b=LQcr02iOb44R3dixIsMf5ZkDycdsHvQiGR24g+4Fgurh4Wgt2hxZUpBoxAQ1qBJUv
-	jU62dZVbRrvYvTZABkcDw==
-Date: Mon, 7 May 2007 07:28:24 -0700 (PDT)
+	b=bDZ3rRwbplta45N4qv70evYBaS1LAZrrmAteDNb7ouTV6aciSc3ig4TdrG0dOrFL0
+	dD/yO+/pwtXRUHmMOC6FQ==
+Date: Mon, 7 May 2007 07:28:21 -0700 (PDT)
 From: David Rientjes <rientjes@google.com>
 X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andi Kleen <ak@suse.de>
-cc: linux-kernel@vger.kernel.org
-Subject: [2.6.22 patch 4/4] x86_64: fix fake numa for machines with true srat
-In-Reply-To: <Pine.LNX.4.64.0705061705050.27058@chino.kir.corp.google.com>
-Message-ID: <Pine.LNX.4.64.0705061705300.27058@chino.kir.corp.google.com>
+cc: Mel Gorman <mel@csn.ul.ie>, linux-kernel@vger.kernel.org
+Subject: [2.6.22 patch 3/4] x86_64: fix e820_hole_size based on address ranges
+In-Reply-To: <Pine.LNX.4.64.0705061704380.27058@chino.kir.corp.google.com>
+Message-ID: <Pine.LNX.4.64.0705061705050.27058@chino.kir.corp.google.com>
 References: <Pine.LNX.4.64.0705061703060.27058@chino.kir.corp.google.com>
  <Pine.LNX.4.64.0705061704380.27058@chino.kir.corp.google.com>
- <Pine.LNX.4.64.0705061705050.27058@chino.kir.corp.google.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use the newly exported disable_srat() function to disable all SRAT 
-detected values before registering emulated node active regions or calling
-setup_node_bootmem().  This ensures we are correctly srat_disabled() since
-we never call acpi_scan_nodes() in the emulated case, even on true SRAT 
-machines.
+e820_hole_size() now uses the newly extracted helper function,
+e820_find_active_region(), to determine the size of usable RAM in a range
+of PFN's.
+
+This was previously broken because of two reasons:
+
+ - The start and end PFN's of each e820 entry were not properly rounded
+   prior to excluding those entries in the range, and
+
+ - Entries smaller than a page were not properly excluded from being
+   accumulated.
+
+This resulted in emulated nodes being incorrectly mapped to ranges that
+were completely reserved and not candidates for being registered as
+active ranges.
 
 Signed-off-by: David Rientjes <rientjes@google.com>
 ---
- arch/x86_64/mm/numa.c |    7 +------
- 1 files changed, 1 insertions(+), 6 deletions(-)
+ arch/x86_64/kernel/e820.c |   54 +++++++++++++++++++-------------------------
+ arch/x86_64/mm/numa.c     |    8 +-----
+ 2 files changed, 25 insertions(+), 37 deletions(-)
 
+diff --git a/arch/x86_64/kernel/e820.c b/arch/x86_64/kernel/e820.c
+--- a/arch/x86_64/kernel/e820.c
++++ b/arch/x86_64/kernel/e820.c
+@@ -192,37 +192,6 @@ unsigned long __init e820_end_of_ram(void)
+ }
+ 
+ /*
+- * Find the hole size in the range.
+- */
+-unsigned long __init e820_hole_size(unsigned long start, unsigned long end)
+-{
+-	unsigned long ram = 0;
+-	int i;
+-
+-	for (i = 0; i < e820.nr_map; i++) {
+-		struct e820entry *ei = &e820.map[i];
+-		unsigned long last, addr;
+-
+-		if (ei->type != E820_RAM ||
+-		    ei->addr+ei->size <= start ||
+-		    ei->addr >= end)
+-			continue;
+-
+-		addr = round_up(ei->addr, PAGE_SIZE);
+-		if (addr < start)
+-			addr = start;
+-
+-		last = round_down(ei->addr + ei->size, PAGE_SIZE);
+-		if (last >= end)
+-			last = end;
+-
+-		if (last > addr)
+-			ram += last - addr;
+-	}
+-	return ((end - start) - ram);
+-}
+-
+-/*
+  * Mark e820 reserved areas as busy for the resource manager.
+  */
+ void __init e820_reserve_resources(void)
+@@ -378,6 +347,29 @@ void __init add_memory_region(unsigned long start, unsigned long size, int type)
+ 	e820.nr_map++;
+ }
+ 
++/*
++ * Find the hole size (in bytes) in the memory range.
++ * @start: starting address of the memory range to scan
++ * @end: ending address of the memory range to scan
++ */
++unsigned long __init e820_hole_size(unsigned long start, unsigned long end)
++{
++	unsigned long start_pfn = start >> PAGE_SHIFT;
++	unsigned long end_pfn = end >> PAGE_SHIFT;
++	unsigned long ei_startpfn;
++	unsigned long ei_endpfn;
++	unsigned long ram = 0;
++	int i;
++
++	for (i = 0; i < e820.nr_map; i++) {
++		if (e820_find_active_region(&e820.map[i],
++					    start_pfn, end_pfn,
++					    &ei_startpfn, &ei_endpfn))
++			ram += ei_endpfn - ei_startpfn;
++	}
++	return end - start - (ram << PAGE_SHIFT);
++}
++
+ void __init e820_print_map(char *who)
+ {
+ 	int i;
 diff --git a/arch/x86_64/mm/numa.c b/arch/x86_64/mm/numa.c
 --- a/arch/x86_64/mm/numa.c
 +++ b/arch/x86_64/mm/numa.c
-@@ -463,6 +463,7 @@ done:
- 		}
- 	}
- out:
-+	disable_srat();
- 	memnode_shift = compute_hash_shift(nodes, num_nodes);
- 	if (memnode_shift < 0) {
- 		memnode_shift = 0;
-@@ -470,12 +471,6 @@ out:
- 		       "disabled.\n");
+@@ -273,9 +273,6 @@ void __init numa_init_array(void)
+ 
+ #ifdef CONFIG_NUMA_EMU
+ /* Numa emulation */
+-#define E820_ADDR_HOLE_SIZE(start, end)					\
+-	(e820_hole_size((start) >> PAGE_SHIFT, (end) >> PAGE_SHIFT) <<	\
+-	PAGE_SHIFT)
+ char *cmdline __initdata;
+ 
+ /*
+@@ -319,7 +316,7 @@ static int __init split_nodes_equally(struct bootnode *nodes, u64 *addr,
  		return -1;
- 	}
--
--	/*
--	 * We need to vacate all active ranges that may have been registered by
--	 * SRAT.
--	 */
--	remove_all_active_ranges();
- 	for_each_node_mask(i, node_possible_map) {
- 		e820_register_active_regions(i, nodes[i].start >> PAGE_SHIFT,
- 						nodes[i].end >> PAGE_SHIFT);
+ 	if (num_nodes > MAX_NUMNODES)
+ 		num_nodes = MAX_NUMNODES;
+-	size = (max_addr - *addr - E820_ADDR_HOLE_SIZE(*addr, max_addr)) /
++	size = (max_addr - *addr - e820_hole_size(*addr, max_addr)) /
+ 	       num_nodes;
+ 	/*
+ 	 * Calculate the number of big nodes that can be allocated as a result
+@@ -347,7 +344,7 @@ static int __init split_nodes_equally(struct bootnode *nodes, u64 *addr,
+ 		if (i == num_nodes + node_start - 1)
+ 			end = max_addr;
+ 		else
+-			while (end - *addr - E820_ADDR_HOLE_SIZE(*addr, end) <
++			while (end - *addr - e820_hole_size(*addr, end) <
+ 			       size) {
+ 				end += FAKE_NODE_MIN_SIZE;
+ 				if (end > max_addr) {
+@@ -487,7 +484,6 @@ out:
+  	numa_init_array();
+  	return 0;
+ }
+-#undef E820_ADDR_HOLE_SIZE
+ #endif /* CONFIG_NUMA_EMU */
+ 
+ void __init numa_initmem_init(unsigned long start_pfn, unsigned long end_pfn)
