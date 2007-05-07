@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754327AbXEGKg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932231AbXEGKlP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754327AbXEGKg1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 06:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932117AbXEGKg1
+	id S932231AbXEGKlP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 06:41:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932224AbXEGKlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 06:36:27 -0400
-Received: from DENETHOR.UNI-MUENSTER.DE ([128.176.180.180]:57043 "EHLO
-	denethor.uni-muenster.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754327AbXEGKg0 (ORCPT
+	Mon, 7 May 2007 06:41:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37101
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S932203AbXEGKlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 06:36:26 -0400
-Date: Mon, 7 May 2007 12:35:19 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, jengelh@gmx.de
-Subject: [PATCH] drivers/macintosh: remove default y from Kconfig (was: Re: 2.6.21-mm1)
-Message-ID: <20070507103519.GA4725@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 7 May 2007 06:41:14 -0400
+Date: Mon, 07 May 2007 03:41:17 -0700 (PDT)
+Message-Id: <20070507.034117.115910272.davem@davemloft.net>
+To: tilman@imap.cc
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, netdev@vger.kernel.org
+Subject: Re: trying to track a change to drivers/isdn/usb-gigaset.c
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <463EF77A.9020808@imap.cc>
+References: <463EF77A.9020808@imap.cc>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I don't think I need macintosh drivers for my x86 arch selected in by default,
-  do I?
+From: Tilman Schmidt <tilman@imap.cc>
+Date: Mon, 07 May 2007 11:55:06 +0200
 
------
-From: Borislav Petkov <bbpetkov@yahoo.de>
+[ netdev@vger.kernel.org is the place to discuss kernel networking
+  issues, thanks ]
 
-Do not select macintosh drivers by default.
+> But I cannot remember seeing that patch via the maintainer
+> addresses for ISDN or the Gigaset driver, and the LKML archive
+> doesn't seem to have it either.
+> 
+> Where was that patch discussed? What is its rationale?
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
+This was a wholesale change done across the entire tree, they were all
+straightforward transformations that didn't change what the code did.
 
---
-Index: trees/linux-mm/drivers/macintosh/Kconfig
-===================================================================
---- linux-mm.orig/drivers/macintosh/Kconfig
-+++ linux-mm/drivers/macintosh/Kconfig
-@@ -2,7 +2,6 @@
- menuconfig MACINTOSH_DRIVERS
- 	bool "Macintosh device drivers"
- 	depends on PPC || MAC || X86
--	default y
+It was a change done so that we could hide the skb data buffering
+details to the point where we could change the protocol header
+pointers into 32-bit offsets which saves 4 bytes per such pointer per
+protocol header stored in struct sk_buff.
 
- if MACINTOSH_DRIVERS
+We're not going to notify the maintainer of each of the hundreds of
+source files we had to touch in order to pull this off, sorry.
 
--- 
-Regards/Gruﬂ,
-    Boris.
+These changes were posted to netdev@vger.kernel.org, they also
+sat in Andrew Morton's -mm tree for quite some time.
