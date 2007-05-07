@@ -1,48 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966047AbXEGRUR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966027AbXEGR13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966047AbXEGRUR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 13:20:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965672AbXEGRUM
+	id S966027AbXEGR13 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 13:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965984AbXEGR12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 13:20:12 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:55583 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965104AbXEGRUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 13:20:10 -0400
-Date: Mon, 7 May 2007 10:18:54 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Chris Wright <chrisw@sous-sol.org>, LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86-64 highres/dyntick support
-Message-ID: <20070507171854.GQ3505@sequoia.sous-sol.org>
-References: <1178485128.31213.98.camel@localhost.localdomain> <20070507163110.GP3505@sequoia.sous-sol.org> <1178556361.3042.16.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178556361.3042.16.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Mon, 7 May 2007 13:27:28 -0400
+Received: from atlrel7.hp.com ([156.153.255.213]:41476 "EHLO atlrel7.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965979AbXEGR11 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 13:27:27 -0400
+Subject: Re: [PATCH 2.6.21-mm1]  remove unionfs reference to
+	SLAB_CTOR_VERIFY
+From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+To: Josef Sipek <jsipek@fsl.cs.sunysb.edu>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, jsipek@cs.sunysb.edu,
+       Eric Whitney <eric.whitney@hp.com>
+In-Reply-To: <20070507171608.GA23382@filer.fsl.cs.sunysb.edu>
+References: <1178551352.5079.25.camel@localhost>
+	 <20070507171608.GA23382@filer.fsl.cs.sunysb.edu>
+Content-Type: text/plain; charset=UTF-8
+Organization: HP/OSLO
+Date: Mon, 07 May 2007 13:27:25 -0400
+Message-Id: <1178558846.5079.47.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Thomas Gleixner (tglx@linutronix.de) wrote:
-> On Mon, 2007-05-07 at 09:31 -0700, Chris Wright wrote:
-> > * Thomas Gleixner (tglx@linutronix.de) wrote:
-> > > I'm pleased to announce the first cut of the final x86_64
-> > > highres/dyntick support, which I did based on Chris Wright's patch set,
-> > > which is again based on Arjan van de Ven's initial work:
+On Mon, 2007-05-07 at 13:16 -0400, Josef Sipek wrote:
+> On Mon, May 07, 2007 at 11:22:32AM -0400, Lee Schermerhorn wrote:
+> > With unionfs included as a module, 2.6.21-mm1 build broke with:
 > > 
-> > Cool.  I had finished mine as well, just didn't get time to polish
-> > and resubmit.
+> > fs/unionfs/super.c: In function ‘init_once’:
+> > fs/unionfs/super.c:822: error: ‘SLAB_CTOR_VERIFY’ undeclared (first use in this function)
+> > fs/unionfs/super.c:822: error: (Each undeclared identifier is reported only oncefs/unionfs/super.c:822: error: for each function it appears in.)
+> > 
+> > Looks like it missed the removal of SLAB_CTOR_VERIFY.  
+>  
+> This fix (by Adrian Bunk) is already in the unionfs git tree.
 > 
-> Hrmpf, you could have saved my weekend :)
+> Thanks anyway.
 
-Yeah, timing was just off, sorry about that.  I'm sure it'll improve
-the end result ;-)
+OK.  I just ran into the issue this am with 21-mm1.  I didn't see the
+fix in the MARC archives, but they haven't been updated since ~3may.
+Sorry for the noise...
 
-thanks,
--chris
+Lee
+
