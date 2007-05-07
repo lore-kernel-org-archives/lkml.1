@@ -1,111 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933367AbXEGLzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933387AbXEGMAG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933367AbXEGLzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 07:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933460AbXEGLzk
+	id S933387AbXEGMAG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 08:00:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933463AbXEGMAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 07:55:40 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:1608 "EHLO mail.z-net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933367AbXEGLzj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 07:55:39 -0400
-Date: Mon, 7 May 2007 15:55:11 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Jarek Poplawski <jarkao2@o2.pl>, Andrew Morton <akpm@linux-foundation.org>,
-       David Chinner <dgc@sgi.com>, David Howells <dhowells@redhat.com>,
-       Gautham Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] make-cancel_rearming_delayed_work-reliable-fix
-Message-ID: <20070507115511.GA10367@zarina>
-Reply-To: cbou@mail.ru
-References: <20070503204226.GA212@tv-sign.ru> <20070503181513.0b0aa4fb.akpm@linux-foundation.org> <20070505213213.GA1013@tv-sign.ru> <20070507103107.GD1754@ff.dom.local> <20070507103420.GA74@tv-sign.ru>
+	Mon, 7 May 2007 08:00:06 -0400
+Received: from rex.snapgear.com ([203.143.235.140]:35257 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S933387AbXEGMAE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 08:00:04 -0400
+Message-ID: <463F14BA.3030304@snapgear.com>
+Date: Mon, 07 May 2007 21:59:54 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 1.5.0.9 (X11/20070102)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20070507103420.GA74@tv-sign.ru>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Robin Getz <rgetz@blackfin.uclinux.org>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>, Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [PATCH]: linux-2.6.21-uc0 (MMU-less updates)
+References: <46382055.8030203@snapgear.com> <200705030735.36879.rgetz@blackfin.uclinux.org> <4639E40D.6030809@snapgear.com> <200705041212.03614.rgetz@blackfin.uclinux.org> <20070506114453.GB29643@flint.arm.linux.org.uk>
+In-Reply-To: <20070506114453.GB29643@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 02:34:20PM +0400, Oleg Nesterov wrote:
-> On 05/07, Jarek Poplawski wrote:
-> >
-> > There is a lot of new things in the final version of this
-> > patch. I guess, there was no such problem in the previous
-> > version.
+Russell King wrote:
+> On Fri, May 04, 2007 at 12:12:03PM -0400, Robin Getz wrote:
+>>>> Depending on how TASK_SIZE is defined - it looks like everyone else
+>>>> forces it to end of memory, except 68k[nommu].
+>>>>
+>>>> asm-arm/memory.h:#define TASK_SIZE              (CONFIG_DRAM_SIZE)
+>>> That is one way to handle it. Have you followed all the other
+>>> uses of TASK_SIZE and verified it is not a problem?
+>> No, I assumed that Russell/David were smarter than we were, and that doing so 
+>> would not be a problem :)
 > 
-> No, this is basically the same patch + re-check-cwq-after-lock,
-> the latter is mostly needed to prevent racing with CPU-hotplug.
+> Don't look at me - the above came from Hyok, and I just assumed that it
+> was correct without really understanding it.
 > 
-> > I can also see you have new doubts about usefulness, which
-> > I cannot understand:
-> > - even if there are some slowdowns, where does it matter?
-> > - the "old" method uses only one method of cancelling, i.e.
-> > del_timer, not trying to stop requeuing or to remove from
-> > the queue; it seems to be effective only with long delayed
-> > timers, and its real problems are probably mostly invisible.
-> 
-> The slowdown is small, changelog mentions it just to be "fair".
-> 
-> I am not happy with the complication this patch adds, mostly
-> I hate this smb_wmb() in insert_work(). I have an idea how to
-> remove it later, but this needs another patch not related to
-> workqueue.c.
-> 
-> > BTW, I'm still not convinced all additions are needed:
-> > the "old" cancel_rearming_  doesn't care about checking
-> > or waiting on anything after del_timer positive.
-> 
-> It would be very strange to do wait_on_work() only in case
-> when del_timer() failed. This way we still need to do
-> cancel_work_sync() after cancel_rearming_delayed_work(),
-> but only when del_timer() failed, ugly. Note also that
-> wait_on_work() does not sleep if work->func() is not running.
-> 
-> Also, consider this callback:
-> 
-> 	void work_handler(struct work_struct *w)
-> 	{
-> 		struct delayed_work dw = container_of(...);
-> 
-> 		queue_delayed_work(dw, delay);
-> 
-> 		// <------------- cancel_rearming_delayed_work()
-> 
-> 		cancel_delayed_work(dw);
-> 		queue_delayed_work(dw, another_delay);
-> 	}
-> 
-> Yes, this is strange and ugly. But correct! The current version
+> I've noticed though that Hyok's gone rather quiet, so I'm not sure
+> whether we'll ever get ARM uclinux integration complete.
 
-I guess pseudo code below is not that strange, but real usecase:
+We can do this without Hyok.
 
-probe()
-{
-	INIT_DELAYED_WORK(...);
-	/* we're not issuing queue_delayed_work() in probe(), work will
-	 * be started by interrupt */
-	return;
-}
+The patches I sent to arm-linux-kernel last week fill all the gaps
+that I see. I'll be reworking that over the coming weeks to try and
+get something that is acceptable to all, so we can get this done.
 
-remove()
-{
-	/* hang will happen here if there was no queue_delyed_work()
-	 * call (like there was no interrupts, which starts rearming
-	 * work */
-	cancel_rearming_delayed_work();
-}
+Regards
+Greg
 
 
-Your patch will fix it, right?
 
-> Oleg.
-
-Good luck,
-
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
+------------------------------------------------------------------------
+Greg Ungerer  --  Chief Software Dude       EMAIL:     gerg@snapgear.com
+SnapGear -- a Secure Computing Company      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
