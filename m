@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbXEGNE1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933766AbXEGNJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933751AbXEGNE1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 09:04:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933771AbXEGNE1
+	id S933766AbXEGNJB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 09:09:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933771AbXEGNJB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 09:04:27 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:37965 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933688AbXEGNEZ (ORCPT
+	Mon, 7 May 2007 09:09:01 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36697 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933766AbXEGNJA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 09:04:25 -0400
-Date: Mon, 7 May 2007 18:34:29 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 5/5] ext4: write support for preallocated blocks/extents
-Message-ID: <20070507130429.GA6681@amitarora.in.ibm.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426181623.GE7209@amitarora.in.ibm.com> <84144f020705070540tf3b1986yd4b1ab65e3a17d5e@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020705070540tf3b1986yd4b1ab65e3a17d5e@mail.gmail.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 7 May 2007 09:09:00 -0400
+Date: Mon, 07 May 2007 22:07:36 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: mel@skynet.ie (Mel Gorman)
+Subject: Re: fragmentation avoidance Re: 2.6.22 -mm merge plans
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, apw@shadowen.org, clameter@sgi.com
+In-Reply-To: <20070501101651.GA29957@skynet.ie>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501101651.GA29957@skynet.ie>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070507211327.3129.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 03:40:26PM +0300, Pekka Enberg wrote:
-> On 4/26/07, Amit K. Arora <aarora@linux.vnet.ibm.com> wrote:
-> > /*
-> >+ * ext4_ext_try_to_merge:
-> >+ * tries to merge the "ex" extent to the next extent in the tree.
-> >+ * It always tries to merge towards right. If you want to merge towards
-> >+ * left, pass "ex - 1" as argument instead of "ex".
-> >+ * Returns 0 if the extents (ex and ex+1) were _not_ merged and returns
-> >+ * 1 if they got merged.
-> >+ */
-> >+int ext4_ext_try_to_merge(struct inode *inode,
-> >+                               struct ext4_ext_path *path,
-> >+                               struct ext4_extent *ex)
-> >+{
+
+Sorry for late response. I went on a vacation in last week.
+And I'm in the mountain of a ton of unread mail now....
+
+> > Mel's moveable-zone work.
 > 
-> Please either use proper kerneldoc format or drop
-> "ext4_ext_try_to_merge" from the comment.
+> These patches are what creates ZONE_MOVABLE. The last 6 patches should be
+> collapsed into a single patch:
+> 
+> 	handle-kernelcore=-generic
+> 
+> I believe Yasunori Goto is looking at these from the perspective of memory
+> hot-remove and has caught a few bugs in the past. Goto-san may be able to
+> comment on whether they have been reviewed recently.
 
-Ok, Thanks.
+Hmm, I don't think my review is enough.
+To be precise, I'm just one user/tester of ZONE_MOVABLE.
+I have tried to make memory remove patches with Mel-san's
+ZONE_MOVABLE patch. And the bugs are things that I found in its work.
+(I'll post these patches in a few days.)
 
---
-Regards,
-Amit Arora
+> The main complexity is in one function in patch one which determines where
+> the PFN is in each node for ZONE_MOVABLE. Getting that right so that the
+> requested amount of kernel memory spread as evenly as possible is just
+> not straight-forward.
+
+>From memory-hotplug view, ZONE_MOVABLE should be aligned by section
+size. But MAX_ORDER alignment is enough for others...
+
+Bye.
+
+-- 
+Yasunori Goto 
+
+
