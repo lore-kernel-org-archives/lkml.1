@@ -1,290 +1,166 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932753AbXEGLBa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXEGLDq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932753AbXEGLBa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 07:01:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932764AbXEGLBa
+	id S932903AbXEGLDq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 07:03:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbXEGLDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 07:01:30 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:40301 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932753AbXEGLB3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 07:01:29 -0400
-Date: Mon, 7 May 2007 12:01:27 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-Subject: [resend] [git pull] DRM patches for 2.6.22-rc1 (fwd)
-Message-ID: <Pine.LNX.4.64.0705071152000.18531@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: MULTIPART/Mixed; BOUNDARY="29444707-1112504443-1177730913=:8378"
-Content-ID: <Pine.LNX.4.64.0705071150390.18531@skynet.skynet.ie>
+	Mon, 7 May 2007 07:03:46 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:34611 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932764AbXEGLDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 07:03:44 -0400
+Date: Mon, 7 May 2007 16:33:48 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070507110348.GA7012@amitarora.in.ibm.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070503212955.b1b6443c.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070503212955.b1b6443c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
---29444707-1112504443-1177730913=:8378
-Content-Type: TEXT/PLAIN; CHARSET=X-UNKNOWN; FORMAT=flowed
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0705071150391.18531@skynet.skynet.ie>
-
-
-Hi Linus,
-
-(I don't think this stuff landed yet...)
-
-It doesn't contain the new TTM stuff that is being discussed...
-
-Please pull the 'drm-patches' branch of
-git://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
-
-This contains the drm patch for 2.6.22-rc1, and contains a number of fixes
-in the mmap code and the locking for AIGLX systems along with new hw support
-for i965GM.
-
-Dave.
-
-    drivers/char/drm/README.drm    |   16 +++--
-    drivers/char/drm/drm.h         |    4 +-
-    drivers/char/drm/drmP.h        |   23 +------
-    drivers/char/drm/drm_bufs.c    |   75 +++--------------------
-    drivers/char/drm/drm_drv.c     |    9 +--
-    drivers/char/drm/drm_fops.c    |   96 ++++++++++++++--------------
-    drivers/char/drm/drm_hashtab.c |   17 +-----
-    drivers/char/drm/drm_hashtab.h |    1 -
-    drivers/char/drm/drm_irq.c     |    4 +-
-    drivers/char/drm/drm_lock.c    |  134 ++++++++-------------------------------
-    drivers/char/drm/drm_mm.c      |    2 +
-    drivers/char/drm/drm_pciids.h  |    3 +-
-    drivers/char/drm/drm_proc.c    |    2 +-
-    drivers/char/drm/drm_stub.c    |    1 -
-    drivers/char/drm/drm_vm.c      |  102 ++++++++++++-------------------
-    drivers/char/drm/i915_dma.c    |    3 +-
-    drivers/char/drm/radeon_cp.c   |    8 +-
-    drivers/char/drm/sis_drv.c     |    2 +-
-    drivers/char/drm/via_drv.c     |    3 +-
-    drivers/char/drm/via_mm.h      |   40 ++++++++++++
-    20 files changed, 196 insertions(+), 349 deletions(-)
-
-commit ce7dd06372058f9e3e57ee4c0aeba694a43a80ad
-Author: Wang Zhenyu <zhenyu.z.wang@intel.com>
-Date:   Thu Apr 26 07:42:56 2007 +1000
-
-       drm/i915: Add 965GM pci id update
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 9e9c1326a592c677c94d730fcf4446d0e275aef4
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Sat Mar 24 17:57:54 2007 +1100
-
-       drm: just use io_remap_pfn_range on all archs..
-
-       Move the sparc64 ifdef around to clean this up.
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 38315878a560eede1a2db52e511ad3a2cfbb4206
-Author: Hugh Dickins <hugh@veritas.com>
-Date:   Sat Mar 24 17:55:16 2007 +1100
-
-       drm: fix DRM_CONSISTENT mapping
-
-       This patch got lost in the DRM git tree for ages, bring it back to life.
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit d7d8aac79dc38cbdef83b774e49bafdae9918137
-Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-Date:   Sat Mar 24 17:52:49 2007 +1100
-
-       drm: fix up mmap locking in preparation for ttm changes
-
-       This change is needed to protect againt disappearing maps which aren't 
-common.
-       The map lists are protected using sturct_mutex but drm_mmap never locked 
-it.
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 040ac32048d5efabd557c1e0a6ab8aec2c710c56
-Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-Date:   Fri Mar 23 13:28:33 2007 +1100
-
-       drm: fix driver deadlock with AIGLX and reclaim_buffers_locked
-
-       Bugzilla Bug #9457
-
-       Add refcounting of user waiters to the DRM hardware lock, so that we can 
-use
-       DRM_LOCK_CONT flag more conservatively.
-
-       Also add a kernel waiter refcount that if nonzero transfers the lock for 
-the
-       kernel context when it is released. This is useful when waiting for idle 
-and can be used for very simple fence object driver implementations for the new 
-memory manager
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 4b560fde06aeb342f3ff0bce924627ab722d251a
-Author: Andrew Morton <akpm@linux-foundation.org>
-Date:   Mon Mar 19 09:08:21 2007 +1100
-
-       drm: fix warning in drm_fops.c
-
-       drivers/char/drm/drm_fops.c: In function 'drm_setup':
-       drivers/char/drm/drm_fops.c:60: warning: comparison of distinct pointer 
-types lacks a cast
-
-       Unfortunately PAGE_SIZE has different types on different architectures.
-
-       Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 99da6d861c659bb1a961b70f50fad268b9ed5a5f
-Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-Date:   Mon Mar 19 08:52:17 2007 +1100
-
-       drm: allow for more generic drm ioctls
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 6244270ef62203e057191bf85489e2ff91cc0e60
-Author: Jay Estabrook <Jay.Estabrook@hp.com>
-Date:   Sun Mar 11 11:46:27 2007 +1100
-
-       drm: fix alpha domain handling
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 74be8e3b3707956f8f232313de9fad896d5489ac
-Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-Date:   Sun Mar 11 11:45:24 2007 +1100
-
-       via: fix CX700 pci id
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 0bead7cdc94b4897f3d92db6170737a2da527134
-Author: Adrian Bunk <bunk@stusta.de>
-Date:   Sun Mar 11 11:41:16 2007 +1100
-
-       drm: make drm_io_prot static.
-
-       This patch makes the needlessly global drm_io_prot() static.
-
-       Signed-off-by: Adrian Bunk <bunk@stusta.de>
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 5379397182a7b5fa1c68ceaefe311ce4c1d04b2a
-Author: Robert P. J. Day <rpjday@mindspring.com>
-Date:   Sun Mar 11 11:39:31 2007 +1100
-
-       drm: remove via_mm.h
-
-       Delete apparently unused header file drivers/char/drm/via_mm.h.
-
-       Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit c1185ccdfb797df82fa84b581eea128041bd63b0
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Sun Feb 18 18:23:11 2007 +1100
-
-       drm: add missing NULL assignment
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 80b2c386f3d8c3367533a8600b599f8686c9d386
-Author: Michel Dänzer <michel@tungstengraphics.com>
-Date:   Sun Feb 18 18:03:21 2007 +1100
-
-       drm/radeon: Fix u32 overflows when determining AGP base address in card 
-space.
-
-       The overflows could lead to the AGP aperture overlapping the framebuffer 
-are    in the card's address space when the latter is located at the very end 
-of th    32 bit address space, which would result in a freeze on X server 
-startup,
-       probably because the card read commands from the framebuffer instead of 
-from    AGP.
-
-       See http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=392915 .
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit cd839d0048c3cb332cb0cd7d3de3431f8e1d3c7a
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Sun Feb 18 17:14:09 2007 +1100
-
-       drm: port over use_vmalloc code from git hashtab
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 11d9c2fd0ae74647ea2b52f9bdfa7a920b48d1f1
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Sun Feb 18 17:13:39 2007 +1100
-
-       drm: fix crash with fops lock and fixup sarea/page size locking
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 54ba2f76e281286cf4b2860ed8354602eab4c1ef
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Sat Feb 10 12:07:47 2007 +1100
-
-       drm: bring bufs code from git tree.
-
-       This checks the AGP mappings are in a valid place and also fixes the size
-       check in the vm..
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 5cc7f9abec8391e43b0a052c8880509668e24b35
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Sat Feb 10 11:53:13 2007 +1100
-
-       drm: move protection stuff into separate function
-
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 8311d570bcb3faea68941ebd5e240eb2e96d65a0
-Author: Ahmed S. Darwish <darwish.07@gmail.com>
-Date:   Fri Feb 9 10:30:10 2007 +1100
-
-       drm: Use ARRAY_SIZE macro when appropriate
-
-       Use ARRAY_SIZE macro already defined in kernel.h
-
-       Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
-       Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit f54d1e40b2732cd882646de3c860d24a6920cbc2
-Author: Randy Dunlap <randy.dunlap@oracle.com>
-Date:   Fri Feb 9 10:28:21 2007 +1100
-
-       drm: update README.drm (bugzilla #7933)
-
-       Update URLs in drivers/char/drm/README.drm, to take care of kernel bugzilla
-
-       Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-       Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-commit 41ed5de9714f3690642d50c44973308476a7d334
-Author: Adrian Bunk <bunk@stusta.de>
-Date:   Fri Feb 9 10:25:22 2007 +1100
-
-       drm: remove unused exports
-
-       This patch removes two unused exports.
-
-       Signed-off-by: Adrian Bunk <bunk@stusta.de>
-       Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-       Signed-off-by: Dave Airlie <airlied@linux.ie>
---29444707-1112504443-1177730913=:8378--
+Andrew,
+
+Thanks for the review comments!
+
+On Thu, May 03, 2007 at 09:29:55PM -0700, Andrew Morton wrote:
+> On Thu, 26 Apr 2007 23:33:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+> 
+> > This patch implements the fallocate() system call and adds support for
+> > i386, x86_64 and powerpc.
+> > 
+> > ...
+> >
+> > +asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
+> 
+> Please add a comment over this function which specifies its behaviour. 
+> Really it should be enough material from which a full manpage can be
+> written.
+> 
+> If that's all too much, this material should at least be spelled out in the
+> changelog.  Because there's no way in which this change can be fully
+> reviewed unless someone (ie: you) tells us what it is setting out to
+> achieve.
+> 
+> If we 100% implement some standard then a URL for what we claim to
+> implement would suffice.  Given that we're at least using different types from
+> posix I doubt if such a thing would be sufficient.
+> 
+> And given the complexity and potential variability within the filesystem
+> implementations of this, I'd expect that _something_ additional needs to be
+> said?
+
+Ok. I will add a detailed comment here.
+
+> 
+> > +{
+> > +	struct file *file;
+> > +	struct inode *inode;
+> > +	long ret = -EINVAL;
+> > +
+> > +	if (len == 0 || offset < 0)
+> > +		goto out;
+> 
+> The posix spec implies that negative `len' is permitted - presumably "allocate
+> ahead of `offset'".  How peculiar.
+
+I think we should go ahead with current glibc implementation (which
+Jakub poited at) of not allowing a negative 'len', since posix also
+doesn't explicitly say anything about allowing negative 'len'.
+
+> 
+> > +	ret = -EBADF;
+> > +	file = fget(fd);
+> > +	if (!file)
+> > +		goto out;
+> > +	if (!(file->f_mode & FMODE_WRITE))
+> > +		goto out_fput;
+> > +
+> > +	inode = file->f_path.dentry->d_inode;
+> > +
+> > +	ret = -ESPIPE;
+> > +	if (S_ISFIFO(inode->i_mode))
+> > +		goto out_fput;
+> > +
+> > +	ret = -ENODEV;
+> > +	if (!S_ISREG(inode->i_mode))
+> > +		goto out_fput;
+> 
+> So we return ENODEV against an S_ISBLK fd, as per the posix spec.  That
+> seems a bit silly of them.
+
+True. 
+ 
+> > +	ret = -EFBIG;
+> > +	if (offset + len > inode->i_sb->s_maxbytes)
+> > +		goto out_fput;
+> 
+> This code does handle offset+len going negative, but only by accident, I
+> suspect.  It happens that s_maxbytes has unsigned type.  Perhaps a comment
+> here would settle the reader's mind.
+
+Ok. I will add a check here for wrap though zero.
+ 
+> > +	if (inode->i_op && inode->i_op->fallocate)
+> > +		ret = inode->i_op->fallocate(inode, mode, offset, len);
+> > +	else
+> > +		ret = -ENOSYS;
+> 
+> If we _are_ going to support negative `len', as posix suggests, I think we
+> should perform the appropriate sanity conversions to `offset' and `len'
+> right here, rather than expecting each filesystem to do it.
+> 
+> If we're not going to handle negative `len' then we should check for it.
+
+Will add a check for negative 'len' and return -EINVAL. This will be
+done where currently we check for negative offset (i.e. at the start of
+the function).
+ 
+> > +out_fput:
+> > +	fput(file);
+> > +out:
+> > +	return ret;
+> > +}
+> > +EXPORT_SYMBOL(sys_fallocate);
+> 
+> I don't believe this needs to be exported to modules?
+
+Ok. Will remove it.
+ 
+> > +/*
+> > + * fallocate() modes
+> > + */
+> > +#define FA_ALLOCATE	0x1
+> > +#define FA_DEALLOCATE	0x2
+> 
+> Now those aren't in posix.  They should be documented, along with their
+> expected semantics.
+
+Will add a comment describing the role of these modes.
+ 
+> >  #ifdef __KERNEL__
+> >  
+> >  #include <linux/linkage.h>
+> > @@ -1125,6 +1131,7 @@ struct inode_operations {
+> >  	ssize_t (*listxattr) (struct dentry *, char *, size_t);
+> >  	int (*removexattr) (struct dentry *, const char *);
+> >  	void (*truncate_range)(struct inode *, loff_t, loff_t);
+> > +	long (*fallocate)(struct inode *, int, loff_t, loff_t);
+> 
+> I really do think it's better to put the variable names in definitions such
+> as this.  Especially when we have two identically-typed variables next to
+> each other like that.  Quick: which one is the offset and which is the
+> length?
+
+Ok. Will add the variable names here.
+
+--
+Regards,
+Amit Arora
