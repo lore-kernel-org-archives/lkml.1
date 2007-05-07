@@ -1,69 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753376AbXEGBll@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753388AbXEGBmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753376AbXEGBll (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 21:41:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXEGBll
+	id S1753388AbXEGBmw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 21:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXEGBmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 21:41:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37044 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753289AbXEGBlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 21:41:40 -0400
-Subject: Re: RFC airo : wpa support
-From: Dan Williams <dcbw@redhat.com>
-To: matthieu castet <castet.matthieu@free.fr>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
-In-Reply-To: <463BB946.3000807@free.fr>
-References: <463BB946.3000807@free.fr>
-Content-Type: text/plain
-Date: Sun, 06 May 2007 21:45:36 -0400
-Message-Id: <1178502336.25436.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Sun, 6 May 2007 21:42:52 -0400
+Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:25343 "HELO
+	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753388AbXEGBmv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 21:42:51 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Disposition:Message-Id:Content-Type:Content-Transfer-Encoding;
+  b=sdF4qU72c8uWS85uXFdkzJUTD2OtUul/LFLSfRoq7vnZp/L1KFKWIoC0l+Hm5xzl/KWsAShiFcVbVDhzE90Kp1fFHnV3V3wBX+Cq54l8nvZt7H74G4PFjI/AzUGH2ay2ZmxPBuLoJueXe94i/oJ0RI0Zz4dcKXZ+UGVCIAIxnlo=  ;
+X-YMail-OSG: fos973EVM1nrKB5ijhlp76SPBMJsi7.GiexXRylozgIxlqYaRkpXhU80PPsp8wfI9viNPMZ.4A--
+From: David Brownell <david-b@pacbell.net>
+To: Anton Vorontsov <cbou@mail.ru>
+Subject: Re: [PATCH 2/7] [RFC] Common power driver for Linux gadgets
+Date: Sun, 6 May 2007 18:39:27 -0700
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+References: <200704122306.46518.david-b@pacbell.net>
+In-Reply-To: <200704122306.46518.david-b@pacbell.net>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200705061839.27477.david-b@pacbell.net>
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-05 at 00:52 +0200, matthieu castet wrote:
-> Hi,
+On Thursday 12 April 2007, David Brownell wrote:
+> > This driver used to stop code/logic duplication through different
+> > machines we porting at handhelds.org. pda_power register machs' power
+> > supplies, and will take care about notifying batteries about power
+> > changes through external power interface.
 > 
-> I attach a diff against 2.6.21 for adding wpa support for airo driver.
-> In then end of 2005 I manage to make work wpa but the code was really 
-> ugly. I manage to find some time to clean it.
-> 
-> 
-> To support wpa, a new interface of the firmware should be used. This 
-> interface is incompatible with the old interface and using both 
-> interface at the same time make the firmware hang.
-> 
-> Porting OPEN and WEP mode to new interface need some driver rewrite, and 
-> the old interface should be keep for the older cards (or the cards that 
-> doesn't have newer firmware).
-> That's why I didn't do it, and I added a module parameter for choosing 
-> between the old driver behavior (with no wpa support) or the driver with 
-> wpa only support.
+> It gets USB power management wrong though. ...
 
-Nice, thanks for cleaning it up.  However, having a module option for
-WPA vs. no WPA gets a big, big NAK from me.  We need to be able to have
-it all co-exist.  I'll see if I can clean it up and make the modes able
-to function in parallel.
+And that seems not to have been resolved in the version you
+reposted and then put into your GIT tree, either ... what's
+your plan for addressing the feedback, then?
 
-> The wireless extension handlers are a bit ugly, I will be very happy, if 
-> somebody could help me to clean them.
 
-I can take a shot at it.
+> Key points:
+> 
+>  - The API needs to say *how much power* can be drawn.  ...
+> 
+>  - Sensing VBUS power is not the same thing as being allowed to consume
+>    it.  Again, USB OTG devices are different...
+> 
+> In general, no component other than the USB peripheral (or host) controller
+> driver has any business trying to control how VBUS power is used.  It's
+> likely to get it wrong ... as shown by this patch.  ;)
 
-Dan
+I see on other LKML threads that folk are spreading misinformation
+about USB, like "no control signaling over USB for power control".
+I sincerly hope you're not believing that's correct!
 
-> Any comments are appreciated.
-> 
-> 
-> Matthieu
-> 
-> 
-> PS : the lastest version of the driver can be found in 
-> http://svn.gna.org/viewcvs/airo-wpa/branches/kernel/
-> 
-> PS2 : There is some remaining trace in the driver for debug purpose, 
-> that will be removed in the final version
 
+Plus, I'm wondering why this doesn't try to leverage the voltage
+framework that's been posted (to the ARM list, most recently).
+
+At some level there's not a lot different between saying "turn on
+the 3V3 supply to this MMC card slot, budgeting 80mA" and saying
+instead "let the system draw up to 200 mA from USB VBUS".  The
+current goes in different directions in those examples, sure.  Plus
+the usage of VBUS as a power _input_ is of course board-specific:
+battery charging, or powering specific circuits (like USB), etc.
+
+Then there are devices which _output_ power on VBUS of course ...
+so the only difference between that and the MMC example being how
+much of the power budget is consumed.  Plus devices which either
+use VBUS as an input or an output, based on how they're hooked up.
+
+All of those are differences that seem to fit better into the notion
+of a general purpose voltage framework than this "power" thing
+you've provided.  (Batter management being a separate issue.)
+
+
+Also that whole notion that there's only a handful of power "supplies"
+to manage ("ac", "main-battery", "usb") just flies in the face of
+how most boards actually work -- multiple voltage rails and switches,
+more types than battery/UPS/"AC"/USB, etc -- and the mechanisms needed
+to manage power when it's critical to eke out every last milliWatt.
+
+- Dave
