@@ -1,70 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965698AbXEGQXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965744AbXEGQ3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965698AbXEGQXe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 12:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965570AbXEGQXd
+	id S965744AbXEGQ3b (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 12:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965687AbXEGQ3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 12:23:33 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:1995 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965558AbXEGQXd (ORCPT
+	Mon, 7 May 2007 12:29:31 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:10621 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965589AbXEGQ3a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 12:23:33 -0400
-Message-ID: <463F527B.4030509@imap.cc>
-Date: Mon, 07 May 2007 18:23:23 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
+	Mon, 7 May 2007 12:29:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=mA9XZVP3nOwZejTQdedcmtKG3DEYm7l1rbENKUEb0dVrkArfT6ejgBcSMJe8iVy5NP/c90F1+mTEe7ULBnDAkxRPJwHd9LlyJEpBgvle97gxrgF4DOkSWxOCunHSJKSO9tFfVsg1vsoxgi0YwzC4yVMjgBtD1QDTdAlVqKpsiU8=
+Message-ID: <a781481a0705070929q18525cbdp1e3b99705a7b18d4@mail.gmail.com>
+Date: Mon, 7 May 2007 21:59:28 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+Subject: Re: gmail is a bit too popular..
+Cc: "Matti Aarnio" <matti.aarnio@zmailer.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.0.98.0705071101510.6512@sigma.j-a-k-j.com>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org, acme@redhat.com, netdev@vger.kernel.org
-Subject: Re: trying to track a change to drivers/isdn/usb-gigaset.c
-References: <463EF77A.9020808@imap.cc> <20070507.034117.115910272.davem@davemloft.net>
-In-Reply-To: <20070507.034117.115910272.davem@davemloft.net>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4F3726D7F8EC3654B4594E34"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070507145555.GG3883@mea-ext.zmailer.org>
+	 <alpine.DEB.0.98.0705071101510.6512@sigma.j-a-k-j.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4F3726D7F8EC3654B4594E34
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On 5/7/07, John Anthony Kazos Jr. <jakj@j-a-k-j.com> wrote:
+> > In the  linux-kernel  -list subscribers domain popularity
+> > analysis I got following results:
+> >
+> >    2101 gmail.com
+> >      49 googlemail.com
+> >      46 gmx.de
+> >      41 redhat.com
+> >      33 yahoo.com
+> >      23 suse.de
+> >      22 gmx.net
+> >      21 comcast.net
+> >
+> >
+> > The  gmail  is so popular, that with their somewhat rudimentary
+> > inbound MTA software this kind of recipient masses take horrible
+> > time to feed in...  Mere 0.5-0.7 seconds per recipient, but..
+> [...]
+> How about some elitism here? Dedicate a certain number of streams to
+> everything-except-gmail, so MTAs from the 21st century can get their mail
+> faster, and set the rest on gmail-only. Slows down gmail and speeds up the
+> rest?
 
-David Miller schrieb:
-> [ netdev@vger.kernel.org is the place to discuss kernel networking
->   issues, thanks ]
-
-OIC. My bad. I didn't make the connection from "skb" to "networking". Sor=
-ry.
-
-> It was a change done so that we could hide the skb data buffering
-> details to the point where we could change the protocol header
-> pointers into 32-bit offsets which saves 4 bytes per such pointer per
-> protocol header stored in struct sk_buff.
-
-Thanks for the explanation.
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig4F3726D7F8EC3654B4594E34
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGP1J7MdB4Whm86/kRAhFVAJoDavWzJI0JB/25462KFZRP/RT9VgCcDQ+1
-brkVMCEPOahm/JDaa3nut3Y=
-=dyoQ
------END PGP SIGNATURE-----
-
---------------enig4F3726D7F8EC3654B4594E34--
+Aargh ... what did us poor folk do to deserve this? I understand ~2000
+of those Gmail users are only spectators, but most others don't have a
+choice. In my case, my university doesn't allow mailboxes to go beyond
+a certain limit and only a couple of weeks worth of lkml would eat
+that up. And I suspect other free web mail servers that offer 3 GB of
+space too would be equally slower. But I do hope someone from Google
+listened to this -- half a second per recipient ... *sucks*.
