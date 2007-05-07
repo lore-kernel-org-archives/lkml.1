@@ -1,69 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754654AbXEGRvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbXEGRwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754654AbXEGRvk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 13:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754574AbXEGRvj
+	id S1754711AbXEGRwQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 13:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754616AbXEGRwL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 13:51:39 -0400
-Received: from fallback.mail.ru ([194.67.57.14]:24812 "EHLO mx4.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754561AbXEGRvi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 13:51:38 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: hirofumi@mail.parknet.co.jp
-Subject: Long file names in VFAT broken with iocharset=utf8
-Date: Mon, 7 May 2007 21:51:14 +0400
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
+	Mon, 7 May 2007 13:52:11 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:55191 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754608AbXEGRwK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 13:52:10 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Mon, 7 May 2007 13:51:22 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: LKML <linux-kernel@vger.kernel.org>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Consolidate asm/poll.h
+In-Reply-To: <20070507184510.60742ae3.sfr@canb.auug.org.au>
+Message-ID: <Pine.LNX.4.64.0705071350480.27625@localhost.localdomain>
+References: <20070507184510.60742ae3.sfr@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart4194964.7MKHQEKNzt";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705072151.20104.arvidjaar@mail.ru>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart4194964.7MKHQEKNzt
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, 7 May 2007, Stephen Rothwell wrote:
 
-This was posted in one of Russian forums. It was not possible to archive=20
-(under Linux, using tar) vfat directory where files had long Russian names=
-=20
-(really long - over 150 - 170 characters) - tar returned stat failure. When=
-=20
-looking with plain ls, file names appeared truncated.
+> These files are almost all the same.
+>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  include/asm-alpha/poll.h   |   26 +-------------------------
+>  include/asm-arm/poll.h     |   28 +---------------------------
+>  include/asm-arm26/poll.h   |   22 ++--------------------
+>  include/asm-avr32/poll.h   |   28 +---------------------------
+>  include/asm-cris/poll.h    |   27 +--------------------------
+>  include/asm-frv/poll.h     |   18 +++---------------
+>  include/asm-generic/Kbuild |    1 +
+>  include/asm-generic/poll.h |   37 +++++++++++++++++++++++++++++++++++++
+>  include/asm-h8300/poll.h   |   18 +++---------------
+>  include/asm-i386/poll.h    |   28 +---------------------------
+>  include/asm-ia64/poll.h    |   33 +--------------------------------
+>  include/asm-m32r/poll.h    |   33 +--------------------------------
+>  include/asm-m68k/poll.h    |   17 +----------------
+>  include/asm-mips/poll.h    |   21 +--------------------
+>  include/asm-parisc/poll.h  |   28 +---------------------------
+>  include/asm-powerpc/poll.h |   25 +------------------------
+>  include/asm-s390/poll.h    |   36 +-----------------------------------
+>  include/asm-sh/poll.h      |   28 +---------------------------
+>  include/asm-sh64/poll.h    |   33 ++-------------------------------
+>  include/asm-sparc/poll.h   |   14 +-------------
+>  include/asm-sparc64/poll.h |   14 +-------------
+>  include/asm-v850/poll.h    |   17 +----------------
+>  include/asm-x86_64/poll.h  |   28 +---------------------------
+>  include/asm-xtensa/poll.h  |   20 +-------------------
+>  24 files changed, 66 insertions(+), 514 deletions(-)
+>  create mode 100644 include/asm-generic/poll.h
 
-Now looking at current (2.6.21) fat driver, __fat_readdir allocates large=20
-enough buffer (PAGE_SIZE-522) for UTF-8 name; but for iocharset=3Dutf8 it c=
-alls=20
-uni16_to_x8() which artificially limits length of UTF-8 name to 256 ... whi=
-ch=20
-is obviously not enough for long UTF-8 Russian string (2 bytes per characte=
-r)=20
-not to mention the - theoretical - general case of 6 bytes UTF-8 characters.
+hey ... if *this* goes in, can i re-try the same thing with ioctl.h?
 
-Similar problem has apparently vfat_lookup()->...->fat_search_long() call=20
-chain. Except this appears to be broken even in case of "utf8", because=20
-fat_search_long allocates fixed 256 bytes buffer for UTF-8 name.
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-Am I off track here?
-
-=2Dandrey
-
---nextPart4194964.7MKHQEKNzt
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGP2cTR6LMutpd94wRAtG4AKDQ9fjiGKn9lBXe1d/wsj9V6LFYHACgz/mQ
-DyzOj1A+4BSr/AT8rnR6GPk=
-=xXOF
------END PGP SIGNATURE-----
-
---nextPart4194964.7MKHQEKNzt--
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
