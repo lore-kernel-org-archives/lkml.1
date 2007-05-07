@@ -1,56 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966977AbXEGVaq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966805AbXEGVek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966977AbXEGVaq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 17:30:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966834AbXEGVam
+	id S966805AbXEGVek (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 17:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966776AbXEGVei
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 17:30:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39626 "EHLO ogre.sisk.pl"
+	Mon, 7 May 2007 17:34:38 -0400
+Received: from haxent.com ([65.99.219.155]:4554 "EHLO haxent.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966816AbXEGVal (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 17:30:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
-Date: Mon, 7 May 2007 23:35:14 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-References: <200705041132.32227.rjw@sisk.pl> <1178538404.7261.16.camel@johannes.berg> <1178538966.7261.18.camel@johannes.berg>
-In-Reply-To: <1178538966.7261.18.camel@johannes.berg>
+	id S966629AbXEGVeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 17:34:37 -0400
+Message-ID: <463F9B68.305@haxent.com.br>
+Date: Mon, 07 May 2007 18:34:32 -0300
+From: Davi Arnaut <davi@haxent.com.br>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Ulrich Drepper <drepper@gmail.com>
+Cc: Davide Libenzi <davidel@xmailserver.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
+References: <20070504225730.490334000@haxent.com.br>	 <463BC3CA.6050109@haxent.com.br>	 <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com>	 <463CFA37.3020809@haxent.com.br> <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
+In-Reply-To: <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705072335.15357.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday, 7 May 2007 13:56, Johannes Berg wrote:
-> On Mon, 2007-05-07 at 13:46 +0200, Johannes Berg wrote:
-> > On Sat, 2007-05-05 at 15:50 +0200, Rafael J. Wysocki wrote:
-> > 
-> > > @@ -60,6 +60,9 @@ void hibernation_set_ops(struct hibernat
-> > >  	}
-> > >  	mutex_lock(&pm_mutex);
-> > >  	hibernation_ops = ops;
-> > > +	if (ops)
-> > > +		hibernation_mode = HIBERNATION_PLATFORM;
-> > 
-> > 	else if (hibernation_mode == HIBERNATION_PLATFORM)
-> > 		hibernation_mode = HIBERNATION_SHUTDOWN;
+Ulrich Drepper wrote:
+> On 5/5/07, Davi Arnaut <davi@haxent.com.br> wrote:
+>> A google search turns up a few users. It also addresses some complaints
+>> from Drepper.
 > 
-> Also, you could then simplify all the instances of
->   (hibernation_mode == HIBERNATION_PLATFORM && hibernation_ops) 
-> to just
->   (hibernation_mode == HIBERNATION_PLATFORM)
-> in various if statements and other places.
+> There is a huge problem with this approach and we're back at the
+> inadequate interface.
+> 
+> select/poll/epoll are thread cancellation points.  I.e., the thread
+> can be canceled before returning to the user.  If this cancellation
+> happens between the kernel deciding to give this thread the event (and
+> no other thread) and the thread testing for cancellation in the libc
+> wrapper around the syscall, then the event is lost and the process(es)
+> might hang.
+> 
+> With kevent we in the end fixed the problem by requiring that part of
+> the cancellation handling the thread tries to wake up another thread
+> waiting for the event queue.  This is easily possible since the event
+> data is in the shared memory segment and it's just purely the thread
+> wakeup that is needed.
+> 
+> To make something like this work for poll you'd have to push back the
+> revents fields of the result back to the kernel which might then cause
+> another thread to be woken up.  I find this too ugly to consider.  You
+> guys will not believe this but I really thought all these things
+> through before writing the OLS paper.  poll cannot be salvaged.
 
-No, that's not a good idea, because of the "reduce code duplication patch"
-that I'd like to go on top of this.  I'd rather use 'if (hibernation_ops)' here. :-)
+See Linus's message on this same thread.
 
-Greetings,
-Rafael
+> There is another thing about this selective wakeup: do I assume it
+> correctly that if more than one file descriptor is reported ready more
+> than one thread is woken?  I think nothing else can be justified.
+
+Correct.
+
+> Will in this case both threads get the same set of descriptors
+> reported or will they see disjunct sets?
+
+Disjunct. In reality, only if the event is edge triggered.
+
+--
+Davi Arnaut
