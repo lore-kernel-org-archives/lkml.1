@@ -1,70 +1,274 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966341AbXEGTlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbXEGTtK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966341AbXEGTlg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 15:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966316AbXEGTle
+	id S1754773AbXEGTtK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:49:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbXEGTtH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 15:41:34 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:42869 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966302AbXEGTld (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 15:41:33 -0400
-Message-ID: <463F80E3.8020204@zytor.com>
-Date: Mon, 07 May 2007 12:41:23 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Mon, 7 May 2007 15:49:07 -0400
+Received: from holomorphy.com ([66.93.40.71]:39376 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753537AbXEGTtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 15:49:05 -0400
+Date: Mon, 7 May 2007 12:49:48 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Andrea Righi <righiandr@users.sourceforge.net>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] VM: per-user overcommit policy
+Message-ID: <20070507194948.GG19966@holomorphy.com>
+References: <463F764E.5050009@users.sourceforge.net> <20070507191658.GY31925@holomorphy.com>
 MIME-Version: 1.0
-To: Al Boldi <a1426z@gawab.com>
-CC: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Execute in place
-References: <200705030211.36293.a1426z@gawab.com> <200705031433.09364.a1426z@gawab.com> <463F57CB.4090301@zytor.com> <200705072237.33217.a1426z@gawab.com>
-In-Reply-To: <200705072237.33217.a1426z@gawab.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070507191658.GY31925@holomorphy.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Al Boldi wrote:
-> H. Peter Anvin wrote:
->> Al Boldi wrote:
->>> Isn't everything really just temporary?
->>>
->>> Would something like an mmap'd tmpfs be possible?
->> No.  tmpfs relies on being able to leave data structures in the running
->> kernel.  In particular, it has no metadata store at all.
->>
->> The needs for a persistent filesystem are very different, regardless of
->> what the underlying medium is.
+On Mon, May 07, 2007 at 12:16:58PM -0700, William Lee Irwin III wrote:
+> The following stanza occurs often:
+> +       if (!vm_acct_get_config(&v, current->uid)) {
+> +               overcommit_memory = v.overcommit_memory;
+> +               overcommit_ratio = v.overcommit_ratio;
+> +       } else {
+> +               overcommit_memory = sysctl_overcommit_memory;
+> +               overcommit_ratio = sysctl_overcommit_ratio;
+> +       }
 > 
-> Think Suspend-To-Disk; in that case tmpfs looks pretty persistent to me.
-> 
-> So what does STD do?  It pushes memory out to swap.
+> suggesting that vm_acct_get_config() isn't the proper abstraction.
+> Instead of
+> 	int vm_acct_get_config(struct vm_acct_values *, uid_t);
+> you could just have
+> 	int vm_acct_get_config(struct vm_acct_values *);
+> which conditionally uses current->uid, and then unconditionally use
+> v.overcommit_memory and v.overcommit_ratio vs. sysctl_overcommit_memory
+> and sysctl_overcommit_ratio in the sequel.
 
-It pushes ALL of (used) memory out to swap.
+Something like this (untested/uncompiled) may do.
 
-> Now, tmpfs could probably do the same thing on its own either to a private 
-> swap or an mmap.  I am suggesting mmap, as swap is currently really slow 
-> with tmpfs, and switching it to use mmap may buy us 2 for the price of 1.
 
-No.
-
-First of all, it would have to map ALL of kernel memory, or you would
-have to change the way things like dentries, inodes, and namespaces are
-allocated in the kernel itself.
-
-Second, you still would have no stability across kernel versions.
-
-Third, you would have to accept total data loss on unclean shutdown,
-because tmpfs doesn't care about coherency, *NOR SHOULD IT*.  This is
-the fundamental reason why allocating a large swap partition and making
-/tmp a tmpfs can give a *huge* performance boost, even though it still
-hits disk.
-
-What you're talking about is, *and should be*, a different filesystem.
-You will relatively quickly find that you have to deal with the same
-kind of stuff that you have to in any filesystem.
-
-	-hpa
+Index: righi/include/linux/mman.h
+===================================================================
+--- righi.orig/include/linux/mman.h	2007-05-07 12:36:05.897386369 -0700
++++ righi/include/linux/mman.h	2007-05-07 12:42:29.803263919 -0700
+@@ -18,14 +18,13 @@
+ extern int sysctl_overcommit_memory;
+ extern int sysctl_overcommit_ratio;
+ extern atomic_t vm_committed_space;
+-#ifdef CONFIG_VM_ACCT_USER
++
+ struct vm_acct_values
+ {
+ 	int overcommit_memory;
+ 	int overcommit_ratio;
+ };
+-extern int vm_acct_get_config(struct vm_acct_values *v, uid_t uid);
+-#endif
++void vm_acct_get_config(struct vm_acct_values *v);
+ 
+ #ifdef CONFIG_SMP
+ extern void vm_acct_memory(long pages);
+Index: righi/mm/swap.c
+===================================================================
+--- righi.orig/mm/swap.c	2007-05-07 12:37:13.965265337 -0700
++++ righi/mm/swap.c	2007-05-07 12:42:14.914415451 -0700
+@@ -482,10 +482,11 @@
+ /*
+  * Get user VM configuration from the hash list.
+  */
+-int vm_acct_get_config(struct vm_acct_values *v, uid_t uid)
++void vm_acct_get_config(struct vm_acct_values *v)
+ {
+ 	struct hlist_node *elem;
+ 	vm_acct_hash_t *p;
++	uid_t uid = current->uid;
+ 
+ 	spin_lock_irq(&vm_acct_lock);
+ 	hlist_for_each_entry(p, elem, &vm_acct_hash[vm_acct_hashfn(uid)],
+@@ -494,12 +495,12 @@
+ 			v->overcommit_memory = p->val.overcommit_memory;
+ 			v->overcommit_ratio = p->val.overcommit_ratio;
+ 			spin_unlock_irq(&vm_acct_lock);
+-			return 0;
++			return;
+ 		}
+ 	}
+ 	spin_unlock_irq(&vm_acct_lock);
+-
+-	return -ENOENT;
++	v->overcommit_memory = sysctl_overcommit_memory;
++	v->overcommit_ratio = sysctl_overcommit_ratio;
+ }
+ 
+ /*
+@@ -646,8 +647,13 @@
+ 	return 0;
+ }
+ __initcall(init_vm_acct);
+-
+-#endif /* CONFIG_VM_ACCT_USER */
++#else /* !CONFIG_VM_ACCT_USER */
++void vm_acct_get_config(struct vm_acct_values *v)
++{
++	v->overcommit_memory = sysctl_overcommit_memory;
++	v->overcommit_ratio = sysctl_overcommit_ratio;
++}
++#endif /* !CONFIG_VM_ACCT_USER */
+ 
+ #ifdef CONFIG_SMP
+ /*
+Index: righi/ipc/shm.c
+===================================================================
+--- righi.orig/ipc/shm.c	2007-05-07 12:40:35.576754521 -0700
++++ righi/ipc/shm.c	2007-05-07 12:43:32.714849046 -0700
+@@ -370,24 +370,15 @@
+ 		shp->mlock_user = current->user;
+ 	} else {
+ 		int acctflag = VM_ACCOUNT;
+-#ifdef CONFIG_VM_ACCT_USER
+-		int overcommit_memory;
+ 		struct vm_acct_values v;
+ 
+-		if (!vm_acct_get_config(&v, current->uid)) {
+-			overcommit_memory = v.overcommit_memory;
+-		} else {
+-			overcommit_memory = sysctl_overcommit_memory;
+-		}
+-#else
+-#define overcommit_memory sysctl_overcommit_memory
+-#endif
++		vm_acct_get_config(&v);
+ 		/*
+ 		 * Do not allow no accounting for OVERCOMMIT_NEVER, even
+ 	 	 * if it's asked for.
+ 		 */
+ 		if  ((shmflg & SHM_NORESERVE) &&
+-				overcommit_memory != OVERCOMMIT_NEVER)
++				v.overcommit_memory != OVERCOMMIT_NEVER)
+ 			acctflag = 0;
+ 		sprintf (name, "SYSV%08x", key);
+ 		file = shmem_file_setup(name, size, acctflag);
+Index: righi/mm/mmap.c
+===================================================================
+--- righi.orig/mm/mmap.c	2007-05-07 12:43:48.143728287 -0700
++++ righi/mm/mmap.c	2007-05-07 12:46:02.775400509 -0700
+@@ -96,30 +96,18 @@
+ int __vm_enough_memory(long pages, int cap_sys_admin)
+ {
+ 	unsigned long free, allowed;
+-#ifdef CONFIG_VM_ACCT_USER
+-	int overcommit_memory, overcommit_ratio;
+ 	struct vm_acct_values v;
+ 
+-	if (!vm_acct_get_config(&v, current->uid)) {
+-		overcommit_memory = v.overcommit_memory;
+-		overcommit_ratio = v.overcommit_ratio;
+-	} else {
+-		overcommit_memory = sysctl_overcommit_memory;
+-		overcommit_ratio = sysctl_overcommit_ratio;
+-	}
+-#else
+-#define overcommit_memory sysctl_overcommit_memory
+-#define overcommit_ratio sysctl_overcommit_ratio
+-#endif
++	vm_acct_get_config(&v);
+ 	vm_acct_memory(pages);
+ 
+ 	/*
+ 	 * Sometimes we want to use more memory than we have
+ 	 */
+-	if (overcommit_memory == OVERCOMMIT_ALWAYS)
++	if (v.overcommit_memory == OVERCOMMIT_ALWAYS)
+ 		return 0;
+ 
+-	if (overcommit_memory == OVERCOMMIT_GUESS) {
++	if (v.overcommit_memory == OVERCOMMIT_GUESS) {
+ 		unsigned long n;
+ 
+ 		free = global_page_state(NR_FILE_PAGES);
+@@ -170,7 +158,7 @@
+ 	}
+ 
+ 	allowed = (totalram_pages - hugetlb_total_pages())
+-	       	* overcommit_ratio / 100;
++	       	* v.overcommit_ratio / 100;
+ 	/*
+ 	 * Leave the last 3% for root
+ 	 */
+@@ -916,10 +904,7 @@
+ 	struct rb_node ** rb_link, * rb_parent;
+ 	int accountable = 1;
+ 	unsigned long charged = 0, reqprot = prot;
+-#ifdef CONFIG_VM_ACCT_USER
+-	int overcommit_memory;
+ 	struct vm_acct_values v;
+-#endif
+ 
+ 	/*
+ 	 * Does the application expect PROT_READ to imply PROT_EXEC?
+@@ -1059,15 +1044,9 @@
+ 	if (!may_expand_vm(mm, len >> PAGE_SHIFT))
+ 		return -ENOMEM;
+ 
+-#ifdef CONFIG_VM_ACCT_USER
+-	if (!vm_acct_get_config(&v, current->uid)) {
+-		overcommit_memory = v.overcommit_memory;
+-	} else {
+-		overcommit_memory = sysctl_overcommit_memory;
+-	}
+-#endif
++	vm_acct_get_config(&v);
+ 	if (accountable && (!(flags & MAP_NORESERVE) ||
+-			    overcommit_memory == OVERCOMMIT_NEVER)) {
++			    v.overcommit_memory == OVERCOMMIT_NEVER)) {
+ 		if (vm_flags & VM_SHARED) {
+ 			/* Check memory availability in shmem_file_setup? */
+ 			vm_flags |= VM_ACCOUNT;
+Index: righi/mm/nommu.c
+===================================================================
+--- righi.orig/mm/nommu.c	2007-05-07 12:46:09.667793284 -0700
++++ righi/mm/nommu.c	2007-05-07 12:46:52.490233596 -0700
+@@ -1240,31 +1240,18 @@
+ int __vm_enough_memory(long pages, int cap_sys_admin)
+ {
+ 	unsigned long free, allowed;
+-#ifdef CONFIG_VM_ACCT_USER
+-	int overcommit_memory, overcommit_ratio;
+ 	struct vm_acct_values v;
+ 
+-	if (!vm_acct_get_config(&v, current->uid)) {
+-		overcommit_memory = v.overcommit_memory;
+-		overcommit_ratio = v.overcommit_ratio;
+-	} else {
+-		overcommit_memory = sysctl_overcommit_memory;
+-		overcommit_ratio = sysctl_overcommit_ratio;
+-	}
+-#else
+-#define overcommit_memory sysctl_overcommit_memory
+-#define overcommit_ratio sysctl_overcommit_ratio
+-#endif
+-
++	vm_acct_get_config(&v);
+ 	vm_acct_memory(pages);
+ 
+ 	/*
+ 	 * Sometimes we want to use more memory than we have
+ 	 */
+-	if (overcommit_memory == OVERCOMMIT_ALWAYS)
++	if (v.overcommit_memory == OVERCOMMIT_ALWAYS)
+ 		return 0;
+ 
+-	if (overcommit_memory == OVERCOMMIT_GUESS) {
++	if (v.overcommit_memory == OVERCOMMIT_GUESS) {
+ 		unsigned long n;
+ 
+ 		free = global_page_state(NR_FILE_PAGES);
+@@ -1314,7 +1301,7 @@
+ 		goto error;
+ 	}
+ 
+-	allowed = totalram_pages * overcommit_ratio / 100;
++	allowed = totalram_pages * v.overcommit_ratio / 100;
+ 	/*
+ 	 * Leave the last 3% for root
+ 	 */
