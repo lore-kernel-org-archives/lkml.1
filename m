@@ -1,56 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966763AbXEGUla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966767AbXEGUnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966763AbXEGUla (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 16:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966519AbXEGUlZ
+	id S966767AbXEGUnV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 16:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966517AbXEGUnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 16:41:25 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:45233 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966506AbXEGUlY (ORCPT
+	Mon, 7 May 2007 16:43:17 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:21867 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S965564AbXEGUnP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 16:41:24 -0400
-X-Sasl-enc: 3ZsBN0nhpEyYZIwbHMhQ+U6B1wCLy2zmv3bpJurev7oD 1178570484
-Date: Mon, 7 May 2007 17:41:18 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Guilherme M. Schroeder" <guilherme@centralinf.com.br>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Blacklist Dell Optiplex 320 from using the HPET
-Message-ID: <20070507204118.GB9822@khazad-dum.debian.net>
-References: <1178314144.6094.7.camel@localhost.localdomain> <200705050118.34711.ak@suse.de> <1178321228.6094.34.camel@localhost.localdomain> <1178375214.31213.13.camel@localhost.localdomain> <1178375435.31213.16.camel@localhost.localdomain> <20070505155815.GC15620@khazad-dum.debian.net> <20070507185902.GA11048@rhlx01.hs-esslingen.de>
+	Mon, 7 May 2007 16:43:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=KDr3Dr4b8feQse8tzESN7ZR0vG6pjPEZItEfhKK09XCSBUUUTVCngbZuaosoNmmkozNUDiBuriKYfI8lgU41+MGHUNUmAXL6AmGxw8CbAOD1Qn1ZAVs7Dtc9yogpwol54jY7jkj+W34rL8ru+6mqCVzYlsVmOvbbTw3TfKU/zkM=
+Message-ID: <4d8e3fd30705071343g221c75a8x737b8498c947fdef@mail.gmail.com>
+Date: Mon, 7 May 2007 22:43:14 +0200
+From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
+To: "Ingo Molnar" <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v10
+Cc: linux-kernel@vger.kernel.org,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Con Kolivas" <kernel@kolivas.org>, "Nick Piggin" <npiggin@suse.de>,
+       "Mike Galbraith" <efault@gmx.de>,
+       "Arjan van de Ven" <arjan@infradead.org>,
+       "Peter Williams" <pwil3058@bigpond.net.au>,
+       "Thomas Gleixner" <tglx@linutronix.de>, caglar@pardus.org.tr,
+       "Willy Tarreau" <w@1wt.eu>, "Gene Heskett" <gene.heskett@gmail.com>,
+       "Mark Lord" <lkml@rtr.ca>
+In-Reply-To: <20070507163342.GA3502@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070507185902.GA11048@rhlx01.hs-esslingen.de>
-X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070507163342.GA3502@elte.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 May 2007, Andreas Mohr wrote:
-> On Sat, May 05, 2007 at 12:58:15PM -0300, Henrique de Moraes Holschuh wrote:
-> > On Sat, 05 May 2007, Thomas Gleixner wrote:
-> > > +		printk(KERN_WARNING "HPET counter is defect\n");
-> > 
-> > What about
-> > 		printk(KERN_WARNING "HPET counter is stopped\n");
-> > 
-> > which is far more descriptive?
-> 
-> Far more misguiding, rather?
+On 5/7/07, Ingo Molnar <mingo@elte.hu> wrote:
+>
+> i'm pleased to announce release -v10 of the CFS scheduler patchset.
+> (The main goal of CFS is to implement "desktop scheduling" with as
+>  high quality as technically possible.)
+>
+> The CFS patch against v2.6.21.1 (or against v2.6.20.10) can be
+> downloaded from the usual place:
+>
+>     http://people.redhat.com/mingo/cfs-scheduler/
+>
+> -v10 got a bit bigger than usual. One reason for that is that i couldnt
+> resist the fine enhancements contributed by Peter Williams and Mike
+> Galbraith. Peter fixed and improved nice level support and SMP
+> load-balancing, while Mike applied his "no compromises" interactivity
+> tuning skills to CFS:
+>
+>     6 files changed, 247 insertions(+), 110 deletions(-)
+>
+> the main user-visible change should be that CFS's 3D gaming performance
+> and 'smoothness' should be significantly improved in -v10. This was the
+> main remaining regression reported for -v9 (and for CFS in general).
 
-True, one can miss the "is".
+Ciao Ingo,
+care to share some more information regarding how you fixed the "3D
+gaming performance" issue?
 
-> "HPET counter inoperable or defective (no increment found during probing)"?
-> (with an optional "please report" part)
+Thanks!
 
-Yes, this looks better.
-
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+Regards,
+                 Paolo
