@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967229AbXEGXbE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967246AbXEGXcB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967229AbXEGXbE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 19:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967224AbXEGXa7
+	id S967246AbXEGXcB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 19:32:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967236AbXEGXb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 19:30:59 -0400
-Received: from flpvm23.prodigy.net ([207.115.20.53]:16610 "EHLO
-	flpvm23.prodigy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967223AbXEGXa6 (ORCPT
+	Mon, 7 May 2007 19:31:56 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46712 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S967186AbXEGXby (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 19:30:58 -0400
-X-ORBL: [69.177.4.52]
-Message-ID: <463FB6B0.3070005@pcburn.com>
-Date: Mon, 07 May 2007 19:30:56 -0400
-From: Chris Bergeron <chris@pcburn.com>
-Reply-To: chris@pcburn.com
-Organization: PCBurn Media
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Getting make net/built-in.o Error with 2.6.21.1 Build
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 7 May 2007 19:31:54 -0400
+Date: Mon, 7 May 2007 16:31:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Andreas Dilger <adilger@clusterfs.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+Message-Id: <20070507163135.cf455103.akpm@linux-foundation.org>
+In-Reply-To: <20070507231442.GA29907@thunk.org>
+References: <20070420135146.GA21352@amitarora.in.ibm.com>
+	<20070420145918.GY355@devserv.devel.redhat.com>
+	<20070424121632.GA10136@amitarora.in.ibm.com>
+	<20070426175056.GA25321@amitarora.in.ibm.com>
+	<20070426181332.GD7209@amitarora.in.ibm.com>
+	<20070503213133.d1559f52.akpm@linux-foundation.org>
+	<20070507113753.GA5439@schatzie.adilger.int>
+	<20070507135825.f8545a65.akpm@linux-foundation.org>
+	<20070507222103.GJ8181@schatzie.adilger.int>
+	<20070507153856.d56a5133.akpm@linux-foundation.org>
+	<20070507231442.GA29907@thunk.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On trying to build a 2.6.21.1 kernel using the configuration at 
-http://pcburn.com/files/kernel/breaks.2.6.21.1.config I'm getting the 
-following error with Networking Support -> Bluetooth Subsystem Support 
--> HIDP protocol support set to built-in:
+On Mon, 7 May 2007 19:14:42 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-net/built-in.o: In function `hidp_add_connection':
-(.text+0x8bb08): undefined reference to `hid_ff_init'
-make: *** [.tmp_vmlinux1] Error 1
+> On Mon, May 07, 2007 at 03:38:56PM -0700, Andrew Morton wrote:
+> > > Actually, this is a non-issue.  The reason that it is handled for extent-only
+> > > is that this is the only way to allocate space in the filesystem without
+> > > doing the explicit zeroing.  For other filesystems (including ext3 and
+> > > ext4 with block-mapped files) the filesystem should return an error (e.g.
+> > > -EOPNOTSUPP) and glibc will do manual zero-filling of the file in userspace.
+> > 
+> > It can be a bit suboptimal from the layout POV.  The reservations code will
+> > largely save us here, but kernel support might make it a bit better.
+> 
+> Actually, the reservations code won't matter, since glibc will fall
+> back to its current behavior, which is it will do the preallocation by
+> explicitly writing zeros to the file.
 
-Works with that option turned off.  Also, the GCC version I'm using is 
-the current Debian Etch release: gcc (GCC) 4.1.2 20061115 (prerelease) 
-(Debian 4.1.1-21).  I also tried it with gcc (GCC) 3.4.6 (Debian 
-3.4.6-5) for the same result.
+No!  Reservations code is *critical* here.  Without reservations, we get
+disastrously-bad layout if two processes were running a large fallocate()
+at the same time.  (This is an SMP-only problem, btw: on UP the timeslice
+lengths save us).
 
-I don't need to build that, so I simply unset it.  If this is at all 
-useful and you need something else just CC: me in the reply.
+My point is that even though reservations save us, we could do even-better
+in-kernel.
 
-Thanks,
--- Chris
+But then, a smart application would bypass the glibc() fallocate()
+implementation and would tune the reservation window size and would use
+direct-IO or sync_file_range()+fadvise(FADV_DONTNEED).
+
+> This wlil result in the same
+> layout as if we had done the persistent preallocation, but of course
+> it will mean the posix_fallocate() could potentially take a long time
+> if you're a PVR and you're reserving a gig or two for a two hour movie
+> at high quality.  That seems suboptimal, granted, and ideally the
+> application should be warned about this before it calls
+> posix_fallocate().  On the other hand, it's what happens today, all
+> the time, so applications won't be too badly surprised.
+
+A PVR implementor would take all this over and would do it themselves, for
+sure.
+
+> If we think applications programmers badly need to know in advance if
+> posix_fallocate() will be fast or slow, probably the right thing is to
+> define a new fpathconf() configuration option so they can query to see
+> whether a particular file will support a fast posix_fallocate().  I'm
+> not 100% convinced such complexity is really needed, but I'm willing
+> to be convinced....  what do folks think?
+> 
+
+An application could do sys_fallocate(one-byte) to work out whether it's
+supported in-kernel, I guess.
+
