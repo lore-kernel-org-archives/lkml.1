@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934157AbXEGOkj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754466AbXEGOsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934157AbXEGOkj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 10:40:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934086AbXEGOkg
+	id S1754466AbXEGOsj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 10:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXEGOsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 10:40:36 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:58912
+	Mon, 7 May 2007 10:48:39 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:37073
 	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933974AbXEGOkf (ORCPT
+	with ESMTP id S1754387AbXEGOsi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 10:40:35 -0400
-Date: Mon, 7 May 2007 07:37:57 -0700 (PDT)
+	Mon, 7 May 2007 10:48:38 -0400
+Date: Mon, 7 May 2007 07:46:38 -0700 (PDT)
 From: david@lang.hm
 X-X-Sender: dlang@asgard.lang.hm
-To: Oliver Neukum <oneukum@suse.de>
-cc: Pavel Machek <pavel@ucw.cz>, David Lang <david.lang@digitalinsight.com>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <200705071452.21969.oneukum@suse.de>
-Message-ID: <Pine.LNX.4.64.0705070736010.18013@asgard.lang.hm>
-References: <1177567481.5025.211.camel@nigel.suspend2.net>
- <Pine.LNX.4.63.0705061909290.19118@qynat.qvtvafvgr.pbz> <20070507124818.GA18209@elf.ucw.cz>
- <200705071452.21969.oneukum@suse.de>
+To: Theodore Tso <tytso@mit.edu>
+cc: Frank van Maarseveen <frankvm@frankvm.com>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: JBD: ext2online wants too many credits (744 > 256)
+In-Reply-To: <20070507142736.GC17180@thunk.org>
+Message-ID: <Pine.LNX.4.64.0705070744350.18013@asgard.lang.hm>
+References: <20070506222626.GA25632@janus> <20070507142736.GC17180@thunk.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007, Oliver Neukum wrote:
+On Mon, 7 May 2007, Theodore Tso wrote:
 
-> Am Montag, 7. Mai 2007 14:48 schrieb Pavel Machek:
->>>> Including network? Your tcp peers will be really confused, then, if
->>>> you ACK packets then claim you did not get them. No, you do not want
->>>> to start network.
->>>
->>> anyone who is doing a hibernate or suspend who expect all the network
->>> connections to be working afterwords is dreaming or smokeing
->>> something.
->>
->> Really? It works today... if the suspend is short enough. And that's
->> how it should be.
->
-> If we get very good at Wake-on-Lan it should work for any length
-> of time.
+> We're going to have to rethink the defaults of the journal size as it
+> relates to on-line resizing, but there might not be a lot of great
+> answers here.  We'll also have to look at the on-line resizing code
+> and see if there's a way to break up the resize operation into smaller
+> transactions as a way of avoiding this problem --- but that would
+> still leave the user stuck with a pathetically small 4M journal on a
+> 3G filesystem.
 
-for suspend-to-ram this would work, I stand corrected.
+why not just allocate a new journal (something along the lines of convert 
+the ext3 to ext2 then back to ext3 would be the ugly, scripted way of 
+doing it)
 
-for hibernate this would almost certinly not work, and I don't think that 
-it's worth raising false hopes.
+or is the problem that you are trying to resize things without remounting 
+them (and therefor without flushing the journal)
 
 David Lang
