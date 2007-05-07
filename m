@@ -1,58 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXEGK4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932664AbXEGK4O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932690AbXEGK4J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 06:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932664AbXEGK4J
+	id S932664AbXEGK4O (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 06:56:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932493AbXEGK4O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 06:56:09 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:40445 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932659AbXEGK4H (ORCPT
+	Mon, 7 May 2007 06:56:14 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:40721 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932664AbXEGK4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 06:56:07 -0400
-Date: Mon, 7 May 2007 12:56:07 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, trond.myklebust@fys.uio.no,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [-mm patch] fix fs/nfs/nfsroot.c compile error
-Message-ID: <20070507105607.GB4226@stusta.de>
-References: <20070505164422.GD8975@stusta.de> <20070505014955.8f3990b5.akpm@linux-foundation.org> <15958.1178534871@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <15958.1178534871@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 7 May 2007 06:56:12 -0400
+Date: Mon, 7 May 2007 19:56:48 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, vatsa@in.ibm.com,
+       zwane@arm.linux.org.uk, nathanl@austin.ibm.com, jschopp@austin.ibm.com,
+       ashok.raj@intel.com, heiko.carstens@de.ibm.com,
+       takeuchi_satoru@jp.fujitsu.com
+Subject: Re: [BUG] cpu-hotplug: Can't offline the CPU with naughty realtime
+ processes
+Message-Id: <20070507195648.dafe57b2.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <87bqgxrlky.wl%takeuchi_satoru@jp.fujitsu.com>
+References: <87bqgxrlky.wl%takeuchi_satoru@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 11:47:51AM +0100, David Howells wrote:
-> Adrian Bunk <bunk@stusta.de> wrote:
+On Mon, 07 May 2007 19:10:05 +0900
+Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com> wrote:
+
+
+> kstopmachine is created, bound to the CPU1, and woken up here, but
+> this process can't start to run because reschedule doesn't occur on
+> CPU1. Hence CPU0 also be able to run because it's waiting completion
+> of CPU1's offline work.
 > 
-> > match_table_t was made "const" and gcc doesn't like "const __initdata":
-> 
-> Hmmm...  My gcc seems quite happy with it.  What gcc are you using?
+Is this Bug ? It seems the system works as designed... 
 
-4.1
+Hmm,  adding stop_machine_run_interruptible() and 
+using wait_for_completion_interruptible() instead of wait_for_completion()
+is O.K. ? Then we can stop cpu hot-unplug by signal. Is this okay for you ?
 
-> Shouldn't __initdata override const?
-> 
-> > BTW: Why is this change to include/linux/parser.h in the net tree?
-> 
-> Because DaveM picked it up as part of my AFS patches, I guess.
-
-It might make sense, but it doesn't seem to be in any way AFS specific.
-
-> David
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+-Kame
 
