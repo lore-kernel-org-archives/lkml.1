@@ -1,166 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932903AbXEGLDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932768AbXEGLFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932903AbXEGLDq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 07:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932840AbXEGLDq
+	id S932768AbXEGLFh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 07:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932771AbXEGLFh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 07:03:46 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:34611 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932764AbXEGLDo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 07:03:44 -0400
-Date: Mon, 7 May 2007 16:33:48 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+	Mon, 7 May 2007 07:05:37 -0400
+Received: from mtagate1.de.ibm.com ([195.212.29.150]:58883 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932768AbXEGLFg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 07:05:36 -0400
+Date: Mon, 7 May 2007 13:04:42 +0200
+From: Cornelia Huck <huckc@de.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070507110348.GA7012@amitarora.in.ibm.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070503212955.b1b6443c.akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Greg K-H <greg@kroah.com>
+Subject: Re: 2.6.21-mm1
+Message-ID: <20070507130442.6ee9259e@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070503212955.b1b6443c.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+On Sat, 5 May 2007 01:49:55 -0700,
+Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Thanks for the review comments!
+> +s390-fix-subsystem-removal-fallout.patch
+> 
+>  Fix it.
 
-On Thu, May 03, 2007 at 09:29:55PM -0700, Andrew Morton wrote:
-> On Thu, 26 Apr 2007 23:33:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
-> 
-> > This patch implements the fallocate() system call and adds support for
-> > i386, x86_64 and powerpc.
-> > 
-> > ...
-> >
-> > +asmlinkage long sys_fallocate(int fd, int mode, loff_t offset, loff_t len)
-> 
-> Please add a comment over this function which specifies its behaviour. 
-> Really it should be enough material from which a full manpage can be
-> written.
-> 
-> If that's all too much, this material should at least be spelled out in the
-> changelog.  Because there's no way in which this change can be fully
-> reviewed unless someone (ie: you) tells us what it is setting out to
-> achieve.
-> 
-> If we 100% implement some standard then a URL for what we claim to
-> implement would suffice.  Given that we're at least using different types from
-> posix I doubt if such a thing would be sufficient.
-> 
-> And given the complexity and potential variability within the filesystem
-> implementations of this, I'd expect that _something_ additional needs to be
-> said?
-
-Ok. I will add a detailed comment here.
-
-> 
-> > +{
-> > +	struct file *file;
-> > +	struct inode *inode;
-> > +	long ret = -EINVAL;
-> > +
-> > +	if (len == 0 || offset < 0)
-> > +		goto out;
-> 
-> The posix spec implies that negative `len' is permitted - presumably "allocate
-> ahead of `offset'".  How peculiar.
-
-I think we should go ahead with current glibc implementation (which
-Jakub poited at) of not allowing a negative 'len', since posix also
-doesn't explicitly say anything about allowing negative 'len'.
-
-> 
-> > +	ret = -EBADF;
-> > +	file = fget(fd);
-> > +	if (!file)
-> > +		goto out;
-> > +	if (!(file->f_mode & FMODE_WRITE))
-> > +		goto out_fput;
-> > +
-> > +	inode = file->f_path.dentry->d_inode;
-> > +
-> > +	ret = -ESPIPE;
-> > +	if (S_ISFIFO(inode->i_mode))
-> > +		goto out_fput;
-> > +
-> > +	ret = -ENODEV;
-> > +	if (!S_ISREG(inode->i_mode))
-> > +		goto out_fput;
-> 
-> So we return ENODEV against an S_ISBLK fd, as per the posix spec.  That
-> seems a bit silly of them.
-
-True. 
- 
-> > +	ret = -EFBIG;
-> > +	if (offset + len > inode->i_sb->s_maxbytes)
-> > +		goto out_fput;
-> 
-> This code does handle offset+len going negative, but only by accident, I
-> suspect.  It happens that s_maxbytes has unsigned type.  Perhaps a comment
-> here would settle the reader's mind.
-
-Ok. I will add a check here for wrap though zero.
- 
-> > +	if (inode->i_op && inode->i_op->fallocate)
-> > +		ret = inode->i_op->fallocate(inode, mode, offset, len);
-> > +	else
-> > +		ret = -ENOSYS;
-> 
-> If we _are_ going to support negative `len', as posix suggests, I think we
-> should perform the appropriate sanity conversions to `offset' and `len'
-> right here, rather than expecting each filesystem to do it.
-> 
-> If we're not going to handle negative `len' then we should check for it.
-
-Will add a check for negative 'len' and return -EINVAL. This will be
-done where currently we check for negative offset (i.e. at the start of
-the function).
- 
-> > +out_fput:
-> > +	fput(file);
-> > +out:
-> > +	return ret;
-> > +}
-> > +EXPORT_SYMBOL(sys_fallocate);
-> 
-> I don't believe this needs to be exported to modules?
-
-Ok. Will remove it.
- 
-> > +/*
-> > + * fallocate() modes
-> > + */
-> > +#define FA_ALLOCATE	0x1
-> > +#define FA_DEALLOCATE	0x2
-> 
-> Now those aren't in posix.  They should be documented, along with their
-> expected semantics.
-
-Will add a comment describing the role of these modes.
- 
-> >  #ifdef __KERNEL__
-> >  
-> >  #include <linux/linkage.h>
-> > @@ -1125,6 +1131,7 @@ struct inode_operations {
-> >  	ssize_t (*listxattr) (struct dentry *, char *, size_t);
-> >  	int (*removexattr) (struct dentry *, const char *);
-> >  	void (*truncate_range)(struct inode *, loff_t, loff_t);
-> > +	long (*fallocate)(struct inode *, int, loff_t, loff_t);
-> 
-> I really do think it's better to put the variable names in definitions such
-> as this.  Especially when we have two identically-typed variables next to
-> each other like that.  Quick: which one is the offset and which is the
-> length?
-
-Ok. Will add the variable names here.
-
---
-Regards,
-Amit Arora
+It doesn't, since the subsystem removal doesn't seem to be applied
+(although it is present in the broken-out directory).
