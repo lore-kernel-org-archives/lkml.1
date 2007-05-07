@@ -1,66 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966899AbXEGU7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966906AbXEGVBB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966899AbXEGU7v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 16:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966630AbXEGU7r
+	id S966906AbXEGVBB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 17:01:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966630AbXEGVBA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 16:59:47 -0400
-Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:6510 "EHLO
-	outbound4-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966621AbXEGU7q (ORCPT
+	Mon, 7 May 2007 17:01:00 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:10639 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966624AbXEGVA7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 16:59:46 -0400
-X-BigFish: VP
-X-FB-SS: 0
-Message-ID: <463F93FB.1000908@am.sony.com>
-Date: Mon, 07 May 2007 14:02:51 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+	Mon, 7 May 2007 17:00:59 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=K7dlYOXTkfY031qW7GI/XK438mZI1PsBICh5q7knSixkF01EY/j2hBnYWcSXOdFysQpFJVwtrNwrSJoiSh7KbiNFoREhWyN8JJvTRQ9oWcQmZu1Y4KPs7Mg3uMbzyTIKbklEUFy9eRKBJKs8AQ2f2jWhLHbT7BQXfGTFmzMdWeo=
+Message-ID: <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
+Date: Mon, 7 May 2007 14:00:58 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Davi Arnaut" <davi@haxent.com.br>
+Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
+Cc: "Davide Libenzi" <davidel@xmailserver.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <463CFA37.3020809@haxent.com.br>
 MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       dirk.behme@googlemail.com, linux kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Need help debugging RT-preempt patch
-References: <463F7449.2020509@am.sony.com> <1178569719.3164.6.camel@imap.mvista.com>
-In-Reply-To: <1178569719.3164.6.camel@imap.mvista.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 May 2007 20:59:44.0143 (UTC) FILETIME=[A36571F0:01C790EA]
+Content-Disposition: inline
+References: <20070504225730.490334000@haxent.com.br>
+	 <463BC3CA.6050109@haxent.com.br>
+	 <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com>
+	 <463CFA37.3020809@haxent.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-> Are you sure you don't have HardIRQS in Threads enabled? Also are you
-> sure the kernel boots without the rt patch applied.
+On 5/5/07, Davi Arnaut <davi@haxent.com.br> wrote:
+> A google search turns up a few users. It also addresses some complaints
+> from Drepper.
 
-Yes on both counts.  I double-checked the configs.  I'm using quilt
-and the RT patch is at the end of my series, so it was easy to
-pop the patch and try again (module .config fixups).
+There is a huge problem with this approach and we're back at the
+inadequate interface.
 
-I may take a few more blind stabs at different configs before
-I go diving into the networking code trying to trace something.
-(or before starting to bisect the patch).  Bisecting the patch
-will be a bit painful since it's currently an all-in-one.
+select/poll/epoll are thread cancellation points.  I.e., the thread
+can be canceled before returning to the user.  If this cancellation
+happens between the kernel deciding to give this thread the event (and
+no other thread) and the thread testing for cancellation in the libc
+wrapper around the syscall, then the event is lost and the process(es)
+might hang.
 
-> 
-> ARM is supported, but specific boards are hit or miss.. 
-> 
-> I've had OMAP working _in the past_ with this patch applied,
-> 
-> http://lkml.org/lkml/2006/12/10/59
-> 
-> There was also a patch released on one of the OMAP lists a while back
-> from Dirk Behme to get OMAP working on a mor recent rt release..
+With kevent we in the end fixed the problem by requiring that part of
+the cancellation handling the thread tries to wake up another thread
+waiting for the event queue.  This is easily possible since the event
+data is in the shared memory segment and it's just purely the thread
+wakeup that is needed.
 
-OK.  This is REALLY helpful info.  I'll take a look.
+To make something like this work for poll you'd have to push back the
+revents fields of the result back to the kernel which might then cause
+another thread to be woken up.  I find this too ugly to consider.  You
+guys will not believe this but I really thought all these things
+through before writing the OLS paper.  poll cannot be salvaged.
 
-Thanks very much!!
- -- Tim
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Electronics
-=============================
-
+There is another thing about this selective wakeup: do I assume it
+correctly that if more than one file descriptor is reported ready more
+than one thread is woken?  I think nothing else can be justified.
+Will in this case both threads get the same set of descriptors
+reported or will they see disjunct sets?
