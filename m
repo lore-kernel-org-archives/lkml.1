@@ -1,59 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751669AbXEGDeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750907AbXEGDxF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751669AbXEGDeX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 23:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXEGDeX
+	id S1750907AbXEGDxF (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 23:53:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXEGDxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 23:34:23 -0400
-Received: from smtpout.mac.com ([17.250.248.186]:52242 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751276AbXEGDeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 23:34:22 -0400
-In-Reply-To: <Pine.LNX.4.63.0705061909290.19118@qynat.qvtvafvgr.pbz>
-References: <1177567481.5025.211.camel@nigel.suspend2.net> <200704280041.17617.rjw@sisk.pl> <alpine.LFD.0.98.0704271612380.9964@woody.linux-foundation.org> <200704280145.26253.rjw@sisk.pl> <1177718250.4737.222.camel@nigel.suspend2.net> <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz> <20070503171843.GA4355@ucw.cz> <Pine.LNX.4.63.0705061909290.19118@qynat.qvtvafvgr.pbz>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CF6D1CC2-4B42-4FF9-821F-C54C4553D710@mac.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@nigel.suspend2.net>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Pekka J Enberg <penberg@cs.helsinki.fi>,
-       LKML <linux-kernel@vger.kernel.org>
+	Sun, 6 May 2007 23:53:05 -0400
+Received: from rwcrmhc14.comcast.net ([204.127.192.84]:61872 "EHLO
+	rwcrmhc14.comcast.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750907AbXEGDxE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 23:53:04 -0400
+Subject: Re: [PATCH] relay: use plain timer instead of delayed work
+From: Tom Zanussi <zanussi@comcast.net>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070506124742.GA102@tv-sign.ru>
+References: <1178426780.29337.67.camel@ubuntu>
+	 <20070506124742.GA102@tv-sign.ru>
+Content-Type: text/plain
+Date: Sun, 06 May 2007 22:29:40 -0500
+Message-Id: <1178508580.4534.1.camel@ubuntu>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.1 
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: Back to the future.
-Date: Sun, 6 May 2007 23:33:11 -0400
-To: David Lang <david.lang@digitalinsight.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 06, 2007, at 22:13:51, David Lang wrote:
-> anyone who is doing a hibernate or suspend who expect all the  
-> network connections to be working afterwords is dreaming or  
-> smokeing something.
->
-> this is just another way that the failure can show up.
->
-> in fact, I would say that it would probalby be a nice thing to do  
-> for intervening firewalls and external servers if a suspend closed  
-> all external TCP connections rather then leaving them dangling  
-> (eating up resources until they time out)
->
-> if you software can't tolorate the network connection going away on  
-> you it will have problems in normal operation anyway, let alone  
-> when you suspend/hibernate your machine.
+On Sun, 2007-05-06 at 16:47 +0400, Oleg Nesterov wrote:
+> On 05/05, Tom Zanussi wrote:
+> >
+> > This patch makes relay use timers instead of workqueues for reader
+> > waking.
+> 
+> A couple of very minor nits,
+> 
+> > @@ -337,11 +334,11 @@ static void __relay_reset(struct rchan_buf *buf, unsigned int init)
+> >  	if (init) {
+> >  		init_waitqueue_head(&buf->read_wait);
+> >  		kref_init(&buf->kref);
+> > -		INIT_DELAYED_WORK(&buf->wake_readers, NULL);
+> > -	} else {
+> > -		cancel_delayed_work(&buf->wake_readers);
+> > -		flush_scheduled_work();
+> > -	}
+> > +		init_timer(&buf->timer);
+> > +		buf->timer.data = (unsigned long)buf;
+> > +		buf->timer.function = wakeup_readers;
+> 
+> I'd suggest to use setup_timer(&buf->timer, wakeup_readers, buf);
+> 
+> > @@ -609,9 +605,16 @@ size_t relay_switch_subbuf(struct rchan_buf *buf, size_t length)
+> >  			buf->padding[old_subbuf];
+> >  		smp_mb();
+> >  		if (waitqueue_active(&buf->read_wait)) {
+> > -			PREPARE_DELAYED_WORK(&buf->wake_readers,
+> > -					     wakeup_readers);
+> > -			schedule_delayed_work(&buf->wake_readers, 1);
+> > +			/*
+> > +			 * Calling wake_up_interruptible() from here
+> > +			 * will deadlock if we happen to be logging
+> > +			 * from the scheduler (trying to re-grab
+> > +			 * rq->lock), so defer it.
+> > +			 */
+> > +			if (!timer_pending(&buf->timer)) {
+> > +				buf->timer.expires = jiffies + 1;
+> > +				add_timer(&buf->timer);
+> > +			}
+> 
+> I think it is better to use __mod_timer(&buf->timer, jiffies + 1). In that
+> case this "if (!timer_pending(&buf->timer))" is not strictly needed, yes?
+> 
+> Imho, add_timer() is almost never should be used. The only valid usage is when
+> timer->expires was already set by somebody else.
+> 
+> Btw, thanks for your explanation about deferred wakeup.
+> 
 
-Yeah, for suspend-to-ram+resume and for snapshot+restore you probably  
-want userspace to support some kind of initscript-like mechanism  
-which is triggered by the lid-switch or something before calling into  
-the kernel.  That way it can close network connections mostly-nicely  
-and down network interfaces before suspending, then re-run DHCP/ 
-802.11/whatever configuration after resume/restore.  That might not  
-be a bad place to handle NFS mounts and such too.
+OK, and thanks for your helpful comments.  Corrected patch to follow...
 
-Cheers,
-Kyle Moffett
+Tom
+
+
 
