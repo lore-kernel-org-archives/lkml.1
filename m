@@ -1,47 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933004AbXEGLTv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933012AbXEGLWP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933004AbXEGLTv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 07:19:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933012AbXEGLTv
+	id S933012AbXEGLWP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 07:22:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933041AbXEGLWP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 07:19:51 -0400
-Received: from za-gw.sanpeople.com ([196.211.225.226]:2944 "EHLO
-	za-gw.sanpeople.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933004AbXEGLTv (ORCPT
+	Mon, 7 May 2007 07:22:15 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:60355 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933012AbXEGLWO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 07:19:51 -0400
-X-Greylist: delayed 1325 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 May 2007 07:19:49 EDT
-Subject: Re: [PATCH 1/2] Use common cpu_is_xxx() macros on AT91 and AVR32
-From: Andrew Victor <andrew@sanpeople.com>
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-Cc: akpm@linux-foundation.org, David Brownell <david-b@pacbell.net>,
-       Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <11785276841920-git-send-email-hskinnemoen@atmel.com>
-References: <11785276841920-git-send-email-hskinnemoen@atmel.com>
-Content-Type: text/plain
-Organization: Multenet Technologies (Pty) Ltd
-Message-Id: <1178534593.27286.28.camel@fuzzie.sanpeople.com>
-Mime-Version: 1.0
-X-Mailer: Ximian Evolution 1.2.2 
-Date: 07 May 2007 12:43:13 +0200
-Content-Transfer-Encoding: 7bit
+	Mon, 7 May 2007 07:22:14 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Ext3 vs NTFS performance
+To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Anton Altaparmakov <aia21@cam.ac.uk>,
+       Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Mon, 07 May 2007 13:21:28 +0200
+References: <8gShI-3hY-11@gated-at.bofh.it> <8h1bh-8sG-11@gated-at.bofh.it> <8h2Al-280-1@gated-at.bofh.it> <8hW9y-2Lp-3@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1Hl1HU-0000h1-8I@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX1+RS8IeUkD8Mj1mTELfXqmqfcjexZz2vzHLK6U
+ PAhVgb6QQkEuyiujoJaJOMgHoBIvHSXKj+madCa2swlx/q/8wi
+ i4I1Pe2ki2PY/Jt/75p6Q==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jörn Engel <joern@lazybastard.org> wrote:
+> On Fri, 4 May 2007 10:46:10 +0100, Christoph Hellwig wrote:
 
-> Several drivers shared between AT91 and AVR32 chips use cpu_is_xxx()
-> to handle CPU-specific differences. Currently, such code needs to be
-> inside #ifdef CONFIG_ARCH_AT91 because the macros don't exist on AVR32.
+>> Which means the right place to fix this is samba.  Samba just need
+>> to intersept lseek and pread/pwrite to never allocate sparse files
+>> but do the right thing instead.  Now what the right thing would probably
+>> be a preallocate instead of writing zeroes, and we need to provide the
+>> infrastructure for them to do it, which is in progress currently.
 > 
-> By defining the same macros on both AT91 and AVR32, these #ifdefs can
-> be eliminated. Since the macros will evaluate to a constant value for
-> CPUs that aren't supported by the current architecture, any code that
-> is only needed on AT91 will be optimized away on AVR32 and vice versa.
-> 
-> Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+> Why do preallocate and not just truncate the file?
 
-Acked-by: Andrew Victor <andrew@sanpeople.com>
+If it's done by samba, it's racy. Only the kernel can reliably tell a
+write-beyond-eof from a write-before-eof. Either it should unconditionally
+turn these preallocation-writes into truncates, or have a flag which will
+turn this feature on and which can be used to turn the lseek into a real
+preallocation call.
 
+I don't think unconditionally turning these writes into truncate would be
+good, it would change the behaviour of dd bs=1 count=$(($n*$BLOCKSIZE+1)).
+-- 
+Top 100 things you don't want the sysadmin to say:
+17. dd if=/dev/null of=/vmunix
 
-
+Friß, Spammer: Gy9b.pfols@qy4ia.7eggert.dyndns.org rlk@r.7eggert.dyndns.org
