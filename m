@@ -1,116 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbXEGTtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbXEGTuJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbXEGTtt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 15:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754834AbXEGTtl
+	id S1754791AbXEGTuJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:50:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbXEGTuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 15:49:41 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:57567 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754795AbXEGTth (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 15:49:37 -0400
-Date: Mon, 7 May 2007 05:37:54 -0600
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
-Message-ID: <20070507113753.GA5439@schatzie.adilger.int>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-	cmm@us.ibm.com
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426181332.GD7209@amitarora.in.ibm.com> <20070503213133.d1559f52.akpm@linux-foundation.org>
+	Mon, 7 May 2007 15:50:04 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3625 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754723AbXEGTuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 15:50:02 -0400
+Date: Mon, 7 May 2007 19:49:50 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Anton Vorontsov <cbou@mail.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+Message-ID: <20070507194949.GB3981@ucw.cz>
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz> <1178550653.11851.191.camel@pmac.infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070503213133.d1559f52.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+In-Reply-To: <1178550653.11851.191.camel@pmac.infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 03, 2007  21:31 -0700, Andrew Morton wrote:
-> On Thu, 26 Apr 2007 23:43:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
-> > + * ext4_fallocate:
-> > + * preallocate space for a file
-> > + * mode is for future use, e.g. for unallocating preallocated blocks etc.
-> > + */
+On Mon 2007-05-07 16:10:53, David Woodhouse wrote:
+> On Mon, 2007-05-07 at 14:04 +0000, Pavel Machek wrote:
+> > Can we stick to ascii in sources? 
 > 
-> This description is rather thin.  What is the filesystem's actual behaviour
-> here?  If the file is using extents then the implementation will do
-> <something>.  If the file is using bitmaps then we will do <something else>.
-> 
-> But what?   Here is where it should be described.
+> No. Please join us in the 21st century.
 
-My understanding is that glibc will handle zero-filling of files for
-filesystems that do not support fallocate().
-
-> > +int ext4_fallocate(struct inode *inode, int mode, loff_t offset, loff_t len)
-> > +{
-> > +	handle_t *handle;
-> > +	ext4_fsblk_t block, max_blocks;
-> > +	int ret, ret2, nblocks = 0, retries = 0;
-> > +	struct buffer_head map_bh;
-> > +	unsigned int credits, blkbits = inode->i_blkbits;
-> > +
-> > +	/* Currently supporting (pre)allocate mode _only_ */
-> > +	if (mode != FA_ALLOCATE)
-> > +		return -EOPNOTSUPP;
-> > +
-> > +	if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
-> > +		return -ENOTTY;
-> 
-> So we don't implement fallocate on bitmap-based files!  Well that's huge
-> news.  The changelog would be an appropriate place to communicate this,
-> along with reasons why, or a description of the plan to fix it.
-> 
-> Also, posix says nothing about fallocate() returning ENOTTY.
-
-I _think_ this is to convince glibc to do the zero-filling in userspace,
-but I'm not up on the API specifics.
-
-> > +	block = offset >> blkbits;
-> > +	max_blocks = (EXT4_BLOCK_ALIGN(len + offset, blkbits) >> blkbits)
-> > +			 - block;
-> > +	mutex_lock(&EXT4_I(inode)->truncate_mutex);
-> > +	credits = ext4_ext_calc_credits_for_insert(inode, NULL);
-> > +	mutex_unlock(&EXT4_I(inode)->truncate_mutex);
-> 
-> Now I'm mystified.  Given that we're allocating an arbitrary amount of disk
-> space, and that this disk space will require an arbitrary amount of
-> metadata, how can we work out how much journal space we'll be needing
-> without at least looking at `len'?
-
-Good question.
-
-The uninitialized extent can cover up to 128MB with a single entry.
-If @path isn't specified, then ext4_ext_calc_credits_for_insert()
-function returns the maximum number of extents needed to insert a leaf,
-including splitting all of the index blocks.  That would allow up to 43GB
-(340 extents/block * 128MB) to be preallocated, but it still needs to take
-the size of the preallocation into account (adding 3 blocks per 43GB - a
-leaf block, a bitmap block and a group descriptor).
-
-Also, since @path is not being given then truncate_mutex is not needed.
-
-> > +		ret = ext4_ext_get_blocks(handle, inode, block,
-> > +					  max_blocks, &map_bh,
-> > +					  EXT4_CREATE_UNINITIALIZED_EXT, 0);
-> > +		BUG_ON(!ret);
-> 
-> BUG_ON is vicious.  Is it really justified here?  Possibly a WARN_ON and
-> ext4_error() would be safer and more useful here.
-
-Ouch, not very friendly error handling.
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
-
+We had this discussion before. Kernel sources should be us-ascii.
+utf-8 is ok for documentation.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
