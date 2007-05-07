@@ -1,124 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967107AbXEGWUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967115AbXEGWVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967107AbXEGWUO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 18:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967101AbXEGWUJ
+	id S967115AbXEGWVN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 18:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966973AbXEGWVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 18:20:09 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:59003 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966631AbXEGWUH (ORCPT
+	Mon, 7 May 2007 18:21:11 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:35182 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966671AbXEGWVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 18:20:07 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:user-agent:from;
-	b=e5D86l2x86lU7i/3ZKle5RH8HPxFydtKybILRUctMAUzj5wYHSSm1z90aIl22oxe+
-	lCJ7RwV3k4mEQxCUjrEwg==
-Date: Mon, 7 May 2007 15:19:01 -0700
-To: ak@suse.de, vojtech@suse.cz
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64: O_EXCL on /dev/mcelog (resend)
-Message-ID: <20070507221901.GA26709@google.com>
-MIME-Version: 1.0
+	Mon, 7 May 2007 18:21:09 -0400
+Date: Mon, 7 May 2007 15:21:04 -0700
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+Message-ID: <20070507222103.GJ8181@schatzie.adilger.int>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+	cmm@us.ibm.com
+References: <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426181332.GD7209@amitarora.in.ibm.com> <20070503213133.d1559f52.akpm@linux-foundation.org> <20070507113753.GA5439@schatzie.adilger.int> <20070507135825.f8545a65.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
-From: thockin@google.com (Tim Hockin)
+In-Reply-To: <20070507135825.f8545a65.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tim Hockin <thockin@google.com>
+On May 07, 2007  13:58 -0700, Andrew Morton wrote:
+> Final point: it's fairly disappointing that the present implementation is
+> ext4-only, and extent-only.  I do think we should be aiming at an ext4
+> bitmap-based implementation and an ext3 implementation.
 
-Background:
- /dev/mcelog is a clear-on-read interface.  It is currently possible for
- multiple users to open and read() the device.  Users are protected from
- each other during any one read, but not across reads.
+Actually, this is a non-issue.  The reason that it is handled for extent-only
+is that this is the only way to allocate space in the filesystem without
+doing the explicit zeroing.  For other filesystems (including ext3 and
+ext4 with block-mapped files) the filesystem should return an error (e.g.
+-EOPNOTSUPP) and glibc will do manual zero-filling of the file in userspace.
 
-Description:
- This patch adds support for O_EXCL to /dev/mcelog.  If a user opens the
- device with O_EXCL, no other user may open the device (EBUSY).  Likewise,
- any user that tries to open the device with O_EXCL while another user has
- the device will fail (EBUSY).
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
-Result:
- Applications can get exclusive access to /dev/mcelog.  Applications that
- do not care will be unchanged.
-
-Alternatives:
- A simpler choice would be to only allow one open() at all, regardless of
- O_EXCL.
-
-Testing:
- I wrote an application that opens /dev/mcelog with O_EXCL and observed
- that any other app that tried to open /dev/mcelog would fail until the
- exclusive app had closed the device.
-
-Caveats:
- None.
-
-Patch:
- This patch is against 2.6.21.
-
-Signed-off-by: Tim Hockin <thockin@google.com>
-
----
-
-This is the first version version of this patch.  The simpler alternative
-of only one open() sounds better to me, but becomes a net change in
-behavior.
-
-
-diff -pruN linux-2.6.20+th/arch/x86_64/kernel/mce.c linux-2.6.20+th1.5/arch/x86_64/kernel/mce.c
---- linux-2.6.20+th/arch/x86_64/kernel/mce.c	2007-04-27 14:19:08.000000000 -0700
-+++ linux-2.6.20+th1.5/arch/x86_64/kernel/mce.c	2007-05-01 21:53:10.000000000 -0700
-@@ -465,6 +465,40 @@ void __cpuinit mcheck_init(struct cpuinf
-  * Character device to read and clear the MCE log.
-  */
- 
-+static DEFINE_SPINLOCK(mce_state_lock);
-+static int open_count;	/* #times opened */
-+static int open_exclu;	/* already open exclusive? */
-+
-+static int mce_open(struct inode *inode, struct file *file)
-+{
-+	spin_lock(&mce_state_lock);
-+
-+	if (open_exclu || (open_count && (file->f_flags & O_EXCL))) {
-+		spin_unlock(&mce_state_lock);
-+		return -EBUSY;
-+	}
-+
-+	if (file->f_flags & O_EXCL)
-+		open_exclu = 1;
-+	open_count++;
-+
-+	spin_unlock(&mce_state_lock);
-+
-+	return 0;
-+}
-+
-+static int mce_release(struct inode *inode, struct file *file)
-+{
-+	spin_lock(&mce_state_lock);
-+
-+	open_count--;
-+	open_exclu = 0;
-+
-+	spin_unlock(&mce_state_lock);
-+
-+	return 0;
-+}
-+
- static void collect_tscs(void *data) 
- { 
- 	unsigned long *cpu_tsc = (unsigned long *)data;
-@@ -553,6 +587,8 @@ static int mce_ioctl(struct inode *i, st
- }
- 
- static const struct file_operations mce_chrdev_ops = {
-+	.open = mce_open,
-+	.release = mce_release,
- 	.read = mce_read,
- 	.ioctl = mce_ioctl,
- };
