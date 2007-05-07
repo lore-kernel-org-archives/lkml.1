@@ -1,70 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966520AbXEGVTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755072AbXEGVTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966520AbXEGVTS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 17:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbXEGVTR
+	id S1755072AbXEGVTx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 17:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbXEGVTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 17:19:17 -0400
-Received: from z2.cat.iki.fi ([212.16.98.133]:35350 "EHLO z2.cat.iki.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754981AbXEGVTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 17:19:16 -0400
-Date: Tue, 8 May 2007 00:19:15 +0300
-From: Matti Aarnio <matti.aarnio@zmailer.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: gmail is a bit too popular..
-Message-ID: <20070507211915.GI3883@mea-ext.zmailer.org>
-References: <20070507145555.GG3883@mea-ext.zmailer.org> <20070507201821.GG943@1wt.eu>
+	Mon, 7 May 2007 17:19:50 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:45337 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754860AbXEGVTu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 17:19:50 -0400
+Date: Mon, 7 May 2007 22:23:11 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Woodhouse <dwmw2@infradead.org>, Anton Vorontsov <cbou@mail.ru>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+Message-ID: <20070507222311.4589fc8a@the-village.bc.nu>
+In-Reply-To: <20070507194949.GB3981@ucw.cz>
+References: <20070503213303.GH20067@zarina>
+	<20070507140453.GD3868@ucw.cz>
+	<1178550653.11851.191.camel@pmac.infradead.org>
+	<20070507194949.GB3981@ucw.cz>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070507201821.GG943@1wt.eu>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 10:18:21PM +0200, Willy Tarreau wrote:
-> On Mon, May 07, 2007 at 05:55:55PM +0300, Matti Aarnio wrote:
-...
-> > The  gmail  is so popular, that with their somewhat rudimentary 
-> > inbound MTA software this kind of recipient masses take horrible
-> > time to feed in...  Mere 0.5-0.7 seconds per recipient, but..
+On Mon, 7 May 2007 19:49:50 +0000
+Pavel Machek <pavel@ucw.cz> wrote:
+
+> On Mon 2007-05-07 16:10:53, David Woodhouse wrote:
+> > On Mon, 2007-05-07 at 14:04 +0000, Pavel Machek wrote:
+> > > Can we stick to ascii in sources? 
 > > 
-> > So far we have tried to feed all recipients in one go per
-> > message - that is sending 2100  RCPT TO -lines in one swoop,
-> > and the system has taken some 15-25 minutes per message to
-> > feed it to gmail.  We are running the delivery 20 streams in
-> > parallel, so it isn't quite as bad as it sounds..
-> > 
+> > No. Please join us in the 21st century.
 > 
-> I suspect they behave like that on purpose to fight spam.
+> We had this discussion before. Kernel sources should be us-ascii.
+> utf-8 is ok for documentation.
 
-No.  VGER is on the extreme outer edge of things, only very few
-legitimate systems have a need to send this much recipients for
-each and every message.  Some small list with perhaps 10 subscribers
-at gmail notice nothing.  Not even with 100 subscribers, but soon
-after that the sending list sysadmin may notice something...
-
-Comparing with spammers - message content analysis (ever so difficult
-thing anyway) is _easier_ per recipient when we are sending 100
-recipients for each DATA-dot body.  It is 1/100:th cost per recipient
-compared to "send one RCPT for each body".  We could send all 2100
-recipients if systems could negotiate such raised limit (there is
-no standardized way, just one private ad-hoc,) and do the recipient
-acceptance analysis fast enough so that PIPELINING-mode would really
-gain benefits.
-
-> If they implemented pipelining, it wouldn't help them.
-
-It would not hurt them either.  Just help us very few who
-are at this extreme outer edge of things..
-
-Lightspeed delay (ping) is about 160 ms, so there is still some
-300-600 ms that the gmail system is munching somewhere per recipient..
-
-Anyway, VGER is now tuned so that the delivery delay stays usually
-under about 1 hour per message to gmail.
-
-....
-> Willy
-
-  /Matti Aarnio
+We had this discussion before. Kernel sources should use utf-8 for
+comments where neccessary. Many names cannot be correctly represented in
+US ascii, and mangling them is just plain rude.
