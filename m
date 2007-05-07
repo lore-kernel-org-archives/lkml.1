@@ -1,41 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934420AbXEGPwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965509AbXEGQA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934420AbXEGPwR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 11:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934386AbXEGPwO
+	id S965509AbXEGQA1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 12:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965254AbXEGQA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 11:52:14 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52167 "EHLO mx1.redhat.com"
+	Mon, 7 May 2007 12:00:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52950 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934383AbXEGPwN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 11:52:13 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1178543543.6158.7.camel@heimdal.trondhjem.org> 
-References: <1178543543.6158.7.camel@heimdal.trondhjem.org>  <20070505164422.GD8975@stusta.de> <20070505014955.8f3990b5.akpm@linux-foundation.org> <15958.1178534871@redhat.com> <20070507105607.GB4226@stusta.de> 
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: Adrian Bunk <bunk@stusta.de>, Andrew Morton <akpm@linux-foundation.org>,
-       davem@davemloft.net, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [-mm patch] fix fs/nfs/nfsroot.c compile error 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Mon, 07 May 2007 16:49:57 +0100
-Message-ID: <20340.1178552997@redhat.com>
+	id S934378AbXEGQA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 12:00:26 -0400
+Date: Mon, 7 May 2007 17:55:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Esben Nielsen <nielsen.esben@googlemail.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070507155559.GA26856@elte.hu>
+References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com> <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com> <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire> <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org> <20070506082911.GA32644@elte.hu> <alpine.LFD.0.98.0705061037390.25245@woody.linux-foundation.org> <Pine.LNX.4.64.0705071311040.14011@frodo.shire>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705071311040.14011@frodo.shire>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <trond.myklebust@fys.uio.no> wrote:
 
-> It makes little or no sense to be forcing attributes like 'const' in a
-> typedef. That is basically stating that it is inconceivable to use
-> anything else. Clearly not the case here...
+* Esben Nielsen <nielsen.esben@googlemail.com> wrote:
 
-Yeah.  I think that there shouldn't be a typedef.  There's no real need for
-it.
+> I would hate to tell mission control for Mankind's first mission to 
+> another star to reboot every 200 years because "there is no need to 
+> worry about it."
 
-David
+ok, i need no other argument - fixed :-)
+
+(btw., if anyone from the planning committee of Mankind's first mission 
+to another star has any other particular wish about CFS's design, i'm 
+all ears and it's going to get the highest possible priority!)
+
+i really mean it! (And i guess you discovered my weak spot. Darn :) 
+Hopefully they wont ask for STREAMS support, that would put us into a 
+_really_ difficult position.)
+
+	Ingo
