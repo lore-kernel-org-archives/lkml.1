@@ -1,83 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754215AbXEGItq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754218AbXEGJQk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754215AbXEGItq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 04:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754191AbXEGItq
+	id S1754218AbXEGJQk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 05:16:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754219AbXEGJQk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 04:49:46 -0400
-Received: from astra.telenet-ops.be ([195.130.132.58]:57189 "EHLO
-	astra.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754183AbXEGItp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 04:49:45 -0400
-Date: Mon, 7 May 2007 10:49:42 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] m68k: <asm/scatterlist.h> needs <asm/types.h>
-In-Reply-To: <Pine.LNX.4.64.0705062238360.2956@scrub.home>
-Message-ID: <Pine.LNX.4.64.0705070900190.4741@anakin>
-References: <Pine.LNX.4.64.0705062233160.4741@anakin>
- <Pine.LNX.4.64.0705062238360.2956@scrub.home>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 May 2007 05:16:40 -0400
+Received: from main.gmane.org ([80.91.229.2]:58753 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754218AbXEGJQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 05:16:39 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Subject: Re: [PATCH] x86-64 highres/dyntick support
+Date: Mon, 7 May 2007 09:16:16 +0000 (UTC)
+Message-ID: <loom.20070507T111514-504@post.gmane.org>
+References: <1178485128.31213.98.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 81.64.156.37 (Mozilla/5.0 (X11; U; Linux x86_64; fr; rv:1.8.1.3) Gecko/20070417 Fedora/2.0.0.3-4.fc7 Firefox/2.0.0.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 May 2007, Roman Zippel wrote:
-> On Sun, 6 May 2007, Geert Uytterhoeven wrote:
-> > The recent <linux/pci.h> cleanup uncovered that include/asm-m68k/scatterlist.h
-> > needs to include <asm/types.h>
-> > 
-> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > ---
-> >  include/asm-m68k/scatterlist.h |    2 ++
-> >  1 file changed, 2 insertions(+)
-> > 
-> > --- linux-m68k-2.6.21.orig/include/asm-m68k/scatterlist.h
-> > +++ linux-m68k-2.6.21/include/asm-m68k/scatterlist.h
-> > @@ -1,6 +1,8 @@
-> >  #ifndef _M68K_SCATTERLIST_H
-> >  #define _M68K_SCATTERLIST_H
-> >  
-> > +#include <asm/types.h>
-> > +
+Thomas Gleixner <tglx <at> linutronix.de> writes:
+
 > 
-> Unless required otherwise please use <linux/types.h>
+> I'm pleased to announce the first cut of the final x86_64
+> highres/dyntick support, which I did based on Chris Wright's patch set,
+> which is again based on Arjan van de Ven's initial work:
 
-Fine for me! I just mimicked asm-i386/scatterlist.h.
+Do you have a 2.6.21-mm1 patchset?
 
-Subject: [PATCH] m68k: <asm/scatterlist.h> needs <linux/types.h>
+Regards,
 
-The recent <linux/pci.h> cleanup uncovered that include/asm-m68k/scatterlist.h
-needs to include <linux/types.h>
+-- 
+Nicolas Mailhot
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- include/asm-m68k/scatterlist.h |    2 ++
- 1 file changed, 2 insertions(+)
 
---- linux-m68k-2.6.21.orig/include/asm-m68k/scatterlist.h
-+++ linux-m68k-2.6.21/include/asm-m68k/scatterlist.h
-@@ -1,6 +1,8 @@
- #ifndef _M68K_SCATTERLIST_H
- #define _M68K_SCATTERLIST_H
- 
-+#include <linux/types.h>
-+
- struct scatterlist {
- 	struct page *page;
- 	unsigned int offset;
 
-Gr{oetje,eeting}s,
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
