@@ -1,65 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754117AbXEGIso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754171AbXEGIsy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754117AbXEGIso (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 04:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754171AbXEGIso
+	id S1754171AbXEGIsy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 04:48:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbXEGIsy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 04:48:44 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:60723 "EHLO relay.atmel.no"
+	Mon, 7 May 2007 04:48:54 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:62945 "EHLO relay.atmel.no"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754117AbXEGIsn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 04:48:43 -0400
+	id S1754171AbXEGIsx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 04:48:53 -0400
 From: Haavard Skinnemoen <hskinnemoen@atmel.com>
 To: akpm@linux-foundation.org
 Cc: David Brownell <david-b@pacbell.net>, Andrew Victor <andrew@sanpeople.com>,
        Nicolas Ferre <nicolas.ferre@rfo.atmel.com>,
        linux-kernel@vger.kernel.org,
        Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [PATCH 2/2] atmel_spi: Remove unnecessary (and wrong) #ifdefs
-Date: Mon,  7 May 2007 10:48:04 +0200
-Message-Id: <11785276843977-git-send-email-hskinnemoen@atmel.com>
+Subject: [PATCH 1/2] Use common cpu_is_xxx() macros on AT91 and AVR32
+Date: Mon,  7 May 2007 10:48:03 +0200
+Message-Id: <11785276841920-git-send-email-hskinnemoen@atmel.com>
 X-Mailer: git-send-email 1.4.4.4
-In-Reply-To: <11785276841920-git-send-email-hskinnemoen@atmel.com>
-References: <11785276841920-git-send-email-hskinnemoen@atmel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that the cpu_is_xxx() macros are available both on AVR32 and AT91,
-we can remove a couple of #ifdefs from this driver. One of them is
-actually wrong -- new_1 should be set on AVR32 but isn't. This causes
-the bus clock to run at twice the speed it is configured to.
+Several drivers shared between AT91 and AVR32 chips use cpu_is_xxx()
+to handle CPU-specific differences. Currently, such code needs to be
+inside #ifdef CONFIG_ARCH_AT91 because the macros don't exist on AVR32.
+
+By defining the same macros on both AT91 and AVR32, these #ifdefs can
+be eliminated. Since the macros will evaluate to a constant value for
+CPUs that aren't supported by the current architecture, any code that
+is only needed on AT91 will be optimized away on AVR32 and vice versa.
 
 Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
 ---
- drivers/spi/atmel_spi.c |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
+ include/asm-arm/arch-at91/cpu.h     |    6 ++++++
+ include/asm-avr32/arch-at32ap/cpu.h |   33 +++++++++++++++++++++++++++++++++
+ 2 files changed, 39 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/spi/atmel_spi.c b/drivers/spi/atmel_spi.c
-index 66e7bc9..1d8a2f6 100644
---- a/drivers/spi/atmel_spi.c
-+++ b/drivers/spi/atmel_spi.c
-@@ -22,10 +22,7 @@
- #include <asm/io.h>
- #include <asm/arch/board.h>
- #include <asm/arch/gpio.h>
--
--#ifdef CONFIG_ARCH_AT91
- #include <asm/arch/cpu.h>
--#endif
+diff --git a/include/asm-arm/arch-at91/cpu.h b/include/asm-arm/arch-at91/cpu.h
+index d464ca5..7ef4eeb 100644
+--- a/include/asm-arm/arch-at91/cpu.h
++++ b/include/asm-arm/arch-at91/cpu.h
+@@ -68,4 +68,10 @@ static inline unsigned long at91_arch_identify(void)
+ #define cpu_is_at91sam9263()	(0)
+ #endif
  
- #include "atmel_spi.h"
- 
-@@ -552,10 +549,8 @@ static int __init atmel_spi_probe(struct platform_device *pdev)
- 		goto out_free_buffer;
- 	as->irq = irq;
- 	as->clk = clk;
--#ifdef CONFIG_ARCH_AT91
- 	if (!cpu_is_at91rm9200())
- 		as->new_1 = 1;
--#endif
- 
- 	ret = request_irq(irq, atmel_spi_interrupt, 0,
- 			pdev->dev.bus_id, master);
++/*
++ * Since this is ARM, we will never run on any AVR32 CPU. But these
++ * definitions may reduce clutter in common drivers.
++ */
++#define cpu_is_at32ap7000()	(0)
++
+ #endif
+diff --git a/include/asm-avr32/arch-at32ap/cpu.h b/include/asm-avr32/arch-at32ap/cpu.h
+new file mode 100644
+index 0000000..2bdc5bd
+--- /dev/null
++++ b/include/asm-avr32/arch-at32ap/cpu.h
+@@ -0,0 +1,33 @@
++/*
++ * AVR32 and (fake) AT91 CPU identification
++ *
++ * Copyright (C) 2007 Atmel Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef __ASM_ARCH_CPU_H
++#define __ASM_ARCH_CPU_H
++
++/*
++ * Only AT32AP7000 is defined for now. We can identify the specific
++ * chip at runtime, but I'm not sure if it's really worth it.
++ */
++#ifdef CONFIG_CPU_AT32AP7000
++# define cpu_is_at32ap7000()	(1)
++#else
++# define cpu_is_at32ap7000()	(0)
++#endif
++
++/*
++ * Since this is AVR32, we will never run on any AT91 CPU. But these
++ * definitions may reduce clutter in common drivers.
++ */
++#define cpu_is_at91rm9200()	(0)
++#define cpu_is_at91sam9xe()	(0)
++#define cpu_is_at91sam9260()	(0)
++#define cpu_is_at91sam9261()	(0)
++#define cpu_is_at91sam9263()	(0)
++
++#endif /* __ASM_ARCH_CPU_H */
 -- 
 1.4.4.4
 
