@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967135AbXEGWgI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967136AbXEGWjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967135AbXEGWgI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 18:36:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967128AbXEGWgF
+	id S967136AbXEGWjp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 18:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966836AbXEGWjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 18:36:05 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:41403 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S967129AbXEGWgE (ORCPT
+	Mon, 7 May 2007 18:39:42 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:59525 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966662AbXEGWjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 18:36:04 -0400
-Date: Tue, 8 May 2007 00:36:04 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: kconfig: error out if recursive dependencies are found
-Message-ID: <20070507223604.GC4226@stusta.de>
-References: <20070502201741.GD9044@uranus.ravnborg.org> <20070506073615.GA6492@uranus.ravnborg.org> <20070506074038.GB6492@uranus.ravnborg.org> <Pine.LNX.4.64.0705070221500.1479@scrub.home> <20070507193707.GA19985@uranus.ravnborg.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070507193707.GA19985@uranus.ravnborg.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Mon, 7 May 2007 18:39:40 -0400
+Date: Mon, 7 May 2007 15:38:56 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andreas Dilger <adilger@clusterfs.com>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+Message-Id: <20070507153856.d56a5133.akpm@linux-foundation.org>
+In-Reply-To: <20070507222103.GJ8181@schatzie.adilger.int>
+References: <20070417125514.GA7574@amitarora.in.ibm.com>
+	<20070418130600.GW5967@schatzie.adilger.int>
+	<20070420135146.GA21352@amitarora.in.ibm.com>
+	<20070420145918.GY355@devserv.devel.redhat.com>
+	<20070424121632.GA10136@amitarora.in.ibm.com>
+	<20070426175056.GA25321@amitarora.in.ibm.com>
+	<20070426181332.GD7209@amitarora.in.ibm.com>
+	<20070503213133.d1559f52.akpm@linux-foundation.org>
+	<20070507113753.GA5439@schatzie.adilger.int>
+	<20070507135825.f8545a65.akpm@linux-foundation.org>
+	<20070507222103.GJ8181@schatzie.adilger.int>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 09:37:07PM +0200, Sam Ravnborg wrote:
-> On Mon, May 07, 2007 at 02:38:36AM +0200, Roman Zippel wrote:
-> > Hi,
-> > 
-> > On Sun, 6 May 2007, Sam Ravnborg wrote:
-> > 
-> > >  	if (sym->flags & SYMBOL_CHECK) {
-> > > -		printf("Warning! Found recursive dependency: %s", sym->name);
-> > > +		fprintf(stderr, "%s:%d:error: found recursive dependency: %s",
-> > > +		        sym->prop->file->name, sym->prop->lineno, sym->name);
-> > >  		return sym;
-> > >  	}
-> > 
-> > If it were that simple to print the location, I had done it already. :)
-> > Try this:
-> > 
-> > config FOO
-> >         bool
-> >         select BAR
-> >         depends on BAR
-> > 
-> > config BAR
-> >         bool
-> > 
-> > I looked into this before, for simple properties one could just remember 
-> > the last checked property via a static variable. The problem are the 
-> > selects which are checked before that loop, here the information from 
-> > where they were selected is not available anymore (at least not easily).
+On Mon, 7 May 2007 15:21:04 -0700
+Andreas Dilger <adilger@clusterfs.com> wrote:
+
+> On May 07, 2007  13:58 -0700, Andrew Morton wrote:
+> > Final point: it's fairly disappointing that the present implementation is
+> > ext4-only, and extent-only.  I do think we should be aiming at an ext4
+> > bitmap-based implementation and an ext3 implementation.
 > 
-> We need to point out _one_ of the faulty spots only.
-> But I see that kconfig records file:line for properties and menu entries
-> but not for symbols.
-> Any special reason why file:line is omitted for symbols (except size of allocated
-> memory)?
-> 
-> Without looking into details it looks more relevant to have file:line for symbols
-> rather than for prompts / properties..
+> Actually, this is a non-issue.  The reason that it is handled for extent-only
+> is that this is the only way to allocate space in the filesystem without
+> doing the explicit zeroing.  For other filesystems (including ext3 and
+> ext4 with block-mapped files) the filesystem should return an error (e.g.
+> -EOPNOTSUPP) and glibc will do manual zero-filling of the file in userspace.
 
-I'm not getting what problem you are trying to solve.
+hrm, spose so.
 
-Kconfig has always printed all symbols in the dependency circle, and 
-with this information it was never a problem to locate what went wrong.
+It can be a bit suboptimal from the layout POV.  The reservations code will
+largely save us here, but kernel support might make it a bit better.
 
-The only thing that was missing was that the error often wasn't detected 
-since it scroled away, so we need to error out.
-
-I have no problem with more information being printed, but at least for 
-me it isn't required since grep'ing for it is trivial.
-
-> 	Sam
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Totally blowing pagecache could be a problem.  Fixable in userspace by
+using sync_file_range()+fadvise() or O_DIRECT, but I bet it doesn't.
 
