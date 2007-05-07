@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967085AbXEGW35@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967054AbXEGWfq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967085AbXEGW35 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 18:29:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966550AbXEGW3y
+	id S967054AbXEGWfq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 18:35:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966719AbXEGWfn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 18:29:54 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:47575 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966716AbXEGW3x (ORCPT
+	Mon, 7 May 2007 18:35:43 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1321 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966550AbXEGWfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 18:29:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=iXYaKfA1WwQB1icQPHPIv1MHsIK1upWQCwSzro0GqkJaIw2ZD3lUKDHVUMjK7jRkEbW1LC/rMjDvAh2aPxMvan4+amBJ/sJCX1OheKggvd4Qs0LQwJhPhtwB/WNhOfSRDOcf3rkhlb6DkyUHVNA0iHFLPpR3qRNskiZYdMNsAJM=
-Message-ID: <12c511ca0705071529w38f71b09je0d9b460c7bc3025@mail.gmail.com>
-Date: Mon, 7 May 2007 15:29:52 -0700
-From: "Tony Luck" <tony.luck@intel.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-Subject: Re: [PATCH 1/3] kbuild: complain about missing system calls.
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kees Cook" <kees@outflux.net>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org,
-       "David Woodhouse" <dwmw2@infradead.org>
-In-Reply-To: <20070321222236.GB22623@uranus.ravnborg.org>
+	Mon, 7 May 2007 18:35:42 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 7 May 2007 15:35:38 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ulrich Drepper <drepper@gmail.com>
+cc: Davi Arnaut <davi@haxent.com.br>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
+In-Reply-To: <a36005b50705071519k40449ed2p7b9ece22cc19219a@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705071525200.29173@alien.or.mcafeemobile.com>
+References: <20070504225730.490334000@haxent.com.br>  <463BC3CA.6050109@haxent.com.br>
+  <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com> 
+ <463CFA37.3020809@haxent.com.br>  <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
+  <463F9B68.305@haxent.com.br> <a36005b50705071519k40449ed2p7b9ece22cc19219a@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	 <20070320103151.f65c81b6.randy.dunlap@oracle.com>
-	 <20070320192016.GC22797@outflux.net>
-	 <20070320214714.0e584cd4.akpm@linux-foundation.org>
-	 <20070321221905.GA22623@uranus.ravnborg.org>
-	 <20070321222236.GB22623@uranus.ravnborg.org>
-X-Google-Sender-Auth: e7ddac966635ce32
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/21/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> Most system calls seem to get added to i386 first. This patch
-> automatically generates a warning for any new system call which is
-> implemented on i386 but not the architecture currently being compiled.
+On Mon, 7 May 2007, Ulrich Drepper wrote:
 
-This is now upstream, and so I see a bunch of warnings for every ia64
-build.  Some of them are real, I need to add some syscalls, but there
-are a few bogus ones because ia64 chose different names (e.g. we have
-a sys_clone() that glibc uses to implement fork() and vfork()).
+> On 5/7/07, Davi Arnaut <davi@haxent.com.br> wrote:
+> > See Linus's message on this same thread.
+> 
+> No.  I'm talking about the userlevel side, not kernel side.
+> 
+> If a thread is canceled *after* it returns from the syscall but before
+> it reports the event to the call (i.e., while still in the syscall
+> wrapper, thread cancellation rules require a check there) the event is
+> lost.
 
-Just checking that the right way for me to shut checksyscalls.sh up is
-to add:
+read(2) is a cancellation point too. So if the fine userspace code issues 
+a random pthread_cancel() to a thread handling that, data is lost together 
+with the session that thread was handling. Hmm, I wonder how the world 
+could have functioned so far.
+Bottom line is, if you really want to throw random cancels to your worker 
+threads, you better wrap them into pthread_cleanup_push(). Because 
+otherwise, no matter where your cancel hits, you end up with a broken 
+system.
 
-#define __IGNORE_fork
-#define __IGNORE_vfork
 
-etc. to include/asm-ia64/unistd.h for each of the bogus ones.  Or is there
-some other preferred mechanism?
 
--Tony
+- Davide
+
+
