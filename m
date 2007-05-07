@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753694AbXEGCmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753708AbXEGCww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753694AbXEGCmv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 22:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753699AbXEGCmv
+	id S1753708AbXEGCww (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 22:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXEGCww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 22:42:51 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49541 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753670AbXEGCmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 22:42:50 -0400
-Message-ID: <463E921D.3070407@redhat.com>
-Date: Sun, 06 May 2007 19:42:37 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+	Sun, 6 May 2007 22:52:52 -0400
+Received: from warden-p.diginsite.com ([208.29.163.248]:53938 "HELO
+	warden.diginsite.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with SMTP id S1753699AbXEGCwv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 22:52:51 -0400
+Date: Sun, 6 May 2007 19:13:51 -0700 (PDT)
+From: David Lang <david.lang@digitalinsight.com>
+X-X-Sender: dlang@dlang.diginsite.com
+To: Pavel Machek <pavel@ucw.cz>
+cc: Nigel Cunningham <nigel@nigel.suspend2.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>
-Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
-References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au> <463B598B.80200@redhat.com> <463BC62C.3060605@yahoo.com.au> <463E5A00.6070708@redhat.com>
-In-Reply-To: <463E5A00.6070708@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+       Pekka J Enberg <penberg@cs.helsinki.fi>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Back to the future.
+In-Reply-To: <20070503171843.GA4355@ucw.cz>
+Message-ID: <Pine.LNX.4.63.0705061909290.19118@qynat.qvtvafvgr.pbz>
+References: <1177567481.5025.211.camel@nigel.suspend2.net> 
+ <200704280041.17617.rjw@sisk.pl>  <alpine.LFD.0.98.0704271612380.9964@woody.linux-foundation.org>
+  <200704280145.26253.rjw@sisk.pl>  <1177718250.4737.222.camel@nigel.suspend2.net>
+  <Pine.LNX.4.63.0704271638150.11000@qynat.qvtvafvgr.pbz> <20070503171843.GA4355@ucw.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> I think that maybe for 2.6.22 we should just alias MADV_FREE
-> to run with the MADV_DONTNEED functionality, so that the glibc
-> people can make the change on their side while we figure out
-> what will be the best thing to do on the kernel side.
+On Thu, 3 May 2007, Pavel Machek wrote:
 
-No need for that.  We can later extend glibc to use MADV_FREE and fall 
-back on MADV_DONTNEED.
+> Hi!
+>
+>> nobody is suggesting that you leave peocesses running
+>> while you do the snapshot, what is being proposed is
+>>
+>> 1. pause userspace (prevent scheduling)
+>> 2. make snapshot image of memory
+>> 3. make mounted filesystems read-only (possibly with
+>> snapshot/checkpoint)
+>> 4. unpause
+>> 5. save image (with full userspace available, including
+>> network)
+>
+> Including network? Your tcp peers will be really confused, then, if
+> you ACK packets then claim you did not get them. No, you do not want
+> to start network.
 
--- 
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+anyone who is doing a hibernate or suspend who expect all the network 
+connections to be working afterwords is dreaming or smokeing something.
+
+this is just another way that the failure can show up.
+
+in fact, I would say that it would probalby be a nice thing to do for 
+intervening firewalls and external servers if a suspend closed all external TCP 
+connections rather then leaving them dangling (eating up resources until they 
+time out)
+
+if you software can't tolorate the network connection going away on you it will 
+have problems in normal operation anyway, let alone when you suspend/hibernate 
+your machine.
+
+David Lang
