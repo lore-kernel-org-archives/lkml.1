@@ -1,103 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934528AbXEGUCS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966410AbXEGUET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934528AbXEGUCS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 16:02:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934520AbXEGUCP
+	id S966410AbXEGUET (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 16:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXEGUEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 16:02:15 -0400
-Received: from www.osadl.org ([213.239.205.134]:41554 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934030AbXEGUCN convert rfc822-to-8bit (ORCPT
+	Mon, 7 May 2007 16:04:16 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:49943 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934562AbXEGUEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 16:02:13 -0400
-From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 2/3] UIO: Documentation
-Date: Mon, 7 May 2007 22:01:46 +0200
-User-Agent: KMail/1.9.5
-Cc: akpm <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org, tglx@linutronix.de,
-       Benedikt Spranger <b.spranger@linutronix.de>
-References: <20070427224957.GA17967@kroah.com> <200705041137.09403.hjk@linutronix.de> <20070507104629.79185cb5.randy.dunlap@oracle.com>
-In-Reply-To: <20070507104629.79185cb5.randy.dunlap@oracle.com>
-Organization: Linutronix
+	Mon, 7 May 2007 16:04:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=R1UlyN8xoLfDfLc3pSLzXME4vbiIVZn0T1KUrLGYYhe0+REEuYDEXgqSsGFUzeYtnpewqcigx+yLqri2+ThRcrIbgOZE/3dNvIKvZnsQJVVFoFwswBHqgMjMH0TgOdFfdtw0Nvg9hArBEvT1RBtYvgVd7xQxGp6I7EhRBwOJo3Y=
+Message-ID: <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com>
+Date: Tue, 8 May 2007 01:34:11 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Pavel Machek" <pavel@ucw.cz>
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+Cc: "David Woodhouse" <dwmw2@infradead.org>, "Anton Vorontsov" <cbou@mail.ru>,
+       "Greg KH" <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, "Andrew Morton" <akpm@osdl.org>
+In-Reply-To: <20070507194949.GB3981@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705072201.46513.hjk@linutronix.de>
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz>
+	 <1178550653.11851.191.camel@pmac.infradead.org>
+	 <20070507194949.GB3981@ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Montag 07 Mai 2007 19:46 schrieb Randy Dunlap:
-> On Fri, 4 May 2007 11:37:09 +0200 Hans-Jürgen Koch wrote:
-> 
-> > Am Donnerstag 03 Mai 2007 08:39 schrieb Hans-Jürgen Koch:
-> > > > 
-> > > > Hm, I have about 3 different patches here now, all dependant on each
-> > > > other, yet I can't tell which goes first :(
-> > > > 
-> > > > Can someone just send me 1, or 3 with the correct order in which to
-> > > > apply them?
-> > > > 
-> > > > thanks,
-> > > > 
-> > > > greg k-h
-> > > >
-> > > 
-> > > Hi Greg,
-> > > I attached all the UIO patches I collected so far. This is my series file:
-> > > 
-> > > uio.patch
-> > > fix-early-irq-problem-in-uio.patch
-> > > uio-documentation.patch
-> > > fix-uio_read-type-problem.patch
-> > > uio-dummy.patch
-> > > uio-hilscher-cif-card-driver.patch
-> > > ioremap-in-uio-hilscher-cif.patch
-> > > add-userspace-howto-to-uio-doc.patch
-> > > fix-uio-doc-build-problems.patch
-> > > 
-> > > It should also work without uio-dummy.patch.
-> > > I added Randy's last one-line patch to fix-uio-doc-build-problems.patch.
-> > > 
-> > > All patches are
-> > > Signed-off-by: Hans J. Koch <hjk@linutronix.de>
-> > > 
-> > > fix-uio-doc-build-problems.patch is also
-> > > Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> > > 
-> > 
-> > I also updated the original patch set with all these changes. They can be 
-> > found here:
-> > 
-> > http://www.osadl.org/projects/downloads/UIO/kernel/
-> 
-> Can one of you make sure that Andrew has a version in -mm that
-> will build without bombing?  
+On 5/8/07, Pavel Machek <pavel@ucw.cz> wrote:
+> On Mon 2007-05-07 16:10:53, David Woodhouse wrote:
+> > On Mon, 2007-05-07 at 14:04 +0000, Pavel Machek wrote:
+> > > Can we stick to ascii in sources?
+> >
+> > No. Please join us in the 21st century.
+>
+> We had this discussion before. Kernel sources should be us-ascii.
+> utf-8 is ok for documentation.
 
-Andrew usually takes Greg's patches AFAIK. The patches in
-http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/driver/
-are definitely out of date. Greg, could you update them?
-
-> Current 2.6.21-mm1 does this on UIO docs, 
-> but all of these have been fixed via email AFAIK:
-> 
-> Warning(/tester/linsrc/linux-2621-mm1//drivers/uio/uio.c:240): No description found for parameter 'info'
-> Warning(/tester/linsrc/linux-2621-mm1//drivers/uio/uio.c:594): No description found for parameter 'owner'
-> Warning(/tester/linsrc/linux-2621-mm1//drivers/uio/uio.c:594): No description found for parameter 'info'
-> Warning(/tester/linsrc/linux-2621-mm1//drivers/uio/uio.c:667): No description found for parameter 'info'
-> Error(/tester/linsrc/linux-2621-mm1//include/linux/uio_driver.h:29): cannot understand prototype: 'struct uio_mem '
-> Error(/tester/linsrc/linux-2621-mm1//include/linux/uio_driver.h:55): cannot understand prototype: 'struct uio_info '
-> Warning(/tester/linsrc/linux-2621-mm1//include/linux/uio_driver.h): no structured comments found
-> make[1]: *** [Documentation/DocBook/kernel-api.xml] Error 2
-> make: *** [mandocs] Error 2
-
-Yes, all of these are fixed in the patches I sent.
-
-Thanks,
-Hans
-
-
+Hmmm ... what if David was German and had a couple of umlauts in his
+name :-) One would expect to at least _spell_ his own name properly in
+his code. Sources need to take care of that too (but we better stick
+to only UTF-8 for source files, wouldn't want to introduce ISO-8859-1
+into the mix too :-)
