@@ -1,57 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966228AbXEGS5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966242AbXEGS5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966228AbXEGS5Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 14:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966224AbXEGS5M
+	id S966242AbXEGS5e (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 14:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966200AbXEGS5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 14:57:12 -0400
-Received: from holomorphy.com ([66.93.40.71]:60308 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966113AbXEGS5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 14:57:11 -0400
-Date: Mon, 7 May 2007 11:57:42 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Bill Davidsen <davidsen@tmr.com>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, buddabrod <buddabrod@gmail.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [patch] CFS scheduler, -v9
-Message-ID: <20070507185742.GE19966@holomorphy.com>
-References: <20070503140911.GA21916@elte.hu> <4d47a5d10705070302k3f081074k89f0122cee7ae2e@mail.gmail.com> <463F31C2.1070809@tmr.com>
+	Mon, 7 May 2007 14:57:30 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:40529 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966197AbXEGS53 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 14:57:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=FE94vkXNIV0gx08ZSqLg773uylzb/YxKLd32gOW4V+Wa7KwvgC3hzRP3HnjZBmZREpqUcnvNmOOZHCS1HZJHJTxvBw/2OPP6IwN/v5od6UDdTCSbGvvnuJhFSVPmDlqM/2zrCAS3Awt21+NAQLzoI0ZGxtX0r6IMh2yNE6wqz5I=
+Message-ID: <a44ae5cd0705071157m241ec3c1k8c60aaf213a28166@mail.gmail.com>
+Date: Mon, 7 May 2007 11:57:28 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Herbert Xu" <herbert@gondor.apana.org.au>
+Subject: 2.6.21-mm1+hotfix -- Slab corruption -- Last user: [<c01b0cfa>](cryptomgr_probe+0x6c/0x9a)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <463F31C2.1070809@tmr.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 10:03:46AM -0400, Bill Davidsen wrote:
-> Clearly you have no idea what's going on, or how development is done. 
-> These are mutually exclusive different ideas on what constitutes an 
-> optimal scheduler, and not in any way improvements on the same thing, 
-> but total replacements for the algorithm of the scheduler.
-> And Ingo has been doing scheduler work for a very long time, while until 
-> recently Con was working on the staircase scheduler as a solution for 
-> desktop use, and it was not (to my taste) a candidate for a general 
-> scheduler until the deadline discussion and some ideas from wli resulted 
-> in improvements resulting in more robust performance under typical 
-> server loads.
-> You also seem to be unaware of the work done by Nick Piggin in 
-> nicksched. There are a lot of mutually incompatible approaches being 
-> evaluated, and that's good for the future.
-
-I'd like to add in Mike Kravetz, Hubertus Franke, and Peter Williams
-for mention here. There are doubtlesss many others also deserving some
-recognition for significant past work.
-
-
--- wli
+[  118.442018] ieee80211_crypt: registered algorithm 'WEP'
+[  118.514572] ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+[  118.514664] Slab corruption: size-256 start=c6aabe98, len=256
+[  118.514672] Redzone: 0x9f911029d74e35b/0x9f911029d74e35b.
+[  118.514676] Last user: [<c01b0cfa>](cryptomgr_probe+0x6c/0x9a)
+[  118.514692] 000: 10 55 ac c6 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
+[  118.514715] Prev obj: start=c6aabd80, len=256
+[  118.514721] Redzone: 0xd84156c5635688c0/0xd84156c5635688c0.
+[  118.514725] Last user: [<c01afd85>](crypto_alloc_instance+0x1d/0xc0)
+[  118.514734] 000: e0 71 39 c0 80 6e 39 c0 88 bd aa c6 88 bd aa c6
+[  118.514753] 010: 04 00 00 00 01 00 00 00 04 00 00 00 00 00 00 00
