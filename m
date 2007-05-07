@@ -1,350 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966306AbXEGTbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966324AbXEGTdg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966306AbXEGTbU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 15:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966259AbXEGTbQ
+	id S966324AbXEGTdg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:33:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966300AbXEGTdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 15:31:16 -0400
-Received: from qb-out-0506.google.com ([72.14.204.231]:16471 "EHLO
-	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966239AbXEGTbO (ORCPT
+	Mon, 7 May 2007 15:33:33 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:1308 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966256AbXEGTdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 15:31:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=cXQh7Q192YRxfTu3jenuMn4d4fKMI5H46DS220h/9prBUdhDT0BkjhUvlvOITVQky0zMjuKWI5v8bZpZ6rfE4vRh3MVWt6wqRqzRvx0qVME3TEvrezxiY5l8qqA8GhsajO6k+XWmwayKvxWAyQfAboCcq8HcHFsjk/zwTErltoQ=
-Date: Mon, 7 May 2007 21:31:15 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: Andrea Righi <righiandr@users.sourceforge.net>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [RFC][PATCH] VM: per-user overcommit policy
-Message-ID: <20070507193115.GA14264@dreamland.darkstar.lan>
+	Mon, 7 May 2007 15:33:32 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] CFS scheduler, -v10
+In-Reply-To: <20070507184047.GA24430@elte.hu> (Ingo Molnar's message of "Mon\,
+	7 May 2007 20\:40\:47 +0200")
+References: <20070507163342.GA3502@elte.hu>
+	<m3abwgqy5m.fsf@lugabout.jhcloos.org> <20070507184047.GA24430@elte.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/23.0.0 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMnRFWHRUaXRsZQAvbWF4dG9y
+ L2Nsb29zL2luY29taW5nLzIwMDQvMDIvUFdHL0pIQzE2LnBuZyJMlEwAAAAadEVYdFNvZnR3YXJl
+ AEdOT01FIEljb24gRWRpdG9ynioKbAAAAHFJREFUeJzFk8EKwCAMQ1/ED9cvzw6iuM0N9WIvDTWE
+ 1KjAxmKnLBEBjLcEIBCeI2nccy5YKrjxwbbvAvZ37zlo4GB9iRMC/cq/AppItwmMyJ5I98wd9G7P
+ xxgrSKlYS2lMrOcV13o95aVSKA7E5ndGXG+IIzcl4BNfAAAAAElFTkSuQmCC
+Copyright: Copyright 2007 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+X-Hashcash: 1:23:070507:linux-kernel@vger.kernel.org::iE0WFDWhHb4TVift:0000000000000000000000000000000003hcv
+X-Hashcash: 1:23:070507:mingo@elte.hu::jNGWQdRbfIg3nMuk:0000q7rg
+Date: Mon, 07 May 2007 15:32:19 -0400
+Message-ID: <m3y7k0pgyt.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <463F764E.5050009@users.sourceforge.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-a few comments on the patch:
+>>>>> "Ingo" == Ingo Molnar <mingo@elte.hu> writes:
 
-Andrea Righi <righiandr@users.sourceforge.net> ha scritto:
-> diff -urpN linux-2.6.21/include/linux/mman.h linux-2.6.21-vm-acct-user/include/linux/mman.h
-> --- linux-2.6.21/include/linux/mman.h   2007-05-07 20:20:24.000000000 +0200
-> +++ linux-2.6.21-vm-acct-user/include/linux/mman.h      2007-05-07 20:20:42.000000000 +0200
-> @@ -18,6 +18,14 @@
-> extern int sysctl_overcommit_memory;
-> extern int sysctl_overcommit_ratio;
-> extern atomic_t vm_committed_space;
-> +#ifdef CONFIG_VM_ACCT_USER
-> +struct vm_acct_values
-> +{
-> +       int overcommit_memory;
-> +       int overcommit_ratio;
-> +};
-> +extern int vm_acct_get_config(struct vm_acct_values *v, uid_t uid);
-> +#endif
-> 
-> #ifdef CONFIG_SMP
-> extern void vm_acct_memory(long pages);
-> diff -urpN linux-2.6.21/ipc/shm.c linux-2.6.21-vm-acct-user/ipc/shm.c
-> --- linux-2.6.21/ipc/shm.c      2007-05-07 20:20:24.000000000 +0200
-> +++ linux-2.6.21-vm-acct-user/ipc/shm.c 2007-05-07 20:20:42.000000000 +0200
-> @@ -370,12 +370,24 @@ static int newseg (struct ipc_namespace 
->                shp->mlock_user = current->user;
->        } else {
->                int acctflag = VM_ACCOUNT;
-> +#ifdef CONFIG_VM_ACCT_USER
-> +               int overcommit_memory;
-> +               struct vm_acct_values v;
-> +       
-> +               if (!vm_acct_get_config(&v, current->uid)) {
-> +                       overcommit_memory = v.overcommit_memory;
-> +               } else {
-> +                       overcommit_memory = sysctl_overcommit_memory;
-> +               }
-> +#else 
-> +#define overcommit_memory sysctl_overcommit_memory
-> +#endif
->                /*
->                 * Do not allow no accounting for OVERCOMMIT_NEVER, even
->                 * if it's asked for.
->                 */
->                if  ((shmflg & SHM_NORESERVE) &&
-> -                               sysctl_overcommit_memory != OVERCOMMIT_NEVER)
-> +                               overcommit_memory != OVERCOMMIT_NEVER)
+>> If instead of pulling master into the cfs branch, I rather switch to 
+>> the master branch and pull the cfs branch into that, it works.
 
-Ugly... very ugly ;) 
+Ingo> ah! Could you please do a git-diff between the broken and the working 
+Ingo> tree, to see what got mismerged?
 
-Don't hide 'overcommit_memory' inside the ifdef block. The compiler
-should be smart enough to optimize away the extra var.
+Yes, I can work on that tonight.  There will be some noise, but at least
+both have master == dc87c3985e9b442c60994308a96f887579addc39.
 
-There's also a problem with the #ifdef scattered all over the code. You
-need a static inline 'vm_acct_get_config' for the !CONFIG_VM_ACCT_USER
-case:
-
-static inline int vm_acct_get_config(struct vm_acct_values *v,
-        uid_t uid)
-{
-        return 0;
-}
-
-in this way you can remove the #ifdef. Futhermore, I'd also move the
-branch with the fallback to sysctl values inside the vm_acct_get_config.
-So, for !CONFIG_VM_ACCT_USER:
-
-static inline int vm_acct_get_config(struct vm_acct_values *v,
-        uid_t uid)
-{
-       v->overcommit_memory = sysctl_overcommit_memory;
-       v->overcommit_ratio = sysctl_overcommit_ratio;
-}
-
-(Yes, gcc will optimize it)
-
-and for CONFIG_VM_ACCT_USER:
-
-int vm_acct_get_config(struct vm_acct_values *v, uid_t uid)
-{
-        if (found uid) {
-                v->overcommit_memory = foo;
-                v->overcommit_ratio = bar;
-        } else {
-                v->overcommit_memory = sysctl_overcommit_memory;
-                v->overcommit_ratio = sysctl_overcommit_ratio;
-        }
-}
-
-
-> diff -urpN linux-2.6.21/mm/swap.c linux-2.6.21-vm-acct-user/mm/swap.c
-> --- linux-2.6.21/mm/swap.c      2007-05-07 20:20:24.000000000 +0200
-> +++ linux-2.6.21-vm-acct-user/mm/swap.c 2007-05-07 20:20:42.000000000 +0200
-> @@ -30,6 +30,10 @@
-> #include <linux/cpu.h>
-> #include <linux/notifier.h>
-> #include <linux/init.h>
-> +#include <linux/hash.h>
-> +#include <linux/seq_file.h>
-> +#include <linux/kernel.h>
-> +#include <linux/proc_fs.h>
-> 
-> /* How many pages do we try to swap or page in/out together? */
-> int page_cluster;
-> @@ -455,6 +459,196 @@ unsigned pagevec_lookup_tag(struct pagev
-> 
-> EXPORT_SYMBOL(pagevec_lookup_tag);
-> 
-> +#ifdef CONFIG_VM_ACCT_USER
-> +
-> +#define VM_ACCT_HASH_SHIFT     10
-> +#define VM_ACCT_HASH_SIZE      (1UL << VM_ACCT_HASH_SHIFT)
-> +#define vm_acct_hashfn(uid) hash_long((unsigned long)uid, VM_ACCT_HASH_SHIFT)
-> +
-> +/* User VM overcommit configuration */
-> +typedef struct vm_acct_hash_struct
-> +{
-> +       uid_t uid;
-> +       struct vm_acct_values val;
-> +       struct hlist_node vm_acct_chain;
-> +} vm_acct_hash_t;
-> +
-> +/* Hash list used to store per-user VM overcommit configurations */
-> +static struct hlist_head *vm_acct_hash;
-> +
-> +/* VM overcommit hash table spinlock */
-> +static __cacheline_aligned_in_smp DEFINE_SPINLOCK(vm_acct_lock);
-> +
-> +/*
-> + * Get user VM configuration from the hash list.
-> + */
-> +int vm_acct_get_config(struct vm_acct_values *v, uid_t uid)
-> +{
-> +       struct hlist_node *elem;
-> +       vm_acct_hash_t *p;
-> +
-> +       spin_lock_irq(&vm_acct_lock);
-> +       hlist_for_each_entry(p, elem, &vm_acct_hash[vm_acct_hashfn(uid)],
-> +                            vm_acct_chain) {
-> +               if (p->uid == uid) {
-> +                       v->overcommit_memory = p->val.overcommit_memory;
-> +                       v->overcommit_ratio = p->val.overcommit_ratio;
-> +                       spin_unlock_irq(&vm_acct_lock);
-> +                       return 0;
-> +               }
-> +       }
-> +       spin_unlock_irq(&vm_acct_lock);
-> +
-> +       return -ENOENT;
-> +}
-> +
-> +/*
-> + * Create a new element in the VM configuration hash list.
-> + */
-> +static int __vm_acct_set_element(uid_t uid,
-> +                       int overcommit_memory, int overcommit_ratio)
-> +{
-> +       struct hlist_node *elem;
-> +       vm_acct_hash_t *p;
-> +       int ret = 0;
-> +
-> +       spin_lock_irq(&vm_acct_lock);
-> +       hlist_for_each_entry(p, elem, &vm_acct_hash[vm_acct_hashfn(uid)],
-> +                            vm_acct_chain) {
-> +               if (p->uid == uid) {
-> +                       p->val.overcommit_memory = overcommit_memory;
-> +                       p->val.overcommit_ratio = overcommit_ratio;
-> +                       goto out;
-> +               }
-> +       }
-> +       spin_unlock_irq(&vm_acct_lock);
-> +
-> +       /* Allocate new element */
-> +       p = kzalloc(sizeof(*p), GFP_KERNEL);
-> +       if (unlikely(!p)) {
-> +               ret = -ENOMEM;
-> +               goto out;
-> +       }
-> +       p->uid = uid;
-> +       p->val.overcommit_memory = overcommit_memory;
-> +       p->val.overcommit_ratio = overcommit_ratio;
-> +
-> +       spin_lock_irq(&vm_acct_lock);
-> +       hlist_add_head(&p->vm_acct_chain, &vm_acct_hash[vm_acct_hashfn(uid)]);
-> +out:
-
-In the error path (kzalloc failure) you release vm_acct_lock which is not
-held.
-
-> +       spin_unlock_irq(&vm_acct_lock);
-> +       return ret;
-> +}
-> +
-> +/*
-> + * Set VM user parameters via /proc/overcommit_uid.
-> + */
-> +static int vm_acct_set(struct file *filp, const char __user *buffer,
-> +                      size_t count, loff_t *data)
-> +{
-> +       char buf[128];
-> +       char *om, *or;
-> +       int __ret;
-              ^^ uh?
-
-> +
-> +       /*
-> +        * Parse ':'-separated arguments
-> +        *     uid:overcommit_memory:overcommit_ratio
-> +        */
-> +       if (count > sizeof(buf) - 1)
-> +               return -EFAULT;
-> +
-> +       if (copy_from_user(buf, buffer, count))
-> +               return -EFAULT;
-> +
-> +       buf[sizeof(buf) - 1] = '\0';
-> +
-> +       om = strstr(buf, ":");
-> +       if ((om == NULL) || (*++om == '\0')) {
-> +               return -EINVAL;
-> +       }
-> +
-> +       or = strstr(om, ":");
-> +       if ((or == NULL) || (*++or == '\0')) {
-> +               return -EINVAL;
-> +       }
-> +
-> +       /* Set VM configuration */
-> +       __ret = __vm_acct_set_element((uid_t)simple_strtoul(buf, NULL, 10),
-> +                           (int)simple_strtol(om, NULL, 10),
-> +                           (int)simple_strtol(or, NULL, 10));
-> +       if (__ret)
-> +               return __ret;
-> +
-> +       return count;
-> +}
-> +
-> +/*
-> + * Print VM overcommit configurations.
-> + */
-> +static int vm_acct_show(struct seq_file *m, void *v)
-> +{
-> +       struct hlist_node *elem;
-> +       vm_acct_hash_t *p;
-> +       int i;
-> +
-> +       spin_lock_irq(&vm_acct_lock);
-> +       for (i = 0; i < VM_ACCT_HASH_SIZE; i++) {
-> +               if (!&vm_acct_hash[i])
-> +                       continue;
-> +               hlist_for_each_entry(p, elem, &vm_acct_hash[i],
-> +                               vm_acct_chain) {
-> +                       seq_printf(m, "%i:%i:%i\n",
-> +                                  p->uid, p->val.overcommit_memory,
-> +                                  p->val.overcommit_ratio);
-> +               }
-> +       }
-> +       spin_unlock_irq(&vm_acct_lock);
-> +
-> +       return 0;
-> +}
-> +
-> +static int vm_acct_open(struct inode *inode, struct file *filp)
-> +{
-> +       return single_open(filp, vm_acct_show, NULL);
-> +}
-> +
-> +static struct file_operations vm_acct_ops = {
-> +       .open           = vm_acct_open,
-> +       .read           = seq_read,
-> +       .write          = vm_acct_set,
-> +       .llseek         = seq_lseek,
-> +       .release        = seq_release,
-> +};
-> +
-> +static int __init init_vm_acct(void)
-> +{
-> +       struct proc_dir_entry *pe;
-> +       int i;
-> +
-> +       vm_acct_hash = kmalloc(VM_ACCT_HASH_SIZE * sizeof(*(vm_acct_hash)),
-> +                              GFP_KERNEL);
-> +       if (!vm_acct_hash)
-> +               return -ENOMEM;
-> +
-> +       printk(KERN_INFO "vm_acct_uid hash table entries: %lu\n",
-> +              VM_ACCT_HASH_SIZE / sizeof(*(vm_acct_hash)));
-> +
-> +       spin_lock_irq(&vm_acct_lock);
-> +       for (i = 0; i < VM_ACCT_HASH_SIZE; i++)
-> +               INIT_HLIST_HEAD(&vm_acct_hash[i]);
-> +       spin_unlock_irq(&vm_acct_lock);
-> +
-> +       pe = create_proc_entry("overcommit_uid", 0600, NULL);
-> +       if (!pe)
-> +               return -ENOMEM;
-> +       pe->proc_fops = &vm_acct_ops;
-> +
-> +       return 0;
-> +}
-> +__initcall(init_vm_acct);
-> +
-> +#endif /* CONFIG_VM_ACCT_USER */
-> +
-> #ifdef CONFIG_SMP
-> /*
->  * We tolerate a little inaccuracy to avoid ping-ponging the counter between
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-
-
-Luca
+-JimC
 -- 
-Porc i' mond che cio' sott i piedi!
-V. Catozzo
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
+
+
