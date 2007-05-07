@@ -1,69 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966906AbXEGVBB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966918AbXEGVBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966906AbXEGVBB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 17:01:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966630AbXEGVBA
+	id S966918AbXEGVBT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 17:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966639AbXEGVBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 17:01:00 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:10639 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966624AbXEGVA7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 17:00:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=K7dlYOXTkfY031qW7GI/XK438mZI1PsBICh5q7knSixkF01EY/j2hBnYWcSXOdFysQpFJVwtrNwrSJoiSh7KbiNFoREhWyN8JJvTRQ9oWcQmZu1Y4KPs7Mg3uMbzyTIKbklEUFy9eRKBJKs8AQ2f2jWhLHbT7BQXfGTFmzMdWeo=
-Message-ID: <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
-Date: Mon, 7 May 2007 14:00:58 -0700
-From: "Ulrich Drepper" <drepper@gmail.com>
-To: "Davi Arnaut" <davi@haxent.com.br>
-Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
-Cc: "Davide Libenzi" <davidel@xmailserver.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <463CFA37.3020809@haxent.com.br>
+	Mon, 7 May 2007 17:01:17 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:4623 "EHLO parknet.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966911AbXEGVBP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 17:01:15 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
+Cc: Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org
+Subject: Re: Long file names in VFAT broken with iocharset=utf8
+References: <200705072151.20104.arvidjaar@mail.ru>
+	<60F72760-C801-4F60-BF47-C661B4B5BE26@e18.physik.tu-muenchen.de>
+	<87fy685w0m.fsf@duaron.myhome.or.jp>
+	<BD281C0E-5278-4944-ABF0-AF692325945C@e18.physik.tu-muenchen.de>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Tue, 08 May 2007 06:01:07 +0900
+In-Reply-To: <BD281C0E-5278-4944-ABF0-AF692325945C@e18.physik.tu-muenchen.de> (Roland Kuhn's message of "Mon\, 7 May 2007 21\:59\:15 +0200")
+Message-ID: <877irk5ox8.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070504225730.490334000@haxent.com.br>
-	 <463BC3CA.6050109@haxent.com.br>
-	 <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com>
-	 <463CFA37.3020809@haxent.com.br>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/5/07, Davi Arnaut <davi@haxent.com.br> wrote:
-> A google search turns up a few users. It also addresses some complaints
-> from Drepper.
+Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de> writes:
 
-There is a huge problem with this approach and we're back at the
-inadequate interface.
+>> Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de> writes:
+>>> PATH_MAX specifically counts _bytes_ not characters, so UTF-8 does
+>>> not matter. ISTR that PATH_MAX was 256 at some point, but I just
+>>> quickly grepped /usr/include and found various mention of 4096, so
+>>> where's the central repository for this configuration item? A hard-
+>>> coded value of 256 somewhere inside the kernel smells like a bug.
+>>
+>> There is a nasty issue here. FAT is limited by 255 unicode chars or  
+>> so.
+>> So, we would need to count number of unicode chars of filename.
+>>
+> No, we don't. At least not when looking at the POSIX spec, which  
+> explicitly mentions _bytes_ and _not_ unicode characters. So, to be  
+> on the safe side, FAT filesystems would need to support a NAME_MAX of  
+> roughly 6*255+3=1533 bytes (not to mention the hassles of forbidden  
+> sequences, etc.; do we need to count zero-width characters?) and  
+> report it through pathconf() to userspace, then userspace could do  
+> with that whatever it liked.
+>
+> What happened to: "file names are just sequences of octets, excluding  
+> '/' and UL"? Adding unicode parsing to the kernel is completely  
+> useless _and_ a big trouble maker.
 
-select/poll/epoll are thread cancellation points.  I.e., the thread
-can be canceled before returning to the user.  If this cancellation
-happens between the kernel deciding to give this thread the event (and
-no other thread) and the thread testing for cancellation in the libc
-wrapper around the syscall, then the event is lost and the process(es)
-might hang.
-
-With kevent we in the end fixed the problem by requiring that part of
-the cancellation handling the thread tries to wake up another thread
-waiting for the event queue.  This is easily possible since the event
-data is in the shared memory segment and it's just purely the thread
-wakeup that is needed.
-
-To make something like this work for poll you'd have to push back the
-revents fields of the result back to the kernel which might then cause
-another thread to be woken up.  I find this too ugly to consider.  You
-guys will not believe this but I really thought all these things
-through before writing the OLS paper.  poll cannot be salvaged.
-
-
-There is another thing about this selective wakeup: do I assume it
-correctly that if more than one file descriptor is reported ready more
-than one thread is woken?  I think nothing else can be justified.
-Will in this case both threads get the same set of descriptors
-reported or will they see disjunct sets?
+The UCS2 in FAT is just on-disk format of the filename. So...
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
