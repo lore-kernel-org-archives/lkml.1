@@ -1,49 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966272AbXEGTAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966235AbXEGTCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966272AbXEGTAj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 15:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966262AbXEGTAg
+	id S966235AbXEGTCy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966143AbXEGTCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 15:00:36 -0400
-Received: from holomorphy.com ([66.93.40.71]:60341 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966200AbXEGTAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 15:00:35 -0400
-Date: Mon, 7 May 2007 12:01:07 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: Ollie Wild <aaw@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
-       linux-mm@kvack.org, linux-arch@vger.kernel.org,
-       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [patch] removes MAX_ARG_PAGES
-Message-ID: <20070507190107.GF19966@holomorphy.com>
-References: <65dd6fd50705060151m78bb9b4fpcb941b16a8c4709e@mail.gmail.com> <617E1C2C70743745A92448908E030B2A01719390@scsmsx411.amr.corp.intel.com>
-MIME-Version: 1.0
+	Mon, 7 May 2007 15:02:49 -0400
+Received: from outmx017.isp.belgacom.be ([195.238.4.116]:42000 "EHLO
+	outmx017.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966113AbXEGTCs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 15:02:48 -0400
+Date: Mon, 7 May 2007 21:03:48 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Dan Williams <dan.j.williams@gmail.com>
+Cc: "Curt E. Bruns" <curt.e.bruns@intel.com>,
+       Peter Milne <peter.milne@d-tacq.com>,
+       Russell King <rmk@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+       Lennert Buytenhek <buytenh@wantstofly.org>
+Subject: Re: [2.6.22 patch] iop: combined watchdog timer driver for iop3xx and iop13xx
+Message-ID: <20070507190348.GA2816@infomag.infomag.iguana.be>
+References: <1177952240.12134.10.camel@dwillia2-linux.ch.intel.com> <20070506095256.GA2521@infomag.infomag.iguana.be> <e9c3a7c20705061313g2b110c4ai478bd3d345de3114@mail.gmail.com> <20070506205320.GA6486@infomag.infomag.iguana.be> <e9c3a7c20705061547u7de21fas6ccad4258da57a9e@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <617E1C2C70743745A92448908E030B2A01719390@scsmsx411.amr.corp.intel.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <e9c3a7c20705061547u7de21fas6ccad4258da57a9e@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At some point in the past, Ollie Wild wrote:
->> We've tested the following architectures: i386, x86_64, um/i386,
->> parisc, and frv.  These are representative of the various scenarios
->> which this patch addresses, but other architecture teams should try it
->> out to make sure there aren't any unexpected gotchas.
+Hi Dan,
 
-On Mon, May 07, 2007 at 10:46:49AM -0700, Luck, Tony wrote:
-> Doesn't build on ia64: complaints from arch/ia64/ia32/binfmt_elf.c
-> (which #includes ../../../fs/binfmt_elf.c) ...
-[...]
-> Turning off CONFIG_IA32-SUPPORT, the kernel built, but oops'd during boot.
-> My serial connection to my test machine is currently broken, so I didn't
-> get a capture of the stack trace, sorry.
+> Barring any objections I'll go ahead and submit the revised patch with
+> an "Acked-by: Wim Van Sebroeck <wim at iguana dot be>" to Russell's
+> ARM patch tracker.
 
-It needs to sweep 32-bit emulation code more generally.
+Fine by me.
 
+Greetings,
+Wim.
 
--- wli
