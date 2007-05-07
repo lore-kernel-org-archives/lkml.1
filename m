@@ -1,60 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966897AbXEGWR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967086AbXEGWT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966897AbXEGWR7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 18:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966583AbXEGWR6
+	id S967086AbXEGWT1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 18:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966631AbXEGWTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 18:17:58 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46826 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966557AbXEGWR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 18:17:57 -0400
-Message-ID: <463FA506.3070207@redhat.com>
-Date: Mon, 07 May 2007 17:15:34 -0500
-From: Eric Sandeen <sandeen@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 7 May 2007 18:19:24 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:9550 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966583AbXEGWTX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 18:19:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=us389KqVG1r1/Ci4l9DL59MaUP71Suq45w8K/RDK+D7QKfvgd90nY3J6htzp2Ws9CSaOa9dNiDgSm7DfqhXHHIc7NK5EjMWBXJANPDfPjaWFtylCZnNeJWgOhn40rLnQKLVAcQf+ezRUMhx/CbpejZiI5UjepzlCmT1UVd/oh/I=
+Message-ID: <a36005b50705071519k40449ed2p7b9ece22cc19219a@mail.gmail.com>
+Date: Mon, 7 May 2007 15:19:22 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Davi Arnaut" <davi@haxent.com.br>
+Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
+Cc: "Davide Libenzi" <davidel@xmailserver.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <463F9B68.305@haxent.com.br>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: sam@ravnborg.org, kbuid-devel@lists.sourceforge.net
-Subject: Re: [PATCH] [KBUILD] fix external module install path
-References: <463F9C3B.4080004@sandeen.net> <463F9DFF.7010101@redhat.com>
-In-Reply-To: <463F9DFF.7010101@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070504225730.490334000@haxent.com.br>
+	 <463BC3CA.6050109@haxent.com.br>
+	 <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com>
+	 <463CFA37.3020809@haxent.com.br>
+	 <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
+	 <463F9B68.305@haxent.com.br>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen wrote:
-> Eric Sandeen wrote:
->> Installing external modules is supposed to put them in some path
->> under /lib/modules/<version>/extra/subdir/, but this change:
->> http://linux.bkbits.net:8080/linux-2.6/?PAGE=cset&REV=1.1982.9.23
->> makes them go under /lib/modules/<version>/extrasubdir
-> 
-> er, hang on.  Now it's not doing it ;-)  stay tuned.
-> 
-> Sorry... I really did get an "extrafs/" directory somehow :)
+On 5/7/07, Davi Arnaut <davi@haxent.com.br> wrote:
+> See Linus's message on this same thread.
 
-Urgh, I can't figure out what tickles it reliably.
+No.  I'm talking about the userlevel side, not kernel side.
 
-There is at least another buglet (?) though, if you don't put a slash on
-the end of your M=, you lose the subdir path.
+If a thread is canceled *after* it returns from the syscall but before
+it reports the event to the call (i.e., while still in the syscall
+wrapper, thread cancellation rules require a check there) the event is
+lost.
 
-[root@marathon-01 linux-2.6.18.x86_64]# make M=fs/ext3/ modules_install
-  INSTALL fs/ext3/ext3.ko
-  DEPMOD  2.6.18-8.el5
-[root@marathon-01 linux-2.6.18.x86_64]# find /lib/modules/`uname
--r`/extra* -name ext3.ko
-/lib/modules/2.6.18-8.el5/extra/fs/ext3/ext3.ko
-
-[root@marathon-01 linux-2.6.18.x86_64]# make M=fs/ext3 modules_install
-  INSTALL fs/ext3/ext3.ko
-  DEPMOD  2.6.18-8.el5
-[root@marathon-01 linux-2.6.18.x86_64]# find /lib/modules/`uname
--r`/extra* -name ext3.ko
-/lib/modules/2.6.18-8.el5/extra/fs/ext3/ext3.ko
-/lib/modules/2.6.18-8.el5/extra/ext3.ko
-
-I'm confused.  Maybe Sam knows how to fix it... :)
-
--Eric
+Linus was only talking about the kernel side and how in the exit path
+such events are not lost.
