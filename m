@@ -1,113 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753925AbXEGE6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbXEGFEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753925AbXEGE6y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 00:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753952AbXEGE6y
+	id S1753957AbXEGFEt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 01:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753978AbXEGFEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 00:58:54 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:39525 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753925AbXEGE6x (ORCPT
+	Mon, 7 May 2007 01:04:49 -0400
+Received: from max.feld.cvut.cz ([147.32.192.36]:57063 "EHLO max.feld.cvut.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753957AbXEGFEs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 00:58:53 -0400
-Date: Mon, 7 May 2007 14:58:35 +1000
-From: David Chinner <dgc@sgi.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: David Chinner <dgc@sgi.com>, Andrew Morton <akpm@linux-foundation.org>,
-       clameter@sgi.com, linux-kernel@vger.kernel.org,
-       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070507045835.GU32602149@melbourne.sgi.com>
-References: <20070424222105.883597089@sgi.com> <20070426190438.3a856220.akpm@linux-foundation.org> <20070427022731.GF65285596@melbourne.sgi.com> <20070426195357.597ffd7e.akpm@linux-foundation.org> <20070427042046.GI65285596@melbourne.sgi.com> <20070426221528.655d79cb.akpm@linux-foundation.org> <20070427060921.GA77450368@melbourne.sgi.com> <20070427000403.6013d1fa.akpm@linux-foundation.org> <20070427080321.GG32602149@melbourne.sgi.com> <m1ejlwu346.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 May 2007 01:04:48 -0400
+From: CIJOML <cijoml@volny.cz>
+To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>,
+       linux-kernel@vger.kernel.org, marcel@holtmann.de,
+       bluez-users@lists.sourceforge.net
+Subject: Re: OOPS when swsusp/resume when connected to the internet via BT and GPRS
+Date: Mon, 7 May 2007 07:04:29 +0200
+User-Agent: KMail/1.9.5
+References: <200705070005.33834.cijoml@volny.cz> <6bffcb0e0705061534l4cdd2496w8e2e2a0606f17f2e@mail.gmail.com>
+In-Reply-To: <6bffcb0e0705061534l4cdd2496w8e2e2a0606f17f2e@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <m1ejlwu346.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200705070704.30361.cijoml@volny.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 04, 2007 at 07:31:37AM -0600, Eric W. Biederman wrote:
-> David Chinner <dgc@sgi.com> writes:
-> 
-> > On Fri, Apr 27, 2007 at 12:04:03AM -0700, Andrew Morton wrote:
-> > I've got several year-old Irix bugs  assigned that are hit every so
-> > often where one page in the aggregated set has the wrong state, and
-> > it's simply not possible to either reproduce the problem or work out
-> > how it happened. The code has grown too complex and convoluted, and
-> > by the time the problem is noticed (either by hang, panic or bug
-> > check) the cause of it is long gone.
+Hi Michal,
+
+my kernel is tainted with madwifi opensource driver :). Only binary part is 
+ath_hal module, which doesn't have anythink to do with this part of kernel.
+Ath_hal is doing RF part of card to protect others tune/transmit in other 
+frequency than 2.5/5.8GHz (Wifi 802.11a/b/g).
+
+My kernel is 100% opensource :)
+
+And BTW this happens also with madwifi kernel modules unloaded.
+
+Best regards
+
+Michal
+
+
+Dne pondělí 07 květen 2007 00:34 jste napsal(a):
+> Hi Michal,
+>
+> On 07/05/07, CIJOML <cijoml@volny.cz> wrote:
+> > Hi all,
 > >
-> > I don't want to go back to having to deal with this sort of problem
-> > - I'd much prefer to have a design that does not make the same
-> > mistakes that lead to these sorts of problem.
-> 
-> So the practical question is.  Was it a high level design problem or
-> was it simply a choice of implementation issue.
-
-Both. To many things can happen asynchroonously to a page that it
-makes it just about impossible to predict all the potential race
-conditions that are involved. complexity arose from trying to fix
-the races that were uncovered without breaking everything else...
-
-> Until we code review and implementation that does page aggregation for
-> linux we can't say how nasty it would be.
-
-We already have an implementation - I've pointed it out several times
-now: see fs/xfs/linux-2.6/xfs_buf.[ch].
-
-There are a lot of nasties in there....
-
-> >> You're addressing Christoph's straw man here.
+> > today I experienced OOPS when connected via BT/GPRS to the internet, then
+> > swsup and resumed with dongle in HID proxy mode. Please see details in
+> > dmesg log:
 > >
-> > No, I'm speaking from years of experience working on a
-> > page/buffer/chunk cache capable of using both large pages and
-> > aggregating multiple pages. It has, at times, almost driven me
-> > insane and I don't want to go back there.
-> 
-> The suggestion seems to be to always aggregate pages (to handle
-> PAGE_SIZE < block size), and not to even worry about the fact
-> that it happens that the pages you are aggregating are physically
-> contiguous.  The memory allocator and the block layer can worry
-> about that.  It isn't something the page cache or filesystems
-> need to pay attention to.
-
-perfomrance problems in using discontigous pages and needing to
-vmap() them says otherwise....
-
-> I suspect the implementation in linux would be sufficiently different
-> that it would not be prone to the same problems.  Among other things
-> we are already do most things on a range of page addresses, so we
-> would seem to have most of the infrastructure already.
-
-Filesystems don't typically do this - they work on blocks and assume
-that a block can be directly referenced.
-
-> Given that small block sizes give us better storage efficiency,
-> which means less disk bandwidth used, which means less time
-> to get the data off of a slow disk (especially if you can
-> put multiple files you want simultaneously in that same space).
-> I'm not convinced that large block sizes are a clear disk performance
-> advantage, so we should not neglect the small file sizes.
-
-Hmmm - we're not talking about using 64k block size filesystems to
-store lots of little files or using them on small, slow disks.
-We're looking at optimising for multi-petabyte filesystems with
-multi-terabyte sized files sustaining throughput of tens to hundreds
-of GB/s to/from hundreds to thousands of disk.
-
-I certinaly don't consider 64k block size filesystems as something
-suitable for desktop use - maybe PVRs would benefit, but this
-is not something you'd use for your kernel build environment on a
-single disk in a desktop system....
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+> > Restarting tasks ... <6>usb 3-1: USB disconnect, address 3
+> > done.
+> > BUG: unable to handle kernel NULL pointer dereference at virtual address
+> > 00000008
+> >  printing eip:
+> > c018db5d
+> > *pde = 00000000
+> > Oops: 0000 [#1]
+> > PREEMPT
+> > Modules linked in: ppp_deflate zlib_deflate bsd_comp ppp_async
+> > ppp_generic slhc usbhid nls_iso8859_1 nls_cp437 vfat fat sg
+> > sr_mod sd_mod usb_storage bnep rfcomm hidp l2cap lp fuse eeprom hci_usb
+> > bluetooth 8250_pci 8250 serial_core snd_intel8x0 sn
+> > d_intel8x0m snd_ac97_codec wlan_scan_sta ac97_bus ath_rate_sample
+> > nsc_ircc snd_pcm ide_cd ath_pci wlan ath_hal(P) 8139too m
+> > ii snd_timer snd irda ehci_hcd psmouse pcspkr i2c_i801 iTCO_wdt
+> > iTCO_vendor_support rtc cdrom parport_pc parport snd_page_a
+> > lloc uhci_hcd crc_ccitt
+> > CPU:    0
+> > EIP:    0060:[<c018db5d>]    Tainted: P       VLI
+>
+> You are using tainted kernel.
+>
+> "    When you are using a binary driver, the kernel is "tainted",
+> which means that the source
+> of possible problems may be unrelated to the kernel code (see
+> https://secure-support.
+> novell.com/KanisaPlatform/Publishing/250/3582750_f.SAL_Public.html for more
+> de- tails). You can check whether or not the kernel was tainted when the
+> problem occured by
+> looking at the corresponding error message. If can you see something
+> similar to the following
+> line:
+> EIP:      0060:[<c046c7c3>]         Tainted: P      VLI
+> (the word Tainted is crucial here), the kernel was tainted and most
+> probably the kernel
+> developers will not be able to help you. In that case you should try
+> to reproduce the problem
+> without the binary driver loaded. Moreover, if the problem does not
+> occur without it, you
+> should send a bug report to the creators of the binary driver and ask
+> them to ﬁx it."
+>
+> -- Linux Kernel Tester's Guide
+>
+> > EFLAGS: 00010282   (2.6.21 #3)
+> > EIP is at sysfs_move_dir+0x3e/0x117
+> > eax: 00000000   ebx: efd7df40   ecx: f79a1e7c   edx: c1b88940
+> > esi: c1b91e28   edi: 00000000   ebp: c1b88940   esp: f79a1e50
+> > ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0068
+> > Process pppd (pid: 6550, ti=f79a0000 task=f29d6ab0 task.ti=f79a0000)
+> > Stack: c03475a4 f7f86e68 00000000 fffffff4 efd7df40 f7f86e68 fffffff4
+> > c1b88940 c01d27ec f12a5240 c0347596 efd7df40 f12a5240 f12a5240 00000000
+> > 00000000 f7f86e00 00000000 c1b88940 c023c984 f7f86e68 f7f36640 ef67b000
+> > 00000000 Call Trace:
+> >  [<c01d27ec>] kobject_move+0xaf/0xfa
+> >  [<c023c984>] device_move+0x49/0xd7
+> >  [<fcb54bb3>] rfcomm_tty_close+0x23/0x7a [rfcomm]
+> >  [<c021957a>] release_dev+0x1df/0x5e7
+> >  [<c01b8eb9>] inode_has_perm+0x66/0x6e
+> >  [<c0166469>] __posix_lock_file_conf+0x44e/0x48b
+> >  [<c01b8f4a>] file_has_perm+0x89/0x91
+> >  [<c0219991>] tty_release+0xf/0x18
+> >  [<c015a3c7>] __fput+0x96/0x15e
+> >  [<c0157fba>] filp_close+0x51/0x58
+> >  [<c0158f65>] sys_close+0x75/0xbf
+> >  [<c0103cd8>] syscall_call+0x7/0xb
+> >  =======================
+> > Code: 40 30 eb 0b a1 a0 79 42 c0 8b 40 14 8b 40 38 89 44 24 08 85 d2 74
+> > 05 8b 72 30 eb 0b a1 a0 79 42 c0 8b 40 14 8b 70 38
+> > 8b 7c 24 08 <8b> 47 08 31 ff 3b 46 08 0f 84 c1 00 00 00 8b 54 24 08 8b 42
+> > 08 EIP: [<c018db5d>] sysfs_move_dir+0x3e/0x117 SS:ESP 0068:f79a1e50
+> >
+> > Thanks for fixing this issue
+> >
+> > Michal
+>
+> Regards,
+> Michal
