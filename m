@@ -1,49 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbXEGVOr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966520AbXEGVTS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbXEGVOr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 17:14:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754845AbXEGVOn
+	id S966520AbXEGVTS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 17:19:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbXEGVTR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 17:14:43 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:53175 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754401AbXEGVOl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 17:14:41 -0400
-Message-ID: <463F9640.4080003@zytor.com>
-Date: Mon, 07 May 2007 14:12:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
-CC: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org
-Subject: Re: Long file names in VFAT broken with iocharset=utf8
-References: <200705072151.20104.arvidjaar@mail.ru> <60F72760-C801-4F60-BF47-C661B4B5BE26@e18.physik.tu-muenchen.de> <87fy685w0m.fsf@duaron.myhome.or.jp> <BD281C0E-5278-4944-ABF0-AF692325945C@e18.physik.tu-muenchen.de>
-In-Reply-To: <BD281C0E-5278-4944-ABF0-AF692325945C@e18.physik.tu-muenchen.de>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 7 May 2007 17:19:17 -0400
+Received: from z2.cat.iki.fi ([212.16.98.133]:35350 "EHLO z2.cat.iki.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754981AbXEGVTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 17:19:16 -0400
+Date: Tue, 8 May 2007 00:19:15 +0300
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+To: linux-kernel@vger.kernel.org
+Subject: Re: gmail is a bit too popular..
+Message-ID: <20070507211915.GI3883@mea-ext.zmailer.org>
+References: <20070507145555.GG3883@mea-ext.zmailer.org> <20070507201821.GG943@1wt.eu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070507201821.GG943@1wt.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland Kuhn wrote:
->
-> No, we don't. At least not when looking at the POSIX spec, which
-> explicitly mentions _bytes_ and _not_ unicode characters. So, to be on
-> the safe side, FAT filesystems would need to support a NAME_MAX of
-> roughly 6*255+3=1533 bytes (not to mention the hassles of forbidden
-> sequences, etc.; do we need to count zero-width characters?) and report
-> it through pathconf() to userspace, then userspace could do with that
-> whatever it liked.
+On Mon, May 07, 2007 at 10:18:21PM +0200, Willy Tarreau wrote:
+> On Mon, May 07, 2007 at 05:55:55PM +0300, Matti Aarnio wrote:
+...
+> > The  gmail  is so popular, that with their somewhat rudimentary 
+> > inbound MTA software this kind of recipient masses take horrible
+> > time to feed in...  Mere 0.5-0.7 seconds per recipient, but..
+> > 
+> > So far we have tried to feed all recipients in one go per
+> > message - that is sending 2100  RCPT TO -lines in one swoop,
+> > and the system has taken some 15-25 minutes per message to
+> > feed it to gmail.  We are running the delivery 20 streams in
+> > parallel, so it isn't quite as bad as it sounds..
+> > 
 > 
-> What happened to: "file names are just sequences of octets, excluding
-> '/' and NUL"? Adding unicode parsing to the kernel is completely useless
-> _and_ a big trouble maker.
-> 
+> I suspect they behave like that on purpose to fight spam.
 
-"Filenames are just octets" have never applied to alien filesystems like
-VFAT.
+No.  VGER is on the extreme outer edge of things, only very few
+legitimate systems have a need to send this much recipients for
+each and every message.  Some small list with perhaps 10 subscribers
+at gmail notice nothing.  Not even with 100 subscribers, but soon
+after that the sending list sysadmin may notice something...
 
-	-hpa
+Comparing with spammers - message content analysis (ever so difficult
+thing anyway) is _easier_ per recipient when we are sending 100
+recipients for each DATA-dot body.  It is 1/100:th cost per recipient
+compared to "send one RCPT for each body".  We could send all 2100
+recipients if systems could negotiate such raised limit (there is
+no standardized way, just one private ad-hoc,) and do the recipient
+acceptance analysis fast enough so that PIPELINING-mode would really
+gain benefits.
 
+> If they implemented pipelining, it wouldn't help them.
+
+It would not hurt them either.  Just help us very few who
+are at this extreme outer edge of things..
+
+Lightspeed delay (ping) is about 160 ms, so there is still some
+300-600 ms that the gmail system is munching somewhere per recipient..
+
+Anyway, VGER is now tuned so that the delivery delay stays usually
+under about 1 hour per message to gmail.
+
+....
+> Willy
+
+  /Matti Aarnio
