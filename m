@@ -1,48 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbXEGGtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754044AbXEGG5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754084AbXEGGtA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 02:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbXEGGtA
+	id S1754044AbXEGG5a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 02:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbXEGG5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 02:49:00 -0400
-Received: from holomorphy.com ([66.93.40.71]:37238 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754084AbXEGGtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 02:49:00 -0400
-Date: Sun, 6 May 2007 23:49:25 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: David Chinner <dgc@sgi.com>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Badari Pulavarty <pbadari@gmail.com>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [00/17] Large Blocksize Support V3
-Message-ID: <20070507064925.GB19966@holomorphy.com>
-References: <20070427060921.GA77450368@melbourne.sgi.com> <20070427000403.6013d1fa.akpm@linux-foundation.org> <20070427080321.GG32602149@melbourne.sgi.com> <20070427014849.41f383f7.akpm@linux-foundation.org> <20070427164535.GH24852@thunk.org> <m1abwku30d.fsf@ebiederm.dsl.xmission.com> <20070507042925.GT32602149@melbourne.sgi.com> <m1tzupkzmw.fsf@ebiederm.dsl.xmission.com> <20070507052729.GV32602149@melbourne.sgi.com> <m17irlkubc.fsf@ebiederm.dsl.xmission.com>
+	Mon, 7 May 2007 02:57:30 -0400
+Received: from wr-out-0506.google.com ([64.233.184.225]:14574 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754044AbXEGG5a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 02:57:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gSB9BbFqeH8gxvnXRNR3dBnLL+JiP4rq8yglOPuShXKDCX8KU1OAx7/MWNlxZn9z9CUGeBqSoWljFxgwdnqR7gR50qt1rB52QE22glruyacEB1FTGLjRxpSNOGjhMXRydFosxB8YssvEknh2hwnycYCBZJhKl293VqrxidvR3ng=
+Message-ID: <416aa1ad0705062357i5a76684ao1d45ef235a6cd20f@mail.gmail.com>
+Date: Mon, 7 May 2007 12:27:28 +0530
+From: "kalash nainwal" <kalash.nainwal@gmail.com>
+To: "Robert Hancock" <hancockr@shaw.ca>
+Subject: Re: select-like implementation for kernel sockets
+Cc: eitanr@audiocodes.com, linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <463E0DD3.9050909@shaw.ca>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <m17irlkubc.fsf@ebiederm.dsl.xmission.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <1178449075.942407.164040@q75g2000hsh.googlegroups.com>
+	 <463E0DD3.9050909@shaw.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner <dgc@sgi.com> writes:
->> Right - so how do we efficiently  manipulate data inside a large
->> block that spans multiple discontigous pages if we don't vmap
->> it?
+On 5/6/07, Robert Hancock <hancockr@shaw.ca> wrote:
+> eitanr@audiocodes.com wrote:
+> > Hi,
+> >
+> > I'm using kernel sockets to Tx and Rx UDP packets between my hardware
+> > device (DSP) to the external network (this is part of a VoIP
+> > implementation). The motivation for using kernel sockets rather than
+> > user-space sockets is to avoid the copying of data between kernel and
+> > user spaces.
+>
+> I think we are zero-copy in many cases for UDP these days, so this
+> doesn't necessarily buy you anything..
+>
+> >
+> > I have no problems on the Tx side (I simply call sock_sendmsg on one
+> > of the sockets), but for the Rx side I want to listen-in on multiple
+> > sockets in blocking mode (I don't want to use polling).
+> >
+> > Is there a way to listen-in on multiple kernel sockets from one kernel
+> > thread? In the user space I would have used select(), but I am not
+> > familiar with a similar solution for the kernel space.
+> >
 
-On Mon, May 07, 2007 at 12:43:19AM -0600, Eric W. Biederman wrote:
-> You don't manipulate data except for copy_from_user, copy_to_user.
-> That is easy comparatively to deal with, and certainly doesn't
-> need vmap.
-> Meta-data may be trickier, but a lot of that depends on your
-> individual filesystem and how it organizes it's meta-data.
+implementing (sock->)sk_data_ready() might serve your purpose?
 
-I wonder what happened to my pagearray patches.
-
-
--- wli
+> > Thanks,
+> > Eitan.
+> >
+> > Eitan Richardson
+> > AudioCodes Ltd.
+> >
+>
+> --
+> Robert Hancock      Saskatoon, SK, Canada
+> To email, remove "nospam" from hancockr@nospamshaw.ca
+> Home Page: http://www.roberthancock.com/
+>
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
