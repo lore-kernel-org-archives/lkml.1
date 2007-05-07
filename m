@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966781AbXEGUng@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966785AbXEGUox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966781AbXEGUng (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 16:43:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966517AbXEGUnc
+	id S966785AbXEGUox (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 16:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966494AbXEGUos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 16:43:32 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:57259 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966772AbXEGUnb (ORCPT
+	Mon, 7 May 2007 16:44:48 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:47923
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S966464AbXEGUor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 16:43:31 -0400
-Date: Mon, 7 May 2007 13:42:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Miles Lane" <miles.lane@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-pm@lists.linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>
-Subject: Re: 2.6.21-mm1+hotfix -- Time gets confused during resume from
- suspend (18014554.415987)
-Message-Id: <20070507134246.c937cdd7.akpm@linux-foundation.org>
-In-Reply-To: <a44ae5cd0705071213md3a403bk3b4b6686a7e333db@mail.gmail.com>
-References: <a44ae5cd0705071213md3a403bk3b4b6686a7e333db@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 7 May 2007 16:44:47 -0400
+Date: Mon, 07 May 2007 13:44:51 -0700 (PDT)
+Message-Id: <20070507.134451.08323342.davem@davemloft.net>
+To: matti.aarnio@zmailer.org
+Cc: jakj@j-a-k-j.com, linux-kernel@vger.kernel.org
+Subject: Re: gmail is a bit too popular..
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070507153511.GH3883@mea-ext.zmailer.org>
+References: <20070507145555.GG3883@mea-ext.zmailer.org>
+	<alpine.DEB.0.98.0705071101510.6512@sigma.j-a-k-j.com>
+	<20070507153511.GH3883@mea-ext.zmailer.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007 12:13:30 -0700
-"Miles Lane" <miles.lane@gmail.com> wrote:
+From: Matti Aarnio <matti.aarnio@zmailer.org>
+Date: Mon, 7 May 2007 18:35:11 +0300
 
-> [ 1278.513048] agpgart-intel 0000:00:00.0: LATE suspend
-> [ 1278.513791]  hwsleep-0323 [03] enter_sleep_state     : Entering
-> sleep state [S3]
-> [18014554.415987] Intel machine check architecture supported.
-> [18014554.416010] Intel machine check reporting enabled on CPU#0.
-> [18014554.416050] Back to C!
-> [ 1281.221504] agpgart-intel 0000:00:00.0: EARLY resume
-> [ 1281.221508] PCI: Calling quirk c01cbfe6 for 0000:00:00.0
-> [ 1281.221510] pci 0000:00:00.1: EARLY resume
-> [ 1281.221513] PCI: Calling quirk c01cbfe6 for 0000:00:00.1
+> On Mon, May 07, 2007 at 11:03:54AM -0400, John Anthony Kazos Jr. wrote:
+> > > In the  linux-kernel  -list subscribers domain popularity
+> > > analysis I got following results:
+> > > 
+> > >    2101 gmail.com
+> > >      49 googlemail.com
+> > >      46 gmx.de
+> .... 
+> > How about some elitism here? Dedicate a certain number of streams to 
+> > everything-except-gmail, so MTAs from the 21st century can get their mail 
+> > faster, and set the rest on gmail-only. Slows down gmail and speeds up the 
+> > rest?
+> 
+> No need.  gmail has done that slowing down all by themselves quite handily..
 
-I think Andi had a suspend/resume handler which would prevent this,
-but it got temporarily removed and will soon be coming back?
+Another thing that plays into this is that a lot of folks
+think it is funny to open up a gmail account and then
+subscribe it to every vger.kernel.org mailing list in order
+to fill it up and slow vger down.
+
+I've been cracking down on such malicious subscriptions lately.
