@@ -1,51 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966882AbXEGU6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966892AbXEGU6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966882AbXEGU6O (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 16:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966635AbXEGU6K
+	id S966892AbXEGU6u (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 16:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966880AbXEGU6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 16:58:10 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:3659 "EHLO scrub.xs4all.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966607AbXEGU6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 16:58:09 -0400
-Date: Mon, 7 May 2007 22:57:57 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Jeff Garzik <jeff@garzik.org>
-cc: Satyam Sharma <satyam.sharma@gmail.com>, Krzysztof Halasa <khc@pm.waw.pl>,
-       Russell King <rmk@arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
-In-Reply-To: <463F8CB4.3040603@garzik.org>
-Message-ID: <Pine.LNX.4.64.0705072254020.2733@scrub.home>
-References: <m3abwhcy74.fsf@maximus.localdomain>  <Pine.LNX.4.64.0705070343330.2733@scrub.home>
-  <m3tzupc6wz.fsf@maximus.localdomain>  <Pine.LNX.4.64.0705071318150.1479@scrub.home>
-  <m3r6psc0ee.fsf@maximus.localdomain>  <Pine.LNX.4.64.0705071509290.1479@scrub.home>
-  <463F27CE.2040008@garzik.org>  <Pine.LNX.4.64.0705071538060.1479@scrub.home>
-  <m3lkg0a88y.fsf@maximus.localdomain>  <Pine.LNX.4.64.0705071901020.1479@scrub.home>
- <a781481a0705071115v5bce9382q166b9c0e0c52c6ef@mail.gmail.com>
- <463F8CB4.3040603@garzik.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 May 2007 16:58:47 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:33270 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966635AbXEGU6n (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 16:58:43 -0400
+Date: Mon, 7 May 2007 13:58:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andreas Dilger <adilger@clusterfs.com>
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+Message-Id: <20070507135825.f8545a65.akpm@linux-foundation.org>
+In-Reply-To: <20070507113753.GA5439@schatzie.adilger.int>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
+	<20070330071417.GI355@devserv.devel.redhat.com>
+	<20070417125514.GA7574@amitarora.in.ibm.com>
+	<20070418130600.GW5967@schatzie.adilger.int>
+	<20070420135146.GA21352@amitarora.in.ibm.com>
+	<20070420145918.GY355@devserv.devel.redhat.com>
+	<20070424121632.GA10136@amitarora.in.ibm.com>
+	<20070426175056.GA25321@amitarora.in.ibm.com>
+	<20070426181332.GD7209@amitarora.in.ibm.com>
+	<20070503213133.d1559f52.akpm@linux-foundation.org>
+	<20070507113753.GA5439@schatzie.adilger.int>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 7 May 2007 05:37:54 -0600
+Andreas Dilger <adilger@clusterfs.com> wrote:
 
-On Mon, 7 May 2007, Jeff Garzik wrote:
-
-> Tough, the kernel community has voted against you.
+> > > +	block = offset >> blkbits;
+> > > +	max_blocks = (EXT4_BLOCK_ALIGN(len + offset, blkbits) >> blkbits)
+> > > +			 - block;
+> > > +	mutex_lock(&EXT4_I(inode)->truncate_mutex);
+> > > +	credits = ext4_ext_calc_credits_for_insert(inode, NULL);
+> > > +	mutex_unlock(&EXT4_I(inode)->truncate_mutex);
+> > 
+> > Now I'm mystified.  Given that we're allocating an arbitrary amount of disk
+> > space, and that this disk space will require an arbitrary amount of
+> > metadata, how can we work out how much journal space we'll be needing
+> > without at least looking at `len'?
 > 
-> It makes far more sense to include a driver during kernel configuration, and
-> have that driver pull in its libraries via 'select'.  The lame alternative
-> requires developers to know which libraries they need BEFORE picking their
-> drivers, which is backwards and requires legwork on the part of the kernel
-> developer.
+> Good question.
+> 
+> The uninitialized extent can cover up to 128MB with a single entry.
+> If @path isn't specified, then ext4_ext_calc_credits_for_insert()
+> function returns the maximum number of extents needed to insert a leaf,
+> including splitting all of the index blocks.  That would allow up to 43GB
+> (340 extents/block * 128MB) to be preallocated, but it still needs to take
+> the size of the preallocation into account (adding 3 blocks per 43GB - a
+> leaf block, a bitmap block and a group descriptor).
 
-Jeff, there was never anything to "vote" about! There is no 
-autoconfiguration, kernel configuration isn't ready for Aunt Tilly and 
-select is no substitute for it...
+I think the use of ext4_journal_extend() (as Amit has proposed) will help
+here, but it is not sufficient.
 
-bye, Roman
+Because under some circumstances, a journal_extend() failure could mean
+that we fail to allocate all the required disk space.  If it is infrequent
+enough, that is acceptable when the caller is using fallocate() for
+performance reasons.
+
+But it is very much not acceptable if the caller is using fallocate() for
+space-reservation reasons.  If you used fallocate to reserve 1GB of disk
+and fallocate() "succeeded" and you later get ENOSPC then you'd have a
+right to get a bit upset.
+
+So I think the ext3/4 fallocate() implementation will need to be
+implemented as a loop: 
+
+	while (len) {
+		journal_start();
+		len -= do_fallocate(len, ...);
+		journal_stop();
+	}
+
+
+Now the interesting question is: what do we do if we get halfway through
+this loop and then run out of space?  We could leave the disk all filled up
+and then return failure to the caller, but that's pretty poor behaviour,
+IMO.
+
+
+
+Does the proposed implementation handle quotas correctly, btw?  Has that
+been tested?
+
+
+Final point: it's fairly disappointing that the present implementation is
+ext4-only, and extent-only.  I do think we should be aiming at an ext4
+bitmap-based implementation and an ext3 implementation.
+
