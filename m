@@ -1,64 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966591AbXEGU1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966602AbXEGU3H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966591AbXEGU1Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 16:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966586AbXEGU1U
+	id S966602AbXEGU3H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 16:29:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966592AbXEGU3E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 16:27:20 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:54733 "EHLO pasmtpB.tele.dk"
+	Mon, 7 May 2007 16:29:04 -0400
+Received: from gw.goop.org ([64.81.55.164]:37706 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966576AbXEGU1T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 16:27:19 -0400
-Date: Mon, 7 May 2007 22:28:13 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Roman Zippel <zippel@linux-m68k.org>
-Subject: Re: why don't top-level menu entries have help info?
-Message-ID: <20070507202813.GA20680@uranus.ravnborg.org>
-References: <Pine.LNX.4.64.0705071548240.29393@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705071548240.29393@localhost.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	id S966593AbXEGU3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 16:29:03 -0400
+Message-ID: <463F8C22.40902@goop.org>
+Date: Mon, 07 May 2007 13:29:22 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH] deflate inflate_dynamic too
+References: <4632AF57.1070102@goop.org> <463F712F.90902@zytor.com>
+In-Reply-To: <463F712F.90902@zytor.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Added Roman Zippel to cc - he is kconfig maintainer,
+H. Peter Anvin wrote:
+> It might be worth reverting some of the code back to the zlib original.
+>  The use of stack allocations here is actually a Linux divergence from
+> zlib (done by Linus), in order to reduce the number of dynamic allocations.
+>
+> In general, the use of dynamic allocations is highly dangerous, because
+> any time you have dynamic allocations you have the choice of either
+> sleeping or failing, unless you have a pre-reserved memory pool.
+>   
 
-	Sam
+Well, every time this code is instantiated, it gets its own malloc/free
+definitions, so they can decide how to handle the dynamic allocations. 
+Seems better than assuming that every caller will have enough stack
+space.  If you want to approximate that, it would be easy enough to have
+a stack-like malloc/free, in which freeing the last allocation will
+always release space.
 
-On Mon, May 07, 2007 at 03:54:13PM -0400, Robert P. J. Day wrote:
-> 
->   i'd be surprised if this hasn't come up before, but would it be hard
-> to add a facility to Kconfig so that "menu" entries have some help
-> info?
-> 
->   after i run "make menuconfig" and i'm sitting at the main menu,
-> there's nothing to help me out in understanding what any of those
-> choices might mean.
-> 
->   i might see "Instrumentation Support" and wonder just what that is,
-> but if i ask for help (which is, as you can see, clearly available
-> at the bottom of the config screen), i get nothing meaningful, just
-> the generic README.
-> 
->   i think it would be helpful if those entries also supported help
-> info.  just my $0.02.
-> 
-> rday
-> 
-> -- 
-> ========================================================================
-> Robert P. J. Day
-> Linux Consulting, Training and Annoying Kernel Pedantry
-> Waterloo, Ontario, CANADA
-> 
-> http://fsdev.net/wiki/index.php?title=Main_Page
-> ========================================================================
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+    J
