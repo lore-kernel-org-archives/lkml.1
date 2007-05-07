@@ -1,70 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966805AbXEGVek@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966854AbXEGVe6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966805AbXEGVek (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 17:34:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966776AbXEGVei
+	id S966854AbXEGVe6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 17:34:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966833AbXEGVex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 17:34:38 -0400
-Received: from haxent.com ([65.99.219.155]:4554 "EHLO haxent.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966629AbXEGVeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 17:34:37 -0400
-Message-ID: <463F9B68.305@haxent.com.br>
-Date: Mon, 07 May 2007 18:34:32 -0300
-From: Davi Arnaut <davi@haxent.com.br>
+	Mon, 7 May 2007 17:34:53 -0400
+Received: from kirby.webscope.com ([204.141.84.54]:52725 "EHLO
+	kirby.webscope.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966827AbXEGVew (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 17:34:52 -0400
+Message-ID: <463F9B4F.7020708@linuxtv.org>
+Date: Mon, 07 May 2007 17:34:07 -0400
+From: Michael Krufky <mkrufky@linuxtv.org>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
-References: <20070504225730.490334000@haxent.com.br>	 <463BC3CA.6050109@haxent.com.br>	 <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com>	 <463CFA37.3020809@haxent.com.br> <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
-In-Reply-To: <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
+To: Manu Abraham <abraham.manu@gmail.com>
+CC: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-dvb@linuxtv.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
+ points about ...)
+References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>		<46389278.1070208@gmail.com> <20070502155125.280320@gmx.net>		<4638C046.1020005@gmail.com> <20070503112013.272380@gmx.net>		<4639F554.1040505@gmail.com> <20070503153129.268110@gmx.net>		<463A0462.5070106@gmail.com>		<d9def9db0705030859y66b1ef8fv22fc844c77bcc3c6@mail.gmail.com>		<463A0B36.5080204@gmail.com>		<d9def9db0705031019l5083d1c1h607b0829ab526f1@mail.gmail.com>		<1178215045.12651.124.camel@localhost> <463A31EE.20907@gmail.com>		<1178388401.12541.115.camel@localhost> <463CD106.3000706@gmail.com>	<1178571269.18383.296.camel@localhost> <463F9941.1060303@gmail.com>
+In-Reply-To: <463F9941.1060303@gmail.com>
+X-Enigmail-Version: 0.94.0.0
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ulrich Drepper wrote:
-> On 5/5/07, Davi Arnaut <davi@haxent.com.br> wrote:
->> A google search turns up a few users. It also addresses some complaints
->> from Drepper.
+Manu Abraham wrote:
+> Mauro Carvalho Chehab wrote:
+>> Hi Manu,
+>>
+>>> From my side, quite some time has been put forward to write that mail.
+>>> Inspite of that if you feel that you do have to go your own way, then
+>>> it is completely upto you. I would say: do as you feel in such a case.
+>> The point is that those issues are pending for a long time, and they
+>> should be solved, especially the module removal issue (*)
+>>
+>> If you are so afraid about applying those changes, maybe the better is
+>> to apply those patches at v4l-dvb tree and at -mm, asking people to
+>> test.
+>>
+>> We may hold their commit on kernel mainstream until the next kernel
+>> release, if nobody complains about, or otherwise revert the changes, if
+>> they proofed to cause troubles at dst and/or dvb-bt8xx.
+>>
+>> Also, you (or others) may write another approach keeping the fixes with
+>> an strategy more adequate for dst.
+>>
+>> Do you agree with this way?
 > 
-> There is a huge problem with this approach and we're back at the
-> inadequate interface.
+> NACK
 > 
-> select/poll/epoll are thread cancellation points.  I.e., the thread
-> can be canceled before returning to the user.  If this cancellation
-> happens between the kernel deciding to give this thread the event (and
-> no other thread) and the thread testing for cancellation in the libc
-> wrapper around the syscall, then the event is lost and the process(es)
-> might hang.
+>> -- 
+>> Cheers,
+>> Mauro
+>>
+>> (*) Currently, dst can be removed only with "rmmod -f", due to a wrong
+>> usage count. With Trent's patches, this were fixed.
 > 
-> With kevent we in the end fixed the problem by requiring that part of
-> the cancellation handling the thread tries to wake up another thread
-> waiting for the event queue.  This is easily possible since the event
-> data is in the shared memory segment and it's just purely the thread
-> wakeup that is needed.
-> 
-> To make something like this work for poll you'd have to push back the
-> revents fields of the result back to the kernel which might then cause
-> another thread to be woken up.  I find this too ugly to consider.  You
-> guys will not believe this but I really thought all these things
-> through before writing the OLS paper.  poll cannot be salvaged.
+> http://article.gmane.org/gmane.linux.drivers.dvb/27792/match=re+linux+dvb+unable+rmmod+dst+bt8xx
 
-See Linus's message on this same thread.
+Just to make things clear, Manu, Are you telling us that the patch in the above
+link addresses the use count bug?
 
-> There is another thing about this selective wakeup: do I assume it
-> correctly that if more than one file descriptor is reported ready more
-> than one thread is woken?  I think nothing else can be justified.
+If that is the case, are you suggesting that that patch be applied to the
+repository instead of Trent's changesets?
 
-Correct.
+Moreso, if that is the case, then the patch in the above link lacks a
+sign-off...  We need to apply SOMETHING to fix this problem, and you know the
+rules...
 
-> Will in this case both threads get the same set of descriptors
-> reported or will they see disjunct sets?
+What should be done to fix the use count bug?
 
-Disjunct. In reality, only if the event is edge triggered.
+Regards,
 
---
-Davi Arnaut
+Michael Krufky
+
