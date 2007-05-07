@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966124AbXEGSN5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966148AbXEGSQJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966124AbXEGSN5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 14:13:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966092AbXEGSNz
+	id S966148AbXEGSQJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 14:16:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966092AbXEGSQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 14:13:55 -0400
-Received: from mga01.intel.com ([192.55.52.88]:30927 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966098AbXEGSNy convert rfc822-to-8bit (ORCPT
+	Mon, 7 May 2007 14:16:03 -0400
+Received: from wr-out-0506.google.com ([64.233.184.230]:64800 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966055AbXEGSQA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 14:13:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,502,1170662400"; 
-   d="scan'208";a="242998811"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Mon, 7 May 2007 14:16:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=r8cW/P7cNMuTMy0ow0nQS+aMsEyFlJ9RFiaGmEc0Uj3wOBiZg4AcSDc+ftrzo+7Yv8mG+kQjacKh3W3+T6NQ/OgsLDRcN/URkQoLkPUEBZDnmzLrSwPeIAxl2Qg8imXUwiejd89iF+H5iR9yog0tLTicQP6LVeh0Y+PEwt0Qfkc=
+Message-ID: <a781481a0705071115v5bce9382q166b9c0e0c52c6ef@mail.gmail.com>
+Date: Mon, 7 May 2007 23:45:58 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Roman Zippel" <zippel@linux-m68k.org>
+Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
+Cc: "Krzysztof Halasa" <khc@pm.waw.pl>, "Jeff Garzik" <jeff@garzik.org>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+In-Reply-To: <Pine.LNX.4.64.0705071901020.1479@scrub.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 0/2] Add percpu smp cacheline align section
-Date: Mon, 7 May 2007 11:13:51 -0700
-Message-ID: <A29F7A5700A7EA4380E08C1F68C3B6D802B03E97@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070507174608.GB21638@linux-os.sc.intel.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 0/2] Add percpu smp cacheline align section
-Thread-Index: AceQz+5CGu2FLNeBQNusmGCknR8PzwAAd54A
-From: "Yu, Fenghua" <fenghua.yu@intel.com>
-To: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Christoph Lameter" <clameter@sgi.com>
-CC: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 07 May 2007 18:13:51.0846 (UTC) FILETIME=[775D7060:01C790D3]
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <m3abwhcy74.fsf@maximus.localdomain>
+	 <Pine.LNX.4.64.0705070343330.2733@scrub.home>
+	 <m3tzupc6wz.fsf@maximus.localdomain>
+	 <Pine.LNX.4.64.0705071318150.1479@scrub.home>
+	 <m3r6psc0ee.fsf@maximus.localdomain>
+	 <Pine.LNX.4.64.0705071509290.1479@scrub.home>
+	 <463F27CE.2040008@garzik.org>
+	 <Pine.LNX.4.64.0705071538060.1479@scrub.home>
+	 <m3lkg0a88y.fsf@maximus.localdomain>
+	 <Pine.LNX.4.64.0705071901020.1479@scrub.home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 10:30:16AM -0700, Christoph Lameter wrote:
-> Call this area "cpu shared" or so?
+On 5/7/07, Roman Zippel <zippel@linux-m68k.org> wrote:
+> Hi,
+>
+> On Mon, 7 May 2007, Krzysztof Halasa wrote:
+>
+> > Roman Zippel <zippel@linux-m68k.org> writes:
+> >
+> > > HDLC doesn't really look like simple library code, what's up with all the
+> > > HDLC_* options?
+> >
+> > Sub-modules.
+>
+> So it's not simple library code, or is it?
+>
+> > Anyway, what does the patch "screw" exactly?
+>
+> Normal dependencies, you basically have to manually make sure they are
+> correct (and it seems with your patch they aren't). Again, _please_ (with
+> sugar on top) don't use select unless you have a good reason for it.
 
-There are some fields in percpu section which are accessed by other
-cpu's but not cache line aligned, e.g. cpu_idle_state, flush_state in
-x86-64. We don't want to place those fields into same subsection as
-cacheline aligned fields.
+Yes, mixing select and depends is a recipe for build disasters. Call
+me a rabid fanatic, but I would in fact go as far as to say that this
+whole "select" thing in the Kconfig process is one big BUG, and not a
+feature. People are lazy by nature and would rather just "select" a
+dependency for their config option than burden users with several
+"depends".
 
-So perhaps, I can change the section name
-.data.percpu.cacheline_aligned_in_smp to
-.data.percpu.shared_cacheline_aligned. And change macro
-DEFINE_PER_CPU_CACHELINE_ALIGNED_IN_SMP to
-DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED.
-
-.data.percpu.shared_cacheline_aligned contains only cpu shared percpu
-fields which are cacheline aligned. In future (or in a separate patch
-series), we can define another percpu section .data.percpu.shared and
-its macro DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED which store all of cpu
-shared percpu fields. The new .data.percpu.shared and
-DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED are for better coding and
-understanding.
-
-Thanks.
-
--Fenghua
+The following rant doesn't apply only to the select above, but
+unfortunately, that's precisely what happens when such stuff is
+introduced ... they seem like a good idea to the introducer for his
+special / rarest-of-rare case, but then others tend to {ab-,mis-}use
+it and the use of such primitives soon proliferates even to cases
+where they are clearly inapplicable / avoidable.
