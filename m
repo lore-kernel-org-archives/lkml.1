@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965645AbXEGQDI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965668AbXEGQGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965645AbXEGQDI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 12:03:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965606AbXEGQDD
+	id S965668AbXEGQGP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 12:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965472AbXEGQGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 12:03:03 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4174 "EHLO ra.tuxdriver.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965536AbXEGQDA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 12:03:00 -0400
-Date: Mon, 7 May 2007 11:38:48 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Dan Williams <dcbw@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       linux-wireless@vger.kernel.org, marcelo@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Please pull 'revert-libertas' branch of wireless-2.6 (was Re: Please pull 'libertas' branch of wireless-2.6)
-Message-ID: <20070507153848.GD5125@tuxdriver.com>
-References: <20070227205649.GH5826@tuxdriver.com> <45E8CF5E.5090305@garzik.org> <20070303052140.GA31075@infradead.org> <20070507104117.GA31601@infradead.org> <1178539423.3032.24.camel@localhost.localdomain> <20070507141143.GB5125@tuxdriver.com> <463F443A.5000306@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <463F443A.5000306@garzik.org>
-User-Agent: Mutt/1.4.2.2i
+	Mon, 7 May 2007 12:06:10 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:52472 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965440AbXEGQGI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 12:06:08 -0400
+Date: Mon, 7 May 2007 09:06:05 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+cc: David Chinner <dgc@sgi.com>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Mel Gorman <mel@skynet.ie>, William Lee Irwin III <wli@holomorphy.com>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+In-Reply-To: <m17irlkubc.fsf@ebiederm.dsl.xmission.com>
+Message-ID: <Pine.LNX.4.64.0705070901400.4290@schroedinger.engr.sgi.com>
+References: <20070427042046.GI65285596@melbourne.sgi.com>
+ <20070426221528.655d79cb.akpm@linux-foundation.org>
+ <20070427060921.GA77450368@melbourne.sgi.com> <20070427000403.6013d1fa.akpm@linux-foundation.org>
+ <20070427080321.GG32602149@melbourne.sgi.com> <20070427014849.41f383f7.akpm@linux-foundation.org>
+ <20070427164535.GH24852@thunk.org> <m1abwku30d.fsf@ebiederm.dsl.xmission.com>
+ <20070507042925.GT32602149@melbourne.sgi.com> <m1tzupkzmw.fsf@ebiederm.dsl.xmission.com>
+ <20070507052729.GV32602149@melbourne.sgi.com> <m17irlkubc.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 11:22:34AM -0400, Jeff Garzik wrote:
+On Mon, 7 May 2007, Eric W. Biederman wrote:
 
-> Open source is about release early, release often.  Not "hide code in a 
-> dark corner until Christoph thinks it is perfect."  We have high 
-> standards for upstream merged code, but that standard is not perfection. 
->  Perfect is the enemy of good.
-> 
-> I would rather see the libertas-2.6 git changes pulled into upstream, 
-> and am not inclined to revert a WORKING DRIVER at this point, a driver 
-> that is actively maintained and has seen quite a bit of improvement 
-> since it initially appeared.
+> Yes, instead of having to redesign the interface between the
+> fs and the page cache for those filesystems that handle large
+> blocks we instead need to redesign significant parts of the VM interface.
+> Shift the redesign work to another group of people and call it a trivial.
 
-Perhaps I was a bit hasty.  Given Dan's response I thought that I
-had missed something.
+To some extend that is true. But then there will then also be additional 
+gain: We can likely get the VM to handle larger pages too which may get 
+rid of hugetlb fs etc. The work is pretty straightforward: No locking 
+changes f.e. So hardly a redesign. I think the crucial point is the 
+antifrag/defrag issue if we want to generalize it.
 
-But, you are right -- the driver works now, and Dan and company are
-sure to be around to keep working on it.
+I have an updated patch here that relies on page reservations. Adds 
+something called page pools. On bootup you need to specify how many pages 
+of each size you want. The page cache will then use those pages for 
+filesystems that need larger blocksize. 
 
-> Plus, that leaves the kernel history less polluted.
+The interesting thing about that one is that it actually enables support 
+foir multiple blocksizes with a single larger pagesize. If f.e. we setup a 
+pool of 64k pages then the block layer can segment that into 16k pieces. 
+So one can actually use 16k 32k and 64k block size with a single larger 
+page size.
 
-Consider the request withdrawn.
-
-Thanks,
-
-John
--- 
-John W. Linville
-linville@tuxdriver.com
