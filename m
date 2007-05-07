@@ -1,77 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934492AbXEGSK6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934509AbXEGSNN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934492AbXEGSK6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 14:10:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934484AbXEGSK5
+	id S934509AbXEGSNN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 14:13:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966092AbXEGSNK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 14:10:57 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:15156 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934481AbXEGSK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 14:10:56 -0400
-Date: Mon, 7 May 2007 11:13:11 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>
-Cc: Borislav Petkov <bbpetkov@yahoo.de>
-Subject: [PATCH] kernel-doc: small kernel-doc optimization
-Message-Id: <20070507111311.443719f7.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Mon, 7 May 2007 14:13:10 -0400
+Received: from nef2.ens.fr ([129.199.96.40]:4757 "EHLO nef2.ens.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934499AbXEGSNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 14:13:08 -0400
+Date: Mon, 7 May 2007 14:11:34 -0400
+From: Quentin Godfroy <godfroy@clipper.ens.fr>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexander Viro <viro@zeniv.linux.org.uk>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       "David A. Madore" <David.Madore@ens.fr>,
+       Roland McGrath <roland@redhat.com>, Jakub Jelinek <jakub@redhat.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: patch: VFS: fix passing of AT_PHDR value in auxv to ELF interpreter
+Message-ID: <20070507181134.GA14939@goelette.ens.fr>
+References: <20070504140921.GA23122@goelette.ens.fr> <20070507174702.GA14479@goelette.ens.fr>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070507174702.GA14479@goelette.ens.fr>
+User-Agent: Mutt/1.4.2.2i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.1.4 (nef2.ens.fr [129.199.96.32]); Mon, 07 May 2007 20:11:35 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Borislav Petkov <bbpetkov@yahoo.de>
+On Mon, May 07, 2007 at 01:47:02PM -0400, Quentin Godfroy wrote:
+> I have made another patch, which I hope should not break anything this
+> time. I tested it on an x86_64 kernel with 32 and 64 bits executables,
+> PIE and not PIE (well my only PIE are libc-2.5.so and ld-2.5.so). I
+> rejoined the loops as suggested, and the kernel falls back on load_addr +
+> exec->e_phoff if there was no PT_PHDR entry in the program headers.
+> 
+> Signed-off-by: Quentin Godfroy <godfroy@clipper.ens.fr>
+> ---
+> --- linux-2.6.21.1/fs/binfmt_elf.c	2007-05-07 10:58:38.000000000 -0400
+> +++ linux-2.6.21.1-patch/fs/binfmt_elf.c	2007-05-07 13:14:33.000000000 -0400
+> @@ -134,6 +134,7 @@ static int padzero(unsigned long elf_bss
+>  static int
+>  create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+>  		int interp_aout, unsigned long load_addr,
+> +		unsigned long phdr_addr,
+>  		unsigned long interp_load_addr)
+>  {
+>  	unsigned long p = bprm->p;
+> @@ -190,7 +191,10 @@ create_elf_tables(struct linux_binprm *b
+>  	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
+>  	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
+>  	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);
+> -	NEW_AUX_ENT(AT_PHDR, load_addr + exec->e_phoff);
+> +	if(phdr_addr)
+> +		NEW_AUX_ENT(AT_PHDR, phdr_addr);
+> +	else
+> +		NEW_AUX_ENT(AT_PHDR, load_addr + exec->e_phoff);
+>  	NEW_AUX_ENT(AT_PHENT, sizeof(struct elf_phdr));
+>  	NEW_AUX_ENT(AT_PHNUM, exec->e_phnum);
+>  	NEW_AUX_ENT(AT_BASE, interp_load_addr);
+> @@ -529,7 +533,7 @@ static unsigned long randomize_stack_top
+>  static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+>  {
+>  	struct file *interpreter = NULL; /* to shut gcc up */
+> - 	unsigned long load_addr = 0, load_bias = 0;
+> + 	unsigned long load_addr = 0, load_bias = 0, phdr_addr = 0;
+>  	int load_addr_set = 0;
+>  	char * elf_interpreter = NULL;
+>  	unsigned int interpreter_type = INTERPRETER_NONE;
+> @@ -620,7 +624,12 @@ static int load_elf_binary(struct linux_
+>  	start_data = 0;
+>  	end_data = 0;
+>  
+> -	for (i = 0; i < loc->elf_ex.e_phnum; i++) {
+> +	for (i = 0; i < loc->elf_ex.e_phnum; i++, elf_ppnt++) {
+> +		if (elf_ppnt->p_type == PT_PHDR) {
+> +			phdr_addr = elf_ppnt->p_vaddr;
+> +			continue;
+> +		}
+> +
+>  		if (elf_ppnt->p_type == PT_INTERP) {
+>  			/* This is the program interpreter used for
+>  			 * shared libraries - for now assume that this
+> @@ -703,20 +712,17 @@ static int load_elf_binary(struct linux_
+>  			/* Get the exec headers */
+>  			loc->interp_ex = *((struct exec *)bprm->buf);
+>  			loc->interp_elf_ex = *((struct elfhdr *)bprm->buf);
+> -			break;
+> +			continue;
+>  		}
+> -		elf_ppnt++;
+> -	}
+>  
+> -	elf_ppnt = elf_phdata;
+> -	for (i = 0; i < loc->elf_ex.e_phnum; i++, elf_ppnt++)
+>  		if (elf_ppnt->p_type == PT_GNU_STACK) {
+>  			if (elf_ppnt->p_flags & PF_X)
+>  				executable_stack = EXSTACK_ENABLE_X;
+>  			else
+>  				executable_stack = EXSTACK_DISABLE_X;
+> -			break;
+> +			continue;
+>  		}
+> +	}
+>  
+>  	/* Some simple consistency checks for the interpreter */
+>  	if (elf_interpreter) {
+> @@ -985,9 +991,12 @@ static int load_elf_binary(struct linux_
+>  
+>  	compute_creds(bprm);
+>  	current->flags &= ~PF_FORKNOEXEC;
+> +	if (phdr_addr)
+> +		phdr_addr += load_bias;
+> +
+>  	create_elf_tables(bprm, &loc->elf_ex,
+>  			  (interpreter_type == INTERPRETER_AOUT),
+> -			  load_addr, interp_load_addr);
+> +			  load_addr, phdr_addr, interp_load_addr);
+>  	/* N.B. passed_fileno might not be initialized? */
+>  	if (interpreter_type == INTERPRETER_AOUT)
+>  		current->mm->arg_start += strlen(passed_fileno) + 1;
 
-Get the kernel version string only once from the environment, thus slightly
-speeding up kernel-doc.
+Wooops. Wrong one. Sorry. This one could have memory leaks.
 
-Signed-off-by: Borislav Petkov <bbpetkov@yahoo.de>
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Signed-off-by: Quentin Godfroy <godfroy@clipper.ens.fr>
 ---
- scripts/kernel-doc |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
-
---- linux-2621-mm1.orig/scripts/kernel-doc
-+++ linux-2621-mm1/scripts/kernel-doc
-@@ -337,6 +337,7 @@ sub get_kernel_version() {
-     }
-     return $version;
- }
-+my $kernelversion = get_kernel_version();
+--- linux-2.6.21.1/fs/binfmt_elf.c	2007-05-07 10:58:38.000000000 -0400
++++ linux-2.6.21.1-patch/fs/binfmt_elf.c	2007-05-07 13:58:14.000000000 -0400
+@@ -134,6 +134,7 @@ static int padzero(unsigned long elf_bss
+ static int
+ create_elf_tables(struct linux_binprm *bprm, struct elfhdr *exec,
+ 		int interp_aout, unsigned long load_addr,
++		unsigned long phdr_addr,
+ 		unsigned long interp_load_addr)
+ {
+ 	unsigned long p = bprm->p;
+@@ -190,7 +191,10 @@ create_elf_tables(struct linux_binprm *b
+ 	NEW_AUX_ENT(AT_HWCAP, ELF_HWCAP);
+ 	NEW_AUX_ENT(AT_PAGESZ, ELF_EXEC_PAGESIZE);
+ 	NEW_AUX_ENT(AT_CLKTCK, CLOCKS_PER_SEC);
+-	NEW_AUX_ENT(AT_PHDR, load_addr + exec->e_phoff);
++	if(phdr_addr)
++		NEW_AUX_ENT(AT_PHDR, phdr_addr);
++	else
++		NEW_AUX_ENT(AT_PHDR, load_addr + exec->e_phoff);
+ 	NEW_AUX_ENT(AT_PHENT, sizeof(struct elf_phdr));
+ 	NEW_AUX_ENT(AT_PHNUM, exec->e_phnum);
+ 	NEW_AUX_ENT(AT_BASE, interp_load_addr);
+@@ -529,7 +533,7 @@ static unsigned long randomize_stack_top
+ static int load_elf_binary(struct linux_binprm *bprm, struct pt_regs *regs)
+ {
+ 	struct file *interpreter = NULL; /* to shut gcc up */
+- 	unsigned long load_addr = 0, load_bias = 0;
++ 	unsigned long load_addr = 0, load_bias = 0, phdr_addr = 0;
+ 	int load_addr_set = 0;
+ 	char * elf_interpreter = NULL;
+ 	unsigned int interpreter_type = INTERPRETER_NONE;
+@@ -709,14 +713,20 @@ static int load_elf_binary(struct linux_
+ 	}
  
- # generate a sequence of code that will splice in highlighting information
- # using the s// operator.
-@@ -610,7 +611,7 @@ sub output_function_xml(%) {
-     print "<refmeta>\n";
-     print " <refentrytitle><phrase>".$args{'function'}."</phrase></refentrytitle>\n";
-     print " <manvolnum>9</manvolnum>\n";
--    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
-+    print " <refmiscinfo class=\"version\">" . $kernelversion . "</refmiscinfo>\n";
-     print "</refmeta>\n";
-     print "<refnamediv>\n";
-     print " <refname>".$args{'function'}."</refname>\n";
-@@ -687,7 +688,7 @@ sub output_struct_xml(%) {
-     print "<refmeta>\n";
-     print " <refentrytitle><phrase>".$args{'type'}." ".$args{'struct'}."</phrase></refentrytitle>\n";
-     print " <manvolnum>9</manvolnum>\n";
--    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
-+    print " <refmiscinfo class=\"version\">" . $kernelversion . "</refmiscinfo>\n";
-     print "</refmeta>\n";
-     print "<refnamediv>\n";
-     print " <refname>".$args{'type'}." ".$args{'struct'}."</refname>\n";
-@@ -772,7 +773,7 @@ sub output_enum_xml(%) {
-     print "<refmeta>\n";
-     print " <refentrytitle><phrase>enum ".$args{'enum'}."</phrase></refentrytitle>\n";
-     print " <manvolnum>9</manvolnum>\n";
--    print " <refmiscinfo class=\"version\">" . get_kernel_version() . "</refmiscinfo>\n";
-+    print " <refmiscinfo class=\"version\">" . $kernelversion . "</refmiscinfo>\n";
-     print "</refmeta>\n";
-     print "<refnamediv>\n";
-     print " <refname>enum ".$args{'enum'}."</refname>\n";
+ 	elf_ppnt = elf_phdata;
+-	for (i = 0; i < loc->elf_ex.e_phnum; i++, elf_ppnt++)
++	for (i = 0; i < loc->elf_ex.e_phnum; i++, elf_ppnt++) {
++		if (elf_ppnt->p_type == PT_PHDR) {
++			phdr_addr = elf_ppnt->p_vaddr;
++			continue;
++		}
++
+ 		if (elf_ppnt->p_type == PT_GNU_STACK) {
+ 			if (elf_ppnt->p_flags & PF_X)
+ 				executable_stack = EXSTACK_ENABLE_X;
+ 			else
+ 				executable_stack = EXSTACK_DISABLE_X;
+-			break;
++			continue;
+ 		}
++	}
+ 
+ 	/* Some simple consistency checks for the interpreter */
+ 	if (elf_interpreter) {
+@@ -985,9 +995,12 @@ static int load_elf_binary(struct linux_
+ 
+ 	compute_creds(bprm);
+ 	current->flags &= ~PF_FORKNOEXEC;
++	if (phdr_addr)
++		phdr_addr += load_bias;
++
+ 	create_elf_tables(bprm, &loc->elf_ex,
+ 			  (interpreter_type == INTERPRETER_AOUT),
+-			  load_addr, interp_load_addr);
++			  load_addr, phdr_addr, interp_load_addr);
+ 	/* N.B. passed_fileno might not be initialized? */
+ 	if (interpreter_type == INTERPRETER_AOUT)
+ 		current->mm->arg_start += strlen(passed_fileno) + 1;
