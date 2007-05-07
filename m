@@ -1,37 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754611AbXEGRpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbXEGRrE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754611AbXEGRpS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 13:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbXEGRpN
+	id S1754632AbXEGRrE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 13:47:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754606AbXEGRq7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 13:45:13 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:35132 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754096AbXEGRpM (ORCPT
+	Mon, 7 May 2007 13:46:59 -0400
+Received: from mga09.intel.com ([134.134.136.24]:26970 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752702AbXEGRq6 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 13:45:12 -0400
-Date: Mon, 7 May 2007 13:45:11 -0400
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: Don Fry <pcnet32@verizon.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: Strange soft lockup detected message (looks like spin_lock bug in pcnet32)
-Message-ID: <20070507174511.GL8751@csclub.uwaterloo.ca>
-References: <20070504143326.GD24769@slug> <20070504151934.GA8754@csclub.uwaterloo.ca> <20070504153438.GE24769@slug> <20070504154009.GE8751@csclub.uwaterloo.ca> <20070504174456.GC8753@csclub.uwaterloo.ca> <20070504175017.GD8753@csclub.uwaterloo.ca> <20070504182433.GA11595@verizon.net> <20070504190236.GE8753@csclub.uwaterloo.ca> <20070507140807.GF8753@csclub.uwaterloo.ca> <20070507144837.GA30865@slug>
+	Mon, 7 May 2007 13:46:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,502,1170662400"; 
+   d="scan'208";a="84645318"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070507144837.GA30865@slug>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [patch] removes MAX_ARG_PAGES
+Date: Mon, 7 May 2007 10:46:49 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A01719390@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <65dd6fd50705060151m78bb9b4fpcb941b16a8c4709e@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [patch] removes MAX_ARG_PAGES
+Thread-Index: AcePu9D1QO37NDIaSWKCmmL7DuE5bgBEueqA
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Ollie Wild" <aaw@google.com>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       <linux-kernel@vger.kernel.org>, <parisc-linux@lists.parisc-linux.org>,
+       <linux-mm@kvack.org>, <linux-arch@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <ak@suse.de>
+X-OriginalArrivalTime: 07 May 2007 17:46:50.0898 (UTC) FILETIME=[B1346720:01C790CF]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 04:48:37PM +0200, Frederik Deweerdt wrote:
-> Can you try running on another Geode LX system, just to rule out a
-> hardware problem on you board?
+> We've tested the following architectures: i386, x86_64, um/i386,
+> parisc, and frv.  These are representative of the various scenarios
+> which this patch addresses, but other architecture teams should try it
+> out to make sure there aren't any unexpected gotchas.
 
-Hmm, I thought I saw it on two systems already, but I should go try that
-again.
+Doesn't build on ia64: complaints from arch/ia64/ia32/binfmt_elf.c
+(which #includes ../../../fs/binfmt_elf.c) ...
 
---
-Len Sorensen
+arch/ia64/ia32/binfmt_elf32.c: In function `ia32_setup_arg_pages':
+arch/ia64/ia32/binfmt_elf32.c:206: error: `MAX_ARG_PAGES' undeclared (first use in this function)
+arch/ia64/ia32/binfmt_elf32.c:206: error: (Each undeclared identifier is reported only once
+arch/ia64/ia32/binfmt_elf32.c:206: error: for each function it appears in.)
+arch/ia64/ia32/binfmt_elf32.c:240: error: structure has no member named `page'
+arch/ia64/ia32/binfmt_elf32.c:242: error: structure has no member named `page'
+arch/ia64/ia32/binfmt_elf32.c:243: warning: implicit declaration of function `install_arg_page'
+make[1]: *** [arch/ia64/ia32/binfmt_elf32.o] Error 1
+
+Turning off CONFIG_IA32-SUPPORT, the kernel built, but oops'd during boot.
+My serial connection to my test machine is currently broken, so I didn't
+get a capture of the stack trace, sorry.
+
+-Tony
