@@ -1,64 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966345AbXEGTgQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966354AbXEGTgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966345AbXEGTgQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 15:36:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966299AbXEGTgN
+	id S966354AbXEGTgb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966348AbXEGTg0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 15:36:13 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:44923 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966259AbXEGTgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 15:36:13 -0400
-Date: Mon, 7 May 2007 21:37:07 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
-Subject: Re: kconfig: error out if recursive dependencies are found
-Message-ID: <20070507193707.GA19985@uranus.ravnborg.org>
-References: <20070502201741.GD9044@uranus.ravnborg.org> <20070506073615.GA6492@uranus.ravnborg.org> <20070506074038.GB6492@uranus.ravnborg.org> <Pine.LNX.4.64.0705070221500.1479@scrub.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705070221500.1479@scrub.home>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 7 May 2007 15:36:26 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:37904 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966342AbXEGTgZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 15:36:25 -0400
+Message-ID: <463F7F30.5010200@zytor.com>
+Date: Mon, 07 May 2007 12:34:08 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+CC: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>,
+       Andrey Borzenkov <arvidjaar@mail.ru>, linux-kernel@vger.kernel.org
+Subject: Re: Long file names in VFAT broken with iocharset=utf8
+References: <200705072151.20104.arvidjaar@mail.ru>	<60F72760-C801-4F60-BF47-C661B4B5BE26@e18.physik.tu-muenchen.de> <87fy685w0m.fsf@duaron.myhome.or.jp>
+In-Reply-To: <87fy685w0m.fsf@duaron.myhome.or.jp>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 02:38:36AM +0200, Roman Zippel wrote:
-> Hi,
+OGAWA Hirofumi wrote:
+>>>
+>> PATH_MAX specifically counts _bytes_ not characters, so UTF-8 does  
+>> not matter. ISTR that PATH_MAX was 256 at some point, but I just  
+>> quickly grepped /usr/include and found various mention of 4096, so  
+>> where's the central repository for this configuration item? A hard- 
+>> coded value of 256 somewhere inside the kernel smells like a bug.
 > 
-> On Sun, 6 May 2007, Sam Ravnborg wrote:
+> There is a nasty issue here. FAT is limited by 255 unicode chars or so.
+> So, we would need to count number of unicode chars of filename.
 > 
-> >  	if (sym->flags & SYMBOL_CHECK) {
-> > -		printf("Warning! Found recursive dependency: %s", sym->name);
-> > +		fprintf(stderr, "%s:%d:error: found recursive dependency: %s",
-> > +		        sym->prop->file->name, sym->prop->lineno, sym->name);
-> >  		return sym;
-> >  	}
-> 
-> If it were that simple to print the location, I had done it already. :)
-> Try this:
-> 
-> config FOO
->         bool
->         select BAR
->         depends on BAR
-> 
-> config BAR
->         bool
-> 
-> I looked into this before, for simple properties one could just remember 
-> the last checked property via a static variable. The problem are the 
-> selects which are checked before that loop, here the information from 
-> where they were selected is not available anymore (at least not easily).
+> That's not implemented currently.
 
-We need to point out _one_ of the faulty spots only.
-But I see that kconfig records file:line for properties and menu entries
-but not for symbols.
-Any special reason why file:line is omitted for symbols (except size of allocated
-memory)?
+Note also there is PATH_MAX and NAME_MAX; the latter is 255 I believe.
 
-Without looking into details it looks more relevant to have file:line for symbols
-rather than for prompts / properties..
+POSIX allows NAME_MAX to vary on a filesystem by filesystem basis,
+although that is not currently implemented in Linux.
 
-	Sam
+	-hpa
