@@ -1,42 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965693AbXEGQG3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965632AbXEGQMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965693AbXEGQG3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 12:06:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965691AbXEGQGY
+	id S965632AbXEGQMu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 12:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965475AbXEGQMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 12:06:24 -0400
-Received: from smtp.ono.com ([62.42.230.12]:42341 "EHLO resmaa02.ono.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965472AbXEGQGY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 12:06:24 -0400
-Date: Mon, 7 May 2007 18:06:04 +0200
-From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
-To: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm1
-Message-ID: <20070507180604.51242492@werewolf-wl>
-In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-X-Mailer: Claws Mail 2.9.1cvs45 (GTK+ 2.10.12; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 May 2007 12:12:46 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42691 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S965254AbXEGQMp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 12:12:45 -0400
+Date: Mon, 7 May 2007 09:11:33 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Esben Nielsen <nielsen.esben@googlemail.com>
+cc: Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v8
+In-Reply-To: <Pine.LNX.4.64.0705071311040.14011@frodo.shire>
+Message-ID: <alpine.LFD.0.98.0705070905330.3802@woody.linux-foundation.org>
+References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com>
+ <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com>
+ <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire>
+ <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org>
+ <20070506082911.GA32644@elte.hu> <alpine.LFD.0.98.0705061037390.25245@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0705071311040.14011@frodo.shire>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 5 May 2007 01:49:55 -0700, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
-> 
-...
-> - The staircase CPU scheduler was dropped
-> 
 
-Sorry, perhaps I missed the thread in LKML, but... why ?
+On Mon, 7 May 2007, Esben Nielsen wrote:
+> 
+> I would hate to tell mission control for Mankind's first mission to another
+> star to reboot every 200 years because "there is no need to worry about it."
 
---
-J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
-                                         \         It's better when it's free
-Mandriva Linux release 2008.0 (Cooker) for i586
-Linux 2.6.20-jam11 (gcc 4.1.2 20070302 (4.1.2-1mdv2007.1)) SMP PREEMPT
-09 F9 11 02 9D 74 E3 5B D8 41 56 C5 63 56 88 C0
+I'd like to put it another way:
+
+ - if your mission to another star *depends* on every single piece of 
+   complex equipment staying up with zero reboots for 200+ years, you have 
+   some serious technology problems.
+
+In other words: your argument is populist, and totally silly.
+
+Trust me, if you are going to another star, you'd better have the 
+capabilities to handle bugs. You'd better have multiple fail-over etc.
+
+A notion of "robustness" cannot and must not hinge on "no bugs". That's 
+unrealistic.
+
+> As a matter of principle an OS should never need a reboot (with exception for
+> upgrading). If you say you have to reboot every 200 years, why not every 100?
+> Every 50? .... Every 45 days (you know what I am referring to :-) ?
+
+There's something of a difference between 45 days and 292 years.
+
+I'm not saying we can't get there, but worrying about it in the current 
+state is just stupid. It's not just looking at the trees and not seeing 
+the forest, it's looking at one *leaf*, and missing the forest.
+
+And quite frankly, if you work for NASA and are aiming for the stars, 
+you'd better not be that person who looks at one leaf and cannot see the 
+forest around you. That's the kind of thing that makes you miss the 
+difference between miles and kilometers.
+
+		Linus
