@@ -1,61 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966283AbXEGTFA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966243AbXEGTNc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966283AbXEGTFA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 15:05:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966234AbXEGTE6
+	id S966243AbXEGTNc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:13:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966192AbXEGTNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 15:04:58 -0400
-Received: from mail-blu.bigfish.com ([65.55.251.10]:64316 "EHLO
-	mail130-blu-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S966223AbXEGTE5 (ORCPT
+	Mon, 7 May 2007 15:13:32 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:54715 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966169AbXEGTNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 15:04:57 -0400
-X-Greylist: delayed 1221 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 May 2007 15:04:57 EDT
-X-BigFish: VP
-Message-ID: <463F7449.2020509@am.sony.com>
-Date: Mon, 07 May 2007 11:47:37 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+	Mon, 7 May 2007 15:13:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=FyJVutK/PBlD3JGvK0QvCLe4ze9tR4LXjhieqfqDaRW5hFBvFrUh/uKtzkNTM+b5mviYYNRuNcLecUcv/Yhh+9IOTZ3425Yv4mkmT9ThVy8VB9g9ylYFwrfzJhyRAhQWYv6zhAqfKLj6bbkMJi6zrnn4U9Baj+EsP6tsCEV48kg=
+Message-ID: <a44ae5cd0705071213md3a403bk3b4b6686a7e333db@mail.gmail.com>
+Date: Mon, 7 May 2007 12:13:30 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org
+Subject: 2.6.21-mm1+hotfix -- Time gets confused during resume from suspend (18014554.415987)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Ingo Molnar <mingo@redhat.com>,
-       linux kernel <linux-kernel@vger.kernel.org>
-Subject: Need help debugging RT-preempt patch
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 07 May 2007 18:44:30.0986 (UTC) FILETIME=[BF93EEA0:01C790D7]
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I've applied patch-2.6.21-rt1 to a 2.6.21 kernel I'm using.
-With the patch applied, but no RT-Preempt options enabled,
-I'm getting network failures (eth0 transmit timeouts) on
-an OMAP board.
-
-I'm not sure what the best method is to debug this.  Should
-I turn on the latency tracer?  Should I post my configuration?
-Should I try to break up the patch and apply changes in small doses?
-I'm not familiar with the network code, or with the RT code (yet),
-so for now I'm kind of stumbling in the dark.
-
-Note that I have other patches applied, for platform support
-for the OMAP.
-
-I believe ARM (or OMAP) is not supported by the RT-preempt patch
-at the moment.  But I'd like to carry the patches in my kernel even
-if the options for RT-preempt are off, because I want to experiment
-with RT-preempt on other platforms (x86 and MIPS).
-
-Any suggestions for where to start to isolate this would
-be appreciated.
-
-Thanks,
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Electronics
-=============================
-
+[ 1278.513048] agpgart-intel 0000:00:00.0: LATE suspend
+[ 1278.513791]  hwsleep-0323 [03] enter_sleep_state     : Entering
+sleep state [S3]
+[18014554.415987] Intel machine check architecture supported.
+[18014554.416010] Intel machine check reporting enabled on CPU#0.
+[18014554.416050] Back to C!
+[ 1281.221504] agpgart-intel 0000:00:00.0: EARLY resume
+[ 1281.221508] PCI: Calling quirk c01cbfe6 for 0000:00:00.0
+[ 1281.221510] pci 0000:00:00.1: EARLY resume
+[ 1281.221513] PCI: Calling quirk c01cbfe6 for 0000:00:00.1
