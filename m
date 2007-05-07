@@ -1,64 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967164AbXEGWkK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966949AbXEGWp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967164AbXEGWkK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 18:40:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967157AbXEGWkG
+	id S966949AbXEGWp7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 18:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754434AbXEGWp6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 18:40:06 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:60254 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967154AbXEGWj7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 18:39:59 -0400
-Subject: Re: [PATCH 1/3] kbuild: complain about missing system calls.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Tony Luck <tony.luck@intel.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Kees Cook <kees@outflux.net>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <12c511ca0705071529w38f71b09je0d9b460c7bc3025@mail.gmail.com>
-References: <20070319205623.299d0378.akpm@linux-foundation.org>
-	 <20070320103151.f65c81b6.randy.dunlap@oracle.com>
-	 <20070320192016.GC22797@outflux.net>
-	 <20070320214714.0e584cd4.akpm@linux-foundation.org>
-	 <20070321221905.GA22623@uranus.ravnborg.org>
-	 <20070321222236.GB22623@uranus.ravnborg.org>
-	 <12c511ca0705071529w38f71b09je0d9b460c7bc3025@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 07 May 2007 23:39:35 +0100
-Message-Id: <1178577575.11851.242.camel@pmac.infradead.org>
+	Mon, 7 May 2007 18:45:58 -0400
+Received: from mga09.intel.com ([134.134.136.24]:1868 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754430AbXEGWp6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 18:45:58 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,502,1170662400"; 
+   d="scan'208";a="84734473"
+Date: Mon, 7 May 2007 15:43:33 -0700
+From: Venki Pallipadi <venkatesh.pallipadi@intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86-64 highres/dyntick support
+Message-ID: <20070507224333.GA14623@linux-os.sc.intel.com>
+References: <1178485128.31213.98.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178485128.31213.98.camel@localhost.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-07 at 15:29 -0700, Tony Luck wrote:
-> On 3/21/07, Sam Ravnborg <sam@ravnborg.org> wrote:
-> > Most system calls seem to get added to i386 first. This patch
-> > automatically generates a warning for any new system call which is
-> > implemented on i386 but not the architecture currently being compiled.
-> 
-> This is now upstream, and so I see a bunch of warnings for every ia64
-> build.  Some of them are real, I need to add some syscalls, but there
-> are a few bogus ones because ia64 chose different names (e.g. we have
-> a sys_clone() that glibc uses to implement fork() and vfork()).
-> 
-> Just checking that the right way for me to shut checksyscalls.sh up is
-> to add:
-> 
-> #define __IGNORE_fork
-> #define __IGNORE_vfork
-> 
-> etc. to include/asm-ia64/unistd.h for each of the bogus ones.  Or is there
-> some other preferred mechanism?
 
-You could add them to scripts/checksyscalls.sh itself -- I think it's
-fairly unlikely that those are syscalls which a new arch port is going
-to 'forget' :)
+Needs this minor fix to build on i386.
 
--- 
-dwmw2
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
+Index: linux-2.6.21-tolkml/include/asm-i386/hpet.h
+===================================================================
+--- linux-2.6.21-tolkml.orig/include/asm-i386/hpet.h	2007-05-07 14:32:37.000000000 -0700
++++ linux-2.6.21-tolkml/include/asm-i386/hpet.h	2007-05-07 14:43:54.000000000 -0700
+@@ -71,17 +71,6 @@
+ #ifdef CONFIG_X86_64
+ /* hpet_readl/writel defines */
+ #include <asm/vsyscall.h>
+-
+-#else
+-static inline unsigned long hpet_readl(unsigned long a)
+-{
+-	return readl(hpet_virt_address + a);
+-}
+-
+-static inline void hpet_writel(unsigned long d, unsigned long a)
+-{
+-	writel(d, hpet_virt_address + a);
+-}
+ #endif
+ 
+ #ifdef CONFIG_HPET_EMULATE_RTC
+Index: linux-2.6.21-tolkml/arch/i386/kernel/hpet.c
+===================================================================
+--- linux-2.6.21-tolkml.orig/arch/i386/kernel/hpet.c	2007-05-07 14:31:34.000000000 -0700
++++ linux-2.6.21-tolkml/arch/i386/kernel/hpet.c	2007-05-07 14:43:36.000000000 -0700
+@@ -47,6 +47,16 @@
+ 
+ static void __iomem * hpet_virt_address;
+ 
++static inline unsigned long hpet_readl(unsigned long a)
++{
++	return readl(hpet_virt_address + a);
++}
++
++static inline void hpet_writel(unsigned long d, unsigned long a)
++{
++	writel(d, hpet_virt_address + a);
++}
++
+ static inline void hpet_set_mapping(void)
+ {
+ 	hpet_virt_address = ioremap_nocache(hpet_address, HPET_MMAP_SIZE);
