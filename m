@@ -1,47 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934446AbXEGRCj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934465AbXEGRHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934446AbXEGRCj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 13:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934429AbXEGRCh
+	id S934465AbXEGRHx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 13:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934438AbXEGRHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 13:02:37 -0400
-Received: from ra.tuxdriver.com ([70.61.120.52]:4920 "EHLO ra.tuxdriver.com"
+	Mon, 7 May 2007 13:07:50 -0400
+Received: from scrub.xs4all.nl ([194.109.195.176]:2739 "EHLO scrub.xs4all.nl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934428AbXEGRCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 13:02:36 -0400
-Date: Mon, 7 May 2007 12:44:39 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Dan Williams <dcbw@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       linux-wireless@vger.kernel.org, marcelo@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Please pull 'revert-libertas' branch of wireless-2.6 (was Re: Please pull 'libertas' branch of wireless-2.6)
-Message-ID: <20070507164439.GE5125@tuxdriver.com>
-References: <20070227205649.GH5826@tuxdriver.com> <45E8CF5E.5090305@garzik.org> <20070303052140.GA31075@infradead.org> <20070507104117.GA31601@infradead.org> <1178539423.3032.24.camel@localhost.localdomain> <20070507141143.GB5125@tuxdriver.com> <463F443A.5000306@garzik.org> <1178552878.5760.4.camel@localhost.localdomain> <463F4A5E.6000501@garzik.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <463F4A5E.6000501@garzik.org>
-User-Agent: Mutt/1.4.2.2i
+	id S934415AbXEGRHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 13:07:49 -0400
+Date: Mon, 7 May 2007 19:07:43 +0200 (CEST)
+From: Roman Zippel <zippel@linux-m68k.org>
+X-X-Sender: roman@scrub.home
+To: Krzysztof Halasa <khc@pm.waw.pl>
+cc: Jeff Garzik <jeff@garzik.org>, Russell King <rmk@arm.linux.org.uk>,
+       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
+In-Reply-To: <m3lkg0a88y.fsf@maximus.localdomain>
+Message-ID: <Pine.LNX.4.64.0705071901020.1479@scrub.home>
+References: <m3abwhcy74.fsf@maximus.localdomain> <m3y7k1biov.fsf@maximus.localdomain>
+ <Pine.LNX.4.64.0705070343330.2733@scrub.home> <m3tzupc6wz.fsf@maximus.localdomain>
+ <Pine.LNX.4.64.0705071318150.1479@scrub.home> <m3r6psc0ee.fsf@maximus.localdomain>
+ <Pine.LNX.4.64.0705071509290.1479@scrub.home> <463F27CE.2040008@garzik.org>
+ <Pine.LNX.4.64.0705071538060.1479@scrub.home> <m3lkg0a88y.fsf@maximus.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 11:48:46AM -0400, Jeff Garzik wrote:
-> Dan Williams wrote:
-> >So, either we push it off until 2.6.23, or it gets merged as-is and we
-> >clean it up as we go along, which we'll certainly do.
-> 
-> Um, it was merged a while ago.
-> 
-> That's why John's email, and my own, are discussing the revert of the 
-> driver, not the merge of the driver.
-> 
-> The executive decision has been made.
+Hi,
 
-Yep, let's keep it -- and keep Dan and Marcelo on the hook... :-)
+On Mon, 7 May 2007, Krzysztof Halasa wrote:
 
-John
--- 
-John W. Linville
-linville@tuxdriver.com
+> Roman Zippel <zippel@linux-m68k.org> writes:
+> 
+> > HDLC doesn't really look like simple library code, what's up with all the 
+> > HDLC_* options?
+> 
+> Sub-modules.
+
+So it's not simple library code, or is it?
+
+> Anyway, what does the patch "screw" exactly?
+
+Normal dependencies, you basically have to manually make sure they are 
+correct (and it seems with your patch they aren't). Again, _please_ (with 
+sugar on top) don't use select unless you have a good reason for it.
+
+bye, Roman
