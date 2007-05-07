@@ -1,105 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbXEGGp0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754084AbXEGGtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbXEGGp0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 02:45:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754069AbXEGGp0
+	id S1754084AbXEGGtA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 02:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754090AbXEGGtA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 02:45:26 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52641 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754060AbXEGGpY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 02:45:24 -0400
-Date: Sun, 6 May 2007 23:43:56 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       John Stultz <johnstul@us.ibm.com>, Len Brown <lenb@kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [patch 2/3] ACPI: Keep TSC stable, when lapic_timer_c2_ok is
- set
-Message-Id: <20070506234356.da324185.akpm@linux-foundation.org>
-In-Reply-To: <20070430102851.987296000@linutronix.de>
-References: <20070430102837.748238000@linutronix.de>
-	<20070430102851.987296000@linutronix.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 7 May 2007 02:49:00 -0400
+Received: from holomorphy.com ([66.93.40.71]:37238 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754084AbXEGGtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 02:49:00 -0400
+Date: Sun, 6 May 2007 23:49:25 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: David Chinner <dgc@sgi.com>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@skynet.ie>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Badari Pulavarty <pbadari@gmail.com>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+Subject: Re: [00/17] Large Blocksize Support V3
+Message-ID: <20070507064925.GB19966@holomorphy.com>
+References: <20070427060921.GA77450368@melbourne.sgi.com> <20070427000403.6013d1fa.akpm@linux-foundation.org> <20070427080321.GG32602149@melbourne.sgi.com> <20070427014849.41f383f7.akpm@linux-foundation.org> <20070427164535.GH24852@thunk.org> <m1abwku30d.fsf@ebiederm.dsl.xmission.com> <20070507042925.GT32602149@melbourne.sgi.com> <m1tzupkzmw.fsf@ebiederm.dsl.xmission.com> <20070507052729.GV32602149@melbourne.sgi.com> <m17irlkubc.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m17irlkubc.fsf@ebiederm.dsl.xmission.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Apr 2007 10:43:33 -0000 Thomas Gleixner <tglx@linutronix.de> wrote:
+David Chinner <dgc@sgi.com> writes:
+>> Right - so how do we efficiently  manipulate data inside a large
+>> block that spans multiple discontigous pages if we don't vmap
+>> it?
 
-> The local apic timer stop in C2 resp. C3 states is coupled with the
-> stop of the TSC. When the local apic timer is marked stable in C2
-> on the kernel commandline, then keep the TSC marked stable in C2 as well.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> 
-> ---
->  drivers/acpi/processor_idle.c |   19 ++++++++-----------
->  1 file changed, 8 insertions(+), 11 deletions(-)
-> 
-> Index: linux-2.6/drivers/acpi/processor_idle.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/processor_idle.c
-> +++ linux-2.6/drivers/acpi/processor_idle.c
-> @@ -305,18 +305,23 @@ static void acpi_state_timer_broadcast(s
->  				       struct acpi_processor_cx *cx,
->  				       int broadcast)
->  {
-> -#ifdef CONFIG_GENERIC_CLOCKEVENTS
-> -
->  	int state = cx - pr->power.states;
->  
->  	if (state >= pr->power.timer_broadcast_on_state) {
-> +
-> +#ifdef CONFIG_GENERIC_CLOCKEVENTS
->  		unsigned long reason;
->  
->  		reason = broadcast ?  CLOCK_EVT_NOTIFY_BROADCAST_ENTER :
->  			CLOCK_EVT_NOTIFY_BROADCAST_EXIT;
->  		clockevents_notify(reason, &pr->id);
-> -	}
->  #endif
-> +
-> +#ifdef CONFIG_GENERIC_TIME
-> +		/* TSC halts in C2/3, so notify users */
-> +		mark_tsc_unstable();
-> +#endif
-> +	}
->  }
->  
->  #else
-> @@ -481,10 +486,6 @@ static void acpi_processor_idle(void)
->  		/* Get end time (ticks) */
->  		t2 = inl(acpi_gbl_FADT.xpm_timer_block.address);
->  
-> -#ifdef CONFIG_GENERIC_TIME
-> -		/* TSC halts in C2, so notify users */
-> -		mark_tsc_unstable();
-> -#endif
->  		/* Re-enable interrupts */
->  		local_irq_enable();
->  		current_thread_info()->status |= TS_POLLING;
-> @@ -523,10 +524,6 @@ static void acpi_processor_idle(void)
->  			acpi_set_register(ACPI_BITREG_ARB_DISABLE, 0);
->  		}
->  
-> -#ifdef CONFIG_GENERIC_TIME
-> -		/* TSC halts in C3, so notify users */
-> -		mark_tsc_unstable();
-> -#endif
->  		/* Re-enable interrupts */
->  		local_irq_enable();
->  		current_thread_info()->status |= TS_POLLING;
-> 
-> -- 
+On Mon, May 07, 2007 at 12:43:19AM -0600, Eric W. Biederman wrote:
+> You don't manipulate data except for copy_from_user, copy_to_user.
+> That is easy comparatively to deal with, and certainly doesn't
+> need vmap.
+> Meta-data may be trickier, but a lot of that depends on your
+> individual filesystem and how it organizes it's meta-data.
 
-I'm now up to the third or fourth time where I need to try to repair this
-patch against churn in Len's tree.  I'm not sure what I'm doing and that
-changelog is of little help to me.
+I wonder what happened to my pagearray patches.
 
-I think I'll drop it.  Please work it with Len.
 
+-- wli
