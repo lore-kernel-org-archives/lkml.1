@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933285AbXEGLpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933287AbXEGLqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933285AbXEGLpA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 07:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933305AbXEGLpA
+	id S933287AbXEGLqq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 07:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933318AbXEGLqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 07:45:00 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:58792 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933285AbXEGLo7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 07:44:59 -0400
-Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <200705051550.53436.rjw@sisk.pl>
-References: <200705041132.32227.rjw@sisk.pl>
-	 <200705051421.31067.rjw@sisk.pl> <1178368028.7408.93.camel@johannes.berg>
-	 <200705051550.53436.rjw@sisk.pl>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-otH3NKaaeqLXLiRucHc3"
-Date: Mon, 07 May 2007 13:46:43 +0200
-Message-Id: <1178538404.7261.16.camel@johannes.berg>
+	Mon, 7 May 2007 07:46:46 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:43560 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933287AbXEGLqo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 07:46:44 -0400
+Date: Mon, 7 May 2007 17:16:49 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
+Subject: Re: [PATCH 3/5] ext4: Extent overlap bugfix
+Message-ID: <20070507114649.GC7012@amitarora.in.ibm.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426181101.GC7209@amitarora.in.ibm.com> <20070503213002.eff696db.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070503213002.eff696db.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 03, 2007 at 09:30:02PM -0700, Andrew Morton wrote:
+> On Thu, 26 Apr 2007 23:41:01 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+> 
+> > +unsigned int ext4_ext_check_overlap(struct inode *inode,
+> > +					struct ext4_extent *newext,
+> > +					struct ext4_ext_path *path)
+> > +{
+> > +	unsigned long b1, b2;
+> > +	unsigned int depth, len1;
+> > +
+> > +	b1 = le32_to_cpu(newext->ee_block);
+> > +	len1 = le16_to_cpu(newext->ee_len);
+> > +	depth = ext_depth(inode);
+> > +	if (!path[depth].p_ext)
+> > +		goto out;
+> > +	b2 = le32_to_cpu(path[depth].p_ext->ee_block);
+> > +
+> > +	/* get the next allocated block if the extent in the path
+> > +	 * is before the requested block(s) */
+> > +	if (b2 < b1) {
+> > +		b2 = ext4_ext_next_allocated_block(path);
+> > +		if (b2 == EXT_MAX_BLOCK)
+> > +			goto out;
+> > +	}
+> > +
+> > +	if (b1 + len1 > b2) {
+> 
+> Are we sure that b1+len cannot wrap through zero here?
 
---=-otH3NKaaeqLXLiRucHc3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+No. Will add a check here for this. Thanks!
+ 
+> > +		newext->ee_len = cpu_to_le16(b2 - b1);
+> > +		return 1;
+> > +	}
 
-On Sat, 2007-05-05 at 15:50 +0200, Rafael J. Wysocki wrote:
 
-> @@ -60,6 +60,9 @@ void hibernation_set_ops(struct hibernat
->  	}
->  	mutex_lock(&pm_mutex);
->  	hibernation_ops =3D ops;
-> +	if (ops)
-> +		hibernation_mode =3D HIBERNATION_PLATFORM;
-
-	else if (hibernation_mode =3D=3D HIBERNATION_PLATFORM)
-		hibernation_mode =3D HIBERNATION_SHUTDOWN;
-
-> +
->  	mutex_unlock(&pm_mutex);
-
-johannes
-
---=-otH3NKaaeqLXLiRucHc3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGPxGj/ETPhpq3jKURAmgpAKCWrxilIOwgwIqO4dYNYvLiQB6Q2wCfXja+
-hzByLxRnkM0YnTXbb4Mvv+Y=
-=/yKc
------END PGP SIGNATURE-----
-
---=-otH3NKaaeqLXLiRucHc3--
-
+--
+Regards,
+Amit Arora
