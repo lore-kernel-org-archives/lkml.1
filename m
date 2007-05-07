@@ -1,110 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbXEGVLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966735AbXEGVNd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754819AbXEGVLr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 17:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXEGVLm
+	id S966735AbXEGVNd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 17:13:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbXEGVNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 17:11:42 -0400
-Received: from gw.goop.org ([64.81.55.164]:54327 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754344AbXEGVLk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 17:11:40 -0400
-Message-ID: <463F9608.40803@goop.org>
-Date: Mon, 07 May 2007 14:11:36 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [patch 25/29] xen: Add the Xen virtual network device driver.
-References: <20070504232051.411946839@goop.org> <20070504232121.492190579@goop.org> <20070505091624.GA8890@infradead.org>
-In-Reply-To: <20070505091624.GA8890@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 7 May 2007 17:13:30 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:26975 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754856AbXEGVN3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 17:13:29 -0400
+Subject: Re: Need help debugging RT-preempt patch
+From: Daniel Walker <dwalker@mvista.com>
+To: Tim Bird <tim.bird@am.sony.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       dirk.behme@googlemail.com, linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <463F93FB.1000908@am.sony.com>
+References: <463F7449.2020509@am.sony.com>
+	 <1178569719.3164.6.camel@imap.mvista.com>  <463F93FB.1000908@am.sony.com>
+Content-Type: text/plain
+Date: Mon, 07 May 2007 14:11:39 -0700
+Message-Id: <1178572299.3164.14.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> On Fri, May 04, 2007 at 04:21:16PM -0700, Jeremy Fitzhardinge wrote:
->   
->> +/*
->> + * Mutually-exclusive module options to select receive data path:
->> + *  rx_copy : Packets are copied by network backend into local memory
->> + *  rx_flip : Page containing packet data is transferred to our ownership
->> + * For fully-virtualised guests there is no option - copying must be used.
->> + * For paravirtualised guests, flipping is the default.
->> + */
->> +static enum {
->> +	RX_COPY = 0,
->> +	RX_FLIP = 1,
->> +} rx_mode = RX_FLIP;
->> +MODULE_PARM_DESC(rx_mode, "How to get packets from card: 0->copy, 1->flip");
->>     
->
-> There only seems to be a module description but no actual paramter for
-> this.  I wish people would have listened to me back then and made the
-> description part of the modular_param statement..
+On Mon, 2007-05-07 at 14:02 -0700, Tim Bird wrote:
+> Daniel Walker wrote:
+> > Are you sure you don't have HardIRQS in Threads enabled? Also are you
+> > sure the kernel boots without the rt patch applied.
+> 
+> Yes on both counts.  I double-checked the configs.  I'm using quilt
+> and the RT patch is at the end of my series, so it was easy to
+> pop the patch and try again (module .config fixups).
+> 
+> I may take a few more blind stabs at different configs before
+> I go diving into the networking code trying to trace something.
+> (or before starting to bisect the patch).  Bisecting the patch
+> will be a bit painful since it's currently an all-in-one.
 
-Is this correct?
+I'm not sure I'd get into "bisecting" one big patch. Especially if you
+new to the patches inner workings.. 
 
----
- drivers/net/xen-netfront.c |   32 ++++++++++++++++++++++++++++----
- 1 file changed, 28 insertions(+), 4 deletions(-)
+You can bisect by kernel version using the older patches but it's
+clearly limited,
 
-===================================================================
---- a/drivers/net/xen-netfront.c
-+++ b/drivers/net/xen-netfront.c
-@@ -62,16 +62,40 @@ struct netfront_cb {
- 
- /*
-  * Mutually-exclusive module options to select receive data path:
-- *  rx_copy : Packets are copied by network backend into local memory
-- *  rx_flip : Page containing packet data is transferred to our ownership
-+ *  copy : Packets are copied by network backend into local memory
-+ *  flip : Page containing packet data is transferred to our ownership
-  * For fully-virtualised guests there is no option - copying must be used.
-  * For paravirtualised guests, flipping is the default.
-  */
--static enum {
-+static enum rx_mode {
- 	RX_COPY = 0,
- 	RX_FLIP = 1,
- } rx_mode = RX_FLIP;
--MODULE_PARM_DESC(rx_mode, "How to get packets from card: 0->copy, 1->flip");
-+MODULE_PARM_DESC(rx_mode, "How to get packets from card: \"copy\" or \"flip\"");
-+
-+static int set_rx_mode(const char *val, struct kernel_param *kp)
-+{
-+	enum rx_mode *rxmp = kp->arg;
-+	int ret = 0;
-+
-+	if (strcmp(val, "copy") == 0)
-+		*rxmp = RX_COPY;
-+	else if (strcmp(val, "flip") == 0)
-+		*rxmp = RX_FLIP;
-+	else
-+		ret = -EINVAL;
-+
-+	return ret;
-+}
-+
-+static int get_rx_mode(char *buffer, struct kernel_param *kp)
-+{
-+	enum rx_mode *rxmp = kp->arg;
-+
-+	return sprintf(buffer, "%s", *rxmp == RX_COPY ? "copy" : "flip");
-+}
-+
-+module_param_call(rx_mode, set_rx_mode, get_rx_mode, &rx_mode, 0400);
- 
- #define RX_COPY_THRESHOLD 256
- 
+http://people.redhat.com/mingo/realtime-preempt/older/
+
+
+Daniel
 
