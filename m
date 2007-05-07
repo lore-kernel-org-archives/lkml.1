@@ -1,102 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966892AbXEGU6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966899AbXEGU7v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966892AbXEGU6u (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 16:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966880AbXEGU6r
+	id S966899AbXEGU7v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 16:59:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966630AbXEGU7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 16:58:47 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:33270 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966635AbXEGU6n (ORCPT
+	Mon, 7 May 2007 16:59:47 -0400
+Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:6510 "EHLO
+	outbound4-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966621AbXEGU7q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 16:58:43 -0400
-Date: Mon, 7 May 2007 13:58:25 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andreas Dilger <adilger@clusterfs.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
-Message-Id: <20070507135825.f8545a65.akpm@linux-foundation.org>
-In-Reply-To: <20070507113753.GA5439@schatzie.adilger.int>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
-	<20070330071417.GI355@devserv.devel.redhat.com>
-	<20070417125514.GA7574@amitarora.in.ibm.com>
-	<20070418130600.GW5967@schatzie.adilger.int>
-	<20070420135146.GA21352@amitarora.in.ibm.com>
-	<20070420145918.GY355@devserv.devel.redhat.com>
-	<20070424121632.GA10136@amitarora.in.ibm.com>
-	<20070426175056.GA25321@amitarora.in.ibm.com>
-	<20070426181332.GD7209@amitarora.in.ibm.com>
-	<20070503213133.d1559f52.akpm@linux-foundation.org>
-	<20070507113753.GA5439@schatzie.adilger.int>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 May 2007 16:59:46 -0400
+X-BigFish: VP
+X-FB-SS: 0
+Message-ID: <463F93FB.1000908@am.sony.com>
+Date: Mon, 07 May 2007 14:02:51 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 1.5.0.4 (X11/20060614)
+MIME-Version: 1.0
+To: Daniel Walker <dwalker@mvista.com>
+CC: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+       dirk.behme@googlemail.com, linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Need help debugging RT-preempt patch
+References: <463F7449.2020509@am.sony.com> <1178569719.3164.6.camel@imap.mvista.com>
+In-Reply-To: <1178569719.3164.6.camel@imap.mvista.com>
+X-Enigmail-Version: 0.94.0.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 07 May 2007 20:59:44.0143 (UTC) FILETIME=[A36571F0:01C790EA]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007 05:37:54 -0600
-Andreas Dilger <adilger@clusterfs.com> wrote:
+Daniel Walker wrote:
+> Are you sure you don't have HardIRQS in Threads enabled? Also are you
+> sure the kernel boots without the rt patch applied.
 
-> > > +	block = offset >> blkbits;
-> > > +	max_blocks = (EXT4_BLOCK_ALIGN(len + offset, blkbits) >> blkbits)
-> > > +			 - block;
-> > > +	mutex_lock(&EXT4_I(inode)->truncate_mutex);
-> > > +	credits = ext4_ext_calc_credits_for_insert(inode, NULL);
-> > > +	mutex_unlock(&EXT4_I(inode)->truncate_mutex);
-> > 
-> > Now I'm mystified.  Given that we're allocating an arbitrary amount of disk
-> > space, and that this disk space will require an arbitrary amount of
-> > metadata, how can we work out how much journal space we'll be needing
-> > without at least looking at `len'?
+Yes on both counts.  I double-checked the configs.  I'm using quilt
+and the RT patch is at the end of my series, so it was easy to
+pop the patch and try again (module .config fixups).
+
+I may take a few more blind stabs at different configs before
+I go diving into the networking code trying to trace something.
+(or before starting to bisect the patch).  Bisecting the patch
+will be a bit painful since it's currently an all-in-one.
+
 > 
-> Good question.
+> ARM is supported, but specific boards are hit or miss.. 
 > 
-> The uninitialized extent can cover up to 128MB with a single entry.
-> If @path isn't specified, then ext4_ext_calc_credits_for_insert()
-> function returns the maximum number of extents needed to insert a leaf,
-> including splitting all of the index blocks.  That would allow up to 43GB
-> (340 extents/block * 128MB) to be preallocated, but it still needs to take
-> the size of the preallocation into account (adding 3 blocks per 43GB - a
-> leaf block, a bitmap block and a group descriptor).
+> I've had OMAP working _in the past_ with this patch applied,
+> 
+> http://lkml.org/lkml/2006/12/10/59
+> 
+> There was also a patch released on one of the OMAP lists a while back
+> from Dirk Behme to get OMAP working on a mor recent rt release..
 
-I think the use of ext4_journal_extend() (as Amit has proposed) will help
-here, but it is not sufficient.
+OK.  This is REALLY helpful info.  I'll take a look.
 
-Because under some circumstances, a journal_extend() failure could mean
-that we fail to allocate all the required disk space.  If it is infrequent
-enough, that is acceptable when the caller is using fallocate() for
-performance reasons.
+Thanks very much!!
+ -- Tim
 
-But it is very much not acceptable if the caller is using fallocate() for
-space-reservation reasons.  If you used fallocate to reserve 1GB of disk
-and fallocate() "succeeded" and you later get ENOSPC then you'd have a
-right to get a bit upset.
-
-So I think the ext3/4 fallocate() implementation will need to be
-implemented as a loop: 
-
-	while (len) {
-		journal_start();
-		len -= do_fallocate(len, ...);
-		journal_stop();
-	}
-
-
-Now the interesting question is: what do we do if we get halfway through
-this loop and then run out of space?  We could leave the disk all filled up
-and then return failure to the caller, but that's pretty poor behaviour,
-IMO.
-
-
-
-Does the proposed implementation handle quotas correctly, btw?  Has that
-been tested?
-
-
-Final point: it's fairly disappointing that the present implementation is
-ext4-only, and extent-only.  I do think we should be aiming at an ext4
-bitmap-based implementation and an ext3 implementation.
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Electronics
+=============================
 
