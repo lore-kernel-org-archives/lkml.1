@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932114AbXEGK1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754317AbXEGKfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932114AbXEGK1q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 06:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754311AbXEGK1q
+	id S1754317AbXEGKfc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 06:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbXEGKfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 06:27:46 -0400
-Received: from khc.piap.pl ([195.187.100.11]:38360 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754291AbXEGK1p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 06:27:45 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Russell King <rmk@arm.linux.org.uk>, lkml <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: [PATCH 2a/3] Intel IXP4xx network drivers
-References: <m3abwhcy74.fsf@maximus.localdomain>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 07 May 2007 12:27:43 +0200
-In-Reply-To: <m3abwhcy74.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Mon, 07 May 2007 01:46:39 +0200")
-Message-ID: <m3fy69c4io.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 7 May 2007 06:35:32 -0400
+Received: from mail.gmx.net ([213.165.64.20]:42296 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754311AbXEGKfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 06:35:31 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/tGzNoRM7ti5sh7fN4k7WKn8xo7Xs+HTnl/Xo2Zx
+	+n8d0TP4X60x/I
+Subject: Re: [patch] CFS scheduler, -v9
+From: Mike Galbraith <efault@gmx.de>
+To: Daniel Phillips <phillips@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, buddabrod <buddabrod@gmail.com>,
+       Balbir Singh <balbir@in.ibm.com>
+In-Reply-To: <4d47a5d10705070302k3f081074k89f0122cee7ae2e@mail.gmail.com>
+References: <20070503140911.GA21916@elte.hu>
+	 <4d47a5d10705070302k3f081074k89f0122cee7ae2e@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 07 May 2007 12:35:23 +0200
+Message-Id: <1178534123.25291.10.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds "fuse" functions to help determine installed IXP4xx CPU
-components and to reset/disable/enable them (only NPE - network
-coprocessors - can be reset and reenabled).
+On Mon, 2007-05-07 at 03:02 -0700, Daniel Phillips wrote:
+> Hi Ingo,
+> 
+> I just thought I would mention this, because it is certainly on my
+> mind.  I can't help
+> wondering if other folks are also concerned about this.  The thing is,
+> why don't you
+> just send your patches to Con who got this whole ball rolling and did a bunch of
+> great work, proving beyond any reasonable doubt that he is capable of
+> maintaining
+> this subsystem, whatever algorithm is finally adopted?  Are you worried that Con
+> might steal your thunder?  That somehow the scheduler is yours alone?  That you
+> might be perceived as less of a genius if somebody else gets credit
+> for their good
+> work?  NIH?
+> 
+> My perception is that you barged in to take over just when Con got things moving
+> after the scheduler sat and rotted for several years.  If that is in
+> any way accurate,
+> then shame on you.
 
-Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
+Nice flame bait.  There's a hell of a lot I could say about this, but
+I'll just leave it.
 
-diff --git a/include/asm-arm/arch-ixp4xx/ixp4xx-regs.h b/include/asm-arm/arch-ixp4xx/ixp4xx-regs.h
-index 5d949d7..5652c41 100644
---- a/include/asm-arm/arch-ixp4xx/ixp4xx-regs.h
-+++ b/include/asm-arm/arch-ixp4xx/ixp4xx-regs.h
-@@ -607,4 +607,55 @@
- 
- #define DCMD_LENGTH	0x01fff		/* length mask (max = 8K - 1) */
- 
-+/* Fuse Bits of IXP_EXP_CFG2 */
-+#define IXP4XX_FUSE_RCOMP		(1 << 0)
-+#define IXP4XX_FUSE_USB_DEVICE		(1 << 1)
-+#define IXP4XX_FUSE_HASH		(1 << 2)
-+#define IXP4XX_FUSE_AES			(1 << 3)
-+#define IXP4XX_FUSE_DES			(1 << 4)
-+#define IXP4XX_FUSE_HDLC		(1 << 5)
-+#define IXP4XX_FUSE_AAL			(1 << 6)
-+#define IXP4XX_FUSE_HSS			(1 << 7)
-+#define IXP4XX_FUSE_UTOPIA		(1 << 8)
-+#define IXP4XX_FUSE_NPEB_ETH0		(1 << 9)
-+#define IXP4XX_FUSE_NPEC_ETH		(1 << 10)
-+#define IXP4XX_FUSE_RESET_NPEA		(1 << 11)
-+#define IXP4XX_FUSE_RESET_NPEB		(1 << 12)
-+#define IXP4XX_FUSE_RESET_NPEC		(1 << 13)
-+#define IXP4XX_FUSE_PCI			(1 << 14)
-+#define IXP4XX_FUSE_ECC_TIMESYNC	(1 << 15)
-+#define IXP4XX_FUSE_UTOPIA_PHY_LIMIT	(3 << 16)
-+#define IXP4XX_FUSE_USB_HOST		(1 << 18)
-+#define IXP4XX_FUSE_NPEA_ETH		(1 << 19)
-+#define IXP4XX_FUSE_NPEB_ETH_1_TO_3	(1 << 20)
-+#define IXP4XX_FUSE_RSA			(1 << 21)
-+#define IXP4XX_FUSE_XSCALE_MAX_FREQ	(3 << 22)
-+#define IXP4XX_FUSE_RESERVED		(0xFF << 24)
-+
-+#define IXP4XX_FUSE_IXP46X_ONLY (IXP4XX_FUSE_ECC_TIMESYNC |		\
-+				 IXP4XX_FUSE_USB_HOST |			\
-+				 IXP4XX_FUSE_NPEA_ETH |			\
-+				 IXP4XX_FUSE_NPEB_ETH_1_TO_3 |		\
-+				 IXP4XX_FUSE_RSA |			\
-+				 IXP4XX_FUSE_XSCALE_MAX_FREQ)
-+
-+#ifndef __ASSEMBLY__
-+
-+static inline u32 ixp4xx_read_fuses(void)
-+{
-+	unsigned int fuses = ~*IXP4XX_EXP_CFG2;
-+	fuses &= ~IXP4XX_FUSE_RESERVED;
-+	if (!cpu_is_ixp46x())
-+		fuses &= ~IXP4XX_FUSE_IXP46X_ONLY;
-+
-+	return fuses;
-+}
-+
-+static inline void ixp4xx_write_fuses(u32 value)
-+{
-+	*IXP4XX_EXP_CFG2 = ~value;
-+}
-+
-+#endif /* __ASSEMBLY__ */
-+
- #endif
+	-Mike
+
