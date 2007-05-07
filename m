@@ -1,274 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754773AbXEGTtK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754795AbXEGTtm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754773AbXEGTtK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 15:49:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbXEGTtH
+	id S1754795AbXEGTtm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:49:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXEGTth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 15:49:07 -0400
-Received: from holomorphy.com ([66.93.40.71]:39376 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753537AbXEGTtF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 15:49:05 -0400
-Date: Mon, 7 May 2007 12:49:48 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Andrea Righi <righiandr@users.sourceforge.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
-Subject: Re: [RFC][PATCH] VM: per-user overcommit policy
-Message-ID: <20070507194948.GG19966@holomorphy.com>
-References: <463F764E.5050009@users.sourceforge.net> <20070507191658.GY31925@holomorphy.com>
-MIME-Version: 1.0
+	Mon, 7 May 2007 15:49:37 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:57564 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754794AbXEGTtg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 15:49:36 -0400
+Date: Mon, 7 May 2007 11:51:44 -0700
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Frank van Maarseveen <frankvm@frankvm.com>, linux-kernel@vger.kernel.org,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: JBD: ext2online wants too many credits (744 > 256)
+Message-ID: <20070507185144.GC6031@schatzie.adilger.int>
+Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
+	Frank van Maarseveen <frankvm@frankvm.com>,
+	linux-kernel@vger.kernel.org,
+	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+References: <20070506222626.GA25632@janus> <20070506214014.8b7451ba.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070507191658.GY31925@holomorphy.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070506214014.8b7451ba.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 12:16:58PM -0700, William Lee Irwin III wrote:
-> The following stanza occurs often:
-> +       if (!vm_acct_get_config(&v, current->uid)) {
-> +               overcommit_memory = v.overcommit_memory;
-> +               overcommit_ratio = v.overcommit_ratio;
-> +       } else {
-> +               overcommit_memory = sysctl_overcommit_memory;
-> +               overcommit_ratio = sysctl_overcommit_ratio;
-> +       }
+On May 06, 2007  21:40 -0700, Andrew Morton wrote:
+> On Mon, 7 May 2007 00:26:26 +0200 Frank van Maarseveen <frankvm@frankvm.com> wrote:
 > 
-> suggesting that vm_acct_get_config() isn't the proper abstraction.
-> Instead of
-> 	int vm_acct_get_config(struct vm_acct_values *, uid_t);
-> you could just have
-> 	int vm_acct_get_config(struct vm_acct_values *);
-> which conditionally uses current->uid, and then unconditionally use
-> v.overcommit_memory and v.overcommit_ratio vs. sysctl_overcommit_memory
-> and sysctl_overcommit_ratio in the sequel.
+> > 2.6.20.6, FC4:
+> > 
+> > I created a 91248k ext3 fs with 4k blocksize:
+> > 
+> > Next, I tried to resize it to about 3G using ext2online while mounted:
+> > 
+> > At that time the kernel said:
+> > 
+> > |JBD: ext2online wants too many credits (744 > 256)
+> > 
+> > What is the limitation I should be aware of? Has it something to do with
+> > the journal log size?
 
-Something like this (untested/uncompiled) may do.
+Yes, for very small filesystems the default journal size is only 4MB, and
+the maximum transaction size is 1MB (256 blocks).
 
+If the filesystem was 128MB or larger in the initial mke2fs then the
+journal would be 16MB and the resize would get up to 1024 blocks for
+the transaction.
 
-Index: righi/include/linux/mman.h
-===================================================================
---- righi.orig/include/linux/mman.h	2007-05-07 12:36:05.897386369 -0700
-+++ righi/include/linux/mman.h	2007-05-07 12:42:29.803263919 -0700
-@@ -18,14 +18,13 @@
- extern int sysctl_overcommit_memory;
- extern int sysctl_overcommit_ratio;
- extern atomic_t vm_committed_space;
--#ifdef CONFIG_VM_ACCT_USER
-+
- struct vm_acct_values
- {
- 	int overcommit_memory;
- 	int overcommit_ratio;
- };
--extern int vm_acct_get_config(struct vm_acct_values *v, uid_t uid);
--#endif
-+void vm_acct_get_config(struct vm_acct_values *v);
- 
- #ifdef CONFIG_SMP
- extern void vm_acct_memory(long pages);
-Index: righi/mm/swap.c
-===================================================================
---- righi.orig/mm/swap.c	2007-05-07 12:37:13.965265337 -0700
-+++ righi/mm/swap.c	2007-05-07 12:42:14.914415451 -0700
-@@ -482,10 +482,11 @@
- /*
-  * Get user VM configuration from the hash list.
-  */
--int vm_acct_get_config(struct vm_acct_values *v, uid_t uid)
-+void vm_acct_get_config(struct vm_acct_values *v)
- {
- 	struct hlist_node *elem;
- 	vm_acct_hash_t *p;
-+	uid_t uid = current->uid;
- 
- 	spin_lock_irq(&vm_acct_lock);
- 	hlist_for_each_entry(p, elem, &vm_acct_hash[vm_acct_hashfn(uid)],
-@@ -494,12 +495,12 @@
- 			v->overcommit_memory = p->val.overcommit_memory;
- 			v->overcommit_ratio = p->val.overcommit_ratio;
- 			spin_unlock_irq(&vm_acct_lock);
--			return 0;
-+			return;
- 		}
- 	}
- 	spin_unlock_irq(&vm_acct_lock);
--
--	return -ENOENT;
-+	v->overcommit_memory = sysctl_overcommit_memory;
-+	v->overcommit_ratio = sysctl_overcommit_ratio;
- }
- 
- /*
-@@ -646,8 +647,13 @@
- 	return 0;
- }
- __initcall(init_vm_acct);
--
--#endif /* CONFIG_VM_ACCT_USER */
-+#else /* !CONFIG_VM_ACCT_USER */
-+void vm_acct_get_config(struct vm_acct_values *v)
-+{
-+	v->overcommit_memory = sysctl_overcommit_memory;
-+	v->overcommit_ratio = sysctl_overcommit_ratio;
-+}
-+#endif /* !CONFIG_VM_ACCT_USER */
- 
- #ifdef CONFIG_SMP
- /*
-Index: righi/ipc/shm.c
-===================================================================
---- righi.orig/ipc/shm.c	2007-05-07 12:40:35.576754521 -0700
-+++ righi/ipc/shm.c	2007-05-07 12:43:32.714849046 -0700
-@@ -370,24 +370,15 @@
- 		shp->mlock_user = current->user;
- 	} else {
- 		int acctflag = VM_ACCOUNT;
--#ifdef CONFIG_VM_ACCT_USER
--		int overcommit_memory;
- 		struct vm_acct_values v;
- 
--		if (!vm_acct_get_config(&v, current->uid)) {
--			overcommit_memory = v.overcommit_memory;
--		} else {
--			overcommit_memory = sysctl_overcommit_memory;
--		}
--#else
--#define overcommit_memory sysctl_overcommit_memory
--#endif
-+		vm_acct_get_config(&v);
- 		/*
- 		 * Do not allow no accounting for OVERCOMMIT_NEVER, even
- 	 	 * if it's asked for.
- 		 */
- 		if  ((shmflg & SHM_NORESERVE) &&
--				overcommit_memory != OVERCOMMIT_NEVER)
-+				v.overcommit_memory != OVERCOMMIT_NEVER)
- 			acctflag = 0;
- 		sprintf (name, "SYSV%08x", key);
- 		file = shmem_file_setup(name, size, acctflag);
-Index: righi/mm/mmap.c
-===================================================================
---- righi.orig/mm/mmap.c	2007-05-07 12:43:48.143728287 -0700
-+++ righi/mm/mmap.c	2007-05-07 12:46:02.775400509 -0700
-@@ -96,30 +96,18 @@
- int __vm_enough_memory(long pages, int cap_sys_admin)
- {
- 	unsigned long free, allowed;
--#ifdef CONFIG_VM_ACCT_USER
--	int overcommit_memory, overcommit_ratio;
- 	struct vm_acct_values v;
- 
--	if (!vm_acct_get_config(&v, current->uid)) {
--		overcommit_memory = v.overcommit_memory;
--		overcommit_ratio = v.overcommit_ratio;
--	} else {
--		overcommit_memory = sysctl_overcommit_memory;
--		overcommit_ratio = sysctl_overcommit_ratio;
--	}
--#else
--#define overcommit_memory sysctl_overcommit_memory
--#define overcommit_ratio sysctl_overcommit_ratio
--#endif
-+	vm_acct_get_config(&v);
- 	vm_acct_memory(pages);
- 
- 	/*
- 	 * Sometimes we want to use more memory than we have
- 	 */
--	if (overcommit_memory == OVERCOMMIT_ALWAYS)
-+	if (v.overcommit_memory == OVERCOMMIT_ALWAYS)
- 		return 0;
- 
--	if (overcommit_memory == OVERCOMMIT_GUESS) {
-+	if (v.overcommit_memory == OVERCOMMIT_GUESS) {
- 		unsigned long n;
- 
- 		free = global_page_state(NR_FILE_PAGES);
-@@ -170,7 +158,7 @@
- 	}
- 
- 	allowed = (totalram_pages - hugetlb_total_pages())
--	       	* overcommit_ratio / 100;
-+	       	* v.overcommit_ratio / 100;
- 	/*
- 	 * Leave the last 3% for root
- 	 */
-@@ -916,10 +904,7 @@
- 	struct rb_node ** rb_link, * rb_parent;
- 	int accountable = 1;
- 	unsigned long charged = 0, reqprot = prot;
--#ifdef CONFIG_VM_ACCT_USER
--	int overcommit_memory;
- 	struct vm_acct_values v;
--#endif
- 
- 	/*
- 	 * Does the application expect PROT_READ to imply PROT_EXEC?
-@@ -1059,15 +1044,9 @@
- 	if (!may_expand_vm(mm, len >> PAGE_SHIFT))
- 		return -ENOMEM;
- 
--#ifdef CONFIG_VM_ACCT_USER
--	if (!vm_acct_get_config(&v, current->uid)) {
--		overcommit_memory = v.overcommit_memory;
--	} else {
--		overcommit_memory = sysctl_overcommit_memory;
--	}
--#endif
-+	vm_acct_get_config(&v);
- 	if (accountable && (!(flags & MAP_NORESERVE) ||
--			    overcommit_memory == OVERCOMMIT_NEVER)) {
-+			    v.overcommit_memory == OVERCOMMIT_NEVER)) {
- 		if (vm_flags & VM_SHARED) {
- 			/* Check memory availability in shmem_file_setup? */
- 			vm_flags |= VM_ACCOUNT;
-Index: righi/mm/nommu.c
-===================================================================
---- righi.orig/mm/nommu.c	2007-05-07 12:46:09.667793284 -0700
-+++ righi/mm/nommu.c	2007-05-07 12:46:52.490233596 -0700
-@@ -1240,31 +1240,18 @@
- int __vm_enough_memory(long pages, int cap_sys_admin)
- {
- 	unsigned long free, allowed;
--#ifdef CONFIG_VM_ACCT_USER
--	int overcommit_memory, overcommit_ratio;
- 	struct vm_acct_values v;
- 
--	if (!vm_acct_get_config(&v, current->uid)) {
--		overcommit_memory = v.overcommit_memory;
--		overcommit_ratio = v.overcommit_ratio;
--	} else {
--		overcommit_memory = sysctl_overcommit_memory;
--		overcommit_ratio = sysctl_overcommit_ratio;
--	}
--#else
--#define overcommit_memory sysctl_overcommit_memory
--#define overcommit_ratio sysctl_overcommit_ratio
--#endif
--
-+	vm_acct_get_config(&v);
- 	vm_acct_memory(pages);
- 
- 	/*
- 	 * Sometimes we want to use more memory than we have
- 	 */
--	if (overcommit_memory == OVERCOMMIT_ALWAYS)
-+	if (v.overcommit_memory == OVERCOMMIT_ALWAYS)
- 		return 0;
- 
--	if (overcommit_memory == OVERCOMMIT_GUESS) {
-+	if (v.overcommit_memory == OVERCOMMIT_GUESS) {
- 		unsigned long n;
- 
- 		free = global_page_state(NR_FILE_PAGES);
-@@ -1314,7 +1301,7 @@
- 		goto error;
- 	}
- 
--	allowed = totalram_pages * overcommit_ratio / 100;
-+	allowed = totalram_pages * v.overcommit_ratio / 100;
- 	/*
- 	 * Leave the last 3% for root
- 	 */
+I'm not sure what the right solution is for this.  If you know you will
+be resizing the fs you could increase the initial journal size at mke2fs
+time (-J size=16).  Alternately, it is possible resize to an intermediate
+size and then delete and recreate the journal via tune2fs (which would
+be the larger size by default) but that can only be done offline.  
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
