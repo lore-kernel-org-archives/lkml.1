@@ -1,84 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967153AbXEGWj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967164AbXEGWkK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967153AbXEGWj5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 18:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967147AbXEGWjx
+	id S967164AbXEGWkK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 18:40:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967157AbXEGWkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 18:39:53 -0400
-Received: from wx-out-0506.google.com ([66.249.82.234]:31802 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967089AbXEGWjo (ORCPT
+	Mon, 7 May 2007 18:40:06 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:60254 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967154AbXEGWj7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 18:39:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Wu3xTecvN0UJjDQaaEymASWXnexNDFSGefCVDNTrGXe5NFPisBLcVbfK8KHVaTLG819U4BWdz+nddJYpRiPg5j+epoKnL79UcD4dokOgsFopDIfAFZ/t+RRTedKkfJO/Nb/xUbZS0OdnRSA1v68Yopc3hRfdemP8dgcAeu+KO8Y=
-Message-ID: <a781481a0705071539o75b256a4p91228a4f8c4a63a7@mail.gmail.com>
-Date: Tue, 8 May 2007 04:09:41 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
-Cc: "Jeff Garzik" <jeff@garzik.org>, "Roman Zippel" <zippel@linux-m68k.org>,
-       "Krzysztof Halasa" <khc@pm.waw.pl>,
-       "Russell King" <rmk@arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <20070507135052.cc7e74ca.randy.dunlap@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 7 May 2007 18:39:59 -0400
+Subject: Re: [PATCH 1/3] kbuild: complain about missing system calls.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Tony Luck <tony.luck@intel.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Kees Cook <kees@outflux.net>, Randy Dunlap <randy.dunlap@oracle.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <12c511ca0705071529w38f71b09je0d9b460c7bc3025@mail.gmail.com>
+References: <20070319205623.299d0378.akpm@linux-foundation.org>
+	 <20070320103151.f65c81b6.randy.dunlap@oracle.com>
+	 <20070320192016.GC22797@outflux.net>
+	 <20070320214714.0e584cd4.akpm@linux-foundation.org>
+	 <20070321221905.GA22623@uranus.ravnborg.org>
+	 <20070321222236.GB22623@uranus.ravnborg.org>
+	 <12c511ca0705071529w38f71b09je0d9b460c7bc3025@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 07 May 2007 23:39:35 +0100
+Message-Id: <1178577575.11851.242.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <m3abwhcy74.fsf@maximus.localdomain>
-	 <m3r6psc0ee.fsf@maximus.localdomain>
-	 <Pine.LNX.4.64.0705071509290.1479@scrub.home>
-	 <463F27CE.2040008@garzik.org>
-	 <Pine.LNX.4.64.0705071538060.1479@scrub.home>
-	 <m3lkg0a88y.fsf@maximus.localdomain>
-	 <Pine.LNX.4.64.0705071901020.1479@scrub.home>
-	 <a781481a0705071115v5bce9382q166b9c0e0c52c6ef@mail.gmail.com>
-	 <463F8CB4.3040603@garzik.org>
-	 <20070507135052.cc7e74ca.randy.dunlap@oracle.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/8/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Mon, 07 May 2007 16:31:48 -0400 Jeff Garzik wrote:
->
-> > Satyam Sharma wrote:
-> > > Yes, mixing select and depends is a recipe for build disasters. Call
-> > > me a rabid fanatic, but I would in fact go as far as to say that this
-> > > whole "select" thing in the Kconfig process is one big BUG, and not a
-> > > feature. People are lazy by nature and would rather just "select" a
-> > > dependency for their config option than burden users with several
-> > > "depends".
-> >
-> > Tough, the kernel community has voted against you.
->
-> Andrew (usually) implores people not to use "select" and I agree
-> with him.
->
-> > It makes far more sense to include a driver during kernel configuration,
-> > and have that driver pull in its libraries via 'select'.  The lame
-> > alternative requires developers to know which libraries they need BEFORE
-> > picking their drivers, which is backwards and requires legwork on the
-> > part of the kernel developer.
->
-> Developers?  If you had said "users," I might agree, but IMO it's
-> OK (or even Good) for developers to know what libraries their code
-> uses/requires.  Yes, that's a good thing.
+On Mon, 2007-05-07 at 15:29 -0700, Tony Luck wrote:
+> On 3/21/07, Sam Ravnborg <sam@ravnborg.org> wrote:
+> > Most system calls seem to get added to i386 first. This patch
+> > automatically generates a warning for any new system call which is
+> > implemented on i386 but not the architecture currently being compiled.
+> 
+> This is now upstream, and so I see a bunch of warnings for every ia64
+> build.  Some of them are real, I need to add some syscalls, but there
+> are a few bogus ones because ia64 chose different names (e.g. we have
+> a sys_clone() that glibc uses to implement fork() and vfork()).
+> 
+> Just checking that the right way for me to shut checksyscalls.sh up is
+> to add:
+> 
+> #define __IGNORE_fork
+> #define __IGNORE_vfork
+> 
+> etc. to include/asm-ia64/unistd.h for each of the bogus ones.  Or is there
+> some other preferred mechanism?
 
-You're absolutely right, but to give Jeff the benefit of the doubt I'm
-sure he _meant_ "users" there although he said "developers". Stating
-the obvious, the developer _has_ to know what stuff his code uses
-anyway, otherwise what does he "select"s or "depends" his config
-option on.
+You could add them to scripts/checksyscalls.sh itself -- I think it's
+fairly unlikely that those are syscalls which a new arch port is going
+to 'forget' :)
 
-As for users, we _can_ avoid pitfalls by building a complete
-dependency tree and just selecting _everything_ that we require for a
-particular config option to be selected, but some users could
-conceivably prefer only being _told_ about what else they need to
-successfully pick a config option (than everything just getting in
-behind their backs). Actually (correct me if I'm wrong), this is not
-presently possible: an option is not visible unless dependencies are
-already picked. Just a suggestion, though.
+-- 
+dwmw2
+
