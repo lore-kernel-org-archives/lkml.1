@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933771AbXEGNJO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933788AbXEGNMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933771AbXEGNJO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 09:09:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933780AbXEGNJN
+	id S933788AbXEGNMm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 09:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933780AbXEGNMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 09:09:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:44075 "EHLO mx1.redhat.com"
+	Mon, 7 May 2007 09:12:42 -0400
+Received: from pat.uio.no ([129.240.10.15]:59378 "EHLO pat.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933771AbXEGNJL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 09:09:11 -0400
-Message-ID: <463F24DB.5040406@redhat.com>
-Date: Mon, 07 May 2007 06:08:43 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Jakub Jelinek <jakub@redhat.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, suparna@in.ibm.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-References: <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070503212955.b1b6443c.akpm@linux-foundation.org> <20070504060731.GJ32602149@melbourne.sgi.com> <20070503232815.2f62a75e.akpm@linux-foundation.org> <20070504065626.GW355@devserv.devel.redhat.com>
-In-Reply-To: <20070504065626.GW355@devserv.devel.redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	id S933775AbXEGNMl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 09:12:41 -0400
+Subject: Re: [-mm patch] fix fs/nfs/nfsroot.c compile error
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Adrian Bunk <bunk@stusta.de>
+Cc: David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, davem@davemloft.net,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <20070507105607.GB4226@stusta.de>
+References: <20070505164422.GD8975@stusta.de>
+	 <20070505014955.8f3990b5.akpm@linux-foundation.org>
+	 <15958.1178534871@redhat.com>  <20070507105607.GB4226@stusta.de>
+Content-Type: text/plain
+Date: Mon, 07 May 2007 09:12:23 -0400
+Message-Id: <1178543543.6158.7.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=12.0, autolearn=disabled, AWL=-0.225)
+X-UiO-Scanned: 04177DA079D58646E025AD990A6C1BB038405DF0
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 524 total 1557755 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jakub Jelinek wrote:
-> is what glibc does ATM.  Seems we violate the case where len == 0, as
-> EINVAL in that case is "shall fail".  But reading the standard to imply
-> negative len is ok is too much guessing, there is no word what it means
-> when len is negative and
-> "required storage for regular file data starting at offset and continuing for len bytes"
-> doesn't make sense for negative size.  
+On Mon, 2007-05-07 at 12:56 +0200, Adrian Bunk wrote:
+> On Mon, May 07, 2007 at 11:47:51AM +0100, David Howells wrote:
+> > Adrian Bunk <bunk@stusta.de> wrote:
+> > 
+> > > match_table_t was made "const" and gcc doesn't like "const __initdata":
+> > 
+> > Hmmm...  My gcc seems quite happy with it.  What gcc are you using?
+> 
+> 4.1
+> 
+> > Shouldn't __initdata override const?
+> > 
+> > > BTW: Why is this change to include/linux/parser.h in the net tree?
+> > 
+> > Because DaveM picked it up as part of my AFS patches, I guess.
+> 
+> It might make sense, but it doesn't seem to be in any way AFS specific.
 
-This wording has already been cleaned up.  The current draft for the 
-next revision reads:
+It makes little or no sense to be forcing attributes like 'const' in a
+typedef. That is basically stating that it is inconceivable to use
+anything else. Clearly not the case here...
 
+Trond
 
-[EINVAL] The len argument is less than or equal to zero, or the offset
-  argument is less than zero, or the underlying file system does not
-  support this operation.
-
-
-I still don't like it since len==0 shouldn't create an error (it's 
-inconsistent) but len<0 is already outlawed.
-
--- 
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
