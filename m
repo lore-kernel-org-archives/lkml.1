@@ -1,117 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967264AbXEGXdT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967274AbXEGXdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967264AbXEGXdT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 19:33:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967249AbXEGXdP
+	id S967274AbXEGXdz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 19:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967267AbXEGXdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 19:33:15 -0400
-Received: from mail4.sea5.speakeasy.net ([69.17.117.6]:48318 "EHLO
-	mail4.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967244AbXEGXdO (ORCPT
+	Mon, 7 May 2007 19:33:51 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:49745 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S967268AbXEGXdt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 19:33:14 -0400
-Date: Mon, 7 May 2007 16:33:12 -0700 (PDT)
-From: Trent Piepho <xyzzy@speakeasy.org>
-X-X-Sender: xyzzy@shell2.speakeasy.net
-To: Manu Abraham <abraham.manu@gmail.com>
-cc: Markus Rechberger <mrechberger@gmail.com>,
-       Linux DVB <linux-dvb@linuxtv.org>,
-       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: Re: [linux-dvb] DST/BT878 module customization (.. was: Critical
- points about ...)
-In-Reply-To: <46389278.1070208@gmail.com>
-Message-ID: <Pine.LNX.4.58.0705071526170.13823@shell2.speakeasy.net>
-References: <d9def9db0704301417i214a17a8i1fdcbc69f837669@mail.gmail.com>
- <4636E0E2.5020601@simon.arlott.org.uk> <Pine.LNX.4.58.0705011500570.309@shell2.speakeasy.net>
- <46389278.1070208@gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 7 May 2007 19:33:49 -0400
+Date: Mon, 7 May 2007 16:33:35 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sleeping function called from invalid context at
+ block/cfq-iosched.c (Was: Re: 2.6.21-mm1)
+Message-Id: <20070507163335.f5f5ea6e.akpm@linux-foundation.org>
+In-Reply-To: <463FB697.6060902@simon.arlott.org.uk>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+	<463E3C50.9080207@simon.arlott.org.uk>
+	<20070506135403.a6785f7d.akpm@linux-foundation.org>
+	<463FAF1C.8060500@simon.arlott.org.uk>
+	<20070507162349.0790706f.akpm@linux-foundation.org>
+	<463FB697.6060902@simon.arlott.org.uk>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2 May 2007, Manu Abraham wrote:
-> > I've been aware of the problem with dst not fully using the dvb customization
-> > systems(*) for a long time.  It came up when dvb_attach() et al were first
-> > being integrated, well before any rejected patches or strongly worded emails
-> > or whatever from certain people that I'm aware of.
-> >
->
-> Well, your understanding of the device is quite limited and hence your
-> comments and patches.
+On Tue, 08 May 2007 00:30:31 +0100
+Simon Arlott <simon@fire.lp0.eu> wrote:
 
-Manu, have you actually looked at the patch?  It seems like you are just
-rejecting everything that has anything to do with dst out of hand.
+> On 08/05/07 00:23, Andrew Morton wrote:
+> > On Mon, 07 May 2007 23:58:36 +0100
+> > Simon Arlott <simon@fire.lp0.eu> wrote:
+> > 
+> >> I've just got this under mainline too now (0ec54aa8af5e6faa346aa55a1ad15ee6c25bb42d 2007-05-05 22:08:06):
+> >>
+> >> [84567.084000] BUG: scheduling while atomic: pdflush/0xeff84acf/186
+> >> [84567.084000] INFO: lockdep is turned off.
+> >> [84567.084000] do_IRQ: stack overflow: 440
+> >> [84567.084000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
+> >> [84567.084000]  [<b0104f62>] show_trace+0x12/0x20
+> >> [84567.084000]  [<b0105075>] dump_stack+0x15/0x20
+> >> [84567.084000]  [<b01069a8>] do_IRQ+0xd8/0xe0
+> >> [84567.084000]  [<b0104bd6>] common_interrupt+0x2e/0x34
+> >> [84567.084000]  [<b0120a28>] printk+0x18/0x20
+> >> [84567.084000]  [<b0140b33>] debug_show_held_locks+0x23/0x30
+> >> [84567.084000]  [<b04e7fea>] schedule+0x52a/0x680
+> >> [84567.084000]  [<b04e8a0a>] schedule_timeout+0x8a/0x90
+> >> [84567.084000]  [<b026c61e>] xlog_state_sync+0x21e/0x260
+> >> [84567.084000]  [<b0269274>] _xfs_log_force+0x44/0x70
+> >> [84567.084000]  [<b022dd22>] xfs_alloc_search_busy+0xd2/0xe0
+> >> [84567.084000]  [<b022d1e6>] xfs_alloc_get_freelist+0xe6/0x100
+> >> [84567.084000]  [<b022fb7f>] xfs_alloc_split+0x1f/0x4c0
+> >> [84567.084000]  [<b022ec3d>] xfs_alloc_insrec+0x35d/0x3b0
+> >> [84567.084000]  [<b02304f9>] xfs_alloc_insert+0x59/0xd0
+> >> [84567.084000]  [<b022c847>] xfs_free_ag_extent+0x297/0x640
+> >> [84567.084000]  [<b022ce11>] xfs_alloc_fix_freelist+0x1d1/0x4c0
+> >> [84567.084000]  [<b022d73b>] xfs_alloc_vextent+0x1eb/0x4b0
+> >> [84567.084000]  [<b023d4bb>] xfs_bmap_btalloc+0x3bb/0x8f0
+> >> [84567.084000]  [<b023da11>] xfs_bmap_alloc+0x21/0x40
+> >> [84567.084000]  [<b02411bf>] xfs_bmapi+0xdbf/0x1450
+> >> [84567.084000]  [<b0266b4a>] xfs_iomap_write_allocate+0x2ba/0x520
+> >> [84567.084000]  [<b026587b>] xfs_iomap+0x45b/0x470
+> >> [84567.084000]  [<b028d85c>] xfs_bmap+0x2c/0x40
+> >> [84567.084000]  [<b0284a0c>] xfs_map_blocks+0x3c/0x80
+> >> [84567.084000]  [<b0285953>] xfs_page_state_convert+0x2f3/0x670
+> >> [84567.084000]  [<b0285d2a>] xfs_vm_writepage+0x5a/0xf0
+> >> [84567.084000]  [<b01539a6>] generic_writepages+0x226/0x360
+> >> [84567.084000]  [<b0285de4>] xfs_vm_writepages+0x24/0x60
+> >> [84567.084000]  [<b0153b0c>] do_writepages+0x2c/0x50
+> >> [84567.084000]  [<b01887d9>] __sync_single_inode+0x59/0x1f0
+> >> [84567.084000]  [<b01889b4>] __writeback_single_inode+0x44/0x1d0
+> >> [84567.084000]  [<b0188d09>] sync_sb_inodes+0x1c9/0x2e0
+> >> [84567.084000]  [<b0188eee>] writeback_inodes+0xce/0xe0
+> >> [84567.084000]  [<b01535c3>] wb_kupdate+0x73/0xf0
+> >> [84567.084000]  [<b015419e>] __pdflush+0xce/0x1a0
+> >> [84567.084000]  [<b0154295>] pdflush+0x25/0x30
+> >> [84567.084000]  [<b01342b4>] kthread+0x94/0xd0
+> >> [84567.084000]  [<b0104d7b>] kernel_thread_helper+0x7/0x1c
+> >> [84567.084000]  =======================
+> >> [84567.087000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
+> >> [84567.087000]  [<b0104f62>] do_IRQ: stack overflow: 328
+> >> [84567.087000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
+> >> [84567.087000]  [<b0104f62>] show_trace+0x12/0x20
+> >> [84567.087000]  [<b0105075>] dump_stack+0x15/0x20
+> >> [84567.087000]  [<b01069a8>] do_IRQ+0xd8/0xe0
+> >> [84567.087000]  [<b0104bd6>] common_interrupt+0x2e/0x34
+> >> [84567.087000]  [<b0120a28>] printk+0x18/0x20
+> >> [84567.087000]  [<b0104f0d>] print_trace_address+0x1d/0x30
+> >> [84567.087000]  [<b0104e18>] dump_trace+0x48/0xb0
+> >> [84567.087000]  [<b0104f3a>] show_trace_log_lvl+0x1a/0x30
+> >> [84567.087000]  [<b0104f62>] show_trace+0x12/0x20
+> >> [84567.087000]  [<b0105075>] dump_stack+0x15/0x20
+> >> [84567.087000]  [<b04e7ffa>] schedule+0x53a/0x680
+> >> [84567.087000]  [<b04e8a0a>] schedule_timeout+0x8a/0x90
+> >> [84567.087000]  [<b026c61e>] xlog_state_sync+0x21e/0x260
+> >> [84567.087000]  [<b0269274>] _xfs_log_force+0x44/0x70
+> >> [84567.087000]  [<b022dd22>] xfs_alloc_search_busy+0xd2/0xe0
+> >> [84567.087000]  [<b022d1e6>] xfs_alloc_get_freelist+0xe6/0x100
+> >> [84567.087000]  [<b022fb7f>] xfs_alloc_split+0x1f/0x4c0
+> >> [84567.087000]  [<b022ec3d>] xfs_alloc_insrec+0x35d/0x3b0
+> >> [84567.087000]  [<b02304f9>] xfs_alloc_insert+0x59/0xd0
+> >> [84567.087000]  [<b022c847>] xfs_free_ag_extent+0x297/0x640
+> >> [84567.087000]  [<b022ce11>] xfs_alloc_fix_freelist+0x1d1/0x4c0
+> >> [84567.087000]  [<b022d73b>] xfs_alloc_vextent+0x1eb/0x4b0
+> >> [84567.087000]  [<b023d4bb>] xfs_bmap_btalloc+0x3bb/0x8f0
+> >> [84567.087000]  [<b023da11>] xfs_bmap_alloc+0x21/0x40
+> >> [84567.087000]  [<b02411bf>] xfs_bmapi+0xdbf/0x1450
+> >> [84567.087000]  [<b0266b4a>] xfs_iomap_write_allocate+0x2ba/0x520
+> >> [84567.087000]  [<b026587b>] xfs_iomap+0x45b/0x470
+> >> [84567.087000]  [<b028d85c>] xfs_bmap+0x2c/0x40
+> >> [84567.087000]  [<b0284a0c>] xfs_map_blocks+0x3c/0x80
+> >> [84567.087000]  [<b0285953>] xfs_page_state_convert+0x2f3/0x670
+> >> [84567.087000]  [<b0285d2a>] xfs_vm_writepage+0x5a/0xf0
+> >> [84567.087000]  [<b01539a6>] generic_writepages+0x226/0x360
+> >> [84567.087000]  [<b0285de4>] xfs_vm_writepages+0x24/0x60
+> >> [84567.087000]  [<b0153b0c>] do_writepages+0x2c/0x50
+> >> [84567.087000]  [<b01887d9>] __sync_single_inode+0x59/0x1f0
+> >> [84567.087000]  [<b01889b4>] __writeback_single_inode+0x44/0x1d0
+> >> [84567.087000]  [<b0188d09>] sync_sb_inodes+0x1c9/0x2e0
+> >> [84567.087000]  [<b0188eee>] writeback_inodes+0xce/0xe0
+> >> [84567.087000]  [<b01535c3>] wb_kupdate+0x73/0xf0
+> >> [84567.087000]  [<b015419e>] __pdflush+0xce/0x1a0
+> >> [84567.087000]  [<b0154295>] pdflush+0x25/0x30
+> >> [84567.087000]  [<b01342b4>] kthread+0x94/0xd0
+> >> [84567.087000]  [<b0104d7b>] kernel_thread_helper+0x7/0x1c
+> >> [84567.087000] BUG: unable to handle kernel paging request at virtual address 00008034
+> >> [84567.087000]  printing eip:
+> >> [84567.087000] b0104e36
+> >> [84567.087000] *pde = 00000000
+> >> [84567.087000] Oops: 0000 [#1]
+> >> [84567.087000] PREEMPT
+> >> [84567.087000] Modules linked in: drbd mt352 saa7134_dvb dvb_pll video_buf_dvb dvb_core
+> >> [84567.087000] CPU:    0
+> >> [84567.087000] EIP:    0060:[<b0104e36>]    Not tainted VLI
+> >> [84567.087000] EFLAGS: 00010046   (2.6.21-git #197)
+> >> [84567.087000] EIP is at dump_trace+0x66/0xb0
+> >> [84567.087000] eax: 00000000   ebx: b18f6fe0   ecx: b06323ec   edx: b05afc71
+> >> [84567.087000] esi: 00008000   edi: 00008ffd   ebp: b18f6138   esp: b18f6120
+> >> [84567.087000] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
+> >> [84567.087000] Process pdflush (pid: 186, ti=b18f5000 task=eff84ad0 task.ti=b18f6000)
+> >> [84567.087000] Stack: b18f6130 b04ea9af 00000001 b05b9937 0000000a b06d656e b18f6158 b0104f3a
+> >> [84567.087000]        b06323ec b05b9937 00000000 b06356a8 b18f6160 b18f622a b18f6168 b0104f62
+> >> [84567.087000]        b05b9937 b06d656e b18f6178 b0105075 b05afeac b18f6184 b18f61a8 b01069a8
+> >> [84567.087000] Call Trace:
+> >> [84567.087000] BUG: unable to handle kernel NULL pointer dereference at virtual address 00000034
+> >> [84567.087000]  printing eip:
+> >> [84567.087000] b0104e36
+> >> [84567.087000] *pde = 00000000
+> >> [84567.087000] Oops: 0000 [#2]
+> >> [84567.087000] PREEMPT
+> >> [84567.087000] Modules linked in: drbd mt352 saa7134_dvb dvb_pll video_buf_dvb dvb_core
+> >> [84567.087000] CPU:    0
+> >> [84567.087000] EIP:    0060:[<b0104e36>]    Not tainted VLI
+> >> [84567.087000] EFLAGS: 00010046   (2.6.21-git #197)
+> >> [84567.087000] EIP is at dump_trace+0x66/0xb0
+> >> [84567.087000] eax: 00000000   ebx: b18f5f60   ecx: b06323ec   edx: b05afc71
+> >> [84567.087000] esi: 00000000   edi: 00000ffd   ebp: b18f5f60   esp: b18f5f48
+> >> [84567.087000] ds: 007b   es: 007b   fs: 0000  gs: 0000  ss: 0068
+> >> [84567.087000] Process pdflush (pid: 186, ti=b18f5000 task=eff84ad0 task.ti=b18f6000)
+> >> [84567.087000] Stack: 5b3e303c 36353438 38302e37 b05afcde 00000018 00000000 b18f5f80 b0104f3a
+> >> [84567.087000]        b06323ec b05afcde 
+> >>
+> >> Then it just gave up doing anything sane, presumably because of the stack overflow  in do_IRQ:
+> >> http://redrum.lp0.eu/tmp/100_4037.jpg
+> >> http://redrum.lp0.eu/tmp/100_4038.jpg
+> >>
+> > 
+> > ugly.  And you're using 8k stacks?
+> 
+> 4k stacks, I will try to reproduce it with 8k stacks - which shouldn't be hard (see below).
+>  
+> > The way we'll fix this is to wait for someone to do a git-bisect on it. 
+> > Perhaps you can do that?
+> 
+> It will take a while, I need to boot to a good kernel so unattended DVB-T recording works 
+> reliably, I'm assuming switching to a different IO scheduler will avoid any problems for 
+> that (and not using the XFS filesystem...). It happened again not 5 minutes later when I 
+> continued compiling the kernel after sending that email so reproducing it should be easy.
+> 
 
-Can you point to any line of code there, and say what it breaks or what it
-will make impossible?
+Oh, OK, in that case it is perhaps a genuine stack overflow.
 
-> These features are not the characteristics of a DVB Frontend. Here there
-> is a DVB frontend like the normal ones which is hidden behind another
-> pseudo bridge (So you don't have *any* access to the frontend at large)
+> esp: b18f6120
 
-Again, did you actually look at the patch?  I never so much as used the
-word frontend to describe the dst.  I didn't change the operation of the
-dst in any way.  I didn't move it to a new place in the framework.
+That's not good.
 
-The bt8xx driver talks to the dst module via the dvb_frontend object, my
-patch has nothing to do with this.  It is a simple patch for simple
-programming issues and nothing to do with these larger issues you bring up.
+Please enable 8k stacks before doing any other debugging things, see if
+that fixes it.
 
-> I would think that it would be *extremely* rude for a person to send in
-> patches for a device that which you don't understand at all, when it is
-> for limiting the capability of the said device
 
-Is the problem that there is a bug in my patch?  Or is your problem that I
-was rude in submitting any patch at all that had anything to do with your
-code?  Do you feel that this part of the Linux kernel is owned by you, and
-that no one else should be permitted to have anything to do with it?
-
-> > (*) There are two customization/dependency control systems in DVB.  One is
-> > dvb_attach(), the other is DVB_FE_CUSTOMISE.  They are not two entirely
-> > separate systems, but overlap in their design a great deal.
->
-> Here we have the attach method attaching different objects, but
-> basically it can be handled for the frontend devices only (and that too
-> that share a very common trait, in this case, frontends are coupled
-> using the i2c bus) and not for other devices. Situation changes when you
-> use another interface such as SPI, where the interface is not well defined.
-
-This is not correct.  The dvb_attach() system has no assumption that it will
-be used for a front-end device.  There are already users which are not
-front-ends, such as tuners or lnb supply control chips, and yes, dst, which
-will all know very well is not a frontend.
-
-It also has nothing do with the i2c.  The attached device could be connected
-in any way.  I plan to add dvb_attach() support for the cx88 secondary i2c bus
-driver (aka vp3054), and that isn't even a different chip.
-
-> > This design means the actual hard link between different drivers is limited to
-> > each driver's single attach function (**).  By breaking this one link, we can
-> > control which drivers must be loaded or linked to only those necessary or
-> > wanted.  dvb_attach() and DVB_FE_CUSTOMISE are two different ways of
-> > controlling these links.
->
-> dvb_attach will have to go away for the DST. It doesn't work for the
-> mentioned reasons that it is just pushing the device to a corner as a
-> DVB frontend whereas it is not a DVB Frontend at all.
-
-The dst is already using dvb_attach()!  I'm not changing that at all.
-
-> being the author and maintainer of dst/dst_ca and maintainer of
-> dvb-bt8xx, i NACK this change
-
-Can one become a maintainer just be declaring ones self to be so?  Or is there
-an expectation that a maintainer will in fact, maintain.  That is to say,
-address concerns in a timely fashion, review patches and work in good faith to
-resolve problems with said patches.
-
-> What i would like to do is like this: Have the current state frozen as
-> it is,
-
-So as maintainer you are declaring that no changes of any kind are permitted?
-That is to say, the code should become frozen, un-fixed and un-updated, in
-other words, _unmaintained_.
-
-How can you have it both ways, that you are the maintainer and that it should
-be unmaintained?
