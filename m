@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752346AbXEFX4I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752595AbXEGAFR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752346AbXEFX4I (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 19:56:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXEFX4I
+	id S1752595AbXEGAFR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 20:05:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752449AbXEGAFQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 19:56:08 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:44680 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752346AbXEFX4G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 19:56:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=nVg+tpMoLqDUWaXh7jzoF8pPW/RI9aJortgcqshcXDwy+ndZF6ulZFB5g5e7rqqr5UqTpTXIbPO4wrZ7KnMjOdd9oSpOaJeTsygOeiR5hwg5gAIV524hv4tGMhTPkQiyJC0r11UJEKGOGqzhmtXBkxAyMHIfBoWGQCIj/EdfGNI=
-Message-ID: <a781481a0705061656u37b90022jfded9b1edbea3fa5@mail.gmail.com>
-Date: Mon, 7 May 2007 05:26:05 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Ray Lee" <ray-lk@madrabbit.org>
-Subject: Re: [PATCH] make hci_notifier a blocking notifier (was Re: BUG: sleeping function called from invalid context at net/core/sock.c:1523)
-Cc: "Alan Stern" <stern@rowland.harvard.edu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "Max Krasnyansky" <maxk@qualcomm.com>, marcel@holtmann.org,
-       bluez-devel@lists.sourceforge.net
-In-Reply-To: <2c0942db0705061615i1c6147a1h6aca54012c3509aa@mail.gmail.com>
+	Sun, 6 May 2007 20:05:16 -0400
+Received: from mail.tmr.com ([64.65.253.246]:34461 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752595AbXEGAFP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 20:05:15 -0400
+Message-ID: <463E6D18.1080902@tmr.com>
+Date: Sun, 06 May 2007 20:04:40 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
+To: Damien Wyart <damien.wyart@free.fr>
+CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>,
+       William Lee Irwin III <wli@holomorphy.com>
+Subject: Re: [patch] CFS scheduler, -v8
+References: <46399B51.9040608@dunaweb.hu> <20070503130201.GA9000@elte.hu> <20070503132932.GA4204@localhost.localdomain>
+In-Reply-To: <20070503132932.GA4204@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <a781481a0705060816v59c1ae70m1d5067fcaba5a25d@mail.gmail.com>
-	 <Pine.LNX.4.44L0.0705061801330.21407-100000@netrider.rowland.org>
-	 <2c0942db0705061615i1c6147a1h6aca54012c3509aa@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Dropped Pavel, Rafael and linux-pm from CC list, this isn't a PM
-error so don't want to spam them; and added bluez-devel)
+Damien Wyart wrote:
+> Hello,
+> 
+> * Ingo Molnar <mingo@elte.hu> [2007-05-03 15:02]:
+>> great! So it seems -v8 does improve OpenGL handling too :-)
+> 
+> What are your thoughts/plans concerning merging CFS into mainline ? Is
+> it a bit premature to get it into 2.6.22 ? I remember Linus was ok to
+> change the default scheduler rapidly (the discussion was about sd at
+> that time) to get more testing than in -mm.
+> 
+It would seem that a number of us are testing the variants and reporting 
+results (I now have to pull all the new versions and redo stuff, but I 
+have a new test I'm going to run as well).
 
-On 5/7/07, Ray Lee <ray-lk@madrabbit.org> wrote:
-> On 5/6/07, Alan Stern <stern@rowland.harvard.edu> wrote:
-> > On Sun, 6 May 2007, Satyam Sharma wrote:
-> >
-> > > Anyway, the hci_notifier is called from the following six call sites:
-> > >
-> > > hci_dev_open() and hci_dev_close() -> both called from
-> > > hci_sock_ioctl() => both can sleep
-> > > hci_register_dev() and hci_unregister_dev() => again both are capable
-> > > of sleeping
-> > > hci_suspend_dev() and hci_resume_dev() -> called from the .suspend()
-> > > and .resume() of the hci_usb_driver, and again both of these can sleep
-> > >
-> > > Is there any other reason why hci_notifier must be an atomic notifier?
-> > >
-> > > (CC'ing Alan Stern just in case, apparently hci_notifier became atomic
-> > > when notifier chains were classified into atomic / blocking)
-> >
-> > I don't remember exactly why this particular choice was made.  Perhaps we
-> > found that the notifier callout routines didn't use any blocking
-> > primitives (we may have been mistaken about this -- there was a lot of
-> > code to check) and so therefore the choice didn't matter.  In that case we
-> > probably just decided to make it an atomic notifier to keep things simple.
-> >
-> > As you found, changing it to a blocking notifier is very easy.  Provided
-> > all the callers are non-atomic it should work just fine.
->
-> Okay, I'll go ahead and try the patch, then, and report back.
+Given that and the fact that there is another idea which can be tested 
+from Tong Li, I think that decision can be postponed, Linus willing. 
+There appear to be enough testers to be driving evolution now, authors 
+may disagree, of course.
 
-You'd still get the BUG message. To fully resolve the problem, we need
-to make the hci_sock_dev_event() notifier callout blocking (which
-happened with this patch) but also convert hci_sk_list.lock to a
-rwsem, but some users of that rwlock (other than hci_sock_dev_event)
-are atomic.
+Several folks added to cc list...
 
-However, please do try and get back, as your testing would still be
-helpful to see whether converting hci_notifier to blocking had other
-side-effects -- if you only see the same message again and otherwise
-things seem fine, then we're good as far as at least this change was
-concerned.
-
-Thanks,
-Satyam
+-- 
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
