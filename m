@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966266AbXEGS7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966272AbXEGTAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966266AbXEGS7J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 14:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966239AbXEGS7G
+	id S966272AbXEGTAj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 15:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966262AbXEGTAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 14:59:06 -0400
-Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:41306 "EHLO
-	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966188AbXEGS7E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 14:59:04 -0400
-Date: Mon, 7 May 2007 20:59:02 +0200
-From: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
-To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       "Guilherme M. Schroeder" <guilherme@centralinf.com.br>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Blacklist Dell Optiplex 320 from using the HPET
-Message-ID: <20070507185902.GA11048@rhlx01.hs-esslingen.de>
-References: <1178314144.6094.7.camel@localhost.localdomain> <200705050118.34711.ak@suse.de> <1178321228.6094.34.camel@localhost.localdomain> <1178375214.31213.13.camel@localhost.localdomain> <1178375435.31213.16.camel@localhost.localdomain> <20070505155815.GC15620@khazad-dum.debian.net>
-Mime-Version: 1.0
+	Mon, 7 May 2007 15:00:36 -0400
+Received: from holomorphy.com ([66.93.40.71]:60341 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966200AbXEGTAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 15:00:35 -0400
+Date: Mon, 7 May 2007 12:01:07 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: "Luck, Tony" <tony.luck@intel.com>
+Cc: Ollie Wild <aaw@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@osdl.org>, Ingo Molnar <mingo@elte.hu>,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [patch] removes MAX_ARG_PAGES
+Message-ID: <20070507190107.GF19966@holomorphy.com>
+References: <65dd6fd50705060151m78bb9b4fpcb941b16a8c4709e@mail.gmail.com> <617E1C2C70743745A92448908E030B2A01719390@scsmsx411.amr.corp.intel.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070505155815.GC15620@khazad-dum.debian.net>
-User-Agent: Mutt/1.4.2.2i
-X-Priority: none
+In-Reply-To: <617E1C2C70743745A92448908E030B2A01719390@scsmsx411.amr.corp.intel.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+At some point in the past, Ollie Wild wrote:
+>> We've tested the following architectures: i386, x86_64, um/i386,
+>> parisc, and frv.  These are representative of the various scenarios
+>> which this patch addresses, but other architecture teams should try it
+>> out to make sure there aren't any unexpected gotchas.
 
-On Sat, May 05, 2007 at 12:58:15PM -0300, Henrique de Moraes Holschuh wrote:
-> On Sat, 05 May 2007, Thomas Gleixner wrote:
-> > +		printk(KERN_WARNING "HPET counter is defect\n");
-> 
-> What about
-> 		printk(KERN_WARNING "HPET counter is stopped\n");
-> 
-> which is far more descriptive?
+On Mon, May 07, 2007 at 10:46:49AM -0700, Luck, Tony wrote:
+> Doesn't build on ia64: complaints from arch/ia64/ia32/binfmt_elf.c
+> (which #includes ../../../fs/binfmt_elf.c) ...
+[...]
+> Turning off CONFIG_IA32-SUPPORT, the kernel built, but oops'd during boot.
+> My serial connection to my test machine is currently broken, so I didn't
+> get a capture of the stack trace, sorry.
 
-Far more misguiding, rather?
+It needs to sweep 32-bit emulation code more generally.
 
-People may mistake this (when not realizing the KERN_WARNING output)
-as a status message indicating that we actively stopped the counter.
-Maybe something like
-"HPET counter inoperable or defective (no increment found during probing)"?
-(with an optional "please report" part)
 
-Andreas Mohr
+-- wli
