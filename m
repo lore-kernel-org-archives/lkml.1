@@ -1,78 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbXEGSmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754798AbXEGSn7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785AbXEGSmd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 14:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbXEGSmc
+	id S1754798AbXEGSn7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 14:43:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbXEGSn6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 14:42:32 -0400
-Received: from main.gmane.org ([80.91.229.2]:52611 "EHLO ciao.gmane.org"
+	Mon, 7 May 2007 14:43:58 -0400
+Received: from mx7.mail.ru ([194.67.23.27]:33819 "EHLO mx7.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754766AbXEGSmb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 14:42:31 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: mkfs.ext2 triggerd RAM corruption
-Date: Mon, 07 May 2007 14:42:18 -0400
-Message-ID: <f1nrtn$qqv$1@sea.gmane.org>
-References: <200705041659.51675.bs@q-leap.de> <20070504203956.GL25077@lug-owl.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1754768AbXEGSn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 14:43:58 -0400
+X-Greylist: delayed 3151 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 May 2007 14:43:57 EDT
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Andreas Schwab <schwab@suse.de>
+Subject: Re: Long file names in VFAT broken with iocharset=utf8
+Date: Mon, 7 May 2007 22:43:52 +0400
+User-Agent: KMail/1.9.6
+Cc: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>, hirofumi@mail.parknet.co.jp,
+       linux-kernel@vger.kernel.org
+References: <200705072151.20104.arvidjaar@mail.ru> <60F72760-C801-4F60-BF47-C661B4B5BE26@e18.physik.tu-muenchen.de> <jebqgwpkgk.fsf@sykes.suse.de>
+In-Reply-To: <jebqgwpkgk.fsf@sykes.suse.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart3942483.AUKt8m5zBK";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: mail.tmr.com
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-In-Reply-To: <20070504203956.GL25077@lug-owl.de>
+Message-Id: <200705072243.53150.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan-Benedict Glaw wrote:
-> On Fri, 2007-05-04 16:59:51 +0200, Bernd Schubert <bs@q-leap.de> wrote:
->> To see whats going on, I copied the entire / (so the initrd) into a tmpfs 
->> root, chrooted into it, also bind mounted the main / into this chroot and 
->> compared several times /bin of chroot/bin and the bind-mounted /bin while the 
->> mkfs.ext2 command was running.
->>
->> beo-05:/# diff -r /bin /oldroot/bin/
->> beo-05:/# diff -r /bin /oldroot/bin/
->> beo-05:/# diff -r /bin /oldroot/bin/
->> Binary files /bin/sleep and /oldroot/bin/sleep differ
->> beo-05:/# diff -r /bin /oldroot/bin/
->> Binary files /bin/bsd-csh and /oldroot/bin/bsd-csh differ
->> Binary files /bin/cat and /oldroot/bin/cat differ
->> ...
->>
->> Also tested different schedulers, at least happens with deadline and 
->> anticipatory.
->>
->> The corruption does NOT happen on running the mkfs command on /dev/sda1, but 
->> happens with sda2, sda3 and sda3. Also doesn't happen with extended 
->> partitions of sda1.
-> 
-> Is sda2 the largest filesystem out of sda2, sda3 (and the logical
-> partitions within the extended sda1, if these get mkfs'ed, too)?
-> 
-> I'm not too sure that this is a kernel bug, but probably a bad RAM
-> chip. Did you run memtest86 for a while? ...and can you reproduce this
-> problem on different machines?
-> 
-> MfG, JBG
-> 
-Was this missing from your copy of the original post, or did you delete 
-it without reading? Note last sentence...
+--nextPart3942483.AUKt8m5zBK
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Summary: The system ramdisk (initrd) gets corrupted while running 
-> mkfs.ext2 on a local sata disk partition.
-> 
-> Reproduced on kernel versions: vanilla 2.6.16 - 2.6.20 (<2.6.16 
-> doesn't run on any of the systems I can do tests with). Please note:
-> I could reproduce this on serveral systems, all of them use ECC
-> memory and the memory of most of them the memory is monitored using
-> EDAC.
+On Monday 07 May 2007, Andreas Schwab wrote:
+> Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de> writes:
+> > PATH_MAX specifically counts _bytes_ not characters, so UTF-8 does not
+> > matter. ISTR that PATH_MAX was 256 at some point, but I just  quickly
+> > grepped /usr/include and found various mention of 4096, so  where's the
+> > central repository for this configuration item? A hard-
+> > coded value of 256 somewhere inside the kernel smells like a bug.
+>
+> There is PATH_MAX and there is NAME_MAX, and only the latter (which is
+> 260 for vfat) matters here.
+>
 
+Do you imply that Linux is unable to represent full VFAT names (255 UCS2=20
+charaters) by design? Hmm ... testing ... looks like it,
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+touch $(perl -e 'print "=D1=84" x 200;') -> Name too long.
 
+So what do we do with long VFAT names? As initial post shows, they do exist.
+
+--nextPart3942483.AUKt8m5zBK
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBGP3NpR6LMutpd94wRAiURAJ47e2cJhCN6Y8quXL9mM8XCApoR9QCfeH8R
+Y7yY2M9BIntJao/H2aCLZis=
+=+Xjw
+-----END PGP SIGNATURE-----
+
+--nextPart3942483.AUKt8m5zBK--
