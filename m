@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753066AbXEGAio@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751744AbXEGBEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753066AbXEGAio (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 6 May 2007 20:38:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbXEGAio
+	id S1751744AbXEGBEQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 6 May 2007 21:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbXEGBEQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 6 May 2007 20:38:44 -0400
-Received: from scrub.xs4all.nl ([194.109.195.176]:1732 "EHLO scrub.xs4all.nl"
+	Sun, 6 May 2007 21:04:16 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41747 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753043AbXEGAin (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 6 May 2007 20:38:43 -0400
-Date: Mon, 7 May 2007 02:38:36 +0200 (CEST)
-From: Roman Zippel <zippel@linux-m68k.org>
-X-X-Sender: roman@scrub.home
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: LKML <linux-kernel@vger.kernel.org>, Adrian Bunk <bunk@stusta.de>
-Subject: Re: kconfig: error out if recursive dependencies are found
-In-Reply-To: <20070506074038.GB6492@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0705070221500.1479@scrub.home>
-References: <20070502201741.GD9044@uranus.ravnborg.org>
- <20070506073615.GA6492@uranus.ravnborg.org> <20070506074038.GB6492@uranus.ravnborg.org>
+	id S1751744AbXEGBEP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 6 May 2007 21:04:15 -0400
+Message-ID: <463E7B0C.50502@garzik.org>
+Date: Sun, 06 May 2007 21:04:12 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Andries.Brouwer@cwi.nl
+CC: linux-kernel@vger.kernel.org,
+       IDE/ATA development list <linux-ide@vger.kernel.org>
+Subject: Re: regressions
+References: <200705062049.l46KnD424997@apps.cwi.nl>
+In-Reply-To: <200705062049.l46KnD424997@apps.cwi.nl>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Andries.Brouwer@cwi.nl wrote:
+> 2.6.21 breaks HPT366 - back to 2.6.20
 
-On Sun, 6 May 2007, Sam Ravnborg wrote:
+I thought Bart/Sergei had fixed this.  Are you using libata or old-IDE 
+driver?
 
->  	if (sym->flags & SYMBOL_CHECK) {
-> -		printf("Warning! Found recursive dependency: %s", sym->name);
-> +		fprintf(stderr, "%s:%d:error: found recursive dependency: %s",
-> +		        sym->prop->file->name, sym->prop->lineno, sym->name);
->  		return sym;
->  	}
 
-If it were that simple to print the location, I had done it already. :)
-Try this:
+> 2.6.20 breaks ZIP - back to 2.6.19
 
-config FOO
-        bool
-        select BAR
-        depends on BAR
+What does this mean?  How is it broken?
 
-config BAR
-        bool
+	Jeff
 
-I looked into this before, for simple properties one could just remember 
-the last checked property via a static variable. The problem are the 
-selects which are checked before that loop, here the information from 
-where they were selected is not available anymore (at least not easily).
 
-bye, Roman
