@@ -1,46 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967043AbXEGV6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967053AbXEGWDl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967043AbXEGV6X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 17:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966976AbXEGV6T
+	id S967053AbXEGWDl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 18:03:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966717AbXEGWDh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 17:58:19 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54383 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966685AbXEGV6S (ORCPT
+	Mon, 7 May 2007 18:03:37 -0400
+Received: from lazybastard.de ([212.112.238.170]:53613 "EHLO
+	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966527AbXEGWDg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 17:58:18 -0400
-Date: Mon, 7 May 2007 23:02:07 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-Cc: "Pavel Machek" <pavel@ucw.cz>, "David Woodhouse" <dwmw2@infradead.org>,
-       "Anton Vorontsov" <cbou@mail.ru>, "Greg KH" <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
-       "Andrew Morton" <akpm@osdl.org>
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-Message-ID: <20070507230207.2a74e769@the-village.bc.nu>
-In-Reply-To: <d120d5000705071455y309e88ebt921331fdf30e60d2@mail.gmail.com>
-References: <20070503213303.GH20067@zarina>
-	<20070507140453.GD3868@ucw.cz>
-	<1178550653.11851.191.camel@pmac.infradead.org>
-	<20070507194949.GB3981@ucw.cz>
-	<20070507222311.4589fc8a@the-village.bc.nu>
-	<d120d5000705071455y309e88ebt921331fdf30e60d2@mail.gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Mon, 7 May 2007 18:03:36 -0400
+Date: Mon, 7 May 2007 23:59:14 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
+To: Andrew Morton <akpm@osdl.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Chinner <dgc@sgi.com>
+Subject: [PATCH 0/2] LogFS take two
+Message-ID: <20070507215913.GA15054@lazybastard.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > We had this discussion before. Kernel sources should use utf-8 for
-> > comments where neccessary. Many names cannot be correctly represented in
-> > US ascii, and mangling them is just plain rude.
-> 
-> So should we all start writing our names in native alphabets? And comments too?
+Motivation:
 
-Well we do have comments in several languages already but I was only
-suggesting names as the comment texts do provide useful info and need to
-be readable.
+Linux currently has 1-2 flash filesystems to choose from, JFFS2 and
+YAFFS.  The latter has never made a serious attempt of kernel
+integration, which may disqualify it to some.
 
-Alan
+The two main problems of JFFS2 are memory consumption and mount time.
+Unlike most filesystems, there is no tree structure of any sorts on
+the medium, so the complete medium needs to be scanned at mount time
+and a tree structure kept in-memory while the filesystem is mounted.
+With bigger devices, both mount time and memory consumption increase
+linearly.
+
+JFFS2 has recently gained summary support, which helps reduce mount
+time by a constant factor.  Linear scalability remains.  YAFFS also
+appears to be better by a constant factor, yet still scales linearly.
+
+LogFS has an on-medium tree, fairly similar to Ext2 in structure, so
+mount times are O(1).  In absolute terms, the OLPC system has mount
+times of ~3.3s for JFFS2 and ~60ms for LogFS.
+
+
+Motivation 2:
+
+Flash is becoming increasingly common in standard PC hardware.  Nearly
+a dozen different manufacturers have announced Solid State Disks
+(SSDs), the OLPC and the Intel Classmate no longer contain hard disks
+and ASUS announced a flash-only Laptop series for regular consumers.
+And that doesn't even mention the ubiquitous USB-Sticks, SD-Cards,
+etc.
+
+Flash behaves significantly different to hard disks.  In order to use
+flash, the current standard practice is to add an emulation layer and
+an old-fashioned hard disk filesystem.  As can be expected, this is
+eating up some of the benefits flash can offer over hard disks.
+
+In principle it is possible to achieve better performance with a flash
+filesystem than with the current emulated approach.  In practice our
+current flash filesystems are not even near that theoretical goal.
+LogFS in its current state is already closer.
+
+
+Current state:
+
+LogFS works and survives my testcases.  It has fairly good chances of
+not eating your data during regular operation.  There are still two
+known bugs that will eat data if the filesystem is uncleanly
+unmounted.  Also still missing is wear leveling.
+
+Handling of read/write/erase errors currently is BUG().  It is on my
+list, no need to remind me. :)
+
+Overall I consider this to be -mm material.  It would be good to get
+some review and have the usual allyesconfig crowd build it and find
+coverity bugs and the like.
+
+http://logfs.org/logfs/ may have some further information.
+
+
+Shameless plug:
+
+I have quit my job last November to concentrate on LogFS.  While I
+have found one sponsor kind enough to fund me, my monetary reserves
+are fairly stressed.  Fairly soon I will be forced to take an
+old-fashioned job again and work on other less exciting stuff.  So if
+anyone needs a fast flash filesystem and has spare money to spend,
+please contact me.
+
+Jörn
+
+-- 
+Everything should be made as simple as possible, but not simpler.
+-- Albert Einstein
