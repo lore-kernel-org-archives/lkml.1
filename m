@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933701AbXEGMwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933751AbXEGNE1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933701AbXEGMwj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 08:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933700AbXEGMwj
+	id S933751AbXEGNE1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 09:04:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933771AbXEGNE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 08:52:39 -0400
-Received: from khc.piap.pl ([195.187.100.11]:56528 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933691AbXEGMwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 08:52:38 -0400
-To: Roman Zippel <zippel@linux-m68k.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Russell King <rmk@arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 1/3] WAN Kconfig: change "depends on HDLC" to "select"
-References: <m3abwhcy74.fsf@maximus.localdomain>
-	<m3y7k1biov.fsf@maximus.localdomain>
-	<Pine.LNX.4.64.0705070343330.2733@scrub.home>
-	<m3tzupc6wz.fsf@maximus.localdomain>
-	<Pine.LNX.4.64.0705071318150.1479@scrub.home>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Mon, 07 May 2007 13:56:41 +0200
-In-Reply-To: <Pine.LNX.4.64.0705071318150.1479@scrub.home> (Roman Zippel's message of "Mon, 7 May 2007 13:22:40 +0200 (CEST)")
-Message-ID: <m3r6psc0ee.fsf@maximus.localdomain>
-MIME-Version: 1.0
+	Mon, 7 May 2007 09:04:27 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:37965 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933688AbXEGNEZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 09:04:25 -0400
+Date: Mon, 7 May 2007 18:34:29 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 5/5] ext4: write support for preallocated blocks/extents
+Message-ID: <20070507130429.GA6681@amitarora.in.ibm.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426181623.GE7209@amitarora.in.ibm.com> <84144f020705070540tf3b1986yd4b1ab65e3a17d5e@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <84144f020705070540tf3b1986yd4b1ab65e3a17d5e@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman Zippel <zippel@linux-m68k.org> writes:
+On Mon, May 07, 2007 at 03:40:26PM +0300, Pekka Enberg wrote:
+> On 4/26/07, Amit K. Arora <aarora@linux.vnet.ibm.com> wrote:
+> > /*
+> >+ * ext4_ext_try_to_merge:
+> >+ * tries to merge the "ex" extent to the next extent in the tree.
+> >+ * It always tries to merge towards right. If you want to merge towards
+> >+ * left, pass "ex - 1" as argument instead of "ex".
+> >+ * Returns 0 if the extents (ex and ex+1) were _not_ merged and returns
+> >+ * 1 if they got merged.
+> >+ */
+> >+int ext4_ext_try_to_merge(struct inode *inode,
+> >+                               struct ext4_ext_path *path,
+> >+                               struct ext4_extent *ex)
+> >+{
+> 
+> Please either use proper kerneldoc format or drop
+> "ext4_ext_try_to_merge" from the comment.
 
->> You don't have to know it's required, you can just select a driver
->> for your hardware, without enabling HDLC first.
->
-> Is this a real problem?
+Ok, Thanks.
 
-I think the "select" is better.
-
-> Using select you should also consider removing HDLC as visible option and 
-> use only select. Mixing depends and selects is generally a bad idea.
-
-It has to stay there for external modules.
-
-It's similar to MII - drivers select MII automatically but you can
-turn it on (Y or M) by hand as well.
-
-And you can have HDLC=y and driver=m (and it makes perfect sense).
-
-Actually I can't see any bad idea here.
-The original dependency was certainly, uhm, not the best one.
--- 
-Krzysztof Halasa
+--
+Regards,
+Amit Arora
