@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968080AbXEHPcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968135AbXEHPcu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968080AbXEHPcp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 11:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967725AbXEHPYg
+	id S968135AbXEHPcu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 11:32:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755166AbXEHPYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 11:24:36 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:35039 "EHLO
+	Tue, 8 May 2007 11:24:38 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:41519 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S966027AbXEHPPi (ORCPT
+	by vger.kernel.org with ESMTP id S966388AbXEHPRe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 11:15:38 -0400
-Date: Tue, 8 May 2007 08:15:22 -0700 (PDT)
+	Tue, 8 May 2007 11:17:34 -0400
+Date: Tue, 8 May 2007 08:17:07 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-cc: Greg K-H <greg@kroah.com>, Adrian Bunk <bunk@stusta.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
- (PCI_MULTITHREAD_PROBE)
-In-Reply-To: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
-Message-ID: <alpine.LFD.0.98.0705080812160.3974@woody.linux-foundation.org>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>,
+       Prarit Bhargava <prarit@redhat.com>,
+       Andi Kleen <andi@basil.nowhere.org>
+Subject: Re: Please revert 86c0baf123e474b6eb404798926ecf62b426bf3a
+In-Reply-To: <20070508134928.GA13212@flint.arm.linux.org.uk>
+Message-ID: <alpine.LFD.0.98.0705080815480.3974@woody.linux-foundation.org>
+References: <20070508134928.GA13212@flint.arm.linux.org.uk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
@@ -27,31 +28,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Tue, 8 May 2007, Cornelia Huck wrote:
->
-> As I wanted to add multithreaded probing for some s390 busses, I
-> discovered that the commit above removed the multithreaded probing
-> infrastructure again, while just some days before some of my patches
-> reworking it had been merged...
+On Tue, 8 May 2007, Russell King wrote:
+> 
+> Shall I invent __CPUINIT to mark data to always be thrown away, or are
+> the x86 folk going to withdraw this patch and do it properly?
 
-No.
+I can certainly revert the patch, but it would probably be better if you 
+were to just start adding the infrastructure you need and send it as a new 
+patch instead (where the revert is part of it, and the __CPUINIT is 
+additional). 
 
-I am *not* reverting that patch. The whole PCI bus-level multi-threaded 
-stuff was an incredibly broken idea.
-
-If you have problems with probing, it's not going to be about the host 
-bus. It might be things like SCSI buses etc, and if somebody makes *those* 
-be more threaded, I'm ok with it. But I'm not going to accept another 
-broken PCI bus probe threading patch.
-
-> (OK, PCI_MULTITHREAD_PROBE should not depend on BROKEN, but on
-> EXPERIMENTAL with the reworked probing infrastructure. This got mixed
-> up, I can send a patch that changes it.)
-
-No. No. No. 
-
-Probing the core bus was broken. Not "experimental". Broken. It not only 
-threaded the wrogn area entirely, it also totally screwed up several 
-driver subsystems (like IDE).
-
-			Linus
+		Linus
