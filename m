@@ -1,44 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966662AbXEHSwF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbXEHSxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966662AbXEHSwF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 14:52:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966222AbXEHSwA
+	id S1754904AbXEHSxm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 14:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754747AbXEHSxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 14:52:00 -0400
-Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:29866 "HELO
-	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754870AbXEHSvv (ORCPT
+	Tue, 8 May 2007 14:53:39 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:38210 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754403AbXEHSxi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 14:51:51 -0400
-X-YMail-OSG: _2Qf54gVM1nOWvelbGJO5wl6l2SBlJ3F2AcaXljivlOyAW3p7eQjADNa.PpCYm76F9IrzFYDdg--
-From: Chris Wedgwood <cw@f00f.org>
-Date: Tue, 8 May 2007 11:37:26 -0700
-Subject: [PATCH] [x86-64] Add getcpu and epoll_pwait system calls.
-To: linux-kernel@vger.kernel.org
-Message-Id: <20070508185145.B9A8E1827261@tuatara.stupidest.org>
+	Tue, 8 May 2007 14:53:38 -0400
+Date: Tue, 8 May 2007 11:53:13 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Airlie <airlied@linux.ie>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [git pull] drm tree with driver changes for 2.6.22-rc1
+In-Reply-To: <Pine.LNX.4.64.0705080714560.5546@skynet.skynet.ie>
+Message-ID: <alpine.LFD.0.98.0705081152300.3974@woody.linux-foundation.org>
+References: <Pine.LNX.4.64.0705080714560.5546@skynet.skynet.ie>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Chris Wedgwood <cw@f00f.org>
----
- include/asm-x86_64/unistd.h |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
 
-diff --git a/include/asm-x86_64/unistd.h b/include/asm-x86_64/unistd.h
-index 26e23e0..aa7d4bf 100644
---- a/include/asm-x86_64/unistd.h
-+++ b/include/asm-x86_64/unistd.h
-@@ -619,6 +619,10 @@ __SYSCALL(__NR_sync_file_range, sys_sync_file_range)
- __SYSCALL(__NR_vmsplice, sys_vmsplice)
- #define __NR_move_pages		279
- __SYSCALL(__NR_move_pages, sys_move_pages)
-+#define __NR_getcpu		280
-+__SYSCALL(__NR_getcpu, sys_getcpu)
-+#define __NR_epoll_pwait	281
-+__SYSCALL(__NR_epoll_pwait, sys_epoll_pwait)
- 
- #ifndef __NO_STUBS
- #define __ARCH_WANT_OLD_READDIR
--- 
-1.5.1.3
 
+On Tue, 8 May 2007, Dave Airlie wrote:
+> 
+> Please pull the 'drm-patches' branch from
+> git://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+
+That's not a valid URL. "master.kernel.org" doesn't run the git-daemon. 
+Please fix your script.
+
+		Linus
