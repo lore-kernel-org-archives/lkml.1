@@ -1,56 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934813AbXEHWZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934844AbXEHW1s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934813AbXEHWZs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934613AbXEHWZm
+	id S934844AbXEHW1s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:27:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934712AbXEHW1o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:25:42 -0400
-Received: from caffeine.uwaterloo.ca ([129.97.134.17]:41211 "EHLO
-	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934456AbXEHWZm (ORCPT
+	Tue, 8 May 2007 18:27:44 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:37353 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934658AbXEHW1n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:25:42 -0400
-Date: Tue, 8 May 2007 18:25:40 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: CodingStyle: start flamewar about use of braces
-Message-ID: <20070508222540.GG8753@csclub.uwaterloo.ca>
-References: <200705081903.l48J3AOw010373@hera.kernel.org> <20070508124301.17975a4f.randy.dunlap@oracle.com> <4640E971.9050400@garzik.org>
+	Tue, 8 May 2007 18:27:43 -0400
+Message-ID: <4640F94F.5030301@zytor.com>
+Date: Tue, 08 May 2007 15:27:27 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4640E971.9050400@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
+To: Alexander van Heukelum <heukelum@mailshack.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
+References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org> <20070508183232.GA13225@mailshack.com> <4640C55B.6030908@zytor.com> <20070508191904.GA13368@mailshack.com>
+In-Reply-To: <20070508191904.GA13368@mailshack.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 05:19:45PM -0400, Jeff Garzik wrote:
-> >>+Do not unnecessarily use braces where a single statement will do.
-> >>+
-> >>+if (condition)
-> >>+	action();
-> >>+
-> >>+This does not apply if one branch of a conditional statement is a single
-> >>+statement. Use braces in both branches.
-> >>+
-> >>+if (condition) {
-> >>+	do_this();
-> >>+	do_that();
-> >>+} else {
-> >>+	otherwise();
-> >>+}
+Alexander van Heukelum wrote:
+> On Tue, May 08, 2007 at 11:45:47AM -0700, H. Peter Anvin wrote:
+>> Alexander van Heukelum wrote:
+>>> Oh! A padding hole in a struct! That could be a problem. If the freeze
+>>> is after decompression, could you test if this makes it work again?
+>>>
+>> The correct fix is to apply __attribute__((packed)) to this structure.
 > 
-> If anyone tries to add braces to my code's 'else' statements where they 
-> are not required, that patch will get NAK'd in a heartbeat.
+> Yeah, I thought about that possibility too, but the struct didn't need
+> that (in my opinion ugly) annotation before. Oh well, here you go.
+> 
 
-Oh isn't coding style fun.  I personally hate code that doesn't ALWAYS
-have the braces everywhere since it makes adding a print statement
-or other debuging to the condition such a pain since you then have to
-add braces to the condition to avoid breaking the code just to insert
-a print statement.  It is one of the few things I disagree with in the
-linux kernel coding style.
+It did need it, however, it just "happened to work" anyway.
 
---
-Len Sorensen
+Yes, it's ugly, but the damage is already done.
+
+	-hpa
