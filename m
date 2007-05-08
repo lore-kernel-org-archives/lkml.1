@@ -1,61 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967597AbXEHNo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967626AbXEHNrw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967597AbXEHNo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 09:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967562AbXEHNoz
+	id S967626AbXEHNrw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 09:47:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967498AbXEHNrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 09:44:55 -0400
-Received: from rtr.ca ([64.26.128.89]:3889 "EHLO mail.rtr.ca"
+	Tue, 8 May 2007 09:47:51 -0400
+Received: from khc.piap.pl ([195.187.100.11]:38925 "EHLO khc.piap.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967505AbXEHNoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 09:44:54 -0400
-Message-ID: <46407ED4.9090301@rtr.ca>
-Date: Tue, 08 May 2007 09:44:52 -0400
-From: Mark Lord <liml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	id S966951AbXEHNru (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 09:47:50 -0400
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Cc: Christian Hohnstaedt <chohnstaedt@innominate.com>,
+       Michael-Luke Jones <mlj28@cam.ac.uk>, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Russell King <rmk@arm.linux.org.uk>, Jeff Garzik <jeff@garzik.org>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] Intel IXP4xx network drivers
+References: <m3abwhcy74.fsf@maximus.localdomain>
+	<m3vef5biob.fsf@maximus.localdomain>
+	<5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>
+	<m3hcqoa772.fsf@maximus.localdomain> <20070507175213.GU23611@tweety>
+	<m3y7k08kvf.fsf@maximus.localdomain>
+	<20070508114811.GB32146@xi.wantstofly.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 08 May 2007 15:47:49 +0200
+In-Reply-To: <20070508114811.GB32146@xi.wantstofly.org> (Lennert Buytenhek's message of "Tue, 8 May 2007 13:48:11 +0200")
+Message-ID: <m3wszj77ga.fsf@maximus.localdomain>
 MIME-Version: 1.0
-To: Ben Collins <ben.collins@ubuntu.com>
-Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       Kyle McMartin <kyle@ubuntu.com>, linux-ide@vger.kernel.org
-Subject: Re: [PATCH] Cleanup libata HPA support
-References: <1178621978.6962.75.camel@cunning>
-In-Reply-To: <1178621978.6962.75.camel@cunning>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Collins wrote:
-..
->  static u64 ata_tf_to_lba48(struct ata_taskfile *tf)
->  {
-> -	u64 sectors = 0;
-> +	u64 sectors;
-> +	u32 high, low;
->  
-> -	sectors |= ((u64)(tf->hob_lbah & 0xff)) << 40;
-> -	sectors |= ((u64)(tf->hob_lbam & 0xff)) << 32;
-> -	sectors |= (tf->hob_lbal & 0xff) << 24;
-> -	sectors |= (tf->lbah & 0xff) << 16;
-> -	sectors |= (tf->lbam & 0xff) << 8;
-> -	sectors |= (tf->lbal & 0xff);
-> +	high = (tf->hob_lbah << 16) |
-> +	       (tf->hob_lbam <<  8) |
-> +		tf->hob_lbal;
-> +	low  = (tf->lbah << 16) |
-> +	       (tf->lbam <<  8) |
-> +		tf->lbal;
->  
-> -	return ++sectors;
-> +	sectors = ((u64)high << 24) | low;
-> +
-> +	return sectors + 1;
->  }
+Lennert Buytenhek <buytenh@wantstofly.org> writes:
 
-Ben, I very much prefer the fixed version of this function
-as implemented by the patch above.
+> I have a couple of ixp23xx boards at home, but I'm not sure whether I
+> can give them away.  I can give you remote access to them, though.
 
-But.. is the original code actually broken, or just messy?
-
-Cheers
-
+Hmm, may be interesting some day.
+-- 
+Krzysztof Halasa
