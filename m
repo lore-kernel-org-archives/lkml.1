@@ -1,186 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934174AbXEHHZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934430AbXEHHav@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934174AbXEHHZm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 03:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933949AbXEHHZi
+	id S934430AbXEHHav (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 03:30:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933949AbXEHHav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 03:25:38 -0400
-Received: from dialup.esmr.ru ([85.94.3.83]:40446 "EHLO localhost.localdomain"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S933913AbXEHHZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 03:25:37 -0400
-Date: Tue, 8 May 2007 11:23:35 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: olof@lixom.net (Olof Johansson)
-Cc: linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/2] [POWERPC] 8xx: mpc885ads pcmcia support
-Message-ID: <20070508112335.4a8d6635@localhost.localdomain>
-In-Reply-To: <20070507135609.GA8513@lixom.net>
-References: <20070506011004.12695.41514.stgit@localhost.localdomain>
-	<20070506012619.12695.37601.stgit@localhost.localdomain>
-	<20070507135609.GA8513@lixom.net>
-X-Mailer: Claws Mail 2.9.1cvs42 (GTK+ 2.10.9; i686-redhat-linux-gnu)
+	Tue, 8 May 2007 03:30:51 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:26949 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933876AbXEHHau (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 03:30:50 -0400
+X-IronPort-AV: i="4.14,503,1170651600"; 
+   d="scan'208"; a="29346122:sNHT22208424"
+Subject: Re: [spi-devel-general] adding bits_per_word to struct
+	spi_board_info to mirror struct spi_device
+From: Bryan WU <bryan.wu@analog.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: Mike Frysinger <vapier.adi@gmail.com>,
+       spi-devel-general@lists.sourceforge.net,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200705072200.26888.david-b@pacbell.net>
+References: <8bd0f97a0704250305qe6175cdm8e1a0cd7844f67bc@mail.gmail.com>
+	 <8bd0f97a0705071647w58c6055ehc54dd6b520a8e227@mail.gmail.com>
+	 <1178596106.5222.3.camel@roc-desktop>
+	 <200705072200.26888.david-b@pacbell.net>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 15:31:35 +0800
+Message-Id: <1178609496.5222.24.camel@roc-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007 08:56:09 -0500
-Olof Johansson wrote:
+On Mon, 2007-05-07 at 22:00 -0700, David Brownell wrote:
+> On Monday 07 May 2007, Bryan WU wrote:
+> 
+> > currently, there are some duplicated data members in spi_device struct
+> > spi_board_info struct. This two structs are confused driver writers and
+> > boards driver users.
+> 
+> How would that confusion arise?  Only arch/.../board-xxx.c writers
+> normally even see spi_board_info; the exception is that someone who
+> writes an add-on board -- maybe a USB-to-SPI adapter -- would call the
+> rarely used spi_new_device() routine.
+> 
+> Developers writing a SPI drivers -- controller drivers touching some
+> SOC's serial controller hardware, or "struct spi_driver" protocol code
+> talking to a chip through such a controller -- never see board info.
+> They only see "struct spi_device".  So I don't see why they would have
+> a reason to be confused.
+> 
+> - Dave
 
-> Hi,
-> 
-> Some minor nitpicks below. Overall it looks good.
-> 
-> 
-> -Olof
-> 
-> On Sun, May 06, 2007 at 05:26:33AM +0400, Vitaly Bordug wrote:
-> > @@ -322,6 +334,70 @@ void init_smc_ioports(struct
-> > fs_uart_platform_info *data) }
-> >  }
-> >  
-> > +#ifdef CONFIG_PCMCIA_M8XX
-> > +static void pcmcia_hw_setup(int slot, int enable)
-> > +{
-> > +	unsigned *bcsr_io;
-> > +
-> > +	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> > +	if (enable)
-> > +		clrbits32(bcsr_io, BCSR1_PCCEN);
-> > +	else
-> > +		setbits32(bcsr_io, BCSR1_PCCEN);
-> > +
-> > +	iounmap(bcsr_io);
-> > +}
-> 
-> If you move this (and next) function up, you don't have to do the
-> prototypes in the beginning of the file. One less #ifdef that way.
-> 
-ok.
-> > +
-> > +static int pcmcia_set_voltage(int slot, int vcc, int vpp)
-> > +{
-> > +	u32 reg = 0;
-> > +	unsigned *bcsr_io;
-> > +
-> > +	bcsr_io = ioremap(BCSR1, sizeof(unsigned long));
-> > +
-> > +	switch(vcc) {
-> > +	case 0:
-> > +		break;
-> > +	case 33:
-> > +		reg |= BCSR1_PCCVCC0;
-> > +		break;
-> > +	case 50:
-> > +		reg |= BCSR1_PCCVCC1;
-> > +		break;
-> > +	default:
-> > +		return 1;
-> > +	}
-> > +
-> > +	switch(vpp) {
-> > +	case 0:
-> > +       	break;
-> > +	case 33:
-> > +	case 50:
-> > +       	if(vcc == vpp)
-> > +			reg |= BCSR1_PCCVPP1;
-> > +		else
-> > +			return 1;
-> > +		break;
-> > +	case 120:
-> > +	if ((vcc == 33) || (vcc == 50))
-> > +		reg |= BCSR1_PCCVPP0;
-> > +	else
-> > +		return 1;
-> > +	default:
-> > +		return 1;
-> > +	}
-> > +
-> > +	/* first, turn off all power */
-> > +	clrbits32(bcsr_io, 0x00610000);
-> > +
-> > +	/* enable new powersettings */
-> > +	setbits32(bcsr_io, reg);
-> > +
-> > +	iounmap(bcsr_io);
-> > +	return 0;
-> > +}
-> > +#endif
-> > +
-> >  int platform_device_skip(const char *model, int id)
-> >  {
-> >  #ifdef CONFIG_MPC8xx_SECOND_ETH_SCC3
-> > diff --git a/arch/powerpc/sysdev/fsl_soc.c
-> > b/arch/powerpc/sysdev/fsl_soc.c index 8a123c7..880e45f 100644
-> > --- a/arch/powerpc/sysdev/fsl_soc.c
-> > +++ b/arch/powerpc/sysdev/fsl_soc.c
-> > @@ -1028,6 +1028,19 @@ err:
-> >  
-> >  arch_initcall(fs_enet_of_init);
-> >  
-> > +static int __init fsl_pcmcia_of_init(void)
-> > +{
-> > +	struct device_node *np = NULL;
-> > +	/*
-> > +	 * Register all the devices which type is "pcmcia"
-> > +	 */
-> > +	while ((np = of_find_compatible_node(np, 
-> > +			"pcmcia", "fsl,pq-pcmcia")) != NULL)
-> > +			    of_platform_device_create(np,
-> > "m8xx-pcmcia", NULL);
-> 
-> Do you really need this now that you have the device table in the
-> driver?
-> 
-Want to keep this one for now... 
+Yes, I agree with you.
+spi_board_info ---> board writers.
+spi_device ---> spi device driver writers.
 
-> > +	return 0;
-> > +}
-> > +
-> > +arch_initcall(fsl_pcmcia_of_init);
-> >  
-> >  static const char *smc_regs = "regs";
-> >  static const char *smc_pram = "pram";
-> > diff --git a/arch/powerpc/sysdev/mpc8xx_pic.h
-> > b/arch/powerpc/sysdev/mpc8xx_pic.h index afa2ee6..07be061 100644
-> > --- a/arch/powerpc/sysdev/mpc8xx_pic.h
-> > +++ b/arch/powerpc/sysdev/mpc8xx_pic.h
-> > @@ -4,7 +4,7 @@
-> >  #include <linux/irq.h>
-> >  #include <linux/interrupt.h>
-> >  
-> > -extern struct hw_interrupt_type mpc8xx_pic;
-> > +/*extern struct hw_interrupt_type mpc8xx_pic;*/
-> 
-> Take it out or leave it in, but don't comment it out, please
-> 
-ok
-> >  
-> >  int mpc8xx_pic_init(void);
-> >  unsigned int mpc8xx_get_irq(void);
-> > diff --git a/drivers/pcmcia/Kconfig b/drivers/pcmcia/Kconfig
-> > index 35f8864..c3fd55d 100644
-> > --- a/drivers/pcmcia/Kconfig
-> > +++ b/drivers/pcmcia/Kconfig
-> > @@ -183,6 +183,7 @@ config PCMCIA_M8XX
-> >          tristate "MPC8xx PCMCIA support"
-> >          depends on PCMCIA && PPC && 8xx 
-> >          select PCCARD_IODYN
-> > +	select PCCARD_NONSTATIC
-> 
-> I was going to say "whitespace!", but seems like this added line is
-> the only one that's actually using tabs. :-) (Yes, I saw 2/2 that
-> fixes this).
-> 
-> >          help
-> >          Say Y here to include support for PowerPC 8xx series PCMCIA
-> >          controller.
+It is very clear for me, a spi_master driver developer.
 
+But how does a board writer know the capabilities which the target
+spi_device driver supports? For example, a board writer use 16
+bits_per_word in a spi_board_info, while the spi_device does not support
+this. And maybe other special function spi_device driver can provide but
+board writer doesn't know or doesn't know how to use this in
+spi_board_info.
 
--- 
-Sincerely, Vitaly
+So can we just use one struct for both board writers and spi device
+driver developers?
+
+Thanks
+-Bryan Wu
 
