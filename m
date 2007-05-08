@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967440AbXEHNo0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967597AbXEHNo4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967440AbXEHNo0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 09:44:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967136AbXEHNoZ
+	id S967597AbXEHNo4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 09:44:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967562AbXEHNoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 09:44:25 -0400
-Received: from wx-out-0506.google.com ([66.249.82.230]:48934 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967131AbXEHNoX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 09:44:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=pAPKzu5QXLqEDlJpTSBY0eG7MkmuJJsHXCy3eEdOo3fcqxvEZlO4/YgbhayYo1pli3jQ667f6eyz7n8hBN60iZd1nX/zcCaPl674rao3p/4pC78masE78Rz7N7eK0wkBEuCQC4Qi/BKOLqJ1ESk3mFVEE3n4K1YcYTJxAKjEOxA=
-Message-ID: <97a0a9ac0705080644j664381daj20c64d070eaccc28@mail.gmail.com>
-Date: Tue, 8 May 2007 07:44:23 -0600
-From: "Gordon Farquharson" <gordonfarquharson@gmail.com>
-To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-Cc: "Tomasz Chmielewski" <mangoo@wpkg.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, "Krzysztof Halasa" <khc@pm.waw.pl>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-In-Reply-To: <f19298770705080148u70638ac2ue87241382681088@mail.gmail.com>
+	Tue, 8 May 2007 09:44:55 -0400
+Received: from rtr.ca ([64.26.128.89]:3889 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967505AbXEHNoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 09:44:54 -0400
+Message-ID: <46407ED4.9090301@rtr.ca>
+Date: Tue, 08 May 2007 09:44:52 -0400
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
+To: Ben Collins <ben.collins@ubuntu.com>
+Cc: linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       Kyle McMartin <kyle@ubuntu.com>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] Cleanup libata HPA support
+References: <1178621978.6962.75.camel@cunning>
+In-Reply-To: <1178621978.6962.75.camel@cunning>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <464034CF.20700@wpkg.org>
-	 <f19298770705080148u70638ac2ue87241382681088@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/8/07, Alexey Zaytsev <alexey.zaytsev@gmail.com> wrote:
-> I was always curious, why do people want to run ixp4xx in LE mode? What
-> are the benefits that overweight the obvious performance degradation?
+Ben Collins wrote:
+..
+>  static u64 ata_tf_to_lba48(struct ata_taskfile *tf)
+>  {
+> -	u64 sectors = 0;
+> +	u64 sectors;
+> +	u32 high, low;
+>  
+> -	sectors |= ((u64)(tf->hob_lbah & 0xff)) << 40;
+> -	sectors |= ((u64)(tf->hob_lbam & 0xff)) << 32;
+> -	sectors |= (tf->hob_lbal & 0xff) << 24;
+> -	sectors |= (tf->lbah & 0xff) << 16;
+> -	sectors |= (tf->lbam & 0xff) << 8;
+> -	sectors |= (tf->lbal & 0xff);
+> +	high = (tf->hob_lbah << 16) |
+> +	       (tf->hob_lbam <<  8) |
+> +		tf->hob_lbal;
+> +	low  = (tf->lbah << 16) |
+> +	       (tf->lbam <<  8) |
+> +		tf->lbal;
+>  
+> -	return ++sectors;
+> +	sectors = ((u64)high << 24) | low;
+> +
+> +	return sectors + 1;
+>  }
 
-Debian on the NSLU2 runs in LE, and it is pretty popular.
+Ben, I very much prefer the fixed version of this function
+as implemented by the patch above.
 
-http://www.linuxdevices.com/news/NS3535328630.html
+But.. is the original code actually broken, or just messy?
 
-Gordon
+Cheers
 
--- 
-Gordon Farquharson
