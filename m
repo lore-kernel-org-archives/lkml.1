@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970444AbXEHXmb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970513AbXEHXnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970444AbXEHXmb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 19:42:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968116AbXEHXmW
+	id S970513AbXEHXnX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 19:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969798AbXEHXnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 19:42:22 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:49354 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968060AbXEHXmV (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 19:42:21 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ken Moffat <zarniwhoop@ntlworld.com>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>, Andi Kleen <ak@suse.de>
-Subject: Re: Lockup after logging out of X
-In-Reply-To: Your message of "Wed, 09 May 2007 01:01:34 +0200."
-             <20070508230134.GD17482@one.firstfloor.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070508195142.GA30030@deepthought>
-            <20070508230134.GD17482@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1178667721_15957P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Tue, 08 May 2007 19:42:01 -0400
-Message-ID: <16127.1178667721@turing-police.cc.vt.edu>
+	Tue, 8 May 2007 19:43:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37846 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S968116AbXEHXnH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 19:43:07 -0400
+Date: Tue, 8 May 2007 16:43:05 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Kevin Winchester <kjwinchester@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot
+In-Reply-To: <464108CC.3060604@gmail.com>
+Message-ID: <Pine.LNX.4.64.0705081639570.16372@schroedinger.engr.sgi.com>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+ <4640FE35.2070605@gmail.com> <Pine.LNX.4.64.0705081557560.15790@schroedinger.engr.sgi.com>
+ <464108CC.3060604@gmail.com>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1700579579-1558832318-1178667785=:16372"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1178667721_15957P
-Content-Type: text/plain; charset=us-ascii
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Wed, 09 May 2007 01:01:34 +0200, Andi Kleen said:
-> Already known, although it is still unclear what the bug actually is.
-> Can you run with the appended patch please (from Eric Biederman)
-> and post any backtraces the WARN_ON in there spews out?
+---1700579579-1558832318-1178667785=:16372
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-> diff --git a/include/asm-x86_64/page.h b/include/asm-x86_64/page.h
-> index b17fc16..e6a4d1e 100644
+On Tue, 8 May 2007, Kevin Winchester wrote:
 
-> +	if (likely(v < __START_KERNEL_map))				\
-> +		v -= PAGE_OFFSET;					\
-> +	else								\
-> +		v = (v - __START_KERNEL_map) + phys_base;		\
+> Here's the dmesg of the slub_debug run, I'll try the patch next:
 
-ERROR: "phys_base" [net/sunrpc/sunrpc.ko] undefined!
-ERROR: "phys_base" [net/sunrpc/auth_gss/rpcsec_gss_spkm3.ko] undefined!
-ERROR: "phys_base" [net/sunrpc/auth_gss/auth_rpcgss.ko] undefined!
-ERROR: "phys_base" [net/mac80211/mac80211.ko] undefined!
-ERROR: "phys_base" [net/ieee80211/ieee80211_crypt_wep.ko] undefined!
-ERROR: "phys_base" [net/ieee80211/ieee80211_crypt_tkip.ko] undefined!
-ERROR: "phys_base" [fs/nfsd/nfsd.ko] undefined!
-ERROR: "phys_base" [fs/nfs/nfs.ko] undefined!
-ERROR: "phys_base" [fs/jbd2/jbd2.ko] undefined!
-ERROR: "phys_base" [fs/ecryptfs/ecryptfs.ko] undefined!
-ERROR: "phys_base" [drivers/net/ppp_mppe.ko] undefined!
-ERROR: "phys_base" [drivers/char/agp/intel-agp.ko] undefined!
-make[1]: *** [__modpost] Error 1
+Ok someone wrote to an object after it was freed. Not slubs problem.
 
-Looks like a missing EXPORT_SYMBOL. Unfortunately, the definition is here:
+> [    1.367129]     Object 0xffff810001bdecd0:  80 b7 b1 01 00 81 ff ff 6b=
+ 6b
+> 6b 6b 6b 6b 6b 6b .=B7=B1...kkkkkkkk
 
-arch/x86_64/kernel/head.S:ENTRY(phys_base)
+The first 8 bytes of the freed object were overwritten.
 
-Do I need to go the old symtabs.c route and stick the EXPORT_SYMBOL in some
-other .c file?
+> [    1.374455] Last alloc: cryptomgr_notify+0x28/0x190 jiffies_ago=3D0 cp=
+u=3D0
+> pid=3D1
+> [    1.374611] Last free : cryptomgr_probe+0x85/0xb0 jiffies_ago=3D0 cpu=
+=3D0
+> pid=3D405
 
---==_Exmh_1178667721_15957P
-Content-Type: application/pgp-signature
+Here are some potential candidates that have recently handled the object.=
+=20
+That was less than a jiffy ago. So very recent.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
 
-iD8DBQFGQQrJcC3lWbTT17ARAiOsAKCWj0lP6+bBSZDIOhPkBi4KiC2h2ACeIVfq
-zAAKLWaC+7O8UVvgWGXtMvY=
-=XfAT
------END PGP SIGNATURE-----
-
---==_Exmh_1178667721_15957P--
+---1700579579-1558832318-1178667785=:16372--
