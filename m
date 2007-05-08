@@ -1,82 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968472AbXEHWja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968485AbXEHWkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968472AbXEHWja (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967171AbXEHWj0
+	id S968485AbXEHWkG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968480AbXEHWkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:39:26 -0400
-Received: from 1wt.eu ([62.212.114.60]:2538 "EHLO 1wt.eu"
+	Tue, 8 May 2007 18:40:00 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52890 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967187AbXEHWjZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:39:25 -0400
-Date: Wed, 9 May 2007 00:39:22 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Zbigniew Baniewski <zb@ispid.com.pl>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: "modularized" 2.4.34.4  ->  ide-core "unresolved symbols"
-Message-ID: <20070508223922.GB31591@1wt.eu>
-References: <20070505194922.GA13176@localhost.localdomain> <20070506043645.GF943@1wt.eu> <20070508202334.GA16185@localhost.localdomain> <20070508211646.GA3129@1wt.eu> <20070508221425.GA18244@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508221425.GA18244@localhost.localdomain>
-User-Agent: Mutt/1.5.11
+	id S968479AbXEHWj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 18:39:59 -0400
+Message-ID: <4640FC3B.3010005@redhat.com>
+Date: Tue, 08 May 2007 18:39:55 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+CC: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [patch] ACPI: fix oops after dock driver fails to initialize
+Content-Type: multipart/mixed;
+ boundary="------------050104070508010703020207"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 12:14:25AM +0200, Zbigniew Baniewski wrote:
-> On Tue, May 08, 2007 at 11:16:46PM +0200, Willy Tarreau wrote:
-> 
-> > depmod:         init_cmd640_vlb
-> 
-> There wasn't such message.
+This is a multi-part message in MIME format.
+--------------050104070508010703020207
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-No, because it seems that your debian scripts hide it (or log it somewhere
-else). But if you do "make modules_install" from the kernel tree (as I did),
-you get it.
 
-> I made another kernel (config below) - unfortunately, this time it gives up
-> completely, saying:
-> 
-> -------------------------------
-> ...ordinary boot messages, ending with "hda:... sectors... w/Cache..."
-> /dev/ide/host0/bus0/target0/lun0:<1>Unable to handle kernel paging request at virtual address ffffff00
-> printing eip:
-> 
-> ...several verses of sanscrit-like language...
+--------------050104070508010703020207
+Content-Type: text/plain;
+ name="acpi_fix_bay-dock_oops.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="acpi_fix_bay-dock_oops.patch"
 
-This "sanscrit-like" language is an oops (in fact a kernel panic, but the
-dump format is called an oops). It is what developers use to find bugs.
+ACPI: fix oops after dock driver fails to initialize
 
-I see that you're using devfs. It is unfortunate for you that you're using
-all the parts which are not reputed for their reliability :-/ I'm pretty
-sure that initialization order matters here but you cannot interact much
-with it, except by forcing some drivers to "=y".
+The driver tests the dock_station pointer for nonnull
+to check whether it has initialized properly. But in
+some cases dock_station will be non-null after being
+freed when driver init fails. Fix by zeroing the
+pointer after freeing.
 
-Are you aware of any kernel version on which this config worked ? I'd
-like to help you get the minimal working config, ie: the one with the
-lower number of hard-linked drivers.
+Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
 
-> <0>Kernel panic: Attempted to kill the idle task!
-> In idle task - not syncing.
-> --------------------------------
-> 
-> Moved the disk to quite different machine - with the same result. So, I'm
-> afraid, it's not hardware-related problem.
+---
+ drivers/acpi/dock.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
-Do not worry about the hardware here. The problem lies in the
-initialization path of some sensible drivers. Did you enable DEVFS for a
-particular reason, or just because you enabled almost everything ? If the
-later, then you should retry with it disabled. It's absolutely not certain
-that it will work, but it may.
+--- 2.6.21-d390.orig/drivers/acpi/dock.c
++++ 2.6.21-d390/drivers/acpi/dock.c
+@@ -698,6 +698,7 @@ static int dock_add(acpi_handle handle)
+ 	if (ret) {
+ 		printk(KERN_ERR PREFIX "Error %d registering dock device\n", ret);
+ 		kfree(dock_station);
++		dock_station = NULL;
+ 		return ret;
+ 	}
+ 	ret = device_create_file(&dock_device.dev, &dev_attr_docked);
+@@ -705,6 +706,7 @@ static int dock_add(acpi_handle handle)
+ 		printk("Error %d adding sysfs file\n", ret);
+ 		platform_device_unregister(&dock_device);
+ 		kfree(dock_station);
++		dock_station = NULL;
+ 		return ret;
+ 	}
+ 	ret = device_create_file(&dock_device.dev, &dev_attr_undock);
+@@ -713,6 +715,7 @@ static int dock_add(acpi_handle handle)
+ 		device_remove_file(&dock_device.dev, &dev_attr_docked);
+ 		platform_device_unregister(&dock_device);
+ 		kfree(dock_station);
++		dock_station = NULL;
+ 		return ret;
+ 	}
+ 
+@@ -725,6 +728,7 @@ static int dock_add(acpi_handle handle)
+ 	dd = alloc_dock_dependent_device(handle);
+ 	if (!dd) {
+ 		kfree(dock_station);
++		dock_station = NULL;
+ 		ret = -ENOMEM;
+ 		goto dock_add_err_unregister;
+ 	}
+@@ -752,6 +756,7 @@ dock_add_err_unregister:
+ 	device_remove_file(&dock_device.dev, &dev_attr_undock);
+ 	platform_device_unregister(&dock_device);
+ 	kfree(dock_station);
++	dock_station = NULL;
+ 	return ret;
+ }
+ 
+@@ -785,6 +790,7 @@ static int dock_remove(void)
+ 
+ 	/* free dock station memory */
+ 	kfree(dock_station);
++	dock_station = NULL;
+ 	return 0;
+ }
+ 
 
-If you're pretty certain that you need DEVFS, then for a test, please
-set a max of IDE options to YES instead of MODULE. At least all the ones
-you need to boot on this system.
-
-As I said, it's a tricky area, and it's for this reason that distros
-enable IDE to YES as well as some other entries I don't have in mind.
-
-Regards,
-Willy
-
+--------------050104070508010703020207--
