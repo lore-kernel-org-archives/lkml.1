@@ -1,104 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966235AbXEHJJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934744AbXEHJOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966235AbXEHJJp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 05:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965805AbXEHJJo
+	id S934744AbXEHJOf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 05:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934565AbXEHJOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 05:09:44 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:47298 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S965536AbXEHJJn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 05:09:43 -0400
-Date: Tue, 8 May 2007 11:16:01 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
-       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] make-cancel_rearming_delayed_work-reliable-fix
-Message-ID: <20070508091601.GB1772@ff.dom.local>
-References: <20070503204226.GA212@tv-sign.ru> <20070503181513.0b0aa4fb.akpm@linux-foundation.org> <20070505213213.GA1013@tv-sign.ru> <20070507103107.GD1754@ff.dom.local> <20070507103420.GA74@tv-sign.ru>
+	Tue, 8 May 2007 05:14:35 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:35176 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934546AbXEHJOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 05:14:34 -0400
+Date: Tue, 8 May 2007 02:11:31 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.linux-foundation.org,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: 2.6.21-mm1 hwsusp: BUG at workqueue.c:106
+Message-Id: <20070508021131.438cee31.akpm@linux-foundation.org>
+In-Reply-To: <46403B7F.1050009@gmail.com>
+References: <46403B7F.1050009@gmail.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070507103420.GA74@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 02:34:20PM +0400, Oleg Nesterov wrote:
-> On 05/07, Jarek Poplawski wrote:
-...
-> I am not happy with the complication this patch adds, mostly
-> I hate this smb_wmb() in insert_work(). I have an idea how to
-> remove it later, but this needs another patch not related to
-> workqueue.c.
-
-Probably I don't feel those barriers enough, but IMHO,
-there is something wrong, if they are needed here, with
-all this made per cpu.
+On Tue, 08 May 2007 10:57:35 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
 
 > 
-> > BTW, I'm still not convinced all additions are needed:
-> > the "old" cancel_rearming_  doesn't care about checking
-> > or waiting on anything after del_timer positive.
-> 
-> It would be very strange to do wait_on_work() only in case
-> when del_timer() failed. This way we still need to do
-> cancel_work_sync() after cancel_rearming_delayed_work(),
-> but only when del_timer() failed, ugly. Note also that
-> wait_on_work() does not sleep if work->func() is not running.
-> 
-> Also, consider this callback:
-> 
-> 	void work_handler(struct work_struct *w)
-> 	{
-> 		struct delayed_work dw = container_of(...);
-> 
-> 		queue_delayed_work(dw, delay);
-> 
-> 		// <------------- cancel_rearming_delayed_work()
-> 
-> 		cancel_delayed_work(dw);
-> 		queue_delayed_work(dw, another_delay);
-> 	}
-> 
-> Yes, this is strange and ugly. But correct! The current version
-> (before this patch) can't cancel this delayed_work. The new
-> implementation works correctly. So I think it is far better to
-> do wait_on_work() unconditionally.
+> this occured in dmesg during resuming from hwsusp in 2.6.21-mm1 (captured
+> through netconsole). Perfectly reproducible, it simply happens each time I
+> try it.
 
-I think there are possible many curious, but correct things yet,
-e.g. handler, which fires timer or another work, which rearms
-this work... But maybe it would be resonable to try to separate
-new things which are really necessary, so IMHO, (practical)
-elimination of endless or excessive looping. If there is needed
-some more functionality, maybe there should be second version
-added e.g. cancel_rearming_delayed_work_sync(). Without this
-you risk, people would really think the old version was better,
-if you knew what you were doing. And the worst thing possible:
-they'll start to use their own, lighter solutions.
+Let's cc Oleg.
 
-I think, there is no reason, such function should need more
-than one loop of one cpu workqueue to cancel any "normal" work
-(or maybe two - if locking is spared), and it's really hard
-to understand, why anybody should  wait all those "not mine",
-so probably slow and buggy works in a queue, do their part of
-needless locking/sleeping/looping and let "my" excellent
-driver to be reloaded... And I think you are doing this now
-with some reserves (kind of "with one hand") - because the
-_PENDING flag is overloaded here and one flag still free.
-I really cannot see how sparing one, two or even three flag
-checks during a loop could be worth even one run_workqueue
-loop more without them.
+> usb_endpoint usbdev5.1_ep00: PM: resume from 0, parent usb5 still 2
+> ------------[ cut here ]------------
+> kernel BUG at /home/l/latest/xxx/kernel/workqueue.c:106!
+> invalid opcode: 0000 [#1]
+> SMP
+> Modules linked in: ipv6 floppy ohci1394 ieee1394 parport_pc parport usbhid
+> ehci_hcd pata_acpi ff_memless sr_mod cdrom
+> CPU:    1
+> EIP:    0060:[<c0132161>]    Not tainted VLI
+> EFLAGS: 00010046   (2.6.21-mm1 #272)
+> EIP is at insert_work+0x6d/0x71
+> eax: c1c3b3c0   ebx: c1814aa0   ecx: 00000001   edx: c1814aa0
+> esi: c1c3b340   edi: 00000282   ebp: c04d2f68   esp: c04d2f50
+> ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+> Process swapper (pid: 0, ti=c04d2000 task=c1c26030 task.ti=c1c20000)
+> Stack: c4685f54 c18148ac c04d2f98 c013816f c1c3b340 c1814aa0 c04d2f88 c013256c
+>        00000066 c1814880 c1c5e000 c04d2fc4 c01325a1
+> c1c5e000 00000100 c012ba35 00000000 c04d2fb8 c01333f4 Call Trace:
+>  [<c0104f27>]  [<c0104fe2>] show_stack_log_lvl+0xa5/0xca
+> show_registers+0x1e2/0x2da
+>  [<c01053f5>]  [<c010559a>] do_trap+0x84/0xaa
+> do_invalid_op+0x88/0x92
+>  [<c0378662>]  [<c013256c>] __queue_work+0x22/0x33
+> delayed_work_timer_fn+0x24/0x2a
+>  [<c012ba35>]  [<c01288a9>] __do_softirq+0x75/0xe6
+> do_softirq+0x63/0xac
+>  [<c0128713>]  [<c0116d7e>] smp_apic_timer_interrupt+0x5c/0x88
+> apic_timer_interrupt+0x28/0x30
+>  [<c010238d>]  [<c0115ad0>] start_secondary+0x25e/0x37a
+> 0x0
+>  =======================
+> 00 00 ba 03 00 00 40 a3 ff 83 10 5b 5d c3 4e 04 56 04 43 04 42 04 53 04 48
+> 04 46 04 c9 <0f> eb fe 89 e5 ec 0c
+> 
 
-Yesterday I've written something probably against my intention:
-so, if there is any CPU burning place, which could be fixed,
-it's definitely worth fixing. I'm not sure what exactly place
-did you mean - if spinlocking in wait_on_work - maybe it's
-a sign this place isn't optimal too: it seems to me, this all
-inserting/waiting for completion could be done under existing
-locks e.g. in run_workqueue (maybe with some flag?).
-
-Jarek P.
+hm, how come it's so messy?
