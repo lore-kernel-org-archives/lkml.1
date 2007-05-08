@@ -1,78 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755070AbXEHGON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118AbXEHGQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755070AbXEHGON (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 02:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbXEHGOL
+	id S1755118AbXEHGQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 02:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbXEHGQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 02:14:11 -0400
-Received: from waste.org ([66.93.16.53]:47766 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755019AbXEHGOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 02:14:09 -0400
-Date: Tue, 8 May 2007 01:12:55 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       Dan Williams <dcbw@redhat.com>, Christoph Hellwig <hch@infradead.org>,
-       linux-wireless@vger.kernel.org, marcelo@kvack.org,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Please pull 'revert-libertas' branch of wireless-2.6 (was Re: Please pull 'libertas' branch of wireless-2.6)
-Message-ID: <20070508061255.GT11166@waste.org>
-References: <20070227205649.GH5826@tuxdriver.com> <45E8CF5E.5090305@garzik.org> <20070303052140.GA31075@infradead.org> <20070507104117.GA31601@infradead.org> <1178539423.3032.24.camel@localhost.localdomain> <20070507141143.GB5125@tuxdriver.com> <463F443A.5000306@garzik.org>
+	Tue, 8 May 2007 02:16:24 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:38084 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754123AbXEHGQX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 02:16:23 -0400
+Date: Tue, 8 May 2007 07:16:21 +0100 (IST)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+Subject: [git pull] drm tree with driver changes for 2.6.22-rc1
+Message-ID: <Pine.LNX.4.64.0705080714560.5546@skynet.skynet.ie>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <463F443A.5000306@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-1471283169-1178604981=:5546"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 11:22:34AM -0400, Jeff Garzik wrote:
-> John W. Linville wrote:
-> >On Mon, May 07, 2007 at 08:03:43AM -0400, Dan Williams wrote:
-> >>On Mon, 2007-05-07 at 11:41 +0100, Christoph Hellwig wrote:
-> >
-> >>>Of course it's not anywhere near good shape.  Almost all items from my
-> >>>review were completely ignored, and we have another totoally substandard
-> >>>wireless driver with crappy thread handling, a huge number of broken 
-> >>>private
-> >>>ioctls and partially absymal codingstyle.
-> >
-> >>I've already updated libertas-2.6 git with a ton of updates for this.
-> >>
-> >>In any case, lets push off any merge until 2.6.23 so the rest of the
-> >>comments can be dealt with:
-> >
-> >Alright...Jeff, would you please pull the following branch for upstream 
-> >ASAP:
-> >
-> >	git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git revert-libertas
-> 
-> This is leading from behind :/  We don't need to blow about in the wind 
-> here.  If you reviewed the driver in depth -- which I assumed because of 
-> the trust placed in you as wireless maintainer -- then this situation 
-> really should not be happening.  You need to know the status of new 
-> drivers you are pushing upstream: what work is left to do, what has been 
-> done, what state the driver is in.
-> 
-> I view this request as a failure of the trust network :(
-> 
-> For my part, I _did_ review it.  Twice.  Once in the early days, and 
-> once when I pulled it into my netdev-2.6.git tree.  libertas needs the 
-> changes mentioned in this thread.  But the driver is in workable shape 
-> to be USED while being improved.  I strongly dislike people being cowed 
-> into not merging a driver for years, because the driver in question does 
-> not meet Christoph's idea of perfection.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-It's a shame to expose new ABI bits that we expect to change to
-mainline. Getting rid of obsolete interfaces is next to impossible so
-the introduction of new interfaces really does warrant serious
-consideration.
+--29444707-1471283169-1178604981=:5546
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN; format=flowed
+Content-Transfer-Encoding: 8BIT
 
-Can we come up with a scheme to keep the new ioctls introduced by this
-driver from leaking over into distro-land before they get reworked?
-Like preemptively adding a deprecation printk?
 
--- 
-Mathematics is the supreme nostalgia of our time.
+Hi Linus,
+
+Please pull the 'drm-patches' branch from
+git://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
+
+This contains updates to the radeon and via drm drivers and cleans up the
+ati pcigart code in order to add support for the integrated rs480 chipsets.
+
+It also pulls in some fixes for via and radeon drivers from the DRI teams.
+
+Hopefully I got the diffstat correct..
+
+Dave.
+
+  drivers/char/drm/ati_pcigart.c  |   84 ++++++++++++++++--------------
+  drivers/char/drm/drmP.h         |    7 ++-
+  drivers/char/drm/drm_drv.c      |   10 ++--
+  drivers/char/drm/drm_os_linux.h |    3 -
+  drivers/char/drm/drm_pciids.h   |    1 +
+  drivers/char/drm/r128_cce.c     |    3 +-
+  drivers/char/drm/r128_drv.h     |    2 +
+  drivers/char/drm/radeon_cp.c    |   71 +++++++++++++++++++++++--
+  drivers/char/drm/radeon_drm.h   |    1 +
+  drivers/char/drm/radeon_drv.h   |   24 ++++++++-
+  drivers/char/drm/radeon_state.c |   52 +++++++++---------
+  drivers/char/drm/via_dma.c      |  111 ++++++++++++++++-----------------------
+  drivers/char/drm/via_drv.h      |    5 +-
+  13 files changed, 222 insertions(+), 152 deletions(-)
+
+commit ef68d295508d52e792abf70d4f84461104d33b9d
+Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
+Date:   Tue May 8 15:48:39 2007 +1000
+
+     via: Make sure we flush write-combining using a follow-up read.
+
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+
+commit a0a6dd0b221260be1e3da725e6b49797e5fa7429
+Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
+Date:   Tue May 8 15:47:41 2007 +1000
+
+     via: Try to improve command-buffer chaining.
+
+     Bump driver date and patchlevel.
+
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+
+commit bc07dc7f07a2f2d4d0aa4ffb9597413ad9137d44
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Tue May 8 15:32:35 2007 +1000
+
+     drm: remove old taskqueue remnant
+
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+
+commit 0515b93c0ea89eb2120b0ec1d148359da01ad2e5
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Tue May 8 15:28:15 2007 +1000
+
+     drm: rename badly named define and cleanup ioctl code spacing
+
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+
+commit 453ff94ca502d0a7441912823f20ed130f685429
+Author: Michel Dänzer <michel@tungstengraphics.com>
+Date:   Tue May 8 15:21:14 2007 +1000
+
+     radeon: Don't mess up page flipping when a file descriptor is closed.
+
+     There can still be other contexts that may use page flipping later on, so do
+     just unilaterally 'clean it up', which could lead to the wrong page being
+     displayed, e.g. when running 3D apps with a GLX compositing manager such as
+     compiz using page flipping.
+
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+
+commit f2b04cd219e5c0f1214c0eeeec814ddd08a12c1b
+Author: Dave Airlie <airlied@linux.ie>
+Date:   Tue May 8 15:19:23 2007 +1000
+
+     drm/radeon: upgrade to 1.27 - make PCI GART more flexible
+
+     radeon: make PCI GART aperture size variable, but making table size variable
+         This is precursor to getting a TTM backend for this stuff, and also
+         allows the PCI table to be allocated at fb 0
+     radeon: add support for reverse engineered xpress200m
+
+         The IGPGART setup code was traced using mmio-trace on fglrx by myself
+         and Phillip Ezolt <phillipezolt@gmail.com> on dri-devel.
+
+         This code doesn't let the 3D driver work properly as the card has no
+         vertex shader support.
+
+         Thanks to Matthew Garrett + Ubuntu for providing me some hardware to do this
+         work on.
+
+     Signed-off-by: Dave Airlie <airlied@linux.ie>
+
+--29444707-1471283169-1178604981=:5546--
