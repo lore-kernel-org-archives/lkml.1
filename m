@@ -1,66 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967725AbXEHNtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967771AbXEHNuc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967725AbXEHNtl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 09:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967418AbXEHNti
+	id S967771AbXEHNuc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 09:50:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967414AbXEHNub
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 09:49:38 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4891 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967329AbXEHNth (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 09:49:37 -0400
-Date: Tue, 8 May 2007 14:49:28 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Andi Kleen <andi@basil.nowhere.org>
-Subject: Please revert 86c0baf123e474b6eb404798926ecf62b426bf3a
-Message-ID: <20070508134928.GA13212@flint.arm.linux.org.uk>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel List <linux-kernel@vger.kernel.org>,
-	Prarit Bhargava <prarit@redhat.com>,
-	Andi Kleen <andi@basil.nowhere.org>
+	Tue, 8 May 2007 09:50:31 -0400
+Received: from mx2.go2.pl ([193.17.41.42]:52071 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S967407AbXEHNub (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 09:50:31 -0400
+Date: Tue, 8 May 2007 15:56:49 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+Message-ID: <20070508135648.GG1772@ff.dom.local>
+References: <20070503204226.GA212@tv-sign.ru> <20070508071544.GA1772@ff.dom.local> <20070508123102.GB968@tv-sign.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070508123102.GB968@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The change:
+On Tue, May 08, 2007 at 04:31:02PM +0400, Oleg Nesterov wrote:
+> On 05/08, Jarek Poplawski wrote:
+> > 
+> > On Fri, May 04, 2007 at 12:42:26AM +0400, Oleg Nesterov wrote:
+> > ...
+> > > +static int try_to_grab_pending(struct work_struct *work)
+> > > +{
+> > > +	struct cpu_workqueue_struct *cwq;
+> > > +	int ret = 0;
+> > > +
+> > > +	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
+> > > +		return 1;
+> > 
+> > Previous version used this check to run del_timer, and I think, it
+> > was good idea. So, maybe, try something like this:
+> > 
+> > - run once del_timer before the loop (in cancel_rearming_ only),
+> 
+> hmm, cancel_rearming_ does del_timer() before try_to_grab_pending().
+> 
+> > - add a parmeter to try_to_grab_pending, e.g. "rearming",
+> > - add here something like this:
+> > 
+> > 	else if (rearming && del_timer(&work->timer)
+> > 		return 1;
+> 
+> I thought about adding such a parameter, and I don't like this. This is
+> a matter of taste, of course, but _imho_ this uglifies the code.
+> 
+> In any case, unless we do completely different patch, the sequence should be
+> 
+> 	del_timer()	- a pending timer is the most common case
+> 
+> 	test_and_set_bit(WORK_STRUCT_PENDING) - the work is idle
+> 
+> 	try-to-steal-the-queued-work
+> 
+> This is what we are doing now.
 
-+#ifdef CONFIG_HOTPLUG_CPU
-+#define __INIT		.section	".text","ax"
-+#define __INITDATA	.section	".data","aw"
-+#else
- #define __INIT		.section	".init.text","ax"
--#define __FINIT		.previous
- #define __INITDATA	.section	".init.data","aw"
-+#endif
-+#define __FINIT		.previous
+I simply don't like to call del_timer(), where not needed, but maybe
+it's not so expensive and we can afford it... 
 
-breaks ARM, since the ARM startup code moves from the start of the image
-to somewhere in the middle of the kernel image.  (That's trivially fixable.)
+> 
+> > > +
+> > > +	/*
+> > > +	 * The queueing is in progress, or it is already queued. Try to
+> > > +	 * steal it from ->worklist without clearing WORK_STRUCT_PENDING.
+> > > +	 */
+> > > +
+> > > +	cwq = get_wq_data(work);
+> > > +	if (!cwq)
+> > > +		return ret;
+> > 
+> > Probably you meant:
+> > 		return 1;
+> 
+> No, we should return 0. This can happen if the queueing of the freshly-
+> initialized @dwork is in progress.
+> 
+> NOTE: right now try_to_grab_pending() is called from cancel_xxx() only, so
+> this can't happen (it would be meaningless to do cancel_xxx if somebody else
+> can queue this work or start the timer), but I'd like try_to_grab_pending()
+> to be as generic as possible.
+> 
+> So, we should either return 0, or add BUG_ON(!cwq).
 
-Besides that, this change is also wrong because not all assembly marked
-__INIT needs to be moved into the standard .text segment when hotplug CPU
-is enabled.  Ditto for __INITDATA.
+...And you prefer endless loop. Seems brave!
 
-One is left wondering why the original patch proposers didn't:
+...
+> Yes, please, and thank you very much for review!
 
-1. Invent __CPUINIT and __CPUINITDATA, to be consistent with __init vs
-   __cpuinit.
+You welcome & my pleasure,
 
-2. copy other architecture maintainers.
-
-Shall I invent __CPUINIT to mark data to always be thrown away, or are
-the x86 folk going to withdraw this patch and do it properly?
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Bye,
+Jarek P.
