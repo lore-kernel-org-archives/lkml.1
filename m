@@ -1,89 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968318AbXEHOv4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968328AbXEHOxp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968318AbXEHOv4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:51:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967771AbXEHOvz
+	id S968328AbXEHOxp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:53:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968249AbXEHOxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:51:55 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:39111 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968227AbXEHOvy (ORCPT
+	Tue, 8 May 2007 10:53:43 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:50236 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968104AbXEHOxm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:51:54 -0400
-To: torvalds@linux-foundation.org
-Subject: [git pull] jfs update
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Message-Id: <20070508145116.DBAD784C0E@kleikamp.austin.ibm.com>
-Date: Tue,  8 May 2007 09:51:16 -0500 (CDT)
-From: shaggy@linux.vnet.ibm.com (Dave Kleikamp)
+	Tue, 8 May 2007 10:53:42 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=dTE49yhbMkNd/6oURVmwAZBw4llmYaIsH3l+as30WlZRkqKdhx0uBFEnm0K68
+	hFz6oy2X2mxvP1KpGLstRIN7A==
+Date: Tue, 8 May 2007 16:53:40 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+Message-ID: <20070508145340.GD387@xi.wantstofly.org>
+References: <m3abwhcy74.fsf@maximus.localdomain> <m3vef5biob.fsf@maximus.localdomain> <5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk> <m3hcqoa772.fsf@maximus.localdomain> <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk> <m33b289zku.fsf@maximus.localdomain> <m3zm4g3yed.fsf_-_@maximus.localdomain> <20070508113735.GB32055@xi.wantstofly.org> <m3fy6775fz.fsf@maximus.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m3fy6775fz.fsf@maximus.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Tue, May 08, 2007 at 04:31:12PM +0200, Krzysztof Halasa wrote:
 
-I added one patch since the last pull request.  This fixes a hang that
-has been seen a few times in recent kernels.
+> >> +/* Built-in 10/100 Ethernet MAC interfaces */
+> >> +static struct mac_plat_info ixdp425_plat_mac[] = {
+> >> +	{
+> >> +		.phy		= 0,
+> >> +		.rxq		= 3,
+> >> +	}, {
+> >> +		.phy		= 1,
+> >> +		.rxq		= 4,
+> >> +	}
+> >> +};
+> >
+> > As with Christian's driver (I'm feeling like a bit of a broken record
+> > here :-), putting knowledge of which queue to use (which is firmware-
+> > specific) in the _board_ support file is almost certainly wrong.
+> >
+> > I would just put the port number in there, and let the ethernet
+> > driver map the port number to the hardware queue number.  After all,
+> > the ethernet driver knows which queues the firmware uses, while the
+> > board support code doesn't.
+> 
+> No, quite the opposite. The board code knows its set of hardware
+> interfaces etc. and can let Ethernet driver use, say, HSS queues.
+> The driver can't know that.
 
-Please pull from
+You are attacking a point that I did not make.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/shaggy/jfs-2.6.git for-linus
+The board support code knows such things as that the "front ethernet
+port" on the board is connected to the CPU's MII port number #2, but
+the board support code does _not_ know that MII port number #2
+corresponds to "ixp4xx hardware queue #5."
 
-This will update the following files:
+If Intel puts out a firmware update next month, and your ethernet
+driver is modified to take advantage of the new features in that
+firmware and starts depending on the newer version of that firmware,
+we will have to modify every ixp4xx board support file in case the
+firmware update modifies the ixp4xx queue numbers in use.  The
+mapping from hardware ports (MII port #0, MII port #6, HSS port
+#42, whatever) to ixp4xx hardware queue numbers (0-63) should _not_
+be put in every single ixp4xx board support file.
 
- Documentation/filesystems/jfs.txt |    8 +++++++-
- fs/jfs/inode.c                    |    1 -
- fs/jfs/ioctl.c                    |    2 ++
- fs/jfs/jfs_imap.c                 |    2 ++
- fs/jfs/jfs_inode.c                |   18 ++++++++++++++++++
- fs/jfs/jfs_inode.h                |    1 +
- fs/jfs/jfs_lock.h                 |    2 +-
- fs/jfs/jfs_logmgr.c               |    7 ++++---
- fs/jfs/jfs_txnmgr.c               |    6 +++---
- 9 files changed, 38 insertions(+), 9 deletions(-)
+Even if you only change the
 
-through these ChangeSets:
+	(in board support file)
+	.rxq		= 4,
 
-Commit: 05ec9e26be1f668ccba4ca54d9a4966c6208c611 
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com> Sat, 05 May 2007 14:24:05 -0500 
+line to something like this instead:
 
-    JFS: Fix race waking up jfsIO kernel thread
-    
-    It's possible for a journal I/O request to be added to the log_redrive
-    queue and the jfsIO thread to be awakened after the thread releases
-    log_redrive_lock but before it sets its state to TASK_INTERRUPTIBLE.
-    
-    The jfsIO thread should set the state before giving up the spinlock, so
-    the waking thread will really wake it.
-    
-    Signed-off-by: Dave Kleikamp <shaggy@austin.ibm.com>
+	(in some ixp4xx-specific or driver-specific header file)
+	#define IXP4XX_MII_PORT_1_RX_QUEUE		4
 
-Commit: 3cbb1c8e1a4787d3dc2951b7615d7bb3788c49a0 
-Author: Milind Arun Choudhary <milindchoudhary@gmail.com> Thu, 26 Apr 2007 07:30:29 -0500 
+	(in board support file)
+	.rxq		= IXP4XX_MII_PORT_1_RX_QUEUE,
 
-    JFS: use __set_current_state()
-    
-    use __set_current_state(TASK_*) instead of current->state = TASK_*
-    
-    Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
-    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+then you have remved this dependency, and then you only have to update
+one place if you move to a newer firmware version.
 
-Commit: 3e2221c73cba7d33fd5706f9bc4906ffaf421478 
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com> Wed, 25 Apr 2007 09:36:20 -0500 
 
-    Copy i_flags to jfs inode flags on write
-    
-    This mirrors Jan Kara's patches for ext3.  This patch makes sure that
-    changes made to inode->i_flags are reflected on disk for jfs.  It also
-    moves a call of jfs_set_inode_flags() to be more consistent with where
-    jfs_get_inode_flags() is called.
-    
-    Signed-off-by: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+> > I generally discourage the use of such wrappers, as it often makes
+> > people forget that the set and clear operations are not atomic, and
+> > it ignores the fact that some of the other bits in the register you
+> > are modifying might have side-effects.
+> 
+> Without them the code in question is hardly readable,
 
-Commit: ba863a0016a33637acc7888698a5d75096fcec05 
-Author: Dave Kleikamp <shaggy@linux.vnet.ibm.com> Fri, 09 Mar 2007 10:27:31 -0600 
+You can read Polish, how can you complain about code readability. :-))
 
-    JFS: document uid, gid, and umask mount options in jfs.txt
-    
-    Signed-off-by: Dave Kleikamp <shaggy@austin.ibm.com>
+*runs*
 
+
+> I pick the need to remember about non-atomicity and possible side
+> effects instead :-)
+
+Sure, point taken, it's just that the person after you might not
+remember..
