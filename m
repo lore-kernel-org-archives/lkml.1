@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031376AbXEHTTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031533AbXEHTVC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031376AbXEHTTy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967910AbXEHTTu
+	id S1031533AbXEHTVC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:21:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031501AbXEHTVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:19:50 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:34975 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967905AbXEHTTs (ORCPT
+	Tue, 8 May 2007 15:21:01 -0400
+Received: from m-relay.rz.uni-saarland.de ([134.96.7.3]:60844 "EHLO
+	m-relay.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031461AbXEHTU7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:19:48 -0400
-Date: Tue, 8 May 2007 12:19:45 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: "John Keller" <jpk@sgi.com>, <linux-kernel@vger.kernel.org>,
-       <steiner@sgi.com>, <linux-ia64@vger.kernel.org>
-Subject: Re: [PATCH Resend] - SN: validate smp_affinity mask on intr
- redirect
-Message-Id: <20070508121945.3e8d29c1.akpm@linux-foundation.org>
-In-Reply-To: <617E1C2C70743745A92448908E030B2A01719A90@scsmsx411.amr.corp.intel.com>
-References: <20070508152315.26329.8428.64771@attica.americas.sgi.com>
-	<617E1C2C70743745A92448908E030B2A01719A90@scsmsx411.amr.corp.intel.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 8 May 2007 15:20:59 -0400
+Date: Tue, 8 May 2007 21:19:04 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
+Message-ID: <20070508191904.GA13368@mailshack.com>
+References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org> <20070508183232.GA13225@mailshack.com> <4640C55B.6030908@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4640C55B.6030908@zytor.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.5.1 (m-relay.rz.uni-saarland.de [134.96.7.3]); Tue, 08 May 2007 21:19:57 +0200 (CEST)
+X-AntiVirus: checked by AntiVir Milter (version: 1.1.3-1; AVE: 7.3.1.53; VDF: 6.38.1.19; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 11:03:20 -0700
-"Luck, Tony" <tony.luck@intel.com> wrote:
-
-> +#ifndef is_affinity_mask_valid
-> +#define is_affinity_mask_valid() 1
-> +#endif
-> +
->  int no_irq_affinity;
->  static int irq_affinity_write_proc(struct file *file, const char __user *buffer,
->  				   unsigned long count, void *data)
-> @@ -42,6 +46,9 @@ static int irq_affinity_write_proc(struc
->  	if (err)
->  		return err;
->  
-> +	if (!is_affinity_mask_valid(new_value))
-> +		return -EINVAL;
+On Tue, May 08, 2007 at 11:45:47AM -0700, H. Peter Anvin wrote:
+> Alexander van Heukelum wrote:
+> > 
+> > Oh! A padding hole in a struct! That could be a problem. If the freeze
+> > is after decompression, could you test if this makes it work again?
+> > 
 > 
-> This results in a warning:
-> kernel/irq/proc.c:49: warning: implicit declaration of function `is_affinity_mask_valid'
-> 
+> The correct fix is to apply __attribute__((packed)) to this structure.
 
-It had a dopey little bug:
+Yeah, I thought about that possibility too, but the struct didn't need
+that (in my opinion ugly) annotation before. Oh well, here you go.
 
+Greetings,
+	Alexander
 
-diff -puN kernel/irq/proc.c~sn-validate-smp_affinity-mask-on-intr-redirect-fix kernel/irq/proc.c
---- a/kernel/irq/proc.c~sn-validate-smp_affinity-mask-on-intr-redirect-fix
-+++ a/kernel/irq/proc.c
-@@ -28,7 +28,7 @@ static int irq_affinity_read_proc(char *
- }
+---
+
+Commit 89ec4c238e7a3d7e660291f3f1a8181381baad77 introduced a discrepancy
+between the struct screen_info which is used by the C code, and the
+PARAM_* offsets which are used in the real-mode kernel. As hpa suggests,
+adding __attribute__((packed)) to the struct fixes it.
+
+Signed-off-by: Alexander van Heukelum <heukelum@mailshack.com>
+
+---
+
+diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
+index b02308e..4a7c24b 100644
+--- a/include/linux/screen_info.h
++++ b/include/linux/screen_info.h
+@@ -44,7 +44,7 @@ struct screen_info {
+ 	u32 capabilities;       /* 0x36 */
+ 				/* 0x3a -- 0x3b reserved for future expansion */
+ 				/* 0x3c -- 0x3f micro stack for relocatable kernels */
+-};
++} __attribute__((packed));
  
- #ifndef is_affinity_mask_valid
--#define is_affinity_mask_valid() 1
-+#define is_affinity_mask_valid(val) 1
- #endif
+ extern struct screen_info screen_info;
  
- int no_irq_affinity;
-_
-
