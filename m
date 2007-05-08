@@ -1,136 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755118AbXEHGQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755174AbXEHGSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755118AbXEHGQY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 02:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbXEHGQY
+	id S1755174AbXEHGSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 02:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754675AbXEHGSW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 02:16:24 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:38084 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754123AbXEHGQX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 02:16:23 -0400
-Date: Tue, 8 May 2007 07:16:21 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: torvalds@osdl.org, Andrew Morton <akpm@osdl.org>
-cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-Subject: [git pull] drm tree with driver changes for 2.6.22-rc1
-Message-ID: <Pine.LNX.4.64.0705080714560.5546@skynet.skynet.ie>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="29444707-1471283169-1178604981=:5546"
+	Tue, 8 May 2007 02:18:22 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:35302 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754406AbXEHGSV (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 02:18:21 -0400
+Date: Tue, 8 May 2007 16:18:10 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org,
+       David Chinner <dgc@sgi.com>
+Subject: Re: sleeping function called from invalid context at block/cfq-iosched.c (Was: Re: 2.6.21-mm1)
+Message-ID: <20070508061810.GI32602149@melbourne.sgi.com>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <463E3C50.9080207@simon.arlott.org.uk> <20070506135403.a6785f7d.akpm@linux-foundation.org> <463FAF1C.8060500@simon.arlott.org.uk> <20070507162349.0790706f.akpm@linux-foundation.org> <463FB697.6060902@simon.arlott.org.uk> <20070507163335.f5f5ea6e.akpm@linux-foundation.org> <463FFD0A.2050708@goop.org> <20070507222409.2d597a86.akpm@linux-foundation.org> <46400CD0.8050309@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46400CD0.8050309@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Mon, May 07, 2007 at 10:38:24PM -0700, Jeremy Fitzhardinge wrote:
+> Andrew Morton wrote:
+> > On Mon, 07 May 2007 21:31:06 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> >   
+> >> I've found that XFS+lvm+4k stacks is completely unusable with current
+> >> kernels.  I get hangs/oopes after ~10mins of work.
+> >>     
+> >
+> > Sounds like this is new behaviour?
+> >
+> > I wonder why.  Same compiler version?
+> 
+> I've only recently started using xfs, so I couldn't say if its new
+> behaviour.  I did notice that it took a week or so for problems to set
+> in; my theory is that as the filesystem got a bit aged, its
+> datastructures got a bit more complex, and cause the kernel code to use
+> more stack.  But that's just a guess.
 
---29444707-1471283169-1178604981=:5546
-Content-Type: TEXT/PLAIN; charset=X-UNKNOWN; format=flowed
-Content-Transfer-Encoding: 8BIT
+The worst case stack usage through XFS occurs when it has to read
+metadata blocks in the writeback path when doing an allocation
+transaction. This happens when walking the freespace btrees looking
+for an extent matching the allocation requirements. As the fileystem
+fills up, these btrees will grow and you are more likely not to have
+a block inthe btree cached in memory.
 
+So yes, this is a possible reason you hadn't seen any problems early
+on.
 
-Hi Linus,
+FWIW, there's also been recent reports of both ext3 and reiser on
+LVM blowing 4k stacks, so if you use LVM it probably advisable to
+go back to 8k stacks....
 
-Please pull the 'drm-patches' branch from
-git://master.kernel.org/pub/scm/linux/kernel/git/airlied/drm-2.6.git drm-patches
-
-This contains updates to the radeon and via drm drivers and cleans up the
-ati pcigart code in order to add support for the integrated rs480 chipsets.
-
-It also pulls in some fixes for via and radeon drivers from the DRI teams.
-
-Hopefully I got the diffstat correct..
+Cheers,
 
 Dave.
-
-  drivers/char/drm/ati_pcigart.c  |   84 ++++++++++++++++--------------
-  drivers/char/drm/drmP.h         |    7 ++-
-  drivers/char/drm/drm_drv.c      |   10 ++--
-  drivers/char/drm/drm_os_linux.h |    3 -
-  drivers/char/drm/drm_pciids.h   |    1 +
-  drivers/char/drm/r128_cce.c     |    3 +-
-  drivers/char/drm/r128_drv.h     |    2 +
-  drivers/char/drm/radeon_cp.c    |   71 +++++++++++++++++++++++--
-  drivers/char/drm/radeon_drm.h   |    1 +
-  drivers/char/drm/radeon_drv.h   |   24 ++++++++-
-  drivers/char/drm/radeon_state.c |   52 +++++++++---------
-  drivers/char/drm/via_dma.c      |  111 ++++++++++++++++-----------------------
-  drivers/char/drm/via_drv.h      |    5 +-
-  13 files changed, 222 insertions(+), 152 deletions(-)
-
-commit ef68d295508d52e792abf70d4f84461104d33b9d
-Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-Date:   Tue May 8 15:48:39 2007 +1000
-
-     via: Make sure we flush write-combining using a follow-up read.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-
-commit a0a6dd0b221260be1e3da725e6b49797e5fa7429
-Author: Thomas Hellstrom <thomas-at-tungstengraphics-dot-com>
-Date:   Tue May 8 15:47:41 2007 +1000
-
-     via: Try to improve command-buffer chaining.
-
-     Bump driver date and patchlevel.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-
-commit bc07dc7f07a2f2d4d0aa4ffb9597413ad9137d44
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Tue May 8 15:32:35 2007 +1000
-
-     drm: remove old taskqueue remnant
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-
-commit 0515b93c0ea89eb2120b0ec1d148359da01ad2e5
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Tue May 8 15:28:15 2007 +1000
-
-     drm: rename badly named define and cleanup ioctl code spacing
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-
-commit 453ff94ca502d0a7441912823f20ed130f685429
-Author: Michel Dänzer <michel@tungstengraphics.com>
-Date:   Tue May 8 15:21:14 2007 +1000
-
-     radeon: Don't mess up page flipping when a file descriptor is closed.
-
-     There can still be other contexts that may use page flipping later on, so do
-     just unilaterally 'clean it up', which could lead to the wrong page being
-     displayed, e.g. when running 3D apps with a GLX compositing manager such as
-     compiz using page flipping.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
-
-commit f2b04cd219e5c0f1214c0eeeec814ddd08a12c1b
-Author: Dave Airlie <airlied@linux.ie>
-Date:   Tue May 8 15:19:23 2007 +1000
-
-     drm/radeon: upgrade to 1.27 - make PCI GART more flexible
-
-     radeon: make PCI GART aperture size variable, but making table size variable
-         This is precursor to getting a TTM backend for this stuff, and also
-         allows the PCI table to be allocated at fb 0
-     radeon: add support for reverse engineered xpress200m
-
-         The IGPGART setup code was traced using mmio-trace on fglrx by myself
-         and Phillip Ezolt <phillipezolt@gmail.com> on dri-devel.
-
-         This code doesn't let the 3D driver work properly as the card has no
-         vertex shader support.
-
-         Thanks to Matthew Garrett + Ubuntu for providing me some hardware to do this
-         work on.
-
-     Signed-off-by: Dave Airlie <airlied@linux.ie>
-
---29444707-1471283169-1178604981=:5546--
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
