@@ -1,106 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934639AbXEHJhf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934782AbXEHJkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934639AbXEHJhf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 05:37:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934631AbXEHJhe
+	id S934782AbXEHJkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 05:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934647AbXEHJkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 05:37:34 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:63163 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S934600AbXEHJhd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 05:37:33 -0400
-Date: Tue, 8 May 2007 11:37:26 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>,
-       Chuck Lever <chuck.lever@oracle.com>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       nfs@lists.sourceforge.net
-Subject: Re: [GIT] NFS client updates for 2.6.22...
-In-Reply-To: <1178117571.5435.10.camel@heimdal.trondhjem.org>
-Message-ID: <Pine.LNX.4.62.0705081133110.20168@pademelon.sonytel.be>
-References: <1178117571.5435.10.camel@heimdal.trondhjem.org>
+	Tue, 8 May 2007 05:40:37 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:49319 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934646AbXEHJkg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 05:40:36 -0400
+Date: Tue, 8 May 2007 02:39:57 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Chris Wright <chrisw@sous-sol.org>, LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86-64 highres/dyntick support
+Message-ID: <20070508093957.GS3505@sequoia.sous-sol.org>
+References: <1178485128.31213.98.camel@localhost.localdomain> <20070507163110.GP3505@sequoia.sous-sol.org> <1178556361.3042.16.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-584337861-980738872-1178617046=:20168"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178556361.3042.16.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
-
----584337861-980738872-1178617046=:20168
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-
-On Wed, 2 May 2007, Trond Myklebust wrote:
-> commit c5a4dd8b7c15927a8fbff83171b57cad675a79b9
-> Author: Chuck Lever <chuck.lever@oracle.com>
-> Date:   Thu Mar 29 16:47:58 2007 -0400
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> On Mon, 2007-05-07 at 09:31 -0700, Chris Wright wrote:
+> >   Going through to see where we differ and if there's
+> > any bits of my set that yours needs.  
 > 
->     SUNRPC: Eliminate side effects from rpc_malloc
->     
->     Currently rpc_malloc sets req->rq_buffer internally.  Make this a more
->     generic interface:  return a pointer to the new buffer (or NULL) and
->     make the caller set req->rq_buffer and req->rq_bufsize.  This looks much
->     more like kmalloc and eliminates the side effects.
->     
->     To fix a potential deadlock, this patch also replaces GFP_NOFS with
->     GFP_NOWAIT in rpc_malloc.  This prevents async RPCs from sleeping outside
->     the RPC's task scheduler while allocating their buffer.
->     
->     Signed-off-by: Chuck Lever <chuck.lever@oracle.com>
->     Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> Yes please.
 
-This patch introduced the following compiler warnings:
+OK, looks very similar all things considered.  One thing I didn't do
+was fix lapic timer calibration (was hoping you'd do that part, and you
+did ;-)  I've noticed that something has changed and I'm seeing irq0
+handled on cpu3 (4 cpu system), where it used to be on cpu0 as expected.
+In addition lapic timer is firing there, and I'm seeing a higher
+interrupt load than I used to.  This is the same in your set and mine.
+Following is small set of patches that were the more obvious bits.
 
-net/sunrpc/sched.c:766: warning: format ‘%u’ expects type ‘unsigned int’, but argument 3 has type ‘size_t’
-net/sunrpc/sched.c:785: warning: format ‘%u’ expects type ‘unsigned int’, but argument 2 has type ‘size_t’
-
-  - Use %zu to format size_t
-  - Kill 2 useless casts
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
---- ps3-linux-2.6.21.orig/net/sunrpc/sched.c
-+++ ps3-linux-2.6.21/net/sunrpc/sched.c
-@@ -763,9 +763,9 @@ void *rpc_malloc(struct rpc_task *task, 
- 	else
- 		buf = kmalloc(size, gfp);
- 	*buf = size;
--	dprintk("RPC: %5u allocated buffer of size %u at %p\n",
-+	dprintk("RPC: %5u allocated buffer of size %zu at %p\n",
- 			task->tk_pid, size, buf);
--	return (void *) ++buf;
-+	return ++buf;
- }
- 
- /**
-@@ -775,14 +775,14 @@ void *rpc_malloc(struct rpc_task *task, 
-  */
- void rpc_free(void *buffer)
- {
--	size_t size, *buf = (size_t *) buffer;
-+	size_t size, *buf = buffer;
- 
- 	if (!buffer)
- 		return;
- 	size = *buf;
- 	buf--;
- 
--	dprintk("RPC:       freeing buffer of size %u at %p\n",
-+	dprintk("RPC:       freeing buffer of size %zu at %p\n",
- 			size, buf);
- 	if (size <= RPC_BUFFER_MAXSIZE)
- 		mempool_free(buf, rpc_buffer_mempool);
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
----584337861-980738872-1178617046=:20168--
+thanks,
+-chris
