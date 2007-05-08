@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970685AbXEHX4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970764AbXEHX5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970685AbXEHX4R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 19:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969435AbXEHX4H
+	id S970764AbXEHX5h (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 19:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970379AbXEHX52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 19:56:07 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:54230 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967460AbXEHX4E (ORCPT
+	Tue, 8 May 2007 19:57:28 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46504 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S968143AbXEHX51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 19:56:04 -0400
-Message-ID: <46410F1D.8060808@oracle.com>
-Date: Tue, 08 May 2007 17:00:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Tue, 8 May 2007 19:57:27 -0400
+Date: Tue, 8 May 2007 16:57:27 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Kevin Winchester <kjwinchester@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot
+In-Reply-To: <464108CC.3060604@gmail.com>
+Message-ID: <Pine.LNX.4.64.0705081655560.16476@schroedinger.engr.sgi.com>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+ <4640FE35.2070605@gmail.com> <Pine.LNX.4.64.0705081557560.15790@schroedinger.engr.sgi.com>
+ <464108CC.3060604@gmail.com>
 MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [RFC/PATCH] doc: volatile considered evil
-References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org> <20070508121404.17bd97a6.randy.dunlap@oracle.com> <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com> <m3k5vj2iha.fsf@maximus.localdomain> <alpine.DEB.0.99.0705081306000.15420@chino.kir.corp.google.com> <20070508161309.c398a913.randy.dunlap@oracle.com> <alpine.DEB.0.99.0705081650530.28511@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.0.99.0705081650530.28511@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> On Tue, 8 May 2007, Randy Dunlap wrote:
-> 
->> It's already there, isn't it?  <quote from original:>
->>
->> The only acceptable uses for "volatile" are:
->>
->>  - in _code_, i.e., for things like the definition of "readb()" etc, where we
->>    use it to force a particular access.
->>  - with inline asms
->>  - on "jiffies", for stupid legacy reasons
->>
->> </quote>
->>
->> or are you saying that you want to subject/header/title modified also?
->>
-> 
-> I wasn't aware that you were considering the inclusion of Linus' entire 
-> email in the document.  There exists a point where CodingStyle becomes so 
-> large that people choose not to read it in its entirety, so I was 
-> expecting only an addition that would explicit document the acceptable and
-> unacceptable uses of 'volatile' in kernel code with perhaps a link to his 
-> email.
+On Tue, 8 May 2007, Kevin Winchester wrote:
 
-but I wouldn't put it into CodingStyle.
+> [    1.376783]  [<ffffffff8067d664>] kernel_init+0xc4/0x2a0
+> [    1.376857]  [<ffffffff802080aa>] __switch_to+0x2a/0x2d0
+> [    1.376932]  [<ffffffff8020a5d8>] child_rip+0xa/0x12
+> [    1.377006]  [<ffffffff8067d5a0>] kernel_init+0x0/0x2a0
+> [    1.377080]  [<ffffffff8020a5ce>] child_rip+0x0/0x12
+> [    1.377151]
+> [    1.377221] @@@ SLUB kmalloc-256: Restoring Poison (0x6b) from
+> 0xffff810001bdecd0-0xffff810001bdedce
+> [    1.377326] @@@ SLUB kmalloc-256: Restoring Poison (0xa5) from
+> 0xffff810001bdedcf-0xffff810001bdedcf
+> [    1.377430] @@@ SLUB: kmalloc-256 slab 0xffff810001061890. Marking all
+> objects used.
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+
+There is more... The above describes the repair actions that were taken by 
+SLUB. Poison was restored and then the slab was taken out of circulation 
+since pointers may still exist that may damage additional objects if used 
+to store more data.
+
+
