@@ -1,116 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966662AbXEHRRV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966741AbXEHRRt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966662AbXEHRRV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 13:17:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966526AbXEHRRU
+	id S966741AbXEHRRt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 13:17:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966597AbXEHRRq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 13:17:20 -0400
-Received: from khc.piap.pl ([195.187.100.11]:42776 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966222AbXEHRRS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 13:17:18 -0400
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-References: <m3abwhcy74.fsf@maximus.localdomain>
-	<m3vef5biob.fsf@maximus.localdomain>
-	<5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>
-	<m3hcqoa772.fsf@maximus.localdomain>
-	<86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>
-	<m33b289zku.fsf@maximus.localdomain>
-	<m3zm4g3yed.fsf_-_@maximus.localdomain>
-	<20070508113735.GB32055@xi.wantstofly.org>
-	<m3fy6775fz.fsf@maximus.localdomain>
-	<20070508145340.GD387@xi.wantstofly.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 08 May 2007 19:17:16 +0200
-In-Reply-To: <20070508145340.GD387@xi.wantstofly.org> (Lennert Buytenhek's message of "Tue, 8 May 2007 16:53:40 +0200")
-Message-ID: <m3lkfz5j6r.fsf@maximus.localdomain>
+	Tue, 8 May 2007 13:17:46 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:48518 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966012AbXEHRRp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 13:17:45 -0400
+Date: Tue, 8 May 2007 19:15:19 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-scsi@vger.kernel.org,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: Fix old SCSI adapter crashes with CD-ROM (take 2)
+Message-ID: <20070508171519.GG4163@kernel.dk>
+References: <20070508171710.1ac730cd@the-village.bc.nu> <20070508161444.GA4163@kernel.dk> <1178642376.3737.36.camel@mulgrave.il.steeleye.com> <20070508164059.GD4163@kernel.dk> <1178643151.3737.44.camel@mulgrave.il.steeleye.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178643151.3737.44.camel@mulgrave.il.steeleye.com>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennert Buytenhek <buytenh@wantstofly.org> writes:
+On Tue, May 08 2007, James Bottomley wrote:
+> On Tue, 2007-05-08 at 18:40 +0200, Jens Axboe wrote:
+> > On Tue, May 08 2007, James Bottomley wrote:
+> > > On Tue, 2007-05-08 at 18:14 +0200, Jens Axboe wrote:
+> > > > On Tue, May 08 2007, Alan Cox wrote:
+> > > > > The CD-ROM layer doesn't bounce requests for old ISA controllers (and
+> > > > > nor should it). However they get injected into the SCSI layer via
+> > > > > sr_ioctl which also doesn't bounce them and SCSI then passes the buffer
+> > > > > along to a device with unchecked_isa_dma set which either panics or
+> > > > > truncates the buffer to 24bits.
+> > > > > 
+> > > > > According to Jens the right long term fix is for the CD layer to route
+> > > > > the requests differently but in the mean time this has been tested by a
+> > > > > victim and verified to sort the problem out. For the other 99.9% of users
+> > > > > it's a no-op and doesn't bounce data.
+> > > > > 
+> > > > > Signed-off-by: Alan Cox <alan@redhat.com>
+> > > > 
+> > > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > > 
+> > > > Christoph passed me his patch to get rid of ->generic_packet() in the
+> > > > cdrom layer, so the work is almost complete. This patch is fine as a
+> > > > work-around until that gets merged, though.
+> > > 
+> > > Actually, I think the new scsi request infrastructure should be doing
+> > > the bouncing (rather than have it done in each problem path we
+> > > discover).
+> > 
+> > Of course, bouncing should only be done in one layer (the block layer).
+> > >
+> > > Mike Christie tells me we're missing bouncing by accident in the
+> > > scsi_execute path (but not the scsi_execute_async path).  He says this
+> > > is the fix he proposed:
+> > > 
+> > > http://marc.info/?l=linux-scsi&m=115981479822790&w=2
+> > > 
+> > > Can we just merge this instead?
+> > 
+> > That's another issue. The problem here are requests (cgc's) initiated by
+> > the cdrom.c layer. Those _should_ get mapped to a request and put on the
+> > queue for the device, and thus get bounced by the block layer if
+> > appropriate.
+> > 
+> > Mike's fix looks legit and should be merged as well, but it wont fix
+> > this issue.
+> 
+> It won't?  I thought the issue (from the fix) is that cgc->buffer is
+> outside of the device accessibility mask.  The scsi_execute path
+> allocates a request and then calls blk_rq_map_kern on the buffer (in
+> this case cgc->buffer) ... the problem is that blk_rq_map_kern() doesn't
+> currently bounce the buffer, but if it did (which is the functionality
+> Mike's patch adds), surely the need to bounce it in the ioctl path would
+> go away?
 
-> The board support code knows such things as that the "front ethernet
-> port" on the board is connected to the CPU's MII port number #2, but
-> the board support code does _not_ know that MII port number #2
-> corresponds to "ixp4xx hardware queue #5."
+You are right, I missed that scsi_execute() actually builds a request in
+the proper manner.
 
-Sure. And I don't want it to know.
+Mikes patch is in the for-2.6.22 block branch and I asked Linus to pull,
+so all should be well.
 
-It has to pick up any available queue for RX, that is. If the
-board code knows it uses ETH connected to NPE-B and NPE-C, and
-HSS-0 connected (obviously) to NPE-A, and it wants some crypto
-functions etc., it can pick a queue which normally belongs to
-HSS-1. If the code knows the board has both HSS and only NPE-B
-Ethernet, it can use one of NPE-C Ethernet's queues. It's that
-simple.
-
-The Ethernet (and HSS etc.) driver knows it has to use queue 24 for
-NPE-B Ethernet's TX and 27 for TX and so on, this is fixed in the
-firmware so I don't let the board code mess with that. The
-Ethernet RX queue is different, we can just make something up and
-tell NPE about that.
-
-That's BTW the same thing you would want to do with SRAM - except
-that the SRAM allocator is technically possible, while making
-queue assignments needs knowledge about the hardware.
-
-> If Intel puts out a firmware update next month, and your ethernet
-> driver is modified to take advantage of the new features in that
-> firmware and starts depending on the newer version of that firmware,
-> we will have to modify every ixp4xx board support file in case the
-> firmware update modifies the ixp4xx queue numbers in use.
-
-Nope, we just modify Ethernet driver:
-drivers/net/arm/ixp4xx_eth.c:
-#define TX_QUEUE(plat)          (NPE_ID(port) + 23)
-#define RXFREE_QUEUE(plat)      (NPE_ID(port) + 26)
-#define TXDONE_QUEUE            31
-
-> The
-> mapping from hardware ports (MII port #0, MII port #6, HSS port
-> #42, whatever) to ixp4xx hardware queue numbers (0-63) should _not_
-> be put in every single ixp4xx board support file.
-
-I've never considered doing that :-)
-
-drivers/net/wan/ixp4xx_hss.c:
-/* Queue IDs */
-#define HSS0_CHL_RXTRIG_QUEUE   12      /* orig size = 32 dwords */
-#define HSS0_PKT_RX_QUEUE       13      /* orig size = 32 dwords */
-#define HSS0_PKT_TX0_QUEUE      14      /* orig size = 16 dwords */
-#define HSS0_PKT_TX1_QUEUE      15
-#define HSS0_PKT_TX2_QUEUE      16
-#define HSS0_PKT_TX3_QUEUE      17
-#define HSS0_PKT_RXFREE0_QUEUE  18      /* orig size = 16 dwords */
-#define HSS0_PKT_RXFREE1_QUEUE  19
-#define HSS0_PKT_RXFREE2_QUEUE  20
-#define HSS0_PKT_RXFREE3_QUEUE  21
-#define HSS0_PKT_TXDONE_QUEUE   22      /* orig size = 64 dwords */
-
-#define HSS1_CHL_RXTRIG_QUEUE   10
-#define HSS1_PKT_RX_QUEUE       0
-#define HSS1_PKT_TX0_QUEUE      5
-#define HSS1_PKT_TX1_QUEUE      6
-#define HSS1_PKT_TX2_QUEUE      7
-#define HSS1_PKT_TX3_QUEUE      8
-#define HSS1_PKT_RXFREE0_QUEUE  1
-#define HSS1_PKT_RXFREE1_QUEUE  2
-#define HSS1_PKT_RXFREE2_QUEUE  3
-#define HSS1_PKT_RXFREE3_QUEUE  4
-#define HSS1_PKT_TXDONE_QUEUE   9
-
->> Without them the code in question is hardly readable,
->
-> You can read Polish, how can you complain about code readability. :-))
-
-Well, you may have the point, but I also care about others :-)
 -- 
-Krzysztof Halasa
+Jens Axboe
+
