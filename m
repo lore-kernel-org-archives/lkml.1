@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967386AbXEHTuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968126AbXEHTux@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967386AbXEHTuk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968049AbXEHTuR
+	id S968126AbXEHTux (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:50:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968074AbXEHTu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:50:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50558 "EHLO mx1.redhat.com"
+	Tue, 8 May 2007 15:50:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50588 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968024AbXEHTuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:50:14 -0400
-Date: Tue, 8 May 2007 20:49:09 +0100
+	id S967084AbXEHTuV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 15:50:21 -0400
+Date: Tue, 8 May 2007 20:49:17 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
        Jonathan Brassow <jbrassow@redhat.com>
-Subject: [2.6.22 PATCH 24/26] dm raid1: fix to commit pending clear region requests
-Message-ID: <20070508194909.GE24114@agk.fab.redhat.com>
+Subject: [2.6.22 PATCH 25/26] dm raid1: switch rh_in_sync to blocking in do_reads
+Message-ID: <20070508194917.GF24114@agk.fab.redhat.com>
 Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
 	Jonathan Brassow <jbrassow@redhat.com>
@@ -29,32 +29,28 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jonathan Brassow <jbrassow@redhat.com>
 
-With the code as it is, it is possible for oustanding clear region
-requests never to get flushed when a mirror is deactivated or suspended.
-This means there will always be some resync work required when a mirror
-is activated, even though it may very well be in-sync.
-
-Always requesting the flush doesn't hurt us.  This is because the log
-tracks whether any changes occurred and, if not, no flush is performed.
+The call to rh_in_sync() in do_reads() should be allowed to block.  It
+is in the mirror worker thread which already permits blocking
+operations.  This will be needed to support clustered mirroring which
+will perform network operations.
 
 Signed-off-by: Jonathan Brassow <jbrassow@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 
 ---
- drivers/md/dm-raid1.c |    3 +--
- 1 files changed, 1 insertion(+), 2 deletions(-)
+ drivers/md/dm-raid1.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
 Index: linux-2.6.21/drivers/md/dm-raid1.c
 ===================================================================
---- linux-2.6.21.orig/drivers/md/dm-raid1.c	2007-05-01 19:20:13.000000000 +0100
-+++ linux-2.6.21/drivers/md/dm-raid1.c	2007-05-01 19:20:17.000000000 +0100
-@@ -405,8 +405,7 @@ static void rh_update_states(struct regi
- 		mempool_free(reg, rh->region_pool);
- 	}
- 
--	if (!list_empty(&recovered))
--		rh->log->type->flush(rh->log);
-+	rh->log->type->flush(rh->log);
- 
- 	list_for_each_entry_safe (reg, next, &clean, list)
- 		mempool_free(reg, rh->region_pool);
+--- linux-2.6.21.orig/drivers/md/dm-raid1.c	2007-05-01 19:20:17.000000000 +0100
++++ linux-2.6.21/drivers/md/dm-raid1.c	2007-05-01 19:20:19.000000000 +0100
+@@ -741,7 +741,7 @@ static void do_reads(struct mirror_set *
+ 		/*
+ 		 * We can only read balance if the region is in sync.
+ 		 */
+-		if (rh_in_sync(&ms->rh, region, 0))
++		if (rh_in_sync(&ms->rh, region, 1))
+ 			m = choose_mirror(ms, bio->bi_sector);
+ 		else
+ 			m = ms->default_mirror;
