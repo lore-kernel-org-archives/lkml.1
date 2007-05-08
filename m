@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967285AbXEHNAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967342AbXEHNAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967285AbXEHNAi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 09:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967063AbXEHNAh
+	id S967342AbXEHNAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 09:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967289AbXEHNAj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 09:00:37 -0400
-Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:61866
+	Tue, 8 May 2007 09:00:39 -0400
+Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:61865
 	"EHLO eggplant.ddo.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966124AbXEHNAg (ORCPT
+	with ESMTP id S967054AbXEHNAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 May 2007 09:00:36 -0400
-X-Greylist: delayed 2023 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 May 2007 09:00:35 EDT
-Message-ID: <1743.192.168.1.10.1178627210.squirrel@eggplant.ddo.jp>
-Date: Tue, 8 May 2007 21:26:50 +0900 (JST)
-Subject: [PATCH 1/2] leds:arch/sh/boards/landisk LEDs supports
+Message-ID: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp>
+Date: Tue, 8 May 2007 21:27:05 +0900 (JST)
+Subject: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
 From: "kogiidena" <kogiidena@eggplant.ddo.jp>
 To: rpurdie@rpsys.net
 Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
@@ -32,233 +31,281 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 To:Richard-san
 CC:all
 
-LED driver of I-O DATA LANDISK and USL-5P
-Please apply following patch
+I wrote LED Blink Trigger. Pleas apply if there is no problem.
 
+This allows LEDs to be controlled by a programmable timer.
+"blink" blinks LED at a constant cycle.
+"bitshift" turns LED or Buzzer on and off by the value of pattern.
+
+Kernel version: linux-2.6.21-rc4
 Signed-off-by: kogiidena <kogiidena@eggplant.ddo.jp>
 
 ---
-diff -urpN linux-2.6.21-rc4.orig/drivers/leds/Kconfig NEW/drivers/leds/Kconfig
---- linux-2.6.21-rc4.orig/drivers/leds/Kconfig        2007-03-16 09:20:01.000000000 +0900
-+++ NEW/drivers/leds/Kconfig        2007-03-27 18:30:44.000000000 +0900
-@@ -94,6 +94,13 @@ config LEDS_COBALT
-         help
-           This option enables support for the front LED on Cobalt Server
+diff -urpN OLD/drivers/leds/Kconfig NEW/drivers/leds/Kconfig
+--- OLD/drivers/leds/Kconfig        2007-03-27 18:30:44.000000000 +0900
++++ NEW/drivers/leds/Kconfig        2007-03-27 18:52:42.000000000 +0900
+@@ -134,5 +134,14 @@ config LEDS_TRIGGER_HEARTBEAT
+           load average.
+           If unsure, say Y.
 
-+config LEDS_LANDISK
-+        tristate "LED Support for LANDISK Series"
-+        depends on LEDS_CLASS && SH_LANDISK
-+        select LEDS_TRIGGERS
++config LEDS_TRIGGER_BLINK
++        tristate "LED Blink Trigger"
++        depends on LEDS_TRIGGERS
 +        help
-+          This option enables support for the LED on LANDISK Series
++          This allows LEDs to be controlled by a programmable timer.
++          "blink" blinks LED at a constant cycle.
++          "bitshift" turns LED on and off by the value of pattern.
++          If unsure, say Y.
 +
- comment "LED Triggers"
+ endmenu
 
- config LEDS_TRIGGERS
-diff -urpN linux-2.6.21-rc4.orig/drivers/leds/Makefile NEW/drivers/leds/Makefile
---- linux-2.6.21-rc4.orig/drivers/leds/Makefile        2007-03-16 09:20:01.000000000 +0900
-+++ NEW/drivers/leds/Makefile        2007-03-27 18:27:18.000000000 +0900
-@@ -16,6 +16,7 @@ obj-$(CONFIG_LEDS_NET48XX)                += leds-net4
- obj-$(CONFIG_LEDS_WRAP)                        += leds-wrap.o
- obj-$(CONFIG_LEDS_H1940)                += leds-h1940.o
- obj-$(CONFIG_LEDS_COBALT)                += leds-cobalt.o
-+obj-$(CONFIG_LEDS_LANDISK)                += leds-landisk.o
-
- # LED Triggers
+diff -urpN OLD/drivers/leds/Makefile NEW/drivers/leds/Makefile
+--- OLD/drivers/leds/Makefile        2007-03-27 18:27:18.000000000 +0900
++++ NEW/drivers/leds/Makefile        2007-03-27 18:36:02.000000000 +0900
+@@ -22,3 +22,4 @@ obj-$(CONFIG_LEDS_LANDISK)                += leds-land
  obj-$(CONFIG_LEDS_TRIGGER_TIMER)        += ledtrig-timer.o
-diff -urpN linux-2.6.21-rc4.orig/drivers/leds/leds-landisk.c NEW/drivers/leds/leds-landisk.c
---- linux-2.6.21-rc4.orig/drivers/leds/leds-landisk.c        1970-01-01 09:00:00.000000000 +0900
-+++ NEW/drivers/leds/leds-landisk.c        2007-03-27 18:16:48.000000000 +0900
-@@ -0,0 +1,183 @@
+ obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)        += ledtrig-ide-disk.o
+ obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)        += ledtrig-heartbeat.o
++obj-$(CONFIG_LEDS_TRIGGER_BLINK)        += ledtrig-blink.o
+diff -urpN OLD/drivers/leds/ledtrig-blink.c NEW/drivers/leds/ledtrig-blink.c
+--- OLD/drivers/leds/ledtrig-blink.c        1970-01-01 09:00:00.000000000 +0900
++++ NEW/drivers/leds/ledtrig-blink.c        2007-03-27 18:16:55.000000000 +0900
+@@ -0,0 +1,235 @@
 +/*
-+ * LEDs driver for I-O DATA DEVICE, INC. "LANDISK Series" support.
++ * LED Blink Trigger
 + *
 + * Copyright (C) 2007 kogiidena
 + *
-+ * Based on the drivers/leds/leds-ams-delta.c by:
-+ * Copyright (C) 2006 Jonathan McDowell <noodles@earth.li>
++ * Based on drivers/leds/ledtrig-heartbeat.c by:
++ * Copyright (C) 2006 Atsushi Nemoto <anemo@mba.ocn.ne.jp>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
++ *
 + */
++#include <linux/module.h>
++#include <linux/jiffies.h>
++#include <linux/kernel.h>
 +#include <linux/init.h>
-+#include <linux/platform_device.h>
-+#include <linux/spinlock.h>
++#include <linux/timer.h>
++#include <linux/sched.h>
 +#include <linux/leds.h>
-+#include <asm/io.h>
-+#include <asm/landisk/iodata_landisk.h>
++#include <linux/device.h>
++#include <linux/ctype.h>
++#include "leds.h"
 +
-+spinlock_t landisk_led_lock;
-+static int landisk_arch;                /* 0:LANDISK, LANTank 1:USL-5P */
-+
-+static void landisk_led_set(struct led_classdev *led_cdev,
-+                            enum led_brightness value);
-+
-+static struct led_classdev landisk_leds[] = {
-+        [0] = {
-+                        .name = "power",
-+                        .brightness_set = landisk_led_set,
-+                        .default_trigger = "blink",
-+               },
-+        [1] = {
-+                        .name = "status",
-+                        .brightness_set = landisk_led_set,
-+                        .default_trigger = "blink",
-+               },
-+        [2] = {
-+                        .name = "led1",
-+                        .brightness_set = landisk_led_set,
-+               },
-+        [3] = {
-+                        .name = "led2",
-+                        .brightness_set = landisk_led_set,
-+               },
-+        [4] = {
-+                        .name = "led3",
-+                        .brightness_set = landisk_led_set,
-+               },
-+        [5] = {
-+                        .name = "led4",
-+                        .brightness_set = landisk_led_set,
-+               },
-+        [6] = {
-+                        .name = "led5",
-+                        .brightness_set = landisk_led_set,
-+               },
-+        [7] = {
-+                        .name = "buzzer",
-+                        .default_trigger = "bitshift",
-+                        .brightness_set = landisk_led_set,
-+               },
++struct blink_trig_data {
++        unsigned int mode;
++        signed int phase;
++        unsigned long interval;
++        struct timer_list timer;
 +};
 +
-+static void landisk_led_set(struct led_classdev *led_cdev,
-+                            enum led_brightness value)
++static void led_blink_function(unsigned long data)
 +{
-+        u8 tmp;
-+        int bitmask;
-+        unsigned long flags;
++        struct led_classdev *led_cdev = (struct led_classdev *)data;
++        struct blink_trig_data *blink_data = led_cdev->trigger_data;
++        unsigned long delay = blink_data->interval;
 +
-+        bitmask = 0x01 << (led_cdev - &landisk_leds[0]);
++        led_set_brightness(led_cdev,
++                           blink_data->phase & 0x1 ? LED_FULL : LED_OFF);
 +
-+        spin_lock_irqsave(&landisk_led_lock, flags);
-+        tmp = ctrl_inb(PA_LED);
-+        if (value)
-+                tmp |=  bitmask;
++        if ((blink_data->mode != 0) ||
++            ((blink_data->phase != 0) && (blink_data->phase != 0xffffffff))) {
++                mod_timer(&blink_data->timer,
++                          jiffies + msecs_to_jiffies(delay));
++        }
++        if (blink_data->mode != 0)
++                blink_data->phase++;
 +        else
-+                tmp &= ~bitmask;
-+        ctrl_outb(tmp, PA_LED);
-+        spin_unlock_irqrestore(&landisk_led_lock, flags);
++                blink_data->phase >>= 1;
 +}
 +
-+static int landisk_led_probe(struct platform_device *pdev)
++static ssize_t led_interval_show(struct class_device *dev, char *buf)
 +{
-+        int i, nr_leds;
-+        int ret;
++        struct led_classdev *led_cdev = class_get_devdata(dev);
++        struct blink_trig_data *blink_data = led_cdev->trigger_data;
 +
-+        nr_leds = landisk_arch ? 8 : 2;
++        sprintf(buf, "%lu\n", blink_data->interval);
 +
-+        for (i = ret = 0; ret >= 0 && i < nr_leds; i++) {
-+                ret = led_classdev_register(&pdev->dev, &landisk_leds[i]);
++        return strlen(buf) + 1;
++}
++
++static ssize_t led_interval_store(struct class_device *dev, const char *buf,
++                                  size_t size)
++{
++        struct led_classdev *led_cdev = class_get_devdata(dev);
++        struct blink_trig_data *blink_data = led_cdev->trigger_data;
++        int ret = -EINVAL;
++        char *after;
++        unsigned long state = simple_strtoul(buf, &after, 10);
++        size_t count = after - buf;
++
++        if (*after && isspace(*after))
++                count++;
++
++        if (count == size) {
++                blink_data->interval = state;
++                mod_timer(&blink_data->timer, jiffies + 1);
++                ret = count;
 +        }
-+
-+        if (ret < 0 && i > 1) {
-+                nr_leds = i - 1;
-+                for (i = 0; i < nr_leds; i++)
-+                        led_classdev_unregister(&landisk_leds[i]);
-+        }
-+
 +        return ret;
 +}
 +
-+static int landisk_led_remove(struct platform_device *pdev)
++static ssize_t led_pattern_show(struct class_device *dev, char *buf)
 +{
-+        int i, nr_leds;
++        struct led_classdev *led_cdev = class_get_devdata(dev);
++        struct blink_trig_data *blink_data = led_cdev->trigger_data;
 +
-+        nr_leds = landisk_arch ? 8 : 2;
++        sprintf(buf, "0x%08x\n", blink_data->phase);
 +
-+        for (i = 0; i < nr_leds; i++) {
-+                   led_classdev_unregister(&landisk_leds[i]);
++        return strlen(buf) + 1;
++}
++
++static ssize_t led_pattern_store(struct class_device *dev, const char *buf,
++                                 size_t size)
++{
++        struct led_classdev *led_cdev = class_get_devdata(dev);
++        struct blink_trig_data *blink_data = led_cdev->trigger_data;
++        int ret = -EINVAL;
++        char *after;
++        unsigned long state = simple_strtoul(buf, &after, 16);
++        size_t count = after - buf;
++
++        if (*after && isspace(*after))
++                count++;
++
++        if (count == size) {
++                blink_data->phase = state;
++                mod_timer(&blink_data->timer, jiffies + 1);
++                ret = count;
 +        }
++        return ret;
++}
 +
++static CLASS_DEVICE_ATTR(interval, 0644, led_interval_show, led_interval_store);
++static CLASS_DEVICE_ATTR(pattern, 0644, led_pattern_show, led_pattern_store);
++
++static void blink_trig_activate(struct led_classdev *led_cdev)
++{
++        struct blink_trig_data *blink_data;
++        int rc;
++
++        blink_data = kzalloc(sizeof(*blink_data), GFP_KERNEL);
++        if (!blink_data)
++                return;
++
++        led_cdev->trigger_data = blink_data;
++
++        blink_data->mode = 1;
++        blink_data->phase = 1;
++        blink_data->interval = 250;
++
++        rc = class_device_create_file(led_cdev->class_dev,
++                                      &class_device_attr_interval);
++        if (rc)
++                goto err_out;
++
++        setup_timer(&blink_data->timer,
++                    led_blink_function, (unsigned long)led_cdev);
++
++        led_blink_function(blink_data->timer.data);
++
++        return;
++
++err_out:
++        led_cdev->trigger_data = NULL;
++        kfree(blink_data);
++}
++
++static void bitshift_trig_activate(struct led_classdev *led_cdev)
++{
++        struct blink_trig_data *blink_data;
++        int rc;
++
++        blink_data = kzalloc(sizeof(*blink_data), GFP_KERNEL);
++        if (!blink_data)
++                return;
++
++        led_cdev->trigger_data = blink_data;
++
++        blink_data->mode = 0;
++        blink_data->phase = 0;
++        blink_data->interval = 250;
++
++        rc = class_device_create_file(led_cdev->class_dev,
++                                      &class_device_attr_interval);
++        if (rc)
++                goto err_out;
++
++        rc = class_device_create_file(led_cdev->class_dev,
++                                      &class_device_attr_pattern);
++        if (rc)
++                goto err_out_interval;
++
++        setup_timer(&blink_data->timer,
++                    led_blink_function, (unsigned long)led_cdev);
++
++        led_blink_function(blink_data->timer.data);
++
++        return;
++
++err_out_interval:
++        class_device_remove_file(led_cdev->class_dev,
++                                 &class_device_attr_interval);
++err_out:
++        led_cdev->trigger_data = NULL;
++        kfree(blink_data);
++}
++
++static void blink_trig_deactivate(struct led_classdev *led_cdev)
++{
++        struct blink_trig_data *blink_data = led_cdev->trigger_data;
++
++        if (blink_data) {
++                class_device_remove_file(led_cdev->class_dev,
++                                         &class_device_attr_interval);
++                if (blink_data->mode == 0) {
++                        class_device_remove_file(led_cdev->class_dev,
++                                                 &class_device_attr_pattern);
++                }
++                del_timer_sync(&blink_data->timer);
++                kfree(blink_data);
++        }
++}
++
++static struct led_trigger blink_led_trigger = {
++        .name                 = "blink",
++        .activate         = blink_trig_activate,
++        .deactivate         = blink_trig_deactivate,
++};
++
++static struct led_trigger bitshift_led_trigger = {
++        .name                 = "bitshift",
++        .activate         = bitshift_trig_activate,
++        .deactivate         = blink_trig_deactivate,
++};
++
++static int __init blink_trig_init(void)
++{
++        led_trigger_register(&blink_led_trigger);
++        led_trigger_register(&bitshift_led_trigger);
 +        return 0;
 +}
 +
-+static struct platform_driver landisk_led_driver = {
-+        .probe         = landisk_led_probe,
-+        .remove = landisk_led_remove,
-+        .driver = {
-+                   .name = "landisk-led",
-+                   },
-+};
-+
-+/* HDD-access-LED setting at landisk status LED */
-+static void landisk_disk_trig_activate(struct led_classdev *led_cdev)
++static void __exit blink_trig_exit(void)
 +{
-+        unsigned long flags;
-+        spin_lock_irqsave(&landisk_led_lock, flags);
-+        ctrl_outb((ctrl_inb(PA_LED) & ~0x0c) | 0x04, PA_LED);
-+        spin_unlock_irqrestore(&landisk_led_lock, flags);
++        led_trigger_unregister(&blink_led_trigger);
++        led_trigger_unregister(&bitshift_led_trigger);
 +}
 +
-+static void landisk_disk_trig_deactivate(struct led_classdev *led_cdev)
-+{
-+        unsigned long flags;
-+        spin_lock_irqsave(&landisk_led_lock, flags);
-+        ctrl_outb((ctrl_inb(PA_LED) & ~0x0c) | 0x0c, PA_LED);
-+        spin_unlock_irqrestore(&landisk_led_lock, flags);
-+}
-+
-+static struct led_trigger landisk_disk_led_trigger = {
-+        .name = "disk",
-+        .activate = landisk_disk_trig_activate,
-+        .deactivate = landisk_disk_trig_deactivate,
-+};
-+
-+static int __init landisk_led_init(void)
-+{
-+        u8 orig, test;
-+
-+        orig = ctrl_inb(PA_LED);
-+        ctrl_outb(0x40, PA_LED);
-+
-+        test = ctrl_inb(PA_LED);
-+        ctrl_outb(orig, PA_LED);
-+
-+        landisk_arch = (test == 0x40);
-+
-+        if (landisk_arch == 0) {
-+                /* arch == landisk */
-+                ctrl_outb(orig | 0x07, PA_LED);
-+                landisk_leds[1].default_trigger = "disk";
-+                led_trigger_register(&landisk_disk_led_trigger);
-+        } else {
-+                /* arch == usl-5p */
-+                ctrl_outb(orig | 0x03, PA_LED);
-+        }
-+        return platform_driver_register(&landisk_led_driver);
-+}
-+
-+static void __exit landisk_led_exit(void)
-+{
-+        if (landisk_arch == 0)
-+                led_trigger_unregister(&landisk_disk_led_trigger);
-+        return platform_driver_unregister(&landisk_led_driver);
-+}
-+
-+module_init(landisk_led_init);
-+module_exit(landisk_led_exit);
++module_init(blink_trig_init);
++module_exit(blink_trig_exit);
 +
 +MODULE_AUTHOR("kogiidena <kogiidena@eggplant.ddo.jp>");
-+MODULE_DESCRIPTION("landisk LED driver");
++MODULE_DESCRIPTION("Blink LED trigger");
 +MODULE_LICENSE("GPL");
-
-
-
-
-
-
 
 
 
