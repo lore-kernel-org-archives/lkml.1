@@ -1,52 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032276AbXEHVQL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032284AbXEHVQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032276AbXEHVQL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:16:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032185AbXEHVQI
+	id S1032284AbXEHVQy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032279AbXEHVQx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:16:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36598 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032268AbXEHVQE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:16:04 -0400
-Subject: Re: [PATCH 1/2] V4L: videodev, allow VIDIOCGMBUF
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <32177258712660011096@wsc.cz>
-References: <32177258712660011096@wsc.cz>
-Content-Type: text/plain
-Date: Tue, 08 May 2007 18:15:38 -0300
-Message-Id: <1178658938.18383.375.camel@localhost>
+	Tue, 8 May 2007 17:16:53 -0400
+Received: from 1wt.eu ([62.212.114.60]:2535 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1032270AbXEHVQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:16:51 -0400
+Date: Tue, 8 May 2007 23:16:46 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Zbigniew Baniewski <zb@ispid.com.pl>
+Cc: linux-kernel@vger.kernel.org, hancockr@shaw.ca
+Subject: Re: "modularized" 2.4.34.4  ->  ide-core "unresolved symbols"
+Message-ID: <20070508211646.GA3129@1wt.eu>
+References: <20070505194922.GA13176@localhost.localdomain> <20070506043645.GF943@1wt.eu> <20070508202334.GA16185@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.0-5mdv2007.1 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070508202334.GA16185@localhost.localdomain>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
+Hi Zbigniew,
 
->	if (_IOC_TYPE(cmd)=='v')
-> -		return v4l_compat_translate_ioctl(inode,file,cmd,arg,
-> +#ifdef CONFIG_VIDEO_V4L1_COMPAT
-> +		if (cmd != VIDIOCGMBUF) /* <-- handled below vvv */
-> +#endif
-> +			return v4l_compat_translate_ioctl(inode,file,cmd,arg,
->  						__video_do_ioctl);
+[first, please always keep people in CC when posting on LKML]
+
+On Tue, May 08, 2007 at 10:23:34PM +0200, Zbigniew Baniewski wrote:
+> On Sun, May 06, 2007 at 06:36:45AM +0200, Willy Tarreau wrote:
 > 
-I've committed two patches on my -git tree that will fix the issue
-you're pointing. 
+> > Could you please be a bit more precise :
+> >   - config
+> 
+> Below.
 
-In fact, all the above code should be handled only if V4L1_COMPAT is
-enabled. The fixes are at the following patches:
+Thanks, I could reproduce.
 
-http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=11fe647ca79d1e6381f954a7fe790a1157c803dc
+> >   - what are the unresolved symbols ?
+> 
+> I don't know. When trying to install "generated" kernel-and-so-on.deb file,
+> there is an error message:
+> 
+> depmod: *** Unresolved symbols in /lib/modules/2.4.34/kernel/drivers/ide/ide-core.o
 
-http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=853fa89dd933b90f820d4bd46a71542bfb3d5967
+Here is the complete error :
 
-Cheers,
-Mauro
+depmod: *** Unresolved symbols in /lib/modules/2.4.34/kernel/drivers/ide/ide-core.o
+depmod:         init_cmd640_vlb
+
+> See also other similar reports, f.e.:
+> 
+> http://linux.derkeiler.com/Mailing-Lists/Kernel/2006-05/msg07966.html
+> http://www.unixadmintalk.com/f59/kernel-compile-problem-afs-122462/
+> http://www.captain.at/programming/rtai/kernel-2.4.php
+
+OK I've checked them now. The right solution is the one suggested in the last
+link above, which is also what Robert Hancock said too : not use CONFIG_IDE=m.
+
+The reason is very simple : the IDE code may call several other drivers, some
+of which are modules, some of which are hard-linked into the kernel. It has
+no reliable way of knowing which ones will be available. In fact, the build
+system inside drivers/ide is not perfect as it's not an easy part.
+
+The other solution in your particular situation is to replace in your .config:
+CONFIG_BLK_DEV_CMD640=y
+
+with :
+CONFIG_BLK_DEV_CMD640=m
+
+because only cmd640 causes trouble. I've tested right here and it fixes the
+problem as expected. After all, nearly all your other IDE drivers are modules.
+
+> >   - link to the patch you are talking about ?
+> 
+> It's the patch made by Arkadiusz Miskiewicz:
+> 
+> http://www.ussg.iu.edu/hypermail/linux/kernel/0311.2/1136.html
+
+OK thanks. It was merged, but it _seems_ to require that you link ide-core
+with the kernel and only use ide-probe-mini to probe/unprobe devices. Never
+tried this way though.
+
+Regards,
+Willy
 
