@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031783AbXEHTtA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031798AbXEHTtO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031783AbXEHTtA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:49:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031776AbXEHTsw
+	id S1031798AbXEHTtO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:49:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031785AbXEHTs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:48:52 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50051 "EHLO mx1.redhat.com"
+	Tue, 8 May 2007 15:48:59 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50126 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031702AbXEHTsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:48:47 -0400
-Date: Tue, 8 May 2007 20:47:36 +0100
+	id S1031773AbXEHTs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 15:48:56 -0400
+Date: Tue, 8 May 2007 20:47:58 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
        Heinz Mauelshagen <hjm@redhat.com>, Milan Broz <mbroz@redhat.com>
-Subject: [2.6.22 PATCH 16/26] dm io: new interface
-Message-ID: <20070508194736.GW24114@agk.fab.redhat.com>
+Subject: [2.6.22 PATCH 18/26] dm exception store: update dm io interface
+Message-ID: <20070508194758.GY24114@agk.fab.redhat.com>
 Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
 	Heinz Mauelshagen <hjm@redhat.com>, Milan Broz <mbroz@redhat.com>
@@ -29,253 +29,141 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Heinz Mauelshagen <hjm@redhat.com>
 
-Add a new API to dm-io.c that uses a private mempool and bio_set for each
-client.
+This patch ports dm-exception-store.c to the new, scalable dm_io() interface.
 
-The new functions to use are dm_io_client_create(), dm_io_client_destroy(),
-dm_io_client_resize() and dm_io().
+It replaces dm_io_get()/dm_io_put() by
+dm_io_client_create()/dm_io_client_destroy() calls and
+dm_io_sync_vm() by dm_io() to achive this.
 
 Signed-off-by: Heinz Mauelshagen <hjm@redhat.com>
-Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Cc: Milan Broz <mbroz@redhat.com>
+Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 ---
 
- drivers/md/dm-io.c |  122 +++++++++++++++++++++++++++++++++++++++++++++++++++++
- drivers/md/dm-io.h |   52 ++++++++++++++++++++++
- 2 files changed, 173 insertions(+), 1 deletion(-)
+ drivers/md/dm-exception-store.c |   52 +++++++++++++++++++++-------------------
+ 1 files changed, 28 insertions(+), 24 deletions(-)
 
-Index: linux-2.6.21/drivers/md/dm-io.c
+Index: linux-2.6.21/drivers/md/dm-exception-store.c
 ===================================================================
---- linux-2.6.21.orig/drivers/md/dm-io.c	2007-05-08 16:28:10.000000000 +0100
-+++ linux-2.6.21/drivers/md/dm-io.c	2007-05-08 16:28:26.000000000 +0100
-@@ -103,6 +103,51 @@ void dm_io_put(unsigned int num_pages)
- 	resize_pool(_num_ios - pages_to_ios(num_pages));
- }
- 
-+/*
-+ * Create a client with mempool and bioset.
-+ */
-+struct dm_io_client *dm_io_client_create(unsigned num_pages)
-+{
-+	unsigned ios = pages_to_ios(num_pages);
-+	struct dm_io_client *client;
-+
-+	client = kmalloc(sizeof(*client), GFP_KERNEL);
-+	if (!client)
-+		return ERR_PTR(-ENOMEM);
-+
-+	client->pool = mempool_create_kmalloc_pool(ios, sizeof(struct io));
-+	if (!client->pool)
-+		goto bad;
-+
-+	client->bios = bioset_create(16, 16);
-+	if (!client->bios)
-+		goto bad;
-+
-+	return client;
-+
-+   bad:
-+	if (client->pool)
-+		mempool_destroy(client->pool);
-+	kfree(client);
-+	return ERR_PTR(-ENOMEM);
-+}
-+EXPORT_SYMBOL(dm_io_client_create);
-+
-+int dm_io_client_resize(unsigned num_pages, struct dm_io_client *client)
-+{
-+	return mempool_resize(client->pool, pages_to_ios(num_pages),
-+			      GFP_KERNEL);
-+}
-+EXPORT_SYMBOL(dm_io_client_resize);
-+
-+void dm_io_client_destroy(struct dm_io_client *client)
-+{
-+	mempool_destroy(client->pool);
-+	bioset_free(client->bios);
-+	kfree(client);
-+}
-+EXPORT_SYMBOL(dm_io_client_destroy);
-+
- /*-----------------------------------------------------------------
-  * We need to keep track of which region a bio is doing io for.
-  * In order to save a memory allocation we store this the last
-@@ -236,6 +281,9 @@ static void bvec_dp_init(struct dpages *
- 	dp->context_ptr = bvec;
- }
- 
-+/*
-+ * Functions for getting the pages from a VMA.
-+ */
- static void vm_get_page(struct dpages *dp,
- 		 struct page **p, unsigned long *len, unsigned *offset)
- {
-@@ -265,6 +313,31 @@ static void dm_bio_destructor(struct bio
- 	bio_free(bio, bios(io->client));
- }
- 
-+/*
-+ * Functions for getting the pages from kernel memory.
-+ */
-+static void km_get_page(struct dpages *dp, struct page **p, unsigned long *len,
-+			unsigned *offset)
-+{
-+	*p = virt_to_page(dp->context_ptr);
-+	*offset = dp->context_u;
-+	*len = PAGE_SIZE - dp->context_u;
-+}
-+
-+static void km_next_page(struct dpages *dp)
-+{
-+	dp->context_ptr += PAGE_SIZE - dp->context_u;
-+	dp->context_u = 0;
-+}
-+
-+static void km_dp_init(struct dpages *dp, void *data)
-+{
-+	dp->get_page = km_get_page;
-+	dp->next_page = km_next_page;
-+	dp->context_u = ((unsigned long) data) & (PAGE_SIZE - 1);
-+	dp->context_ptr = data;
-+}
-+
- /*-----------------------------------------------------------------
-  * IO routines that accept a list of pages.
-  *---------------------------------------------------------------*/
-@@ -451,6 +524,55 @@ int dm_io_async_vm(unsigned int num_regi
- 	return async_io(NULL, num_regions, where, rw, &dp, fn, context);
- }
- 
-+static int dp_init(struct dm_io_request *io_req, struct dpages *dp)
-+{
-+	/* Set up dpages based on memory type */
-+	switch (io_req->mem.type) {
-+	case DM_IO_PAGE_LIST:
-+		list_dp_init(dp, io_req->mem.ptr.pl, io_req->mem.offset);
-+		break;
-+
-+	case DM_IO_BVEC:
-+		bvec_dp_init(dp, io_req->mem.ptr.bvec);
-+		break;
-+
-+	case DM_IO_VMA:
-+		vm_dp_init(dp, io_req->mem.ptr.vma);
-+		break;
-+
-+	case DM_IO_KMEM:
-+		km_dp_init(dp, io_req->mem.ptr.addr);
-+		break;
-+
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * New collapsed (a)synchronous interface
-+ */
-+int dm_io(struct dm_io_request *io_req, unsigned num_regions,
-+	  struct io_region *where, unsigned long *sync_error_bits)
-+{
-+	int r;
-+	struct dpages dp;
-+
-+	r = dp_init(io_req, &dp);
-+	if (r)
-+		return r;
-+
-+	if (!io_req->notify.fn)
-+		return sync_io(io_req->client, num_regions, where,
-+			       io_req->bi_rw, &dp, sync_error_bits);
-+
-+	return async_io(io_req->client, num_regions, where, io_req->bi_rw,
-+			&dp, io_req->notify.fn, io_req->notify.context);
-+}
-+EXPORT_SYMBOL(dm_io);
-+
- EXPORT_SYMBOL(dm_io_get);
- EXPORT_SYMBOL(dm_io_put);
- EXPORT_SYMBOL(dm_io_sync);
-Index: linux-2.6.21/drivers/md/dm-io.h
-===================================================================
---- linux-2.6.21.orig/drivers/md/dm-io.h	2007-05-08 16:25:41.000000000 +0100
-+++ linux-2.6.21/drivers/md/dm-io.h	2007-05-08 16:28:11.000000000 +0100
-@@ -20,13 +20,47 @@ struct page_list {
- 	struct page *page;
+--- linux-2.6.21.orig/drivers/md/dm-exception-store.c	2007-05-01 17:38:31.000000000 +0100
++++ linux-2.6.21/drivers/md/dm-exception-store.c	2007-05-01 17:40:53.000000000 +0100
+@@ -1,7 +1,8 @@
+ /*
+- * dm-snapshot.c
++ * dm-exception-store.c
+  *
+  * Copyright (C) 2001-2002 Sistina Software (UK) Limited.
++ * Copyright (C) 2006 Red Hat GmbH
+  *
+  * This file is released under the GPL.
+  */
+@@ -123,6 +124,7 @@ struct pstore {
+ 	atomic_t pending_count;
+ 	uint32_t callback_count;
+ 	struct commit_callback *callbacks;
++	struct dm_io_client *io_client;
  };
  
--
- /*
-  * 'error' is a bitset, with each bit indicating whether an error
-  * occurred doing io to the corresponding region.
+ static inline unsigned int sectors_to_pages(unsigned int sectors)
+@@ -159,14 +161,20 @@ static void free_area(struct pstore *ps)
   */
- typedef void (*io_notify_fn)(unsigned long error, void *context);
+ static int chunk_io(struct pstore *ps, uint32_t chunk, int rw)
+ {
+-	struct io_region where;
+-	unsigned long bits;
++	struct io_region where = {
++		.bdev = ps->snap->cow->bdev,
++		.sector = ps->snap->chunk_size * chunk,
++		.count = ps->snap->chunk_size,
++	};
++	struct dm_io_request io_req = {
++		.bi_rw = rw,
++		.mem.type = DM_IO_VMA,
++		.mem.ptr.vma = ps->area,
++		.client = ps->io_client,
++		.notify.fn = NULL,
++	};
  
-+enum dm_io_mem_type {
-+	DM_IO_PAGE_LIST,/* Page list */
-+	DM_IO_BVEC,	/* Bio vector */
-+	DM_IO_VMA,	/* Virtual memory area */
-+	DM_IO_KMEM,	/* Kernel memory */
-+};
-+
-+struct dm_io_memory {
-+	enum dm_io_mem_type type;
-+
-+	union {
-+		struct page_list *pl;
-+		struct bio_vec *bvec;
-+		void *vma;
-+		void *addr;
-+	} ptr;
-+
-+	unsigned offset;
-+};
-+
-+struct dm_io_notify {
-+	io_notify_fn fn;	/* Callback for asynchronous requests */
-+	void *context;		/* Passed to callback */
-+};
-+
-+/*
-+ * IO request structure
-+ */
-+struct dm_io_client;
-+struct dm_io_request {
-+	int bi_rw;			/* READ|WRITE - not READA */
-+	struct dm_io_memory mem;	/* Memory to use for io */
-+	struct dm_io_notify notify;	/* Synchronous if notify.fn is NULL */
-+	struct dm_io_client *client;	/* Client memory handler */
-+};
+-	where.bdev = ps->snap->cow->bdev;
+-	where.sector = ps->snap->chunk_size * chunk;
+-	where.count = ps->snap->chunk_size;
+-
+-	return dm_io_sync_vm(1, &where, rw, ps->area, &bits);
++	return dm_io(&io_req, 1, &where, NULL);
+ }
  
  /*
-  * Before anyone uses the IO interface they should call
-@@ -39,6 +73,16 @@ int dm_io_get(unsigned int num_pages);
- void dm_io_put(unsigned int num_pages);
+@@ -213,17 +221,18 @@ static int read_header(struct pstore *ps
+ 		chunk_size_supplied = 0;
+ 	}
  
- /*
-+ * For async io calls, users can alternatively use the dm_io() function below
-+ * and dm_io_client_create() to create private mempools for the client.
-+ *
-+ * Create/destroy may block.
-+ */
-+struct dm_io_client *dm_io_client_create(unsigned num_pages);
-+int dm_io_client_resize(unsigned num_pages, struct dm_io_client *client);
-+void dm_io_client_destroy(struct dm_io_client *client);
-+
-+/*
-  * Synchronous IO.
-  *
-  * Please ensure that the rw flag in the next two functions is
-@@ -71,4 +115,10 @@ int dm_io_async_bvec(unsigned int num_re
- int dm_io_async_vm(unsigned int num_regions, struct io_region *where, int rw,
- 		   void *data, io_notify_fn fn, void *context);
+-	r = dm_io_get(sectors_to_pages(ps->snap->chunk_size));
+-	if (r)
+-		return r;
++	ps->io_client = dm_io_client_create(sectors_to_pages(ps->snap->
++							     chunk_size));
++	if (IS_ERR(ps->io_client))
++		return PTR_ERR(ps->io_client);
  
-+/*
-+ * IO interface using private per-client pools.
-+ */
-+int dm_io(struct dm_io_request *io_req, unsigned num_regions,
-+	  struct io_region *region, unsigned long *sync_error_bits);
-+
- #endif
+ 	r = alloc_area(ps);
+ 	if (r)
+-		goto bad1;
++		return r;
+ 
+ 	r = chunk_io(ps, 0, READ);
+ 	if (r)
+-		goto bad2;
++		goto bad;
+ 
+ 	dh = (struct disk_header *) ps->area;
+ 
+@@ -235,7 +244,7 @@ static int read_header(struct pstore *ps
+ 	if (le32_to_cpu(dh->magic) != SNAP_MAGIC) {
+ 		DMWARN("Invalid or corrupt snapshot");
+ 		r = -ENXIO;
+-		goto bad2;
++		goto bad;
+ 	}
+ 
+ 	*new_snapshot = 0;
+@@ -252,27 +261,22 @@ static int read_header(struct pstore *ps
+ 	       (unsigned long long)ps->snap->chunk_size);
+ 
+ 	/* We had a bogus chunk_size. Fix stuff up. */
+-	dm_io_put(sectors_to_pages(ps->snap->chunk_size));
+ 	free_area(ps);
+ 
+ 	ps->snap->chunk_size = chunk_size;
+ 	ps->snap->chunk_mask = chunk_size - 1;
+ 	ps->snap->chunk_shift = ffs(chunk_size) - 1;
+ 
+-	r = dm_io_get(sectors_to_pages(chunk_size));
++	r = dm_io_client_resize(sectors_to_pages(ps->snap->chunk_size),
++				ps->io_client);
+ 	if (r)
+ 		return r;
+ 
+ 	r = alloc_area(ps);
+-	if (r)
+-		goto bad1;
+-
+-	return 0;
++	return r;
+ 
+-bad2:
++bad:
+ 	free_area(ps);
+-bad1:
+-	dm_io_put(sectors_to_pages(ps->snap->chunk_size));
+ 	return r;
+ }
+ 
+@@ -405,7 +409,7 @@ static void persistent_destroy(struct ex
+ {
+ 	struct pstore *ps = get_info(store);
+ 
+-	dm_io_put(sectors_to_pages(ps->snap->chunk_size));
++	dm_io_client_destroy(ps->io_client);
+ 	vfree(ps->callbacks);
+ 	free_area(ps);
+ 	kfree(ps);
