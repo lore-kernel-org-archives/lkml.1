@@ -1,104 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968485AbXEHWkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968495AbXEHWkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968485AbXEHWkG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968480AbXEHWkA
+	id S968495AbXEHWkm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968480AbXEHWkj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:40:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52890 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968479AbXEHWj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:39:59 -0400
-Message-ID: <4640FC3B.3010005@redhat.com>
-Date: Tue, 08 May 2007 18:39:55 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 8 May 2007 18:40:39 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33335 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968428AbXEHWki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 18:40:38 -0400
+Date: Tue, 8 May 2007 16:40:36 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-arch@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] lock bitops
+Message-ID: <20070508224036.GE10562@parisc-linux.org>
+References: <20070508113709.GA19294@wotan.suse.de> <20070508150631.GC10562@parisc-linux.org> <20070508222926.GA20174@wotan.suse.de>
 MIME-Version: 1.0
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-CC: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [patch] ACPI: fix oops after dock driver fails to initialize
-Content-Type: multipart/mixed;
- boundary="------------050104070508010703020207"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070508222926.GA20174@wotan.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050104070508010703020207
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Wed, May 09, 2007 at 12:29:27AM +0200, Nick Piggin wrote:
+> On Tue, May 08, 2007 at 09:06:32AM -0600, Matthew Wilcox wrote:
+> > On Tue, May 08, 2007 at 01:37:09PM +0200, Nick Piggin wrote:
+> > > --
+> > > Introduce test_and_set_bit_lock / clear_bit_unlock bitops with lock semantics.
+> > > Add non-trivial for powerpc and ia64. Convert page lock, buffer lock,
+> > > bit_spin_lock, tasklet locks to use the new locks.
+> > 
+> > The names are a bit clumsy.  How about naming them after the effect,
+> > rather than the implementation?  It struck me that really these things
+> > are bit mutexes -- you can sleep while holding the lock.  How about
+> > calling them bit_mutex_trylock() and bit_mutex_unlock()?
+> 
+> bit_spin_trylock / bit_spin_unlock be OK? ;)
 
-
---------------050104070508010703020207
-Content-Type: text/plain;
- name="acpi_fix_bay-dock_oops.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="acpi_fix_bay-dock_oops.patch"
-
-ACPI: fix oops after dock driver fails to initialize
-
-The driver tests the dock_station pointer for nonnull
-to check whether it has initialized properly. But in
-some cases dock_station will be non-null after being
-freed when driver init fails. Fix by zeroing the
-pointer after freeing.
-
-Signed-off-by: Chuck Ebbert <cebbert@redhat.com>
-
----
- drivers/acpi/dock.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
---- 2.6.21-d390.orig/drivers/acpi/dock.c
-+++ 2.6.21-d390/drivers/acpi/dock.c
-@@ -698,6 +698,7 @@ static int dock_add(acpi_handle handle)
- 	if (ret) {
- 		printk(KERN_ERR PREFIX "Error %d registering dock device\n", ret);
- 		kfree(dock_station);
-+		dock_station = NULL;
- 		return ret;
- 	}
- 	ret = device_create_file(&dock_device.dev, &dev_attr_docked);
-@@ -705,6 +706,7 @@ static int dock_add(acpi_handle handle)
- 		printk("Error %d adding sysfs file\n", ret);
- 		platform_device_unregister(&dock_device);
- 		kfree(dock_station);
-+		dock_station = NULL;
- 		return ret;
- 	}
- 	ret = device_create_file(&dock_device.dev, &dev_attr_undock);
-@@ -713,6 +715,7 @@ static int dock_add(acpi_handle handle)
- 		device_remove_file(&dock_device.dev, &dev_attr_docked);
- 		platform_device_unregister(&dock_device);
- 		kfree(dock_station);
-+		dock_station = NULL;
- 		return ret;
- 	}
- 
-@@ -725,6 +728,7 @@ static int dock_add(acpi_handle handle)
- 	dd = alloc_dock_dependent_device(handle);
- 	if (!dd) {
- 		kfree(dock_station);
-+		dock_station = NULL;
- 		ret = -ENOMEM;
- 		goto dock_add_err_unregister;
- 	}
-@@ -752,6 +756,7 @@ dock_add_err_unregister:
- 	device_remove_file(&dock_device.dev, &dev_attr_undock);
- 	platform_device_unregister(&dock_device);
- 	kfree(dock_station);
-+	dock_station = NULL;
- 	return ret;
- }
- 
-@@ -785,6 +790,7 @@ static int dock_remove(void)
- 
- 	/* free dock station memory */
- 	kfree(dock_station);
-+	dock_station = NULL;
- 	return 0;
- }
- 
-
---------------050104070508010703020207--
+We already have a bit_spin_trylock -- it keeps preempt disabled until
+you bit_spin_unlock.  Oh, and it only actually sets a bit if you've got
+SMP or lock debugging on.  Nice try though ;-)
