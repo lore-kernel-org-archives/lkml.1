@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031638AbXEHTql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031642AbXEHTq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031638AbXEHTql (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031626AbXEHTq3
+	id S1031642AbXEHTq6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031585AbXEHTqw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:46:29 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48999 "EHLO mx1.redhat.com"
+	Tue, 8 May 2007 15:46:52 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49174 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031621AbXEHTqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:46:25 -0400
-Date: Tue, 8 May 2007 20:45:17 +0100
+	id S1031582AbXEHTqt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 15:46:49 -0400
+Date: Tue, 8 May 2007 20:45:39 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org, olaf.kirch@oracle.com
-Subject: [2.6.22 PATCH 07/26] dm crypt: use smaller bvecs in clones
-Message-ID: <20070508194517.GN24114@agk.fab.redhat.com>
+Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+       Ludwig Nussel <ludwig.nussel@suse.de>,
+       Christophe Saout <christophe@saout.de>
+Subject: [2.6.22 PATCH 08/26] dm crypt: add null iv
+Message-ID: <20070508194539.GO24114@agk.fab.redhat.com>
 Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	olaf.kirch@oracle.com
+	Ludwig Nussel <ludwig.nussel@suse.de>,
+	Christophe Saout <christophe@saout.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -26,109 +29,73 @@ Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: olaf.kirch@oracle.com
+From: Ludwig Nussel <ludwig.nussel@suse.de>
 
-Allocate smaller clones
+Add a new IV generation method 'null' to read old filesystem images
+created with SuSE's loop_fish2 module.
 
-With the previous dm-crypt fixes, there is no need for the clone
-bios to have the same bvec size as the original - we just
-need to make them big enough for the remaining number of
-pages. The only requirement is that we clear the "out" index
-in convert_context, so that crypt_convert starts storing data
-at the right position within the clone bio.
-
-Signed-off-by: olaf.kirch@oracle.com
+Signed-off-by: Ludwig Nussel <ludwig.nussel@suse.de>
+Acked-By: Christophe Saout <christophe@saout.de>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 ---
 
- drivers/md/dm-crypt.c |   29 ++++++++---------------------
- 1 files changed, 8 insertions(+), 21 deletions(-)
+ drivers/md/dm-crypt.c |   18 +++++++++++++++++-
+ 1 files changed, 17 insertions(+), 1 deletion(-)
 
 Index: linux-2.6.21/drivers/md/dm-crypt.c
 ===================================================================
---- linux-2.6.21.orig/drivers/md/dm-crypt.c	2007-05-01 17:40:48.000000000 +0100
+--- linux-2.6.21.orig/drivers/md/dm-crypt.c	2007-05-01 17:40:49.000000000 +0100
 +++ linux-2.6.21/drivers/md/dm-crypt.c	2007-05-01 17:40:49.000000000 +0100
-@@ -379,8 +379,7 @@ static int crypt_convert(struct crypt_co
-  * This should never violate the device limitations
-  * May return a smaller bio when running out of pages
+@@ -121,6 +121,9 @@ static void clone_init(struct crypt_io *
+  * benbi: the 64-bit "big-endian 'narrow block'-count", starting at 1
+  *        (needed for LRW-32-AES and possible other narrow block modes)
+  *
++ * null: the initial vector is always zero.  Provides compatibility with
++ *       obsolete loop_fish2 devices.  Do not use for new devices.
++ *
+  * plumb: unimplemented, see:
+  * http://article.gmane.org/gmane.linux.kernel.device-mapper.dm-crypt/454
   */
--static struct bio *crypt_alloc_buffer(struct crypt_io *io, unsigned int size,
--				      unsigned int *bio_vec_idx)
-+static struct bio *crypt_alloc_buffer(struct crypt_io *io, unsigned int size)
- {
- 	struct crypt_config *cc = io->target->private;
- 	struct bio *clone;
-@@ -394,16 +393,7 @@ static struct bio *crypt_alloc_buffer(st
- 
- 	clone_init(io, clone);
- 
--	/* if the last bio was not complete, continue where that one ended */
--	clone->bi_idx = *bio_vec_idx;
--	clone->bi_vcnt = *bio_vec_idx;
--	clone->bi_size = 0;
--	clone->bi_flags &= ~(1 << BIO_SEG_VALID);
--
--	/* clone->bi_idx pages have already been allocated */
--	size -= clone->bi_idx * PAGE_SIZE;
--
--	for (i = clone->bi_idx; i < nr_iovecs; i++) {
-+	for (i = 0; i < nr_iovecs; i++) {
- 		struct bio_vec *bv = bio_iovec_idx(clone, i);
- 
- 		bv->bv_page = mempool_alloc(cc->page_pool, gfp_mask);
-@@ -415,7 +405,7 @@ static struct bio *crypt_alloc_buffer(st
- 		 * return a partially allocated bio, the caller will then try
- 		 * to allocate additional bios while submitting this partial bio
- 		 */
--		if ((i - clone->bi_idx) == (MIN_BIO_PAGES - 1))
-+		if (i == (MIN_BIO_PAGES - 1))
- 			gfp_mask = (gfp_mask | __GFP_NOWARN) & ~__GFP_WAIT;
- 
- 		bv->bv_offset = 0;
-@@ -434,12 +424,6 @@ static struct bio *crypt_alloc_buffer(st
- 		return NULL;
- 	}
- 
--	/*
--	 * Remember the last bio_vec allocated to be able
--	 * to correctly continue after the splitting.
--	 */
--	*bio_vec_idx = clone->bi_vcnt;
--
- 	return clone;
+@@ -257,6 +260,13 @@ static int crypt_iv_benbi_gen(struct cry
+ 	return 0;
  }
  
-@@ -597,7 +581,6 @@ static void process_write(struct crypt_i
- 	struct convert_context ctx;
- 	unsigned remaining = base_bio->bi_size;
- 	sector_t sector = base_bio->bi_sector - io->target->begin;
--	unsigned bvec_idx = 0;
- 
- 	atomic_inc(&io->pending);
- 
-@@ -608,13 +591,14 @@ static void process_write(struct crypt_i
- 	 * so repeat the whole process until all the data can be handled.
- 	 */
- 	while (remaining) {
--		clone = crypt_alloc_buffer(io, base_bio->bi_size, &bvec_idx);
-+		clone = crypt_alloc_buffer(io, remaining);
- 		if (unlikely(!clone)) {
- 			dec_pending(io, -ENOMEM);
- 			return;
- 		}
- 
- 		ctx.bio_out = clone;
-+		ctx.idx_out = 0;
- 
- 		if (unlikely(crypt_convert(cc, &ctx) < 0)) {
- 			crypt_free_buffer_pages(cc, clone, clone->bi_size);
-@@ -623,6 +607,9 @@ static void process_write(struct crypt_i
- 			return;
- 		}
- 
-+		/* crypt_convert should have filled the clone bio */
-+		BUG_ON(ctx.idx_out < clone->bi_vcnt);
++static int crypt_iv_null_gen(struct crypt_config *cc, u8 *iv, sector_t sector)
++{
++	memset(iv, 0, cc->iv_size);
 +
- 		clone->bi_sector = cc->start + sector;
- 		remaining -= clone->bi_size;
- 		sector += bio_sectors(clone);
++	return 0;
++}
++
+ static struct crypt_iv_operations crypt_iv_plain_ops = {
+ 	.generator = crypt_iv_plain_gen
+ };
+@@ -273,6 +283,10 @@ static struct crypt_iv_operations crypt_
+ 	.generator = crypt_iv_benbi_gen
+ };
+ 
++static struct crypt_iv_operations crypt_iv_null_ops = {
++	.generator = crypt_iv_null_gen
++};
++
+ static int
+ crypt_convert_scatterlist(struct crypt_config *cc, struct scatterlist *out,
+                           struct scatterlist *in, unsigned int length,
+@@ -803,6 +817,8 @@ static int crypt_ctr(struct dm_target *t
+ 		cc->iv_gen_ops = &crypt_iv_essiv_ops;
+ 	else if (strcmp(ivmode, "benbi") == 0)
+ 		cc->iv_gen_ops = &crypt_iv_benbi_ops;
++	else if (strcmp(ivmode, "null") == 0)
++		cc->iv_gen_ops = &crypt_iv_null_ops;
+ 	else {
+ 		ti->error = "Invalid IV mode";
+ 		goto bad2;
+@@ -1030,7 +1046,7 @@ error:
+ 
+ static struct target_type crypt_target = {
+ 	.name   = "crypt",
+-	.version= {1, 3, 0},
++	.version= {1, 5, 0},
+ 	.module = THIS_MODULE,
+ 	.ctr    = crypt_ctr,
+ 	.dtr    = crypt_dtr,
