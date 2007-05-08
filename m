@@ -1,59 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968269AbXEHOmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968274AbXEHOmx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968269AbXEHOmQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968263AbXEHOmO
+	id S968274AbXEHOmx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:42:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968180AbXEHOmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:42:14 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:55736 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968106AbXEHOmN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:42:13 -0400
-Date: Tue, 8 May 2007 16:41:23 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg K-H <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
- (PCI_MULTITHREAD_PROBE)
-Message-ID: <20070508164123.5c5056e3@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <20070508141149.GJ4226@stusta.de>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
-	<20070508141149.GJ4226@stusta.de>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
+	Tue, 8 May 2007 10:42:52 -0400
+Received: from mail.screens.ru ([213.234.233.54]:51420 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968178AbXEHOmv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 10:42:51 -0400
+Date: Tue, 8 May 2007 18:42:24 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] vmstat-use-our-own-timer-events-fix
+Message-ID: <20070508144224.GA1138@tv-sign.ru>
+References: <46403B7F.1050009@gmail.com> <20070508021131.438cee31.akpm@linux-foundation.org> <20070508105528.GA86@tv-sign.ru> <46405A67.8020105@gmail.com> <46406656.9060504@gmail.com> <20070508134815.GA1074@tv-sign.ru> <20070508134815.GA1074@tv-sign.ru> <735170251589527543@wsc.cz>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <735170251589527543@wsc.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 16:11:49 +0200,
-Adrian Bunk <bunk@stusta.de> wrote:
-
-> My patch (that started the discussion you mentioned and seems to have 
-> been applied unchanged) contained both the wanted PCI_MULTITHREAD_PROBE 
-> removal and a removal of some of your new infrastructure.
+On 05/08, Jiri Slaby wrote:
+>
+> Oleg Nesterov wrote:
+> > On 05/08, Oleg Nesterov wrote:
+> > >
+> > > On 05/08, Jiri Slaby wrote:
+> > >
+> > > This should not happen because we are doing cancel_rearming_delayed_work()
+> > > below, however:
+> > > 
+> > > > +       case CPU_DOWN_PREPARE:
+> > > > +       case CPU_DOWN_PREPARE_FROZEN:
+> > > > +               cancel_rearming_delayed_work(&per_cpu(vmstat_work, cpu));
+> > > > +               per_cpu(vmstat_work, cpu).work.func = NULL;
+> > > > +       case CPU_DOWN_FAILED:
+> > > > +       case CPU_DOWN_FAILED_FROZEN:
+> > > > +               start_cpu_timer(cpu);
+> > > 
+> > > we need a "break;" before "case CPU_DOWN_FAILED", otherwise we re-start
+> > > vmstat_update() immediately.
+> > > 
+> > > This is a bug, but I am not sure is this the only problem.
+> > 
+> > In case I was not clear, this _can_ explain the problem. Because an extra
+> > start_cpu_timer() (due to missed "break;") re-initializes dwork, and clears
+> > _PENDING.
 > 
-> Let's revert it, and I'll then send a new patch containing only the 
-> PCI_MULTITHREAD_PROBE removal.
+> Yes, it helped, thanks. If no objections, please apply the patch below.
 
-Yes, that would be much preferred, thanks.
+Great! Thanks.
 
-> You meant to say:
->   depends on EXPERIMENTAL && !ATA && !IDE && !...
 > 
-> Multithreaded probing on the PCI bus currently breaks too much kernel 
-> code.
+> vmstat-use-our-own-timer-events-fix
 > 
-> And we've already seen how many systems it therefore breaks in practice.
+> add missing break
+> 
+> Cc: Christoph Lameter <clameter@sgi.com>
+> Cc: Arjan van de Ven <arjan@linux.intel.com>
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> 
+> ---
+> commit e0fe3cf4776a3c16ac7625ce9eae75ea42eb9b4e
+> tree c9a4277860e2cea03911b3d73c9386c9284d991b
+> parent b1034323f7e57642eee59a0f5e77c50bc26982c5
+> author Jiri Slaby <jirislaby@gmail.com> Tue, 08 May 2007 16:25:28 +0200
+> committer Jiri Slaby <jirislaby@gmail.com> Tue, 08 May 2007 16:25:28 +0200
+> 
+>  mm/vmstat.c |    1 +
+>  1 files changed, 1 insertions(+), 0 deletions(-)
+> 
+> diff --git a/mm/vmstat.c b/mm/vmstat.c
+> index 709e2f0..fac05e8 100644
+> --- a/mm/vmstat.c
+> +++ b/mm/vmstat.c
+> @@ -677,6 +677,7 @@ static int __cpuinit vmstat_cpuup_callback(struct notifier_block *nfb,
+>  	case CPU_DOWN_PREPARE_FROZEN:
+>  		cancel_rearming_delayed_work(&per_cpu(vmstat_work, cpu));
+>  		per_cpu(vmstat_work, cpu).work.func = NULL;
+> +		break;
+>  	case CPU_DOWN_FAILED:
+>  	case CPU_DOWN_FAILED_FROZEN:
+>  		start_cpu_timer(cpu);
 
-I'm not quite sure about that, that was with the older broken
-infrastructure. But I'm not too emotionally involved with pci
-multithread probing, so if the consensus is that it should be removed,
-that's fine with me.
