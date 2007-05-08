@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967584AbXEHBEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967597AbXEHBHm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967584AbXEHBEP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 21:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967542AbXEHBEM
+	id S967597AbXEHBHm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 21:07:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966642AbXEHBHk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 21:04:12 -0400
-Received: from dpc691978010.direcpc.com ([69.19.78.10]:34867 "EHLO
-	third-harmonic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966205AbXEHBEH (ORCPT
+	Mon, 7 May 2007 21:07:40 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:57879 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966205AbXEHBHj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 21:04:07 -0400
-X-Greylist: delayed 2756 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 May 2007 21:03:53 EDT
-Message-ID: <463FC24C.309@third-harmonic.com>
-Date: Mon, 07 May 2007 20:20:28 -0400
-From: john cooper <john.cooper@third-harmonic.com>
-User-Agent: Thunderbird 1.5.0.2 (X11/20060420)
-MIME-Version: 1.0
-To: Daniel Walker <dwalker@mvista.com>
-CC: Tim Bird <tim.bird@am.sony.com>, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@redhat.com>, dirk.behme@googlemail.com,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       john cooper <john.cooper@third-harmonic.com>
-Subject: Re: Need help debugging RT-preempt patch
-References: <463F7449.2020509@am.sony.com>	 <1178569719.3164.6.camel@imap.mvista.com>  <463F93FB.1000908@am.sony.com> <1178572299.3164.14.camel@imap.mvista.com>
-In-Reply-To: <1178572299.3164.14.camel@imap.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 7 May 2007 21:07:39 -0400
+Date: Mon, 7 May 2007 18:07:36 -0700
+From: Andreas Dilger <adilger@clusterfs.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+Message-ID: <20070508010736.GO8181@schatzie.adilger.int>
+Mail-Followup-To: Jeff Garzik <jeff@garzik.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+	cmm@us.ibm.com
+References: <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426181332.GD7209@amitarora.in.ibm.com> <20070503213133.d1559f52.akpm@linux-foundation.org> <20070507113753.GA5439@schatzie.adilger.int> <20070507135825.f8545a65.akpm@linux-foundation.org> <20070507222103.GJ8181@schatzie.adilger.int> <463FB008.3080706@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <463FB008.3080706@garzik.org>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Walker wrote:
-
-> I'm not sure I'd get into "bisecting" one big patch. Especially if you
-> new to the patches inner workings.. 
+On May 07, 2007  19:02 -0400, Jeff Garzik wrote:
+> Andreas Dilger wrote:
+> >Actually, this is a non-issue.  The reason that it is handled for 
+> >extent-only is that this is the only way to allocate space in the
+> >filesystem without doing the explicit zeroing.
 > 
-> You can bisect by kernel version using the older patches but it's
-> clearly limited,
+> Precisely /how/ do you avoid the zeroing issue, for extents?
 > 
-> http://people.redhat.com/mingo/realtime-preempt/older/
+> If I posix_fallocate() 20GB on ext4, it damn well better be zeroed, 
+> otherwise the implementation is broken.
 
-Actually working on this more closely over a year or so ago I
-found a binary chop among patch versions to often be the
-fastest means of locating the source of breakage.  Though that
-may have been more applicable when several patch versions per
-day were being generated.
+In ext4 (as in XFS) there is a flag stored in the extent that tells if
+the extent is initialized or not.  Reads from uninitialized extents will
+return zero-filled data, and writes that don't span the whole extent
+will cause the uninitialized extent to be split into a regular extent
+and one or two uninitialized extents (depending where the write is).
 
--john
+My comment was just that the extent doesn't have to be explicitly zero
+filled on the disk, by virtue of the fact that the uninitialized flag
+will cause reads to return zero.
 
--- 
-john.cooper@third-harmonic.com
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
