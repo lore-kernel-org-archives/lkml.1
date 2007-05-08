@@ -1,48 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755308AbXEHFyP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968021AbXEHFyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755308AbXEHFyP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 01:54:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbXEHFyK
+	id S968021AbXEHFyt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 01:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967971AbXEHFyp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 01:54:10 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:37569 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755271AbXEHFyI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 01:54:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=fBPk8JT1h0tu7MlmrLi9jbBt8tb1pWahKuyirlNYb2754zDL+a+scphi/V//Cy2dG7ywPy8fKoraTeltqwZvEC0NzsU6Qi7UUb0wkCDuU0SmiQH0E+osVZl/5Bi8oCYRtL1WQYI1iJTumPLhobUirE6Rrf0rCA0D3H0I3gUcTOY=
-Message-ID: <787b0d920705072253vd9eb7c4o893412d28706c9a6@mail.gmail.com>
-Date: Tue, 8 May 2007 01:53:38 -0400
-From: "Albert Cahalan" <acahalan@gmail.com>
-To: joern@lazybastard.org, akpm@osdl.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, shaggy@linux.vnet.ibm.com, dgc@sgi.com
-Subject: Re: [PATCH 0/2] LogFS take two
+	Tue, 8 May 2007 01:54:45 -0400
+Received: from ozlabs.org ([203.10.76.45]:60028 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967930AbXEHFyo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 01:54:44 -0400
+Date: Tue, 8 May 2007 15:54:31 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] [POWERPC] dts: kill hardcoded phandles
+Message-ID: <20070508055431.GA21009@localhost.localdomain>
+Mail-Followup-To: Vitaly Bordug <vitb@kernel.crashing.org>,
+	linux-pcmcia@lists.infradead.org, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
+References: <20070508053049.18428.50622.stgit@localhost.localdomain> <20070508054855.18428.29080.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20070508054855.18428.29080.stgit@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-joern@lazybastard.org, akpm@osdl.org,
-linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-shaggy@linux.vnet.ibm.com, dgc@sgi.com
+On Tue, May 08, 2007 at 09:48:56AM +0400, Vitaly Bordug wrote:
+> 
+> Removed explicit linux,phandle usage. Using references and labels now in
+> PQ and PQ2 boards currently supported in arch/powerpc.
+> Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> 
+> ---
+> 
+>  arch/powerpc/boot/dts/mpc8272ads.dts |   42 ++++++++++++----------------------
+>  arch/powerpc/boot/dts/mpc866ads.dts  |   31 +++++++++----------------
+>  arch/powerpc/boot/dts/mpc885ads.dts  |    2 +-
+>  3 files changed, 27 insertions(+), 48 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+> index 423eedc..83461fe 100644
+> --- a/arch/powerpc/boot/dts/mpc8272ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+> @@ -14,12 +14,10 @@
+>         compatible = "MPC8260ADS";
+>         #address-cells = <1>;
+>         #size-cells = <1>;
+> -       linux,phandle = <100>;
+>  
+>         cpus {
+>                 #address-cells = <1>;
+>                 #size-cells = <0>;
+> -               linux,phandle = <200>;
+>  
+>                 PowerPC,8272@0 {
+>                         device_type = "cpu";
+> @@ -32,12 +30,10 @@
+>                         bus-frequency = <0>;
+>                         clock-frequency = <0>;
+>                         32-bit;
+> -                       linux,phandle = <201>;
+>                 };
+>         };
+>  
+> -       interrupt-controller@f8200000 {
+> -               linux,phandle = <f8200000>;
+> +		pci_pic:interrupt-controller@f8200000 {
 
-Re: [PATCH 0/2] LogFS take two
+I'd like to establish a convention of putting a space after the : and
+using capitals for labels unless there's a strong reason not to in a
+particular case.  It makes them easier to visually distinguish next to
+the node name.
 
-You seem to be missing the immutable bit. This is really useful
-for dealing with buggy or badly-designed things running as root.
-I've used to to protect /dev/null from becoming a normal file
-filled with junk, and to protect /etc/resolv.conf from "helpful"
-network management daemons that don't know my DNS servers.
-
-Anything else missing?
-
-BTW, BSD offers an unprivileged immutable bit as well. I'm sure
-it's useful for the apps that trash their own config files.
-Actually, this bit alone would do fine, and we could really use
-a way to protect writable device files from deletion or permission
-bit changes.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
