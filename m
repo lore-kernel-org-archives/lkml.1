@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967995AbXEHFj3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968005AbXEHFk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967995AbXEHFj3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 01:39:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967977AbXEHFj2
+	id S968005AbXEHFk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 01:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968000AbXEHFkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 01:39:28 -0400
-Received: from waste.org ([66.93.16.53]:51467 "EHLO waste.org"
+	Tue, 8 May 2007 01:40:23 -0400
+Received: from 1wt.eu ([62.212.114.60]:2525 "EHLO 1wt.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967882AbXEHFj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 01:39:27 -0400
-Date: Tue, 8 May 2007 00:36:27 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Esben Nielsen <nielsen.esben@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070508053627.GS11166@waste.org>
-References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com> <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com> <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire> <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org> <Pine.LNX.4.64.0705071159530.14011@frodo.shire> <alpine.LFD.0.98.0705070921390.3802@woody.linux-foundation.org>
-MIME-Version: 1.0
+	id S967999AbXEHFkX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 01:40:23 -0400
+Date: Tue, 8 May 2007 07:39:29 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Woodhouse <dwmw2@infradead.org>, Anton Vorontsov <cbou@mail.ru>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+Message-ID: <20070508053929.GH943@1wt.eu>
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz> <1178550653.11851.191.camel@pmac.infradead.org> <20070507194949.GB3981@ucw.cz> <1178567497.11851.229.camel@pmac.infradead.org> <20070507203812.GA18400@elf.ucw.cz>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705070921390.3802@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20070507203812.GA18400@elf.ucw.cz>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 09:28:32AM -0700, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 7 May 2007, Esben Nielsen wrote:
+On Mon, May 07, 2007 at 10:38:12PM +0200, Pavel Machek wrote:
+> On Mon 2007-05-07 20:51:37, David Woodhouse wrote:
+> > On Mon, 2007-05-07 at 19:49 +0000, Pavel Machek wrote:
+> > > We had this discussion before. Kernel sources should be us-ascii.
+> > > utf-8 is ok for documentation. 
 > > 
-> > What is (long)(a-b) ? I have tried to look it up in the C99 standeard but I
-> > can't find it. Maybe it is in the referred LIA-1 standeard, which I can't find
-> > with google.
+> > /* This _is_ documentation. Go away. */
 > 
-> I don't worry about non-2's-complement machines (they don't exist, and 
-> likely won't exist in the future either).
+> No, that's a comment. Fix your code.
+> 
+> (And besides, comments are supposed to be useful. Patch contained
+> something like...
+> 
+> int voltage; /* ??V */
+> 
+> ...which is pretty unhelpful. We still stick to 80 columns in the
+> code, and bigger displays certainly predate utf-8 compatibility. Plus,
+> you'd have to convert large part of Czech republic before I could
+> reasonably use utf-8).
+> 									Pavel
 
-They do exist. And they run Linux. SLES9 in fact.
+I agree that it's really sad that anyone applies his own caprice in source
+code which is supposed to be used by anybody. Next time this crap will
+appear in printks and we will say "hey, it's documentation". It would be
+better to stick to the common denominator. Some people like Davem insist
+a lot on respecting the 80 columns limit for good reason. We should also
+respect the charset supported by the same terminals.
 
-http://en.wikipedia.org/wiki/UNIVAC_1100/2200_series#UNISYS_ClearPath_IX_series
+Otherwise, if anything is allowed in comments, I don't see why we should
+not start to put ASCII art "just for fun", since I do not see any justified
+use of the UTF8 on the code above.
 
-http://www.unisys.com/eprise/main/admin/corporate/doc/ClearPath_Plus_Dorado_Model_390_Server_Specification_Sheet.pdf
+And no, I won't upgrade my system to get UTF8 support.
 
-That machine is a direct descendant of the Univac 1101 from 1950 and
-is still software-compatible with 1107s from 1962.
+Willy
 
-(Granted, they only run Linux on the x86 side.)
-
--- 
-Mathematics is the supreme nostalgia of our time.
