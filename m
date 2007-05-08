@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967771AbXEHEgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967794AbXEHEna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967771AbXEHEgK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 00:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966795AbXEHEgE
+	id S967794AbXEHEna (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 00:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967753AbXEHEn0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 00:36:04 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:39997 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967685AbXEHEgC (ORCPT
+	Tue, 8 May 2007 00:43:26 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:8689 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967732AbXEHEnZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 00:36:02 -0400
-Date: Mon, 7 May 2007 21:35:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Ulrich Drepper <drepper@gmail.com>
-cc: Davide Libenzi <davidel@xmailserver.org>, Davi Arnaut <davi@haxent.com.br>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
-In-Reply-To: <a36005b50705071949r4f45194bhc0c0416db28d1560@mail.gmail.com>
-Message-ID: <alpine.LFD.0.98.0705072132580.3974@woody.linux-foundation.org>
-References: <20070504225730.490334000@haxent.com.br>  <463BC3CA.6050109@haxent.com.br>
-  <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com> 
- <463CFA37.3020809@haxent.com.br>  <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
-  <463F9B68.305@haxent.com.br>  <a36005b50705071519k40449ed2p7b9ece22cc19219a@mail.gmail.com>
-  <Pine.LNX.4.64.0705071525200.29173@alien.or.mcafeemobile.com>
- <a36005b50705071949r4f45194bhc0c0416db28d1560@mail.gmail.com>
+	Tue, 8 May 2007 00:43:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=ABgCB5l4NnwIiOeL4mtY+x6t9U+VjBzoUB9dMGb5sOCnNI9BaJu+4p8P0CFVD27H7W1+5E1dmmpMGyZKPeHRQE8pc+Y9sqfaFiDLCsj1XkgZOuSS6z/1fG16s1YdqoWBnuee/5cstZGcItdw6dR32DWbO6ncwPwsInItSTkf6XM=
+Message-ID: <787b0d920705072143q63e56f23j18c6b0dbfb270883@mail.gmail.com>
+Date: Tue, 8 May 2007 00:43:24 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: arvidjaar@mail.ru, hirofumi@mail.parknet.co.jp,
+       linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: Long file names in VFAT broken with iocharset=utf8
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Andrey Borzenkov writes:
 
+> This was posted in one of Russian forums. It was not possible to
+> archive (under Linux, using tar) vfat directory where files had
+> long Russian names (really long - over 150 - 170 characters) - tar
+> returned stat failure. When looking with plain ls, file names
+> appeared truncated.
 
-On Mon, 7 May 2007, Ulrich Drepper wrote:
-> 
-> This is absolutely not comparable.  When read/write is canceled no
-> data is lost.  Some other thread might have to pick up the slack but
-> that's it.
+I have an idea to deal with this, but first a rant...
 
-That's bullsh*t, Uli, and you know it.
+At two bytes per character, you get 127 characters in a filename.
+That's wider than the standard 80-column display, and far wider
+than the 28 or 29 characters that an "ls -l" has room for. In a
+GUI file manager or file dialog box, you'll have to scroll sideways.
+In a web browser directory listing, you'll almost certainly have
+to scroll sideways. Must of this even applies to Windows tools.
 
-Whatever the thread read() into it's buffer is effectively gone. You don't 
-know how much of the buffer was updated, so other threads cannot use the 
-data.
+In other words, this is user error. Somebody thought that a filename
+was a place to store a document, probably a README file. What next,
+shall we MIME-encode an icon into the filename?
 
-In fact, the exact *reverse* of what you claim is true. With "poll()" or 
-"select()", other threads *can* actually look at the result buffer, since 
-it has a known size and format that is independent of the return value, 
-unlike read().
-
-But the real issue is that if you start cancellign threads without any 
-other synchronization, you are going to lose data anyway. Claiming 
-anything else is just silly. The whole scenario you talk about is 
-nonsensical, never mind that read() actually handles it *less* well rather 
-than better as you claim.
-
-		Linus
+Fix: the vfat driver should use the 8.3 name for such files.
