@@ -1,199 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754975AbXEHGLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933020AbXEHGMN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754975AbXEHGLp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 02:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754132AbXEHGLn
+	id S933020AbXEHGMN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 02:12:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXEHGMK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 02:11:43 -0400
-Received: from mga05.intel.com ([192.55.52.89]:29571 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754124AbXEHGLn (ORCPT
+	Tue, 8 May 2007 02:12:10 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:31493 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755018AbXEHGMI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 02:11:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,503,1170662400"; 
-   d="scan'208";a="243201031"
-Subject: Re: acpi_handle is intel only.
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Olaf Hering <olaf@aepfle.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       gregkh@suse.de
-In-Reply-To: <20070505202930.GA6360@aepfle.de>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-	 <20070505202930.GA6360@aepfle.de>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 08 May 2007 14:11:05 +0800
-Message-Id: <1178604665.3014.7.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.2 (2.9.2-2.fc7) 
+	Tue, 8 May 2007 02:12:08 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=4O9x5tGOmx6CNDz/2soYPSjkKYmtmPvxY7/tBvQI9PdLqqDdlLWvUIImXJMHxc9X9ZA//MKr+ehql2iYC3BGfQ4fdYE+ReiidNTu2s/+d3v2bIMk/eXSXrMJyg65KP+MNeYCfAE4/rWvqOz/VaHpGb+n04dC6FrbMJY5nv+DUWk=  ;
+X-YMail-OSG: YV4CDnMVM1n_TnNlTAcxhNRNvelkI1HeO_2jVBuwB45LDkO1Qweaj5QuSYbgHjn.Hj._8QyPsg--
+Message-ID: <464014B0.7060308@yahoo.com.au>
+Date: Tue, 08 May 2007 16:12:00 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: Ulrich Drepper <drepper@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
+References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au> <463B598B.80200@redhat.com> <463BC62C.3060605@yahoo.com.au> <463E5A00.6070708@redhat.com>
+In-Reply-To: <463E5A00.6070708@redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-05 at 22:29 +0200, Olaf Hering wrote:
-> On Sat, May 05, Andrew Morton wrote:
+Rik van Riel wrote:
+> Nick Piggin wrote:
 > 
-> > +gregkh-pci-pci-reduce-aer-init-error-information.patch
+>> OK, sure. I think we need more numbers though.
 > 
-> include/linux/pci-acpi.h:57: error: expected ')' before 'handle'
-> make[4]: *** [drivers/pci/pcie/portdrv_pci.o] Error 1
 > 
-> acpi_handle is intel only.
-Sorry. I didn't check CONFIG_ACPI=n. The acpi header file inclusion
-is too complicated.
+> Thinking about the issue some more, I think I know just the
+> number we might want to know.
+> 
+> It is pretty obvious that the kernel needs to do less work
+> with the MADV_FREE code present.  However, it is possible
+> that userspace needs to do more work, by accessing pages
+> that are not in the CPU cache, or in another CPU's cache.
+> 
+> In the test cases where you see similar performance on the
+> workload with and without the MADV_FREE code, are you by any
+> chance seeing lower system time and higher user time?
 
-Below patch against 2.6.21+gregkh-pci-pci-reduce-aer-init-error-information.patch
-fixes the compiling issue. I delete the acpi header file inclusion in aerdrv.h,
-and move function aer_osc_setup to another file.
+I didn't actually check system and user times for the mysql
+benchmark, but that's exactly what I had in mind when I
+mentioned the poor cache behaviour this patch could cause. I
+definitely did see user times go up in benchmarks where I
+measured.
 
-I tested it with both CONFIG_ACPI=y and CONFIG_ACPI=n.
+We have percpu and cache affine page allocators, so when
+userspace just frees a page, it is likely to be cache hot, so
+we want to free it up so it can be reused by this CPU ASAP.
+Likewise, when we newly allocate a page, we want it to be one
+that is cache hot on this CPU.
 
-Signed-off-by: Zhang Yanmin <yanmin.zhang@intel.com>
 
----
+> I think that maybe for 2.6.22 we should just alias MADV_FREE
+> to run with the MADV_DONTNEED functionality, so that the glibc
+> people can make the change on their side while we figure out
+> what will be the best thing to do on the kernel side.
+> 
+> I'll send in a patch that does that once Linus has committed
+> your most recent flood of patches.  What do you think?
 
-diff -Nraup linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv_acpi.c linux-2.6.21_aer_fix/drivers/pci/pcie/aer/aerdrv_acpi.c
---- linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv_acpi.c	2007-05-09 21:00:15.000000000 +0800
-+++ linux-2.6.21_aer_fix/drivers/pci/pcie/aer/aerdrv_acpi.c	1970-01-01 08:00:00.000000000 +0800
-@@ -1,61 +0,0 @@
--/*
-- * Access ACPI _OSC method
-- *
-- * Copyright (C) 2006 Intel Corp.
-- *	Tom Long Nguyen (tom.l.nguyen@intel.com)
-- *	Zhang Yanmin (yanmin.zhang@intel.com)
-- *
-- */
--
--#include <linux/module.h>
--#include <linux/pci.h>
--#include <linux/kernel.h>
--#include <linux/errno.h>
--#include <linux/pm.h>
--#include <linux/suspend.h>
--#include <linux/acpi.h>
--#include <linux/pci-acpi.h>
--#include <linux/delay.h>
--#include "aerdrv.h"
--
--/**
-- * aer_osc_setup - run ACPI _OSC method
-- *
-- * Return:
-- *	Zero if success. Nonzero for otherwise.
-- *
-- * Invoked when PCIE bus loads AER service driver. To avoid conflict with
-- * BIOS AER support requires BIOS to yield AER control to OS native driver.
-- **/
--acpi_status aer_osc_setup(struct pci_dev *dev)
--{
--	acpi_status status = AE_NOT_FOUND;
--	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
--	struct pci_dev *pdev = dev;
--	struct pci_bus *parent;
--
--	while (!handle) {
--		if (!pdev || !pdev->bus->parent)
--			break;
--		parent = pdev->bus->parent;
--		if (!parent->self)
--			/* Parent must be a host bridge */
--			handle = acpi_get_pci_rootbridge_handle(
--					pci_domain_nr(parent),
--					parent->number);
--		else
--			handle = DEVICE_ACPI_HANDLE(
--					&(parent->self->dev));
--		pdev = parent->self;
--	}
--
--	if (!handle)
--		return status;
--
--	pci_osc_support_set(OSC_EXT_PCI_CONFIG_SUPPORT);
--	status = pci_osc_control_set(handle, OSC_PCI_EXPRESS_AER_CONTROL |
--		OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
--
--	return status;
--}
--
-diff -Nraup linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv_core.c linux-2.6.21_aer_fix/drivers/pci/pcie/aer/aerdrv_core.c
---- linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv_core.c	2007-05-09 21:00:15.000000000 +0800
-+++ linux-2.6.21_aer_fix/drivers/pci/pcie/aer/aerdrv_core.c	2007-05-09 21:02:14.000000000 +0800
-@@ -726,6 +726,47 @@ void aer_delete_rootport(struct aer_rpc 
- }
- 
- /**
-+ * aer_osc_setup - run ACPI _OSC method
-+ *
-+ * Return:
-+ *	Zero if success. Nonzero for otherwise.
-+ *
-+ * Invoked when PCIE bus loads AER service driver. To avoid conflict with
-+ * BIOS AER support requires BIOS to yield AER control to OS native driver.
-+ **/
-+acpi_status aer_osc_setup(struct pci_dev *dev)
-+{
-+	acpi_status status = AE_NOT_FOUND;
-+	acpi_handle handle = DEVICE_ACPI_HANDLE(&dev->dev);
-+	struct pci_dev *pdev = dev;
-+	struct pci_bus *parent;
-+
-+	while (!handle) {
-+		if (!pdev || !pdev->bus->parent)
-+			break;
-+		parent = pdev->bus->parent;
-+		if (!parent->self)
-+			/* Parent must be a host bridge */
-+			handle = acpi_get_pci_rootbridge_handle(
-+					pci_domain_nr(parent),
-+					parent->number);
-+		else
-+			handle = DEVICE_ACPI_HANDLE(
-+					&(parent->self->dev));
-+		pdev = parent->self;
-+	}
-+
-+	if (!handle)
-+		return status;
-+
-+	pci_osc_support_set(OSC_EXT_PCI_CONFIG_SUPPORT);
-+	status = pci_osc_control_set(handle, OSC_PCI_EXPRESS_AER_CONTROL |
-+		OSC_PCI_EXPRESS_CAP_STRUCTURE_CONTROL);
-+
-+	return status;
-+}
-+
-+/**
-  * aer_init - provide AER initialization
-  * @dev: pointer to AER pcie device
-  *
-diff -Nraup linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv.h linux-2.6.21_aer_fix/drivers/pci/pcie/aer/aerdrv.h
---- linux-2.6.21_aer/drivers/pci/pcie/aer/aerdrv.h	2007-05-09 21:00:15.000000000 +0800
-+++ linux-2.6.21_aer_fix/drivers/pci/pcie/aer/aerdrv.h	2007-05-09 21:00:59.000000000 +0800
-@@ -9,8 +9,6 @@
- #define _AERDRV_H_
- 
- #include <linux/pcieport_if.h>
--#include <linux/acpi.h>
--#include <linux/pci-acpi.h>
- #include <linux/aer.h>
- 
- #define AER_NONFATAL			0
-@@ -118,6 +116,5 @@ extern void aer_delete_rootport(struct a
- extern int aer_init(struct pcie_device *dev);
- extern void aer_isr(struct work_struct *work);
- extern void aer_print_error(struct pci_dev *dev, struct aer_err_info *info);
--extern acpi_status aer_osc_setup(struct pci_dev *dev);
- 
- #endif //_AERDRV_H_
-diff -Nraup linux-2.6.21_aer/drivers/pci/pcie/aer/Makefile linux-2.6.21_aer_fix/drivers/pci/pcie/aer/Makefile
---- linux-2.6.21_aer/drivers/pci/pcie/aer/Makefile	2007-05-09 21:00:03.000000000 +0800
-+++ linux-2.6.21_aer_fix/drivers/pci/pcie/aer/Makefile	2007-05-09 21:02:34.000000000 +0800
-@@ -4,5 +4,5 @@
- 
- obj-$(CONFIG_PCIEAER) += aerdriver.o
- 
--aerdriver-objs := aerdrv_errprint.o aerdrv_core.o aerdrv.o aerdrv_acpi.o
-+aerdriver-objs := aerdrv_errprint.o aerdrv_core.o aerdrv.o
- 
+I'll let you and Ulrich decide on that. Keep in mind that older
+kernels (without the mmap_sem patch for MADV_DONTNEED) still
+seem to get a pretty decent improvement from using MADV_DONTNEED,
+so it is possible glibc will want to start using that anyway.
+
+-- 
+SUSE Labs, Novell Inc.
