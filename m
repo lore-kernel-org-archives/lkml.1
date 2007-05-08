@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752097AbXEHWHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754838AbXEHWIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752097AbXEHWHa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032463AbXEHWHW
+	id S1754838AbXEHWIH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754227AbXEHWIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:07:22 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:54594 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754154AbXEHWHN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:07:13 -0400
-Date: Tue, 8 May 2007 15:10:50 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Howells <dhowells@redhat.com>,
-       Bj?rn Steinbrink <B.Steinbrink@gmx.de>
-Subject: Re: [patch 3/4] split usermodehelper setup from execution
-Message-Id: <20070508151050.f0c2c20f.randy.dunlap@oracle.com>
-In-Reply-To: <4640F30C.7080901@goop.org>
-References: <20070508205129.064843364@goop.org>
-	<20070508205517.256147592@goop.org>
-	<20070508150156.402980c6.randy.dunlap@oracle.com>
-	<4640F30C.7080901@goop.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 May 2007 18:08:00 -0400
+Received: from gw.goop.org ([64.81.55.164]:44565 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754320AbXEHWH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 18:07:58 -0400
+Message-ID: <4640F4B3.30408@goop.org>
+Date: Tue, 08 May 2007 15:07:47 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: yhlu <yhlu.kernel@gmail.com>
+CC: "Eric W. Biederman" <ebiederm@xmission.com>, vgoyal@in.ibm.com,
+       "H. Peter Anvin" <hpa@zytor.com>, Gerd Hoffmann <kraxel@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
+ relocatable bzImage
+References: <4634483E.9030307@goop.org> <46390523.5010809@goop.org>	 <463909AF.9040205@zytor.com> <20070503045031.GA5794@in.ibm.com>	 <m1tzuuv24z.fsf@ebiederm.dsl.xmission.com>	 <86802c440705080941y69ddd5d6lab170c5f3967f148@mail.gmail.com>	 <m1sla7i68s.fsf@ebiederm.dsl.xmission.com>	 <86802c440705081033s19365843i5b955ae175de73eb@mail.gmail.com>	 <86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>	 <m1k5vji107.fsf@ebiederm.dsl.xmission.com> <86802c440705081500x682ee098y7d51f7bb98dbcff6@mail.gmail.com>
+In-Reply-To: <86802c440705081500x682ee098y7d51f7bb98dbcff6@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 May 2007 15:00:44 -0700 Jeremy Fitzhardinge wrote:
+yhlu wrote:
+> On 5/8/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>> You might try a git-bisect, or if it is just these patches
+>> walking through them one-by-one.
+>
+> f82af20e1a028e16b9bb11da081fa1148d40fa6a is first bad commit
+> commit f82af20e1a028e16b9bb11da081fa1148d40fa6a
+> Author: Gerd Hoffmann <kraxel@suse.de>
+> Date:   Wed May 2 19:27:19 2007 +0200
+>
+>    [PATCH] x86-64: ignore vgacon if hardware not present
+>
+>    Avoid trying to set up vgacon if there's no vga hardware present.
+>
+>    Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+>    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+>    Signed-off-by: Andi Kleen <ak@suse.de>
+>    Cc: Alan <alan@lxorguk.ukuu.org.uk>
+>    Acked-by: Ingo Molnar <mingo@elte.hu>
 
-> Randy Dunlap wrote:
-> > On Tue, 08 May 2007 13:51:32 -0700 Jeremy Fitzhardinge wrote:
-> >
-> >   
-> >> --- a/kernel/kmod.c
-> >> +++ b/kernel/kmod.c
-> >> @@ -253,11 +262,94 @@ static void __call_usermodehelper(struct
-> >>  }
-> >>  
-> >>  /**
-> >> - * call_usermodehelper_keys - start a usermode application
-> >> - * @path: pathname for the application
-> >> - * @argv: null-terminated argument list
-> >> - * @envp: null-terminated environment list
-> >> - * @session_keyring: session keyring for process (NULL for an empty keyring)
-> >> + * call_usermodehelper_setup - prepare to call a usermode helper
-> >> + * @path - path to usermode executable
-> >> + * @argv - arg vector for process
-> >> + * @envp - environment for process
-> >>     
-> >
-> > s / - /: / above please.
-> >   
-> 
-> The power of cut'n'paste makes the errors consistent, at least...  Will
-> fix up.
+Interesting.  I haven't really been following this thread, but doesn't
+it mean something isn't being initialized properly if this patch makes a
+difference?
 
-Thanks.  If you point me to such foobars (in general), I'll fix them up.
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+    J
