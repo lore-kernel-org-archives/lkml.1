@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031808AbXEHTt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031819AbXEHTti@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031808AbXEHTt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031779AbXEHTs4
+	id S1031819AbXEHTti (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:49:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031803AbXEHTtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:48:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50048 "EHLO mx1.redhat.com"
+	Tue, 8 May 2007 15:49:19 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50191 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031224AbXEHTsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:48:47 -0400
-Date: Tue, 8 May 2007 20:47:44 +0100
+	id S1031801AbXEHTtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 15:49:06 -0400
+Date: Tue, 8 May 2007 20:48:07 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Milan Broz <mbroz@redhat.com>
-Subject: [2.6.22 PATCH 17/26] dm kcopyd: update dm io interface
-Message-ID: <20070508194744.GX24114@agk.fab.redhat.com>
+       Heinz Mauelshagen <heinzm@redhat.com>, Milan Broz <mbroz@redhat.com>
+Subject: [2.6.22 PATCH 19/26] dm log: update dm io interface
+Message-ID: <20070508194807.GZ24114@agk.fab.redhat.com>
 Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
+	Heinz Mauelshagen <heinzm@redhat.com>,
 	Milan Broz <mbroz@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -27,84 +28,99 @@ Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Milan Broz <mbroz@redhat.com>
+From: Heinz Mauelshagen <heinzm@redhat.com>
 
-This patch ports kcopyd.c to the new, scalable dm_io() interface.
+This patch ports dm-log.c to the new dm-io interface in order to make
+it scalable to have a large number of persistent dirty logs active in
+parallel.
 
-Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Heinz Mauelshagen <hjm@redhat.com>
+Signed-off-by: Heinz Mauelshagen <heinzm@redhat.com>
+Cc: Milan Broz <mbroz@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 ---
 
- drivers/md/kcopyd.c |   28 ++++++++++++++++++----------
- 1 files changed, 18 insertions(+), 10 deletions(-)
+ drivers/md/dm-log.c |   31 ++++++++++++++++++++++++-------
+ 1 files changed, 24 insertions(+), 7 deletions(-)
 
-Index: linux-2.6.21/drivers/md/kcopyd.c
+Index: linux-2.6.21/drivers/md/dm-log.c
 ===================================================================
---- linux-2.6.21.orig/drivers/md/kcopyd.c	2007-05-01 17:38:32.000000000 +0100
-+++ linux-2.6.21/drivers/md/kcopyd.c	2007-05-01 17:40:53.000000000 +0100
-@@ -1,5 +1,6 @@
- /*
-  * Copyright (C) 2002 Sistina Software (UK) Limited.
-+ * Copyright (C) 2006 Red Hat GmbH
-  *
-  * This file is released under the GPL.
-  *
-@@ -45,6 +46,8 @@ struct kcopyd_client {
- 	unsigned int nr_pages;
- 	unsigned int nr_free_pages;
+--- linux-2.6.21.orig/drivers/md/dm-log.c	2007-05-01 17:40:51.000000000 +0100
++++ linux-2.6.21/drivers/md/dm-log.c	2007-05-01 17:40:54.000000000 +0100
+@@ -149,6 +149,8 @@ struct log_c {
+ 		FORCESYNC,	/* Force a sync to happen */
+ 	} sync;
  
-+	struct dm_io_client *io_client;
++	struct dm_io_request io_req;
 +
- 	wait_queue_head_t destroyq;
- 	atomic_t nr_jobs;
- };
-@@ -342,16 +345,20 @@ static void complete_io(unsigned long er
- static int run_io_job(struct kcopyd_job *job)
+ 	/*
+ 	 * Disk log fields
+ 	 */
+@@ -200,13 +202,20 @@ static void header_from_disk(struct log_
+ 	core->nr_regions = le64_to_cpu(disk->nr_regions);
+ }
+ 
++static int rw_header(struct log_c *lc, int rw)
++{
++	lc->io_req.bi_rw = rw;
++	lc->io_req.mem.ptr.vma = lc->disk_header;
++	lc->io_req.notify.fn = NULL;
++
++	return dm_io(&lc->io_req, 1, &lc->header_location, NULL);
++}
++
+ static int read_header(struct log_c *log)
  {
  	int r;
-+	struct dm_io_request io_req = {
-+		.bi_rw = job->rw,
-+		.mem.type = DM_IO_PAGE_LIST,
-+		.mem.ptr.pl = job->pages,
-+		.mem.offset = job->offset,
-+		.notify.fn = complete_io,
-+		.notify.context = job,
-+		.client = job->kc->io_client,
-+	};
+-	unsigned long ebits;
  
- 	if (job->rw == READ)
--		r = dm_io_async(1, &job->source, job->rw,
--				job->pages,
--				job->offset, complete_io, job);
--
-+		r = dm_io(&io_req, 1, &job->source, NULL);
- 	else
--		r = dm_io_async(job->num_dests, job->dests, job->rw,
--				job->pages,
--				job->offset, complete_io, job);
-+		r = dm_io(&io_req, job->num_dests, job->dests, NULL);
- 
- 	return r;
- }
-@@ -670,8 +677,9 @@ int kcopyd_client_create(unsigned int nr
+-	r = dm_io_sync_vm(1, &log->header_location, READ,
+-			  log->disk_header, &ebits);
++	r = rw_header(log, READ);
+ 	if (r)
  		return r;
- 	}
  
--	r = dm_io_get(nr_pages);
--	if (r) {
-+	kc->io_client = dm_io_client_create(nr_pages);
-+	if (IS_ERR(kc->io_client)) {
-+		r = PTR_ERR(kc->io_client);
- 		client_free_pages(kc);
- 		kfree(kc);
- 		kcopyd_exit();
-@@ -691,7 +699,7 @@ void kcopyd_client_destroy(struct kcopyd
- 	/* Wait for completion of all jobs submitted by this client. */
- 	wait_event(kc->destroyq, !atomic_read(&kc->nr_jobs));
+@@ -234,11 +243,8 @@ static int read_header(struct log_c *log
  
--	dm_io_put(kc->nr_pages);
-+	dm_io_client_destroy(kc->io_client);
- 	client_free_pages(kc);
- 	client_del(kc);
- 	kfree(kc);
+ static inline int write_header(struct log_c *log)
+ {
+-	unsigned long ebits;
+-
+ 	header_to_disk(&log->header, log->disk_header);
+-	return dm_io_sync_vm(1, &log->header_location, WRITE,
+-			     log->disk_header, &ebits);
++	return rw_header(log, WRITE);
+ }
+ 
+ /*----------------------------------------------------------------
+@@ -257,6 +263,7 @@ static int create_log_context(struct dir
+ 	uint32_t region_size;
+ 	unsigned int region_count;
+ 	size_t bitset_size, buf_size;
++	int r;
+ 
+ 	if (argc < 1 || argc > 2) {
+ 		DMWARN("wrong number of arguments to mirror log");
+@@ -326,6 +333,15 @@ static int create_log_context(struct dir
+ 		buf_size = dm_round_up((LOG_OFFSET << SECTOR_SHIFT) +
+ 				       bitset_size, ti->limits.hardsect_size);
+ 		lc->header_location.count = buf_size >> SECTOR_SHIFT;
++		lc->io_req.mem.type = DM_IO_VMA;
++		lc->io_req.client = dm_io_client_create(dm_div_up(buf_size,
++								   PAGE_SIZE));
++		if (IS_ERR(lc->io_req.client)) {
++			r = PTR_ERR(lc->io_req.client);
++			DMWARN("couldn't allocate disk io client");
++			kfree(lc);
++			return -ENOMEM;
++		}
+ 
+ 		lc->disk_header = vmalloc(buf_size);
+ 		if (!lc->disk_header) {
+@@ -426,6 +442,7 @@ static void disk_dtr(struct dirty_log *l
+ 
+ 	dm_put_device(lc->ti, lc->log_dev);
+ 	vfree(lc->disk_header);
++	dm_io_client_destroy(lc->io_req.client);
+ 	destroy_log_context(lc);
+ }
+ 
