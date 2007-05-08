@@ -1,61 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966599AbXEHUfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966665AbXEHUhW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966599AbXEHUfB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966527AbXEHUe4
+	id S966665AbXEHUhW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 16:37:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933223AbXEHUhR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:34:56 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:53287 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966442AbXEHUez (ORCPT
+	Tue, 8 May 2007 16:37:17 -0400
+Received: from mtagate1.uk.ibm.com ([195.212.29.134]:2532 "EHLO
+	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932286AbXEHUhO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:34:55 -0400
-X-Originating-Ip: 99.246.112.70
-Date: Tue, 8 May 2007 16:34:26 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Matt Mackall <mpm@selenic.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] Create a top-level "Space-critical features" menu.
-In-Reply-To: <20070508201046.GU11166@waste.org>
-Message-ID: <Pine.LNX.4.64.0705081633580.13444@localhost.localdomain>
-References: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain>
- <20070508201046.GU11166@waste.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Tue, 8 May 2007 16:37:14 -0400
+Date: Tue, 8 May 2007 22:36:53 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+ (PCI_MULTITHREAD_PROBE)
+Message-ID: <20070508223653.1bb63b08@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+	<20070508141149.GJ4226@stusta.de>
+	<alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
+	<20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
+	<alpine.LFD.0.98.0705081123080.3974@woody.linux-foundation.org>
+	<20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
+	<alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Matt Mackall wrote:
+On Tue, 8 May 2007 12:31:22 -0700 (PDT),
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
 
-> On Tue, May 08, 2007 at 04:06:30AM -0400, Robert P. J. Day wrote:
-> >
-> >   i've always hated that lower-level menu under "General setup":
-> >
-> > Configure standard kernel features (for small systems)  --->
-> >
-> > which buries the choice of de-selecting features to save space one
-> > level down without really explaining what it's all about.  so i just
-> > shifted all of that up to the top under what i think is a more
-> > meaningful name.
->
-> WTF. It certainly does explain what it's all about (hint: hit '?') and
-> you've clearly failed to read it, even while creating the patch.
+> > What if two devices become hotplugged at the same time? Does this imply 
+> > that the bus _always_ needs to do some serializing there?
+> 
+> You want to test it? Be my guest.
 
-you're right, i have no idea how i missed that.  duh.
+It was more a rhetorical question. If not all drivers can handle it,
+serialize at the bus level. But if all drivers can, there's no reason
+for the bus to do it. On a bus with a small number of drivers, I
+prefer to have the drivers in good shape. (This kind of implies that e.
+g. pci needs to serialize, but css/ccw doesn't, and doesn't have to.)
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+> But the final nail in the coffin is that doing it at the bus level is 
+> INFERIOR. As you yourself admitted, it's better to do some things 
+> synchronously.
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+How so? It is possible to do some stuff synchronously. But why
+shouldn't other things be done asynchronously?
+(And there is a place both for bus-level parallelism and driver-level
+parallelism. Just depends on your bus/driver/device.)
