@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967066AbXEHRu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967170AbXEHRu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967066AbXEHRu2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 13:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966751AbXEHRuZ
+	id S967170AbXEHRu6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 13:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966810AbXEHRu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 13:50:25 -0400
-Received: from [81.2.110.250] ([81.2.110.250]:43167 "EHLO the-village.bc.nu"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S966405AbXEHRuY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 13:50:24 -0400
-Date: Tue, 8 May 2007 18:53:59 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-scsi@vger.kernel.org,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: Fix old SCSI adapter crashes with CD-ROM (take 2)
-Message-ID: <20070508185359.01a1a18d@the-village.bc.nu>
-In-Reply-To: <1178646426.3737.59.camel@mulgrave.il.steeleye.com>
-References: <20070508171710.1ac730cd@the-village.bc.nu>
-	<20070508161444.GA4163@kernel.dk>
-	<1178642376.3737.36.camel@mulgrave.il.steeleye.com>
-	<20070508184256.029cf8a4@the-village.bc.nu>
-	<1178646426.3737.59.camel@mulgrave.il.steeleye.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 8 May 2007 13:50:56 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:41189 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966726AbXEHRuz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 13:50:55 -0400
+Subject: Re: Getting make net/built-in.o Error with 2.6.21.1 Build
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>, chris@pcburn.com,
+       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705081944450.16923@twin.jikos.cz>
+References: <463FB6B0.3070005@pcburn.com>
+	 <a781481a0705071725i1d802dfejbcdaca4ab0a1ff55@mail.gmail.com>
+	 <Pine.LNX.4.64.0705081740550.16923@twin.jikos.cz>
+	 <a781481a0705080905l609dc925s93357e6eb0d4c318@mail.gmail.com>
+	 <Pine.LNX.4.64.0705081815130.16923@twin.jikos.cz>
+	 <1178642912.8628.70.camel@aeonflux.holtmann.net>
+	 <Pine.LNX.4.64.0705081944450.16923@twin.jikos.cz>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 19:50:10 +0200
+Message-Id: <1178646610.8628.78.camel@aeonflux.holtmann.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Long answer - it doesn't take this path.
-> > 
-> > Different bug, both want fixing I suspect.
+Hi Jiri,
+
+> > > Marcel - are you aware of any devices currently supported by USB HID 
+> > > force-feedback code, which have a bluetooth version, please?
+> > I haven't looked at all details for the PS3 controller, but that might
+> > be the first one. In theory they can and at some point they will enter
+> > the market.
 > 
-> Actually, it does take this path ... one of the things we've been doing
-> in SCSI is slowly eliminating the old direct submission paths in favour
-> of sending everything through the correct block layer paths.
-> scsi_execute(), which the sr ioctl uses is just such a fixed path ...
-> the bug is that it should be bouncing the request but because of an
-> oversight (which Mike's patch corrects) it doesn't.
-
-Well if Mike's patch is going in and it fixes this then I'll be more than
-happy to withdraw the pending one.
-
+> You are right, PS3 controller is going to be shipped in both variants. On 
+> the other hand it is perfectly possible that we will need special 
+> force-feedback driver for it anyway.
 > 
-> The ultimate goal is to be able to eliminate the unchecked_isa_dma flag
-> entirely and have the block layer (or device mask allocations) fix all
-> of this in every ULD.
+> BTW when talking about this - we already have PS3 quirk present in usb hid 
+> (extra control URB is required to make it operational), probably something 
+> similar will be needed for BT version too.
 
-About time ;)
+I know, but we do that in user space before we hand over the control to
+the kernel. It is simpler, because it is on the control channel and that
+part is not nicely integrated into the HID subsystem to be used by the
+transport layers right now. At least as far as I can tell.
+
+Regards
+
+Marcel
 
 
-Alan
