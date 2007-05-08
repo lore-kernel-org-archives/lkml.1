@@ -1,37 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754257AbXEHPpi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934686AbXEHPpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754257AbXEHPpi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 11:45:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968081AbXEHPcr
+	id S934686AbXEHPpt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 11:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934590AbXEHPpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 11:32:47 -0400
-Received: from khc.piap.pl ([195.187.100.11]:58860 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966428AbXEHP2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 11:28:23 -0400
-To: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
-Cc: "Tomasz Chmielewski" <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
-       "Michael Jones" <mlj28@cam.ac.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-References: <464034CF.20700@wpkg.org>
-	<f19298770705080148u70638ac2ue87241382681088@mail.gmail.com>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 08 May 2007 17:28:21 +0200
-In-Reply-To: <f19298770705080148u70638ac2ue87241382681088@mail.gmail.com> (Alexey Zaytsev's message of "Tue, 8 May 2007 12:48:51 +0400")
-Message-ID: <m3bqgv72sq.fsf@maximus.localdomain>
+	Tue, 8 May 2007 11:45:25 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:60392 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754257AbXEHPeG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 11:34:06 -0400
+Message-ID: <46409865.9010204@linux.vnet.ibm.com>
+Date: Tue, 08 May 2007 10:33:57 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+Reply-To: brking@linux.vnet.ibm.com
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Garzik <jeff@garzik.org>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@SteelEye.com>
+Subject: Re: [git patches] libata reset sequence update
+References: <20070508063820.GA13469@havoc.gtf.org>
+In-Reply-To: <20070508063820.GA13469@havoc.gtf.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Alexey Zaytsev" <alexey.zaytsev@gmail.com> writes:
+Jeff Garzik wrote:
+> This has been testing in -mm for a while, but I wanted to send it
+> separated from the main libata update, since it has a chance of
+> breakage.
+> 
+> Most notably, a cumulative timeout (deadline) helps the code from diving
+> into overly-long reset sequences.
+> 
+> Please pull from 'reset-seq' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git reset-seq
 
-> I was always curious, why do people want to run ixp4xx in LE mode? What
-> are the benefits that overweight the obvious performance degradation?
+James,
 
-Debian is indeed a valid reason.
-I wonder if it would be much work to create BE Debian as well.
-Simple automated process it seems, for most part at least.
--- 
-Krzysztof Halasa
+FYI - this means you'll probably want to revert this patch:
+
+http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=a6506b8e111c9bf9e430e32725b96c0688416c8e
+
+-Brian
+
