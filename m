@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967122AbXEHUqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967266AbXEHUs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967122AbXEHUqt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934320AbXEHUqr
+	id S967266AbXEHUs6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 16:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934370AbXEHUs5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:46:47 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:44624 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934310AbXEHUqq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:46:46 -0400
-Message-ID: <4640E17E.7090909@drzeus.cx>
-Date: Tue, 08 May 2007 22:45:50 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_hera.drzeus.cx-28672-1178657204-0001-2"
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] MMC updates
-X-Enigmail-Version: 0.95.0
+	Tue, 8 May 2007 16:48:57 -0400
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:42739 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934366AbXEHUs4 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 16:48:56 -0400
+Date: Tue, 8 May 2007 21:48:52 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Valdis.Kletnieks@vt.edu
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Andi Kleen <ak@suse.de>
+Subject: Re: Lockup after logging out of X
+Message-ID: <20070508204852.GA30610@deepthought>
+References: <20070508195142.GA30030@deepthought> <16635.1178655711@turing-police.cc.vt.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <16635.1178655711@turing-police.cc.vt.edu>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+On Tue, May 08, 2007 at 04:21:51PM -0400, Valdis.Kletnieks@vt.edu wrote:
+> On Tue, 08 May 2007 20:51:42 BST, Ken Moffat said:
+> 
+> >  After trying git-bisect, it tells me:
+> > 0dbf7028c0c1f266c9631139450a1502d3cd457e is first bad commit
+> > commit 0dbf7028c0c1f266c9631139450a1502d3cd457e
+> > Author: Vivek Goyal <vgoyal@in.ibm.com>
+> > Date:   Wed May 2 19:27:07 2007 +0200
+> > 
+> >     [PATCH] x86: __pa and __pa_symbol address space separation
+[...]
+> 
+> I saw this same exact problem on my box back at 21-rc5-mm4, but didn't
+> report it here because Christoph Hellwig thinks such things are off-topic (as
+> I was seeing it with the NVidia driver).
+> 
+> http://marc.info/?l=linux-kernel&m=117579249300455&w=2
+> http://www.nvnews.net/vbulletin/showthread.php?t=89444
+> 
+> Sorry to see you hit a problem with the exact same patch with a Radeon card
+> a month later.
+> 
+ OK, in view of the minimal oops output that made it to my log
+(forgot to say in today's repost that it was from one of the bad
+bisect builds), I'd better point out that I don't have the ati
+module (fglrx or whatever it is called), this is purely using Linus'
+tree.
 
---=_hera.drzeus.cx-28672-1178657204-0001-2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
-
-Linus, please pull from
-
-        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-=
-linus
-
-to receive the following updates:
-
- drivers/misc/tifm_7xx1.c   |   27 ++++++++++++++++++++++++---
- drivers/mmc/Kconfig        |   10 +++++-----
- drivers/mmc/card/Kconfig   |    3 +--
- drivers/mmc/core/Kconfig   |    1 -
- drivers/mmc/core/core.c    |   10 ++++++----
- drivers/mmc/host/Kconfig   |   19 +++++++++----------
- drivers/mmc/host/tifm_sd.c |   13 +------------
- include/linux/tifm.h       |    1 +
- 8 files changed, 47 insertions(+), 37 deletions(-)
-
-Alex Dubov (1):
-      disable socket power in adapter driver instead of media one
-
-Jan Engelhardt (1):
-      mmc: Use menuconfig objects
-
-Pierre Ossman (1):
-      mmc: use lock instead of claim in debug check
-
-
-
---=_hera.drzeus.cx-28672-1178657204-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGQOF+7b8eESbyJLgRAqHYAKDQPEMsYw/kyOgwHpbsl8WWzlxwaACfZuYM
-2AD3ti9sfexglBQYMRkNALU=
-=FEAR
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-28672-1178657204-0001-2--
+Ken
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
