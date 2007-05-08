@@ -1,41 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030476AbXEHP6A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968247AbXEHP7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030476AbXEHP6A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 11:58:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966433AbXEHP57
+	id S968247AbXEHP7k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 11:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966433AbXEHP7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 11:57:59 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:53407 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S967725AbXEHP56 (ORCPT
+	Tue, 8 May 2007 11:59:39 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60787 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964810AbXEHP7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 11:57:58 -0400
-Subject: Re: [PATCH 1/2] mca: mca_pentium_flag no longer used
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: andrew hendry <andrew.hendry@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <d45a3acc0705070549ic3b11a5pc8c299e08f914835@mail.gmail.com>
-References: <d45a3acc0705070549ic3b11a5pc8c299e08f914835@mail.gmail.com>
-Content-Type: text/plain
-Date: Tue, 08 May 2007 10:57:55 -0500
-Message-Id: <1178639875.3737.27.camel@mulgrave.il.steeleye.com>
+	Tue, 8 May 2007 11:59:38 -0400
+Date: Tue, 8 May 2007 17:03:35 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@osdl.org
+Subject: [PATCH]: Fix old SCSI adapter crashes with CD-ROM
+Message-ID: <20070508170335.1b1f844c@the-village.bc.nu>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-07 at 22:49 +1000, andrew hendry wrote:
-> The check for mca_pentium_flag was removed long ago.
-> This cleans up the flag and documentation.
+The CD-ROM layer doesn't bounce requests for old ISA controllers (and
+nor should it). However they get injected into the SCSI layer via
+sr_ioctl which also doesn't bounce them and SCSI then passes the buffer
+along to a device with unchecked_isa_dma set which either panics or
+truncates the buffer to 24bits.
 
-I can't apply this patch ... apparently the email is dual text and
-html ... we really need text only for patch application.  Plus, it looks
-like your email tool has converted all the tabs in the diff to spaces.
+According to Jens the right long term fix is for the CD layer to route
+the requests differently but in the mean time this has been tested by a
+victim and verified to sort the problem out. For the other 99.9% of users
+it's a no-op and doesn't bounce data.
 
-Could you resend.  If you can't get the mailer to comply, just attaching
-the diff file usually works.
+Signed-off-by: Alan Cox <alan@redhat.com>
 
-James
-
-
+diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c linux-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c
+--- linux.vanilla-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c	2007-04-12 14:14:45.000000000 +0100
++++ linux-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c	2007-05-01 14:23:40.000000000 +0100
+@@ -187,9 +187,10 @@
+ 	struct scsi_sense_hdr sshdr;
+ 	int result, err = 0, retries = 0;
+ 	struct request_sense *sense = cgc->sense;
+-
++	void *zebedee = cgc->buffer;
++	
+ 	SDev = cd->device;
+-
++	
+ 	if (!sense) {
+ 		sense = kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
+ 		if (!sense) {
+@@ -197,7 +198,22 @@
+ 			goto out;
+ 		}
+ 	}
+-
++	
++	if (cgc->buflen && cd->device->host->unchecked_isa_dma) {
++		switch(cgc->data_direction) {
++			case DMA_NONE:
++				break;
++			case DMA_FROM_DEVICE:
++			case DMA_TO_DEVICE:
++				zebedee = kmalloc(cgc->buflen, GFP_KERNEL|GFP_DMA);
++				if (zebedee ==NULL) {
++					err = -ENOMEM;
++					goto out;
++				}
++		}
++		if (cgc->data_direction == DMA_TO_DEVICE)
++			memcpy(zebedee, cgc->buffer, cgc->buflen);
++	}
+       retry:
+ 	if (!scsi_block_when_processing_errors(SDev)) {
+ 		err = -ENODEV;
+@@ -206,10 +222,16 @@
+ 
+ 	memset(sense, 0, sizeof(*sense));
+ 	result = scsi_execute(SDev, cgc->cmd, cgc->data_direction,
+-			      cgc->buffer, cgc->buflen, (char *)sense,
++			      zebedee, cgc->buflen, (char *)sense,
+ 			      cgc->timeout, IOCTL_RETRIES, 0);
+ 
+ 	scsi_normalize_sense((char *)sense, sizeof(*sense), &sshdr);
++	
++	if (zebedee != cgc->buffer) {
++		if (cgc->data_direction == DMA_FROM_DEVICE)
++			memcpy(cgc->buffer, zebedee, cgc->buflen);
++		kfree(zebedee);	/* Time for bed */
++	}
+ 
+ 	/* Minimal error checking.  Ignore cases we know about, and report the rest. */
+ 	if (driver_byte(result) != 0) {
