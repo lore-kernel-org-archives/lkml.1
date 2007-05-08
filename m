@@ -1,75 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967917AbXEHULA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032035AbXEHUM2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967917AbXEHULA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:11:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967846AbXEHUKz
+	id S1032035AbXEHUM2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 16:12:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968261AbXEHUMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:10:55 -0400
-Received: from waste.org ([66.93.16.53]:33833 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967084AbXEHUKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:10:54 -0400
-Date: Tue, 8 May 2007 15:10:47 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] Create a top-level "Space-critical features" menu.
-Message-ID: <20070508201046.GU11166@waste.org>
-References: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain>
+	Tue, 8 May 2007 16:12:22 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:42364 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967846AbXEHUMV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 16:12:21 -0400
+Message-ID: <4640D988.1040504@freescale.com>
+Date: Tue, 08 May 2007 15:11:52 -0500
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Kim Phillips <kim.phillips@freescale.com>
+CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       =?ISO-8859-1?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>,
+       Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Kconfig warnings on latest GIT
+References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com>
+In-Reply-To: <20070508143127.38fafa3c.kim.phillips@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 04:06:30AM -0400, Robert P. J. Day wrote:
+Kim Phillips wrote:
+> On Tue, 8 May 2007 00:04:14 +0300
+> Ismail Dönmez <ismail@pardus.org.tr> wrote:
 > 
->   i've always hated that lower-level menu under "General setup":
+>> drivers/net/Kconfig:2279:warning: 'select' used by config symbol 'UCC_GETH' 
+>> refers to undefined symbol 'UCC_FAST'
 > 
-> Configure standard kernel features (for small systems)  --->
+> looks like this introduces the error:
 > 
-> which buries the choice of de-selecting features to save space one
-> level down without really explaining what it's all about.  so i just
-> shifted all of that up to the top under what i think is a more
-> meaningful name.
-
-WTF. It certainly does explain what it's all about (hint: hit '?') and
-you've clearly failed to read it, even while creating the patch.
-
->   this patch is also why i asked earlier why top-level menu entries
-> have no "help" text -- because, in this case, it would be useful for
-> someone looking at the config screen to see that choice and be able to
-> ask, "hey, i wonder what *that's* all about", and get help along the
-> lines of:
+> commit 7d776cb596994219584257eb5956b87628e5deaf
+> Author: Timur Tabi <timur@freescale.com>
+> Date:   Mon Mar 12 15:40:27 2007 -0500
 > 
->   "these features are normally selected but, if you're strapped for
-> space, such as with embedded systems, you might consider turning some
-> of them off.  if space isn't an issue, you might as well just leave
-> them as they are."  (or something like that.)
+>     [POWERPC] QE: automatically select QE options
 
-NAK. Let's actually read that config option description:
+I have a dilemma, so I need help fixing this bug.
 
-menuconfig EMBEDDED
-        bool "Configure standard kernel features (for small systems)"
-        help
-          This option allows certain base kernel options and settings
-          to be disabled or tweaked. This is for specialized
-          environments which can tolerate a "non-standard" kernel.
-          Only use this if you really know what you are doing.
+This particular patch is necessary because without it, selecting support for the QE is too 
+complicated.
 
-That means this option is for specialized environments which can
-tolerate a non-standard kernel and people should only use it if they
-really know what they're doing.
+Background: The QUICC Engine (QE) is a microcontroller on some Freescale CPUs that can 
+mimic a wide variety of devices.  It has multiple controllers (called UCCs), and each one 
+can be an ethernet device, or a UART, or an HDLC thingy, etc.  There's a QE library and a 
+bunch of other support code in the arch/powerpc directory, so the QE is a powerpc-specific 
+device.  However, all of the drivers that use it are located in drivers/xxx.
 
-Think about what non-standard means. We absolutely don't want to hear
-from anyone whose machine silently crashed only to discover they
-accidentally had CONFIG_PRINTK off. None of the options in that menu
-are of any interest to the average user and they shouldn't be using
-them.
+This isn't a new problem.  The common solution is to define some intermediate Kconfig 
+option, like UCC_FAST_TEMP in the driver's Kconfig.  Selecting UCC_FAST will then also set 
+UCC_FAST_TEMP.  The device driver then depends on UCC_FAST_TEMP.
 
-Feel free to suggest better help text if that isn't clear enough.
+There's also a UCC_SLOW option with the same problem.
+
+The dillema is that there is no single device driver class that depends on UCC_FAST. 
+Currently, there's only one that uses UCC_FAST: the ucc_geth driver.  But I'm also working 
+on a UART driver.
+
+So my question is: in which Kconfig do I define "UCC_FAST_TEMP" and "UCC_SLOW_TEMP"?  At 
+first I thought, just put it in drivers/Kconfig, but that Kconfig does nothing but 
+including other Kconfigs.  I believe that if I submit a patch that adds "UCC_FAST_TEMP" 
+and "UCC_SLOW_TEMP" to drivers/Kconfig, it will be rejected.  Either that, or I'll spend 
+six weeks trying to persuade everyone that it's a good idea.
+
+Does anyone have any suggestions on how I can fix this?
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Timur Tabi
+Linux Kernel Developer @ Freescale
