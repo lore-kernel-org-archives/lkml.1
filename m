@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031565AbXEHTcC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934205AbXEHTcQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031565AbXEHTcC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:32:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031505AbXEHTb6
+	id S934205AbXEHTcQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:32:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031567AbXEHTcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:31:58 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:35098 "EHLO
-	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967821AbXEHTb5 convert rfc822-to-8bit (ORCPT
+	Tue, 8 May 2007 15:32:09 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:59236 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1031582AbXEHTcE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:31:57 -0400
-Date: Tue, 8 May 2007 14:31:27 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Ismail =?ISO-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>
-Cc: Timur Tabi <timur@freescale.com>, Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Kconfig warnings on latest GIT
-Message-Id: <20070508143127.38fafa3c.kim.phillips@freescale.com>
-In-Reply-To: <200705080004.14570.ismail@pardus.org.tr>
-References: <200705080004.14570.ismail@pardus.org.tr>
-Organization: Freescale Semiconductor
-X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 8 May 2007 15:32:04 -0400
+Date: Tue, 8 May 2007 12:31:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+ (PCI_MULTITHREAD_PROBE)
+In-Reply-To: <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
+Message-ID: <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+ <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
+ <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
+ <alpine.LFD.0.98.0705081123080.3974@woody.linux-foundation.org>
+ <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 00:04:14 +0300
-Ismail Dönmez <ismail@pardus.org.tr> wrote:
 
+
+On Tue, 8 May 2007, Cornelia Huck wrote:
 > 
-> drivers/net/Kconfig:2279:warning: 'select' used by config symbol 'UCC_GETH' 
-> refers to undefined symbol 'UCC_FAST'
+> Is there any reason why a driver shouldn't be able to handle probing
+> several devices at once?
 
-looks like this introduces the error:
+Internal driver reasons?
 
-commit 7d776cb596994219584257eb5956b87628e5deaf
-Author: Timur Tabi <timur@freescale.com>
-Date:   Mon Mar 12 15:40:27 2007 -0500
+Look, Cornelia, there's about a million drivers in the kernel. They are 
+not all safe. End of discussion.
 
-    [POWERPC] QE: automatically select QE options
+If you are willing to go through them all, fix everything, test it, talk 
+with all maintainers, all the more power to you.
 
-    Change the Kconfig files so that the Freescale QE options are automatically
-    selected if a QE device is selected.  Previously, you'd need to manually
-    select UCC_FAST if you want any "fast" UCC devices, such as Gigabit Ethernet
-    Now, the QE Gigabit Ethernet option is always available if the device has a
-    QE, and UCC_FAST is automatically enabled.  A side-effect is that the
-    "QE Options" menu no longer exists.
+As it is, that's not going to happen. So you should *assume* that drivers 
+are not expecting to be called multiple times in parallel. And if they 
+are, you may then assume that people don't want them to be, because they 
+want stable naming.
 
-    Signed-off-by: Timur Tabi <timur@freescale.com>
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+> What if two devices become hotplugged at the same time? Does this imply 
+> that the bus _always_ needs to do some serializing there?
 
-cc:ing authors, fti.
+You want to test it? Be my guest.
 
-Kim
+But the final nail in the coffin is that doing it at the bus level is 
+INFERIOR. As you yourself admitted, it's better to do some things 
+synchronously.
+
+		Linus
