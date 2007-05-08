@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934310AbXEHQr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbXEHQtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934310AbXEHQr3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 12:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933855AbXEHQr2
+	id S1754403AbXEHQtX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933691AbXEHQtU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 12:47:28 -0400
-Received: from sabe.cs.wisc.edu ([128.105.6.20]:44325 "EHLO sabe.cs.wisc.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933808AbXEHQr1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 12:47:27 -0400
-Message-ID: <4640A972.3010108@cs.wisc.edu>
-Date: Tue, 08 May 2007 11:46:42 -0500
-From: Mike Christie <michaelc@cs.wisc.edu>
-User-Agent: Thunderbird 1.5 (X11/20060313)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-scsi@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: Fix old SCSI adapter crashes with CD-ROM (take 2)
-References: <20070508171710.1ac730cd@the-village.bc.nu>	 <20070508161444.GA4163@kernel.dk> <1178642376.3737.36.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1178642376.3737.36.camel@mulgrave.il.steeleye.com>
-X-Enigmail-Version: 0.94.0.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 May 2007 12:49:20 -0400
+Received: from coyote.holtmann.net ([217.160.111.169]:41079 "EHLO
+	mail.holtmann.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933855AbXEHQtT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 12:49:19 -0400
+Subject: Re: Getting make net/built-in.o Error with 2.6.21.1 Build
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Jiri Kosina <jikos@jikos.cz>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>, chris@pcburn.com,
+       linux-kernel@vger.kernel.org, bluez-devel@lists.sourceforge.net,
+       netdev@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705081815130.16923@twin.jikos.cz>
+References: <463FB6B0.3070005@pcburn.com>
+	 <a781481a0705071725i1d802dfejbcdaca4ab0a1ff55@mail.gmail.com>
+	 <Pine.LNX.4.64.0705081740550.16923@twin.jikos.cz>
+	 <a781481a0705080905l609dc925s93357e6eb0d4c318@mail.gmail.com>
+	 <Pine.LNX.4.64.0705081815130.16923@twin.jikos.cz>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 18:48:32 +0200
+Message-Id: <1178642912.8628.70.camel@aeonflux.holtmann.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Tue, 2007-05-08 at 18:14 +0200, Jens Axboe wrote:
->> On Tue, May 08 2007, Alan Cox wrote:
->>> The CD-ROM layer doesn't bounce requests for old ISA controllers (and
->>> nor should it). However they get injected into the SCSI layer via
->>> sr_ioctl which also doesn't bounce them and SCSI then passes the buffer
->>> along to a device with unchecked_isa_dma set which either panics or
->>> truncates the buffer to 24bits.
->>>
->>> According to Jens the right long term fix is for the CD layer to route
->>> the requests differently but in the mean time this has been tested by a
->>> victim and verified to sort the problem out. For the other 99.9% of users
->>> it's a no-op and doesn't bounce data.
->>>
->>> Signed-off-by: Alan Cox <alan@redhat.com>
->> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
->>
->> Christoph passed me his patch to get rid of ->generic_packet() in the
->> cdrom layer, so the work is almost complete. This patch is fine as a
->> work-around until that gets merged, though.
-> 
-> Actually, I think the new scsi request infrastructure should be doing
-> the bouncing (rather than have it done in each problem path we
-> discover).
-> 
-> Mike Christie tells me we're missing bouncing by accident in the
-> scsi_execute path (but not the scsi_execute_async path).  He says this
-> is the fix he proposed:
-> 
-> http://marc.info/?l=linux-scsi&m=115981479822790&w=2
-> 
+Hi Jiri,
 
-Hey Jens and James, one thing I forgot to mention is that I could not
-remember if I needed an extra bio_get in there. I thought I did not
-because the caller is not touching the bio after the bio_endio calls
-like is done with the blk/bio_map_user path. But I did that patch so
-long ago I do not remember now.
+> > Sure, my aim here was to only solve the _build breakage_ by fixing the 
+> > Kconfig for this module (that used code from another kernel module 
+> > without listing it in its dependencies). If, as you say, the real 
+> > solution is that we should actually be taking out the offending call to 
+> > the other module itself, then please go ahead -- I don't know much about 
+> > the Bluetooth / HIDP subsytem anyway.
+> 
+> Converting the hid-ff drivers to be also transport-independent is on my 
+> TODO list, but it didn't happen yet.
+> 
+> Marcel - are you aware of any devices currently supported by USB HID 
+> force-feedback code, which have a bluetooth version, please? 
+
+I haven't looked at all details for the PS3 controller, but that might
+be the first one. In theory they can and at some point they will enter
+the market.
+
+> I'd propose the patch below, until I make the usbhid force-feedback code 
+> transport independent. Thanks.
+> 
+> 
+> 
+> From: Jiri Kosina <jkosina@suse.cz>
+> 
+> [Bluetooth] HIDP - don't initialize force feedback
+> 
+> The current implementation of force feedback for HID devices is 
+> USB-transport only and therefore calling hid_ff_init() from hidp code is 
+> not going to work (plus it creates unwanted dependency of hidp on usbhid). 
+> Remove the hid_ff_init() until either the hid-ff is made 
+> transport-independent, or at least support for bluetooth transport is 
+> added.
+> 
+> Signed-off-by: Jiri Kosina <jkosina@suse.cz>
+
+Signed-off-by: Marcel Holtmann <marcel@holtmann.org>
+
+Under the condition that you remember to put it back once a generic FF
+exists.
+
+Regards
+
+Marcel
+
+
