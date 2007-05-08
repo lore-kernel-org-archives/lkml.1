@@ -1,74 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934594AbXEHRgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966479AbXEHRjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934594AbXEHRgY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 13:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934427AbXEHRgY
+	id S966479AbXEHRjd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 13:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965948AbXEHRjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 13:36:24 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:7538 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934384AbXEHRgW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 13:36:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=kEnSs3G4CkJADMzLTCMOfRuYFkJczgVjP8lwCeHHXlrR5hYXG6N+GXxi+b4LgLqzPQF/AoeHrIRtWeIw6c1xgqFmUJGS8co+Hx4ocfEzHkbe5fSHVvZj+KK9MGA3j0BzRXBh3FCNCa/2UFVE/R0ueWogwljZGWGOSbJ1ioVOQng=
-Message-ID: <55f6199c0705081036w60611d0cr33d51bcaef4782cd@mail.gmail.com>
-Date: Tue, 8 May 2007 13:36:21 -0400
-From: Disconnect <dc.disconnect@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Back to the future.
-In-Reply-To: <20070507203859.GB18400@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 8 May 2007 13:39:31 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:36911 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S965655AbXEHRja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 13:39:30 -0400
+Date: Tue, 8 May 2007 18:42:56 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-scsi@vger.kernel.org,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH]: Fix old SCSI adapter crashes with CD-ROM (take 2)
+Message-ID: <20070508184256.029cf8a4@the-village.bc.nu>
+In-Reply-To: <1178642376.3737.36.camel@mulgrave.il.steeleye.com>
+References: <20070508171710.1ac730cd@the-village.bc.nu>
+	<20070508161444.GA4163@kernel.dk>
+	<1178642376.3737.36.camel@mulgrave.il.steeleye.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1177567481.5025.211.camel@nigel.suspend2.net>
-	 <Pine.LNX.4.63.0705061909290.19118@qynat.qvtvafvgr.pbz>
-	 <20070507124818.GA18209@elf.ucw.cz>
-	 <200705071452.21969.oneukum@suse.de>
-	 <Pine.LNX.4.64.0705070736010.18013@asgard.lang.hm>
-	 <20070507195142.GC3981@ucw.cz>
-	 <Pine.LNX.4.64.0705071250460.21621@asgard.lang.hm>
-	 <20070507203859.GB18400@elf.ucw.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We used it (with great success) to replace bad UPSs on single-PSU
-database servers under (light) load. No need for scheduled downtime,
-etc.
+> Mike Christie tells me we're missing bouncing by accident in the
+> scsi_execute path (but not the scsi_execute_async path).  He says this
+> is the fix he proposed:
+> 
+> http://marc.info/?l=linux-scsi&m=115981479822790&w=2
+> 
+> Can we just merge this instead?
 
-The whole point of hibernation (or suspend to disk, or whatever you
-call it) is that the system goes to a zero-power state and then can be
-brought back to its original state. Closing in-progress network
-connections has nothing to do with pausing a machine any more than
-setting IM clients to 'away' would, or locking an X session. That sort
-of side-effect needs to be handled outside the core of "put state out
-to disk and read it back".
+Short answer: No
 
-On 5/7/07, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
-> > I don't dispute that it sometimes works today.
-> >
-> > what I dispute is that makeing it work should be a contraint on a cleaner
-> > design that happens to cause tcp connections to fail on suspend-to-disk
-> > (hibernate).
-> >
-> > if you are dong suspend-to-disk for such a short period that TCP
-> > connections are able to recover (typically <15 min for most firewalls, in
-> > some cases <2 min for connections with keep-alive) is it really
-> > worth it?
->
-> People were using swsusp to move server from one room to another.
->                                                                         Pavel
-> --
-> (english) http://www.livejournal.com/~pavelmachek
-> (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Long answer - it doesn't take this path.
+
+Different bug, both want fixing I suspect.
