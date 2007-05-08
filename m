@@ -1,90 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968768AbXEHWul@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032572AbXEHWvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968768AbXEHWul (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:50:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968619AbXEHWuM
+	id S1032572AbXEHWvS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968805AbXEHWuR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:50:12 -0400
-Received: from smtpout09-04.prod.mesa1.secureserver.net ([64.202.165.17]:58274
-	"HELO smtpout09.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S968610AbXEHWuK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:50:10 -0400
-Message-ID: <4640FEA0.3020407@seclark.us>
-Date: Tue, 08 May 2007 18:50:08 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-CC: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: CodingStyle: start flamewar about use of braces
-References: <200705081903.l48J3AOw010373@hera.kernel.org> <20070508124301.17975a4f.randy.dunlap@oracle.com> <4640E971.9050400@garzik.org> <20070508222540.GG8753@csclub.uwaterloo.ca>
-In-Reply-To: <20070508222540.GG8753@csclub.uwaterloo.ca>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 18:50:17 -0400
+Received: from ns.suse.de ([195.135.220.2]:55938 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968784AbXEHWuO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 18:50:14 -0400
+Date: Wed, 9 May 2007 00:50:12 +0200
+From: Nick Piggin <npiggin@suse.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] optimise unlock_page
+Message-ID: <20070508225012.GF20174@wotan.suse.de>
+References: <20070508113709.GA19294@wotan.suse.de> <20070508114003.GB19294@wotan.suse.de> <1178659827.14928.85.camel@localhost.localdomain> <20070508224124.GD20174@wotan.suse.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070508224124.GD20174@wotan.suse.de>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennart Sorensen wrote:
+On Wed, May 09, 2007 at 12:41:24AM +0200, Nick Piggin wrote:
+> On Wed, May 09, 2007 at 07:30:27AM +1000, Benjamin Herrenschmidt wrote:
+> > On Tue, 2007-05-08 at 13:40 +0200, Nick Piggin wrote:
+> > > This patch trades a page flag for a significant improvement in the unlock_page
+> > > fastpath. Various problems in the previous version were spotted by Hugh and
+> > > Ben (and fixed in this one).
+> > > 
+> > > Comments?
+> > > 
+> > > --
+> > > 
+> > > Speed up unlock_page by introducing a new page flag to signal that there are
+> > > page waitqueue waiters for PG_locked. This means a memory barrier and a random
+> > > waitqueue hash cacheline load can be avoided in the fastpath when there is no
+> > > contention.
+> > 
+> > I'm not 100% familiar with the exclusive vs. non exclusive wait thingy
+> > but wake_up_page() does __wake_up_bit() which calls __wake_up() with
+> > nr_exclusive set to 1. Doesn't that mean that only one waiter will be
+> > woken up ?
+> > 
+> > If that's the case, then we lose because we'll have clear PG_waiters but
+> > only wake up one of them.
+> > 
+> > Waking them all would fix it but at the risk of causing other
+> > problems... Maybe PG_waiters need to actually be a counter but if that
+> > is the case, then it complicates things even more.
+> > 
+> > Any smart idea ?
+> 
+> It will wake up 1 exclusive waiter, but no limit on non exclusive waiters.
+> Hmm, but it won't wake up waiters behind the exclusive guy... maybe the
+> wake up code can check whether the waitqueue is still active after the
+> wakeup, and set PG_waiters again in that case?
 
->On Tue, May 08, 2007 at 05:19:45PM -0400, Jeff Garzik wrote:
->  
->
->>>>+Do not unnecessarily use braces where a single statement will do.
->>>>+
->>>>+if (condition)
->>>>+	action();
->>>>+
->>>>+This does not apply if one branch of a conditional statement is a single
->>>>+statement. Use braces in both branches.
->>>>+
->>>>+if (condition) {
->>>>+	do_this();
->>>>+	do_that();
->>>>+} else {
->>>>+	otherwise();
->>>>+}
->>>>        
->>>>
->>If anyone tries to add braces to my code's 'else' statements where they 
->>are not required, that patch will get NAK'd in a heartbeat.
->>    
->>
->
->Oh isn't coding style fun.  I personally hate code that doesn't ALWAYS
->have the braces everywhere since it makes adding a print statement
->or other debuging to the condition such a pain since you then have to
->add braces to the condition to avoid breaking the code just to insert
->a print statement.  It is one of the few things I disagree with in the
->linux kernel coding style.
->
->--
->Len Sorensen
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->  
->
-I agree - it is merely defensive programming to always have the braces, 
-it prevents someone
-from sticking in a diag and forgetting to add braces so things go haywire.
+Hm, I don't know if we can do that without a race either...
 
-My $.02
-Steve
-
--- 
-
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
-
-
+OTOH, waking all non exclusive waiters may not be a really bad idea.
 
