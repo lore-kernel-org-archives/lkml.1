@@ -1,4072 +1,1485 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbXEHHT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755661AbXEHHXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755589AbXEHHT4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 03:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbXEHHT4
+	id S1755661AbXEHHXR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 03:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755626AbXEHHXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 03:19:56 -0400
-Received: from www.osadl.org ([213.239.205.134]:43510 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755512AbXEHHTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 03:19:49 -0400
-Subject: Re: [PATCH 1/2] LogFS proper
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       David Chinner <dgc@sgi.com>
-In-Reply-To: <20070507220036.GB15054@lazybastard.org>
-References: <20070507215913.GA15054@lazybastard.org>
-	 <20070507220036.GB15054@lazybastard.org>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 08 May 2007 09:22:30 +0200
-Message-Id: <1178608950.3042.273.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 8 May 2007 03:23:11 -0400
+Received: from ppsw-2.csi.cam.ac.uk ([131.111.8.132]:34882 "EHLO
+	ppsw-2.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755625AbXEHHXH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 03:23:07 -0400
+X-Cam-SpamDetails: Not scanned
+X-Cam-AntiVirus: No virus found
+X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
+In-Reply-To: <m3zm4g3yed.fsf_-_@maximus.localdomain>
+References: <m3abwhcy74.fsf@maximus.localdomain> <m3vef5biob.fsf@maximus.localdomain> <5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk> <m3hcqoa772.fsf@maximus.localdomain> <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk> <m33b289zku.fsf@maximus.localdomain> <m3zm4g3yed.fsf_-_@maximus.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6814ADC1-8C4E-424C-93EF-236EC77CADC4@cam.ac.uk>
+Cc: Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Content-Transfer-Encoding: 7bit
+From: Michael-Luke Jones <mlj28@cam.ac.uk>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+Date: Tue, 8 May 2007 08:22:17 +0100
+To: Krzysztof Halasa <khc@pm.waw.pl>
+X-Mailer: Apple Mail (2.752.2)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-08 at 00:00 +0200, Jörn Engel wrote:
-> The filesystem itself.
+On 8 May 2007, at 02:19, Krzysztof Halasa wrote:
 
-Very descriptive log entry.
+> Adds a driver for built-in IXP4xx Ethernet MAC and HSS ports
+>
+> Signed-off-by: Krzysztof Halasa <khc@pm.waw.pl>
+>
+> diff --git a/arch/arm/mach-ixp4xx/ixdp425-setup.c b/arch/arm/mach- 
+> ixp4xx/ixdp425-setup.c
+> index ec4f079..f20d39d 100644
+> --- a/arch/arm/mach-ixp4xx/ixdp425-setup.c
+> +++ b/arch/arm/mach-ixp4xx/ixdp425-setup.c
+> @@ -101,10 +101,35 @@ static struct platform_device ixdp425_uart = {
+>  	.resource		= ixdp425_uart_resources
+>  };
+>
+> +/* Built-in 10/100 Ethernet MAC interfaces */
+> +static struct mac_plat_info ixdp425_plat_mac[] = {
+> +	{
+> +		.phy		= 0,
+> +		.rxq		= 3,
+> +	}, {
+> +		.phy		= 1,
+> +		.rxq		= 4,
+> +	}
+> +};
+> +
+> +static struct platform_device ixdp425_mac[] = {
+> +	{
+> +		.name			= "ixp4xx_eth",
+> +		.id			= IXP4XX_ETH_NPEB,
+> +		.dev.platform_data	= ixdp425_plat_mac,
+> +	}, {
+> +		.name			= "ixp4xx_eth",
+> +		.id			= IXP4XX_ETH_NPEC,
+> +		.dev.platform_data	= ixdp425_plat_mac + 1,
+> +	}
+> +};
+> +
+>  static struct platform_device *ixdp425_devices[] __initdata = {
+>  	&ixdp425_i2c_controller,
+>  	&ixdp425_flash,
+> -	&ixdp425_uart
+> +	&ixdp425_uart,
+> +	&ixdp425_mac[0],
+> +	&ixdp425_mac[1],
+>  };
+>
+>  static void __init ixdp425_init(void)
 
-> +config LOGFS
-> +	tristate "Log Filesystem (EXPERIMENTAL)"
-> +	depends on EXPERIMENTAL
-> +	select ZLIB_INFLATE
-> +	select ZLIB_DEFLATE
+A final submission should probably have this platform data separated  
+from the net driver and sent upstream via Russell's patch tracking  
+system rather than netdev.
+
+> diff --git a/drivers/net/arm/Kconfig b/drivers/net/arm/Kconfig
+> index 678e4f4..5e2acb6 100644
+> --- a/drivers/net/arm/Kconfig
+> +++ b/drivers/net/arm/Kconfig
+> @@ -46,3 +46,13 @@ config EP93XX_ETH
+>  	help
+>  	  This is a driver for the ethernet hardware included in EP93xx  
+> CPUs.
+>  	  Say Y if you are building a kernel for EP93xx based devices.
+> +
+> +config IXP4XX_ETH
+> +	tristate "IXP4xx Ethernet support"
+> +	depends on NET_ETHERNET && ARM && ARCH_IXP4XX
+> +	select IXP4XX_NPE
+> +	select IXP4XX_QMGR
+> +	select MII
 > +	help
-> +	  Successor of JFFS2, using explicit filesystem hierarchy.
-
-Why is it a successor ? Does it build upon JFFS2 ?
-
-> +	  Continuing with the long tradition of calling the filesystem
-> +	  exactly what it is not, LogFS is a journaled filesystem,
-> +	  while JFFS and JFFS2 were true log-structured filesystems.
-> +	  The hybrid structure of journaled filesystems promise to
-> +	  scale better to larger sized.
-> +
-> +	  If unsure, say N.
-
-...
-
-> @@ -0,0 +1,14 @@
-> +obj-$(CONFIG_LOGFS)	+= logfs.o
-> +
-> +logfs-y += compr.o
-> +logfs-y	+= dir.o
-> +logfs-y	+= file.o
-> +logfs-y	+= gc.o
-> +logfs-y	+= inode.o
-> +logfs-y	+= journal.o
-> +logfs-y += memtree.o
-> +logfs-y	+= readwrite.o
-> +logfs-y	+= segment.o
-> +logfs-y	+= super.o
-> +logfs-y += progs/fsck.o
-> +logfs-y += progs/mkfs.o
-
-Please use either tabs or spaces. Preferrably tabs
-
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/logfs.h	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,626 @@
-> +#ifndef logfs_h
-> +#define logfs_h
-> +
-> +#define __CHECK_ENDIAN__
-> +
-> +
-> +#include <linux/crc32.h>
-> +#include <linux/fs.h>
-> +#include <linux/kallsyms.h>
-> +#include <linux/kernel.h>
-> +#include <linux/mtd/mtd.h>
-> +#include <linux/pagemap.h>
-> +#include <linux/statfs.h>
-
-Please sort includes alphabetically and seperate the 
-#include <linux/mtd/mtd.h> from the #include <linux/...> ones
-
-> +typedef __be16 be16;
-> +typedef __be32 be32;
-> +typedef __be64 be64;
-
-Why are those typedefs necessary ?
-
-> +struct btree_head {
-> +	struct btree_node *node;
-> +	int height;
-> +	void *null_ptr;
-> +};
-
-Please document structures
-
-> +#define packed __attribute__((__packed__))
-
-Please use the __attribute__((__packed__)) on your structs instead of
-creating some extra "needs lookup" magic.
-
-> +
-> +#define TRACE() do {						\
-> +	printk("trace: %s:%d: ", __FILE__, __LINE__);		\
-> +	printk("->%s\n", __func__);				\
-> +} while(0)
-
-Oh no. Not again another "I'm in function X tracer". 
-
-> +
-> +#define LOGFS_MAGIC 0xb21f205ac97e8168ull
-> +#define LOGFS_MAGIC_U32 0xc97e8168ull
-
-why is an U32 constant ull ?
-
-> +#define LOGFS_BLOCK_SECTORS	(8)
-> +#define LOGFS_BLOCK_BITS	(9)	/* 512 pointers, used for shifts */
-> +#define LOGFS_BLOCKSIZE		(4096ull)
-> +#define LOGFS_BLOCK_FACTOR (LOGFS_BLOCKSIZE / sizeof(u64))
-> +#define LOGFS_BLOCK_MASK (LOGFS_BLOCK_FACTOR-1)
-
-for the whole defines:
-
-Please align them so it does not look like a jigsaw puzzle.
-
-Please avoid tail comments as it makes it harder to parse
-
-> +#define I0_BLOCKS	(4+16)
-> +#define I1_BLOCKS LOGFS_BLOCK_FACTOR
-> +#define I2_BLOCKS (LOGFS_BLOCK_FACTOR * I1_BLOCKS)
-> +#define I3_BLOCKS (LOGFS_BLOCK_FACTOR * I2_BLOCKS)
-> +#define I4_BLOCKS (LOGFS_BLOCK_FACTOR * I3_BLOCKS)
-> +#define I5_BLOCKS (LOGFS_BLOCK_FACTOR * I4_BLOCKS)
-
-Some explanation for that magic math might be helpful
-
-> +#define I1_INDEX	(4+16)
-
-same constant as IO_BLOCKS. coincidence ?
-
-> +#define I2_INDEX	(5+16)
-> +#define I3_INDEX	(6+16)
-> +#define I4_INDEX	(7+16)
-> +#define I5_INDEX	(8+16)
-
-#define I2_INDEX	(I1_INDEX + 1)
-....
-
-> +struct logfs_disk_super {
-> +	be64	ds_magic;
-> +	be32	ds_crc;			/* crc32 of everything below */
-> +	u8	ds_ifile_levels;	/* max level of ifile */
-> +	u8	ds_iblock_levels;	/* max level of regular files */
-> +	u8	ds_data_levels;		/* number of segments to leaf blocks */
-> +	u8	pad0;
-> +
-> +	be64	ds_feature_incompat;
-> +	be64	ds_feature_ro_compat;
-> +
-> +	be64	ds_feature_compat;
-> +	be64	ds_flags;
-> +
-> +	be64	ds_filesystem_size;	/* filesystem size in bytes */
-> +	u8	ds_segment_shift;	/* log2 of segment size */
-> +	u8	ds_block_shift;		/* log2 if block size */
-> +	u8	ds_write_shift;		/* log2 of write size */
-> +	u8	pad1[5];
-> +
-> +	/* the segments of the primary journal.  if fewer than 4 segments are
-> +	 * used, some fields are set to 0 */
-> +#define LOGFS_JOURNAL_SEGS 4
-
-Please avoid defines inside of structures
-
-> +	be64	ds_journal_seg[LOGFS_JOURNAL_SEGS];
-> +
-> +	be64	ds_root_reserve;	/* bytes reserved for root */
-> +
-> +	be64	pad2[19];		/* align to 256 bytes */
-> +}packed;
-
-Please comment the structure with kernel doc comments and avoid the tail
-comments.
-
-> +
-> +#define LOGFS_IF_VALID		0x00000001 /* inode exists */
-> +#define LOGFS_IF_EMBEDDED	0x00000002 /* data embedded in block pointers */
-> +#define LOGFS_IF_ZOMBIE		0x00000004 /* inode was already deleted */
-> +#define LOGFS_IF_STILLBORN	0x40000000 /* couldn't write inode in creat() */
-> +#define LOGFS_IF_INVALID	0x80000000 /* inode does not exist */
-
-Are these bit values or enum type ?
-
-> +struct logfs_disk_inode {
-> +	be16	di_mode;
-> +	be16	di_pad;
-> +	be32	di_flags;
-> +	be32	di_uid;
-> +	be32	di_gid;
-> +
-> +	be64	di_ctime;
-> +	be64	di_mtime;
-> +
-> +	be32	di_refcount;
-> +	be32	di_generation;
-> +	be64	di_used_bytes;
-> +
-> +	be64	di_size;
-> +	be64	di_data[LOGFS_EMBEDDED_FIELDS];
-> +}packed;
-> +
-> +
-> +#define LOGFS_MAX_NAMELEN 255
-
-Please put define on top
-
-> +struct logfs_disk_dentry {
-> +	be64	ino;		/* inode pointer */
-> +	be16	namelen;
-> +	u8	type;
-> +	u8	name[LOGFS_MAX_NAMELEN];
-> +}packed;
-> +
-> +
-> +#define OBJ_TOP_JOURNAL	1	/* segment header for master journal */
-> +#define OBJ_JOURNAL	2	/* segment header for journal */
-> +#define OBJ_OSTORE	3	/* segment header for ostore */
-> +#define OBJ_BLOCK	4	/* data block */
-> +#define OBJ_INODE	5	/* inode */
-> +#define OBJ_DENTRY	6	/* dentry */
-
-enum please
-
-> +struct logfs_object_header {
-> +	be32	crc;		/* checksum */
-> +	be16	len;		/* length of object, header not included */
-> +	u8	type;		/* node type */
-> +	u8	compr;		/* compression type */
-> +	be64	ino;		/* inode number */
-> +	be64	pos;		/* file position */
-> +}packed;
-
-For all structs:
-
-Please use kernel doc struct comments.
-
-> +
-> +struct logfs_segment_header {
-> +	be32	crc;		/* checksum */
-> +	be16	len;		/* length of object, header not included */
-> +	u8	type;		/* node type */
-> +	u8	level;		/* GC level */
-> +	be32	segno;		/* segment number */
-> +	be32	ec;		/* erase count */
-> +	be64	gec;		/* global erase count (write time) */
-> +}packed;
-> +
-> +enum {
-> +	COMPR_NONE	= 0,
-> +	COMPR_ZLIB	= 1,
-> +};
-
-Please name the enums and use the same enum for the according fields and
-the function arguments.
-
-> +
-> +/* Journal entries come in groups of 16.  First group contains individual
-> + * entries, next groups contain one entry per level */
-> +enum {
-> +	JEG_BASE	= 0,
-> +	JE_FIRST	= 1,
-> +
-> +	JE_COMMIT	= 1,	/* commits all previous entries */
-> +	JE_ABORT	= 2,	/* aborts all previous entries */
-> +	JE_DYNSB	= 3,
-> +	JE_ANCHOR	= 4,
-> +	JE_ERASECOUNT	= 5,
-> +	JE_SPILLOUT	= 6,
-> +	JE_DELTA	= 7,
-> +	JE_BADSEGMENTS	= 8,
-> +	JE_AREAS	= 9,	/* area description sans wbuf */
-> +	JEG_WBUF	= 0x10,	/* write buffer for segments */
-> +
-> +	JE_LAST		= 0x1f,
-> +};
-
-same here
-
-> +
-> +////////////////////////////////////////////////////////////////////////////////
-> +////////////////////////////////////////////////////////////////////////////////
-
-Eew.
-
-> +
-> +#define LOGFS_SUPER(sb) ((struct logfs_super*)(sb->s_fs_info))
-> +#define LOGFS_INODE(inode) container_of(inode, struct logfs_inode, vfs_inode)
-
-lowercase inlines please
-
-> +
-> +			/*	0	reserved for gc markers */
-> +#define LOGFS_INO_MASTER	1	/* inode file */
-> +#define LOGFS_INO_ROOT		2	/* root directory */
-> +#define LOGFS_INO_ATIME		4	/* atime for all inodes */
-> +#define LOGFS_INO_BAD_BLOCKS	5	/* bad blocks */
-> +#define LOGFS_INO_OBSOLETE	6	/* obsolete block count */
-> +#define LOGFS_INO_ERASE_COUNT	7	/* erase count */
-> +#define LOGFS_RESERVED_INOS	16
-
-enum ?
-
-> +struct logfs_super {
-> +	//struct super_block *s_sb;		/* should get removed... */
-
-Please do so
-
-> +	be64	*s_rblock;
-> +	be64	*s_wblock[LOGFS_MAX_LEVELS];
-
-Please comment the non obvious ones instead of the self explaining
-
-> +	u64	 s_free_bytes;			/* number of free bytes */
-
-
-> +#define journal_for_each(__i) for (__i=0; __i<LOGFS_JOURNAL_SEGS; __i++)
-
-	__i = 0; __i < LOGFS_JOURNAL_SEGS;
-
-> +void logfs_crash_dump(struct super_block *sb);
-> +#define LOGFS_BUG(sb) do {		\
-> +	struct super_block *__sb = sb;	\
-
-Why do we need a local variable here ?
-
-> +	logfs_crash_dump(__sb);		\
-> +	BUG();				\
-> +} while(0)
-
-> +static inline u8 logfs_type(struct inode *inode)
-> +{
-> +	return (inode->i_mode >> 12) & 15;
-
-What's 12 and 15 ? Constants perhaps ?
-
-> +}
-> +static inline struct logfs_disk_sum *alloc_disk_sum(struct super_block *sb)
-> +{
-> +	return kzalloc(sb->s_blocksize, GFP_ATOMIC);
-> +}
-
-No, please do not add another alias for kzalloc
-
-> +static inline void free_disk_sum(struct logfs_disk_sum *sum)
-> +{
-> +	kfree(sum);
-> +}
-
-same here
-
-> +
-> +/* compr.c */
-> +#define logfs_compress_none logfs_memcpy
-> +#define logfs_uncompress_none logfs_memcpy
-
-can you please use logfs_memcpy instead ?
-
-> +int logfs_memcpy(void *in, void *out, size_t inlen, size_t outlen);
-> +int logfs_compress(void *in, void *out, size_t inlen, size_t outlen);
-> +int logfs_compress_vec(struct kvec *vec, int count, void *out, size_t outlen);
-> +int logfs_uncompress(void *in, void *out, size_t inlen, size_t outlen);
-> +int logfs_uncompress_vec(void *in, size_t inlen, struct kvec *vec, int count);
-
-are those global ? If yes, please add extern, else remove
-
-> +int __init logfs_compr_init(void);
-> +void __exit logfs_compr_exit(void);
-
-dito
-
-> +
-> +/* dir.c */
-> +extern struct inode_operations logfs_dir_iops;
-> +extern struct file_operations logfs_dir_fops;
-> +int logfs_replay_journal(struct super_block *sb);
-
-dito
-
-> +
-> +/* file.c */
-> +extern struct inode_operations logfs_reg_iops;
-> +extern struct file_operations logfs_reg_fops;
-> +extern struct address_space_operations logfs_reg_aops;
-> +
-> +int logfs_setattr(struct dentry *dentry, struct iattr *iattr);
-
-dito
-
-> +
-> +/* gc.c */
-> +void logfs_gc_pass(struct super_block *sb);
-> +int logfs_init_gc(struct logfs_super *super);
-> +void logfs_cleanup_gc(struct logfs_super *super);
-
-same here ......................
-
-> +
-> +/* inode.c */
-> +/* progs/mkfs.c */
-> +int logfs_fsck(struct super_block *sb);
-
-down to this place
-
-> +
-> +static inline u64 dev_ofs(struct super_block *sb, u32 segno, u32 ofs)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-
-Seperate variables and code by an empty line please
-
-> +	return ((u64)segno << super->s_segshift) + ofs;
-> +}
-> +
-> +
-> +static inline void device_read(struct super_block *sb, u32 segno, u32 ofs,
-> +		size_t len, void *buf)
-> +{
-> +	int err = mtdread(sb, dev_ofs(sb, segno, ofs), len, buf);
-
-Same here.
-
-> +	LOGFS_BUG_ON(err, sb);
-
-Please open code this instead of nesting mtdread into device_read and
-therefor avoid the error handling pathes in those places where
-device_read is used.
-
-> +}
-> +
-> +
-> +#define EOF	256
-
-1. very intuitive name
-2. why is this constant not at the top, where the other constants are
-3. why 256
-
-
-> +
-> +typedef int (*dir_callback)(struct inode *dir, struct dentry *dentry,
-> +		struct logfs_disk_dentry *dd, loff_t pos);
-
-Why is this in the middle of something else ?
-
-> +
-> +static s64 dir_seek_data(struct inode *inode, s64 pos)
-> +{
-> +	s64 new_pos = logfs_seek_data(inode, pos);
-
-new line please
-
-> +	return max((s64)pos, new_pos - 1);
-
-	max_t please 
-
-> +}
-> +
-> +
-> +static int __logfs_dir_walk(struct inode *dir, struct dentry *dentry,
-> +		dir_callback handler, struct logfs_disk_dentry *dd, loff_t *pos)
-> +{
-> +	struct qstr *name = dentry ? &dentry->d_name : NULL;
-> +	int ret;
-> +
-> +	for (; ; (*pos)++) {
-> +		ret = read_dir(dir, dd, *pos);
-> +		if (ret == -EOF)
-> +			return 0;
-> +		if (ret == -ENODATA) {/* deleted dentry */
-
-Please move the comment away. It makes parsing hard
-
-> +			*pos = dir_seek_data(dir, *pos);
-> +			continue;
-> +		}
-> +		if (ret)
-> +			return ret;
-> +		BUG_ON(dd->namelen == 0);
-> +
-> +		if (name) {
-> +			if (name->len != be16_to_cpu(dd->namelen))
-> +				continue;
-> +			if (memcmp(name->name, dd->name, name->len))
-> +				continue;
-> +		}
-> +
-> +		return handler(dir, dentry, dd, *pos);
-> +	}
-> +	return ret;
-
-	Where do you break out of the loop ?
-
-> +}
-> +
-> +
-> +static int logfs_dir_walk(struct inode *dir, struct dentry *dentry,
-> +		dir_callback handler)
-> +{
-> +	struct logfs_disk_dentry dd;
-> +	loff_t pos = 0;
-
-New line please
-
-> +	return __logfs_dir_walk(dir, dentry, handler, &dd, &pos);
-> +}
-> +
-> +
-> +static struct dentry *logfs_lookup(struct inode *dir, struct dentry *dentry,
-> +		struct nameidata *nd)
-> +{
-> +	struct dentry *ret;
-> +
-> +	ret = ERR_PTR(logfs_dir_walk(dir, dentry, logfs_lookup_handler));
-> +	return ret;
-
-	return ERR_PTR(.....);
-
-> +}
-> +
-> +static int logfs_unlink(struct inode *dir, struct dentry *dentry)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(dir->i_sb);
-> +	struct inode *inode = dentry->d_inode;
-> +	int ret;
-> +
-> +	mutex_lock(&super->s_victim_mutex);
-> +	super->s_victim_ino = inode->i_ino;
-> +
-> +	/* remove dentry */
-> +	if (inode->i_mode & S_IFDIR)
-> +		dir->i_nlink--;
-> +	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME;
-> +	ret = logfs_dir_walk(dir, dentry, logfs_unlink_handler);
-> +	super->s_victim_ino = 0;
-> +	if (ret)
-> +		goto out;
-> +
-> +	/* remove inode */
-> +	ret = logfs_remove_inode(inode);
-
-Please remove this goto / label construct and  do
-
-	if (likely(!ret))
-		ret = logfs_remove_inode(inode);
-
-instead
-
-> +out:
-> +	mutex_unlock(&super->s_victim_mutex);
-> +	return ret;
-> +}
-> +
-> +
-> +/* FIXME: readdir currently has it's own dir_walk code.  I don't see a good
-> + * way to combine the two copies */
-> +#define IMPLICIT_NODES 2
-> +static int __logfs_readdir(struct file *file, void *buf, filldir_t filldir)
-> +{
-> +	struct logfs_disk_dentry dd;
-> +	loff_t pos = file->f_pos - IMPLICIT_NODES;
-> +	int err;
-> +
-> +	BUG_ON(pos<0);
-> +	for (;; pos++) {
-> +		struct inode *dir = file->f_dentry->d_inode;
-
-new line please
-
-> +		err = read_dir(dir, &dd, pos);
-> +		if (err == -EOF)
-> +			break;
-
-	-EOF results in a return code 0 ?
-
-> +		if (err == -ENODATA) {/* deleted dentry */
-> +			pos = dir_seek_data(dir, pos);
-> +			continue;
-> +		}
-> +		if (err)
-> +			return err;
-> +		BUG_ON(dd.namelen == 0);
-> +
-> +		if (filldir(buf, dd.name, be16_to_cpu(dd.namelen), pos,
-> +					be64_to_cpu(dd.ino), dd.type))
-> +			break;
-> +	}
-> +
-> +	file->f_pos = pos + IMPLICIT_NODES;
-> +	return 0;
-> +}
-> +
-> +
-> +static int logfs_readdir(struct file *file, void *buf, filldir_t filldir)
-> +{
-> +	struct inode *inode = file->f_dentry->d_inode;
-> +	int err;
-> +
-> +	if (file->f_pos < 0)
-> +		return -EINVAL;
-> +
-> +	if (file->f_pos == 0) {
-> +		if (filldir(buf, ".", 1, 1, inode->i_ino, DT_DIR) < 0)
-> +			return 0;
-> +		file->f_pos++;
-> +	}
-> +	if (file->f_pos == 1) {
-> +		ino_t pino = parent_ino(file->f_dentry);
-
-empty line
-
-> +		if (filldir(buf, "..", 2, 2, pino, DT_DIR) < 0)
-> +			return 0;
-> +		file->f_pos++;
-> +	}
-> +
-> +	err = __logfs_readdir(file, buf, filldir);
-> +	if (err)
-> +		printk("LOGFS readdir error=%x, pos=%llx\n", err, file->f_pos);
-> +	return err;
-> +}
-
-> +static int logfs_write_dir(struct inode *dir, struct dentry *dentry,
-> +		struct inode *inode)
-> +{
-> +	struct logfs_disk_dentry dd;
-> +	int err;
-> +
-> +	memset(&dd, 0, sizeof(dd));
-> +	dd.ino = cpu_to_be64(inode->i_ino);
-> +	dd.type = logfs_type(inode);
-> +	logfs_set_name(&dd, &dentry->d_name);
-> +
-> +	dir->i_ctime = dir->i_mtime = CURRENT_TIME;
-> +	/* FIXME: the file size should actually get aligned when writing,
-> +	 * not when reading. */
-
-Please use 
-
-	/*
-	 * kernel style 
-	 * multi line comments
-	 */
-
-> +	err = write_dir(dir, &dd, file_end(dir));
-> +	if (err)
-> +		return err;
-> +	d_instantiate(dentry, inode);
-> +	return 0;
-> +}
-> +
-> +
-> +static int __logfs_create(struct inode *dir, struct dentry *dentry,
-> +		struct inode *inode, const char *dest, long destlen)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(dir->i_sb);
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	int ret;
-> +
-> +	mutex_lock(&super->s_victim_mutex);
-> +	super->s_victim_ino = inode->i_ino;
-> +	if (inode->i_mode & S_IFDIR)
-> +		inode->i_nlink++;
-> +
-> +	if (dest) /* symlink */
-> +		ret = logfs_inode_write(inode, dest, destlen, 0);
-> +	else /* creat/mkdir/mknod */
-> +		ret = __logfs_write_inode(inode);
-
-
-Please remove this confusing tail comments
-
-> +	super->s_victim_ino = 0;
-> +	if (ret) {
-> +		if (!dest)
-> +			li->li_flags |= LOGFS_IF_STILLBORN;
-> +		/* FIXME: truncate symlink */
-> +		inode->i_nlink--;
-> +		iput(inode);
-> +		goto out;
-> +	}
-> +
-> +	if (inode->i_mode & S_IFDIR)
-> +		dir->i_nlink++;
-> +	ret = logfs_write_dir(dir, dentry, inode);
-> +
-> +	if (ret) {
-> +		if (inode->i_mode & S_IFDIR)
-> +			dir->i_nlink--;
-> +		logfs_remove_inode(inode);
-> +		iput(inode);
-> +	}
-> +out:
-> +	mutex_unlock(&super->s_victim_mutex);
-> +	return ret;
-> +}
-> +
-> +
-> +/* FIXME: This should really be somewhere in the 64bit area. */
-> +#define LOGFS_LINK_MAX (1<<30)
-
-Please move the define to the header file or some other useful place
-
-> +static int logfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
-> +{
-> +	struct inode *inode;
-> +
-> +	if (dir->i_nlink >= LOGFS_LINK_MAX)
-> +		return -EMLINK;
-> +
-> +	/* FIXME: why do we have to fill in S_IFDIR, while the mode is
-> +	 * correct for mknod, creat, etc.?  Smells like the vfs *should*
-> +	 * do it for us but for some reason fails to do so.
-> +	 */
-
-Comment style
-
-> +
-> +static struct inode_operations ext2_symlink_iops = {
-> +	.readlink	= generic_readlink,
-> +	.follow_link	= page_follow_link_light,
-> +};
-
-s/ext2/logfs/ maybe ?
-
-> +static int logfs_nop_handler(struct inode *dir, struct dentry *dentry,
-> +		struct logfs_disk_dentry *dd, loff_t pos)
-> +{
-> +	return 0;
-> +}
-
-New line
-
-> +static inline int logfs_get_dd(struct inode *dir, struct dentry *dentry,
-> +		struct logfs_disk_dentry *dd, loff_t *pos)
-> +{
-> +	*pos = 0;
-> +	return __logfs_dir_walk(dir, dentry, logfs_nop_handler, dd, pos);
-> +}
-> +
-
-> +static int logfs_delete_dd(struct inode *dir, struct logfs_disk_dentry *dd,
-> +		loff_t pos)
-> +{
-> +	int err;
-> +
-> +	err = read_dir(dir, dd, pos);
-> +	if (err == -EOF) /* don't expose internal errnos */
-> +		err = -EIO;
-
-Interesting. Why is EOF morphed to EIO ?
-
-> +	if (err)
-> +		return err;
-> +
-> +	dir->i_ctime = dir->i_mtime = CURRENT_TIME;
-> +	if (dd->type == DT_DIR)
-> +		dir->i_nlink--;
-> +	return logfs_delete(dir, pos);
-> +}
-
-> +
-> +static int logfs_rename(struct inode *old_dir, struct dentry *old_dentry,
-> +		struct inode *new_dir, struct dentry *new_dentry)
-> +{
-> +	if (new_dentry->d_inode) /* target exists */
-> +		return logfs_rename_target(old_dir, old_dentry, new_dir, new_dentry);
-> +	else if (old_dir == new_dir) /* local rename */
-> +		return logfs_rename_local(old_dir, old_dentry, new_dentry);
-
-Comment style
-
-> +	return logfs_rename_cross(old_dir, old_dentry, new_dir, new_dentry);
-> +}
-> +
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/file.c	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,82 @@
-
-Comment missing. License missing.
-
-> +#include "logfs.h"
-> +
-> +
-> +static int logfs_prepare_write(struct file *file, struct page *page,
-> +		unsigned start, unsigned end)
-> +{
-> +	if (PageUptodate(page))
-> +		return 0;
-> +
-> +	if ((start == 0) && (end == PAGE_CACHE_SIZE))
-> +		return 0;
-
-	Self explaining logic ?
-
-> +	return logfs_readpage_nolock(page);
-> +}
-> +
-> +
-> +static int logfs_readpage(struct file *file, struct page *page)
-> +{
-> +	int ret = logfs_readpage_nolock(page);
-
-empty line
-
-> +	unlock_page(page);
-> +	return ret;
-> +}
-> +
-> +
-> +static int logfs_writepage(struct page *page, struct writeback_control *wbc)
-> +{
-> +	BUG();
-
-Is this a permanent solution ?
-
-> +	return 0;
-> +}
-
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/gc.c	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,350 @@
-
-Comment and license please.
-
-> +#include "logfs.h"
-> +
-> +#if 0
-
-Can you please remove this ?
-
-> +/**
-> + * When deciding which segment to use next, calculate the resistance
-> + * of each segment and pick the lowest.  Segments try to resist usage
-> + * if
-> + * o they are full,
-> + * o they have a high erase count or
-> + * o they have recently been written.
-> + *
-> + * Full segments should not get reused, as there is little space to
-> + * gain from them.  Segments with high erase count should be left
-> + * aside as they can wear out sooner than others.  Freshly-written
-> + * segments contain many blocks that will get obsoleted fairly soon,
-> + * so it helps to wait a little before reusing them.
-> + *
-> + * Total resistance is expressed in erase counts.  Formula is:
-> + *
-> + * R = EC + K1*F + K2*e^(-t/theta)
-> + *
-> + * R:	Resistance
-> + * EC:	Erase count
-> + * K1:	Constant, 10,000 might be a good value
-> + * K2:	Constant,  1,000 might be a good value
-> + * F:	Segment fill level
-> + * t:	Time since segment was written to (in number of segments written)
-> + * theta: Time constant.  Total number of segments might be a good value
-> + *
-> + * Since the kernel is not allowed to use floating point, the function
-> + * decay() is used to approximate exponential decay in fixed point.
-> + */
-
-Interestingly enough this unused function is better commented than
-anything else in this patch.
-
-> +static long decay(long t0, long t, long theta)
-> +{
-> +	long shift, fac;
-> +
-> +	if (t >= 32*theta)
-> +		return 0;
-> +
-> +	shift = t/theta;
-> +	fac = theta - (t%theta)/2;
-> +	return (t0 >> shift) * fac / theta;
-> +}
-> +#endif
-> +
-> +
-> +static u32 logfs_valid_bytes(struct super_block *sb, u32 segno)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	struct logfs_object_header h;
-> +	u64 ofs, ino, pos;
-> +	u32 seg_ofs, valid, size;
-> +	void *reserved;
-> +	int i;
-> +
-> +	/* Some segments are reserved.  Just pretend they were all valid */
-> +	reserved = btree_lookup(&super->s_reserved_segments, segno);
-> +	if (reserved)
-> +		return super->s_segsize;
-> +
-> +	/* Currently open segments */
-> +	/* FIXME: just reserve open areas and remove this code */
-> +	for (i=0; i<LOGFS_NO_AREAS; i++) {
-> +		struct logfs_area *area = super->s_area[i];
-> +		if (area->a_is_open && (area->a_segno == segno)) {
-> +			return super->s_segsize;
-> +		}
-> +	}
-> +
-> +	device_read(sb, segno, 0, sizeof(h), &h);
-
-	See above comment about device_read() implementation.
-
-> +	if (all_ff(&h, sizeof(h)))
-> +		return 0;
-> +
-> +	valid = 0; /* segment header not counted as valid bytes */
-> +	for (seg_ofs = sizeof(h); seg_ofs + sizeof(h) < super->s_segsize; ) {
-> +		device_read(sb, segno, seg_ofs, sizeof(h), &h);
-> +		if (all_ff(&h, sizeof(h)))
-> +			break;
-> +
-> +		ofs = dev_ofs(sb, segno, seg_ofs);
-> +		ino = be64_to_cpu(h.ino);
-> +		pos = be64_to_cpu(h.pos);
-> +		size = (u32)be16_to_cpu(h.len) + sizeof(h);
-> +		//printk("%x %x (%llx, %llx, %llx)(%x, %x)\n", h.type, h.compr, ofs, ino, pos, valid, size);
-
-	Please remove
-
-> +		if (logfs_is_valid_block(sb, ofs, ino, pos))
-> +			valid += size;
-> +		seg_ofs += size;
-> +	}
-> +	printk("valid(%x) = %x\n", segno, valid);
-> +	return valid;
-> +}
-> +
-> +static void __logfs_gc_segment(struct super_block *sb, u32 segno)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	struct logfs_object_header h;
-> +	struct logfs_segment_header *sh;
-> +	u64 ofs, ino, pos;
-> +	u32 seg_ofs;
-> +	int level;
-> +
-> +	device_read(sb, segno, 0, sizeof(h), &h);
-
-
-	See above comment about device_read() implementation.
-
-> +	sh = (void*)&h;
-
-Please use proper type casting !
-
-> +	level = sh->level;
-> +
-> +	for (seg_ofs = sizeof(h); seg_ofs + sizeof(h) < super->s_segsize; ) {
-> +		ofs = dev_ofs(sb, segno, seg_ofs);
-> +		device_read(sb, segno, seg_ofs, sizeof(h), &h);
-
-	See above comment about device_read() implementation.
-
-> +		ino = be64_to_cpu(h.ino);
-> +		pos = be64_to_cpu(h.pos);
-> +		if (logfs_is_valid_block(sb, ofs, ino, pos))
-> +			logfs_cleanse_block(sb, ofs, ino, pos, level);
-> +		seg_ofs += sizeof(h);
-> +		seg_ofs += be16_to_cpu(h.len);
-> +	}
-> +}
-> +
-
-> +static void __add_segment(struct list_head *list, int *count, u32 segno,
-> +		int valid)
-> +{
-> +	struct logfs_segment *seg = kzalloc(sizeof(*seg), GFP_KERNEL);
-
-empty line
-
-> +	if (!seg)
-> +		return;
-> +
-> +	seg->segno = segno;
-> +	seg->valid = valid;
-> +	list_add(&seg->list, list);
-> +	*count += 1;
-> +}
-
-Also __add_segment() can fail. Why is there no return code ?
-
-> +
-> +
-> +static void add_segment(struct list_head *list, int *count, u32 segno,
-> +		int valid)
-> +{
-> +	struct logfs_segment *seg;
-> +	list_for_each_entry(seg, list, list)
-> +		if (seg->segno == segno)
-> +			return;
-> +	__add_segment(list, count, segno, valid);
-
-	Can fail. Error handling ?
-
-> +}
-> +
-> +
-> +static void del_segment(struct list_head *list, int *count, u32 segno)
-> +{
-> +	struct logfs_segment *seg;
-
-Empty line
-
-> +	list_for_each_entry(seg, list, list)
-> +		if (seg->segno == segno) {
-> +			list_del(&seg->list);
-> +			*count -= 1;
-> +			kfree(seg);
-> +			return;
-> +		}
-> +}
-> +
-> +
-> +static void add_free_segment(struct super_block *sb, u32 segno)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	add_segment(&super->s_free_list, &super->s_free_count, segno, 0);
-> +}
-
-Empty line
-
-> +static void add_low_segment(struct super_block *sb, u32 segno, int valid)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-
-Empty line
-
-> +	add_segment(&super->s_low_list, &super->s_low_count, segno, valid);
-
-	Can fail
-
-> +}
-> +static void del_low_segment(struct super_block *sb, u32 segno)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-
-Empty line
-
-> +	del_segment(&super->s_low_list, &super->s_low_count, segno);
-> +}
-> +
-> +
-> +static void scan_segment(struct super_block *sb, u32 segno)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	u32 full = super->s_segsize - sb->s_blocksize - 0x18; /* one header */
-
-Please use a understandable constant instead of 0x18
-
-> +	int valid;
-> +
-> +	valid = logfs_valid_bytes(sb, segno);
-> +	if (valid == 0) {
-> +		del_low_segment(sb, segno);
-> +		add_free_segment(sb, segno);
-> +	} else if (valid < full)
-> +		add_low_segment(sb, segno, valid);
-
-		Can fail
-> +}
-> +
-> +
-> +static void free_all_segments(struct logfs_super *super)
-> +{
-> +	struct logfs_segment *seg, *next;
-> +
-> +	list_for_each_entry_safe(seg, next, &super->s_free_list, list) {
-> +		list_del(&seg->list);
-> +		kfree(seg);
-> +	}
-> +	list_for_each_entry_safe(seg, next, &super->s_low_list, list) {
-> +		list_del(&seg->list);
-> +		kfree(seg);
-> +	}
-> +}
-> +
-> +
-> +static void logfs_scan_pass(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int i;
-> +
-> +	for (i = super->s_sweeper+1; i != super->s_sweeper; i++) {
-
-	for (i = super->s_sweeper + 1; i != super->s_sweeper; i++) {
-
-
-> +		if (i >= super->s_no_segs)
-> +			i=1;	/* skip superblock */
-
-			i = 1;
-	and remove tail comment
-
-> +
-> +		scan_segment(sb, i);
-> +
-> +		if (super->s_free_count >= super->s_total_levels) {
-> +			super->s_sweeper = i;
-> +			return;
-> +		}
-> +	}
-> +	scan_segment(sb, super->s_sweeper);
-> +}
-> +
-
-> +/* GC all the low-count segments.  If necessary, rescan the medium.
-> + * If we made enough room, return */
-> +static void logfs_gc_several(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int rounds;
-> +
-> +	rounds = super->s_low_count;
-> +
-> +	for (; rounds; rounds--) {
-> +		if (super->s_free_count >= super->s_total_levels)
-> +			return;
-> +		if (super->s_free_count < 3) {
-> +			logfs_scan_pass(sb);
-> +			printk("s");
-
-	Debug leftover ?
-
-> +		}
-> +		logfs_gc_once(sb);
-> +#if 1
-> +		if (super->s_free_count >= super->s_total_levels)
-> +			return;
-> +		printk(".");
-> +#endif
-
-	Dito ?
-
-> +	}
-> +}
-> +
-> +
-> +void logfs_gc_pass(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int i;
-> +
-> +	for (i=4; i; i--) {
-
-	(i = 4; ...
-
-	Please use a constant instead of 4
-
-
-> +		if (super->s_free_count >= super->s_total_levels)
-> +			return;
-> +		logfs_scan_pass(sb);
-> +
-> +		if (super->s_free_count >= super->s_total_levels)
-> +			return;
-> +		printk("free:%8d, low:%8d, sweeper:%8lld\n",
-> +				super->s_free_count, super->s_low_count,
-> +				super->s_sweeper);
-
-Debug leftover ? Otherwise please add loglevel and some hint from which
-code this originates
-
-> +		logfs_gc_several(sb);
-> +		printk("free:%8d, low:%8d, sweeper:%8lld\n",
-> +				super->s_free_count, super->s_low_count,
-> +				super->s_sweeper);
-
-Same here
-
-> +	}
-> +	logfs_fsck(sb);
-> +	LOGFS_BUG(sb);
-> +}
-> +
-> +
-> +
-> +void logfs_cleanup_gc(struct logfs_super *super)
-> +{
-> +	free_all_segments(super);
-> +}
-
-Can we add another wrapper to this please ?
-
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/inode.c	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,468 @@
-
-Comment + license missing
-
-> +#include "logfs.h"
-> +#include <linux/backing-dev.h>
-> +#include <linux/writeback.h> /* for inode_lock */
-
-Please remove the stupid comment
-
-> +
-> +static struct kmem_cache *logfs_inode_cache;
-> +
-> +
-> +static int __logfs_read_inode(struct inode *inode);
-> +
-> +
-> +struct inode *logfs_iget(struct super_block *sb, ino_t ino, int *cookie)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	struct logfs_inode *li;
-> +
-> +	if (ino == LOGFS_INO_MASTER) /* never iget this "inode"! */
-
-	comment style
-
-> +		return super->s_master_inode;
-> +
-> +	spin_lock(&inode_lock);
-> +	list_for_each_entry(li, &super->s_freeing_list, li_freeing_list)
-> +		if (li->vfs_inode.i_ino == ino) {
-> +			spin_unlock(&inode_lock);
-> +			*cookie = 1;
-> +			return &li->vfs_inode;
-> +		}
-> +	spin_unlock(&inode_lock);
-> +
-> +	*cookie = 0;
-> +	return __logfs_iget(sb, ino);
-> +}
-> +
-> +
-> +void logfs_iput(struct inode *inode, int cookie)
-> +{
-> +	if (inode->i_ino == LOGFS_INO_MASTER) /* never iput it either! */
-
-	comment style
-
-> +		return;
-> +
-> +	if (cookie)
-> +		return;
-> +
-> +	iput(inode);
-> +}
-> +
-> +
-> +static void logfs_init_inode(struct inode *inode)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	int i;
-> +
-> +	li->li_flags	= LOGFS_IF_VALID;
-> +	li->li_used_bytes = 0;
-> +	inode->i_uid	= 0;
-> +	inode->i_gid	= 0;
-> +	inode->i_size	= 0;
-> +	inode->i_blocks	= 0;
-> +	inode->i_ctime	= CURRENT_TIME;
-> +	inode->i_mtime	= CURRENT_TIME;
-> +	inode->i_nlink	= 1;
-> +	INIT_LIST_HEAD(&li->li_freeing_list);
-> +
-> +	for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
-
-	i = 0; .....
-
-> +		li->li_data[i] = 0;
-> +
-> +	return;
-> +}
-> +
-> +
-> +struct inode *logfs_new_meta_inode(struct super_block *sb, u64 ino)
-> +{
-> +	struct inode *inode;
-> +
-> +	inode = logfs_alloc_inode(sb);
-> +	if (!inode)
-> +		return ERR_PTR(-ENOMEM);
-> +
-> +	logfs_init_inode(inode);
-> +	inode->i_mode = 0;
-> +	inode->i_ino = ino;
-> +	inode->i_sb = sb;
-> +
-> +	/* This is a blatant copy of alloc_inode code.  We'd need alloc_inode
-> +	 * to be nonstatic, alas. */
-> +	{
-> +		static const struct address_space_operations empty_aops;
-> +		struct address_space * const mapping = &inode->i_data;
-
-Please remove the brackets and move the variables to the top of the
-fucntion
-
-> +		mapping->a_ops = &empty_aops;
-> +		mapping->host = inode;
-> +		mapping->flags = 0;
-> +		mapping_set_gfp_mask(mapping, GFP_HIGHUSER);
-> +		mapping->assoc_mapping = NULL;
-> +		mapping->backing_dev_info = &default_backing_dev_info;
-> +		inode->i_mapping = mapping;
-> +	}
-> +
-> +	return inode;
-> +}
-> +
-> +
-> +static struct timespec be64_to_timespec(be64 betime)
-> +{
-> +	u64 time = be64_to_cpu(betime);
-> +	struct timespec tsp;
-
-Empty line
-
-> +	tsp.tv_sec = time >> 32;
-> +	tsp.tv_nsec = time & 0xffffffff;
-> +	return tsp;
-> +}
-> +
-> +
-> +static be64 timespec_to_be64(struct timespec tsp)
-> +{
-> +	u64 time = ((u64)tsp.tv_sec << 32) + (tsp.tv_nsec & 0xffffffff);
-
-tsp.tv_nsec & 0xffffffff ????
-
-timespecs need to be normalized, so tv_nsec can never be greater than
-999999999 == 0x3B9AC9FF
-
-> +	return cpu_to_be64(time);
-> +}
-> +
-> +
-> +static void logfs_disk_to_inode(struct logfs_disk_inode *di, struct inode*inode)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	int i;
-> +
-> +	inode->i_mode	= be16_to_cpu(di->di_mode);
-> +	li->li_flags	= be32_to_cpu(di->di_flags);
-> +	inode->i_uid	= be32_to_cpu(di->di_uid);
-> +	inode->i_gid	= be32_to_cpu(di->di_gid);
-> +	inode->i_size	= be64_to_cpu(di->di_size);
-> +	logfs_set_blocks(inode, be64_to_cpu(di->di_used_bytes));
-> +	inode->i_ctime	= be64_to_timespec(di->di_ctime);
-> +	inode->i_mtime	= be64_to_timespec(di->di_mtime);
-> +	inode->i_nlink	= be32_to_cpu(di->di_refcount);
-> +	inode->i_generation = be32_to_cpu(di->di_generation);
-> +
-> +	switch (inode->i_mode & S_IFMT) {
-> +	case S_IFCHR: /* fall through */
-
-Sigh. Could you please add useful comments ?
-
-> +	case S_IFBLK: /* fall through */
-> +	case S_IFIFO:
-> +		inode->i_rdev = be64_to_cpu(di->di_data[0]);
-> +		break;
-> +	default:
-> +		for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
-
-		i = 0; i < L.....
-
-> +			li->li_data[i] = be64_to_cpu(di->di_data[i]);
-> +		break;
-> +	}
-> +}
-> +
-> +
-> +static void logfs_inode_to_disk(struct inode *inode, struct logfs_disk_inode*di)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	int i;
-> +
-> +	di->di_mode	= cpu_to_be16(inode->i_mode);
-> +	di->di_pad	= 0;
-> +	di->di_flags	= cpu_to_be32(li->li_flags);
-> +	di->di_uid	= cpu_to_be32(inode->i_uid);
-> +	di->di_gid	= cpu_to_be32(inode->i_gid);
-> +	di->di_size	= cpu_to_be64(i_size_read(inode));
-> +	di->di_used_bytes = cpu_to_be64(li->li_used_bytes);
-> +	di->di_ctime	= timespec_to_be64(inode->i_ctime);
-> +	di->di_mtime	= timespec_to_be64(inode->i_mtime);
-> +	di->di_refcount	= cpu_to_be32(inode->i_nlink);
-> +	di->di_generation = cpu_to_be32(inode->i_generation);
-> +
-> +	switch (inode->i_mode & S_IFMT) {
-> +	case S_IFCHR: /* fall through */
-
-See above
-
-> +	case S_IFBLK: /* fall through */
-> +	case S_IFIFO:
-> +		di->di_data[0] = cpu_to_be64(inode->i_rdev);
-> +		break;
-> +	default:
-> +		for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
-
-See above
-
-> +			di->di_data[i] = cpu_to_be64(li->li_data[i]);
-> +		break;
-> +	}
-> +}
-> +
-> +
-> +static int logfs_read_disk_inode(struct logfs_disk_inode *di,
-> +		struct inode *inode)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(inode->i_sb);
-> +	ino_t ino = inode->i_ino;
-> +	int ret;
-> +
-> +	BUG_ON(!super->s_master_inode);
-> +	ret = logfs_inode_read(super->s_master_inode, di, sizeof(*di), ino);
-> +	if (ret)
-> +		return ret;
-> +
-> +	if ( !(be32_to_cpu(di->di_flags) & LOGFS_IF_VALID))
-> +		return -EIO;
-> +
-> +	if (be32_to_cpu(di->di_flags) & LOGFS_IF_INVALID)
-> +		return -EIO;
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +static int __logfs_read_inode(struct inode *inode)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	struct logfs_disk_inode di;
-> +	int ret;
-> +
-> +	ret = logfs_read_disk_inode(&di, inode);
-> +	/* FIXME: move back to mkfs when format has settled */
-> +	if (ret == -ENODATA && inode->i_ino == LOGFS_INO_ROOT) {
-> +		memset(&di, 0, sizeof(di));
-> +		di.di_flags	= cpu_to_be32(LOGFS_IF_VALID);
-> +		di.di_mode	= cpu_to_be16(S_IFDIR | 0755);
-> +		di.di_refcount	= cpu_to_be32(2);
-> +		ret = 0;
-> +	}
-> +	if (ret)
-> +		return ret;
-> +	logfs_disk_to_inode(&di, inode);
-> +
-> +	if ( !(li->li_flags&LOGFS_IF_VALID) || (li->li_flags&LOGFS_IF_INVALID))
-> +		return -EIO;
-
-	Is this really an IO error ?
-
-> +	switch (inode->i_mode & S_IFMT) {
-> +	case S_IFDIR:
-> +		inode->i_op = &logfs_dir_iops;
-> +		inode->i_fop = &logfs_dir_fops;
-> +		break;
-> +	case S_IFREG:
-> +		inode->i_op = &logfs_reg_iops;
-> +		inode->i_fop = &logfs_reg_fops;
-> +		inode->i_mapping->a_ops = &logfs_reg_aops;
-> +		break;
-> +	default:
-> +		;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-
-> +int __logfs_write_inode(struct inode *inode)
-> +{
-> +	struct logfs_disk_inode old, new; /* FIXME: move these off the stack */
-> +
-> +	BUG_ON(inode->i_ino == LOGFS_INO_MASTER);
-> +
-> +	/* read and compare the inode first.  If it hasn't changed, don't
-> +	 * bother writing it. */
-
-Comment style
-
-> +	logfs_inode_to_disk(inode, &new);
-> +	if (logfs_read_disk_inode(&old, inode))
-> +		return logfs_write_disk_inode(&new, inode);
-> +	if (memcmp(&old, &new, sizeof(old)))
-> +		return logfs_write_disk_inode(&new, inode);
-> +	return 0;
-> +}
-> +
-> +
-> +
-> +/**
-
-Do not use kernel doc comment start sequence for non kernel doc comments
-please 
-
-> + * We need to remember which inodes are currently being dropped.  They
-> + * would deadlock the cleaner, if it were to iget() them.  So
-> + * logfs_drop_inode() adds them to super->s_freeing_list,
-> + * logfs_destroy_inode() removes them again and logfs_iget() checks the
-> + * list.
-> + */
-> +static void logfs_destroy_inode(struct inode *inode)
-> +
-
-> +static u64 logfs_get_ino(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	u64 ino;
-> +
-> +	/* FIXME: ino allocation should work in two modes:
-> +	 * o nonsparse - ifile is mostly occupied, just append
-> +	 * o sparse - ifile has lots of holes, fill them up
-> +	 */
-
-Comment style
-
-> +	spin_lock(&super->s_ino_lock);
-> +	ino = super->s_last_ino; /* ifile shouldn't be too sparse */
-> +	super->s_last_ino++;
-> +	spin_unlock(&super->s_ino_lock);
-> +	return ino;
-> +}
-> +
-
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/journal.c	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,696 @@
-
-Comment and license missing
-
-> +#include "logfs.h"
-> +
-> +
-> +static void clear_retired(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int i;
-> +
-> +	for (i=0; i<JE_LAST; i++)
-
-	i = 0; ....
-
-> +		super->s_retired[i].used = 0;
-> +	super->s_first.used = 0;
-> +}
-> +
-> +
-> +static void clear_speculatives(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int i;
-> +
-> +	for (i=0; i<JE_LAST; i++)
-
-	dito
-
-> +		super->s_speculative[i].used = 0;
-> +}
-> +
-> +
-> +static void retire_speculatives(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int i;
-> +
-> +	for (i=0; i<JE_LAST; i++) {
-> +		struct logfs_journal_entry *spec = super->s_speculative + i;
-> +		struct logfs_journal_entry *retired = super->s_retired + i;
-
-empty line
-
-> +		if (! spec->used)
-> +			continue;
-> +		if (retired->used && (spec->version <= retired->version))
-> +			continue;
-> +		retired->used = 1;
-> +		retired->version = spec->version;
-> +		retired->offset = spec->offset;
-> +		retired->len = spec->len;
-> +	}
-> +	clear_speculatives(sb);
-> +}
-> +
-> +
-> +static void __logfs_scan_journal(struct super_block *sb, void *block,
-> +		u32 segno, u64 block_ofs, int block_index)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	struct logfs_journal_header *h;
-> +	struct logfs_area *area = super->s_journal_area;
-> +
-> +	for (h = block; (void*)h - block < sb->s_blocksize; h++) {
-> +		struct logfs_journal_entry *spec, *retired;
-> +		unsigned long ofs = (void*)h - block;
-> +		unsigned long remainder = sb->s_blocksize - ofs;
-> +		u16 len = be16_to_cpu(h->h_len);
-> +		u16 type = be16_to_cpu(h->h_type);
-> +		s16 version = be16_to_cpu(h->h_version);
-> +
-> +		if ((len < 16) || (len > remainder))
-> +			continue;
-> +		if ((type < JE_FIRST) || (type > JE_LAST))
-> +			continue;
-> +		if (h->h_crc != logfs_crc32(h, len, 4))
-> +			continue;
-> +
-> +		if (!super->s_first.used) { /* remember first version */
-
-	Comment style
-
-> +			super->s_first.used = 1;
-> +			super->s_first.version = version;
-> +		}
-> +		version -= super->s_first.version;
-> +
-> +		if (abs(version) > 1<<14) /* all versions should be near */
-> +			LOGFS_BUG(sb);
-> +
-> +		spec = &super->s_speculative[type];
-> +		retired = &super->s_retired[type];
-> +		switch (type) {
-> +		default: /* store speculative entry */
-
-	Comment style
-
-> +			if (spec->used && (version <= spec->version))
-> +				break;
-> +			spec->used = 1;
-> +			spec->version = version;
-> +			spec->offset = block_ofs + ofs;
-> +			spec->len = len;
-> +			break;
-> +		case JE_COMMIT: /* retire speculative entries */
-
-	Comment style
-
-> +			if (retired->used && (version <= retired->version))
-> +				break;
-> +			retired->used = 1;
-> +			retired->version = version;
-> +			retired->offset = block_ofs + ofs;
-> +			retired->len = len;
-> +			retire_speculatives(sb);
-> +			/* and set up journal area */
-> +			area->a_segno = segno;
-> +			area->a_used_objects = block_index;
-> +			area->a_is_open = 0; /* never reuse same segment after
-> +						mount - wasteful but safe */
-
-	Comment style
-
-> +			break;
-> +		}
-> +	}
-> +}
-> +
-> +
-> +static int logfs_scan_journal(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	void *block = super->s_compressed_je;
-> +	u64 ofs;
-> +	u32 segno;
-> +	int i, k, err;
-> +
-> +	clear_speculatives(sb);
-> +	clear_retired(sb);
-> +	journal_for_each(i) {
-> +		segno = super->s_journal_seg[i];
-> +		if (!segno)
-> +			continue;
-> +		for (k=0; k<super->s_no_blocks; k++) {
-
-	k = 0;..........
-
-> +			ofs = logfs_block_ofs(sb, segno, k);
-> +			err = mtdread(sb, ofs, sb->s_blocksize, block);
-> +			if (err)
-> +				return err;
-> +			__logfs_scan_journal(sb, block, segno, ofs, k);
-> +		}
-> +	}
-> +	return 0;
-> +}
-> +
-
-> +static void logfs_calc_free(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	u64 no_segs = super->s_no_segs;
-> +	u64 no_blocks = super->s_no_blocks;
-> +	u64 blocksize = sb->s_blocksize;
-> +	u64 free;
-> +	int i, reserved_segs;
-> +
-> +	reserved_segs = 1; /* super_block */
-> +	reserved_segs += super->s_bad_segments;
-> +	journal_for_each(i)
-> +		if (super->s_journal_seg[i])
-> +			reserved_segs++;
-> +
-> +	free = no_segs * no_blocks * blocksize;		/* total size */
-> +	free -= reserved_segs * no_blocks * blocksize;	/* sb & journal */
-> +	free -= (no_segs - reserved_segs) * blocksize;	/* block summary */
-> +	free -= super->s_used_bytes;			/* stored data */
-> +	super->s_free_bytes = free;
-
-	comments all over the function
-
-> +}
-> +
-
-> +static void reserve_sb_and_journal(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	struct btree_head *head = &super->s_reserved_segments;
-> +	int i, err;
-> +
-> +	err = btree_insert(head, 0, (void*)1);
-
-What stands 1 for ?
-
-> +	BUG_ON(err);
-> +
-> +	journal_for_each(i) {
-> +		if (! super->s_journal_seg[i])
-> +			continue;
-> +		err = btree_insert(head, super->s_journal_seg[i], (void*)1);
-> +		BUG_ON(err);
-> +	}
-> +}
-> +
-
-> +static void logfs_read_anchor(struct super_block *sb, struct logfs_anchor *da)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	struct inode *inode = super->s_master_inode;
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	int i;
-> +
-> +	super->s_last_ino = be64_to_cpu(da->da_last_ino);
-> +	li->li_flags	= LOGFS_IF_VALID;
-> +	i_size_write(inode, be64_to_cpu(da->da_size));
-> +	li->li_used_bytes = be64_to_cpu(da->da_used_bytes);
-> +
-> +	for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
-
-	i = 0; ...
-
-> +		li->li_data[i] = be64_to_cpu(da->da_data[i]);
-> +}
-> +
-
-> +static void logfs_read_areas(struct super_block *sb, struct logfs_je_areas *a)
-> +{
-> +	struct logfs_area *area;
-> +	int i;
-> +
-> +	for (i=0; i<LOGFS_NO_AREAS; i++) {
-
-	Sigh
-
-> +		area = LOGFS_SUPER(sb)->s_area[i];
-> +		area->a_used_bytes = be32_to_cpu(a->used_bytes[i]);
-> +		area->a_segno = be32_to_cpu(a->segno[i]);
-> +		if (area->a_segno)
-> +			area->a_is_open = 1;
-> +	}
-> +}
-> +
-
-> +/* FIXME: make sure there are enough per-area objects in journal */
-> +static int logfs_read_journal(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	void *block = super->s_compressed_je;
-> +	void *scratch = super->s_je;
-> +	int i, err, level;
-> +	struct logfs_area *area;
-> +
-> +	for (i=0; i<JE_LAST; i++) {
-
-i..
-
-> +		struct logfs_journal_entry *je = super->s_retired + i;
-> +		if (!super->s_retired[i].used)
-
-		if (!super->s_retired[i].used) {
-
-> +			switch (i) {
-> +			case JE_COMMIT:
-> +			case JE_DYNSB:
-> +			case JE_ANCHOR:
-> +				printk("LogFS: Missing journal entry %x?\n",
-> +						i);
-> +				return -EIO;
-> +			default:
-> +				continue;
-> +			}
-
-		}
-
-> +		err = mtdread(sb, je->offset, sb->s_blocksize, block);
-> +		if (err)
-> +			return err;
-
-> +		level = i & 0xf;
-
-what is 0xf ?
-
-> +		area = super->s_area[level];
-> +		switch (i & ~0xf) {
-> +		case JEG_BASE:
-> +			switch (i) {
-
-Represents I an enum or a bitfield or both ?
-
-> +			case JE_COMMIT:
-> +				/* just reads the latest version number */
-> +				logfs_read_commit(super, block);
-> +				break;
-> +			case JE_DYNSB:
-> +				logfs_read_dynsb(sb, unpack(block, scratch));
-> +				break;
-> +
-> +static void journal_get_free_segment(struct logfs_area *area)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(area->a_sb);
-> +	int i;
-> +
-> +	journal_for_each(i) {
-> +		if (area->a_segno != super->s_journal_seg[i])
-> +			continue;
-> +empty_seg:
-> +		i++;
-> +		if (i == LOGFS_JOURNAL_SEGS)
-> +			i = 0;
-> +		if (!super->s_journal_seg[i])
-> +			goto empty_seg;
-
-
-Does this loop for ever or is there a guranteed exit ?
-Please use a do while loop instead of the goto
-
-> +		area->a_segno = super->s_journal_seg[i];
-> +		++(super->s_journal_ec[i]);
-> +		return;
-> +	}
-> +	BUG();
-> +}
-> +
-> +
-> +/**
-> + * logfs_get_free_entry - return free space for journal entry
-> + */
-> +static s64 logfs_get_free_entry(struct super_block *sb)
-> +{
-> +	s64 ret;
-> +
-> +	mutex_lock(&LOGFS_SUPER(sb)->s_log_mutex);
-> +	ret = __logfs_get_free_entry(sb);
-> +	mutex_unlock(&LOGFS_SUPER(sb)->s_log_mutex);
-> +	BUG_ON(ret <= 0); /* not sure, but it's safer to BUG than to accept */
-
-It might be safer to do proper error handling.
-
-> +	return ret;
-> +}
-> +
-
-> +static size_t logfs_write_header(struct logfs_super *super,
-> +		struct logfs_journal_header *h, size_t datalen, u16 type)
-> +{
-> +	size_t len = datalen + sizeof(*h);
-
-Empty line
-
-> +	return __logfs_write_header(super, h, len, datalen, type, COMPR_NONE);
-> +}
-> +
-> +
-> +static void *logfs_write_bb(struct super_block *sb, void *h,
-> +		u16 *type, size_t *len)
-> +{
-> +	*type = JE_BADSEGMENTS;
-> +	*len = sb->s_blocksize;
-> +	return LOGFS_SUPER(sb)->s_bb_array;
-> +}
-> +
-> +
-> +static inline size_t logfs_journal_erasecount_size(struct logfs_super *super)
-> +{
-> +	return LOGFS_JOURNAL_SEGS * sizeof(be32);
-> +}
-
-E,pty line
-
-> +static void *logfs_write_erasecount(struct super_block *sb, void *_ec,
-> +		u16 *type, size_t *len)
-> +{
-
-> +
-> +static void *__logfs_write_anchor(struct super_block *sb, void *_da,
-> +		u16 *type, size_t *len)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	struct logfs_anchor *da = _da;
-> +	struct inode *inode = super->s_master_inode;
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	int i;
-> +
-> +	da->da_last_ino = cpu_to_be64(super->s_last_ino);
-> +	da->da_size	= cpu_to_be64(i_size_read(inode));
-> +	da->da_used_bytes = cpu_to_be64(li->li_used_bytes);
-> +	for (i=0; i<LOGFS_EMBEDDED_FIELDS; i++)
-
-	i = 0; ....
-
-> +		da->da_data[i] = cpu_to_be64(li->li_data[i]);
-> +	*type = JE_ANCHOR;
-> +	*len = sizeof(*da);
-> +	return da;
-> +}
-> +
-
-> +
-> +static void *logfs_write_areas(struct super_block *sb, void *_a,
-> +		u16 *type, size_t *len)
-> +{
-> +	struct logfs_area *area;
-> +	struct logfs_je_areas *a = _a;
-> +	int i;
-> +
-> +	for (i=0; i<16; i++) { /* FIXME: have all 16 areas */
-> +		a->used_bytes[i] = 0;
-> +		a->segno[i] = 0;
-> +	}
-
-	memset perhaps ?
-
-> +	for (i=0; i<LOGFS_NO_AREAS; i++) {
-
-	i = 0; ...
-
-> +		area = LOGFS_SUPER(sb)->s_area[i];
-> +		a->used_bytes[i] = cpu_to_be32(area->a_used_bytes);
-> +		a->segno[i] = cpu_to_be32(area->a_segno);
-> +	}
-> +	*type = JE_AREAS;
-> +	*len = sizeof(*a);
-> +	return a;
-> +}
-> +
-
-> +int logfs_write_anchor(struct inode *inode)
-> +{
-> +	struct super_block *sb = inode->i_sb;
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	void *block = super->s_compressed_je;
-> +	u64 ofs;
-> +	size_t jpos;
-> +	int i, ret;
-> +
-> +	ofs = logfs_get_free_entry(sb);
-> +	BUG_ON(ofs >= super->s_size);
-> +
-> +	memset(block, 0, sb->s_blocksize);
-> +	jpos = 0;
-> +	for (i=0; i<LOGFS_NO_AREAS; i++) {
-
-	i = 0; ...
-> +		super->s_sum_index = i;
-> +		jpos += logfs_write_je(sb, jpos, logfs_write_wbuf);
-> +	}
-> +	jpos += logfs_write_je(sb, jpos, logfs_write_bb);
-> +	jpos += logfs_write_je(sb, jpos, logfs_write_erasecount);
-> +	jpos += logfs_write_je(sb, jpos, __logfs_write_anchor);
-> +	jpos += logfs_write_je(sb, jpos, logfs_write_dynsb);
-> +	jpos += logfs_write_je(sb, jpos, logfs_write_areas);
-> +	jpos += logfs_write_je(sb, jpos, logfs_write_commit);
-> +
-> +	BUG_ON(jpos > sb->s_blocksize);
-> +
-> +	ret = mtdwrite(sb, ofs, sb->s_blocksize, block);
-> +	if (ret)
-> +		return ret;
-> +	return 0;
-
-	Interesting way to reyl on compiler smartness
-
-> +}
-> +
-
-> +int logfs_init_journal(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int ret;
-> +
-> +	mutex_init(&super->s_log_mutex);
-> +
-> +	super->s_je = kzalloc(sb->s_blocksize, GFP_KERNEL);
-> +	if (!super->s_je)
-> +		goto err0;
-> +
-> +	super->s_compressed_je = kzalloc(sb->s_blocksize, GFP_KERNEL);
-> +	if (!super->s_compressed_je)
-> +		goto err1;
-> +
-> +	super->s_bb_array = kzalloc(sb->s_blocksize, GFP_KERNEL);
-> +	if (!super->s_bb_array)
-> +		goto err2;
-> +
-> +	super->s_master_inode = logfs_new_meta_inode(sb, LOGFS_INO_MASTER);
-> +	if (!super->s_master_inode)
-> +		goto err3;
-> +
-> +	super->s_master_inode->i_nlink = 1; /* lock it in ram */
-> +
-> +	/* logfs_scan_journal() is looking for the latest journal entries, but
-> +	 * doesn't copy them into data structures yet.  logfs_read_journal()
-> +	 * then re-reads those entries and copies their contents over. */
-> +	ret = logfs_scan_journal(sb);
-> +	if (ret)
-> +		return ret;
-
-	what about the allocated buffers ?
-
-> +	ret = logfs_read_journal(sb);
-> +	if (ret)
-> +		return ret;
-
-	dito
-
-> +	reserve_sb_and_journal(sb);
-> +	logfs_calc_free(sb);
-> +
-> +	super->s_journal_area->a_ops = &journal_area_ops;
-> +	return 0;
-> +err3:
-> +	kfree(super->s_bb_array);
-> +err2:
-> +	kfree(super->s_compressed_je);
-> +err1:
-> +	kfree(super->s_je);
-> +err0:
-> +	return -ENOMEM;
-> +}
-> +
-> +
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/readwrite.c	2007-05-07 20:37:05.000000000 +0200
-> @@ -0,0 +1,1125 @@
-> +/**
-> + * fs/logfs/readwrite.c
-> + *
-> + * Actually contains five sets of very similar functions:
-> + * read		read blocks from a file
-> + * write	write blocks to a file
-> + * valid	check whether a block still belongs to a file
-> + * truncate	truncate a file
-> + * rewrite	move existing blocks of a file to a new location (gc helper)
-
-License ?
-
-> + */
-> +#include "logfs.h"
-> +
-> +
-> +static int logfs_read_empty(void *buf, int read_zero)
-> +{
-> +	if (!read_zero)
-> +		return -ENODATA;
-> +
-> +	memset(buf, 0, PAGE_CACHE_SIZE);
-
-	Is buf guaranteed to be at least sizeof(PAGE_CACHE_SIZE) ?
-
-> +	return 0;
-> +}
-
-> +static int logfs_read_direct(struct inode *inode, pgoff_t index, void *buf,
-> +		int read_zero)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	u64 block;
-> +
-> +	block = li->li_data[index];
-> +	if (!block)
-> +		return logfs_read_empty(buf, read_zero);
-> +
-> +	//printk("ino=%lx, index=%lx, blocks=%llx\n", inode->i_ino, index, block);
-
-Please remove
-
-> +	return logfs_segment_read(inode->i_sb, buf, block);
-> +}
-> +
-> +
-> +
-> +static unsigned long get_bits(u64 val, int skip, int no)
-> +{
-> +	u64 ret = val;
-> +
-> +	ret >>= skip * no;
-> +	ret <<= 64 - no;
-> +	ret >>= 64 - no;
-> +	BUG_ON((unsigned long)ret != ret);
-
-	????
-
-> +	return ret;
-> +}
-> +
-> +
-> +
-> +static u64 seek_data_loop(struct inode *inode, u64 pos, int count)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	struct logfs_super *super = LOGFS_SUPER(inode->i_sb);
-> +	be64 *rblock;
-> +	u64 bofs = li->li_data[I1_INDEX + count];
-> +	int bits = LOGFS_BLOCK_BITS;
-> +	int i, ret, slot;
-> +
-> +	BUG_ON(!bofs);
-> +
-> +	rblock = logfs_get_rblock(super);
-> +
-> +	for (i=count; i>=0; i--) {
-> +		ret = logfs_segment_read(inode->i_sb, rblock, bofs);
-> +		if (ret)
-> +			goto out;
-
-	break;
-
-> +		slot = get_bits(pos, i, bits);
-> +		while (slot < LOGFS_BLOCK_FACTOR && rblock[slot] == 0) {
-> +			slot++;
-> +			pos += 1 << (LOGFS_BLOCK_BITS * i);
-> +		}
-> +		if (slot >= LOGFS_BLOCK_FACTOR)
-> +			goto out;
-
-	break;
-
-> +		bofs = be64_to_cpu(rblock[slot]);
-> +	}
-> +out:
-> +	logfs_put_rblock(super);
-> +	return pos;
-> +}
-> +
-
-> +static int logfs_is_valid_loop(struct inode *inode, pgoff_t index,
-> +		int count, u64 ofs)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	struct logfs_super *super = LOGFS_SUPER(inode->i_sb);
-> +	be64 *rblock;
-> +	u64 bofs = li->li_data[I1_INDEX + count];
-> +	int bits = LOGFS_BLOCK_BITS;
-> +	int i, ret;
-> +
-> +	if (!bofs)
-> +		return 0;
-> +
-> +	if (bofs == ofs)
-> +		return 1;
-> +
-> +	rblock = logfs_get_rblock(super);
-> +
-> +	for (i=count; i>=0; i--) {
-
-	....
-
-> +		ret = logfs_segment_read(inode->i_sb, rblock, bofs);
-> +		if (ret)
-> +			goto fail;
-
-	please use break and do a return !ret;
-
-> +		bofs = be64_to_cpu(rblock[get_bits(index, i, bits)]);
-> +		if (!bofs)
-> +			goto fail;
-> +
-> +		if (bofs == ofs) {
-> +			ret = 1;
-> +			goto out;
-> +		}
-> +	}
-> +
-> +fail:
-> +	ret = 0;
-
-	
-
-> +out:
-> +	logfs_put_rblock(super);
-> +	return ret;
-> +}
-> +
-> +
-> +static int __logfs_is_valid_block(struct inode *inode, pgoff_t index, u64 ofs)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +
-> +	//printk("%lx, %x, %x\n", inode->i_ino, inode->i_nlink, atomic_read(&inode->i_count));
-
-	Sigh
-
-> +	if ((inode->i_nlink == 0) && atomic_read(&inode->i_count) == 1)
-> +		return 0;
-> +
-> +	if (li->li_flags & LOGFS_IF_EMBEDDED)
-> +		return 0;
-> +
-> +	if (index < I0_BLOCKS)
-> +		return logfs_is_valid_direct(li, index, ofs);
-> +	else if (index < I1_BLOCKS)
-> +		return logfs_is_valid_loop(inode, index, 0, ofs);
-> +	else if (index < I2_BLOCKS)
-> +		return logfs_is_valid_loop(inode, index, 1, ofs);
-> +	else if (index < I3_BLOCKS)
-> +		return logfs_is_valid_loop(inode, index, 2, ofs);
-> +
-> +	BUG();
-> +	return 0;
-> +}
-> +
-> +
-> +int logfs_is_valid_block(struct super_block *sb, u64 ofs, u64 ino, u64 pos)
-> +{
-> +	struct inode *inode;
-> +	int ret, cookie;
-> +
-> +	/* Umount closes a segment with free blocks remaining.  Those
-> +	 * blocks are by definition invalid. */
-> +	if (ino == -1)
-> +		return 0;
-> +
-> +	if ((u64)(u_long)ino != ino) {
-> +		printk("%llx, %llx, %llx\n", ofs, ino, pos);
-
-	more sigh
-
-> +		LOGFS_BUG(sb);
-> +	}
-> +	inode = logfs_iget(sb, ino, &cookie);
-> +	if (!inode)
-> +		return 0;
-> +
-> +#if 0
-> +	/* Any data belonging to dirty inodes must be considered valid until
-> +	 * the inode is written back.  If we prematurely deleted old blocks
-> +	 * and crashed before the inode is written, the filesystem goes boom.
-> +	 */
-> +	if (inode->i_state & I_DIRTY)
-> +		ret = 2;
-> +	else
-
-There seems to be a patternm, that unused code is surprisingly well
-commented.
-
-> +#endif
-> +		ret = __logfs_is_valid_block(inode, pos, ofs);
-> +
-> +	logfs_iput(inode, cookie);
-> +	return ret;
-> +}
-> +
-> +
-> +
-> +/**
-> + * logfs_file_read - generic_file_read for in-kernel buffers
-> + */
-> +static ssize_t __logfs_inode_read(struct inode *inode, char *buf, size_t count,
-> +		loff_t *ppos, int read_zero)
-> +{
-> +	void *block_data = NULL;
-> +	loff_t size = i_size_read(inode);
-> +	int err = -ENOMEM;
-> +
-> +	pr_debug("read from %lld, count %zd\n", *ppos, count);
-
-Loglevel missing
-
-> +	if (*ppos >= size)
-> +		return 0;
-> +	if (count > size - *ppos)
-> +		count = size - *ppos;
-> +
-> +	BUG_ON(logfs_index(*ppos) != logfs_index(*ppos + count - 1));
-> +
-> +	block_data = kzalloc(LOGFS_BLOCKSIZE, GFP_KERNEL);
-> +	if (!block_data)
-> +		goto fail;
-> +
-> +	err = logfs_read_block(inode, logfs_index(*ppos), block_data,
-> +			read_zero);
-> +	if (err)
-> +		goto fail;
-> +
-> +	memcpy(buf, block_data + (*ppos % LOGFS_BLOCKSIZE), count);
-> +	*ppos += count;
-> +	kfree(block_data);
-> +	return count;
-
-	err = count; and fall trough ?
-
-> +fail:
-> +	kfree(block_data);
-> +	return err;
-> +}
-> +
-
-> +static int logfs_alloc_bytes(struct inode *inode, int bytes)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(inode->i_sb);
-> +
-> +	if (!bytes)
-> +		return 0;
-> +
-> +	if (super->s_free_bytes < bytes + super->s_gc_reserve) {
-> +		//TRACE();
-
-	Sigh.
-
-> +		return -ENOSPC;
-> +	}
-> +
-> +	/* Actual allocation happens later.  Make sure we don't drop the
-> +	 * lock before then! */
-> +
-> +	return 0;
-> +}
-> +
-
-> +
+> +	  Say Y here if you want to use built-in Ethernet ports
+> +	  on IXP4xx processor.
+> diff --git a/drivers/net/arm/Makefile b/drivers/net/arm/Makefile
+> index a4c8682..7c812ac 100644
+> --- a/drivers/net/arm/Makefile
+> +++ b/drivers/net/arm/Makefile
+> @@ -9,3 +9,4 @@ obj-$(CONFIG_ARM_ETHER3)	+= ether3.o
+>  obj-$(CONFIG_ARM_ETHER1)	+= ether1.o
+>  obj-$(CONFIG_ARM_AT91_ETHER)	+= at91_ether.o
+>  obj-$(CONFIG_EP93XX_ETH)	+= ep93xx_eth.o
+> +obj-$(CONFIG_IXP4XX_ETH)	+= ixp4xx_eth.o
+> diff --git a/drivers/net/arm/ixp4xx_eth.c b/drivers/net/arm/ 
+> ixp4xx_eth.c
+> new file mode 100644
+> index 0000000..dcea6e5
+> --- /dev/null
+> +++ b/drivers/net/arm/ixp4xx_eth.c
+> @@ -0,0 +1,1002 @@
 > +/*
-> + * File is too large for embedded data when called.  Move data to first
-> + * block and clear embedded area
+> + * Intel IXP4xx Ethernet driver for Linux
+> + *
+> + * Copyright (C) 2007 Krzysztof Halasa <khc@pm.waw.pl>
+> + *
+> + * This program is free software; you can redistribute it and/or  
+> modify it
+> + * under the terms of version 2 of the GNU General Public License
+> + * as published by the Free Software Foundation.
+> + *
+> + * Ethernet port config (0x00 is not present on IXP42X):
+> + *
+> + * logical port		0x00		0x10		0x20
+> + * NPE			0 (NPE-A)	1 (NPE-B)	2 (NPE-C)
+> + * physical PortId	2		0		1
+> + * TX queue		23		24		25
+> + * RX-free queue	26		27		28
+> + * TX-done queue is always 31, RX queue is configurable
 > + */
-> +static int logfs_move_embedded(struct inode *inode, be64 **wblocks)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	void *buf;
-> +	s64 block;
-> +	int i;
 > +
-> +	if (! (li->li_flags & LOGFS_IF_EMBEDDED))
-> +		return 0;
+> +#include <linux/delay.h>
+> +#include <linux/dma-mapping.h>
+> +#include <linux/dmapool.h>
+> +#include <linux/kernel.h>
+> +#include <linux/mii.h>
+> +#include <linux/platform_device.h>
+> +#include <asm/io.h>
+> +#include <asm/arch/npe.h>
+> +#include <asm/arch/qmgr.h>
 > +
-> +	if (logfs_alloc_blocks(inode, 1)) {
-> +		//TRACE();
+> +#ifndef __ARMEB__
+> +#warning Little endian mode not supported
+> +#endif
 
-	more sigh
-> +		return -ENOSPC;
-> +	}
-> +
-> +	buf = wblocks[0];
-> +
-> +	memcpy(buf, li->li_data, LOGFS_EMBEDDED_SIZE);
-> +	block = logfs_segment_write(inode, buf, 0, 0, 1);
-> +	if (block < 0)
-> +		return block;
-> +
-> +	li->li_data[0] = block;
-> +
-> +	li->li_flags &= ~LOGFS_IF_EMBEDDED;
-> +	for (i=1; i<LOGFS_EMBEDDED_FIELDS; i++)
-> +		li->li_data[i] = 0;
-> +
-> +	return logfs_dirty_inode(inode);
-> +}
-> +
-> +
-> +static int logfs_write_direct(struct inode *inode, pgoff_t index, void *buf)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	s64 block;
-> +
-> +	if (li->li_data[index] == 0) {
-> +		if (logfs_alloc_blocks(inode, 1)) {
-> +			//TRACE();
+This has gone from error to warning - fair play but if are planning  
+to put this upstream this cycle (anything's possible :) ) you'll want  
+to declare this driver broken on ARMEB in Kconfig please.
 
-	again
-	
-> +			return -ENOSPC;
-> +		}
-> +	}
-> +	block = logfs_segment_write(inode, buf, index, 0, 1);
-> +	if (block < 0)
-> +		return block;
-> +
-> +	if (li->li_data[index])
-> +		logfs_segment_delete(inode, li->li_data[index], index, 0);
-> +	li->li_data[index] = block;
-> +
-> +	return logfs_dirty_inode(inode);
-> +}
-> +
-> +
-> +static int logfs_write_loop(struct inode *inode, pgoff_t index, void *buf,
-> +		be64 **wblocks, int count)
-> +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	u64 bofs = li->li_data[I1_INDEX + count];
-> +	s64 block;
-> +	int bits = LOGFS_BLOCK_BITS;
-> +	int allocs = 0;
-> +	int i, ret;
-> +
-> +	for (i=count; i>=0; i--) {
-> +		if (bofs) {
-> +			ret = logfs_segment_read(inode->i_sb, wblocks[i], bofs);
-> +			if (ret)
-> +				return ret;
-> +		} else {
-> +			allocs++;
-> +			memset(wblocks[i], 0, LOGFS_BLOCKSIZE);
-> +		}
-> +		bofs = be64_to_cpu(wblocks[i][get_bits(index, i, bits)]);
-> +	}
-> +
-> +	if (! wblocks[0][get_bits(index, 0, bits)])
-> +		allocs++;
-> +	if (logfs_alloc_blocks(inode, allocs)) {
-> +		//TRACE();
+Personally I'd like LE ethernet tested and working before we push.
 
-	yet more
+> +
+> +#define DEBUG_QUEUES	0
+> +#define DEBUG_RX	0
+> +#define DEBUG_TX	0
+> +#define DEBUG_PKT_BYTES	0
+> +#define DEBUG_MDIO	0
+> +
+> +#define DRV_NAME	"ixp4xx_eth"
+> +#define DRV_VERSION	"0.04"
+> +
+> +#define TX_QUEUE_LEN	16 /* dwords */
+> +#define PKT_DESCS	64 /* also length of queues: TX-done, RX-ready,  
+> RX */
+> +
+> +#define POOL_ALLOC_SIZE		(sizeof(struct desc) * (PKT_DESCS))
+> +#define REGS_SIZE		0x1000
+> +#define MAX_MRU			1536
+> +
+> +#define MDIO_INTERVAL		(3 * HZ)
+> +#define MAX_MDIO_RETRIES	100 /* microseconds, typically 30 cycles */
+> +
+> +#define NPE_ID(port)		((port)->id >> 4)
+> +#define PHYSICAL_ID(port)	((NPE_ID(port) + 2) % 3)
+> +#define TX_QUEUE(plat)		(NPE_ID(port) + 23)
+> +#define RXFREE_QUEUE(plat)	(NPE_ID(port) + 26)
+> +#define TXDONE_QUEUE		31
+> +
+> +/* TX Control Registers */
+> +#define TX_CNTRL0_TX_EN		BIT(0)
+> +#define TX_CNTRL0_HALFDUPLEX	BIT(1)
+> +#define TX_CNTRL0_RETRY		BIT(2)
+> +#define TX_CNTRL0_PAD_EN	BIT(3)
+> +#define TX_CNTRL0_APPEND_FCS	BIT(4)
+> +#define TX_CNTRL0_2DEFER	BIT(5)
+> +#define TX_CNTRL0_RMII		BIT(6)	/* reduced MII */
+> +#define TX_CNTRL1_RETRIES	0x0F /* 4 bits */
+> +
+> +/* RX Control Registers */
+> +#define RX_CNTRL0_RX_EN		BIT(0)
+> +#define RX_CNTRL0_PADSTRIP_EN	BIT(1)
+> +#define RX_CNTRL0_SEND_FCS	BIT(2)
+> +#define RX_CNTRL0_PAUSE_EN	BIT(3)
+> +#define RX_CNTRL0_LOOP_EN	BIT(4)
+> +#define RX_CNTRL0_ADDR_FLTR_EN	BIT(5)
+> +#define RX_CNTRL0_RX_RUNT_EN	BIT(6)
+> +#define RX_CNTRL0_BCAST_DIS	BIT(7)
+> +#define RX_CNTRL1_DEFER_EN	BIT(0)
+> +
+> +/* Core Control Register */
+> +#define CORE_RESET		BIT(0)
+> +#define CORE_RX_FIFO_FLUSH	BIT(1)
+> +#define CORE_TX_FIFO_FLUSH	BIT(2)
+> +#define CORE_SEND_JAM		BIT(3)
+> +#define CORE_MDC_EN		BIT(4) /* NPE-B ETH-0 only */
+> +
+> +/* Definitions for MII access routines */
+> +#define MII_CMD_GO		BIT(31)
+> +#define MII_CMD_WRITE		BIT(26)
+> +#define MII_STAT_READ_FAILED	BIT(31)
+> +
+> +/* NPE message codes */
+> +#define NPE_GETSTATUS			0x00
+> +#define NPE_EDB_SETPORTADDRESS		0x01
+> +#define NPE_EDB_GETMACADDRESSDATABASE	0x02
+> +#define NPE_EDB_SETMACADDRESSSDATABASE	0x03
+> +#define NPE_GETSTATS			0x04
+> +#define NPE_RESETSTATS			0x05
+> +#define NPE_SETMAXFRAMELENGTHS		0x06
+> +#define NPE_VLAN_SETRXTAGMODE		0x07
+> +#define NPE_VLAN_SETDEFAULTRXVID	0x08
+> +#define NPE_VLAN_SETPORTVLANTABLEENTRY	0x09
+> +#define NPE_VLAN_SETPORTVLANTABLERANGE	0x0A
+> +#define NPE_VLAN_SETRXQOSENTRY		0x0B
+> +#define NPE_VLAN_SETPORTIDEXTRACTIONMODE 0x0C
+> +#define NPE_STP_SETBLOCKINGSTATE	0x0D
+> +#define NPE_FW_SETFIREWALLMODE		0x0E
+> +#define NPE_PC_SETFRAMECONTROLDURATIONID 0x0F
+> +#define NPE_PC_SETAPMACTABLE		0x11
+> +#define NPE_SETLOOPBACK_MODE		0x12
+> +#define NPE_PC_SETBSSIDTABLE		0x13
+> +#define NPE_ADDRESS_FILTER_CONFIG	0x14
+> +#define NPE_APPENDFCSCONFIG		0x15
+> +#define NPE_NOTIFY_MAC_RECOVERY_DONE	0x16
+> +#define NPE_MAC_RECOVERY_START		0x17
+> +
+> +
 
-> +		return -ENOSPC;
-> +	}
-> +
-> +	block = logfs_segment_write(inode, buf, index, 0, allocs);
-> +	allocs = allocs ? allocs-1 : 0;
-> +	if (block < 0)
-> +		return block;
-> +
-> +	for (i=0; i<=count; i++) {
+Two returns? Defines make sense in-file here :)
 
-	i = 0; ....
-
-> +		wblocks[i][get_bits(index, i, bits)] = cpu_to_be64(block);
-> +		block = logfs_segment_write(inode, wblocks[i], index, i+1,
-> +				allocs);
-> +		allocs = allocs ? allocs-1 : 0;
-> +		if (block < 0)
-> +			return block;
-> +	}
-> +
-> +	li->li_data[I1_INDEX + count] = block;
-> +
-> +	return logfs_dirty_inode(inode);
-> +}
-> +
-> +
-> +
-> +
-> +int logfs_rewrite_block(struct inode *inode, pgoff_t index, u64 ofs, int level)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(inode->i_sb);
-> +	be64 **wblocks;
-> +	void *buf;
-> +	int ret;
-> +
-> +	//printk("(%lx, %lx, %llx, %x)\n", inode->i_ino, index, ofs, level);
-
-	yay !
-
-> +	wblocks = super->s_wblock;
-> +	buf = wblocks[LOGFS_MAX_INDIRECT];
-> +	ret = __logfs_rewrite_block(inode, index, buf, wblocks, level);
-> +	return ret;
-> +}
-> +
-> +
-> +/**
-
-Please do not use /** here, it is the start sequence for kernel doc
-comments
-
-> + * Three cases exist:
-> + * size <= pos			- remove full block
-> + * size >= pos + chunk		- do nothing
-> + * pos < size < pos + chunk	- truncate, rewrite
-> + */
-> +static s64 __logfs_truncate_i0(struct inode *inode, u64 size, u64 bofs,
-> +		u64 pos, be64 **wblocks)
-> +{
-> +	size_t len = size - pos;
-> +	void *buf = wblocks[LOGFS_MAX_INDIRECT];
-> +	int err;
-> +
-> +	if (size <= pos) {	/* remove whole block */
-> +		logfs_segment_delete(inode, bofs,
-> +				pos >> inode->i_sb->s_blocksize_bits, 0);
-> +		return 0;
-> +	}
-> +
-> +	/* truncate this block, rewrite it */
-> +	err = logfs_segment_read(inode->i_sb, buf, bofs);
-> +	if (err)
-> +		return err;
-> +
-> +	memset(buf + len, 0, LOGFS_BLOCKSIZE - len);
-> +	return logfs_segment_write_pos(inode, buf, pos, 0, 0);
-> +}
-> +
-> +
-> +/* FIXME: move to super */
-
-Please do so
-
-> +static u64 logfs_factor[] = {
-> +	LOGFS_BLOCKSIZE,
-> +	LOGFS_I1_SIZE,
-> +	LOGFS_I2_SIZE,
-> +	LOGFS_I3_SIZE
+> +struct eth_regs {
+> +	u32 tx_control[2], __res1[2];		/* 000 */
+> +	u32 rx_control[2], __res2[2];		/* 010 */
+> +	u32 random_seed, __res3[3];		/* 020 */
+> +	u32 partial_empty_threshold, __res4;	/* 030 */
+> +	u32 partial_full_threshold, __res5;	/* 038 */
+> +	u32 tx_start_bytes, __res6[3];		/* 040 */
+> +	u32 tx_deferral, rx_deferral,__res7[2];	/* 050 */
+> +	u32 tx_2part_deferral[2], __res8[2];	/* 060 */
+> +	u32 slot_time, __res9[3];		/* 070 */
+> +	u32 mdio_command[4];			/* 080 */
+> +	u32 mdio_status[4];			/* 090 */
+> +	u32 mcast_mask[6], __res10[2];		/* 0A0 */
+> +	u32 mcast_addr[6], __res11[2];		/* 0C0 */
+> +	u32 int_clock_threshold, __res12[3];	/* 0E0 */
+> +	u32 hw_addr[6], __res13[61];		/* 0F0 */
+> +	u32 core_control;			/* 1FC */
 > +};
 > +
-
+> +struct port {
+> +	struct resource *mem_res;
+> +	struct eth_regs __iomem *regs;
+> +	struct npe *npe;
+> +	struct net_device *netdev;
+> +	struct net_device_stats stat;
+> +	struct mii_if_info mii;
+> +	struct delayed_work mdio_thread;
+> +	struct mac_plat_info *plat;
+> +	struct sk_buff *rx_skb_tab[PKT_DESCS];
+> +	struct desc *rx_desc_tab; /* coherent */
+> +	int id;			/* logical port ID */
+> +	u32 rx_desc_tab_phys;
+> +	u32 msg_enable;
+> +};
 > +
-> +static ssize_t __logfs_inode_write(struct inode *inode, const char *buf,
-> +		size_t count, loff_t *ppos)
+> +/* NPE message structure */
+> +struct msg {
+> +	union {
+> +		struct {
+> +			u8 cmd, eth_id, mac[ETH_ALEN];
+> +		};
+> +		struct {
+> +			u8 cmd, eth_id, __byte2, byte3;
+> +			u8 __byte4, byte5, __byte6, byte7;
+> +		};
+> +		struct {
+> +			u8 cmd, eth_id, __b2, byte3;
+> +			u32 data32;
+> +		};
+> +	};
+> +};
+> +
+> +/* Ethernet packet descriptor */
+> +struct desc {
+> +	u32 next;		/* pointer to next buffer, unused */
+> +	u16 buf_len;		/* buffer length */
+> +	u16 pkt_len;		/* packet length */
+> +	u32 data;		/* pointer to data buffer in RAM */
+> +	u8 dest_id;
+> +	u8 src_id;
+> +	u16 flags;
+> +	u8 qos;
+> +	u8 padlen;
+> +	u16 vlan_tci;
+> +	u8 dest_mac[ETH_ALEN];
+> +	u8 src_mac[ETH_ALEN];
+> +};
+> +
+> +
+> +#define rx_desc_phys(port, n)	((port)->rx_desc_tab_phys +		\
+> +				 (n) * sizeof(struct desc))
+> +#define tx_desc_phys(n)		(tx_desc_tab_phys + (n) * sizeof(struct  
+> desc))
+> +
+> +static spinlock_t mdio_lock;
+> +static struct eth_regs __iomem *mdio_regs; /* mdio command and  
+> status only */
+> +static struct npe *mdio_npe;
+> +static int ports_open;
+> +static struct dma_pool *dma_pool;
+> +static struct sk_buff *tx_skb_tab[PKT_DESCS];
+> +static struct desc *tx_desc_tab; /* coherent */
+> +static u32 tx_desc_tab_phys;
+> +
+> +
+> +static inline void set_regbits(u32 bits, u32 __iomem *reg)
 > +{
-> +	void *block_data = NULL;
-> +	int err = -ENOMEM;
-> +
-> +	pr_debug("write to 0x%llx, count %zd\n", *ppos, count);
-> +
-> +	BUG_ON(logfs_index(*ppos) != logfs_index(*ppos + count - 1));
-> +
-> +	block_data = kzalloc(LOGFS_BLOCKSIZE, GFP_KERNEL);
-> +	if (!block_data)
-> +		goto fail;
-> +
-> +	err = logfs_read_block(inode, logfs_index(*ppos), block_data, 1);
-> +	if (err)
-> +		goto fail;
-> +
-> +	memcpy(block_data + (*ppos % LOGFS_BLOCKSIZE), buf, count);
-> +
-> +	if (i_size_read(inode) < *ppos + count)
-> +		i_size_write(inode, *ppos + count);
-> +
-> +	err = logfs_write_buf(inode, logfs_index(*ppos), block_data);
-> +	if (err)
-> +		goto fail;
-> +
-> +	*ppos += count;
-> +	pr_debug("write to %lld, count %zd\n", *ppos, count);
-
-	Please add some hint, where this comes from
-
-> +	kfree(block_data);
-> +	return count;
-
-	err = count; fall trhough ?
-
-> +fail:
-> +	kfree(block_data);
-> +	return err;
+> +	__raw_writel(__raw_readl(reg) | bits, reg);
+> +}
+> +static inline void clr_regbits(u32 bits, u32 __iomem *reg)
+> +{
+> +	__raw_writel(__raw_readl(reg) & ~bits, reg);
 > +}
 > +
 > +
-> +int logfs_inode_read(struct inode *inode, void *buf, size_t n, loff_t _pos)
+> +static u16 mdio_cmd(struct net_device *dev, int phy_id, int location,
+> +		    int write, u16 cmd)
 > +{
-> +	loff_t pos = _pos << inode->i_sb->s_blocksize_bits;
-> +	ssize_t ret;
+> +	int cycles = 0;
 > +
-> +	if (pos >= i_size_read(inode))
-> +		return -EOF;
-> +	ret = __logfs_inode_read(inode, buf, n, &pos, 0);
-> +	if (ret < 0)
-> +		return ret;
-> +	ret = ret==n ? 0 : -EIO;
-
-	return ret == n ? ..... perhaps ?
-
-> +	return ret;
+> +	if (__raw_readl(&mdio_regs->mdio_command[3]) & 0x80) {
+> +		printk("%s: MII not ready to transmit\n", dev->name);
+> +		return 0;	/* not ready to transmit */
+> +	}
+> +	
+> +	if (write) {
+> +		__raw_writel(cmd & 0xFF, &mdio_regs->mdio_command[0]);
+> +		__raw_writel(cmd >> 8, &mdio_regs->mdio_command[1]);
+> +	}
+> +	__raw_writel(((phy_id << 5) | location) & 0xFF,
+> +		     &mdio_regs->mdio_command[2]);
+> +	__raw_writel((phy_id >> 3) | (write << 2) | 0x80 /* GO */,
+> +		     &mdio_regs->mdio_command[3]);
+> +
+> +	while ((cycles < MAX_MDIO_RETRIES) &&
+> +	       (__raw_readl(&mdio_regs->mdio_command[3]) & 0x80)) {
+> +		udelay(1);
+> +		cycles++;
+> +	}
+> +
+> +	if (cycles == MAX_MDIO_RETRIES) {
+> +		printk("%s: MII write failed\n", dev->name);
+> +		return 0;
+> +	}
+> +
+> +#if DEBUG_MDIO
+> +	printk(KERN_DEBUG "mdio_cmd() took %i cycles\n", cycles);
+> +#endif
+> +
+> +	if (write)
+> +		return 0;
+> +
+> +	if (__raw_readl(&mdio_regs->mdio_status[3]) & 0x80) {
+> +		printk("%s: MII read failed\n", dev->name);
+> +		return 0;
+> +	}
+> +
+> +	return (__raw_readl(&mdio_regs->mdio_status[0]) & 0xFF) |
+> +		(__raw_readl(&mdio_regs->mdio_status[1]) << 8);
+> +}
+> +
+> +static int mdio_read(struct net_device *dev, int phy_id, int  
+> location)
+> +{
+> +	unsigned long flags;
+> +	u16 val;
+> +
+> +	spin_lock_irqsave(&mdio_lock, flags);
+> +	val = mdio_cmd(dev, phy_id, location, 0, 0);
+> +	spin_unlock_irqrestore(&mdio_lock, flags);
+> +	return val;
+> +}
+> +
+> +static void mdio_write(struct net_device *dev, int phy_id, int  
+> location,
+> +		       int val)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&mdio_lock, flags);
+> +	mdio_cmd(dev, phy_id, location, 1, val);
+> +	spin_unlock_irqrestore(&mdio_lock, flags);
+> +}
+> +
+> +static void eth_set_duplex(struct port *port)
+> +{
+> +	if (port->mii.full_duplex)
+> +		clr_regbits(TX_CNTRL0_HALFDUPLEX, &port->regs->tx_control[0]);
+> +	else
+> +		set_regbits(TX_CNTRL0_HALFDUPLEX, &port->regs->tx_control[0]);
 > +}
 > +
 > +
-> +
-> +int logfs_init_rw(struct logfs_super *super)
+> +static void mdio_thread(struct work_struct *work)
 > +{
+> +	struct port *port = container_of(work, struct port,  
+> mdio_thread.work);
+> +
+> +	if (mii_check_media(&port->mii, 1, 0))
+> +		eth_set_duplex(port);
+> +	schedule_delayed_work(&port->mdio_thread, MDIO_INTERVAL);
+> +}
+> +
+> +
+> +static inline void debug_skb(const char *func, struct sk_buff *skb)
+> +{
+> +#if DEBUG_PKT_BYTES
 > +	int i;
 > +
-> +	mutex_init(&super->s_r_mutex);
-> +	mutex_init(&super->s_w_mutex);
-> +	super->s_rblock = kmalloc(LOGFS_BLOCKSIZE, GFP_KERNEL);
-> +	if (!super->s_wblock)
-> +		return -ENOMEM;
-> +	for (i=0; i<=LOGFS_MAX_INDIRECT; i++) {
-
-	i = 0; ...
-
-> +		super->s_wblock[i] = kmalloc(LOGFS_BLOCKSIZE, GFP_KERNEL);
-> +		if (!super->s_wblock) {
-> +			logfs_cleanup_rw(super);
-> +			return -ENOMEM;
-> +		}
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +void logfs_cleanup_rw(struct logfs_super *super)
-> +{
-> +	int i;
-> +
-> +	for (i=0; i<=LOGFS_MAX_INDIRECT; i++)
-
-	dito
-
-> +		kfree(super->s_wblock[i]);
-> +	kfree(super->s_rblock);
-> +}
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/super.c	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,490 @@
-
-Comment, license please
-
-> +#include "logfs.h"
-> +
-> +
-> +#define FAIL_ON(cond) do { if (unlikely((cond))) return -EINVAL; } while(0)
-
-Please open code
-
-> +int mtdread(struct super_block *sb, loff_t ofs, size_t len, void *buf)
-> +{
-> +	struct mtd_info *mtd = LOGFS_SUPER(sb)->s_mtd;
-> +	size_t retlen;
-> +	int ret;
-> +
-> +	ret = mtd->read(mtd, ofs, len, &retlen, buf);
-> +	if (ret || (retlen != len)) {
-> +		printk("ret: %x\n", ret);
-> +		printk("retlen: %x, len: %x\n", retlen, len);
-> +		printk("ofs: %llx, mtd->size: %x\n", ofs, mtd->size);
-
-	Sigh
-
-> +		dump_stack();
-> +		return -EIO;
-> +	}
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +static void check(void *buf, size_t len)
-> +{
-> +	char value[8] = {0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a, 0x5a};
-> +	void *poison = buf, *end = buf + len;
-> +
-> +	while (poison) {
-> +		poison = memchr(poison, value[0], end-poison);
-> +		if (!poison || poison + 8 > end)
-> +			return;
-> +		if (! memcmp(poison, value, 8)) {
-> +			printk("%p %p %p\n", buf, poison, end);
-
-	More sigh
-
-> +			BUG();
-> +		}
-> +		poison++;
-> +	}
-> +}
-> +
-> +
-> +int mtdwrite(struct super_block *sb, loff_t ofs, size_t len, void *buf)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	struct mtd_info *mtd = super->s_mtd;
-> +	struct inode *inode = super->s_dev_inode;
-> +	size_t retlen;
-> +	loff_t page_start, page_end;
-> +	int ret;
-> +
-> +	if (0) /* FIXME: this should be a debugging option */
-> +		check(buf, len);
-> +
-> +	//printk("write ofs=%llx, len=%x\n", ofs, len);
-
-	hrmpf
-
-> +	BUG_ON((ofs >= mtd->size) || (len > mtd->size - ofs));
-> +	BUG_ON(ofs != (ofs >> super->s_writeshift) << super->s_writeshift);
-> +	//BUG_ON(len != (len >> super->s_blockshift) << super->s_blockshift);
-
-
-	hrmpf
-
-> +	/* FIXME: fix all callers to write PAGE_CACHE_SIZE'd chunks */
-> +	BUG_ON(len > PAGE_CACHE_SIZE);
-> +	page_start = ofs & PAGE_CACHE_MASK;
-> +	page_end = PAGE_CACHE_ALIGN(ofs + len) - 1;
-> +	truncate_inode_pages_range(&inode->i_data, page_start, page_end);
-> +	ret = mtd->write(mtd, ofs, len, &retlen, buf);
-> +	if (ret || (retlen != len))
-> +		return -EIO;
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +static DECLARE_COMPLETION(logfs_erase_complete);
-
-empty line
-
-> +static void logfs_erase_callback(struct erase_info *ei)
-> +{
-> +	complete(&logfs_erase_complete);
-> +}
-
-dito
-
-> +int mtderase(struct super_block *sb, loff_t ofs, size_t len)
-> +{
-> +	struct mtd_info *mtd = LOGFS_SUPER(sb)->s_mtd;
-> +	struct inode *inode = LOGFS_SUPER(sb)->s_dev_inode;
-> +	struct erase_info ei;
-> +	int ret;
-> +
-> +	BUG_ON(len % mtd->erasesize);
-> +
-> +	truncate_inode_pages_range(&inode->i_data, ofs, ofs+len-1);
-> +	if (mtd->block_isbad(mtd, ofs))
-> +		return -EIO;
-
-this actually leads to a double check of block_isbad for blocks which
-are not bad. 
-
-> +	memset(&ei, 0, sizeof(ei));
-> +	ei.mtd = mtd;
-> +	ei.addr = ofs;
-> +	ei.len = len;
-> +	ei.callback = logfs_erase_callback;
-> +	ret = mtd->erase(mtd, &ei);
-> +	if (ret)
-> +		return -EIO;
-> +
-> +	wait_for_completion(&logfs_erase_complete);
-> +	if (ei.state != MTD_ERASE_DONE)
-> +		return -EIO;
-> +	return 0;
-> +}
-> +
-> +
-> +
-> +void *logfs_device_getpage(struct super_block *sb, u64 offset,
-> +		struct page **page)
-> +{
-> +	struct inode *inode = LOGFS_SUPER(sb)->s_dev_inode;
-> +
-> +	*page = read_cache_page(inode->i_mapping, offset >> PAGE_CACHE_SHIFT,
-> +			logfs_readdevice, NULL);
-> +	BUG_ON(IS_ERR(*page));	/* TODO: use mempool here */
-
-				For the BUG ?
-
-> +	return kmap(*page);
-> +}
-> +
-> +
-> +static int logfs_get_sb_final(struct super_block *sb, struct vfsmount *mnt)
-> +{
-> +	struct inode *rootdir;
-> +	int err;
-> +
-> +	/* root dir */
-> +	rootdir = iget(sb, LOGFS_INO_ROOT);
-> +	if (!rootdir)
-> +		goto fail;
-> +
-> +	sb->s_root = d_alloc_root(rootdir);
-> +	if (!sb->s_root)
-> +		goto fail;
-> +
-> +#if 1
-> +	err = logfs_fsck(sb);
-> +#else
-> +	err = 0;
-> +#endif
-
-	Please cleanup
-
-> +	if (err) {
-> +		printk(KERN_ERR "LOGFS: fsck failed, refusing to mount\n");
-> +		goto fail;
-> +	}
-> +
-> +	return simple_set_mnt(mnt, sb);
-> +
-> +fail:
-> +	iput(LOGFS_SUPER(sb)->s_master_inode);
-> +	return -EIO;
-> +}
-> +
-> +
-> +
-> +
-> +
-> +static int logfs_get_sb(struct file_system_type *type, int flags,
-> +		const char *devname, void *data, struct vfsmount *mnt)
-> +{
-> +	ulong mtdnr;
-> +	struct mtd_info *mtd;
-> +
-> +#if 0
-> +	if (!devname)
-> +		return ERR_PTR(-EINVAL);
-> +	if (strncmp(devname, "mtd", 3))
-> +		return ERR_PTR(-EINVAL);
-> +
-> +	{
-> +		char *garbage;
-> +		mtdnr = simple_strtoul(devname+3, &garbage, 0);
-> +		if (*garbage)
-> +			return ERR_PTR(-EINVAL);
-> +	}
-> +#else
-> +	mtdnr = 0;
-> +#endif
-> +
-
-	Please cleanup
-
-> +	mtd = get_mtd_device(NULL, mtdnr);
-> +	if (!mtd)
-> +		return -EINVAL;
-> +
-> +	return logfs_get_sb_mtd(type, flags, mtd, mnt);
-> +}
-> +
-> +-- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/progs/mkfs.c	2007-05-07 13:32:12.000000000 +0200
-
-why needs this to be in a sub directory ? And shouldn't this be user
-space tools - or what I'm missing here ?
-
-> @@ -0,0 +1,319 @@
-
-Comment, license
-
-> +#include "../logfs.h"
-> +
-> +#define OFS_SB		0
-> +#define OFS_JOURNAL	1
-> +#define OFS_ROOTDIR	3
-> +#define OFS_IFILE	4
-> +#define OFS_COUNT	5
-
-enum ?
-
-> +static u64 segment_offset[OFS_COUNT];
-> +
-> +static u64 fssize;
-> +static u64 no_segs;
-> +static u64 free_blocks;
-> +
-> +static u32 segsize;
-> +static u32 blocksize;
-> +static int segshift;
-> +static int blockshift;
-> +static int writeshift;
-> +
-> +static u32 blocks_per_seg;
-> +static u16 version;
-> +
-> +static be32 bb_array[1024];
-> +static int bb_count;
-> +
-> +
-> +#if 0
-> +/* rootdir */
-> +static int make_rootdir(struct super_block *sb)
-> +{
-> +	struct logfs_disk_inode *di;
-> +	int ret;
-> +
-> +	di = kzalloc(blocksize, GFP_KERNEL);
-> +	if (!di)
-> +		return -ENOMEM;
-> +
-> +	di->di_flags	= cpu_to_be32(LOGFS_IF_VALID);
-> +	di->di_mode	= cpu_to_be16(S_IFDIR | 0755);
-> +	di->di_refcount	= cpu_to_be32(2);
-> +	ret = mtdwrite(sb, segment_offset[OFS_ROOTDIR], blocksize, di);
-> +	kfree(di);
-> +	return ret;
-> +}
-> +
-> +
-> +/* summary */
-> +static int make_summary(struct super_block *sb)
-> +{
-> +	struct logfs_disk_sum *sum;
-> +	u64 sum_ofs;
-> +	int ret;
-> +
-> +	sum = kzalloc(LOGFS_BLOCKSIZE, GFP_KERNEL);
-> +	if (!sum)
-> +		return -ENOMEM;
-> +	memset(sum, 0xff, LOGFS_BLOCKSIZE);
-> +
-> +	sum->oids[0].ino = cpu_to_be64(LOGFS_INO_MASTER);
-> +	sum->oids[0].pos = cpu_to_be64(LOGFS_INO_ROOT);
-> +	sum_ofs = segment_offset[OFS_ROOTDIR];
-> +	sum_ofs += segsize - blocksize;
-> +	sum->level = LOGFS_MAX_LEVELS;
-> +	ret = mtdwrite(sb, sum_ofs, LOGFS_BLOCKSIZE, sum);
-> +	kfree(sum);
-> +	return ret;
-> +}
-> +#endif
-
-Please remove
-
-> +
-> +/* journal */
-> +static size_t __write_header(struct logfs_journal_header *h, size_t len,
-> +		size_t datalen, u16 type, u8 compr)
-> +{
-> +	h->h_len	= cpu_to_be16(len);
-> +	h->h_type	= cpu_to_be16(type);
-> +	h->h_version	= cpu_to_be16(++version);
-> +	h->h_datalen	= cpu_to_be16(datalen);
-> +	h->h_compr	= compr;
-> +	h->h_pad[0]	= 'h';
-> +	h->h_pad[1]	= 'a';
-> +	h->h_pad[2]	= 't';
-> +	h->h_crc	= logfs_crc32(h, len, 4);
-> +	return len;
-> +}
-> +static size_t write_header(struct logfs_journal_header *h, size_t datalen,
-> +		u16 type)
-> +{
-> +	size_t len = datalen + sizeof(*h);
-> +	return __write_header(h, len, datalen, type, COMPR_NONE);
-> +}
-> +static size_t je_badsegments(void *data, u16 *type)
-> +{
-> +	memcpy(data, bb_array, blocksize);
-> +	*type = JE_BADSEGMENTS;
-> +	return blocksize;
-> +}
-> +static size_t je_anchor(void *_da, u16 *type)
-> +{
-> +	struct logfs_anchor *da = _da;
-> +
-> +	memset(da, 0, sizeof(*da));
-> +	da->da_last_ino	= cpu_to_be64(LOGFS_RESERVED_INOS);
-> +	da->da_size	= cpu_to_be64((LOGFS_INO_ROOT+1) * blocksize);
-> +#if 0
-> +	da->da_used_bytes = cpu_to_be64(blocksize);
-> +	da->da_data[LOGFS_INO_ROOT] = cpu_to_be64(3*segsize);
-> +#else
-> +	da->da_data[LOGFS_INO_ROOT] = 0;
-> +#endif
-
-Please cleanup
-
-> +	*type = JE_ANCHOR;
-> +	return sizeof(*da);
-> +}
-
-Empty line
-
-> +static size_t je_dynsb(void *_dynsb, u16 *type)
-> +{
-> +	struct logfs_dynsb *dynsb = _dynsb;
-> +
-> +	memset(dynsb, 0, sizeof(*dynsb));
-> +	dynsb->ds_used_bytes	= cpu_to_be64(blocksize);
-> +	*type = JE_DYNSB;
-> +	return sizeof(*dynsb);
-> +}
-
-Same
-
-> +static size_t je_commit(void *h, u16 *type)
-> +{
-> +	*type = JE_COMMIT;
-> +	return 0;
-> +}
-
-Same
-
-> +static size_t write_je(size_t jpos, void *scratch, void *header,
-> +		size_t (*write)(void *scratch, u16 *type))
-> +{
-> +	void *data;
-> +	ssize_t len, max, compr_len, pad_len, full_len;
-> +	u16 type;
-> +	u8 compr = COMPR_ZLIB;
-> +
-> +	header += jpos;
-> +	data = header + sizeof(struct logfs_journal_header);
-> +
-> +	len = write(scratch, &type);
-> +	if (len == 0)
-> +		return write_header(header, 0, type);
-> +
-> +	max = blocksize - jpos;
-> +	compr_len = logfs_compress(scratch, data, len, max);
-> +	if ((compr_len < 0) || (type == JE_ANCHOR)) {
-> +		compr_len = logfs_memcpy(scratch, data, len, max);
-> +		compr = COMPR_NONE;
-> +	}
-> +	BUG_ON(compr_len < 0);
-> +
-> +	pad_len = ALIGN(compr_len, 16);
-> +	memset(data + compr_len, 0, pad_len - compr_len);
-> +	full_len = pad_len + sizeof(struct logfs_journal_header);
-> +
-> +	return __write_header(header, full_len, len, type, compr);
-> +}
-
-Same
-
-> +static int make_journal(struct super_block *sb)
-> +{
-> +	void *journal, *scratch;
-> +	size_t jpos;
-> +	int ret;
-> +
-> +	journal = kzalloc(2*blocksize, GFP_KERNEL);
-> +	if (!journal)
-> +		return -ENOMEM;
-> +
-> +	scratch = journal + blocksize;
-> +
-> +	jpos = 0;
-> +	/* erasecount is not written - implicitly set to 0 */
-> +	/* neither are summary, index, wbuf */
-> +	jpos += write_je(jpos, scratch, journal, je_badsegments);
-> +	jpos += write_je(jpos, scratch, journal, je_anchor);
-> +	jpos += write_je(jpos, scratch, journal, je_dynsb);
-> +	jpos += write_je(jpos, scratch, journal, je_commit);
-> +	ret = mtdwrite(sb, segment_offset[OFS_JOURNAL], blocksize, journal);
-> +	kfree(journal);
-> +	return ret;
-> +}
-> +
-> +
-> +/* superblock */
-> +static int make_super(struct super_block *sb, struct logfs_disk_super *ds)
-> +{
-> +	void *sector;
-> +	int ret;
-> +
-> +	sector = kzalloc(4096, GFP_KERNEL);
-> +	if (!sector)
-> +		return -ENOMEM;
-> +
-> +	memset(ds, 0, sizeof(*ds));
-> +
-> +	ds->ds_magic		= cpu_to_be64(LOGFS_MAGIC);
-> +#if 0	/* sane defaults */
-> +	ds->ds_ifile_levels	= 3; /* 2+1, 1GiB */
-> +	ds->ds_iblock_levels	= 4; /* 3+1, 512GiB */
-> +	ds->ds_data_levels	= 3; /* old, young, unknown */
-> +#else
-> +	ds->ds_ifile_levels	= 1; /* 0+1, 80kiB */
-> +	ds->ds_iblock_levels	= 4; /* 3+1, 512GiB */
-> +	ds->ds_data_levels	= 1; /* unknown */
-> +#endif
-
-Please cleanup
-
-> +	ds->ds_feature_incompat	= 0;
-> +	ds->ds_feature_ro_compat= 0;
-> +
-> +	ds->ds_feature_compat	= 0;
-> +	ds->ds_flags		= 0;
-> +
-> +	ds->ds_filesystem_size	= cpu_to_be64(fssize);
-> +	ds->ds_segment_shift	= segshift;
-> +	ds->ds_block_shift	= blockshift;
-> +	ds->ds_write_shift	= writeshift;
-> +
-> +	ds->ds_journal_seg[0]	= cpu_to_be64(1);
-> +	ds->ds_journal_seg[1]	= cpu_to_be64(2);
-> +	ds->ds_journal_seg[2]	= 0;
-> +	ds->ds_journal_seg[3]	= 0;
-> +
-> +	ds->ds_root_reserve	= 0;
-> +
-> +	ds->ds_crc = logfs_crc32(ds, sizeof(*ds), 12);
-> +
-> +	memcpy(sector, ds, sizeof(*ds));
-> +	ret = mtdwrite(sb, segment_offset[OFS_SB], 4096, sector);
-> +	kfree(sector);
-> +	return ret;
-> +}
-> +
-> +
-> +int logfs_mkfs(struct super_block *sb, struct logfs_disk_super *ds)
-> +{
-> +	int ret = 0;
-> +
-> +	segshift = 17;
-> +	blockshift = 12;
-> +	writeshift = 8;
-> +
-> +	segsize = 1 << segshift;
-> +	blocksize = 1 << blockshift;
-> +	version = 0;
-> +
-> +	getsize(sb, &fssize, &no_segs);
-> +
-> +	/* 3 segs for sb and journal,
-> +	 * 1 block per seg extra,
-> +	 * 1 block for rootdir
-> +	 */
-> +	blocks_per_seg = 1 << (segshift - blockshift);
-> +	free_blocks = (no_segs - 3) * (blocks_per_seg - 1) - 1;
-> +
-> +	ret = bad_block_scan(sb);
-> +	if (ret)
-> +		return ret;
-> +
-> +	{
-> +		int i;
-> +		for (i=0; i<OFS_COUNT; i++)
-> +			printk("%x->%llx\n", i, segment_offset[i]);
-> +	}
-> +
-> +#if 0
-> +	ret = make_rootdir(sb);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = make_summary(sb);
-> +	if (ret)
-> +		return ret;
-> +#endif
-
-Same
-
-> +	ret = make_journal(sb);
-> +	if (ret)
-> +		return ret;
-> +
-> +	ret = make_super(sb, ds);
-> +	if (ret)
-> +		return ret;
-> +
-> +	return 0;
-> +}
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/progs/fsck.c	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,323 @@
-
-Comment, license
-
-> +#include "../logfs.h"
-> +
-> +static u64 used_bytes;
-> +static u64 free_bytes;
-> +static u64 last_ino;
-> +static u64 *inode_bytes;
-> +static u64 *inode_links;
-> +
-> +
-> +/**
-> + * Pass 1: blocks
-> + */
-> +
-> +
-> +static void safe_read(struct super_block *sb, u32 segno, u32 ofs,
-> +		size_t len, void *buf)
-> +{
-> +	BUG_ON(wbuf_read(sb, dev_ofs(sb, segno, ofs), len, buf));
-> +}
-
-Empty line
-
-> +static u32 logfs_free_bytes(struct super_block *sb, u32 segno)
-> +{
-
-> +static void logfsck_blocks(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int i;
-> +	int free;
-> +
-> +	for (i=0; i<super->s_no_segs; i++) {
-> +		free = logfs_free_bytes(sb, i);
-> +		free_bytes += free;
-> +		printk(" %3x", free);
-> +		if (i % 8 == 7)
-> +			printk(" : ");
-> +		if (i % 16 == 15)
-> +			printk("\n");
+> +	printk(KERN_DEBUG "%s(%i): ", func, skb->len);
+> +	for (i = 0; i < skb->len; i++) {
+> +		if (i >= DEBUG_PKT_BYTES)
+> +			break;
+> +		printk("%s%02X",
+> +		       ((i == 6) || (i == 12) || (i >= 14)) ? " " : "",
+> +		       skb->data[i]);
 > +	}
 > +	printk("\n");
-
-printk with loglevels and identifiable origin please
-
-> +
-> +
-> +static s64 dir_seek_data(struct inode *inode, s64 pos)
-> +{
-> +	s64 new_pos = logfs_seek_data(inode, pos);
-
-new line
-
-> +	return max((s64)pos, new_pos - 1);
+> +#endif
 > +}
 > +
 > +
-> +static int __logfsck_dirs(struct inode *dir)
+> +static inline void debug_desc(unsigned int queue, u32 desc_phys,
+> +			      struct desc *desc, int is_get)
 > +{
-> +	struct inode *inode;
-> +	loff_t pos;
-> +	u64 ino;
-> +	u8 type;
-> +	int cookie, err, ret = 0;
+> +#if DEBUG_QUEUES
+> +	const char *op = is_get ? "->" : "<-";
 > +
-> +	for (pos=0; ; pos++) {
-> +		err = read_one_dd(dir, pos, &ino, &type);
-> +		//yield();
-
-	great. cond_resched() if you really need to
-
-> +		if (err == -ENODATA) { /* dentry was deleted */
-> +			pos = dir_seek_data(dir, pos);
+> +	if (!desc_phys) {
+> +		printk(KERN_DEBUG "queue %2i %s NULL\n", queue, op);
+> +		return;
+> +	}
+> +	printk(KERN_DEBUG "queue %2i %s %X: %X %3X %3X %08X %2X < %2X %4X  
+> %X"
+> +	       " %X %X %02X%02X%02X%02X%02X%02X < %02X%02X%02X%02X%02X%02X 
+> \n",
+> +	       queue, op, desc_phys, desc->next, desc->buf_len, desc- 
+> >pkt_len,
+> +	       desc->data, desc->dest_id, desc->src_id,
+> +	       desc->flags, desc->qos,
+> +	       desc->padlen, desc->vlan_tci,
+> +	       desc->dest_mac[0], desc->dest_mac[1],
+> +	       desc->dest_mac[2], desc->dest_mac[3],
+> +	       desc->dest_mac[4], desc->dest_mac[5],
+> +	       desc->src_mac[0], desc->src_mac[1],
+> +	       desc->src_mac[2], desc->src_mac[3],
+> +	       desc->src_mac[4], desc->src_mac[5]);
+> +#endif
+> +}
+> +
+> +static inline int queue_get_desc(unsigned int queue, struct port  
+> *port,
+> +				 int is_tx)
+> +{
+> +	u32 phys, tab_phys, n_desc;
+> +	struct desc *tab;
+> +
+> +	if (!(phys = qmgr_get_entry(queue))) {
+> +		debug_desc(queue, phys, NULL, 1);
+> +		return -1;
+> +	}
+> +
+> +	phys &= ~0x1F; /* mask out non-address bits */
+> +	tab_phys = is_tx ? tx_desc_phys(0) : rx_desc_phys(port, 0);
+> +	tab = is_tx ? tx_desc_tab : port->rx_desc_tab;
+> +	n_desc = (phys - tab_phys) / sizeof(struct desc);
+> +	BUG_ON(n_desc >= PKT_DESCS);
+> +
+> +	debug_desc(queue, phys, &tab[n_desc], 1);
+> +	BUG_ON(tab[n_desc].next);
+> +	return n_desc;
+> +}
+> +
+> +static inline void queue_put_desc(unsigned int queue, u32 desc_phys,
+> +				  struct desc *desc)
+> +{
+> +	debug_desc(queue, desc_phys, desc, 0);
+> +	BUG_ON(desc_phys & 0x1F);
+> +	qmgr_put_entry(queue, desc_phys);
+> +}
+> +
+> +
+> +static void eth_rx_irq(void *pdev)
+> +{
+> +	struct net_device *dev = pdev;
+> +	struct port *port = netdev_priv(dev);
+> +
+> +#if DEBUG_RX
+> +	printk(KERN_DEBUG "eth_rx_irq() start\n");
+> +#endif
+> +	qmgr_disable_irq(port->plat->rxq);
+> +	netif_rx_schedule(dev);
+> +}
+> +
+> +static int eth_poll(struct net_device *dev, int *budget)
+> +{
+> +	struct port *port = netdev_priv(dev);
+> +	unsigned int queue = port->plat->rxq;
+> +	int quota = dev->quota, received = 0;
+> +
+> +#if DEBUG_RX
+> +	printk(KERN_DEBUG "eth_poll() start\n");
+> +#endif
+> +	while (quota) {
+> +		struct sk_buff *old_skb, *new_skb;
+> +		struct desc *desc;
+> +		u32 data;
+> +		int n = queue_get_desc(queue, port, 0);
+> +		if (n < 0) {	/* No packets received */
+> +			dev->quota -= received;
+> +			*budget -= received;
+> +			received = 0;
+> +			netif_rx_complete(dev);
+> +			qmgr_enable_irq(queue);
+> +			if (!qmgr_stat_empty(queue) &&
+> +			    netif_rx_reschedule(dev, 0)) {
+> +				qmgr_disable_irq(queue);
+> +				continue;
+> +			}
+> +			return 0; /* all work done */
+> +		}
+> +
+> +		desc = &port->rx_desc_tab[n];
+> +
+> +		if ((new_skb = netdev_alloc_skb(dev, MAX_MRU)) != NULL) {
+> +#if 0
+> +			skb_reserve(new_skb, 2);  /* FIXME */
+> +#endif
+> +			data = dma_map_single(&dev->dev, new_skb->data,
+> +					      MAX_MRU, DMA_FROM_DEVICE);
+> +		}
+> +
+> +		if (!new_skb || dma_mapping_error(data)) {
+> +			if (new_skb)
+> +				dev_kfree_skb(new_skb);
+> +			port->stat.rx_dropped++;
+> +			/* put the desc back on RX-ready queue */
+> +			desc->buf_len = MAX_MRU;
+> +			desc->pkt_len = 0;
+> +			queue_put_desc(RXFREE_QUEUE(port->plat),
+> +				       rx_desc_phys(port, n), desc);
+> +			BUG_ON(qmgr_stat_overflow(RXFREE_QUEUE(port->plat)));
 > +			continue;
 > +		}
-> +		if (err == -EOF)
-> +			break;
-> +		if (err)
-> +			goto error0;
 > +
-> +		err = -EIO;
-> +		if (ino > last_ino) {
-> +			printk("ino %llx > last_ino %llx\n", ino, last_ino);
-
-	loglevel .....
-
-> +			goto error0;
-> +		}
-> +		inode = logfs_iget(dir->i_sb, ino, &cookie);
-> +		if (!inode) {
-> +			printk("Could not find inode #%llx\n", ino);
-> +			goto error0;
-> +		}
-> +		if (type != logfs_type(inode)) {
-> +			printk("dd type %x != inode type %x\n", type,
-> +					logfs_type(inode));
-
-	dito
-
-> +			goto error1;
-> +		}
-> +		inode_links[ino]++;
-> +		err = 0;
-> +		if (type == DT_DIR) {
-> +			inode_links[dir->i_ino]++;
-> +			inode_links[ino]++;
-> +			err = __logfsck_dirs(inode);
-> +		}
-> +error1:
-> +		logfs_iput(inode, cookie);
-> +error0:
-> +		if (!ret)
-> +			ret = err;
-> +		continue;
+> +		/* process received skb */
+> +		old_skb = port->rx_skb_tab[n];
+> +		dma_unmap_single(&dev->dev, desc->data,
+> +				 MAX_MRU, DMA_FROM_DEVICE);
+> +		skb_put(old_skb, desc->pkt_len);
+> +
+> +		debug_skb("eth_poll", old_skb);
+> +
+> +		old_skb->protocol = eth_type_trans(old_skb, dev);
+> +		dev->last_rx = jiffies;
+> +		port->stat.rx_packets++;
+> +		port->stat.rx_bytes += old_skb->len;
+> +		netif_receive_skb(old_skb);
+> +
+> +		/* put the new skb on RX-free queue */
+> +		port->rx_skb_tab[n] = new_skb;
+> +		desc->buf_len = MAX_MRU;
+> +		desc->pkt_len = 0;
+> +		desc->data = data;
+> +		queue_put_desc(RXFREE_QUEUE(port->plat),
+> +			       rx_desc_phys(port, n), desc);
+> +		BUG_ON(qmgr_stat_overflow(RXFREE_QUEUE(port->plat)));
+> +		quota--;
+> +		received++;
 > +	}
-> +	return 1;
+> +	dev->quota -= received;
+> +	*budget -= received;
+> +	return 1;		/* not all work done */
+> +}
+> +
+> +static void eth_xmit_ready_irq(void *pdev)
+> +{
+> +	struct net_device *dev = pdev;
+> +
+> +#if DEBUG_TX
+> +	printk(KERN_DEBUG "eth_xmit_empty() start\n");
+> +#endif
+> +	netif_start_queue(dev);
+> +}
+> +
+> +static int eth_xmit(struct sk_buff *skb, struct net_device *dev)
+> +{
+> +	struct port *port = netdev_priv(dev);
+> +	struct desc *desc;
+> +	u32 phys;
+> +	struct sk_buff *old_skb;
+> +	int n;
+> +
+> +#if DEBUG_TX
+> +	printk(KERN_DEBUG "eth_xmit() start\n");
+> +#endif
+> +	if (unlikely(skb->len > MAX_MRU)) {
+> +		dev_kfree_skb(skb);
+> +		port->stat.tx_errors++;
+> +		return NETDEV_TX_OK;
+> +	}
+> +
+> +	n = queue_get_desc(TXDONE_QUEUE, port, 1);
+> +	BUG_ON(n < 0);
+> +	desc = &tx_desc_tab[n];
+> +	phys = tx_desc_phys(n);
+> +
+> +	if ((old_skb = tx_skb_tab[n]) != NULL) {
+> +		dma_unmap_single(&dev->dev, desc->data,
+> +				 desc->buf_len, DMA_TO_DEVICE);
+> +		port->stat.tx_packets++;
+> +		port->stat.tx_bytes += old_skb->len;
+> +		dev_kfree_skb(old_skb);
+> +	}
+> +
+> +	/* disable VLAN functions in NPE image for now */
+> +	memset(desc, 0, sizeof(*desc));
+> +	desc->buf_len = desc->pkt_len = skb->len;
+> +	desc->data = dma_map_single(&dev->dev, skb->data,
+> +				    skb->len, DMA_TO_DEVICE);
+> +	if (dma_mapping_error(desc->data)) {
+> +		desc->data = 0;
+> +		dev_kfree_skb(skb);
+> +		tx_skb_tab[n] = NULL;
+> +		port->stat.tx_dropped++;
+> +		/* put the desc back on TX-done queue */
+> +		queue_put_desc(TXDONE_QUEUE, phys, desc);
+> +		return 0;
+> +	}
+> +
+> +	tx_skb_tab[n] = skb;
+> +	debug_skb("eth_xmit", skb);
+> +
+> +	/* NPE firmware pads short frames with zeros internally */
+> +	wmb();
+> +	queue_put_desc(TX_QUEUE(port->plat), phys, desc);
+> +	BUG_ON(qmgr_stat_overflow(TX_QUEUE(port->plat)));
+> +	dev->trans_start = jiffies;
+> +
+> +	if (qmgr_stat_full(TX_QUEUE(port->plat))) {
+> +		netif_stop_queue(dev);
+> +		/* we could miss TX ready interrupt */
+> +		if (!qmgr_stat_full(TX_QUEUE(port->plat))) {
+> +			netif_start_queue(dev);
+> +		}
+> +	}
+> +
+> +#if DEBUG_TX
+> +	printk(KERN_DEBUG "eth_xmit() end\n");
+> +#endif
+> +	return NETDEV_TX_OK;
 > +}
 > +
 > +
-> +/**
-> + * Pass 3: inodes
-> + */
-> +
-> +
-> +static int logfs_check_inode(struct inode *inode)
+> +static struct net_device_stats *eth_stats(struct net_device *dev)
 > +{
-> +	struct logfs_inode *li = LOGFS_INODE(inode);
-> +	u64 bytes0 = li->li_used_bytes;
-> +	u64 bytes1 = inode_bytes[inode->i_ino];
-> +	u64 links0 = inode->i_nlink;
-> +	u64 links1 = inode_links[inode->i_ino];
+> +	struct port *port = netdev_priv(dev);
+> +	return &port->stat;
+> +}
 > +
-> +	if (bytes0 || bytes1 || links0 || links1
-> +			|| inode->i_ino == LOGFS_SUPER(inode->i_sb)->s_last_ino)
-> +		printk("%lx: %llx(%llx) bytes, %llx(%llx) links\n",
-> +				inode->i_ino, bytes0, bytes1, links0, links1);
-
-	Sigh
-
-> +	used_bytes += bytes0;
-> +	return (bytes0 == bytes1) && (links0 == links1);
+> +static void eth_set_mcast_list(struct net_device *dev)
+> +{
+> +	struct port *port = netdev_priv(dev);
+> +	struct dev_mc_list *mclist = dev->mc_list;
+> +	u8 diffs[ETH_ALEN], *addr;
+> +	int cnt = dev->mc_count, i;
+> +
+> +	if ((dev->flags & IFF_PROMISC) || !mclist || !cnt) {
+> +		clr_regbits(RX_CNTRL0_ADDR_FLTR_EN,
+> +			    &port->regs->rx_control[0]);
+> +		return;
+> +	}
+> +
+> +	memset(diffs, 0, ETH_ALEN);
+> +	addr = mclist->dmi_addr; /* first MAC address */
+> +
+> +	while (--cnt && (mclist = mclist->next))
+> +		for (i = 0; i < ETH_ALEN; i++)
+> +			diffs[i] |= addr[i] ^ mclist->dmi_addr[i];
+> +
+> +	for (i = 0; i < ETH_ALEN; i++) {
+> +		__raw_writel(addr[i], &port->regs->mcast_addr[i]);
+> +		__raw_writel(~diffs[i], &port->regs->mcast_mask[i]);
+> +	}
+> +
+> +	set_regbits(RX_CNTRL0_ADDR_FLTR_EN, &port->regs->rx_control[0]);
 > +}
 > +
 > +
-> +static int logfs_check_ino(struct super_block *sb, u64 ino)
+> +static int eth_ioctl(struct net_device *dev, struct ifreq *req,  
+> int cmd)
 > +{
-> +	struct inode *inode;
-> +	int ret, cookie;
+> +	struct port *port = netdev_priv(dev);
+> +	unsigned int duplex_chg;
+> +	int err;
 > +
-> +	//yield();
-
-	See above instance of //yield();
-
-> +	inode = logfs_iget(sb, ino, &cookie);
-> +	if (!inode)
-> +		return 1;
-> +	ret = logfs_check_inode(inode);
-> +	logfs_iput(inode, cookie);
-> +	return ret;
-> +}
-> +
-> +
-> +
-> +static int logfsck_stats(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	u64 ostore_segs, total, expected;
-> +	int i, reserved_segs;
-> +
-> +	reserved_segs = 1; /* super_block */
-> +	journal_for_each(i)
-> +		if (super->s_journal_seg[i])
-> +			reserved_segs++;
-> +	reserved_segs += super->s_bad_segments;
-> +
-> +	ostore_segs = super->s_no_segs - reserved_segs;
-> +	expected = ostore_segs << super->s_segshift;
-> +	total = free_bytes + used_bytes;
-> +
-> +	printk("free:%8llx, used:%8llx, total:%8llx",
-> +			free_bytes, used_bytes, expected);
-
-	loglevel
-
-> +	if (total > expected)
-> +		printk(" + %llx\n", total - expected);
-> +	else if (total < expected)
-> +		printk(" - %llx\n", expected - total);
-> +	else
-> +		printk("\n");
-> +
-> +	return total == expected;
-> +}
-> +
-> +
-> +static int __logfs_fsck(struct super_block *sb)
-> +{
-> +	int ret;
-> +	int err = 0;
-> +
-> +	/* pass 1: check blocks */
-> +	logfsck_blocks(sb);
-> +	/* pass 2: check directories */
-> +	ret = logfsck_dirs(sb);
-> +	if (!ret) {
-> +		printk("Pass 2: directory check failed\n");
-
-	same
-
-> +		err = -EIO;
-> +	}
-> +	/* pass 3: check inodes */
-> +	ret = logfsck_inodes(sb);
-> +	if (!ret) {
-> +		printk("Pass 3: inode check failed\n");
-
-	same
-
-> +		err = -EIO;
-> +	}
-> +	/* Pass 4: Total blocks */
-> +	ret = logfsck_stats(sb);
-> +	if (!ret) {
-> +		printk("Pass 4: statistic check failed\n");
-
-	same
-
-> +		err = -EIO;
-> +	}
-> +
+> +	if (!netif_running(dev))
+> +		return -EINVAL;
+> +	err = generic_mii_ioctl(&port->mii, if_mii(req), cmd, &duplex_chg);
+> +	if (duplex_chg)
+> +		eth_set_duplex(port);
 > +	return err;
 > +}
 > +
 > +
-> +int logfs_fsck(struct super_block *sb)
+> +static int request_queues(struct port *port)
 > +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int ret = -ENOMEM;
+> +	int err;
 > +
-> +	used_bytes = 0;
-> +	free_bytes = 0;
-> +	last_ino = super->s_last_ino;
-> +	inode_bytes = kzalloc(last_ino * sizeof(be64), GFP_KERNEL);
-> +	if (!inode_bytes)
-> +		goto out0;
-
-	return ret;
-
-> +	inode_links = kzalloc(last_ino * sizeof(be64), GFP_KERNEL);
-> +	if (!inode_links)
-> +		goto out1;
+> +	err = qmgr_request_queue(RXFREE_QUEUE(port->plat), PKT_DESCS, 0, 0);
+> +	if (err)
+> +		return err;
 > +
-> +	ret = __logfs_fsck(sb);
+> +	err = qmgr_request_queue(port->plat->rxq, PKT_DESCS, 0, 0);
+> +	if (err)
+> +		goto rel_rxfree;
 > +
-> +	kfree(inode_links);
-> +	inode_links = NULL;
-> +out1:
-> +	kfree(inode_bytes);
-> +	inode_bytes = NULL;
-> +out0:
-> +	return ret;
-> +}
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/Locking	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,45 @@
-
-Can you move this into documentation please
-
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/compr.c	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,198 @@
-
-Comment, license
-
-> +#include "logfs.h"
-> +#include <linux/vmalloc.h>
-> +#include <linux/zlib.h>
+> +	err = qmgr_request_queue(TX_QUEUE(port->plat), TX_QUEUE_LEN, 0, 0);
+> +	if (err)
+> +		goto rel_rx;
 > +
-> +#define COMPR_LEVEL 3
+> +	/* TX-done queue handles skbs sent out by the NPEs */
+> +	if (!ports_open) {
+> +		err = qmgr_request_queue(TXDONE_QUEUE, PKT_DESCS, 0, 0);
+> +		if (err)
+> +			goto rel_tx;
+> +	}
+> +	return 0;
 > +
-> +static DEFINE_MUTEX(compr_mutex);
-> +static struct z_stream_s stream;
-> +
-> +
-> +int logfs_memcpy(void *in, void *out, size_t inlen, size_t outlen)
-> +{
-> +	if (outlen < inlen)
-> +		return -EIO;
-> +	memcpy(out, in, inlen);
-> +	return inlen;
+> +rel_tx:
+> +	qmgr_release_queue(TX_QUEUE(port->plat));
+> +rel_rx:
+> +	qmgr_release_queue(port->plat->rxq);
+> +rel_rxfree:
+> +	qmgr_release_queue(RXFREE_QUEUE(port->plat));
+> +	return err;
 > +}
 > +
-> +
-> +int logfs_compress_vec(struct kvec *vec, int count, void *out, size_t outlen)
+> +static void release_queues(struct port *port)
 > +{
-> +	int i, ret;
+> +	qmgr_release_queue(RXFREE_QUEUE(port->plat));
+> +	qmgr_release_queue(port->plat->rxq);
+> +	qmgr_release_queue(TX_QUEUE(port->plat));
 > +
-> +	mutex_lock(&compr_mutex);
-> +	ret = zlib_deflateInit(&stream, COMPR_LEVEL);
-> +	if (ret != Z_OK)
-> +		goto error;
+> +	if (!ports_open)
+> +		qmgr_release_queue(TXDONE_QUEUE);
+> +}
 > +
-> +	stream.total_in = 0;
-> +	stream.total_out = 0;
+> +static int init_queues(struct port *port)
+> +{
+> +	int i;
 > +
-> +	for (i=0; i<count-1; i++) {
-> +		stream.next_in = vec[i].iov_base;
-> +		stream.avail_in = vec[i].iov_len;
-> +		stream.next_out = out + stream.total_out;
-> +		stream.avail_out = outlen - stream.total_out;
+> +	if (!dma_pool) {
+> +		/* Setup TX descriptors - common to all ports */
+> +		dma_pool = dma_pool_create(DRV_NAME, NULL, POOL_ALLOC_SIZE,
+> +					   32, 0);
+> +		if (!dma_pool)
+> +			return -ENOMEM;
 > +
-> +		ret = zlib_deflate(&stream, Z_NO_FLUSH);
-> +		if (ret != Z_OK)
-> +			goto error;
-> +		/* if (stream.total_out >= outlen)
-> +			goto error; */
-
-	???
-
+> +		if (!(tx_desc_tab = dma_pool_alloc(dma_pool, GFP_KERNEL,
+> +						   &tx_desc_tab_phys)))
+> +			return -ENOMEM;
+> +		memset(tx_desc_tab, 0, POOL_ALLOC_SIZE);
+> +		memset(tx_skb_tab, 0, sizeof(tx_skb_tab)); /* static table */
+> +
+> +		for (i = 0; i < PKT_DESCS; i++) {
+> +			queue_put_desc(TXDONE_QUEUE, tx_desc_phys(i),
+> +				       &tx_desc_tab[i]);
+> +			BUG_ON(qmgr_stat_overflow(TXDONE_QUEUE));
+> +		}
 > +	}
 > +
-> +	stream.next_in = vec[count-1].iov_base;
-> +	stream.avail_in = vec[count-1].iov_len;
-> +	stream.next_out = out + stream.total_out;
-> +	stream.avail_out = outlen - stream.total_out;
-> +
-> +	ret = zlib_deflate(&stream, Z_FINISH);
-> +	if (ret != Z_STREAM_END)
-> +		goto error;
-> +	/* if (stream.total_out >= outlen)
-> +		goto error; */
-
-	???
-
-> +	ret = zlib_deflateEnd(&stream);
-> +	if (ret != Z_OK)
-> +		goto error;
-> +
-> +	if (stream.total_out >= stream.total_in)
-> +		goto error;
-> +
-> +	ret = stream.total_out;
-> +	mutex_unlock(&compr_mutex);
-> +	return ret;
-> +error:
-> +	mutex_unlock(&compr_mutex);
-> +	return -EIO;
-> +}
-> +
-> +
-
-> +int logfs_uncompress_vec(void *in, size_t inlen, struct kvec *vec, int count)
-> +{
-> +	int i, ret;
-> +
-> +	mutex_lock(&compr_mutex);
-> +	ret = zlib_inflateInit(&stream);
-> +	if (ret != Z_OK)
-> +		goto error;
-> +
-> +	stream.total_in = 0;
-> +	stream.total_out = 0;
-> +
-> +	for (i=0; i<count-1; i++) {
-> +		stream.next_in = in + stream.total_in;
-> +		stream.avail_in = inlen - stream.total_in;
-> +		stream.next_out = vec[i].iov_base;
-> +		stream.avail_out = vec[i].iov_len;
-> +
-> +		ret = zlib_inflate(&stream, Z_NO_FLUSH);
-> +		if (ret != Z_OK)
-> +			goto error;
-> +	}
-> +	stream.next_in = in + stream.total_in;
-> +	stream.avail_in = inlen - stream.total_in;
-> +	stream.next_out = vec[count-1].iov_base;
-> +	stream.avail_out = vec[count-1].iov_len;
-> +
-> +	ret = zlib_inflate(&stream, Z_FINISH);
-> +	if (ret != Z_STREAM_END)
-> +		goto error;
-> +
-> +	ret = zlib_inflateEnd(&stream);
-> +	if (ret != Z_OK)
-> +		goto error;
-> +
-> +	mutex_unlock(&compr_mutex);
-> +	return ret;
-> +error:
-> +	mutex_unlock(&compr_mutex);
-> +	return -EIO;
-
-	Sigh. Can you please make this a bit more clever  ?
-
-> +}
-> +
-> +
-> +int logfs_uncompress(void *in, void *out, size_t inlen, size_t outlen)
-> +{
-> +	int ret;
-> +
-> +	mutex_lock(&compr_mutex);
-> +	ret = zlib_inflateInit(&stream);
-> +	if (ret != Z_OK)
-> +		goto error;
-> +
-> +	stream.next_in = in;
-> +	stream.avail_in = inlen;
-> +	stream.total_in = 0;
-> +	stream.next_out = out;
-> +	stream.avail_out = outlen;
-> +	stream.total_out = 0;
-> +
-> +	ret = zlib_inflate(&stream, Z_FINISH);
-> +	if (ret != Z_STREAM_END)
-> +		goto error;
-> +
-> +	ret = zlib_inflateEnd(&stream);
-> +	if (ret != Z_OK)
-> +		goto error;
-> +
-> +	mutex_unlock(&compr_mutex);
-> +	return ret;
-> +error:
-> +	mutex_unlock(&compr_mutex);
-> +	return -EIO;
-
-	Same here
-
-> +}
-
-
-> +
-> +int __init logfs_compr_init(void)
-> +{
-> +	size_t size = max(zlib_deflate_workspacesize(),
-> +			zlib_inflate_workspacesize());
-> +	printk("deflate size: %x\n", zlib_deflate_workspacesize());
-> +	printk("inflate size: %x\n", zlib_inflate_workspacesize());
-
-	loglevel
-
-> +	stream.workspace = vmalloc(size);
-> +	if (!stream.workspace)
+> +	/* Setup RX buffers */
+> +	if (!(port->rx_desc_tab = dma_pool_alloc(dma_pool, GFP_KERNEL,
+> +						 &port->rx_desc_tab_phys)))
 > +		return -ENOMEM;
+> +	memset(port->rx_desc_tab, 0, POOL_ALLOC_SIZE);
+> +	memset(port->rx_skb_tab, 0, sizeof(port->rx_skb_tab)); /* table */
+> +
+> +	for (i = 0; i < PKT_DESCS; i++) {
+> +		struct desc *desc = &port->rx_desc_tab[i];
+> +		struct sk_buff *skb;
+> +
+> +		if (!(skb = netdev_alloc_skb(port->netdev, MAX_MRU)))
+> +			return -ENOMEM;
+> +		port->rx_skb_tab[i] = skb;
+> +		desc->buf_len = MAX_MRU;
+> +#if 0
+> +		skb_reserve(skb, 2);  /* FIXME */
+> +#endif
+
+Hallo :o)
+
+> +		desc->data = dma_map_single(&port->netdev->dev, skb->data,
+> +					    MAX_MRU, DMA_FROM_DEVICE);
+> +		if (dma_mapping_error(desc->data)) {
+> +			desc->data = 0;
+> +			return -EIO;
+> +		}
+> +		queue_put_desc(RXFREE_QUEUE(port->plat),
+> +			       rx_desc_phys(port, i), desc);
+> +		BUG_ON(qmgr_stat_overflow(RXFREE_QUEUE(port->plat)));
+> +	}
 > +	return 0;
 > +}
 > +
-> +void __exit logfs_compr_exit(void)
+> +static void destroy_queues(struct port *port)
 > +{
-> +	vfree(stream.workspace);
-> +}
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/segment.c	2007-05-07 20:41:17.000000000 +0200
-> @@ -0,0 +1,533 @@
-
-Comment, license
-
-> +#include "logfs.h"
+> +	int i;
 > +
+> +	while (queue_get_desc(RXFREE_QUEUE(port->plat), port, 0) >= 0)
+> +		/* nothing to do here */;
+> +	while (queue_get_desc(port->plat->rxq, port, 0) >= 0)
+> +		/* nothing to do here */;
+> +	while (queue_get_desc(TX_QUEUE(port->plat), port, 1) >= 0) {
+> +		/* nothing to do here */;
+> +	}
+> +	if (!ports_open)
+> +		while (queue_get_desc(TXDONE_QUEUE, port, 1) >= 0)
+> +			/* nothing to do here */;
 > +
-> +
-> +#define HEADER_SIZE sizeof(struct logfs_object_header)
-
-empty line
-
-> +s64 __logfs_segment_write(struct inode *inode, void *buf, u64 pos, int level,
-> +		int alloc, int len, int compr)
-> +{
-> +	struct logfs_area *area;
-> +	struct super_block *sb = inode->i_sb;
-> +	u64 ofs;
-> +	u64 ino = inode->i_ino;
-> +	int err;
-> +	struct logfs_object_header h;
-> +
-> +	h.crc	= cpu_to_be32(0xcccccccc);
-> +	h.len	= cpu_to_be16(len);
-> +	h.type	= OBJ_BLOCK;
-> +	h.compr	= compr;
-> +	h.ino	= cpu_to_be64(inode->i_ino);
-> +	h.pos	= cpu_to_be64(pos);
-> +
-> +	level = adj_level(ino, level);
-> +	area = get_area(sb, level);
-> +	ofs = __logfs_get_free_bytes(area, ino, pos, len + HEADER_SIZE);
-> +	LOGFS_BUG_ON(ofs <= 0, sb);
-> +	//printk("alloc: (%llx, %llx, %llx, %x)\n", ino, pos, ret, level);
-
-	clean up
-
-> +	err = buf_write(area, ofs, &h, sizeof(h));
-> +	if (!err)
-> +		err = buf_write(area, ofs + HEADER_SIZE, buf, len);
-> +	BUG_ON(err);
-> +	if (err)
-> +		return err;
-> +	if (alloc) {
-> +		int acc_len = (level==0) ? len : sb->s_blocksize;
-> +		logfs_consume_bytes(inode, acc_len + HEADER_SIZE);
+> +	if (port->rx_desc_tab) {
+> +		for (i = 0; i < PKT_DESCS; i++) {
+> +			struct desc *desc = &port->rx_desc_tab[i];
+> +			struct sk_buff *skb = port->rx_skb_tab[i];
+> +			if (skb) {
+> +				if (desc->data)
+> +					dma_unmap_single(&port->netdev->dev,
+> +							 desc->data, MAX_MRU,
+> +							 DMA_FROM_DEVICE);
+> +				dev_kfree_skb(skb);
+> +			}
+> +		}
+> +		dma_pool_free(dma_pool, port->rx_desc_tab,
+> +			      port->rx_desc_tab_phys);
+> +		port->rx_desc_tab = NULL;
 > +	}
 > +
-> +	logfs_close_area(area); /* FIXME merge with open_area */
-> +
-> +	//printk("    (%llx, %llx, %llx)\n", ofs, ino, pos);
-
-	same
-
-> +	return ofs;
+> +	if (!ports_open && tx_desc_tab) {
+> +		for (i = 0; i < PKT_DESCS; i++) {
+> +			struct desc *desc = &tx_desc_tab[i];
+> +			struct sk_buff *skb = tx_skb_tab[i];
+> +			if (skb) {
+> +				if (desc->data)
+> +					dma_unmap_single(&port->netdev->dev,
+> +							 desc->data,
+> +							 desc->buf_len,
+> +							 DMA_TO_DEVICE);
+> +				dev_kfree_skb(skb);
+> +			}
+> +		}
+> +		dma_pool_free(dma_pool, tx_desc_tab, tx_desc_tab_phys);
+> +		tx_desc_tab = NULL;
+> +	}
+> +	if (!ports_open && dma_pool) {
+> +		dma_pool_destroy(dma_pool);
+> +		dma_pool = NULL;
+> +	}
 > +}
 > +
-> +
-> +
-> +
-> +int wbuf_read(struct super_block *sb, u64 ofs, size_t len, void *buf)
+> +static int eth_load_firmware(struct net_device *dev, struct npe *npe)
 > +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	struct logfs_area *area;
-> +	u32 segno = ofs >> super->s_segshift;
+> +	struct msg msg;
+> +	int err;
+> +
+> +	if ((err = npe_load_firmware(npe, npe_name(npe), &dev->dev)) != 0)
+> +		return err;
+> +
+> +	if ((err = npe_recv_message(npe, &msg, "ETH_GET_STATUS")) != 0) {
+> +		printk(KERN_ERR "%s: %s not responding\n", dev->name,
+> +		       npe_name(npe));
+> +		return err;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static int eth_open(struct net_device *dev)
+> +{
+> +	struct port *port = netdev_priv(dev);
+> +	struct npe *npe = port->npe;
+> +	struct msg msg;
 > +	int i, err;
 > +
-> +	err = mtdread(sb, ofs, len, buf);
-> +	if (err)
+> +	if (!npe_running(npe))
+> +		if (eth_load_firmware(dev, npe))
+> +			return -EIO;
+> +
+> +	if (!npe_running(mdio_npe))
+> +		if (eth_load_firmware(dev, mdio_npe))
+> +			return -EIO;
+> +
+> +	memset(&msg, 0, sizeof(msg));
+> +	msg.cmd = NPE_VLAN_SETRXQOSENTRY;
+> +	msg.eth_id = port->id;
+> +	msg.byte5 = port->plat->rxq | 0x80;
+> +	msg.byte7 = port->plat->rxq << 4;
+> +	for (i = 0; i < 8; i++) {
+> +		msg.byte3 = i;
+> +		if (npe_send_recv_message(port->npe, &msg, "ETH_SET_RXQ"))
+> +			return -EIO;
+> +	}
+> +
+> +	msg.cmd = NPE_EDB_SETPORTADDRESS;
+> +	msg.eth_id = PHYSICAL_ID(port);
+> +	memcpy(msg.mac, dev->dev_addr, ETH_ALEN);
+> +	if (npe_send_recv_message(port->npe, &msg, "ETH_SET_MAC"))
+> +		return -EIO;
+> +
+> +	memset(&msg, 0, sizeof(msg));
+> +	msg.cmd = NPE_FW_SETFIREWALLMODE;
+> +	msg.eth_id = port->id;
+> +	if (npe_send_recv_message(port->npe, &msg, "ETH_SET_FIREWALL_MODE"))
+> +		return -EIO;
+> +
+> +	if ((err = request_queues(port)) != 0)
 > +		return err;
 > +
-> +	for (i=0; i<LOGFS_NO_AREAS; i++) {
-
-	i = 0; ...
-
-> +		area = super->s_area[i];
-> +		if (area->a_segno == segno) {
-> +			fixup_from_wbuf(sb, area, buf, ofs, len);
-> +			break;
-> +		}
+> +	if ((err = init_queues(port)) != 0) {
+> +		destroy_queues(port);
+> +		release_queues(port);
+> +		return err;
 > +	}
+> +
+> +	for (i = 0; i < ETH_ALEN; i++)
+> +		__raw_writel(dev->dev_addr[i], &port->regs->hw_addr[i]);
+> +	__raw_writel(0x08, &port->regs->random_seed);
+> +	__raw_writel(0x12, &port->regs->partial_empty_threshold);
+> +	__raw_writel(0x30, &port->regs->partial_full_threshold);
+> +	__raw_writel(0x08, &port->regs->tx_start_bytes);
+> +	__raw_writel(0x15, &port->regs->tx_deferral);
+> +	__raw_writel(0x08, &port->regs->tx_2part_deferral[0]);
+> +	__raw_writel(0x07, &port->regs->tx_2part_deferral[1]);
+> +	__raw_writel(0x80, &port->regs->slot_time);
+> +	__raw_writel(0x01, &port->regs->int_clock_threshold);
+> +	__raw_writel(TX_CNTRL1_RETRIES, &port->regs->tx_control[1]);
+> +	__raw_writel(TX_CNTRL0_TX_EN | TX_CNTRL0_RETRY | TX_CNTRL0_PAD_EN |
+> +		     TX_CNTRL0_APPEND_FCS | TX_CNTRL0_2DEFER,
+> +		     &port->regs->tx_control[0]);
+> +	__raw_writel(0, &port->regs->rx_control[1]);
+> +	__raw_writel(RX_CNTRL0_RX_EN | RX_CNTRL0_PADSTRIP_EN,
+> +		     &port->regs->rx_control[0]);
+> +
+> +	if (mii_check_media(&port->mii, 1, 1))
+> +		eth_set_duplex(port);
+> +	eth_set_mcast_list(dev);
+> +	netif_start_queue(dev);
+> +	schedule_delayed_work(&port->mdio_thread, MDIO_INTERVAL);
+> +
+> +	qmgr_set_irq(port->plat->rxq, QUEUE_IRQ_SRC_NOT_EMPTY,
+> +		     eth_rx_irq, dev);
+> +	qmgr_set_irq(TX_QUEUE(port->plat), QUEUE_IRQ_SRC_NOT_FULL,
+> +		     eth_xmit_ready_irq, dev);
+> +	qmgr_enable_irq(port->plat->rxq);
+> +	qmgr_enable_irq(TX_QUEUE(port->plat));
+> +	ports_open++;
 > +	return 0;
 > +}
 > +
-> +
-> +int logfs_segment_read(struct super_block *sb, void *buf, u64 ofs)
+> +static int eth_close(struct net_device *dev)
 > +{
-> +	struct logfs_object_header *h;
-> +	u16 len;
-> +	int err, bs = sb->s_blocksize;
+> +	struct port *port = netdev_priv(dev);
 > +
-> +	mutex_lock(&compr_mutex);
-> +	err = wbuf_read(sb, ofs, bs+24, compressor_buf);
-> +	if (err)
-> +		goto out;
-> +	h = (void*)compressor_buf;
-
-
-	please use proper typecasts
-
-> +	len = be16_to_cpu(h->len);
+> +	ports_open--;
+> +	qmgr_disable_irq(port->plat->rxq);
+> +	qmgr_disable_irq(TX_QUEUE(port->plat));
+> +	netif_stop_queue(dev);
 > +
-> +	switch (h->compr) {
-> +	case COMPR_NONE:
-> +		logfs_memcpy(compressor_buf+24, buf, bs, bs);
+> +	clr_regbits(RX_CNTRL0_RX_EN, &port->regs->rx_control[0]);
+> +	clr_regbits(TX_CNTRL0_TX_EN, &port->regs->tx_control[0]);
+> +	set_regbits(CORE_RESET | CORE_RX_FIFO_FLUSH | CORE_TX_FIFO_FLUSH,
+> +		    &port->regs->core_control);
+> +	udelay(10);
+> +	clr_regbits(CORE_RESET | CORE_RX_FIFO_FLUSH | CORE_TX_FIFO_FLUSH,
+> +		    &port->regs->core_control);
+> +
+> +	cancel_rearming_delayed_work(&port->mdio_thread);
+> +	destroy_queues(port);
+> +	release_queues(port);
+> +	return 0;
+> +}
+> +
+> +static int __devinit eth_init_one(struct platform_device *pdev)
+> +{
+> +	struct port *port;
+> +	struct net_device *dev;
+> +	struct mac_plat_info *plat = pdev->dev.platform_data;
+> +	u32 regs_phys;
+> +	int err;
+> +
+> +	if (!(dev = alloc_etherdev(sizeof(struct port))))
+> +		return -ENOMEM;
+> +
+> +	SET_MODULE_OWNER(dev);
+> +	SET_NETDEV_DEV(dev, &pdev->dev);
+> +	port = netdev_priv(dev);
+> +	port->netdev = dev;
+> +	port->id = pdev->id;
+> +
+> +	switch (port->id) {
+> +	case IXP4XX_ETH_NPEA:
+> +		port->regs = (struct eth_regs __iomem *)IXP4XX_EthA_BASE_VIRT;
+> +		regs_phys  = IXP4XX_EthA_BASE_PHYS;
 > +		break;
-> +	case COMPR_ZLIB:
-> +		err = logfs_uncompress(compressor_buf+24, buf, len, bs);
-> +		BUG_ON(err);
+> +	case IXP4XX_ETH_NPEB:
+> +		port->regs = (struct eth_regs __iomem *)IXP4XX_EthB_BASE_VIRT;
+> +		regs_phys  = IXP4XX_EthB_BASE_PHYS;
+> +		break;
+> +	case IXP4XX_ETH_NPEC:
+> +		port->regs = (struct eth_regs __iomem *)IXP4XX_EthC_BASE_VIRT;
+> +		regs_phys  = IXP4XX_EthC_BASE_PHYS;
 > +		break;
 > +	default:
-> +		LOGFS_BUG(sb);
+> +		err = -ENOSYS;
+> +		goto err_free;
 > +	}
-> +out:
-> +	mutex_unlock(&compr_mutex);
+> +
+> +	dev->open = eth_open;
+> +	dev->hard_start_xmit = eth_xmit;
+> +	dev->poll = eth_poll;
+> +	dev->stop = eth_close;
+> +	dev->get_stats = eth_stats;
+> +	dev->do_ioctl = eth_ioctl;
+> +	dev->set_multicast_list = eth_set_mcast_list;
+> +	dev->weight = 16;
+> +	dev->tx_queue_len = 100;
+> +
+> +	if (!(port->npe = npe_request(NPE_ID(port)))) {
+> +		err = -EIO;
+> +		goto err_free;
+> +	}
+> +
+> +	if (register_netdev(dev)) {
+> +		err = -EIO;
+> +		goto err_npe_rel;
+> +	}
+> +
+> +	port->mem_res = request_mem_region(regs_phys, REGS_SIZE, dev->name);
+> +	if (!port->mem_res) {
+> +		err = -EBUSY;
+> +		goto err_unreg;
+> +	}
+> +
+> +	port->plat = plat;
+> +	memcpy(dev->dev_addr, plat->hwaddr, ETH_ALEN);
+
+I think my comment about adding randomised MAC addresses in case of  
+no hwaddr stands - it's really not that complex.
+
+Christian's driver did this:
+
+	/* The place of the MAC address is very system dependent.
+	 * Here we use a random one to be replaced by one of the
+	 * following commands:
+	 * "ip link set address 02:03:04:04:04:01 dev eth0"
+	 * "ifconfig eth0 hw ether 02:03:04:04:04:07"
+	*/
+
+	if (is_zero_ether_addr(plat->hwaddr)) {
+		random_ether_addr(dev->dev_addr);
+		dev->dev_addr[5] = plat->phy_id;
+	}
+	else
+		memcpy(dev->dev_addr, plat->hwaddr, 6);
+
+> +
+> +	platform_set_drvdata(pdev, dev);
+> +
+> +	__raw_writel(CORE_RESET, &port->regs->core_control);
+> +	udelay(50);
+> +	__raw_writel(CORE_MDC_EN, &port->regs->core_control);
+> +	udelay(50);
+> +
+> +	port->mii.dev = dev;
+> +	port->mii.mdio_read = mdio_read;
+> +	port->mii.mdio_write = mdio_write;
+> +	port->mii.phy_id = plat->phy;
+> +	port->mii.phy_id_mask = 0x1F;
+> +	port->mii.reg_num_mask = 0x1F;
+> +
+> +	INIT_DELAYED_WORK(&port->mdio_thread, mdio_thread);
+> +
+> +	printk(KERN_INFO "%s: MII PHY %i on %s\n", dev->name, plat->phy,
+> +	       npe_name(port->npe));
+> +	return 0;
+> +
+> +err_unreg:
+> +	unregister_netdev(dev);
+> +err_npe_rel:
+> +	npe_release(port->npe);
+> +err_free:
+> +	free_netdev(dev);
 > +	return err;
 > +}
 > +
+> +static int __devexit eth_remove_one(struct platform_device *pdev)
+> +{
+> +	struct net_device *dev = platform_get_drvdata(pdev);
+> +	struct port *port = netdev_priv(dev);
 > +
-> +static u64 logfs_block_mask[] = {
-> +	~0,
-> +	~(I1_BLOCKS-1),
-> +	~(I2_BLOCKS-1),
-> +	~(I3_BLOCKS-1)
+> +	unregister_netdev(dev);
+> +	platform_set_drvdata(pdev, NULL);
+> +	npe_release(port->npe);
+> +	release_resource(port->mem_res);
+> +	free_netdev(dev);
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver drv = {
+> +	.driver.name	= DRV_NAME,
+> +	.probe		= eth_init_one,
+> +	.remove		= eth_remove_one,
 > +};
-
-Empty line please
-
-> +static int check_pos(struct super_block *sb, u64 pos1, u64 pos2, int level)
+> +
+> +static int __init eth_init_module(void)
 > +{
-> +	LOGFS_BUG_ON(	(pos1 & logfs_block_mask[level]) !=
-> +			(pos2 & logfs_block_mask[level]), sb);
-> +}
-
-empty line
-
-> +int logfs_segment_delete(struct inode *inode, u64 ofs, u64 pos, int level)
-> +{
-> +	struct super_block *sb = inode->i_sb;
-> +	struct logfs_object_header *h;
-> +	u16 len;
-> +	int err;
+> +	if (!(ixp4xx_read_fuses() & IXP4XX_FUSE_NPEB_ETH0))
+> +		return -ENOSYS;
 > +
+> +	/* All MII PHY accesses use NPE-B Ethernet registers */
+> +	if (!(mdio_npe = npe_request(1)))
+> +		return -EIO;
+> +	spin_lock_init(&mdio_lock);
+> +	mdio_regs = (struct eth_regs __iomem *)IXP4XX_EthB_BASE_VIRT;
 > +
-> +	mutex_lock(&compr_mutex);
-> +	err = wbuf_read(sb, ofs, 4096+24, compressor_buf);
-> +	LOGFS_BUG_ON(err, sb);
-> +	h = (void*)compressor_buf;
-
-	proper typecast
-
-> +	len = be16_to_cpu(h->len);
-> +	check_pos(sb, pos, be64_to_cpu(h->pos), level);
-> +	mutex_unlock(&compr_mutex);
-> +
-> +	level = adj_level(inode->i_ino, level);
-> +	len = (level==0) ? len : sb->s_blocksize;
-> +	logfs_remove_bytes(inode, len + sizeof(*h));
-> +	return 0;
+> +	return platform_driver_register(&drv);
 > +}
 > +
-> +
-> +int logfs_open_area(struct logfs_area *area)
+> +static void __exit eth_cleanup_module(void)
 > +{
-> +	if (area->a_is_open)
-> +		return 0; /* nothing to do */
-
-	yeah, another really helpful comment
-
-> +	area->a_ops->get_free_segment(area);
-> +	area->a_used_objects = 0;
-> +	area->a_used_bytes = 0;
-> +	area->a_ops->get_erase_count(area);
-> +
-> +	area->a_ops->clear_blocks(area);
-> +	area->a_is_open = 1;
-> +
-> +	return area->a_ops->erase_segment(area);
+> +	platform_driver_unregister(&drv);
+> +	npe_release(mdio_npe);
 > +}
 > +
+> +MODULE_AUTHOR("Krzysztof Halasa");
+> +MODULE_DESCRIPTION("Intel IXP4xx Ethernet driver");
+> +MODULE_LICENSE("GPL v2");
+> +module_init(eth_init_module);
 
-> +static void ostore_get_free_segment(struct logfs_area *area)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(area->a_sb);
-> +	struct logfs_segment *seg;
-> +
-> +	BUG_ON(list_empty(&super->s_free_list));
-> +
-> +	seg = list_entry(super->s_free_list.prev, struct logfs_segment, list);
-> +	list_del(&seg->list);
-> +	area->a_segno = seg->segno;
-> +	kfree(seg);
-> +	super->s_free_count -= 1;
+For our flash and eeprom notifiers to work, we need this converted to  
+a late_initcall:
+http://trac.nslu2-linux.org/kernel/browser/trunk/patches/2.6.21/37- 
+ixp4xx-net-driver-fix-mac-handling.patch
 
-get_free_segment actually kfree's a segment ? Please use a less
-misleading function name
+akpm suggested this fix, but we don't absolutely know if it's  
+upstream acceptable.
 
-> +}
+> +module_exit(eth_cleanup_module);
+> diff --git a/drivers/net/wan/Kconfig b/drivers/net/wan/Kconfig
+> index 5f79622..b891e10 100644
+> --- a/drivers/net/wan/Kconfig
+> +++ b/drivers/net/wan/Kconfig
+> @@ -342,6 +342,16 @@ config DSCC4_PCI_RST
+>
+>  	  Say Y if your card supports this feature.
+>
+> +config IXP4XX_HSS
+> +	tristate "IXP4xx HSS (synchronous serial port) support"
+> +	depends on ARM && ARCH_IXP4XX
+> +	select IXP4XX_NPE
+> +	select IXP4XX_QMGR
+> +	select HDLC
+> +	help
+> +	  Say Y here if you want to use built-in HSS ports
+> +	  on IXP4xx processor.
 > +
+>  config DLCI
+>  	tristate "Frame Relay DLCI support"
+>  	---help---
+> diff --git a/drivers/net/wan/Makefile b/drivers/net/wan/Makefile
+> index d61fef3..1b1d116 100644
+> --- a/drivers/net/wan/Makefile
+> +++ b/drivers/net/wan/Makefile
+> @@ -42,6 +42,7 @@ obj-$(CONFIG_C101)		+= c101.o
+>  obj-$(CONFIG_WANXL)		+= wanxl.o
+>  obj-$(CONFIG_PCI200SYN)		+= pci200syn.o
+>  obj-$(CONFIG_PC300TOO)		+= pc300too.o
+> +obj-$(CONFIG_IXP4XX_HSS)	+= ixp4xx_hss.o
+>
+>  clean-files := wanxlfw.inc
+>  $(obj)/wanxl.o:	$(obj)/wanxlfw.inc
+> diff --git a/drivers/net/wan/ixp4xx_hss.c b/drivers/net/wan/ 
+> ixp4xx_hss.c
+> new file mode 100644
+> index 0000000..ed56ed8
+> --- /dev/null
+> +++ b/drivers/net/wan/ixp4xx_hss.c
+> @@ -0,0 +1,1048 @@
+> +/*
+> + * Intel IXP4xx HSS (synchronous serial port) driver for Linux
+> + *
+> + * Copyright (C) 2007 Krzysztof Halasa <khc@pm.waw.pl>
+> + *
+> + * This program is free software; you can redistribute it and/or  
+> modify it
+> + * under the terms of version 2 of the GNU General Public License
+> + * as published by the Free Software Foundation.
+> + */
 > +
-> +static void ostore_get_erase_count(struct logfs_area *area)
-> +{
-> +	struct logfs_segment_header h;
+> +#include <linux/dma-mapping.h>
+> +#include <linux/dmapool.h>
+> +#include <linux/kernel.h>
+> +#include <linux/hdlc.h>
+> +#include <linux/platform_device.h>
+> +#include <asm/io.h>
+> +#include <asm/arch/npe.h>
+> +#include <asm/arch/qmgr.h>
 > +
-> +	device_read(area->a_sb, area->a_segno, 0, sizeof(h), &h);
+> +#ifndef __ARMEB__
+> +#warning Little endian mode not supported
+> +#endif
 
-	error handling
-
-> +	area->a_erase_count = be32_to_cpu(h.ec) + 1;
-> +}
-> +
-> +
-> +
-> +static int ostore_erase_segment(struct logfs_area *area)
-> +{
-> +	struct logfs_segment_header h;
-> +	u64 ofs;
-> +	int err;
-> +
-> +	err = logfs_erase_segment(area->a_sb, area->a_segno);
-> +	if (err)
-> +		return err;
-> +
-> +	h.len = 0;
-> +	h.type = OBJ_OSTORE;
-> +	h.level = area->a_level;
-> +	h.segno = cpu_to_be32(area->a_segno);
-> +	h.ec = cpu_to_be32(area->a_erase_count);
-> +	h.gec = cpu_to_be64(LOGFS_SUPER(area->a_sb)->s_gec);
-> +	h.crc = logfs_crc32(&h, sizeof(h), 4);
-> +	/* FIXME: write it out */
-
-	isn't that what buf_write() does ?
-
-> +	ofs = dev_ofs(area->a_sb, area->a_segno, 0);
-> +	area->a_used_bytes = sizeof(h);
-> +	return buf_write(area, ofs, &h, sizeof(h));
-> +}
-> +
-> +
-> +static void flush_buf(struct logfs_area *area)
-> +{
-> +	struct super_block *sb = area->a_sb;
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	u32 used, free;
-> +	u64 ofs;
-> +	u32 writemask = super->s_writesize - 1;
-> +	int err;
-> +
-> +	ofs = dev_ofs(sb, area->a_segno, area->a_used_bytes);
-> +	ofs &= ~writemask;
-> +	used = area->a_used_bytes & writemask;
-> +	free = super->s_writesize - area->a_used_bytes;
-> +	free &= writemask;
-> +	//printk("flush(%llx, %x, %x)\n", ofs, used, free);
-
-	sigh
-
-> +	if (used == 0)
-> +		return;
-> +
-> +	TRACE();
-
-	sigh more
-
-> +	memset(area->a_wbuf + used, 0xff, free);
-> +	err = mtdwrite(sb, ofs, super->s_writesize, area->a_wbuf);
-> +	LOGFS_BUG_ON(err, sb);
-> +}
-> +
+Personally I'm less fussed about WAN / LE support. Anyone with any  
+sense will run ixp4xx boards doing such a specialised network  
+operation as BE. Also, NSLU2-Linux can't test this functionality with  
+our LE setup as we don't have this hardware on-board. You may just  
+want to declare a depends on ARMEB in Kconfig (with or without OR  
+(ARM || BROKEN) ) and have done with it - it's up to you.
 
 > +
+> +#define DEBUG_QUEUES		0
+> +#define DEBUG_RX		0
+> +#define DEBUG_TX		0
 > +
-> +int logfs_init_areas(struct super_block *sb)
-> +{
-> +	struct logfs_super *super = LOGFS_SUPER(sb);
-> +	int i;
+> +#define DRV_NAME		"ixp4xx_hss"
+> +#define DRV_VERSION		"0.03"
 > +
-> +	super->s_journal_area = kzalloc(sizeof(struct logfs_area), GFP_KERNEL);
-> +	if (!super->s_journal_area)
-> +		return -ENOMEM;
-> +	super->s_journal_area->a_sb = sb;
+> +#define PKT_EXTRA_FLAGS		0 /* orig 1 */
+> +#define FRAME_SYNC_OFFSET	0 /* unused, channelized only */
+> +#define FRAME_SYNC_SIZE		1024
+> +#define PKT_NUM_PIPES		1 /* 1, 2 or 4 */
+> +#define PKT_PIPE_FIFO_SIZEW	4 /* total 4 dwords per HSS */
 > +
-> +	for (i=0; i<LOGFS_NO_AREAS; i++) {
-	i = 0; ..
+> +#define RX_DESCS		16 /* also length of queues: RX-ready, RX */
+> +#define TX_DESCS		16 /* also length of queues: TX-done, TX */
+> +
+> +#define POOL_ALLOC_SIZE		(sizeof(struct desc) * (RX_DESCS +  
+> TX_DESCS))
+> +#define RX_SIZE			(HDLC_MAX_MRU + 4) /* NPE needs more space */
+> +
+> +/* Queue IDs */
+> +#define HSS0_CHL_RXTRIG_QUEUE	12	/* orig size = 32 dwords */
+> +#define HSS0_PKT_RX_QUEUE	13	/* orig size = 32 dwords */
+> +#define HSS0_PKT_TX0_QUEUE	14	/* orig size = 16 dwords */
+> +#define HSS0_PKT_TX1_QUEUE	15
+> +#define HSS0_PKT_TX2_QUEUE	16
+> +#define HSS0_PKT_TX3_QUEUE	17
+> +#define HSS0_PKT_RXFREE0_QUEUE	18	/* orig size = 16 dwords */
+> +#define HSS0_PKT_RXFREE1_QUEUE	19
+> +#define HSS0_PKT_RXFREE2_QUEUE	20
+> +#define HSS0_PKT_RXFREE3_QUEUE	21
+> +#define HSS0_PKT_TXDONE_QUEUE	22	/* orig size = 64 dwords */
+> +
+> +#define HSS1_CHL_RXTRIG_QUEUE	10
+> +#define HSS1_PKT_RX_QUEUE	0
+> +#define HSS1_PKT_TX0_QUEUE	5
+> +#define HSS1_PKT_TX1_QUEUE	6
+> +#define HSS1_PKT_TX2_QUEUE	7
+> +#define HSS1_PKT_TX3_QUEUE	8
+> +#define HSS1_PKT_RXFREE0_QUEUE	1
+> +#define HSS1_PKT_RXFREE1_QUEUE	2
+> +#define HSS1_PKT_RXFREE2_QUEUE	3
+> +#define HSS1_PKT_RXFREE3_QUEUE	4
+> +#define HSS1_PKT_TXDONE_QUEUE	9
+> +
+> +#define NPE_PKT_MODE_HDLC		0
+> +#define NPE_PKT_MODE_RAW		1
+> +#define NPE_PKT_MODE_56KMODE		2
+> +#define NPE_PKT_MODE_56KENDIAN_MSB	4
+> +
+> +/* PKT_PIPE_HDLC_CFG_WRITE flags */
+> +#define PKT_HDLC_IDLE_ONES		0x1 /* default = flags */
+> +#define PKT_HDLC_CRC_32			0x2 /* default = CRC-16 */
+> +#define PKT_HDLC_MSB_ENDIAN		0x4 /* default = LE */
+> +
+> +
+> +/* hss_config, PCRs */
+> +/* Frame sync sampling, default = active low */
+> +#define PCR_FRM_SYNC_ACTIVE_HIGH	0x40000000
+> +#define PCR_FRM_SYNC_FALLINGEDGE	0x80000000
+> +#define PCR_FRM_SYNC_RISINGEDGE		0xC0000000
+> +
+> +/* Frame sync pin: input (default) or output generated off a given  
+> clk edge */
+> +#define PCR_FRM_SYNC_OUTPUT_FALLING	0x20000000
+> +#define PCR_FRM_SYNC_OUTPUT_RISING	0x30000000
+> +
+> +/* Frame and data clock sampling on edge, default = falling */
+> +#define PCR_FCLK_EDGE_RISING		0x08000000
+> +#define PCR_DCLK_EDGE_RISING		0x04000000
+> +
+> +/* Clock direction, default = input */
+> +#define PCR_SYNC_CLK_DIR_OUTPUT		0x02000000
+> +
+> +/* Generate/Receive frame pulses, default = enabled */
+> +#define PCR_FRM_PULSE_DISABLED		0x01000000
+> +
+> + /* Data rate is full (default) or half the configured clk speed */
+> +#define PCR_HALF_CLK_RATE		0x00200000
+> +
+> +/* Invert data between NPE and HSS FIFOs? (default = no) */
+> +#define PCR_DATA_POLARITY_INVERT	0x00100000
+> +
+> +/* TX/RX endianness, default = LSB */
+> +#define PCR_MSB_ENDIAN			0x00080000
+> +
+> +/* Normal (default) / open drain mode (TX only) */
+> +#define PCR_TX_PINS_OPEN_DRAIN		0x00040000
+> +
+> +/* No framing bit transmitted and expected on RX? (default =  
+> framing bit) */
+> +#define PCR_SOF_NO_FBIT			0x00020000
+> +
+> +/* Drive data pins? */
+> +#define PCR_TX_DATA_ENABLE		0x00010000
+> +
+> +/* Voice 56k type: drive the data pins low (default), high, high Z */
+> +#define PCR_TX_V56K_HIGH		0x00002000
+> +#define PCR_TX_V56K_HIGH_IMP		0x00004000
+> +
+> +/* Unassigned type: drive the data pins low (default), high, high  
+> Z */
+> +#define PCR_TX_UNASS_HIGH		0x00000800
+> +#define PCR_TX_UNASS_HIGH_IMP		0x00001000
+> +
+> +/* T1 @ 1.544MHz only: Fbit dictated in FIFO (default) or high Z */
+> +#define PCR_TX_FB_HIGH_IMP		0x00000400
+> +
+> +/* 56k data endiannes - which bit unused: high (default) or low */
+> +#define PCR_TX_56KE_BIT_0_UNUSED	0x00000200
+> +
+> +/* 56k data transmission type: 32/8 bit data (default) or 56K data */
+> +#define PCR_TX_56KS_56K_DATA		0x00000100
+> +
+> +/* hss_config, cCR */
+> +/* Number of packetized clients, default = 1 */
+> +#define CCR_NPE_HFIFO_2_HDLC		0x04000000
+> +#define CCR_NPE_HFIFO_3_OR_4HDLC	0x08000000
+> +
+> +/* default = no loopback */
+> +#define CCR_LOOPBACK			0x02000000
+> +
+> +/* HSS number, default = 0 (first) */
+> +#define CCR_SECOND_HSS			0x01000000
+> +
+> +
+> +/* hss_config, clkCR: main:10, num:10, denom:12 */
+> +#define CLK42X_SPEED_EXP	((0x3FF << 22) | (  2 << 12) |   15) /*65  
+> KHz*/
+> +
+> +#define CLK42X_SPEED_512KHZ	((  130 << 22) | (  2 << 12) |   15)
+> +#define CLK42X_SPEED_1536KHZ	((   43 << 22) | ( 18 << 12) |   47)
+> +#define CLK42X_SPEED_1544KHZ	((   43 << 22) | ( 33 << 12) |  192)
+> +#define CLK42X_SPEED_2048KHZ	((   32 << 22) | ( 34 << 12) |   63)
+> +#define CLK42X_SPEED_4096KHZ	((   16 << 22) | ( 34 << 12) |  127)
+> +#define CLK42X_SPEED_8192KHZ	((    8 << 22) | ( 34 << 12) |  255)
+> +
+> +#define CLK46X_SPEED_512KHZ	((  130 << 22) | ( 24 << 12) |  127)
+> +#define CLK46X_SPEED_1536KHZ	((   43 << 22) | (152 << 12) |  383)
+> +#define CLK46X_SPEED_1544KHZ	((   43 << 22) | ( 66 << 12) |  385)
+> +#define CLK46X_SPEED_2048KHZ	((   32 << 22) | (280 << 12) |  511)
+> +#define CLK46X_SPEED_4096KHZ	((   16 << 22) | (280 << 12) | 1023)
+> +#define CLK46X_SPEED_8192KHZ	((    8 << 22) | (280 << 12) | 2047)
+> +
+> +
+> +/* hss_config, LUTs: default = unassigned */
+> +#define TDMMAP_HDLC		1	/* HDLC - packetised */
+> +#define TDMMAP_VOICE56K		2	/* Voice56K - channelised */
+> +#define TDMMAP_VOICE64K		3	/* Voice64K - channelised */
+> +
+> +
+> +/* NPE command codes */
+> +/* writes the ConfigWord value to the location specified by offset */
+> +#define PORT_CONFIG_WRITE			0x40
+> +
+> +/* triggers the NPE to load the contents of the configuration  
+> table */
+> +#define PORT_CONFIG_LOAD			0x41
+> +
+> +/* triggers the NPE to return an HssErrorReadResponse message */
+> +#define PORT_ERROR_READ				0x42
+> +
+> +/* reset NPE internal status and enable the HssChannelized  
+> operation */
+> +#define CHAN_FLOW_ENABLE			0x43
+> +#define CHAN_FLOW_DISABLE			0x44
+> +#define CHAN_IDLE_PATTERN_WRITE			0x45
+> +#define CHAN_NUM_CHANS_WRITE			0x46
+> +#define CHAN_RX_BUF_ADDR_WRITE			0x47
+> +#define CHAN_RX_BUF_CFG_WRITE			0x48
+> +#define CHAN_TX_BLK_CFG_WRITE			0x49
+> +#define CHAN_TX_BUF_ADDR_WRITE			0x4A
+> +#define CHAN_TX_BUF_SIZE_WRITE			0x4B
+> +#define CHAN_TSLOTSWITCH_ENABLE			0x4C
+> +#define CHAN_TSLOTSWITCH_DISABLE		0x4D
+> +
+> +/* downloads the gainWord value for a timeslot switching channel  
+> associated
+> +   with bypassNum */
+> +#define CHAN_TSLOTSWITCH_GCT_DOWNLOAD		0x4E
+> +
+> +/* triggers the NPE to reset internal status and enable the  
+> HssPacketized
+> +   operation for the flow specified by pPipe */
 
-> +		super->s_area[i] = init_ostore_area(sb, i);
-> +		if (!super->s_area[i])
-> +			goto err;
-> +	}
-> +	return 0;
-> +
-> +err:
-> +	for (i--; i>=0; i--)
+Greater-than-one-line comments not conforming to Kernel coding style  
+- someone much more angry than me will jump on that.
 
-	same here
+> +#define PKT_PIPE_FLOW_ENABLE			0x50
+> +#define PKT_PIPE_FLOW_DISABLE			0x51
+> +#define PKT_NUM_PIPES_WRITE			0x52
+> +#define PKT_PIPE_FIFO_SIZEW_WRITE		0x53
+> +#define PKT_PIPE_HDLC_CFG_WRITE			0x54
+> +#define PKT_PIPE_IDLE_PATTERN_WRITE		0x55
+> +#define PKT_PIPE_RX_SIZE_WRITE			0x56
+> +#define PKT_PIPE_MODE_WRITE			0x57
+> +
+> +
 
-> +		cleanup_ostore_area(super->s_area[i]);
-> +	kfree(super->s_journal_area);
-> +	return -ENOMEM;
-> +}
-> +
-> +
-> +void logfs_cleanup_areas(struct logfs_super *super)
-> +{
-> +	int i;
-> +
-> +	for (i=0; i<LOGFS_NO_AREAS; i++)
+Lots of double returns.
 
-	adnd here
+> +#define HSS_TIMESLOTS		128
+> +#define HSS_LUT_BITS		2
+> +
+> +/* HDLC packet status values - desc->status */
+> +#define ERR_SHUTDOWN		1 /* stop or shutdown occurrance */
+> +#define ERR_HDLC_ALIGN		2 /* HDLC alignment error */
+> +#define ERR_HDLC_FCS		3 /* HDLC Frame Check Sum error */
+> +#define ERR_RXFREE_Q_EMPTY	4 /* RX-free queue became empty while  
+> receiving
+> +				     this packet (if buf_len < pkt_len) */
+> +#define ERR_HDLC_TOO_LONG	5 /* HDLC frame size too long */
+> +#define ERR_HDLC_ABORT		6 /* abort sequence received */
+> +#define ERR_DISCONNECTING	7 /* disconnect is in progress */
+> +
+> +
+> +struct port {
+> +	struct npe *npe;
+> +	struct net_device *netdev;
+> +	struct hss_plat_info *plat;
+> +	struct sk_buff *rx_skb_tab[RX_DESCS], *tx_skb_tab[TX_DESCS];
+> +	struct desc *desc_tab;	/* coherent */
+> +	u32 desc_tab_phys;
+> +	sync_serial_settings settings;
+> +	int id;
+> +	u8 hdlc_cfg;
+> +};
+> +
 
-> +		cleanup_ostore_area(super->s_area[i]);
-> +	kfree(super->s_journal_area);
-> +}
-> --- /dev/null	2007-04-18 05:32:26.652341749 +0200
-> +++ linux-2.6.21logfs/fs/logfs/memtree.c	2007-05-07 13:32:12.000000000 +0200
-> @@ -0,0 +1,199 @@
-> +/* In-memory B+Tree. */
+[snip]
 
-license and a little bit more description
+Again, looking good.
 
-> +#include "logfs.h"
-> +
-> +#define BTREE_NODES 16	/* 32bit, 128 byte cacheline */
-> +//#define BTREE_NODES 8	/* 32bit,  64 byte cacheline */
-
-Please cleanup
-
-> +void *btree_lookup(struct btree_head *head, long val)
-> +{
-> +	int i, height = head->height;
-> +	struct btree_node *node = head->node;
-> +
-> +	if (val == 0)
-> +		return head->null_ptr;
-> +
-> +	if (height == 0)
-> +		return NULL;
-> +
-> +	for ( ; height > 1; height--) {
-> +		for (i=0; i<BTREE_NODES; i++)
-> +			if (node[i].val <= val)
-> +				break;
-> +		node = node[i].node;
-> +	}
-> +
-> +	for (i=0; i<BTREE_NODES; i++)
-
-	i = 0; ...
-
-> +		if (node[i].val == val)
-> +			return node[i].node;
-> +
-> +	return NULL;
-> +}
-> +
-> +
-> +static void find_pos(struct btree_node *node, long val, int *pos, int *fill)
-> +{
-> +	int i;
-> +
-> +	for (i=0; i<BTREE_NODES; i++)
-	
-same
-
-> +		if (node[i].val <= val)
-> +			break;
-> +	*pos = i;
-> +	for (i=*pos; i<BTREE_NODES; i++)
-
-same
-
-> +		if (node[i].val == 0)
-> +			break;
-> +	*fill = i;
-> +}
-> +
-> +
-> +static struct btree_node *find_level(struct btree_head *head, long val,
-> +		int level)
-> +{
-> +	struct btree_node *node = head->node;
-> +	int i, height = head->height;
-> +
-> +	for ( ; height > level; height--) {
-> +		for (i=0; i<BTREE_NODES; i++)
-
-same
-
-> +			if (node[i].val <= val)
-> +				break;
-> +		node = node[i].node;
-> +	}
-> +	return node;
-> +}
-> +
-> +
-> +
-> +static int btree_remove_level(struct btree_head *head, long val, int level)
-> +{
-> +	struct btree_node *node;
-> +	int i, pos, fill;
-> +
-> +	if (val == 0) { /* 0 identifies empty slots, so special-case this */
-> +		head->null_ptr = NULL;
-> +		return 0;
-> +	}
-> +
-> +	node = find_level(head, val, level);
-> +	find_pos(node, val, &pos, &fill);
-> +	if (level == 1)
-> +		BUG_ON(node[pos].val != val);
-> +
-> +	/* remove and shift */
-> +	for (i=pos; i<fill-1; i++) {
-> +		node[i].val = node[i+1].val;
-> +		node[i].node = node[i+1].node;
-> +	}
-> +	node[fill-1].val = 0;
-> +	node[fill-1].node = NULL;
-> +
-> +	if (fill-1 < BTREE_NODES/2) {
-> +		/* XXX */
-
-	YYYY perhaps ?
-
-> +	}
-> +	if (fill-1 == 0) {
-> +		btree_remove_level(head, val, level+1);
-> +		kfree(node);
-> +		return 0;
-> +	}
-> +
-> +	return 0;
-> +}
-
+Michael-Luke Jones
 
