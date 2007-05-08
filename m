@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967027AbXEHMpK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967085AbXEHMrK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967027AbXEHMpK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:45:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934595AbXEHMpG
+	id S967085AbXEHMrK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:47:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966951AbXEHMrJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:45:06 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:37831 "EHLO smtps.tip.net.au"
+	Tue, 8 May 2007 08:47:09 -0400
+Received: from tim.rpsys.net ([194.106.48.114]:51033 "EHLO tim.rpsys.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934673AbXEHMpE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:45:04 -0400
-Date: Tue, 8 May 2007 22:44:59 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Thomas Klein <osstklei@de.ibm.com>
-Cc: Jeff Garzik <jeff@garzik.org>, Thomas Klein <tklein@de.ibm.com>,
-       Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Christoph Raisch <raisch@de.ibm.com>,
-       Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-       linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
-Subject: Re: [PATCH] ehea: Receive SKB Aggregation
-Message-Id: <20070508224459.7a46e1e4.sfr@canb.auug.org.au>
-In-Reply-To: <200705081405.33742.osstklei@de.ibm.com>
-References: <200705081405.33742.osstklei@de.ibm.com>
-X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
+	id S967008AbXEHMrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:47:08 -0400
+Subject: Re: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
+From: Richard Purdie <rpurdie@rpsys.net>
+To: kogiidena@eggplant.ddo.jp
+Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
+In-Reply-To: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp>
+References: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 13:46:47 +0100
+Message-Id: <1178628407.6061.24.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__8_May_2007_22_44_59_+1000_2D.TR.V1=VgSWO2="
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__8_May_2007_22_44_59_+1000_2D.TR.V1=VgSWO2=
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Tue, 2007-05-08 at 21:27 +0900, kogiidena wrote:
+> I wrote LED Blink Trigger. Pleas apply if there is no problem.
+> 
+> This allows LEDs to be controlled by a programmable timer.
+> "blink" blinks LED at a constant cycle.
+> "bitshift" turns LED or Buzzer on and off by the value of pattern.
+> 
+> Kernel version: linux-2.6.21-rc4
+> Signed-off-by: kogiidena <kogiidena@eggplant.ddo.jp>
 
-On Tue, 8 May 2007 14:05:33 +0200 Thomas Klein <osstklei@de.ibm.com> wrote:
->
-> +struct ehea_lro {
-> +	struct sk_buff *parent;
-> +	struct sk_buff *last_skb;
-> +        struct iphdr *iph;
-> +        struct tcphdr *tcph;
-   ^^^^^^^^
-Spaces instead of tabs.
+As far as I can tell, the existing timer trigger can do everything the
+blink trigger can (and more besides). The driver looks like it would be
+a lot easier to read if it just contained the bitshift trigger. To be
+accepted, the bitshift trigger needs more documentation, particularly
+the Kconfig entry. Its not clear for example that the bits are just
+shifted once and don't repeat. Most people would probably want it to
+repeat and with a repeat mode, it might be able to replace the heartbeat
+trigger too?
 
-Also in at least one other place in this patch.
+Regards,
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Richard
 
---Signature=_Tue__8_May_2007_22_44_59_+1000_2D.TR.V1=VgSWO2=
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGQHDRFdBgD/zoJvwRAjwxAJ9UTT3P1RuptBk7k8kJXiwDQ9g4/QCgjyrM
-NRwkVc8qbfnHZoI31ZxMCo4=
-=gY89
------END PGP SIGNATURE-----
 
---Signature=_Tue__8_May_2007_22_44_59_+1000_2D.TR.V1=VgSWO2=--
