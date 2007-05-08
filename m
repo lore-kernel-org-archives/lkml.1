@@ -1,59 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032151AbXEHVCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032108AbXEHVF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032151AbXEHVCq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032145AbXEHVCn
+	id S1032108AbXEHVF4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967801AbXEHVFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:02:43 -0400
-Received: from lazybastard.de ([212.112.238.170]:39834 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031630AbXEHVCm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:02:42 -0400
-Date: Tue, 8 May 2007 22:58:27 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH 1/2] LogFS proper
-Message-ID: <20070508205827.GC23056@lazybastard.org>
-References: <20070507215913.GA15054@lazybastard.org> <20070507220036.GB15054@lazybastard.org> <1178608950.3042.273.camel@localhost.localdomain> <20070508163226.GA22443@lazybastard.org> <84144f020705081215t73f2c0fq8ecb677423329cd8@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <84144f020705081215t73f2c0fq8ecb677423329cd8@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 8 May 2007 17:05:53 -0400
+Received: from gw.goop.org ([64.81.55.164]:60336 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967789AbXEHVFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:05:52 -0400
+Message-ID: <4640E62D.8060704@goop.org>
+Date: Tue, 08 May 2007 14:05:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: David Rientjes <rientjes@google.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH] doc: volatile considered evil
+References: <516386418.20070501080839@gmail.com>	<20070430235642.e576e917.akpm@linux-foundation.org>	<20070508121404.17bd97a6.randy.dunlap@oracle.com>	<alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com> <m3k5vj2iha.fsf@maximus.localdomain>
+In-Reply-To: <m3k5vj2iha.fsf@maximus.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 22:15:18 +0300, Pekka Enberg wrote:
-> On 5/8/07, Jörn Engel <joern@lazybastard.org> wrote:
-> >> > +typedef __be16 be16;
-> >> > +typedef __be32 be32;
-> >> > +typedef __be64 be64;
-> >>
-> >> Why are those typedefs necessary ?
-> >
-> >Not strictly.  I tend to use the be* types fairly often in the code and
-> >simply grew weary of seeing the underscores.
-> >
-> >Any objections if I seperate out the userspace headers and keep the
-> >shorthands for kernel code only?
-> 
-> Not sure what you mean but I would prefer you drop the typedefs completely.
+Krzysztof Halasa wrote:
+> David Rientjes <rientjes@google.com> writes:
+>
+>   
+>> Since 'volatile' has two different semantics depending on the context in 
+>> which it is used, this warning should be appended to include the fact that 
+>> it is legitimate to use for inline assembly.
+>>     
+>
+> I think it hasn't two semantics, it's like arguing that char has two
+> semantics.
+>   
 
-Basically I prefer be64 over __be64 for similar reasons that most people
-prefer u64 over __u64.  Others prefer uint64_t over both, but C99 hasn't
-defined beint64_t yet.
+No, David means that "asm volatile (...)" is meaningful and OK to use.
 
-Maybe I should secretly patch include/linux/types.h to add these three
-lines and bribe akpm's evil twin to merge that?  It definitely makes
-more sense to have such a typedef in generic code or not at all.
-
-Jörn
-
--- 
-Audacity augments courage; hesitation, fear.
--- Publilius Syrus
+    J
