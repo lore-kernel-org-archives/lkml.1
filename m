@@ -1,126 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966418AbXEHRHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934384AbXEHRIa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966418AbXEHRHl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 13:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934131AbXEHRHl
+	id S934384AbXEHRIa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 13:08:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934116AbXEHRI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 13:07:41 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:54954 "EHLO atlrel6.hp.com"
+	Tue, 8 May 2007 13:08:29 -0400
+Received: from mx.laposte.net ([81.255.54.16]:63063 "EHLO mx.laposte.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934182AbXEHRHj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 13:07:39 -0400
-Subject: Re: [PATCH] change zonelist order v5 [2/3] automatic configuration
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, clameter@sgi.com,
-       akpm@linux-foundation.org, ak@suse.de, jbarnes@virtuousgeek.org
-In-Reply-To: <20070508201819.99f499df.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
-	 <20070508201819.99f499df.kamezawa.hiroyu@jp.fujitsu.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Tue, 08 May 2007 13:07:35 -0400
-Message-Id: <1178644056.5203.28.camel@localhost>
+	id S933903AbXEHRI3 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 13:08:29 -0400
+Subject: Re: [PATCH] x86-64 highres/dyntick support
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1178551705.3042.6.camel@localhost.localdomain>
+References: <1178485128.31213.98.camel@localhost.localdomain>
+	 <loom.20070507T111514-504@post.gmane.org>
+	 <1178551705.3042.6.camel@localhost.localdomain>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Organization: Adresse perso
+Date: Tue, 08 May 2007 19:08:21 +0200
+Message-Id: <1178644101.2743.0.camel@rousalka.dyndns.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-08 at 20:18 +0900, KAMEZAWA Hiroyuki wrote:
-> Add auto zone ordering configuration.
+Le lundi 07 mai 2007 à 17:28 +0200, Thomas Gleixner a écrit :
+> On Mon, 2007-05-07 at 09:16 +0000, Nicolas Mailhot wrote:
+> > Thomas Gleixner <tglx <at> linutronix.de> writes:
+> > 
+> > > 
+> > > I'm pleased to announce the first cut of the final x86_64
+> > > highres/dyntick support, which I did based on Chris Wright's patch set,
+> > > which is again based on Arjan van de Ven's initial work:
+> > 
+> > Do you have a 2.6.21-mm1 patchset?
 > 
-> This function will select ZONE_ORDER_NODE when
-> 
-> There are only ZONE_DMA or ZONE_DMA32.
-> || size of (ZONE_DMA/DMA32) > (System Total Memory)/2
-> || Assume Node(A)
-> 	Node (A) is enough big &&
-> 	Node (A)'s ZONE_DMA/DMA32 occupies 60% of Node(A)'s memory.
-> 	(In this case, ZONE_ORDER_ZONE may not offer enough locality...)
-> 
-> otherwise, ZONE_ORDER_ZONE is selected.
-> 
-> Maybe there is no best and simple way to configure zone order. I wrote this base on
-> my experience and discussion on the list.
-> 
-> Anyway, a user can specifiy zone order from boot option/sysctl.
-> 
-> Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> 
+> Not yet, but it should be halfways easy to do one. Stay tuned.
 
-Acked-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+Ok, tuning now
 
-> ---
->  mm/page_alloc.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 49 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6.21-mm1/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.21-mm1.orig/mm/page_alloc.c
-> +++ linux-2.6.21-mm1/mm/page_alloc.c
-> @@ -2248,8 +2248,55 @@ static void build_zonelists_in_zone_orde
->  
->  static int default_zonelist_order(void)
->  {
-> -	/* dummy, just select node order. */
-> -	return ZONELIST_ORDER_NODE;
-> +	int nid, zone_type;
-> +	unsigned long low_kmem_size,total_size;
-> +	struct zone *z;
-> +	int average_size;
-> +	/*
-> +         * ZONE_DMA and ZONE_DMA32 can be very small area in the sytem.
-> +	 * If they are really small and used heavily, the system can fall
-> +	 * into OOM very easily.
-> +	 * This function detect ZONE_DMA/DMA32 size and confgigures zone order.
-> +	 */
-> +	/* Is there ZONE_NORMAL ? (ex. ppc has only DMA zone..) */
-> +	low_kmem_size = 0;
-> +	total_size = 0;
-> +	for_each_online_node(nid) {
-> +		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
-> +			z = &NODE_DATA(nid)->node_zones[zone_type];
-> +			if (populated_zone(z)) {
-> +				if (zone_type < ZONE_NORMAL)
-> +					low_kmem_size += z->present_pages;
-> +				total_size += z->present_pages;
-> +			}
-> +		}
-> +	}
-> +	if (!low_kmem_size ||  /* there are no DMA area. */
-> +	    low_kmem_size > total_size/2) /* DMA/DMA32 is big. */
-> +		return ZONELIST_ORDER_NODE;
-> +	/*
-> +	 * look into each node's config.
-> +  	 * If there is a node whose DMA/DMA32 memory is very big area on
-> + 	 * local memory, NODE_ORDER may be suitable.
-> +         */
-> +	average_size = total_size / (num_online_nodes() + 1);
-> +	for_each_online_node(nid) {
-> +		low_kmem_size = 0;
-> +		total_size = 0;
-> +		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
-> +			z = &NODE_DATA(nid)->node_zones[zone_type];
-> +			if (populated_zone(z)) {
-> +				if (zone_type < ZONE_NORMAL)
-> +					low_kmem_size += z->present_pages;
-> +				total_size += z->present_pages;
-> +			}
-> +		}
-> +		if (low_kmem_size &&
-> +		    total_size > average_size && /* ignore small node */
-> +		    low_kmem_size > total_size * 70/100)
-> +			return ZONELIST_ORDER_NODE;
-> +	}
-> +	return ZONELIST_ORDER_ZONE;
->  }
->  
-> 
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+Thanks
 
+-- 
+Nicolas Mailhot
