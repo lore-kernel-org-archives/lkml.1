@@ -1,60 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934758AbXEHWVz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934796AbXEHWYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934758AbXEHWVz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:21:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934658AbXEHWVv
+	id S934796AbXEHWYh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934779AbXEHWYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:21:51 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:51836
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934620AbXEHWVu (ORCPT
+	Tue, 8 May 2007 18:24:34 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:43403 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934778AbXEHWYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:21:50 -0400
-Message-ID: <46410577.2070202@microgate.com>
-Date: Tue, 08 May 2007 17:19:19 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] synclink_gt add compat_ioctl
-References: <1178215277.4369.6.camel@amdx2.microgate.com> <200705060227.29450.arnd@arndb.de> <1178658843.4152.12.camel@x2.microgate.com> <200705090007.53613.arnd@arndb.de>
-In-Reply-To: <200705090007.53613.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 18:24:33 -0400
+Date: Wed, 9 May 2007 00:24:32 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Chris Wedgwood <cw@f00f.org>
+Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [x86-64] Add getcpu and epoll_pwait system calls.
+Message-ID: <20070508222432.GA15029@one.firstfloor.org>
+References: <20070508185145.B9A8E1827261@tuatara.stupidest.org> <20070508221348.GC17482@one.firstfloor.org> <20070508221656.GA6850@tuatara.stupidest.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070508221656.GA6850@tuatara.stupidest.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> To solve this, you can to change include/linux/Kbuild to list
-> synclink.h as unifdef-y instead of header-y, and put the parts
-> that you don't want to be in user space inside of #ifdef __KERNEL__.
+On Tue, May 08, 2007 at 03:16:56PM -0700, Chris Wedgwood wrote:
+> On Wed, May 09, 2007 at 12:13:48AM +0200, Andi Kleen wrote:
 > 
-> Alternatively, you can put these kernel-internal definitions into
-> a private header file in drivers/char that does not get installed
-> in the first place. That would be particularly useful if you can
-> also move other parts of linux/synclink.h into the private header,
-> when they are not part of the external ABI.
+> > Nope.  There already is a getcpu vsyscall. This is not needed.
+> 
+> The kbuild magic that checks for missing syscalls needs to be taught
+> about this then I take it?
+> 
 
-Understood. That is the last piece to the puzzle.
+Somehow yes.  But i'm not going to add a useless syscall just to shut it up.
 
-I think the first approach would be better as
-synclink.h is all interface definitions. The kernel
-specific parts are in the individual synclink drivers
-(such as register definitions, etc). The only exception
-to this is now the ioctl32 structures and I would hate
-to break out a whole new header just for that.
-
-Thanks again for your targeted and informative help.
-(Thanks to Andrew for your patience in dealing
-with a patch that never should have been submitted.)
-
---
-Paul
-
-
-
-
-
-
+-Andi
