@@ -1,54 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967382AbXEHLsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967392AbXEHLuL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967382AbXEHLsU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 07:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967353AbXEHLsQ
+	id S967392AbXEHLuL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 07:50:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967381AbXEHLuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 07:48:16 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:49968 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967340AbXEHLsP (ORCPT
+	Tue, 8 May 2007 07:50:07 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:36718 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S967338AbXEHLuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 07:48:15 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=ULx6FuhkKyV4BgvEEIWwkZRGZS/Nwo1ynmLGz5W2+xxrYM9dUHQoM4v2bt3Sk
-	D8nRQQ69gtfT/HHXyKA4jJtdg==
-Date: Tue, 8 May 2007 13:48:11 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Christian Hohnstaedt <chohnstaedt@innominate.com>,
-       Michael-Luke Jones <mlj28@cam.ac.uk>, netdev@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Russell King <rmk@arm.linux.org.uk>, Jeff Garzik <jeff@garzik.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] Intel IXP4xx network drivers
-Message-ID: <20070508114811.GB32146@xi.wantstofly.org>
-References: <m3abwhcy74.fsf@maximus.localdomain> <m3vef5biob.fsf@maximus.localdomain> <5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk> <m3hcqoa772.fsf@maximus.localdomain> <20070507175213.GU23611@tweety> <m3y7k08kvf.fsf@maximus.localdomain>
+	Tue, 8 May 2007 07:50:06 -0400
+Date: Tue, 8 May 2007 12:54:11 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: righiandr@users.sourceforge.net
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm@kvack.org
+Subject: Re: [RFC][PATCH] VM: per-user overcommit policy
+Message-ID: <20070508125411.07de2340@the-village.bc.nu>
+In-Reply-To: <463FACF9.2080301@users.sourceforge.net>
+References: <463F764E.5050009@users.sourceforge.net>
+	<20070507212322.6d60210b@the-village.bc.nu>
+	<463FACF9.2080301@users.sourceforge.net>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m3y7k08kvf.fsf@maximus.localdomain>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 10:00:20PM +0200, Krzysztof Halasa wrote:
+> When $VERY_CRITICAL_DAEMON dies *all* the users blame the sysadmin [me]. If a
+> user application dies because a malloc() returns NULL, the sysadmin [I] can
+> blame the user saying: "hey! _you_ tried to hog the machine and _your_
+> application is not able to handle the NULL result of the malloc()s!"... :-)
 
-> > - the NPE can also be used as DMA engine and for crypto operations.
-> >   Both are not network related.
-> >   Additionally, the NPE is not only ixp4xx related, but is
-> >   also used in IXP23xx CPUs, so it could be placed in
-> >   arch/arm/common or arch/arm/xscale ?
-> >
-> > - The MAC is used on IXP23xx, too. So the drivers for
-> >   both CPU familys only differ in the way they exchange
-> >   network packets between the NPE and the kernel.
-> 
-> Hmm... perhaps someone have a spare device with such IXP23xx
-> and wants to make it a donation for science? :-)
+If you allow overcommit by the daemons and not user space then some of
+the time you will still get out of memory kills which may well hit your
+daemon process.
 
-I have a couple of ixp23xx boards at home, but I'm not sure whether I
-can give them away.  I can give you remote access to them, though.
+> A solution could be to define the critical processes unkillable via
+> /proc/<pid>/oom_adj, but the per-process approach doesn't resolve all the
+> possible cases and it's quite difficult to manage in big environments, like HPC
+> clusters.
+
+If you are running no overcommit you should never get an out of memory
+kill.
+
+> Anyway, it seems that I need to deepen my knowledge about the recent development
+> of process containers and openvz...
+
+I think that does what you need - you'd create containers for critical
+services and for the users and split resources to protect one from the
+other.
