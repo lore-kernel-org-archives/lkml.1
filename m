@@ -1,62 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967294AbXEHLdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967329AbXEHLh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967294AbXEHLdY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 07:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934566AbXEHLdV
+	id S967329AbXEHLh0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 07:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967111AbXEHLh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 07:33:21 -0400
-Received: from [212.12.190.181] ([212.12.190.181]:33122 "EHLO raad.intranet"
-	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934519AbXEHLdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 07:33:20 -0400
-From: Al Boldi <a1426z@gawab.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: Execute in place
-Date: Tue, 8 May 2007 14:36:11 +0300
-User-Agent: KMail/1.5
-Cc: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <200705030211.36293.a1426z@gawab.com> <200705072356.51283.a1426z@gawab.com> <4640137A.8030000@zytor.com>
-In-Reply-To: <4640137A.8030000@zytor.com>
+	Tue, 8 May 2007 07:37:26 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:33211 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966371AbXEHLhZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 07:37:25 -0400
+Message-ID: <464060EF.8090501@zytor.com>
+Date: Tue, 08 May 2007 04:37:19 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Al Boldi <a1426z@gawab.com>
+CC: Dmitry Krivoschekov <dmitry.krivoschekov@gmail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Execute in place
+References: <200705030211.36293.a1426z@gawab.com> <200705072356.51283.a1426z@gawab.com> <4640137A.8030000@zytor.com> <200705081436.11928.a1426z@gawab.com>
+In-Reply-To: <200705081436.11928.a1426z@gawab.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705081436.11928.a1426z@gawab.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Al Boldi wrote:
-> >> What you're talking about is, *and should be*, a different filesystem.
-> >> You will relatively quickly find that you have to deal with the same
-> >> kind of stuff that you have to in any filesystem.
-> >
-> > That's exactly what I want to avoid, as this would introduce a
-> > performance penalty.
-> >
-> > All we need is a periodically synced tmpfs to mmap, with a minimal
-> > stream into page-cache algo on mount.
->
-> ... which would be completely useless, because you wouldn't get any sort
-> of coherency; you would have pointers pointing into space, etc. etc.
+Al Boldi wrote:
+> 
+> You don't really think that anybody is suggesting to store the tmpfs data 
+> without any coherency, do you?
+> 
+> I am suggesting that you can easily isolate tmpfs coherency from the rest of 
+> the page-cache, by simply streaming tmpfs data out to an mmap and plugging 
+> it with the tmpfs fat on umount.  And streaming things back in on mount.
+> 
 
-You don't really think that anybody is suggesting to store the tmpfs data 
-without any coherency, do you?
+You still don't get it, do you?
 
-I am suggesting that you can easily isolate tmpfs coherency from the rest of 
-the page-cache, by simply streaming tmpfs data out to an mmap and plugging 
-it with the tmpfs fat on umount.  And streaming things back in on mount.
+tmpfs metadata doesn't live in the pagecache.
 
-> Sorry, it's useless.
-
-Persisting tmpfs is useful for the mere case of saving you the need to 
-repopulate on mount.
-
-
-Thanks!
-
---
-Al
-
+	-hpa
