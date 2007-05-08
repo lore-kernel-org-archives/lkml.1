@@ -1,124 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967304AbXEHLSb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967315AbXEHLSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967304AbXEHLSb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 07:18:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967241AbXEHLSa
+	id S967315AbXEHLSn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 07:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967301AbXEHLSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 07:18:30 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36208 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967293AbXEHLS0 (ORCPT
+	Tue, 8 May 2007 07:18:41 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4839 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967311AbXEHLSk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 07:18:26 -0400
-Date: Tue, 8 May 2007 20:19:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, Lee.Schermerhorn@hp.com,
-       clameter@sgi.com, akpm@linux-foundation.org, ak@suse.de,
-       jbarnes@virtuousgeek.org
-Subject: [PATCH] change zonelist order v5 [3/3] documentation
-Message-Id: <20070508201904.0ee47ca2.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 May 2007 07:18:40 -0400
+Message-ID: <46405C92.1080003@shadowen.org>
+Date: Tue, 08 May 2007 12:18:42 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Shani Moideen <shani.moideen@wipro.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       kernel-janitors@lists.osdl.org
+Subject: Re: [KJ PATCH] Replacing memset(<addr>,0,PAGE_SIZE) with clear_page()
+ in mm/memory.c
+References: <1178621156.3598.10.camel@shani-win>
+In-Reply-To: <1178621156.3598.10.camel@shani-win>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patch for documentation.
+Shani Moideen wrote:
+> Hi,
+> 
+> Replacing memset(<addr>,0,PAGE_SIZE) with clear_page() in mm/memory.c.
+> 
+> Signed-off-by: Shani Moideen <shani.moideen@wipro.com>
+> ----
+> 
+> thanks.
+> 
+> 
+> diff --git a/mm/memory.c b/mm/memory.c
+> index e7066e7..2780d07 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -1505,7 +1505,7 @@ static inline void cow_user_page(struct page *dst, struct page *src, unsigned lo
+>                  * zeroes.
+>                  */
+>                 if (__copy_from_user_inatomic(kaddr, uaddr, PAGE_SIZE))
+> -                       memset(kaddr, 0, PAGE_SIZE);
+> +                       clear_page(kaddr);
+>                 kunmap_atomic(kaddr, KM_USER0);
+>                 flush_dcache_page(dst);
+>                 return;
+> 
+> 
 
-Signed-Off-By: KAMEZAWA hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+This looks to be whitespace dammaged?
 
+-apw
 
----
- Documentation/kernel-parameters.txt |   10 +++++++
- Documentation/sysctl/vm.txt         |   48 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 58 insertions(+)
-
-Index: linux-2.6.21-mm1/Documentation/kernel-parameters.txt
-===================================================================
---- linux-2.6.21-mm1.orig/Documentation/kernel-parameters.txt
-+++ linux-2.6.21-mm1/Documentation/kernel-parameters.txt
-@@ -1233,6 +1233,16 @@ and is between 256 and 4096 characters. 
- 
- 	nr_uarts=	[SERIAL] maximum number of UARTs to be registered.
- 
-+	numa_zonelist_oder= [KNL,BOOT]
-+			Select zonelist order for NUMA. zonelist is used for
-+			desiding where the kernel allocates memory from.
-+			Default is automatic configuration. If "node" is
-+			specified, zonelist is ordered by locality. This can
-+			offer the best locality but possibility of OOM may
-+			increase.  If "zone" is specified, the zonelist is
-+			ordered by zone_type.
-+			See Documentaion/sysctl/vm.txt numa_zonelist_order.
-+			
- 	opl3=		[HW,OSS]
- 			Format: <io>
- 
-Index: linux-2.6.21-mm1/Documentation/sysctl/vm.txt
-===================================================================
---- linux-2.6.21-mm1.orig/Documentation/sysctl/vm.txt
-+++ linux-2.6.21-mm1/Documentation/sysctl/vm.txt
-@@ -35,6 +35,7 @@ Currently, these files are in /proc/sys/
- - stat_interval
- - readahead_ratio
- - readahead_hit_rate
-+- numa_zonelist_order
- 
- ==============================================================
- 
-@@ -293,3 +294,49 @@ Possible values can be:
- The larger value, the more capabilities, with more possible overheads.
- 
- The default value is 1.
-+
-+==============================================================
-+
-+numa_zonelist_order
-+
-+This sysctl is only for NUMA.
-+'where the memory is allocated from' is controlled by zonelist.
-+(This documentation ignores ZONE_HIGHMEM/ZONE_DMA32 for simple explanation.
-+ you may be able to read ZONE_DMA as ZONE_DMA32...)
-+
-+In non-NUMA case, a zonelist for GFP_KERNEL is ordered as following.
-+ZONE_NORMAL -> ZONE_DMA
-+This means that a memory allocation request for GFP_KERNEL will
-+get memory from ZONE_DMA only when ZONE_NORMAL is not available.
-+
-+In NUMA case, you can think of following 2 types of order.
-+Assume 2 node NUMA and below is zonelist of Node(0)'s GFP_KERNEL
-+
-+(A) Node(0) ZONE_NORMAL -> Node(0) ZONE_DMA -> Node(1) ZONE_NORMAL
-+(B) Node(0) ZONE_NORMAL -> Node(1) ZONE_NORMAL -> Node(0) ZONE_DMA.
-+
-+Type(A) offers the best locality for processes on Node(0), but ZONE_DMA
-+will be used before ZONE_NORMAL exhaustion. This increases possibility of
-+out-of-memory(OOM) of ZONE_DMA because ZONE_DMA is tend to be small.
-+
-+Type(B) cannot offer the best locality but very robust against OOM of DMA zone.
-+
-+Type(A) is called as "Node" order. Type (B) is "Zone" order.
-+
-+"Node order" orders the zonelists by node, then by zone within each node.
-+This will offer the best locality but increases possibility of OOM.
-+Specify "[Nn]ode" for zone order
-+
-+"Zone Order"  preserves the DMA zone as long as possible but
-+results in off-node allocation [for node 0] earlier.
-+Specify "[Zz]one"for zode order.
-+
-+Specify "[Dd]efault" to request automatic configuration.  Autoconfiguration
-+will select "node" order in following case.
-+(1) if the DMA zone does not exist or
-+(2) if the DMA zone comprises greater than 50% of the available memory or
-+(3) if a node's DMA zone comprises greater than 60% of its local memory and
-+    the amount of local memory is enough big.
-+
-+Otherwise, "zone" order will be selected. Default order is recommended unless
-+unless this is causing problems for your system/application.
+use tabs not spaces
+PATCH: -:64:
+FILE: b/mm/memory.c:1508:
++                       clear_page(kaddr);$
 
