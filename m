@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032435AbXEHWAe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032447AbXEHWAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032435AbXEHWAe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:00:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032087AbXEHWAa
+	id S1032447AbXEHWAl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032441AbXEHWAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:00:30 -0400
-Received: from nz-out-0506.google.com ([64.233.162.233]:53448 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032082AbXEHWA1 (ORCPT
+	Tue, 8 May 2007 18:00:37 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:6768 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1032436AbXEHWAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:00:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lDGTxQI7UV3YZLIT1CBYRcJqK77GVtt+xmbMcTrjk5fk8tqqK2xdiT2UzbcTk15YMl6jO184mOo2cFuBxyAN9zvuqLw34AX9BcEL7Xu4kadnHmbbIZwA5MrHVaEXjjmTM5hhoxaVR9IbuUhja2jXph5se4s48dsBIRdCTvFAXeU=
-Message-ID: <86802c440705081500x682ee098y7d51f7bb98dbcff6@mail.gmail.com>
-Date: Tue, 8 May 2007 15:00:26 -0700
-From: yhlu <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
-Cc: vgoyal@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Gerd Hoffmann" <kraxel@redhat.com>, "Jeff Garzik" <jeff@garzik.org>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>
-In-Reply-To: <m1k5vji107.fsf@ebiederm.dsl.xmission.com>
+	Tue, 8 May 2007 18:00:34 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=OW1pcmVBC1bSR2Kadvdoak5/JPIkoKfys0TfeaeBmHYuwUEiTzl00/N/ORXWcTQ0g
+	1J0gEECctZHOTiV9GWtYw==
+Date: Tue, 8 May 2007 14:59:45 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [RFC/PATCH] doc: volatile considered evil
+In-Reply-To: <4640ED7D.708@goop.org>
+Message-ID: <alpine.DEB.0.99.0705081453350.25466@chino.kir.corp.google.com>
+References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org>
+ <20070508121404.17bd97a6.randy.dunlap@oracle.com>
+ <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com>
+ <4640E98B.4030107@goop.org> <alpine.DEB.0.99.0705081423500.24138@chino.kir.corp.google.com>
+ <4640ED7D.708@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <4634483E.9030307@goop.org> <46390523.5010809@goop.org>
-	 <463909AF.9040205@zytor.com> <20070503045031.GA5794@in.ibm.com>
-	 <m1tzuuv24z.fsf@ebiederm.dsl.xmission.com>
-	 <86802c440705080941y69ddd5d6lab170c5f3967f148@mail.gmail.com>
-	 <m1sla7i68s.fsf@ebiederm.dsl.xmission.com>
-	 <86802c440705081033s19365843i5b955ae175de73eb@mail.gmail.com>
-	 <86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>
-	 <m1k5vji107.fsf@ebiederm.dsl.xmission.com>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/8/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> You might try a git-bisect, or if it is just these patches
-> walking through them one-by-one.
+On Tue, 8 May 2007, Jeremy Fitzhardinge wrote:
 
-f82af20e1a028e16b9bb11da081fa1148d40fa6a is first bad commit
-commit f82af20e1a028e16b9bb11da081fa1148d40fa6a
-Author: Gerd Hoffmann <kraxel@suse.de>
-Date:   Wed May 2 19:27:19 2007 +0200
+> > 	In an asm construct, if all your input operands are modified and 
+> > 	specified as output operands as well, volatile must be added so 
+> > 	that the entire construct is not optimized away.  Additionally, 
+> > 	it must be added if your construct modifies memory that is neither 
+> > 	listed in inputs nor outputs to the construct so that it is known 
+> > 	to have at least one side-effect.
+> 
+> Hm.  Is "asm volatile" necessary if you have a "memory" clobber?  Would
+> probably be the safest thing, I guess.
+> 
 
-    [PATCH] x86-64: ignore vgacon if hardware not present
+No, because the first requirement for 'volatile' in my paragraph above is 
+restricted to clobbering specific hard registers and an operand cannot 
+describe a hard register for a member when that register appears in the 
+clobber list.  If an input operand is modified (i.e. not "accessed", 
+rather "modified" inclusive of the case where the previous value is the 
+same as the original value) then it must also be specified as an output 
+operand.
 
-    Avoid trying to set up vgacon if there's no vga hardware present.
+Now if all such output operands are to specify that the input operands 
+were "modified", 'volatile' is required to ensure the side-effects are 
+preserved or, otherwise, gcc is free optimize the entire asm construct 
+away since it appears to be unused.
 
-    Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-    Signed-off-by: Andi Kleen <ak@suse.de>
-    Cc: Alan <alan@lxorguk.ukuu.org.uk>
-    Acked-by: Ingo Molnar <mingo@elte.hu>
+> Yeah, they're completely different.  They're not even analogous, really,
+> which was my point.  People confer more meaning to "asm volatile" than
+> it actually has, because of the analogy with volatile variables/types. 
+> They would have been better off with something like "asm static", which
+> isn't much more meaningful, but at least it doesn't mislead the reader
+> into thinking it has anything to do with the other volatile.
+> 
 
-YH
+You're point about reordering "asm volatile" constructs differs depending 
+on -mvolatile-asm-stop or -mno-volatile-asm-stop, however.
+
+		David
