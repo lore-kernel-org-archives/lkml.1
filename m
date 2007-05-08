@@ -1,41 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967456AbXEHOeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968237AbXEHOe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967456AbXEHOeN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968146AbXEHOeL
+	id S968237AbXEHOe0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968067AbXEHOe0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:34:11 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:50932 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967455AbXEHOeK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:34:10 -0400
-Date: Tue, 8 May 2007 17:34:08 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: Rene Herman <rene.herman@gmail.com>
-cc: Andrew Morton <akpm@osdl.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: New Mitsumi legacy CD-ROM driver
-In-Reply-To: <46408662.5070003@gmail.com>
-Message-ID: <Pine.LNX.4.64.0705081731100.32530@sbz-30.cs.Helsinki.FI>
-References: <464045F0.3040906@gmail.com> <84144f020705080653i16d324c8pbd2925d844f400fc@mail.gmail.com>
- <46408662.5070003@gmail.com>
+	Tue, 8 May 2007 10:34:26 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:47662 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968233AbXEHOeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 10:34:24 -0400
+Date: Tue, 8 May 2007 18:42:37 +0400
+From: Alexey Dobriyan <adobriyan@sw.ru>
+To: Christoph Hellwig <hch@lst.de>, Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org, devel@openvz.org
+Subject: Re: [PATCH -utrace] Move utrace into task_struct
+Message-ID: <20070508144237.GB6130@localhost.sw.ru>
+References: <20070502113252.GA8017@localhost.sw.ru> <20070502220203.D73D21801A3@magilla.sf.frob.com> <20070503103449.GB6147@lst.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070503103449.GB6147@lst.de>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Rene Herman wrote:
-> I admit my DOS inspired dislike of realloc() is largely pointless these days
-> but, err... "E426: tag not found: krealloc". Would you perhaps like the list?
-> Or the if (tracks != mcd->tracks) thing?
+Regardless of future of "struct utrace utrace;" patch looks like there
+is another race: engine's flags and ops settings in utrace_detach() and
+acting on them in report_quiescent():
 
-The krealloc() API has been in current git for few days now. I suggested 
-it because I thought it would nicely fold the kfree() + kzalloc() pair 
-into a simple krealloc() call but the error handling makes it a total 
-mess. I think we need kzrealloc() in the kernel... ;-)
+utrace_detach()				report_quiescent()
+---------------				------------------
+[utrace lock held]			[utrace lock is not held]
 
-So please simply ignore my comment.
+engine->flags = UTRACE_EVENT(QUIESCE) |
+		UTRACE_ACTION_QUIESCE;
+					if (engine->flags & UTRACE_EVENT(QUIESCE))
+						REPORT(report_quiesce);
 
-				Pekka
+rcu_assign_pointer(engine->ops, &dead_engine_ops);
+
+
+At the moment of REPORT call engine's ops are still "live" ptrace ops
+which do not have ->report_quiesce callback. So, there will oops while
+calling function at NULL address. "Dead" ptrace engine ops do have dummy
+callback but it wasn't yet glued.
+
+I hit this once with "struct utrace utrace;" patch applied, but this
+bug is also present in stock utrace, I'm sure.
+
