@@ -1,39 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934796AbXEHWYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934813AbXEHWZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934796AbXEHWYh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934779AbXEHWYe
+	id S934813AbXEHWZs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934613AbXEHWZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:24:34 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43403 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934778AbXEHWYd (ORCPT
+	Tue, 8 May 2007 18:25:42 -0400
+Received: from caffeine.uwaterloo.ca ([129.97.134.17]:41211 "EHLO
+	caffeine.csclub.uwaterloo.ca" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S934456AbXEHWZm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:24:33 -0400
-Date: Wed, 9 May 2007 00:24:32 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Chris Wedgwood <cw@f00f.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [x86-64] Add getcpu and epoll_pwait system calls.
-Message-ID: <20070508222432.GA15029@one.firstfloor.org>
-References: <20070508185145.B9A8E1827261@tuatara.stupidest.org> <20070508221348.GC17482@one.firstfloor.org> <20070508221656.GA6850@tuatara.stupidest.org>
-Mime-Version: 1.0
+	Tue, 8 May 2007 18:25:42 -0400
+Date: Tue, 8 May 2007 18:25:40 -0400
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: CodingStyle: start flamewar about use of braces
+Message-ID: <20070508222540.GG8753@csclub.uwaterloo.ca>
+References: <200705081903.l48J3AOw010373@hera.kernel.org> <20070508124301.17975a4f.randy.dunlap@oracle.com> <4640E971.9050400@garzik.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070508221656.GA6850@tuatara.stupidest.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <4640E971.9050400@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 03:16:56PM -0700, Chris Wedgwood wrote:
-> On Wed, May 09, 2007 at 12:13:48AM +0200, Andi Kleen wrote:
+On Tue, May 08, 2007 at 05:19:45PM -0400, Jeff Garzik wrote:
+> >>+Do not unnecessarily use braces where a single statement will do.
+> >>+
+> >>+if (condition)
+> >>+	action();
+> >>+
+> >>+This does not apply if one branch of a conditional statement is a single
+> >>+statement. Use braces in both branches.
+> >>+
+> >>+if (condition) {
+> >>+	do_this();
+> >>+	do_that();
+> >>+} else {
+> >>+	otherwise();
+> >>+}
 > 
-> > Nope.  There already is a getcpu vsyscall. This is not needed.
-> 
-> The kbuild magic that checks for missing syscalls needs to be taught
-> about this then I take it?
-> 
+> If anyone tries to add braces to my code's 'else' statements where they 
+> are not required, that patch will get NAK'd in a heartbeat.
 
-Somehow yes.  But i'm not going to add a useless syscall just to shut it up.
+Oh isn't coding style fun.  I personally hate code that doesn't ALWAYS
+have the braces everywhere since it makes adding a print statement
+or other debuging to the condition such a pain since you then have to
+add braces to the condition to avoid breaking the code just to insert
+a print statement.  It is one of the few things I disagree with in the
+linux kernel coding style.
 
--Andi
+--
+Len Sorensen
