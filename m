@@ -1,68 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965509AbXEHI4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965908AbXEHI47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965509AbXEHI4g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 04:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934736AbXEHI4f
+	id S965908AbXEHI47 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 04:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965805AbXEHI45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 04:56:35 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:41510 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934730AbXEHI4e (ORCPT
+	Tue, 8 May 2007 04:56:57 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:41650 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965774AbXEHI4z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 04:56:34 -0400
-Message-ID: <46403AF3.9000300@wpkg.org>
-Date: Tue, 08 May 2007 10:55:15 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Tue, 8 May 2007 04:56:55 -0400
+Date: Tue, 8 May 2007 10:56:54 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RFC] Create a top-level "Space-critical features" menu.
+Message-ID: <20070508085654.GG4226@stusta.de>
+References: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain>
 MIME-Version: 1.0
-To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
-       netdev@vger.kernel.org, Michael Jones <mlj28@cam.ac.uk>,
-       Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-References: <464034CF.20700@wpkg.org> <f19298770705080148u70638ac2ue87241382681088@mail.gmail.com>
-In-Reply-To: <f19298770705080148u70638ac2ue87241382681088@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alexey Zaytsev schrieb:
-> On 5/8/07, Tomasz Chmielewski <mangoo@wpkg.org> wrote:
->> Michael Jones wrote:
->>
->> >> +#ifndef __ARMEB__
->> >> +#warning Little endian mode not supported
->> >> +#endif
->> >
->> > Personally I'm less fussed about WAN / LE support. Anyone with any
->> > sense will run ixp4xx boards doing such a specialised network
->> > operation as BE. Also, NSLU2-Linux can't test this functionality with
->> > our LE setup as we don't have this hardware on-board. You may just
->> > want to declare a depends on ARMEB in Kconfig (with or without OR
->> > (ARM || BROKEN) ) and have done with it - it's up to you.
->>
->> Christian Hohnstaedt's work did support LE though.
->>
->> Not all ixp4xx boards are by definition "doing such a specialised
->> network operation".
->>
+On Tue, May 08, 2007 at 04:06:30AM -0400, Robert P. J. Day wrote:
 > 
-> I was always curious, why do people want to run ixp4xx in LE mode? What
-> are the benefits that overweight the obvious performance degradation?
+>   i've always hated that lower-level menu under "General setup":
+> 
+> Configure standard kernel features (for small systems)  --->
+> 
+> which buries the choice of de-selecting features to save space one
+> level down without really explaining what it's all about.  so i just
+> shifted all of that up to the top under what i think is a more
+> meaningful name.
+> 
+>   this patch is also why i asked earlier why top-level menu entries
+> have no "help" text -- because, in this case, it would be useful for
+> someone looking at the config screen to see that choice and be able to
+> ask, "hey, i wonder what *that's* all about", and get help along the
+> lines of:
+> 
+>   "these features are normally selected but, if you're strapped for
+> space, such as with embedded systems, you might consider turning some
+> of them off.  if space isn't an issue, you might as well just leave
+> them as they are."  (or something like that.)
+>...
 
-I guess the main reason, at least for me, is that there is only one 
-distro that properly supports LE ARM: Debian.
+I'm against it:
 
-It greatly simplifies management/administration of a higher number of 
-devices, given the fact that Debian also supports other architectures 
-(not just x86/64, sometimes PPC, like most distros do).
+I don't have numbers, but I'd expect the vast majority of people 
+building kernels to be people with low kernel knowledge building for an 
+i386/x86_64 system.
 
+OTOH, people developing embedded systems are most likely more familiar 
+with kernel internals.
 
-Not always network performance is to most important factor.
+Kernel size doesn't matter that much for average desktop or server 
+systems, and most things for possible space savings behind hidden behind 
+EMBEDDED are things where you _really_ have to know what you are doing 
+when playing with these options.
 
+cu
+Adrian
 
 -- 
-Tomasz Chmielewski
-http://wpkg.org
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
