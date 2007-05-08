@@ -1,62 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968336AbXEHPq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968313AbXEHPtY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968336AbXEHPq4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 11:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934591AbXEHPp1
+	id S968313AbXEHPtY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 11:49:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966829AbXEHPtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 11:45:27 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:53260 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934572AbXEHPpH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 11:45:07 -0400
-Subject: Re: [git patches] libata reset sequence update
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: brking@linux.vnet.ibm.com
-Cc: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <46409865.9010204@linux.vnet.ibm.com>
-References: <20070508063820.GA13469@havoc.gtf.org>
-	 <46409865.9010204@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 08 May 2007 10:43:29 -0500
-Message-Id: <1178639009.3737.23.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 11:49:19 -0400
+Received: from twin.jikos.cz ([213.151.79.26]:53630 "EHLO twin.jikos.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965880AbXEHPtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 11:49:16 -0400
+Date: Tue, 8 May 2007 17:49:00 +0200 (CEST)
+From: Jiri Kosina <jikos@jikos.cz>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+cc: chris@pcburn.com, linux-kernel@vger.kernel.org,
+       Marcel Holtmann <marcel@holtmann.org>,
+       bluez-devel@lists.sourceforge.net, netdev@vger.kernel.org
+Subject: Re: Getting make net/built-in.o Error with 2.6.21.1 Build
+In-Reply-To: <a781481a0705071725i1d802dfejbcdaca4ab0a1ff55@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705081740550.16923@twin.jikos.cz>
+References: <463FB6B0.3070005@pcburn.com> <a781481a0705071725i1d802dfejbcdaca4ab0a1ff55@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-08 at 10:33 -0500, Brian King wrote:
-> Jeff Garzik wrote:
-> > This has been testing in -mm for a while, but I wanted to send it
-> > separated from the main libata update, since it has a chance of
-> > breakage.
-> > 
-> > Most notably, a cumulative timeout (deadline) helps the code from diving
-> > into overly-long reset sequences.
-> > 
-> > Please pull from 'reset-seq' branch of
-> > master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/libata-dev.git reset-seq
-> 
-> James,
-> 
-> FYI - this means you'll probably want to revert this patch:
-> 
-> http://git.kernel.org/gitweb.cgi?p=linux/kernel/git/jejb/scsi-misc-2.6.git;a=commitdiff;h=a6506b8e111c9bf9e430e32725b96c0
+On Tue, 8 May 2007, Satyam Sharma wrote:
 
-Jeff,
+> >   CC      init/version.o
+> >   LD      init/built-in.o
+> >   LD      .tmp_vmlinux1
+> > net/built-in.o: In function `hidp_add_connection':
+> > (.text+0x8bb08): undefined reference to `hid_ff_init'
+> > make: *** [.tmp_vmlinux1] Error 1
+> You've got CONFIG_BT_HIDP=y there but CONFIG_USB_HID=m. The trivial 
+> patch below solves it. To test, you can just "make oldconfig" on the 
+> same .config that broke above and then proceed to make bzImage.
 
-I'm not happy about this ... I specifically put that reversion in
-because you and Tejun told me the the reset change "is scheduled to be
-merged but not too soon."
+I'd say we need a different fix here. First, the question is whether there 
+are any force-feedback devices, supported by USBHID force-feedback layer, 
+which have a bluetooth version?
 
-Since you knew I'd taken action on the basis of that advice, could you
-at least cc me on the pull request that voids it?
+If there are none of them, we could just drop the FF initialization 
+completely for now. 
 
-I'll just pull it out of the scsi-misc tree.
+On the other hand if there are such devices, just calling hid_ff_init() is 
+presently not enough anyway, as the force feedback drivers for HID devices 
+are currently USB-transport specific.
 
-James
-
-
+-- 
+Jiri Kosina
