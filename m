@@ -1,102 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967426AbXEHNDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967473AbXEHNEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967426AbXEHNDr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 09:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966159AbXEHNDp
+	id S967473AbXEHNEM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 09:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967206AbXEHNEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 09:03:45 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:58293 "HELO
-	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with SMTP id S967264AbXEHNDo (ORCPT
+	Tue, 8 May 2007 09:04:10 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:57654 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967391AbXEHNEI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 09:03:44 -0400
-Date: Tue, 8 May 2007 17:07:59 +0400
-From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
-To: linux-kernel@vger.kernel.org
-Cc: kbaidarov@ru.mvista.com
-Subject: [PATCH] block:  generic_unplug_device implicitly makes irq enable
-Message-ID: <20070508170759.1c66352a@windmill.dev.rtsoft.ru>
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.19; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 May 2007 09:04:08 -0400
+Message-ID: <4640750B.4040801@s5r6.in-berlin.de>
+Date: Tue, 08 May 2007 15:03:07 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RFC] Create a top-level "Space-critical features" menu.
+References: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain> <1178612519.3042.294.camel@localhost.localdomain> <Pine.LNX.4.64.0705080431110.13403@localhost.localdomain> <Pine.LNX.4.61.0705081117051.17280@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705081117051.17280@yvahk01.tjqt.qr>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jan Engelhardt wrote:
+> On May 8 2007 04:41, Robert P. J. Day wrote:
+>>  in my opinion, the config option "EMBEDDED" is just plain silly.  as
+>>i mentioned earlier, there may be other reasons that people want to
+>>de-activate normally selected features rather than just for strictly
+>>embedded systems.
+> 
+> Did not you want to make a patch row that expresses all your ideas, aka
+>   CONFIG_EXPERT
+>   CONFIG_ASKFORDETAILS (former CONFIG_EMBEDDED, e.g. "place in memory where
+> kernel is loaded")
 
-while working on LKCD I found out common block device issue.
-LKCD uses generic_unplug_device() to finish disk IO in case of blockdev kernel core dump.
-I found out that after calling of generic_unplug_device() IRQs become implicitly enabled (it is supposed that IRQs are disabled).
-I looked at generic_unplug_device() code and found out that function lose state of irq flags, it use spin_lock_irq()/spin_unlock_irq() instead of spin_lock_irqsave()/spin_unlock_irqrestore():
-void generic_unplug_device(request_queue_t *q)
-{
-	spin_lock_irq(q->queue_lock);
-	__generic_unplug_device(q);
-	spin_unlock_irq(q->queue_lock);
-}
+Some of this might be better left to GUIs or HOWTOs.
 
-generic_unplug_device() - is a method to unplug the block device, named unplug_fn in struct request_queue.
-I've compared generic_unplug_device() with other methods:
-file drivers/md/raid5.c ...
-static void raid5_unplug_device(request_queue_t *q)
-{
-	mddev_t *mddev = q->queuedata;
-	raid5_conf_t *conf = mddev_to_conf(mddev);
-	unsigned long flags;
+>   CONFIG_OBSOLETE
+>   CONFIG_DEPRECATED
+> etc.? :)
+> 
+> 
+> 
+> Jan
 
-	spin_lock_irqsave(&conf->device_lock, flags);
 
-	if (blk_remove_plug(q)) {
-		conf->seq_flush++;
-		raid5_activate_delayed(conf);
-	}
-	md_wakeup_thread(mddev->thread);
-
-	spin_unlock_irqrestore(&conf->device_lock, flags);
-
-	unplug_slaves(mddev);
-}
-
-file drivers/block/umem.c ...
-static void mm_unplug_device(request_queue_t *q)
-{
-	struct cardinfo *card = q->queuedata;
-	unsigned long flags;
-
-	spin_lock_irqsave(&card->lock, flags);
-	if (blk_remove_plug(q))
-		activate(card);
-	spin_unlock_irqrestore(&card->lock, flags);
-}
-
-As you can see raid5_unplug_device() and mm_unplug_device() are using
-spin_lock_irqsave()/spin_unlock_irqrestore(), instead of spin_lock_irq()/spin_unlock_irq().
-I found out that generic_unplug_device() is used not only in LKCD, so I suggest to switch generic_unplug_device() to spin_lock_irqsave()/spin_unlock_irqrestore() to prevent implicitly losing of IRQ flags.
-Here is patch against kernel 2.6.21.1.
-Please CC me to answers/comments.
-Thanks.
-
-Signed-off-by: Konstantin Baydarov <kbaidarov@ru.mvista.com>
-
- block/ll_rw_blk.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.21.1/block/ll_rw_blk.c
-===================================================================
---- linux-2.6.21.1.orig/block/ll_rw_blk.c
-+++ linux-2.6.21.1/block/ll_rw_blk.c
-@@ -1602,9 +1602,11 @@ EXPORT_SYMBOL(__generic_unplug_device);
-  **/
- void generic_unplug_device(request_queue_t *q)
- {
--	spin_lock_irq(q->queue_lock);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(q->queue_lock, flags);
- 	__generic_unplug_device(q);
--	spin_unlock_irq(q->queue_lock);
-+	spin_unlock_irqrestore(q->queue_lock, flags);
- }
- EXPORT_SYMBOL(generic_unplug_device);
- 
+-- 
+Stefan Richter
+-=====-=-=== -=-= -=---
+http://arcgraph.de/sr/
