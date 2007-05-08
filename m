@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966394AbXEHJph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934596AbXEHJq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966394AbXEHJph (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 05:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934636AbXEHJpf
+	id S934596AbXEHJq0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 05:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966395AbXEHJqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 05:45:35 -0400
-Received: from www.osadl.org ([213.239.205.134]:56679 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934637AbXEHJpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 05:45:32 -0400
-Subject: Re: [PATCH 2/5] x86_64: __setup_APIC_LVTT whitespace fix
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070508094339.GU3505@sequoia.sous-sol.org>
-References: <1178485128.31213.98.camel@localhost.localdomain>
-	 <20070507163110.GP3505@sequoia.sous-sol.org>
-	 <1178556361.3042.16.camel@localhost.localdomain>
-	 <20070508093957.GS3505@sequoia.sous-sol.org>
-	 <20070508094339.GU3505@sequoia.sous-sol.org>
-Content-Type: text/plain
-Date: Tue, 08 May 2007 11:48:19 +0200
-Message-Id: <1178617700.3042.305.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 8 May 2007 05:46:25 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4765 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966403AbXEHJqY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 05:46:24 -0400
+Message-ID: <464046EC.40301@shadowen.org>
+Date: Tue, 08 May 2007 10:46:20 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>
+CC: linux-kernel@vger.kernel.org, Steve Fox <drfickle@us.ibm.com>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: 2.6.21-mm1 -- x86 verify_cpu.S compile failure
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-08 at 02:43 -0700, Chris Wright wrote:
-> Completely trivial one.
-> 
-> Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-> ---
->  arch/x86_64/kernel/apic.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> --- tglx.orig/arch/x86_64/kernel/apic.c
-> +++ tglx/arch/x86_64/kernel/apic.c
-> @@ -779,7 +779,7 @@ void __init init_apic_mappings(void)
->  
->  #define APIC_DIVISOR 16
->  
-> -static void __setup_APIC_LVTT(unsigned int clocks, int oneshot,int  irqen)
-> +static void __setup_APIC_LVTT(unsigned int clocks, int oneshot, int irqen)
->  {
->  	unsigned int lvtt_value, tmp_value;
->  
+We are seeing the following compile error on older x86 installs:
 
-Thanks,
+  arch/i386/kernel/verify_cpu.S: Assembler messages:
+  arch/i386/kernel/verify_cpu.S:13: Error: `(%esp)' is
+			 not a valid 16 bit base/index expression
 
-	tglx
+Seems to come from:
 
+  x86_64-mm-i386-verify-cpu
 
+Compiler:
+
+  gcc version 3.3.4 (Debian 1:3.3.4-3)
+
+-apw
