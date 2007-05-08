@@ -1,75 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934744AbXEHJOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934784AbXEHJTT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934744AbXEHJOf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 05:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934565AbXEHJOf
+	id S934784AbXEHJTT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 05:19:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934617AbXEHJTS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 05:14:35 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:35176 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934546AbXEHJOe (ORCPT
+	Tue, 8 May 2007 05:19:18 -0400
+Received: from py-out-1112.google.com ([64.233.166.176]:28499 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934570AbXEHJTR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 05:14:34 -0400
-Date: Tue, 8 May 2007 02:11:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       linux-pm@lists.linux-foundation.org,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: 2.6.21-mm1 hwsusp: BUG at workqueue.c:106
-Message-Id: <20070508021131.438cee31.akpm@linux-foundation.org>
-In-Reply-To: <46403B7F.1050009@gmail.com>
-References: <46403B7F.1050009@gmail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 05:19:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:reply-to:to:subject:cc:mime-version:content-type;
+        b=mI85Xts7tRUEUjBr52cTcMjNZ2oIHqKuQvyRQ7dmv/Zk5HjvxHukTBUSqH5pSWR97WRgfeoXQZOpZWhjRBc2/6hON+MdEPWoiQRwwWekjLH/Jeazas0UGsyyFqD+zUmk6Z2gMO3xL7eZau0pwlf+VR/V5lB7oCVj2uA2Rjg60FU=
+Message-ID: <3efb10970705080219j21f8d5f2n26250548bcdebf30@mail.gmail.com>
+Date: Tue, 8 May 2007 11:19:16 +0200
+From: "Remy Bohmer" <l.pinguin@gmail.com>
+Reply-To: linux@bohmer.net
+To: andrew@sanpeople.com
+Subject: [PATCH]: Make LEDS work on evaluation board AT91SAM9261-EK
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_23640_18872116.1178615956220"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 May 2007 10:57:35 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
+------=_Part_23640_18872116.1178615956220
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-> 
-> this occured in dmesg during resuming from hwsusp in 2.6.21-mm1 (captured
-> through netconsole). Perfectly reproducible, it simply happens each time I
-> try it.
+Hello Andrew,
 
-Let's cc Oleg.
+Attached you can find a patch needed to make the LEDS for 'CPU-Idle'
+and 'Timer' work on the AT91SAM9261-EK board. The kernel configuration
+options are already there, but the implementation is not available.
+This patch fixes this.
 
-> usb_endpoint usbdev5.1_ep00: PM: resume from 0, parent usb5 still 2
-> ------------[ cut here ]------------
-> kernel BUG at /home/l/latest/xxx/kernel/workqueue.c:106!
-> invalid opcode: 0000 [#1]
-> SMP
-> Modules linked in: ipv6 floppy ohci1394 ieee1394 parport_pc parport usbhid
-> ehci_hcd pata_acpi ff_memless sr_mod cdrom
-> CPU:    1
-> EIP:    0060:[<c0132161>]    Not tainted VLI
-> EFLAGS: 00010046   (2.6.21-mm1 #272)
-> EIP is at insert_work+0x6d/0x71
-> eax: c1c3b3c0   ebx: c1814aa0   ecx: 00000001   edx: c1814aa0
-> esi: c1c3b340   edi: 00000282   ebp: c04d2f68   esp: c04d2f50
-> ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
-> Process swapper (pid: 0, ti=c04d2000 task=c1c26030 task.ti=c1c20000)
-> Stack: c4685f54 c18148ac c04d2f98 c013816f c1c3b340 c1814aa0 c04d2f88 c013256c
->        00000066 c1814880 c1c5e000 c04d2fc4 c01325a1
-> c1c5e000 00000100 c012ba35 00000000 c04d2fb8 c01333f4 Call Trace:
->  [<c0104f27>]  [<c0104fe2>] show_stack_log_lvl+0xa5/0xca
-> show_registers+0x1e2/0x2da
->  [<c01053f5>]  [<c010559a>] do_trap+0x84/0xaa
-> do_invalid_op+0x88/0x92
->  [<c0378662>]  [<c013256c>] __queue_work+0x22/0x33
-> delayed_work_timer_fn+0x24/0x2a
->  [<c012ba35>]  [<c01288a9>] __do_softirq+0x75/0xe6
-> do_softirq+0x63/0xac
->  [<c0128713>]  [<c0116d7e>] smp_apic_timer_interrupt+0x5c/0x88
-> apic_timer_interrupt+0x28/0x30
->  [<c010238d>]  [<c0115ad0>] start_secondary+0x25e/0x37a
-> 0x0
->  =======================
-> 00 00 ba 03 00 00 40 a3 ff 83 10 5b 5d c3 4e 04 56 04 43 04 42 04 53 04 48
-> 04 46 04 c9 <0f> eb fe 89 e5 ec 0c
-> 
+Can you please apply this patch to the kernel mainline?
 
-hm, how come it's so messy?
+Kind Regards,
+
+Remy Bohmer
+
+------=_Part_23640_18872116.1178615956220
+Content-Type: text/x-patch; name=leds.diff; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f1g4tshb
+Content-Disposition: attachment; filename="leds.diff"
+
+ZGlmZiAtcnVOIGxpbnV4LTIuNi4yMS5vcmlnL2FyY2gvYXJtL21hY2gtYXQ5MS9ib2FyZC1zYW05
+MjYxZWsuYyBsaW51eC0yLjYuMjEvYXJjaC9hcm0vbWFjaC1hdDkxL2JvYXJkLXNhbTkyNjFlay5j
+Ci0tLSBsaW51eC0yLjYuMjEub3JpZy9hcmNoL2FybS9tYWNoLWF0OTEvYm9hcmQtc2FtOTI2MWVr
+LmMJMjAwNy0wNS0wNCAxNTo1MTozNC4wMDAwMDAwMDAgKzAyMDAKKysrIGxpbnV4LTIuNi4yMS9h
+cmNoL2FybS9tYWNoLWF0OTEvYm9hcmQtc2FtOTI2MWVrLmMJMjAwNy0wNS0wNyAxNjo0NTowNC4w
+MDAwMDAwMDAgKzAyMDAKQEAgLTU5LDYgKzU5LDkgQEAKIAkvKiBJbml0aWFsaXplIHByb2Nlc3Nv
+cjogMTguNDMyIE1IeiBjcnlzdGFsICovCiAJYXQ5MXNhbTkyNjFfaW5pdGlhbGl6ZSgxODQzMjAw
+MCk7CiAKKwkvKiBTZXR1cCB0aGUgTEVEcyAqLworCWF0OTFfaW5pdF9sZWRzKEFUOTFfUElOX1BB
+MTMsIEFUOTFfUElOX1BBMTQpOworCiAJLyogU2V0dXAgdGhlIHNlcmlhbCBwb3J0cyBhbmQgY29u
+c29sZSAqLwogCWF0OTFfaW5pdF9zZXJpYWwoJmVrX3VhcnRfY29uZmlnKTsKIH0KZGlmZiAtcnVO
+IGxpbnV4LTIuNi4yMS5vcmlnL2FyY2gvYXJtL21hY2gtYXQ5MS9NYWtlZmlsZSBsaW51eC0yLjYu
+MjEvYXJjaC9hcm0vbWFjaC1hdDkxL01ha2VmaWxlCi0tLSBsaW51eC0yLjYuMjEub3JpZy9hcmNo
+L2FybS9tYWNoLWF0OTEvTWFrZWZpbGUJMjAwNy0wNS0wNCAxNTo1MTozNC4wMDAwMDAwMDAgKzAy
+MDAKKysrIGxpbnV4LTIuNi4yMS9hcmNoL2FybS9tYWNoLWF0OTEvTWFrZWZpbGUJMjAwNy0wNS0w
+NyAxNzozNDoyMS4wMDAwMDAwMDAgKzAyMDAKQEAgLTM4LDYgKzM5LDcgQEAKICMgTEVEcyBzdXBw
+b3J0CiBsZWQtJChDT05GSUdfQVJDSF9BVDkxUk05MjAwREspCSs9IGxlZHMubwogbGVkLSQoQ09O
+RklHX01BQ0hfQVQ5MVJNOTIwMEVLKQkrPSBsZWRzLm8KK2xlZC0kKENPTkZJR19NQUNIX0FUOTFT
+QU05MjYxRUspKz0gbGVkcy5vCiBsZWQtJChDT05GSUdfTUFDSF9DU0IzMzcpCSs9IGxlZHMubwog
+bGVkLSQoQ09ORklHX01BQ0hfQ1NCNjM3KQkrPSBsZWRzLm8KIGxlZC0kKENPTkZJR19NQUNIX0tC
+OTIwMCkJKz0gbGVkcy5vCg==
+------=_Part_23640_18872116.1178615956220--
