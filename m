@@ -1,65 +1,193 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967844AbXEHMOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967866AbXEHMPJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967844AbXEHMOp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967562AbXEHMOo
+	id S967866AbXEHMPJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:15:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967868AbXEHMPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:14:44 -0400
-Received: from relay.2ka.mipt.ru ([194.85.82.65]:50671 "EHLO 2ka.mipt.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967651AbXEHMOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:14:43 -0400
-Date: Tue, 8 May 2007 16:13:42 +0400
-From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-To: Anton Vorontsov <cbou@mail.ru>
-Cc: akpm@linux-foundation.org, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: + git-battery-fix.patch added to -mm tree
-Message-ID: <20070508121341.GA21072@2ka.mipt.ru>
-References: <200705081001.l48A1KUK020833@shell0.pdx.osdl.net> <20070508111924.GA16785@zarina>
+	Tue, 8 May 2007 08:15:08 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:3310 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S967821AbXEHMPE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:15:04 -0400
+Date: Tue, 8 May 2007 22:13:22 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: "David S. Miller" <davem@davemloft.net>,
+       Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Stephen Hemminger <shemminge@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+Subject: [1/2] [NET] link_watch: Move link watch list into net_device
+Message-ID: <20070508121322.GA21647@gondor.apana.org.au>
+References: <20070504232051.411946839@goop.org> <20070504232121.492190579@goop.org> <20070505091624.GA8890@infradead.org> <463C56D3.8060609@goop.org> <20070505102305.GA12771@gondor.apana.org.au> <463F95C3.60407@goop.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=koi8-r
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070508111924.GA16785@zarina>
+In-Reply-To: <463F95C3.60407@goop.org>
 User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 08 May 2007 16:13:50 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 03:19:24PM +0400, Anton Vorontsov (cbou@mail.ru) wrote:
-> On Tue, May 08, 2007 at 03:01:20AM -0700, akpm@linux-foundation.org wrote:
-> > 
-> > The patch titled
-> >      git-battery-fix
-> > has been added to the -mm tree.  Its filename is
-> >      git-battery-fix.patch
+On Mon, May 07, 2007 at 02:10:27PM -0700, Jeremy Fitzhardinge wrote:
+>
+> > We should just change this to use netif_device_attach and
+> > netif_device_detach.
 > 
-> Andrew, much thanks for fixing that. That error triggered by some
-> refactors in drivers/base/... I suppose I have to setup -mm tree in
-> addition to Linus', to test -mm builds from time to time for the
-> purpose of catching these changes myself.
-> 
-> Though, this error happened indeed because nobody cares about
-> find_bus function nowdays...
-> 
-> I want ask Greg KH and Evgeniy Polyakov: could you together settle
-> preferred way of accessing bus types? Should we really use
-> find_bus/bus_find, or Evgeniy would just export w1 bus type? In
-> later case, I'll remove un-"if 0" find_bus patch, and will
-> prepare another which will export w1 bus type.
-> 
-> I do not have any preference, both solutions will work.
+> Like this?
 
-There is one small problem with any of such approach, and this problem
-is called Adrian Bunk :)
-Eventually he will remove whatever changes you did if there are no
-in-kernel users.
-But since find bus users are now going into the tree, it is possible to
-make a lot of people happy, who remove ifdef around find_bus() in own
-embedded trees.
+Sorry, I had forgotten that I've already concluded previously that
+this doesn't work because we don't want to prevent the interface
+from being brought up (and other reasons).  My memory is failing me :)
 
-So, my vote is for exporting generic find_bus in mainline with related
-to w1 and battery status changes.
+So I think the best option now is to get rid of the delay on carrier
+on events for everyone.
 
+Here is the first of 2 patches.
+
+[NET] link_watch: Move link watch list into net_device
+
+These days the link watch mechanism is an integral part of the
+network subsystem as it manages the carrier status.  So it now
+makes sense to allocate some memory for it in net_device rather
+than allocating it on demand.
+
+In fact, this is necessary because we can't tolerate a memory
+allocation failure since that means we'd have to potentially
+throw a link up event away.
+
+It also simplifies the code greatly.
+
+In doing so I discovered a subtle race condition in the use
+of singleevent.  This race condition still exists (and is
+somewhat magnified) without singleevent but it's now plugged
+thanks to an smp_mb__before_clear_bit.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+Cheers,
 -- 
-	Evgeniy Polyakov
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+--
+a6c194d06da9aed2a8f5a4ea07e3cbf9266db4ef
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 3044622..f671cd2 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -467,6 +467,8 @@ struct net_device
+ 	/* device index hash chain */
+ 	struct hlist_node	index_hlist;
+ 
++	struct net_device	*link_watch_next;
++
+ 	/* register/unregister state machine */
+ 	enum { NETREG_UNINITIALIZED=0,
+ 	       NETREG_REGISTERED,	/* completed register_netdevice */
+diff --git a/net/core/link_watch.c b/net/core/link_watch.c
+index e3c26a9..71a35da 100644
+--- a/net/core/link_watch.c
++++ b/net/core/link_watch.c
+@@ -19,7 +19,6 @@
+ #include <linux/rtnetlink.h>
+ #include <linux/jiffies.h>
+ #include <linux/spinlock.h>
+-#include <linux/list.h>
+ #include <linux/slab.h>
+ #include <linux/workqueue.h>
+ #include <linux/bitops.h>
+@@ -28,7 +27,6 @@
+ 
+ enum lw_bits {
+ 	LW_RUNNING = 0,
+-	LW_SE_USED
+ };
+ 
+ static unsigned long linkwatch_flags;
+@@ -37,17 +35,9 @@ static unsigned long linkwatch_nextevent;
+ static void linkwatch_event(struct work_struct *dummy);
+ static DECLARE_DELAYED_WORK(linkwatch_work, linkwatch_event);
+ 
+-static LIST_HEAD(lweventlist);
++static struct net_device *lweventlist;
+ static DEFINE_SPINLOCK(lweventlist_lock);
+ 
+-struct lw_event {
+-	struct list_head list;
+-	struct net_device *dev;
+-};
+-
+-/* Avoid kmalloc() for most systems */
+-static struct lw_event singleevent;
+-
+ static unsigned char default_operstate(const struct net_device *dev)
+ {
+ 	if (!netif_carrier_ok(dev))
+@@ -90,21 +80,23 @@ static void rfc2863_policy(struct net_device *dev)
+ /* Must be called with the rtnl semaphore held */
+ void linkwatch_run_queue(void)
+ {
+-	struct list_head head, *n, *next;
++	struct net_device *next;
+ 
+ 	spin_lock_irq(&lweventlist_lock);
+-	list_replace_init(&lweventlist, &head);
++	next = lweventlist;
++	lweventlist = NULL;
+ 	spin_unlock_irq(&lweventlist_lock);
+ 
+-	list_for_each_safe(n, next, &head) {
+-		struct lw_event *event = list_entry(n, struct lw_event, list);
+-		struct net_device *dev = event->dev;
++	while (next) {
++		struct net_device *dev = next;
+ 
+-		if (event == &singleevent) {
+-			clear_bit(LW_SE_USED, &linkwatch_flags);
+-		} else {
+-			kfree(event);
+-		}
++		next = dev->link_watch_next;
++
++		/*
++		 * Make sure the above read is complete since it can be
++		 * rewritten as soon as we clear the bit below.
++		 */
++		smp_mb__before_clear_bit();
+ 
+ 		/* We are about to handle this device,
+ 		 * so new events can be accepted
+@@ -147,24 +139,12 @@ void linkwatch_fire_event(struct net_device *dev)
+ {
+ 	if (!test_and_set_bit(__LINK_STATE_LINKWATCH_PENDING, &dev->state)) {
+ 		unsigned long flags;
+-		struct lw_event *event;
+-
+-		if (test_and_set_bit(LW_SE_USED, &linkwatch_flags)) {
+-			event = kmalloc(sizeof(struct lw_event), GFP_ATOMIC);
+-
+-			if (unlikely(event == NULL)) {
+-				clear_bit(__LINK_STATE_LINKWATCH_PENDING, &dev->state);
+-				return;
+-			}
+-		} else {
+-			event = &singleevent;
+-		}
+ 
+ 		dev_hold(dev);
+-		event->dev = dev;
+ 
+ 		spin_lock_irqsave(&lweventlist_lock, flags);
+-		list_add_tail(&event->list, &lweventlist);
++		dev->link_watch_next = lweventlist;
++		lweventlist = dev;
+ 		spin_unlock_irqrestore(&lweventlist_lock, flags);
+ 
+ 		if (!test_and_set_bit(LW_RUNNING, &linkwatch_flags)) {
