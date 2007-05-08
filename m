@@ -1,88 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967511AbXEHAQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967520AbXEHAQy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967511AbXEHAQV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 20:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967492AbXEHAQP
+	id S967520AbXEHAQy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 20:16:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967517AbXEHAQv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 20:16:15 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:35813 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967285AbXEHAQN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 20:16:13 -0400
-Date: Mon, 7 May 2007 17:15:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: cmm@us.ibm.com
-Cc: Andreas Dilger <adilger@clusterfs.com>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
-Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
-Message-Id: <20070507171541.5370a36a.akpm@linux-foundation.org>
-In-Reply-To: <1178582424.3933.39.camel@dyn9047017103.beaverton.ibm.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
-	<20070330071417.GI355@devserv.devel.redhat.com>
-	<20070417125514.GA7574@amitarora.in.ibm.com>
-	<20070418130600.GW5967@schatzie.adilger.int>
-	<20070420135146.GA21352@amitarora.in.ibm.com>
-	<20070420145918.GY355@devserv.devel.redhat.com>
-	<20070424121632.GA10136@amitarora.in.ibm.com>
-	<20070426175056.GA25321@amitarora.in.ibm.com>
-	<20070426181332.GD7209@amitarora.in.ibm.com>
-	<20070503213133.d1559f52.akpm@linux-foundation.org>
-	<20070507113753.GA5439@schatzie.adilger.int>
-	<20070507135825.f8545a65.akpm@linux-foundation.org>
-	<1178582424.3933.39.camel@dyn9047017103.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 7 May 2007 20:16:51 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51571 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967516AbXEHAQt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 20:16:49 -0400
+Message-ID: <463FC0E4.8080908@redhat.com>
+Date: Mon, 07 May 2007 20:14:28 -0400
+From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       linux-kernel@vger.kernel.org, Kristian H??gsberg <krh@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux1394-devel <linux1394-devel@lists.sourceforge.net>
+Subject: Re: [PATCH 6/6] firewire: add it all to kbuild
+References: <20070502090007.GA28174@infradead.org> <tkrat.087ee29add656926@s5r6.in-berlin.de> <tkrat.350cb4dfe522266e@s5r6.in-berlin.de> <tkrat.65aea95f1451c211@s5r6.in-berlin.de> <tkrat.2aa3f3ac11a3d60d@s5r6.in-berlin.de> <tkrat.a41f7f10d21d3cc4@s5r6.in-berlin.de> <tkrat.c82a1d775d989371@s5r6.in-berlin.de> <tkrat.abd13e310a4516c7@s5r6.in-berlin.de> <20070502194442.GE1248@infradead.org> <46391834.2050209@s5r6.in-berlin.de> <20070503081011.GD23000@infradead.org>
+In-Reply-To: <20070503081011.GD23000@infradead.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 May 2007 17:00:24 -0700
-Mingming Cao <cmm@us.ibm.com> wrote:
-
-> > +       while (ret >= 0 && ret < max_blocks) {
-> > +               block = block + ret;
-> > +               max_blocks = max_blocks - ret;
-> > +               ret = ext4_ext_get_blocks(handle, inode, block,
-> > +                                         max_blocks, &map_bh,
-> > +                                         EXT4_CREATE_UNINITIALIZED_EXT, 0);
-> > +               BUG_ON(!ret);
-> > +               if (ret > 0 && test_bit(BH_New, &map_bh.b_state)
-> > +                       && ((block + ret) > (i_size_read(inode) << blkbits)))
-> > +                       nblocks = nblocks + ret;
-> > +       }
-> > +
-> > +       if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
-> > +               goto retry;
-> > +
-> > Now the interesting question is: what do we do if we get halfway through
-> > this loop and then run out of space?  We could leave the disk all filled up
-> > and then return failure to the caller, but that's pretty poor behaviour,
-> > IMO.
-> > 
-> The current code handles earlier ENOSPC by three times retries. After
-> that if we still run out of space, then it's propably right to notify
-> the caller there isn't much space left.
+Christoph Hellwig wrote:
+> On Thu, May 03, 2007 at 01:01:08AM +0200, Stefan Richter wrote:
+>> Christoph Hellwig wrote:
+>>>> +fw-core-objs := fw-card.o fw-topology.o fw-transaction.o fw-iso.o \
+>>>> +	fw-device.o fw-cdev.o
+>>> fw-core-y += ..
+>>>
+>> Like such?
 > 
-> We could extend the block reservation window size before the while loop
-> so we could get a lower chance to get more fragmented.
+> Exactly.
 
-yes, but my point is that the proposed behaviour is really quite bad.
+OK, changed that here, will push out new patches soon.
 
-We will attempt to allocate the disk space and then we will return failure,
-having consumed all the disk space and having partially and uselessly
-populated an unknown amount of the file.
-
-Userspace could presumably repair the mess in most situations by truncating
-the file back again.  The kernel cannot do that because there might be live
-data in amongst there.
-
-So we'd need to either keep track of which blocks were newly-allocated and
-then free them all again on the error path (doesn't work right across
-commit+crash+recovery) or we could later use the space-reservation scheme which
-delayed allocation will need to introduce.
-
-Or we could decide to live with the above IMO-crappy behaviour.
+Kristian
