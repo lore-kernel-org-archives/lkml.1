@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031343AbXEHTru@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031738AbXEHTsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031343AbXEHTru (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:47:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031702AbXEHTrl
+	id S1031738AbXEHTsD (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:48:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031678AbXEHTrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:47:41 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49476 "EHLO mx1.redhat.com"
+	Tue, 8 May 2007 15:47:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49487 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031689AbXEHTre (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:47:34 -0400
-Date: Tue, 8 May 2007 20:47:26 +0100
+	id S1031694AbXEHTri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 15:47:38 -0400
+Date: Tue, 8 May 2007 20:46:34 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Heinz Mauelshagen <hjm@redhat.com>, Milan Broz <mbroz@redhat.com>
-Subject: [2.6.22 PATCH 15/26] dm io: prepare for new interface
-Message-ID: <20070508194726.GV24114@agk.fab.redhat.com>
+       Jonathan E Brassow <jbrassow@redhat.com>
+Subject: [2.6.22 PATCH 11/26] dm log: fault detection
+Message-ID: <20070508194634.GR24114@agk.fab.redhat.com>
 Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Heinz Mauelshagen <hjm@redhat.com>, Milan Broz <mbroz@redhat.com>
+	Jonathan E Brassow <jbrassow@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,213 +27,93 @@ Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heinz Mauelshagen <hjm@redhat.com>
+From: Jonathan E Brassow <jbrassow@redhat.com>
 
-Introduce struct dm_io_client to prepare for per-client mempools
-and bio_sets.
+This patch gives the disk logging code the ability to store the fact
+that an error occured on the log device.  In addition, an event is
+raised when an error is encountered during I/O to the log device.
 
-Temporary functions bios() and io_pool() choose between
-the per-client structures and the global ones so the old
-and new interfaces can co-exist.
-
-Make error_bits optional.
- 
-Signed-off-by: Heinz Mauelshagen <hjm@redhat.com>
+Signed-off-by: Jonathan E Brassow <jbrassow@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
-Cc: Milan Broz <mbroz@redhat.com>
 ---
 
- drivers/md/dm-io.c |   61 ++++++++++++++++++++++++++++++++++++++---------------
- 1 files changed, 44 insertions(+), 17 deletions(-)
+ drivers/md/dm-log.c |   30 +++++++++++++++++++++++++++---
+ 1 files changed, 27 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.21/drivers/md/dm-io.c
+Index: linux-2.6.21/drivers/md/dm-log.c
 ===================================================================
---- linux-2.6.21.orig/drivers/md/dm-io.c	2007-05-01 17:40:52.000000000 +0100
-+++ linux-2.6.21/drivers/md/dm-io.c	2007-05-01 17:40:52.000000000 +0100
-@@ -1,5 +1,6 @@
- /*
-  * Copyright (C) 2003 Sistina Software
-+ * Copyright (C) 2006 Red Hat GmbH
-  *
-  * This file is released under the GPL.
-  */
-@@ -14,11 +15,17 @@
+--- linux-2.6.21.orig/drivers/md/dm-log.c	2007-05-01 17:38:32.000000000 +0100
++++ linux-2.6.21/drivers/md/dm-log.c	2007-05-01 17:40:51.000000000 +0100
+@@ -152,6 +152,7 @@ struct log_c {
+ 	/*
+ 	 * Disk log fields
+ 	 */
++	int log_dev_failed;
+ 	struct dm_dev *log_dev;
+ 	struct log_header header;
  
- static struct bio_set *_bios;
+@@ -315,6 +316,7 @@ static int create_log_context(struct dir
+ 		lc->disk_header = NULL;
+ 	} else {
+ 		lc->log_dev = dev;
++		lc->log_dev_failed = 0;
+ 		lc->header_location.bdev = lc->log_dev->bdev;
+ 		lc->header_location.sector = 0;
  
-+struct dm_io_client {
-+	mempool_t *pool;
-+	struct bio_set *bios;
-+};
-+
- /* FIXME: can we shrink this ? */
- struct io {
- 	unsigned long error;
- 	atomic_t count;
- 	struct task_struct *sleeper;
-+	struct dm_io_client *client;
- 	io_notify_fn callback;
- 	void *context;
- };
-@@ -26,12 +33,24 @@ struct io {
- /*
-  * io contexts are only dynamically allocated for asynchronous
-  * io.  Since async io is likely to be the majority of io we'll
-- * have the same number of io contexts as buffer heads ! (FIXME:
-- * must reduce this).
-+ * have the same number of io contexts as bios! (FIXME: must reduce this).
-  */
- static unsigned _num_ios;
- static mempool_t *_io_pool;
+@@ -437,6 +439,15 @@ static int count_bits32(uint32_t *addr, 
+ 	return count;
+ }
  
-+/*
-+ * Temporary functions to allow old and new interfaces to co-exist.
-+ */
-+static struct bio_set *bios(struct dm_io_client *client)
++static void fail_log_device(struct log_c *lc)
 +{
-+	return client ? client->bios : _bios;
++	if (lc->log_dev_failed)
++		return;
++
++	lc->log_dev_failed = 1;
++	dm_table_event(lc->ti->table);
 +}
 +
-+static mempool_t *io_pool(struct dm_io_client *client)
-+{
-+	return client ? client->pool : _io_pool;
-+}
+ static int disk_resume(struct dirty_log *log)
+ {
+ 	int r;
+@@ -446,8 +457,12 @@ static int disk_resume(struct dirty_log 
+ 
+ 	/* read the disk header */
+ 	r = read_header(lc);
+-	if (r)
++	if (r) {
++		DMWARN("%s: Failed to read header on mirror log device",
++		       lc->log_dev->name);
++		fail_log_device(lc);
+ 		return r;
++	}
+ 
+ 	/* set or clear any new bits -- device has grown */
+ 	if (lc->sync == NOSYNC)
+@@ -472,7 +487,14 @@ static int disk_resume(struct dirty_log 
+ 	lc->header.nr_regions = lc->region_count;
+ 
+ 	/* write the new header */
+-	return write_header(lc);
++	r = write_header(lc);
++	if (r) {
++		DMWARN("%s: Failed to write header on mirror log device",
++		       lc->log_dev->name);
++		fail_log_device(lc);
++	}
 +
- static unsigned int pages_to_ios(unsigned int pages)
- {
- 	return 4 * pages;	/* too many ? */
-@@ -118,7 +137,7 @@ static void dec_count(struct io *io, uns
- 			io_notify_fn fn = io->callback;
- 			void *context = io->context;
- 
--			mempool_free(io, _io_pool);
-+			mempool_free(io, io_pool(io->client));
- 			fn(r, context);
- 		}
- 	}
-@@ -241,7 +260,9 @@ static void vm_dp_init(struct dpages *dp
- 
- static void dm_bio_destructor(struct bio *bio)
- {
--	bio_free(bio, _bios);
-+	struct io *io = bio->bi_private;
-+
-+	bio_free(bio, bios(io->client));
++	return r;
  }
  
- /*-----------------------------------------------------------------
-@@ -264,7 +285,7 @@ static void do_region(int rw, unsigned i
- 		 * to hide it from bio_add_page().
- 		 */
- 		num_bvecs = (remaining / (PAGE_SIZE >> SECTOR_SHIFT)) + 2;
--		bio = bio_alloc_bioset(GFP_NOIO, num_bvecs, _bios);
-+		bio = bio_alloc_bioset(GFP_NOIO, num_bvecs, bios(io->client));
- 		bio->bi_sector = where->sector + (where->count - remaining);
- 		bio->bi_bdev = where->bdev;
- 		bio->bi_end_io = endio;
-@@ -319,8 +340,9 @@ static void dispatch_io(int rw, unsigned
- 	dec_count(io, 0, 0);
- }
+ static uint32_t core_get_region_size(struct dirty_log *log)
+@@ -516,7 +538,9 @@ static int disk_flush(struct dirty_log *
+ 		return 0;
  
--static int sync_io(unsigned int num_regions, struct io_region *where,
--	    int rw, struct dpages *dp, unsigned long *error_bits)
-+static int sync_io(struct dm_io_client *client, unsigned int num_regions,
-+		   struct io_region *where, int rw, struct dpages *dp,
-+		   unsigned long *error_bits)
- {
- 	struct io io;
+ 	r = write_header(lc);
+-	if (!r)
++	if (r)
++		fail_log_device(lc);
++	else
+ 		lc->touched = 0;
  
-@@ -332,6 +354,7 @@ static int sync_io(unsigned int num_regi
- 	io.error = 0;
- 	atomic_set(&io.count, 1); /* see dispatch_io() */
- 	io.sleeper = current;
-+	io.client = client;
- 
- 	dispatch_io(rw, num_regions, where, dp, &io, 1);
- 
-@@ -348,12 +371,15 @@ static int sync_io(unsigned int num_regi
- 	if (atomic_read(&io.count))
- 		return -EINTR;
- 
--	*error_bits = io.error;
-+	if (error_bits)
-+		*error_bits = io.error;
-+
- 	return io.error ? -EIO : 0;
- }
- 
--static int async_io(unsigned int num_regions, struct io_region *where, int rw,
--	     struct dpages *dp, io_notify_fn fn, void *context)
-+static int async_io(struct dm_io_client *client, unsigned int num_regions,
-+		    struct io_region *where, int rw, struct dpages *dp,
-+		    io_notify_fn fn, void *context)
- {
- 	struct io *io;
- 
-@@ -363,10 +389,11 @@ static int async_io(unsigned int num_reg
- 		return -EIO;
- 	}
- 
--	io = mempool_alloc(_io_pool, GFP_NOIO);
-+	io = mempool_alloc(io_pool(client), GFP_NOIO);
- 	io->error = 0;
- 	atomic_set(&io->count, 1); /* see dispatch_io() */
- 	io->sleeper = NULL;
-+	io->client = client;
- 	io->callback = fn;
- 	io->context = context;
- 
-@@ -380,7 +407,7 @@ int dm_io_sync(unsigned int num_regions,
- {
- 	struct dpages dp;
- 	list_dp_init(&dp, pl, offset);
--	return sync_io(num_regions, where, rw, &dp, error_bits);
-+	return sync_io(NULL, num_regions, where, rw, &dp, error_bits);
- }
- 
- int dm_io_sync_bvec(unsigned int num_regions, struct io_region *where, int rw,
-@@ -388,7 +415,7 @@ int dm_io_sync_bvec(unsigned int num_reg
- {
- 	struct dpages dp;
- 	bvec_dp_init(&dp, bvec);
--	return sync_io(num_regions, where, rw, &dp, error_bits);
-+	return sync_io(NULL, num_regions, where, rw, &dp, error_bits);
- }
- 
- int dm_io_sync_vm(unsigned int num_regions, struct io_region *where, int rw,
-@@ -396,7 +423,7 @@ int dm_io_sync_vm(unsigned int num_regio
- {
- 	struct dpages dp;
- 	vm_dp_init(&dp, data);
--	return sync_io(num_regions, where, rw, &dp, error_bits);
-+	return sync_io(NULL, num_regions, where, rw, &dp, error_bits);
- }
- 
- int dm_io_async(unsigned int num_regions, struct io_region *where, int rw,
-@@ -405,7 +432,7 @@ int dm_io_async(unsigned int num_regions
- {
- 	struct dpages dp;
- 	list_dp_init(&dp, pl, offset);
--	return async_io(num_regions, where, rw, &dp, fn, context);
-+	return async_io(NULL, num_regions, where, rw, &dp, fn, context);
- }
- 
- int dm_io_async_bvec(unsigned int num_regions, struct io_region *where, int rw,
-@@ -413,7 +440,7 @@ int dm_io_async_bvec(unsigned int num_re
- {
- 	struct dpages dp;
- 	bvec_dp_init(&dp, bvec);
--	return async_io(num_regions, where, rw, &dp, fn, context);
-+	return async_io(NULL, num_regions, where, rw, &dp, fn, context);
- }
- 
- int dm_io_async_vm(unsigned int num_regions, struct io_region *where, int rw,
-@@ -421,7 +448,7 @@ int dm_io_async_vm(unsigned int num_regi
- {
- 	struct dpages dp;
- 	vm_dp_init(&dp, data);
--	return async_io(num_regions, where, rw, &dp, fn, context);
-+	return async_io(NULL, num_regions, where, rw, &dp, fn, context);
- }
- 
- EXPORT_SYMBOL(dm_io_get);
+ 	return r;
