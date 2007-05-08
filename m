@@ -1,87 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbXEHGaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933865AbXEHGab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755336AbXEHGaV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 02:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755265AbXEHGaQ
+	id S933865AbXEHGab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 02:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932659AbXEHGa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 02:30:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:43483 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755163AbXEHGaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 02:30:14 -0400
-Message-ID: <464018F2.7050409@goop.org>
-Date: Mon, 07 May 2007 23:30:10 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
+	Tue, 8 May 2007 02:30:27 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1786 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755319AbXEHGaU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 02:30:20 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Mon, 7 May 2007 23:30:19 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Ulrich Drepper <drepper@gmail.com>
+cc: Davi Arnaut <davi@haxent.com.br>,
        Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [patch 25/29] xen: Add the Xen virtual network device driver.
-References: <20070504232051.411946839@goop.org>	 <20070504232121.492190579@goop.org> <20070505091624.GA8890@infradead.org>	 <463F9608.40803@goop.org> <1178577322.28438.16.camel@localhost.localdomain>
-In-Reply-To: <1178577322.28438.16.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
+In-Reply-To: <a36005b50705071949r4f45194bhc0c0416db28d1560@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705072324270.4247@alien.or.mcafeemobile.com>
+References: <20070504225730.490334000@haxent.com.br>  <463BC3CA.6050109@haxent.com.br>
+  <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com> 
+ <463CFA37.3020809@haxent.com.br>  <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com>
+  <463F9B68.305@haxent.com.br>  <a36005b50705071519k40449ed2p7b9ece22cc19219a@mail.gmail.com>
+  <Pine.LNX.4.64.0705071525200.29173@alien.or.mcafeemobile.com>
+ <a36005b50705071949r4f45194bhc0c0416db28d1560@mail.gmail.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> Looks good, you can slightly improve it to be the model use of new
-> module_param types by calling your functions param_set_rx_mode and
-> param_get_rx_mode, then simply using "module_param(rx_mode, rx_mode,
-> 0400)"
->   
+On Mon, 7 May 2007, Ulrich Drepper wrote:
 
-Cute.  I tried it out, but it doesn't yield an obvious improvement:
+> On 5/7/07, Davide Libenzi <davidel@xmailserver.org> wrote:
+> > read(2) is a cancellation point too. So if the fine userspace code issues
+> > a random pthread_cancel() to a thread handling that, data is lost together
+> > with the session that thread was handling.
+> 
+> This is absolutely not comparable.  When read/write is canceled no
+> data is lost.  Some other thread might have to pick up the slack but
+> that's it.
 
-diff -r 83d67449bff4 drivers/net/xen-netfront.c
---- a/drivers/net/xen-netfront.c	Mon May 07 18:44:11 2007 -0700
-+++ b/drivers/net/xen-netfront.c	Mon May 07 22:58:36 2007 -0700
-@@ -67,13 +67,16 @@ struct netfront_cb {
-  * For fully-virtualised guests there is no option - copying must be used.
-  * For paravirtualised guests, flipping is the default.
-  */
--static enum rx_mode {
-+typedef enum rx_mode {
- 	RX_COPY = 0,
- 	RX_FLIP = 1,
--} rx_mode = RX_FLIP;
--MODULE_PARM_DESC(rx_mode, "How to get packets from card: \"copy\" or \"flip\"");
--
--static int set_rx_mode(const char *val, struct kernel_param *kp)
-+} rx_mode_t;
-+
-+static enum rx_mode rx_mode = RX_FLIP;
-+
-+#define param_check_rx_mode_t(name, p) __param_check(name, p, rx_mode_t)
-+
-+static int param_set_rx_mode_t(const char *val, struct kernel_param *kp)
- {
- 	enum rx_mode *rxmp = kp->arg;
- 	int ret = 0;
-@@ -88,14 +91,15 @@ static int set_rx_mode(const char *val, 
- 	return ret;
- }
- 
--static int get_rx_mode(char *buffer, struct kernel_param *kp)
-+static int param_get_rx_mode_t(char *buffer, struct kernel_param *kp)
- {
- 	enum rx_mode *rxmp = kp->arg;
- 
- 	return sprintf(buffer, "%s", *rxmp == RX_COPY ? "copy" : "flip");
- }
- 
--module_param_call(rx_mode, set_rx_mode, get_rx_mode, &rx_mode, 0400);
-+MODULE_PARM_DESC(rx_mode, "How to get packets from card: \"copy\" or \"flip\"");
-+module_param(rx_mode, rx_mode_t, 0400);
- 
- #define RX_COPY_THRESHOLD 256
- 
+Ohh, is it different? Please, it is not even worth to show you how exactly 
+the same is. Because you are perfectly aware of it.
+
+
+> We went over this for kevent discussions.  I really am not willing to
+> do it all again especially since there is no hope to achieve a
+> satisfying result with poll.  So, don't count my silence as agreement,
+> it isn't.
+
+You're climbing mirrors AFAICS, more that bringing any valid points. And 
+as far as I'm concerned, this thread is becoming very repetitive and boring.
+
+
+
+- Davide
 
 
