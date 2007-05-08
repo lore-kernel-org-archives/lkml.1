@@ -1,96 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968247AbXEHP7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934583AbXEHQFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968247AbXEHP7k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 11:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966433AbXEHP7j
+	id S934583AbXEHQFN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934331AbXEHQFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 11:59:39 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60787 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964810AbXEHP7i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 11:59:38 -0400
-Date: Tue, 8 May 2007 17:03:35 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@osdl.org
-Subject: [PATCH]: Fix old SCSI adapter crashes with CD-ROM
-Message-ID: <20070508170335.1b1f844c@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 8 May 2007 12:05:12 -0400
+Received: from main.gmane.org ([80.91.229.2]:45101 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933977AbXEHQFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 12:05:11 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Vladimir Pouzanov <farcaller@gmail.com>
+Subject: ACPI Power Down is broken in 2.6.21.1
+Date: Tue, 8 May 2007 16:01:14 +0000 (UTC)
+Message-ID: <loom.20070508T175303-27@post.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 91.124.62.29 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.3) Gecko/20070328 Firefox/2.0.0.3)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The CD-ROM layer doesn't bounce requests for old ISA controllers (and
-nor should it). However they get injected into the SCSI layer via
-sr_ioctl which also doesn't bounce them and SCSI then passes the buffer
-along to a device with unchecked_isa_dma set which either panics or
-truncates the buffer to 24bits.
+Hi all,
 
-According to Jens the right long term fix is for the CD layer to route
-the requests differently but in the mean time this has been tested by a
-victim and verified to sort the problem out. For the other 99.9% of users
-it's a no-op and doesn't bounce data.
+I have got a problem with Asus F3T notebook and 2.6.21.1 kernel. When I
+perform powerdown (with user-space app or alt+sysrq+o) I get "Power Down."
+message, but the notebook doesn't turn off. Everything is ok on 2.6.20.
 
-Signed-off-by: Alan Cox <alan@redhat.com>
+There seem to be no changes in acpi/sleep/poweroff.c so I don't know where
+should I start looking for a bug.
 
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c linux-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c
---- linux.vanilla-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c	2007-04-12 14:14:45.000000000 +0100
-+++ linux-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c	2007-05-01 14:23:40.000000000 +0100
-@@ -187,9 +187,10 @@
- 	struct scsi_sense_hdr sshdr;
- 	int result, err = 0, retries = 0;
- 	struct request_sense *sense = cgc->sense;
--
-+	void *zebedee = cgc->buffer;
-+	
- 	SDev = cd->device;
--
-+	
- 	if (!sense) {
- 		sense = kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
- 		if (!sense) {
-@@ -197,7 +198,22 @@
- 			goto out;
- 		}
- 	}
--
-+	
-+	if (cgc->buflen && cd->device->host->unchecked_isa_dma) {
-+		switch(cgc->data_direction) {
-+			case DMA_NONE:
-+				break;
-+			case DMA_FROM_DEVICE:
-+			case DMA_TO_DEVICE:
-+				zebedee = kmalloc(cgc->buflen, GFP_KERNEL|GFP_DMA);
-+				if (zebedee ==NULL) {
-+					err = -ENOMEM;
-+					goto out;
-+				}
-+		}
-+		if (cgc->data_direction == DMA_TO_DEVICE)
-+			memcpy(zebedee, cgc->buffer, cgc->buflen);
-+	}
-       retry:
- 	if (!scsi_block_when_processing_errors(SDev)) {
- 		err = -ENODEV;
-@@ -206,10 +222,16 @@
- 
- 	memset(sense, 0, sizeof(*sense));
- 	result = scsi_execute(SDev, cgc->cmd, cgc->data_direction,
--			      cgc->buffer, cgc->buflen, (char *)sense,
-+			      zebedee, cgc->buflen, (char *)sense,
- 			      cgc->timeout, IOCTL_RETRIES, 0);
- 
- 	scsi_normalize_sense((char *)sense, sizeof(*sense), &sshdr);
-+	
-+	if (zebedee != cgc->buffer) {
-+		if (cgc->data_direction == DMA_FROM_DEVICE)
-+			memcpy(cgc->buffer, zebedee, cgc->buflen);
-+		kfree(zebedee);	/* Time for bed */
-+	}
- 
- 	/* Minimal error checking.  Ignore cases we know about, and report the rest. */
- 	if (driver_byte(result) != 0) {
+F3T is based on Thrion64 X2 CPU (I'm running it in x86 mode with SMP and
+PREEMPT).
+
+Sincerely,
+Vladimir "Farcaller" Pouzanov
+http://hackndev.com
+
