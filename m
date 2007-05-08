@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968337AbXEHVsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032260AbXEHVtU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968337AbXEHVsR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967397AbXEHVsP
+	id S1032260AbXEHVtU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:49:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968390AbXEHVtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:48:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38532 "EHLO hera.kernel.org"
+	Tue, 8 May 2007 17:49:18 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:58800 "EHLO e5.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966266AbXEHVsP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:48:15 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [patch 4/4] Add common orderly_poweroff()
-Date: Tue, 8 May 2007 17:45:17 -0400
-User-Agent: KMail/1.9.5
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
-       "David S. Miller" <davem@davemloft.net>
-References: <20070508205129.064843364@goop.org> <20070508205517.358968475@goop.org>
-In-Reply-To: <20070508205517.358968475@goop.org>
+	id S968385AbXEHVtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:49:15 -0400
+Date: Tue, 8 May 2007 16:49:14 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Andrew Morton <akpm@linux-foundation.org>, jeffschroeder@computer.org,
+       Chris Wright <chrisw@sous-sol.org>,
+       Karl MacMillan <kmacmillan@mentalrootkit.com>,
+       KaiGai Kohei <kaigai@kaigai.gr.jp>
+Subject: Re: [PATCH 2/2] file capabilities: accomodate >32 bit capabilities
+Message-ID: <20070508214914.GA27582@sergelap.austin.ibm.com>
+References: <20070508191548.GA29913@sergelap.austin.ibm.com> <20070508191704.GC29913@sergelap.austin.ibm.com> <20070508205826.GH6375@schatzie.adilger.int>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705081745.18201.lenb@kernel.org>
+In-Reply-To: <20070508205826.GH6375@schatzie.adilger.int>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 May 2007 16:51, Jeremy Fitzhardinge wrote:
-> Various pieces of code around the kernel want to be able to trigger an
-> orderly poweroff.  This pulls them together into a single
-> implementation.
+Quoting Andreas Dilger (adilger@clusterfs.com):
+> On May 08, 2007  14:17 -0500, Serge E. Hallyn wrote:
+> > As the capability set changes and distributions start tagging
+> > binaries with capabilities, we would like for running an older
+> > kernel to not necessarily make those binaries unusable.
+> > 
+> > 	(0. Enable the CONFIG_SECURITY_FS_CAPABILITIES option
+> > 	   when CONFIG_SECURITY=n.)
+> > 	(1. Rename CONFIG_SECURITY_FS_CAPABILITIES to
+> > 	   CONFIG_SECURITY_FILE_CAPABILITIES)
+> > 	2. Introduce CONFIG_SECURITY_FILE_CAPABILITIES_STRICTXATTR
+> > 	   which, when set, prevents loading binaries with capabilities
+> > 	   set which the kernel doesn't know about.  When not set,
+> > 	   such capabilities run, ignoring the unknown caps.
+> > 	3. To accomodate 64-bit caps, specify that capabilities are
+> > 	   stored as
+> > 	   	u32 version; u32 eff0; u32 perm0; u32 inh0;
+> > 		u32 eff1; u32 perm1; u32 inh1; (etc)
 > 
-> By default the poweroff command is /sbin/poweroff, but it can be set
-> via sysctl: kernel/poweroff_cmd.  This is split at whitespace, so it
-> can include command-line arguments.
-> 
-> This patch replaces four other instances of invoking either "poweroff"
-> or "shutdown -h now": one sparc64, two sbus drivers, and acpi thermal
-> management.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Cc: Chris Wright <chrisw@sous-sol.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: Len Brown <lenb@kernel.org>
+> Have you considered how such capabilities will be used in the future?
 
-Re: the ACPI parts
-Acked-by: Len Brown <len.brown@intel.com>
+There have been all sorts of suggestions, including very fine-grained
+breakdowns of existing capabilities as well as capabilities for
+non-privileged operations.
+
+Other candidates for upcoming capabilities will be to satisfy
+containers/vserver/openvz, where a distinction needs to be made between
+CAP_DAC_OVERRIDE inside the user namespace, and the global
+CAP_DAC_OVERRIDE.  Although the path i've been pursuing (for which I
+should really send out the prelim patches I've been sitting on)
+follow David Howell's and Eric Biederman's suggestions of using the
+keyrings to store capabilities to other user namespaces.  Still new
+capabilities may be desirable to guard CLONE_NEW_NS etc (rather than
+CAP_SYS_ADMIN).
+
+> One of the important use cases I can see today is the ability to
+> split the heavily-overloaded e.g. CAP_SYS_ADMIN into much more fine
+> grained attributes.
+
+Sounds plausible, though it suffers from both making capabilities far
+more cumbersome (i.e. finding the right capability for what you wanted
+to do) and backward compatibility.  Perhaps at that point we should
+introduce security.capabilityv2 xattrs.  A binary can then carry
+security.capability=CAP_SYS_ADMIN=p, and
+security.capabilityv2=cap_may_clone_mntns=p.
+
+> What we definitely do NOT want to happen is an application that needs
+> priviledged access (e.g. e2fsck, mount) to stop running because the
+> new capabilities _would_ have been granted by the new kernel and are
+> not by the old kernel and STRICTXATTR is used.
+> 
+> To me it would seem that having extra capabilities on an old kernel
+> is relatively harmless if the old kernel doesn't know what they are.
+> It's like having a key to a door that you don't know where it is.
+
+If we ditch the STRICTXATTR option do the semantics seem sane to you?
 
 thanks,
--Len
- 
-> Cc: Al Viro <viro@zeniv.linux.org.uk>
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: David S. Miller <davem@davemloft.net>
-> 
-> ---
->  arch/sparc64/kernel/power.c     |   40 +------------------------------
->  drivers/acpi/thermal.c          |   24 +-----------------
->  drivers/sbus/char/bbc_envctrl.c |    5 +--
->  drivers/sbus/char/envctrl.c     |    7 +----
->  include/linux/reboot.h          |    5 +++
->  include/linux/sysctl.h          |    1
->  kernel/sys.c                    |   50 +++++++++++++++++++++++++++++++++++++++
->  kernel/sysctl.c                 |   10 +++++++
->  8 files changed, 74 insertions(+), 68 deletions(-)
+-serge
