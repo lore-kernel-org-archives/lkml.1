@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967656AbXEHCvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967664AbXEHCzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967656AbXEHCvv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 22:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967645AbXEHCvr
+	id S967664AbXEHCzX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 22:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967630AbXEHCzU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 22:51:47 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42736 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S967642AbXEHCvq (ORCPT
+	Mon, 7 May 2007 22:55:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:40845 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967610AbXEHCzU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 22:51:46 -0400
-Date: Tue, 8 May 2007 12:50:48 +1000
-From: David Chinner <dgc@sgi.com>
-To: Mingming Cao <cmm@us.ibm.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
-       Johann Lombardi <johann.lombardi@bull.net>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>, Dave Chinner <dgc@sgi.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-ext4-1
-Message-ID: <20070508025048.GC32602149@melbourne.sgi.com>
-References: <E1HiXab-0001QX-Sk@candygram.thunk.org> <1178571383.3933.8.camel@dyn9047017103.beaverton.ibm.com>
-Mime-Version: 1.0
+	Mon, 7 May 2007 22:55:20 -0400
+Date: Mon, 7 May 2007 19:54:26 -0700
+From: Greg KH <greg@kroah.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@osdl.org>,
+       Linus Torvalds <torvalds@osdl.org>, Greg KH <gregkh@suse.de>,
+       linux-pm@lists.osdl.org, linux-kernel@vger.kernel.org
+Subject: Re: [linux-pm] Re: [patch] suspend/resume debugging: device filter
+Message-ID: <20070508025426.GA28166@kroah.com>
+References: <20070125110501.GA25151@elte.hu> <20070126015536.GA14917@suse.de> <20070505092425.GA23125@elte.hu> <20070505100855.GC25704@elf.ucw.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1178571383.3933.8.camel@dyn9047017103.beaverton.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070505100855.GC25704@elf.ucw.cz>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 01:56:23PM -0700, Mingming Cao wrote:
-> In any case, it would be useful to add a new set of testsuites for the
-> new fallocate() syscall and fsstress in LTP testsuites to automatically
-> the preallocation code in ext4/XFS.
+On Sat, May 05, 2007 at 12:08:55PM +0200, Pavel Machek wrote:
+> Hi!
+> 
+> > > Here's a (compile tested only) patch that does this on a per-device 
+> > > basis, which is smaller, and should work just as well as your patch.
+> > > 
+> > > It creates a new file in the power/ directory for every device called 
+> > > "can_suspend".  Write a '0' to it to prevent that device from being 
+> > > suspended.
+> > > 
+> > > Does this work for you?
+> > 
+> > yeah, i was able to use this too to debug suspend/resume problems. But 
+> > i've added the check to the resume path too - for example sw-suspend 
+> > does a resume of devices during its suspend cycle, cutting off much of 
+> > the netconsole output.
+> > 
+> > which makes the can_suspend flag mis-named - perhaps rename it to 
+> > exclude_pm ?
+> 
+> debug_exclude_pm? I do not want people playing with it, then
+> complaining that they broke the suspend.
 
-I hacked an existing XFS test prog to do manual testing of the fallocate()
-syscall. In the XFSQA suite we have various pre-alloc enhanced utils (e.g.
-fsstress, fsx, etc) that we should probably update to be able to use both
-fallocate and xfsctl so we can test both.
+I can make the attribute only show up if CONFIG_DEBUG_DRIVER is enabled.
+Would that be better?  We can also write to the syslog when the
+attribute is changed that they just might have broken something.
 
-Here's all the programs we use that have preallocation awareness:
+thanks,
 
-chook 982% grep RESVSP ltp/*.c  | awk '/^ltp/  { split($1,a,":"); print a[1] ;}' | uniq
-ltp/doio.c
-ltp/fsstress.c
-ltp/fsx.c
-ltp/growfiles.c
-ltp/iogen.c
-chook 983% grep RESVSP src/* | awk '/^src/ { split($1,a,":"); print a[1] ;}' | uniq
-src/alloc.c
-src/fstest.c
-src/iopat.c
-src/randholes.c
-src/resvtest.c
-src/unwritten_mmap.c
-src/unwritten_sync.c
-
-BTW, have you guys tested mmap writes into unwritten extents? ;)
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+greg k-h
