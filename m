@@ -1,79 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967449AbXEHNBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967426AbXEHNDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967449AbXEHNBd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 09:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967414AbXEHNBb
+	id S967426AbXEHNDr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 09:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966159AbXEHNDp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 09:01:31 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:36807 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S967370AbXEHNBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 09:01:30 -0400
-Date: Tue, 8 May 2007 15:07:48 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
-       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] make-cancel_rearming_delayed_work-reliable-fix
-Message-ID: <20070508130748.GF1772@ff.dom.local>
-References: <20070503204226.GA212@tv-sign.ru> <20070503181513.0b0aa4fb.akpm@linux-foundation.org> <20070505213213.GA1013@tv-sign.ru> <20070507103107.GD1754@ff.dom.local> <20070507103420.GA74@tv-sign.ru> <20070508091601.GB1772@ff.dom.local> <20070508120221.GA968@tv-sign.ru>
+	Tue, 8 May 2007 09:03:45 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:58293 "HELO
+	mail.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with SMTP id S967264AbXEHNDo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 09:03:44 -0400
+Date: Tue, 8 May 2007 17:07:59 +0400
+From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+To: linux-kernel@vger.kernel.org
+Cc: kbaidarov@ru.mvista.com
+Subject: [PATCH] block:  generic_unplug_device implicitly makes irq enable
+Message-ID: <20070508170759.1c66352a@windmill.dev.rtsoft.ru>
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.19; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508120221.GA968@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 04:02:21PM +0400, Oleg Nesterov wrote:
-> On 05/08, Jarek Poplawski wrote:
-> >
-> > On Mon, May 07, 2007 at 02:34:20PM +0400, Oleg Nesterov wrote:
-> > > On 05/07, Jarek Poplawski wrote:
-...
-> I am strongly against adding many different variants of cancel_xxx().
-> With this patch the API is simple
-> 
-> 	- cancel_delayed_work() stops the timer
-> 
-> 	- cancel_rearming_delayed_work() stops the timer and work,
-> 	  doesn't need cancel_work_sync/flush_workqueue
+Hi,
 
-But most often there is a simple rearming (but not neccessarily
-always) work for which the first is not enough and the second
-an overkill (especially with system/workqueues loaded).
+while working on LKCD I found out common block device issue.
+LKCD uses generic_unplug_device() to finish disk IO in case of blockdev kernel core dump.
+I found out that after calling of generic_unplug_device() IRQs become implicitly enabled (it is supposed that IRQs are disabled).
+I looked at generic_unplug_device() code and found out that function lose state of irq flags, it use spin_lock_irq()/spin_unlock_irq() instead of spin_lock_irqsave()/spin_unlock_irqrestore():
+void generic_unplug_device(request_queue_t *q)
+{
+	spin_lock_irq(q->queue_lock);
+	__generic_unplug_device(q);
+	spin_unlock_irq(q->queue_lock);
+}
 
-> When work->func() re-arms itself, both queue_work() and queue_delayed_work()
-> may change CPU if CPU_DOWN_xxx happens. Note that this is possible
-> even if we use freezer for cpu-hotplug, because the timer migrates to
-> another CPU anyway.
+generic_unplug_device() - is a method to unplug the block device, named unplug_fn in struct request_queue.
+I've compared generic_unplug_device() with other methods:
+file drivers/md/raid5.c ...
+static void raid5_unplug_device(request_queue_t *q)
+{
+	mddev_t *mddev = q->queuedata;
+	raid5_conf_t *conf = mddev_to_conf(mddev);
+	unsigned long flags;
 
-Thanks for explanation - I try to think about this.
+	spin_lock_irqsave(&conf->device_lock, flags);
+
+	if (blk_remove_plug(q)) {
+		conf->seq_flush++;
+		raid5_activate_delayed(conf);
+	}
+	md_wakeup_thread(mddev->thread);
+
+	spin_unlock_irqrestore(&conf->device_lock, flags);
+
+	unplug_slaves(mddev);
+}
+
+file drivers/block/umem.c ...
+static void mm_unplug_device(request_queue_t *q)
+{
+	struct cardinfo *card = q->queuedata;
+	unsigned long flags;
+
+	spin_lock_irqsave(&card->lock, flags);
+	if (blk_remove_plug(q))
+		activate(card);
+	spin_unlock_irqrestore(&card->lock, flags);
+}
+
+As you can see raid5_unplug_device() and mm_unplug_device() are using
+spin_lock_irqsave()/spin_unlock_irqrestore(), instead of spin_lock_irq()/spin_unlock_irq().
+I found out that generic_unplug_device() is used not only in LKCD, so I suggest to switch generic_unplug_device() to spin_lock_irqsave()/spin_unlock_irqrestore() to prevent implicitly losing of IRQ flags.
+Here is patch against kernel 2.6.21.1.
+Please CC me to answers/comments.
+Thanks.
+
+Signed-off-by: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+
+ block/ll_rw_blk.c |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.21.1/block/ll_rw_blk.c
+===================================================================
+--- linux-2.6.21.1.orig/block/ll_rw_blk.c
++++ linux-2.6.21.1/block/ll_rw_blk.c
+@@ -1602,9 +1602,11 @@ EXPORT_SYMBOL(__generic_unplug_device);
+  **/
+ void generic_unplug_device(request_queue_t *q)
+ {
+-	spin_lock_irq(q->queue_lock);
++	unsigned long flags;
++
++	spin_lock_irqsave(q->queue_lock, flags);
+ 	__generic_unplug_device(q);
+-	spin_unlock_irq(q->queue_lock);
++	spin_unlock_irqrestore(q->queue_lock, flags);
+ }
+ EXPORT_SYMBOL(generic_unplug_device);
  
-> >                                I'm not sure what exactly place
-> > did you mean - if spinlocking in wait_on_work - maybe it's
-> > a sign this place isn't optimal too: it seems to me, this all
-> > inserting/waiting for completion could be done under existing
-> > locks e.g. in run_workqueue (maybe with some flag?).
-> 
-> Sorry, can't understand this. Inserting uses existing lock, namely
-> cwq->lock.
-
-I meant held locks - maybe e.g. after seeing some flag set (or some
-other global/per_cpu/atomic/whatever variable) in a processed work
-insert_wq_barrier could be done in already locked place. Or maybe
-the whole idea of these completions should be rethinked, for
-something lighter (i.e. lockless)?
-
-> 
-> Just in case, I think wait_on_cpu_work() can check ->current_work without
-> cwq->lock, but I am not sure yet. We can remove unneeded "new |= " from
-> set_wq_data(), we can do a couple of other optimizations. However, there
-> are already _a lot_ of workqueue changes in -mm tree. We can do this later.
-> Right now my only concern is correctness.
-
-I agree 100% - it's -mm, the old way is working, so why hurry?
-
-Jarek P.
