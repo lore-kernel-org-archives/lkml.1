@@ -1,148 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968171AbXEHOkL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968258AbXEHOlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968171AbXEHOkL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:40:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967426AbXEHOkG
+	id S968258AbXEHOlF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967870AbXEHOlD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:40:06 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:50208 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967391AbXEHOkE (ORCPT
+	Tue, 8 May 2007 10:41:03 -0400
+Received: from vms046pub.verizon.net ([206.46.252.46]:34107 "EHLO
+	vms046pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967949AbXEHOlB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:40:04 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=MBSDcUe+XmjZtkoEBRPhx59bke7FLRpI4j+i+F0WHz5uF6vI+sGOcFSlulg7Z
-	88sKzvQK3qtYXp3fGN3rA3XhA==
-Date: Tue, 8 May 2007 16:40:01 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.3 - QMGR
-Message-ID: <20070508144001.GC387@xi.wantstofly.org>
-References: <m3abwhcy74.fsf@maximus.localdomain> <m3vef5biob.fsf@maximus.localdomain> <5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk> <m3hcqoa772.fsf@maximus.localdomain> <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk> <m33b289zku.fsf@maximus.localdomain> <m31whs5ehn.fsf_-_@maximus.localdomain> <20070508113232.GA32055@xi.wantstofly.org> <m3k5vj76bi.fsf@maximus.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m3k5vj76bi.fsf@maximus.localdomain>
-User-Agent: Mutt/1.4.1i
+	Tue, 8 May 2007 10:41:01 -0400
+Date: Tue, 08 May 2007 10:40:53 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: gmail, but lets see if this make it to the list,
+ my last 2 msg's didn't.
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Message-id: <200705081040.53067.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 04:12:17PM +0200, Krzysztof Halasa wrote:
+verizon, by refusing the lkml server, forced me into using a gmail account to 
+receive this list.  But now gmail sent messages seem to be dropping off the 
+edge someplace, so lets see if a message posted through vz makes it...
 
-> > The queue manager interrupts should probably be implemented as an
-> > irqchip, in the same way that GPIO interrupts are implemented.  (I.e.
-> > allocate 'real' interrupt numbers for them, and use the interrupt
-> > cascade mechanism.)  You probably want to have separate irqchips for
-> > the upper and lower halves, too.  This way, drivers can just use
-> > request_irq() instead of having to bother with platform-specific
-> > qmgr_set_irq() methods.
-> 
-> Is there a sample somewhere?
-
-See for example arch/arm/mach-ep93xx/core.c, handling of the A/B/F
-port GPIO interrupts.
-
-In a nutshell, it goes like this.
-
-1) Allocate a set of IRQ numbers.  E.g. in include/asm-arm/arch-ixp4xx/irqs.h:
-
-	#define IRQ_IXP4XX_QUEUE_0	64
-	#define IRQ_IXP4XX_QUEUE_1	65
-	[...]
-
-   Adjust NR_IRQS, too.
-
-2) Implement interrupt chip functions:
-
-	static void ixp4xx_queue_low_irq_mask_ack(unsigned int irq)
-	{
-		[...]
-	}
-
-	static void ixp4xx_queue_low_irq_mask(unsigned int irq)
-	{
-		[...]
-	}
-
-	static void ixp4xx_queue_low_irq_unmask(unsigned int irq)
-	{
-		[...]
-	}
-
-	static void ixp4xx_queue_low_irq_set_type(unsigned int irq)
-	{
-		[...]
-	}
-
-	static struct irq_chip ixp4xx_queue_low_irq_chip = {
-		.name		= "QMGR low",
-		.ack		= ixp4xx_queue_low_irq_mask_ack,
-		.mask		= ixp4xx_queue_low_irq_mask,
-		.unmask		= ixp4xx_queue_low_irq_unmask,
-		.set_type	= ixp4xx_queue_low_irq_set_type,
-	};
-
-3) Hook up the queue interrupts:
-
-	for (i = IRQ_IXP4XX_QUEUE_0; i <= IRQ_IXP4XX_QUEUE_31; i++) {
-		set_irq_chip(i, &ixp4xx_queue_low_irq_chip);
-		set_irq_handler(i, handle_level_irq);
-		set_irq_flags(i, IRQF_VALID);
-	}
-
-4) Implement an interrupt handler for the parent interrupt:
-
-	static void ixp4xx_qmgr_low_irq_handler(unsigned int irq, struct irq_des c *desc)
-	{
-		u32 status;
-		int i;
-
-		status = __raw_readl(IXP4XX_WHATEVER_QMGR_LOW_STATUS_REGISTER);
-		for (i = 0; i < 32; i++) {
-			if (status & (1 << i)) {
-				desc = irq_desc + IRQ_IXP4XX_QUEUE_0 + i;
-				desc_handle_irq(IRQ_IXP4XX_QUEUE_0 + i, desc);
-			}
-		}
-	}
-
-5) Hook up the parent interrupt:
-
-	set_irq_chained_handler(IRQ_IXP4XX_QM1, ixp4xx_qmgr_low_irq_handler);
-
-
-Or something like that.
-
-
-> > As with Christian's driver, I don't know whether an SRAM allocator
-> > makes much sense.  We can just set up a static allocation map for the
-> > in-tree drivers and leave out the allocator altogether.  I.e. I don't
-> > think it's worth the complexity (and just because the butt-ugly Intel
-> > code has an allocator isn't a very good reason. :-)
-> 
-> It's a very simple allocator. I don't whink we have enough SRAM
-> without it. For now it would work but it's probably too small
-> for all potential users at a time.
-> 
-> There may be up to 6 Ethernet ports (not sure about hardware
-> status, not yet supported even by Intel) - 7 queues * 128 entries
-> each = ~ 3.5 KB. Add 2 long queues (RX) for HSS and something
-> for TX, and then crypto, and maybe other things.
-
-You're unlikely to be using all of those at the same time, though.
-
-And what do you do if the user does compile all of these features into
-his kernel and then tries to use them all at the same time?  Return
--ENOMEM?
-
-Shouldn't we make sure that at least the features that are compiled in
-can be used at the same time?  If you want that guarantee, then you
-might as well determine the SRAM map at compile time.
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Good leaders being scarce, following yourself is allowed.
