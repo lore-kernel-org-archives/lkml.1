@@ -1,82 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032131AbXEHU6h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032126AbXEHVAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032131AbXEHU6h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:58:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032121AbXEHU6b
+	id S1032126AbXEHVAa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031597AbXEHVAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:58:31 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:40608 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032120AbXEHU63 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:58:29 -0400
-Date: Tue, 8 May 2007 13:58:26 -0700
-From: Andreas Dilger <adilger@clusterfs.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Andrew Morton <akpm@linux-foundation.org>, jeffschroeder@computer.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       Karl MacMillan <kmacmillan@mentalrootkit.com>,
-       KaiGai Kohei <kaigai@kaigai.gr.jp>
-Subject: Re: [PATCH 2/2] file capabilities: accomodate >32 bit capabilities
-Message-ID: <20070508205826.GH6375@schatzie.adilger.int>
-Mail-Followup-To: "Serge E. Hallyn" <serue@us.ibm.com>,
-	lkml <linux-kernel@vger.kernel.org>,
-	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-	James Morris <jmorris@namei.org>,
-	Stephen Smalley <sds@tycho.nsa.gov>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	jeffschroeder@computer.org, Chris Wright <chrisw@sous-sol.org>,
-	Karl MacMillan <kmacmillan@mentalrootkit.com>,
-	KaiGai Kohei <kaigai@kaigai.gr.jp>
-References: <20070508191548.GA29913@sergelap.austin.ibm.com> <20070508191704.GC29913@sergelap.austin.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508191704.GC29913@sergelap.austin.ibm.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+	Tue, 8 May 2007 17:00:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:36783 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967774AbXEHVAU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:00:20 -0400
+Message-ID: <4640E4CE.1030506@garzik.org>
+Date: Tue, 08 May 2007 16:59:58 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Matt Mackall <mpm@selenic.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Dan Williams <dcbw@redhat.com>, Christoph Hellwig <hch@infradead.org>,
+       linux-wireless@vger.kernel.org, marcelo@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Please pull 'revert-libertas' branch of wireless-2.6 (was Re:
+ Please pull 'libertas' branch of wireless-2.6)
+References: <20070227205649.GH5826@tuxdriver.com> <45E8CF5E.5090305@garzik.org> <20070303052140.GA31075@infradead.org> <20070507104117.GA31601@infradead.org> <1178539423.3032.24.camel@localhost.localdomain> <20070507141143.GB5125@tuxdriver.com> <463F443A.5000306@garzik.org> <20070508061255.GT11166@waste.org> <464034C2.3030007@yahoo.com.au>
+In-Reply-To: <464034C2.3030007@yahoo.com.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 08, 2007  14:17 -0500, Serge E. Hallyn wrote:
-> As the capability set changes and distributions start tagging
-> binaries with capabilities, we would like for running an older
-> kernel to not necessarily make those binaries unusable.
+Nick Piggin wrote:
+> Two things on top of a lot of people's pet peeves list are lack of
+> good review bandwidth, and poor driver code! So it is sad this was
+> merged without Christoph's comments being addressed. "it works for
+> me, we can fix it later" is probably a big reason for quality
+> problems of some parts of the kernel.
 > 
-> 	(0. Enable the CONFIG_SECURITY_FS_CAPABILITIES option
-> 	   when CONFIG_SECURITY=n.)
-> 	(1. Rename CONFIG_SECURITY_FS_CAPABILITIES to
-> 	   CONFIG_SECURITY_FILE_CAPABILITIES)
-> 	2. Introduce CONFIG_SECURITY_FILE_CAPABILITIES_STRICTXATTR
-> 	   which, when set, prevents loading binaries with capabilities
-> 	   set which the kernel doesn't know about.  When not set,
-> 	   such capabilities run, ignoring the unknown caps.
-> 	3. To accomodate 64-bit caps, specify that capabilities are
-> 	   stored as
-> 	   	u32 version; u32 eff0; u32 perm0; u32 inh0;
-> 		u32 eff1; u32 perm1; u32 inh1; (etc)
+> As for Christoph's idea of perfection... it usually isn't a bad
+> thing. And he is quite reasonable if you explain your good reason
+> to disagree or do something differently. The attitude of ignoring
+> comments can be really demotivating for a reviewer.
 
-Have you considered how such capabilities will be used in the future?
-One of the important use cases I can see today is the ability to
-split the heavily-overloaded e.g. CAP_SYS_ADMIN into much more fine
-grained attributes.
+I guess it's a good thing that the maintainer was not ignoring the 
+review comments, then...
 
-What we definitely do NOT want to happen is an application that needs
-priviledged access (e.g. e2fsck, mount) to stop running because the
-new capabilities _would_ have been granted by the new kernel and are
-not by the old kernel and STRICTXATTR is used.
+(please review the thread before replying, next time)
 
-To me it would seem that having extra capabilities on an old kernel
-is relatively harmless if the old kernel doesn't know what they are.
-It's like having a key to a door that you don't know where it is.
+	Jeff
 
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
 
