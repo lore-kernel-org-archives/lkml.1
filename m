@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032065AbXEHUVW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032090AbXEHUVe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032065AbXEHUVW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:21:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968272AbXEHUVS
+	id S1032090AbXEHUVe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 16:21:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032080AbXEHUVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:21:18 -0400
-Received: from assei1bl6.telenet-ops.be ([195.130.133.68]:32976 "EHLO
-	assei1bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967147AbXEHUVR (ORCPT
+	Tue, 8 May 2007 16:21:30 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:45881 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1032075AbXEHUV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:21:17 -0400
-Date: Tue, 8 May 2007 22:21:12 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Philippe De Muyter <phdm@macqel.be>
-Cc: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: retry [PATCH] partition : add support for sysv68 partitions
-In-Reply-To: <20070413135501.GA27439@ingate.macqel.be>
-Message-ID: <Pine.LNX.4.64.0705082217340.12497@anakin>
-References: <20070413135501.GA27439@ingate.macqel.be>
+	Tue, 8 May 2007 16:21:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=li7d4g4T0WSDu6lOlQVDn3jQckxuaWzBWKGeqGE2h3dX9oO3FhrncXjm66BW91i5n
+	0We0fqnCETC3A3vZam6RQ==
+Date: Tue, 8 May 2007 13:20:31 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Krzysztof Halasa <khc@pm.waw.pl>
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH] doc: volatile considered evil
+In-Reply-To: <m3k5vj2iha.fsf@maximus.localdomain>
+Message-ID: <alpine.DEB.0.99.0705081306000.15420@chino.kir.corp.google.com>
+References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org>
+ <20070508121404.17bd97a6.randy.dunlap@oracle.com>
+ <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com>
+ <m3k5vj2iha.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi Philippe,
+On Tue, 8 May 2007, Krzysztof Halasa wrote:
 
-On Fri, 13 Apr 2007, Philippe De Muyter wrote:
-> Add support for the Motorola sysv68 disk partition table (slices in motorola
-> doc).
+> > Since 'volatile' has two different semantics depending on the context in 
+> > which it is used, this warning should be appended to include the fact that 
+> > it is legitimate to use for inline assembly.
 > 
-> Signed-off-by: Philippe De Muyter <phdm@macqel.be>
+> I think it hasn't two semantics, it's like arguing that char has two
+> semantics.
 > 
-> diff -r 1b54f1d81bc5 fs/partitions/Kconfig
-> --- a/fs/partitions/Kconfig	Thu Apr 12 15:44:52 2007 -0700
-> +++ b/fs/partitions/Kconfig	Fri Apr 13 15:51:58 2007 +0200
-> @@ -236,3 +236,12 @@ config EFI_PARTITION
->  	help
->  	  Say Y here if you would like to use hard disks under Linux which
->  	  were partitioned using EFI GPT.
-> +
-> +config SYSV68_PARTITION
-> +	bool "SYSV68 partition table support" if PARTITION_ADVANCED
-> +	default y if M68K
-        ^^^^^^^^^^^^^^^^^
-> +	help
-> +	  Say Y here if you would like to be able to read the hard disk
-> +	  partition table format used by Motorola Delta machines (using
-> +	  sysv68).
-> +	  Otherwise, say N.
+> Volatile does one thing - prohibits C compiler from optimizing
+> accesses to the variable. Either with (volatile *) casts and with
+> volatile var;
+> 
 
-Bummer, I saw your patch before, but I never noticed the `default y if M68K'.
+What the meaning of an "access" to a volatile memory-mapped I/O port or a 
+variable that can be asynchronously interrupted is implementation-defined.
 
-Can you please tell me on which platforms SYSV68 partition tables are commonly
-used (I guess the Motorola MVME boards?), so we can enable it by default on a
-more sensible subset of M68K?
+You're only citing qualified versions of objects.
 
-Gr{oetje,eeting}s,
+In an asm construct, if all your input operands are modified and specified 
+as output operands as well, volatile must be added so that the entire 
+construct is not optimized away.  Additionally, it must be added if your 
+construct modifies memory that is neither listed in inputs nor outputs to 
+the construct so that it is known to have at least one side-effect.  Then, 
+the compiler cannot delete your construct if it is reachable because it 
+may produce such side-effects.
 
-						Geert
+Thus, the warning that was proposed for addition to CodingStyle should be 
+modified to explicitly state that the use of 'volatile' for asm constructs 
+is perfectly legitimate and its use as a type qualifier for objects in 
+code is inappropriate.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+		David
