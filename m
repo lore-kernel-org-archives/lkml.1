@@ -1,178 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967240AbXEGXs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967273AbXEHAAc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967240AbXEGXs6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 19:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbXEGXsz
+	id S967273AbXEHAAc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 20:00:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967258AbXEHAA3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 19:48:55 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:35359 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755250AbXEGXsy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 19:48:54 -0400
-From: "=?utf-8?q?S=2E=C3=87a=C4=9Flar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: Venki Pallipadi <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH 1/8] Restructuring hpet timer generic clock interfaces
-Date: Tue, 8 May 2007 02:47:48 +0300
-User-Agent: KMail/1.9.6
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>, Chris Wright <chrisw@sous-sol.org>
-References: <20070507202734.GA3926@linux-os.sc.intel.com>
-In-Reply-To: <20070507202734.GA3926@linux-os.sc.intel.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2190289.AdOUzTgegd";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+	Mon, 7 May 2007 20:00:29 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:34491 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967073AbXEHAA2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 20:00:28 -0400
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andreas Dilger <adilger@clusterfs.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
+In-Reply-To: <20070507135825.f8545a65.akpm@linux-foundation.org>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
+	 <20070330071417.GI355@devserv.devel.redhat.com>
+	 <20070417125514.GA7574@amitarora.in.ibm.com>
+	 <20070418130600.GW5967@schatzie.adilger.int>
+	 <20070420135146.GA21352@amitarora.in.ibm.com>
+	 <20070420145918.GY355@devserv.devel.redhat.com>
+	 <20070424121632.GA10136@amitarora.in.ibm.com>
+	 <20070426175056.GA25321@amitarora.in.ibm.com>
+	 <20070426181332.GD7209@amitarora.in.ibm.com>
+	 <20070503213133.d1559f52.akpm@linux-foundation.org>
+	 <20070507113753.GA5439@schatzie.adilger.int>
+	 <20070507135825.f8545a65.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM LTC
+Date: Mon, 07 May 2007 17:00:24 -0700
+Message-Id: <1178582424.3933.39.camel@dyn9047017103.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705080247.54463.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2190289.AdOUzTgegd
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Mon, 2007-05-07 at 13:58 -0700, Andrew Morton wrote:
+> On Mon, 7 May 2007 05:37:54 -0600
+> Andreas Dilger <adilger@clusterfs.com> wrote:
+> 
+> > > > +	block = offset >> blkbits;
+> > > > +	max_blocks = (EXT4_BLOCK_ALIGN(len + offset, blkbits) >> blkbits)
+> > > > +			 - block;
+> > > > +	mutex_lock(&EXT4_I(inode)->truncate_mutex);
+> > > > +	credits = ext4_ext_calc_credits_for_insert(inode, NULL);
+> > > > +	mutex_unlock(&EXT4_I(inode)->truncate_mutex);
+> > > 
+> > > Now I'm mystified.  Given that we're allocating an arbitrary amount of disk
+> > > space, and that this disk space will require an arbitrary amount of
+> > > metadata, how can we work out how much journal space we'll be needing
+> > > without at least looking at `len'?
+> > 
+> > Good question.
+> > 
+> > The uninitialized extent can cover up to 128MB with a single entry.
+> > If @path isn't specified, then ext4_ext_calc_credits_for_insert()
+> > function returns the maximum number of extents needed to insert a leaf,
+> > including splitting all of the index blocks.  That would allow up to 43GB
+> > (340 extents/block * 128MB) to be preallocated, but it still needs to take
+> > the size of the preallocation into account (adding 3 blocks per 43GB - a
+> > leaf block, a bitmap block and a group descriptor).
+> 
+> I think the use of ext4_journal_extend() (as Amit has proposed) will help
+> here, but it is not sufficient.
+> 
+> Because under some circumstances, a journal_extend() failure could mean
+> that we fail to allocate all the required disk space.  If it is infrequent
+> enough, that is acceptable when the caller is using fallocate() for
+> performance reasons.
+> 
+> But it is very much not acceptable if the caller is using fallocate() for
+> space-reservation reasons.  If you used fallocate to reserve 1GB of disk
+> and fallocate() "succeeded" and you later get ENOSPC then you'd have a
+> right to get a bit upset.
+> 
+> So I think the ext3/4 fallocate() implementation will need to be
+> implemented as a loop: 
+> 
+> 	while (len) {
+> 		journal_start();
+> 		len -= do_fallocate(len, ...);
+> 		journal_stop();
+> 	}
+> 
+> 
 
-Hi;
+I agree.  There is already a loop in Amit's current's patch to call
+ext4_ext_get_blocks() thoug. Question is how much credit should ext4 to
+ask for in each journal_start()?
+> +/*
+> + * ext4_fallocate:
+> + * preallocate space for a file
+> + * mode is for future use, e.g. for unallocating preallocated blocks etc.
+> + */
+> +int ext4_fallocate(struct inode *inode, int mode, loff_t offset, loff_t len)
+> +{
+....
 
-07 May 2007 Pts tarihinde, Venki Pallipadi =C5=9Funlar=C4=B1 yazm=C4=B1=C5=
-=9Ft=C4=B1:=20
-> i386 HPET changes.
->
-> Patchset does the following changes to HPET support:
-> * Add HPET force detect to ICH chipsets, and detect the
->   presence of HPET through PCI quirk.
-> * Enable HPET timer to function in standard interrupt delivery mode,
-> against the current legacy replacement mode
-> * Enable HPET as a PER CPU time event, which will help in laptops that
->   supports C3 and hence has unreliable LAPIC timer.
->
-> The changes enable processors to stay in idle longer, by increasing the
-> average time spend in an idle state per call, by more than twice, on
-> my dual core laptop. It reduces the number of interrupts on a totally
-> idle system, compared to when I use PIT.
+> +       mutex_lock(&EXT4_I(inode)->truncate_mutex);
+> +       credits = ext4_ext_calc_credits_for_insert(inode, NULL);
+> +       mutex_unlock(&EXT4_I(inode)->truncate_mutex);
 
-My machine (SONY VAIO FS-215B) just hangs/freezes (no oops, no MAGIC_SYSRQ)=
-=20
-after writing "ACPI: Power Button (CM) [PWRB]" on screen
+I think the calculation is based on the assumption that there is only a
+single extent to be inserted, which is the ideal case. But in some cases
+we may end up allocating several chunk of blocks(extents) for this
+single preallocation request when fs is fragmented (or part of
+preallocation request is already fulfilled)
 
-=2E..
-Machine check exception polling timer started.
-apm: BIOS version 1.2 Flags 0x03 (Driver version 1.16ac)
-audit: initializing netlink socket (disabled)
-audit(1178591695.734:1): initialized
-highmem bounce pool size: 64 pages
-VFS: Disk quotas dquot_6.5.1
-Dquot-cache hash table entries: 1024 (order 0, 4096 bytes)
-io scheduler noop registered
-io scheduler anticipatory registered
-io scheduler deadline registered
-io scheduler cfq registered (default)
-ACPI: AC Adapter [ADP1] (on-line)
-ACPI: Battery Slot [BAT0] (battery present)
-input: Power Button (FF) as /class/input/input0
-ACPI: Power Button (FF) [PWRF]
-input: Lid Switch as /class/input/input1
-ACPI: Lid Switch [LID0]
-input: Power Button (CM) as /class/input/input2
-ACPI: Power Button (CM) [PWRB]
+I think we should move this calculation inside the loop as well,and we
+really do not need to grab the lock to calculate the credit if the @path
+is always NULL, all the function does is mathmatics.
 
-Normal boot sequence continues with following;
+I can't think of any good way to estimate the total credits needed for
+this whole preallocation request. Looked at ext4_get_block(), which is
+used for DIO code to deal with large amount of block allocation. The
+credit reservation is quite weak there too. The DIO_CREDIT is only
+(EXT4_RESERVE_TRANS_BLOCKS + 32)
 
-ACPI: CPU0 (power states: C1[C1] C2[C2])
-ACPI: Processor [CPU0] (supports 8 throttling states)
-ACPI Exception (processor_core-0783): AE_NOT_FOUND, Processor Device is not=
-=20
-present [20070126]
-ACPI: Thermal Zone [THRM] (98 C)
-isapnp: Scanning for PnP cards...
-Time: acpi_pm clocksource has been installed.
-isapnp: No Plug & Play device found
-Real Time Clock Driver v1.12ac
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-Clocksource tsc unstable (delta =3D -490158796 ns)
-floppy0: no floppy controllers found
-RAMDISK driver initialized: 16 RAM disks of 16384K size 1024 blocksize
-loop: loaded (max 8 devices)
-=2E..
+> +       handle=ext4_journal_start(inode, credits +
+> +                                       EXT4_DATA_TRANS_BLOCKS(inode->i_sb)+1);
+> +       if (IS_ERR(handle))
+> +               return PTR_ERR(handle);
+> +retry:
+> +       ret = 0;
+> +       while (ret >= 0 && ret < max_blocks) {
+> +               block = block + ret;
+> +               max_blocks = max_blocks - ret;
+> +               ret = ext4_ext_get_blocks(handle, inode, block,
+> +                                         max_blocks, &map_bh,
+> +                                         EXT4_CREATE_UNINITIALIZED_EXT, 0);
+> +               BUG_ON(!ret);
+> +               if (ret > 0 && test_bit(BH_New, &map_bh.b_state)
+> +                       && ((block + ret) > (i_size_read(inode) << blkbits)))
+> +                       nblocks = nblocks + ret;
+> +       }
+> +
+> +       if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
+> +               goto retry;
+> +
+> Now the interesting question is: what do we do if we get halfway through
+> this loop and then run out of space?  We could leave the disk all filled up
+> and then return failure to the caller, but that's pretty poor behaviour,
+> IMO.
+> 
+The current code handles earlier ENOSPC by three times retries. After
+that if we still run out of space, then it's propably right to notify
+the caller there isn't much space left.
 
-System boots fine with hpet=3Ddisable and by the way, i tried the first ver=
-sion=20
-of this patchset without a problem (if i remembered correctly, it was just=
-=20
-force detects the hpet but only enables for x86_64)
+We could extend the block reservation window size before the while loop
+so we could get a lower chance to get more fragmented.
 
-zangetsu ~ # lspci
-00:00.0 Host bridge: Intel Corporation Mobile 915GM/PM/GMS/910GML Express=20
-Processor to DRAM Controller (rev 03)
-00:02.0 VGA compatible controller: Intel Corporation Mobile 915GM/GMS/910GM=
-L=20
-Express Graphics Controller (rev 03)
-00:02.1 Display controller: Intel Corporation Mobile 915GM/GMS/910GML Expre=
-ss=20
-Graphics Controller (rev 03)
-00:1b.0 Audio device: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family)=
-=20
-High Definition Audio Controller (rev 03)
-00:1d.0 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Famil=
-y)=20
-USB UHCI #1 (rev 03)
-00:1d.1 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Famil=
-y)=20
-USB UHCI #2 (rev 03)
-00:1d.2 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Famil=
-y)=20
-USB UHCI #3 (rev 03)
-00:1d.3 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Famil=
-y)=20
-USB UHCI #4 (rev 03)
-00:1d.7 USB Controller: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Famil=
-y)=20
-USB2 EHCI Controller (rev 03)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev d3)
-00:1f.0 ISA bridge: Intel Corporation 82801FBM (ICH6M) LPC Interface Bridge=
-=20
-(rev 03)
-00:1f.1 IDE interface: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family=
-)=20
-IDE Controller (rev 03)
-00:1f.3 SMBus: Intel Corporation 82801FB/FBM/FR/FW/FRW (ICH6 Family) SMBus=
-=20
-Controller (rev 03)
-06:03.0 CardBus bridge: Texas Instruments PCI7420 CardBus Controller
-06:03.2 FireWire (IEEE 1394): Texas Instruments PCI7x20 1394a-2000 OHCI=20
-Two-Port PHY/Link-Layer Controller
-06:03.3 Mass storage controller: Texas Instruments PCI7420/7620 Combo CardB=
-us,=20
-1394a-2000 OHCI and SD/MS-Pro Controller
-06:04.0 Network controller: Intel Corporation PRO/Wireless 2200BG Network=20
-Connection (rev 05)
-06:08.0 Ethernet controller: Intel Corporation 82562ET/EZ/GT/GZ - PRO/100 V=
-E=20
-(LOM) Ethernet Controller Mobile (rev 03)
+> 
+> Does the proposed implementation handle quotas correctly, btw?  Has that
+> been tested?
+> 
+I think so. The ext4_ext_get_blocks() will end up calling
+ext4_new_blocks() to do the real block allocation, quota is being
+handled there, therefor is tested already.
 
-Cheers
-=2D-=20
-S.=C3=87a=C4=9Flar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
+Mingming
 
---nextPart2190289.AdOUzTgegd
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQBGP7qqy7E6i0LKo6YRAjH0AKCKkTd360JhKqFDezi1ZvxDWNS1oQCgqhHk
-h/2MUhQqLYdouzR47qojPgM=
-=tMSE
------END PGP SIGNATURE-----
-
---nextPart2190289.AdOUzTgegd--
