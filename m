@@ -1,67 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967315AbXEHLSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967325AbXEHLUO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967315AbXEHLSn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 07:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967301AbXEHLSl
+	id S967325AbXEHLUO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 07:20:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967311AbXEHLUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 07:18:41 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:4839 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967311AbXEHLSk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 07:18:40 -0400
-Message-ID: <46405C92.1080003@shadowen.org>
-Date: Tue, 08 May 2007 12:18:42 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Tue, 8 May 2007 07:20:11 -0400
+Received: from mail.z-net.ru ([89.113.80.10]:1298 "EHLO mail.z-net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966707AbXEHLUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 07:20:10 -0400
+Date: Tue, 8 May 2007 15:19:24 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: akpm@linux-foundation.org
+Cc: Greg KH <gregkh@suse.de>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       linux-kernel@vger.kernel.org
+Subject: Re: + git-battery-fix.patch added to -mm tree
+Message-ID: <20070508111924.GA16785@zarina>
+Reply-To: cbou@mail.ru
+References: <200705081001.l48A1KUK020833@shell0.pdx.osdl.net>
 MIME-Version: 1.0
-To: Shani Moideen <shani.moideen@wipro.com>
-CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@lists.osdl.org
-Subject: Re: [KJ PATCH] Replacing memset(<addr>,0,PAGE_SIZE) with clear_page()
- in mm/memory.c
-References: <1178621156.3598.10.camel@shani-win>
-In-Reply-To: <1178621156.3598.10.camel@shani-win>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+In-Reply-To: <200705081001.l48A1KUK020833@shell0.pdx.osdl.net>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shani Moideen wrote:
-> Hi,
+On Tue, May 08, 2007 at 03:01:20AM -0700, akpm@linux-foundation.org wrote:
 > 
-> Replacing memset(<addr>,0,PAGE_SIZE) with clear_page() in mm/memory.c.
+> The patch titled
+>      git-battery-fix
+> has been added to the -mm tree.  Its filename is
+>      git-battery-fix.patch
+
+Andrew, much thanks for fixing that. That error triggered by some
+refactors in drivers/base/... I suppose I have to setup -mm tree in
+addition to Linus', to test -mm builds from time to time for the
+purpose of catching these changes myself.
+
+Though, this error happened indeed because nobody cares about
+find_bus function nowdays...
+
+I want ask Greg KH and Evgeniy Polyakov: could you together settle
+preferred way of accessing bus types? Should we really use
+find_bus/bus_find, or Evgeniy would just export w1 bus type? In
+later case, I'll remove un-"if 0" find_bus patch, and will
+prepare another which will export w1 bus type.
+
+I do not have any preference, both solutions will work.
+
+Thanks,
+
+> *** Remember to use Documentation/SubmitChecklist when testing your code ***
 > 
-> Signed-off-by: Shani Moideen <shani.moideen@wipro.com>
-> ----
+> See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt to find
+> out what to do about this
 > 
-> thanks.
+> ------------------------------------------------------
+> Subject: git-battery-fix
+> From: Andrew Morton <akpm@linux-foundation.org>
 > 
+> Cc: Anton Vorontsov <cbou@mail.ru>
+> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> ---
 > 
-> diff --git a/mm/memory.c b/mm/memory.c
-> index e7066e7..2780d07 100644
-> --- a/mm/memory.c
-> +++ b/mm/memory.c
-> @@ -1505,7 +1505,7 @@ static inline void cow_user_page(struct page *dst, struct page *src, unsigned lo
->                  * zeroes.
->                  */
->                 if (__copy_from_user_inatomic(kaddr, uaddr, PAGE_SIZE))
-> -                       memset(kaddr, 0, PAGE_SIZE);
-> +                       clear_page(kaddr);
->                 kunmap_atomic(kaddr, KM_USER0);
->                 flush_dcache_page(dst);
->                 return;
+>  drivers/base/bus.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
+> diff -puN drivers/base/bus.c~git-battery-fix drivers/base/bus.c
+> --- a/drivers/base/bus.c~git-battery-fix
+> +++ a/drivers/base/bus.c
+> @@ -740,7 +740,7 @@ void put_bus(struct bus_type * bus)
+>  
+>  struct bus_type * find_bus(char * name)
+>  {
+> -	struct kobject * k = kset_find_obj(&bus_subsys.kset, name);
+> +	struct kobject * k = kset_find_obj(&bus_subsys, name);
+>  	return k ? to_bus(k) : NULL;
+>  }
+>  EXPORT_SYMBOL_GPL(find_bus);
+> _
 > 
 
-This looks to be whitespace dammaged?
-
--apw
-
-use tabs not spaces
-PATCH: -:64:
-FILE: b/mm/memory.c:1508:
-+                       clear_page(kaddr);$
-
+-- 
+Anton Vorontsov
+email: cbou@mail.ru
+backup email: ya-cbou@yandex.ru
+irc://irc.freenode.org/bd2
