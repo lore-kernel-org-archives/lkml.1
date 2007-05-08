@@ -1,90 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032260AbXEHVtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032033AbXEHVyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032260AbXEHVtU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968390AbXEHVtS
+	id S1032033AbXEHVyX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967451AbXEHVyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:49:18 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:58800 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968385AbXEHVtP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:49:15 -0400
-Date: Tue, 8 May 2007 16:49:14 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Andrew Morton <akpm@linux-foundation.org>, jeffschroeder@computer.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       Karl MacMillan <kmacmillan@mentalrootkit.com>,
-       KaiGai Kohei <kaigai@kaigai.gr.jp>
-Subject: Re: [PATCH 2/2] file capabilities: accomodate >32 bit capabilities
-Message-ID: <20070508214914.GA27582@sergelap.austin.ibm.com>
-References: <20070508191548.GA29913@sergelap.austin.ibm.com> <20070508191704.GC29913@sergelap.austin.ibm.com> <20070508205826.GH6375@schatzie.adilger.int>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508205826.GH6375@schatzie.adilger.int>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 8 May 2007 17:54:20 -0400
+Received: from mga06.intel.com ([134.134.136.21]:24844 "EHLO
+	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S967147AbXEHVyT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:54:19 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,507,1170662400"; 
+   d="scan'208";a="240897489"
+Subject: RE: Regression with SLUB on Netperf and Volanomark
+From: Tim Chen <tim.c.chen@linux.intel.com>
+Reply-To: tim.c.chen@linux.intel.com
+To: Christoph Lameter <clameter@sgi.com>
+Cc: "Chen, Tim C" <tim.c.chen@intel.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
+       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+In-Reply-To: <Pine.LNX.4.64.0705071848300.1378@schroedinger.engr.sgi.com>
+References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
+	 <Pine.LNX.4.64.0705031839480.16296@schroedinger.engr.sgi.com>
+	 <1178322083.23795.217.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0705041800070.28492@schroedinger.engr.sgi.com>
+	 <1178584834.15701.18.camel@localhost.localdomain>
+	 <Pine.LNX.4.64.0705071848300.1378@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Organization: Intel
+Date: Tue, 08 May 2007 14:02:04 -0700
+Message-Id: <1178658124.15701.35.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-8) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Andreas Dilger (adilger@clusterfs.com):
-> On May 08, 2007  14:17 -0500, Serge E. Hallyn wrote:
-> > As the capability set changes and distributions start tagging
-> > binaries with capabilities, we would like for running an older
-> > kernel to not necessarily make those binaries unusable.
-> > 
-> > 	(0. Enable the CONFIG_SECURITY_FS_CAPABILITIES option
-> > 	   when CONFIG_SECURITY=n.)
-> > 	(1. Rename CONFIG_SECURITY_FS_CAPABILITIES to
-> > 	   CONFIG_SECURITY_FILE_CAPABILITIES)
-> > 	2. Introduce CONFIG_SECURITY_FILE_CAPABILITIES_STRICTXATTR
-> > 	   which, when set, prevents loading binaries with capabilities
-> > 	   set which the kernel doesn't know about.  When not set,
-> > 	   such capabilities run, ignoring the unknown caps.
-> > 	3. To accomodate 64-bit caps, specify that capabilities are
-> > 	   stored as
-> > 	   	u32 version; u32 eff0; u32 perm0; u32 inh0;
-> > 		u32 eff1; u32 perm1; u32 inh1; (etc)
+On Mon, 2007-05-07 at 18:49 -0700, Christoph Lameter wrote:
+> On Mon, 7 May 2007, Tim Chen wrote:
 > 
-> Have you considered how such capabilities will be used in the future?
-
-There have been all sorts of suggestions, including very fine-grained
-breakdowns of existing capabilities as well as capabilities for
-non-privileged operations.
-
-Other candidates for upcoming capabilities will be to satisfy
-containers/vserver/openvz, where a distinction needs to be made between
-CAP_DAC_OVERRIDE inside the user namespace, and the global
-CAP_DAC_OVERRIDE.  Although the path i've been pursuing (for which I
-should really send out the prelim patches I've been sitting on)
-follow David Howell's and Eric Biederman's suggestions of using the
-keyrings to store capabilities to other user namespaces.  Still new
-capabilities may be desirable to guard CLONE_NEW_NS etc (rather than
-CAP_SYS_ADMIN).
-
-> One of the important use cases I can see today is the ability to
-> split the heavily-overloaded e.g. CAP_SYS_ADMIN into much more fine
-> grained attributes.
-
-Sounds plausible, though it suffers from both making capabilities far
-more cumbersome (i.e. finding the right capability for what you wanted
-to do) and backward compatibility.  Perhaps at that point we should
-introduce security.capabilityv2 xattrs.  A binary can then carry
-security.capability=CAP_SYS_ADMIN=p, and
-security.capabilityv2=cap_may_clone_mntns=p.
-
-> What we definitely do NOT want to happen is an application that needs
-> priviledged access (e.g. e2fsck, mount) to stop running because the
-> new capabilities _would_ have been granted by the new kernel and are
-> not by the old kernel and STRICTXATTR is used.
+> > However, the output from TCP_STREAM is quite stable.  
+> > I am still seeing a 4% difference between the SLAB and SLUB kernel.
+> > Looking at the L2 cache miss rate with emon, I saw 6% more cache miss on
+> > the client side with SLUB.  The server side has the same amount of cache
+> > miss.  This is test under SMP mode with client and server bound to
+> > different core on separate package.
 > 
-> To me it would seem that having extra capabilities on an old kernel
-> is relatively harmless if the old kernel doesn't know what they are.
-> It's like having a key to a door that you don't know where it is.
+> Could you try the following patch on top of 2.6.21-mm1 with the patches
+> from http://ftp.kernel.org/pub/linux/kernel/people/christoph/slub-patches?
+> 
+> I sent it to you before. This is one is an updated version
+> 
+> 
+> 
+> Avoid atomic overhead in slab_alloc and slab_free
+> 
 
-If we ditch the STRICTXATTR option do the semantics seem sane to you?
+I tried the slub-patches and the avoid atomic overhead patch against
+2.6.21-mm1.  It brings the TCP_STREAM performance for SLUB to the SLAB
+level.  The patches not mentioned in the "series" file did not apply
+cleanly to 2.6.21-mm1 and I skipped most of those.  
 
-thanks,
--serge
+Patches applied are: 
+http://ftp.kernel.org/pub/linux/kernel/people/christoph/slub-
+patches/series + dentry_target_reclaimed + kmem_cache_ops + slub_stats +
+skip_atomic_overhead
+
+Without skip atomic overhead patch, the throughput drops by 1 to 1.5%.
+
+The change from slub_min_order=0 slub_max_order=4 
+to slub_min_order=6 slub_max_order=7 did not make much difference in
+my tests.
+
+
+Tim
