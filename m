@@ -1,43 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967203AbXEHSTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967287AbXEHSWJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967203AbXEHSTu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 14:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967080AbXEHSTu
+	id S967287AbXEHSWJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 14:22:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966725AbXEHSWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 14:19:50 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:45142 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967021AbXEHSTt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 14:19:49 -0400
-From: Roland McGrath <roland@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Tue, 8 May 2007 14:22:08 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:46579 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S966264AbXEHSWH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 14:22:07 -0400
+Date: Tue, 8 May 2007 11:22:07 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Srinivasa Ds <srinivasa@in.ibm.com>
+cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
        Andrew Morton <akpm@linux-foundation.org>
-X-Fcc: ~/Mail/linus
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Remove unused variable in get_unmapped_area
-X-Shopping-List: (1) Quaint corruption excitements
-   (2) Carbonated abrasion wigs
-   (3) Stimulating dwarves
-   (4) Dyspeptic circumlocutions
-Message-Id: <20070508181938.B5B6E1F850E@magilla.localdomain>
-Date: Tue,  8 May 2007 11:19:38 -0700 (PDT)
+Subject: Re: kernel expection generated with 2.6.21-mm1 kernel boot up
+In-Reply-To: <46406816.8030106@in.ibm.com>
+Message-ID: <Pine.LNX.4.64.0705081119590.10126@schroedinger.engr.sgi.com>
+References: <463F196C.9070501@linux.vnet.ibm.com> <46406816.8030106@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Roland McGrath <roland@redhat.com>
----
- mm/mmap.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+On Tue, 8 May 2007, Srinivasa Ds wrote:
 
-diff --git a/mm/mmap.c b/mm/mmap.c
-index 52646d6..4be69af 100644  
---- a/mm/mmap.c
-+++ b/mm/mmap.c
-@@ -1366,7 +1366,6 @@ unsigned long
- get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
- 		unsigned long pgoff, unsigned long flags)
- {
--	unsigned long ret;
- 	unsigned long (*get_area)(struct file *, unsigned long,
- 				  unsigned long, unsigned long, unsigned long);
- 
+> Looks like there is a bug in SLUB implementaion for ppc64 in 2.6.21-mm1.
+> I unmarked CONFIG_SLUB and build the kernel, its booting cleary now.
+> 
+> Thanks
+>  Srinivasa DS
+
+This is a known issue for PPC with more than 4 processors. Work is in 
+progress for a general fix.
+
+You should have not been able to select SLUB at all given that you have 4 
+processor configured. Hmmm... The Kconfig comparison for more than 4 cpus 
+does only seem to work in certain cases.
+
+Could I have a complete .config?
