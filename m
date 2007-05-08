@@ -1,75 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966394AbXEHMk6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966841AbXEHMln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966394AbXEHMk6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:40:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934367AbXEHMk5
+	id S966841AbXEHMln (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934367AbXEHMlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:40:57 -0400
-Received: from mail.screens.ru ([213.234.233.54]:35785 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934206AbXEHMk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:40:56 -0400
-Date: Tue, 8 May 2007 16:40:47 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-mm1 hwsusp: BUG at workqueue.c:106
-Message-ID: <20070508124047.GA995@tv-sign.ru>
-References: <20070508105528.GA86@tv-sign.ru> <20070508121232.GE1772@ff.dom.local>
-Mime-Version: 1.0
+	Tue, 8 May 2007 08:41:42 -0400
+Received: from tango.0pointer.de ([85.214.72.216]:48859 "EHLO
+	tango.0pointer.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934535AbXEHMll (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:41:41 -0400
+Date: Tue, 8 May 2007 14:41:39 +0200
+From: Lennart Poettering <mzxreary@0pointer.de>
+To: Greg KH <gregkh@suse.de>
+Cc: linux-kernel@vger.kernel.org, kay.sievers@vrfy.org
+Subject: Re: [PATCH] DMI-based module autoloading
+Message-ID: <20070508124139.GA18511@tango.0pointer.de>
+References: <20070508005429.GA19182@tango.0pointer.de> <20070508012736.GA24856@suse.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070508121232.GE1772@ff.dom.local>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070508012736.GA24856@suse.de>
+Organization: .phi.
+X-Campaign-1: ()  ASCII Ribbon Campaign
+X-Campaign-2: /  Against HTML Email & vCards - Against Microsoft Attachments
+X-Disclaimer-1: Diese Nachricht wurde mit einer elektronischen 
+X-Disclaimer-2: Datenverarbeitungsanlage erstellt und bedarf daher 
+X-Disclaimer-3: keiner Unterschrift.
+User-Agent: Leviathan/19.8.0 [zh] (Cray 3; I; Solaris 4.711; Console)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/08, Jarek Poplawski wrote:
->
-> On 08-05-2007 12:55, Oleg Nesterov wrote:
-> > On 05/08, Andrew Morton wrote:
-> >> On Tue, 08 May 2007 10:57:35 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
-> >>
-> >>> this occured in dmesg during resuming from hwsusp in 2.6.21-mm1 (captured
-> >>> through netconsole). Perfectly reproducible, it simply happens each time I
-> >>> try it.
-> >> Let's cc Oleg.
-> >>
-> >>> usb_endpoint usbdev5.1_ep00: PM: resume from 0, parent usb5 still 2
-> >>> ------------[ cut here ]------------
-> >>> kernel BUG at /home/l/latest/xxx/kernel/workqueue.c:106!
-> >>> invalid opcode: 0000 [#1]
-> >>> SMP
-> >>> Modules linked in: ipv6 floppy ohci1394 ieee1394 parport_pc parport usbhid
-> >>> ehci_hcd pata_acpi ff_memless sr_mod cdrom
-> ...
-> > queue_delayed_work().
+On Mon, 07.05.07 18:27, Greg KH (gregkh@suse.de) wrote:
+
+Hi!
+
+> On Tue, May 08, 2007 at 02:54:29AM +0200, Lennart Poettering wrote:
+> > To take advantage of DMI based module autoloading, a driver should
+> > export one or more MODULE_ALIAS fields similar to these:
 > > 
-> > Probably, cancel_delayed_work(&delayed_work->work) was called with the ->timer
-> > pending. This is wrong, cancel_delayed_work() clears _PENDING unconditionally,
+> > MODULE_ALIAS("dmi:*:svnMICRO-STARINT'LCO.,LTD:pnMS-1013:pvr0131*:cvnMICRO-STARINT'LCO.,LTD:ct10:*");
+> > MODULE_ALIAS("dmi:*:svnMicro-StarInternational:pnMS-1058:pvr0581:rvnMSI:rnMS-1058:*:ct10:*");
+> > MODULE_ALIAS("dmi:*:svnMicro-StarInternational:pnMS-1412:*:rvnMSI:rnMS-1412:*:cvnMICRO-STARINT'LCO.,LTD:ct10:*");
+> > MODULE_ALIAS("dmi:*:svnNOTEBOOK:pnSAM2000:pvr0131*:cvnMICRO-STARINT'LCO.,LTD:ct10:*");
 > 
-> Maybe I miss your point, but clearing is conditional: on timer delete...
+> Is there any way to automatically generate these aliases (like we do for
+> PCI and USB), in a way that is easier for the developer, instead of
+> having to figure out how to create such a "wierd" string like these by
+> hand?
+
+Automatically? You mean by having some kind of macro that generates
+the string from its parameters or some kind of structure and than use
+"file2alias" to generate the alias lines automatically?
+
+I am not sure if that is a good idea, because people really need to
+clean up their strings manually before putting them into
+MODULE_ALIAS. DMI data blocks usually contain a lot of rubbish. People should
+really think twice when writing down those lines.
+
+It's not that difficult to write these strings by hand, they are not
+that weird. Also, on systems with this patch applied all you need to
+do is run "cat /sys/class/dmi/id/modalias" to get the proper
+MODULE_ALIAS string for your respective machine. Then, just replace
+all rubbish with "*" and you are done.
+
+If required I can hack up a simple script that generates the data from
+dmidecode.
+ 
+> > These lines are specific to my msi-laptop.c driver. They are basically
+> > just a concatenation of a few carefully selected DMI fields with all
+> > potentially bad characters stripped.
 > 
-> I think more suspicious is calling cancel_work_sync() for a delayed work
-> (with timer pending). Or maybe some race profits from _PENDING cleared
-> without locking?
+> What is a "bad character" here?
 
-Yes, of course, I meant cancel_work_sync(), sorry for the confusion.
+All characters <= 32 and >= 127, and ':'. The latter we use for
+separating the DMI fields in the modalias strings, hence we don't want
+the DMI data to use that character.
 
-Thanks!
+Lennart
 
-So, once again, cancel_work_sync(&dwork->work) is wrong unless the timer
-was stopped.
-
-Before make-cancel_rearming_delayed_work-reliable.patch
-
-	it requires that the @work can't be re-queued.
-
-After
-	works, but waits for the timer expiration in a busy-wait loop.
-
-Oleg.
-
+-- 
+Lennart Poettering; lennart [at] poettering [dot] net
+ICQ# 11060553; GPG 0x1A015CC4; http://0pointer.net/lennart/
