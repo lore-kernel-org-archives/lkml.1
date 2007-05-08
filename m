@@ -1,74 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967013AbXEHUlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934225AbXEHUnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967013AbXEHUlp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933865AbXEHUll
+	id S934225AbXEHUnb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 16:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933865AbXEHUn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:41:41 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44853 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S933223AbXEHUlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:41:39 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -mm] swsusp: Use reasonable default for hibernation_mode
-Date: Tue, 8 May 2007 22:46:16 +0200
-User-Agent: KMail/1.9.5
-Cc: Johannes Berg <johannes@sipsolutions.net>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-References: <200705041132.32227.rjw@sisk.pl> <200705051550.53436.rjw@sisk.pl> <1178538404.7261.16.camel@johannes.berg>
-In-Reply-To: <1178538404.7261.16.camel@johannes.berg>
+	Tue, 8 May 2007 16:43:27 -0400
+Received: from pne-smtpout3-sn1.fre.skanova.net ([81.228.11.120]:63433 "EHLO
+	pne-smtpout3-sn1.fre.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933740AbXEHUn0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 16:43:26 -0400
+X-Greylist: delayed 4184 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 May 2007 16:43:26 EDT
+Message-ID: <4640CA5A.2080301@trn.iki.fi>
+Date: Tue, 08 May 2007 22:07:06 +0300
+From: Lasse Karkkainen <tronic+bpsk@trn.iki.fi>
+User-Agent: Thunderbird 1.5.0.8 (X11/20061209)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: linux-kernel@vger.kernel.org
+Subject: Slow usb-storage detection prevents RAID autodetection
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705082246.17166.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Make sure that hibernation_mode is set to a reasonable value by default.
+On boot, it takes a while until USB disks are detected, and before this
+the kernel may have already reached the RAID autodetection stage (in
+which case RAID arrays from USB storage will not be detected at all),
+and may even have tried mounting the root, causing kernel panic if the
+root partition was supposed to be on a USB disk.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/disk.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+Is there any good workaround for this besides using initrd? Or are there
+plans on fixing it (perhaps make RAID autodetection and root mounting
+wait for USB scanning to finish)?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Index: linux-2.6.21/kernel/power/disk.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/disk.c	2007-05-06 14:40:12.000000000 +0200
-+++ linux-2.6.21/kernel/power/disk.c	2007-05-08 22:12:02.000000000 +0200
-@@ -30,8 +30,6 @@ char resume_file[256] = CONFIG_PM_STD_PA
- dev_t swsusp_resume_device;
- sector_t swsusp_resume_block;
- 
--static int hibernation_mode;
--
- enum {
- 	HIBERNATION_INVALID,
- 	HIBERNATION_PLATFORM,
-@@ -45,6 +43,8 @@ enum {
- #define HIBERNATION_MAX (__HIBERNATION_AFTER_LAST-1)
- #define HIBERNATION_FIRST (HIBERNATION_INVALID + 1)
- 
-+static int hibernation_mode = HIBERNATION_SHUTDOWN;
-+
- struct hibernation_ops *hibernation_ops;
- 
- /**
-@@ -60,6 +60,11 @@ void hibernation_set_ops(struct hibernat
- 	}
- 	mutex_lock(&pm_mutex);
- 	hibernation_ops = ops;
-+	if (ops)
-+		hibernation_mode = HIBERNATION_PLATFORM;
-+	else if (hibernation_mode == HIBERNATION_PLATFORM)
-+		hibernation_mode = HIBERNATION_SHUTDOWN;
-+
- 	mutex_unlock(&pm_mutex);
- }
- 
+iD8DBQFGQMpaOBbAI1NE8/ERAvXrAJ9db2FEaCMlXFpuduhz7LxUM8DJsACgt75R
+YFmRRJog2LyIcqMttYxCJ/A=
+=v0DG
+-----END PGP SIGNATURE-----
