@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968915AbXEHWwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968995AbXEHWxd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968915AbXEHWwP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032587AbXEHWvz
+	id S968995AbXEHWxd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:53:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968599AbXEHWxZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:51:55 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:36758 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032579AbXEHWvx (ORCPT
+	Tue, 8 May 2007 18:53:25 -0400
+Received: from v05705.home.net.pl ([212.85.118.117]:63066 "HELO
+	v05705.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S968590AbXEHWxY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:51:53 -0400
-Date: Tue, 8 May 2007 15:52:53 -0700
-From: Greg KH <greg@kroah.com>
-To: J??rn Engel <joern@lazybastard.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH 1/2] LogFS proper
-Message-ID: <20070508225253.GA2689@kroah.com>
-References: <20070507215913.GA15054@lazybastard.org> <20070507220036.GB15054@lazybastard.org> <1178608950.3042.273.camel@localhost.localdomain> <20070508163226.GA22443@lazybastard.org> <84144f020705081215t73f2c0fq8ecb677423329cd8@mail.gmail.com> <20070508205827.GC23056@lazybastard.org>
+	Tue, 8 May 2007 18:53:24 -0400
+Date: Wed, 9 May 2007 00:53:33 +0200
+From: Zbigniew Baniewski <zb@ispid.com.pl>
+To: Willy Tarreau <w@1wt.eu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: "modularized" 2.4.34.4  ->  ide-core "unresolved symbols"
+Message-ID: <20070508225333.GA19063@localhost.localdomain>
+References: <20070505194922.GA13176@localhost.localdomain> <20070506043645.GF943@1wt.eu> <20070508202334.GA16185@localhost.localdomain> <20070508211646.GA3129@1wt.eu> <20070508221425.GA18244@localhost.localdomain> <20070508223922.GB31591@1wt.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-2
 Content-Disposition: inline
-In-Reply-To: <20070508205827.GC23056@lazybastard.org>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <20070508223922.GB31591@1wt.eu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 10:58:27PM +0200, J??rn Engel wrote:
-> On Tue, 8 May 2007 22:15:18 +0300, Pekka Enberg wrote:
-> > On 5/8/07, J??rn Engel <joern@lazybastard.org> wrote:
-> > >> > +typedef __be16 be16;
-> > >> > +typedef __be32 be32;
-> > >> > +typedef __be64 be64;
-> > >>
-> > >> Why are those typedefs necessary ?
-> > >
-> > >Not strictly.  I tend to use the be* types fairly often in the code and
-> > >simply grew weary of seeing the underscores.
-> > >
-> > >Any objections if I seperate out the userspace headers and keep the
-> > >shorthands for kernel code only?
-> > 
-> > Not sure what you mean but I would prefer you drop the typedefs completely.
-> 
-> Basically I prefer be64 over __be64 for similar reasons that most people
-> prefer u64 over __u64.  Others prefer uint64_t over both, but C99 hasn't
-> defined beint64_t yet.
+On Wed, May 09, 2007 at 12:39:22AM +0200, Willy Tarreau wrote:
 
-There is a difference between "u64" and "__u64", so don't confuse the
-two, they are used for different things.
+> This "sanscrit-like" language is an oops (in fact a kernel panic, but the
+> dump format is called an oops). It is what developers use to find bugs.
 
-Same thing for your typedef above, you are confusing the usage of these
-types of variables, please do not do that.
+Of course, I'm aware. ;)
 
-In short, if the variable is going to cross the userspace/kernelspace
-boundry, use the "__" version, otherwise use the non-"--" version.
+> I see that you're using devfs.
 
-And please don't use uint64_t in the kernel, I don't want to see that
-long flame-war again, read the archives for why those kinds of types
-don't matter for us in the kernel tree.
+No, I'm not. No idea, why it has been enabled... :-O  just added grsecurity
+patch to the previous .config, switched ata-module to be compiled directly
+into kernel - and made new compilation.
 
-So please drop all typedefs from your filesystem, you should not be
-creating any new ones, that's the incorrect style guidelines.
+> If you're pretty certain that you need DEVFS, then for a test, please
+> set a max of IDE options to YES instead of MODULE. At least all the ones
+> you need to boot on this system.
 
-thanks,
+OK, I'll repeat the compilation making sure, that devfs is disabled.
+-- 
+				pozdrawiam / regards
 
-greg k-h
+						Zbigniew Baniewski
