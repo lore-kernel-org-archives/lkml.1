@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966235AbXEHMYQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934598AbXEHM1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966235AbXEHMYQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:24:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965509AbXEHMYP
+	id S934598AbXEHM1W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934430AbXEHM1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:24:15 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:36360 "EHLO pasmtpB.tele.dk"
+	Tue, 8 May 2007 08:27:21 -0400
+Received: from ns.suse.de ([195.135.220.2]:36681 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S964792AbXEHMYO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:24:14 -0400
-Date: Tue, 8 May 2007 13:52:20 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: Bogus section mismatch errors?
-Message-ID: <20070508115220.GA29160@uranus.ravnborg.org>
-References: <20070508111759.GA26562@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S934515AbXEHM1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:27:20 -0400
+From: Andi Kleen <ak@suse.de>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
+Date: Tue, 8 May 2007 14:27:08 +0200
+User-Agent: KMail/1.9.1
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Alexander van Heukelum <heukelum@mailshack.com>,
+       lkml <linux-kernel@vger.kernel.org>
+References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org> <46405E0C.3020909@zytor.com>
+In-Reply-To: <46405E0C.3020909@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070508111759.GA26562@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200705081427.08646.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 12:17:59PM +0100, Russell King wrote:
-> 
-> WARNING: arch/arm/mach-realview/built-in.o - Section mismatch:
->  reference to .init.text: from .data between 'realview_timer' (at offset 0x54)
->  and 'clcd_plat_data'
-> 
-> Weird, these two data structures don't interact with each other.  Probably
-> bogus.
-modpsot does it best to guess what symbol are represented by an address.
-In this case I would assume that realview_timer has a function pointer to a function
-that is marked __init.
+On Tuesday 08 May 2007 13:25, H. Peter Anvin wrote:
+> Andrew Morton wrote:
+> >>  	# Normalize the start address
+> >> -	jmpl	$BOOTSEG, $start2
+> >> +	jmpw	$BOOTSEG, $start2
+> >
+> > Sigh, another blow struck in the ongoing struggle between my Vaio and the
+> > rest of the world.
+> >
+> > Stone-cold black-screen lockup immediately upon boot.
+> >
+> > Stock FC5 install, config at
+> > http://userweb.kernel.org/~akpm/config-sony.txt
+>
+> Andrew, I'm seriously starting to think there is something fundamentally
+> wrong with that test setup.
 
-> 
-> WARNING: init/built-in.o - Section mismatch:
->  reference to .init.text: from .text between 'rest_init' (at offset 0x2c)
->  and 'run_init_process'
-This is due to the reference to kernel_init - but binutils hardcode the offset
-so modpost does not recognize the symbol.
-A workaround (that I do not like) it to remove static declaration of kernel_init,
-then modpost will recognize the symbol and see this is OK.
+I agree. The patch above does not change any code in the running
+kernel and is not even used in a normal kernel boot. Andrew,
+can you please double check that?
 
+> [*] On the other hand, as I discovered in the process,
+> arch/i386/kernel/cpu/transmeta.c apparently gets miscompiled on my
+> development system for top-of-Linus.  This is a Linux bug and not gcc's
+> fault.  The following code:
 
-> WARNING: mm/built-in.o - Section mismatch:
->  reference to .init.text: from .text between 'kmem_cache_create' (at offset 0x1bd94)
->  and 'cache_reap'
-> WARNING: mm/built-in.o - Section mismatch:
->  reference to .init.text: from .text between 'kmem_cache_create' (at offset 0x1bdcc)
->  and 'cache_reap'
-There are in slab a function that is not marked __init that refer to a function marked
-__init. But the logic surrounding makes it OK.
+You should have put that into a different mail (is there a electron shortage
+somewhere now? @)  Ok, thanks for the well researched bug report.  Will fix in 
+my tree.
 
-I have no fix/workaround for this.
-Andres has suggested that we should mark functions/data that may refer to __init{data}
-with something like: __nowarn and __nowarndata
+-Andi
 
-I am planning to implement something so we can mark functions/data with:
-__init_ref_ok and _init_data_ref_ok
-Which is indeed more ugly but expalins what is actually OK.
-
-I hope to take a look during the weekend.
-
-	Sam
