@@ -1,73 +1,262 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968068AbXEHOUb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968095AbXEHOXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968068AbXEHOUb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:20:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967868AbXEHOUb
+	id S968095AbXEHOXi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967562AbXEHOXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:20:31 -0400
-Received: from mail.screens.ru ([213.234.233.54]:40892 "EHLO mail.screens.ru"
+	Tue, 8 May 2007 10:23:37 -0400
+Received: from mail.kroah.org ([69.55.234.183]:37159 "EHLO perch.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967377AbXEHOUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:20:30 -0400
-Date: Tue, 8 May 2007 18:20:25 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       linux-pm@lists.linux-foundation.org,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-mm1 hwsusp: BUG at workqueue.c:106
-Message-ID: <20070508142025.GB1105@tv-sign.ru>
-References: <46403B7F.1050009@gmail.com> <20070508021131.438cee31.akpm@linux-foundation.org> <20070508105528.GA86@tv-sign.ru> <46405A67.8020105@gmail.com> <46406656.9060504@gmail.com> <20070508134815.GA1074@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508134815.GA1074@tv-sign.ru>
-User-Agent: Mutt/1.5.11
+	id S967658AbXEHOXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 10:23:36 -0400
+X-Greylist: delayed 939 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 May 2007 10:23:36 EDT
+From: Greg Kroah-Hartman <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org
+Cc: =?utf-8?q?Hans-J=C3=BCrgen_Koch?= <hjk@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 3/3] UIO: Hilscher CIF card driver
+Date: Tue,  8 May 2007 07:08:44 -0700
+Message-Id: <11786333244012-git-send-email-gregkh@suse.de>
+X-Mailer: git-send-email 1.5.1.3
+In-Reply-To: <11786333241492-git-send-email-gregkh@suse.de>
+References: <20070508140428.GA12641@kroah.com>
+ <1178633324259-git-send-email-gregkh@suse.de>
+ <11786333241492-git-send-email-gregkh@suse.de>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/08, Oleg Nesterov wrote:
->
-> On 05/08, Jiri Slaby wrote:
-> >
-> > vmstat_update+0x0/0x2b
-> 
-> Thanks a lot.
-> 
-> Right now,
-> 
-> > +static void vmstat_update(struct work_struct *w)
-> > +{
-> > +       refresh_cpu_vm_stats(smp_processor_id());
-> > +       schedule_delayed_work(&__get_cpu_var(vmstat_work),
-> > +               sysctl_stat_interval);
-> > +}
-> 
-> This is not precisely correct. We cam schedule the wrong vmstat_work
-> if this timer/work migrates to another CPU. I'd suggest
-> 
-> 	schedule_delayed_work(container_of(w, struct delayed_work, work))
-> 
-> This should not happen because we are doing cancel_rearming_delayed_work()
-> below, however:
-> 
-> > +       case CPU_DOWN_PREPARE:
-> > +       case CPU_DOWN_PREPARE_FROZEN:
-> > +               cancel_rearming_delayed_work(&per_cpu(vmstat_work, cpu));
-> > +               per_cpu(vmstat_work, cpu).work.func = NULL;
-> > +       case CPU_DOWN_FAILED:
-> > +       case CPU_DOWN_FAILED_FROZEN:
-> > +               start_cpu_timer(cpu);
-> 
-> we need a "break;" before "case CPU_DOWN_FAILED", otherwise we re-start
-> vmstat_update() immediately.
-> 
-> This is a bug, but I am not sure is this the only problem.
+From: Hans-Jürgen Koch <hjk@linutronix.de>
 
-In case I was not clear, this _can_ explain the problem. Because an extra
-start_cpu_timer() (due to missed "break;") re-initializes dwork, and clears
-_PENDING.
+this is a patch that adds support for Hilscher CIF DeviceNet and
+Profibus cards. I tested it on a Kontron CPX board, and Thomas reviewed
+it.
 
-Oleg.
+You can find the user space part here:
+
+http://www.osadl.org/projects/downloads/UIO/user/cif-0.1.0.tar.gz
+
+Notes: cif_api.c is the main file you want to look at. It contains the
+functions to open, close, mmap and so on. cif_dps.c adds functions
+specific to Profibus cards, and cif_dn.c contains functions for
+DeviceNet cards.  cif.c is a universal playground, it's just a small
+test program.  The user space part of this UIO driver is still work in
+progress, and not everything is tested yet. At the moment, the thread in
+cif_api.c contains some code that artificially makes the card generate
+interrupts, this was added for testing and will be removed later. But
+the driver already contains all the functions needed for useful
+operation, so it gives a good idea of how such a thing looks like.
+
+For comparison, here's what you get from the manufacturer
+(www.hilscher.com) when you ask for a Linux 2.6 driver:
+
+http://www.tglx.de/private/hjk/cif-orig-2.6.tar.bz2
+
+WARNING: Don't look at the code for too long, you might become sick :-)
+
+
+Signed-off-by: Hans-Jürgen Koch <hjk@linutronix.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+---
+ drivers/uio/Kconfig   |   13 ++++
+ drivers/uio/Makefile  |    3 +-
+ drivers/uio/uio_cif.c |  156 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 171 insertions(+), 1 deletions(-)
+ create mode 100644 drivers/uio/uio_cif.c
+
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index 8fcef21..279f26c 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -11,4 +11,17 @@ config UIO
+ 
+ 	  If you don't know what to do here, say N.
+ 
++config UIO_CIF
++	tristate "generic Hilscher CIF Card driver"
++	depends on UIO && PCI
++	default n
++	help
++	  Driver for Hilscher CIF DeviceNet and Profibus cards.  This
++	  driver requires a userspace component that handles all of the
++	  heavy lifting and can be found at:
++	  	http://www.osadl.org/projects/downloads/UIO/user/cif-*
++
++	  To compile this driver as a module, choose M here: the module
++	  will be called uio_cif.
++
+ endmenu
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+index 9b7c830..7fecfb4 100644
+--- a/drivers/uio/Makefile
++++ b/drivers/uio/Makefile
+@@ -1 +1,2 @@
+-obj-$(CONFIG_UIO) += uio.o
++obj-$(CONFIG_UIO)	+= uio.o
++obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+diff --git a/drivers/uio/uio_cif.c b/drivers/uio/uio_cif.c
+new file mode 100644
+index 0000000..838bae4
+--- /dev/null
++++ b/drivers/uio/uio_cif.c
+@@ -0,0 +1,156 @@
++/*
++ * UIO Hilscher CIF card driver
++ *
++ * (C) 2007 Hans J. Koch <hjk@linutronix.de>
++ * Original code (C) 2005 Benedikt Spranger <b.spranger@linutronix.de>
++ *
++ * Licensed under GPL version 2 only.
++ *
++ */
++
++#include <linux/device.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/uio_driver.h>
++
++#include <asm/io.h>
++
++#ifndef PCI_DEVICE_ID_PLX_9030
++#define PCI_DEVICE_ID_PLX_9030	0x9030
++#endif
++
++#define PLX9030_INTCSR		0x4C
++#define INTSCR_INT1_ENABLE	0x01
++#define INTSCR_INT1_STATUS	0x04
++#define INT1_ENABLED_AND_ACTIVE	(INTSCR_INT1_ENABLE | INTSCR_INT1_STATUS)
++
++#define PCI_SUBVENDOR_ID_PEP	0x1518
++#define CIF_SUBDEVICE_PROFIBUS	0x430
++#define CIF_SUBDEVICE_DEVICENET	0x432
++
++
++static irqreturn_t hilscher_handler(int irq, struct uio_info *dev_info)
++{
++	void __iomem *plx_intscr = dev_info->mem[0].internal_addr
++					+ PLX9030_INTCSR;
++
++	if ((ioread8(plx_intscr) & INT1_ENABLED_AND_ACTIVE)
++	    != INT1_ENABLED_AND_ACTIVE)
++		return IRQ_NONE;
++
++	/* Disable interrupt */
++	iowrite8(ioread8(plx_intscr) & ~INTSCR_INT1_ENABLE, plx_intscr);
++	return IRQ_HANDLED;
++}
++
++static int __devinit hilscher_pci_probe(struct pci_dev *dev,
++					const struct pci_device_id *id)
++{
++	struct uio_info *info;
++
++	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++
++	if (pci_enable_device(dev))
++		goto out_free;
++
++	if (pci_request_regions(dev, "hilscher"))
++		goto out_disable;
++
++	info->mem[0].addr = pci_resource_start(dev, 0);
++	if (!info->mem[0].addr)
++		goto out_release;
++	info->mem[0].internal_addr = ioremap(pci_resource_start(dev, 0),
++					     pci_resource_len(dev, 0));
++	if (!info->mem[0].internal_addr)
++		goto out_release;
++
++	info->mem[0].size = pci_resource_len(dev, 0);
++	info->mem[0].memtype = UIO_MEM_PHYS;
++	info->mem[1].addr = pci_resource_start(dev, 2);
++	info->mem[1].size = pci_resource_len(dev, 2);
++	info->mem[1].memtype = UIO_MEM_PHYS;
++	switch (id->subdevice) {
++		case CIF_SUBDEVICE_PROFIBUS:
++			info->name = "CIF_Profibus";
++			break;
++		case CIF_SUBDEVICE_DEVICENET:
++			info->name = "CIF_Devicenet";
++			break;
++		default:
++			info->name = "CIF_???";
++	}
++	info->version = "0.0.1";
++	info->irq = dev->irq;
++	info->irq_flags = IRQF_DISABLED | IRQF_SHARED;
++	info->handler = hilscher_handler;
++
++	if (uio_register_device(&dev->dev, info))
++		goto out_unmap;
++
++	pci_set_drvdata(dev, info);
++
++	return 0;
++out_unmap:
++	iounmap(info->mem[0].internal_addr);
++out_release:
++	pci_release_regions(dev);
++out_disable:
++	pci_disable_device(dev);
++out_free:
++	kfree (info);
++	return -ENODEV;
++}
++
++static void hilscher_pci_remove(struct pci_dev *dev)
++{
++	struct uio_info *info = pci_get_drvdata(dev);
++
++	uio_unregister_device(info);
++	pci_release_regions(dev);
++	pci_disable_device(dev);
++	pci_set_drvdata(dev, NULL);
++	iounmap(info->mem[0].internal_addr);
++
++	kfree (info);
++}
++
++static struct pci_device_id hilscher_pci_ids[] = {
++	{
++		.vendor =	PCI_VENDOR_ID_PLX,
++		.device =	PCI_DEVICE_ID_PLX_9030,
++		.subvendor =	PCI_SUBVENDOR_ID_PEP,
++		.subdevice =	CIF_SUBDEVICE_PROFIBUS,
++	},
++	{
++		.vendor =	PCI_VENDOR_ID_PLX,
++		.device =	PCI_DEVICE_ID_PLX_9030,
++		.subvendor =	PCI_SUBVENDOR_ID_PEP,
++		.subdevice =	CIF_SUBDEVICE_DEVICENET,
++	},
++	{ 0, }
++};
++
++static struct pci_driver hilscher_pci_driver = {
++	.name = "hilscher",
++	.id_table = hilscher_pci_ids,
++	.probe = hilscher_pci_probe,
++	.remove = hilscher_pci_remove,
++};
++
++static int __init hilscher_init_module(void)
++{
++	return pci_register_driver(&hilscher_pci_driver);
++}
++
++static void __exit hilscher_exit_module(void)
++{
++	pci_unregister_driver(&hilscher_pci_driver);
++}
++
++module_init(hilscher_init_module);
++module_exit(hilscher_exit_module);
++
++MODULE_LICENSE("GPL v2");
++MODULE_AUTHOR("Hans J. Koch, Benedikt Spranger");
+-- 
+1.5.1.3
 
