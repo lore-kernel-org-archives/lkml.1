@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967575AbXEHMIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967440AbXEHMOZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967575AbXEHMIS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967426AbXEHMIR
+	id S967440AbXEHMOZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:14:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967387AbXEHMOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:08:17 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:50259 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967424AbXEHMIP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:08:15 -0400
-Message-ID: <46406816.8030106@in.ibm.com>
-Date: Tue, 08 May 2007 17:37:50 +0530
-From: Srinivasa Ds <srinivasa@in.ibm.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
-MIME-Version: 1.0
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-CC: linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: kernel expection generated with 2.6.21-mm1 kernel boot up
-References: <463F196C.9070501@linux.vnet.ibm.com>
-In-Reply-To: <463F196C.9070501@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 08:14:23 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48030 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967363AbXEHMOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:14:22 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070508114003.GB19294@wotan.suse.de> 
+References: <20070508114003.GB19294@wotan.suse.de>  <20070508113709.GA19294@wotan.suse.de> 
+To: Nick Piggin <npiggin@suse.de>
+Cc: linux-arch@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] optimise unlock_page 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Tue, 08 May 2007 13:13:35 +0100
+Message-ID: <9948.1178626415@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kamalesh Babulal wrote:
-> Hi,
-> 
-> I tried compiling and booting up with 2.6.21-mm1 kernel
-> on the following machine
-> 
-> Architecture      :    PPC64
-> CPU Type           :    POWER5 (gr)
-> Machine Type    :    CHRP IBM,9117-570
-> Base OS              :    Fedora Core 5
-> 
 
-> 
-> Faulting instruction address: 0xc0000000000cc5e4
-> 
-> cpu 0x1: Vector: 300 (Data Access) at [c000000005373320]
-> 
->   pc: c0000000000cc5e4: .slab_free+0x6c/0x424
-> 
->   lr: c00000000002fa70: .pgtable_free_tlb+0xd0/0x140
-> 
->   sp: c0000000053735a0
-> 
->  msr: 8000000000009032
-> 
+Nick Piggin <npiggin@suse.de> wrote:
 
-Looks like there is a bug in SLUB implementaion for ppc64 in 2.6.21-mm1.
-I unmarked CONFIG_SLUB and build the kernel, its booting cleary now.
+> This patch trades a page flag for a significant improvement in the unlock_page
+> fastpath. Various problems in the previous version were spotted by Hugh and
+> Ben (and fixed in this one).
 
-Thanks
- Srinivasa DS
+It looks reasonable at first glance, though it does consume yet another page
+flag:-/  However, I think that's probably a worthy trade.
+
+>  }
+> -	
+> +
+> +static inline void unlock_page(struct page *page)
+> +{
+> +	VM_BUG_ON(!PageLocked(page));
+> +	ClearPageLocked_Unlock(page);
+> +	if (unlikely(PageWaiters(page)))
+> +		__unlock_page(page);
+> +}
+> +
+
+Please don't simply discard the documentation, we have little enough as it is:
+
+> -/**
+> - * unlock_page - unlock a locked page
+> - * @page: the page
+> - *
+> - * Unlocks the page and wakes up sleepers in ___wait_on_page_locked().
+> - * Also wakes sleepers in wait_on_page_writeback() because the wakeup
+> - * mechananism between PageLocked pages and PageWriteback pages is shared.
+> - * But that's OK - sleepers in wait_on_page_writeback() just go back to sleep.
+> - *
+> - * The mb is necessary to enforce ordering between the clear_bit and the read
+> - * of the waitqueue (to avoid SMP races with a parallel wait_on_page_locked()).
+
+David
