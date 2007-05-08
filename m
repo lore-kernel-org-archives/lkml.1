@@ -1,64 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032341AbXEHVWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032354AbXEHVXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032341AbXEHVWP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032333AbXEHVWJ
+	id S1032354AbXEHVXb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032346AbXEHVX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:22:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:50040 "EHLO mga09.intel.com"
+	Tue, 8 May 2007 17:23:28 -0400
+Received: from gate.crashing.org ([63.228.1.57]:59332 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032185AbXEHVWI convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:22:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,507,1170662400"; 
-   d="scan'208";a="85072384"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-9"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH 1/8] Restructuring hpet timer generic clock interfaces
-Date: Tue, 8 May 2007 14:22:01 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F55DF62B@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <200705090008.00916.caglar@pardus.org.tr>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/8] Restructuring hpet timer generic clock interfaces
-thread-index: AceRtQnar+qx0pquQjmAER27sbXRtwAAbM+Q
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: <caglar@pardus.org.tr>
-CC: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andi Kleen" <ak@suse.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Chris Wright" <chrisw@sous-sol.org>
-X-OriginalArrivalTime: 08 May 2007 21:22:02.0002 (UTC) FILETIME=[EB3C4720:01C791B6]
+	id S1032345AbXEHVX1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:23:27 -0400
+Subject: Re: [rfc] lock bitops
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Matthew Wilcox <matthew@wil.cx>
+Cc: Nick Piggin <npiggin@suse.de>, linux-arch@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070508150631.GC10562@parisc-linux.org>
+References: <20070508113709.GA19294@wotan.suse.de>
+	 <20070508150631.GC10562@parisc-linux.org>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 07:23:15 +1000
+Message-Id: <1178659395.14928.82.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Tue, 2007-05-08 at 09:06 -0600, Matthew Wilcox wrote:
+> On Tue, May 08, 2007 at 01:37:09PM +0200, Nick Piggin wrote:
+> > --
+> > Introduce test_and_set_bit_lock / clear_bit_unlock bitops with lock semantics.
+> > Add non-trivial for powerpc and ia64. Convert page lock, buffer lock,
+> > bit_spin_lock, tasklet locks to use the new locks.
+> 
+> The names are a bit clumsy.  How about naming them after the effect,
+> rather than the implementation?  It struck me that really these things
+> are bit mutexes -- you can sleep while holding the lock.  How about
+> calling them bit_mutex_trylock() and bit_mutex_unlock()?
 
->-----Original Message-----
->From: S.Çaðlar Onur [mailto:caglar@pardus.org.tr] 
->Sent: Tuesday, May 08, 2007 2:08 PM
->To: Pallipadi, Venkatesh
->Cc: linux-kernel; Andrew Morton; Thomas Gleixner; Andi Kleen; 
->Ingo Molnar; Chris Wright
->Subject: Re: [PATCH 1/8] Restructuring hpet timer generic 
->clock interfaces
->
->08 May 2007 Sal tarihinde, Pallipadi, Venkatesh þunlarý yazmýþtý: 
->> Hmm. Looks like timer was somehow not set correctly.
->> Can you try only the first 5 patches in the patchset and 
->leave out the last
->> three and check whether it works.
->
->Yep, first 5 patches works fine,
->
+Hrm... spin_trylock vs. mutex_trylock ... what difference ? :-)
 
-That's good news :-).
+Note that if we're gonna generalize the usage as a mutex, we might want
+to extend the unlock semantic to return the first word flag atomically
+so that the caller can test for other bits without having to read
+the word back (which might be a performance hit on CPUs without store
+forwarding). That's already what Nick's new unlock_page() does (testing
+the flag again right after unlock). At first, I though it would make
+clear_bit_unlock() semantics a bit too clumsy but maybe it's worth it.
 
-Can you send me the full dmesg with the 5 patches and also the config file you are using. Also, did you try these patches against 2.6.21-vanilla or recent git?
+Ben.
 
-Thanks,
-Venki
+
