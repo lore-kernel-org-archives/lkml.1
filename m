@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032242AbXEHVLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032243AbXEHVMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032242AbXEHVLp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032233AbXEHVLi
+	id S1032243AbXEHVMv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032209AbXEHVMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:11:38 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:54171 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1032193AbXEHVK4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:10:56 -0400
-Date: Tue, 8 May 2007 14:10:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Latchesar Ionkov" <lucho@ionkov.net>
-Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       linux-fsdevel@vger.kernel.org,
-       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/4] v9fs: rename non-vfs related structs and functions
- to be moved to net/9p
-Message-Id: <20070508141012.7fdf4c24.akpm@linux-foundation.org>
-In-Reply-To: <f158dc670705081351j4d46b433o2bdd2e8212a52e15@mail.gmail.com>
-References: <f158dc670705081351j4d46b433o2bdd2e8212a52e15@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 May 2007 17:12:46 -0400
+Received: from gherkin.frus.com ([192.158.254.49]:33733 "EHLO gherkin.frus.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1032173AbXEHVMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:12:45 -0400
+Subject: Re: New Mitsumi legacy CD-ROM driver
+In-Reply-To: <200705082213.44042.linux@rainbow-software.org> "from Ondrej Zary
+ at May 8, 2007 10:13:43 pm"
+To: Ondrej Zary <linux@rainbow-software.org>
+Date: Tue, 8 May 2007 16:12:36 -0500 (CDT)
+CC: Rene Herman <rene.herman@gmail.com>, Andrew Morton <akpm@osdl.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+X-Mailer: ELM [version 2.4ME+ PL82 (25)]
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Message-Id: <20070508211236.95087DBA1@gherkin.frus.com>
+From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 14:51:02 -0600
-"Latchesar Ionkov" <lucho@ionkov.net> wrote:
+Ondrej Zary wrote:
+> On Tuesday 08 May 2007 11:42:08 you wrote:
+> > Mitsumi (mcdx, this driver), panasonic (sbpcd) and sony (cdu31a) are
+> > somewhat of an exception in so far that controllers for those three are
+> > still around on a lot of old ISA soundcards though. Moreover, I have the
+> > drives to test that trio so after this mitsumi driver is complete and in
+> > good shape I'll do the other two as well.
+> 
+> I fixed cdu31a some time ago - so it at least works.
+> I also have a Panasonic drive with controller integrated on a SB16 sound card 
+> but haven't tried it with Linux yet.
+> 
+> It's nice to see new driver for these old drives.
 
-> This patchset moves non-filesystem interfaces of v9fs from fs/9p to net/9p.
-> It moves the transport, packet marshalling and connection layers to net/9p
-> leaving only the VFS related files in fs/9p.
+Agreed.  I've still got a GUS in one of my museum pieces that runs
+MS-Win 3.1 by default.  The BIOS is too old to support booting from
+anything except hda, sda and floppy, but because I enjoy pain I'll
+be happy to modify the startup floppy images for a 2.6.X-based live
+CD distro (DSL, anyone?) and give the new drivers a spin when they're
+ready for testing.  The motherboard is a curiosity: it has ISA, PCI,
+*and* VLB slots.  The processor is an AMD 5x86 (think 486 on steroids).
+I *might* have 32 MB of RAM to work with: I simply don't remember :-).
 
-(Please cc netdev@vger.kernel.org on net-related work)
-
-These changes would be best handled via Eric's git tree, with appropriate
-acks from the net maintainers.
+-- 
+-----------------------------------------------------------------------
+Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
+rct@frus.com
+-----------------------------------------------------------------------
