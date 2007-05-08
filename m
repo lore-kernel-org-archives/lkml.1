@@ -1,83 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968147AbXEHO0I@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968165AbXEHO1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968147AbXEHO0I (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:26:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967710AbXEHO0H
+	id S968165AbXEHO1A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968037AbXEHO07
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:26:07 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:51457 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S967562AbXEHO0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:26:05 -0400
-Date: Tue, 8 May 2007 16:32:17 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
-       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
-Message-ID: <20070508143217.GA1011@ff.dom.local>
-References: <20070503204226.GA212@tv-sign.ru> <20070508071544.GA1772@ff.dom.local> <20070508123102.GB968@tv-sign.ru> <20070508135648.GG1772@ff.dom.local> <20070508140517.GA1105@tv-sign.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508140517.GA1105@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 8 May 2007 10:26:59 -0400
+Received: from smtpq2.groni1.gr.home.nl ([213.51.130.201]:34146 "EHLO
+	smtpq2.groni1.gr.home.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967828AbXEHO06 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 10:26:58 -0400
+Message-ID: <4640871F.2020904@gmail.com>
+Date: Tue, 08 May 2007 16:20:15 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Pekka J Enberg <penberg@cs.helsinki.fi>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: New Mitsumi legacy CD-ROM driver
+References: <464045F0.3040906@gmail.com> <20070508103524.GH4163@kernel.dk> <46407D75.7050603@gmail.com> <20070508134944.GO4163@kernel.dk> <Pine.LNX.4.64.0705081656570.31629@sbz-30.cs.Helsinki.FI> <20070508140432.GS4163@kernel.dk>
+In-Reply-To: <20070508140432.GS4163@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-AtHome-MailScanner-Information: Please contact support@home.nl for more information
+X-AtHome-MailScanner: Found to be clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 06:05:17PM +0400, Oleg Nesterov wrote:
-> On 05/08, Jarek Poplawski wrote:
-> >
-> > On Tue, May 08, 2007 at 04:31:02PM +0400, Oleg Nesterov wrote:
-> > > 
-> > > I thought about adding such a parameter, and I don't like this. This is
-> > > a matter of taste, of course, but _imho_ this uglifies the code.
-> > > 
-> > > In any case, unless we do completely different patch, the sequence should be
-> > > 
-> > > 	del_timer()	- a pending timer is the most common case
-> > > 
-> > > 	test_and_set_bit(WORK_STRUCT_PENDING) - the work is idle
-> > > 
-> > > 	try-to-steal-the-queued-work
-> > > 
-> > > This is what we are doing now.
-> > 
-> > I simply don't like to call del_timer(), where not needed, but maybe
-> > it's not so expensive and we can afford it... 
+On 05/08/2007 04:04 PM, Jens Axboe wrote:
+
+>>> Fine with me... As far as I am concerned, you are now the legacy
+>>> CD-ROM driver maintainer :-)
+>> 
+>> Poor Rene... ;-)
 > 
-> But this is the most common case, that was my point.
+> I'll be expecting a MAINTAINERS patch :-)
 
-And I agree it should start... 
+Hey, I _want_ to be supporting this one and the ones that'll follow but I'm 
+waiting with sending that particular patch until they're done and the rest 
+are gone since I'm not going to be maintaining the horrid crap that's there 
+currently thank you very much :-/
 
-> 
-> Look, we can add
-> 
-> 	if (!get_wq_data(work))
-> 		/* it was never queued */
-> 		return;
-> 
-> at the very start of cancel_xxx() functions. This will optimize out
-> del_timer + try_to_grab_pending() _sometimes_. Should we do this?
-> I don't think so. I think it is better to save a couple of bytes
-> from i-cache, but not to try to optimize the unlikely case.
+Rene.
 
-But the most of our test is already done in test_and_set_bit.
-I think it's more about taste, so let's forget...
-
-> > > So, we should either return 0, or add BUG_ON(!cwq).
-> > 
-> > ...And you prefer endless loop. Seems brave!
-> 
-> No, no, the loop won't be endless. Why do you think so? We spin until the timer
-> is started, or until the work is queued.
-
-Probably you are right - I was afraid about some inactive
-work with no timer to come.
-
-So, I think this all looks fine, and maybe one more needless ack
-won't do any harm here:
-
-Acked-by: Jarek Poplawski <jarkao2@o2.pl>
