@@ -1,77 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967480AbXEHS1n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967017AbXEHSab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967480AbXEHS1n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 14:27:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966692AbXEHS1m
+	id S967017AbXEHSab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 14:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966191AbXEHSab
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 14:27:42 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:46107 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966632AbXEHS1l (ORCPT
+	Tue, 8 May 2007 14:30:31 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:39862 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S966035AbXEHSaa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 14:27:41 -0400
-Message-ID: <4640C115.6080300@zytor.com>
-Date: Tue, 08 May 2007 11:27:33 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 8 May 2007 14:30:30 -0400
+Date: Tue, 8 May 2007 11:30:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+ (PCI_MULTITHREAD_PROBE)
+In-Reply-To: <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
+Message-ID: <alpine.LFD.0.98.0705081123080.3974@woody.linux-foundation.org>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+ <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
+ <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Alexander van Heukelum <heukelum@mailshack.com>, Andi Kleen <ak@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
-References: <20070505104452.GA30944@mailshack.com>	<20070508032817.e4734798.akpm@linux-foundation.org>	<46405E0C.3020909@zytor.com> <20070508111243.13e7a7f7.akpm@linux-foundation.org>
-In-Reply-To: <20070508111243.13e7a7f7.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> 
-> Without patch:
-> 
-> (gdb)  x/20i _start
-> 0x0 <_start>:   ljmpw  $0x0,$0x8
-> 0x6 <_start+6>: rolb   $0x8c,(%edi)
-> 0x9 <start2+1>: enter  $0xd88e,$0x8e
-> 0xd <start2+5>: rorb   $0xfb,0x7c00bcd0(%esi)
-> 0x14 <start2+12>:       cld    
-> 0x15 <start2+13>:       mov    $0x20ac0031,%esi
-> 0x1a <msg_loop+2>:      (bad)  
-> 0x1b <msg_loop+3>:      je     0x26 <die>
-> 0x1d <msg_loop+5>:      mov    $0xe,%ah
-> 0x1f <msg_loop+7>:      mov    $0x10cd0007,%ebx
-> 0x24 <msg_loop+12>:     jmp    0x18 <msg_loop>
-> 0x26 <die>:     xor    %eax,%eax
-> 0x28 <die+2>:   int    $0x16
-> 
-> With patch:
-> 
-> (gdb) x/20i _start
-> 0x0 <_start>:   ljmp   $0xc88c,$0x7c00005
-> 0x7 <start2+2>: mov    %eax,%ds
-> 0x9 <start2+4>: mov    %eax,%es
-> 0xb <start2+6>: mov    %eax,%ss
-> 0xd <start2+8>: mov    $0xfcfb7c00,%esp
-> 0x12 <start2+13>:       mov    $0x20ac002e,%esi
-> 0x17 <msg_loop+2>:      (bad)  
-> 0x18 <msg_loop+3>:      je     0x23 <die>
-> 0x1a <msg_loop+5>:      mov    $0xe,%ah
-> 0x1c <msg_loop+7>:      mov    $0x10cd0007,%ebx
-> 0x21 <msg_loop+12>:     jmp    0x15 <msg_loop>
-> 
-> not sure what's going on there.  We seem to have confused gdb.
-> 
 
-You're trying to disassemble 16-bit code as if it was 32-bit code.  The
-easiest way to disassemble is to have NASM installed on your machine and
-just do:
 
-	ndisasm bzImage
+On Tue, 8 May 2007, Cornelia Huck wrote:
+>
+> > Threading at a driver level still does that (ie individual disks may be 
+> > attached in some order that depends on how fast they are to respond), but 
+> > in a much more controlled fashion, and only for drivers that explicitly 
+> > say that they can do it.
+> 
+> How is that better? You still must rely on udev for persistent device
+> names.
 
-My setup code rewrite creates an intermediate .elf file to retain
-debugging information and make 16-bit disassembly
-("objdump -d -m i8086") easier.
+It's better because then the *driver* can decide whether it supports 
+threaded probing or not.
 
-	-hpa
+The threaded PCI bus probing was totally and utterly broken exactly 
+because many drivers were simply not willing or able to handle it.
+
+Also, quite frankly, when this came up I already posted a much better 
+approach for allowing arbitrary threading. It was ignored, but maybe you 
+want to take a look.
+
+See
+
+	http://lkml.org/lkml/2006/10/27/185
+
+for last time this came up. Any driver can decide to do
+
+	execute_in_parallel(myprobe, myarguments);
+
+and that really *simple* thing allows synchronization points 
+("wait_for_parallel()") and arbitrary setting of the allowed parallelism.
+
+I really think that is a *much* better approach. It allows, for example, 
+the driver to do certain things (like name allocations and any 
+particularly *fast* parts of probing) synchronously, and then do slow 
+things (like spinning up disks and actually reading the partition tables) 
+asynchronously.
+
+Anyway, I will refuse to merge anything that does generic bus-level 
+(unless the bus is something off-the-board like SCSI) parallelism, unless 
+you can really show me how superior and stable it is. I seriously doubt 
+you can. We tried it once, and it was a total disaster.
+
+		Linus
