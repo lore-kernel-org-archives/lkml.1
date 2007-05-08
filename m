@@ -1,65 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968117AbXEHOHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968122AbXEHOLu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968117AbXEHOHm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968026AbXEHOHi
+	id S968122AbXEHOLu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:11:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967658AbXEHOLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:07:38 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:34340 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967803AbXEHOHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:07:37 -0400
-Message-ID: <46408424.6050301@redhat.com>
-Date: Tue, 08 May 2007 10:07:32 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 8 May 2007 10:11:50 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:41944 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S967652AbXEHOLt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 10:11:49 -0400
+Date: Tue, 8 May 2007 16:11:49 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg K-H <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+	(PCI_MULTITHREAD_PROBE)
+Message-ID: <20070508141149.GJ4226@stusta.de>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Andi Kleen <andi@basil.nowhere.org>
-Subject: Re: Please revert 86c0baf123e474b6eb404798926ecf62b426bf3a
-References: <20070508134928.GA13212@flint.arm.linux.org.uk>
-In-Reply-To: <20070508134928.GA13212@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 08, 2007 at 03:37:13PM +0200, Cornelia Huck wrote:
+> As I wanted to add multithreaded probing for some s390 busses, I
+> discovered that the commit above removed the multithreaded probing
+> infrastructure again, while just some days before some of my patches
+> reworking it had been merged... I thought
+> http://marc.info/?l=linux-kernel&m=117591868412593&w=2 meant that we
+> should go ahead with per-subsystem multithreaded probing?
 
+My patch (that started the discussion you mentioned and seems to have 
+been applied unchanged) contained both the wanted PCI_MULTITHREAD_PROBE 
+removal and a removal of some of your new infrastructure.
 
-Russell King wrote:
-> The change:
->
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +#define __INIT		.section	".text","ax"
-> +#define __INITDATA	.section	".data","aw"
-> +#else
->  #define __INIT		.section	".init.text","ax"
-> -#define __FINIT		.previous
->  #define __INITDATA	.section	".init.data","aw"
-> +#endif
-> +#define __FINIT		.previous
->
->   
+Let's revert it, and I'll then send a new patch containing only the 
+PCI_MULTITHREAD_PROBE removal.
 
-Something is not right here.... was this the patch that I submitted?  If 
-so then I definitely screwed up pretty badly.
+> (OK, PCI_MULTITHREAD_PROBE should not depend on BROKEN, but on
+> EXPERIMENTAL with the reworked probing infrastructure. This got mixed
+> up, I can send a patch that changes it.)
 
-I thought I had done (sorry for the cut-and-paste):
+You meant to say:
+  depends on EXPERIMENTAL && !ATA && !IDE && !...
 
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+#define __CPUINIT	.section	".text","ax"
-+#define __CPUINITDATA	.section	".data","aw"
-+#else
-+#define __CPUINIT	__INIT
-+#define __CPUINITDATA	__INITDATA
-+#endif
+Multithreaded probing on the PCI bus currently breaks too much kernel 
+code.
 
+And we've already seen how many systems it therefore breaks in practice.
 
-Maybe some wires got crossed along the submit route...  Russell, I'll 
-submit a fix against the latest tree.
+cu
+Adrian
 
-P.
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
