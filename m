@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968122AbXEHOLu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968135AbXEHOMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968122AbXEHOLu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967658AbXEHOLu
+	id S968135AbXEHOMV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968127AbXEHOMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:11:50 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:41944 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S967652AbXEHOLt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:11:49 -0400
-Date: Tue, 8 May 2007 16:11:49 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Greg K-H <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
-	(PCI_MULTITHREAD_PROBE)
-Message-ID: <20070508141149.GJ4226@stusta.de>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+	Tue, 8 May 2007 10:12:20 -0400
+Received: from khc.piap.pl ([195.187.100.11]:48305 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967418AbXEHOMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 10:12:19 -0400
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.3 - QMGR
+References: <m3abwhcy74.fsf@maximus.localdomain>
+	<m3vef5biob.fsf@maximus.localdomain>
+	<5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>
+	<m3hcqoa772.fsf@maximus.localdomain>
+	<86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>
+	<m33b289zku.fsf@maximus.localdomain>
+	<m31whs5ehn.fsf_-_@maximus.localdomain>
+	<20070508113232.GA32055@xi.wantstofly.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 08 May 2007 16:12:17 +0200
+In-Reply-To: <20070508113232.GA32055@xi.wantstofly.org> (Lennert Buytenhek's message of "Tue, 8 May 2007 13:32:32 +0200")
+Message-ID: <m3k5vj76bi.fsf@maximus.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 03:37:13PM +0200, Cornelia Huck wrote:
-> As I wanted to add multithreaded probing for some s390 busses, I
-> discovered that the commit above removed the multithreaded probing
-> infrastructure again, while just some days before some of my patches
-> reworking it had been merged... I thought
-> http://marc.info/?l=linux-kernel&m=117591868412593&w=2 meant that we
-> should go ahead with per-subsystem multithreaded probing?
+Lennert Buytenhek <buytenh@wantstofly.org> writes:
 
-My patch (that started the discussion you mentioned and seems to have 
-been applied unchanged) contained both the wanted PCI_MULTITHREAD_PROBE 
-removal and a removal of some of your new infrastructure.
+> The queue manager interrupts should probably be implemented as an
+> irqchip, in the same way that GPIO interrupts are implemented.  (I.e.
+> allocate 'real' interrupt numbers for them, and use the interrupt
+> cascade mechanism.)  You probably want to have separate irqchips for
+> the upper and lower halves, too.  This way, drivers can just use
+> request_irq() instead of having to bother with platform-specific
+> qmgr_set_irq() methods.
 
-Let's revert it, and I'll then send a new patch containing only the 
-PCI_MULTITHREAD_PROBE removal.
+Is there a sample somewhere?
 
-> (OK, PCI_MULTITHREAD_PROBE should not depend on BROKEN, but on
-> EXPERIMENTAL with the reworked probing infrastructure. This got mixed
-> up, I can send a patch that changes it.)
+> As with Christian's driver, I don't know whether an SRAM allocator
+> makes much sense.  We can just set up a static allocation map for the
+> in-tree drivers and leave out the allocator altogether.  I.e. I don't
+> think it's worth the complexity (and just because the butt-ugly Intel
+> code has an allocator isn't a very good reason. :-)
 
-You meant to say:
-  depends on EXPERIMENTAL && !ATA && !IDE && !...
+It's a very simple allocator. I don't whink we have enough SRAM
+without it. For now it would work but it's probably too small
+for all potential users at a time.
 
-Multithreaded probing on the PCI bus currently breaks too much kernel 
-code.
+There may be up to 6 Ethernet ports (not sure about hardware
+status, not yet supported even by Intel) - 7 queues * 128 entries
+each = ~ 3.5 KB. Add 2 long queues (RX) for HSS and something
+for TX, and then crypto, and maybe other things.
 
-And we've already seen how many systems it therefore breaks in practice.
-
-cu
-Adrian
-
+Current allocator have its potential problems, but they can be
+solved internally (fragmentation, be we tend to use only
+128-entry queues (RX and TX-ready Ethernet pool) and short,
+16-entry ones (TX) - easy to deal with).
 -- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Krzysztof Halasa
