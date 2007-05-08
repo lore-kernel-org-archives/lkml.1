@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967983AbXEHFig@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967995AbXEHFj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967983AbXEHFig (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 01:38:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967977AbXEHFic
+	id S967995AbXEHFj3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 01:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967977AbXEHFj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 01:38:32 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:37839 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967951AbXEHFi3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 01:38:29 -0400
-Date: Mon, 7 May 2007 22:37:38 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Simon Arlott <simon@fire.lp0.eu>,
-       linux-kernel@vger.kernel.org, Andi Kleen <ak@suse.de>
-Subject: Re: sleeping function called from invalid context at
- block/cfq-iosched.c (Was: Re: 2.6.21-mm1)
-Message-Id: <20070507223738.57d763da.akpm@linux-foundation.org>
-In-Reply-To: <20070508053132.GZ31925@holomorphy.com>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-	<463E3C50.9080207@simon.arlott.org.uk>
-	<20070506135403.a6785f7d.akpm@linux-foundation.org>
-	<463FAF1C.8060500@simon.arlott.org.uk>
-	<20070507162349.0790706f.akpm@linux-foundation.org>
-	<463FB697.6060902@simon.arlott.org.uk>
-	<20070507163335.f5f5ea6e.akpm@linux-foundation.org>
-	<463FFD0A.2050708@goop.org>
-	<20070507222409.2d597a86.akpm@linux-foundation.org>
-	<20070508053132.GZ31925@holomorphy.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 01:39:28 -0400
+Received: from waste.org ([66.93.16.53]:51467 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967882AbXEHFj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 01:39:27 -0400
+Date: Tue, 8 May 2007 00:36:27 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Esben Nielsen <nielsen.esben@googlemail.com>, Ingo Molnar <mingo@elte.hu>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v8
+Message-ID: <20070508053627.GS11166@waste.org>
+References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com> <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com> <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire> <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org> <Pine.LNX.4.64.0705071159530.14011@frodo.shire> <alpine.LFD.0.98.0705070921390.3802@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705070921390.3802@woody.linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007 22:31:32 -0700 William Lee Irwin III <wli@holomorphy.com> wrote:
-
-> On Mon, 07 May 2007 21:31:06 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> >> I'm using wli's 8k
-> >> stack + irq stack patches with good success though.
+On Mon, May 07, 2007 at 09:28:32AM -0700, Linus Torvalds wrote:
 > 
-> On Mon, May 07, 2007 at 10:24:09PM -0700, Andrew Morton wrote:
-> > wlis are handy.
 > 
-> I think Andi's handling the mergework on those patches, but I'll check
-> in to see if I should rediff vs. -mm or what if you want them.
+> On Mon, 7 May 2007, Esben Nielsen wrote:
+> > 
+> > What is (long)(a-b) ? I have tried to look it up in the C99 standeard but I
+> > can't find it. Maybe it is in the referred LIA-1 standeard, which I can't find
+> > with google.
 > 
-> Andi, what's the verdict on those stack patches?
-> 
+> I don't worry about non-2's-complement machines (they don't exist, and 
+> likely won't exist in the future either).
 
-Whoa. The verdict is usually "don't use so much stack".
+They do exist. And they run Linux. SLES9 in fact.
 
-Do we know what has gone wrong here?
+http://en.wikipedia.org/wiki/UNIVAC_1100/2200_series#UNISYS_ClearPath_IX_series
 
-Last week Jens said he was picking up the ancient
-md-dm-reduce-stack-usage-with-stacked-block-devices.patch, but he doesn't
-seem to have done so yet.
+http://www.unisys.com/eprise/main/admin/corporate/doc/ClearPath_Plus_Dorado_Model_390_Server_Specification_Sheet.pdf
 
-XFS is frequently implicated.
+That machine is a direct descendant of the Univac 1101 from 1950 and
+is still software-compatible with 1107s from 1962.
+
+(Granted, they only run Linux on the x86 side.)
+
+-- 
+Mathematics is the supreme nostalgia of our time.
