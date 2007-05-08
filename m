@@ -1,54 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970359AbXEHXlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970444AbXEHXmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970359AbXEHXlV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 19:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968060AbXEHXlM
+	id S970444AbXEHXmb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 19:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968116AbXEHXmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 19:41:12 -0400
-Received: from kanga.kvack.org ([66.96.29.28]:49693 "EHLO kanga.kvack.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967979AbXEHXlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 19:41:11 -0400
-Date: Tue, 8 May 2007 20:41:18 -0300
-From: Marcelo Tosatti <marcelo@kvack.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Dan Williams <dcbw@redhat.com>, David Miller <davem@davemloft.net>,
-       penberg@cs.helsinki.fi, linville@tuxdriver.com, hch@infradead.org,
-       linux-wireless@vger.kernel.org, marcelo@kvack.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org
-Subject: Re: Please pull 'revert-libertas' branch of wireless-2.6
-Message-ID: <20070508234118.GA3472@dmt>
-References: <20070507141143.GB5125@tuxdriver.com> <463F443A.5000306@garzik.org> <84144f020705080247v74ebcd26y27c2f1e61529b215@mail.gmail.com> <20070508.132737.104034594.davem@davemloft.net> <4640E3BF.8080401@garzik.org> <1178659763.14888.2.camel@localhost.localdomain> <4640FC76.4090908@garzik.org>
+	Tue, 8 May 2007 19:42:22 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:49354 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968060AbXEHXmV (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 19:42:21 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ken Moffat <zarniwhoop@ntlworld.com>, linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Andi Kleen <ak@suse.de>
+Subject: Re: Lockup after logging out of X
+In-Reply-To: Your message of "Wed, 09 May 2007 01:01:34 +0200."
+             <20070508230134.GD17482@one.firstfloor.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20070508195142.GA30030@deepthought>
+            <20070508230134.GD17482@one.firstfloor.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4640FC76.4090908@garzik.org>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: multipart/signed; boundary="==_Exmh_1178667721_15957P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Tue, 08 May 2007 19:42:01 -0400
+Message-ID: <16127.1178667721@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 06:40:54PM -0400, Jeff Garzik wrote:
-> Dan Williams wrote:
-> >I'll audit the list of ioctls and remove ones that may be objectionable,
-> >and we'll go back through them after 2.6.22 and add back in ones that
-> >are actually required.  Keep the API/ABI small and expand if necessary.
-> >What's the timeframe required here?  Linville said a few days at the
-> >most.
-> 
-> Ideally, before 2.6.22-rc1.  No set date, but generally it's a week or 
-> two after merge window opens.
-> 
-> But even if you miss -rc1, we MUST get in the ioctl removal before 
-> 2.6.22 release.  This is certainly exception to the "nothing but bug 
-> fixes" rule -- or perhaps it is following the rule, if you consider the 
-> ioctls' existence a bug :)
-> 
-> Getting the CodingStyle fixes in before 2.6.22-rc1 would be nice, but, 
-> as I noted, lower priority than serious stuff like ioctl consideration.
+--==_Exmh_1178667721_15957P
+Content-Type: text/plain; charset=us-ascii
 
-There is also a bunch of updates pending. I'm sending them over this
-week.
+On Wed, 09 May 2007 01:01:34 +0200, Andi Kleen said:
+> Already known, although it is still unclear what the bug actually is.
+> Can you run with the appended patch please (from Eric Biederman)
+> and post any backtraces the WARN_ON in there spews out?
 
-Dan: I'll be sending everything thats currently in our tree but not
-mainline.
+> diff --git a/include/asm-x86_64/page.h b/include/asm-x86_64/page.h
+> index b17fc16..e6a4d1e 100644
+
+> +	if (likely(v < __START_KERNEL_map))				\
+> +		v -= PAGE_OFFSET;					\
+> +	else								\
+> +		v = (v - __START_KERNEL_map) + phys_base;		\
+
+ERROR: "phys_base" [net/sunrpc/sunrpc.ko] undefined!
+ERROR: "phys_base" [net/sunrpc/auth_gss/rpcsec_gss_spkm3.ko] undefined!
+ERROR: "phys_base" [net/sunrpc/auth_gss/auth_rpcgss.ko] undefined!
+ERROR: "phys_base" [net/mac80211/mac80211.ko] undefined!
+ERROR: "phys_base" [net/ieee80211/ieee80211_crypt_wep.ko] undefined!
+ERROR: "phys_base" [net/ieee80211/ieee80211_crypt_tkip.ko] undefined!
+ERROR: "phys_base" [fs/nfsd/nfsd.ko] undefined!
+ERROR: "phys_base" [fs/nfs/nfs.ko] undefined!
+ERROR: "phys_base" [fs/jbd2/jbd2.ko] undefined!
+ERROR: "phys_base" [fs/ecryptfs/ecryptfs.ko] undefined!
+ERROR: "phys_base" [drivers/net/ppp_mppe.ko] undefined!
+ERROR: "phys_base" [drivers/char/agp/intel-agp.ko] undefined!
+make[1]: *** [__modpost] Error 1
+
+Looks like a missing EXPORT_SYMBOL. Unfortunately, the definition is here:
+
+arch/x86_64/kernel/head.S:ENTRY(phys_base)
+
+Do I need to go the old symtabs.c route and stick the EXPORT_SYMBOL in some
+other .c file?
+
+--==_Exmh_1178667721_15957P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGQQrJcC3lWbTT17ARAiOsAKCWj0lP6+bBSZDIOhPkBi4KiC2h2ACeIVfq
+zAAKLWaC+7O8UVvgWGXtMvY=
+=XfAT
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1178667721_15957P--
