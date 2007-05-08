@@ -1,99 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031560AbXEHTaF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031565AbXEHTcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031560AbXEHTaF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:30:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031545AbXEHT36
+	id S1031565AbXEHTcC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:32:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031505AbXEHTb6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:29:58 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:41198 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031535AbXEHT35 (ORCPT
+	Tue, 8 May 2007 15:31:58 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:35098 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967821AbXEHTb5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:29:57 -0400
-Date: Tue, 8 May 2007 12:29:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: kako@zhnet.hu
-Cc: "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [Bugme-new] [Bug 8454] New: system freeze during boot before
- ACPI initialising
-Message-Id: <20070508122934.3b3b7c13.akpm@linux-foundation.org>
-In-Reply-To: <200705081628.l48GSBYm015491@fire-2.osdl.org>
-References: <200705081628.l48GSBYm015491@fire-2.osdl.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 8 May 2007 15:31:57 -0400
+Date: Tue, 8 May 2007 14:31:27 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Ismail =?ISO-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>
+Cc: Timur Tabi <timur@freescale.com>, Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Kconfig warnings on latest GIT
+Message-Id: <20070508143127.38fafa3c.kim.phillips@freescale.com>
+In-Reply-To: <200705080004.14570.ismail@pardus.org.tr>
+References: <200705080004.14570.ismail@pardus.org.tr>
+Organization: Freescale Semiconductor
+X-Mailer: Sylpheed version 1.0.6 (GTK+ 1.2.10; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 8 May 2007 00:04:14 +0300
+Ismail Dönmez <ismail@pardus.org.tr> wrote:
 
-(please follow up via emailed reply-to-all, not via the bugzilla web interface)
+> 
+> drivers/net/Kconfig:2279:warning: 'select' used by config symbol 'UCC_GETH' 
+> refers to undefined symbol 'UCC_FAST'
 
-On Tue, 8 May 2007 09:28:11 -0700
-bugme-daemon@bugzilla.kernel.org wrote:
+looks like this introduces the error:
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=8454
-> 
->            Summary: system freeze during boot before ACPI initialising
->     Kernel Version: 2.6.21
->             Status: NEW
->           Severity: blocking
->              Owner: other_other@kernel-bugs.osdl.org
->          Submitter: kako@zhnet.hu
-> 
-> 
-> Most recent kernel where this bug did *NOT* occur:2.6.20
-> Distribution:Fedora Core 6.91 and up
-> Hardware Environment: Asus P4V8X-X motherboard, Celeron2400, 512M RAM IDE drives
-> Software Environment: fedora core
-> Problem Description: 
-> This problem occured at first when I tried to install a FC7rc2 on my home-box,
-> but didn't succeded. At second time, when I wanted to compile a new 2.6.21
-> kernel from vanilla. Both times there was the same halts
-> 
-> The booting procedure halts BEFORE acpi initialisation before these lines
-> -------------------
-> ACPI: Processor [CPU1] (supports 16 throttling states)
-> ACPI Exception (acpi_processor-0677): AE_NOT_FOUND, Processor Device is not
-> present [20060707]
-> -------------------
-> 
-> The last lines in character console mode are:
-> ----------
-> io scheduler deadline registered
-> io scheduler cfq registered (default)
-> PCI: Bypassing VIA 8237 APIC De-Assert Message
-> ----------
-> 
-> and in framebuffer console mode:
-> ----------
-> vesafb: Truecolor: size=0:5:6:5, shift=0:11:5:0
-> Console: switching to colour frame buffer device 128x48
-> fb0: VESA VGA frame buffer device
-> ----------
-> 
-> Once the system halts, the ctrl-alt-del is not working any more, only reset button.
-> 
-> 
-> 
-> Steps to reproduce: get a p4v8x-x motherboard, and try to boot.
-> 
-> >From that dvd-media I successfully installed many systems without problems, but
-> not with this MB.
-> 
+commit 7d776cb596994219584257eb5956b87628e5deaf
+Author: Timur Tabi <timur@freescale.com>
+Date:   Mon Mar 12 15:40:27 2007 -0500
 
-This is the sort of bug where everyone sits in stunned silence because we
-don't have any idea of who broke it.
+    [POWERPC] QE: automatically select QE options
 
-It would be great if you could help us fix it, but it will take some time.
+    Change the Kconfig files so that the Freescale QE options are automatically
+    selected if a QE device is selected.  Previously, you'd need to manually
+    select UCC_FAST if you want any "fast" UCC devices, such as Gigabit Ethernet
+    Now, the QE Gigabit Ethernet option is always available if the device has a
+    QE, and UCC_FAST is automatically enabled.  A side-effect is that the
+    "QE Options" menu no longer exists.
 
-First step: please add `initcall_debug' to the kernel boot command line so
-we get a better idea of where it failed.
+    Signed-off-by: Timur Tabi <timur@freescale.com>
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-Second step: try older kernels.  2.6.12, 2.6.16, etc.  If one of those
-works OK then we know that we can find the buggy change via git-bisect.
+cc:ing authors, fti.
 
-Thanks.
-
+Kim
