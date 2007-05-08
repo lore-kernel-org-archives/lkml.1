@@ -1,55 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967006AbXEHLAn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967023AbXEHLFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967006AbXEHLAn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 07:00:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966461AbXEHLAm
+	id S967023AbXEHLFj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 07:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966486AbXEHLFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 07:00:42 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:42483 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966404AbXEHLAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 07:00:41 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
-Date: Tue, 8 May 2007 13:05:16 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@nigel.suspend2.net>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-References: <200705041132.32227.rjw@sisk.pl> <200705072335.15357.rjw@sisk.pl> <1178613696.18162.28.camel@johannes.berg>
-In-Reply-To: <1178613696.18162.28.camel@johannes.berg>
+	Tue, 8 May 2007 07:05:38 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:64381 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966465AbXEHLFh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 07:05:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tDa5KS8kydaBInO/TVEFshiwKDK2/eD0fS+BckNU/xoEG/Ao9XL7MLzOokDCp/uZafi+MHlNtyAABbhlVr1CTgxUjPivgLMVnratxd6rNx2bo2O6gS4zZiUDMVP1swgEd64twmE6tizrsdczx5NYQaWhYmGb4Dur2GCMfarmK34=
+Message-ID: <6bffcb0e0705080405s67775dcdr1f1d5c2bb9d78348@mail.gmail.com>
+Date: Tue, 8 May 2007 13:05:35 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-git8+ BUG: NMI Watchdog detected LOCKUP on CPU1
+Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+       "Patrick McHardy" <kaber@trash.net>
+In-Reply-To: <20070508030701.d21dc40b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705081305.17628.rjw@sisk.pl>
+References: <46403642.7020501@googlemail.com>
+	 <20070508030701.d21dc40b.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday, 8 May 2007 10:41, Johannes Berg wrote:
-> On Mon, 2007-05-07 at 23:35 +0200, Rafael J. Wysocki wrote:
-> 
-> > > Also, you could then simplify all the instances of
-> > >   (hibernation_mode == HIBERNATION_PLATFORM && hibernation_ops) 
-> > > to just
-> > >   (hibernation_mode == HIBERNATION_PLATFORM)
-> > > in various if statements and other places.
-> > 
-> > No, that's not a good idea, because of the "reduce code duplication patch"
-> > that I'd like to go on top of this.  I'd rather use 'if (hibernation_ops)' here. :-)
-> 
-> But if you want the user to be able to change away from 'platform' mode
-> you still have to have
->   if (hibernation_ops && hibernation_mode == HIBERNATION_PLATFORM)
-> in most places, no?
+On 08/05/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Tue, 08 May 2007 10:35:14 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+>
+> > Hi,
+> >
+> > / filesystem was full
+> >
+> > [39525.460000] BUG: NMI Watchdog detected LOCKUP on CPU1, eip 08056990, registers:
+> > [39525.468000] Modules linked in: loop ipt_MASQUERADE iptable_nat nf_nat autofs4 af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss evdev snd_pcm intel_agp snd_timer snd agpgart soundcore i2c_i801 snd_page_alloc ide_cd cdrom rtc unix
+> > [39525.518000] CPU:    1
+> > [39525.518000] EIP:    0073:[<08056990>]    Not tainted VLI
+> > [39525.518000] EFLAGS: 00000202   (2.6.21-ga989705c #187)
+> > [39525.529000] EIP is at 0x8056990
+> > [39525.529000] eax: 6e560d60   ebx: 0000000b   ecx: 00000000   edx: 000dd15e
+> > [39525.541000] esi: 00000000   edi: 6e560220   ebp: bfeb0a58   esp: bfeb0990
+> > [39525.547000] ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 007b
+> > [39525.553000] Process line (pid: 4277, ti=cf200000 task=f6f560b0 task.ti=cf200000)
+> > [39525.560000] Kernel panic - not syncing: Aiee, killing interrupt handler!
+> >
+> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git8/git-console.log
+> > http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git8/git-config
+> >
+>
+> I don't know what caused the CPU to jump into hyperspace like that, but Patrick
+> tells me that this:
+>
+> > [38773.921000] printk: 15909 messages suppressed.
+> > [38773.926000] ipt_hook: happy cracking.
+> > [38778.921000] printk: 16332 messages suppressed.
+> > [38778.925000] ipt_hook: happy cracking.
+> > [38783.921000] printk: 16175 messages suppressed.
+> > [38783.926000] ipt_hook: happy cracking.
+> > [38788.921000] printk: 16390 messages suppressed.
+> > [38788.925000] ipt_hook: happy cracking.
+> > [38793.921000] printk: 16289 messages suppressed.
+> > [38793.925000] ipt_hook: happy cracking.
+> > [38798.921000] printk: 16172 messages suppressed.
+> > [38798.926000] ipt_hook: happy cracking.
+> > [38803.921000] printk: 15738 messages suppressed.
+> > [38803.925000] ipt_hook: happy cracking.
+> > [38808.921000] printk: 14731 messages suppressed.
+>
+>   happens when a local process sends packets with invalid IP headers
+>   through raw sockets.
 
-Yes, and that's why I'm not going to change that.  The code from user.c is also
-going to call these functions in the future, so the full test is necessary.
+Yes, it was an isic session.
 
-For now, I'll only add the 'else if' check to hibernation_set_ops().
+>
+>   [ 5225.195000] UDP: short packet: From 37.126.206.54:46544 39671/1182
+>   to 127.0.0.1:40761
+>
+>   This seems to indicate something on the local machine (packets are not
+>   routed to 127.0.0.1) is sending invalid packets, probably with
+>   incorrectly set up skb pointers.
+>
+>   I'd suggest to add a WARN_ON(1) in ipt_local_hook().
+>
+> So can you please add the appropriate WARN_ON?
+>
+> Whatever happens, that printk should be toned down, shouldn't it?  We
+> prefer to not let unprivileged apps spam the logs.
+>
+>
 
-Greetings,
-Rafael
+[39293.925000] ipt_hook: happy cracking.
+[39429.024000] printk: 15828 messages suppressed.
+[39429.028000] nf_conntrack: table full, dropping packet.
+[39430.034000] nf_conntrack: table full, dropping packet.
+[39431.039000] nf_conntrack: table full, dropping packet.
+[39432.044000] nf_conntrack: table full, dropping packet.
+[39444.056000] nf_conntrack: table full, dropping packet.
+[39445.061000] nf_conntrack: table full, dropping packet.
+[39525.460000] BUG: NMI Watchdog detected LOCKUP on CPU1, eip
+08056990, registers:
+
+This lockup occurred after an isic test. Hmmm... linus_stress?
+
+FAIL aio_dio_bugs Command
+<LD_LIBRARY_PATH=/usr/local/autotest/client/deps/libaio/lib/
+/usr/local/autotest/client/tests/aio_dio_bugs/src/aio-dio-extend-stat
+file> failed, rc=32512
+GOOD aiostress completed successfully
+GOOD bonnie completed successfully
+GOOD cpu_hotplug completed successfully
+GOOD cyclictest completed successfully
+GOOD dbench completed successfully
+FAIL disktest running test disktest
+<--[random error]-->
+FAIL fs_mark Command <./fs_mark -d /mnt -s 10240 -n 1000> failed, rc=256
+GOOD fsfuzzer completed successfully
+GOOD fsx completed successfully
+FAIL interbench Command
+</usr/local/autotest/client/tests/interbench/src/interbench -m 'run
+#0'  -c> failed, rc=256
+GOOD iozone completed successfully
+FAIL isic running test job
+  Traceback (most recent call last):
+    File "/usr/local/autotest/client/bin/job.py", line 179, in __runtest
+      test.runtest(self, url, tag, args, dargs)
+    File "/usr/local/autotest/client/bin/test.py", line 195, in runtest
+      fork_waitfor(job.resultdir, pid)
+    File "/usr/local/autotest/client/bin/parallel.py", line 40, in fork_waitfor
+      (pid, status) = os.waitpid(pid, 0)
+  KeyboardInterrupt
+GOOD linus_stress completed successfully
+
+I don't remember what was the next test.
+
+I'll try to find out how to reproduce this lockup. Anyway, IMO it's
+not a network related problem.
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
