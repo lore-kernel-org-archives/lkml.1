@@ -1,85 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbXEHTjn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966299AbXEHTlA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbXEHTjn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:39:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754811AbXEHTjk
+	id S966299AbXEHTlA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:41:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbXEHTk5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:39:40 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:50018 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754446AbXEHTjj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:39:39 -0400
-Date: Tue, 8 May 2007 12:43:01 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: CodingStyle: start flamewar about use of braces
-Message-Id: <20070508124301.17975a4f.randy.dunlap@oracle.com>
-In-Reply-To: <200705081903.l48J3AOw010373@hera.kernel.org>
-References: <200705081903.l48J3AOw010373@hera.kernel.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Tue, 8 May 2007 15:40:57 -0400
+Received: from dtp.xs4all.nl ([80.126.206.180]:52822 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1754638AbXEHTk4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 15:40:56 -0400
+Date: Tue, 8 May 2007 21:40:54 +0200
+From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+To: linux-kernel@vger.kernel.org
+Subject: nbd problem. 
+Message-ID: <20070508194053.GA23615@bitwizard.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Organization: BitWizard.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 19:03:10 GMT Linux Kernel Mailing List wrote:
 
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e659ba4a0d2d471c0d73590f78e1a1b5a1eede48
-> Commit:     e659ba4a0d2d471c0d73590f78e1a1b5a1eede48
-> Parent:     28be5abb400e5e082f5225105fdc69337ec0c0b4
-> Author:     Oliver Neukum <oliver@neukum.org>
-> AuthorDate: Tue May 8 00:30:34 2007 -0700
-> Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
-> CommitDate: Tue May 8 11:15:12 2007 -0700
-> 
->     CodingStyle: start flamewar about use of braces
+Hi,
 
-It worked somewhat.  We never did reach any kind of
-concensus about this....
+The nbd client still reliably hangs when I use it. 
+
+While looking into this, I found:
 
 
->     Signed-off-by: Oliver Neukum <oneukum@suse.de>
->     Cc: Tilman Schmidt <tilman@imap.cc>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  Documentation/CodingStyle |   15 +++++++++++++++
->  1 files changed, 15 insertions(+), 0 deletions(-)
-> 
-> diff --git a/Documentation/CodingStyle b/Documentation/CodingStyle
-> index 9069189..e7f5fc6 100644
-> --- a/Documentation/CodingStyle
-> +++ b/Documentation/CodingStyle
-> @@ -160,6 +160,21 @@ supply of new-lines on your screen is not a renewable resource (think
->  25-line terminal screens here), you have more empty lines to put
->  comments on.
->  
-> +Do not unnecessarily use braces where a single statement will do.
-> +
-> +if (condition)
-> +	action();
-> +
-> +This does not apply if one branch of a conditional statement is a single
-> +statement. Use braces in both branches.
-> +
-> +if (condition) {
-> +	do_this();
-> +	do_that();
-> +} else {
-> +	otherwise();
-> +}
-> +
->  		3.1:  Spaces
->  
->  Linux kernel style for use of spaces depends (mostly) on
+446                 req->errors = 0;
+447                 spin_unlock_irq(q->queue_lock);
+                   ^^^^^^^^^^^^^^^^^^^^
+448 
+449                 mutex_lock(&lo->tx_lock);
+450                 if (unlikely(!lo->sock)) {
+451                         mutex_unlock(&lo->tx_lock);
+452                         printk(KERN_ERR "%s: Attempted send on closed socket\n",
+453                                lo->disk->disk_name);
+454                         req->errors++;
+455                         nbd_end_request(req);
+456                         spin_lock_irq(q->queue_lock);
+457                         continue;
+458                 }
+459 
+460                 lo->active_req = req;
+461 
+462                 if (nbd_send_req(lo, req) != 0) {
+463                         printk(KERN_ERR "%s: Request send failed\n",
+464                                         lo->disk->disk_name);
+465                         req->errors++;
+466                         nbd_end_request(req);
+467                 } else {
+468                         spin_lock(&lo->queue_lock);
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+469                         list_add(&req->queuelist, &lo->queue_head);
+470                         spin_unlock(&lo->queue_lock);
+471                 }
+472 
+473                 lo->active_req = NULL;
 
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+As far as I read things, the function is called with the lock
+held and interrupts disabled., the lock can then be released and 
+retaken without disabling interrupts again. 
+
+Should this be fixed?
+
+(it doesn't fix my hang though....)
+
+	Roger. 
+
+-- 
+** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
+**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
+*-- BitWizard writes Linux device drivers for any device you may have! --*
+Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
+Does it sit on the couch all day? Is it unemployed? Please be specific! 
+Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
