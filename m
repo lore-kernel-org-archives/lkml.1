@@ -1,55 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966662AbXEHKro@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966545AbXEHKwr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966662AbXEHKro (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 06:47:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966481AbXEHKrn
+	id S966545AbXEHKwr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 06:52:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966430AbXEHKwp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 06:47:43 -0400
-Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:33222 "EHLO
-	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966449AbXEHKrn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 06:47:43 -0400
-Subject: [KJ PATCH] Replacing memset(<addr>,0,PAGE_SIZE) with clear_page()
-	in mm/memory.c
-From: Shani Moideen <shani.moideen@wipro.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, kernel-janitors@lists.osdl.org
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: Linux COE, Wipro Technolgies
-Date: Tue, 08 May 2007 16:15:56 +0530
-Message-Id: <1178621156.3598.10.camel@shani-win>
+	Tue, 8 May 2007 06:52:45 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54982 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S966405AbXEHKwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 06:52:43 -0400
+Date: Tue, 8 May 2007 16:22:47 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+Message-ID: <20070508105247.GA1950@amitarora.in.ibm.com>
+References: <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426181332.GD7209@amitarora.in.ibm.com> <20070503213133.d1559f52.akpm@linux-foundation.org> <20070507120719.GD7012@amitarora.in.ibm.com> <1178551477.12900.6.camel@kleikamp.austin.ibm.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-X-OriginalArrivalTime: 08 May 2007 10:47:39.0677 (UTC) FILETIME=[4C5264D0:01C7915E]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178551477.12900.6.camel@kleikamp.austin.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, May 07, 2007 at 10:24:37AM -0500, Dave Kleikamp wrote:
+> On Mon, 2007-05-07 at 17:37 +0530, Amit K. Arora wrote:
+> > On Thu, May 03, 2007 at 09:31:33PM -0700, Andrew Morton wrote:
+> > > On Thu, 26 Apr 2007 23:43:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+> 
+> > > > +int ext4_fallocate(struct inode *inode, int mode, loff_t offset, loff_t len)
+> > > > +{
+> > > > +	handle_t *handle;
+> > > > +	ext4_fsblk_t block, max_blocks;
+> > > > +	int ret, ret2, nblocks = 0, retries = 0;
+> > > > +	struct buffer_head map_bh;
+> > > > +	unsigned int credits, blkbits = inode->i_blkbits;
+> > > > +
+> > > > +	/* Currently supporting (pre)allocate mode _only_ */
+> > > > +	if (mode != FA_ALLOCATE)
+> > > > +		return -EOPNOTSUPP;
+> > > > +
+> > > > +	if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
+> > > > +		return -ENOTTY;
+> > > 
+> > > So we don't implement fallocate on bitmap-based files!  Well that's huge
+> > > news.  The changelog would be an appropriate place to communicate this,
+> > > along with reasons why, or a description of the plan to fix it.
+> > 
+> > Ok. Will add this in the function description as well.
+> > 
+> > > Also, posix says nothing about fallocate() returning ENOTTY.
+> > 
+> > Right. I don't seem to find any suitable error from posix description.
+> > Can you please suggest an error code which might make more sense here ?
+> > Will -ENOTSUPP be ok ? Since we want to say here that we don't support
+> > non-extent files.
+> 
+> Isn't the idea that libc will interpret -ENOTTY, or whatever is returned
+> here, and fall back to the current library code to do preallocation?
+> This way, the caller of fallocate() will never see this return code, so
+> it won't violate posix.
 
-Replacing memset(<addr>,0,PAGE_SIZE) with clear_page() in mm/memory.c.
+You are right.
 
-Signed-off-by: Shani Moideen <shani.moideen@wipro.com>
-----
+But, we still need to "standardize" (and limit) the error codes
+which we should return from kernel when we want to fall back on the
+library implementation. The posix_fallocate() library function will have
+to look for a set of errors from fallocate() system call, upon receiving
+which it will do preallocation from user level; or else, it will return
+success/error-code returned by the system call to the user.
 
-thanks.
+I think we can make it fall back to library implementation of fallocate,
+whenever posix_fallocate() receives any of the following errors from
+fallocate() system call:
 
+1. ENOSYS
+2. EOPNOTSUPP
+3. ENOTTY        (?)
 
-diff --git a/mm/memory.c b/mm/memory.c
-index e7066e7..2780d07 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -1505,7 +1505,7 @@ static inline void cow_user_page(struct page *dst, struct page *src, unsigned lo
-                 * zeroes.
-                 */
-                if (__copy_from_user_inatomic(kaddr, uaddr, PAGE_SIZE))
--                       memset(kaddr, 0, PAGE_SIZE);
-+                       clear_page(kaddr);
-                kunmap_atomic(kaddr, KM_USER0);
-                flush_dcache_page(dst);
-                return;
+Now the question is - should we limit the set of errors for this purpose
+to just 1 & 2 above ? In that case I will need to change the error being
+returned here to -EOPNOTSUPP (from current -ENOTTY).
 
-
--- 
-Shani 
+--
+Regards,
+Amit Arora
