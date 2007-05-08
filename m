@@ -1,41 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934723AbXEHWUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934758AbXEHWVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934723AbXEHWUM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934658AbXEHWT7
+	id S934758AbXEHWVz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934658AbXEHWVv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:19:59 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:53043 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934585AbXEHWT6 (ORCPT
+	Tue, 8 May 2007 18:21:51 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:51836
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934620AbXEHWVu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:19:58 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4640F76A.9070707@s5r6.in-berlin.de>
-Date: Wed, 09 May 2007 00:19:22 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Tue, 8 May 2007 18:21:50 -0400
+Message-ID: <46410577.2070202@microgate.com>
+Date: Tue, 08 May 2007 17:19:19 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: torvalds@linux-foundation.org, bunk@stusta.de, cornelia.huck@de.ibm.com,
-       greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11 (PCI_MULTITHREAD_PROBE)
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>	<20070508141149.GJ4226@stusta.de>	<alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org> <20070508.141554.112287211.davem@davemloft.net>
-In-Reply-To: <20070508.141554.112287211.davem@davemloft.net>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] synclink_gt add compat_ioctl
+References: <1178215277.4369.6.camel@amdx2.microgate.com> <200705060227.29450.arnd@arndb.de> <1178658843.4152.12.camel@x2.microgate.com> <200705090007.53613.arnd@arndb.de>
+In-Reply-To: <200705090007.53613.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-[persistent unique device property -> persistent unique device name]
-> Those mappings should exist statically somewhere, not depend upon
-> something as frivolous as probe ordering.
+Arnd Bergmann wrote:
+> To solve this, you can to change include/linux/Kbuild to list
+> synclink.h as unifdef-y instead of header-y, and put the parts
+> that you don't want to be in user space inside of #ifdef __KERNEL__.
+> 
+> Alternatively, you can put these kernel-internal definitions into
+> a private header file in drivers/char that does not get installed
+> in the first place. That would be particularly useful if you can
+> also move other parts of linux/synclink.h into the private header,
+> when they are not part of the external ABI.
 
-We do this all the time for hotpluggable hardware.  And bus types
-without hotplugging capability become increasingly rare nowadays. :-)
--- 
-Stefan Richter
--=====-=-=== -=-= -=---
-http://arcgraph.de/sr/
+Understood. That is the last piece to the puzzle.
+
+I think the first approach would be better as
+synclink.h is all interface definitions. The kernel
+specific parts are in the individual synclink drivers
+(such as register definitions, etc). The only exception
+to this is now the ioctl32 structures and I would hate
+to break out a whole new header just for that.
+
+Thanks again for your targeted and informative help.
+(Thanks to Andrew for your patience in dealing
+with a patch that never should have been submitted.)
+
+--
+Paul
+
+
+
+
+
+
