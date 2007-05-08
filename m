@@ -1,105 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967189AbXEHMzG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967229AbXEHM72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967189AbXEHMzG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:55:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967043AbXEHMzD
+	id S967229AbXEHM72 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966124AbXEHM7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:55:03 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:60690 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966446AbXEHMzC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:55:02 -0400
-Subject: Re: [PATCH 1/2] leds:arch/sh/boards/landisk LEDs supports
-From: Richard Purdie <rpurdie@rpsys.net>
-To: kogiidena@eggplant.ddo.jp
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
-In-Reply-To: <1743.192.168.1.10.1178627210.squirrel@eggplant.ddo.jp>
-References: <1743.192.168.1.10.1178627210.squirrel@eggplant.ddo.jp>
-Content-Type: text/plain
-Date: Tue, 08 May 2007 13:54:48 +0100
-Message-Id: <1178628889.6061.33.camel@localhost.localdomain>
+	Tue, 8 May 2007 08:59:25 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:50080 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934528AbXEHM7Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:59:24 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=IM33iNkaQwIvIl5824VauYw8PsTazOLRlAdrnMb6TdggFN8evhPfxjc1gAtES
+	T6cjICSZzfPy9RZGm4sYcdo3w==
+Date: Tue, 8 May 2007 14:59:21 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Alexey Zaytsev <alexey.zaytsev@gmail.com>
+Cc: Krzysztof Halasa <khc@pm.waw.pl>, Michael-Luke Jones <mlj28@cam.ac.uk>,
+       Jeff Garzik <jeff@garzik.org>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.3 - QMGR
+Message-ID: <20070508125921.GA32669@xi.wantstofly.org>
+References: <m3abwhcy74.fsf@maximus.localdomain> <m3vef5biob.fsf@maximus.localdomain> <5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk> <m3hcqoa772.fsf@maximus.localdomain> <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk> <m33b289zku.fsf@maximus.localdomain> <m31whs5ehn.fsf_-_@maximus.localdomain> <20070508113232.GA32055@xi.wantstofly.org> <f19298770705080547m3c0b5583qd6ad7aaca816361c@mail.gmail.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <f19298770705080547m3c0b5583qd6ad7aaca816361c@mail.gmail.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Tue, 2007-05-08 at 21:26 +0900, kogiidena wrote:
-> To:Richard-san
-> CC:all
+On Tue, May 08, 2007 at 04:47:31PM +0400, Alexey Zaytsev wrote:
+
+> > As with Christian's driver, I don't know whether an SRAM allocator
+> > makes much sense.  We can just set up a static allocation map for the
+> > in-tree drivers and leave out the allocator altogether.  I.e. I don't
+> > think it's worth the complexity (and just because the butt-ugly Intel
+> > code has an allocator isn't a very good reason. :-)
 > 
-> LED driver of I-O DATA LANDISK and USL-5P
-> Please apply following patch
-> 
-> Signed-off-by: kogiidena <kogiidena@eggplant.ddo.jp>
-> 
-[...]
-> +/* HDD-access-LED setting at landisk status LED */
-> +static void landisk_disk_trig_activate(struct led_classdev *led_cdev)
-> +{
-> +        unsigned long flags;
-> +        spin_lock_irqsave(&landisk_led_lock, flags);
-> +        ctrl_outb((ctrl_inb(PA_LED) & ~0x0c) | 0x04, PA_LED);
-> +        spin_unlock_irqrestore(&landisk_led_lock, flags);
-> +}
-> +
-> +static void landisk_disk_trig_deactivate(struct led_classdev *led_cdev)
-> +{
-> +        unsigned long flags;
-> +        spin_lock_irqsave(&landisk_led_lock, flags);
-> +        ctrl_outb((ctrl_inb(PA_LED) & ~0x0c) | 0x0c, PA_LED);
-> +        spin_unlock_irqrestore(&landisk_led_lock, flags);
-> +}
-> +
-> +static struct led_trigger landisk_disk_led_trigger = {
-> +        .name = "disk",
-> +        .activate = landisk_disk_trig_activate,
-> +        .deactivate = landisk_disk_trig_deactivate,
-> +};
+> Is the qmgr used when the NPEs are utilized as DMA engines?
 
-You can't do this since the trigger will appear for all LEDs and it only
-applies to a single LED. There has been previous discussion of LED
-specific triggers and we'll need that support before you can make
-something like this work. Nobody has sent me a patch for that yet and I
-haven't had time to write one...
-
-+static int __init landisk_led_init(void)
-> +{
-> +        u8 orig, test;
-> +
-> +        orig = ctrl_inb(PA_LED);
-> +        ctrl_outb(0x40, PA_LED);
-> +
-> +        test = ctrl_inb(PA_LED);
-> +        ctrl_outb(orig, PA_LED);
-> +
-> +        landisk_arch = (test == 0x40);
-> +
-> +        if (landisk_arch == 0) {
-> +                /* arch == landisk */
-> +                ctrl_outb(orig | 0x07, PA_LED);
-> +                landisk_leds[1].default_trigger = "disk";
-> +                led_trigger_register(&landisk_disk_led_trigger);
-> +        } else {
-> +                /* arch == usl-5p */
-> +                ctrl_outb(orig | 0x03, PA_LED);
-> +        }
-> +        return platform_driver_register(&landisk_led_driver);
-
-Broken error handling - you should check the return code of
-led_trigger_register().
-
-> +static void __exit landisk_led_exit(void)
-> +{
-> +        if (landisk_arch == 0)
-> +                led_trigger_unregister(&landisk_disk_led_trigger);
-> +        return platform_driver_unregister(&landisk_led_driver);
-> +}
-
-void functions don't return.
-
-Other than those issues, it looks ok.
-
-Richard
+I'm not sure, but probably yes.
 
 
+> And is the allocator needed in this case?
+
+If you statically partition the available queue SRAM, no.
