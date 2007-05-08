@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934963AbXEHJyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934972AbXEHJzj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934963AbXEHJyf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 05:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934956AbXEHJyd
+	id S934972AbXEHJzj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 05:55:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934956AbXEHJzi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 05:54:33 -0400
-Received: from allen.werkleitz.de ([80.190.251.108]:50462 "EHLO
-	allen.werkleitz.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934957AbXEHJyb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 05:54:31 -0400
-Date: Tue, 8 May 2007 11:54:21 +0200
-From: Johannes Stezenbach <js@linuxtv.org>
-To: Esben Nielsen <nielsen.esben@googlemail.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Message-ID: <20070508095421.GA10456@linuxtv.org>
-References: <463854F3.3020403@linux.vnet.ibm.com> <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com> <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire> <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org> <Pine.LNX.4.64.0705071159530.14011@frodo.shire> <alpine.LFD.0.98.0705070921390.3802@woody.linux-foundation.org> <20070507183931.GB3472@linuxtv.org> <Pine.LNX.4.64.0705080931460.10409@frodo.shire>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705080931460.10409@frodo.shire>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 87.162.108.65
-Subject: Re: [patch] CFS scheduler, -v8
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on allen.werkleitz.de)
+	Tue, 8 May 2007 05:55:38 -0400
+Received: from www.osadl.org ([213.239.205.134]:44800 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S934818AbXEHJzh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 05:55:37 -0400
+Subject: Re: [PATCH] x86-64 highres/dyntick support
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <20070508095130.GY3505@sequoia.sous-sol.org>
+References: <1178485128.31213.98.camel@localhost.localdomain>
+	 <20070507163110.GP3505@sequoia.sous-sol.org>
+	 <1178556361.3042.16.camel@localhost.localdomain>
+	 <20070508093957.GS3505@sequoia.sous-sol.org>
+	 <1178617864.3042.309.camel@localhost.localdomain>
+	 <20070508095130.GY3505@sequoia.sous-sol.org>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 11:58:24 +0200
+Message-Id: <1178618304.3042.320.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007, Esben Nielsen wrote:
+On Tue, 2007-05-08 at 02:51 -0700, Chris Wright wrote:
+> That's what I was wondering, although i have same setup for 32-bit
+> and it behaves as expected with cpu0 taking hpet or pit on irq0
+> and lapic timer picked up on the other 3 cpus.
 > 
-> This is contrary to C99 standeard annex H2.2 
-> (http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1124.pdf):
+> > > In addition lapic timer is firing there, and I'm seeing a higher
+> > > interrupt load than I used to.  This is the same in your set and mine.
+> > 
+> > Is irq0 _and_ the lapic timer firing ?
 > 
-> "An implementation that defines signed integer types as also being modulo 
-> need
-> not detect integer overflow, in which case, only integer divide-by-zero need
-> be detected."
-> 
-> So if it doesn't properly defines wrapping it has to detect integer 
-> overflow, right?
+> Yes.
 
-No. Annex H (informative!) only talks about LIA-1 conformance.
+Hmm, that's even more strange. Can you please provide the output
+of /proc/timer_list ?
 
-C99 isn't LIA-1 conformant. H2.2 describes what an implementation
-might do to make signed integers LIA-1 compatible, which is
-what gcc does with -fwarpv or -ftrapv.
-
-At least that's how I understand it, the C99 standard
-seems to have been written with the "it was hard to
-write, so it should be hard to read" mindset. :-/
-
-I still don't know _why_ signed integer overflow behaviour
-isn't defined in C. It just goes against everyones expectation
-and thus causes bugs.
+	tglx
 
 
-Johannes
