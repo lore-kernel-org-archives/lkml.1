@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967828AbXEHE5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967848AbXEHFAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967828AbXEHE5g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 00:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967814AbXEHE5f
+	id S967848AbXEHFAb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 01:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967842AbXEHFAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 00:57:35 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60738 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S967802AbXEHE5f (ORCPT
+	Tue, 8 May 2007 01:00:30 -0400
+Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:39889 "HELO
+	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S967814AbXEHFAa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 00:57:35 -0400
-Date: Mon, 7 May 2007 21:57:32 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Tim Chen <tim.c.chen@linux.intel.com>
-cc: "Chen, Tim C" <tim.c.chen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: RE: Regression with SLUB on Netperf and Volanomark
-In-Reply-To: <1178584834.15701.18.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0705072150490.4939@schroedinger.engr.sgi.com>
-References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
-  <Pine.LNX.4.64.0705031839480.16296@schroedinger.engr.sgi.com> 
- <1178322083.23795.217.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0705041800070.28492@schroedinger.engr.sgi.com>
- <1178584834.15701.18.camel@localhost.localdomain>
+	Tue, 8 May 2007 01:00:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=k7zc8K6n4LWkD/qUZAV2Y+9S946VoHnuNCHT8mPlDuQae2xB5Lz+JC6+x9jbQTkUrh09TMgJFxuSFRzTp6bmQnFt9CaiYdLEmaRnt+R/cFRLsXtYaS1d6yPa8rJtrNFZhc5whkIgjYtOxw1EYtwjHhe4QbtIEW1YAMW7Odko6Hk=  ;
+X-YMail-OSG: UFMIKf8VM1lJENtr1D1_iTT6jEn97WEz7GfWnU3jaiK4ob78Yz1Lwh.2uWxXB1lr0SNPeCrR3w--
+From: David Brownell <david-b@pacbell.net>
+To: "Mike Frysinger" <vapier.adi@gmail.com>
+Subject: Re: [spi-devel-general] adding bits_per_word to struct spi_board_info to mirror struct spi_device
+Date: Mon, 7 May 2007 21:53:45 -0700
+User-Agent: KMail/1.9.6
+Cc: spi-devel-general@lists.sourceforge.net, "Wu, Bryan" <Bryan.Wu@analog.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+References: <8bd0f97a0704250305qe6175cdm8e1a0cd7844f67bc@mail.gmail.com> <200704250813.30999.david-b@pacbell.net> <8bd0f97a0705071647w58c6055ehc54dd6b520a8e227@mail.gmail.com>
+In-Reply-To: <8bd0f97a0705071647w58c6055ehc54dd6b520a8e227@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705072153.46411.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007, Tim Chen wrote:
+On Monday 07 May 2007, Mike Frysinger wrote:
+> On 4/25/07, David Brownell <david-b@pacbell.net> wrote:
+> > On Wednesday 25 April 2007, Mike Frysinger wrote:
+> 
+> > > is there something obvious i'm missing ?  seems to me that if the
+> > > generic spi framework respects bits_per_word on a per-spi device
+> > > basis, then it should be exposed in the generic info structure so that
+> > > the setting can be tracked in the boards file ...
+> >
+> > The initial driver set didn't need it, that's all.  ISTR someone
+> > else pointed out this quirk, but never provided a patch to resolve
+> > the issue.
+> 
+> so which direction should it be ?  or should it be both ? :)
 
-> However, the output from TCP_STREAM is quite stable.  
-> I am still seeing a 4% difference between the SLAB and SLUB kernel.
-> Looking at the L2 cache miss rate with emon, I saw 6% more cache miss on
-> the client side with SLUB.  The server side has the same amount of cache
-> miss.  This is test under SMP mode with client and server bound to
-> different core on separate package.
+Add bits_per_word to spi_board_info, and have the device creation
+logic copy it into spi_device as it's created.
 
-If this is cache miss related then a larger page order may take are 
-of this. Boot with (assume you got 2.6.21-mm1 at least...)
 
-slub_min_order=6 slub_max_order=7
+> Blackfin at the moment is doing DMA/bits_per_word setup in the boards
+> ... we could move these to the drivers and have each one just call
+> spi_setup() at init, or i could post a patch for the common framework
+> if you think that's an OK direction to [also] go ...
 
-which will give you an allocation unit of 256k. Just tried it. It 
-actually works but has no effect here whatsoever on UP netperf 
-performance. netperf performance dropped from 6MB(slab)/6.2MB(slub) on 
-2.6.21-rc7-mm1 to 4.5MB (both) on 2.6.21-mm1. So I guess there is 
-something also going on with the networking layer.
+I don't see what you're getting at here.  The SPI core doesn't
+do anything with DMA, beyond passing DMA addresses through when
+necessary.  (Needed to handle messages derived from scatterlists,
+since I don't want lower layers to know scatterlists, but otherwise
+uncommon.)
 
-Still have not found a machine here where I could repeat your 
-results.
+And when each spi_device is created, the core calls spi_setup()
+with the data.  That seems like the natural place to set up
+things like DMA and so forth...
+
+The pxa2xx_spi driver uses spi_board_info.controller_data to pass
+dma setup/tuning data from board init logic.  
+
+- Dave
