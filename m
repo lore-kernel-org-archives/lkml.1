@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966802AbXEHUlK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967013AbXEHUlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966802AbXEHUlK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:41:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933865AbXEHUlE
+	id S967013AbXEHUlp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 16:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933865AbXEHUll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:41:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39494
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S933663AbXEHUlB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:41:01 -0400
-Date: Tue, 08 May 2007 13:41:01 -0700 (PDT)
-Message-Id: <20070508.134101.122616112.davem@davemloft.net>
-To: sam@ravnborg.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Bogus section mismatch errors?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070508115220.GA29160@uranus.ravnborg.org>
-References: <20070508111759.GA26562@flint.arm.linux.org.uk>
-	<20070508115220.GA29160@uranus.ravnborg.org>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 8 May 2007 16:41:41 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44853 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S933223AbXEHUlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 16:41:39 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH -mm] swsusp: Use reasonable default for hibernation_mode
+Date: Tue, 8 May 2007 22:46:16 +0200
+User-Agent: KMail/1.9.5
+Cc: Johannes Berg <johannes@sipsolutions.net>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+References: <200705041132.32227.rjw@sisk.pl> <200705051550.53436.rjw@sisk.pl> <1178538404.7261.16.camel@johannes.berg>
+In-Reply-To: <1178538404.7261.16.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705082246.17166.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sam Ravnborg <sam@ravnborg.org>
-Date: Tue, 8 May 2007 13:52:20 +0200
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-> There are in slab a function that is not marked __init that refer to a function marked
-> __init. But the logic surrounding makes it OK.
-> 
-> I have no fix/workaround for this.
-> Andres has suggested that we should mark functions/data that may refer to __init{data}
-> with something like: __nowarn and __nowarndata
-> 
-> I am planning to implement something so we can mark functions/data with:
-> __init_ref_ok and _init_data_ref_ok
-> Which is indeed more ugly but expalins what is actually OK.
-> 
-> I hope to take a look during the weekend.
+Make sure that hibernation_mode is set to a reasonable value by default.
 
-Thanks for working on this, it's the only mismatch I still see
-on sparc64 in current GIT :-)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/disk.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.21/kernel/power/disk.c
+===================================================================
+--- linux-2.6.21.orig/kernel/power/disk.c	2007-05-06 14:40:12.000000000 +0200
++++ linux-2.6.21/kernel/power/disk.c	2007-05-08 22:12:02.000000000 +0200
+@@ -30,8 +30,6 @@ char resume_file[256] = CONFIG_PM_STD_PA
+ dev_t swsusp_resume_device;
+ sector_t swsusp_resume_block;
+ 
+-static int hibernation_mode;
+-
+ enum {
+ 	HIBERNATION_INVALID,
+ 	HIBERNATION_PLATFORM,
+@@ -45,6 +43,8 @@ enum {
+ #define HIBERNATION_MAX (__HIBERNATION_AFTER_LAST-1)
+ #define HIBERNATION_FIRST (HIBERNATION_INVALID + 1)
+ 
++static int hibernation_mode = HIBERNATION_SHUTDOWN;
++
+ struct hibernation_ops *hibernation_ops;
+ 
+ /**
+@@ -60,6 +60,11 @@ void hibernation_set_ops(struct hibernat
+ 	}
+ 	mutex_lock(&pm_mutex);
+ 	hibernation_ops = ops;
++	if (ops)
++		hibernation_mode = HIBERNATION_PLATFORM;
++	else if (hibernation_mode == HIBERNATION_PLATFORM)
++		hibernation_mode = HIBERNATION_SHUTDOWN;
++
+ 	mutex_unlock(&pm_mutex);
+ }
+ 
