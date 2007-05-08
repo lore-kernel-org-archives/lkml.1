@@ -1,74 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934430AbXEHHav@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934528AbXEHHfI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934430AbXEHHav (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 03:30:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933949AbXEHHav
+	id S934528AbXEHHfI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 03:35:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934497AbXEHHfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 03:30:51 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:26949 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933876AbXEHHau (ORCPT
+	Tue, 8 May 2007 03:35:05 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:20450 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934492AbXEHHfB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 03:30:50 -0400
-X-IronPort-AV: i="4.14,503,1170651600"; 
-   d="scan'208"; a="29346122:sNHT22208424"
-Subject: Re: [spi-devel-general] adding bits_per_word to struct
-	spi_board_info to mirror struct spi_device
-From: Bryan WU <bryan.wu@analog.com>
-To: David Brownell <david-b@pacbell.net>
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       spi-devel-general@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200705072200.26888.david-b@pacbell.net>
-References: <8bd0f97a0704250305qe6175cdm8e1a0cd7844f67bc@mail.gmail.com>
-	 <8bd0f97a0705071647w58c6055ehc54dd6b520a8e227@mail.gmail.com>
-	 <1178596106.5222.3.camel@roc-desktop>
-	 <200705072200.26888.david-b@pacbell.net>
-Content-Type: text/plain
-Date: Tue, 08 May 2007 15:31:35 +0800
-Message-Id: <1178609496.5222.24.camel@roc-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 03:35:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
+        b=eZ9tuAOOm7726PI6lKPHwyQxuyLMuzb6md2G0V4dX+WoJiPIPtQ9ptnrqnGxGlbpGjXR2LcQ4Sq8j+E1C21+13EyJk2HbZSVKhTTeA1YhvWcMDfmLAjEWoDFDKfeM9c/qfybalZ+oxum1MSJ5iv1mORaT0fTwR9OhQV0d1ZWsR4=
+Date: Tue, 8 May 2007 09:34:49 +0200 (CEST)
+From: Esben Nielsen <nielsen.esben@googlemail.com>
+X-X-Sender: simlo@frodo.shire
+To: Johannes Stezenbach <js@linuxtv.org>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Esben Nielsen <nielsen.esben@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
+       buddabrod <buddabrod@gmail.com>
+Subject: Re: [patch] CFS scheduler, -v8
+In-Reply-To: <20070507183931.GB3472@linuxtv.org>
+Message-ID: <Pine.LNX.4.64.0705080931460.10409@frodo.shire>
+References: <20070501212223.GA29867@elte.hu> <463854F3.3020403@linux.vnet.ibm.com>
+ <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com>
+ <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire>
+ <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0705071159530.14011@frodo.shire>
+ <alpine.LFD.0.98.0705070921390.3802@woody.linux-foundation.org>
+ <20070507183931.GB3472@linuxtv.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-07 at 22:00 -0700, David Brownell wrote:
-> On Monday 07 May 2007, Bryan WU wrote:
-> 
-> > currently, there are some duplicated data members in spi_device struct
-> > spi_board_info struct. This two structs are confused driver writers and
-> > boards driver users.
-> 
-> How would that confusion arise?  Only arch/.../board-xxx.c writers
-> normally even see spi_board_info; the exception is that someone who
-> writes an add-on board -- maybe a USB-to-SPI adapter -- would call the
-> rarely used spi_new_device() routine.
-> 
-> Developers writing a SPI drivers -- controller drivers touching some
-> SOC's serial controller hardware, or "struct spi_driver" protocol code
-> talking to a chip through such a controller -- never see board info.
-> They only see "struct spi_device".  So I don't see why they would have
-> a reason to be confused.
-> 
-> - Dave
 
-Yes, I agree with you.
-spi_board_info ---> board writers.
-spi_device ---> spi device driver writers.
 
-It is very clear for me, a spi_master driver developer.
+On Mon, 7 May 2007, Johannes Stezenbach wrote:
 
-But how does a board writer know the capabilities which the target
-spi_device driver supports? For example, a board writer use 16
-bits_per_word in a spi_board_info, while the spi_device does not support
-this. And maybe other special function spi_device driver can provide but
-board writer doesn't know or doesn't know how to use this in
-spi_board_info.
+> On Mon, May 07, 2007, Linus Torvalds wrote:
+>> On Mon, 7 May 2007, Esben Nielsen wrote:
+>>>
+>>> What is (long)(a-b) ? I have tried to look it up in the C99 standeard but I
+>>> can't find it. Maybe it is in the referred LIA-1 standeard, which I can't find
+>>> with google.
+>
+> C99 defines unsigned overflow semantics, but it doesn't say anything
+> about signed overflow, thus it's undefined -- and you have a hard
+> time finding it out.
+>
+> However, I have no clue *why* it's undefined and not
+> implementation defined. Does someone know?
+>
+>> I don't worry about non-2's-complement machines (they don't exist, and
+>> likely won't exist in the future either).
+>
+> I think DSPs can do saturated arithmetics (clamp to min/max
+> values instead of wrap around). Not that it matters for Linux...
+>
+>> So I worry about compilers rewriting my code.
+>
+> gcc has -fwrapv and -ftrapv to change signed integer overflow
+> behaviour.
+>
+> One baffling example where gcc rewrites code is when
+> conditionals depend on signed integer overflow:
+>
+> $ cat xx.c
+> #include <assert.h>
+>
+> int foo(int a)
+> {
+> 	assert(a + 100 > a);
+> 	return a;
+> }
+>
+> int bar(int a)
+> {
+> 	if (a + 100 > a)
+> 		a += 100;
+> 	return a;
+> }
+> $ gcc -Wall -Wextra -fomit-frame-pointer -c xx.c
+> $ objdump -dr xx.o
+>
+> xx.o:     file format elf32-i386
+>
+> Disassembly of section .text:
+>
+> 00000000 <foo>:
+>   0:   8b 44 24 04             mov    0x4(%esp),%eax
+>   4:   c3                      ret
+>
+> 00000005 <bar>:
+>   5:   83 44 24 04 64          addl   $0x64,0x4(%esp)
+>   a:   8b 44 24 04             mov    0x4(%esp),%eax
+>   e:   c3                      ret
+>
+>
+> The assert and the condition were just dropped
+> by gcc -- without any warning.
+>
+> gcc-4.2 will add -fstrict-overflow and -Wstrict-overflow.
+> http://gcc.gnu.org/gcc-4.2/changes.html
+>
+>
+> Johannes
+>
 
-So can we just use one struct for both board writers and spi device
-driver developers?
+This is contrary to C99 standeard annex H2.2 
+(http://www.open-std.org/jtc1/sc22/wg14/www/docs/n1124.pdf):
 
-Thanks
--Bryan Wu
+"An implementation that defines signed integer types as also being modulo need
+not detect integer overflow, in which case, only integer divide-by-zero need
+be detected."
 
+So if it doesn't properly defines wrapping it has to detect integer 
+overflow, right?
+
+gcc does niether with that optimization :-(
+
+Esben
