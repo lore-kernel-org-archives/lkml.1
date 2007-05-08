@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032425AbXEHVzi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968247AbXEHV5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032425AbXEHVzi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:55:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032078AbXEHVze
+	id S968247AbXEHV5s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032037AbXEHV5o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:55:34 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:50525 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1032076AbXEHVzd (ORCPT
+	Tue, 8 May 2007 17:57:44 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:11768 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966726AbXEHV5n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:55:33 -0400
-Date: Tue, 8 May 2007 14:56:53 -0700
+	Tue, 8 May 2007 17:57:43 -0400
+Date: Tue, 8 May 2007 14:59:02 -0700
 From: Randy Dunlap <randy.dunlap@oracle.com>
 To: Jeremy Fitzhardinge <jeremy@goop.org>
 Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
-       Akinobu Mita <akinobu.mita@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@mandriva.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Panagiotis Issaris <takis@issaris.org>
-Subject: Re: [patch 1/4] add kstrndup
-Message-Id: <20070508145653.25585885.randy.dunlap@oracle.com>
-In-Reply-To: <20070508205517.009423792@goop.org>
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch 2/4] add argv_split()
+Message-Id: <20070508145902.fec4884d.randy.dunlap@oracle.com>
+In-Reply-To: <20070508205517.142888645@goop.org>
 References: <20070508205129.064843364@goop.org>
-	<20070508205517.009423792@goop.org>
+	<20070508205517.142888645@goop.org>
 Organization: Oracle Linux Eng.
 X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
@@ -35,44 +31,70 @@ X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 May 2007 13:51:30 -0700 Jeremy Fitzhardinge wrote:
+On Tue, 08 May 2007 13:51:31 -0700 Jeremy Fitzhardinge wrote:
 
-> --- a/mm/util.c
-> +++ b/mm/util.c
-> @@ -18,7 +18,7 @@ void *__kzalloc(size_t size, gfp_t flags
->  }
->  EXPORT_SYMBOL(__kzalloc);
->  
-> -/*
-> +/**
->   * kstrdup - allocate space for and copy an existing string
+> --- /dev/null
+> +++ b/lib/argv_split.c
+> @@ -0,0 +1,160 @@
+> +
+> +static const char *skip_sep(const char *cp)
+> +{
+> +	while(*cp && isspace(*cp))
 
-No blank ("*") line between function name and its parameters.
-(occurs in multiple places in multiple patches in this series;
-I'm not going to point out each one of them separately)
+Kernel style is space after "while", "for", "if"...
 
->   *
->   * @s: the string to duplicate
-> @@ -39,6 +39,33 @@ char *kstrdup(const char *s, gfp_t gfp)
->  	return buf;
->  }
->  EXPORT_SYMBOL(kstrdup);
+> +		cp++;
+> +
+> +	return cp;
+> +}
+> +
+> +static const char *skip_arg(const char *cp)
+> +{
+> +	while(*cp && !isspace(*cp))
+> +		cp++;
+> +
+> +	return cp;
+> +}
+> +
+> +static int count_argc(const char *str)
+> +{
+> +	int count = 0;
+> +
+> +	while(*str) {
+> +		str = skip_sep(str);
+> +		if (*str) {
+> +			count++;
+> +			str = skip_arg(str);
+> +		}
+> +	}
+> +
+> +	return count;
+> +}
 > +
 > +/**
-> + * kstrndup - allocate space for and copy an existing string
+> + * argv_free - free an argv
 > + *
-> + * @s: the string to duplicate
-> + * @max: read at most @max chars from @s
-> + * @gfp: the GFP mask used in the kmalloc() call when allocating memory
+
+no blank "*" line.
+
+> + * @argv - the argument vector to be freed
+
+    * @argv: the argument vector to be freed
+
+
+> + *
+> + * Frees an argv and the strings it points to.
 > + */
-> +char *kstrndup(const char *s, size_t max, gfp_t gfp)
+> +void argv_free(char **argv)
 > +{
+> +	char **p;
+> +	for(p = argv; *p; p++)
+> +		kfree(*p);
+> +
+> +	kfree(argv);
 > +}
-> +EXPORT_SYMBOL(kstrndup);
->  
->  /**
->   * kmemdup - duplicate region of memory
-> ===================================================================
+> +EXPORT_SYMBOL(argv_free);
+
 
 ---
 ~Randy
