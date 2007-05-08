@@ -1,86 +1,185 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934833AbXEHKHQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966366AbXEHKHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934833AbXEHKHQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 06:07:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965805AbXEHKHQ
+	id S966366AbXEHKHg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 06:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966318AbXEHKHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 06:07:16 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52526 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934735AbXEHKHN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 06:07:13 -0400
-Date: Tue, 8 May 2007 03:07:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Patrick McHardy <kaber@trash.net>
-Subject: Re: 2.6.21-git8+ BUG: NMI Watchdog detected LOCKUP on CPU1
-Message-Id: <20070508030701.d21dc40b.akpm@linux-foundation.org>
-In-Reply-To: <46403642.7020501@googlemail.com>
-References: <46403642.7020501@googlemail.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 06:07:35 -0400
+Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:39238 "EHLO
+	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965805AbXEHKHe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 06:07:34 -0400
+Date: Tue, 8 May 2007 03:06:57 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Chris Wright <chrisw@sous-sol.org>, LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86-64 highres/dyntick support
+Message-ID: <20070508100657.GZ3505@sequoia.sous-sol.org>
+References: <1178485128.31213.98.camel@localhost.localdomain> <20070507163110.GP3505@sequoia.sous-sol.org> <1178556361.3042.16.camel@localhost.localdomain> <20070508093957.GS3505@sequoia.sous-sol.org> <1178617864.3042.309.camel@localhost.localdomain> <20070508095130.GY3505@sequoia.sous-sol.org> <1178618304.3042.320.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178618304.3042.320.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.14 (2007-02-12)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 May 2007 10:35:14 +0200 Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+* Thomas Gleixner (tglx@linutronix.de) wrote:
+> Hmm, that's even more strange. Can you please provide the output
+> of /proc/timer_list ?
 
-> Hi,
-> 
-> / filesystem was full
-> 
-> [39525.460000] BUG: NMI Watchdog detected LOCKUP on CPU1, eip 08056990, registers:
-> [39525.468000] Modules linked in: loop ipt_MASQUERADE iptable_nat nf_nat autofs4 af_packet nf_conntrack_netbios_ns ipt_REJECT nf_conntrack_ipv4 xt_state nf_conntrack nfnetlink iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 binfmt_misc thermal processor fan container nvram snd_intel8x0 snd_ac97_codec ac97_bus snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss evdev snd_pcm intel_agp snd_timer snd agpgart soundcore i2c_i801 snd_page_alloc ide_cd cdrom rtc unix
-> [39525.518000] CPU:    1
-> [39525.518000] EIP:    0073:[<08056990>]    Not tainted VLI
-> [39525.518000] EFLAGS: 00000202   (2.6.21-ga989705c #187)
-> [39525.529000] EIP is at 0x8056990
-> [39525.529000] eax: 6e560d60   ebx: 0000000b   ecx: 00000000   edx: 000dd15e
-> [39525.541000] esi: 00000000   edi: 6e560220   ebp: bfeb0a58   esp: bfeb0990
-> [39525.547000] ds: 007b   es: 007b   fs: 0000  gs: 0033  ss: 007b
-> [39525.553000] Process line (pid: 4277, ti=cf200000 task=f6f560b0 task.ti=cf200000)
-> [39525.560000] Kernel panic - not syncing: Aiee, killing interrupt handler!
-> 
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git8/git-console.log
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/2.6.21-git8/git-config
-> 
+It's quite normal looking, and a printk in clockevents_set_mode looks normal too.
 
-I don't know what caused the CPU to jump into hyperspace like that, but Patrick
-tells me that this:
+[chrisw@localhost ~]$ cat /proc/timer_list
+Timer List Version: v0.3
+HRTIMER_MAX_CLOCK_BASES: 2
+now at 313565930359 nsecs
 
-> [38773.921000] printk: 15909 messages suppressed.
-> [38773.926000] ipt_hook: happy cracking.
-> [38778.921000] printk: 16332 messages suppressed.
-> [38778.925000] ipt_hook: happy cracking.
-> [38783.921000] printk: 16175 messages suppressed.
-> [38783.926000] ipt_hook: happy cracking.
-> [38788.921000] printk: 16390 messages suppressed.
-> [38788.925000] ipt_hook: happy cracking.
-> [38793.921000] printk: 16289 messages suppressed.
-> [38793.925000] ipt_hook: happy cracking.
-> [38798.921000] printk: 16172 messages suppressed.
-> [38798.926000] ipt_hook: happy cracking.
-> [38803.921000] printk: 15738 messages suppressed.
-> [38803.925000] ipt_hook: happy cracking.
-> [38808.921000] printk: 14731 messages suppressed.
+cpu: 0
+ clock 0:
+  .index:      0
+  .resolution: 4000250 nsecs
+  .get_time:   ktime_get_real
+active timers:
+ clock 1:
+  .index:      1
+  .resolution: 4000250 nsecs
+  .get_time:   ktime_get
+active timers:
+ #0: <ffff810150223e38>, hrtimer_wakeup, S:01
+ # expires at 313700587872 nsecs [in 134657513 nsecs]
+ #1: <ffff810150223e38>, it_real_fn, S:01
+ # expires at 332024684987 nsecs [in 18458754628 nsecs]
+ #2: <ffff810150223e38>, hrtimer_wakeup, S:01
+ # expires at 337032779067 nsecs [in 23466848708 nsecs]
+ #3: <ffff810150223e38>, hrtimer_wakeup, S:01
+ # expires at 1851212334864 nsecs [in 1537646404505 nsecs]
+ #4: <ffff810150223e38>, it_real_fn, S:01
+ # expires at 3635317355388 nsecs [in 3321751425029 nsecs]
+ #5: <ffff810150223e38>, it_real_fn, S:01
+ # expires at 3635630194993 nsecs [in 3322064264634 nsecs]
 
-  happens when a local process sends packets with invalid IP headers
-  through raw sockets.
+cpu: 1
+ clock 0:
+  .index:      0
+  .resolution: 4000250 nsecs
+  .get_time:   ktime_get_real
+active timers:
+ clock 1:
+  .index:      1
+  .resolution: 4000250 nsecs
+  .get_time:   ktime_get
+active timers:
 
-  [ 5225.195000] UDP: short packet: From 37.126.206.54:46544 39671/1182
-  to 127.0.0.1:40761
+cpu: 2
+ clock 0:
+  .index:      0
+  .resolution: 4000250 nsecs
+  .get_time:   ktime_get_real
+active timers:
+ clock 1:
+  .index:      1
+  .resolution: 4000250 nsecs
+  .get_time:   ktime_get
+active timers:
 
-  This seems to indicate something on the local machine (packets are not
-  routed to 127.0.0.1) is sending invalid packets, probably with
-  incorrectly set up skb pointers.
+cpu: 3
+ clock 0:
+  .index:      0
+  .resolution: 4000250 nsecs
+  .get_time:   ktime_get_real
+active timers:
+ clock 1:
+  .index:      1
+  .resolution: 4000250 nsecs
+  .get_time:   ktime_get
+active timers:
+ #0: <ffff810150223e38>, it_real_fn, S:01
+ # expires at 313558625026 nsecs [in -7305333 nsecs]
+ #1: <ffff810150223e38>, hrtimer_wakeup, S:01
+ # expires at 369334850252 nsecs [in 55768919893 nsecs]
+ #2: <ffff810150223e38>, it_real_fn, S:01
+ # expires at 3936979059363 nsecs [in 3623413129004 nsecs]
 
-  I'd suggest to add a WARN_ON(1) in ipt_local_hook().
 
-So can you please add the appropriate WARN_ON?
+Tick Device: mode:     0
+Clock Event Device: hpet
+ max_delta_ns:   85899346200
+ min_delta_ns:   1920
+ mult:           107374182
+ shift:          32
+ mode:           2
+ next_event:     9223372036854775807 nsecs
+ set_next_event: hpet_next_event
+ set_mode:       hpet_set_mode
+ event_handler:  tick_handle_periodic_broadcast
+tick_broadcast_mask: 00000001
 
-Whatever happens, that printk should be toned down, shouldn't it?  We
-prefer to not let unprivileged apps spam the logs.
+
+Tick Device: mode:     0
+Clock Event Device: lapic
+ max_delta_ns:   671088687
+ min_delta_ns:   1200
+ mult:           53687081
+ shift:          32
+ mode:           1
+ next_event:     0 nsecs
+ set_next_event: lapic_next_event
+ set_mode:       lapic_timer_setup
+ event_handler:  tick_handle_periodic
+
+Tick Device: mode:     0
+Clock Event Device: lapic
+ max_delta_ns:   671088687
+ min_delta_ns:   1200
+ mult:           53687081
+ shift:          32
+ mode:           2
+ next_event:     0 nsecs
+ set_next_event: lapic_next_event
+ set_mode:       lapic_timer_setup
+ event_handler:  tick_handle_periodic
+
+Tick Device: mode:     0
+Clock Event Device: lapic
+ max_delta_ns:   671088687
+ min_delta_ns:   1200
+ mult:           53687081
+ shift:          32
+ mode:           2
+ next_event:     0 nsecs
+ set_next_event: lapic_next_event
+ set_mode:       lapic_timer_setup
+ event_handler:  tick_handle_periodic
+
+Tick Device: mode:     0
+Clock Event Device: lapic
+ max_delta_ns:   671088687
+ min_delta_ns:   1200
+ mult:           53687081
+ shift:          32
+ mode:           2
+ next_event:     0 nsecs
+ set_next_event: lapic_next_event
+ set_mode:       lapic_timer_setup
+ event_handler:  tick_handle_periodic
+
+
+[chrisw@localhost ~]$ grep -e 0: -e LOC: /proc/interrupts 
+  0:         72          2         58      36008   IO-APIC-edge      timer
+LOC:      36655      36772      36725      36683 
+[chrisw@localhost ~]$ grep -e 0: -e LOC: /proc/interrupts 
+  0:         72          2         58      36165   IO-APIC-edge      timer
+LOC:      36812      36929      36882      36840 
+[chrisw@localhost ~]$ grep -e 0: -e LOC: /proc/interrupts 
+  0:         72          2         58      36297   IO-APIC-edge      timer
+LOC:      36944      37061      37014      36972 
+[chrisw@localhost ~]$ grep -e 0: -e LOC: /proc/interrupts 
+  0:         72          2         58      36424   IO-APIC-edge      timer
+LOC:      37071      37188      37141      37099 
 
