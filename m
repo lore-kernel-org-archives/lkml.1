@@ -1,82 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032460AbXEHWGP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754198AbXEHWHN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032460AbXEHWGP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:06:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbXEHWGJ
+	id S1754198AbXEHWHN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:07:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbXEHWHK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:06:09 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:42450 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbXEHWGF (ORCPT
+	Tue, 8 May 2007 18:07:10 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:57501 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754075AbXEHWHG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:06:05 -0400
-Subject: Re: 2.6.21-ext4-1
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: David Chinner <dgc@sgi.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
-       Johann Lombardi <johann.lombardi@bull.net>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070508025048.GC32602149@melbourne.sgi.com>
-References: <E1HiXab-0001QX-Sk@candygram.thunk.org>
-	 <1178571383.3933.8.camel@dyn9047017103.beaverton.ibm.com>
-	 <20070508025048.GC32602149@melbourne.sgi.com>
-Content-Type: text/plain
-Organization: IBM LTC
-Date: Tue, 08 May 2007 15:05:56 -0700
-Message-Id: <1178661957.4135.66.camel@dyn9047017103.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-7) 
+	Tue, 8 May 2007 18:07:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qBaWZrhH2g63Ba4s9+Z0m6I35LCFiHLiEz/p/bgl5yc8BEHuOqgVZX5UatprA9xBL+InmFLNJiriaWimSrVWWyW7lbfua9BS84vBI3Ug5Hf93Uqwxk5UFzbTKxV+Yy15UXMTeZ0FR2EZboiLt5wcsltpEvBo4bkjZU2COVAhfJk=
+Message-ID: <a4e6962a0705081507u39ab95c6oee147ac3e453624a@mail.gmail.com>
+Date: Tue, 8 May 2007 17:07:05 -0500
+From: "Eric Van Hensbergen" <ericvh@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [V9fs-developer] [PATCH 1/4] v9fs: rename non-vfs related structs and functions to be moved to net/9p
+Cc: "Latchesar Ionkov" <lucho@ionkov.net>, linux-fsdevel@vger.kernel.org,
+       "V9FS Developers" <v9fs-developer@lists.sourceforge.net>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org
+In-Reply-To: <20070508141012.7fdf4c24.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <f158dc670705081351j4d46b433o2bdd2e8212a52e15@mail.gmail.com>
+	 <20070508141012.7fdf4c24.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-08 at 12:50 +1000, David Chinner wrote:
-> On Mon, May 07, 2007 at 01:56:23PM -0700, Mingming Cao wrote:
-> > In any case, it would be useful to add a new set of testsuites for the
-> > new fallocate() syscall and fsstress in LTP testsuites to automatically
-> > the preallocation code in ext4/XFS.
-> 
-> I hacked an existing XFS test prog to do manual testing of the fallocate()
-> syscall. In the XFSQA suite we have various pre-alloc enhanced utils (e.g.
-> fsstress, fsx, etc) that we should probably update to be able to use both
-> fallocate and xfsctl so we can test both.
-> 
-> Here's all the programs we use that have preallocation awareness:
-> 
-> chook 982% grep RESVSP ltp/*.c  | awk '/^ltp/  { split($1,a,":"); print a[1] ;}' | uniq
-> ltp/doio.c
-> ltp/fsstress.c
-> ltp/fsx.c
-> ltp/growfiles.c
-> ltp/iogen.c
-> chook 983% grep RESVSP src/* | awk '/^src/ { split($1,a,":"); print a[1] ;}' | uniq
-> src/alloc.c
-> src/fstest.c
-> src/iopat.c
-> src/randholes.c
-> src/resvtest.c
-> src/unwritten_mmap.c
-> src/unwritten_sync.c
-> 
-Thanks for sharing the info. I think Amit used a fsx version with
-preallocation awareness test, but I don't know if we have other ltp
-tests that aware preallocation. I would very appreciate if you could
-share your preallocation test with us.
+On 5/8/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Tue, 8 May 2007 14:51:02 -0600
+> "Latchesar Ionkov" <lucho@ionkov.net> wrote:
+>
+> > This patchset moves non-filesystem interfaces of v9fs from fs/9p to net/9p.
+> > It moves the transport, packet marshalling and connection layers to net/9p
+> > leaving only the VFS related files in fs/9p.
+>
+> (Please cc netdev@vger.kernel.org on net-related work)
+>
+> These changes would be best handled via Eric's git tree, with appropriate
+> acks from the net maintainers.
+>
 
-> BTW, have you guys tested mmap writes into unwritten extents? ;)
-> 
-I am not sure, Amit, have you done some mmap write test into
-uninitialized extents?
+Ack.  I was waiting to see if Lucho hit any major brick walls with the
+community before pulling them in.
 
-Sorry, I still not quite clear what's the mapped problem you are worry
-about. Could you explain to me a bit more? thanks!
-
-Mingming
-
-
-> Cheers,
-> 
-> Dave.
-
+                -eric
