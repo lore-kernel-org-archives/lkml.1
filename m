@@ -1,49 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968995AbXEHWxd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969047AbXEHXBe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968995AbXEHWxd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:53:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968599AbXEHWxZ
+	id S969047AbXEHXBe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 19:01:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967774AbXEHXB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:53:25 -0400
-Received: from v05705.home.net.pl ([212.85.118.117]:63066 "HELO
-	v05705.home.net.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S968590AbXEHWxY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:53:24 -0400
-Date: Wed, 9 May 2007 00:53:33 +0200
-From: Zbigniew Baniewski <zb@ispid.com.pl>
-To: Willy Tarreau <w@1wt.eu>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: "modularized" 2.4.34.4  ->  ide-core "unresolved symbols"
-Message-ID: <20070508225333.GA19063@localhost.localdomain>
-References: <20070505194922.GA13176@localhost.localdomain> <20070506043645.GF943@1wt.eu> <20070508202334.GA16185@localhost.localdomain> <20070508211646.GA3129@1wt.eu> <20070508221425.GA18244@localhost.localdomain> <20070508223922.GB31591@1wt.eu>
+	Tue, 8 May 2007 19:01:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37959 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967801AbXEHXBZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 19:01:25 -0400
+Message-ID: <46410140.7050205@garzik.org>
+Date: Tue, 08 May 2007 19:01:20 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-In-Reply-To: <20070508223922.GB31591@1wt.eu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Stephen.Clark@seclark.us
+CC: Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: CodingStyle: start flamewar about use of braces
+References: <200705081903.l48J3AOw010373@hera.kernel.org> <20070508124301.17975a4f.randy.dunlap@oracle.com> <4640E971.9050400@garzik.org> <20070508222540.GG8753@csclub.uwaterloo.ca> <4640FEA0.3020407@seclark.us>
+In-Reply-To: <4640FEA0.3020407@seclark.us>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 12:39:22AM +0200, Willy Tarreau wrote:
+Stephen Clark wrote:
+> Lennart Sorensen wrote:
+>> On Tue, May 08, 2007 at 05:19:45PM -0400, Jeff Garzik wrote:
+>>> If anyone tries to add braces to my code's 'else' statements where 
+>>> they are not required, that patch will get NAK'd in a heartbeat.
 
-> This "sanscrit-like" language is an oops (in fact a kernel panic, but the
-> dump format is called an oops). It is what developers use to find bugs.
+>> Oh isn't coding style fun.  I personally hate code that doesn't ALWAYS
+>> have the braces everywhere since it makes adding a print statement
+>> or other debuging to the condition such a pain since you then have to
+>> add braces to the condition to avoid breaking the code just to insert
+>> a print statement.  It is one of the few things I disagree with in the
+>> linux kernel coding style.
 
-Of course, I'm aware. ;)
+> I agree - it is merely defensive programming to always have the braces, 
+> it prevents someone
+> from sticking in a diag and forgetting to add braces so things go haywire.
 
-> I see that you're using devfs.
 
-No, I'm not. No idea, why it has been enabled... :-O  just added grsecurity
-patch to the previous .config, switched ata-module to be compiled directly
-into kernel - and made new compilation.
+If you compulsively add braces where not needed, the number of lines in 
+the source file explodes.  Net result is code that is more difficult to 
+read, because far fewer lines of code fit on a single page/screen.
 
-> If you're pretty certain that you need DEVFS, then for a test, please
-> set a max of IDE options to YES instead of MODULE. At least all the ones
-> you need to boot on this system.
+But hey, it's personal preference.  I'm not going to enforce the 
+make-code-more-readable rule on others' code... :)
 
-OK, I'll repeat the compilation making sure, that devfs is disabled.
--- 
-				pozdrawiam / regards
+	Jeff
 
-						Zbigniew Baniewski
+
