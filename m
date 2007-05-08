@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934142AbXEHQkS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934244AbXEHQlM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934142AbXEHQkS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 12:40:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934094AbXEHQkQ
+	id S934244AbXEHQlM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:41:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934094AbXEHQlK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 12:40:16 -0400
-Received: from xenotime.net ([66.160.160.81]:47830 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S933903AbXEHQkN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 12:40:13 -0400
-Date: Tue, 8 May 2007 09:45:02 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Dan Kruchinin <dubalom@gmail.com>, Greg KH <greg@kroah.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [PATCH -mm] drivers/usb/core/config.c:
- kzalloc(0, ..)
-Message-Id: <20070508094502.efc32182.rdunlap@xenotime.net>
-In-Reply-To: <Pine.LNX.4.44L0.0705081152590.3217-100000@iolanthe.rowland.org>
-References: <20070508141453.GA12771@kroah.com>
-	<Pine.LNX.4.44L0.0705081152590.3217-100000@iolanthe.rowland.org>
-Organization: YPO4
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+	Tue, 8 May 2007 12:41:10 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:32902 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934068AbXEHQlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 12:41:08 -0400
+Date: Tue, 8 May 2007 22:18:50 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Nathan Lynch <nathanl@austin.ibm.com>,
+       Joel Schopp <jschopp@austin.ibm.com>, Ashok Raj <ashok.raj@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@us.ibm.com
+Subject: Re: [BUG] cpu-hotplug: Can't offline the CPU with naughty	realtime	processes
+Message-ID: <20070508164850.GS7311@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <87bqgxrlky.wl%takeuchi_satoru@jp.fujitsu.com> <1178545373.28438.7.camel@localhost.localdomain> <877irkrq8a.wl%takeuchi_satoru@jp.fujitsu.com> <1178593345.28438.29.camel@localhost.localdomain> <874pmoro1c.wl%takeuchi_satoru@jp.fujitsu.com> <20070508041033.GB25030@in.ibm.com> <87irb3g4zt.wl%takeuchi_satoru@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87irb3g4zt.wl%takeuchi_satoru@jp.fujitsu.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 11:57:07 -0400 (EDT) Alan Stern wrote:
+On Tue, May 08, 2007 at 04:16:06PM +0900, Satoru Takeuchi wrote:
+> Sometimes I wonder at prio_array. It has 140 entries(from 0 to 139),
+> and the meaning of each entry is as follows, I think.
+> 
+> +-----------+-----------------------------------------------+
+> | index     | usage                                         |
+> +-----------+-----------------------------------------------+
+> | 0 - 98    | RT processes are here. They are in the entry  |
+> |           | whose index is 99 - sched_priority.           |
 
-> On Tue, 8 May 2007, Greg KH wrote:
-> 
-> > >  The problem was in drivers/usb/core/config.c in function 
-> > >  usb_parse_interface:
-> > >  ---
-> > >  num_ep = num_ep_orig = alt->desc.bNumEndpoints;
-> > >  ...
-> > >  len = sizeof(struct usb_host_endpoint) * num_ep;
-> > >  alt->endpoint = kzalloc(len, GFP_KERNEL);
-> > >  ---
-> > > 
-> > >  num_ep can be 0, as it was in my case, so following patch makes this
-> > >  situation more obvious
-> > >  and clear.
-> 
-> How about instead just doing:
-> 
-> +	num_ep = max(num_ep, 1);
->  	len = sizeof(struct usb_host_endpoint) * num_ep;
-> 
-> Also, wasn't it true at one point that it was legal to call kmalloc() with 
-> a length of 0?  ISTR seeing somewhere that it's true for regular malloc().
+>From sched.h:
 
-kmalloc(0) was legal with CONFIG_SLAB=y.  However, there is now
-something called SLUB, which just returned an error when size == 0.
-It has recently been modified to mirror the SLAB behavior but also
-do a stack dump so that "bad" callers can be fixed.
+/*
+ * Priority of a process goes from 0..MAX_PRIO-1, valid RT
+ * priority is 0..MAX_RT_PRIO-1, and SCHED_NORMAL/SCHED_BATCH
+ * tasks are in the range MAX_RT_PRIO..MAX_PRIO-1.
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+so shouldn't the index for RT processes be 0 - 99, given that
+MAX_RT_PRIO = 100?
+
+> +-----------+-----------------------------------------------+
+> | 99        | No one use it? CMIIW.                         |
+> +-----------+-----------------------------------------------+
+> | 100 - 139 | Ordinally processes are here. They are in the |
+> |           | entry whose index is (nice+120) +/- 5         |
+> +-----------+-----------------------------------------------+
+> 
+> What's the purpose of the prio_array[99]? Once I exlore source tree
+> briefly and can't found any kernel thread which uses this entry.
+> Does anybody know?
+
+-- 
+Regards,
+vatsa
