@@ -1,52 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967085AbXEHMrK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967131AbXEHMrh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967085AbXEHMrK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:47:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966951AbXEHMrJ
+	id S967131AbXEHMrh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:47:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967115AbXEHMrd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:47:09 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:51033 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967008AbXEHMrI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:47:08 -0400
-Subject: Re: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
-From: Richard Purdie <rpurdie@rpsys.net>
-To: kogiidena@eggplant.ddo.jp
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
-In-Reply-To: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp>
-References: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp>
-Content-Type: text/plain
-Date: Tue, 08 May 2007 13:46:47 +0100
-Message-Id: <1178628407.6061.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Tue, 8 May 2007 08:47:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:15102 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966209AbXEHMrc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:47:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=MZlrSSi/R0e8/itbqQkWe2S1xzjSpzx5kYjot1TSIrJHxEjjRVtpXKvyrKvVe0czys9nO6R1yZbX0pLjUMC/kTwPa05xEbQxjswOAR4LxLzXeTzb7+Qf5gLb4ua4F0Uc6/pdjFWpNDDLRQFXFkm7zL1x0mhugnM1KezD/5JI6xc=
+Message-ID: <f19298770705080547m3c0b5583qd6ad7aaca816361c@mail.gmail.com>
+Date: Tue, 8 May 2007 16:47:31 +0400
+From: "Alexey Zaytsev" <alexey.zaytsev@gmail.com>
+To: "Lennert Buytenhek" <buytenh@wantstofly.org>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.3 - QMGR
+Cc: "Krzysztof Halasa" <khc@pm.waw.pl>, "Michael-Luke Jones" <mlj28@cam.ac.uk>,
+       "Jeff Garzik" <jeff@garzik.org>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       "Russell King" <rmk@arm.linux.org.uk>,
+       "ARM Linux Mailing List" <linux-arm-kernel@lists.arm.linux.org.uk>
+In-Reply-To: <20070508113232.GA32055@xi.wantstofly.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <m3abwhcy74.fsf@maximus.localdomain>
+	 <m3vef5biob.fsf@maximus.localdomain>
+	 <5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>
+	 <m3hcqoa772.fsf@maximus.localdomain>
+	 <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>
+	 <m33b289zku.fsf@maximus.localdomain>
+	 <m31whs5ehn.fsf_-_@maximus.localdomain>
+	 <20070508113232.GA32055@xi.wantstofly.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-08 at 21:27 +0900, kogiidena wrote:
-> I wrote LED Blink Trigger. Pleas apply if there is no problem.
-> 
-> This allows LEDs to be controlled by a programmable timer.
-> "blink" blinks LED at a constant cycle.
-> "bitshift" turns LED or Buzzer on and off by the value of pattern.
-> 
-> Kernel version: linux-2.6.21-rc4
-> Signed-off-by: kogiidena <kogiidena@eggplant.ddo.jp>
+On 5/8/07, Lennert Buytenhek <buytenh@wantstofly.org> wrote:
+...
+> As with Christian's driver, I don't know whether an SRAM allocator
+> makes much sense.  We can just set up a static allocation map for the
+> in-tree drivers and leave out the allocator altogether.  I.e. I don't
+> think it's worth the complexity (and just because the butt-ugly Intel
+> code has an allocator isn't a very good reason. :-)
 
-As far as I can tell, the existing timer trigger can do everything the
-blink trigger can (and more besides). The driver looks like it would be
-a lot easier to read if it just contained the bitshift trigger. To be
-accepted, the bitshift trigger needs more documentation, particularly
-the Kconfig entry. Its not clear for example that the bits are just
-shifted once and don't repeat. Most people would probably want it to
-repeat and with a repeat mode, it might be able to replace the heartbeat
-trigger too?
-
-Regards,
-
-Richard
-
-
-
-
+Is the qmgr used when the NPEs are utilized as DMA engines? And is the
+allocator needed in this case? If yes, I beg you not to drop it,
+because we use one NPE for this purpose, and if we are going to adopt
+this driver instead of the intel's one, you will receive a patch
+adding DMA functionality very soon. ;)
