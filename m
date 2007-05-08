@@ -1,136 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031810AbXEHUBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031933AbXEHUCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031810AbXEHUBR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031864AbXEHUBL
+	id S1031933AbXEHUCu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 16:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031927AbXEHUCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:01:11 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:57680 "EHLO
+	Tue, 8 May 2007 16:02:44 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:60363 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031833AbXEHUBI (ORCPT
+	by vger.kernel.org with ESMTP id S1031925AbXEHUCk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:01:08 -0400
-Date: Tue, 8 May 2007 13:00:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexander van Heukelum <heukelum@mailshack.com>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
-       "H. Peter Anvin" <hpa@zytor.com>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
-Message-Id: <20070508130004.25cb5363.akpm@linux-foundation.org>
-In-Reply-To: <20070508183232.GA13225@mailshack.com>
-References: <20070505104452.GA30944@mailshack.com>
-	<20070508032817.e4734798.akpm@linux-foundation.org>
-	<20070508183232.GA13225@mailshack.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 16:02:40 -0400
+Date: Tue, 8 May 2007 13:01:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+ (PCI_MULTITHREAD_PROBE)
+In-Reply-To: <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+ <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
+ <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
+ <alpine.LFD.0.98.0705081123080.3974@woody.linux-foundation.org>
+ <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
+ <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 20:32:32 +0200
-Alexander van Heukelum <heukelum@mailshack.com> wrote:
 
-> On Tue, May 08, 2007 at 03:28:17AM -0700, Andrew Morton wrote:
-> > On Sat, 5 May 2007 12:44:52 +0200 Alexander van Heukelum <heukelum@mailshack.com> wrote:
-> > > --- a/arch/i386/boot/bootsect.S
-> > > +++ b/arch/i386/boot/bootsect.S
-> > > @@ -44,7 +44,7 @@ #endif
-> > >  _start:
-> > >  
-> > >  	# Normalize the start address
-> > > -	jmpl	$BOOTSEG, $start2
-> > > +	jmpw	$BOOTSEG, $start2
-> > 
-> > Sigh, another blow struck in the ongoing struggle between my Vaio and the
-> > rest of the world.
-> > 
-> > Stone-cold black-screen lockup immediately upon boot.
-> > 
-> > Stock FC5 install, config at
-> > http://userweb.kernel.org/~akpm/config-sony.txt
+
+On Tue, 8 May 2007, Linus Torvalds wrote:
 > 
-> Sigh... sounds impossible.
-> 
-> I assume this is repeatable?
+> But the final nail in the coffin is that doing it at the bus level is 
+> INFERIOR. As you yourself admitted, it's better to do some things 
+> synchronously.
 
-100%
+Side note: there may well be clever combinations of "bus side" support 
+*together* with per-device rules.
 
-> And this patch changes behaviour?
+For example, right now we probe devices by calling their "probe()" 
+routines synchronously. Changing that to be asynchronous simply isn't an 
+option, because we've seen drivers that get  unhappy (and the hotplug 
+argument isn't an argument: *most* drivers aren't even hotplug-capable 
+anyway).
 
-Yup.
+BUT. 
 
-> What do you mean by immediate?
+Instead of changing existign probe functionality to be asynchronous, we 
+could *add* a new and asynchronous part to it. For example, we could make 
+the rule for PCI - or other bus - devices be:
 
-Basically the last thing I see is grub.
+ - the bus will *first* call the "probe()" function synchronously.
 
-> Before or after decompression?
+ - after that one has completed, we will call "probe_async()" 
+   asynchronously at some point (it ie might be scheduled immediately 
+   after the "probe()" call, but delayed by some arbitrary issues like 
+   just already having too many asynchronous probes on-going or similar)
 
-Not sure - things happen pretty quickly and I suspect info is getting lost
-when the display is changing modes.
+(A variation of the above might be that *everybody*s synchronous probe 
+function will be called first, and then the asynchronous probe functions 
+will be called only when they are all done. That might help with drivers 
+that have dependencies between different PCI functions - Cardbus comes to 
+mind, where the different slots look like independent PCI devices, but 
+slot zero is literally the master and controls some of the functions on 
+slot 1 too - similar issues may well happen in other multi-function 
+devices, and it might simplify things if you knew that the serial probe 
+had completed fully before the asynchronous parallel part even starts).
 
-> Fishy... As Andi and Peter have mentioned, this code is not executed.
-> There is only one user of the same memory area this early... video.S
-> uses it to store some collected data, but as far as I can see only the
-> 'CONFIG_VIDEO_RETAIN' code also reads it back. If it happens before
-> decompression, could you see if changing
-> 	#define CONFIG_VIDEO_RETAIN -> #undef CONFIG_VIDEO_RETAIN
-> in arch/i386/boot/video.S changes anything?
-> 
-> Do you select a non-standard textmode?
+So an unmodified driver would basically work exactly like it does now, but 
+if a driver is happy with being called asynchronously, it could just 
+change it's 
 
-yep.
+	.probe = mydriver_probe
 
-> Does vga=ask show up?
+thing into a
 
-no.
+	.probe_async = mydriver_probe
 
-> *looks around some*
-> 
-> Oh! A padding hole in a struct! That could be a problem. If the freeze
-> is after decompression, could you test if this makes it work again?
+and we can do that ona per-driver basis with that kind of really simple 
+one-liner change.
 
-I shall try that later in the day.
+In fact, there is nothing wrong with having *both* a synchronous part, and 
+an async part:
 
-> 
-> ---
-> 
-> Commit 89ec4c238e7a3d7e660291f3f1a8181381baad77 introduced a discrepancy
-> between the struct screen_info which is used by the C code, and the
-> PARAM_* offsets which are used in the real-mode kernel. This is an
-> attempt to rectify the situation, but I have no way to test it.
-> 
-> Signed-off-by: Alexander van Heukelum <heukelum@mailshack.com>
-> 
-> ---
-> 
-> diff --git a/arch/i386/boot/bootsect.S b/arch/i386/boot/bootsect.S
-> diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
-> index 8143c95..8e404cb 100644
-> --- a/arch/i386/boot/video.S
-> +++ b/arch/i386/boot/video.S
-> @@ -95,7 +95,8 @@ #define PARAM_VESAPM_SEG	0x2e
->  #define PARAM_VESAPM_OFF	0x30
->  #define PARAM_LFB_PAGES		0x32
->  #define PARAM_VESA_ATTRIB	0x34
-> -#define PARAM_CAPABILITIES	0x36
-> +#define PARAM_VESA_PAD		0x36
-> +#define PARAM_CAPABILITIES	0x38
->  
->  /* Define DO_STORE according to CONFIG_VIDEO_RETAIN */
->  #ifdef CONFIG_VIDEO_RETAIN
-> diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-> index b02308e..0a2e892 100644
-> --- a/include/linux/screen_info.h
-> +++ b/include/linux/screen_info.h
-> @@ -41,8 +41,8 @@ struct screen_info {
->  	u16 vesapm_off;		/* 0x30 */
->  	u16 pages;		/* 0x32 */
->  	u16 vesa_attributes;	/* 0x34 */
-> -	u32 capabilities;       /* 0x36 */
-> -				/* 0x3a -- 0x3b reserved for future expansion */
-> +	u16 vesa_pad;		/* 0x36 */
-> +	u32 capabilities;       /* 0x38 */
->  				/* 0x3c -- 0x3f micro stack for relocatable kernels */
->  };
->  
+	.probe = mydriver_setup,
+	.probe_async = mydriver_spin_up_and_probe_devices,
+
+and it would do basic setup (including, for example, the fast enumeration 
+of whatever devices are connected) synchronously, but then do anything 
+more in the async part - and the async part would still be guaranteed that 
+the setup has been run by the time it is scheduled (but not really have 
+any other guarantees).
+
+Hmm? Would something like this work? I dunno, but it seems a hell of a lot 
+safer and more capable than the aborted PCI multithreaded probing that was 
+an "all or nothing" approach.
+
+		Linus
