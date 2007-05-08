@@ -1,51 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968313AbXEHPtY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968350AbXEHPwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968313AbXEHPtY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 11:49:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966829AbXEHPtT
+	id S968350AbXEHPwB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 11:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968266AbXEHPwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 11:49:19 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:53630 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965880AbXEHPtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 11:49:16 -0400
-Date: Tue, 8 May 2007 17:49:00 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-cc: chris@pcburn.com, linux-kernel@vger.kernel.org,
-       Marcel Holtmann <marcel@holtmann.org>,
-       bluez-devel@lists.sourceforge.net, netdev@vger.kernel.org
-Subject: Re: Getting make net/built-in.o Error with 2.6.21.1 Build
-In-Reply-To: <a781481a0705071725i1d802dfejbcdaca4ab0a1ff55@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705081740550.16923@twin.jikos.cz>
-References: <463FB6B0.3070005@pcburn.com> <a781481a0705071725i1d802dfejbcdaca4ab0a1ff55@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 May 2007 11:52:00 -0400
+Received: from www.osadl.org ([213.239.205.134]:39596 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S967613AbXEHPv6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 11:51:58 -0400
+Subject: Re: [PATCH 1/2] LogFS proper
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>,
+       Andrew Morton <akpm@osdl.org>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
+       David Chinner <dgc@sgi.com>
+In-Reply-To: <Pine.LNX.4.61.0705081439270.17280@yvahk01.tjqt.qr>
+References: <20070507215913.GA15054@lazybastard.org>
+	 <20070507220036.GB15054@lazybastard.org>
+	 <1178608950.3042.273.camel@localhost.localdomain>
+	 <Pine.LNX.4.61.0705081439270.17280@yvahk01.tjqt.qr>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 17:54:41 +0200
+Message-Id: <1178639681.3042.334.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Satyam Sharma wrote:
+On Tue, 2007-05-08 at 14:46 +0200, Jan Engelhardt wrote:
+> >> +static int __logfs_readdir(struct file *file, void *buf, filldir_t filldir)
+> >> +{
+> >> +		err = read_dir(dir, &dd, pos);
+> >> +		if (err == -EOF)
+> >> +			break;
+> >
+> >	-EOF results in a return code 0 ?
+> 
+> Results in a return code -256.
 
-> >   CC      init/version.o
-> >   LD      init/built-in.o
-> >   LD      .tmp_vmlinux1
-> > net/built-in.o: In function `hidp_add_connection':
-> > (.text+0x8bb08): undefined reference to `hid_ff_init'
-> > make: *** [.tmp_vmlinux1] Error 1
-> You've got CONFIG_BT_HIDP=y there but CONFIG_USB_HID=m. The trivial 
-> patch below solves it. To test, you can just "make oldconfig" on the 
-> same .config that broke above and then proceed to make bzImage.
+Really ? It breaks out of the loop and returns 0 !
 
-I'd say we need a different fix here. First, the question is whether there 
-are any force-feedback devices, supported by USBHID force-feedback layer, 
-which have a bluetooth version?
+> +	}
+> +
+> +	file->f_pos = pos + IMPLICIT_NODES;
+> +	return 0;
 
-If there are none of them, we could just drop the FF initialization 
-completely for now. 
+	tglx
 
-On the other hand if there are such devices, just calling hid_ff_init() is 
-presently not enough anyway, as the force feedback drivers for HID devices 
-are currently USB-transport specific.
 
--- 
-Jiri Kosina
