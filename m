@@ -1,49 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967196AbXEHLSJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967285AbXEHLSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967196AbXEHLSJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 07:18:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934230AbXEHLSI
+	id S967285AbXEHLSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 07:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967241AbXEHLSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 07:18:08 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4161 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934144AbXEHLSH (ORCPT
+	Tue, 8 May 2007 07:18:20 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:44430 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967235AbXEHLST (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 07:18:07 -0400
-Date: Tue, 8 May 2007 12:17:59 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Bogus section mismatch errors?
-Message-ID: <20070508111759.GA26562@flint.arm.linux.org.uk>
-Mail-Followup-To: Linux Kernel List <linux-kernel@vger.kernel.org>
+	Tue, 8 May 2007 07:18:19 -0400
+Date: Tue, 8 May 2007 20:18:19 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, Lee.Schermerhorn@hp.com,
+       clameter@sgi.com, akpm@linux-foundation.org, ak@suse.de,
+       jbarnes@virtuousgeek.org
+Subject: [PATCH] change zonelist order v5 [2/3] automatic configuration
+Message-Id: <20070508201819.99f499df.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Add auto zone ordering configuration.
 
-WARNING: arch/arm/mach-realview/built-in.o - Section mismatch:
- reference to .init.text: from .data between 'realview_timer' (at offset 0x54)
- and 'clcd_plat_data'
+This function will select ZONE_ORDER_NODE when
 
-Weird, these two data structures don't interact with each other.  Probably
-bogus.
+There are only ZONE_DMA or ZONE_DMA32.
+|| size of (ZONE_DMA/DMA32) > (System Total Memory)/2
+|| Assume Node(A)
+	Node (A) is enough big &&
+	Node (A)'s ZONE_DMA/DMA32 occupies 60% of Node(A)'s memory.
+	(In this case, ZONE_ORDER_ZONE may not offer enough locality...)
 
-WARNING: init/built-in.o - Section mismatch:
- reference to .init.text: from .text between 'rest_init' (at offset 0x2c)
- and 'run_init_process'
-WARNING: mm/built-in.o - Section mismatch:
- reference to .init.text: from .text between 'kmem_cache_create' (at offset 0x1bd94)
- and 'cache_reap'
-WARNING: mm/built-in.o - Section mismatch:
- reference to .init.text: from .text between 'kmem_cache_create' (at offset 0x1bdcc)
- and 'cache_reap'
+otherwise, ZONE_ORDER_ZONE is selected.
 
-Are these more bogus?
+Maybe there is no best and simple way to configure zone order. I wrote this base on
+my experience and discussion on the list.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Anyway, a user can specifiy zone order from boot option/sysctl.
+
+Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+
+---
+ mm/page_alloc.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ 1 file changed, 49 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.21-mm1/mm/page_alloc.c
+===================================================================
+--- linux-2.6.21-mm1.orig/mm/page_alloc.c
++++ linux-2.6.21-mm1/mm/page_alloc.c
+@@ -2248,8 +2248,55 @@ static void build_zonelists_in_zone_orde
+ 
+ static int default_zonelist_order(void)
+ {
+-	/* dummy, just select node order. */
+-	return ZONELIST_ORDER_NODE;
++	int nid, zone_type;
++	unsigned long low_kmem_size,total_size;
++	struct zone *z;
++	int average_size;
++	/*
++         * ZONE_DMA and ZONE_DMA32 can be very small area in the sytem.
++	 * If they are really small and used heavily, the system can fall
++	 * into OOM very easily.
++	 * This function detect ZONE_DMA/DMA32 size and confgigures zone order.
++	 */
++	/* Is there ZONE_NORMAL ? (ex. ppc has only DMA zone..) */
++	low_kmem_size = 0;
++	total_size = 0;
++	for_each_online_node(nid) {
++		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
++			z = &NODE_DATA(nid)->node_zones[zone_type];
++			if (populated_zone(z)) {
++				if (zone_type < ZONE_NORMAL)
++					low_kmem_size += z->present_pages;
++				total_size += z->present_pages;
++			}
++		}
++	}
++	if (!low_kmem_size ||  /* there are no DMA area. */
++	    low_kmem_size > total_size/2) /* DMA/DMA32 is big. */
++		return ZONELIST_ORDER_NODE;
++	/*
++	 * look into each node's config.
++  	 * If there is a node whose DMA/DMA32 memory is very big area on
++ 	 * local memory, NODE_ORDER may be suitable.
++         */
++	average_size = total_size / (num_online_nodes() + 1);
++	for_each_online_node(nid) {
++		low_kmem_size = 0;
++		total_size = 0;
++		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
++			z = &NODE_DATA(nid)->node_zones[zone_type];
++			if (populated_zone(z)) {
++				if (zone_type < ZONE_NORMAL)
++					low_kmem_size += z->present_pages;
++				total_size += z->present_pages;
++			}
++		}
++		if (low_kmem_size &&
++		    total_size > average_size && /* ignore small node */
++		    low_kmem_size > total_size * 70/100)
++			return ZONELIST_ORDER_NODE;
++	}
++	return ZONELIST_ORDER_ZONE;
+ }
+ 
+ 
+
