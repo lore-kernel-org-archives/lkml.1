@@ -1,80 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966854AbXEHMSz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966918AbXEHMV7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966854AbXEHMSz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:18:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966520AbXEHMSy
+	id S966918AbXEHMV7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:21:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933865AbXEHMV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:18:54 -0400
-Received: from smtpout06-04.prod.mesa1.secureserver.net ([64.202.165.227]:36145
-	"HELO smtpout06.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with SMTP id S966686AbXEHMSx (ORCPT
+	Tue, 8 May 2007 08:21:58 -0400
+Received: from wx-out-0506.google.com ([66.249.82.233]:65266 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S932458AbXEHMV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:18:53 -0400
-Message-ID: <46406AAB.7050001@seclark.us>
-Date: Tue, 08 May 2007 08:18:51 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Tue, 8 May 2007 08:21:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=RHk88CZgX99MUIxZGvn0FzEH9waOLHXGY8GIsMK4oUlOnLp2+1iu5gqR/mNUHsSuGJXqHAOoQUBEWPj+keZG2+7++xoZdR9tMuR7E1xluXzhA9IUV8SnqNjTV8/AqxQ6EeVA/J5b01BreJg2ZmKmKldV4JYEPCNBzGL6CzuG/iI=
+Message-ID: <84144f020705080521k6d75d9f8m33e25585735e4f7e@mail.gmail.com>
+Date: Tue, 8 May 2007 15:21:55 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Michael Tokarev" <mjt@tls.msk.ru>
+Subject: Re: [KJ PATCH] Replacing memset(<addr>,0,PAGE_SIZE) with clear_page() in kernel/kexec.c
+Cc: "Shani Moideen" <shani.moideen@wipro.com>, ebiederm@xmission.com,
+       linux-kernel@vger.kernel.org, kernel-janitors@lists.osdl.org
+In-Reply-To: <46405AB6.6040901@msgid.tls.msk.ru>
 MIME-Version: 1.0
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz>	 <1178550653.11851.191.camel@pmac.infradead.org>	 <20070507194949.GB3981@ucw.cz>	 <20070507222311.4589fc8a@the-village.bc.nu> <d120d5000705071455y309e88ebt921331fdf30e60d2@mail.gmail.com>
-In-Reply-To: <d120d5000705071455y309e88ebt921331fdf30e60d2@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1178621444.3598.15.camel@shani-win>
+	 <46405AB6.6040901@msgid.tls.msk.ru>
+X-Google-Sender-Auth: 14907e0dfff5d2c1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dmitry Torokhov wrote:
+Shani Moideen wrote:
+> >                 ptr = kmap(page);
+> > -               memset(ptr, 0, PAGE_SIZE);
+> > +               clear_page(ptr);
 
->On 5/7/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->  
->
->>On Mon, 7 May 2007 19:49:50 +0000
->>Pavel Machek <pavel@ucw.cz> wrote:
->>
->>    
->>
->>>On Mon 2007-05-07 16:10:53, David Woodhouse wrote:
->>>      
->>>
->>>>On Mon, 2007-05-07 at 14:04 +0000, Pavel Machek wrote:
->>>>        
->>>>
->>>>>Can we stick to ascii in sources?
->>>>>          
->>>>>
->>>>No. Please join us in the 21st century.
->>>>        
->>>>
->>>We had this discussion before. Kernel sources should be us-ascii.
->>>utf-8 is ok for documentation.
->>>      
->>>
->>We had this discussion before. Kernel sources should use utf-8 for
->>comments where neccessary. Many names cannot be correctly represented in
->>US ascii, and mangling them is just plain rude.
->>    
->>
->
->So should we all start writing our names in native alphabets? And comments too?
->
->  
->
-And while your at I think you should write all the comments and 
-documentation in your
-native language as well ;-)
+On 5/8/07, Michael Tokarev <mjt@tls.msk.ru> wrote:
+> I wonder if it's worth to invent kzmap() or something like that... ;)
 
-
--- 
-
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
-
-
-
+I am counting 59 kmap + memset pairs in the kernel, so perhaps it is
+worth it to reduce kernel text size.
