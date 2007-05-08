@@ -1,61 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967508AbXEHMGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967413AbXEHMHQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967508AbXEHMGW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967490AbXEHMGT
+	id S967413AbXEHMHQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:07:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967434AbXEHMHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:06:19 -0400
-Received: from mx10.go2.pl ([193.17.41.74]:47046 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S967486AbXEHMGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:06:15 -0400
-Date: Tue, 8 May 2007 14:12:33 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jiri Slaby <jirislaby@gmail.com>, "Rafael J\. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-mm1 hwsusp: BUG at workqueue.c:106
-Message-ID: <20070508121232.GE1772@ff.dom.local>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508105528.GA86@tv-sign.ru>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 8 May 2007 08:07:14 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47040 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967405AbXEHMHL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:07:11 -0400
+Date: Tue, 08 May 2007 21:06:18 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [Patch] Fix unnecesary meminit
+Cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Miles Lane <miles.lane@gmail.com>, Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20070506175326.GA9855@uranus.ravnborg.org>
+References: <20070504170421.b1ab2d16.akpm@linux-foundation.org> <20070506175326.GA9855@uranus.ravnborg.org>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070508210318.10DA.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 08-05-2007 12:55, Oleg Nesterov wrote:
-> On 05/08, Andrew Morton wrote:
->> On Tue, 08 May 2007 10:57:35 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
->>
->>> this occured in dmesg during resuming from hwsusp in 2.6.21-mm1 (captured
->>> through netconsole). Perfectly reproducible, it simply happens each time I
->>> try it.
->> Let's cc Oleg.
->>
->>> usb_endpoint usbdev5.1_ep00: PM: resume from 0, parent usb5 still 2
->>> ------------[ cut here ]------------
->>> kernel BUG at /home/l/latest/xxx/kernel/workqueue.c:106!
->>> invalid opcode: 0000 [#1]
->>> SMP
->>> Modules linked in: ipv6 floppy ohci1394 ieee1394 parport_pc parport usbhid
->>> ehci_hcd pata_acpi ff_memless sr_mod cdrom
-...
-> queue_delayed_work().
+> > It doesn't make a lot of sense to export an __init symbol to modules.  I
+> > guess it's OK in this case, but we get warnings:
 > 
-> Probably, cancel_delayed_work(&delayed_work->work) was called with the ->timer
-> pending. This is wrong, cancel_delayed_work() clears _PENDING unconditionally,
+> It seems wrong to me to first tell linker to discard the code after init and
+> next to export the symbol to make it available for any module anytime.
+> 
+> Both function are relatively small so better avoid playing games and
+> drop the __meminit tag.
 
-Maybe I miss your point, but clearing is conditional: on timer delete...
+Ok. This is the patch.
 
-I think more suspicious is calling cancel_work_sync() for a delayed work
-(with timer pending). Or maybe some race profits from _PENDING cleared
-without locking?
 
-BTW, it seems some debugging is needed to show, whose work is doing the
-mess.
+-------
+This is to fix unnecessary __meminit definition.
+These are exported for kernel modules.
 
-Regards,
-Jarek P.
+I compiled on ia64/x86-64 with memory hotplug on/off.
+
+Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+
+ drivers/acpi/numa.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.21-mm1/drivers/acpi/numa.c
+===================================================================
+--- linux-2.6.21-mm1.orig/drivers/acpi/numa.c	2007-05-08 19:33:05.000000000 +0900
++++ linux-2.6.21-mm1/drivers/acpi/numa.c	2007-05-08 19:33:12.000000000 +0900
+@@ -228,7 +228,7 @@ int __init acpi_numa_init(void)
+ 	return 0;
+ }
+ 
+-int __meminit acpi_get_pxm(acpi_handle h)
++int acpi_get_pxm(acpi_handle h)
+ {
+ 	unsigned long pxm;
+ 	acpi_status status;
+@@ -246,7 +246,7 @@ int __meminit acpi_get_pxm(acpi_handle h
+ }
+ EXPORT_SYMBOL(acpi_get_pxm);
+ 
+-int __meminit acpi_get_node(acpi_handle *handle)
++int acpi_get_node(acpi_handle *handle)
+ {
+ 	int pxm, node = -1;
+ 
+
+-- 
+Yasunori Goto 
+
+
