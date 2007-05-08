@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934580AbXEHBlD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934605AbXEHBn5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934580AbXEHBlD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 21:41:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934434AbXEHBk6
+	id S934605AbXEHBn5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 21:43:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934599AbXEHBny
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 21:40:58 -0400
-Received: from khc.piap.pl ([195.187.100.11]:55527 "EHLO khc.piap.pl"
+	Mon, 7 May 2007 21:43:54 -0400
+Received: from THUNK.ORG ([69.25.196.29]:48400 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934429AbXEHBk5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 21:40:57 -0400
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Russell King <rmk@arm.linux.org.uk>, lkml <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH 0/3] Intel IXP4xx network drivers
-References: <m3abwhcy74.fsf@maximus.localdomain>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 08 May 2007 03:40:56 +0200
-In-Reply-To: <m3abwhcy74.fsf@maximus.localdomain> (Krzysztof Halasa's message of "Mon, 07 May 2007 01:46:39 +0200")
-Message-ID: <m3vef43xef.fsf@maximus.localdomain>
+	id S934592AbXEHBnw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 7 May 2007 21:43:52 -0400
+Date: Mon, 7 May 2007 21:43:37 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Mingming Cao <cmm@us.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andreas Dilger <adilger@clusterfs.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+Message-ID: <20070508014337.GA14072@thunk.org>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Mingming Cao <cmm@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Andreas Dilger <adilger@clusterfs.com>,
+	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070507171541.5370a36a.akpm@linux-foundation.org> <1178584899.3933.73.camel@dyn9047017103.beaverton.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178584899.3933.73.camel@dyn9047017103.beaverton.ibm.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@thunk.org
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, the status of my patches is as follows:
-[PATCH] Use menuconfig objects II - netdev/wan
-        the "menuconfig" WAN patch by Jan Engelhardt
+On Mon, May 07, 2007 at 05:41:39PM -0700, Mingming Cao wrote:
+> We could check the total number of fs free blocks account before
+> preallocation happens, if there isn't enough space left, there is no
+> need to bother preallocating.
 
-[PATCH 1a/3] WAN Kconfig: change "depends on HDLC" to "select"
-        the Kconfig changes for WAN (HDLC) drivers
+Checking against the fs free blocks is a good idea, since it will
+prevent the obvious error case where someone tries to preallocate 10GB
+when there is only 2GB left.  But it won't help if there are multiple
+processes trying to allocate blocks the same time.  On the other hand,
+that case is probably relatively rare, and in that case, the
+filesystem was probably going to be left completely full in any case.
 
-[PATCH 2a/3] Intel IXP4xx network drivers
-	IXP4xx "fuses" (installed on-chip CPU components) patch
+On Mon, May 07, 2007 at 05:15:41PM -0700, Andrew Morton wrote:
+> Userspace could presumably repair the mess in most situations by truncating
+> the file back again.  The kernel cannot do that because there might be live
+> data in amongst there.
 
-[PATCH] Intel IXP4xx network drivers v.3 - QMGR
-	IXP4xx hardware Queue Manager driver
+Actually, the kernel could do it, in that could simply release all
+unitialized extents back to the system.  The problem is distinguishing
+between the unitialized extents that had just been newly added, versus
+the ones that had there from before.  (On the other hand, if the
+filesystem was completely full, releasing unitialized blocks wouldn't
+be the worse thing in the world to do, although releasing previously
+fallocated blocks probably does violate the princple of least
+surprise, even if it's what the user would have wanted.)
 
-[PATCH] Intel IXP4xx network drivers v.2 - NPE
-	IXP4xx Network Processor Engine driver, needs "fuses" patch
+On Mon, May 07, 2007 at 05:41:39PM -0700, Mingming Cao wrote:
+> If there is enough free space, we could make a reservation window that
+> have at least N free blocks and mark it not stealable by other files. So
+> later we will not run into the ENOSPC error.
 
-[PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-	You guessed it, needs all of the above.
+Could you really use a single reservation window?  When the filesystem
+is almost full, the free extents are likely going to be scattered all
+over the disk.  The general principle of grabbing all of the extents
+and keeping them in an in-memory data structure, and only adding them
+to the extent tree would work, though; I'm just not sure we could do
+it using the existing reservation window code, since it only supports
+a single reservation window per file, yes?
 
-
-The:
-[PATCH] Intel IXP4xx network drivers v.2 - QMGR
-was faulty, thus v.3.
-
-Fire again :-)
--- 
-Krzysztof Halasa
+						- Ted
