@@ -1,47 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755414AbXEHQHO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968310AbXEHQIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755414AbXEHQHO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 12:07:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968111AbXEHQHJ
+	id S968310AbXEHQIb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934784AbXEHQIa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 12:07:09 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47695 "EHLO
+	Tue, 8 May 2007 12:08:30 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:47813 "EHLO
 	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934833AbXEHQHE (ORCPT
+	with ESMTP id S934771AbXEHQI3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 12:07:04 -0400
-Date: Tue, 8 May 2007 09:07:03 -0700 (PDT)
+	Tue, 8 May 2007 12:08:29 -0400
+Date: Tue, 8 May 2007 09:08:26 -0700 (PDT)
 From: Christoph Lameter <clameter@sgi.com>
 X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andy Whitcroft <apw@shadowen.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm1
-In-Reply-To: <46407554.10801@shadowen.org>
-Message-ID: <Pine.LNX.4.64.0705080906290.8722@schroedinger.engr.sgi.com>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
- <46407554.10801@shadowen.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] vmstat-use-our-own-timer-events-fix
+In-Reply-To: <735170251589527543@wsc.cz>
+Message-ID: <Pine.LNX.4.64.0705080908080.8722@schroedinger.engr.sgi.com>
+References: <46403B7F.1050009@gmail.com> <20070508021131.438cee31.akpm@linux-foundation.org>
+ <20070508105528.GA86@tv-sign.ru> <46405A67.8020105@gmail.com>
+ <46406656.9060504@gmail.com> <20070508134815.GA1074@tv-sign.ru>
+ <20070508134815.GA1074@tv-sign.ru> <735170251589527543@wsc.cz>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Andy Whitcroft wrote:
+On Tue, 8 May 2007, Jiri Slaby wrote:
 
-> The SLUB code introduces the config segment below to stop SLUB being
-> used on powerpc:
-> 
->     config ARCH_USES_SLAB_PAGE_STRUCT
->        bool
->        default y
->        depends on SPLIT_PTLOCK_CPUS <= NR_CPUS
-> 
-> However as far as I can kconfig has no support for operators other than
-> ==, !=, &&, and ||.  Who can say why we do not get an error.
-> 
-> Cirtainly in my testing this simply never triggers and bad kernels result.
-> 
-> Thoughts?
+> Yes, it helped, thanks. If no objections, please apply the patch below.
 
-Get rid of the whole patch as soon as possible? It seems that PPC work is 
-in progress to make SLUB work in all configurations.
-
+Acked-by: Christoph Lameter <clameter@sgi.com>
