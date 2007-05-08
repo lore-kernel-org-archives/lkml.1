@@ -1,97 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031992AbXEHUKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967917AbXEHULA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031992AbXEHUKW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967846AbXEHUKQ
+	id S967917AbXEHULA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 16:11:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967846AbXEHUKz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:10:16 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:45459 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967084AbXEHUKN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:10:13 -0400
-Date: Tue, 8 May 2007 21:10:12 +0100 (BST)
-From: James Simmons <jsimmons@infradead.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Linux console project <linuxconsole-dev@lists.sourceforge.net>
-Subject: [PATCH] Use tty_schedule in VT code.
-Message-ID: <Pine.LNX.4.64.0705082107460.3459@pentafluge.infradead.org>
+	Tue, 8 May 2007 16:10:55 -0400
+Received: from waste.org ([66.93.16.53]:33833 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967084AbXEHUKy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 16:10:54 -0400
+Date: Tue, 8 May 2007 15:10:47 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][RFC] Create a top-level "Space-critical features" menu.
+Message-ID: <20070508201046.GU11166@waste.org>
+References: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 08, 2007 at 04:06:30AM -0400, Robert P. J. Day wrote:
+> 
+>   i've always hated that lower-level menu under "General setup":
+> 
+> Configure standard kernel features (for small systems)  --->
+> 
+> which buries the choice of de-selecting features to save space one
+> level down without really explaining what it's all about.  so i just
+> shifted all of that up to the top under what i think is a more
+> meaningful name.
 
+WTF. It certainly does explain what it's all about (hint: hit '?') and
+you've clearly failed to read it, even while creating the patch.
 
-This patch has the VT subsystem use tty_schedule_flip instead of 
-con_schedule_flip. There are two ways we can approach this. We can
-do the below path or extend tty_schedule_flip to accept a time field.
-Comments welcomed.
+>   this patch is also why i asked earlier why top-level menu entries
+> have no "help" text -- because, in this case, it would be useful for
+> someone looking at the config screen to see that choice and be able to
+> ask, "hey, i wonder what *that's* all about", and get help along the
+> lines of:
+> 
+>   "these features are normally selected but, if you're strapped for
+> space, such as with embedded systems, you might consider turning some
+> of them off.  if space isn't an issue, you might as well just leave
+> them as they are."  (or something like that.)
 
-Signed-Off: James Simmons <jsimmons@infradead.org>
+NAK. Let's actually read that config option description:
 
-diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
-index cb8d691..2db8973 100644
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -303,7 +303,7 @@ static void put_queue(struct vc_data *vc, int ch)
- 
- 	if (tty) {
- 		tty_insert_flip_char(tty, ch, 0);
--		con_schedule_flip(tty);
-+		tty_schedule_flip(tty);
- 	}
- }
- 
-@@ -318,7 +318,7 @@ static void puts_queue(struct vc_data *vc, char *cp)
- 		tty_insert_flip_char(tty, *cp, 0);
- 		cp++;
- 	}
--	con_schedule_flip(tty);
-+	tty_schedule_flip(tty);
- }
- 
- static void applkey(struct vc_data *vc, int key, char mode)
-@@ -549,7 +549,7 @@ static void fn_send_intr(struct vc_data *vc)
- 	if (!tty)
- 		return;
- 	tty_insert_flip_char(tty, 0, TTY_BREAK);
--	con_schedule_flip(tty);
-+	tty_schedule_flip(tty);
- }
- 
- static void fn_scroll_forw(struct vc_data *vc)
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index 1bbb45b..c9bbb14 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -1240,7 +1240,7 @@ static void respond_string(const char *p, struct tty_struct *tty)
- 		tty_insert_flip_char(tty, *p, 0);
- 		p++;
- 	}
--	con_schedule_flip(tty);
-+	tty_schedule_flip(tty);
- }
- 
- static void cursor_report(struct vc_data *vc, struct tty_struct *tty)
-diff --git a/include/linux/kbd_kern.h b/include/linux/kbd_kern.h
-index 506ad20..7b24a0d 100644
---- a/include/linux/kbd_kern.h
-+++ b/include/linux/kbd_kern.h
-@@ -149,16 +149,4 @@ void compute_shiftstate(void);
- 
- extern unsigned int keymap_count;
- 
--/* console.c */
--
--static inline void con_schedule_flip(struct tty_struct *t)
--{
--	unsigned long flags;
--	spin_lock_irqsave(&t->buf.lock, flags);
--	if (t->buf.tail != NULL)
--		t->buf.tail->commit = t->buf.tail->used;
--	spin_unlock_irqrestore(&t->buf.lock, flags);
--	schedule_delayed_work(&t->buf.work, 0);
--}
--
- #endif
+menuconfig EMBEDDED
+        bool "Configure standard kernel features (for small systems)"
+        help
+          This option allows certain base kernel options and settings
+          to be disabled or tweaked. This is for specialized
+          environments which can tolerate a "non-standard" kernel.
+          Only use this if you really know what you are doing.
+
+That means this option is for specialized environments which can
+tolerate a non-standard kernel and people should only use it if they
+really know what they're doing.
+
+Think about what non-standard means. We absolutely don't want to hear
+from anyone whose machine silently crashed only to discover they
+accidentally had CONFIG_PRINTK off. None of the options in that menu
+are of any interest to the average user and they shouldn't be using
+them.
+
+Feel free to suggest better help text if that isn't clear enough.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
