@@ -1,108 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934538AbXEHLcb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934595AbXEHLcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934538AbXEHLcb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 07:32:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934519AbXEHLca
+	id S934595AbXEHLcl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 07:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934566AbXEHLcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 07:32:30 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:60928 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934517AbXEHLca (ORCPT
+	Tue, 8 May 2007 07:32:39 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:49919 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934544AbXEHLch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 07:32:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=apMpd8e9egNwP54TcZoUN/6cEOn6+lodZHdfyP65zHihb+FQ2mzZYfpimDrPw43sA3b7EIr2jG/LlBSDci/LifHAUDkH1h/oqilNEd5lP1lWYeS0vH4EUanbcqKNjkJr/1/qJAYt8VH2zFQZneO8lpPeBHoR6r3pPcRjDEoQxt8=
-Message-ID: <46405FC9.7010407@gmail.com>
-Date: Tue, 08 May 2007 13:32:25 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Dan Kruchinin <dubalom@gmail.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       linux-usb-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>
-Subject: Re: [PATCH -mm] drivers/usb/core/config.c: kzalloc(0,..)
-References: <a8f16e2b0705072003m6172df63l199090149edd7612@mail.gmail.com>
-In-Reply-To: <a8f16e2b0705072003m6172df63l199090149edd7612@mail.gmail.com>
-X-Enigmail-Version: 0.95b
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 07:32:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=KrOY4EWpwrrEbF1zyQtPhQ3EdjlBLRqyF4n1wEYIBu2wJ4p55c6C7Xl5P6z0x
+	0q7mvkQNxQ55eb3n10XxC5mnA==
+Date: Tue, 8 May 2007 13:32:32 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.3 - QMGR
+Message-ID: <20070508113232.GA32055@xi.wantstofly.org>
+References: <m3abwhcy74.fsf@maximus.localdomain> <m3vef5biob.fsf@maximus.localdomain> <5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk> <m3hcqoa772.fsf@maximus.localdomain> <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk> <m33b289zku.fsf@maximus.localdomain> <m31whs5ehn.fsf_-_@maximus.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m31whs5ehn.fsf_-_@maximus.localdomain>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Kruchinin napsal(a):
-> The following patch fixes such SLUB report(when someone tries to
-> allocate 0 bytes):
-> -- 
-> May  8 00:19:15 midgard kernel: [   21.933467] BUG: at
-> include/linux/slub_def.h:88 kmalloc_index()
-> May  8 00:19:15 midgard kernel: [   21.933470]
-> [show_registers+410/736] show_trace_log_lvl+0x1a/0x30
-> May  8 00:19:15 midgard kernel: [   21.933478]
-> [print_trace_warning_symbol+50/64] show_trace+0x12/0x20
-> May  8 00:19:15 midgard kernel: [   21.933482]  [fixup_irqs+38/192]
-> dump_stack+0x16/0x20
-> May  8 00:19:15 midgard kernel: [   21.933485]  [do_lookup+195/400]
-> get_slab+0x213/0x230
-> May  8 00:19:15 midgard kernel: [   21.933489]  [do_lookup+309/400]
-> __kmalloc_track_caller+0x15/0x40
-> May  8 00:19:15 midgard kernel: [   21.933493]  [__vunmap+25/240]
-> __kzalloc+0x19/0x50
-> May  8 00:19:15 midgard kernel: [   21.933498]  [<df05778e>]
-> usb_parse_configuration+0x85e/0xe70 [usbcore]
-> May  8 00:19:15 midgard kernel: [   21.933520]  [<df057fcb>]
-> usb_get_configuration+0x12b/0x450 [usbcore]
-> May  8 00:19:15 midgard kernel: [   21.933535]  [<df04ed87>]
-> usb_new_device+0x17/0x1c0 [usbcore]
-> May  8 00:19:15 midgard kernel: [   21.933550]  [<df05073a>]
-> hub_thread+0x79a/0xfd0 [usbcore]
-> May  8 00:19:15 midgard kernel: [   21.933564]
-> [run_posix_cpu_timers+1218/2064] kthread+0x42/0x70
-> May  8 00:19:15 midgard kernel: [   21.933569]  [math_error+87/240]
-> kernel_thread_helper+0x7/0x10
-> May  8 00:19:15 midgard kernel: [   21.933572]  =======================
-> -- 
-> 
-> The problem was in drivers/usb/core/config.c in function
-> usb_parse_interface:
-> ---
-> num_ep = num_ep_orig = alt->desc.bNumEndpoints;
-> ...
-> len = sizeof(struct usb_host_endpoint) * num_ep;
-> alt->endpoint = kzalloc(len, GFP_KERNEL);
-> ---
-> 
-> num_ep can be 0, as it was in my case, so following patch makes this
-> situation more obvious
-> and clear.
-> 
-> --------------
-> diff --git a/drivers/usb/core/config.c b/drivers/usb/core/config.c
-> index bfb3731..4db6b21 100644
-> --- a/drivers/usb/core/config.c
-> +++ b/drivers/usb/core/config.c
-> @@ -185,7 +185,10 @@ static int usb_parse_interface(struct device
-> *ddev, int cfgno,
->         num_ep = USB_MAXENDPOINTS;
->     }
-> 
-> -    len = sizeof(struct usb_host_endpoint) * num_ep;
-> +    len = sizeof(struct usb_host_endpoint);
-> +    if (num_ep > 0)
-> +      len *= num_ep;
-> +   
->     alt->endpoint = kzalloc(len, GFP_KERNEL);
->     if (!alt->endpoint)
->         return -ENOMEM;
-> ---------------
+I'm not sure what the latest versions are, so I'm not sure which
+patches to review and which patches are obsolete.
 
-I don't think, this is correct, but let USB people make a decision (always CC
-subsys maintainers plus people who might be involved).
 
-regards,
--- 
-http://www.fi.muni.cz/~xslaby/            Jiri Slaby
-faculty of informatics, masaryk university, brno, cz
-e-mail: jirislaby gmail com, gpg pubkey fingerprint:
-B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
+On Tue, May 08, 2007 at 02:46:28AM +0200, Krzysztof Halasa wrote:
+
+> +struct qmgr_regs __iomem *qmgr_regs;
+> +static struct resource *mem_res;
+> +static spinlock_t qmgr_lock;
+> +static u32 used_sram_bitmap[4]; /* 128 16-dword pages */
+> +static void (*irq_handlers[HALF_QUEUES])(void *pdev);
+> +static void *irq_pdevs[HALF_QUEUES];
+> +
+> +void qmgr_set_irq(unsigned int queue, int src,
+> +		  void (*handler)(void *pdev), void *pdev)
+> +{
+> +	u32 __iomem *reg = &qmgr_regs->irqsrc[queue / 8]; /* 8 queues / u32 */
+> +	int bit = (queue % 8) * 4; /* 3 bits + 1 reserved bit per queue */
+> +	unsigned long flags;
+> +
+> +	src &= 7;
+> +	spin_lock_irqsave(&qmgr_lock, flags);
+> +	__raw_writel((__raw_readl(reg) & ~(7 << bit)) | (src << bit), reg);
+> +	irq_handlers[queue] = handler;
+> +	irq_pdevs[queue] = pdev;
+> +	spin_unlock_irqrestore(&qmgr_lock, flags);
+> +}
+
+The queue manager interrupts should probably be implemented as an
+irqchip, in the same way that GPIO interrupts are implemented.  (I.e.
+allocate 'real' interrupt numbers for them, and use the interrupt
+cascade mechanism.)  You probably want to have separate irqchips for
+the upper and lower halves, too.  This way, drivers can just use
+request_irq() instead of having to bother with platform-specific
+qmgr_set_irq() methods.  I think I also made this review comment
+with Christian's driver.
+
+
+> +int qmgr_request_queue(unsigned int queue, unsigned int len /* dwords */,
+> +		       unsigned int nearly_empty_watermark,
+> +		       unsigned int nearly_full_watermark)
+> +{
+> +	u32 cfg, addr = 0, mask[4]; /* in 16-dwords */
+> +	int err;
+> +
+> +	if (queue >= HALF_QUEUES)
+> +		return -ERANGE;
+> +
+> +	if ((nearly_empty_watermark | nearly_full_watermark) & ~7)
+> +		return -EINVAL;
+> +
+> +	switch (len) {
+> +	case  16:
+> +		cfg = 0 << 24;
+> +		mask[0] = 0x1;
+> +		break;
+> +	case  32:
+> +		cfg = 1 << 24;
+> +		mask[0] = 0x3;
+> +		break;
+> +	case  64:
+> +		cfg = 2 << 24;
+> +		mask[0] = 0xF;
+> +		break;
+> +	case 128:
+> +		cfg = 3 << 24;
+> +		mask[0] = 0xFF;
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +
+> +	cfg |= nearly_empty_watermark << 26;
+> +	cfg |= nearly_full_watermark << 29;
+> +	len /= 16;		/* in 16-dwords: 1, 2, 4 or 8 */
+> +	mask[1] = mask[2] = mask[3] = 0;
+> +
+> +	if (!try_module_get(THIS_MODULE))
+> +		return -ENODEV;
+> +
+> +	spin_lock_irq(&qmgr_lock);
+> +	if (__raw_readl(&qmgr_regs->sram[queue])) {
+> +		err = -EBUSY;
+> +		goto err;
+> +	}
+> +
+> +	while (1) {
+> +		if (!(used_sram_bitmap[0] & mask[0]) &&
+> +		    !(used_sram_bitmap[1] & mask[1]) &&
+> +		    !(used_sram_bitmap[2] & mask[2]) &&
+> +		    !(used_sram_bitmap[3] & mask[3]))
+> +			break; /* found free space */
+> +
+> +		addr++;
+> +		shift_mask(mask);
+> +		if (addr + len > ARRAY_SIZE(qmgr_regs->sram)) {
+> +			printk(KERN_ERR "qmgr: no free SRAM space for"
+> +			       " queue %i\n", queue);
+> +			err = -ENOMEM;
+> +			goto err;
+> +		}
+> +	}
+> +
+> +	used_sram_bitmap[0] |= mask[0];
+> +	used_sram_bitmap[1] |= mask[1];
+> +	used_sram_bitmap[2] |= mask[2];
+> +	used_sram_bitmap[3] |= mask[3];
+> +	__raw_writel(cfg | (addr << 14), &qmgr_regs->sram[queue]);
+> +	spin_unlock_irq(&qmgr_lock);
+> +
+> +#if DEBUG
+> +	printk(KERN_DEBUG "qmgr: requested queue %i, addr = 0x%02X\n",
+> +	       queue, addr);
+> +#endif
+> +	return 0;
+> +
+> +err:
+> +	spin_unlock_irq(&qmgr_lock);
+> +	module_put(THIS_MODULE);
+> +	return err;
+> +}
+
+As with Christian's driver, I don't know whether an SRAM allocator
+makes much sense.  We can just set up a static allocation map for the
+in-tree drivers and leave out the allocator altogether.  I.e. I don't
+think it's worth the complexity (and just because the butt-ugly Intel
+code has an allocator isn't a very good reason. :-)
+
+I.e. an API a la:
+
+	ixp4xx_qmgr_config_queue(int queue_nr, int sram_base_address, int queue_size, ...);
+
+might simply suffice.
