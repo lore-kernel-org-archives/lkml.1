@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968424AbXEHQjK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933971AbXEHQkI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968424AbXEHQjK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 12:39:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968318AbXEHQjJ
+	id S933971AbXEHQkI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:40:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933855AbXEHQkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 12:39:09 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:42320 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966965AbXEHQjG (ORCPT
+	Tue, 8 May 2007 12:40:05 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:53896 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754293AbXEHQkD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 12:39:06 -0400
-Date: Tue, 8 May 2007 18:38:46 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
- (PCI_MULTITHREAD_PROBE)
-Message-ID: <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
-	<20070508141149.GJ4226@stusta.de>
-	<alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
+	Tue, 8 May 2007 12:40:03 -0400
+Subject: Re: [PATCH]: Fix old SCSI adapter crashes with CD-ROM (take 2)
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-scsi@vger.kernel.org,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070508161444.GA4163@kernel.dk>
+References: <20070508171710.1ac730cd@the-village.bc.nu>
+	 <20070508161444.GA4163@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 11:39:36 -0500
+Message-Id: <1178642376.3737.36.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 08:27:34 -0700 (PDT),
-Linus Torvalds <torvalds@linux-foundation.org> wrote:
-
-> And no, we should not do it at the device core level. In fact, I don't 
-> think we should do it at that level at all. 
+On Tue, 2007-05-08 at 18:14 +0200, Jens Axboe wrote:
+> On Tue, May 08 2007, Alan Cox wrote:
+> > The CD-ROM layer doesn't bounce requests for old ISA controllers (and
+> > nor should it). However they get injected into the SCSI layer via
+> > sr_ioctl which also doesn't bounce them and SCSI then passes the buffer
+> > along to a device with unchecked_isa_dma set which either panics or
+> > truncates the buffer to 24bits.
+> > 
+> > According to Jens the right long term fix is for the CD layer to route
+> > the requests differently but in the mean time this has been tested by a
+> > victim and verified to sort the problem out. For the other 99.9% of users
+> > it's a no-op and doesn't bounce data.
+> > 
+> > Signed-off-by: Alan Cox <alan@redhat.com>
 > 
-> I'm pretty sure that the performance problems are at individual device 
-> drivers, and that the right solution is to thread at *that* level. Not 
-> higher up.
-
-These are two different problems:
-
-1. Probing taking long for individual device drivers. I agree, this
-should be solved at the driver level.
-
-2. Sheer volume of devices on a bus. Even if the indivdual probing
-doesn't take long, having all devices probed one after the other may
-take a lot of time. Putting the actual probe on a thread makes it
-possible to run several probes in parallel, thereby cutting probing
-time.
-
-(FWIW, the s390 cio layer does asynchronous probing at the bus level,
-where work is usually outstanding for a lot of devices at once. Where a
-2.4 kernel might take half an hour to detect all devices, we slashed it
-down to half a minute. I believe we could make rescans work even better
-with multithreaded probing with some tweaking.)
-
-> Threading at the bus level just inevitably means things like random 
-> numbers for devices depending on some timing/scheduling issue. That's 
-> nasty.
+> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 > 
-> Threading at a driver level still does that (ie individual disks may be 
-> attached in some order that depends on how fast they are to respond), but 
-> in a much more controlled fashion, and only for drivers that explicitly 
-> say that they can do it.
+> Christoph passed me his patch to get rid of ->generic_packet() in the
+> cdrom layer, so the work is almost complete. This patch is fine as a
+> work-around until that gets merged, though.
 
-How is that better? You still must rely on udev for persistent device
-names. And controlling device names in the driver can still be done in
-the device driver with multithreaded probing (on s390 ccw, devices
-already pop up in a random order, and the dasd driver manages to
-conjure up consistent names for those devices that the user specified.)
+Actually, I think the new scsi request infrastructure should be doing
+the bouncing (rather than have it done in each problem path we
+discover).
+
+Mike Christie tells me we're missing bouncing by accident in the
+scsi_execute path (but not the scsi_execute_async path).  He says this
+is the fix he proposed:
+
+http://marc.info/?l=linux-scsi&m=115981479822790&w=2
+
+Can we just merge this instead?
+
+James
+
+
