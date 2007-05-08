@@ -1,42 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032157AbXEHVGG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032164AbXEHVId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032157AbXEHVGG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:06:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967854AbXEHVFy
+	id S1032164AbXEHVId (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967944AbXEHVIb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:05:54 -0400
-Received: from mail.tmr.com ([64.65.253.246]:36273 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967474AbXEHVFw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:05:52 -0400
-Message-ID: <4640E64D.3070304@tmr.com>
-Date: Tue, 08 May 2007 17:06:21 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	Tue, 8 May 2007 17:08:31 -0400
+Received: from ns2.uludag.org.tr ([193.140.100.220]:60575 "EHLO uludag.org.tr"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S967681AbXEHVIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:08:30 -0400
+From: "=?iso-8859-9?q?S=2E=C7a=F0lar?= Onur" <caglar@pardus.org.tr>
+Reply-To: caglar@pardus.org.tr
+Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Subject: Re: [PATCH 1/8] Restructuring hpet timer generic clock interfaces
+Date: Wed, 9 May 2007 00:07:52 +0300
+User-Agent: KMail/1.9.6
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "Andrew Morton" <akpm@osdl.org>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Andi Kleen" <ak@suse.de>, "Ingo Molnar" <mingo@elte.hu>,
+       "Chris Wright" <chrisw@sous-sol.org>
+References: <653FFBB4508B9042B5D43DC9E18836F55DF0A8@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F55DF0A8@scsmsx415.amr.corp.intel.com>
 MIME-Version: 1.0
-To: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: Preempt of BKL and with tickless systems
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/signed;
+  boundary="nextPart3630267.rdPmg34D5N";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200705090008.00916.caglar@pardus.org.tr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think I have a reasonable grip on the voluntary and full preempt 
-models, can anyone give me any wisdom on the preempt of the BKL? I know 
-what it does, the question is where it might make a difference under 
-normal loads. Define normal as servers and desktops.
+--nextPart3630267.rdPmg34D5N
+Content-Type: text/plain;
+  charset="iso-8859-9"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I've been running some sched tests, and it seems to make little 
-difference how that's set. Before I run a bunch of extra tests, I 
-thought I'd ask.
+08 May 2007 Sal tarihinde, Pallipadi, Venkatesh =FEunlar=FD yazm=FD=FEt=FD:=
+=20
+> Hmm. Looks like timer was somehow not set correctly.
+> Can you try only the first 5 patches in the patchset and leave out the la=
+st
+> three and check whether it works.
 
+Yep, first 5 patches works fine,
 
-New topic: I have found preempt, both voluntary and forced, seems to 
-help more with response as the HZ gets smaller. How does that play with 
-tickless operation, or are you-all waiting for me to run my numbers with 
-all values of HZ and not, and tell the world what I found? ;-)
+[caglar@zangetsu][~]> dmesg | grep hpet
+hpet clocksource registered
+hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
+hpet0: 3 64-bit timers, 14318180 Hz
+hpet clockevent registered
+Time: hpet clocksource has been installed.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+[caglar@zangetsu][~]> cat /proc/timer_list
+=2E..
+Tick Device: mode:     1
+Clock Event Device: hpet
+ max_delta_ns:   2147483647
+ min_delta_ns:   3352
+ mult:           61496110
+ shift:          32
+ mode:           3
+ next_event:     9223372036854775807 nsecs
+ set_next_event: hpet_legacy_next_event
+ set_mode:       hpet_legacy_set_mode
+ event_handler:  tick_handle_oneshot_broadcast
+tick_broadcast_mask: 00000001
+tick_broadcast_oneshot_mask: 00000000
+=2E..
+
+If you need more output/log etc. please just say :)
+
+Cheers
+=2D-=20
+S.=C7a=F0lar Onur <caglar@pardus.org.tr>
+http://cekirdek.pardus.org.tr/~caglar/
+
+Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
+se!
+
+--nextPart3630267.rdPmg34D5N
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQBGQOawy7E6i0LKo6YRAiVYAJ4kDb+wP7q9HvNsov05dl3UpbHzxQCg1JOb
+ia/Ub9F1nuK0T54BJN7lbKA=
+=MnFB
+-----END PGP SIGNATURE-----
+
+--nextPart3630267.rdPmg34D5N--
