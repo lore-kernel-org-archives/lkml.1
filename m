@@ -1,62 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934598AbXEHM1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966462AbXEHMb5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934598AbXEHM1W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934430AbXEHM1V
+	id S966462AbXEHMb5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:31:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966391AbXEHMb4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:27:21 -0400
-Received: from ns.suse.de ([195.135.220.2]:36681 "EHLO mx1.suse.de"
+	Tue, 8 May 2007 08:31:56 -0400
+Received: from mail.screens.ru ([213.234.233.54]:58714 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934515AbXEHM1U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:27:20 -0400
-From: Andi Kleen <ak@suse.de>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
-Date: Tue, 8 May 2007 14:27:08 +0200
-User-Agent: KMail/1.9.1
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Alexander van Heukelum <heukelum@mailshack.com>,
-       lkml <linux-kernel@vger.kernel.org>
-References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org> <46405E0C.3020909@zytor.com>
-In-Reply-To: <46405E0C.3020909@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S966366AbXEHMbz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:31:55 -0400
+Date: Tue, 8 May 2007 16:31:02 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+Message-ID: <20070508123102.GB968@tv-sign.ru>
+References: <20070503204226.GA212@tv-sign.ru> <20070508071544.GA1772@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705081427.08646.ak@suse.de>
+In-Reply-To: <20070508071544.GA1772@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 08 May 2007 13:25, H. Peter Anvin wrote:
-> Andrew Morton wrote:
-> >>  	# Normalize the start address
-> >> -	jmpl	$BOOTSEG, $start2
-> >> +	jmpw	$BOOTSEG, $start2
-> >
-> > Sigh, another blow struck in the ongoing struggle between my Vaio and the
-> > rest of the world.
-> >
-> > Stone-cold black-screen lockup immediately upon boot.
-> >
-> > Stock FC5 install, config at
-> > http://userweb.kernel.org/~akpm/config-sony.txt
+On 05/08, Jarek Poplawski wrote:
+> 
+> On Fri, May 04, 2007 at 12:42:26AM +0400, Oleg Nesterov wrote:
+> ...
+> > +static int try_to_grab_pending(struct work_struct *work)
+> > +{
+> > +	struct cpu_workqueue_struct *cwq;
+> > +	int ret = 0;
+> > +
+> > +	if (!test_and_set_bit(WORK_STRUCT_PENDING, work_data_bits(work)))
+> > +		return 1;
+> 
+> Previous version used this check to run del_timer, and I think, it
+> was good idea. So, maybe, try something like this:
+> 
+> - run once del_timer before the loop (in cancel_rearming_ only),
+
+hmm, cancel_rearming_ does del_timer() before try_to_grab_pending().
+
+> - add a parmeter to try_to_grab_pending, e.g. "rearming",
+> - add here something like this:
+> 
+> 	else if (rearming && del_timer(&work->timer)
+> 		return 1;
+
+I thought about adding such a parameter, and I don't like this. This is
+a matter of taste, of course, but _imho_ this uglifies the code.
+
+In any case, unless we do completely different patch, the sequence should be
+
+	del_timer()	- a pending timer is the most common case
+
+	test_and_set_bit(WORK_STRUCT_PENDING) - the work is idle
+
+	try-to-steal-the-queued-work
+
+This is what we are doing now.
+
+> > +
+> > +	/*
+> > +	 * The queueing is in progress, or it is already queued. Try to
+> > +	 * steal it from ->worklist without clearing WORK_STRUCT_PENDING.
+> > +	 */
+> > +
+> > +	cwq = get_wq_data(work);
+> > +	if (!cwq)
+> > +		return ret;
+> 
+> Probably you meant:
+> 		return 1;
+
+No, we should return 0. This can happen if the queueing of the freshly-
+initialized @dwork is in progress.
+
+NOTE: right now try_to_grab_pending() is called from cancel_xxx() only, so
+this can't happen (it would be meaningless to do cancel_xxx if somebody else
+can queue this work or start the timer), but I'd like try_to_grab_pending()
+to be as generic as possible.
+
+So, we should either return 0, or add BUG_ON(!cwq).
+
+> BTW, probably there is some special reason it's in the loop now,
+> so maybe you should add a comment, why the old way (at the beginning
+> of a cancel_ function) is not enough.
+
+see above. Note that wait_on_work() checks cwq == NULL as well. This is
+because I do not want to tie try_to_grab_pending() and wait_on_work(),
+they should be generic, and could be used independently.
+
+> I think adding the first check:
+> 
+>    if (!list_empty(&work->entry)) {
 >
-> Andrew, I'm seriously starting to think there is something fundamentally
-> wrong with that test setup.
+> without the lock is usable here.
 
-I agree. The patch above does not change any code in the running
-kernel and is not even used in a normal kernel boot. Andrew,
-can you please double check that?
+We should optimize the common case, and most probably this work is
+already queued, so I don't this it is worth to enlarge .text.
 
-> [*] On the other hand, as I discovered in the process,
-> arch/i386/kernel/cpu/transmeta.c apparently gets miscompiled on my
-> development system for top-of-Linus.  This is a Linux bug and not gcc's
-> fault.  The following code:
+> > +void cancel_work_sync(struct work_struct *work)
+> > +{
+> > +	while (!try_to_grab_pending(work))
+> 
+> So this could be:
+> 	while (!try_to_grab_pending(work, 0))
+> 
+> > +		;
+> > +	wait_on_work(work);
+> > +	work_clear_pending(work);
+> >  }
+> > ...
+> > +void cancel_rearming_delayed_work(struct delayed_work *dwork)
+> > +{
+> > +	while (!del_timer(&dwork->timer) &&
+> > +	       !try_to_grab_pending(&dwork->work))
+> 
+> ...and this like here:
+> 
+>   if (!del_timer(&dwork->timer)
+> 	while (!try_to_grab_pending(&dwork->work, 1))
+> 
+> 
+> > +		;
+> > +	wait_on_work(&dwork->work);
+> > +	work_clear_pending(&dwork->work);
+> > +}
 
-You should have put that into a different mail (is there a electron shortage
-somewhere now? @)  Ok, thanks for the well researched bug report.  Will fix in 
-my tree.
+As I said, I personally don't like this, mostly because this complicates
+the code a bit more.
 
--Andi
+> I didn't have as much time as needed, so I'll try to look
+> at this yet.
+
+Yes, please, and thank you very much for review!
+
+Oleg.
 
