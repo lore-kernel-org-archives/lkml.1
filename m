@@ -1,41 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754765AbXEHRU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966264AbXEHRWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754765AbXEHRU5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 13:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXEHRU4
+	id S966264AbXEHRWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 13:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754794AbXEHRWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 13:20:56 -0400
-Received: from khc.piap.pl ([195.187.100.11]:44168 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754512AbXEHRUz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 13:20:55 -0400
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: Alexey Zaytsev <alexey.zaytsev@gmail.com>,
-       Tomasz Chmielewski <mangoo@wpkg.org>, linux-kernel@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
-       Michael Jones <mlj28@cam.ac.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-References: <464034CF.20700@wpkg.org>
-	<f19298770705080148u70638ac2ue87241382681088@mail.gmail.com>
-	<m3bqgv72sq.fsf@maximus.localdomain>
-	<20070508155201.GA1251@xi.wantstofly.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 08 May 2007 19:20:54 +0200
-In-Reply-To: <20070508155201.GA1251@xi.wantstofly.org> (Lennert Buytenhek's message of "Tue, 8 May 2007 17:52:01 +0200")
-Message-ID: <m3hcqn5j0p.fsf@maximus.localdomain>
+	Tue, 8 May 2007 13:22:18 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52151 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754629AbXEHRWR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 13:22:17 -0400
+Date: Tue, 8 May 2007 10:22:16 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, ak@suse.de, jbarnes@virtuousgeek.org
+Subject: Re: [PATCH] change zonelist order v5 [1/3] implements zonelist order
+ selection
+In-Reply-To: <1178643985.5203.27.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0705081021340.9446@schroedinger.engr.sgi.com>
+References: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com> 
+ <20070508201642.c63b3f65.kamezawa.hiroyu@jp.fujitsu.com>
+ <1178643985.5203.27.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennert Buytenhek <buytenh@wantstofly.org> writes:
+On Tue, 8 May 2007, Lee Schermerhorn wrote:
 
-> There _is_ an ARM BE version of Debian.
->
-> It's not an official port, but it's not maintained any worse than
-> the 'official' LE ARM Debian port is.
+> > Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> 
+> Tested OK on my platform.
+> Acked-by:   Lee Schermerhorn <lee.schermerhorn@hp.com>
 
-Hmm... That changes a bit. Perhaps we should forget about
-that LE thing then, and (at best) put that trivial workaround?
--- 
-Krzysztof Halasa
+So far testing is IA64 only?
