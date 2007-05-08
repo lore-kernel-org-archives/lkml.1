@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754003AbXEHWCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934445AbXEHWEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754003AbXEHWCz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753631AbXEHWCx
+	id S934445AbXEHWEV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbXEHWER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:02:53 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:60217 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752330AbXEHWCw (ORCPT
+	Tue, 8 May 2007 18:04:17 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:53543 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1749667AbXEHWEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:02:52 -0400
-Date: Tue, 8 May 2007 15:02:51 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Tim Chen <tim.c.chen@linux.intel.com>
-cc: "Chen, Tim C" <tim.c.chen@intel.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "Zhang, Yanmin" <yanmin.zhang@intel.com>,
-       "Wang, Peter Xihong" <peter.xihong.wang@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-Subject: RE: Regression with SLUB on Netperf and Volanomark
-In-Reply-To: <1178658124.15701.35.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0705081502130.15135@schroedinger.engr.sgi.com>
-References: <9D2C22909C6E774EBFB8B5583AE5291C02786032@fmsmsx414.amr.corp.intel.com>
-  <Pine.LNX.4.64.0705031839480.16296@schroedinger.engr.sgi.com> 
- <1178322083.23795.217.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0705041800070.28492@schroedinger.engr.sgi.com> 
- <1178584834.15701.18.camel@localhost.localdomain> 
- <Pine.LNX.4.64.0705071848300.1378@schroedinger.engr.sgi.com>
- <1178658124.15701.35.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 May 2007 18:04:16 -0400
+Date: Tue, 8 May 2007 15:06:23 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Len Brown <lenb@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+       Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>
+Subject: Re: [patch 4/4] Add common orderly_poweroff()
+Message-Id: <20070508150623.d8a0a240.randy.dunlap@oracle.com>
+In-Reply-To: <20070508205517.358968475@goop.org>
+References: <20070508205129.064843364@goop.org>
+	<20070508205517.358968475@goop.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Tim Chen wrote:
+On Tue, 08 May 2007 13:51:33 -0700 Jeremy Fitzhardinge wrote:
 
-> I tried the slub-patches and the avoid atomic overhead patch against
-> 2.6.21-mm1.  It brings the TCP_STREAM performance for SLUB to the SLAB
-> level.  The patches not mentioned in the "series" file did not apply
-> cleanly to 2.6.21-mm1 and I skipped most of those.  
+> diff -r 9eea40ea89b7 kernel/sys.c
+> --- a/kernel/sys.c	Tue May 08 12:59:41 2007 -0700
+> +++ b/kernel/sys.c	Tue May 08 13:42:22 2007 -0700
+> @@ -2208,3 +2208,58 @@ asmlinkage long sys_getcpu(unsigned __us
+>  	}
+>  	return err ? -EFAULT : 0;
+>  }
+> +
+> +char poweroff_cmd[POWEROFF_CMD_PATH_LEN] = "/sbin/poweroff";
+> +
+> +static void argv_cleanup(char **argv, char **envp)
+> +{
+> +	argv_free(argv);
+> +}
+> +
+> +/**
 
-Ahhh. Great. The patches not mentioned should not be applied corredct.
+   /*
+would be OK since this isn't kernel-doc.... (or make it kernel-doc)
 
-> Without skip atomic overhead patch, the throughput drops by 1 to 1.5%.
-> 
-> The change from slub_min_order=0 slub_max_order=4 
-> to slub_min_order=6 slub_max_order=7 did not make much difference in
-> my tests.
+> + * Trigger an orderly system poweroff
+> + *
+> + * This may be called from any context to trigger a system shutdown.
+> + * If the orderly shutdown fails, it will force an immediate shutdown.
+> + */
+> +int orderly_poweroff(bool force)
+> +{
 
-Allright. I will then put that patch in.
 
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
