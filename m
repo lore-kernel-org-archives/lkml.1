@@ -1,77 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966186AbXEHQza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966359AbXEHQ7l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966186AbXEHQza (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 12:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966233AbXEHQz3
+	id S966359AbXEHQ7l (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:59:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966061AbXEHQ7k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 12:55:29 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:36162 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966168AbXEHQz2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 12:55:28 -0400
-Date: Tue, 8 May 2007 18:52:58 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mike Christie <michaelc@cs.wisc.edu>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-scsi@vger.kernel.org,
-       akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH]: Fix old SCSI adapter crashes with CD-ROM (take 2)
-Message-ID: <20070508165258.GE4163@kernel.dk>
-References: <20070508171710.1ac730cd@the-village.bc.nu> <20070508161444.GA4163@kernel.dk> <1178642376.3737.36.camel@mulgrave.il.steeleye.com> <4640A972.3010108@cs.wisc.edu>
+	Tue, 8 May 2007 12:59:40 -0400
+Received: from khc.piap.pl ([195.187.100.11]:34265 "EHLO khc.piap.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S965884AbXEHQ7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 12:59:38 -0400
+To: Lennert Buytenhek <buytenh@wantstofly.org>
+Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, Jeff Garzik <jeff@garzik.org>,
+       netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.3 - QMGR
+References: <m3abwhcy74.fsf@maximus.localdomain>
+	<m3vef5biob.fsf@maximus.localdomain>
+	<5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>
+	<m3hcqoa772.fsf@maximus.localdomain>
+	<86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>
+	<m33b289zku.fsf@maximus.localdomain>
+	<m31whs5ehn.fsf_-_@maximus.localdomain>
+	<20070508113232.GA32055@xi.wantstofly.org>
+	<m3k5vj76bi.fsf@maximus.localdomain>
+	<20070508144001.GC387@xi.wantstofly.org>
+From: Krzysztof Halasa <khc@pm.waw.pl>
+Date: Tue, 08 May 2007 18:59:36 +0200
+In-Reply-To: <20070508144001.GC387@xi.wantstofly.org> (Lennert Buytenhek's message of "Tue, 8 May 2007 16:40:01 +0200")
+Message-ID: <m3ps5b5k07.fsf@maximus.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4640A972.3010108@cs.wisc.edu>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08 2007, Mike Christie wrote:
-> James Bottomley wrote:
-> > On Tue, 2007-05-08 at 18:14 +0200, Jens Axboe wrote:
-> >> On Tue, May 08 2007, Alan Cox wrote:
-> >>> The CD-ROM layer doesn't bounce requests for old ISA controllers (and
-> >>> nor should it). However they get injected into the SCSI layer via
-> >>> sr_ioctl which also doesn't bounce them and SCSI then passes the buffer
-> >>> along to a device with unchecked_isa_dma set which either panics or
-> >>> truncates the buffer to 24bits.
-> >>>
-> >>> According to Jens the right long term fix is for the CD layer to route
-> >>> the requests differently but in the mean time this has been tested by a
-> >>> victim and verified to sort the problem out. For the other 99.9% of users
-> >>> it's a no-op and doesn't bounce data.
-> >>>
-> >>> Signed-off-by: Alan Cox <alan@redhat.com>
-> >> Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-> >>
-> >> Christoph passed me his patch to get rid of ->generic_packet() in the
-> >> cdrom layer, so the work is almost complete. This patch is fine as a
-> >> work-around until that gets merged, though.
-> > 
-> > Actually, I think the new scsi request infrastructure should be doing
-> > the bouncing (rather than have it done in each problem path we
-> > discover).
-> > 
-> > Mike Christie tells me we're missing bouncing by accident in the
-> > scsi_execute path (but not the scsi_execute_async path).  He says this
-> > is the fix he proposed:
-> > 
-> > http://marc.info/?l=linux-scsi&m=115981479822790&w=2
-> > 
-> 
-> Hey Jens and James, one thing I forgot to mention is that I could not
-> remember if I needed an extra bio_get in there. I thought I did not
-> because the caller is not touching the bio after the bio_endio calls
-> like is done with the blk/bio_map_user path. But I did that patch so
-> long ago I do not remember now.
+Lennert Buytenhek <buytenh@wantstofly.org> writes:
 
-If you don't touch it after bio_endio(), then you don't need to hold an
-extra reference to it. I'll add your patch.
+> See for example arch/arm/mach-ep93xx/core.c, handling of the A/B/F
+> port GPIO interrupts.
+>
+> In a nutshell, it goes like this.
 
+Thanks, I will investigate.
+
+>> There may be up to 6 Ethernet ports (not sure about hardware
+>> status, not yet supported even by Intel) - 7 queues * 128 entries
+>> each = ~ 3.5 KB. Add 2 long queues (RX) for HSS and something
+>> for TX, and then crypto, and maybe other things.
+>
+> You're unlikely to be using all of those at the same time, though.
+
+That's the point.
+
+> And what do you do if the user does compile all of these features into
+> his kernel and then tries to use them all at the same time?  Return
+> -ENOMEM?
+
+If he is able to do so, yes - there is nothing we can do. But
+I suspect a single machine would not have all possible hardware.
+The problem is, we don't know what would it have, so it must be
+dynamic.
+
+> Shouldn't we make sure that at least the features that are compiled in
+> can be used at the same time?
+
+We can't - hardware capabilities limit that. A general purpose
+distribution would probably want to compile in everything (perhaps
+as modules).
+
+>  If you want that guarantee, then you
+> might as well determine the SRAM map at compile time.
+
+That would be most limiting with IMHO no visible advantage.
 -- 
-Jens Axboe
-
+Krzysztof Halasa
