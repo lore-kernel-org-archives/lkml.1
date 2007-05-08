@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967536AbXEHSfq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966597AbXEHSfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967536AbXEHSfq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 14:35:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967403AbXEHSfo
+	id S966597AbXEHSfv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 14:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966899AbXEHSfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 14:35:44 -0400
-Received: from mga01.intel.com ([192.55.52.88]:64885 "EHLO mga01.intel.com"
+	Tue, 8 May 2007 14:35:48 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50509 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966440AbXEHSfm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 14:35:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,506,1170662400"; 
-   d="scan'208";a="243420157"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: [PATCH 1/3] kbuild: complain about missing system calls.
-Date: Tue, 8 May 2007 11:35:27 -0700
-Message-ID: <617E1C2C70743745A92448908E030B2A01719AFB@scsmsx411.amr.corp.intel.com>
-In-Reply-To: <20070508182424.GA31516@uranus.ravnborg.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/3] kbuild: complain about missing system calls.
-Thread-Index: AceRnf6tsuy4eucITmWw6TVHKQ4NkgAANhNw
-From: "Luck, Tony" <tony.luck@intel.com>
-To: "Sam Ravnborg" <sam@ravnborg.org>
-CC: "David Woodhouse" <dwmw2@infradead.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Kees Cook" <kees@outflux.net>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 08 May 2007 18:35:28.0329 (UTC) FILETIME=[A68ACB90:01C7919F]
+	id S967515AbXEHSfp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 14:35:45 -0400
+Date: Tue, 8 May 2007 14:35:28 -0400
+From: Jakub Jelinek <jakub@redhat.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Rik van Riel <riel@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
+Message-ID: <20070508183528.GM355@devserv.devel.redhat.com>
+Reply-To: Jakub Jelinek <jakub@redhat.com>
+References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au> <463B598B.80200@redhat.com> <463BC62C.3060605@yahoo.com.au> <463E5A00.6070708@redhat.com> <464014B0.7060308@yahoo.com.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464014B0.7060308@yahoo.com.au>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Looks more complex than necessary.  Why do you want to execute
-an arch specific script to list the __IGNORE symbols?  That would
-allow an arch to generate a list with sed/perl/etc. but that
-looks like overkill.
+On Tue, May 08, 2007 at 04:12:00PM +1000, Nick Piggin wrote:
+> I didn't actually check system and user times for the mysql
+> benchmark, but that's exactly what I had in mind when I
+> mentioned the poor cache behaviour this patch could cause. I
+> definitely did see user times go up in benchmarks where I
+> measured.
+> 
+> We have percpu and cache affine page allocators, so when
+> userspace just frees a page, it is likely to be cache hot, so
+> we want to free it up so it can be reused by this CPU ASAP.
+> Likewise, when we newly allocate a page, we want it to be one
+> that is cache hot on this CPU.
 
-If you just have an arch specific file with the right defines.
-E.g. for x86_64 in include/asm-x86_64/ignore_syscalls:
+malloc has per-thread arenas, so when using MADV_FREE the pages
+should be local to the thread as well (unless the thread has switched
+to a different CPU also to the CPU) and in case of sysbench should
+be cache hot as well (it is reused RSN).  With MADV_DONTNEED you need to
+clear the pages while that is not necessary with MADV_FREE.
 
-#include __IGNORE_getcpu
-
-Then the checksyscalls.sh changes would just be something like
-(do I need a ${srctree} before the include??):
-
-diff --git a/scripts/checksyscalls.sh b/scripts/checksyscalls.sh
-index f98171f..616f7c5 100755
---- a/scripts/checksyscalls.sh
-+++ b/scripts/checksyscalls.sh
-@@ -105,6 +105,10 @@ cat << EOF
- #define __IGNORE_putpmsg
- #define __IGNORE_vserver
- EOF
-+if [ -f include/asm/ignore_syscalls ]
-+then
-+	cat include/asm/ignore_syscalls
-+fi
- }
- 
- syscall_list() {
-
--Tony
+	Jakub
