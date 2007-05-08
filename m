@@ -1,121 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967024AbXEHLZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934538AbXEHLcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967024AbXEHLZT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 07:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934516AbXEHLZS
+	id S934538AbXEHLcb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 07:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934519AbXEHLca
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 07:25:18 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:53486 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934352AbXEHLZP (ORCPT
+	Tue, 8 May 2007 07:32:30 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:60928 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934517AbXEHLca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 07:25:15 -0400
-Message-ID: <46405E0C.3020909@zytor.com>
-Date: Tue, 08 May 2007 04:25:00 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 8 May 2007 07:32:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=apMpd8e9egNwP54TcZoUN/6cEOn6+lodZHdfyP65zHihb+FQ2mzZYfpimDrPw43sA3b7EIr2jG/LlBSDci/LifHAUDkH1h/oqilNEd5lP1lWYeS0vH4EUanbcqKNjkJr/1/qJAYt8VH2zFQZneO8lpPeBHoR6r3pPcRjDEoQxt8=
+Message-ID: <46405FC9.7010407@gmail.com>
+Date: Tue, 08 May 2007 13:32:25 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Alexander van Heukelum <heukelum@mailshack.com>, Andi Kleen <ak@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
-References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org>
-In-Reply-To: <20070508032817.e4734798.akpm@linux-foundation.org>
-X-Enigmail-Version: 0.95.0
+To: Dan Kruchinin <dubalom@gmail.com>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       linux-usb-devel@lists.sourceforge.net, Greg KH <greg@kroah.com>
+Subject: Re: [PATCH -mm] drivers/usb/core/config.c: kzalloc(0,..)
+References: <a8f16e2b0705072003m6172df63l199090149edd7612@mail.gmail.com>
+In-Reply-To: <a8f16e2b0705072003m6172df63l199090149edd7612@mail.gmail.com>
+X-Enigmail-Version: 0.95b
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-
->>  
->>  	# Normalize the start address
->> -	jmpl	$BOOTSEG, $start2
->> +	jmpw	$BOOTSEG, $start2
+Dan Kruchinin napsal(a):
+> The following patch fixes such SLUB report(when someone tries to
+> allocate 0 bytes):
+> -- 
+> May  8 00:19:15 midgard kernel: [   21.933467] BUG: at
+> include/linux/slub_def.h:88 kmalloc_index()
+> May  8 00:19:15 midgard kernel: [   21.933470]
+> [show_registers+410/736] show_trace_log_lvl+0x1a/0x30
+> May  8 00:19:15 midgard kernel: [   21.933478]
+> [print_trace_warning_symbol+50/64] show_trace+0x12/0x20
+> May  8 00:19:15 midgard kernel: [   21.933482]  [fixup_irqs+38/192]
+> dump_stack+0x16/0x20
+> May  8 00:19:15 midgard kernel: [   21.933485]  [do_lookup+195/400]
+> get_slab+0x213/0x230
+> May  8 00:19:15 midgard kernel: [   21.933489]  [do_lookup+309/400]
+> __kmalloc_track_caller+0x15/0x40
+> May  8 00:19:15 midgard kernel: [   21.933493]  [__vunmap+25/240]
+> __kzalloc+0x19/0x50
+> May  8 00:19:15 midgard kernel: [   21.933498]  [<df05778e>]
+> usb_parse_configuration+0x85e/0xe70 [usbcore]
+> May  8 00:19:15 midgard kernel: [   21.933520]  [<df057fcb>]
+> usb_get_configuration+0x12b/0x450 [usbcore]
+> May  8 00:19:15 midgard kernel: [   21.933535]  [<df04ed87>]
+> usb_new_device+0x17/0x1c0 [usbcore]
+> May  8 00:19:15 midgard kernel: [   21.933550]  [<df05073a>]
+> hub_thread+0x79a/0xfd0 [usbcore]
+> May  8 00:19:15 midgard kernel: [   21.933564]
+> [run_posix_cpu_timers+1218/2064] kthread+0x42/0x70
+> May  8 00:19:15 midgard kernel: [   21.933569]  [math_error+87/240]
+> kernel_thread_helper+0x7/0x10
+> May  8 00:19:15 midgard kernel: [   21.933572]  =======================
+> -- 
 > 
-> Sigh, another blow struck in the ongoing struggle between my Vaio and the
-> rest of the world.
+> The problem was in drivers/usb/core/config.c in function
+> usb_parse_interface:
+> ---
+> num_ep = num_ep_orig = alt->desc.bNumEndpoints;
+> ...
+> len = sizeof(struct usb_host_endpoint) * num_ep;
+> alt->endpoint = kzalloc(len, GFP_KERNEL);
+> ---
 > 
-> Stone-cold black-screen lockup immediately upon boot.
+> num_ep can be 0, as it was in my case, so following patch makes this
+> situation more obvious
+> and clear.
 > 
-> Stock FC5 install, config at
-> http://userweb.kernel.org/~akpm/config-sony.txt
+> --------------
+> diff --git a/drivers/usb/core/config.c b/drivers/usb/core/config.c
+> index bfb3731..4db6b21 100644
+> --- a/drivers/usb/core/config.c
+> +++ b/drivers/usb/core/config.c
+> @@ -185,7 +185,10 @@ static int usb_parse_interface(struct device
+> *ddev, int cfgno,
+>         num_ep = USB_MAXENDPOINTS;
+>     }
+> 
+> -    len = sizeof(struct usb_host_endpoint) * num_ep;
+> +    len = sizeof(struct usb_host_endpoint);
+> +    if (num_ep > 0)
+> +      len *= num_ep;
+> +   
+>     alt->endpoint = kzalloc(len, GFP_KERNEL);
+>     if (!alt->endpoint)
+>         return -ENOMEM;
+> ---------------
 
-Andrew, I'm seriously starting to think there is something fundamentally
-wrong with that test setup.
+I don't think, this is correct, but let USB people make a decision (always CC
+subsys maintainers plus people who might be involved).
 
-The bootsect code in question is never executed.  AT ALL.  The only
-raison d'être for it at all is to print an error message if someone
-writes the kernel to a raw floppy disk.  Nor does it change the
-alignment of the header or anything else to that effect -- the assembly
-code downstream has an explicit ".org" directive.  For what it's worth,
-just to make sure I'm not crazy, I just re-tested both booting the
-kernel and booting the raw disk image, in simulation and on real
-hardware, and it doesn't change anything.  I used your configuration
-file (yes '' | make oldconfig) minus Bluetooth (which is broken in
-current top of Linus) against top of tree Linus + the jmpw patch.  I
-obviously don't have your Vaio, but I do have my own share of quirky
-hardware.  FWIW, I netbooted the hardware using pxelinux 3.50-pre7 as
-the bootloader.[*]
-
-I'm not writing this to give you a hard time, far from it.  I'm
-suggesting that there might be something wrong with that rig that's
-giving you false testing failures.  I don't particularly care about the
-patch itself -- all it does is save 3 bytes which are currently unused
-anyway, (although it might help Vivek's work.)  However, I'm very
-concerned that you might be getting false failures, for obvious reasons.
-
-	-hpa
-
-
-[*] On the other hand, as I discovered in the process,
-arch/i386/kernel/cpu/transmeta.c apparently gets miscompiled on my
-development system for top-of-Linus.  This is a Linux bug and not gcc's
-fault.  The following code:
-
-	rdmsr(0x80860004, cap_mask, uk);
-	wrmsr(0x80860004, ~0, uk);
-	c->x86_capability[0] = cpuid_edx(0x00000001);
-	wrmsr(0x80860004, cap_mask, uk);
-
-... gets turned into ...
-c0430f2d:       b9 04 00 86 80          mov    $0x80860004,%ecx
-c0430f32:       0f 32                   rdmsr
-c0430f34:       89 c6                   mov    %eax,%esi
-c0430f36:       83 c8 ff                or     $0xffffffff,%eax
-c0430f39:       89 d7                   mov    %edx,%edi
-c0430f3b:       89 c2                   mov    %eax,%edx	## WTF!!
-c0430f3d:       0f 30                   wrmsr
-c0430f3f:       31 c9                   xor    %ecx,%ecx
-c0430f41:       b8 01 00 00 00          mov    $0x1,%eax
-c0430f46:       0f a2                   cpuid
-c0430f48:       8b 45 8c                mov    0xffffff8c(%ebp),%eax
-c0430f4b:       b9 04 00 86 80          mov    $0x80860004,%ecx
-c0430f50:       89 50 0c                mov    %edx,0xc(%eax)
-c0430f53:       b8 00 00 00 00          mov    $0x0,%eax
-c0430f58:       89 fa                   mov    %edi,%edx
-c0430f5a:       09 f0                   or     %esi,%eax
-c0430f5c:       0f 30                   wrmsr
-
-... with an immediate crash as a result, since -1 is not legal to write
-into the high part (%edx) of MSR 0x80860004.
-
-This is due to native_write_msr() being incorrectly implemented as a
-macro.  The preprocessed code expands to:
- do { unsigned long long __val = native_read_msr(0x80860004); cap_mask =
-__val; uk = __val >> 32; } while(0);
- native_write_msr(0x80860004, ((unsigned long long)uk << 32) | ~0);
- c->x86_capability[0] = cpuid_edx(0x00000001);
- native_write_msr(0x80860004, ((unsigned long long)uk << 32) | cap_mask);
-
-Spot the looney?  "((unsigned long long)uk << 32) | ~0)" is *exactly*
-the same thing as "(unsigned long long)~0" which is exactly
-0xffffffffffffffffULL.  Without casting the lower argument to u32 before
-ORing, it is not guarded against sign extension as a result of promotion.
-
-	-hpa
-
-
-
-
+regards,
+-- 
+http://www.fi.muni.cz/~xslaby/            Jiri Slaby
+faculty of informatics, masaryk university, brno, cz
+e-mail: jirislaby gmail com, gpg pubkey fingerprint:
+B674 9967 0407 CE62 ACC8  22A0 32CC 55C3 39D4 7A7E
