@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031313AbXEHTLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031356AbXEHTMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031313AbXEHTLv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031288AbXEHTLr
+	id S1031356AbXEHTMl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031372AbXEHTMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:11:47 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:53986 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031298AbXEHTLp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:11:45 -0400
-Date: Tue, 8 May 2007 20:49:54 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "Luck, Tony" <tony.luck@intel.com>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Kees Cook <kees@outflux.net>,
-       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] kbuild: complain about missing system calls.
-Message-ID: <20070508184954.GA31736@uranus.ravnborg.org>
-References: <20070508182424.GA31516@uranus.ravnborg.org> <617E1C2C70743745A92448908E030B2A01719AFB@scsmsx411.amr.corp.intel.com>
-Mime-Version: 1.0
+	Tue, 8 May 2007 15:12:37 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:38853 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031349AbXEHTMf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 15:12:35 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: yhlu <yhlu.kernel@gmail.com>
+Cc: vgoyal@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Gerd Hoffmann" <kraxel@redhat.com>, "Jeff Garzik" <jeff@garzik.org>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <4634483E.9030307@goop.org> <4638FC39.4010101@goop.org>
+	<4638FE1B.9050901@zytor.com> <46390523.5010809@goop.org>
+	<463909AF.9040205@zytor.com> <20070503045031.GA5794@in.ibm.com>
+	<m1tzuuv24z.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705080941y69ddd5d6lab170c5f3967f148@mail.gmail.com>
+	<m1sla7i68s.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705081033s19365843i5b955ae175de73eb@mail.gmail.com>
+	<86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>
+Date: Tue, 08 May 2007 13:11:36 -0600
+In-Reply-To: <86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>
+	(yhlu.kernel@gmail.com's message of "Tue, 8 May 2007 11:51:35 -0700")
+Message-ID: <m1k5vji107.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <617E1C2C70743745A92448908E030B2A01719AFB@scsmsx411.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 11:35:27AM -0700, Luck, Tony wrote:
-> Looks more complex than necessary.  Why do you want to execute
-> an arch specific script to list the __IGNORE symbols?  That would
-> allow an arch to generate a list with sed/perl/etc. but that
-> looks like overkill.
-> 
-> If you just have an arch specific file with the right defines.
-> E.g. for x86_64 in include/asm-x86_64/ignore_syscalls:
-> 
-> #include __IGNORE_getcpu
-> 
-> Then the checksyscalls.sh changes would just be something like
-> (do I need a ${srctree} before the include??):
-Much better - thanks.
+yhlu <yhlu.kernel@gmail.com> writes:
 
-Yes. For "make O=..." builds we need to refer to the file in
-the srctree. include/asm/... is not pointing back to the original tree.
-So I had to use:
+> Eric,
+>
+> i tried to load vmlinux with kexec and got
+> Ramdisks not supported with generic elf arguments
+>
+> So i use mkelfImage with my patch ( convert elf64 to elf32) to make
+> another elf32. and loaded with kexec and can not get vga console too.
+> ---serial console works well.
+>
+> the mkelfImage 2.7 patch is at
+> http://72.14.253.104/search?q=cache:fuxOvFw3ZIIJ:lists.osdl.org/pipermail/fastboot/attachments/20061108/009064a6/attachment.obj+mkelfImage+2.7+patch&hl=en&ct=clnk&cd=4&gl=us
+>
+> So the problem is not bzImage related, but in somewhere in vmlinux.
 
-if [ -f ${srctree}/include/asm-${ARCH}/ignore_syscalls ]; then
-	cat ${srctree}/include/asm-${ARCH}/ignore_syscalls
-fi
+Odd.   Is it specifically these patches?
+Or is it just the recent kernel from Linus?
 
-To make it work.
-I will push this change out during the weekend I hope.
+You might try a git-bisect, or if it is just these patches
+walking through them one-by-one.
 
-	Sam
+Eric
