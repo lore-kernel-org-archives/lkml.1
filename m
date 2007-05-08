@@ -1,44 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968469AbXEHWgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032518AbXEHWgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968469AbXEHWgS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966946AbXEHWgM
+	id S1032518AbXEHWgq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968440AbXEHWgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:36:12 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:53966 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967012AbXEHWgK (ORCPT
+	Tue, 8 May 2007 18:36:42 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:14573 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968474AbXEHWgk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:36:10 -0400
-Message-ID: <4640FB2C.2060300@zytor.com>
-Date: Tue, 08 May 2007 15:35:24 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
+	Tue, 8 May 2007 18:36:40 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=F18/xHjWC31B4KWMNJYD7LHVGmGDNNtOf7OEbqBEK/fn9Pmpasw0d/3wTi8PrOJ+K
+	JnsTbHJ7e2QV+LWUx3TUg==
+Date: Tue, 8 May 2007 15:35:31 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: yhlu <yhlu.kernel@gmail.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       vgoyal@in.ibm.com, Gerd Hoffmann <kraxel@redhat.com>,
-       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
- relocatable bzImage
-References: <4634483E.9030307@goop.org> <46390523.5010809@goop.org>	 <463909AF.9040205@zytor.com> <20070503045031.GA5794@in.ibm.com>	 <m1tzuuv24z.fsf@ebiederm.dsl.xmission.com>	 <86802c440705080941y69ddd5d6lab170c5f3967f148@mail.gmail.com>	 <m1sla7i68s.fsf@ebiederm.dsl.xmission.com>	 <86802c440705081033s19365843i5b955ae175de73eb@mail.gmail.com>	 <86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>	 <m1k5vji107.fsf@ebiederm.dsl.xmission.com> <86802c440705081500x682ee098y7d51f7bb98dbcff6@mail.gmail.com> <4640F4B3.30408@goop.org>
-In-Reply-To: <4640F4B3.30408@goop.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [RFC/PATCH] doc: volatile considered evil
+In-Reply-To: <4640F9C4.8050804@goop.org>
+Message-ID: <alpine.DEB.0.99.0705081531270.26621@chino.kir.corp.google.com>
+References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org>
+ <20070508121404.17bd97a6.randy.dunlap@oracle.com>
+ <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com>
+ <4640E98B.4030107@goop.org> <alpine.DEB.0.99.0705081423500.24138@chino.kir.corp.google.com>
+ <4640ED7D.708@goop.org> <alpine.DEB.0.99.0705081453350.25466@chino.kir.corp.google.com>
+ <4640F3FD.80001@goop.org> <alpine.DEB.0.99.0705081510370.25865@chino.kir.corp.google.com>
+ <4640F9C4.8050804@goop.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> 
-> Interesting.  I haven't really been following this thread, but doesn't
-> it mean something isn't being initialized properly if this patch makes a
-> difference?
+On Tue, 8 May 2007, Jeremy Fitzhardinge wrote:
+
+> Sounds like it's referring to micro-architectural reordering, which is
+> distinct from compiler reordering.  In other words, even if you
+> specified "-mvolatile-asm-stop" I would assume that the compiler could
+> still reorder the asm statements.  Am I right, or should I read more
+> into the manual description than it actually says?
 > 
 
-Specifically boot_params.screen_info isn't being properly set up by the
-caller.
+The ia64 architecture does not include any interlocks for asm constructs 
+and allow them to be executed in parallel without stop bits (although it 
+should emit a diagnostic message from gcc, although that is not a 
+constraint that was introduced in C99).  Adding -mvolatile-asm-stops will 
+add these stop bits for any asm volatile construct that does not already 
+have them so that gcc is aware that it is unsafe to execute such 
+constructs in parallel.
 
-	-hpa
+ [ This is a tangent because we currently don't have -mvolatile-asm-stop
+   support and it's ia64-specific.  If they ever request such support,
+   then this will simply alter your warning about reordering asm
+   volatile constructs to exclude the ia64 case. ]
+
+		David
