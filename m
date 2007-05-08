@@ -1,50 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970555AbXEHXt4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970626AbXEHXyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970555AbXEHXt4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 19:49:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967429AbXEHXts
+	id S970626AbXEHXyg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 19:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967460AbXEHXy1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 19:49:48 -0400
-Received: from ozlabs.org ([203.10.76.45]:54647 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967427AbXEHXtr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 19:49:47 -0400
-Subject: Re: [patch 3/4] split usermodehelper setup from execution
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       David Howells <dhowells@redhat.com>,
-       Bj?rn Steinbrink <B.Steinbrink@gmx.de>
-In-Reply-To: <20070508205517.256147592@goop.org>
-References: <20070508205129.064843364@goop.org>
-	 <20070508205517.256147592@goop.org>
-Content-Type: text/plain
-Date: Wed, 09 May 2007 09:49:31 +1000
-Message-Id: <1178668171.7286.55.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 19:54:27 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:31263 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967429AbXEHXy0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 19:54:26 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=HCYG2C0HbaGsGRDjQy940Z3ZpWmz8ihpasHAD3v8EmVMa9xKOkmKIsjj9XeMn3wAi
+	Z6VEF3lf3BTuRY8AbPFOw==
+Date: Tue, 8 May 2007 16:54:04 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Krzysztof Halasa <khc@pm.waw.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC/PATCH] doc: volatile considered evil
+In-Reply-To: <20070508161309.c398a913.randy.dunlap@oracle.com>
+Message-ID: <alpine.DEB.0.99.0705081650530.28511@chino.kir.corp.google.com>
+References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org>
+ <20070508121404.17bd97a6.randy.dunlap@oracle.com>
+ <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com>
+ <m3k5vj2iha.fsf@maximus.localdomain> <alpine.DEB.0.99.0705081306000.15420@chino.kir.corp.google.com>
+ <20070508161309.c398a913.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-08 at 13:51 -0700, Jeremy Fitzhardinge wrote:
-> plain text document attachment (usermodehelper-split-init.patch)
-> Rather than having hundreds of variations of call_usermodehelper for
-> various pieces of usermode state which could be set up, split the
-> info allocation and initialization from the actual process execution.
+On Tue, 8 May 2007, Randy Dunlap wrote:
 
-Erk, I hadn't realized how extended call_usermodehelper had become.
+> It's already there, isn't it?  <quote from original:>
+> 
+> The only acceptable uses for "volatile" are:
+> 
+>  - in _code_, i.e., for things like the definition of "readb()" etc, where we
+>    use it to force a particular access.
+>  - with inline asms
+>  - on "jiffies", for stupid legacy reasons
+> 
+> </quote>
+> 
+> or are you saying that you want to subject/header/title modified also?
+> 
 
-call_usermodehelper_pipe()?  Erk.  Grepping... for core dumping via a
-process?  Without modifying the ELF core dumper (at least) to handle
-short writes?  Why not dump it in an agreed location and exec the
-process with that as an arg?
-
-When did this go in?  2.6.19... hmm, too late to rip it out I guess 8(
-
-Anyway, I'm not sure exposing an open-ended interface wins: refactoring
-internally definitely makes sense though.
-
-Rusty.
-
+I wasn't aware that you were considering the inclusion of Linus' entire 
+email in the document.  There exists a point where CodingStyle becomes so 
+large that people choose not to read it in its entirety, so I was 
+expecting only an addition that would explicit document the acceptable and
+unacceptable uses of 'volatile' in kernel code with perhaps a link to his 
+email.
