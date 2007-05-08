@@ -1,191 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968060AbXEHMQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966854AbXEHMSz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968060AbXEHMQd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967504AbXEHMQc
+	id S966854AbXEHMSz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:18:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966520AbXEHMSy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:16:32 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3333 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S968013AbXEHMQa (ORCPT
+	Tue, 8 May 2007 08:18:54 -0400
+Received: from smtpout06-04.prod.mesa1.secureserver.net ([64.202.165.227]:36145
+	"HELO smtpout06.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with SMTP id S966686AbXEHMSx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:16:30 -0400
-Date: Tue, 8 May 2007 22:16:09 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: "David S. Miller" <davem@davemloft.net>,
-       Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-Subject: [2/2] [NET] link_watch: Remove delay for up even when we're down
-Message-ID: <20070508121609.GA24763@gondor.apana.org.au>
-References: <20070504232051.411946839@goop.org> <20070504232121.492190579@goop.org> <20070505091624.GA8890@infradead.org> <463C56D3.8060609@goop.org> <20070505102305.GA12771@gondor.apana.org.au> <463F95C3.60407@goop.org> <20070508121322.GA21647@gondor.apana.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508121322.GA21647@gondor.apana.org.au>
-User-Agent: Mutt/1.5.9i
+	Tue, 8 May 2007 08:18:53 -0400
+Message-ID: <46406AAB.7050001@seclark.us>
+Date: Tue, 08 May 2007 08:18:51 -0400
+From: Stephen Clark <Stephen.Clark@seclark.us>
+Reply-To: Stephen.Clark@seclark.us
+User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz>	 <1178550653.11851.191.camel@pmac.infradead.org>	 <20070507194949.GB3981@ucw.cz>	 <20070507222311.4589fc8a@the-village.bc.nu> <d120d5000705071455y309e88ebt921331fdf30e60d2@mail.gmail.com>
+In-Reply-To: <d120d5000705071455y309e88ebt921331fdf30e60d2@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[NET]: Remove link_watch delay for up even when we're down
+Dmitry Torokhov wrote:
 
-Currently all link carrier events are delayed by up to a second
-before they're processed to prevent link storms.  This causes
-unnecessary packet loss during that interval.
+>On 5/7/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>  
+>
+>>On Mon, 7 May 2007 19:49:50 +0000
+>>Pavel Machek <pavel@ucw.cz> wrote:
+>>
+>>    
+>>
+>>>On Mon 2007-05-07 16:10:53, David Woodhouse wrote:
+>>>      
+>>>
+>>>>On Mon, 2007-05-07 at 14:04 +0000, Pavel Machek wrote:
+>>>>        
+>>>>
+>>>>>Can we stick to ascii in sources?
+>>>>>          
+>>>>>
+>>>>No. Please join us in the 21st century.
+>>>>        
+>>>>
+>>>We had this discussion before. Kernel sources should be us-ascii.
+>>>utf-8 is ok for documentation.
+>>>      
+>>>
+>>We had this discussion before. Kernel sources should use utf-8 for
+>>comments where neccessary. Many names cannot be correctly represented in
+>>US ascii, and mangling them is just plain rude.
+>>    
+>>
+>
+>So should we all start writing our names in native alphabets? And comments too?
+>
+>  
+>
+And while your at I think you should write all the comments and 
+documentation in your
+native language as well ;-)
 
-In fact, we can achieve the same effect in preventing storms by
-only delaying down events and unnecssary up events.  The latter
-is defined as up events when we're already up.
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
---
-diff --git a/net/core/link_watch.c b/net/core/link_watch.c
-index 71a35da..b5f4579 100644
---- a/net/core/link_watch.c
-+++ b/net/core/link_watch.c
-@@ -77,11 +77,52 @@ static void rfc2863_policy(struct net_device *dev)
- }
- 
- 
--/* Must be called with the rtnl semaphore held */
--void linkwatch_run_queue(void)
-+static int linkwatch_urgent_event(struct net_device *dev)
-+{
-+	return netif_running(dev) && netif_carrier_ok(dev) &&
-+	       dev->qdisc != dev->qdisc_sleeping;
-+}
-+
-+
-+static void linkwatch_add_event(struct net_device *dev)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&lweventlist_lock, flags);
-+	dev->link_watch_next = lweventlist;
-+	lweventlist = dev;
-+	spin_unlock_irqrestore(&lweventlist_lock, flags);
-+}
-+
-+
-+static void linkwatch_schedule_work(unsigned long delay)
-+{
-+	if (test_and_set_bit(LW_RUNNING, &linkwatch_flags))
-+		return;
-+
-+	/* If we wrap around we'll delay it by at most HZ. */
-+	if (delay > HZ)
-+		delay = 0;
-+
-+	schedule_delayed_work(&linkwatch_work, delay);
-+}
-+
-+
-+static void __linkwatch_run_queue(int urgent_only)
- {
- 	struct net_device *next;
- 
-+	/*
-+	 * Limit the number of linkwatch events to one
-+	 * per second so that a runaway driver does not
-+	 * cause a storm of messages on the netlink
-+	 * socket.  This limit does not apply to up events
-+	 * while the device qdisc is down.
-+	 */
-+	if (!urgent_only)
-+		linkwatch_nextevent = jiffies + HZ;
-+	clear_bit(LW_RUNNING, &linkwatch_flags);
-+
- 	spin_lock_irq(&lweventlist_lock);
- 	next = lweventlist;
- 	lweventlist = NULL;
-@@ -92,6 +133,11 @@ void linkwatch_run_queue(void)
- 
- 		next = dev->link_watch_next;
- 
-+		if (urgent_only && !linkwatch_urgent_event(dev)) {
-+			linkwatch_add_event(dev);
-+			continue;
-+		}
-+
- 		/*
- 		 * Make sure the above read is complete since it can be
- 		 * rewritten as soon as we clear the bit below.
-@@ -116,21 +162,23 @@ void linkwatch_run_queue(void)
- 
- 		dev_put(dev);
- 	}
-+
-+	if (lweventlist)
-+		linkwatch_schedule_work(linkwatch_nextevent - jiffies);
- }
- 
- 
--static void linkwatch_event(struct work_struct *dummy)
-+/* Must be called with the rtnl semaphore held */
-+void linkwatch_run_queue(void)
- {
--	/* Limit the number of linkwatch events to one
--	 * per second so that a runaway driver does not
--	 * cause a storm of messages on the netlink
--	 * socket
--	 */
--	linkwatch_nextevent = jiffies + HZ;
--	clear_bit(LW_RUNNING, &linkwatch_flags);
-+	__linkwatch_run_queue(0);
-+}
-+
- 
-+static void linkwatch_event(struct work_struct *dummy)
-+{
- 	rtnl_lock();
--	linkwatch_run_queue();
-+	__linkwatch_run_queue(time_after(linkwatch_nextevent, jiffies));
- 	rtnl_unlock();
- }
- 
-@@ -138,23 +186,19 @@ static void linkwatch_event(struct work_struct *dummy)
- void linkwatch_fire_event(struct net_device *dev)
- {
- 	if (!test_and_set_bit(__LINK_STATE_LINKWATCH_PENDING, &dev->state)) {
--		unsigned long flags;
-+		unsigned long delay;
- 
- 		dev_hold(dev);
- 
--		spin_lock_irqsave(&lweventlist_lock, flags);
--		dev->link_watch_next = lweventlist;
--		lweventlist = dev;
--		spin_unlock_irqrestore(&lweventlist_lock, flags);
-+		linkwatch_add_event(dev);
- 
--		if (!test_and_set_bit(LW_RUNNING, &linkwatch_flags)) {
--			unsigned long delay = linkwatch_nextevent - jiffies;
-+		delay = linkwatch_nextevent - jiffies;
- 
--			/* If we wrap around we'll delay it by at most HZ. */
--			if (delay > HZ)
--				delay = 0;
--			schedule_delayed_work(&linkwatch_work, delay);
--		}
-+		/* Minimise down-time: drop delay for up event. */
-+		if (linkwatch_urgent_event(dev))
-+			delay = 0;
-+
-+		linkwatch_schedule_work(delay);
- 	}
- }
- 
+
+"They that give up essential liberty to obtain temporary safety, 
+deserve neither liberty nor safety."  (Ben Franklin)
+
+"The course of history shows that as a government grows, liberty 
+decreases."  (Thomas Jefferson)
+
+
+
