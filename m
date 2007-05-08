@@ -1,137 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032388AbXEHV7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032435AbXEHWAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032388AbXEHV7R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968375AbXEHV7Q
+	id S1032435AbXEHWAe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032087AbXEHWAa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:59:16 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:51664 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968266AbXEHV7O (ORCPT
+	Tue, 8 May 2007 18:00:30 -0400
+Received: from nz-out-0506.google.com ([64.233.162.233]:53448 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1032082AbXEHWA1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:59:14 -0400
-Date: Tue, 8 May 2007 15:01:56 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Howells <dhowells@redhat.com>,
-       Bj?rn Steinbrink <B.Steinbrink@gmx.de>
-Subject: Re: [patch 3/4] split usermodehelper setup from execution
-Message-Id: <20070508150156.402980c6.randy.dunlap@oracle.com>
-In-Reply-To: <20070508205517.256147592@goop.org>
-References: <20070508205129.064843364@goop.org>
-	<20070508205517.256147592@goop.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 May 2007 18:00:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lDGTxQI7UV3YZLIT1CBYRcJqK77GVtt+xmbMcTrjk5fk8tqqK2xdiT2UzbcTk15YMl6jO184mOo2cFuBxyAN9zvuqLw34AX9BcEL7Xu4kadnHmbbIZwA5MrHVaEXjjmTM5hhoxaVR9IbuUhja2jXph5se4s48dsBIRdCTvFAXeU=
+Message-ID: <86802c440705081500x682ee098y7d51f7bb98dbcff6@mail.gmail.com>
+Date: Tue, 8 May 2007 15:00:26 -0700
+From: yhlu <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+Cc: vgoyal@in.ibm.com, "H. Peter Anvin" <hpa@zytor.com>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Gerd Hoffmann" <kraxel@redhat.com>, "Jeff Garzik" <jeff@garzik.org>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>
+In-Reply-To: <m1k5vji107.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+References: <4634483E.9030307@goop.org> <46390523.5010809@goop.org>
+	 <463909AF.9040205@zytor.com> <20070503045031.GA5794@in.ibm.com>
+	 <m1tzuuv24z.fsf@ebiederm.dsl.xmission.com>
+	 <86802c440705080941y69ddd5d6lab170c5f3967f148@mail.gmail.com>
+	 <m1sla7i68s.fsf@ebiederm.dsl.xmission.com>
+	 <86802c440705081033s19365843i5b955ae175de73eb@mail.gmail.com>
+	 <86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>
+	 <m1k5vji107.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 May 2007 13:51:32 -0700 Jeremy Fitzhardinge wrote:
+On 5/8/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> You might try a git-bisect, or if it is just these patches
+> walking through them one-by-one.
 
-> --- a/kernel/kmod.c
-> +++ b/kernel/kmod.c
-> @@ -253,11 +262,94 @@ static void __call_usermodehelper(struct
->  }
->  
->  /**
-> - * call_usermodehelper_keys - start a usermode application
-> - * @path: pathname for the application
-> - * @argv: null-terminated argument list
-> - * @envp: null-terminated environment list
-> - * @session_keyring: session keyring for process (NULL for an empty keyring)
-> + * call_usermodehelper_setup - prepare to call a usermode helper
-> + * @path - path to usermode executable
-> + * @argv - arg vector for process
-> + * @envp - environment for process
+f82af20e1a028e16b9bb11da081fa1148d40fa6a is first bad commit
+commit f82af20e1a028e16b9bb11da081fa1148d40fa6a
+Author: Gerd Hoffmann <kraxel@suse.de>
+Date:   Wed May 2 19:27:19 2007 +0200
 
-s / - /: / above please.
+    [PATCH] x86-64: ignore vgacon if hardware not present
 
-> + *
-> + * Returns either NULL on allocation failure, or a subprocess_info
-> + * structure.  This should be passed to call_usermodehelper_exec to
-> + * exec the process and free the structure.
-> + */
-> +struct subprocess_info *call_usermodehelper_setup(char *path,
-> +						  char **argv, char **envp)
-> +{
-> +}
-> +EXPORT_SYMBOL(call_usermodehelper_setup);
-> +
-> +/**
-> + * call_usermodehelper_setkeys - set the session keys for usermode helper
-> + * @info - a subprocess_info returned by call_usermodehelper_setup
-> + * @session_keyring - the session keyring for the process
+    Avoid trying to set up vgacon if there's no vga hardware present.
 
-and here.
+    Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+    Signed-off-by: Andi Kleen <ak@suse.de>
+    Cc: Alan <alan@lxorguk.ukuu.org.uk>
+    Acked-by: Ingo Molnar <mingo@elte.hu>
 
-> + */
-> +
-> +/**
-> + * call_usermodehelper_setcleanup - set a cleanup function
-> + * @info  - a subprocess_info returned by call_usermodehelper_setup
-> + * @cleanup - a cleanup function
-
-again.
-
-> + *
-> + * The cleanup function is just befor ethe subprocess_info is about to
-> + * be freed.  This can be used for freeing the argv and envp.  The
-> + * Function must be runnable in either a process context or the
-> + * context in which call_usermodehelper_exec is called.
-> + */
-> +void call_usermodehelper_setcleanup(struct subprocess_info *info,
-> +				    void (*cleanup)(char **argv, char **envp))
-> +{
-> +	info->cleanup = cleanup;
-> +}
-> +EXPORT_SYMBOL(call_usermodehelper_setcleanup);
-> +
-> +/**
-> + * call_usermodehelper_stdinpipe - set up a pipe to be used for stdin
-> + * @sub_info - a subprocess_info returned by call_usermodehelper_setup
-> + * @filp - set to the write-end of a pipe
-
-again.
-
-> + *
-> + * This constructs a pipe, and sets the read end to be the stdin of the
-> + * subprocess, and returns the write-end in *@filp.
-> + */
-> +int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
-> +				  struct file **filp)
-> +{
-> +}
-> +EXPORT_SYMBOL(call_usermodehelper_stdinpipe);
-
-...
-
-> +/**
-> + * call_usermodehelper_pipe - call a usermode helper process with a pipe stdin
-> + * @path - path to usermode executable
-> + * @argv - arg vector for process
-> + * @envp - environment for process
-> + * @filp - set to the write-end of a pipe
-
-and here.
-
-> + *
-> + * This is a simple wrapper which executes a usermode-helper function
-> + * with a pipe as stdin.  It is implemented entirely in terms of
-> + * lower-level call_usermodehelper_* functions.
-> + */
->  int call_usermodehelper_pipe(char *path, char **argv, char **envp,
->  			     struct file **filp)
->  {
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+YH
