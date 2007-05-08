@@ -1,15 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031513AbXEHTQx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031722AbXEHTRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031513AbXEHTQx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:16:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031349AbXEHTQp
+	id S1031722AbXEHTRa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031524AbXEHTRY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:16:45 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:35055 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031476AbXEHTQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:16:43 -0400
-Date: Tue, 8 May 2007 14:16:41 -0500
+	Tue, 8 May 2007 15:17:24 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:42524 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967897AbXEHTRW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 15:17:22 -0400
+Date: Tue, 8 May 2007 14:17:04 -0500
 From: "Serge E. Hallyn" <serue@us.ibm.com>
 To: "Serge E. Hallyn" <serue@us.ibm.com>
 Cc: lkml <linux-kernel@vger.kernel.org>,
@@ -19,8 +20,8 @@ Cc: lkml <linux-kernel@vger.kernel.org>,
        Chris Wright <chrisw@sous-sol.org>,
        Karl MacMillan <kmacmillan@mentalrootkit.com>,
        KaiGai Kohei <kaigai@kaigai.gr.jp>
-Subject: [PATCH 1/2] file capabilities: implement file capabilities
-Message-ID: <20070508191641.GB29913@sergelap.austin.ibm.com>
+Subject: [PATCH 2/2] file capabilities: accomodate >32 bit capabilities
+Message-ID: <20070508191704.GC29913@sergelap.austin.ibm.com>
 References: <20070508191548.GA29913@sergelap.austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -31,103 +32,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Serge E. Hallyn <serue@us.ibm.com>
-Subject: [PATCH 1/2] file capabilities: implement file capabilities
+Subject: [PATCH 2/2] file capabilities: accomodate >32 bit capabilities
 
-Implement file posix capabilities.  This allows programs to be given a
-subset of root's powers regardless of who runs them, without having to use
-setuid and giving the binary all of root's powers.
+(Changelog: fixed syntax error in dummy version of check_cap_sanity())
 
-This version works with Kaigai Kohei's userspace tools, found at
-http://www.kaigai.gr.jp/index.php.  For more information on how to use this
-patch, Chris Friedhoff has posted a nice page at
-http://www.friedhoff.org/fscaps.html.
+As the capability set changes and distributions start tagging
+binaries with capabilities, we would like for running an older
+kernel to not necessarily make those binaries unusable.
 
-Changelog:
-	Nov 27:
-	Incorporate fixes from Andrew Morton
-	(security-introduce-file-caps-tweaks and
-	security-introduce-file-caps-warning-fix)
-	Fix Kconfig dependency.
-	Fix change signaling behavior when file caps are not compiled in.
-
-	Nov 13:
-	Integrate comments from Alexey: Remove CONFIG_ ifdef from
-	capability.h, and use %zd for printing a size_t.
-
-	Nov 13:
-	Fix endianness warnings by sparse as suggested by Alexey
-	Dobriyan.
-
-	Nov 09:
-	Address warnings of unused variables at cap_bprm_set_security
-	when file capabilities are disabled, and simultaneously clean
-	up the code a little, by pulling the new code into a helper
-	function.
-
-	Nov 08:
-	For pointers to required userspace tools and how to use
-	them, see http://www.friedhoff.org/fscaps.html.
-
-	Nov 07:
-	Fix the calculation of the highest bit checked in
-	check_cap_sanity().
-
-	Nov 07:
-	Allow file caps to be enabled without CONFIG_SECURITY, since
-	capabilities are the default.
-	Hook cap_task_setscheduler when !CONFIG_SECURITY.
-	Move capable(TASK_KILL) to end of cap_task_kill to reduce
-	audit messages.
-
-	Nov 05:
-	Add secondary calls in selinux/hooks.c to task_setioprio and
-	task_setscheduler so that selinux and capabilities with file
-	cap support can be stacked.
-
-	Sep 05:
-	As Seth Arnold points out, uid checks are out of place
-	for capability code.
-
-	Sep 01:
-	Define task_setscheduler, task_setioprio, cap_task_kill, and
-	task_setnice to make sure a user cannot affect a process in which
-	they called a program with some fscaps.
-
-	One remaining question is the note under task_setscheduler: are we
-	ok with CAP_SYS_NICE being sufficient to confine a process to a
-	cpuset?
-
-	It is a semantic change, as without fsccaps, attach_task doesn't
-	allow CAP_SYS_NICE to override the uid equivalence check.  But since
-	it uses security_task_setscheduler, which elsewhere is used where
-	CAP_SYS_NICE can be used to override the uid equivalence check,
-	fixing it might be tough.
-
-	     task_setscheduler
-		 note: this also controls cpuset:attach_task.  Are we ok with
-		     CAP_SYS_NICE being used to confine to a cpuset?
-	     task_setioprio
-	     task_setnice
-		 sys_setpriority uses this (through set_one_prio) for another
-		 process.  Need same checks as setrlimit
-
-	Aug 21:
-	Updated secureexec implementation to reflect the fact that
-	euid and uid might be the same and nonzero, but the process
-	might still have elevated caps.
-
-	Aug 15:
-	Handle endianness of xattrs.
-	Enforce capability version match between kernel and disk.
-	Enforce that no bits beyond the known max capability are
-	set, else return -EPERM.
-	With this extra processing, it may be worth reconsidering
-	doing all the work at bprm_set_security rather than
-	d_instantiate.
-
-	Aug 10:
-	Always call getxattr at bprm_set_security, rather than
-	caching it at d_instantiate.
+	(0. Enable the CONFIG_SECURITY_FS_CAPABILITIES option
+	   when CONFIG_SECURITY=n.)
+	(1. Rename CONFIG_SECURITY_FS_CAPABILITIES to
+	   CONFIG_SECURITY_FILE_CAPABILITIES)
+	2. Introduce CONFIG_SECURITY_FILE_CAPABILITIES_STRICTXATTR
+	   which, when set, prevents loading binaries with capabilities
+	   set which the kernel doesn't know about.  When not set,
+	   such capabilities run, ignoring the unknown caps.
+	3. To accomodate 64-bit caps, specify that capabilities are
+	   stored as
+	   	u32 version; u32 eff0; u32 perm0; u32 inh0;
+		u32 eff1; u32 perm1; u32 inh1; (etc)
 
 Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
 Cc: Stephen Smalley <sds@tycho.nsa.gov>
@@ -136,411 +60,277 @@ Cc: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/linux/capability.h |   20 +++
- include/linux/security.h   |   12 +-
- security/Kconfig           |   10 +
- security/capability.c      |    4 
- security/commoncap.c       |  194 +++++++++++++++++++++++++++++++++--
- security/selinux/hooks.c   |   12 ++
- 6 files changed, 241 insertions(+), 11 deletions(-)
+ include/linux/capability.h |   23 ++++-
+ security/Kconfig           |   14 ++-
+ security/commoncap.c       |  157 ++++++++++++++++++++++-------------
+ 3 files changed, 132 insertions(+), 62 deletions(-)
 
-diff -puN include/linux/capability.h~implement-file-posix-capabilities include/linux/capability.h
---- a/include/linux/capability.h~implement-file-posix-capabilities
+diff -puN include/linux/capability.h~file-capabilities-accomodate-future-64-bit-caps include/linux/capability.h
+--- a/include/linux/capability.h~file-capabilities-accomodate-future-64-bit-caps
 +++ a/include/linux/capability.h
-@@ -40,11 +40,29 @@ typedef struct __user_cap_data_struct {
-         __u32 inheritable;
- } __user *cap_user_data_t;
-   
+@@ -44,11 +44,28 @@ typedef struct __user_cap_data_struct {
+ 
+ #define XATTR_CAPS_SUFFIX "capability"
+ #define XATTR_NAME_CAPS XATTR_SECURITY_PREFIX XATTR_CAPS_SUFFIX
 +
++/* size of caps that we work with */
++#define XATTR_CAPS_SZ (4*sizeof(__le32))
 +
-+#define XATTR_CAPS_SUFFIX "capability"
-+#define XATTR_NAME_CAPS XATTR_SECURITY_PREFIX XATTR_CAPS_SUFFIX
-+struct vfs_cap_data_disk {
++/*
++ * data[] is organized as:
++ *   effective[0]
++ *   permitted[0]
++ *   inheritable[0]
++ *   effective[1]
++ *   ...
++ * this way we can just read as much of the on-disk capability as
++ * we know should exist and know we'll get the data we'll need.
++ */
+ struct vfs_cap_data_disk {
+ 	__le32 version;
+-	__le32 effective;
+-	__le32 permitted;
+-	__le32 inheritable;
++	__le32 data[];  /* eff[0], perm[0], inh[0], eff[1], ... */
++};
++
++struct vfs_cap_data_disk_v1 {
 +	__le32 version;
-+	__le32 effective;
-+	__le32 permitted;
-+	__le32 inheritable;
-+};
-+
++	__le32 data[3];  /* eff[0], perm[0], inh[0] */
+ };
+ 
  #ifdef __KERNEL__
+diff -puN security/commoncap.c~file-capabilities-accomodate-future-64-bit-caps security/commoncap.c
+--- a/security/commoncap.c~file-capabilities-accomodate-future-64-bit-caps
++++ a/security/commoncap.c
+@@ -110,36 +110,73 @@ void cap_capset_set (struct task_struct 
+ 	target->cap_permitted = *permitted;
+ }
  
- #include <linux/spinlock.h>
- #include <asm/current.h>
- 
-+struct vfs_cap_data {
-+	__u32 version;
-+	__u32 effective;
-+	__u32 permitted;
-+	__u32 inheritable;
-+};
+-#ifdef CONFIG_SECURITY_FS_CAPABILITIES
+-static inline void cap_from_disk(struct vfs_cap_data_disk *dcap,
+-					struct vfs_cap_data *cap)
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
 +
- /* #define STRICT_CAP_T_TYPECHECKS */
- 
- #ifdef STRICT_CAP_T_TYPECHECKS
-@@ -288,6 +306,8 @@ typedef __u32 kernel_cap_t;
- 
- #define CAP_AUDIT_CONTROL    30
- 
-+#define CAP_NUMCAPS	     31
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES_STRICTXATTR
++static int check_cap_sanity(struct vfs_cap_data_disk *dcap, int size)
+ {
+-	cap->version = le32_to_cpu(dcap->version);
+-	cap->effective = le32_to_cpu(dcap->effective);
+-	cap->permitted = le32_to_cpu(dcap->permitted);
+-	cap->inheritable = le32_to_cpu(dcap->inheritable);
++	int word, bit;
++	u32 eff, inh, perm;
++	int sz = (size-1)/3;
 +
- #ifdef __KERNEL__
- /* 
-  * Bounding set
-diff -puN include/linux/security.h~implement-file-posix-capabilities include/linux/security.h
---- a/include/linux/security.h~implement-file-posix-capabilities
-+++ a/include/linux/security.h
-@@ -53,6 +53,10 @@ extern int cap_inode_setxattr(struct den
- extern int cap_inode_removexattr(struct dentry *dentry, char *name);
- extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
- extern void cap_task_reparent_to_init (struct task_struct *p);
-+extern int cap_task_kill(struct task_struct *p, struct siginfo *info, int sig, u32 secid);
-+extern int cap_task_setscheduler (struct task_struct *p, int policy, struct sched_param *lp);
-+extern int cap_task_setioprio (struct task_struct *p, int ioprio);
-+extern int cap_task_setnice (struct task_struct *p, int nice);
- extern int cap_syslog (int type);
- extern int cap_vm_enough_memory (long pages);
++	word = CAP_NUMCAPS / 32;
++	bit = CAP_NUMCAPS % 32;
++
++	eff  = le32_to_cpu(dcap->data[3*word]);
++	perm = le32_to_cpu(dcap->data[3*word+1]);
++	inh  = le32_to_cpu(dcap->data[3*word+2]);
++
++	while (word < sz) {
++		if (bit == 32) {
++			bit = 0;
++			word++;
++			if (word >= sz)
++				break;
++			eff  = le32_to_cpu(dcap->data[3*word]);
++			perm = le32_to_cpu(dcap->data[3*word+1]);
++			inh  = le32_to_cpu(dcap->data[3*word+2]);
++			continue;
++		}
++		if (eff & CAP_TO_MASK(bit))
++			return -EINVAL;
++		if (inh & CAP_TO_MASK(bit))
++			return -EINVAL;
++		if (perm & CAP_TO_MASK(bit))
++			return -EINVAL;
++		bit++;
++	}
++
++	return 0;
+ }
++#else
++static int check_cap_sanity(struct vfs_cap_data_disk *dcap, int sz)
++{ return 0; }
++#endif
  
-@@ -2585,12 +2589,12 @@ static inline int security_task_setgroup
- 
- static inline int security_task_setnice (struct task_struct *p, int nice)
+-static int check_cap_sanity(struct vfs_cap_data *cap)
++static inline int cap_from_disk(struct vfs_cap_data_disk *dcap,
++					struct linux_binprm *bprm, int size)
  {
--	return 0;
-+	return cap_task_setnice(p, nice);
+-	int i;
++	int rc, version;
+ 
+-	if (cap->version != _LINUX_CAPABILITY_VERSION)
+-		return -EPERM;
++	version = le32_to_cpu(dcap->version);
++	if (version != _LINUX_CAPABILITY_VERSION)
++		return -EINVAL;
+ 
+-	for (i = CAP_NUMCAPS; i < 8*sizeof(cap->effective); i++) {
+-		if (cap->effective & CAP_TO_MASK(i))
+-			return -EPERM;
+-	}
+-	for (i = CAP_NUMCAPS; i < 8*sizeof(cap->permitted); i++) {
+-		if (cap->permitted & CAP_TO_MASK(i))
+-			return -EPERM;
+-	}
+-	for (i = CAP_NUMCAPS; i < 8*sizeof(cap->inheritable); i++) {
+-		if (cap->inheritable & CAP_TO_MASK(i))
+-			return -EPERM;
++	size /= sizeof(u32);
++	if ((size-1)%3) {
++		printk(KERN_WARNING "%s: size is an invalid size (%d)\n",
++						__FUNCTION__, size);
++		return -EINVAL;
+ 	}
+ 
++	rc = check_cap_sanity(dcap, size);
++	if (rc)
++		return rc;
++
++	bprm->cap_effective = le32_to_cpu(dcap->data[0]);
++	bprm->cap_permitted = le32_to_cpu(dcap->data[1]);
++	bprm->cap_inheritable = le32_to_cpu(dcap->data[2]);
++
+ 	return 0;
  }
  
- static inline int security_task_setioprio (struct task_struct *p, int ioprio)
+@@ -147,52 +184,58 @@ static int check_cap_sanity(struct vfs_c
+ static int set_file_caps(struct linux_binprm *bprm)
  {
+ 	struct dentry *dentry;
+-	ssize_t rc;
+-	struct vfs_cap_data_disk dcaps;
+-	struct vfs_cap_data caps;
++	int rc;
++	struct vfs_cap_data_disk_v1 v1caps;
++	struct vfs_cap_data_disk *dcaps;
+ 	struct inode *inode;
+-	int err;
+ 
++	dcaps = (struct vfs_cap_data_disk *)&v1caps;
+ 	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
+ 		return 0;
+ 
+ 	dentry = dget(bprm->file->f_dentry);
+ 	inode = dentry->d_inode;
+-	if (!inode->i_op || !inode->i_op->getxattr) {
+-		dput(dentry);
+-		return 0;
+-	}
+-
+-	rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, &dcaps,
+-						sizeof(dcaps));
+-	dput(dentry);
+-
+-	if (rc == -ENODATA)
+-		return 0;
+-
+-	if (rc < 0) {
+-		printk(KERN_NOTICE "%s: Error (%zd) getting xattr\n",
+-				__FUNCTION__, rc);
+-		return rc;
++	rc = 0;
++	if (!inode->i_op || !inode->i_op->getxattr)
++		goto out;
++
++	rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, dcaps,
++							XATTR_CAPS_SZ);
++	if (rc == -ENODATA || rc == -EOPNOTSUPP) {
++		rc = 0;
++		goto out;
++	}
++	if (rc == -ERANGE) {
++		int size;
++		size = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, NULL, 0);
++		if (size <= 0) {  /* shouldn't ever happen */
++			rc = -EINVAL;
++			goto out;
++		}
++		dcaps = kmalloc(size, GFP_KERNEL);
++		if (!dcaps) {
++			rc = -ENOMEM;
++			goto out;
++		}
++		rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, dcaps,
++							size);
+ 	}
+-
+-	if (rc != sizeof(dcaps)) {
+-		printk(KERN_NOTICE "%s: got wrong size for getxattr (%zd)\n",
+-					__FUNCTION__, rc);
+-		return -EPERM;
++	if (rc < 0)
++		goto out;
++	if (rc < sizeof(struct vfs_cap_data_disk_v1)) {
++		rc = -EINVAL;
++		goto out;
+ 	}
+ 
+-	cap_from_disk(&dcaps, &caps);
+-	err = check_cap_sanity(&caps);
+-	if (err)
+-		return err;
+-
+-	bprm->cap_effective = caps.effective;
+-	bprm->cap_permitted = caps.permitted;
+-	bprm->cap_inheritable = caps.inheritable;
++	rc = cap_from_disk(dcaps, bprm, rc);
+ 
 -	return 0;
-+	return cap_task_setioprio(p, ioprio);
++out:
++	dput(dentry);
++	if ((void *)dcaps != (void *)&v1caps)
++		kfree(dcaps);
++	return rc;
+ }
++
+ #else
+ static inline int set_file_caps(struct linux_binprm *bprm)
+ {
+@@ -399,7 +442,7 @@ int cap_task_post_setuid (uid_t old_ruid
+ 	return 0;
  }
  
- static inline int security_task_getioprio (struct task_struct *p)
-@@ -2608,7 +2612,7 @@ static inline int security_task_setsched
- 					      int policy,
- 					      struct sched_param *lp)
- {
--	return 0;
-+	return cap_task_setscheduler(p, policy, lp);
- }
- 
- static inline int security_task_getscheduler (struct task_struct *p)
-@@ -2625,7 +2629,7 @@ static inline int security_task_kill (st
- 				      struct siginfo *info, int sig,
- 				      u32 secid)
- {
--	return 0;
-+	return cap_task_kill(p, info, sig, secid);
- }
- 
- static inline int security_task_wait (struct task_struct *p)
-diff -puN security/Kconfig~implement-file-posix-capabilities security/Kconfig
---- a/security/Kconfig~implement-file-posix-capabilities
+-#ifdef CONFIG_SECURITY_FS_CAPABILITIES
++#ifdef CONFIG_SECURITY_FILE_CAPABILITIES
+ /*
+  * Rationale: code calling task_setscheduler, task_setioprio, and
+  * task_setnice, assumes that
+diff -puN security/Kconfig~file-capabilities-accomodate-future-64-bit-caps security/Kconfig
+--- a/security/Kconfig~file-capabilities-accomodate-future-64-bit-caps
 +++ a/security/Kconfig
-@@ -80,6 +80,16 @@ config SECURITY_CAPABILITIES
+@@ -80,9 +80,9 @@ config SECURITY_CAPABILITIES
  	  This enables the "default" Linux capabilities functionality.
  	  If you are unsure how to answer this question, answer Y.
  
-+config SECURITY_FS_CAPABILITIES
-+	bool "File POSIX Capabilities"
-+	depends on SECURITY=n || SECURITY_CAPABILITIES=y
-+	default n
+-config SECURITY_FS_CAPABILITIES
++config SECURITY_FILE_CAPABILITIES
+ 	bool "File POSIX Capabilities"
+-	depends on SECURITY=n || SECURITY_CAPABILITIES=y
++	depends on SECURITY=n || SECURITY_CAPABILITIES!=n
+ 	default n
+ 	help
+ 	  This enables filesystem capabilities, allowing you to give
+@@ -90,6 +90,16 @@ config SECURITY_FS_CAPABILITIES
+ 
+ 	  If in doubt, answer N.
+ 
++config SECURITY_FILE_CAPABILITIES_STRICTXATTR
++	bool "Refuse to run files with unknown caps"
++	depends on SECURITY_FILE_CAPABILITIES
++	default y
 +	help
-+	  This enables filesystem capabilities, allowing you to give
-+	  binaries a subset of root's powers without using setuid 0.
-+
-+	  If in doubt, answer N.
++	  Refuse to run files which have unknown capabilities set
++	  in the security.capability xattr.  This could prevent
++	  running important binaries from an updated distribution
++	  on an older kernel.
 +
  config SECURITY_ROOTPLUG
  	tristate "Root Plug Support"
  	depends on USB && SECURITY
-diff -puN security/capability.c~implement-file-posix-capabilities security/capability.c
---- a/security/capability.c~implement-file-posix-capabilities
-+++ a/security/capability.c
-@@ -40,6 +40,10 @@ static struct security_operations capabi
- 	.inode_setxattr =		cap_inode_setxattr,
- 	.inode_removexattr =		cap_inode_removexattr,
- 
-+	.task_kill =			cap_task_kill,
-+	.task_setscheduler =		cap_task_setscheduler,
-+	.task_setioprio =		cap_task_setioprio,
-+	.task_setnice =			cap_task_setnice,
- 	.task_post_setuid =		cap_task_post_setuid,
- 	.task_reparent_to_init =	cap_task_reparent_to_init,
- 
-diff -puN security/commoncap.c~implement-file-posix-capabilities security/commoncap.c
---- a/security/commoncap.c~implement-file-posix-capabilities
-+++ a/security/commoncap.c
-@@ -23,6 +23,7 @@
- #include <linux/ptrace.h>
- #include <linux/xattr.h>
- #include <linux/hugetlb.h>
-+#include <linux/mount.h>
- 
- int cap_netlink_send(struct sock *sk, struct sk_buff *skb)
- {
-@@ -109,15 +110,108 @@ void cap_capset_set (struct task_struct 
- 	target->cap_permitted = *permitted;
- }
- 
-+#ifdef CONFIG_SECURITY_FS_CAPABILITIES
-+static inline void cap_from_disk(struct vfs_cap_data_disk *dcap,
-+					struct vfs_cap_data *cap)
-+{
-+	cap->version = le32_to_cpu(dcap->version);
-+	cap->effective = le32_to_cpu(dcap->effective);
-+	cap->permitted = le32_to_cpu(dcap->permitted);
-+	cap->inheritable = le32_to_cpu(dcap->inheritable);
-+}
-+
-+static int check_cap_sanity(struct vfs_cap_data *cap)
-+{
-+	int i;
-+
-+	if (cap->version != _LINUX_CAPABILITY_VERSION)
-+		return -EPERM;
-+
-+	for (i = CAP_NUMCAPS; i < 8*sizeof(cap->effective); i++) {
-+		if (cap->effective & CAP_TO_MASK(i))
-+			return -EPERM;
-+	}
-+	for (i = CAP_NUMCAPS; i < 8*sizeof(cap->permitted); i++) {
-+		if (cap->permitted & CAP_TO_MASK(i))
-+			return -EPERM;
-+	}
-+	for (i = CAP_NUMCAPS; i < 8*sizeof(cap->inheritable); i++) {
-+		if (cap->inheritable & CAP_TO_MASK(i))
-+			return -EPERM;
-+	}
-+
-+	return 0;
-+}
-+
-+/* Locate any VFS capabilities: */
-+static int set_file_caps(struct linux_binprm *bprm)
-+{
-+	struct dentry *dentry;
-+	ssize_t rc;
-+	struct vfs_cap_data_disk dcaps;
-+	struct vfs_cap_data caps;
-+	struct inode *inode;
-+	int err;
-+
-+	if (bprm->file->f_vfsmnt->mnt_flags & MNT_NOSUID)
-+		return 0;
-+
-+	dentry = dget(bprm->file->f_dentry);
-+	inode = dentry->d_inode;
-+	if (!inode->i_op || !inode->i_op->getxattr) {
-+		dput(dentry);
-+		return 0;
-+	}
-+
-+	rc = inode->i_op->getxattr(dentry, XATTR_NAME_CAPS, &dcaps,
-+						sizeof(dcaps));
-+	dput(dentry);
-+
-+	if (rc == -ENODATA)
-+		return 0;
-+
-+	if (rc < 0) {
-+		printk(KERN_NOTICE "%s: Error (%zd) getting xattr\n",
-+				__FUNCTION__, rc);
-+		return rc;
-+	}
-+
-+	if (rc != sizeof(dcaps)) {
-+		printk(KERN_NOTICE "%s: got wrong size for getxattr (%zd)\n",
-+					__FUNCTION__, rc);
-+		return -EPERM;
-+	}
-+
-+	cap_from_disk(&dcaps, &caps);
-+	err = check_cap_sanity(&caps);
-+	if (err)
-+		return err;
-+
-+	bprm->cap_effective = caps.effective;
-+	bprm->cap_permitted = caps.permitted;
-+	bprm->cap_inheritable = caps.inheritable;
-+
-+	return 0;
-+}
-+#else
-+static inline int set_file_caps(struct linux_binprm *bprm)
-+{
-+	return 0;
-+}
-+#endif
-+
- int cap_bprm_set_security (struct linux_binprm *bprm)
- {
-+	int ret;
-+
- 	/* Copied from fs/exec.c:prepare_binprm. */
- 
--	/* We don't have VFS support for capabilities yet */
- 	cap_clear (bprm->cap_inheritable);
- 	cap_clear (bprm->cap_permitted);
- 	cap_clear (bprm->cap_effective);
- 
-+	ret = set_file_caps(bprm);
-+
- 	/*  To support inheritance of root-permissions and suid-root
- 	 *  executables under compatibility mode, we raise all three
- 	 *  capability sets for the file.
-@@ -134,7 +228,8 @@ int cap_bprm_set_security (struct linux_
- 		if (bprm->e_uid == 0)
- 			cap_set_full (bprm->cap_effective);
- 	}
--	return 0;
-+
-+	return ret;
- }
- 
- void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe)
-@@ -182,11 +277,15 @@ void cap_bprm_apply_creds (struct linux_
- 
- int cap_bprm_secureexec (struct linux_binprm *bprm)
- {
--	/* If/when this module is enhanced to incorporate capability
--	   bits on files, the test below should be extended to also perform a 
--	   test between the old and new capability sets.  For now,
--	   it simply preserves the legacy decision algorithm used by
--	   the old userland. */
-+	if (current->uid != 0) {
-+		if (!cap_isclear(bprm->cap_effective))
-+			return 1;
-+		if (!cap_isclear(bprm->cap_permitted))
-+			return 1;
-+		if (!cap_isclear(bprm->cap_inheritable))
-+			return 1;
-+	}
-+
- 	return (current->euid != current->uid ||
- 		current->egid != current->gid);
- }
-@@ -300,6 +399,83 @@ int cap_task_post_setuid (uid_t old_ruid
- 	return 0;
- }
- 
-+#ifdef CONFIG_SECURITY_FS_CAPABILITIES
-+/*
-+ * Rationale: code calling task_setscheduler, task_setioprio, and
-+ * task_setnice, assumes that
-+ *   . if capable(cap_sys_nice), then those actions should be allowed
-+ *   . if not capable(cap_sys_nice), but acting on your own processes,
-+ *   	then those actions should be allowed
-+ * This is insufficient now since you can call code without suid, but
-+ * yet with increased caps.
-+ * So we check for increased caps on the target process.
-+ */
-+static inline int cap_safe_nice(struct task_struct *p)
-+{
-+	if (!cap_issubset(p->cap_permitted, current->cap_permitted) &&
-+	    !__capable(current, CAP_SYS_NICE))
-+		return -EPERM;
-+	return 0;
-+}
-+
-+int cap_task_setscheduler (struct task_struct *p, int policy,
-+			   struct sched_param *lp)
-+{
-+	return cap_safe_nice(p);
-+}
-+
-+int cap_task_setioprio (struct task_struct *p, int ioprio)
-+{
-+	return cap_safe_nice(p);
-+}
-+
-+int cap_task_setnice (struct task_struct *p, int nice)
-+{
-+	return cap_safe_nice(p);
-+}
-+
-+int cap_task_kill(struct task_struct *p, struct siginfo *info,
-+				int sig, u32 secid)
-+{
-+	if (info != SEND_SIG_NOINFO && (is_si_special(info) || SI_FROMKERNEL(info)))
-+		return 0;
-+
-+	if (secid)
-+		/*
-+		 * Signal sent as a particular user.
-+		 * Capabilities are ignored.  May be wrong, but it's the
-+		 * only thing we can do at the moment.
-+		 * Used only by usb drivers?
-+		 */
-+		return 0;
-+	if (cap_issubset(p->cap_permitted, current->cap_permitted))
-+		return 0;
-+	if (capable(CAP_KILL))
-+		return 0;
-+
-+	return -EPERM;
-+}
-+#else
-+int cap_task_setscheduler (struct task_struct *p, int policy,
-+			   struct sched_param *lp)
-+{
-+	return 0;
-+}
-+int cap_task_setioprio (struct task_struct *p, int ioprio)
-+{
-+	return 0;
-+}
-+int cap_task_setnice (struct task_struct *p, int nice)
-+{
-+	return 0;
-+}
-+int cap_task_kill(struct task_struct *p, struct siginfo *info,
-+				int sig, u32 secid)
-+{
-+	return 0;
-+}
-+#endif
-+
- void cap_task_reparent_to_init (struct task_struct *p)
- {
- 	p->cap_effective = CAP_INIT_EFF_SET;
-@@ -337,6 +513,10 @@ EXPORT_SYMBOL(cap_bprm_secureexec);
- EXPORT_SYMBOL(cap_inode_setxattr);
- EXPORT_SYMBOL(cap_inode_removexattr);
- EXPORT_SYMBOL(cap_task_post_setuid);
-+EXPORT_SYMBOL(cap_task_kill);
-+EXPORT_SYMBOL(cap_task_setscheduler);
-+EXPORT_SYMBOL(cap_task_setioprio);
-+EXPORT_SYMBOL(cap_task_setnice);
- EXPORT_SYMBOL(cap_task_reparent_to_init);
- EXPORT_SYMBOL(cap_syslog);
- EXPORT_SYMBOL(cap_vm_enough_memory);
-diff -puN security/selinux/hooks.c~implement-file-posix-capabilities security/selinux/hooks.c
---- a/security/selinux/hooks.c~implement-file-posix-capabilities
-+++ a/security/selinux/hooks.c
-@@ -2825,6 +2825,12 @@ static int selinux_task_setnice(struct t
- 
- static int selinux_task_setioprio(struct task_struct *p, int ioprio)
- {
-+	int rc;
-+
-+	rc = secondary_ops->task_setioprio(p, ioprio);
-+	if (rc)
-+		return rc;
-+
- 	return task_has_perm(current, p, PROCESS__SETSCHED);
- }
- 
-@@ -2854,6 +2860,12 @@ static int selinux_task_setrlimit(unsign
- 
- static int selinux_task_setscheduler(struct task_struct *p, int policy, struct sched_param *lp)
- {
-+	int rc;
-+
-+	rc = secondary_ops->task_setscheduler(p, policy, lp);
-+	if (rc)
-+		return rc;
-+
- 	return task_has_perm(current, p, PROCESS__SETSCHED);
- }
- 
 _
