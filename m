@@ -1,53 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030401AbXEHP5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030476AbXEHP6A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030401AbXEHP5V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 11:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030354AbXEHP5T
+	id S1030476AbXEHP6A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 11:58:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966433AbXEHP57
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 11:57:19 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:33034 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S966433AbXEHP5M (ORCPT
+	Tue, 8 May 2007 11:57:59 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:53407 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S967725AbXEHP56 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 11:57:12 -0400
-Date: Tue, 8 May 2007 11:57:07 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Dan Kruchinin <dubalom@gmail.com>
-cc: Greg KH <greg@kroah.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       USB development list <linux-usb-devel@lists.sourceforge.net>
-Subject: Re: [linux-usb-devel] [PATCH -mm] drivers/usb/core/config.c: kzalloc(0,
- ..)
-In-Reply-To: <20070508141453.GA12771@kroah.com>
-Message-ID: <Pine.LNX.4.44L0.0705081152590.3217-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 May 2007 11:57:58 -0400
+Subject: Re: [PATCH 1/2] mca: mca_pentium_flag no longer used
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: andrew hendry <andrew.hendry@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <d45a3acc0705070549ic3b11a5pc8c299e08f914835@mail.gmail.com>
+References: <d45a3acc0705070549ic3b11a5pc8c299e08f914835@mail.gmail.com>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 10:57:55 -0500
+Message-Id: <1178639875.3737.27.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Greg KH wrote:
+On Mon, 2007-05-07 at 22:49 +1000, andrew hendry wrote:
+> The check for mca_pentium_flag was removed long ago.
+> This cleans up the flag and documentation.
 
-> >  The problem was in drivers/usb/core/config.c in function 
-> >  usb_parse_interface:
-> >  ---
-> >  num_ep = num_ep_orig = alt->desc.bNumEndpoints;
-> >  ...
-> >  len = sizeof(struct usb_host_endpoint) * num_ep;
-> >  alt->endpoint = kzalloc(len, GFP_KERNEL);
-> >  ---
-> > 
-> >  num_ep can be 0, as it was in my case, so following patch makes this
-> >  situation more obvious
-> >  and clear.
+I can't apply this patch ... apparently the email is dual text and
+html ... we really need text only for patch application.  Plus, it looks
+like your email tool has converted all the tabs in the diff to spaces.
 
-How about instead just doing:
+Could you resend.  If you can't get the mailer to comply, just attaching
+the diff file usually works.
 
-+	num_ep = max(num_ep, 1);
- 	len = sizeof(struct usb_host_endpoint) * num_ep;
+James
 
-Also, wasn't it true at one point that it was legal to call kmalloc() with 
-a length of 0?  ISTR seeing somewhere that it's true for regular malloc().
-
-Alan Stern
 
