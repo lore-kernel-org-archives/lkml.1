@@ -1,60 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934738AbXEHIhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934746AbXEHIjw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934738AbXEHIhE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 04:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934675AbXEHIhA
+	id S934746AbXEHIjw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 04:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934675AbXEHIjs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 04:37:00 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:49097 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934724AbXEHIg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 04:36:56 -0400
-Date: Tue, 8 May 2007 10:28:29 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: David Chinner <dgc@sgi.com>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org
-Subject: Re: sleeping function called from invalid context at block/cfq-iosched.c
- (Was: Re: 2.6.21-mm1)
-In-Reply-To: <20070508061810.GI32602149@melbourne.sgi.com>
-Message-ID: <Pine.LNX.4.61.0705081026160.17280@yvahk01.tjqt.qr>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
- <463E3C50.9080207@simon.arlott.org.uk> <20070506135403.a6785f7d.akpm@linux-foundation.org>
- <463FAF1C.8060500@simon.arlott.org.uk> <20070507162349.0790706f.akpm@linux-foundation.org>
- <463FB697.6060902@simon.arlott.org.uk> <20070507163335.f5f5ea6e.akpm@linux-foundation.org>
- <463FFD0A.2050708@goop.org> <20070507222409.2d597a86.akpm@linux-foundation.org>
- <46400CD0.8050309@goop.org> <20070508061810.GI32602149@melbourne.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Tue, 8 May 2007 04:39:48 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:43681 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934669AbXEHIjs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 04:39:48 -0400
+Subject: Re: [PATCH -mm] PM: Separate hibernation code from suspend code
+From: Johannes Berg <johannes@sipsolutions.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@nigel.suspend2.net>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <200705072335.15357.rjw@sisk.pl>
+References: <200705041132.32227.rjw@sisk.pl>
+	 <1178538404.7261.16.camel@johannes.berg>
+	 <1178538966.7261.18.camel@johannes.berg>  <200705072335.15357.rjw@sisk.pl>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-8mWerKlO4Ta99S02oQCD"
+Date: Tue, 08 May 2007 10:41:36 +0200
+Message-Id: <1178613696.18162.28.camel@johannes.berg>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On May 8 2007 16:18, David Chinner wrote:
->
->On Mon, May 07, 2007 at 10:38:24PM -0700, Jeremy Fitzhardinge wrote:
->> Andrew Morton wrote:
->> > On Mon, 07 May 2007 21:31:06 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->> >   
->> >> I've found that XFS+lvm+4k stacks is completely unusable with current
->> >> kernels.  I get hangs/oopes after ~10mins of work.
->> >
->> > Sounds like this is new behaviour?
->> > I wonder why.  Same compiler version?
->> 
->> I've only recently started using xfs, so I couldn't say if its new
->> behaviour.  I did notice that it took a week or so for problems to set
->> in; my theory is that as the filesystem got a bit aged, its
->> datastructures got a bit more complex, and cause the kernel code to use
->> more stack.  But that's just a guess.
+--=-8mWerKlO4Ta99S02oQCD
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-FWIW, I run dm-crypt+xfs on one machine, of course with 8k since that's
-suse default. No issues. dm-crypt and lvm got something in common,
-don't they?
+On Mon, 2007-05-07 at 23:35 +0200, Rafael J. Wysocki wrote:
 
+> > Also, you could then simplify all the instances of
+> >   (hibernation_mode =3D=3D HIBERNATION_PLATFORM && hibernation_ops)=20
+> > to just
+> >   (hibernation_mode =3D=3D HIBERNATION_PLATFORM)
+> > in various if statements and other places.
+>=20
+> No, that's not a good idea, because of the "reduce code duplication patch=
+"
+> that I'd like to go on top of this.  I'd rather use 'if (hibernation_ops)=
+' here. :-)
 
-Jan
--- 
+But if you want the user to be able to change away from 'platform' mode
+you still have to have
+  if (hibernation_ops && hibernation_mode =3D=3D HIBERNATION_PLATFORM)
+in most places, no?
+
+johannes
+
+--=-8mWerKlO4Ta99S02oQCD
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGQDfA/ETPhpq3jKURAsR8AJ9PNTU8AqnMzXVPa8UI1nS7qoSj/gCeJ6Hc
+HJ5SeqIcml1MPBTHauJ0nFA=
+=iyZL
+-----END PGP SIGNATURE-----
+
+--=-8mWerKlO4Ta99S02oQCD--
+
