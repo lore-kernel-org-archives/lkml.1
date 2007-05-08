@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934960AbXEHQTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934985AbXEHQVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934960AbXEHQTu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 12:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968336AbXEHQTr
+	id S934985AbXEHQVd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934928AbXEHQVc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 12:19:47 -0400
-Received: from gateway-1237.mvista.com ([63.81.120.158]:43485 "EHLO
-	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934929AbXEHQTo (ORCPT
+	Tue, 8 May 2007 12:21:32 -0400
+Received: from rtsoft2.corbina.net ([85.21.88.2]:49759 "EHLO
+	vitb.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934893AbXEHQVb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 12:19:44 -0400
-Message-Id: <20070508161811.894622930@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Tue, 08 May 2007 09:18:11 -0700
-From: Daniel Walker <dwalker@mvista.com>
-To: akpm@linux-foundation.org
-Cc: tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: [PATCH] clocksource: spelling error in watchdog code
+	Tue, 8 May 2007 12:21:31 -0400
+Date: Tue, 8 May 2007 20:18:01 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: "Loeliger Jon-LOELIGER" <jdl@freescale.com>
+Cc: "Samuel Ortiz" <samuel@sortiz.org>, <linuxppc-dev@ozlabs.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] [POWERPC] 8xx: PQ SoC IRDA support
+Message-ID: <20070508201801.478f4999@vitb.ru.mvista.com>
+In-Reply-To: <AF0367BA48C55940A43CCF08DF35553C012AA475@az33exm24.fsl.freescale.net>
+References: <20070508052723.18404.8216.stgit@localhost.localdomain>
+	<AF0367BA48C55940A43CCF08DF35553C012AA475@az33exm24.fsl.freescale.net>
+X-Mailer: Claws Mail 2.9.1cvs30 (GTK+ 2.6.10; i686-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theres more that need fixing , and fix my own subject spelling
-error too.
+On Tue, 8 May 2007 07:36:48 -0700
+"Loeliger Jon-LOELIGER" <jdl@freescale.com> wrote:
 
-Signed-Off-By: Daniel Walker <dwalker@mvista.com>
+> > Adds support of IRDA transceiver residing on PowerQUICC processors and
+> > enabling such on mpc885ads reference board. The driver is implemented 
+> > using of_device concept, hereby implies arch/powerpc support 
+> > of the target.
+> > 
+> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+> 
+> > diff --git a/arch/powerpc/boot/dts/mpc885ads.dts 
+> > b/arch/powerpc/boot/dts/mpc885ads.dts
+> > index 110bf61..95b280c 100644
+> > --- a/arch/powerpc/boot/dts/mpc885ads.dts
+> > +++ b/arch/powerpc/boot/dts/mpc885ads.dts
+> > @@ -178,6 +178,16 @@
+> >  				interrupt-parent = <930>;
+> >  				phy-handle = <e8002>;
+> >  			};
+> > +
+> > +			scc@a20 {
+> > +				device_type = "network";
+> > +				compatible = "fsl,irda";
+> > +				model = "SCC";
+> > +				device-id = <2>;
+> > +				reg = <a20 18 3d00 80>;
+> > +				interrupts = <1d 3>;
+> > +				interrupt-parent = <930>;
+> > +			};
+> >  		};
+> >  	};
+> >  };
+> 
+> 
+> Any chance we could get an update to the booting-without-of.txt
+> for any of this?
+> 
+Yes of course. my note is that it makes sense once defines would settle down
+stuff that looks OK in docs might not look such in driver...
 
----
- kernel/time/clocksource.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.21/kernel/time/clocksource.c
-===================================================================
---- linux-2.6.21.orig/kernel/time/clocksource.c
-+++ linux-2.6.21/kernel/time/clocksource.c
-@@ -77,14 +77,14 @@ static cycle_t watchdog_last;
- static int watchdog_resumed;
- 
- /*
-- * Interval: 0.5sec Treshold: 0.0625s
-+ * Interval: 0.5sec Threshold: 0.0625s
-  */
- #define WATCHDOG_INTERVAL (HZ >> 1)
--#define WATCHDOG_TRESHOLD (NSEC_PER_SEC >> 4)
-+#define WATCHDOG_THRESHOLD (NSEC_PER_SEC >> 4)
- 
- static void clocksource_ratewd(struct clocksource *cs, int64_t delta)
- {
--	if (delta > -WATCHDOG_TRESHOLD && delta < WATCHDOG_TRESHOLD)
-+	if (delta > -WATCHDOG_THRESHOLD && delta < WATCHDOG_THRESHOLD)
- 		return;
- 
- 	printk(KERN_WARNING "Clocksource %s unstable (delta = %Ld ns)\n",
 -- 
-
--- 
+Sincerely, 
+Vitaly
