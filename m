@@ -1,79 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968234AbXEHO4L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965880AbXEHPAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968234AbXEHO4L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:56:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968067AbXEHO4J
+	id S965880AbXEHPAh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 11:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934347AbXEHPAg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:56:09 -0400
-Received: from smtp-ext.int-evry.fr ([157.159.11.17]:51265 "EHLO
-	smtp-ext.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967870AbXEHO4I (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:56:08 -0400
-From: Florian Fainelli <florian.fainelli@int-evry.fr>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] time locale in gen_initramfs_list.sh
-Date: Tue, 8 May 2007 16:46:42 +0200
-User-Agent: KMail/1.9.6
-Cc: linux-kernel@vger.kernel.org
-References: <200705080755.31157.florian.fainelli@int-evry.fr> <464059BE.6010304@zytor.com>
-In-Reply-To: <464059BE.6010304@zytor.com>
+	Tue, 8 May 2007 11:00:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:53842 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934247AbXEHPAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 11:00:35 -0400
+Message-ID: <4640906B.2020301@redhat.com>
+Date: Tue, 08 May 2007 10:59:55 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1739623.aTpPJMV2Wd";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+CC: Ulrich Drepper <drepper@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
+References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au> <463B598B.80200@redhat.com> <463BC62C.3060605@yahoo.com.au> <463E5A00.6070708@redhat.com> <464014B0.7060308@yahoo.com.au>
+In-Reply-To: <464014B0.7060308@yahoo.com.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705081646.47568.florian.fainelli@int-evry.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1739623.aTpPJMV2Wd
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Nick Piggin wrote:
 
-Hello Peter,
+> We have percpu and cache affine page allocators, so when
+> userspace just frees a page, it is likely to be cache hot, so
+> we want to free it up so it can be reused by this CPU ASAP.
+> Likewise, when we newly allocate a page, we want it to be one
+> that is cache hot on this CPU.
 
-This is true. According to GNU fileutils changelog, the nearest Changelog=20
-message regarding this option is :
+Actually, isn't the clear page function capable of doing
+some magic, when it writes all zeroes into the page, that
+causes the zeroes to just live in CPU cache without the old
+data ever being loaded from RAM?
 
-2004-11-19  Alfred M. Szmidt  <ams@gnu.org>
+That would sure be faster than touching RAM.  Not sure if
+we use/trigger that kind of magic, though :)
 
-        * src/ls.c (usage): Clarified description of --no-group (-G),
-        --human-readable (-h), --inode (-i), --size (-s), --time,
-        and --time-style.
-
-Le mardi 8 mai 2007, H. Peter Anvin a =E9crit=A0:
-> Florian Fainelli wrote:
-> > I noticed that some zsh users who forced their ls formatting to somethi=
-ng
-> > non standard could not generate the initramfs file list. Forcing the
-> > locale to C while generating seems not to be enough. Adding
-> > --time-style=3Dlocale will use C locale ls output and will let them
-> > generate the initramfs list. It has no side effects for other users.
->
-> ... except for those whose "ls" doesn't have "--time-style=3Dlocale"; how
-> long has that been implemented?
->
-> 	-hpa
-
-
-
-=2D-=20
-Cordialement, Florian Fainelli
-=2D--------------------------------------------
-
---nextPart1739623.aTpPJMV2Wd
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQBGQI1XkwOXMtq9F3IRAildAKCt/1NcpKxgHIkvA5OluwUmx8rPQQCfWPJx
-y4/jdBdgLlbrgomU9EY3WkI=
-=DkBH
------END PGP SIGNATURE-----
-
---nextPart1739623.aTpPJMV2Wd--
+-- 
+Politics is the struggle between those who want to make their country
+the best in the world, and those who believe it already is.  Each group
+calls the other unpatriotic.
