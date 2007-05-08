@@ -1,74 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032372AbXEHV3L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032380AbXEHV3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032372AbXEHV3L (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:29:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032365AbXEHV3F
+	id S1032380AbXEHV3T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032365AbXEHV3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:29:05 -0400
-Received: from ns2.uludag.org.tr ([193.140.100.220]:57804 "EHLO uludag.org.tr"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1031838AbXEHV3B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:29:01 -0400
-From: "=?iso-8859-9?q?S=2E=C7a=F0lar?= Onur" <caglar@pardus.org.tr>
-Reply-To: caglar@pardus.org.tr
-Organization: =?utf-8?q?T=C3=9CB=C4=B0TAK_/?= UEKAE
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Subject: Re: [PATCH 1/8] Restructuring hpet timer generic clock interfaces
-Date: Wed, 9 May 2007 00:28:34 +0300
-User-Agent: KMail/1.9.6
-Cc: "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@osdl.org>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Andi Kleen" <ak@suse.de>, "Ingo Molnar" <mingo@elte.hu>,
-       "Chris Wright" <chrisw@sous-sol.org>
-References: <653FFBB4508B9042B5D43DC9E18836F55DF62B@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F55DF62B@scsmsx415.amr.corp.intel.com>
+	Tue, 8 May 2007 17:29:15 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:61652 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1032369AbXEHV3K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:29:10 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=RcAATuMRChIjaivZ9rFJATdsqYkNzONMvszxkJ/zQcdam/rIQX33qLUe2lXxIfh62
+	v/SObABdTJHsAnXbJcjqw==
+Date: Tue, 8 May 2007 14:27:33 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [RFC/PATCH] doc: volatile considered evil
+In-Reply-To: <4640E98B.4030107@goop.org>
+Message-ID: <alpine.DEB.0.99.0705081423500.24138@chino.kir.corp.google.com>
+References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org>
+ <20070508121404.17bd97a6.randy.dunlap@oracle.com>
+ <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com>
+ <4640E98B.4030107@goop.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1503193.KA5DkEojCh";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705090028.34969.caglar@pardus.org.tr>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1503193.KA5DkEojCh
-Content-Type: text/plain;
-  charset="iso-8859-9"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Tue, 8 May 2007, Jeremy Fitzhardinge wrote:
 
-09 May 2007 =C7ar tarihinde, Pallipadi, Venkatesh =FEunlar=FD yazm=FD=FEt=
-=FD:=20
-> That's good news :-).
->
-> Can you send me the full dmesg with the 5 patches and also the config file
-> you are using. Also, did you try these patches against 2.6.21-vanilla or
-> recent git?
+> It's probably worth noting that "asm volatile (...)" doesn't mean what
+> many people think it means: specifically, it *does not* prevent the asm
+> from being reordered with respect to the surrounding code.  It may not
+> even prevent it from being reordered with respect to other asm
+> volatiles.  *All* it means is that the asm code will be emitted even if
+> the compiler doesn't think its results will be used.  Note that an
+> "asm()" with no outputs is implicitly "asm volatile()" - on the grounds
+> that it would be otherwise useless as far as gcc can tell.
+> 
+> If you need to guarantee ordering of asm statements, you must do it
+> explicitly, with either a "memory" clobber, or some finer-grain
+> serialization variable (like the _proxy_pda stuff).  It would be useful
+> if you could tell gcc "I'm passing this variable to the asm for
+> serialization purposes, but there's no need to generate any explicit
+> references to it", but as far as I know there's no support for that.
+> 
 
-I'm trying these on top of 2.6.21.1 + CFS-v11 and with some other patches=20
-(bootsplash + apparmor + swap prefetch + your ondemand timer patch)
+Ok, so let's take your second paragraph and my email of an hour ago:
 
-You can find config.gz and full dmesg at [1]=20
+	In an asm construct, if all your input operands are modified and 
+	specified as output operands as well, volatile must be added so 
+	that the entire construct is not optimized away.  Additionally, 
+	it must be added if your construct modifies memory that is neither 
+	listed in inputs nor outputs to the construct so that it is known 
+	to have at least one side-effect.  Then, the compiler cannot 
+	delete your construct if it is reachable because it may produce 
+	such side-effects.
 
-[1] http://cekirdek.pardus.org.tr/~caglar/hpet/
-=2D-=20
-S.=C7a=F0lar Onur <caglar@pardus.org.tr>
-http://cekirdek.pardus.org.tr/~caglar/
+and add it to any proposed change to CodingStyle that suggests against the 
+'volatile' keyword since there exists a distinct difference in behavior 
+between using the keyword as a type qualifier for an object and as a 
+qualifier for an asm construct.
 
-Linux is like living in a teepee. No Windows, no Gates and an Apache in hou=
-se!
-
---nextPart1503193.KA5DkEojCh
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQBGQOuCy7E6i0LKo6YRAnOeAKCeZIUXax3+rcyJql7TOxkjyZ3DcwCgup5E
-YU3XxvFul8w0MPe3iSZVJq4=
-=ELLI
------END PGP SIGNATURE-----
-
---nextPart1503193.KA5DkEojCh--
+		David
