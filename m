@@ -1,69 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032812AbXEHXOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967863AbXEHXYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032812AbXEHXOk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 19:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032221AbXEHXO2
+	id S967863AbXEHXYT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 19:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967376AbXEHXYK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 19:14:28 -0400
-Received: from lazybastard.de ([212.112.238.170]:41720 "EHLO
-	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1031736AbXEHXO1 (ORCPT
+	Tue, 8 May 2007 19:24:10 -0400
+Received: from smtp101.mail.mud.yahoo.com ([209.191.85.211]:37600 "HELO
+	smtp101.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S967364AbXEHXYJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 19:14:27 -0400
-Date: Wed, 9 May 2007 01:10:09 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Greg KH <greg@kroah.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Chinner <dgc@sgi.com>
-Subject: Re: [PATCH 1/2] LogFS proper
-Message-ID: <20070508231009.GB25920@lazybastard.org>
-References: <20070507215913.GA15054@lazybastard.org> <20070507220036.GB15054@lazybastard.org> <1178608950.3042.273.camel@localhost.localdomain> <20070508163226.GA22443@lazybastard.org> <84144f020705081215t73f2c0fq8ecb677423329cd8@mail.gmail.com> <20070508205827.GC23056@lazybastard.org> <20070508225253.GA2689@kroah.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070508225253.GA2689@kroah.com>
-User-Agent: Mutt/1.5.9i
+	Tue, 8 May 2007 19:24:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=nj35IiLBKGgSurqmF41LElfZg2irQh5mSPIT5Y1npnzlsGsS8639+Gs2VRHVGQS9svIhjZnMU1SsKX2YjJManrlsap467BRWgOmdQ9ZhT5vKxOadbDbBSKhtYNsOm4ZMsZUzBQSgR7dgqCpEGPphUg75kSHpxevKnuX9slZSsu8=  ;
+X-YMail-OSG: zEblq_gVM1n4qhPfF4BbTasGyvzsoNAtdSFL.jTaMOco0TpZRrZdZEowzqJ84YWZIhB1o91fSA--
+Message-ID: <4641065D.6060403@yahoo.com.au>
+Date: Wed, 09 May 2007 09:23:09 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: Ulrich Drepper <drepper@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
+References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au> <463B598B.80200@redhat.com> <463BC62C.3060605@yahoo.com.au> <463E5A00.6070708@redhat.com> <464014B0.7060308@yahoo.com.au> <4640906B.2020301@redhat.com>
+In-Reply-To: <4640906B.2020301@redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 15:52:53 -0700, Greg KH wrote:
-> On Tue, May 08, 2007 at 10:58:27PM +0200, J??rn Engel wrote:
-> > 
-> > Basically I prefer be64 over __be64 for similar reasons that most people
-> > prefer u64 over __u64.  Others prefer uint64_t over both, but C99 hasn't
-> > defined beint64_t yet.
+Rik van Riel wrote:
+> Nick Piggin wrote:
 > 
-> There is a difference between "u64" and "__u64", so don't confuse the
-> two, they are used for different things.
+>> We have percpu and cache affine page allocators, so when
+>> userspace just frees a page, it is likely to be cache hot, so
+>> we want to free it up so it can be reused by this CPU ASAP.
+>> Likewise, when we newly allocate a page, we want it to be one
+>> that is cache hot on this CPU.
 > 
-> Same thing for your typedef above, you are confusing the usage of these
-> types of variables, please do not do that.
 > 
-> In short, if the variable is going to cross the userspace/kernelspace
-> boundry, use the "__" version, otherwise use the non-"--" version.
+> Actually, isn't the clear page function capable of doing
+> some magic, when it writes all zeroes into the page, that
+> causes the zeroes to just live in CPU cache without the old
+> data ever being loaded from RAM?
+> 
+> That would sure be faster than touching RAM.  Not sure if
+> we use/trigger that kind of magic, though :)
+> 
 
-Complete agreement with one nitbit: there is not "be64" type defined as
-of yet.
+powerpc has and uses an instruction to zero a full cacheline, yes.
 
-And in the current patch there is no userspace/kernelspace boundary
-either, as both mkfs and fsck live in kernelspace.  When changing this I
-will use __be64 and friends in the common header.
-
-The remaining question is how to deal with kernel-only code that uses
-be64.  Convert that to __be64 as well?  Or introduce be64 in
-include/linix/types.h instead?
-
-> And please don't use uint64_t in the kernel, I don't want to see that
-> long flame-war again, read the archives for why those kinds of types
-> don't matter for us in the kernel tree.
-
-Trust me, I'm happy there is no beint64_t.  So enough of that.
-
-Jörn
+Not sure about x86-64 CPUs... I don't think they can do it.
 
 -- 
-Eighty percent of success is showing up.
--- Woody Allen
+SUSE Labs, Novell Inc.
