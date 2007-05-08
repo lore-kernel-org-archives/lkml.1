@@ -1,113 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968328AbXEHOxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968234AbXEHO4L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968328AbXEHOxp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968249AbXEHOxn
+	id S968234AbXEHO4L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:56:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968067AbXEHO4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:53:43 -0400
-Received: from alephnull.demon.nl ([83.160.184.112]:50236 "EHLO
-	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968104AbXEHOxm (ORCPT
+	Tue, 8 May 2007 10:56:09 -0400
+Received: from smtp-ext.int-evry.fr ([157.159.11.17]:51265 "EHLO
+	smtp-ext.int-evry.fr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967870AbXEHO4I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:53:42 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
-	d=wantstofly.org;
-	h=date:from:to:cc:subject:message-id:mime-version:content-type:
-	content-disposition:in-reply-to:user-agent;
-	b=dTE49yhbMkNd/6oURVmwAZBw4llmYaIsH3l+as30WlZRkqKdhx0uBFEnm0K68
-	hFz6oy2X2mxvP1KpGLstRIN7A==
-Date: Tue, 8 May 2007 16:53:40 +0200
-From: Lennert Buytenhek <buytenh@wantstofly.org>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-Message-ID: <20070508145340.GD387@xi.wantstofly.org>
-References: <m3abwhcy74.fsf@maximus.localdomain> <m3vef5biob.fsf@maximus.localdomain> <5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk> <m3hcqoa772.fsf@maximus.localdomain> <86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk> <m33b289zku.fsf@maximus.localdomain> <m3zm4g3yed.fsf_-_@maximus.localdomain> <20070508113735.GB32055@xi.wantstofly.org> <m3fy6775fz.fsf@maximus.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <m3fy6775fz.fsf@maximus.localdomain>
-User-Agent: Mutt/1.4.1i
+	Tue, 8 May 2007 10:56:08 -0400
+From: Florian Fainelli <florian.fainelli@int-evry.fr>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] time locale in gen_initramfs_list.sh
+Date: Tue, 8 May 2007 16:46:42 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <200705080755.31157.florian.fainelli@int-evry.fr> <464059BE.6010304@zytor.com>
+In-Reply-To: <464059BE.6010304@zytor.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1739623.aTpPJMV2Wd";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705081646.47568.florian.fainelli@int-evry.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 04:31:12PM +0200, Krzysztof Halasa wrote:
+--nextPart1739623.aTpPJMV2Wd
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> >> +/* Built-in 10/100 Ethernet MAC interfaces */
-> >> +static struct mac_plat_info ixdp425_plat_mac[] = {
-> >> +	{
-> >> +		.phy		= 0,
-> >> +		.rxq		= 3,
-> >> +	}, {
-> >> +		.phy		= 1,
-> >> +		.rxq		= 4,
-> >> +	}
-> >> +};
-> >
-> > As with Christian's driver (I'm feeling like a bit of a broken record
-> > here :-), putting knowledge of which queue to use (which is firmware-
-> > specific) in the _board_ support file is almost certainly wrong.
-> >
-> > I would just put the port number in there, and let the ethernet
-> > driver map the port number to the hardware queue number.  After all,
-> > the ethernet driver knows which queues the firmware uses, while the
-> > board support code doesn't.
-> 
-> No, quite the opposite. The board code knows its set of hardware
-> interfaces etc. and can let Ethernet driver use, say, HSS queues.
-> The driver can't know that.
+Hello Peter,
 
-You are attacking a point that I did not make.
+This is true. According to GNU fileutils changelog, the nearest Changelog=20
+message regarding this option is :
 
-The board support code knows such things as that the "front ethernet
-port" on the board is connected to the CPU's MII port number #2, but
-the board support code does _not_ know that MII port number #2
-corresponds to "ixp4xx hardware queue #5."
+2004-11-19  Alfred M. Szmidt  <ams@gnu.org>
 
-If Intel puts out a firmware update next month, and your ethernet
-driver is modified to take advantage of the new features in that
-firmware and starts depending on the newer version of that firmware,
-we will have to modify every ixp4xx board support file in case the
-firmware update modifies the ixp4xx queue numbers in use.  The
-mapping from hardware ports (MII port #0, MII port #6, HSS port
-#42, whatever) to ixp4xx hardware queue numbers (0-63) should _not_
-be put in every single ixp4xx board support file.
+        * src/ls.c (usage): Clarified description of --no-group (-G),
+        --human-readable (-h), --inode (-i), --size (-s), --time,
+        and --time-style.
 
-Even if you only change the
-
-	(in board support file)
-	.rxq		= 4,
-
-line to something like this instead:
-
-	(in some ixp4xx-specific or driver-specific header file)
-	#define IXP4XX_MII_PORT_1_RX_QUEUE		4
-
-	(in board support file)
-	.rxq		= IXP4XX_MII_PORT_1_RX_QUEUE,
-
-then you have remved this dependency, and then you only have to update
-one place if you move to a newer firmware version.
+Le mardi 8 mai 2007, H. Peter Anvin a =E9crit=A0:
+> Florian Fainelli wrote:
+> > I noticed that some zsh users who forced their ls formatting to somethi=
+ng
+> > non standard could not generate the initramfs file list. Forcing the
+> > locale to C while generating seems not to be enough. Adding
+> > --time-style=3Dlocale will use C locale ls output and will let them
+> > generate the initramfs list. It has no side effects for other users.
+>
+> ... except for those whose "ls" doesn't have "--time-style=3Dlocale"; how
+> long has that been implemented?
+>
+> 	-hpa
 
 
-> > I generally discourage the use of such wrappers, as it often makes
-> > people forget that the set and clear operations are not atomic, and
-> > it ignores the fact that some of the other bits in the register you
-> > are modifying might have side-effects.
-> 
-> Without them the code in question is hardly readable,
 
-You can read Polish, how can you complain about code readability. :-))
+=2D-=20
+Cordialement, Florian Fainelli
+=2D--------------------------------------------
 
-*runs*
+--nextPart1739623.aTpPJMV2Wd
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
 
-> I pick the need to remember about non-atomicity and possible side
-> effects instead :-)
+iD8DBQBGQI1XkwOXMtq9F3IRAildAKCt/1NcpKxgHIkvA5OluwUmx8rPQQCfWPJx
+y4/jdBdgLlbrgomU9EY3WkI=
+=DkBH
+-----END PGP SIGNATURE-----
 
-Sure, point taken, it's just that the person after you might not
-remember..
+--nextPart1739623.aTpPJMV2Wd--
