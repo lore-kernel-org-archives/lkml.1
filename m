@@ -1,114 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967279AbXEHSgL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933855AbXEHSqG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967279AbXEHSgL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 14:36:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967400AbXEHSgG
+	id S933855AbXEHSqG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 14:46:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbXEHSqF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 14:36:06 -0400
-Received: from m-relay.rz.uni-saarland.de ([134.96.7.3]:11126 "EHLO
-	m-relay.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967583AbXEHSgE (ORCPT
+	Tue, 8 May 2007 14:46:05 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:53760 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754257AbXEHSqE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 14:36:04 -0400
-Date: Tue, 8 May 2007 20:32:32 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Antonino A. Daplas" <adaplas@gmail.com>
-Cc: Andi Kleen <ak@suse.de>, "H. Peter Anvin" <hpa@zytor.com>,
+	Tue, 8 May 2007 14:46:04 -0400
+Message-ID: <4640C55B.6030908@zytor.com>
+Date: Tue, 08 May 2007 11:45:47 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Alexander van Heukelum <heukelum@mailshack.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
        lkml <linux-kernel@vger.kernel.org>
 Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
-Message-ID: <20070508183232.GA13225@mailshack.com>
-References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508032817.e4734798.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.5.1 (m-relay.rz.uni-saarland.de [134.96.7.3]); Tue, 08 May 2007 20:34:57 +0200 (CEST)
-X-AntiVirus: checked by AntiVir Milter (version: 1.1.3-1; AVE: 7.3.1.53; VDF: 6.38.1.19; host: AntiVir1)
+References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org> <20070508183232.GA13225@mailshack.com>
+In-Reply-To: <20070508183232.GA13225@mailshack.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 03:28:17AM -0700, Andrew Morton wrote:
-> On Sat, 5 May 2007 12:44:52 +0200 Alexander van Heukelum <heukelum@mailshack.com> wrote:
-> > --- a/arch/i386/boot/bootsect.S
-> > +++ b/arch/i386/boot/bootsect.S
-> > @@ -44,7 +44,7 @@ #endif
-> >  _start:
-> >  
-> >  	# Normalize the start address
-> > -	jmpl	$BOOTSEG, $start2
-> > +	jmpw	$BOOTSEG, $start2
+Alexander van Heukelum wrote:
 > 
-> Sigh, another blow struck in the ongoing struggle between my Vaio and the
-> rest of the world.
+> Oh! A padding hole in a struct! That could be a problem. If the freeze
+> is after decompression, could you test if this makes it work again?
 > 
-> Stone-cold black-screen lockup immediately upon boot.
-> 
-> Stock FC5 install, config at
-> http://userweb.kernel.org/~akpm/config-sony.txt
 
-Sigh... sounds impossible.
+The correct fix is to apply __attribute__((packed)) to this structure.
+Of course, changing the boot sector will cause different random values
+to be poked into this field...
 
-I assume this is repeatable? And this patch changes behaviour? What do
-you mean by immediate? Before or after decompression?
+I actually caught this during my setup code rewrite, but I forgot that
+in the old setup code the parameter structure overlays the boot sector
+(it doesn't in my code -- it starts out with nice clean zero-filled memory.)
 
-Fishy... As Andi and Peter have mentioned, this code is not executed.
-There is only one user of the same memory area this early... video.S
-uses it to store some collected data, but as far as I can see only the
-'CONFIG_VIDEO_RETAIN' code also reads it back. If it happens before
-decompression, could you see if changing
-	#define CONFIG_VIDEO_RETAIN -> #undef CONFIG_VIDEO_RETAIN
-in arch/i386/boot/video.S changes anything?
-
-Do you select a non-standard textmode? Does vga=ask show up?
-
-*looks around some*
-
-Oh! A padding hole in a struct! That could be a problem. If the freeze
-is after decompression, could you test if this makes it work again?
-
-Greetings,
-	Alexander
-
----
-
-Commit 89ec4c238e7a3d7e660291f3f1a8181381baad77 introduced a discrepancy
-between the struct screen_info which is used by the C code, and the
-PARAM_* offsets which are used in the real-mode kernel. This is an
-attempt to rectify the situation, but I have no way to test it.
-
-Signed-off-by: Alexander van Heukelum <heukelum@mailshack.com>
-
----
-
-diff --git a/arch/i386/boot/bootsect.S b/arch/i386/boot/bootsect.S
-diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
-index 8143c95..8e404cb 100644
---- a/arch/i386/boot/video.S
-+++ b/arch/i386/boot/video.S
-@@ -95,7 +95,8 @@ #define PARAM_VESAPM_SEG	0x2e
- #define PARAM_VESAPM_OFF	0x30
- #define PARAM_LFB_PAGES		0x32
- #define PARAM_VESA_ATTRIB	0x34
--#define PARAM_CAPABILITIES	0x36
-+#define PARAM_VESA_PAD		0x36
-+#define PARAM_CAPABILITIES	0x38
- 
- /* Define DO_STORE according to CONFIG_VIDEO_RETAIN */
- #ifdef CONFIG_VIDEO_RETAIN
-diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-index b02308e..0a2e892 100644
---- a/include/linux/screen_info.h
-+++ b/include/linux/screen_info.h
-@@ -41,8 +41,8 @@ struct screen_info {
- 	u16 vesapm_off;		/* 0x30 */
- 	u16 pages;		/* 0x32 */
- 	u16 vesa_attributes;	/* 0x34 */
--	u32 capabilities;       /* 0x36 */
--				/* 0x3a -- 0x3b reserved for future expansion */
-+	u16 vesa_pad;		/* 0x36 */
-+	u32 capabilities;       /* 0x38 */
- 				/* 0x3c -- 0x3f micro stack for relocatable kernels */
- };
- 
+	-hpa
