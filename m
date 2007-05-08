@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031798AbXEHTtO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031808AbXEHTt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031798AbXEHTtO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:49:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031785AbXEHTs7
+	id S1031808AbXEHTt2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031779AbXEHTs4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:48:59 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50126 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031773AbXEHTs4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 May 2007 15:48:56 -0400
-Date: Tue, 8 May 2007 20:47:58 +0100
+Received: from mx1.redhat.com ([66.187.233.31]:50048 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1031224AbXEHTsr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 15:48:47 -0400
+Date: Tue, 8 May 2007 20:47:44 +0100
 From: Alasdair G Kergon <agk@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Heinz Mauelshagen <hjm@redhat.com>, Milan Broz <mbroz@redhat.com>
-Subject: [2.6.22 PATCH 18/26] dm exception store: update dm io interface
-Message-ID: <20070508194758.GY24114@agk.fab.redhat.com>
+       Milan Broz <mbroz@redhat.com>
+Subject: [2.6.22 PATCH 17/26] dm kcopyd: update dm io interface
+Message-ID: <20070508194744.GX24114@agk.fab.redhat.com>
 Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
 	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Heinz Mauelshagen <hjm@redhat.com>, Milan Broz <mbroz@redhat.com>
+	Milan Broz <mbroz@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -27,143 +27,84 @@ Organization: Red Hat UK Ltd. Registered in England and Wales, number 04098903. 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heinz Mauelshagen <hjm@redhat.com>
+From: Milan Broz <mbroz@redhat.com>
 
-This patch ports dm-exception-store.c to the new, scalable dm_io() interface.
+This patch ports kcopyd.c to the new, scalable dm_io() interface.
 
-It replaces dm_io_get()/dm_io_put() by
-dm_io_client_create()/dm_io_client_destroy() calls and
-dm_io_sync_vm() by dm_io() to achive this.
-
+Signed-off-by: Milan Broz <mbroz@redhat.com>
 Signed-off-by: Heinz Mauelshagen <hjm@redhat.com>
-Cc: Milan Broz <mbroz@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 ---
 
- drivers/md/dm-exception-store.c |   52 +++++++++++++++++++++-------------------
- 1 files changed, 28 insertions(+), 24 deletions(-)
+ drivers/md/kcopyd.c |   28 ++++++++++++++++++----------
+ 1 files changed, 18 insertions(+), 10 deletions(-)
 
-Index: linux-2.6.21/drivers/md/dm-exception-store.c
+Index: linux-2.6.21/drivers/md/kcopyd.c
 ===================================================================
---- linux-2.6.21.orig/drivers/md/dm-exception-store.c	2007-05-01 17:38:31.000000000 +0100
-+++ linux-2.6.21/drivers/md/dm-exception-store.c	2007-05-01 17:40:53.000000000 +0100
-@@ -1,7 +1,8 @@
+--- linux-2.6.21.orig/drivers/md/kcopyd.c	2007-05-01 17:38:32.000000000 +0100
++++ linux-2.6.21/drivers/md/kcopyd.c	2007-05-01 17:40:53.000000000 +0100
+@@ -1,5 +1,6 @@
  /*
-- * dm-snapshot.c
-+ * dm-exception-store.c
-  *
-  * Copyright (C) 2001-2002 Sistina Software (UK) Limited.
+  * Copyright (C) 2002 Sistina Software (UK) Limited.
 + * Copyright (C) 2006 Red Hat GmbH
   *
   * This file is released under the GPL.
-  */
-@@ -123,6 +124,7 @@ struct pstore {
- 	atomic_t pending_count;
- 	uint32_t callback_count;
- 	struct commit_callback *callbacks;
+  *
+@@ -45,6 +46,8 @@ struct kcopyd_client {
+ 	unsigned int nr_pages;
+ 	unsigned int nr_free_pages;
+ 
 +	struct dm_io_client *io_client;
++
+ 	wait_queue_head_t destroyq;
+ 	atomic_t nr_jobs;
  };
- 
- static inline unsigned int sectors_to_pages(unsigned int sectors)
-@@ -159,14 +161,20 @@ static void free_area(struct pstore *ps)
-  */
- static int chunk_io(struct pstore *ps, uint32_t chunk, int rw)
+@@ -342,16 +345,20 @@ static void complete_io(unsigned long er
+ static int run_io_job(struct kcopyd_job *job)
  {
--	struct io_region where;
--	unsigned long bits;
-+	struct io_region where = {
-+		.bdev = ps->snap->cow->bdev,
-+		.sector = ps->snap->chunk_size * chunk,
-+		.count = ps->snap->chunk_size,
-+	};
+ 	int r;
 +	struct dm_io_request io_req = {
-+		.bi_rw = rw,
-+		.mem.type = DM_IO_VMA,
-+		.mem.ptr.vma = ps->area,
-+		.client = ps->io_client,
-+		.notify.fn = NULL,
++		.bi_rw = job->rw,
++		.mem.type = DM_IO_PAGE_LIST,
++		.mem.ptr.pl = job->pages,
++		.mem.offset = job->offset,
++		.notify.fn = complete_io,
++		.notify.context = job,
++		.client = job->kc->io_client,
 +	};
  
--	where.bdev = ps->snap->cow->bdev;
--	where.sector = ps->snap->chunk_size * chunk;
--	where.count = ps->snap->chunk_size;
+ 	if (job->rw == READ)
+-		r = dm_io_async(1, &job->source, job->rw,
+-				job->pages,
+-				job->offset, complete_io, job);
 -
--	return dm_io_sync_vm(1, &where, rw, ps->area, &bits);
-+	return dm_io(&io_req, 1, &where, NULL);
- }
++		r = dm_io(&io_req, 1, &job->source, NULL);
+ 	else
+-		r = dm_io_async(job->num_dests, job->dests, job->rw,
+-				job->pages,
+-				job->offset, complete_io, job);
++		r = dm_io(&io_req, job->num_dests, job->dests, NULL);
  
- /*
-@@ -213,17 +221,18 @@ static int read_header(struct pstore *ps
- 		chunk_size_supplied = 0;
- 	}
- 
--	r = dm_io_get(sectors_to_pages(ps->snap->chunk_size));
--	if (r)
--		return r;
-+	ps->io_client = dm_io_client_create(sectors_to_pages(ps->snap->
-+							     chunk_size));
-+	if (IS_ERR(ps->io_client))
-+		return PTR_ERR(ps->io_client);
- 
- 	r = alloc_area(ps);
- 	if (r)
--		goto bad1;
-+		return r;
- 
- 	r = chunk_io(ps, 0, READ);
- 	if (r)
--		goto bad2;
-+		goto bad;
- 
- 	dh = (struct disk_header *) ps->area;
- 
-@@ -235,7 +244,7 @@ static int read_header(struct pstore *ps
- 	if (le32_to_cpu(dh->magic) != SNAP_MAGIC) {
- 		DMWARN("Invalid or corrupt snapshot");
- 		r = -ENXIO;
--		goto bad2;
-+		goto bad;
- 	}
- 
- 	*new_snapshot = 0;
-@@ -252,27 +261,22 @@ static int read_header(struct pstore *ps
- 	       (unsigned long long)ps->snap->chunk_size);
- 
- 	/* We had a bogus chunk_size. Fix stuff up. */
--	dm_io_put(sectors_to_pages(ps->snap->chunk_size));
- 	free_area(ps);
- 
- 	ps->snap->chunk_size = chunk_size;
- 	ps->snap->chunk_mask = chunk_size - 1;
- 	ps->snap->chunk_shift = ffs(chunk_size) - 1;
- 
--	r = dm_io_get(sectors_to_pages(chunk_size));
-+	r = dm_io_client_resize(sectors_to_pages(ps->snap->chunk_size),
-+				ps->io_client);
- 	if (r)
- 		return r;
- 
- 	r = alloc_area(ps);
--	if (r)
--		goto bad1;
--
--	return 0;
-+	return r;
- 
--bad2:
-+bad:
- 	free_area(ps);
--bad1:
--	dm_io_put(sectors_to_pages(ps->snap->chunk_size));
  	return r;
  }
+@@ -670,8 +677,9 @@ int kcopyd_client_create(unsigned int nr
+ 		return r;
+ 	}
  
-@@ -405,7 +409,7 @@ static void persistent_destroy(struct ex
- {
- 	struct pstore *ps = get_info(store);
+-	r = dm_io_get(nr_pages);
+-	if (r) {
++	kc->io_client = dm_io_client_create(nr_pages);
++	if (IS_ERR(kc->io_client)) {
++		r = PTR_ERR(kc->io_client);
+ 		client_free_pages(kc);
+ 		kfree(kc);
+ 		kcopyd_exit();
+@@ -691,7 +699,7 @@ void kcopyd_client_destroy(struct kcopyd
+ 	/* Wait for completion of all jobs submitted by this client. */
+ 	wait_event(kc->destroyq, !atomic_read(&kc->nr_jobs));
  
--	dm_io_put(sectors_to_pages(ps->snap->chunk_size));
-+	dm_io_client_destroy(ps->io_client);
- 	vfree(ps->callbacks);
- 	free_area(ps);
- 	kfree(ps);
+-	dm_io_put(kc->nr_pages);
++	dm_io_client_destroy(kc->io_client);
+ 	client_free_pages(kc);
+ 	client_del(kc);
+ 	kfree(kc);
