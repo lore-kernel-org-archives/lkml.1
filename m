@@ -1,95 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934760AbXEHIme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934771AbXEHInc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934760AbXEHIme (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 04:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934665AbXEHImd
+	id S934771AbXEHInc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 04:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934755AbXEHInb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 04:42:33 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:41026 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934622AbXEHImc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 04:42:32 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Tue, 8 May 2007 04:41:58 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] Create a top-level "Space-critical features" menu.
-In-Reply-To: <1178612519.3042.294.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0705080431110.13403@localhost.localdomain>
-References: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain>
- <1178612519.3042.294.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.723, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00, RCVD_IN_SORBS_DUL 20.00,
-	TW_GL 0.08)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Tue, 8 May 2007 04:43:31 -0400
+Received: from fogou.chygwyn.com ([195.171.2.24]:36335 "EHLO fogou.chygwyn.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934665AbXEHIna (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 04:43:30 -0400
+X-Greylist: delayed 2540 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 May 2007 04:43:30 EDT
+Subject: Re: [PATCH] DLM: fix a couple of races
+From: Steven Whitehouse <steve@chygwyn.com>
+To: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: linux-kernel@vger.kernel.org, teigland@redhat.com,
+       linux-cluster@redhat.com, joel.becker@oracle.com
+In-Reply-To: <Pine.LNX.4.64.0705042119510.16239@cselinux1.cse.iitk.ac.in>
+References: <Pine.LNX.4.64.0705042119510.16239@cselinux1.cse.iitk.ac.in>
+Content-Type: text/plain
+Organization: ChyGwyn Limited (Registered in England and Wales, No.
+	03887683) Registered Office: Digital Technium, Singleton Park, Swansea. SA2
+	8PP
+Date: Tue, 08 May 2007 09:00:58 +0100
+Message-Id: <1178611258.7476.5.camel@quoit>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Thomas Gleixner wrote:
+Hi,
 
-> On Tue, 2007-05-08 at 04:06 -0400, Robert P. J. Day wrote:
-> >   i've always hated that lower-level menu under "General setup":
->
-> Good reason to break everything which depends on CONFIG_EMBEDDED.
->
-> 	tglx
->
-> > -menuconfig EMBEDDED
-> > -	bool "Configure standard kernel features (for small systems)"
+Added to the GFS2 -nmw git tree, thanks. Please remember to add a
+Signed-off-by line for future patches - I've added it for you this time,
 
-ah, now i see what you're getting at here:
+Steve.
 
-$ grep EMBEDDED $(find . -name Kconfig\*)
-./drivers/pcmcia/Kconfig:       select CARDBUS if !EMBEDDED
-./drivers/pcmcia/Kconfig:       bool "Special initialization for O2Micro bridges" if EMBEDDED
-./drivers/pcmcia/Kconfig:       bool "Special initialization for Ricoh bridges" if EMBEDDED
-./drivers/pcmcia/Kconfig:       bool "Special initialization for TI and EnE bridges" if EMBEDDED
-./drivers/pcmcia/Kconfig:       bool "Auto-tune EnE bridges for CB cards" if EMBEDDED
-./drivers/pcmcia/Kconfig:       bool "Special initialization for Toshiba ToPIC bridges" if EMBEDDED
-./drivers/ata/Kconfig:  depends on EMBEDDED || ARCH_RPC
-./drivers/acpi/Kconfig: bool "Power Management Timer Support" if EMBEDDED
-./drivers/ide/Kconfig:  depends on ALPHA || SUPERH || IA64 || EMBEDDED
-... snip ...
+On Fri, 2007-05-04 at 21:49 +0530, Satyam Sharma wrote:
+> Hi,
+> 
+> There are the following two trivially-fixed races in fs/dlm/config.c:
+> 
+> 1. The configfs subsystem semaphore must be held by the caller when 
+> calling config_group_find_obj(). It's needed to walk the subsystem 
+> hierarchy without racing with a simultaneous mkdir(2) or rmdir(2). I 
+> looked around to see if there was some other way we were avoiding this 
+> race, but couldn't find any.
+> 
+> 2. get_comm() does hold the subsystem semaphore but lets go too soon -- 
+> before grabbing a reference on the found config_item. A concurrent 
+> rmdir(2) could come and release the comm after the up() but before the 
+> config_item_get().
+> 
+> Patch that fixes both these bugs below.
+> 
+> Cheers,
+> S
+> 
+> PS: For some reason, configfs still uses a struct semaphore (as a binary 
+> semaphore) for configfs_subsystem.su_sem. Someone with free time should 
+> convert that to a struct mutex, say configfs_subsystem.su_mtx -- which is 
+> the preferred way to use (binary) mutexes presently. CC'ing Joel Becker on 
+> this.
+> 
+> ---
+> 
+> Fix two races in fs/dlm/config.c:
+> 
+> (1) Grab the configfs subsystem semaphore before calling 
+> config_group_find_obj() in get_space(). This solves a potential race 
+> between get_space() and concurrent mkdir(2) or rmdir(2).
+> 
+> (2) Grab a reference on the found config_item _while_ holding the configfs 
+> subsystem semaphore in get_comm(), and not after it. This solves a 
+> potential race between get_comm() and concurrent rmdir(2).
+> 
+>   fs/dlm/config.c |   15 +++++++++++----
+>   1 file changed, 11 insertions(+), 4 deletions(-)
+> 
+>  	Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+> 
+> ---
+> 
+> diff -ruNp linux-2.6.21.1/fs/dlm/config.c linux-2.6.21.1~patch/fs/dlm/config.c
+> --- linux-2.6.21.1/fs/dlm/config.c	2007-04-26 08:38:32.000000000 +0530
+> +++ linux-2.6.21.1~patch/fs/dlm/config.c	2007-05-04 21:08:54.000000000 +0530
+> @@ -744,9 +744,16 @@ static ssize_t node_weight_write(struct
+> 
+>   static struct space *get_space(char *name)
+>   {
+> +	struct config_item *i;
+> +
+>   	if (!space_list)
+>   		return NULL;
+> -	return to_space(config_group_find_obj(space_list, name));
+> +
+> +	down(&space_list->cg_subsys->su_sem);
+> +	i = config_group_find_obj(space_list, name);
+> +	up(&space_list->cg_subsys->su_sem);
+> +
+> +	return to_space(i);
+>   }
+> 
+>   static void put_space(struct space *sp)
+> @@ -772,20 +779,20 @@ static struct comm *get_comm(int nodeid,
+>   			if (cm->nodeid != nodeid)
+>   				continue;
+>   			found = 1;
+> +			config_item_get(i);
+>   			break;
+>   		} else {
+>   			if (!cm->addr_count ||
+>   			    memcmp(cm->addr[0], addr, sizeof(*addr)))
+>   				continue;
+>   			found = 1;
+> +			config_item_get(i);
+>   			break;
+>   		}
+>   	}
+>   	up(&clusters_root.subsys.su_sem);
+> 
+> -	if (found)
+> -		config_item_get(i);
+> -	else
+> +	if (!found)
+>   		cm = NULL;
+>   	return cm;
+>   }
+> 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-  in my opinion, the config option "EMBEDDED" is just plain silly.  as
-i mentioned earlier, there may be other reasons that people want to
-de-activate normally selected features rather than just for strictly
-embedded systems.
-
-  here's an example:
-
-drivers/input/keyboard/Kconfig:
-...
-menuconfig INPUT_KEYBOARD
-        bool "Keyboards" if EMBEDDED || !X86
-        default y
-...
-
-  so i should only be allowed to de-activate keyboard support if i
-claim i'm working on an "embedded" system?  that's absurd.  maybe it's
-a 64-CPU monster server that just happens to be running headless and
-needs no keyboard.  making that selection dependent on EMBEDDED is
-just silly in that case.
-
-  anyway, must pack up and dash off for a few hours, but i'm hoping
-you can see my point.  i don't disagree that there should be a way to
-de-select normally selected features.  i just think the way it's being
-done now is hideously misnamed.
-
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
