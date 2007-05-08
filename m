@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934205AbXEHTcQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754747AbXEHTgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934205AbXEHTcQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:32:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031567AbXEHTcJ
+	id S1754747AbXEHTgh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXEHTge
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:32:09 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59236 "EHLO
+	Tue, 8 May 2007 15:36:34 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:48139 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031582AbXEHTcE (ORCPT
+	by vger.kernel.org with ESMTP id S1754114AbXEHTgd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:32:04 -0400
-Date: Tue, 8 May 2007 12:31:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-cc: Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
- (PCI_MULTITHREAD_PROBE)
-In-Reply-To: <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
-Message-ID: <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
- <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
- <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
- <alpine.LFD.0.98.0705081123080.3974@woody.linux-foundation.org>
- <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 8 May 2007 15:36:33 -0400
+Date: Tue, 8 May 2007 12:35:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frederik Deweerdt <deweerdt@free.fr>
+Cc: linux-kernel@vger.kernel.org, jbeulich@novell.com, ak@suse.de
+Subject: Re: kmem_cache_init failure (was Re: 2.6.21-mm1)
+Message-Id: <20070508123555.dfb7d5bb.akpm@linux-foundation.org>
+In-Reply-To: <20070508172233.GA11683@slug>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+	<20070508172233.GA11683@slug>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 8 May 2007 19:22:33 +0200
+Frederik Deweerdt <deweerdt@free.fr> wrote:
 
-
-On Tue, 8 May 2007, Cornelia Huck wrote:
+> On Sat, May 05, 2007 at 01:49:55AM -0700, Andrew Morton wrote:
+> > 
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm1/
+> > 
+> Hi all,
 > 
-> Is there any reason why a driver shouldn't be able to handle probing
-> several devices at once?
+> My computer fails early at boot with a stack along the lines of:
+> 
+> kmem_cache_zalloc
+> kmem_cache_create
+> kmem_cache_init
+> start_kernel
+> 
+> eip is at cache_calloc_refill+0x3e1 which is the 
+> slabp->colouroff = colouroff; in alloc_slabmgmt()
+> 
+> I've bisected it down to the x86_64-mm-cpa-kerneltext.patch and the 
+> 
+> +       if (!pte_present(*kpte))
+> +               return 0;
+>
+> part in particular. Dotconfig and cpuinfo are available at
+> http://fdeweerdt.free.fr/kmem_prob/.  Any ideas?
 
-Internal driver reasons?
+Thanks for working that out - it helps heaps.
 
-Look, Cornelia, there's about a million drivers in the kernel. They are 
-not all safe. End of discussion.
+x86_64-mm-cpa-kerneltext.patch seems to have been dropped from Andi's tree.
+It might come back, so please let's keep an eye out for that.
 
-If you are willing to go through them all, fix everything, test it, talk 
-with all maintainers, all the more power to you.
-
-As it is, that's not going to happen. So you should *assume* that drivers 
-are not expecting to be called multiple times in parallel. And if they 
-are, you may then assume that people don't want them to be, because they 
-want stable naming.
-
-> What if two devices become hotplugged at the same time? Does this imply 
-> that the bus _always_ needs to do some serializing there?
-
-You want to test it? Be my guest.
-
-But the final nail in the coffin is that doing it at the bus level is 
-INFERIOR. As you yourself admitted, it's better to do some things 
-synchronously.
-
-		Linus
