@@ -1,64 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968287AbXEHOqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968304AbXEHOsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968287AbXEHOqm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968170AbXEHOqm
+	id S968304AbXEHOsB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968301AbXEHOsA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:46:42 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:37583 "EHLO
-	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S968159AbXEHOql (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:46:41 -0400
-Date: Tue, 08 May 2007 08:46:27 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] Cleanup libata HPA support
-In-reply-to: <fa.7iNoP7Qs8RAGjCdw2nQZBKOCxZU@ifi.uio.no>
-To: Ben Collins <ben.collins@ubuntu.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <46408D43.3020300@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.7iNoP7Qs8RAGjCdw2nQZBKOCxZU@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Tue, 8 May 2007 10:48:00 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:57393 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968183AbXEHOr6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 10:47:58 -0400
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+From: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+In-Reply-To: <20070508105247.GA1950@amitarora.in.ibm.com>
+References: <20070417125514.GA7574@amitarora.in.ibm.com>
+	 <20070418130600.GW5967@schatzie.adilger.int>
+	 <20070420135146.GA21352@amitarora.in.ibm.com>
+	 <20070420145918.GY355@devserv.devel.redhat.com>
+	 <20070424121632.GA10136@amitarora.in.ibm.com>
+	 <20070426175056.GA25321@amitarora.in.ibm.com>
+	 <20070426181332.GD7209@amitarora.in.ibm.com>
+	 <20070503213133.d1559f52.akpm@linux-foundation.org>
+	 <20070507120719.GD7012@amitarora.in.ibm.com>
+	 <1178551477.12900.6.camel@kleikamp.austin.ibm.com>
+	 <20070508105247.GA1950@amitarora.in.ibm.com>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 09:47:54 -0500
+Message-Id: <1178635675.11344.10.camel@kleikamp.austin.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Collins wrote:
-> The original HPA patch that Kyle worked on has gone into current git
-> without some fixes that we worked through late in the Ubuntu feisty
-> release. Here's the main copy of the notes I sent to Alan a few weeks
-> ago in regards to the original patch, and a repatch against current git
-> to fix things up. Note we have released feisty with the patch attached
-> (albeit we have HPA enabled by default), and we have not had any reports
-> directly attributed to it. However, in gutsy (devel for next release,
-> based on current stock linux-2.6.git), we are already seeing reports of
-> the same issues we already fixed. 
-> 
-> The issues we saw were mainly that some controllers didn't return the
-> correct size from the SET_MAX command (sata_nv is a good example). So I
-> added a re IDENTIFY after the SET_MAX, and compared all the numbers. If
-> re-id was correct, but return value from SET_MAX wasn't we print a
-> warning and use the IDENTIFY value regardless (since that's what the
-> device is going to use).
-> 
-> Because we re IDENTIFY, there was also no need to keep n_sectors_boot
-> around, so that was removed. The ata_hpa_resize() was changed to handle
-> everything in a single call (checks for HPA support of the device, and
-> whether ignore_hpa is set or not), and it also sets dev->n_sectors
-> before returning.
-> 
-> So far with this patch, we were able to fix all the problems we were
-> seeing with it (except the sata_nv issue where we had to revert to not
-> using adma for NO_DATA transactions, already reported to libata-dev).
-> We've not had any reports of further problems.
+On Tue, 2007-05-08 at 16:22 +0530, Amit K. Arora wrote:
+> On Mon, May 07, 2007 at 10:24:37AM -0500, Dave Kleikamp wrote:
+> > On Mon, 2007-05-07 at 17:37 +0530, Amit K. Arora wrote:
+> > > On Thu, May 03, 2007 at 09:31:33PM -0700, Andrew Morton wrote:
 
-That sata_nv issue should not be present anymore in the current 
-libata-dev tree.
+> > > > So we don't implement fallocate on bitmap-based files!  Well that's huge
+> > > > news.  The changelog would be an appropriate place to communicate this,
+> > > > along with reasons why, or a description of the plan to fix it.
+> > > 
+> > > Ok. Will add this in the function description as well.
+> > > 
+> > > > Also, posix says nothing about fallocate() returning ENOTTY.
+> > > 
+> > > Right. I don't seem to find any suitable error from posix description.
+> > > Can you please suggest an error code which might make more sense here ?
+> > > Will -ENOTSUPP be ok ? Since we want to say here that we don't support
+> > > non-extent files.
+> > 
+> > Isn't the idea that libc will interpret -ENOTTY, or whatever is returned
+> > here, and fall back to the current library code to do preallocation?
+> > This way, the caller of fallocate() will never see this return code, so
+> > it won't violate posix.
+> 
+> You are right.
+> 
+> But, we still need to "standardize" (and limit) the error codes
+> which we should return from kernel when we want to fall back on the
+> library implementation. The posix_fallocate() library function will have
+> to look for a set of errors from fallocate() system call, upon receiving
+> which it will do preallocation from user level; or else, it will return
+> success/error-code returned by the system call to the user.
+> 
+> I think we can make it fall back to library implementation of fallocate,
+> whenever posix_fallocate() receives any of the following errors from
+> fallocate() system call:
+> 
+> 1. ENOSYS
+> 2. EOPNOTSUPP
+> 3. ENOTTY        (?)
+> 
+> Now the question is - should we limit the set of errors for this purpose
+> to just 1 & 2 above ? In that case I will need to change the error being
+> returned here to -EOPNOTSUPP (from current -ENOTTY).
 
+If you want my opinion, -EOPNOTSUPP is better than -ENOTTY.
+
+Shaggy
 -- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+David Kleikamp
+IBM Linux Technology Center
 
