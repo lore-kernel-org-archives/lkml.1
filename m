@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934727AbXEHIg6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934738AbXEHIhE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934727AbXEHIg6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 04:36:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934675AbXEHIgy
+	id S934738AbXEHIhE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 04:37:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934675AbXEHIhA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 04:36:54 -0400
-Received: from ppsw-2.csi.cam.ac.uk ([131.111.8.132]:32838 "EHLO
-	ppsw-2.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934678AbXEHIgx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 04:36:53 -0400
-X-Cam-SpamDetails: Not scanned
-X-Cam-AntiVirus: No virus found
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-In-Reply-To: <200705080826.l488Qnrb006666@harpo.it.uu.se>
-References: <200705080826.l488Qnrb006666@harpo.it.uu.se>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <94A84191-A7C6-41D2-83A0-2C28EB210B5B@cam.ac.uk>
-Cc: Krzysztof Halasa <khc@pm.waw.pl>, Jeff Garzik <jeff@garzik.org>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       lkml <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
-       Russell King <rmk@arm.linux.org.uk>
-Content-Transfer-Encoding: 7bit
-From: Michael-Luke Jones <mlj28@cam.ac.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-Date: Tue, 8 May 2007 09:35:54 +0100
-To: Mikael Pettersson <mikpe@it.uu.se>, Tomasz Chmielewski <mangoo@wpkg.org>
-X-Mailer: Apple Mail (2.752.2)
+	Tue, 8 May 2007 04:37:00 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:49097 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934724AbXEHIg4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 04:36:56 -0400
+Date: Tue, 8 May 2007 10:28:29 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: David Chinner <dgc@sgi.com>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org
+Subject: Re: sleeping function called from invalid context at block/cfq-iosched.c
+ (Was: Re: 2.6.21-mm1)
+In-Reply-To: <20070508061810.GI32602149@melbourne.sgi.com>
+Message-ID: <Pine.LNX.4.61.0705081026160.17280@yvahk01.tjqt.qr>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+ <463E3C50.9080207@simon.arlott.org.uk> <20070506135403.a6785f7d.akpm@linux-foundation.org>
+ <463FAF1C.8060500@simon.arlott.org.uk> <20070507162349.0790706f.akpm@linux-foundation.org>
+ <463FB697.6060902@simon.arlott.org.uk> <20070507163335.f5f5ea6e.akpm@linux-foundation.org>
+ <463FFD0A.2050708@goop.org> <20070507222409.2d597a86.akpm@linux-foundation.org>
+ <46400CD0.8050309@goop.org> <20070508061810.GI32602149@melbourne.sgi.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 8 May 2007, at 09:26, Mikael Pettersson wrote:
 
-> On Tue, 8 May 2007 08:22:17 +0100, Michael-Luke Jones wrote:
-> AFAIK, it's a HW limitation of the IXP4xx NPEs, or
-> possibly Intel's microcode for them.
+On May 8 2007 16:18, David Chinner wrote:
 >
-> I run my IXP42x boxes big-endian and don't mind doing so.
->
-> /Mikael
+>On Mon, May 07, 2007 at 10:38:24PM -0700, Jeremy Fitzhardinge wrote:
+>> Andrew Morton wrote:
+>> > On Mon, 07 May 2007 21:31:06 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>> >   
+>> >> I've found that XFS+lvm+4k stacks is completely unusable with current
+>> >> kernels.  I get hangs/oopes after ~10mins of work.
+>> >
+>> > Sounds like this is new behaviour?
+>> > I wonder why.  Same compiler version?
+>> 
+>> I've only recently started using xfs, so I couldn't say if its new
+>> behaviour.  I did notice that it took a week or so for problems to set
+>> in; my theory is that as the filesystem got a bit aged, its
+>> datastructures got a bit more complex, and cause the kernel code to use
+>> more stack.  But that's just a guess.
 
-*cough*
-http://www.hohnstaedt.de/ixp_npe/0.2.0/0001-IXP4XX-Driver-for-NPE- 
-QMGR-MAC-0.2.0.txt
-:p
+FWIW, I run dm-crypt+xfs on one machine, of course with 8k since that's
+suse default. No issues. dm-crypt and lvm got something in common,
+don't they?
 
----
 
-On 8 May 2007, at 09:29, Tomasz Chmielewski wrote:
-> Christian Hohnstaedt's work did support LE though.
-
-Indeed.
-
-> Krzysztof, why is LE not supported?
-
-Butting in here. It's not supported because LE mode has to work in a  
-brain-damaged way. NPE DMAs the complete skb straight out of RAM.  
-Unfortunately it expects the skb to already be written out in ram BE.
-
-Thus, in LE mode we have to byteswap the skb with CPU before the NPE  
-can DMA it. This hasn't been implemented yet.
-
-Michael-Luke Jones
-
+Jan
+-- 
