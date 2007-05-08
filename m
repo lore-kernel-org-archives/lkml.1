@@ -1,55 +1,369 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967858AbXEHFAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967884AbXEHFPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967858AbXEHFAm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 01:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967852AbXEHFAf
+	id S967884AbXEHFPS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 01:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967878AbXEHFPP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 01:00:35 -0400
-Received: from smtp107.sbc.mail.mud.yahoo.com ([68.142.198.206]:39898 "HELO
-	smtp107.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S967840AbXEHFAa (ORCPT
+	Tue, 8 May 2007 01:15:15 -0400
+Received: from web57402.mail.re1.yahoo.com ([66.196.100.53]:39228 "HELO
+	web57402.mail.re1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S967877AbXEHFPN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 01:00:30 -0400
+	Tue, 8 May 2007 01:15:13 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 May 2007 01:15:12 EDT
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=rxRb6sonKn09GG4brsTMEmQwv/ncVIGb7JLymZb2otbN2YNZDF9O7VefFzyur0c0bBdudA/1X+Dqh3qE564TDaLyiSn7GatcTZxD7K0o1tKyg76YfIRqyFlVjm05NqdvaNQmDzFauyvTntgk1d5Y6ZegpwZX0IWMDPkd5G+JWv8=  ;
-X-YMail-OSG: 8TYlDz8VM1nsDAfbTN8cK6.EHHfdLcMgRmkgyuRj2YiKHGwt7hlzndg_dSX3t0a_BRq.8BpCyA--
-From: David Brownell <david-b@pacbell.net>
-To: Bryan WU <bryan.wu@analog.com>
-Subject: Re: [spi-devel-general] adding bits_per_word to struct spi_board_info to mirror struct spi_device
-Date: Mon, 7 May 2007 22:00:26 -0700
-User-Agent: KMail/1.9.6
-Cc: Mike Frysinger <vapier.adi@gmail.com>,
-       spi-devel-general@lists.sourceforge.net,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <8bd0f97a0704250305qe6175cdm8e1a0cd7844f67bc@mail.gmail.com> <8bd0f97a0705071647w58c6055ehc54dd6b520a8e227@mail.gmail.com> <1178596106.5222.3.camel@roc-desktop>
-In-Reply-To: <1178596106.5222.3.camel@roc-desktop>
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=Sox+9jUbXgJGIuOY2XQFx7ohlvEhKPWUXkeF8VKJD5HiIZkjHn82SX3zAXZDzHYnZ9UM4sxaw4T/sQLpzeVrDknRDs23JvgrP6HS1+RIglMt1fPfFojkNfLWERemSniaVi0xrtjJovZpETLrm9Ey19L1lLM+Lo1ExfqGUqe48ks=;
+X-YMail-OSG: ULDvgOUVM1nm6gjqTyFicc8u8iirNux.XHX23d9d2SigbwK2E452LJKIAlp0Nx5rAg--
+Date: Mon, 7 May 2007 22:08:31 -0700 (PDT)
+From: ~el8 <j4mm1x@yahoo.com>
+Subject: 6apart ~el8
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705072200.26888.david-b@pacbell.net>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <52792.51072.qm@web57402.mail.re1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 07 May 2007, Bryan WU wrote:
 
-> currently, there are some duplicated data members in spi_device struct
-> spi_board_info struct. This two structs are confused driver writers and
-> boards driver users.
+################################################
+##  0fPHIc1@L ~El8 rUI|\|@t1o|\| p0r+phoLi0   ##
+################################################
+##::::::::::::::::::::::::::::::::::::::::::::##
+##:'####::::::'########:'##::::::::'#######:::##
+##'##  ##:'##: ##.....:: ##:::::::'##.... ##::##
+##..::. ####:: ##::::::: ##::::::: ##:::: ##::##
+##:::::....::: ######::: ##:::::::: #######:::##
+##:::::::::::: ##...:::: ##:::::::'##.... ##::##
+##:::::::::::: ##::::::: ##::::::: ##:::: ##::##
+##::~el8[666]: ########: ########:. #######:::##
+##::::::::::::........::........:::.......::::##
+################################################
+## the definitive src for the SFBay H/P Scene ##
+################################################
 
-How would that confusion arise?  Only arch/.../board-xxx.c writers
-normally even see spi_board_info; the exception is that someone who
-writes an add-on board -- maybe a USB-to-SPI adapter -- would call the
-rarely used spi_new_device() routine.
+.----------------------------------------------------------------.
+; T4bLe opH |-|oLY w4R3Z 4|\|D bEY0n|) ;              
+          ;
+`--------------------------------------'              
+          ;
+; *00* ~e~ intr0duktion                               
+          ;
+; *01* ~e~ 6AP@4t RUyn                                
+          ;
+' *02* ~e~ b00K 0F Od1n, G4Wd 0F lUlZ                 
+          ;
+`----------------------------------------------------------------'
 
-Developers writing a SPI drivers -- controller drivers touching some
-SOC's serial controller hardware, or "struct spi_driver" protocol code
-talking to a chip through such a controller -- never see board info.
-They only see "struct spi_device".  So I don't see why they would have
-a reason to be confused.
 
-- Dave
+.----------------------------------------------------------------.
+; t4ble of ~el8 m3mbrZ ;                              
+          ;
+`----------------------'                              
+          ;
+; SiLLY G00S3         -> THe HiGH PReeZT              
+          ;
+; FuNNY BuNNY         -> a BLiP oN YOuR GaYDaR        
+          ;
+; ODaY MaZTeR         -> GeTZ aLL THe HoEZ and CoDEz  
+          ;
+; ENRiCO              -> INSaNe IN ThE MeMBRAiN       
+          ;
+; ReDPUBeZ            -> AkA KARRoT_BoTToM            
+          ;
+; CaWCaW              -> EYe'LL TEaR YoUR EyEZ OuT    
+          ;
+; KRaD                -> sO FReSH & sO CLEaN          
+          ;
+; PoOtIeTaNG          -> CRaZY CooL FRe$h             
+          ;
+; UNCLe MaViS         -> HaS YOu IN A HEaDLoK         
+          ;
+; TcJ                 -> ThE CRiMiNaL JESuS           
+          ;
+; CLiFF SToLE         -> CLiFF SToLE YOUR CoDEz       
+          ;
+; JaMeS BRoWN PaNTZ   -> STAiNeD UNDeRWaREZ           
+          ;
+; JoHNY SiX ToEZ      -> MuTaTED MiKE                 
+          ;
+; DiNOSaUR MaN        -> THe OLD SCHooL               
+          ;
+; MiKE TySoN          -> THe DaHMeR oF BoXiNG         
+          ;
+; BaLLSaCK            -> Mr HuGE NuTZ                 
+          ;
+; ARaB BiLL           -> MeKKa DoN WoN                
+          ;
+; KaRELeSS KaRL       -> EyE DoNT WiPE LoGZ           
+          ;
+; OSaMA BiN LaDEN     -> GeORgE BuSH                  
+          ;
+; ThE UNiX TeRRoRiZt  -> RM'z YoUR BoX WiTHOuT ReMORsE
+          ;
+; PuSSy FaCEd KiLLa   -> GHoST FaCE KiLLaZ HoMEsLiCE  
+          ;
+; CHiNeeZ TiMMy       -> CReAM oF SuM YuN GaI         
+          ;
+; SeXPaTRiOT          -> THe PoRNo HaCKeR             
+          ;
+; T z D               -> TEaM ZeRODaY                 
+          ;
+; J4mm1x              -> My pan15 DO nOT UP 4nD i h4V3
+          ;
+;                        pro8L3m Wi+H My P3NNy b4lLS  
+          ;
+`----------------------------------------------------------------'
 
+.~v~----------------------------------------------------------~v~.
+; *00* intr0duktion -- ~el8 TEaM                      
+          ;
+`----------------------------------------------------------------'
+
+        8OyCOtT h0r5e5 f0r tehy are th3 enemy
+
+        we r h4rdkore h4krz who clean your toilets,
+the h4rdkore k0derz 
+        who forcefully w1pe y0ur wind0wz @ st0pl1ghtz
+and intersekti0nz,
+        the h4rdk0re phre4krZ who mow your l4wn, the
+h4rdk0re cr4krz
+        who ste4l cl0thez from the salvati0n army, we
+take yor orderz
+        at burger k1ng, we steal yor hubk4pz, we even
+put k4meraz in
+        port `o pottiez. *_DO_* *_NOT_* *_FUCK_*
+*_WITH_* *_US_*.
+
+        -- ~el8 team
+
+
+
+.~v~----------------------------------------------------------~v~.
+; *01* 6AP@4t RUyn -- ~el8 TEaM                       
+          ;
+`----------------------------------------------------------------'
+
+       
+,_______________________________________________,
+        |              BARAK BERKIOWITZ               
+ |
+        |              210 TENNYSON AVE               
+ |
+        |             PALO ALTO CA, 94301             
+ |
+        |               (650) 322-8031                
+ |
+        |              SSN: 118-46-3088               
+ |
+       
+|_______________________________________________|
+        ^                                             
+ ^
+       
+,_______________________________________________,
+        |                  Mena Trott                 
+ |
+        |                 4338 26TH ST                
+ |
+        |         SAN FRANCISCO, CA 94131-1810        
+ |
+        |                (415) 821-2073               
+ |
+       
+|_______________________________________________|
+        ^                                             
+ ^
+       
+,_______________________________________________,
+        |               DAVID F MARQUARDT             
+ |
+        |            2480 SAND HILL RD APT 101        
+ |
+        |            MENLO PARK, CA 94025-6940        
+ |
+        |                (650) 233-3333               
+ |
+        |                (650) 692-2883               
+ |
+        |               SSN: 086-44-2677              
+ |
+       
+|_______________________________________________|
+        ^                                             
+ ^
+       
+,_______________________________________________,
+        |               DAVID MARTIN HORNIK           
+ |
+        |                137 PARK AVE #419            
+ |
+        |            PALO ALTO, CA 94306-1108         
+ |
+        |                (650) 327-8757               
+ |
+        |                (650) 328-1380               
+ |
+        |               SSN: 014-48-8392              
+ |
+       
+|_______________________________________________|
+        ^                                             
+ ^
+       
+,_______________________________________________,
+        |                  Jun Makihara               
+ |
+        |               1601 RISING GLEN RD           
+ |
+        |            LOS ANGELES, CA 90069-1227       
+ |
+        |               SSN: 579-86-3910              
+ |
+       
+|_______________________________________________|
+        ^                                             
+ ^
+       
+,_______________________________________________,
+        |                  REID HOFFMAN               
+ |
+        |               2042 LEAVENWORTH ST           
+ |
+        |           SAN FRANCISCO, CA 94133-2518      
+ |
+        |               SSN: 516-84-6565              
+ |
+       
+|_______________________________________________|
+        ^                                             
+ ^
+       
+,_______________________________________________,
+        |                 BENJAMIN J TROTT            
+ |
+        |                   4338 26TH ST              
+ |
+        |           SAN FRANCISCO, CA 94131-1810      
+ |
+        |                 (415) 821-2073              
+ |
+        |               SSN: 567-49-0571              
+ |
+       
+|_______________________________________________|
+        ^                                             
+ ^
+                           aNd FiNallY
+       
+,_______________________________________________,
+        |                 BRAD FITZPATRICK            
+ |
+        |                   529 28TH ST               
+ |
+        |           SAN FRANCISCO, CA 94131-2219      
+ |
+        |               SSN: 459-49-4136              
+ |
+       
+|_______________________________________________|
+        ^                                             
+ ^
+
+
+.~v~----------------------------------------------------------~v~.
+; *02* b00K 0F Od1n, G4Wd 0F lUlZ -- ~el8 TEaM        
+          ;
+`----------------------------------------------------------------'
+
+<Odin> NIGGER NALA NIGGER NALA
+<Odin> D"
+<Odin> I DONT HAVE N E
+<Odin> LIKE WHOA
+<Odin> Naked?
+<Odin> HISSS
+<Odin> A BACKBONES
+<Odin> Shutup u tlak dumb
+<Odin> N e captain morgan n e mixing the light and the
+dark and getting the rum flaps barf on ur hiss
+<Odin> Tree dicks
+<Odin> ANALA
+<Odin> Wanna see TERDS
+<Odin> <MASTER><
+<Odin> YEAH
+<Odin> I dunno
+<Odin> JIZZ
+<Odin> WELL IM LISTENING TO GAY MUSIC
+<Odin> 8[
+<Odin> WHAT
+<Odin> I DUNNO
+<Odin> AND IT WOULDNT IT WAS SO HUGE LOL
+<Odin> 9]]
+<Odin> Did u fuckers know that
+<Odin> LOL
+<Odin> DOING THE FLAP LA D:
+<Odin> ET TU BRUTE?
+<Odin> N E POOPY WET
+<Odin> Ssssssssss
+<Odin> Hissssssss
+<Odin> I, 2 high 2 type legit
+<Odin> I NEED TO STEAL 10 LCDS
+<Odin> OMG
+<Odin> Jizz flaps
+<Odin> SSSSSSSSSSSSSSSSSSSSSSs
+<Odin> D:
+<Odin> SNIFF IT OK HJUNNY
+<Odin> THEN I RAPE THEM
+<Odin> I have done 12 poopers
+<Odin> Shutup nigger
+<Odin> A new breed of the awful flaps
+
++++++++++++++++++++++++++++++++++++++++++++
+|         Closing Words by                |
+|              j4mm1x                     |
++++++++++++++++++++++++++++++++++++++++++++
+
+        I did it for the lulz.
+
+                                           lllllll    
+ 888888888
+                                           l:::::l   
+88:::::::::88
+                                           l:::::l 
+88:::::::::::::88
+                                           l:::::l
+8::::::88888::::::8
+                            eeeeeeeeeeee    l::::l
+8:::::8     8:::::8
+                          ee::::::::::::ee  l::::l
+8:::::8     8:::::8
+    _________     _____ e::::::eeeee:::::ee l::::l 
+8:::::88888:::::8
+   /          \  /     |e::::::e     e:::::el::::l  
+8:::::::::::::8
+  /  ~el8      \/      /e:::::::eeeee::::::el::::l 
+8:::::88888:::::8
+ /       _            / e:::::::::::::::::e l::::l
+8:::::8     8:::::8
+/      /  \          /  e::::::eeeeeeeeeee  l::::l
+8:::::8     8:::::8
+\_____/    \________/   e:::::::e           l::::l
+8:::::8     8:::::8
+                        e::::::::e        
+l::::::l8::::::88888::::::8
+                         e::::::::eeeeeeee l::::::l
+88:::::::::::::88
+                          ee:::::::::::::e l::::::l  
+88:::::::::88
+                            eeeeeeeeeeeeee llllllll   
+ 888888888
+                                                      
+  .j4mm1x.
+
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
