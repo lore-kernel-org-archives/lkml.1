@@ -1,314 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967342AbXEHNAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967449AbXEHNBd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967342AbXEHNAl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 09:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967289AbXEHNAj
+	id S967449AbXEHNBd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 09:01:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967414AbXEHNBb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 09:00:39 -0400
-Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:61865
-	"EHLO eggplant.ddo.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967054AbXEHNAg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 09:00:36 -0400
-Message-ID: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp>
-Date: Tue, 8 May 2007 21:27:05 +0900 (JST)
-Subject: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
-From: "kogiidena" <kogiidena@eggplant.ddo.jp>
-To: rpurdie@rpsys.net
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
-Reply-To: kogiidena@eggplant.ddo.jp
-User-Agent: SquirrelMail/1.4.5
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-References: 
-In-Reply-To: 
+	Tue, 8 May 2007 09:01:31 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:36807 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S967370AbXEHNBa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 09:01:30 -0400
+Date: Tue, 8 May 2007 15:07:48 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make-cancel_rearming_delayed_work-reliable-fix
+Message-ID: <20070508130748.GF1772@ff.dom.local>
+References: <20070503204226.GA212@tv-sign.ru> <20070503181513.0b0aa4fb.akpm@linux-foundation.org> <20070505213213.GA1013@tv-sign.ru> <20070507103107.GD1754@ff.dom.local> <20070507103420.GA74@tv-sign.ru> <20070508091601.GB1772@ff.dom.local> <20070508120221.GA968@tv-sign.ru>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070508120221.GA968@tv-sign.ru>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To:Richard-san
-CC:all
+On Tue, May 08, 2007 at 04:02:21PM +0400, Oleg Nesterov wrote:
+> On 05/08, Jarek Poplawski wrote:
+> >
+> > On Mon, May 07, 2007 at 02:34:20PM +0400, Oleg Nesterov wrote:
+> > > On 05/07, Jarek Poplawski wrote:
+...
+> I am strongly against adding many different variants of cancel_xxx().
+> With this patch the API is simple
+> 
+> 	- cancel_delayed_work() stops the timer
+> 
+> 	- cancel_rearming_delayed_work() stops the timer and work,
+> 	  doesn't need cancel_work_sync/flush_workqueue
 
-I wrote LED Blink Trigger. Pleas apply if there is no problem.
+But most often there is a simple rearming (but not neccessarily
+always) work for which the first is not enough and the second
+an overkill (especially with system/workqueues loaded).
 
-This allows LEDs to be controlled by a programmable timer.
-"blink" blinks LED at a constant cycle.
-"bitshift" turns LED or Buzzer on and off by the value of pattern.
+> When work->func() re-arms itself, both queue_work() and queue_delayed_work()
+> may change CPU if CPU_DOWN_xxx happens. Note that this is possible
+> even if we use freezer for cpu-hotplug, because the timer migrates to
+> another CPU anyway.
 
-Kernel version: linux-2.6.21-rc4
-Signed-off-by: kogiidena <kogiidena@eggplant.ddo.jp>
+Thanks for explanation - I try to think about this.
+ 
+> >                                I'm not sure what exactly place
+> > did you mean - if spinlocking in wait_on_work - maybe it's
+> > a sign this place isn't optimal too: it seems to me, this all
+> > inserting/waiting for completion could be done under existing
+> > locks e.g. in run_workqueue (maybe with some flag?).
+> 
+> Sorry, can't understand this. Inserting uses existing lock, namely
+> cwq->lock.
 
----
-diff -urpN OLD/drivers/leds/Kconfig NEW/drivers/leds/Kconfig
---- OLD/drivers/leds/Kconfig        2007-03-27 18:30:44.000000000 +0900
-+++ NEW/drivers/leds/Kconfig        2007-03-27 18:52:42.000000000 +0900
-@@ -134,5 +134,14 @@ config LEDS_TRIGGER_HEARTBEAT
-           load average.
-           If unsure, say Y.
+I meant held locks - maybe e.g. after seeing some flag set (or some
+other global/per_cpu/atomic/whatever variable) in a processed work
+insert_wq_barrier could be done in already locked place. Or maybe
+the whole idea of these completions should be rethinked, for
+something lighter (i.e. lockless)?
 
-+config LEDS_TRIGGER_BLINK
-+        tristate "LED Blink Trigger"
-+        depends on LEDS_TRIGGERS
-+        help
-+          This allows LEDs to be controlled by a programmable timer.
-+          "blink" blinks LED at a constant cycle.
-+          "bitshift" turns LED on and off by the value of pattern.
-+          If unsure, say Y.
-+
- endmenu
+> 
+> Just in case, I think wait_on_cpu_work() can check ->current_work without
+> cwq->lock, but I am not sure yet. We can remove unneeded "new |= " from
+> set_wq_data(), we can do a couple of other optimizations. However, there
+> are already _a lot_ of workqueue changes in -mm tree. We can do this later.
+> Right now my only concern is correctness.
 
-diff -urpN OLD/drivers/leds/Makefile NEW/drivers/leds/Makefile
---- OLD/drivers/leds/Makefile        2007-03-27 18:27:18.000000000 +0900
-+++ NEW/drivers/leds/Makefile        2007-03-27 18:36:02.000000000 +0900
-@@ -22,3 +22,4 @@ obj-$(CONFIG_LEDS_LANDISK)                += leds-land
- obj-$(CONFIG_LEDS_TRIGGER_TIMER)        += ledtrig-timer.o
- obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)        += ledtrig-ide-disk.o
- obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)        += ledtrig-heartbeat.o
-+obj-$(CONFIG_LEDS_TRIGGER_BLINK)        += ledtrig-blink.o
-diff -urpN OLD/drivers/leds/ledtrig-blink.c NEW/drivers/leds/ledtrig-blink.c
---- OLD/drivers/leds/ledtrig-blink.c        1970-01-01 09:00:00.000000000 +0900
-+++ NEW/drivers/leds/ledtrig-blink.c        2007-03-27 18:16:55.000000000 +0900
-@@ -0,0 +1,235 @@
-+/*
-+ * LED Blink Trigger
-+ *
-+ * Copyright (C) 2007 kogiidena
-+ *
-+ * Based on drivers/leds/ledtrig-heartbeat.c by:
-+ * Copyright (C) 2006 Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+#include <linux/module.h>
-+#include <linux/jiffies.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/timer.h>
-+#include <linux/sched.h>
-+#include <linux/leds.h>
-+#include <linux/device.h>
-+#include <linux/ctype.h>
-+#include "leds.h"
-+
-+struct blink_trig_data {
-+        unsigned int mode;
-+        signed int phase;
-+        unsigned long interval;
-+        struct timer_list timer;
-+};
-+
-+static void led_blink_function(unsigned long data)
-+{
-+        struct led_classdev *led_cdev = (struct led_classdev *)data;
-+        struct blink_trig_data *blink_data = led_cdev->trigger_data;
-+        unsigned long delay = blink_data->interval;
-+
-+        led_set_brightness(led_cdev,
-+                           blink_data->phase & 0x1 ? LED_FULL : LED_OFF);
-+
-+        if ((blink_data->mode != 0) ||
-+            ((blink_data->phase != 0) && (blink_data->phase != 0xffffffff))) {
-+                mod_timer(&blink_data->timer,
-+                          jiffies + msecs_to_jiffies(delay));
-+        }
-+        if (blink_data->mode != 0)
-+                blink_data->phase++;
-+        else
-+                blink_data->phase >>= 1;
-+}
-+
-+static ssize_t led_interval_show(struct class_device *dev, char *buf)
-+{
-+        struct led_classdev *led_cdev = class_get_devdata(dev);
-+        struct blink_trig_data *blink_data = led_cdev->trigger_data;
-+
-+        sprintf(buf, "%lu\n", blink_data->interval);
-+
-+        return strlen(buf) + 1;
-+}
-+
-+static ssize_t led_interval_store(struct class_device *dev, const char *buf,
-+                                  size_t size)
-+{
-+        struct led_classdev *led_cdev = class_get_devdata(dev);
-+        struct blink_trig_data *blink_data = led_cdev->trigger_data;
-+        int ret = -EINVAL;
-+        char *after;
-+        unsigned long state = simple_strtoul(buf, &after, 10);
-+        size_t count = after - buf;
-+
-+        if (*after && isspace(*after))
-+                count++;
-+
-+        if (count == size) {
-+                blink_data->interval = state;
-+                mod_timer(&blink_data->timer, jiffies + 1);
-+                ret = count;
-+        }
-+        return ret;
-+}
-+
-+static ssize_t led_pattern_show(struct class_device *dev, char *buf)
-+{
-+        struct led_classdev *led_cdev = class_get_devdata(dev);
-+        struct blink_trig_data *blink_data = led_cdev->trigger_data;
-+
-+        sprintf(buf, "0x%08x\n", blink_data->phase);
-+
-+        return strlen(buf) + 1;
-+}
-+
-+static ssize_t led_pattern_store(struct class_device *dev, const char *buf,
-+                                 size_t size)
-+{
-+        struct led_classdev *led_cdev = class_get_devdata(dev);
-+        struct blink_trig_data *blink_data = led_cdev->trigger_data;
-+        int ret = -EINVAL;
-+        char *after;
-+        unsigned long state = simple_strtoul(buf, &after, 16);
-+        size_t count = after - buf;
-+
-+        if (*after && isspace(*after))
-+                count++;
-+
-+        if (count == size) {
-+                blink_data->phase = state;
-+                mod_timer(&blink_data->timer, jiffies + 1);
-+                ret = count;
-+        }
-+        return ret;
-+}
-+
-+static CLASS_DEVICE_ATTR(interval, 0644, led_interval_show, led_interval_store);
-+static CLASS_DEVICE_ATTR(pattern, 0644, led_pattern_show, led_pattern_store);
-+
-+static void blink_trig_activate(struct led_classdev *led_cdev)
-+{
-+        struct blink_trig_data *blink_data;
-+        int rc;
-+
-+        blink_data = kzalloc(sizeof(*blink_data), GFP_KERNEL);
-+        if (!blink_data)
-+                return;
-+
-+        led_cdev->trigger_data = blink_data;
-+
-+        blink_data->mode = 1;
-+        blink_data->phase = 1;
-+        blink_data->interval = 250;
-+
-+        rc = class_device_create_file(led_cdev->class_dev,
-+                                      &class_device_attr_interval);
-+        if (rc)
-+                goto err_out;
-+
-+        setup_timer(&blink_data->timer,
-+                    led_blink_function, (unsigned long)led_cdev);
-+
-+        led_blink_function(blink_data->timer.data);
-+
-+        return;
-+
-+err_out:
-+        led_cdev->trigger_data = NULL;
-+        kfree(blink_data);
-+}
-+
-+static void bitshift_trig_activate(struct led_classdev *led_cdev)
-+{
-+        struct blink_trig_data *blink_data;
-+        int rc;
-+
-+        blink_data = kzalloc(sizeof(*blink_data), GFP_KERNEL);
-+        if (!blink_data)
-+                return;
-+
-+        led_cdev->trigger_data = blink_data;
-+
-+        blink_data->mode = 0;
-+        blink_data->phase = 0;
-+        blink_data->interval = 250;
-+
-+        rc = class_device_create_file(led_cdev->class_dev,
-+                                      &class_device_attr_interval);
-+        if (rc)
-+                goto err_out;
-+
-+        rc = class_device_create_file(led_cdev->class_dev,
-+                                      &class_device_attr_pattern);
-+        if (rc)
-+                goto err_out_interval;
-+
-+        setup_timer(&blink_data->timer,
-+                    led_blink_function, (unsigned long)led_cdev);
-+
-+        led_blink_function(blink_data->timer.data);
-+
-+        return;
-+
-+err_out_interval:
-+        class_device_remove_file(led_cdev->class_dev,
-+                                 &class_device_attr_interval);
-+err_out:
-+        led_cdev->trigger_data = NULL;
-+        kfree(blink_data);
-+}
-+
-+static void blink_trig_deactivate(struct led_classdev *led_cdev)
-+{
-+        struct blink_trig_data *blink_data = led_cdev->trigger_data;
-+
-+        if (blink_data) {
-+                class_device_remove_file(led_cdev->class_dev,
-+                                         &class_device_attr_interval);
-+                if (blink_data->mode == 0) {
-+                        class_device_remove_file(led_cdev->class_dev,
-+                                                 &class_device_attr_pattern);
-+                }
-+                del_timer_sync(&blink_data->timer);
-+                kfree(blink_data);
-+        }
-+}
-+
-+static struct led_trigger blink_led_trigger = {
-+        .name                 = "blink",
-+        .activate         = blink_trig_activate,
-+        .deactivate         = blink_trig_deactivate,
-+};
-+
-+static struct led_trigger bitshift_led_trigger = {
-+        .name                 = "bitshift",
-+        .activate         = bitshift_trig_activate,
-+        .deactivate         = blink_trig_deactivate,
-+};
-+
-+static int __init blink_trig_init(void)
-+{
-+        led_trigger_register(&blink_led_trigger);
-+        led_trigger_register(&bitshift_led_trigger);
-+        return 0;
-+}
-+
-+static void __exit blink_trig_exit(void)
-+{
-+        led_trigger_unregister(&blink_led_trigger);
-+        led_trigger_unregister(&bitshift_led_trigger);
-+}
-+
-+module_init(blink_trig_init);
-+module_exit(blink_trig_exit);
-+
-+MODULE_AUTHOR("kogiidena <kogiidena@eggplant.ddo.jp>");
-+MODULE_DESCRIPTION("Blink LED trigger");
-+MODULE_LICENSE("GPL");
+I agree 100% - it's -mm, the old way is working, so why hurry?
 
-
-
-
-
-
+Jarek P.
