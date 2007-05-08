@@ -1,91 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966545AbXEHKwr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966842AbXEHK4F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966545AbXEHKwr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 06:52:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966430AbXEHKwp
+	id S966842AbXEHK4F (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 06:56:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966461AbXEHK4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 06:52:45 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:54982 "EHLO e1.ny.us.ibm.com"
+	Tue, 8 May 2007 06:56:04 -0400
+Received: from mail.screens.ru ([213.234.233.54]:54646 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966405AbXEHKwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 06:52:43 -0400
-Date: Tue, 8 May 2007 16:22:47 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: Dave Kleikamp <shaggy@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
-Message-ID: <20070508105247.GA1950@amitarora.in.ibm.com>
-References: <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426181332.GD7209@amitarora.in.ibm.com> <20070503213133.d1559f52.akpm@linux-foundation.org> <20070507120719.GD7012@amitarora.in.ibm.com> <1178551477.12900.6.camel@kleikamp.austin.ibm.com>
+	id S966523AbXEHK4C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 06:56:02 -0400
+Date: Tue, 8 May 2007 14:55:28 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jiri Slaby <jirislaby@gmail.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.21-mm1 hwsusp: BUG at workqueue.c:106
+Message-ID: <20070508105528.GA86@tv-sign.ru>
+References: <46403B7F.1050009@gmail.com> <20070508021131.438cee31.akpm@linux-foundation.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1178551477.12900.6.camel@kleikamp.austin.ibm.com>
-User-Agent: Mutt/1.4.1i
+In-Reply-To: <20070508021131.438cee31.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 07, 2007 at 10:24:37AM -0500, Dave Kleikamp wrote:
-> On Mon, 2007-05-07 at 17:37 +0530, Amit K. Arora wrote:
-> > On Thu, May 03, 2007 at 09:31:33PM -0700, Andrew Morton wrote:
-> > > On Thu, 26 Apr 2007 23:43:32 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+On 05/08, Andrew Morton wrote:
+>
+> On Tue, 08 May 2007 10:57:35 +0200 Jiri Slaby <jirislaby@gmail.com> wrote:
 > 
-> > > > +int ext4_fallocate(struct inode *inode, int mode, loff_t offset, loff_t len)
-> > > > +{
-> > > > +	handle_t *handle;
-> > > > +	ext4_fsblk_t block, max_blocks;
-> > > > +	int ret, ret2, nblocks = 0, retries = 0;
-> > > > +	struct buffer_head map_bh;
-> > > > +	unsigned int credits, blkbits = inode->i_blkbits;
-> > > > +
-> > > > +	/* Currently supporting (pre)allocate mode _only_ */
-> > > > +	if (mode != FA_ALLOCATE)
-> > > > +		return -EOPNOTSUPP;
-> > > > +
-> > > > +	if (!(EXT4_I(inode)->i_flags & EXT4_EXTENTS_FL))
-> > > > +		return -ENOTTY;
-> > > 
-> > > So we don't implement fallocate on bitmap-based files!  Well that's huge
-> > > news.  The changelog would be an appropriate place to communicate this,
-> > > along with reasons why, or a description of the plan to fix it.
 > > 
-> > Ok. Will add this in the function description as well.
-> > 
-> > > Also, posix says nothing about fallocate() returning ENOTTY.
-> > 
-> > Right. I don't seem to find any suitable error from posix description.
-> > Can you please suggest an error code which might make more sense here ?
-> > Will -ENOTSUPP be ok ? Since we want to say here that we don't support
-> > non-extent files.
+> > this occured in dmesg during resuming from hwsusp in 2.6.21-mm1 (captured
+> > through netconsole). Perfectly reproducible, it simply happens each time I
+> > try it.
 > 
-> Isn't the idea that libc will interpret -ENOTTY, or whatever is returned
-> here, and fall back to the current library code to do preallocation?
-> This way, the caller of fallocate() will never see this return code, so
-> it won't violate posix.
+> Let's cc Oleg.
+> 
+> > usb_endpoint usbdev5.1_ep00: PM: resume from 0, parent usb5 still 2
+> > ------------[ cut here ]------------
+> > kernel BUG at /home/l/latest/xxx/kernel/workqueue.c:106!
+> > invalid opcode: 0000 [#1]
+> > SMP
+> > Modules linked in: ipv6 floppy ohci1394 ieee1394 parport_pc parport usbhid
+> > ehci_hcd pata_acpi ff_memless sr_mod cdrom
+> > CPU:    1
+> > EIP:    0060:[<c0132161>]    Not tainted VLI
+> > EFLAGS: 00010046   (2.6.21-mm1 #272)
+> > EIP is at insert_work+0x6d/0x71
+> > eax: c1c3b3c0   ebx: c1814aa0   ecx: 00000001   edx: c1814aa0
+> > esi: c1c3b340   edi: 00000282   ebp: c04d2f68   esp: c04d2f50
+> > ds: 007b   es: 007b   fs: 00d8  gs: 0000  ss: 0068
+> > Process swapper (pid: 0, ti=c04d2000 task=c1c26030 task.ti=c1c20000)
+> > Stack: c4685f54 c18148ac c04d2f98 c013816f c1c3b340 c1814aa0 c04d2f88 c013256c
+> >        00000066 c1814880 c1c5e000 c04d2fc4 c01325a1
+> > c1c5e000 00000100 c012ba35 00000000 c04d2fb8 c01333f4 Call Trace:
+> >  [<c0104f27>]  [<c0104fe2>] show_stack_log_lvl+0xa5/0xca
+> > show_registers+0x1e2/0x2da
+> >  [<c01053f5>]  [<c010559a>] do_trap+0x84/0xaa
+> > do_invalid_op+0x88/0x92
+> >  [<c0378662>]  [<c013256c>] __queue_work+0x22/0x33
+> > delayed_work_timer_fn+0x24/0x2a
+> >  [<c012ba35>]  [<c01288a9>] __do_softirq+0x75/0xe6
+> > do_softirq+0x63/0xac
+> >  [<c0128713>]  [<c0116d7e>] smp_apic_timer_interrupt+0x5c/0x88
+> > apic_timer_interrupt+0x28/0x30
 
-You are right.
+queue_delayed_work().
 
-But, we still need to "standardize" (and limit) the error codes
-which we should return from kernel when we want to fall back on the
-library implementation. The posix_fallocate() library function will have
-to look for a set of errors from fallocate() system call, upon receiving
-which it will do preallocation from user level; or else, it will return
-success/error-code returned by the system call to the user.
+Probably, cancel_delayed_work(&delayed_work->work) was called with the ->timer
+pending. This is wrong, cancel_delayed_work() clears _PENDING unconditionally,
+that is why the comment says
 
-I think we can make it fall back to library implementation of fallocate,
-whenever posix_fallocate() receives any of the following errors from
-fallocate() system call:
+	it is expected that, prior to calling cancel_work_sync(), the caller has
+	arranged for the work to not be requeued.
 
-1. ENOSYS
-2. EOPNOTSUPP
-3. ENOTTY        (?)
+(Just in case, after make-cancel_rearming_delayed_work-reliable.patch this is still
+ wrong (as documented) to do cancel_delayed_work() before cancel_delayed_timer(),
+ but should work correctly).
 
-Now the question is - should we limit the set of errors for this purpose
-to just 1 & 2 above ? In that case I will need to change the error being
-returned here to -EOPNOTSUPP (from current -ENOTTY).
+ata_port_flush_task() and ata_port_detach() do this, I sent the patch to fix this
+twice. The last one is
 
---
-Regards,
-Amit Arora
+	[PATCH -mm] libata-core: convert to use cancel_rearming_delayed_work()
+	http://marc.info/?l=linux-kernel&m=117840349108505
+	
+
+Jiri, any chance you can re-test with the patch below?
+
+--- OLD/kernel/workqueue.c~	2007-05-06 00:01:06.000000000 +0400
++++ OLD/kernel/workqueue.c	2007-05-08 14:50:39.000000000 +0400
+@@ -103,7 +103,10 @@ static inline void set_wq_data(struct wo
+ {
+ 	unsigned long new;
+ 
+-	BUG_ON(!work_pending(work));
++	if (!work_pending(work)) {
++		printk(KERN_ERR "BUG: set_wq_data ");
++		print_symbol("%s\n", (unsigned long) work->func);
++	}
+ 
+ 	new = (unsigned long) cwq | (1UL << WORK_STRUCT_PENDING);
+ 	new |= WORK_STRUCT_FLAG_MASK & *work_data_bits(work);
+
