@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbXEHNPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966965AbXEHNRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754939AbXEHNPo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 09:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966235AbXEHNPm
+	id S966965AbXEHNRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 09:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934686AbXEHNRU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 09:15:42 -0400
-Received: from mga02.intel.com ([134.134.136.20]:8745 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754246AbXEHNPl convert rfc822-to-8bit (ORCPT
+	Tue, 8 May 2007 09:17:20 -0400
+Received: from mail2.sea5.speakeasy.net ([69.17.117.4]:46372 "EHLO
+	mail2.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934588AbXEHNRT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 09:15:41 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,505,1170662400"; 
-   d="scan'208";a="240693492"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Tue, 8 May 2007 09:17:19 -0400
+Date: Tue, 8 May 2007 09:17:16 -0400 (EDT)
+From: James Morris <jmorris@namei.org>
+X-X-Sender: jmorris@d.namei
+To: Rusty Russell <rusty@rustcorp.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [PATCH] lguest: two net bugfixes
+In-Reply-To: <1178623374.7286.10.camel@localhost.localdomain>
+Message-ID: <Line.LNX.4.64.0705080916560.23450@d.namei>
+References: <1178623374.7286.10.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] x86-64 highres/dyntick support
-Date: Tue, 8 May 2007 06:15:38 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F55DF147@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <20070508095130.GY3505@sequoia.sous-sol.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] x86-64 highres/dyntick support
-thread-index: AceRVnp9mgh9k/FsTDWjqUbumgbdAgAHFDxQ
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Chris Wright" <chrisw@sous-sol.org>,
-       "Thomas Gleixner" <tglx@linutronix.de>
-CC: "LKML" <linux-kernel@vger.kernel.org>, "john stultz" <johnstul@us.ibm.com>,
-       "Ingo Molnar" <mingo@elte.hu>, "Arjan van de Ven" <arjan@infradead.org>,
-       "Steven Rostedt" <rostedt@goodmis.org>, "Andi Kleen" <ak@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 08 May 2007 13:15:38.0568 (UTC) FILETIME=[F88DA480:01C79172]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
+On Tue, 8 May 2007, Rusty Russell wrote:
 
->-----Original Message-----
->From: Chris Wright [mailto:chrisw@sous-sol.org] 
->Sent: Tuesday, May 08, 2007 2:52 AM
->To: Thomas Gleixner
->Cc: Chris Wright; LKML; Pallipadi, Venkatesh; john stultz; 
->Ingo Molnar; Arjan van de Ven; Steven Rostedt; Andi Kleen; 
->Andrew Morton
->Subject: Re: [PATCH] x86-64 highres/dyntick support
->
->* Thomas Gleixner (tglx@linutronix.de) wrote:
->> On Tue, 2007-05-08 at 02:39 -0700, Chris Wright wrote:
->> 
->> > OK, looks very similar all things considered.  One thing I 
->didn't do
->> > was fix lapic timer calibration (was hoping you'd do that 
->part, and you
->> > did ;-)  I've noticed that something has changed and I'm 
->seeing irq0
->> > handled on cpu3 (4 cpu system), where it used to be on 
->cpu0 as expected.
->> 
->> Strange, irq balancing ?
->
->That's what I was wondering, although i have same setup for 32-bit
->and it behaves as expected with cpu0 taking hpet or pit on irq0
->and lapic timer picked up on the other 3 cpus.
->
+> 1) Bridging via host is broken: we need to set "promisc" bit in MAC
+>    address published by the host so the guest sends us everything.
+>    Thanks James Morris for the report (I don't use bridging).
+> 
+> 2) Lguest network device uses 0 to mean "noone at this slot".  It used to
+>    use 0xFF, and one spot was missed.  Minor: it just means we'll have a
+>    useless extra transmit for broadcast packets.
+> 
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-Yes. Looks like irq balancing issue. On i386 I see irq has flag
-IRQF_NOBALANCING, but x86-64 does not have this flag. Can you add that
-and check whether that makes any difference.
+Acked-by: James Morris <jmorris@namei.org>
 
-Thanks,
-Venki
+
+
+> ---
+>  Documentation/lguest/lguest.c |    2 ++
+>  drivers/net/lguest_net.c      |    2 +-
+>  2 files changed, 3 insertions(+), 1 deletion(-)
+> 
+> diff -r 999a9058a151 Documentation/lguest/lguest.c
+> --- a/Documentation/lguest/lguest.c	Tue May 08 19:49:33 2007 +1000
+> +++ b/Documentation/lguest/lguest.c	Tue May 08 21:04:51 2007 +1000
+> @@ -860,6 +860,10 @@ static void setup_tun_net(const char *ar
+>  
+>  	/* We are peer 0, ie. first slot. */
+>  	configure_device(ipfd, ifr.ifr_name, ip, dev->mem);
+> +
+> +	/* Set "promisc" bit: we want every single packet. */
+> +	*((u8 *)dev->mem) |= 0x1;
+> +
+>  	close(ipfd);
+>  
+>  	verbose("device %p: tun net %u.%u.%u.%u\n",
+> diff -r 999a9058a151 drivers/net/lguest_net.c
+> --- a/drivers/net/lguest_net.c	Tue May 08 19:49:33 2007 +1000
+> +++ b/drivers/net/lguest_net.c	Tue May 08 21:03:47 2007 +1000
+> @@ -249,7 +249,7 @@ static int lguestnet_close(struct net_de
+>  	struct lguestnet_info *info = dev->priv;
+>  
+>  	/* Clear all trace: others might deliver packets, we'll ignore it. */
+> -	memset(&info->peer[info->me], 0xFF, sizeof(info->peer[info->me]));
+> +	memset(&info->peer[info->me], 0, sizeof(info->peer[info->me]));
+>  
+>  	/* Deregister sg lists. */
+>  	hcall(LHCALL_BIND_DMA, peer_key(info, info->me), __pa(info->dma), 0);
+> 
+> 
+> 
+
+-- 
+James Morris
+<jmorris@namei.org>
