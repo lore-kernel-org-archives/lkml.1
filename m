@@ -1,64 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967569AbXEHAjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967576AbXEHAl4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967569AbXEHAjT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 20:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967563AbXEHAjP
+	id S967576AbXEHAl4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 7 May 2007 20:41:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967474AbXEHAlx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 20:39:15 -0400
-Received: from paragon.brong.net ([66.232.154.163]:57761 "EHLO
-	paragon.brong.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967491AbXEHAjP (ORCPT
+	Mon, 7 May 2007 20:41:53 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:44944 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967468AbXEHAlw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 20:39:15 -0400
-X-Greylist: delayed 1837 seconds by postgrey-1.27 at vger.kernel.org; Mon, 07 May 2007 20:39:15 EDT
-Date: Tue, 8 May 2007 10:08:28 +1000
-From: Bron Gondwana <brong@fastmail.fm>
-To: Bron Gondwana <brong@fastmail.fm>
-Cc: Adrian Bunk <bunk@stusta.de>, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.16.40
-Message-ID: <20070508000828.GA20388@brong.net>
-References: <20070210164113.GG12958@stusta.de> <20070212061347.GB24889@brong.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070212061347.GB24889@brong.net>
-Organization: brong.net
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 7 May 2007 20:41:52 -0400
+Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andreas Dilger <adilger@clusterfs.com>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
+In-Reply-To: <20070507171541.5370a36a.akpm@linux-foundation.org>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
+	 <20070330071417.GI355@devserv.devel.redhat.com>
+	 <20070417125514.GA7574@amitarora.in.ibm.com>
+	 <20070507171541.5370a36a.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM LTC
+Date: Mon, 07 May 2007 17:41:39 -0700
+Message-Id: <1178584899.3933.73.camel@dyn9047017103.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Feb 12, 2007 at 05:13:47PM +1100, Bron Gondwana wrote:
-> On Sat, Feb 10, 2007 at 05:41:13PM +0100, Adrian Bunk wrote:
-> > New drivers since 2.6.16.39:
-> > - Areca ARC11X0/ARC12X0 SATA-RAID support
-> > - AMD Athlon64/FX and Opteron temperature sensor
+On Mon, 2007-05-07 at 17:15 -0700, Andrew Morton wrote:
+> On Mon, 07 May 2007 17:00:24 -0700
+> Mingming Cao <cmm@us.ibm.com> wrote:
 > 
-> Sorry - I think I just sent a blank reply to this!  Oops.
+> > > +       while (ret >= 0 && ret < max_blocks) {
+> > > +               block = block + ret;
+> > > +               max_blocks = max_blocks - ret;
+> > > +               ret = ext4_ext_get_blocks(handle, inode, block,
+> > > +                                         max_blocks, &map_bh,
+> > > +                                         EXT4_CREATE_UNINITIALIZED_EXT, 0);
+> > > +               BUG_ON(!ret);
+> > > +               if (ret > 0 && test_bit(BH_New, &map_bh.b_state)
+> > > +                       && ((block + ret) > (i_size_read(inode) << blkbits)))
+> > > +                       nblocks = nblocks + ret;
+> > > +       }
+> > > +
+> > > +       if (ret == -ENOSPC && ext4_should_retry_alloc(inode->i_sb, &retries))
+> > > +               goto retry;
+> > > +
+> > > Now the interesting question is: what do we do if we get halfway through
+> > > this loop and then run out of space?  We could leave the disk all filled up
+> > > and then return failure to the caller, but that's pretty poor behaviour,
+> > > IMO.
+> > > 
+> > The current code handles earlier ENOSPC by three times retries. After
+> > that if we still run out of space, then it's propably right to notify
+> > the caller there isn't much space left.
+> > 
+> > We could extend the block reservation window size before the while loop
+> > so we could get a lower chance to get more fragmented.
 > 
-> I was going to say - thanks.  We'll definitely be using
-> this kernel since we've found that 2.6.19.2 has a
-> significantly worse IO profile and either the 2.6.16.40-rc1
-> kernel or 2.6.18 on otherwise identical machines with pretty
-> stable loads (so we can compare back to previous weeks).
+> yes, but my point is that the proposed behaviour is really quite bad.
 > 
-> Now to figure out what's causing the extra load in the
-> 2.6.19 branch!
+I agree your point, that's why I mention it only helped the
+fragmentation issue but not the ENOSPC case.
 
-By the way, we've just tried a 2.6.20.11 kernel on another machine
-and so far (fingers crossed) we're not seeing the load issues we
-had with the 2.6.19 kernel we were using.
 
-Given that the Areca driver is the same in both, the only other funky
-thing we did was a single patch to ReiserFS, but we're applying that
-same patch on 2.6.20.
+> We will attempt to allocate the disk space and then we will return failure,
+> having consumed all the disk space and having partially and uselessly
+> populated an unknown amount of the file.
+> 
 
-(my sneaking suspicion was that the delayed bitmap loading was to blame,
-but it's hard to test these things short of multiple reboots, and we
-don't have a testing Cyrus install that we can load that heavily)
+Not totally useless I think. If only half of the space is preallocated
+because run out of space, the application can decide whether it's good
+enough to start to use this preallocated space or wait for the fs to
+have more free space.
 
-Anyway - if this goes well for the next couple of days we'll probably
-stop tracking the 2.6.16 series.  Thanks again, very much, for your work
-with 2.6.16.  It was fantastic to have this resource to keep us from
-having to chase more recent kernels just to get the patches we needed!
+> Userspace could presumably repair the mess in most situations by truncating
+> the file back again.  The kernel cannot do that because there might be live
+> data in amongst there.
+> 
+> So we'd need to either keep track of which blocks were newly-allocated and
+> then free them all again on the error path (doesn't work right across
+> commit+crash+recovery) or we could later use the space-reservation scheme which
+> delayed allocation will need to introduce.
+> 
+> Or we could decide to live with the above IMO-crappy behaviour.
 
-Bron.
+In fact Amit and I had raised this issue before, whether it's okay to do
+allow partial preallocation. At that moment the feedback is it's no much
+different than the current zero-out-preallocation behavior: people might
+preallocating half-way then later deal with ENOSPC.
+
+We could check the total number of fs free blocks account before
+preallocation happens, if there isn't enough space left, there is no
+need to bother preallocating.
+
+If there is enough free space, we could make a reservation window that
+have at least N free blocks and mark it not stealable by other files. So
+later we will not run into the ENOSPC error.
+
+The fs free blocks account is just a estimate though.
+
+
+Mingming
+
