@@ -1,95 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969057AbXEHXBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969194AbXEHXET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969057AbXEHXBy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 19:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969070AbXEHXBj
+	id S969194AbXEHXET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 19:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968588AbXEHXEK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 19:01:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53693 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S969064AbXEHXBh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 19:01:37 -0400
-Date: Wed, 9 May 2007 01:01:34 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ken Moffat <zarniwhoop@ntlworld.com>
+	Tue, 8 May 2007 19:04:10 -0400
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:57677 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S967944AbXEHXEJ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 19:04:09 -0400
+Date: Wed, 9 May 2007 00:03:50 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
        Vivek Goyal <vgoyal@in.ibm.com>, Andi Kleen <ak@suse.de>
 Subject: Re: Lockup after logging out of X
-Message-ID: <20070508230134.GD17482@one.firstfloor.org>
-References: <20070508195142.GA30030@deepthought>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <20070508230350.GA911@deepthought>
+References: <20070508195142.GA30030@deepthought> <6bffcb0e0705081547t198ed83eg3f4861617216127d@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070508195142.GA30030@deepthought>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <6bffcb0e0705081547t198ed83eg3f4861617216127d@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 08:51:42PM +0100, Ken Moffat wrote:
->  This is a resend, with a better title and slightly more
-> clarification.  Originally sent yesterday evening, but I can see no
-> evidence that it got beyond my isp's mailserver.  Apologies to the
-> Cc's if you did get the original.
+On Wed, May 09, 2007 at 12:47:02AM +0200, Michal Piotrowski wrote:
 > 
->  Using Linus' tree pulled on Sunday afternoon UK time.  Running an
-> amd64 ('pure64') desktop using gdm for graphical login, on Xorg 7.2
-> with a radeon 9200se.  No problems until I log out of the desktop
-> and go back to gdm.  Before that, the text consoles seem to be
-> working fine.  After I go back to gdm. the display is corrupted and
-> only MagicSysRQ works.  Mostly, the keyboard LEDs flash, but the
-> only thing that made it to the logs was this exceedingly incomplete
-> oops report:
+> Please check the latest -git.
 > 
-> May  7 21:02:54 bluesbreaker kernel: [   46.549615] [drm] writeback
-> test succeeded in 1 usecs
-> May  7 21:03:24 bluesbreaker kernel: [   61.552793] Unable to handle
-> kernel paging request at ffff81003befd3e8 RIP:
-> May  7 21:03:24 bluesbreaker kernel: [   61.552798]
-> [<ffffffff80271576>] fasync_helper+0x52/0xf0
-> May  7 21:03:24 bluesbreaker kernel: [   61.552805] PGD 8063 PUD
-> 9063 PMD 800000003bef11e3 BAD
-> May  7 21:03:24 bluesbreaker kernel: [   61.552811] Oops: 0009 [1]
-> PREEMPT
-> May  7 21:04:18 bluesbreaker syslogd 1.4.1: restart.
+> 31 hours ago 	Linus Torvalds 	Revert "[PATCH] x86: __pa and
+> __pa_symbol address space ...
 > 
->  After trying git-bisect, it tells me:
-> 0dbf7028c0c1f266c9631139450a1502d3cd457e is first bad commit
-> commit 0dbf7028c0c1f266c9631139450a1502d3cd457e
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=e3ebadd95cb621e2c7436f3d3646447ac9d5c16d
 
-Already known, although it is still unclear what the bug actually is.
-Can you run with the appended patch please (from Eric Biederman) 
-and post any backtraces the WARN_ON in there spews out? 
+ Thanks.
+> 
+> Regards,
+> Michal
+> 
+> -- 
+> Michal K. K. Piotrowski
+> Kernel Monkeys
+> (http://kernel.wikidot.com/start)
 
-Also do you use swiotlb?
-
-Thanks
-
--Andi
-
-diff --git a/include/asm-x86_64/page.h b/include/asm-x86_64/page.h
-index b17fc16..e6a4d1e 100644
---- a/include/asm-x86_64/page.h
-+++ b/include/asm-x86_64/page.h
-@@ -105,7 +105,18 @@ extern unsigned long phys_base;
- 
- /* Note: __pa(&symbol_visible_to_c) should be always replaced with __pa_symbol.
-    Otherwise you risk miscompilation. */
--#define __pa(x)			((unsigned long)(x) - PAGE_OFFSET)
-+#define __pa(x)	\
-+({									\
-+	unsigned long v;						\
-+	asm("" : "=r" (v) : "0" ((unsigned long)(x)));			\
-+	WARN_ON(v >= __START_KERNEL_map);					\
-+	if (likely(v < __START_KERNEL_map))				\
-+		v -= PAGE_OFFSET;					\
-+	else								\
-+		v = (v - __START_KERNEL_map) + phys_base;		\
-+	v; 								\
-+}) 
-+
- /* __pa_symbol should be used for C visible symbols.
-    This seems to be the official gcc blessed way to do such arithmetic. */ 
- #define __pa_symbol(x)		\
-
-
+-- 
+das eine Mal als Tragödie, das andere Mal als Farce
