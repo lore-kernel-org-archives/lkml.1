@@ -1,65 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968009AbXEHVZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968080AbXEHV0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968009AbXEHVZt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967896AbXEHVZs
+	id S968080AbXEHV0A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967896AbXEHVZy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:25:48 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:40981 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967080AbXEHVZr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:25:47 -0400
-Message-ID: <4640EB9D.90409@oracle.com>
-Date: Tue, 08 May 2007 14:29:01 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060719)
+	Tue, 8 May 2007 17:25:54 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:37118 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968019AbXEHVZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:25:51 -0400
+Message-ID: <4640EAD4.9010106@garzik.org>
+Date: Tue, 08 May 2007 17:25:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: David Rientjes <rientjes@google.com>,
+To: Randy Dunlap <randy.dunlap@oracle.com>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Krzysztof Halasa <khc@pm.waw.pl>,
+       David Rientjes <rientjes@google.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org
 Subject: Re: [RFC/PATCH] doc: volatile considered evil
-References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org> <20070508121404.17bd97a6.randy.dunlap@oracle.com> <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com> <4640E98B.4030107@goop.org>
-In-Reply-To: <4640E98B.4030107@goop.org>
+References: <516386418.20070501080839@gmail.com>	<20070430235642.e576e917.akpm@linux-foundation.org>	<20070508121404.17bd97a6.randy.dunlap@oracle.com>	<alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com> <m3k5vj2iha.fsf@maximus.localdomain> <4640E62D.8060704@goop.org> <4640E8C4.4000603@garzik.org> <4640EB19.6030005@oracle.com>
+In-Reply-To: <4640EB19.6030005@oracle.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> David Rientjes wrote:
->> Since 'volatile' has two different semantics depending on the context in 
->> which it is used, this warning should be appended to include the fact that 
->> it is legitimate to use for inline assembly.
->>   
+Randy Dunlap wrote:
+> Jeff Garzik wrote:
+>> Jeremy Fitzhardinge wrote:
+>>> No, David means that "asm volatile (...)" is meaningful and OK to use.
 > 
+> I thought it was OK in readl(), writel(), etc... (and in asm),
+> but that's it.  (and jiffies)
 > 
-> It's probably worth noting that "asm volatile (...)" doesn't mean what
-> many people think it means: specifically, it *does not* prevent the asm
-> from being reordered with respect to the surrounding code.  It may not
-> even prevent it from being reordered with respect to other asm
-> volatiles.  *All* it means is that the asm code will be emitted even if
-> the compiler doesn't think its results will be used.  Note that an
-> "asm()" with no outputs is implicitly "asm volatile()" - on the grounds
-> that it would be otherwise useless as far as gcc can tell.
-> 
-> If you need to guarantee ordering of asm statements, you must do it
-> explicitly, with either a "memory" clobber, or some finer-grain
-> serialization variable (like the _proxy_pda stuff).  It would be useful
-> if you could tell gcc "I'm passing this variable to the asm for
-> serialization purposes, but there's no need to generate any explicit
-> references to it", but as far as I know there's no support for that.
-> 
->     J
+>> In a driver?  Highly unlikey it is OK.  In a filesystem?  Even more 
+>> unlikely it is OK to use.
+>>
+>> The set of circumstances where 'volatile' is acceptable is very limited.
+>>
+>> You will see it used properly in the definitions of writel(), for 
+>> example.  But most drivers using 'volatile' are likely bugs.
 
-The doc. should just be talking about "volatile" in C mostly.
-Any asm volatile comments are "extra".
 
--- 
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Not sure how to interpret your top-posted response :)
+
+It is normal in the definition of writel(), in arch code, but 
+inappropriate in drivers when they _use_ writel().
+
+If I may generalize, arch code generally knows what it's doing, when it 
+uses volatile.  OTOH, driver authors that use volatile generally do 
+/not/ know what they are doing.
+
+	Jeff
+
+
