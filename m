@@ -1,87 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968212AbXEHObT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968220AbXEHOcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968212AbXEHObT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:31:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968080AbXEHObR
+	id S968220AbXEHOcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968080AbXEHOce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:31:17 -0400
-Received: from khc.piap.pl ([195.187.100.11]:55951 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968127AbXEHObO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:31:14 -0400
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-References: <m3abwhcy74.fsf@maximus.localdomain>
-	<m3vef5biob.fsf@maximus.localdomain>
-	<5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>
-	<m3hcqoa772.fsf@maximus.localdomain>
-	<86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>
-	<m33b289zku.fsf@maximus.localdomain>
-	<m3zm4g3yed.fsf_-_@maximus.localdomain>
-	<20070508113735.GB32055@xi.wantstofly.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Tue, 08 May 2007 16:31:12 +0200
-In-Reply-To: <20070508113735.GB32055@xi.wantstofly.org> (Lennert Buytenhek's message of "Tue, 8 May 2007 13:37:35 +0200")
-Message-ID: <m3fy6775fz.fsf@maximus.localdomain>
+	Tue, 8 May 2007 10:32:34 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:18964 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967658AbXEHOce (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 10:32:34 -0400
+Date: Tue, 8 May 2007 16:30:19 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block:  generic_unplug_device implicitly makes irq enable
+Message-ID: <20070508143019.GY4163@kernel.dk>
+References: <20070508170759.1c66352a@windmill.dev.rtsoft.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070508170759.1c66352a@windmill.dev.rtsoft.ru>
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Brightmail-Tracker: AAAAAQAAAAI=
+X-Whitelist: TRUE
+X-Whitelist: TRUE
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennert Buytenhek <buytenh@wantstofly.org> writes:
+On Tue, May 08 2007, Konstantin Baydarov wrote:
+> Hi,
+> 
+> while working on LKCD I found out common block device issue.
+> LKCD uses generic_unplug_device() to finish disk IO in case of blockdev kernel core dump.
+> I found out that after calling of generic_unplug_device() IRQs become implicitly enabled (it is supposed that IRQs are disabled).
+> I looked at generic_unplug_device() code and found out that function lose state of irq flags, it use spin_lock_irq()/spin_unlock_irq() instead of spin_lock_irqsave()/spin_unlock_irqrestore():
+> void generic_unplug_device(request_queue_t *q)
+> {
+> 	spin_lock_irq(q->queue_lock);
+> 	__generic_unplug_device(q);
+> 	spin_unlock_irq(q->queue_lock);
+> }
+> 
+> generic_unplug_device() - is a method to unplug the block device, named unplug_fn in struct request_queue.
+> I've compared generic_unplug_device() with other methods:
+> file drivers/md/raid5.c ...
+> static void raid5_unplug_device(request_queue_t *q)
+> {
+> 	mddev_t *mddev = q->queuedata;
+> 	raid5_conf_t *conf = mddev_to_conf(mddev);
+> 	unsigned long flags;
+> 
+> 	spin_lock_irqsave(&conf->device_lock, flags);
+> 
+> 	if (blk_remove_plug(q)) {
+> 		conf->seq_flush++;
+> 		raid5_activate_delayed(conf);
+> 	}
+> 	md_wakeup_thread(mddev->thread);
+> 
+> 	spin_unlock_irqrestore(&conf->device_lock, flags);
+> 
+> 	unplug_slaves(mddev);
+> }
+> 
+> file drivers/block/umem.c ...
+> static void mm_unplug_device(request_queue_t *q)
+> {
+> 	struct cardinfo *card = q->queuedata;
+> 	unsigned long flags;
+> 
+> 	spin_lock_irqsave(&card->lock, flags);
+> 	if (blk_remove_plug(q))
+> 		activate(card);
+> 	spin_unlock_irqrestore(&card->lock, flags);
+> }
+> 
+> As you can see raid5_unplug_device() and mm_unplug_device() are using
+> spin_lock_irqsave()/spin_unlock_irqrestore(), instead of spin_lock_irq()/spin_unlock_irq().
+> I found out that generic_unplug_device() is used not only in LKCD, so I suggest to switch generic_unplug_device() to spin_lock_irqsave()/spin_unlock_irqrestore() to prevent implicitly losing of IRQ flags.
+> Here is patch against kernel 2.6.21.1.
+> Please CC me to answers/comments.
+> Thanks.
+> 
+> Signed-off-by: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+> 
+>  block/ll_rw_blk.c |    6 ++++--
+>  1 file changed, 4 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6.21.1/block/ll_rw_blk.c
+> ===================================================================
+> --- linux-2.6.21.1.orig/block/ll_rw_blk.c
+> +++ linux-2.6.21.1/block/ll_rw_blk.c
+> @@ -1602,9 +1602,11 @@ EXPORT_SYMBOL(__generic_unplug_device);
+>   **/
+>  void generic_unplug_device(request_queue_t *q)
+>  {
+> -	spin_lock_irq(q->queue_lock);
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(q->queue_lock, flags);
+>  	__generic_unplug_device(q);
+> -	spin_unlock_irq(q->queue_lock);
+> +	spin_unlock_irqrestore(q->queue_lock, flags);
+>  }
+>  EXPORT_SYMBOL(generic_unplug_device);
 
->> +/* Built-in 10/100 Ethernet MAC interfaces */
->> +static struct mac_plat_info ixdp425_plat_mac[] = {
->> +	{
->> +		.phy		= 0,
->> +		.rxq		= 3,
->> +	}, {
->> +		.phy		= 1,
->> +		.rxq		= 4,
->> +	}
->> +};
->
-> As with Christian's driver (I'm feeling like a bit of a broken record
-> here :-), putting knowledge of which queue to use (which is firmware-
-> specific) in the _board_ support file is almost certainly wrong.
->
-> I would just put the port number in there, and let the ethernet
-> driver map the port number to the hardware queue number.  After all,
-> the ethernet driver knows which queues the firmware uses, while the
-> board support code doesn't.
+The patch is not correct, some ->request_fn() functions may sleep. So
+it's illegal to call generic_unlug_device() with interrupts disabled in
+the first place, which is why spin_lock_irq() is used instead of the
+flags saving variant.
 
-No, quite the opposite. The board code knows its set of hardware
-interfaces etc. and can let Ethernet driver use, say, HSS queues.
-The driver can't know that.
+So it looks like you need to fix your caller instead.
 
-It would make sense if we had many queues, but it doesn't seem
-the case (perhaps the upper queues could be used for some
-purposes, but Intel's code doesn't use them either and they
-probably know better).
-
->> +static inline void set_regbits(u32 bits, u32 __iomem *reg)
->> +{
->> +	__raw_writel(__raw_readl(reg) | bits, reg);
->> +}
->> +static inline void clr_regbits(u32 bits, u32 __iomem *reg)
->> +{
->> +	__raw_writel(__raw_readl(reg) & ~bits, reg);
->> +}
->
-> I generally discourage the use of such wrappers, as it often makes
-> people forget that the set and clear operations are not atomic, and
-> it ignores the fact that some of the other bits in the register you
-> are modifying might have side-effects.
-
-Without them the code in question is hardly readable, I pick the need
-to remember about non-atomicity and possible side effects instead :-)
-
-I've outlined the current versions in a separate mail, generally
-2 patches are marked "v.2" and one "v.3".
 -- 
-Krzysztof Halasa
+Jens Axboe
+
