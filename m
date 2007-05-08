@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934985AbXEHQVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968355AbXEHQVm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934985AbXEHQVd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 12:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934928AbXEHQVc
+	id S968355AbXEHQVm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:21:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968313AbXEHQVk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 12:21:32 -0400
-Received: from rtsoft2.corbina.net ([85.21.88.2]:49759 "EHLO
-	vitb.dev.rtsoft.ru" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934893AbXEHQVb (ORCPT
+	Tue, 8 May 2007 12:21:40 -0400
+Received: from moutng.kundenserver.de ([212.227.126.183]:58584 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968189AbXEHQVh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 12:21:31 -0400
-Date: Tue, 8 May 2007 20:18:01 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: "Loeliger Jon-LOELIGER" <jdl@freescale.com>
-Cc: "Samuel Ortiz" <samuel@sortiz.org>, <linuxppc-dev@ozlabs.org>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] [POWERPC] 8xx: PQ SoC IRDA support
-Message-ID: <20070508201801.478f4999@vitb.ru.mvista.com>
-In-Reply-To: <AF0367BA48C55940A43CCF08DF35553C012AA475@az33exm24.fsl.freescale.net>
-References: <20070508052723.18404.8216.stgit@localhost.localdomain>
-	<AF0367BA48C55940A43CCF08DF35553C012AA475@az33exm24.fsl.freescale.net>
-X-Mailer: Claws Mail 2.9.1cvs30 (GTK+ 2.6.10; i686-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 12:21:37 -0400
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Long file names in VFAT broken with iocharset=utf8
+To: Albert Cahalan <acahalan@gmail.com>, arvidjaar@mail.ru,
+       hirofumi@mail.parknet.co.jp, linux-kernel@vger.kernel.org,
+       hpa@zytor.com
+Reply-To: 7eggert@gmx.de
+Date: Tue, 08 May 2007 18:21:18 +0200
+References: <8ipOe-5KI-3@gated-at.bofh.it>
+User-Agent: KNode/0.7.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1HlSRC-0000cg-Je@be1.lrz>
+X-be10.7eggert.dyndns.org-MailScanner-Information: See www.mailscanner.info for information
+X-be10.7eggert.dyndns.org-MailScanner: Found to be clean
+X-be10.7eggert.dyndns.org-MailScanner-From: 7eggert@gmx.de
+X-Provags-ID: V01U2FsdGVkX18OK+Z+TN4SJMDI1+2P9YVa22Cb5kTg4dOeJNA
+ Ix6q/74jSfl+suJkNQVIoVkFrJpxdovITG4HcnrTfhgmCh1yVN
+ ny99MZVcwKEIZhunNTcEw==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 07:36:48 -0700
-"Loeliger Jon-LOELIGER" <jdl@freescale.com> wrote:
+Albert Cahalan <acahalan@gmail.com> wrote:
 
-> > Adds support of IRDA transceiver residing on PowerQUICC processors and
-> > enabling such on mpc885ads reference board. The driver is implemented 
-> > using of_device concept, hereby implies arch/powerpc support 
-> > of the target.
-> > 
-> > Signed-off-by: Vitaly Bordug <vitb@kernel.crashing.org>
+[...]
+> At two bytes per character, you get 127 characters in a filename.
+> That's wider than the standard 80-column display, and far wider
+> than the 28 or 29 characters that an "ls -l" has room for. In a
+> GUI file manager or file dialog box, you'll have to scroll sideways.
+> In a web browser directory listing, you'll almost certainly have
+> to scroll sideways. Must of this even applies to Windows tools.
 > 
-> > diff --git a/arch/powerpc/boot/dts/mpc885ads.dts 
-> > b/arch/powerpc/boot/dts/mpc885ads.dts
-> > index 110bf61..95b280c 100644
-> > --- a/arch/powerpc/boot/dts/mpc885ads.dts
-> > +++ b/arch/powerpc/boot/dts/mpc885ads.dts
-> > @@ -178,6 +178,16 @@
-> >  				interrupt-parent = <930>;
-> >  				phy-handle = <e8002>;
-> >  			};
-> > +
-> > +			scc@a20 {
-> > +				device_type = "network";
-> > +				compatible = "fsl,irda";
-> > +				model = "SCC";
-> > +				device-id = <2>;
-> > +				reg = <a20 18 3d00 80>;
-> > +				interrupts = <1d 3>;
-> > +				interrupt-parent = <930>;
-> > +			};
-> >  		};
-> >  	};
-> >  };
-> 
-> 
-> Any chance we could get an update to the booting-without-of.txt
-> for any of this?
-> 
-Yes of course. my note is that it makes sense once defines would settle down
-stuff that looks OK in docs might not look such in driver...
+> In other words, this is user error. Somebody thought that a filename
+> was a place to store a document, probably a README file. What next,
+> shall we MIME-encode an icon into the filename?
 
+I've got a music file where the artist name is 113 characters long, if I use
+an abbreviation.
+
+> Fix: the vfat driver should use the 8.3 name for such files.
+
+Let's port that to ext3! I wantet the system to rename my files into
+abcd~123.ext for all my life! NOT!
 -- 
-Sincerely, 
-Vitaly
+If at first you don't succeed call in an air-strike. 
+
+Friﬂ, Spammer: fMxJx@egfX.7eggert.dyndns.org qexHpj@zRuKa.7eggert.dyndns.org
+ e@fjsuTc.7eggert.dyndns.org Q-Bms1F@Wa.7eggert.dyndns.org
