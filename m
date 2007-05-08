@@ -1,53 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032318AbXEHVUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032329AbXEHVVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032318AbXEHVUj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032185AbXEHVUg
+	id S1032329AbXEHVVU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032185AbXEHVVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:20:36 -0400
-Received: from gw.goop.org ([64.81.55.164]:58988 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1031833AbXEHVUf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:20:35 -0400
-Message-ID: <4640E98B.4030107@goop.org>
-Date: Tue, 08 May 2007 14:20:11 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [RFC/PATCH] doc: volatile considered evil
-References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org> <20070508121404.17bd97a6.randy.dunlap@oracle.com> <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 17:21:16 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:37219 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1031837AbXEHVVP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:21:15 -0400
+Subject: Re: [PATCH 2/2] V4L: v4l1-compat, fix VIDIOCSPICT for non-OVERLAY
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <26766101783271028925@wsc.cz>
+References: <26766101783271028925@wsc.cz>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 08 May 2007 18:20:52 -0300
+Message-Id: <1178659252.18383.378.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 8bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> Since 'volatile' has two different semantics depending on the context in 
-> which it is used, this warning should be appended to include the fact that 
-> it is legitimate to use for inline assembly.
->   
+Hi Jiri,
 
+Em Ter, 2007-05-08 às 20:25 +0200, Jiri Slaby escreveu:
+> v4l1-compat, fix VIDIOCSPICT for non-OVERLAY
+> 
+> Do not return EINVAL for devices, which don't support overlay.
 
-It's probably worth noting that "asm volatile (...)" doesn't mean what
-many people think it means: specifically, it *does not* prevent the asm
-from being reordered with respect to the surrounding code.  It may not
-even prevent it from being reordered with respect to other asm
-volatiles.  *All* it means is that the asm code will be emitted even if
-the compiler doesn't think its results will be used.  Note that an
-"asm()" with no outputs is implicitly "asm volatile()" - on the grounds
-that it would be otherwise useless as far as gcc can tell.
+The patch bellow also provides a proper fix for VIDIOCSPICT:
 
-If you need to guarantee ordering of asm statements, you must do it
-explicitly, with either a "memory" clobber, or some finer-grain
-serialization variable (like the _proxy_pda stuff).  It would be useful
-if you could tell gcc "I'm passing this variable to the asm for
-serialization purposes, but there's no need to generate any explicit
-references to it", but as far as I know there's no support for that.
+http://git.kernel.org/?p=linux/kernel/git/mchehab/v4l-dvb.git;a=commitdiff;h=d2af6959d465f0523dceedfddc036c9c5aaf53c0
+ 
+Cheers,
+Mauro
 
-    J
