@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032440AbXEHWEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032460AbXEHWGP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032440AbXEHWEx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934472AbXEHWEt
+	id S1032460AbXEHWGP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:06:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbXEHWGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:04:49 -0400
-Received: from gw.goop.org ([64.81.55.164]:49736 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934468AbXEHWEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:04:47 -0400
-Message-ID: <4640F3FD.80001@goop.org>
-Date: Tue, 08 May 2007 15:04:45 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [RFC/PATCH] doc: volatile considered evil
-References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org> <20070508121404.17bd97a6.randy.dunlap@oracle.com> <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com> <4640E98B.4030107@goop.org> <alpine.DEB.0.99.0705081423500.24138@chino.kir.corp.google.com> <4640ED7D.708@goop.org> <alpine.DEB.0.99.0705081453350.25466@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.0.99.0705081453350.25466@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 May 2007 18:06:09 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:42450 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751220AbXEHWGF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 18:06:05 -0400
+Subject: Re: 2.6.21-ext4-1
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: David Chinner <dgc@sgi.com>
+Cc: "Theodore Ts'o" <tytso@mit.edu>, linux-ext4@vger.kernel.org,
+       Johann Lombardi <johann.lombardi@bull.net>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070508025048.GC32602149@melbourne.sgi.com>
+References: <E1HiXab-0001QX-Sk@candygram.thunk.org>
+	 <1178571383.3933.8.camel@dyn9047017103.beaverton.ibm.com>
+	 <20070508025048.GC32602149@melbourne.sgi.com>
+Content-Type: text/plain
+Organization: IBM LTC
+Date: Tue, 08 May 2007 15:05:56 -0700
+Message-Id: <1178661957.4135.66.camel@dyn9047017103.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> Now if all such output operands are to specify that the input operands 
-> were "modified", 'volatile' is required to ensure the side-effects are 
-> preserved or, otherwise, gcc is free optimize the entire asm construct 
-> away since it appears to be unused.
->   
+On Tue, 2007-05-08 at 12:50 +1000, David Chinner wrote:
+> On Mon, May 07, 2007 at 01:56:23PM -0700, Mingming Cao wrote:
+> > In any case, it would be useful to add a new set of testsuites for the
+> > new fallocate() syscall and fsstress in LTP testsuites to automatically
+> > the preallocation code in ext4/XFS.
+> 
+> I hacked an existing XFS test prog to do manual testing of the fallocate()
+> syscall. In the XFSQA suite we have various pre-alloc enhanced utils (e.g.
+> fsstress, fsx, etc) that we should probably update to be able to use both
+> fallocate and xfsctl so we can test both.
+> 
+> Here's all the programs we use that have preallocation awareness:
+> 
+> chook 982% grep RESVSP ltp/*.c  | awk '/^ltp/  { split($1,a,":"); print a[1] ;}' | uniq
+> ltp/doio.c
+> ltp/fsstress.c
+> ltp/fsx.c
+> ltp/growfiles.c
+> ltp/iogen.c
+> chook 983% grep RESVSP src/* | awk '/^src/ { split($1,a,":"); print a[1] ;}' | uniq
+> src/alloc.c
+> src/fstest.c
+> src/iopat.c
+> src/randholes.c
+> src/resvtest.c
+> src/unwritten_mmap.c
+> src/unwritten_sync.c
+> 
+Thanks for sharing the info. I think Amit used a fsx version with
+preallocation awareness test, but I don't know if we have other ltp
+tests that aware preallocation. I would very appreciate if you could
+share your preallocation test with us.
 
-Yup.
+> BTW, have you guys tested mmap writes into unwritten extents? ;)
+> 
+I am not sure, Amit, have you done some mmap write test into
+uninitialized extents?
 
->> Yeah, they're completely different.  They're not even analogous, really,
->> which was my point.  People confer more meaning to "asm volatile" than
->> it actually has, because of the analogy with volatile variables/types. 
->> They would have been better off with something like "asm static", which
->> isn't much more meaningful, but at least it doesn't mislead the reader
->> into thinking it has anything to do with the other volatile.
->>
->>     
->
-> You're point about reordering "asm volatile" constructs differs depending 
-> on -mvolatile-asm-stop or -mno-volatile-asm-stop, however.
->   
+Sorry, I still not quite clear what's the mapped problem you are worry
+about. Could you explain to me a bit more? thanks!
 
-Erm, that seems to be ia64 specific, and I have no idea what adding a
-"stop bit" implies.  Can you set even or odd parity too?
+Mingming
 
-    J
+
+> Cheers,
+> 
+> Dave.
+
