@@ -1,53 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967955AbXEHFYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967962AbXEHF23@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967955AbXEHFYd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 01:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967950AbXEHFY2
+	id S967962AbXEHF23 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 01:28:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967879AbXEHF20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 01:24:28 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:53544 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967889AbXEHFY1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 01:24:27 -0400
-Date: Mon, 7 May 2007 22:24:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Simon Arlott <simon@fire.lp0.eu>, linux-kernel@vger.kernel.org
-Subject: Re: sleeping function called from invalid context at
- block/cfq-iosched.c (Was: Re: 2.6.21-mm1)
-Message-Id: <20070507222409.2d597a86.akpm@linux-foundation.org>
-In-Reply-To: <463FFD0A.2050708@goop.org>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
-	<463E3C50.9080207@simon.arlott.org.uk>
-	<20070506135403.a6785f7d.akpm@linux-foundation.org>
-	<463FAF1C.8060500@simon.arlott.org.uk>
-	<20070507162349.0790706f.akpm@linux-foundation.org>
-	<463FB697.6060902@simon.arlott.org.uk>
-	<20070507163335.f5f5ea6e.akpm@linux-foundation.org>
-	<463FFD0A.2050708@goop.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 May 2007 01:28:26 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:54481 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967057AbXEHF2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 01:28:25 -0400
+Message-ID: <46400A73.1070201@garzik.org>
+Date: Tue, 08 May 2007 01:28:19 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Krzysztof Halasa <khc@pm.waw.pl>, Russell King <rmk@arm.linux.org.uk>
+CC: Michael-Luke Jones <mlj28@cam.ac.uk>, netdev@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>,
+       ARM Linux Mailing List 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+References: <m3abwhcy74.fsf@maximus.localdomain>	<m3vef5biob.fsf@maximus.localdomain>	<5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>	<m3hcqoa772.fsf@maximus.localdomain>	<86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>	<m33b289zku.fsf@maximus.localdomain> <m3zm4g3yed.fsf_-_@maximus.localdomain>
+In-Reply-To: <m3zm4g3yed.fsf_-_@maximus.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 07 May 2007 21:31:06 -0700 Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+ACK.
 
-> Andrew Morton wrote:
-> > Please enable 8k stacks before doing any other debugging things, see if
-> > that fixes it.
-> 
-> I've found that XFS+lvm+4k stacks is completely unusable with current
-> kernels.  I get hangs/oopes after ~10mins of work.
+I shall presume that the ARM folks will apply these patches.  You may 
+tack on an "Acked-by: Jeff Garzik <jeff@garzik.org>" onto the ethernet 
+driver itself.
 
-Sounds like this is new behaviour?
+I'll let the ARM folks review the rest.
 
-I wonder why.  Same compiler version?
+I do agree with the comments in the thread that -- as in your most 
+recent revision -- the non-eth code belongs in arch/arm.
 
->  I'm using wli's 8k
-> stack + irq stack patches with good success though.
-> 
+	Jeff
 
-wlis are handy.
+
+
