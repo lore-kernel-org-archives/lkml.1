@@ -1,73 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966151AbXEHQxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966248AbXEHQxy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966151AbXEHQxI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 12:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966061AbXEHQxF
+	id S966248AbXEHQxy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:53:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966168AbXEHQxv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 12:53:05 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:37705 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965975AbXEHQxB (ORCPT
+	Tue, 8 May 2007 12:53:51 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:54039 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S965693AbXEHQxu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 12:53:01 -0400
-Date: Tue, 8 May 2007 09:52:59 -0700
-From: Andreas Dilger <adilger@clusterfs.com>
-To: Theodore Tso <tytso@mit.edu>, Mingming Cao <cmm@us.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
-Subject: Re: [PATCH 4/5] ext4: fallocate support in ext4
-Message-ID: <20070508165259.GD6375@schatzie.adilger.int>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Mingming Cao <cmm@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070507171541.5370a36a.akpm@linux-foundation.org> <1178584899.3933.73.camel@dyn9047017103.beaverton.ibm.com> <20070508014337.GA14072@thunk.org>
+	Tue, 8 May 2007 12:53:50 -0400
+Subject: Re: [PATCH]: Fix old SCSI adapter crashes with CD-ROM (take 2)
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-scsi@vger.kernel.org,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070508164059.GD4163@kernel.dk>
+References: <20070508171710.1ac730cd@the-village.bc.nu>
+	 <20070508161444.GA4163@kernel.dk>
+	 <1178642376.3737.36.camel@mulgrave.il.steeleye.com>
+	 <20070508164059.GD4163@kernel.dk>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 11:52:31 -0500
+Message-Id: <1178643151.3737.44.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508014337.GA14072@thunk.org>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 07, 2007  21:43 -0400, Theodore Tso wrote:
-> On Mon, May 07, 2007 at 05:15:41PM -0700, Andrew Morton wrote:
-> > Userspace could presumably repair the mess in most situations by truncating
-> > the file back again.  The kernel cannot do that because there might be live
-> > data in amongst there.
+On Tue, 2007-05-08 at 18:40 +0200, Jens Axboe wrote:
+> On Tue, May 08 2007, James Bottomley wrote:
+> > On Tue, 2007-05-08 at 18:14 +0200, Jens Axboe wrote:
+> > > On Tue, May 08 2007, Alan Cox wrote:
+> > > > The CD-ROM layer doesn't bounce requests for old ISA controllers (and
+> > > > nor should it). However they get injected into the SCSI layer via
+> > > > sr_ioctl which also doesn't bounce them and SCSI then passes the buffer
+> > > > along to a device with unchecked_isa_dma set which either panics or
+> > > > truncates the buffer to 24bits.
+> > > > 
+> > > > According to Jens the right long term fix is for the CD layer to route
+> > > > the requests differently but in the mean time this has been tested by a
+> > > > victim and verified to sort the problem out. For the other 99.9% of users
+> > > > it's a no-op and doesn't bounce data.
+> > > > 
+> > > > Signed-off-by: Alan Cox <alan@redhat.com>
+> > > 
+> > > Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+> > > 
+> > > Christoph passed me his patch to get rid of ->generic_packet() in the
+> > > cdrom layer, so the work is almost complete. This patch is fine as a
+> > > work-around until that gets merged, though.
+> > 
+> > Actually, I think the new scsi request infrastructure should be doing
+> > the bouncing (rather than have it done in each problem path we
+> > discover).
 > 
-> Actually, the kernel could do it, in that could simply release all
-> unitialized extents back to the system.  The problem is distinguishing
-> between the unitialized extents that had just been newly added, versus
-> the ones that had there from before.  (On the other hand, if the
-> filesystem was completely full, releasing unitialized blocks wouldn't
-> be the worse thing in the world to do, although releasing previously
-> fallocated blocks probably does violate the princple of least
-> surprise, even if it's what the user would have wanted.)
+> Of course, bouncing should only be done in one layer (the block layer).
+> >
+> > Mike Christie tells me we're missing bouncing by accident in the
+> > scsi_execute path (but not the scsi_execute_async path).  He says this
+> > is the fix he proposed:
+> > 
+> > http://marc.info/?l=linux-scsi&m=115981479822790&w=2
+> > 
+> > Can we just merge this instead?
+> 
+> That's another issue. The problem here are requests (cgc's) initiated by
+> the cdrom.c layer. Those _should_ get mapped to a request and put on the
+> queue for the device, and thus get bounced by the block layer if
+> appropriate.
+> 
+> Mike's fix looks legit and should be merged as well, but it wont fix
+> this issue.
 
-I tend to agree with this.  Having fallocate() fill up the filesystem
-is exactly what the caller asked.  Doing a write() hit ENOSPC doesn't
-trucate off the whole write either, nor does "dd" delete the whole file
-when the filesystem is full.
+It won't?  I thought the issue (from the fix) is that cgc->buffer is
+outside of the device accessibility mask.  The scsi_execute path
+allocates a request and then calls blk_rq_map_kern on the buffer (in
+this case cgc->buffer) ... the problem is that blk_rq_map_kern() doesn't
+currently bounce the buffer, but if it did (which is the functionality
+Mike's patch adds), surely the need to bounce it in the ioctl path would
+go away?
 
-Even checking the statfs() space before doing the fallocate() may be
-counter intuitive, since it will return ENOSPC but the filesystem will
-not actually be full.  Some applications (e.g. database) may WANT to
-fill the filesystem and then get the actual file size back to avoid
-trusting statfs() because of metadata overhead (e.g. indirect blocks).
+James
 
-One of the design goals for sys_fallocate() was to allow FA_DELALLOC
-to deallocate unwritten extents in a safe manner.
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
 
