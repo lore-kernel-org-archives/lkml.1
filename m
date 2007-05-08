@@ -1,103 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934903AbXEHQNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934918AbXEHQOs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934903AbXEHQNA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 12:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934686AbXEHQM7
+	id S934918AbXEHQOs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 12:14:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934893AbXEHQOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 12:12:59 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:59356 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S934347AbXEHQM6 (ORCPT
+	Tue, 8 May 2007 12:14:48 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48169 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934788AbXEHQOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 12:12:58 -0400
-Date: Tue, 8 May 2007 17:17:10 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: linux-scsi@vger.kernel.org, akpm@osdl.org, linux-kernel@vger.kernel.org
-Subject: [PATCH]: Fix old SCSI adapter crashes with CD-ROM (take 2)
-Message-ID: <20070508171710.1ac730cd@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 12:14:47 -0400
+Date: Tue, 8 May 2007 09:14:46 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Linux-MM <linux-mm@kvack.org>,
+       Lee.Schermerhorn@hp.com, AKPM <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, jbarnes@virtuousgeek.org
+Subject: Re: [PATCH] change zonelist order v5 [0/3]
+In-Reply-To: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0705080914320.8801@schroedinger.engr.sgi.com>
+References: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The CD-ROM layer doesn't bounce requests for old ISA controllers (and
-nor should it). However they get injected into the SCSI layer via
-sr_ioctl which also doesn't bounce them and SCSI then passes the buffer
-along to a device with unchecked_isa_dma set which either panics or
-truncates the buffer to 24bits.
+Good explanation. Thanks.
 
-According to Jens the right long term fix is for the CD layer to route
-the requests differently but in the mean time this has been tested by a
-victim and verified to sort the problem out. For the other 99.9% of users
-it's a no-op and doesn't bounce data.
-
-Signed-off-by: Alan Cox <alan@redhat.com>
-
-diff -u --new-file --recursive --exclude-from /usr/src/exclude linux.vanilla-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c linux-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c
---- linux.vanilla-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c	2007-04-12 14:14:45.000000000 +0100
-+++ linux-2.6.21-rc6-mm1/drivers/scsi/sr_ioctl.c	2007-05-08 16:55:01.446661608 +0100
-@@ -187,9 +187,10 @@
- 	struct scsi_sense_hdr sshdr;
- 	int result, err = 0, retries = 0;
- 	struct request_sense *sense = cgc->sense;
--
-+	void *zebedee = cgc->buffer;
-+	
- 	SDev = cd->device;
--
-+	
- 	if (!sense) {
- 		sense = kmalloc(SCSI_SENSE_BUFFERSIZE, GFP_KERNEL);
- 		if (!sense) {
-@@ -197,7 +198,22 @@
- 			goto out;
- 		}
- 	}
--
-+	
-+	if (cgc->buflen && cd->device->host->unchecked_isa_dma) {
-+		switch(cgc->data_direction) {
-+			case DMA_NONE:
-+				break;
-+			case DMA_FROM_DEVICE:
-+			case DMA_TO_DEVICE:
-+				zebedee = kmalloc(cgc->buflen, GFP_KERNEL|GFP_DMA);
-+				if (zebedee ==NULL) {
-+					err = -ENOMEM;
-+					goto out;
-+				}
-+		}
-+		if (cgc->data_direction == DMA_TO_DEVICE)
-+			memcpy(zebedee, cgc->buffer, cgc->buflen);
-+	}
-       retry:
- 	if (!scsi_block_when_processing_errors(SDev)) {
- 		err = -ENODEV;
-@@ -206,10 +222,15 @@
- 
- 	memset(sense, 0, sizeof(*sense));
- 	result = scsi_execute(SDev, cgc->cmd, cgc->data_direction,
--			      cgc->buffer, cgc->buflen, (char *)sense,
-+			      zebedee, cgc->buflen, (char *)sense,
- 			      cgc->timeout, IOCTL_RETRIES, 0);
- 
- 	scsi_normalize_sense((char *)sense, sizeof(*sense), &sshdr);
-+	
-+	if (zebedee != cgc->buffer) {
-+		if (cgc->data_direction == DMA_FROM_DEVICE)
-+			memcpy(cgc->buffer, zebedee, cgc->buflen);
-+	}
- 
- 	/* Minimal error checking.  Ignore cases we know about, and report the rest. */
- 	if (driver_byte(result) != 0) {
-@@ -266,6 +287,8 @@
- 
- 	/* Wake up a process waiting for device */
-       out:
-+	if (zebedee != cgc->buffer)
-+		kfree(zebedee);	/* Time for bed */
- 	if (!cgc->sense)
- 		kfree(sense);
- 	cgc->stat = err;
