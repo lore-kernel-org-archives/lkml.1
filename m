@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030297AbXEHRxI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967345AbXEHR6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030297AbXEHRxI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 13:53:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966975AbXEHRxG
+	id S967345AbXEHR6v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 13:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967247AbXEHR6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 13:53:06 -0400
-Received: from canuck.infradead.org ([209.217.80.40]:43559 "EHLO
-	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S965828AbXEHRxE (ORCPT
+	Tue, 8 May 2007 13:58:51 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:54642 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S967047AbXEHR6t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 13:53:04 -0400
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-From: David Woodhouse <dwmw2@infradead.org>
-To: "Maciej W. Rozycki" <macro@linux-mips.org>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>, Pavel Machek <pavel@ucw.cz>,
-       Anton Vorontsov <cbou@mail.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
-       Andrew Morton <akpm@osdl.org>
-In-Reply-To: <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
-References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz>
-	 <1178550653.11851.191.camel@pmac.infradead.org>
-	 <20070507194949.GB3981@ucw.cz>
-	 <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com>
-	 <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
+	Tue, 8 May 2007 13:58:49 -0400
+Subject: Re: [PATCH]: Fix old SCSI adapter crashes with CD-ROM (take 2)
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-scsi@vger.kernel.org,
+       akpm@osdl.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070508185359.01a1a18d@the-village.bc.nu>
+References: <20070508171710.1ac730cd@the-village.bc.nu>
+	 <20070508161444.GA4163@kernel.dk>
+	 <1178642376.3737.36.camel@mulgrave.il.steeleye.com>
+	 <20070508184256.029cf8a4@the-village.bc.nu>
+	 <1178646426.3737.59.camel@mulgrave.il.steeleye.com>
+	 <20070508185359.01a1a18d@the-village.bc.nu>
 Content-Type: text/plain
-Date: Tue, 08 May 2007 18:52:31 +0100
-Message-Id: <1178646751.2824.48.camel@pmac.infradead.org>
+Date: Tue, 08 May 2007 12:58:35 -0500
+Message-Id: <1178647115.3737.62.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-08 at 18:45 +0100, Maciej W. Rozycki wrote:
->  Well, my name has an acute above "o" and a dot above "z", but I do not 
-> have such a high expectation as to have it correctly spelled in comments 
-> and elsewhere within some code before I am able to get it right in 
-> official documents issued in English.  And the universe is not going to 
-> collapse because of the missing accents, so I consider this an issue we 
-> can think of resolving once we have fixed all the bugs that we have.
+On Tue, 2007-05-08 at 18:53 +0100, Alan Cox wrote:
+> > The ultimate goal is to be able to eliminate the unchecked_isa_dma flag
+> > entirely and have the block layer (or device mask allocations) fix all
+> > of this in every ULD.
+> 
+> About time ;)
 
-It's not an issue which needs resolving. We can spell your name just
-fine; we just need Pavel to quit whining and join us in the 21st
-century.
+Actually, I should point out (before those who did the work get
+justifiably irritated) that the overall goal is to remove the special
+case non-scatter/gather path from all the drivers ... eliminating the
+need to worry about DMA zone allocations is just a nice bonus as a side
+effect of sending everything through the block layer.
 
--- 
-dwmw2
+James
+
 
