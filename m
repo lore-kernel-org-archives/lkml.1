@@ -1,70 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967440AbXEHMOZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967844AbXEHMOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967440AbXEHMOZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 08:14:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967387AbXEHMOX
+	id S967844AbXEHMOp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 08:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967562AbXEHMOo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 08:14:23 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48030 "EHLO mx1.redhat.com"
+	Tue, 8 May 2007 08:14:44 -0400
+Received: from relay.2ka.mipt.ru ([194.85.82.65]:50671 "EHLO 2ka.mipt.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967363AbXEHMOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 08:14:22 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070508114003.GB19294@wotan.suse.de> 
-References: <20070508114003.GB19294@wotan.suse.de>  <20070508113709.GA19294@wotan.suse.de> 
-To: Nick Piggin <npiggin@suse.de>
-Cc: linux-arch@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [rfc] optimise unlock_page 
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
-Date: Tue, 08 May 2007 13:13:35 +0100
-Message-ID: <9948.1178626415@redhat.com>
+	id S967651AbXEHMOn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 08:14:43 -0400
+Date: Tue, 8 May 2007 16:13:42 +0400
+From: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+To: Anton Vorontsov <cbou@mail.ru>
+Cc: akpm@linux-foundation.org, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: + git-battery-fix.patch added to -mm tree
+Message-ID: <20070508121341.GA21072@2ka.mipt.ru>
+References: <200705081001.l48A1KUK020833@shell0.pdx.osdl.net> <20070508111924.GA16785@zarina>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=koi8-r
+Content-Disposition: inline
+In-Reply-To: <20070508111924.GA16785@zarina>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (2ka.mipt.ru [0.0.0.0]); Tue, 08 May 2007 16:13:50 +0400 (MSD)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 08, 2007 at 03:19:24PM +0400, Anton Vorontsov (cbou@mail.ru) wrote:
+> On Tue, May 08, 2007 at 03:01:20AM -0700, akpm@linux-foundation.org wrote:
+> > 
+> > The patch titled
+> >      git-battery-fix
+> > has been added to the -mm tree.  Its filename is
+> >      git-battery-fix.patch
+> 
+> Andrew, much thanks for fixing that. That error triggered by some
+> refactors in drivers/base/... I suppose I have to setup -mm tree in
+> addition to Linus', to test -mm builds from time to time for the
+> purpose of catching these changes myself.
+> 
+> Though, this error happened indeed because nobody cares about
+> find_bus function nowdays...
+> 
+> I want ask Greg KH and Evgeniy Polyakov: could you together settle
+> preferred way of accessing bus types? Should we really use
+> find_bus/bus_find, or Evgeniy would just export w1 bus type? In
+> later case, I'll remove un-"if 0" find_bus patch, and will
+> prepare another which will export w1 bus type.
+> 
+> I do not have any preference, both solutions will work.
 
-Nick Piggin <npiggin@suse.de> wrote:
+There is one small problem with any of such approach, and this problem
+is called Adrian Bunk :)
+Eventually he will remove whatever changes you did if there are no
+in-kernel users.
+But since find bus users are now going into the tree, it is possible to
+make a lot of people happy, who remove ifdef around find_bus() in own
+embedded trees.
 
-> This patch trades a page flag for a significant improvement in the unlock_page
-> fastpath. Various problems in the previous version were spotted by Hugh and
-> Ben (and fixed in this one).
+So, my vote is for exporting generic find_bus in mainline with related
+to w1 and battery status changes.
 
-It looks reasonable at first glance, though it does consume yet another page
-flag:-/  However, I think that's probably a worthy trade.
-
->  }
-> -	
-> +
-> +static inline void unlock_page(struct page *page)
-> +{
-> +	VM_BUG_ON(!PageLocked(page));
-> +	ClearPageLocked_Unlock(page);
-> +	if (unlikely(PageWaiters(page)))
-> +		__unlock_page(page);
-> +}
-> +
-
-Please don't simply discard the documentation, we have little enough as it is:
-
-> -/**
-> - * unlock_page - unlock a locked page
-> - * @page: the page
-> - *
-> - * Unlocks the page and wakes up sleepers in ___wait_on_page_locked().
-> - * Also wakes sleepers in wait_on_page_writeback() because the wakeup
-> - * mechananism between PageLocked pages and PageWriteback pages is shared.
-> - * But that's OK - sleepers in wait_on_page_writeback() just go back to sleep.
-> - *
-> - * The mb is necessary to enforce ordering between the clear_bit and the read
-> - * of the waitqueue (to avoid SMP races with a parallel wait_on_page_locked()).
-
-David
+-- 
+	Evgeniy Polyakov
