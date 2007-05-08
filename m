@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032409AbXEHVhJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032044AbXEHVl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032409AbXEHVhJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:37:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032011AbXEHVhH
+	id S1032044AbXEHVl7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031994AbXEHVlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:37:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:46568 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032399AbXEHVhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:37:05 -0400
-Message-ID: <4640ED7D.708@goop.org>
-Date: Tue, 08 May 2007 14:37:01 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: David Rientjes <rientjes@google.com>
-CC: Randy Dunlap <randy.dunlap@oracle.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [RFC/PATCH] doc: volatile considered evil
-References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org> <20070508121404.17bd97a6.randy.dunlap@oracle.com> <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com> <4640E98B.4030107@goop.org> <alpine.DEB.0.99.0705081423500.24138@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.0.99.0705081423500.24138@chino.kir.corp.google.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 8 May 2007 17:41:55 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58694
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1031927AbXEHVly (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:41:54 -0400
+Date: Tue, 08 May 2007 14:41:54 -0700 (PDT)
+Message-Id: <20070508.144154.31643026.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+Cc: cornelia.huck@de.ibm.com, bunk@stusta.de, greg@kroah.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+ (PCI_MULTITHREAD_PROBE)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org>
+References: <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
+	<alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org>
+	<alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rientjes wrote:
-> Ok, so let's take your second paragraph and my email of an hour ago:
->
-> 	In an asm construct, if all your input operands are modified and 
-> 	specified as output operands as well, volatile must be added so 
-> 	that the entire construct is not optimized away.  Additionally, 
-> 	it must be added if your construct modifies memory that is neither 
-> 	listed in inputs nor outputs to the construct so that it is known 
-> 	to have at least one side-effect.
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Tue, 8 May 2007 13:01:21 -0700 (PDT)
 
-Hm.  Is "asm volatile" necessary if you have a "memory" clobber?  Would
-probably be the safest thing, I guess.
+> In fact, there is nothing wrong with having *both* a synchronous part, and 
+> an async part:
+> 
+> 	.probe = mydriver_setup,
+> 	.probe_async = mydriver_spin_up_and_probe_devices,
+ ...
+> Hmm? Would something like this work? I dunno, but it seems a hell of a lot 
+> safer and more capable than the aborted PCI multithreaded probing that was 
+> an "all or nothing" approach.
 
-> and add it to any proposed change to CodingStyle that suggests against the 
-> 'volatile' keyword since there exists a distinct difference in behavior 
-> between using the keyword as a type qualifier for an object and as a 
-> qualifier for an asm construct.
->   
+I definitely agree that we need a transitonary approach to this.
 
-Yeah, they're completely different.  They're not even analogous, really,
-which was my point.  People confer more meaning to "asm volatile" than
-it actually has, because of the analogy with volatile variables/types. 
-They would have been better off with something like "asm static", which
-isn't much more meaningful, but at least it doesn't mislead the reader
-into thinking it has anything to do with the other volatile.
+Although I kind of preferred the idea you mentioned where the
+device could launch the asynchronous probe and just return from
+the normal ->probe() immediately.
 
-But yes, seems like a worthwhile thing to point out.  Or just point to
-the gcc manual, which is pretty clear about all this stuff.
-
-    J
+This might get tricky if the callers do some kind of reference
+counting or other resource management based upon the ->probe()
+return value since it wouldn't know what happened to the
+launched asynchronous probe when it returns from ->probe().
