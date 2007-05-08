@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967737AbXEHD5V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967747AbXEHECv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967737AbXEHD5V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 7 May 2007 23:57:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967721AbXEHD5R
+	id S967747AbXEHECv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 00:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967722AbXEHECr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 7 May 2007 23:57:17 -0400
-Received: from smtpout.mac.com ([17.250.248.171]:59055 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967720AbXEHD5R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 7 May 2007 23:57:17 -0400
-In-Reply-To: <a36005b50705071949r4f45194bhc0c0416db28d1560@mail.gmail.com>
-References: <20070504225730.490334000@haxent.com.br> <463BC3CA.6050109@haxent.com.br> <Pine.LNX.4.64.0705051155210.19104@alien.or.mcafeemobile.com> <463CFA37.3020809@haxent.com.br> <a36005b50705071400p5302da05n7d27ec1995b9d4dc@mail.gmail.com> <463F9B68.305@haxent.com.br> <a36005b50705071519k40449ed2p7b9ece22cc19219a@mail.gmail.com> <Pine.LNX.4.64.0705071525200.29173@alien.or.mcafeemobile.com> <a36005b50705071949r4f45194bhc0c0416db28d1560@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EDEE9581-CA5B-4DC3-99A0-C28780B1A747@mac.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>, Davi Arnaut <davi@haxent.com.br>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [PATCH] rfc: threaded epoll_wait thundering herd
-Date: Mon, 7 May 2007 23:56:40 -0400
-To: Ulrich Drepper <drepper@gmail.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
+	Tue, 8 May 2007 00:02:47 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:45113 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967721AbXEHECr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 00:02:47 -0400
+Date: Tue, 8 May 2007 09:40:33 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       Nathan Lynch <nathanl@austin.ibm.com>,
+       Joel Schopp <jschopp@austin.ibm.com>, Ashok Raj <ashok.raj@intel.com>,
+       Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       paulmck@us.ibm.com
+Subject: Re: [BUG] cpu-hotplug: Can't offline the CPU with naughty	realtime	processes
+Message-ID: <20070508041033.GB25030@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <87bqgxrlky.wl%takeuchi_satoru@jp.fujitsu.com> <1178545373.28438.7.camel@localhost.localdomain> <877irkrq8a.wl%takeuchi_satoru@jp.fujitsu.com> <1178593345.28438.29.camel@localhost.localdomain> <874pmoro1c.wl%takeuchi_satoru@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <874pmoro1c.wl%takeuchi_satoru@jp.fujitsu.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 07, 2007, at 22:49:04, Ulrich Drepper wrote:
-> On 5/7/07, Davide Libenzi <davidel@xmailserver.org> wrote:
->> read(2) is a cancellation point too. So if the fine userspace code  
->> issues a random pthread_cancel() to a thread handling that, data  
->> is lost together with the session that thread was handling.
->
-> This is absolutely not comparable.  When read/write is canceled no  
-> data is lost.  Some other thread might have to pick up the slack  
-> but that's it.
+On Tue, May 08, 2007 at 12:29:19PM +0900, Satoru Takeuchi wrote:
+> > We used to be able to create kernel threads higher than any userspace
+> > priority.  If this is no longer true, I think that's OK: equal priority
+> > still means we'll get scheduled, right?
+> 
+> IF SCHED_RR, yes. However, if SCHED_FIFO, no. Such process doen't have timeslice
+> and only relinquish CPU time voluntarily.
 
-Uhh, how can you claim "no data is lost" in this scenario:
+yeah ..this is truly a problem if SCHED_FIFO user-space cpu hog task is
+running at MAX_USER_RT_PRIO (which happens to be same as max real-time
+priority kernel threads can attain - MAX_RT_PRIO).
 
-A bunch of threads shares a common fd and fpos, reading fixed-size  
-records:
+One option is to make MAX_USER_RT_PRIO < MAX_RT_PRIO. I am not sure what
+semantics that will break (perhaps the real-time folks can clarify
+that).
 
-thread1: read(myfd, per_thread_buf, 512);
-thread2: pthread_cancel(thread1);
-thread3: read(myfd, per_thread_buf, 512);
+The other easier option is to add a wake_up_process_to_front() API in
+sched.c, which essentially wakes up the process and enqueues the task to
+the front of runqueue.
 
-This is *exactly* analogous to the epoll() scenario:  A bunch of  
-threads are attempting to get data (either events or records) from a  
-given object.  If thread1 gets cancelled after the completion of its  
-read() syscall then the file position will have been advanced but the  
-data in the per-thread buffer will be discarded.  The third thread  
-won't (reliably) get the same data as thread1.  It might get it  
-randomly on occasion if file position updates race, but you can't  
-rely on that behavior.
+> # Hence this problem is complicated ;-(
 
-Here's how you make both of those models safe against thread  
-cancellation (assuming, of course, that process_one_buf has no  
-cancellation points until after it saves the buffer state somewhere):
-
-char per_thread_buf[512];
-pthread_setcanceltype(PTHREAD_CANCEL_DEFERRED, NULL);
-pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-while (read(fd, per_thread_buf, 512) == 512) {
-	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
-	process_one_buffer(per_thread_buf);
-	pthread_testcancel();
-	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
-}
-pthread_exit(NULL);
-
-Look how trivial that is!  Isn't it fun?  Of course, once you look at  
-it this way you could do the same verbose crap that pthread_cancel/ 
-pthread_setcancelstate/pthread_testcancel are doing with a simple int  
-protected by a pthread_mutex.
-
-Cheers,
-Kyle Moffett
-
+-- 
+Regards,
+vatsa
