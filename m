@@ -1,94 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934549AbXEHHgz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934515AbXEHHmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934549AbXEHHgz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 03:36:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934410AbXEHHgv
+	id S934515AbXEHHmZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 03:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934134AbXEHHmW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 03:36:51 -0400
-Received: from www.osadl.org ([213.239.205.134]:44922 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934155AbXEHHgu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 03:36:50 -0400
-Subject: Re: [PATCH 0/2] LogFS take two
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: =?ISO-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
-Cc: Andrew Morton <akpm@osdl.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Dave Kleikamp <shaggy@linux.vnet.ibm.com>,
-       David Chinner <dgc@sgi.com>
-In-Reply-To: <20070507215913.GA15054@lazybastard.org>
-References: <20070507215913.GA15054@lazybastard.org>
-Content-Type: text/plain; charset=utf-8
-Date: Tue, 08 May 2007 09:39:37 +0200
-Message-Id: <1178609977.3042.288.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 8bit
+	Tue, 8 May 2007 03:42:22 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:41656 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S934414AbXEHHmV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 03:42:21 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type;
+  b=BGtlQ/sSMmf6wmYCc98EkQIuaamGVbKEhcUf2MsbpRK0BfPfRSjKdO5hSZ/k2D17xSOxo4PvxC0WcEj8K+IFldaoZvg+/L61FmAxURa3mDSYVSejHAdM5sZvB7o3iqPBOvC+HBYH3tuVxSubcGNBzI3o2HAb/PMQuHOVRn5AHMw=  ;
+X-YMail-OSG: VsSEvIwVM1l2FEhP3dhqoi8mbQt8tJRLIQltWkV0z7hTH10oVti1ToomrMJB._h5zxFKp2nrLg--
+Message-ID: <464029C2.1020003@yahoo.com.au>
+Date: Tue, 08 May 2007 17:41:54 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: get_user_pages vs mmap MAP_FIXED bug
+References: <1178434876.12284.175.camel@localhost.localdomain>	<1178501204.7731.35.camel@localhost.localdomain> <20070506202225.ba6476b6.akpm@linux-foundation.org>
+In-Reply-To: <20070506202225.ba6476b6.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------020304050300010008000406"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-07 at 23:59 +0200, Jörn Engel wrote:
+This is a multi-part message in MIME format.
+--------------020304050300010008000406
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-> LogFS has an on-medium tree, fairly similar to Ext2 in structure, so
-> mount times are O(1).  In absolute terms, the OLPC system has mount
-> times of ~3.3s for JFFS2 and ~60ms for LogFS.
-
-Impressive number
-
-> Motivation 2:
+Andrew Morton wrote:
+> On Mon, 07 May 2007 11:26:44 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> Flash is becoming increasingly common in standard PC hardware.  Nearly
-> a dozen different manufacturers have announced Solid State Disks
-> (SSDs), the OLPC and the Intel Classmate no longer contain hard disks
-> and ASUS announced a flash-only Laptop series for regular consumers.
-
-With a hardware controller which allows no direct access to the flash.
-
-> And that doesn't even mention the ubiquitous USB-Sticks, SD-Cards,
-> etc.
-
-which again do not allow direct access to the flash
-
-> Flash behaves significantly different to hard disks.  In order to use
-> flash, the current standard practice is to add an emulation layer and
-> an old-fashioned hard disk filesystem.  As can be expected, this is
-> eating up some of the benefits flash can offer over hard disks.
 > 
-> In principle it is possible to achieve better performance with a flash
-> filesystem than with the current emulated approach. 
-
-Err, where does JFFS2 use a block emulation layer ?
-
-> Current state:
+>>On Sun, 2007-05-06 at 17:01 +1000, Rusty Russell wrote:
+>>
+>>>This bug is in 2.6.21-rc7-mm2, but not 2.6.21.  Haven't tested
+>>>2.6.21-mm1 yet.
+>>
+>>OK, 2.6.21-mm1 fails too.  2.6.21-git6 ... is fine.
+>>
+>>Here's a standalone test using ptrace.  No kernel module req'd.
+>>
+>>	rusty@debussy:~/linux-2.6.21-mm1$ ../examiner 
+>>	ptrace says 0, child says 0x464c457f
 > 
-> LogFS works and survives my testcases.  It has fairly good chances of
-> not eating your data during regular operation.  There are still two
-> known bugs that will eat data if the filesystem is uncleanly
-> unmounted.  Also still missing is wear leveling.
-
-Are you going to make logfs play with UBI ?
-
-> Handling of read/write/erase errors currently is BUG().  It is on my
-> list, no need to remind me. :)
 > 
-> Overall I consider this to be -mm material.
+> thanks.
+> 
+> 
+>>Any clues Andrew?  Or should I take your patches and do a binary search?
+> 
+> 
+> I've been assuming that Nick's vm_operations.fault changes have broken
+> get_user_pages()'s manual faulting.  The next step is to wait for Nick to
+> turn up.
 
-I don't. It seems fs developers tend to have their own view of how to
-get stuff mainline.
+Fancy that! Thanks for catching it Rusty, does the following work for
+you?
 
-The code is far from being useful on real world hardware. The error
-handling via BUG() is just making it useless. 
+-- 
+SUSE Labs, Novell Inc.
 
-Also please fix the coding style and other issues from the seperate
-review.
+--------------020304050300010008000406
+Content-Type: text/plain;
+ name="mm-fix-for-fault.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="mm-fix-for-fault.patch"
 
-Some useful comments would make a functional review way easier.
+Fix a couple of places that should be testing fault as well as nopage.
 
->   It would be good to get
-> some review and have the usual allyesconfig crowd build it 
+Signed-off-by: Nick Piggin <npiggin@suse.de>
 
-make allyesconfig does not work for you ?
+Index: linux-2.6/mm/memory.c
+===================================================================
+--- linux-2.6.orig/mm/memory.c	2007-04-24 15:02:51.000000000 +1000
++++ linux-2.6/mm/memory.c	2007-05-08 15:23:55.000000000 +1000
+@@ -1049,7 +1049,8 @@
+ 		if (pages)
+ 			foll_flags |= FOLL_GET;
+ 		if (!write && !(vma->vm_flags & VM_LOCKED) &&
+-		    (!vma->vm_ops || !vma->vm_ops->nopage))
++		    (!vma->vm_ops || (!vma->vm_ops->nopage &&
++					!vma->vm_ops->fault)))
+ 			foll_flags |= FOLL_ANON;
+ 
+ 		do {
+Index: linux-2.6/mm/rmap.c
+===================================================================
+--- linux-2.6.orig/mm/rmap.c	2007-04-24 08:53:50.000000000 +1000
++++ linux-2.6/mm/rmap.c	2007-05-08 15:24:27.000000000 +1000
+@@ -640,8 +640,10 @@
+ 			printk (KERN_EMERG "  page->count = %x\n", page_count(page));
+ 			printk (KERN_EMERG "  page->mapping = %p\n", page->mapping);
+ 			print_symbol (KERN_EMERG "  vma->vm_ops = %s\n", (unsigned long)vma->vm_ops);
+-			if (vma->vm_ops)
++			if (vma->vm_ops) {
+ 				print_symbol (KERN_EMERG "  vma->vm_ops->nopage = %s\n", (unsigned long)vma->vm_ops->nopage);
++				print_symbol (KERN_EMERG "  vma->vm_ops->fault = %s\n", (unsigned long)vma->vm_ops->fault);
++			}
+ 			if (vma->vm_file && vma->vm_file->f_op)
+ 				print_symbol (KERN_EMERG "  vma->vm_file->f_op->mmap = %s\n", (unsigned long)vma->vm_file->f_op->mmap);
+ 			BUG();
 
-	tglx
-
-
+--------------020304050300010008000406--
