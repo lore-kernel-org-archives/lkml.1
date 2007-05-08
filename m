@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967473AbXEHNEM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967533AbXEHNEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967473AbXEHNEM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 09:04:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967206AbXEHNEK
+	id S967533AbXEHNEV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 09:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967498AbXEHNEU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 09:04:10 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:57654 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967391AbXEHNEI (ORCPT
+	Tue, 8 May 2007 09:04:20 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:4914 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967500AbXEHNEQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 09:04:08 -0400
-Message-ID: <4640750B.4040801@s5r6.in-berlin.de>
-Date: Tue, 08 May 2007 15:03:07 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Tue, 8 May 2007 09:04:16 -0400
+Message-ID: <46407554.10801@shadowen.org>
+Date: Tue, 08 May 2007 14:04:20 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-CC: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][RFC] Create a top-level "Space-critical features" menu.
-References: <Pine.LNX.4.64.0705080356020.10881@localhost.localdomain> <1178612519.3042.294.camel@localhost.localdomain> <Pine.LNX.4.64.0705080431110.13403@localhost.localdomain> <Pine.LNX.4.61.0705081117051.17280@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0705081117051.17280@yvahk01.tjqt.qr>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm1
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+In-Reply-To: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Engelhardt wrote:
-> On May 8 2007 04:41, Robert P. J. Day wrote:
->>  in my opinion, the config option "EMBEDDED" is just plain silly.  as
->>i mentioned earlier, there may be other reasons that people want to
->>de-activate normally selected features rather than just for strictly
->>embedded systems.
-> 
-> Did not you want to make a patch row that expresses all your ideas, aka
->   CONFIG_EXPERT
->   CONFIG_ASKFORDETAILS (former CONFIG_EMBEDDED, e.g. "place in memory where
-> kernel is loaded")
+The SLUB code introduces the config segment below to stop SLUB being
+used on powerpc:
 
-Some of this might be better left to GUIs or HOWTOs.
+    config ARCH_USES_SLAB_PAGE_STRUCT
+       bool
+       default y
+       depends on SPLIT_PTLOCK_CPUS <= NR_CPUS
 
->   CONFIG_OBSOLETE
->   CONFIG_DEPRECATED
-> etc.? :)
-> 
-> 
-> 
-> Jan
+However as far as I can kconfig has no support for operators other than
+==, !=, &&, and ||.  Who can say why we do not get an error.
 
+Cirtainly in my testing this simply never triggers and bad kernels result.
 
--- 
-Stefan Richter
--=====-=-=== -=-= -=---
-http://arcgraph.de/sr/
+Thoughts?
+
+-apw
