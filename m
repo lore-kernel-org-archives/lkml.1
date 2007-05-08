@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032079AbXEHUMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032038AbXEHUOl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032079AbXEHUMr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 16:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032045AbXEHUMg
+	id S1032038AbXEHUOl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 16:14:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968245AbXEHUOi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 16:12:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58992 "EHLO mx1.redhat.com"
+	Tue, 8 May 2007 16:14:38 -0400
+Received: from mga03.intel.com ([143.182.124.21]:30796 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032034AbXEHUM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 16:12:28 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH 1/2] smaps: only define clear_refs for CONFIG_MMU
-To: torvalds@osdl.org, akpm@osdl.org
-Cc: rientjes@google.com, linux-kernel@vger.kernel.org, dhowells@redhat.com
-Date: Tue, 08 May 2007 21:11:38 +0100
-Message-ID: <20070508201138.2302.87781.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
+	id S967660AbXEHUOg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 16:14:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,506,1170662400"; 
+   d="scan'208";a="225796901"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: [PATCH Resend] - SN: validate smp_affinity mask on intr redirect
+Date: Tue, 8 May 2007 13:14:26 -0700
+Message-ID: <617E1C2C70743745A92448908E030B2A01719BB8@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070508121945.3e8d29c1.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH Resend] - SN: validate smp_affinity mask on intr redirect
+Thread-Index: AceRpdf/Z01TFyTzRPauhif4ebTN5wAByxSw
+From: "Luck, Tony" <tony.luck@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+CC: "John Keller" <jpk@sgi.com>, <linux-kernel@vger.kernel.org>,
+       <steiner@sgi.com>, <linux-ia64@vger.kernel.org>
+X-OriginalArrivalTime: 08 May 2007 20:14:27.0884 (UTC) FILETIME=[7ACAF6C0:01C791AD]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Rientjes <rientjes@google.com>
+> It had a dopey little bug:
+>
+> -#define is_affinity_mask_valid() 1
+> +#define is_affinity_mask_valid(val) 1
 
-/proc/pid/clear_refs is only defined in the CONFIG_MMU case, so make sure we
-don't have any references to clear_refs_smap() in generic procfs code.
+That would fix warnings on non-ia64 systems (which is
+a step in the right direction).  But on ia64 I have
+the
 
-Signed-off-by: David Rientjes <rientjes@google.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+#define is_affinity_mask_valid is_affinity_mask_valid
 
- fs/proc/base.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+in play at that point, so I have a real function call
+which doesn't have an in-scope declaration, so I get:
 
-diff --git a/fs/proc/base.c b/fs/proc/base.c
-index ec158dd..5602ae4 100644
---- a/fs/proc/base.c
-+++ b/fs/proc/base.c
-@@ -715,6 +715,7 @@ static const struct file_operations proc_oom_adjust_operations = {
- 	.write		= oom_adjust_write,
- };
- 
-+#ifdef CONFIG_MMU
- static ssize_t clear_refs_write(struct file *file, const char __user *buf,
- 				size_t count, loff_t *ppos)
- {
-@@ -748,6 +749,7 @@ static ssize_t clear_refs_write(struct file *file, const char __user *buf,
- static struct file_operations proc_clear_refs_operations = {
- 	.write		= clear_refs_write,
- };
-+#endif
- 
- #ifdef CONFIG_AUDITSYSCALL
- #define TMPBUFLEN 21
+kernel/irq/proc.c:49: warning: implicit declaration of function `is_affinity_mask_valid'
 
+-Tony
