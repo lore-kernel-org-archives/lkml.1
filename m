@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934445AbXEHWEV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032440AbXEHWEx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934445AbXEHWEV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 18:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbXEHWER
+	id S1032440AbXEHWEx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 18:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934472AbXEHWEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 18:04:17 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:53543 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1749667AbXEHWEQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 18:04:16 -0400
-Date: Tue, 8 May 2007 15:06:23 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Len Brown <lenb@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
-       Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>
-Subject: Re: [patch 4/4] Add common orderly_poweroff()
-Message-Id: <20070508150623.d8a0a240.randy.dunlap@oracle.com>
-In-Reply-To: <20070508205517.358968475@goop.org>
-References: <20070508205129.064843364@goop.org>
-	<20070508205517.358968475@goop.org>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 8 May 2007 18:04:49 -0400
+Received: from gw.goop.org ([64.81.55.164]:49736 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934468AbXEHWEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 18:04:47 -0400
+Message-ID: <4640F3FD.80001@goop.org>
+Date: Tue, 08 May 2007 15:04:45 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: David Rientjes <rientjes@google.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [RFC/PATCH] doc: volatile considered evil
+References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org> <20070508121404.17bd97a6.randy.dunlap@oracle.com> <alpine.DEB.0.99.0705081217180.12908@chino.kir.corp.google.com> <4640E98B.4030107@goop.org> <alpine.DEB.0.99.0705081423500.24138@chino.kir.corp.google.com> <4640ED7D.708@goop.org> <alpine.DEB.0.99.0705081453350.25466@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.0.99.0705081453350.25466@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 May 2007 13:51:33 -0700 Jeremy Fitzhardinge wrote:
+David Rientjes wrote:
+> Now if all such output operands are to specify that the input operands 
+> were "modified", 'volatile' is required to ensure the side-effects are 
+> preserved or, otherwise, gcc is free optimize the entire asm construct 
+> away since it appears to be unused.
+>   
 
-> diff -r 9eea40ea89b7 kernel/sys.c
-> --- a/kernel/sys.c	Tue May 08 12:59:41 2007 -0700
-> +++ b/kernel/sys.c	Tue May 08 13:42:22 2007 -0700
-> @@ -2208,3 +2208,58 @@ asmlinkage long sys_getcpu(unsigned __us
->  	}
->  	return err ? -EFAULT : 0;
->  }
-> +
-> +char poweroff_cmd[POWEROFF_CMD_PATH_LEN] = "/sbin/poweroff";
-> +
-> +static void argv_cleanup(char **argv, char **envp)
-> +{
-> +	argv_free(argv);
-> +}
-> +
-> +/**
+Yup.
 
-   /*
-would be OK since this isn't kernel-doc.... (or make it kernel-doc)
+>> Yeah, they're completely different.  They're not even analogous, really,
+>> which was my point.  People confer more meaning to "asm volatile" than
+>> it actually has, because of the analogy with volatile variables/types. 
+>> They would have been better off with something like "asm static", which
+>> isn't much more meaningful, but at least it doesn't mislead the reader
+>> into thinking it has anything to do with the other volatile.
+>>
+>>     
+>
+> You're point about reordering "asm volatile" constructs differs depending 
+> on -mvolatile-asm-stop or -mno-volatile-asm-stop, however.
+>   
 
-> + * Trigger an orderly system poweroff
-> + *
-> + * This may be called from any context to trigger a system shutdown.
-> + * If the orderly shutdown fails, it will force an immediate shutdown.
-> + */
-> +int orderly_poweroff(bool force)
-> +{
+Erm, that seems to be ia64 specific, and I have no idea what adding a
+"stop bit" implies.  Can you set even or odd parity too?
 
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+    J
