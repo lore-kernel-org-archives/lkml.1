@@ -1,57 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032243AbXEHVMv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032253AbXEHVOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032243AbXEHVMv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 17:12:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032209AbXEHVMq
+	id S1032253AbXEHVOQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 17:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032230AbXEHVOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 17:12:46 -0400
-Received: from gherkin.frus.com ([192.158.254.49]:33733 "EHLO gherkin.frus.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032173AbXEHVMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 17:12:45 -0400
-Subject: Re: New Mitsumi legacy CD-ROM driver
-In-Reply-To: <200705082213.44042.linux@rainbow-software.org> "from Ondrej Zary
- at May 8, 2007 10:13:43 pm"
-To: Ondrej Zary <linux@rainbow-software.org>
-Date: Tue, 8 May 2007 16:12:36 -0500 (CDT)
-CC: Rene Herman <rene.herman@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-X-Mailer: ELM [version 2.4ME+ PL82 (25)]
-MIME-Version: 1.0
+	Tue, 8 May 2007 17:14:12 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:50329
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1032205AbXEHVOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 17:14:10 -0400
+Subject: Re: [PATCH] synclink_gt add compat_ioctl
+From: Paul Fulghum <paulkf@microgate.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200705060227.29450.arnd@arndb.de>
+References: <1178215277.4369.6.camel@amdx2.microgate.com>
+	 <200705051258.01743.arnd@arndb.de> <463C8D42.7020707@microgate.com>
+	 <200705060227.29450.arnd@arndb.de>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 16:14:03 -0500
+Message-Id: <1178658843.4152.12.camel@x2.microgate.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Type: text/plain; charset=US-ASCII
-Message-Id: <20070508211236.95087DBA1@gherkin.frus.com>
-From: rct@gherkin.frus.com (Bob Tracy)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ondrej Zary wrote:
-> On Tuesday 08 May 2007 11:42:08 you wrote:
-> > Mitsumi (mcdx, this driver), panasonic (sbpcd) and sony (cdu31a) are
-> > somewhat of an exception in so far that controllers for those three are
-> > still around on a lot of old ISA soundcards though. Moreover, I have the
-> > drives to test that trio so after this mitsumi driver is complete and in
-> > good shape I'll do the other two as well.
-> 
-> I fixed cdu31a some time ago - so it at least works.
-> I also have a Panasonic drive with controller integrated on a SB16 sound card 
-> but haven't tried it with Linux yet.
-> 
-> It's nice to see new driver for these old drives.
+On Sun, 2007-05-06 at 02:27 +0200, Arnd Bergmann wrote:
 
-Agreed.  I've still got a GUS in one of my museum pieces that runs
-MS-Win 3.1 by default.  The BIOS is too old to support booting from
-anything except hda, sda and floppy, but because I enjoy pain I'll
-be happy to modify the startup floppy images for a 2.6.X-based live
-CD distro (DSL, anyone?) and give the new drivers a spin when they're
-ready for testing.  The motherboard is a curiosity: it has ISA, PCI,
-*and* VLB slots.  The processor is an AMD 5x86 (think 486 on steroids).
-I *might* have 32 MB of RAM to work with: I simply don't remember :-).
+> Now that you mention the duplication, this sounds wrong as well. The easiest
+> solution is probably to just put the definition of your data structure
+> inside of #ifdef CONFIG_COMPAT in the header file.
 
--- 
------------------------------------------------------------------------
-Bob Tracy                   WTO + WIPO = DMCA? http://www.anti-dmca.org
-rct@frus.com
------------------------------------------------------------------------
+The structure definition was already inside of #ifdef CONFIG_COMPAT
+
+The problem is including linux/compat.h inside of synclink.h
+causes an error on i386. The headerscheck facility is spitting
+out an error even if the #include <linux/compat.h> is inside of
+#ifdef CONFIG_COMPAT
+
+make[3]: *** No rule to make target
+`/usr/src/devel/usr/include/linux/.check.synclink.h', needed by
+`__headerscheck'.  Stop.
+
+linux/kexec.h includes linux/compat.h without a similar error,
+though that is inside of a #ifdef CONFIG_KEXEC
+
+Moving linux/compat.h from synclink.h to synclink_gt.c
+removes the error.
+
+This is the last error standing in my way and I'm trying
+to figure out the rules for when and where you are allowed
+to use compat.h, I'm not familiar with the headerscheck
+facility so I'm not sure what it is looking for and the
+error is not very helpful. There is nothing in Documentation
+covering it.
+
+--
+Paul Fulghum
+Microgate Systems, Ltd
+
