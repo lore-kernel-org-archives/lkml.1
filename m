@@ -1,70 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031533AbXEHTVC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031548AbXEHTWF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031533AbXEHTVC (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 15:21:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031501AbXEHTVB
+	id S1031548AbXEHTWF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 15:22:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1031555AbXEHTWA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 15:21:01 -0400
-Received: from m-relay.rz.uni-saarland.de ([134.96.7.3]:60844 "EHLO
-	m-relay.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1031461AbXEHTU7 (ORCPT
+	Tue, 8 May 2007 15:22:00 -0400
+Received: from mtagate8.de.ibm.com ([195.212.29.157]:38762 "EHLO
+	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967660AbXEHTV6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 15:20:59 -0400
-Date: Tue, 8 May 2007 21:19:04 +0200
-From: Alexander van Heukelum <heukelum@mailshack.com>
-To: "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
-Message-ID: <20070508191904.GA13368@mailshack.com>
-References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org> <20070508183232.GA13225@mailshack.com> <4640C55B.6030908@zytor.com>
+	Tue, 8 May 2007 15:21:58 -0400
+Date: Tue, 8 May 2007 21:21:17 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+ (PCI_MULTITHREAD_PROBE)
+Message-ID: <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <alpine.LFD.0.98.0705081123080.3974@woody.linux-foundation.org>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+	<20070508141149.GJ4226@stusta.de>
+	<alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
+	<20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
+	<alpine.LFD.0.98.0705081123080.3974@woody.linux-foundation.org>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4640C55B.6030908@zytor.com>
-User-Agent: Mutt/1.5.9i
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.5.1 (m-relay.rz.uni-saarland.de [134.96.7.3]); Tue, 08 May 2007 21:19:57 +0200 (CEST)
-X-AntiVirus: checked by AntiVir Milter (version: 1.1.3-1; AVE: 7.3.1.53; VDF: 6.38.1.19; host: AntiVir1)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 11:45:47AM -0700, H. Peter Anvin wrote:
-> Alexander van Heukelum wrote:
-> > 
-> > Oh! A padding hole in a struct! That could be a problem. If the freeze
-> > is after decompression, could you test if this makes it work again?
-> > 
+On Tue, 8 May 2007 11:30:03 -0700 (PDT),
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> It's better because then the *driver* can decide whether it supports 
+> threaded probing or not.
+
+Is there any reason why a driver shouldn't be able to handle probing
+several devices at once? What if two devices become hotplugged at the
+same time? Does this imply that the bus _always_ needs to do some
+serializing there?
+
+> Also, quite frankly, when this came up I already posted a much better 
+> approach for allowing arbitrary threading. It was ignored, but maybe you 
+> want to take a look.
 > 
-> The correct fix is to apply __attribute__((packed)) to this structure.
+> See
+> 
+> 	http://lkml.org/lkml/2006/10/27/185
+> 
+> for last time this came up. Any driver can decide to do
+> 
+> 	execute_in_parallel(myprobe, myarguments);
+> 
+> and that really *simple* thing allows synchronization points 
+> ("wait_for_parallel()") and arbitrary setting of the allowed parallelism.
 
-Yeah, I thought about that possibility too, but the struct didn't need
-that (in my opinion ugly) annotation before. Oh well, here you go.
+Yeah, I saw this back then. But this is much too inflexible. How do you
+determine the settings? On a large system, you could throttle too much,
+obliterating most of the benefits of the parallel approach; on a small
+system, you could overwhelm the system.
 
-Greetings,
-	Alexander
+> I really think that is a *much* better approach. It allows, for example, 
+> the driver to do certain things (like name allocations and any 
+> particularly *fast* parts of probing) synchronously, and then do slow 
+> things (like spinning up disks and actually reading the partition tables) 
+> asynchronously.
 
----
+Hm, I think "asynchronous" is the key word here, not "multithreaded".
+Thinking some more of it, we really want to do the following:
+- look at the device:
+  - do the fast stuff
+  - kick off the slow stuff
+- look at the next device
+  - ...
+- wait until all devices said they are finished
+- each device needs to signal completion when the slow stuff has been
+done (or hit a timeout)
 
-Commit 89ec4c238e7a3d7e660291f3f1a8181381baad77 introduced a discrepancy
-between the struct screen_info which is used by the C code, and the
-PARAM_* offsets which are used in the real-mode kernel. As hpa suggests,
-adding __attribute__((packed)) to the struct fixes it.
+(By some curious accident, that is what s390 cio does :))
 
-Signed-off-by: Alexander van Heukelum <heukelum@mailshack.com>
+This way, we are much more flexible than with the execute_in_parallel()
+approach. This async approach especially looks suited to stuff where
+some kind of operation is submitted to the hardware and we need to wait
+for an interrupt/completion. And for that kind of operations, it scales
+equally well on small or big machines.
 
----
+> Anyway, I will refuse to merge anything that does generic bus-level 
+> (unless the bus is something off-the-board like SCSI) parallelism, unless 
+> you can really show me how superior and stable it is. I seriously doubt 
+> you can. We tried it once, and it was a total disaster.
 
-diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
-index b02308e..4a7c24b 100644
---- a/include/linux/screen_info.h
-+++ b/include/linux/screen_info.h
-@@ -44,7 +44,7 @@ struct screen_info {
- 	u32 capabilities;       /* 0x36 */
- 				/* 0x3a -- 0x3b reserved for future expansion */
- 				/* 0x3c -- 0x3f micro stack for relocatable kernels */
--};
-+} __attribute__((packed));
- 
- extern struct screen_info screen_info;
- 
+Maybe the criterion should be more "a resonably unified set of
+devices". s390 channel attached devices are really all the same (at a
+certain not driver-specific level), and the same may be true for
+something like scsi. pci may be just too diverse with too many
+dissimilar drivers.
