@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968091AbXEHOGv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968101AbXEHOG5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968091AbXEHOGv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:06:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968077AbXEHOGu
+	id S968101AbXEHOG5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:06:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968096AbXEHOGz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:06:50 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:45331 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967873AbXEHOGt (ORCPT
+	Tue, 8 May 2007 10:06:55 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:48465 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S968077AbXEHOGx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:06:49 -0400
-Date: Tue, 8 May 2007 16:04:32 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Pekka J Enberg <penberg@cs.helsinki.fi>
-Cc: Rene Herman <rene.herman@gmail.com>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: New Mitsumi legacy CD-ROM driver
-Message-ID: <20070508140432.GS4163@kernel.dk>
-References: <464045F0.3040906@gmail.com> <20070508103524.GH4163@kernel.dk> <46407D75.7050603@gmail.com> <20070508134944.GO4163@kernel.dk> <Pine.LNX.4.64.0705081656570.31629@sbz-30.cs.Helsinki.FI>
+	Tue, 8 May 2007 10:06:53 -0400
+Date: Tue, 8 May 2007 07:04:28 -0700
+From: Greg KH <gregkh@suse.de>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Benedikt Spranger <b.spranger@linutronix.de>,
+       "Hans J. Koch" <hjk@linutronix.de>
+Subject: [GIT PATCH] UIO patches for 2.6.21
+Message-ID: <20070508140428.GA12641@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=unknown-8bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705081656570.31629@sbz-30.cs.Helsinki.FI>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08 2007, Pekka J Enberg wrote:
-> On Tue, 8 May 2007, Jens Axboe wrote:
-> > IOW, you are always better off not supporting highmem for this driver.
-> > The fact that it also simplifies the handling is a bonus.
-> 
-> Agreed. So we should just use BLK_BOUNCE_HIGH, right?
+Here is another round of the updated UIO (Userspace I/O driver framework)
+patches for 2.6.21.
 
-Yeah, just remove the call to blk_queue_bounce_limit() completely, the
-block layer has always defaulted to that.
+All of the issues raised from the last time the patches were posted
+(last week) have been fixed in this version.
 
-> On Tue, 8 May 2007, Jens Axboe wrote:
-> > Fine with me... As far as I am concerned, you are now the legacy CD-ROM
-> > driver maintainer :-)
-> 
-> Poor Rene... ;-)
+Many thanks for all of the review comments from everyone who took the
+time to read over the code.
 
-I'll be expecting a MAINTAINERS patch :-)
+These patches include full documentation, are self-contained from the
+rest of the kernel, and have been in the -mm tree for the past few
+months with no complaints.
 
--- 
-Jens Axboe
+Please pull from:
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/uio-2.6.git/
+
+Patches will be sent as a follow-on to this message to lkml for people
+to see.
+
+thanks,
+
+greg k-h
+
+
+
+ Documentation/DocBook/kernel-api.tmpl |    4 
+ Documentation/DocBook/uio-howto.tmpl  |  611 +++++++++++++++++++++++++++++
+ drivers/Kconfig                       |    1 
+ drivers/Makefile                      |    1 
+ drivers/uio/Kconfig                   |   27 +
+ drivers/uio/Makefile                  |    2 
+ drivers/uio/uio.c                     |  701 ++++++++++++++++++++++++++++++++++
+ drivers/uio/uio_cif.c                 |  156 +++++++
+ include/linux/uio_driver.h            |   91 ++++
+ 9 files changed, 1594 insertions(+)
+
+---------------
+
+Hans J. Koch (2):
+      UIO: Add the User IO core code
+      UIO: Documentation
+
+Hans-Jürgen Koch (1):
+      UIO: Hilscher CIF card driver
 
