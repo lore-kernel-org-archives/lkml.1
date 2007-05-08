@@ -1,50 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968237AbXEHOe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968242AbXEHOfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968237AbXEHOe0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 10:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968067AbXEHOe0
+	id S968242AbXEHOfT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 10:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967027AbXEHOfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 10:34:26 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:47662 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S968233AbXEHOeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 10:34:24 -0400
-Date: Tue, 8 May 2007 18:42:37 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: Christoph Hellwig <hch@lst.de>, Roland McGrath <roland@redhat.com>
-Cc: linux-kernel@vger.kernel.org, devel@openvz.org
-Subject: Re: [PATCH -utrace] Move utrace into task_struct
-Message-ID: <20070508144237.GB6130@localhost.sw.ru>
-References: <20070502113252.GA8017@localhost.sw.ru> <20070502220203.D73D21801A3@magilla.sf.frob.com> <20070503103449.GB6147@lst.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 8 May 2007 10:35:18 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:17260 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967229AbXEHOfQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 10:35:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:date:user-agent:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
+        b=h3jDaUUD5hhAQQ/kt6efumlVF29dEamaPzoTdcKOcofjjCJYGt/ie63DesDRNgeJ7jYHH8M4xl0Z3mOvl3VYEjzIsT9dbt4nu8CTeSKNaZsa976Boz+VQXKESZVhgLiMQmBtZfQ+mO4o1ID9b/Vhvw+tr8OExLH1UvXpq6KN0tA=
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: linux-kernel@vger.kernel.org
+Subject: gmail
+Date: Tue, 8 May 2007 10:35:03 -0400
+User-Agent: KMail/1.9.6
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070503103449.GB6147@lst.de>
-User-Agent: Mutt/1.5.11
+Message-Id: <200705081035.04031.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Regardless of future of "struct utrace utrace;" patch looks like there
-is another race: engine's flags and ops settings in utrace_detach() and
-acting on them in report_quiescent():
+verizon forced me over to a gmail account by refusing this mailing list.
+Now lkml seems to be refusing posts from my gmail account.
 
-utrace_detach()				report_quiescent()
----------------				------------------
-[utrace lock held]			[utrace lock is not held]
+Is there a reason?
 
-engine->flags = UTRACE_EVENT(QUIESCE) |
-		UTRACE_ACTION_QUIESCE;
-					if (engine->flags & UTRACE_EVENT(QUIESCE))
-						REPORT(report_quiesce);
-
-rcu_assign_pointer(engine->ops, &dead_engine_ops);
-
-
-At the moment of REPORT call engine's ops are still "live" ptrace ops
-which do not have ->report_quiesce callback. So, there will oops while
-calling function at NULL address. "Dead" ptrace engine ops do have dummy
-callback but it wasn't yet glued.
-
-I hit this once with "struct utrace utrace;" patch applied, but this
-bug is also present in stock utrace, I'm sure.
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+My pony-tail hit the on/off switch on the power strip.
