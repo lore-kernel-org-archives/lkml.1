@@ -1,38 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755737AbXEIOUn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756688AbXEIOVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755737AbXEIOUn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 10:20:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753537AbXEIOUg
+	id S1756688AbXEIOVj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 10:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbXEIOVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 10:20:36 -0400
-Received: from smtp-out04.alice-dsl.net ([88.44.63.6]:13287 "EHLO
-	smtp-out04.alice-dsl.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753186AbXEIOUf (ORCPT
+	Wed, 9 May 2007 10:21:31 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:35339 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753537AbXEIOVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 10:20:35 -0400
-X-Greylist: delayed 850 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 May 2007 10:20:35 EDT
-From: Foli Ayivoh <it21@alice-dsl.net>
-Reply-To: Foli Ayivoh <101551.753@compuserve.com>
-To: linux-kernel@vger.kernel.org
-Subject: 802.11n(draft)
-User-Agent: KMail/1.9.5
+	Wed, 9 May 2007 10:21:30 -0400
+Date: Wed, 9 May 2007 07:21:15 -0700
+From: Greg KH <greg@kroah.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Henry Su <henry.su@amd.com>, alan@lxorguk.ukuu.org.uk, bzolnier@gmail.com,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       xiaosuzi520@hotmail.com
+Subject: Re: [patch] Add the device IDs for AMD/ATI SB700
+Message-ID: <20070509142115.GA26646@kroah.com>
+References: <FFECF24D2A7F6D418B9511AF6F3586020197F6A6@shacnexch2.atitech.com> <4641C066.8080100@garzik.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Date: Wed, 9 May 2007 16:06:20 +0200
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705091606.20259.it21@alice-dsl.net>
-X-OriginalArrivalTime: 09 May 2007 14:02:42.0612 (UTC) FILETIME=[B63A4F40:01C79242]
+In-Reply-To: <4641C066.8080100@garzik.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, May 09, 2007 at 08:36:54AM -0400, Jeff Garzik wrote:
+> Henry Su wrote:
+> > From: henry.su@amd.com
+> > Adding the device ID for AMD/ATI SB700.
+> > Signed-off-by:henry su <henry.su@amd.com>
+> 
+> Time to train new people...
+> 
+> You need to split up your patches:
+> * send I2C and PCI quirk patches to GregKH
 
-I hope this is the right place to ask!?
+Nope, I2C is not me anymore, I think it's already on it's third
+maintainer, check the MAINTAINERS file for details.
 
-Is there a driver for the Marvell-"TopDog"-Chipset
-or is it in the making (in the near future) ?
+thanks,
 
---
-Foli Ayivoh
+greg k-h
