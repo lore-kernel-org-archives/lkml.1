@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbXEIKvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758195AbXEIKxb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758201AbXEIKvx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 06:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbXEIKvm
+	id S1758195AbXEIKxb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 06:53:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbXEIKxY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 06:51:42 -0400
-Received: from ozlabs.org ([203.10.76.45]:41294 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750719AbXEIKvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 06:51:41 -0400
+	Wed, 9 May 2007 06:53:24 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:32791 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751642AbXEIKxX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 06:53:23 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: yhlu <yhlu.kernel@gmail.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       vgoyal@in.ibm.com, Gerd Hoffmann <kraxel@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <4634483E.9030307@goop.org> <4640FB2C.2060300@zytor.com>
+	<86802c440705081541v7d0773cek2c5fae1854b68bbc@mail.gmail.com>
+	<46410403.4050802@zytor.com>
+	<m17irivkhy.fsf@ebiederm.dsl.xmission.com>
+	<46413087.2020505@zytor.com>
+	<m1tzumu10k.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705082152g49d4d3echf3eb165ce4feb2e9@mail.gmail.com>
+	<46415640.6000600@zytor.com> <4641573C.1000205@zytor.com>
+	<86802c440705082248r5248aa08s8299e03f615b984a@mail.gmail.com>
+	<46416246.9090005@zytor.com>
+Date: Wed, 09 May 2007 04:52:08 -0600
+In-Reply-To: <46416246.9090005@zytor.com> (H. Peter Anvin's message of "Tue,
+	08 May 2007 22:55:18 -0700")
+Message-ID: <m1abwetgkn.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <17985.42884.971318.859402@cargo.ozlabs.ibm.com>
-Date: Wed, 9 May 2007 20:50:44 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: suparna@in.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-In-Reply-To: <20070509101507.GA26056@in.ibm.com>
-References: <20070330071417.GI355@devserv.devel.redhat.com>
-	<20070417125514.GA7574@amitarora.in.ibm.com>
-	<20070418130600.GW5967@schatzie.adilger.int>
-	<20070420135146.GA21352@amitarora.in.ibm.com>
-	<20070420145918.GY355@devserv.devel.redhat.com>
-	<20070424121632.GA10136@amitarora.in.ibm.com>
-	<20070426175056.GA25321@amitarora.in.ibm.com>
-	<20070426180332.GA7209@amitarora.in.ibm.com>
-	<20070503212955.b1b6443c.akpm@linux-foundation.org>
-	<17978.47502.786970.196554@cargo.ozlabs.ibm.com>
-	<20070509101507.GA26056@in.ibm.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suparna Bhattacharya writes:
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-> > This looks like it will have the same problem on s390 as
-> > sys_sync_file_range.  Maybe the prototype should be:
-> > 
-> > asmlinkage long sys_fallocate(loff_t offset, loff_t len, int fd, int mode)
-> 
-> Yes, but the trouble is that there was a contrary viewpoint preferring that fd
-> first be maintained as a convention like other syscalls (see the following
-> posts)
+> yhlu wrote:
+>> so the kexec tools need to scan the pci devices list, and find out how
+>> to set real_mode.isVGA and orig_video_mode, also need to parse the
+>> comand line about vga console.
+>
+> BTW, welcome to the hell of bypassing setup.
 
-Of course the interface used by an application program would have the
-fd first.  Glibc can do the translation.
+Well in this case things are so very much better then attempting to
+us setup.S it isn't a real option.
 
-Paul.
+In general BIOS calls just don't work reliably after linux has
+been running for a while.
+
+As for YH's point it does look like there are a few ways
+to poke the linux kernel to see what is happening.
+
+We can look in /proc/ioports and see what has reserved
+the video resources.  That should give us a reasonable
+estimate of the video adapter.  We can do an ioctl to
+the console and see how many lines and columns we have.
+
+Reusing boot_params could be nice but if we have the information
+available in other ways digging it out that way is quite possibly
+better.
+
+
+Eric
