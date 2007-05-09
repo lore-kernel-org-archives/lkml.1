@@ -1,162 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970704AbXEIAWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971238AbXEIAX1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970704AbXEIAWl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 20:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968516AbXEIAV1
+	id S971238AbXEIAX1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 20:23:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968516AbXEIAXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 20:21:27 -0400
-Received: from mail.sjtu.org ([202.120.5.34]:40061 "ehlo appsrv1.sjtu.org"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S934109AbXEIAV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 20:21:26 -0400
-Subject: [PATCH 2/3] v4l: Enable IR-Remote for the 10moons TM300 Card
-From: Tony Wan <wankai@sjtu.org>
-To: michael@mihu.de, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Wed, 09 May 2007 15:49:44 +0800
-Message-Id: <1178696984.30673.0.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 20:23:17 -0400
+Received: from waste.org ([66.93.16.53]:49692 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S970261AbXEIAXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 20:23:16 -0400
+Date: Tue, 8 May 2007 19:23:08 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, clameter@sgi.com
+Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch added to -mm tree
+Message-ID: <20070509002307.GV11115@waste.org>
+References: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable the IR-remote of the 10moons TM300 card and add the key-codes for
-it's remote. But to enable all the keys, "IR_KEYTAB_SIZE", the size of
-code tables should be at least 256.
+On Tue, May 08, 2007 at 04:02:20PM -0700, akpm@linux-foundation.org wrote:
+>  	bool "SLOB (Simple Allocator)"
+>  	help
+>  	   SLOB replaces the SLAB allocator with a drastically simpler
+>  	   allocator.  SLOB is more space efficient that SLAB but does not
+> -	   scale well (single lock for all operations) and is more susceptible
+> -	   to fragmentation. SLOB it is a great choice to reduce
+> -	   memory usage and code size for embedded systems.
+> +	   scale well (single lock for all operations) and is also highly
+> +	   susceptible to fragmentation. SLUB can accomplish a higher object
+> +	   density. It is usually better to use SLUB instead of SLOB.
 
-It has been tested using lirc. All the key codes are accepted.
+This isn't accurate.
 
-This patch depends on the "[PATCH 1/3] v4l: Support 10moons TM300
-(saa7130) Card"
+First, SLOB no longer runs on SMP because SLAB grew some RCU-related
+hair. So it now effectively has no locks at all! 
 
-Signed-off-by: Tony Wan <wankai@sjtu.org>
----
- drivers/media/common/ir-keymaps.c           |   71 +++++++++++++++++++++++++++
- drivers/media/video/saa7134/saa7134-cards.c |    1 +
- drivers/media/video/saa7134/saa7134-input.c |    6 ++
- include/media/ir-common.h                   |    1 +
- 4 files changed, 79 insertions(+), 0 deletions(-)
+Second, I think the fragmentation issues are exaggerated. Before SLAB
+was introduced, Linux's kmalloc was the moral equivalent of SLOB
+(without SLAB emulation) and fragmentation was not the driving force
+for replacement. Small Linux 1.x machines frequently had uptimes of 1+
+years without fragmenting to death. Instead, it was performance with
+large amounts of RAM - the old kmalloc (and SLOB) have performance
+proportional to memory size.
 
-diff --git a/drivers/media/common/ir-keymaps.c b/drivers/media/common/ir-keymaps.c
-index cbd1184..df11ed4 100644
---- a/drivers/media/common/ir-keymaps.c
-+++ b/drivers/media/common/ir-keymaps.c
-@@ -1783,3 +1783,74 @@ IR_KEYTAB_TYPE ir_codes_tt_1500[IR_KEYTAB_SIZE] = {
- };
- 
- EXPORT_SYMBOL_GPL(ir_codes_tt_1500);
-+
-+/* 10MOONS TM300 */
-+IR_KEYTAB_TYPE ir_codes_10moonstm3[IR_KEYTAB_SIZE] = {
-+	[ 0x10 ] = KEY_POWER,           // Power
-+	[ 0x0d ] = KEY_MUTE,            // Mute
-+	[ 0x1e ] = KEY_TUNER,           // Cable
-+	[ 0x00 ] = KEY_VIDEO,           // Composite / S-Video
-+	[ 0x01 ] = KEY_RADIO,           // Music
-+	[ 0x02 ] = KEY_TEXT,            // Photo
-+
-+	[ 0x1f ] = KEY_1,
-+	[ 0x03 ] = KEY_2,
-+	[ 0x04 ] = KEY_3,
-+	[ 0x05 ] = KEY_4,
-+	[ 0x1c ] = KEY_5,
-+	[ 0x06 ] = KEY_6,
-+	[ 0x07 ] = KEY_7,
-+	[ 0x08 ] = KEY_8,
-+	[ 0x1d ] = KEY_9,
-+	[ 0x09 ] = KEY_SELECT,          // 2 digit select (-/--)
-+	[ 0x0a ] = KEY_0,
-+	[ 0x0b ] = KEY_AGAIN,           // Recall
-+
-+	[ 0x14 ] = KEY_F1,              // Begin
-+	[ 0x15 ] = KEY_F2,              // End
-+
-+	[ 0x16 ] = KEY_CHANNELUP,       // CH+
-+	[ 0x12 ] = KEY_CHANNELDOWN,     // CH-
-+	[ 0x0c ] = KEY_VOLUMEUP,        // VOL+
-+	[ 0x17 ] = KEY_VOLUMEDOWN,      // VOL-
-+	[ 0x18 ] = KEY_OK,              // OK
-+
-+	[ 0x0e ] = KEY_EXIT,            // Exit
-+	[ 0x13 ] = KEY_COMPUTER,        // Desktop
-+	[ 0x11 ] = KEY_TAB,             // TAB
-+	[ 0x19 ] = KEY_CYCLEWINDOWS,    // Switch task
-+
-+	[ 0x1a ] = KEY_MENU,            // Menu
-+	[ 0x1b ] = KEY_ZOOM,            // Fullscreen
-+#if IR_KEYTAB_SIZE>=256
-+	[ 0x84 ] = KEY_ARCHIVE,         // Time shifting
-+	[ 0x80 ] = KEY_SWITCHVIDEOMODE, // Selcect source
-+
-+	[ 0x9a ] = KEY_RECORD,          // Record
-+	[ 0x82 ] = KEY_PLAY,            // Play/Pause
-+	[ 0x85 ] = KEY_STOP,            // Stop
-+	[ 0x83 ] = KEY_CAMERA,          // Snapshot
-+
-+	[ 0x88 ] = KEY_BACK,            // Backward <<
-+	[ 0x8a ] = KEY_FORWARD,         // Forward >>
-+	[ 0x89 ] = KEY_PREVIOUS,        // Back |<<
-+	[ 0x8b ] = KEY_NEXT,            // End >>|
-+
-+	[ 0x8c ] = KEY_PROGRAM,         // Multi-view
-+	[ 0x8d ] = KEY_AUDIO,           // Audio Tracks
-+	[ 0x8e ] = KEY_SOUND,           // Sound
-+	[ 0x8f ] = KEY_SUBTITLE,        // Subtitles
-+
-+	[ 0x90 ] = KEY_TIME,            // Set timer
-+	[ 0x91 ] = KEY_CHANNEL,         // Stereo
-+	[ 0x92 ] = KEY_LANGUAGE,        // Language
-+	[ 0x93 ] = KEY_TEXT,            // Text
-+
-+	[ 0x99 ] = KEY_RED,             // RED
-+	[ 0x81 ] = KEY_GREEN,           // GREEN
-+	[ 0x87 ] = KEY_YELLOW,          // YELLOW
-+	[ 0x97 ] = KEY_BLUE,            // BLUE
-+#endif /* IR_KEYTAB_SIZE>=256 */
-+};
-+
-+EXPORT_SYMBOL_GPL(ir_codes_10moonstm3);
-diff --git a/drivers/media/video/saa7134/saa7134-cards.c b/drivers/media/video/saa7134/saa7134-cards.c
-index c89d0ef..17d3228 100644
---- a/drivers/media/video/saa7134/saa7134-cards.c
-+++ b/drivers/media/video/saa7134/saa7134-cards.c
-@@ -4248,6 +4248,7 @@ int saa7134_board_init1(struct saa7134_dev *dev)
- 	case SAA7134_BOARD_AVERMEDIA_A16AR:
- 	case SAA7134_BOARD_ENCORE_ENLTV:
- 	case SAA7134_BOARD_ENCORE_ENLTV_FM:
-+	case SAA7134_BOARD_10MOONSTVMASTER3:
- 		dev->has_remote = SAA7134_REMOTE_GPIO;
- 		break;
- 	case SAA7134_BOARD_FLYDVBS_LR300:
-diff --git a/drivers/media/video/saa7134/saa7134-input.c b/drivers/media/video/saa7134/saa7134-input.c
-index c0de37e..5511aff 100644
---- a/drivers/media/video/saa7134/saa7134-input.c
-+++ b/drivers/media/video/saa7134/saa7134-input.c
-@@ -333,6 +333,12 @@ int saa7134_input_init1(struct saa7134_dev *dev)
- 		mask_keyup   = 0x040000;
- 		polling      = 50; // ms
- 		break;
-+	case SAA7134_BOARD_10MOONSTVMASTER3:
-+		ir_codes     = ir_codes_10moonstm3;
-+		mask_keycode = 0x7f80000;
-+		mask_keyup   = 0x8000000;
-+		polling      = 50; //ms
-+		break;
- 	}
- 	if (NULL == ir_codes) {
- 		printk("%s: Oops: IR config error [card=%d]\n",
-diff --git a/include/media/ir-common.h b/include/media/ir-common.h
-index 9807a7c..4e4d207 100644
---- a/include/media/ir-common.h
-+++ b/include/media/ir-common.h
-@@ -140,6 +140,7 @@ extern IR_KEYTAB_TYPE ir_codes_budget_ci_old[IR_KEYTAB_SIZE];
- extern IR_KEYTAB_TYPE ir_codes_asus_pc39[IR_KEYTAB_SIZE];
- extern IR_KEYTAB_TYPE ir_codes_encore_enltv[IR_KEYTAB_SIZE];
- extern IR_KEYTAB_TYPE ir_codes_tt_1500[IR_KEYTAB_SIZE];
-+extern IR_KEYTAB_TYPE ir_codes_10moonstm3[IR_KEYTAB_SIZE];
- 
- #endif
- 
+Third, I don't think it's possible even in theory for a SLAB-like
+allocator to be as efficient as SLOB simply due to the constraints of
+putting only objects of the same size on a given page. So consider me
+skeptical on the density claim.
 
+It is usually better to use SLUB simply because you're more likely to
+have 1GB of RAM rather than 4MB.
 
+-- 
+Mathematics is the supreme nostalgia of our time.
