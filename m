@@ -1,42 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758203AbXEIPzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758366AbXEIP5R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758203AbXEIPzg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbXEIPza
+	id S1758366AbXEIP5R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:57:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbXEIP5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:55:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:60141 "EHLO mx1.redhat.com"
+	Wed, 9 May 2007 11:57:04 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60770 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754139AbXEIPz3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:55:29 -0400
-Date: Wed, 9 May 2007 16:54:11 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Heinz Mauelshagen <hjm@redhat.com>
-Subject: Re: [2.6.22 PATCH 22/26] dm: bio list helpers
-Message-ID: <20070509155411.GD18152@agk.fab.redhat.com>
-Mail-Followup-To: Jens Axboe <jens.axboe@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>, dm-devel@redhat.com,
-	linux-kernel@vger.kernel.org, Heinz Mauelshagen <hjm@redhat.com>
-References: <20070508194845.GC24114@agk.fab.redhat.com> <20070508174159.7d78a275.akpm@linux-foundation.org> <20070509064923.GO4163@kernel.dk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070509064923.GO4163@kernel.dk>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+	id S1756106AbXEIP5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:57:01 -0400
+Message-ID: <4641EF46.2090506@redhat.com>
+Date: Wed, 09 May 2007 11:56:54 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: Greg K-H <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       =?ISO-8859-1?Q?Mat=ED=ADas_Alejandro_Torres?= <torresmat@gmail.com>
+Subject: Re: [PATCH] pci-quirks: disable MSI on RS400-200 and RS480, take
+ #2
+References: <4641BD26.1020501@gmail.com> <4641EAA5.4030409@redhat.com> <4641EDDC.1020102@gmail.com>
+In-Reply-To: <4641EDDC.1020102@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 08:49:23AM +0200, Jens Axboe wrote:
-> Besides, manual prefetching is very rarely a win. I dabbled with some
-> benchmarks a few weeks back (with the doubly linked lists), and in most
-> cases it was actually a loss. So I'd vote for just removing the
-> prefetch() above.
+Tejun Heo wrote:
+>> FWIW several distros have turned off MSI by default and added
+>> a "pci=msi" option to enable it.
+> 
+> Yeah, it seem to cause a lot of problems on certain chips but I think
+> the correct path is to add PCI quirks for those.  Most MSI problems I've
+> seen are on these ATI chips.  Do you happen to know any other?
 
-OK.
- 
-Alasdair
--- 
-agk@redhat.com
+We had devices that didn't do MSI right, e.g. forcedeth and others I
+can't recall now.
