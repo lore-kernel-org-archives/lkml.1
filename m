@@ -1,63 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbXEIIOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbXEIIPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754499AbXEIIOI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 04:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbXEIINy
+	id S1755580AbXEIIPn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 04:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbXEIIP3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 04:13:54 -0400
-Received: from smtp1-g19.free.fr ([212.27.42.27]:34292 "EHLO smtp1-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753537AbXEIINw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 04:13:52 -0400
-From: Duncan Sands <duncan.sands@math.u-psud.fr>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11 (PCI_MULTITHREAD_PROBE)
-Date: Wed, 9 May 2007 10:14:16 +0200
-User-Agent: KMail/1.9.6
-Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Adrian Bunk <bunk@stusta.de>,
-       Greg K-H <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com> <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org> <alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Wed, 9 May 2007 04:15:29 -0400
+Received: from www.osadl.org ([213.239.205.134]:33163 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753107AbXEIIP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 04:15:26 -0400
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       John Stultz <johnstul@us.ibm.com>, linux-acpi@vger.kernel.org
+In-Reply-To: <20070509001032.dbb982ca.akpm@linux-foundation.org>
+References: <20070430102837.748238000@linutronix.de>
+	 <20070430102852.042964000@linutronix.de>
+	 <20070505003421.00ec45ba.akpm@linux-foundation.org>
+	 <20070505115127.GA17815@elte.hu>
+	 <1178463784.31213.46.camel@localhost.localdomain>
+	 <20070508225920.258d8d34.akpm@linux-foundation.org>
+	 <20070509001032.dbb982ca.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 10:18:17 +0200
+Message-Id: <1178698697.3042.461.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705091014.17109.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2007-05-09 at 00:10 -0700, Andrew Morton wrote:
+> > > find an updated patch below. It fixes the problem on Ingo's
+> > > VAIO-of-fun-emulator and I got confirmation from several other affected
+> > > users, that the patch series is still solving their problems.
+> > > 
+> > 
+> > The machine is still hanging with this patch applied.
 
-> Instead of changing existign probe functionality to be asynchronous, we 
-> could *add* a new and asynchronous part to it. For example, we could make 
-> the rule for PCI - or other bus - devices be:
+What did change since yesterday ?
+
+> yup, that now survives suspend-to-disk and resume, thanks.
+
+> > suspend-to-disk gets up to "swsusp: critical section: done (NNN pages copied)"
+> > 
+> > No netconsole, no printk-timestamping.
+> > 
+> > ho hum, I guess I get to debug this.
 > 
->  - the bus will *first* call the "probe()" function synchronously.
+> It got ugly.
 > 
->  - after that one has completed, we will call "probe_async()" 
->    asynchronously at some point (it ie might be scheduled immediately 
->    after the "probe()" call, but delayed by some arbitrary issues like 
->    just already having too many asynchronous probes on-going or similar)
+> We finish swsusp_save() and a few other functions then we go
+> 
+> 	hibernate
+> 	->platform_finish
+> 	  ->acpi_hibernation_finish
+> 	    ->acpi_leave_sleep_state
+> 	      ->acpi_evaluate_object
+> 
+> and there it dies, in this call:
+> 
+> 	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
+> 
+> I wonder how your patch caused that?
 
-the usbatm USB ADSL modem drivers have this functionality.  These drivers
-need to load firmware before they become useful.  The natural place to do
-this is in the probe() method, but because firmware loading can take quite
-some time (10 seconds, or even an infinite amount of time if the firmware
-is not available and the timeout has been turned off) and would block the
-USB hub thread if done from probe(), it's done in a separate kernel thread.
-Clients of usbatm, like the speedtch driver, register themselves with usbatm,
-providing a "bind" and a "heavy_init" method.  "bind" is like probe(), while
-"heavy_init" is like probe_async().  First bind is called, and if successful
-and heavy_init has been defined, then heavy_init is run in its own thread.
-If the device is unplugged, usbatm takes care of making sure that the heavy_init
-thread has stopped before calling unbind and destroying device related structures.
+hmm, that's more than strange
 
-A bunch of other USB drivers could do with similar functionality for the
-same reason (slow probe), and there was some discussion about generalizing
-this functionality to the USB layer but I didn't find time to do anything
-about it yet.  See http://marc.info/?l=linux-usb-devel&m=116551653026075&w=2
+> <debugs further>
+> 
+> OK, it gets to the last statement in acpi_evaluate_object():
+> 
+> 	return_ACPI_STATUS(status);
+> 
+> but doesn't hit the printk on return to the caller,
+> acpi_leave_sleep_state().
+> 
+> A working theory would be that something we did trashed the stack in
+> acpi_evaluate_object().
+> 
+> <switches from 8k stacks to 4k. No change>
+> 
+> foo.  I'm not sure what to do now.
 
-Best wishes,
+Hmm. Do we enable interrupts somewhere where we should not ?
+/me goes looking for such places.
 
-Duncan.
+	tglx
+
+
+	
+
+
