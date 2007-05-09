@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbXEIRRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbXEIRWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbXEIRRo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 13:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbXEIRRg
+	id S1757384AbXEIRWT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 13:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbXEIRWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 13:17:36 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:56063 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755287AbXEIRRg (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 13:17:36 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm2 - Kconfig horkage
-In-Reply-To: Your message of "Wed, 09 May 2007 10:07:56 PDT."
-             <Pine.LNX.4.64.0705091007050.28520@schroedinger.engr.sgi.com>
-From: Valdis.Kletnieks@vt.edu
-References: <20070509012322.199f292b.akpm@linux-foundation.org> <5713.1178722647@turing-police.cc.vt.edu>
-            <Pine.LNX.4.64.0705091007050.28520@schroedinger.engr.sgi.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1178731018_3418P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Wed, 09 May 2007 13:16:58 -0400
-Message-ID: <7574.1178731018@turing-police.cc.vt.edu>
+	Wed, 9 May 2007 13:22:10 -0400
+Received: from gra-lx1.iram.es ([150.214.224.41]:38530 "EHLO gra-lx1.iram.es"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755362AbXEIRWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 13:22:09 -0400
+X-Greylist: delayed 1842 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 May 2007 13:22:09 EDT
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 9 May 2007 18:51:15 +0200
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>,
+       Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org
+Subject: Section mismatch warnings (was Re: [PATCH] early_pfn_to_nid needs to be __meminit)
+Message-ID: <20070509165115.GA23576@iram.es>
+References: <20070510022552.4bb1a407.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070510022552.4bb1a407.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1178731018_3418P
-Content-Type: text/plain; charset="us-ascii"
-Content-Id: <7568.1178731018.1@turing-police.cc.vt.edu>
-
-On Wed, 09 May 2007 10:07:56 PDT, Christoph Lameter said:
-> On Wed, 9 May 2007, Valdis.Kletnieks@vt.edu wrote:
-> > 1) Spotted in init/Kconfig:
-> > 
-> > config SLUB_DEBUG
-> >         default y
-> >         bool "Enable SLUB debugging support" if EMBEDDED
-> >         help
-> > 
-> > Shouldn't that have an 'default SLUB' or 'if SLUB' or something attached to it?
+On Thu, May 10, 2007 at 02:25:52AM +1000, Stephen Rothwell wrote:
+> since it is referenced by memmap_init_zone (which is __meminit) via the
+> early_pfn_in_nid macro when CONFIG_NODES_SPAN_OTHER_NODES is set (which
+> basically means PowerPC 64).
 > 
-> Maybe. Is there a problem with SLUB_DEBUG being set if SLUB is not 
-> selected?
+> This removes a section mismatch warning in those circumstances.
 
-% egrep 'SL[AU]B' /usr/src/linux-2.6.21-mm2/.config
-# CONFIG_SLUB_DEBUG is not set
-CONFIG_SLAB=y
-# CONFIG_SLUB is not set
-# CONFIG_DEBUG_SLAB is not set
+Speaking of this, I just tried to compile an official (Linus' git tree) 
+kernel for my old PMac G4 and I get a lot of section mismatch warnings at 
+the end of the compilation:
 
-Just seemed odd to do a 'make oldconfig' and get prompted for the value, and it
-gave a value of 'Y' to a debug  option of a feature that wasn't selected.  :)
+  LD      vmlinux
+  SYSMAP  System.map
+  SYSMAP  .tmp_System.map
+  MODPOST vmlinux
+WARNING: "fee_restarts" [arch/powerpc/kernel/built-in] is COMMON symbol
+WARNING: "ee_restarts" [arch/powerpc/kernel/built-in] is COMMON symbol
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_string_start (offset 0x8)
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_string_end (offset 0xc)
+...
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from dt_struct_end (offset 0x20c)
+WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from disp_BAT (offset 0x234)
+WARNING: "primary_pteg_full" [arch/powerpc/mm/built-in] is COMMON symbol
+WARNING: "next_slot" [arch/powerpc/mm/built-in] is COMMON symbol
+WARNING: "htab_hash_searches" [arch/powerpc/mm/built-in] is COMMON symbol
+WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0xf50) and 'v_mapped_by_bats'
+WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.data:.got2 from  (offset 0x0)
+...
+WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.text:pmac_pcibios_after_init from .machine.desc after 'mach_powermac' (at offset 0xc4)
+WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at
+offset 0x1de88) and 'kmem_cache_shrink'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at
+offset 0x1dec0) and 'kmem_cache_shrink'
 
-It took me a while to convince myself that somebody hadn't changed the default
-to CONFIG_SLUB while I wasn't looking....
+I find these 50 or so warnings so scary that I've not yet tried 
+to boot the kernel. Note that this is a non-modular kernel.
 
-(Maybe the order of entries needs fixing - SLAB, SLAB_DEBUG, SLUB, SLUB_DEBUG,
-so that oldconfig and friends don't pop the question for debugging till *after*
-they ask if the feature should be included?
-
---==_Exmh_1178731018_3418P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGQgIKcC3lWbTT17ARAoHEAJ4gKG5oIMpQfLqXAoSvPXnu5gd1bQCggeSY
-QojLHjC/zVrMxlOI+OZ0d4E=
-=mpOl
------END PGP SIGNATURE-----
-
---==_Exmh_1178731018_3418P--
+	Gabriel
