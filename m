@@ -1,69 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbXEIIoh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755925AbXEIIpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755800AbXEIIoh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 04:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbXEIInl
+	id S1755925AbXEIIpb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 04:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbXEIIpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 04:43:41 -0400
-Received: from ausmtp06.au.ibm.com ([202.81.18.155]:35407 "EHLO
-	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754723AbXEIInk (ORCPT
+	Wed, 9 May 2007 04:45:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53987
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753370AbXEIIpN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 04:43:40 -0400
-From: Sripathi Kodi <sripathik@in.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] Use write_trylock_irqsave in ptrace_attach
-Date: Wed, 9 May 2007 14:13:27 +0530
-User-Agent: KMail/1.9.5
-Cc: akpm@osdl.org
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 9 May 2007 04:45:13 -0400
+Date: Wed, 09 May 2007 01:45:14 -0700 (PDT)
+Message-Id: <20070509.014514.124869407.davem@davemloft.net>
+To: akpm@linux-foundation.org
+Cc: efault@gmx.de, linux-kernel@vger.kernel.org
+Subject: Re: multi-second freezes with current GIT?
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070509014328.35d1d087.akpm@linux-foundation.org>
+References: <1178681360.7487.59.camel@Homer.simpson.net>
+	<20070508.232326.44096869.davem@davemloft.net>
+	<20070509014328.35d1d087.akpm@linux-foundation.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705091413.27344.sripathik@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Andrew Morton <akpm@linux-foundation.org>
+Date: Wed, 9 May 2007 01:43:28 -0700
 
-This patch makes ptrace_attach use write_trylock_irqsave.
+> does
+> 
+> echo 40 > /proc/sys/vm/dirty_ratio
+> echo 10 > /proc/sys/vm/dirty_background_ratio
+> 
+> fix it?
 
-Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
-
----
- kernel/ptrace.c |    7 +++----
- 1 files changed, 3 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.21/kernel/ptrace.c
-===================================================================
---- linux-2.6.21.orig/kernel/ptrace.c
-+++ linux-2.6.21/kernel/ptrace.c
-@@ -160,6 +160,7 @@ int ptrace_may_attach(struct task_struct
- int ptrace_attach(struct task_struct *task)
- {
- 	int retval;
-+	unsigned long flags = 0;
- 
- 	retval = -EPERM;
- 	if (task->pid <= 1)
-@@ -178,9 +179,7 @@ repeat:
- 	 * cpu's that may have task_lock).
- 	 */
- 	task_lock(task);
--	local_irq_disable();
--	if (!write_trylock(&tasklist_lock)) {
--		local_irq_enable();
-+	if (!write_trylock_irqsave(&tasklist_lock, flags)) {
- 		task_unlock(task);
- 		do {
- 			cpu_relax();
-@@ -208,7 +207,7 @@ repeat:
- 	force_sig_specific(SIGSTOP, task);
- 
- bad:
--	write_unlock_irq(&tasklist_lock);
-+	write_unlock_irqrestore(&tasklist_lock, flags);
- 	task_unlock(task);
- out:
- 	return retval;
+Yes, I was going to play with that, I'll report if anything
+decisive happens.
