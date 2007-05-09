@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969094AbXEIGa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966203AbXEIGao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969094AbXEIGa0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 02:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934722AbXEIGaH
+	id S966203AbXEIGao (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 02:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969032AbXEIGaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 02:30:07 -0400
-Received: from adicia.telenet-ops.be ([195.130.132.56]:39801 "EHLO
-	adicia.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934664AbXEIGaF (ORCPT
+	Wed, 9 May 2007 02:30:19 -0400
+Received: from amsfep17-int.chello.nl ([213.46.243.15]:11947 "EHLO
+	amsfep18-int.chello.nl" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S968649AbXEIGaR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 02:30:05 -0400
-Date: Wed, 9 May 2007 08:30:02 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Hans Verkuil <hverkuil@xs4all.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCHES] V4L/DVB updates
-In-Reply-To: <1177706435.5163.49.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0705090804310.12497@anakin>
-References: <1177706435.5163.49.camel@localhost>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 May 2007 02:30:17 -0400
+Subject: [PATCH] sunrpc: fix crash in rpc_malloc()
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 08:30:11 +0200
+Message-Id: <1178692212.6810.1.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Apr 2007, Mauro Carvalho Chehab wrote:
-> A short changelog:
-> 
->    - New drivers:
->         ivtv driver for Hauppauge PVR series and similar boards;
 
-Can we please have proper Kconfig dependencies instead of
+While the comment says:
+ * To prevent rpciod from hanging, this allocator never sleeps,
+ * returning NULL if the request cannot be serviced immediately.
 
-| #ifdef CONFIG_LIRC_I2C
-| #  error "This driver is not compatible with the LIRC I2C kernel configuration
-| #endif /* CONFIG_LIRC_I2C */
-| 
-| #ifndef CONFIG_PCI
-| #  error "This driver requires kernel PCI support."
-| #endif /* CONFIG_PCI */
+The function does not actually check for NULL pointers being returned.
 
-in drivers/media/video/ivtv/ivtv-driver.h? Especially a dependency on
-CONFIG_PCI would be nice (CONFIG_LIRC_I2C doesn't exist in mainline?).
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ net/sunrpc/sched.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-| drivers/media/video/video-buf.c: In function 'videobuf_queue_pci':
-| drivers/media/video/video-buf.c:399: error: 'pci_map_sg' undeclared (first use in this function)
+Index: linux-2.6-git/net/sunrpc/sched.c
+===================================================================
+--- linux-2.6-git.orig/net/sunrpc/sched.c
++++ linux-2.6-git/net/sunrpc/sched.c
+@@ -762,6 +762,10 @@ void *rpc_malloc(struct rpc_task *task, 
+ 		buf = mempool_alloc(rpc_buffer_mempool, gfp);
+ 	else
+ 		buf = kmalloc(size, gfp);
++
++	if (!buf)
++		return NULL;
++
+ 	*buf = size;
+ 	dprintk("RPC: %5u allocated buffer of size %zu at %p\n",
+ 			task->tk_pid, size, buf);
 
-Probably some new driver does a select VIDEO_BUF, which overrides that
-VIDEO_BUF depends on PCI?
 
-Thanks!
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
