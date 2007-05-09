@@ -1,46 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbXEITpS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXEITxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757458AbXEITpS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 15:45:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbXEITpG
+	id S1757397AbXEITxm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 15:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbXEITxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 15:45:06 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:56123 "EHLO e6.ny.us.ibm.com"
+	Wed, 9 May 2007 15:53:36 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46795 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755524AbXEITpF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 15:45:05 -0400
-Date: Wed, 9 May 2007 14:45:03 -0500
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, ppc-dev <linuxppc-dev@ozlabs.org>,
-       Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Section mismatch warnings (was Re: [PATCH] early_pfn_to_nid needs to be __meminit)
-Message-ID: <20070509194503.GZ4452@austin.ibm.com>
-References: <20070510022552.4bb1a407.sfr@canb.auug.org.au> <20070509165115.GA23576@iram.es>
+	id S1751580AbXEITxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 15:53:35 -0400
+Message-ID: <464226BD.8000602@garzik.org>
+Date: Wed, 09 May 2007 15:53:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070509165115.GA23576@iram.es>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+To: Gerhard Mack <gmack@innerfire.net>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [2.6.21.1] SATA freeze
+References: <Pine.LNX.4.64.0705091453310.18441@mtl.rackplans.net>
+In-Reply-To: <Pine.LNX.4.64.0705091453310.18441@mtl.rackplans.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 06:51:15PM +0200, Gabriel Paubert wrote:
-> On Thu, May 10, 2007 at 02:25:52AM +1000, Stephen Rothwell wrote:
-> > This removes a section mismatch warning in those circumstances.
+Gerhard Mack wrote:
+> May  9 14:51:35 mgerhard kernel: ata1.00: exception Emask 0x0 SAct 0x0 
+> SErr 0x1800000 action 0x2 frozen
+> May  9 14:51:35 mgerhard kernel: ata1.00: cmd 
+> 35/00:00:80:6d:c8/00:04:09:00:00/e0 tag 0 cdb 0x0 data 524288 out
+> May  9 14:51:35 mgerhard kernel:          res 
+> 40/00:c8:68:65:c8/84:00:09:00:00/e0 Emask 0x4 (timeout)
+> May  9 14:51:42 mgerhard kernel: ata1: port is slow to respond, please be 
+> patient (Status 0xd0)
 > 
-> Speaking of this, I just tried to compile an official (Linus' git tree) 
-> kernel for my old PMac G4 and I get a lot of section mismatch warnings at 
-> the end of the compilation:
-> 
-> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0xf50) and 'v_mapped_by_bats'
-> 
-> I find these 50 or so warnings so scary that I've not yet tried 
-> to boot the kernel. Note that this is a non-modular kernel.
+> Anything I can do to figgure out what's causing this?
 
-I'm getting oodles of these on an older -mm2 tree. The kernels seem to
-work fine. Yes, they should be fixed but I'm up to my proverbial eyballs
-in alligators.
+Provide full lspci, dmesg, kernel config?
 
---linas
+	Jeff
+
+
+
