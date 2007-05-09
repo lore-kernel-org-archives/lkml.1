@@ -1,84 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbXEIPGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756941AbXEIPLR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758213AbXEIPGt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXEIPGm
+	id S1756941AbXEIPLR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:11:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXEIPLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:06:42 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:46810 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753645AbXEIPGl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:06:41 -0400
-Subject: Re: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
-From: Richard Purdie <rpurdie@rpsys.net>
-To: kogiidena@eggplant.ddo.jp
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
-In-Reply-To: <2329.192.168.1.10.1178718316.squirrel@eggplant.ddo.jp>
-References: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp>
-	 <1178628407.6061.24.camel@localhost.localdomain>
-	 <1638.192.168.1.10.1178710979.squirrel@eggplant.ddo.jp>
-	 <1178712861.6291.5.camel@localhost.localdomain>
-	 <2329.192.168.1.10.1178718316.squirrel@eggplant.ddo.jp>
-Content-Type: text/plain
-Date: Wed, 09 May 2007 16:06:24 +0100
-Message-Id: <1178723184.6291.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 9 May 2007 11:11:05 -0400
+Received: from www.osadl.org ([213.239.205.134]:35202 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751600AbXEIPLD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:11:03 -0400
+From: =?iso-8859-1?q?Hans-J=FCrgen_Koch?= <hjk@linutronix.de>
+To: Greg KH <greg@kroah.com>
+Subject: Re: [patch] Add the device IDs for AMD/ATI SB700
+Date: Wed, 9 May 2007 17:10:28 +0200
+User-Agent: KMail/1.9.5
+Cc: Jeff Garzik <jeff@garzik.org>, Henry Su <henry.su@amd.com>,
+       alan@lxorguk.ukuu.org.uk, bzolnier@gmail.com,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       xiaosuzi520@hotmail.com
+References: <FFECF24D2A7F6D418B9511AF6F3586020197F6A6@shacnexch2.atitech.com> <4641C066.8080100@garzik.org> <20070509142115.GA26646@kroah.com>
+In-Reply-To: <20070509142115.GA26646@kroah.com>
+Organization: Linutronix
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705091710.28332.hjk@linutronix.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 22:45 +0900, kogiidena wrote:
-> > On Wed, 2007-05-09 at 20:42 +0900, kogiidena wrote:
-> >> >As far as I can tell, the existing timer trigger can do everything the
-> >> >blink trigger can (and more besides).
-> >> I want to blink LED in the initial state.
-> >
-> > Are you after to set that per LED or would some standard configurable
-> > default for all LEDs work?
-> I'm sorry.The meaning of the question cannot be understood.
-> My LED is use in the following.
-> I want to blink LED while booting it.
-> When boot ends, LED is turned on.
+Am Mittwoch 09 Mai 2007 16:21 schrieb Greg KH:
+> On Wed, May 09, 2007 at 08:36:54AM -0400, Jeff Garzik wrote:
+> > Henry Su wrote:
+> > > From: henry.su@amd.com
+> > > Adding the device ID for AMD/ATI SB700.
+> > > Signed-off-by:henry su <henry.su@amd.com>
+> > 
+> > Time to train new people...
+> > 
+> > You need to split up your patches:
+> > * send I2C and PCI quirk patches to GregKH
+> 
+> Nope, I2C is not me anymore, I think it's already on it's third
+> maintainer
 
-Your device has more than one LED. Do you need to be able to configure
-each LED individually or can they all have the same default settings?
+AFAICT, Jean Delvare only dropped lm-sensors maintainership. He is
+still maintainer (and hopefully stays) of the i2c subsystem.
 
-> > The approach is probably a good idea but you'll have to split struct
-> > timer_list timer from the data structure.
+Anyway, whoever maintains it, patches for i2c should be sent to
+the i2c mailing list, i2c@lm-sensors.org
 
-"struct timer_list timer" in "struct timer_trig_data" is unused when its
-used for a default_trigger_data which is wasted space.
-
-> > Also, if default_trigger wasn't the timer trigger you have a nice oops
-> > waiting to happen.
-> I'm sorry that it is not possible to understand enough.
-> Please teach concretely.
-
-You don't check default_trigger == "timer" before using
-default_trigger_data.
-
-Imagine we have:
-
-struct led_classdev landisk_leds = {
-       .name = "power",
-       .default_trigger = "bitshift",
-       .default_trigger_data =&default_bitshift_trig_data,
-};
-
-where:
-
-struct bitshift_trig_data {
-       unsigned long single_variable;
-};
-
-If you then:
-
-echo "timer" > /sys/class/leds/power/trigger
-
-your patch will use random data and possibly oops.
-
-Regards,
-
-Richard
-
+Hans
