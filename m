@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969457AbXEIDmQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969400AbXEIDrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969457AbXEIDmQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 23:42:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965724AbXEIDmC
+	id S969400AbXEIDrr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 23:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967367AbXEIDrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 23:42:02 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:60698 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755589AbXEIDmB (ORCPT
+	Tue, 8 May 2007 23:47:40 -0400
+Received: from smtp109.mail.mud.yahoo.com ([209.191.85.219]:32342 "HELO
+	smtp109.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755591AbXEIDrj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 23:42:01 -0400
-Message-ID: <46414307.90504@zytor.com>
-Date: Tue, 08 May 2007 20:41:59 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Tue, 8 May 2007 23:47:39 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=n7IOXKgRsggN6EIhS3AGY/dKjGmCjMddfc4Co6vdI2GvZW7ZZmWf6hWSkfE9cMGPzferWLdf3jpIs5FiF/t5rv59Xsozm9yGwrG++xpnuNVpY5u2eEDeEpzM5fOpww08U60BMSnbjlZjkQsBJxxRwbQx/Ghl0IO51l2hPuBEKmI=  ;
+X-YMail-OSG: CLvlgZIVM1mviXQumtNxlix4u3CpemWRdMmLouGgb47SAOID01k8e1mXgl5AM8xY1arUO.8tsQ--
+Message-ID: <4641443C.7090007@yahoo.com.au>
+Date: Wed, 09 May 2007 13:47:08 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-To: Chris Wedgwood <cw@f00f.org>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Type cast some size_t arguments to 'unsigned int' to
- avoid (harmless) gcc printk warnings.
-References: <20070508185142.9ED501827261@tuatara.stupidest.org>
-In-Reply-To: <20070508185142.9ED501827261@tuatara.stupidest.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+CC: Matt Mackall <mpm@selenic.com>, David Miller <davem@davemloft.net>,
+       clameter@sgi.com, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch
+ added to -mm tree
+References: <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com> <20070509012725.GZ11115@waste.org> <Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com> <20070508.185141.85412154.davem@davemloft.net> <46412BB5.1060605@yahoo.com.au> <20070509025634.GC11115@waste.org> <46413D6A.6000502@yahoo.com.au>
+In-Reply-To: <46413D6A.6000502@yahoo.com.au>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wedgwood wrote:
-> Signed-off-by: Chris Wedgwood <cw@f00f.org>
-> ---
->  net/sunrpc/sched.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/net/sunrpc/sched.c b/net/sunrpc/sched.c
-> index 4a53e94..60df3c1 100644
-> --- a/net/sunrpc/sched.c
-> +++ b/net/sunrpc/sched.c
-> @@ -764,7 +764,7 @@ void *rpc_malloc(struct rpc_task *task, size_t size)
->  		buf = kmalloc(size, gfp);
->  	*buf = size;
->  	dprintk("RPC: %5u allocated buffer of size %u at %p\n",
-> -			task->tk_pid, size, buf);
-> +			task->tk_pid, (unsigned int)size, buf);
->  	return (void *) ++buf;
->  }
->  
-> @@ -783,7 +783,7 @@ void rpc_free(void *buffer)
->  	buf--;
->  
->  	dprintk("RPC:       freeing buffer of size %u at %p\n",
-> -			size, buf);
-> +			(unsigned int)size, buf);
->  	if (size <= RPC_BUFFER_MAXSIZE)
->  		mempool_free(buf, rpc_buffer_mempool);
->  	else
+Nick Piggin wrote:
 
-NAK.  This is wrong for multiple reasons.
-Use %zu instead.
+> +static void kmem_rcu_free(struct rcu_head *head)
+> +{
+> +	struct slob_rcu *slob_rcu = (struct slob_rcu *)head;
+> +	void *b = (void *)slob_rcu - slob_rcu->c->size;
 
-	-hpa
+No, I forgot that c->size includes the size of struct slob_rcu here.
+Will send updated patch which is tested and includes SOB.
 
+> +
+> +	__kmem_cache_free(b, slob_rcu->c);
+> +}
 
+-- 
+SUSE Labs, Novell Inc.
