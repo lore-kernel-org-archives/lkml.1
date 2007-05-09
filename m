@@ -1,64 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbXEIRPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758539AbXEIRPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758242AbXEIRPj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 13:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757428AbXEIRPS
+	id S1758539AbXEIRPz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 13:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757652AbXEIRPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 13:15:18 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:33254 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757218AbXEIRPQ (ORCPT
+	Wed, 9 May 2007 13:15:21 -0400
+Received: from nz-out-0506.google.com ([64.233.162.230]:11882 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757509AbXEIRPT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 13:15:16 -0400
-Date: Wed, 9 May 2007 19:14:35 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: david@lang.hm
-Cc: Greg KH <greg@kroah.com>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
- (PCI_MULTITHREAD_PROBE)
-Message-ID: <20070509191435.695765ce@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <Pine.LNX.4.64.0705090947010.4467@asgard.lang.hm>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
-	<20070508141149.GJ4226@stusta.de>
-	<alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
-	<20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
-	<20070509095302.GA13053@kroah.com>
-	<20070509153813.52a7c397@gondolin.boeblingen.de.ibm.com>
-	<20070509164207.GA28633@kroah.com>
-	<Pine.LNX.4.64.0705090947010.4467@asgard.lang.hm>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 May 2007 13:15:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=He81taqpxDZSi45RzxQtwyVAa+BuKxVPbxNibIvtjYefN11bRAyCRgsadfb9uFnO6k/jHCrg07Hgbunvq4G7YDp7hLPcY30c+UGGwiDxX7au9Lenoy72fkszQjN+cDZRSWrRHX1g1uUMnuqh7qncvl+CYg2CJKnh/t+WXA0QXME=
+Message-ID: <a36005b50705091015u3b0ccc3brb4cb99fc0fa29d82@mail.gmail.com>
+Date: Wed, 9 May 2007 10:15:17 -0700
+From: "Ulrich Drepper" <drepper@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH] stub MADV_FREE implementation
+Cc: "Rik van Riel" <riel@redhat.com>, "Nick Piggin" <nickpiggin@yahoo.com.au>,
+       "Ulrich Drepper" <drepper@redhat.com>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, "Jakub Jelinek" <jakub@redhat.com>,
+       "Dave Jones" <davej@redhat.com>
+In-Reply-To: <20070508160547.e1576146.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au>
+	 <463B598B.80200@redhat.com> <463BC62C.3060605@yahoo.com.au>
+	 <463FF3D3.9060007@redhat.com>
+	 <20070508160547.e1576146.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 May 2007 09:50:09 -0700 (PDT),
-david@lang.hm wrote:
+On 5/8/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> And has Ulrich indicated that glibc would indeed go out ahead of
+> the kernel in this fashion?
 
-> On Wed, 9 May 2007, Greg KH wrote:
+Rik is concerned to get a glibc version which allows him to test the
+improvements.  That's really not a big problem.  We laready have a
+patch for this and can provide appropriate RPMs easily.
 
-> > Why is it dead?  Since when is PCI the only bus in the system?
-> 
-> correct, while this discussion started over the PCI_MULTITHREAD_PROBE it's 
-> focusing on the generic problem that would apply to any bus
-
-s/multithreaded/async/ (more generic and better describing what we
-want imo) That's why I said the multithreaded approach was dead (sorry
-if that was confusing).
-
-> I don't think anyone is saying that PCI is the problem here. We're trying 
-> to identify what needs to be done for any arbatrary bus, if a particular 
-> bus doesn't need to split it's initialization up becouse there are no 
-> delays (and therefor no gains for multithreading) then drivers for that 
-> bus don't bother to implement any async portion.
-
-Exactly. A general idea/framework on how to do async probing would be
-good.
+I don't want to set a precedence for adding glibc support for phantom
+features.  So, I would not add support to the official glibc anyway
+until there is a fixed implementation which then also means a fixed
+ABI.  So, Andrew, applying the patch won't do any good.
