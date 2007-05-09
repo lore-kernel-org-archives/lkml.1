@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968434AbXEIFzV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935041AbXEIFz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968434AbXEIFzV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 01:55:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932760AbXEIFzI
+	id S935041AbXEIFz6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 01:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934647AbXEIFzs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 01:55:08 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:50262 "EHLO
+	Wed, 9 May 2007 01:55:48 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:50275 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933856AbXEIFzG (ORCPT
+	with ESMTP id S932760AbXEIFzr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 01:55:06 -0400
-Message-ID: <46416217.1070202@zytor.com>
-Date: Tue, 08 May 2007 22:54:31 -0700
+	Wed, 9 May 2007 01:55:47 -0400
+Message-ID: <46416246.9090005@zytor.com>
+Date: Tue, 08 May 2007 22:55:18 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
@@ -34,21 +34,10 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 yhlu wrote:
-> On 5/8/07, H. Peter Anvin <hpa@zytor.com> wrote:
->> H. Peter Anvin wrote:
->> Of course, one could argue that since all of those were obsolete by the
->> time Linux was first created, that it probably doesn't matter and that
->> isVGA == 0 pretty much means the more obvious thing.
->>
->> MDA/HGC stuck around for quite a while for debugging, since it was
->> non-conflicting with VGA, but even if it is, the reason people put it in
->> their system is to have something that the OS doesn't readily see.
->>
 > so the kexec tools need to scan the pci devices list, and find out how
 > to set real_mode.isVGA and orig_video_mode, also need to parse the
 > comand line about vga console.
 
-A better way, probably, would be for the kernel to export the
-boot_params structure so kexec can reuse it.
+BTW, welcome to the hell of bypassing setup.
 
 	-hpa
