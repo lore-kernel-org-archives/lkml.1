@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbXEIMxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758035AbXEIMyg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbXEIMxg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbXEIMx0
+	id S1758035AbXEIMyg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:54:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbXEIMy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:53:26 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:34895 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754925AbXEIMxY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:53:24 -0400
-Date: Wed, 9 May 2007 14:52:24 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-cc: Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: nbd problem.
-In-Reply-To: <20070509123820.GA1618@bitwizard.nl>
-Message-ID: <Pine.LNX.4.61.0705091452070.32349@yvahk01.tjqt.qr>
-References: <20070508194053.GA23615@bitwizard.nl>
- <a781481a0705081333u7b910522x5aac0a0e532d5f85@mail.gmail.com>
- <20070509111049.GA2362@bitwizard.nl> <20070509123820.GA1618@bitwizard.nl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Wed, 9 May 2007 08:54:29 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3737 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755103AbXEIMy2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 08:54:28 -0400
+Date: Wed, 9 May 2007 12:54:16 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-pcmcia@lists.infradead.org
+Subject: Re: pcmcia ioctl removal
+Message-ID: <20070509125415.GA4720@ucw.cz>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501084623.GB14364@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070501084623.GB14364@infradead.org>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi!
 
-On May 9 2007 14:38, Rogier Wolff wrote:
->
->ozon:~> ps auxww | grep D
->USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
->root       110  0.4  0.0      0     0 ?        D    10:28   0:31 [pdflush]
->root       112  0.0  0.0      0     0 ?        D<   10:28   0:05 [kswapd0]
->root      1649  0.0  0.1   1604   108 pts/0    D+   11:17   0:03 nbd-client petisuix 1234 /dev/nd0
->root      1654  0.9  4.5   4648  2816 pts/0    D+   11:17   0:44 rsync /usr/src/linux-2.6.21.ozon /mnt/test1 -av --progress
->wolff     1716  0.0  0.9   1648   560 pts/1    R+   12:33   0:00 grep D
->ozon:~> 
->
->Can anybody help me figure out what these proceses are waiting for?
+> >  pcmcia-delete-obsolete-pcmcia_ioctl-feature.patch
+> 
+> ...
+> 
+> > Dominik is busy.  Will probably re-review and send these direct to Linus.
+> 
+> The patch above is the removal of cardmgr support.  While I'd love to
+> see this cruft gone it definitively needs maintainer judgement on whether
+> they time has come that no one relies on cardmgr anymore.
 
-echo t >/proc/sysrq-trigger
+I remember needing cardmgr few months ago on sa-1100 arm system. I'm
+not sure this is obsolete-enough to kill.
 
-dumps a ton to /var/log/messages.
-
-
-
-Jan
+							Pavel
 -- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
