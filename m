@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969961AbXEIC0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969711AbXEICjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969961AbXEIC0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 22:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935347AbXEIC0F
+	id S969711AbXEICjY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 22:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934410AbXEICjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 22:26:05 -0400
-Received: from bulldog.cs.binghamton.edu ([128.226.118.10]:39062 "EHLO
-	bulldog.cs.binghamton.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935247AbXEIC0D (ORCPT
+	Tue, 8 May 2007 22:39:15 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:2832 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934400AbXEICjO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 22:26:03 -0400
-X-Greylist: delayed 2941 seconds by postgrey-1.27 at vger.kernel.org; Tue, 08 May 2007 22:26:03 EDT
-Message-ID: <464125BC.109@cs.binghamton.edu>
-Date: Tue, 08 May 2007 21:37:00 -0400
-From: "Michael R. Hines" <mhines@cs.binghamton.edu>
-Reply-To: mhines@cs.binghamton.edu
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 8 May 2007 22:39:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=M1P4IZLpnSFkD77/ilyjeRA3SXkaTYaLAT0aO2TyXek89J2PvZ/iSCZ6aEYlD0WdA
+	Rk4KFhTkeoCOtQdgjKqTg==
+Date: Tue, 8 May 2007 19:38:56 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       jeremy@goop.org
+Subject: Re: [PATCH] doc: volatile considered evil
+In-Reply-To: <20070508190800.1334b968.randy.dunlap@oracle.com>
+Message-ID: <alpine.DEB.0.99.0705081934390.20751@chino.kir.corp.google.com>
+References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org>
+ <20070508121404.17bd97a6.randy.dunlap@oracle.com>
+ <a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
+ <20070508163452.8b71f682.randy.dunlap@oracle.com>
+ <alpine.DEB.0.99.0705081702070.28511@chino.kir.corp.google.com>
+ <20070508190800.1334b968.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: mhines@cs.binghamton.edu
-Subject: random AIO reads (do_generic_mapping_read)
-X-Enigmail-Version: 0.95.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig891CB62675E7FE352899FA39"
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig891CB62675E7FE352899FA39
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, 8 May 2007, Randy Dunlap wrote:
 
-Howdy (please CC replies directly),
+> "volatile" used on a gcc asm extension is different, granted.
+> It's not even a C-language "volatile" keyword AFAICT, so it doesn't
+> apply in this context.
+> 
 
-I have a very specific question regarding the behavior of
-do_generic_mapping_read().
+Using 'volatile' for an asm construct certainly is a keyword; in fact, C99 
+defines 'volatile' as a token which is reserved for use as a keyword.
 
-Here's my 2.6.20 setup: I have a stable block device driver that has
-random-access style latencies (around 80 microseconds. zero seek-time).
+> Anyway, how is this slightly modified title?
+> 
+> +***** "volatile" considered useless and evil:  Just Say NO! *****
+> +
+> +Do not use the C-language "volatile" keyword on kernel data
+> +(extracted from lkml emails from Linus)
+> 
 
-=46rom userland: I have a simple AIO io_submit/io_suspend
-program that repeatedly fires off *hundreds random AIO reads*
+It's still ambiguous.  A much more explicit title that nobody could argue 
+with would be "do not use the 'volatile' keyword as a type qualifier for 
+an object."
 
-Here's what I would like to happen:
-
-Since my driver does not seek (i.e. I/O not helped by mm/readahead.c)
-I would like my AIOs to be *overlapped* when sent to my driver.
-Currently, do_generic_mapping_read() will block on every read,
-one-by-one. Instead I want the bio's to be fired off to my driver as
-fast as possible without calling lock_page(). Rather the read should
-return and allow io_submit_one to fire off more reads without waiting
-for the userspace-copy - it would instead happen later in the future.
-
-Furthermore: I *do not* want to avoid the page cache (which temporarily
-solves the problem). I still want the support of the page-cache, I just
-instead need those I/Os to not block or sleep while waiting for a single
-I/O to complete.
-
-Obviously if this were a disk, such a requirement would be very stupid
-(and useless). But without it, my low-latency driver is under-utilized.
-
-Is this possible right now?
-
---=20
-/**************************************/
-Michael R. Hines
-Grad Student, SUNY Binghamton
-http://www.cs.binghamton.edu/~mhines
-/ *************************************/
-
-
---------------enig891CB62675E7FE352899FA39
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGQSW85CdHxppqAIYRAkUxAKCIqdpSmxcVVMxQrEjmc4El0/tUAwCeMk6D
-hOZVCm+7m1foaqNZFAenXfM=
-=5+xR
------END PGP SIGNATURE-----
-
---------------enig891CB62675E7FE352899FA39--
+		David
