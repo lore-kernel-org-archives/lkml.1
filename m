@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbXEIJuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755936AbXEIJwB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755419AbXEIJuZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 05:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbXEIJuP
+	id S1755936AbXEIJwB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:52:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754894AbXEIJvv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 05:50:15 -0400
-Received: from wr-out-0506.google.com ([64.233.184.225]:5636 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753294AbXEIJuN (ORCPT
+	Wed, 9 May 2007 05:51:51 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57422 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754783AbXEIJvu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 05:50:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V8fygeI364UfM0fNuxCE+YYw8wOoCk3ZtvifmSpokFS04BRty8GYIwIewobGS/pjD1mXijGba+srpgVEKGlMUnlh51Us2D4WFvun8yC+3Kqzcstx6VOnmJIig5VfKEbFVNjZoGvUA8qB1OoKHwKctl/l8vEvzqD4GXS7iDKufrY=
-Message-ID: <a44ae5cd0705090250w4f0d1dfes97d5e14f128187d9@mail.gmail.com>
-Date: Wed, 9 May 2007 02:50:12 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Herbert Xu" <herbert@gondor.apana.org.au>
-Subject: Re: 2.6.21-mm1+hotfix -- Slab corruption -- Last user: [<c01b0cfa>](cryptomgr_probe+0x6c/0x9a)
-Cc: "Andrew Morton" <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070508095255.GA20522@gondor.apana.org.au>
+	Wed, 9 May 2007 05:51:50 -0400
+Date: Wed, 9 May 2007 02:53:02 -0700
+From: Greg KH <greg@kroah.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+	(PCI_MULTITHREAD_PROBE)
+Message-ID: <20070509095302.GA13053@kroah.com>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com> <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org> <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <a44ae5cd0705071157m241ec3c1k8c60aaf213a28166@mail.gmail.com>
-	 <20070508095255.GA20522@gondor.apana.org.au>
+In-Reply-To: <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/8/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> On Mon, May 07, 2007 at 11:57:28AM -0700, Miles Lane wrote:
-> > [  118.442018] ieee80211_crypt: registered algorithm 'WEP'
-> > [  118.514572] ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
-> > [  118.514664] Slab corruption: size-256 start=c6aabe98, len=256
-> > [  118.514672] Redzone: 0x9f911029d74e35b/0x9f911029d74e35b.
-> > [  118.514676] Last user: [<c01b0cfa>](cryptomgr_probe+0x6c/0x9a)
-> > [  118.514692] 000: 10 55 ac c6 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b 6b
-> > [  118.514715] Prev obj: start=c6aabd80, len=256
-> > [  118.514721] Redzone: 0xd84156c5635688c0/0xd84156c5635688c0.
-> > [  118.514725] Last user: [<c01afd85>](crypto_alloc_instance+0x1d/0xc0)
-> > [  118.514734] 000: e0 71 39 c0 80 6e 39 c0 88 bd aa c6 88 bd aa c6
-> > [  118.514753] 010: 04 00 00 00 01 00 00 00 04 00 00 00 00 00 00 00
->
-> Oops.  Does this patch fix the problem for you?
+On Tue, May 08, 2007 at 06:38:46PM +0200, Cornelia Huck wrote:
+> On Tue, 8 May 2007 08:27:34 -0700 (PDT),
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> 
+> > And no, we should not do it at the device core level. In fact, I don't 
+> > think we should do it at that level at all. 
+> > 
+> > I'm pretty sure that the performance problems are at individual device 
+> > drivers, and that the right solution is to thread at *that* level. Not 
+> > higher up.
+> 
+> These are two different problems:
+> 
+> 1. Probing taking long for individual device drivers. I agree, this
+> should be solved at the driver level.
 
-Yes, that fixed it.  I found the problem is also showing up in
-2.6.21-git10.  I tested with 2.6.21-git10.
+For your bus perhaps, but not for PCI.
 
-Thanks!
-         Miles
+> 2. Sheer volume of devices on a bus. Even if the indivdual probing
+> doesn't take long, having all devices probed one after the other may
+> take a lot of time. Putting the actual probe on a thread makes it
+> possible to run several probes in parallel, thereby cutting probing
+> time.
+
+Again, not for PCI, right?
+
+If you want to implement this for your bus type, fine, I have no
+objection to that at all, but not for PCI, it's just not worth it.
+
+thanks,
+
+greg k-h
