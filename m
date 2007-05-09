@@ -1,141 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbXEIQEy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbXEIQHu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757385AbXEIQEy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 12:04:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbXEIQEd
+	id S1756882AbXEIQHu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 12:07:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXEIQHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 12:04:33 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:3241 "EHLO mail.z-net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754218AbXEIQEb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 12:04:31 -0400
-Date: Wed, 9 May 2007 20:03:28 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: kogiidena@eggplant.ddo.jp, linux-kernel@vger.kernel.org,
-       lethal@linux-sh.org
-Subject: Re: [PATCH 1/2] leds:arch/sh/boards/landisk LEDs supports
-Message-ID: <20070509160328.GA13640@zarina>
-Reply-To: cbou@mail.ru
-References: <1743.192.168.1.10.1178627210.squirrel@eggplant.ddo.jp> <1178628889.6061.33.camel@localhost.localdomain> <2490.192.168.1.10.1178720780.squirrel@eggplant.ddo.jp> <1178723594.6291.21.camel@localhost.localdomain>
+	Wed, 9 May 2007 12:07:44 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:2618 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754259AbXEIQHn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 12:07:43 -0400
+Message-ID: <4641F19F.605@shadowen.org>
+Date: Wed, 09 May 2007 17:06:55 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <1178723594.6291.21.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Andi Kleen <andi@firstfloor.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel@vger.kernel.org, Steve Fox <drfickle@us.ibm.com>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: 2.6.21-mm1 -- x86 verify_cpu.S compile failure
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <464046EC.40301@shadowen.org> <20070508152415.GA16967@one.firstfloor.org>
+In-Reply-To: <20070508152415.GA16967@one.firstfloor.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 04:13:14PM +0100, Richard Purdie wrote:
-> On Wed, 2007-05-09 at 23:26 +0900, kogiidena wrote:
-> > Hi Richard-san
-> > 
-> > The following three points were corrected.
-> > 
-> > 1.
-> > > You can't do this since the trigger will appear for all LEDs and it only
-> > > applies to a single LED. There has been previous discussion of LED
-> > > specific triggers and we'll need that support before you can make
-> > > something like this work. Nobody has sent me a patch for that yet and I
-> > > haven't had time to write one...
-> > The trigger name past "disk" was changed to the name "hard".
-> > This is to mean the hardware of LANDISK controls LED.
-> > The problem of "LED specific triggers" is solved.
+Andi Kleen wrote:
+> On Tue, May 08, 2007 at 10:46:20AM +0100, Andy Whitcroft wrote:
+>> We are seeing the following compile error on older x86 installs:
+>>
+>>   arch/i386/kernel/verify_cpu.S: Assembler messages:
+>>   arch/i386/kernel/verify_cpu.S:13: Error: `(%esp)' is
+>> 			 not a valid 16 bit base/index expression
+>>
+>> Seems to come from:
+>>
+>>   x86_64-mm-i386-verify-cpu
+>>
+>> Compiler:
+>>
+>>   gcc version 3.3.4 (Debian 1:3.3.4-3)
 > 
-> No, its not solved.
+> Your compiler must be a brother in spirit of Andrew's vaio.
 > 
-> Imagine I connect some device with its own LEDs and LED drivers. I'll
-> use "corgi:amber" as an example.
+> Does this patch help? 
 > 
-> I run:
+> -Andi
 > 
-> 'cat /sys/class/leds/corgi:amber/triggers'
 > 
-> I see "hard" listed.
+> Index: linux/arch/i386/kernel/verify_cpu.S
+> ===================================================================
+> --- linux.orig/arch/i386/kernel/verify_cpu.S
+> +++ linux/arch/i386/kernel/verify_cpu.S
+> @@ -10,7 +10,9 @@ verify_cpu:
+>  
+>  #if CONFIG_X86_MINIMUM_CPU_MODEL >= 4
+>  	pushfl
+> -	orl	$(1<<18),(%esp)		# try setting AC
+> +	pop	%eax
+> +	orl	$(1<<18),%eax		# try setting AC
+> +	push	%eax
+>  	popfl
+>  	pushfl
+>  	popl    %eax
 > 
-> 'echo "hard" > /sys/class/leds/corgi:amber/triggers'
 > 
-> doesn't work though...
-> 
-> If its not going to work, it shouldn't be listed.
-> 
-> Regards,
-> 
-> Richard
 
-Following patch sitting for a long time in our handhelds.org tree.
+Yep that gets us past the compile problems.  Of course she then blows up
+cause SLUB does not work on x86 in that version ... but ...
 
-kogiidena, I'm almost sure you'll find it useful, just apply patch,
-and implement .is_led_supported function for your trigger, which will
-eliminate trigger showing in
-/sys/class/leds/LED_WHICH_NOT_SUPPORTS_CUSTOM_TRIGGER/triggers
+Acked-by: Andy Whitcroft <apw@shadowen.org>
 
-
-- - - - -
-
-Custom triggers support, which are might not supported by all LEDs
-    
-Signed-off-by: Anton Vorontsov <cbou@mail.ru>
-
-diff --git a/drivers/leds/led-triggers.c b/drivers/leds/led-triggers.c
-index 454fb09..0af0d61 100644
---- a/drivers/leds/led-triggers.c
-+++ b/drivers/leds/led-triggers.c
-@@ -53,6 +53,9 @@ ssize_t led_trigger_store(struct class_device *dev, const char *buf,
- 	read_lock(&triggers_list_lock);
- 	list_for_each_entry(trig, &trigger_list, next_trig) {
- 		if (!strcmp(trigger_name, trig->name)) {
-+			if (trig->is_led_supported &&
-+			    !trig->is_led_supported(led_cdev)) break;
-+
- 			write_lock(&led_cdev->trigger_lock);
- 			led_trigger_set(led_cdev, trig);
- 			write_unlock(&led_cdev->trigger_lock);
-@@ -85,6 +88,8 @@ ssize_t led_trigger_show(struct class_device *dev, char *buf)
- 		if (led_cdev->trigger && !strcmp(led_cdev->trigger->name,
- 							trig->name))
- 			len += sprintf(buf+len, "[%s] ", trig->name);
-+		else if (trig->is_led_supported &&
-+			 !trig->is_led_supported(led_cdev)) continue;
- 		else
- 			len += sprintf(buf+len, "%s ", trig->name);
- 	}
-@@ -127,6 +132,7 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trigger)
- 			led_cdev->trigger->deactivate(led_cdev);
- 		led_set_brightness(led_cdev, LED_OFF);
- 	}
-+	led_cdev->trigger = trigger;
- 	if (trigger) {
- 		write_lock_irqsave(&trigger->leddev_list_lock, flags);
- 		list_add_tail(&led_cdev->trig_list, &trigger->led_cdevs);
-@@ -134,7 +140,6 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trigger)
- 		if (trigger->activate)
- 			trigger->activate(led_cdev);
- 	}
--	led_cdev->trigger = trigger;
- }
- 
- void led_trigger_set_default(struct led_classdev *led_cdev)
-@@ -171,7 +176,9 @@ int led_trigger_register(struct led_trigger *trigger)
- 	list_for_each_entry(led_cdev, &leds_list, node) {
- 		write_lock(&led_cdev->trigger_lock);
- 		if (!led_cdev->trigger && led_cdev->default_trigger &&
--			    !strcmp(led_cdev->default_trigger, trigger->name))
-+			   !strcmp(led_cdev->default_trigger, trigger->name) &&
-+			   (!trigger->is_led_supported ||
-+			    trigger->is_led_supported(led_cdev)))
- 			led_trigger_set(led_cdev, trigger);
- 		write_unlock(&led_cdev->trigger_lock);
- 	}
-diff --git a/include/linux/leds.h b/include/linux/leds.h
-index 88afcef..71175f6 100644
---- a/include/linux/leds.h
-+++ b/include/linux/leds.h
-@@ -70,6 +70,7 @@ struct led_trigger {
- 	const char	 *name;
- 	void		(*activate)(struct led_classdev *led_cdev);
- 	void		(*deactivate)(struct led_classdev *led_cdev);
-+	int		(*is_led_supported)(struct led_classdev *led_cdev);
- 
- 	/* LEDs under control by this trigger (for simple triggers) */
- 	rwlock_t	  leddev_list_lock;
+-apw
