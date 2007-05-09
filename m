@@ -1,151 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968953AbXEIHK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969390AbXEIHL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968953AbXEIHK7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 03:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968357AbXEIHKq
+	id S969390AbXEIHL2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 03:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968557AbXEIHKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 03:10:46 -0400
-Received: from fed1rmmtao104.cox.net ([68.230.241.42]:35927 "EHLO
-	fed1rmmtao104.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S967970AbXEIHKp convert rfc822-to-8bit (ORCPT
+	Wed, 9 May 2007 03:10:51 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:39847 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S968443AbXEIHKs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 03:10:45 -0400
-From: Junio C Hamano <junkio@cox.net>
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.1.4
-cc: linux-kernel@vger.kernel.org
-Date: Wed, 09 May 2007 00:10:43 -0700
-Message-ID: <7vhcqmxyj0.fsf@assigned-by-dhcp.cox.net>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 9 May 2007 03:10:48 -0400
+Date: Wed, 9 May 2007 00:10:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: tglx@linutronix.de, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>
+Cc: linux-acpi@vger.kernel.org
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+Message-Id: <20070509001032.dbb982ca.akpm@linux-foundation.org>
+In-Reply-To: <20070508225920.258d8d34.akpm@linux-foundation.org>
+References: <20070430102837.748238000@linutronix.de>
+	<20070430102852.042964000@linutronix.de>
+	<20070505003421.00ec45ba.akpm@linux-foundation.org>
+	<20070505115127.GA17815@elte.hu>
+	<1178463784.31213.46.camel@localhost.localdomain>
+	<20070508225920.258d8d34.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To: git@vger.kernel.org
-cc: linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.5.1.4
+On Tue, 8 May 2007 22:59:20 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-The latest maintenance release GIT 1.5.1.4 is available at the
-usual places:
+> On Sun, 06 May 2007 17:03:03 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > Andrew,
+> > 
+> > On Sat, 2007-05-05 at 13:51 +0200, Ingo Molnar wrote:
+> > > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > > 
+> > > > > Fixup the existing users.
+> > > > 
+> > > > This one makes the Vaio-of-fun hang during suspend to disk.  It gets 
+> > > > up to "swsusp: critical section/: done (%d pages copied)" then it 
+> > > > freezes.
+> > > 
+> > > after trying to reproduce it on 2 boxes without success it did trigger 
+> > > some sw-suspend weirdness on a third box :) We are debugging it now.
+> > 
+> > find an updated patch below. It fixes the problem on Ingo's
+> > VAIO-of-fun-emulator and I got confirmation from several other affected
+> > users, that the patch series is still solving their problems.
+> > 
+> 
+> The machine is still hanging with this patch applied.
+> 
+> suspend-to-disk gets up to "swsusp: critical section: done (NNN pages copied)"
+> 
+> No netconsole, no printk-timestamping.
+> 
+> ho hum, I guess I get to debug this.
 
-  http://www.kernel.org/pub/software/scm/git/
+It got ugly.
 
-  git-1.5.1.4.tar.{gz,bz2}			(tarball)
-  git-htmldocs-1.5.1.4.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.5.1.4.tar.{gz,bz2}		(preformatted docs)
-  RPMS/$arch/git-*-1.5.1.4-1.$arch.rpm	(RPM)
+We finish swsusp_save() and a few other functions then we go
 
-GIT v1.5.1.4 Release Notes
-==========================
+	hibernate
+	->platform_finish
+	  ->acpi_hibernation_finish
+	    ->acpi_leave_sleep_state
+	      ->acpi_evaluate_object
 
-Fixes since v1.5.1.3
---------------------
+and there it dies, in this call:
 
-* Bugfixes
+	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
 
-  - "git-http-fetch" did not work around a bug in libcurl
-    earlier than 7.16 (curl_multi_remove_handle() was broken).
+I wonder how your patch caused that?
 
-  - "git cvsserver" handles a file that was once removed and
-    then added again correctly.
+<debugs further>
 
-  - import-tars script (in contrib/) handles GNU tar archives
-    that contain pathnames longer than 100 bytes (long-link
-    extension) correctly.
+OK, it gets to the last statement in acpi_evaluate_object():
 
-  - xdelta test program did not build correctly.
+	return_ACPI_STATUS(status);
 
-  - gitweb sometimes tried incorrectly to apply function to
-    decode utf8 twice, resulting in corrupt output.
+but doesn't hit the printk on return to the caller,
+acpi_leave_sleep_state().
 
-  - "git blame -C" mishandled text at the end of a group of
-    lines.
+A working theory would be that something we did trashed the stack in
+acpi_evaluate_object().
 
-  - "git log/rev-list --boundary" did not produce output
-    correctly without --left-right option.
+<switches from 8k stacks to 4k. No change>
 
-  - Many documentation updates.
-
-
-----------------------------------------------------------------
-
-Changes since v1.5.1.3 are as follows:
-
-Alex Riesen (1):
-      Small correction in reading of commit headers
-
-Alexandre Julliard (1):
-      http-fetch: Disable use of curl multi support for libcurl < 7.16.
-
-Amos Waterland (1):
-      wcwidth redeclaration
-
-Arjen Laarhoven (1):
-      Document 'opendiff' value in config.txt and git-mergetool.txt
-
-Bryan Larsen (2):
-      Allow PERL_PATH="/usr/bin/env perl"
-      posix compatibility for t4200
-
-Carl Worth (1):
-      Mention version 1.5.1 in tutorial and user-manual
-
-Daniel Barkalow (1):
-      Make xstrndup common
-
-Frank Lichtenheld (1):
-      cvsserver: Handle re-added files correctly
-
-Ismail Dönmez (1):
-      gitweb: use decode_utf8 directly
-
-J. Bruce Fields (7):
-      user-manual: more discussion of detached heads, fix typos
-      user-manual: add section ID's
-      user-manual: clean up fast-forward and dangling-objects sections
-      user-manual: fix .gitconfig editing examples
-      user-manual: miscellaneous editing
-      user-manual: stop deprecating the manual
-      user-manual: fix clone and fetch typos
-
-Jakub Narebski (1):
-      diff format documentation: describe raw combined diff format
-
-James Bowes (1):
-      Documentation: fix typo in git-remote.txt
-
-Jeff King (1):
-      Documentation: don't reference non-existent 'git-cvsapplycommit'
-
-Johannes Schindelin (1):
-      Teach import-tars about GNU tar's @LongLink extension.
-
-Junio C Hamano (5):
-      diff.c: fix "size cache" handling.
-      blame: Notice a wholesale incorporation of an existing file.
-      blame: -C -C -C
-      Add test for blame corner cases.
-      GIT v1.5.1.4
-
-Karl Hasselström (2):
-      Fix markup in git-svn man page
-      Add --no-rebase option to git-svn dcommit
-
-Linus Torvalds (1):
-      Fix --boundary output
-
-Martin Koegler (1):
-      Fix compilation of test-delta
-
-Paul Mackerras (1):
-      gitk: Allow user to choose whether to see the diff, old file, or new file
-
-Quy Tonthat (1):
-      Add howto files to rpm packages.
-
-Shawn O. Pearce (1):
-      git-gui: Allow spaces in path to 'wish'
-
-
+foo.  I'm not sure what to do now.
