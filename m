@@ -1,43 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935041AbXEIFz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935178AbXEIF4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935041AbXEIFz6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 01:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934647AbXEIFzs
+	id S935178AbXEIF4o (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 01:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935050AbXEIF4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 01:55:48 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:50275 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932760AbXEIFzr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 01:55:47 -0400
-Message-ID: <46416246.9090005@zytor.com>
-Date: Tue, 08 May 2007 22:55:18 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+	Wed, 9 May 2007 01:56:33 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:39256 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934647AbXEIF4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 01:56:32 -0400
+Message-ID: <46416255.3060105@drzeus.cx>
+Date: Wed, 09 May 2007 07:55:33 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
 User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: yhlu <yhlu.kernel@gmail.com>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, vgoyal@in.ibm.com,
-       Gerd Hoffmann <kraxel@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for
- relocatable bzImage
-References: <4634483E.9030307@goop.org> <4640FB2C.2060300@zytor.com>	 <86802c440705081541v7d0773cek2c5fae1854b68bbc@mail.gmail.com>	 <46410403.4050802@zytor.com>	 <m17irivkhy.fsf@ebiederm.dsl.xmission.com>	 <46413087.2020505@zytor.com>	 <m1tzumu10k.fsf@ebiederm.dsl.xmission.com>	 <86802c440705082152g49d4d3echf3eb165ce4feb2e9@mail.gmail.com>	 <46415640.6000600@zytor.com> <4641573C.1000205@zytor.com> <86802c440705082248r5248aa08s8299e03f615b984a@mail.gmail.com>
-In-Reply-To: <86802c440705082248r5248aa08s8299e03f615b984a@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="=_hera.drzeus.cx-7137-1178690185-0001-2"
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] MMC updates
+References: <4640E17E.7090909@drzeus.cx>
+In-Reply-To: <4640E17E.7090909@drzeus.cx>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-yhlu wrote:
-> so the kexec tools need to scan the pci devices list, and find out how
-> to set real_mode.isVGA and orig_video_mode, also need to parse the
-> comand line about vga console.
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-BTW, welcome to the hell of bypassing setup.
+--=_hera.drzeus.cx-7137-1178690185-0001-2
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 
-	-hpa
+Pierre Ossman wrote:
+> Linus, please pull from
+> 
+>         git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
+> 
+
+fsck! I pushed the wrong branch :/
+
+This fix should have been in the last commit.
+
+Sorry,
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+--=_hera.drzeus.cx-7137-1178690185-0001-2
+Content-Type: text/x-patch; name="spinfix.patch"; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="spinfix.patch"
+
+commit 3b9a6d78eb439016728c598a1373b50328f5e9fe
+Author: Pierre Ossman <drzeus@drzeus.cx>
+Date:   Wed May 9 07:53:28 2007 +0200
+
+    mmc: fix wrong call to spinlock
+    
+    Fix silly typo in spinlock calls.
+    
+    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+
+diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
+index b6c1670..7385acf 100644
+--- a/drivers/mmc/core/core.c
++++ b/drivers/mmc/core/core.c
+@@ -501,9 +501,9 @@ void mmc_detect_change(struct mmc_host *host, unsigned long delay)
+ {
+ #ifdef CONFIG_MMC_DEBUG
+ 	unsigned long flags;
+-	spin_lock_irqsave(host->lock, flags);
++	spin_lock_irqsave(&host->lock, flags);
+ 	BUG_ON(host->removed);
+-	spin_unlock_irqrestore(host->lock, flags);
++	spin_unlock_irqrestore(&host->lock, flags);
+ #endif
+ 
+ 	mmc_schedule_delayed_work(&host->detect, delay);
+
+--=_hera.drzeus.cx-7137-1178690185-0001-2--
