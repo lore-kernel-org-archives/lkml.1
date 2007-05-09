@@ -1,44 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbXEIKWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbXEIKW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211AbXEIKWe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 06:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757103AbXEIKWX
+	id S1757326AbXEIKW7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 06:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755152AbXEIKWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 06:22:23 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:44585 "EHLO twin.jikos.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755220AbXEIKWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 06:22:22 -0400
-Date: Wed, 9 May 2007 12:22:14 +0200 (CEST)
-From: Jiri Kosina <jikos@jikos.cz>
-To: Folkert van Heusden <folkert@vanheusden.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.21] kernel panic
-In-Reply-To: <Pine.LNX.4.64.0705070029580.16923@twin.jikos.cz>
-Message-ID: <Pine.LNX.4.64.0705091221360.16923@twin.jikos.cz>
-References: <20070506115651.GA13183@vanheusden.com>
- <Pine.LNX.4.64.0705061632500.16923@twin.jikos.cz> <20070506164944.GA15682@vanheusden.com>
- <Pine.LNX.4.64.0705070029580.16923@twin.jikos.cz>
+	Wed, 9 May 2007 06:22:47 -0400
+Received: from ug-out-1314.google.com ([66.249.92.168]:3836 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755148AbXEIKWp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 06:22:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=kaUtGYyn1Tm8/XfTcjN8/7XvUQTxdmQ4BD9iOZuc/cC9rON83Zg0n5LmjvXYh+3XpaTLGIz1v4v7ItT5NoU1StulGgWayCcoPODqDsqNzl5M3xuE4401lMLEeiH55nS+sxc3/JD+tPledBW4jv9/w0xM96kkpjtaXvwPQavqHo4=
+Message-ID: <84144f020705090322jc37884drc31b97879648d09@mail.gmail.com>
+Date: Wed, 9 May 2007 13:22:43 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: Re: [patch 8/9] lguest: the block driver
+Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
+       rusty@rustcorp.com.au, ak@suse.de, jens.axboe@oracle.com,
+       "Rene Herman" <rene.herman@gmail.com>
+In-Reply-To: <200705090951.l499pdsc020409@shell0.pdx.osdl.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200705090951.l499pdsc020409@shell0.pdx.osdl.net>
+X-Google-Sender-Auth: ebab1ffbacaf86b5
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007, Jiri Kosina wrote:
+On 5/9/07, akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
+> +/* Jens gave me this nice helper to end all chunks of a request. */
+> +static void end_entire_request(struct request *req, int uptodate)
+> +{
+> +       if (end_that_request_first(req, uptodate, req->hard_nr_sectors))
+> +               BUG();
+> +       add_disk_randomness(req->rq_disk);
+> +       blkdev_dequeue_request(req);
+> +       end_that_request_last(req, uptodate);
+> +}
 
-> OK, I think the patch below should solve this. I am pretty surprised 
-> though that this bug wasn't triggered/reported by anyone anytime sooner, 
-> it has been there for ages too (but ok, the race window should be pretty 
-> small and hiddev is usually not high-throughput interface).
-> Could you please test it and let me know?
-> From: Jiri Kosina <jkosina@suse.cz>
-> USB HID: hiddev - fix race between hiddev_send_event() and hiddev_release()
-
-Flokert,
-
-did you have time to verify whether this patch fixes the issue for you?
-
-Thanks,
-
--- 
-Jiri Kosina
+Again, I would prefer this went straight into block/ll_rw_blk.c. Rene
+and I am using something similar in the new Mitsumi driver although
+one of us has a bug already, we're using req->nr_sectors for this...
