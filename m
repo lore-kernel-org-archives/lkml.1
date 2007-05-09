@@ -1,45 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbXEIPqE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758121AbXEIPrK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757825AbXEIPqE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:46:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbXEIPpz
+	id S1758121AbXEIPrK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:47:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbXEIPq6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:45:55 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:34822 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754171AbXEIPpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:45:54 -0400
-Message-ID: <4641EC7A.7060006@drzeus.cx>
-Date: Wed, 09 May 2007 17:44:58 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+	Wed, 9 May 2007 11:46:58 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:45153 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754929AbXEIPq5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:46:57 -0400
+Subject: Re: [patch] CFS scheduler, -v11
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] MMC updates
-References: <4640E17E.7090909@drzeus.cx> <46416255.3060105@drzeus.cx> <4641643D.4040305@yahoo.com.au> <464169C8.9060002@drzeus.cx> <46416B9A.3020008@yahoo.com.au> <46417D97.9090108@drzeus.cx> <46419036.8090504@s5r6.in-berlin.de>
-In-Reply-To: <46419036.8090504@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>
+In-Reply-To: <20070508150431.GA26977@elte.hu>
+References: <20070508150431.GA26977@elte.hu>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 17:46:37 +0200
+Message-Id: <1178725597.10077.1.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Sounds to me like either struct xyz_host { atomic_t removed; } would do
-> the job, or that actually wider regions of mmc_host_remove() and
-> mmc_detect_change() need to be serialized.
->   
+Hello Ingo.
 
-AFAIK, an atomic_t doesn't guarantee any ordering, just atomicity. So an
-atomic_t with a barrier would be sufficient. But barriers are mostly
-voodoo that few people understand ;)
+Sorry it has taken this long, but i've been quite busy with work.
 
--- 
-     -- Pierre Ossman
+Here are my results with v11 for smoothness.
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+under slight load (spamasassin nice 19'ed), its now doing okay in
+smoothness, almost as good as SD. but under harder load such as pressing
+a link in a browser while 3d(at nice 0), or spamasassin at nice 0 still
+makes it go stutterish instead of smooth. But overall it does seem
+better.
+
+On Tue, 2007-05-08 at 17:04 +0200, Ingo Molnar wrote:
+> * Mike Galbraith <efault@gmx.de> wrote:
+> 
+> > [...] Values 0x3 and 0xb are merely context switch happy.
+> 
+> thanks Mike - value 0x8 looks pretty good here and doesnt have the 
+> artifacts you found. I've done a quick -v11 release with that fixed, 
+> available at the usual place:
+> 
+>     http://people.redhat.com/mingo/cfs-scheduler/
+> 
+> with no other changes.
+> 
+> 	Ingo
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
