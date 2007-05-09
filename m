@@ -1,150 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbXEIJxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbXEIJx6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbXEIJxf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 05:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756416AbXEIJwe
+	id S1756829AbXEIJx6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:53:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756437AbXEIJwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 05:52:34 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:58908 "EHLO
+	Wed, 9 May 2007 05:52:36 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:58816 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756374AbXEIJwc (ORCPT
+	by vger.kernel.org with ESMTP id S1756408AbXEIJwe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 05:52:32 -0400
-Message-Id: <200705090951.l499pcB2020403@shell0.pdx.osdl.net>
-Subject: [patch 6/9] lguest: the console driver
+	Wed, 9 May 2007 05:52:34 -0400
+Message-Id: <200705090951.l499pb6H020400@shell0.pdx.osdl.net>
+Subject: [patch 5/9] lguest: the Makefile and Kconfig
 To: linux-kernel@vger.kernel.org
 Cc: virtualization@lists.osdl.org, akpm@linux-foundation.org,
        rusty@rustcorp.com.au, ak@suse.de
 From: akpm@linux-foundation.org
-Date: Wed, 09 May 2007 02:51:38 -0700
+Date: Wed, 09 May 2007 02:51:37 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 
-A simple console driver for lguest.
+This is the Kconfig and Makefile to allow lguest to actually be
+compiled.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andi Kleen <ak@suse.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- drivers/char/Makefile     |    1 
- drivers/char/hvc_lguest.c |   99 ++++++++++++++++++++++++++++++++++++
- 2 files changed, 100 insertions(+)
+ drivers/Kconfig         |    2 ++
+ drivers/Makefile        |    1 +
+ drivers/lguest/Kconfig  |   20 ++++++++++++++++++++
+ drivers/lguest/Makefile |    7 +++++++
+ 4 files changed, 30 insertions(+)
 
-diff -puN drivers/char/Makefile~lguest-the-console-driver drivers/char/Makefile
---- a/drivers/char/Makefile~lguest-the-console-driver
-+++ a/drivers/char/Makefile
-@@ -44,6 +44,7 @@ obj-$(CONFIG_AMIGA_BUILTIN_SERIAL) += am
- obj-$(CONFIG_SX)		+= sx.o generic_serial.o
- obj-$(CONFIG_RIO)		+= rio/ generic_serial.o
- obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
-+obj-$(CONFIG_LGUEST_GUEST)	+= hvc_lguest.o
- obj-$(CONFIG_HVC_ISERIES)	+= hvc_iseries.o
- obj-$(CONFIG_HVC_RTAS)		+= hvc_rtas.o
- obj-$(CONFIG_HVC_BEAT)		+= hvc_beat.o
-diff -puN /dev/null drivers/char/hvc_lguest.c
+diff -puN drivers/Kconfig~lguest-the-makefile-and-kconfig drivers/Kconfig
+--- a/drivers/Kconfig~lguest-the-makefile-and-kconfig
++++ a/drivers/Kconfig
+@@ -89,4 +89,6 @@ source "drivers/auxdisplay/Kconfig"
+ source "drivers/kvm/Kconfig"
+ 
+ source "drivers/uio/Kconfig"
++
++source "drivers/lguest/Kconfig"
+ endmenu
+diff -puN drivers/Makefile~lguest-the-makefile-and-kconfig drivers/Makefile
+--- a/drivers/Makefile~lguest-the-makefile-and-kconfig
++++ a/drivers/Makefile
+@@ -72,6 +72,7 @@ obj-$(CONFIG_ISDN)		+= isdn/
+ obj-$(CONFIG_EDAC)		+= edac/
+ obj-$(CONFIG_MCA)		+= mca/
+ obj-$(CONFIG_EISA)		+= eisa/
++obj-$(CONFIG_LGUEST_GUEST)	+= lguest/
+ obj-$(CONFIG_CPU_FREQ)		+= cpufreq/
+ obj-$(CONFIG_MMC)		+= mmc/
+ obj-$(CONFIG_NEW_LEDS)		+= leds/
+diff -puN /dev/null drivers/lguest/Kconfig
 --- /dev/null
-+++ a/drivers/char/hvc_lguest.c
-@@ -0,0 +1,99 @@
-+/* Simple console for lguest.
-+ *
-+ * Copyright (C) 2006 Rusty Russell, IBM Corporation
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
-+ */
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/lguest_bus.h>
-+#include "hvc_console.h"
++++ a/drivers/lguest/Kconfig
+@@ -0,0 +1,20 @@
++config LGUEST
++	tristate "Linux hypervisor example code"
++	depends on X86 && PARAVIRT && NET && EXPERIMENTAL && !X86_PAE
++	select LGUEST_GUEST
++	select HVC_DRIVER
++	---help---
++	  This is a very simple module which allows you to run
++	  multiple instances of the same Linux kernel, using the
++	  "lguest" command found in the Documentation/lguest directory.
++	  Note that "lguest" is pronounced to rhyme with "fell quest",
++	  not "rustyvisor".  See Documentation/lguest/lguest.txt.
 +
-+static char inbuf[256];
-+static struct lguest_dma cons_input = { .used_len = 0,
-+					.addr[0] = __pa(inbuf),
-+					.len[0] = sizeof(inbuf),
-+					.len[1] = 0 };
++	  If unsure, say N.  If curious, say M.  If masochistic, say Y.
 +
-+static int put_chars(u32 vtermno, const char *buf, int count)
-+{
-+	struct lguest_dma dma;
++config LGUEST_GUEST
++	bool
++	help
++	  The guest needs code built-in, even if the host has lguest
++	  support as a module.  The drivers are tiny, so we build them
++	  in too.
+diff -puN /dev/null drivers/lguest/Makefile
+--- /dev/null
++++ a/drivers/lguest/Makefile
+@@ -0,0 +1,7 @@
++# Guest requires the paravirt_ops replacement and the bus driver.
++obj-$(CONFIG_LGUEST_GUEST) += lguest.o lguest_asm.o lguest_bus.o
 +
-+	/* FIXME: what if it's over a page boundary? */
-+	dma.len[0] = count;
-+	dma.len[1] = 0;
-+	dma.addr[0] = __pa(buf);
-+
-+	hcall(LHCALL_SEND_DMA, LGUEST_CONSOLE_DMA_KEY, __pa(&dma), 0);
-+	return count;
-+}
-+
-+static int get_chars(u32 vtermno, char *buf, int count)
-+{
-+	static int cons_offset;
-+
-+	if (!cons_input.used_len)
-+		return 0;
-+
-+	if (cons_input.used_len - cons_offset < count)
-+		count = cons_input.used_len - cons_offset;
-+
-+	memcpy(buf, inbuf + cons_offset, count);
-+	cons_offset += count;
-+	if (cons_offset == cons_input.used_len) {
-+		cons_offset = 0;
-+		cons_input.used_len = 0;
-+	}
-+	return count;
-+}
-+
-+struct hv_ops lguest_cons = {
-+	.get_chars = get_chars,
-+	.put_chars = put_chars,
-+};
-+
-+static int __init cons_init(void)
-+{
-+	if (strcmp(paravirt_ops.name, "lguest") != 0)
-+		return 0;
-+
-+	return hvc_instantiate(0, 0, &lguest_cons);
-+}
-+console_initcall(cons_init);
-+
-+static int lguestcons_probe(struct lguest_device *lgdev)
-+{
-+	lgdev->private = hvc_alloc(0, lgdev->index+1, &lguest_cons, 256);
-+	if (IS_ERR(lgdev->private))
-+		return PTR_ERR(lgdev->private);
-+
-+	if (!hcall(LHCALL_BIND_DMA, LGUEST_CONSOLE_DMA_KEY, __pa(&cons_input),
-+		   (1<<8) + lgdev->index+1))
-+		printk("lguest console: failed to bind buffer.\n");
-+	return 0;
-+}
-+
-+static struct lguest_driver lguestcons_drv = {
-+	.name = "lguestcons",
-+	.owner = THIS_MODULE,
-+	.device_type = LGUEST_DEVICE_T_CONSOLE,
-+	.probe = lguestcons_probe,
-+};
-+
-+static int __init hvc_lguest_init(void)
-+{
-+	return register_lguest_driver(&lguestcons_drv);
-+}
-+module_init(hvc_lguest_init);
++# Host requires the other files, which can be a module.
++obj-$(CONFIG_LGUEST)	+= lg.o
++lg-objs := core.o hypercalls.o page_tables.o interrupts_and_traps.o \
++	segments.o io.o lguest_user.o switcher.o
 _
