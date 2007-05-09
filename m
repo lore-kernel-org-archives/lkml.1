@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756740AbXEIMNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757392AbXEIMOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756740AbXEIMNz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbXEIMNq
+	id S1757392AbXEIMOS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXEIMNt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:13:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:36155 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755002AbXEIMNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:13:45 -0400
-Subject: Re: [patch 7/9] lguest: the net driver
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, ak@suse.de, jeff@garzik.org,
-       jmorris@namei.org, netdev@vger.kernel.org
-In-Reply-To: <20070509120030.GA12853@gondor.apana.org.au>
-References: <E1HljA6-0001E4-00@gondolin.me.apana.org.au>
-	 <1178711725.7286.82.camel@localhost.localdomain>
-	 <20070509120030.GA12853@gondor.apana.org.au>
-Content-Type: text/plain
-Date: Wed, 09 May 2007 22:13:28 +1000
-Message-Id: <1178712808.7286.92.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Wed, 9 May 2007 08:13:49 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:59298 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbXEIMNr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 08:13:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=jD1RAobtmthLNcGkUlcuQ0VWBiV+yZLFZjRzWsVse/IJi1U4xbLWE0el8o/HK6Gac/8iMUiHmJ0onAy71A95KDlC+QOf+bJko6j2xOl+IgoMkB/bv2yqj/irheGTE47G9p89mYuMciI8IHnHT7lBHvtRUFV5WxUYQjj9+cbiyv4=
+Message-ID: <84144f020705090513q28784b69sd91cd2490514d44c@mail.gmail.com>
+Date: Wed, 9 May 2007 15:13:45 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Rusty Russell" <rusty@rustcorp.com.au>
+Subject: Re: [patch 2/9] lguest: the guest code
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, ak@suse.de,
+       jeremy@goop.org
+In-Reply-To: <1178711957.7286.87.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200705090951.l499pYBV020391@shell0.pdx.osdl.net>
+	 <84144f020705090316o5e3b6d89r74638ec8e4d396d4@mail.gmail.com>
+	 <1178711957.7286.87.camel@localhost.localdomain>
+X-Google-Sender-Auth: 0a734cef04611461
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 22:00 +1000, Herbert Xu wrote:
-> Hi Rusty:
-> 
-> On Wed, May 09, 2007 at 09:55:25PM +1000, Rusty Russell wrote:
-> > 
-> > 	NO_CSUM because it really doesn't need a checksum.  The
-> > LGUEST_NET_F_NOCSUM is only set for local inter-guest networking.  If
-> > some guest were to route the packets outside the machine, this would be
-> > an issue, though ("don't do that").
-> 
-> While I can see that this is good in keeping things simple, I think
-> it's something that you want to be able to support since the user
-> may wish to setup a guest as a firewall appliance which would involve
-> passing packets from another guest to the outside world.
+Hi Rusty,
 
-Indeed, you understand the tradeoff.  The example launcher could have an
-option not to set the LGUEST_NET_F_NOCSUM in this case.
+On 5/9/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
+>         Hmm, where would the error go?
 
-That said, one significant purpose of lguest is to serve as an example
-of how to do things.  So if you feel really strongly that there's a
-Right Way, we could look at the patch...
-
-Thanks,
-Rusty.
-
-
+Let it propagate: scan_devices -> lguest_bus_init -> do_initcalls. We
+probably don't want to panic() if bus_register and device_register
+fail there either.
