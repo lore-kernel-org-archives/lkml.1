@@ -1,72 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbXEILz4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbXEIL7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756558AbXEILz4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 07:55:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXEILzq
+	id S1756511AbXEIL7X (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 07:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbXEIL7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 07:55:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:40481 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752072AbXEILzp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 07:55:45 -0400
-Subject: Re: [patch 7/9] lguest: the net driver
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, ak@suse.de, jeff@garzik.org,
-       jmorris@namei.org, netdev@vger.kernel.org
-In-Reply-To: <E1HljA6-0001E4-00@gondolin.me.apana.org.au>
-References: <E1HljA6-0001E4-00@gondolin.me.apana.org.au>
+	Wed, 9 May 2007 07:59:16 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:42989 "EHLO
+	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752841AbXEIL7P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 07:59:15 -0400
+Subject: [KJ PATCH] Replacing alloc_pages(gfp,0) with alloc_page(gfp) in
+	arch/i386/mm/pageattr.c.
+From: Shani Moideen <shani.moideen@wipro.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@lists.osdl.org
 Content-Type: text/plain
-Date: Wed, 09 May 2007 21:55:25 +1000
-Message-Id: <1178711725.7286.82.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
+Organization: Linux COE, Wipro Technolgies
+Date: Wed, 09 May 2007 17:27:19 +0530
+Message-Id: <1178711839.2280.21.camel@shani-win>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+X-OriginalArrivalTime: 09 May 2007 11:59:12.0822 (UTC) FILETIME=[75A61560:01C79231]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 20:12 +1000, Herbert Xu wrote:
-> akpm@linux-foundation.org wrote:
-> >
-> > +       if (desc->features & LGUEST_NET_F_NOCSUM)
-> > +               dev->features |= NETIF_F_NO_CSUM;
-> 
-> Any reason why you're using NO_CSUM here instead of HW_CSUM?
-> Practically there is no difference but NO_CSUM could be treated
-> differently in future and I'm not sure whether such changes would
-> be desirable in this driver (i.e., not even generating a partial
-> checksum).
+Hi,
+ 
+Replacing alloc_pages(gfp,0) with alloc_page(gfp) in
+arch/i386/mm/pageattr.c.
 
-Hi Herbert,
+Signed-off-by: Shani Moideen <shani.moideen@wipro.com>
+----
 
-	NO_CSUM because it really doesn't need a checksum.  The
-LGUEST_NET_F_NOCSUM is only set for local inter-guest networking.  If
-some guest were to route the packets outside the machine, this would be
-an issue, though ("don't do that").
+diff --git a/arch/i386/mm/pageattr.c b/arch/i386/mm/pageattr.c
+index 412ebbd..12f7f14 100644
+--- a/arch/i386/mm/pageattr.c
++++ b/arch/i386/mm/pageattr.c
+@@ -45,7 +45,7 @@ static struct page *split_large_page(unsigned long address, pgprot_t prot,
+ 	pte_t *pbase;
 
-> Also, there doesn't seem to be any passing of metadata to the
-> backend which means that neither NO_CSUM/HW_CSUM can work if
-> somebody needs to look at the checksum field.  You could use
-> IP_CSUM if you do the same hack on the backend that Xen does.
-> Otherwise you'll have to make do with no checksum offload at all.
+ 	spin_unlock_irq(&cpa_lock);
+-	base = alloc_pages(GFP_KERNEL, 0);
++	base = alloc_page(GFP_KERNEL);
+ 	spin_lock_irq(&cpa_lock);
+ 	if (!base) 
+ 		return NULL;
 
-Yeah, definitely good future work.  This is far simpler: external-facing
-networks don't get marked with the LGUEST_NET_F_NOCSUM but set.
 
-KVM is going to have a paravirt network driver too: it'd be nice to
-share code here.
-
-> I think you'd also need a change_mtu function if the SG feature
-> is going to be of some use since the default Ethernet one limits
-> the MTU to 1500.
-
-Indeed, that would be a new feature, and is certainly a consideration
-for more efficient inter-guest networking.  However, I consider that
-somewhat cheating: it's nice to know that 1500 doesn't suck too hard.
-
-Remember, "Features kill puppies!" 8)
-
-Thanks,
-Rusty.
-
+-- 
+Shani 
