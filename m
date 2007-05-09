@@ -1,70 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759507AbXEIW7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759889AbXEIXEj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759507AbXEIW7w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 18:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757063AbXEIW72
+	id S1759889AbXEIXEj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbXEIXEW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 18:59:28 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:60501 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759869AbXEIW7U (ORCPT
+	Wed, 9 May 2007 19:04:22 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:37992 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754731AbXEIXEU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 18:59:20 -0400
-Date: Wed, 9 May 2007 15:59:12 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [git patches] IDE update
-Message-Id: <20070509155912.20596814.akpm@linux-foundation.org>
-In-Reply-To: <46424F7B.8060004@garzik.org>
-References: <200705100046.05280.bzolnier@gmail.com>
-	<46424F7B.8060004@garzik.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Wed, 9 May 2007 19:04:20 -0400
+Subject: Re: [patch 6/7] SCSI: save disk in scsi_device - resend
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, htejun@gmail.com, akpm@linux-foundation.org
+In-Reply-To: <20070509155032.57c3a55d.kristen.c.accardi@intel.com>
+References: <20070424074856.005152262@intel.com>
+	 <20070504111733.f507501d.kristen.c.accardi@intel.com>
+	 <1178310648.3711.56.camel@mulgrave.il.steeleye.com>
+	 <20070507082928.17878961.kristen.c.accardi@intel.com>
+	 <20070509155032.57c3a55d.kristen.c.accardi@intel.com>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 18:04:13 -0500
+Message-Id: <1178751853.3695.59.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 May 2007 18:47:23 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
+On Wed, 2007-05-09 at 15:50 -0700, Kristen Carlson Accardi wrote:
+> interpret the lack of response to this question to mean that I can
+> just
+> decide for myself - in which case I prefer to send this as a separate 
+> patchset after this one is integrated.
 
-> Bartlomiej Zolnierkiewicz wrote:
-> > * the code for selecting and programming the best DMA transfer mode
-> >   has been reworked to be cleaner, more generic and more libata-like,
-> >   (> 500 LOCs gone and this change allows the change described below)
-> 
-> > Bartlomiej Zolnierkiewicz (11):
-> >       ide: rework the code for selecting the best DMA transfer mode (v3)
-> 
-> 
-> Has this seen testing/exposure in -mm tree?
-> 
+Sorry ... was sidetracked getting tree into shape.
 
-argh.  If this was in a file called
-ide-rework-the-code-for-selecting-the-best-DMA-transfer-mode.patch then it
-would be so easy.
+Yes, separate patch is preferred.
 
-<logs into hera>
+James
 
-<greps>
-
-ah, it's hidden in ide-max-dma-mode-v3.patch.
-
-akpm:/usr/src/25> grep ide-max-dma-mode-v3 pc/*series
-pc/2.6.21-mm1-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-mm2-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-rc2-mm2-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-rc3-mm1-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-rc3-mm2-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-rc4-mm1-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-rc5-mm3-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-rc5-mm4-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-rc6-mm1-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-rc7-mm1-series:ide-ide-max-dma-mode-v3.patch
-pc/2.6.21-rc7-mm2-series:ide-ide-max-dma-mode-v3.patch
-
-No probs.
 
