@@ -1,45 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXEIPh2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbXEIPnl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbXEIPh2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbXEIPhS
+	id S1757363AbXEIPnl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:43:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbXEIPnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:37:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54073 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754094AbXEIPhQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:37:16 -0400
-Message-ID: <4641EAA5.4030409@redhat.com>
-Date: Wed, 09 May 2007 11:37:09 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 9 May 2007 11:43:31 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:40219 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754929AbXEIPna (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:43:30 -0400
+Date: Wed, 9 May 2007 16:38:16 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
+In-Reply-To: <4641DE7D.6000902@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0705091612100.18822@blonde.wat.veritas.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com>
+ <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com>
+ <4641BFCE.6090200@yahoo.com.au> <Pine.LNX.4.64.0705091522110.15345@blonde.wat.veritas.com>
+ <4641DE7D.6000902@yahoo.com.au>
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: Greg K-H <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       =?ISO-8859-1?Q?Mat=ED=ADas_Alejandro_Torres?= <torresmat@gmail.com>
-Subject: Re: [PATCH] pci-quirks: disable MSI on RS400-200 and RS480, take
- #2
-References: <4641BD26.1020501@gmail.com>
-In-Reply-To: <4641BD26.1020501@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 09 May 2007 15:38:31.0836 (UTC) FILETIME=[190845C0:01C79250]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGFuZHJlYUBzdXNlLmRlAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAaGNoQGluZnJhZGVhZC5vcmcAbmlja3BpZ2dpbkB5YWhvby5jb20uYXUA
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> MSI doesn't work on RS400-200 and RS480 requiring pci=nomsi kernel
-> boot parameter for ahci to work.  This patch renames quirk_svw_msi()
-> to quirk_disable_all_msi() and use it to disable MSI on those chips.
+On Thu, 10 May 2007, Nick Piggin wrote:
+> > 
+> > The filesystem (or page cache) allows pages beyond i_size to come
+> > in there?  That wasn't a problem before, was it?  But now it is?
 > 
->   http://thread.gmane.org/gmane.linux.ide/17820
->   http://thread.gmane.org/gmane.linux.ide/17516
->   https://bugzilla.novell.com/show_bug.cgi?id=263893
+> The filesystem still doesn't, but if i_size is updated after the page
+> is returned, we can have a problem that was previously taken care of
+> with the truncate_count but now isn't.
+
+But... I thought the page lock was now taking care of that in your
+scheme?  truncate_inode_pages has to wait for the page lock, then
+it finds the page is mapped and... ahh, it finds the copiee page
+is not mapped, so doesn't do its own little unmap_mapping_range,
+and the copied page squeaks through.  Drat.
+
+I really think the truncate_count solution worked better, for
+truncation anyway.  There may be persuasive reasons you need the
+page lock for invalidation: I gave up on trying to understand the
+required behaviour(s) for invalidation.
+
+So, bring back (the original use of, not my tree marker use of)
+truncate_count?  Hmm, you probably don't want to do that, because
+there was some pleasure in removing the strange barriers associated
+with it.
+
+A second unmap_mapping_range is just one line of code - but it sure
+feels like a defeat to me, calling the whole exercise into question.
+(But then, you'd be right to say my perfectionism made it impossible
+for me to come up with any solution to the invalidation issues.)
+
+> > Suspect you'd need a barrier of some kind between the i_size_write and
+> > the mapping_mapped test?
 > 
+> The unmap_mapping_range that runs after the truncate_inode_pages should
+> run in the correct order, I believe.
 
-FWIW several distros have turned off MSI by default and added
-a "pci=msi" option to enable it.
+Yes, if there's going to be that backup call, the first won't really
+need a barrier.
 
+> > But that's a change we could have made at
+> > any time if we'd bothered, it's not really the issue here.
+> 
+> I don't see how you could, because you need to increment truncate_count.
 
+Though indeed we did so, I don't see that we needed to increment
+truncate_count in that case (nobody could be coming through
+do_no_page on that file, when there are no mappings of it).
+
+> But I believe this is fixing the issue, even if it does so in a peripheral
+> manner, because it avoids the added cost for unmapped files.
+
+It's a small improvement to your common case, I agree.
+
+Hugh
