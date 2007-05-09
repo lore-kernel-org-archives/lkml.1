@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1034074AbXEID2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S967741AbXEIDaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1034074AbXEID2Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 23:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967560AbXEID2Q
+	id S967741AbXEIDaT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 23:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967498AbXEIDaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 23:28:16 -0400
-Received: from ozlabs.org ([203.10.76.45]:44256 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S967531AbXEID2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 23:28:15 -0400
-Date: Wed, 9 May 2007 13:28:11 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Andrew Morton <akpm@osdl.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-kernel@vger.kernel.org
-Subject: Remove an unused variable from get_unmapped_area()
-Message-ID: <20070509032811.GI4198@localhost.localdomain>
-Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
-	Andrew Morton <akpm@osdl.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 8 May 2007 23:30:05 -0400
+Received: from mail.gmx.net ([213.165.64.20]:47174 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754293AbXEIDaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 23:30:01 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX18pOThOwvIpGdOIaEwPx1aS94OuaOkvpPEOgX87dC
+	z4I/MZnRfkRbe+
+Subject: Re: multi-second freezes with current GIT?
+From: Mike Galbraith <efault@gmx.de>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20070508.184458.21594839.davem@davemloft.net>
+References: <20070508.184458.21594839.davem@davemloft.net>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 05:29:20 +0200
+Message-Id: <1178681360.7487.59.camel@Homer.simpson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some recent changes in get_unmapped_area() have left the 'ret'
-local unused.  This patch removes it.
+On Tue, 2007-05-08 at 18:44 -0700, David Miller wrote:
+> I've been noticing this off and on for the past week or so.
+> 
+> The system seems to jam up for several seconds, anything that would
+> need to read from disk just sits there during this time.  I think it's
+> correlated with generating a lot of dirty write data.
+> 
+> My mouse moves around in X etc. so it really is only processes that
+> need to read from disk that get stuck.
+> 
+> Perhaps it's a side effect of those dirty ratio changes Linus made to
+> start off the 2.6.22 merge cycle?
 
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
+Uhoh, that seems highly likely.
 
-Index: working-2.6/mm/mmap.c
-===================================================================
---- working-2.6.orig/mm/mmap.c	2007-05-09 13:26:33.000000000 +1000
-+++ working-2.6/mm/mmap.c	2007-05-09 13:26:47.000000000 +1000
-@@ -1366,7 +1366,6 @@ unsigned long
- get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
- 		unsigned long pgoff, unsigned long flags)
- {
--	unsigned long ret;
- 	unsigned long (*get_area)(struct file *, unsigned long,
- 				  unsigned long, unsigned long, unsigned long);
- 
+I think those changes may have been triggered by my repeatable and truly
+horrible system stalls when writing to an ext3 data=ordered nearly full
+filesystem.  Anything that does fdatasync() and/or fsync() can cause
+very bad experiences indeed.  KDE's little menu/program launcher
+doohickey does fdatasync() for some odd reason, which has utterly killed
+my entire GUI for up to and including 20 minutes at a whack.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Switching to data=writeback cured those horrors.  Lowering the dirty
+ratio reduced the agony of data=ordered tremendously, but didn't make it
+even remotely acceptable.
+
+	-Mike
+
