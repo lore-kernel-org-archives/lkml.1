@@ -1,55 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757508AbXEIMVT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757326AbXEIMXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757508AbXEIMVT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:21:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbXEIMVL
+	id S1757326AbXEIMXU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755261AbXEIMXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:21:11 -0400
-Received: from www.osadl.org ([213.239.205.134]:48940 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750979AbXEIMVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:21:09 -0400
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <200705091345.55207.rjw@sisk.pl>
-References: <20070430102837.748238000@linutronix.de>
-	 <20070509013119.dbea7233.akpm@linux-foundation.org>
-	 <1178701183.3042.469.camel@localhost.localdomain>
-	 <200705091345.55207.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Wed, 09 May 2007 14:24:02 +0200
-Message-Id: <1178713442.3042.480.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 08:23:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50871 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754530AbXEIMXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 08:23:11 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <5d6222a80705090507h4fdbf4f5x439d3991c1c9b7b8@mail.gmail.com> 
+References: <5d6222a80705090507h4fdbf4f5x439d3991c1c9b7b8@mail.gmail.com>  <20070509120201.6771.92968.stgit@warthog.cambridge.redhat.com> 
+To: "Glauber de Oliveira Costa" <glommer@gmail.com>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org, npiggin@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix a bad bug in read_cache_page_async() 
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+Date: Wed, 09 May 2007 13:22:51 +0100
+Message-ID: <11154.1178713371@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 13:45 +0200, Rafael J. Wysocki wrote:
-> On Wednesday, 9 May 2007 10:59, Thomas Gleixner wrote:
-> > On Wed, 2007-05-09 at 01:31 -0700, Andrew Morton wrote:
-> > > > I suspect I just tested the wrong thing yesterday.  Let me recheck just
-> > > > these patches against 2.6.21.
-> > > 
-> > > yup, same hang with just these three:
-> > > 
-> > > origin
-> > > clocksource-fix-resume-logic
-> > > clockevents-fix-resume-logic-updated-version
-> > 
-> > I have no idea, how this affects acpi_evaluate_object()
-> 
-> I think the problem is that the ACPI code ordering here is broken in a
-> difficult to fix way.
+Glauber de Oliveira Costa <glommer@gmail.com> wrote:
 
-Any explanation aside of witchcraft why this is affected by the clock
-event resume changes ?
+> any reason for not simply returning page here?
 
-	tglx
+Not particularly.
 
-
+David
