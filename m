@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759362AbXEIWHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759573AbXEIWHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759362AbXEIWHP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 18:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754012AbXEIWHE
+	id S1759573AbXEIWHl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 18:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759206AbXEIWH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 18:07:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:49217 "EHLO mail.dvmed.net"
+	Wed, 9 May 2007 18:07:27 -0400
+Received: from mga09.intel.com ([134.134.136.24]:19158 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751648AbXEIWHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 18:07:02 -0400
-Message-ID: <46424602.3090404@garzik.org>
-Date: Wed, 09 May 2007 18:06:58 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, suparna@in.ibm.com,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: aio is unlikely
-References: <200705092101.l49L1CF1023363@hera.kernel.org>
-In-Reply-To: <200705092101.l49L1CF1023363@hera.kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1759373AbXEIWHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 18:07:25 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,512,1170662400"; 
+   d="scan'208";a="85448472"
+Date: Wed, 9 May 2007 15:04:24 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: lenb@kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       ilya@total-knowledge.com
+Subject: [PATCH] ACPI: dock: cleanup the uid patch
+Message-Id: <20070509150424.5511a56f.kristen.c.accardi@intel.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b8522ead3534c6cd06752b47a3bc380956191a2a
-> Commit:     b8522ead3534c6cd06752b47a3bc380956191a2a
-> Parent:     b41eeef14d7c73af6d16c7d02b7a939082a137ff
-> Author:     Andrew Morton <akpm@osdl.org>
-> AuthorDate: Wed May 9 02:34:58 2007 -0700
-> Committer:  Linus Torvalds <torvalds@woody.linux-foundation.org>
-> CommitDate: Wed May 9 12:30:54 2007 -0700
-> 
->     aio is unlikely
->     
->     Stick an unlikely() around is_aio(): I assert that most IO is synchronous.
->     
->     Cc: Suparna Bhattacharya <suparna@in.ibm.com>
->     Cc: Ingo Molnar <mingo@elte.hu>
->     Cc: Benjamin LaHaise <bcrl@kvack.org>
->     Cc: Zach Brown <zach.brown@oracle.com>
->     Cc: Ulrich Drepper <drepper@redhat.com>
->     Cc: Christoph Hellwig <hch@lst.de>
->     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
->     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-> ---
->  include/linux/aio.h |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/aio.h b/include/linux/aio.h
-> index a30ef13..43dc2eb 100644
-> --- a/include/linux/aio.h
-> +++ b/include/linux/aio.h
-> @@ -226,7 +226,8 @@ int FASTCALL(io_submit_one(struct kioctx *ctx, struct iocb __user *user_iocb,
->  		__put_ioctx(kioctx);					\
->  } while (0)
->  
-> -#define in_aio() !is_sync_wait(current->io_wait)
-> +#define in_aio() (unlikely(!is_sync_wait(current->io_wait)))
+ACPI: dock: cleanup the uid patch
 
-Please revert.  Workload-dependent "likelihood" should not cause 
-programmers to add such markers.
+Make uid sysfs file error path free memory, and cleanup sysfs file
+when removing driver.  Also fix CodingStyle violations.
 
-This is a common misunderstanding about unlikely() and likely().  The 
-branch prediction used for each assumes 99% unlikely or 99% likely, 
-which is not true at all for workload-dependent code.
-
-Even if only 1% of Linux users use AIO, for that 1%, the 'unlikely' 
-marker causes repeated branch mispredictions.
-
-likely() and unlikely() should be used for cases where code is 
-likely/unlikely for EVERYBODY.
-
-	Jeff
-
-
+Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Cc: Illya A. Volynets-Evenbakh <ilya@total-knowledge.com>
+Index: 2.6-git/drivers/acpi/dock.c
+===================================================================
+--- 2.6-git.orig/drivers/acpi/dock.c
++++ 2.6-git/drivers/acpi/dock.c
+@@ -675,16 +675,15 @@ static ssize_t show_dock_uid(struct devi
+ 			     struct device_attribute *attr, char *buf)
+ {
+ 	unsigned long lbuf;
+-	acpi_status status = acpi_evaluate_integer(dock_station->handle, "_UID", NULL, &lbuf);
+-	if(ACPI_FAILURE(status)) {
++	acpi_status status = acpi_evaluate_integer(dock_station->handle,
++					"_UID", NULL, &lbuf);
++	if (ACPI_FAILURE(status))
+ 	    return 0;
+-	}
++
+ 	return snprintf(buf, PAGE_SIZE, "%lx\n", lbuf);
+ }
+ DEVICE_ATTR(uid, S_IRUGO, show_dock_uid, NULL);
+ 
+-
+-
+ /**
+  * dock_add - add a new dock station
+  * @handle: the dock station handle
+@@ -736,6 +735,8 @@ static int dock_add(acpi_handle handle)
+ 	ret = device_create_file(&dock_device.dev, &dev_attr_uid);
+ 	if (ret) {
+ 		printk("Error %d adding sysfs file\n", ret);
++		device_remove_file(&dock_device.dev, &dev_attr_docked);
++		device_remove_file(&dock_device.dev, &dev_attr_undock);
+ 		platform_device_unregister(&dock_device);
+ 		kfree(dock_station);
+ 		return ret;
+@@ -775,6 +776,7 @@ dock_add_err:
+ dock_add_err_unregister:
+ 	device_remove_file(&dock_device.dev, &dev_attr_docked);
+ 	device_remove_file(&dock_device.dev, &dev_attr_undock);
++	device_remove_file(&dock_device.dev, &dev_attr_uid);
+ 	platform_device_unregister(&dock_device);
+ 	kfree(dock_station);
+ 	return ret;
+@@ -806,6 +808,7 @@ static int dock_remove(void)
+ 	/* cleanup sysfs */
+ 	device_remove_file(&dock_device.dev, &dev_attr_docked);
+ 	device_remove_file(&dock_device.dev, &dev_attr_undock);
++	device_remove_file(&dock_device.dev, &dev_attr_uid);
+ 	platform_device_unregister(&dock_device);
+ 
+ 	/* free dock station memory */
