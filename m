@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032835AbXEIC5m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970175AbXEIC6a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032835AbXEIC5m (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 22:57:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032675AbXEIC44
+	id S970175AbXEIC6a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 22:58:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032832AbXEIC5k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 22:56:56 -0400
-Received: from waste.org ([66.93.16.53]:47461 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032664AbXEIC4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 22:56:55 -0400
-Date: Tue, 8 May 2007 21:56:35 -0500
-From: Matt Mackall <mpm@selenic.com>
+	Tue, 8 May 2007 22:57:40 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53207 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1032773AbXEIC5i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 22:57:38 -0400
+Date: Tue, 8 May 2007 19:57:37 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
 To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: David Miller <davem@davemloft.net>, clameter@sgi.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch added to -mm tree
-Message-ID: <20070509025634.GC11115@waste.org>
-References: <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com> <20070509012725.GZ11115@waste.org> <Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com> <20070508.185141.85412154.davem@davemloft.net> <46412BB5.1060605@yahoo.com.au>
+cc: Matt Mackall <mpm@selenic.com>, akpm@linux-foundation.org,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch
+ added to -mm tree
+In-Reply-To: <4641353F.2000408@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0705081954300.19976@schroedinger.engr.sgi.com>
+References: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net>
+ <20070509002307.GV11115@waste.org> <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com>
+ <20070509012725.GZ11115@waste.org> <Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com>
+ <20070509021911.GB11115@waste.org> <Pine.LNX.4.64.0705081920250.17931@schroedinger.engr.sgi.com>
+ <4641353F.2000408@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46412BB5.1060605@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 12:02:29PM +1000, Nick Piggin wrote:
-> BTW, we _really_ should be doing RCU properly in slob, because you
-> technically can't noop RCU on UP (even though the current users may be
-> safe...).
+On Wed, 9 May 2007, Nick Piggin wrote:
 
-Thanks. Hugh was pretty convinced it was unneeded:
+> > Exactly. That overhead does not exist in SLUB. Thus SLOB is less efficient
+> > than SLUB.
+> 
+> What you trade for that is that one page page can only serve one slab.
 
-http://marc.info/?l=linux-mm&m=116413907023393&w=2
+Right.
 
-And since I didn't care much about the SMP case, I didn't pursue it.
+> For small systems, I would not be surprised if that was less space
+> efficient, even just looking at kmalloc caches in isolation. Or do you
+> have numbers to support your conclusion?
 
-This almost looks reasonable. I think HW_ALIGN | RCU is going to make
-it break though:
+No I do not have any number beyond the efficiency calculations based on 
+whole slabs. We would have to do some experiments to figure out how much 
+space is actually wasted through partial slabs.
 
-> +	if (unlikely(c->flags & SLAB_DESTROY_BY_RCU))
-> +		b += sizeof(struct slob_rcu);
-> +
+If you just do straight allocation on a UP system then there is at maximum 
+one partial slab per slabcache with SLUB.
 
-That could be dealt with by putting the slob_rcu at the end of the
-object and having the RCU helper function use ->size to work backward
-to the actual pointer.
+The situation becomes different with allocation and frees. Then we may 
+have lots of partial slabs that we allocate from. But the SLOB approach 
+also will have holes to manage. So I do not see how this could be a 
+benefit unless you only have a few precious pages and you need to put 
+multiple object sizes into it. A 4M system still has 1000 pages.
 
->  void kmem_cache_free(struct kmem_cache *c, void *b)
->  {
->  	if (c->dtor)
->  		c->dtor(b, c, 0);
-
-I think if we want RCU to actually work, we want to run ->dtor in
-__kmem_cache_free?
-
-> -	if (c->size < PAGE_SIZE)
-> -		slob_free(b, c->size);
-> -	else
-> -		free_pages((unsigned long)b, find_order(c->size));
-> +	if (unlikely(c->flags & SLAB_DESTROY_BY_RCU)) {
-> +		struct slob_rcu *slob_rcu;
-> +		b -= sizeof(struct slob_rcu);
-> +		slob_rcu = b;
-> +		slob_rcu->size = c->size;
-
-Which means just store c in the header^Wfooter, then we can retrieve the size
-and the dtor in the RCU helper.
-
-We might as well add slab_is_available and make the damn thing work on
-sparsemem again too.
-
--- 
-Mathematics is the supreme nostalgia of our time.
