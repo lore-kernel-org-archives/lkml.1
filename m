@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbXEIXiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbXEIXjS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759454AbXEIXiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbXEIXiJ
+	id S1759803AbXEIXjS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:39:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbXEIXjJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:38:09 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47374 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756690AbXEIXiI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:38:08 -0400
-Date: Thu, 10 May 2007 09:38:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Rob Landley <rob@landley.net>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Building ppc/powerpc kernel to run under QEMU.
-Message-Id: <20070510093807.95eda2a0.sfr@canb.auug.org.au>
-In-Reply-To: <200705091839.55149.rob@landley.net>
-References: <200705091839.55149.rob@landley.net>
-X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
+	Wed, 9 May 2007 19:39:09 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:49285 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751473AbXEIXjG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 19:39:06 -0400
+Date: Wed, 9 May 2007 16:36:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Yu, Fenghua" <fenghua.yu@intel.com>
+Cc: "Christoph Lameter" <clameter@sgi.com>,
+       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] Call percpu smp cacheline algin interface
+Message-Id: <20070509163616.e8a36a4c.akpm@linux-foundation.org>
+In-Reply-To: <A29F7A5700A7EA4380E08C1F68C3B6D802B5F7CA@scsmsx411.amr.corp.intel.com>
+References: <Pine.LNX.4.64.0705091556260.1221@schroedinger.engr.sgi.com>
+	<A29F7A5700A7EA4380E08C1F68C3B6D802B5F7CA@scsmsx411.amr.corp.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__10_May_2007_09_38_07_+1000_R/cEdKuAyFIzBkht"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__10_May_2007_09_38_07_+1000_R/cEdKuAyFIzBkht
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Wed, 9 May 2007 16:10:05 -0700
+"Yu, Fenghua" <fenghua.yu@intel.com> wrote:
 
-On Wed, 9 May 2007 18:39:55 -0400 Rob Landley <rob@landley.net> wrote:
->
-> Who do I ask about the status of the migration from ARCH=ppc to ARCH=powerpc?
+> 
+> 
+> On Wed, 9 May 2007, Andrew Morton wrote:
+> 
+> >> erm, it's not obviosu from all this that the patches are worth
+> proceeding
+> >> with, are they?
+> 
+> >What was it? 0.5% performance improvement on a synthetic benchmark? 
+> >Process wakeup I believe?
+> 
+> The initial patch and discussion is from:
+> http://www.uwsg.iu.edu/hypermail/linux/kernel/0704.1/0340.html
+> 
+> Yes, the runqueue patch has a 0.5% perf improvement on database
+> workload(which is a good improvement for this workload).
+> 
+> The theory behind the patches is:
+> 
+> 1. Minimize number of cache lines that are touched during a remote
+> access. On Numa system, remote access is more expensive than local.
+> 2. Do not share cache line between remote accessed data and local
+> accessed data. Local data update may cause remote access cache miss and
+> wait for longer time.
+> 
+> Although the patches themselves don't save or waste per_cpu size, the
+> above two reasons are good to have them in.
+> 
 
-linuxppc-dev@ozlabs.org ...
+Guys, this is all a lesson in the value of changelogs, and in how not to
+write them.
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Can you please prepare a new changelog for these patches?  Something which
+encapsulates all the above in as brief a form as possible and which
+includes some numbers describing the space and/or speed improvements?
 
---Signature=_Thu__10_May_2007_09_38_07_+1000_R/cEdKuAyFIzBkht
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGQltkFdBgD/zoJvwRAqfSAJ9Uveer2e9JwloeAdX2847GKNkerwCgiw2q
-aWGjbUvngOWrC8Qcz//w+sg=
-=EmvT
------END PGP SIGNATURE-----
-
---Signature=_Thu__10_May_2007_09_38_07_+1000_R/cEdKuAyFIzBkht--
+Thanks.
