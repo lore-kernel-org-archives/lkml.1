@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969141AbXEIFWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969167AbXEIFZd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969141AbXEIFWb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 01:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966105AbXEIFWT
+	id S969167AbXEIFZd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 01:25:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966260AbXEIFZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 01:22:19 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:49081 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754909AbXEIFWS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 01:22:18 -0400
-X-Sasl-enc: ZL9bVs61Vl5CIlf+lUIML6Vv0EAj7zIrvojcS1RxYObi 1178688136
-Message-ID: <46415A26.6080209@whitby.id.au>
-Date: Wed, 09 May 2007 14:50:38 +0930
-From: Rod Whitby <rod@whitby.id.au>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: Michael-Luke Jones <mlj28@cam.ac.uk>,
-       Alexey Zaytsev <alexey.zaytsev@gmail.com>
-CC: netdev@vger.kernel.org, Tomasz Chmielewski <mangoo@wpkg.org>,
-       linux-kernel@vger.kernel.org, Krzysztof Halasa <khc@pm.waw.pl>,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Why run ixp4xx LE? (Was: [PATCH] Intel IXP4xx network drivers v.2
- - Ethernet and HSS)
-References: <464034CF.20700@wpkg.org>	<f19298770705080148u70638ac2ue87241382681088@mail.gmail.com> <FCBED7DF-2A16-419A-865D-663C34437579@cam.ac.uk>
-In-Reply-To: <FCBED7DF-2A16-419A-865D-663C34437579@cam.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 01:25:25 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:43338 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S966105AbXEIFZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 01:25:24 -0400
+Date: Wed, 9 May 2007 07:31:44 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Venki Pallipadi <venkatesh.pallipadi@intel.com>,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH -mm] timer: parenthesis fix in tbase_get_deferrable() etc.
+Message-ID: <20070509053144.GA995@ff.dom.local>
+References: <20070508103348.GC1772@ff.dom.local> <20070508163358.9cc482a8.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070508163358.9cc482a8.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael-Luke Jones wrote:
-> On 8 May 2007, at 09:48, Alexey Zaytsev wrote:
+On Tue, May 08, 2007 at 04:33:58PM -0700, Andrew Morton wrote:
+> On Tue, 8 May 2007 12:33:48 +0200
+> Jarek Poplawski <jarkao2@o2.pl> wrote:
 > 
->> I was always curious, why do people want to run ixp4xx in LE mode? What
->> are the benefits that overweight the obvious performance degradation?
+> > 
+> > Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+> > 
+> > ---
+> > 
+> > diff -Nurp 2.6.21-mm1-/kernel/timer.c 2.6.21-mm1/kernel/timer.c
+> > --- 2.6.21-mm1-/kernel/timer.c	2007-05-08 11:54:48.000000000 +0200
+> > +++ 2.6.21-mm1/kernel/timer.c	2007-05-08 12:05:11.000000000 +0200
+> > @@ -92,24 +92,24 @@ static DEFINE_PER_CPU(tvec_base_t *, tve
+> >  /* Functions below help us manage 'deferrable' flag */
+> >  static inline unsigned int tbase_get_deferrable(tvec_base_t *base)
+> >  {
+> > -	return ((unsigned int)(unsigned long)base & TBASE_DEFERRABLE_FLAG);
+> > +	return (unsigned int)((unsigned long)base & TBASE_DEFERRABLE_FLAG);
+> >  }
+...
+> The change makes sense, but does it actually "fix" anything?
 > 
-> Debian.
-> http://www.debian.org/ports/arm/
 
-And also out-of-kernel drivers for things like webcams, which have been
-naively written for x86 little endian and have no concept of endian
-neutrality.  In some cases it's just easier to run LE instead of
-fighting with the driver code.
+Yes - this first place fixes logical error, so it's a sin
+- even if not punishable in practice. (It's also unnecessary
+test for long to int conversion.)
 
-BTW, for the consumer-level IXP42x devices (like the NSLU2) the
-performance difference is *completely* overwhelmed by slowness in the
-rest of the system.
+Other changes are only BTW.
 
--- Rod
+Regards,
+Jarek P.
