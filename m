@@ -1,95 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755580AbXEIIPn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbXEIIR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755580AbXEIIPn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 04:15:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754120AbXEIIP3
+	id S1755793AbXEIIR4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 04:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbXEIIRo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 04:15:29 -0400
-Received: from www.osadl.org ([213.239.205.134]:33163 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753107AbXEIIP0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 04:15:26 -0400
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       John Stultz <johnstul@us.ibm.com>, linux-acpi@vger.kernel.org
-In-Reply-To: <20070509001032.dbb982ca.akpm@linux-foundation.org>
-References: <20070430102837.748238000@linutronix.de>
-	 <20070430102852.042964000@linutronix.de>
-	 <20070505003421.00ec45ba.akpm@linux-foundation.org>
-	 <20070505115127.GA17815@elte.hu>
-	 <1178463784.31213.46.camel@localhost.localdomain>
-	 <20070508225920.258d8d34.akpm@linux-foundation.org>
-	 <20070509001032.dbb982ca.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Wed, 09 May 2007 10:18:17 +0200
-Message-Id: <1178698697.3042.461.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Wed, 9 May 2007 04:17:44 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:60986 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbXEIIRn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 04:17:43 -0400
+Message-ID: <4641836C.200@s5r6.in-berlin.de>
+Date: Wed, 09 May 2007 10:16:44 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: CodingStyle: start flamewar about use of braces
+References: <200705081903.l48J3AOw010373@hera.kernel.org>	 <20070508124301.17975a4f.randy.dunlap@oracle.com>	 <4640E971.9050400@garzik.org> <a781481a0705081637x129cb009u6a557205d3776014@mail.gmail.com>
+In-Reply-To: <a781481a0705081637x129cb009u6a557205d3776014@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 00:10 -0700, Andrew Morton wrote:
-> > > find an updated patch below. It fixes the problem on Ingo's
-> > > VAIO-of-fun-emulator and I got confirmation from several other affected
-> > > users, that the patch series is still solving their problems.
-> > > 
-> > 
-> > The machine is still hanging with this patch applied.
+Satyam Sharma wrote:
+> It's quite funny to worship them as "prophets" and adopt their style
+> for some stuff (with a simple "Rationale: K&R.") one instant and then
+> suggest a style completely opposite to theirs one screenful later in
+> the same file.
 
-What did change since yesterday ?
+That's what happens to a text which is incrementally written by people
+with different writing styles (and different opinions).
 
-> yup, that now survives suspend-to-disk and resume, thanks.
+As a slightly off-topic side note:  CodingStyle was once a guideline
+which sort of worked because it was a compact and entertaining read; so
+some people took the time to read it and didn't mind too much to adopt
+the preferred style.  It appears that CodingStyle is now being
+transformed into a norm which the authors want to make work by being
+comprehensive, and by being able to point offenders to a chapter/
+section/ clause which they breached.  Alas only a few people will be
+able and willing to memorize CodingStyle's rules then.
 
-> > suspend-to-disk gets up to "swsusp: critical section: done (NNN pages copied)"
-> > 
-> > No netconsole, no printk-timestamping.
-> > 
-> > ho hum, I guess I get to debug this.
-> 
-> It got ugly.
-> 
-> We finish swsusp_save() and a few other functions then we go
-> 
-> 	hibernate
-> 	->platform_finish
-> 	  ->acpi_hibernation_finish
-> 	    ->acpi_leave_sleep_state
-> 	      ->acpi_evaluate_object
-> 
-> and there it dies, in this call:
-> 
-> 	status = acpi_evaluate_object(NULL, METHOD_NAME__WAK, &arg_list, NULL);
-> 
-> I wonder how your patch caused that?
-
-hmm, that's more than strange
-
-> <debugs further>
-> 
-> OK, it gets to the last statement in acpi_evaluate_object():
-> 
-> 	return_ACPI_STATUS(status);
-> 
-> but doesn't hit the printk on return to the caller,
-> acpi_leave_sleep_state().
-> 
-> A working theory would be that something we did trashed the stack in
-> acpi_evaluate_object().
-> 
-> <switches from 8k stacks to 4k. No change>
-> 
-> foo.  I'm not sure what to do now.
-
-Hmm. Do we enable interrupts somewhere where we should not ?
-/me goes looking for such places.
-
-	tglx
-
-
-	
-
-
+I don't know which form is better suited to the goal of well
+maintainable code --- the compact, easy to read, winning guideline, or
+the comprehensive norm.
+-- 
+Stefan Richter
+-=====-=-=== -=-= -=--=
+http://arcgraph.de/sr/
