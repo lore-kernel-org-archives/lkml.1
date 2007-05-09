@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbXEIMiG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbXEIMie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757850AbXEIMiG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:38:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbXEIMhy
+	id S1758006AbXEIMie (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbXEIMi0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:37:54 -0400
-Received: from mtagate5.uk.ibm.com ([195.212.29.138]:30269 "EHLO
-	mtagate5.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750833AbXEIMhx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:37:53 -0400
-Date: Wed, 9 May 2007 14:37:35 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Duncan Sands <duncan.sands@math.u-psud.fr>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
- (PCI_MULTITHREAD_PROBE)
-Message-ID: <20070509143735.036351e4@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <200705091116.06995.duncan.sands@math.u-psud.fr>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
-	<200705091014.17109.duncan.sands@math.u-psud.fr>
-	<20070509104541.48cc901e@gondolin.boeblingen.de.ibm.com>
-	<200705091116.06995.duncan.sands@math.u-psud.fr>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 08:38:26 -0400
+Received: from dtp.xs4all.nl ([80.126.206.180]:24186 "HELO abra2.bitwizard.nl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1756617AbXEIMiZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 08:38:25 -0400
+Date: Wed, 9 May 2007 14:38:21 +0200
+From: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+To: Rogier Wolff <R.E.Wolff@BitWizard.nl>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: nbd problem.
+Message-ID: <20070509123820.GA1618@bitwizard.nl>
+References: <20070508194053.GA23615@bitwizard.nl> <a781481a0705081333u7b910522x5aac0a0e532d5f85@mail.gmail.com> <20070509111049.GA2362@bitwizard.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070509111049.GA2362@bitwizard.nl>
+Organization: BitWizard.nl
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 May 2007 11:16:06 +0200,
-Duncan Sands <duncan.sands@math.u-psud.fr> wrote:
+On Wed, May 09, 2007 at 01:10:49PM +0200, Rogier Wolff wrote:
+> On Tue, May 08, 2007 at 01:33:52PM -0700, Satyam Sharma wrote:
+> > On 5/8/07, Rogier Wolff <R.E.Wolff@bitwizard.nl> wrote:
+> > >
+> > >Hi,
+> > >
+> > >The nbd client still reliably hangs when I use it.
+> 
+> Someone suggested to use 
+> 
+> http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git;a=summary
+> 
+> and that fixed it.  (i.e. there is something in there that should
+> be merged....)
 
-> The main difficulties encountered with usbatm were: (1) avoiding race
-> conditions on device disconnect; (2) providing a way to cancel heavy_init.
-> As mentioned in my original email, heavy_init could run forever depending
-> on how the system is configured.  In the current implementation a signal
-> is sent on disconnect(), to indicate that the game is up, then disconnect()
-> blocks until heavy_init terminates, if it hasn't already.  A better method
-> would be to allow registration of a cancel() routine, which disconnect
-> would call before blocking on heavy_init termination.  This could send a
-> signal, or complete a completion, or whatever.
+Cancel the party! It got MUCH further than before, but crashed
+eventually. 
 
-Yes, a cancel routine would make sense also in the generic
-probe()/setup() case.
+ozon:~> ps auxww | grep D
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+root       110  0.4  0.0      0     0 ?        D    10:28   0:31 [pdflush]
+root       112  0.0  0.0      0     0 ?        D<   10:28   0:05 [kswapd0]
+root      1649  0.0  0.1   1604   108 pts/0    D+   11:17   0:03 nbd-client petisuix 1234 /dev/nd0
+root      1654  0.9  4.5   4648  2816 pts/0    D+   11:17   0:44 rsync /usr/src/linux-2.6.21.ozon /mnt/test1 -av --progress
+wolff     1716  0.0  0.9   1648   560 pts/1    R+   12:33   0:00 grep D
+ozon:~> 
 
-> Sadly, the generic firmware
-> loading infrastructure doesn't have a way of asynchronously cancelling a
-> firmware load, so right now cancellation only does something if the firmware
-> has already been loaded from disk, in which case it cancels the upload to the
-> modem (which is the most time consuming part).
+Can anybody help me figure out what these proceses are waiting for?
 
-Hm, a firmware load cancellation interface looks like a worthwile
-addition to the firmware code (especially since fw_load_abort() already
-exists and can even be triggered by userspace).
+	Roger. 
+
+-- 
+** R.E.Wolff@BitWizard.nl ** http://www.BitWizard.nl/ ** +31-15-2600998 **
+**    Delftechpark 26 2628 XH  Delft, The Netherlands. KVK: 27239233    **
+*-- BitWizard writes Linux device drivers for any device you may have! --*
+Q: It doesn't work. A: Look buddy, doesn't work is an ambiguous statement. 
+Does it sit on the couch all day? Is it unemployed? Please be specific! 
+Define 'it' and what it isn't doing. --------- Adapted from lxrbot FAQ
