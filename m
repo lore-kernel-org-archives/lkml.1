@@ -1,132 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756676AbXEILDR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbXEILE3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756676AbXEILDR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 07:03:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754694AbXEILDE
+	id S1757569AbXEILE3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 07:04:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbXEILES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 07:03:04 -0400
-Received: from wx-out-0506.google.com ([66.249.82.229]:53796 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751661AbXEILDB (ORCPT
+	Wed, 9 May 2007 07:04:18 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:51714 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754694AbXEILER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 07:03:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=oJS2QhOTN22ebssDyQw+DlmUNdBkw/QOtkz6IyiaEzOuoMnoWwMQqUvyMe/f2JD/kGQWfUvYf4UuP/WNAccdocBzhGF243myTUePGYcfJX/V3ht+qKpeAFsOnTZiCqFHv38ZYkp1mmU25rXi1Dwl06wfJRQDSWixUSjeUkdZmww=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-Date: Wed, 9 May 2007 07:02:48 -0400
-User-Agent: KMail/1.9.6
-Cc: "Antonino Ingargiola" <tritemio@gmail.com>,
-       "Paul Fulghum" <paulkf@microgate.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com> <5486cca80705051108p55b2cddfydce54aa15dd317f4@mail.gmail.com> <200705052035.58782.oliver@neukum.org>
-In-Reply-To: <200705052035.58782.oliver@neukum.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 07:04:17 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=peusxXizMwzVFi2bmwCo/uAmyDmKmo7SgoHT8/WwtUr6+7yrlTqOSKA5NXHKn
+	IJf+fzZGFEDqZ91gdjlglHy1w==
+Date: Wed, 9 May 2007 13:04:15 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Marcus Better <marcus@better.se>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+Message-ID: <20070509110415.GA7513@xi.wantstofly.org>
+References: <464034CF.20700@wpkg.org> <f1s2eu$26p$1@sea.gmane.org> <20070509092132.GB6976@xi.wantstofly.org> <200705091135.06405.marcus@better.se>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705090702.48576.gene.heskett@gmail.com>
+In-Reply-To: <200705091135.06405.marcus@better.se>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 May 2007, Oliver Neukum wrote:
->Am Samstag, 5. Mai 2007 20:08 schrieb Antonino Ingargiola:
->> Now I don't want to abuse your kindness, but I (personally) would be
->> *really* interested in a similar fix for the FTDI usb-serial driver,
->> because many measurements I do use an FTDI device.
->
->Does this work?
->
->	Regards
->		Oliver
->----
->
->--- a/drivers/usb/serial/ftdi_sio.c	2007-05-05 20:21:41.000000000 +0200
->+++ b/drivers/usb/serial/ftdi_sio.c	2007-05-05 20:27:09.000000000 +0200
->@@ -1749,10 +1749,6 @@ static void ftdi_process_read (struct wo
-> 			length = 0;
-> 		}
->
->-		if (priv->rx_flags & THROTTLED) {
->-			dbg("%s - throttled", __FUNCTION__);
->-			break;
->-		}
-> 		if (tty_buffer_request_room(tty, length) < length) {
-> 			/* break out & wait for throttling/unthrottling to happen */
-> 			dbg("%s - receive room low", __FUNCTION__);
->@@ -1825,16 +1821,6 @@ static void ftdi_process_read (struct wo
-> 		dbg("%s - incomplete, %d bytes processed, %d remain",
-> 				__FUNCTION__, packet_offset,
-> 				urb->actual_length - packet_offset);
->-		/* check if we were throttled while processing */
->-		spin_lock_irqsave(&priv->rx_lock, flags);
->-		if (priv->rx_flags & THROTTLED) {
->-			priv->rx_flags |= ACTUALLY_THROTTLED;
->-			spin_unlock_irqrestore(&priv->rx_lock, flags);
->-			dbg("%s - deferring remainder until unthrottled",
->-					__FUNCTION__);
->-			return;
->-		}
->-		spin_unlock_irqrestore(&priv->rx_lock, flags);
-> 		/* if the port is closed stop trying to read */
-> 		if (port->open_count > 0){
-> 			/* delay processing of remainder */
->@@ -1856,9 +1842,15 @@ static void ftdi_process_read (struct wo
-> 			      port->read_urb->transfer_buffer,
-> port->read_urb->transfer_buffer_length, ftdi_read_bulk_callback, port);
->
->-		result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
->-		if (result)
->-			err("%s - failed resubmitting read urb, error %d", __FUNCTION__,
-> result); +		spin_lock_irqsave(&priv->rx_lock, flags);
->+		if (priv->rx_flags & THROTTLED) {
->+			priv->rx_flags |= ACTUALLY_THROTTLED;
->+		} else {
->+			result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
->+			if (result)
->+				err("%s - failed resubmitting read urb, error %d", __FUNCTION__,
-> result); +		}
->+		spin_unlock_irqrestore(&priv->rx_lock, flags);
-> 	}
->
-> 	return;
->-
-Oliver:
+On Wed, May 09, 2007 at 11:35:03AM +0200, Marcus Better wrote:
 
-While running kernel-2.6.21.1-sd-0.48 + this and the other patch I mentioned,
+> > Does that mean that the Debian ARM people have their heads so far
+> > up their collective asses that they think that every form of change
+> > is bad and are unable to accept that some forms of change might be
+> > for the better?
+> 
+> Well, I am not one of the Debian ARM people, just a user... and I
+> do hope the EABI port becomes supported in the future! But in the
+> meatime there is a crowd of users running Debian on consumer devices
+> like the NSLU2, and they need a LE network driver.
 
-Unforch, this patch doesn't seem to have effected my usb-serial problems, for 
-upsd anyway, it's running at 47% of the cpu right now, while running sd-0.48.
+"There's a crowd of users running Linux on TCP offload capable
+cards, and they need TCP offload support in Linux."
 
-Occasionally a stop and restart will fix it...  Nope.  On the restart, its 
-about 3% _until_ something starts reading its output data file, which could 
-be gkrellmBUPS, or its own gui, either one bounces it back up to 45+% of the 
-cpu.  On a kernel where it works sorta right, as in a recent fedora kernel, 
-its about 1.5%, and on even older 2.6.18ish stuff, this utility ran at .1% of 
-the cpu regardless of who read its output data.  But that was with a pl2303 
-adapter, which no longer works at all so I bought some ftdi based ones.
+The people who need a LE network driver can use Christian's driver,
+as Christian's driver works in LE just fine.  The people who care
+about LE support can add LE support to the driver that Krzysztof wrote.
 
-So the next boot will be to cfs-v10 + these.
+I don't think that not supporting LE is a reason not to merge
+Krzysztof's driver.  Don't make supporting LE systems Krzysztof's
+problem.
+
+Krzysztof has written an excellent driver, and while it would be 100%
+Debian style to reject his driver just because it doesn't support LE[*],
+thankfully, Linux is not Debian.  Please don't turn Linux into Debian.
 
 
-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
-
-
-
--- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-For certain people, after fifty, litigation takes the place of sex.
-		-- Gore Vidal
+[*] And if he were to complain about this, he would get slapped with
+    the standard "Our priorities are our users and free software"
+    Debian Social Contract rhetoric -- thank $DEITY we don't have a
+    Linux Kernel Social Contract with the same bullshit in it.
