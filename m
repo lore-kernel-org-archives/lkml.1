@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758532AbXEIQxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbXEIQyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758532AbXEIQxa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 12:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbXEIQxV
+	id S1758574AbXEIQyX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 12:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbXEIQyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 12:53:21 -0400
-Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:55063
-	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756579AbXEIQxU (ORCPT
+	Wed, 9 May 2007 12:54:08 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:54118 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755744AbXEIQyD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 12:53:20 -0400
-Date: Wed, 9 May 2007 09:50:09 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Greg KH <greg@kroah.com>
-cc: Cornelia Huck <cornelia.huck@de.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
- (PCI_MULTITHREAD_PROBE)
-In-Reply-To: <20070509164207.GA28633@kroah.com>
-Message-ID: <Pine.LNX.4.64.0705090947010.4467@asgard.lang.hm>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
- <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
- <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com> <20070509095302.GA13053@kroah.com>
- <20070509153813.52a7c397@gondolin.boeblingen.de.ibm.com> <20070509164207.GA28633@kroah.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 9 May 2007 12:54:03 -0400
+Date: Wed, 9 May 2007 09:54:02 -0700
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070509165402.GO6375@schatzie.adilger.int>
+Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+	torvalds@osdl.org, akpm@linux-foundation.org,
+	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+	cmm@us.ibm.com
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070509160102.GA30745@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 May 2007, Greg KH wrote:
+On May 09, 2007  21:31 +0530, Amit K. Arora wrote:
+> 2) For FA_UNALLOCATE mode, should the file system allow unallocation
+>    of normal (non-preallocated) blocks (blocks allocated via
+>    regular write/truncate operations) also (i.e. work as punch()) ?
+>    - Though FA_UNALLOCATE mode is yet to be implemented on ext4, still
+>      we need to finalize on the convention here as a general guideline
+>      to all the filesystems that implement fallocate.
 
->>>> doesn't take long, having all devices probed one after the other may
->>>> take a lot of time. Putting the actual probe on a thread makes it
->>>> possible to run several probes in parallel, thereby cutting probing
->>>> time.
->>>
->>> Again, not for PCI, right?
->>
->> It seems that everyone agrees now that moving PCI over to a new probing
->> model without individual driver support was a bad idea. So generic
->> multithreaded probing is dead.
->
-> Why is it dead?  Since when is PCI the only bus in the system?
+I would only allow this on FA_ALLOCATE extents.  That means it won't be
+possible to do this for filesystems that don't understand unwritten
+extents unless there are blocks allocated beyond EOF.
 
-correct, while this discussion started over the PCI_MULTITHREAD_PROBE it's 
-focusing on the generic problem that would apply to any bus
+> 3) If above is true, the file size will need to be changed
+>    for "unallocation" when block holding the EOF gets unallocated.
+>    - If we do not "unallocate" normal (non-preallocated) blocks and we
+>      do not change the file size on preallocation, then this is a
+>      non-issue.
 
->>> If you want to implement this for your bus type, fine, I have no
->>> objection to that at all, but not for PCI, it's just not worth it.
->>
->> Infrastructure for async probing might not be such a bad idea, though.
->> (Aren't there some huge PCI-based machines?) However, I don't really
->> care whether PCI or SCSI or $HUGE_BUS use it, but serial synchronous
->> probing on a bus looks like a killer on most large systems.
->
-> PCI probing is just reading stuff from memory.  The slowness happens
-> when storage devices need to spin up and/or discover attached drives.
->
-> So, the async stuff can be done in those buses if wanted/needed, PCI is
-> not the problem here.
+Not necessarily.  That will just make the file sparse.  If FA_ALLOCATE
+does not change the file size, why should FA_UNALLOCATE.
 
-I don't think anyone is saying that PCI is the problem here. We're trying 
-to identify what needs to be done for any arbatrary bus, if a particular 
-bus doesn't need to split it's initialization up becouse there are no 
-delays (and therefor no gains for multithreading) then drivers for that 
-bus don't bother to implement any async portion.
+> 4) Should we update mtime & ctime on a successfull allocation/
+>    unallocation ?
 
-David Lang
+I would say yes.  If glibc does the fallback fallocate via write() the
+mtime/ctime will be updated, so it makes sense to be consistent for
+both methods.  Also, it just makes sense from the "this file was modified"
+point of view.
+
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
+
