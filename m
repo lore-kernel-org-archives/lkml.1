@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756199AbXEII7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756587AbXEIJAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756199AbXEII7p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 04:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754396AbXEII7g
+	id S1756587AbXEIJAb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbXEIJAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 04:59:36 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:48826 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbXEII7f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 04:59:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=dQ3zUOO4/fcRv3OCU/0ieHxb6nDdxSjrGq+fg5SwoiVA2fnkXInHAiuszwrSeYX6q5EJVnNfmOLEgAqe4mWJOA1eSfpL8fEtRHaOSXzanlurGMAdmUOFlFFAa3niPKv+To5F4J9pLQQte2KDR3ru2Sx6VlD7d3DzwvCQJH8DXgo=
-Message-ID: <84144f020705090159t72ea1bd8qccc60791f3be8db@mail.gmail.com>
-Date: Wed, 9 May 2007 11:59:33 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-Subject: Re: CodingStyle: start flamewar about use of braces
-Cc: "Satyam Sharma" <satyam.sharma@gmail.com>, "Jeff Garzik" <jeff@garzik.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4641836C.200@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705081903.l48J3AOw010373@hera.kernel.org>
-	 <20070508124301.17975a4f.randy.dunlap@oracle.com>
-	 <4640E971.9050400@garzik.org>
-	 <a781481a0705081637x129cb009u6a557205d3776014@mail.gmail.com>
-	 <4641836C.200@s5r6.in-berlin.de>
-X-Google-Sender-Auth: 8bba01b839967778
+	Wed, 9 May 2007 05:00:10 -0400
+Received: from main.gmane.org ([80.91.229.2]:33422 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754396AbXEIJAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 05:00:08 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Marcus Better <marcus@better.se>
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+Followup-To: gmane.linux.network
+Date: Wed, 09 May 2007 10:58:06 +0200
+Message-ID: <f1s2eu$26p$1@sea.gmane.org>
+References: <464034CF.20700@wpkg.org> <f19298770705080148u70638ac2ue87241382681088@mail.gmail.com> <m3bqgv72sq.fsf@maximus.localdomain> <20070508155201.GA1251@xi.wantstofly.org> <m3hcqn5j0p.fsf@maximus.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: 67.152.216.81.static.g-va.siw.siwnet.net
+User-Agent: KNode/0.10.4
+Cc: netdev@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/9/07, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
-> I don't know which form is better suited to the goal of well
-> maintainable code --- the compact, easy to read, winning guideline, or
-> the comprehensive norm.
+Krzysztof Halasa wrote:
+> Lennert Buytenhek <buytenh@wantstofly.org> writes:
+>> There _is_ an ARM BE version of Debian.
+>>
+>> It's not an official port, but it's not maintained any worse than
+>> the 'official' LE ARM Debian port is.
 
-Bah, it's a slippery slope. Too little guidelines and we end up people
-submitting code that is "obviously" violating Linux coding standards
-on the basis of that it's not forbidden by Documentation/CodingStyle.
-And with too much detail, we end up with something that nobody wants
-to read let alone follow. So what CodingStyle should say, really, is
-that maintainers have different preference and you're usually better
-off following them than fighting against them ;-).
+> Hmm... That changes a bit. Perhaps we should forget about
+> that LE thing then, and (at best) put that trivial workaround?
+
+Please keep in mind that users are unlikely to install an unofficial port
+which lacks integration with the Debian infrastructure, security support
+and other services. The arm architecture (LE) is currently the third most
+popular in Debian, whereas I suspect (?) there are very few BE Debian
+systems out there.
+
+Marcus
+
+
