@@ -1,134 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbXEIMBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757227AbXEIMB4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757448AbXEIMBi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756304AbXEIMAS
+	id S1757227AbXEIMB4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:01:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757245AbXEIMAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:00:18 -0400
-Received: from wx-out-0506.google.com ([66.249.82.231]:18638 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756262AbXEIMAP (ORCPT
+	Wed, 9 May 2007 08:00:25 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:1179 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756946AbXEIMAV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:00:15 -0400
+	Wed, 9 May 2007 08:00:21 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:organization:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
-        b=UJTuEEkwbrAG8NuaTjVc4RlRKPCJCyFxgEyIrq9myV4DPQS/f/NwAF4PT7QVg2RG4UaoXpvmqoJv9Red2cZvKhkc7/fX9+WN9BOOn6EDyh2COZIFGvN2dGS9giHwOdTp3MS+UW/ZqZJXlMENvvcnIfuaFt5obUFHjCmTDHY6eIA=
-From: Gene Heskett <gene.heskett@gmail.com>
-Organization: Organization? very little
-To: Oliver Neukum <oliver@neukum.org>, David Miller <davem@davemloft.net>
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-User-Agent: KMail/1.9.6
-Cc: "Antonino Ingargiola" <tritemio@gmail.com>,
-       "Paul Fulghum" <paulkf@microgate.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com> <5486cca80705051108p55b2cddfydce54aa15dd317f4@mail.gmail.com> <200705052035.58782.oliver@neukum.org>
-In-Reply-To: <200705052035.58782.oliver@neukum.org>
+        d=googlemail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=a2VKPe4iK52E4mrndjj8ctLhkaJWneH5H3bKROdSv/dILYa6Il+YpwSYwjgNWXo8yMpsqv9m3mzVE7dcB55H+bm9QEqow1Aef2PRwGza9eo0XyC6lQL4WYeeflCjtZmrSVaXpmc66I5a2fCoiSavV49zRM9eb4UXNL4BTd/DSFs=
+Message-ID: <6e0cfd1d0705090500u3423877u579ebace44100b77@mail.gmail.com>
+Date: Wed, 9 May 2007 14:00:19 +0200
+From: "Martin Schwidefsky" <schwidefsky@googlemail.com>
+To: "Paul Mackerras" <paulus@samba.org>
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Cc: suparna@in.ibm.com, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, cmm@us.ibm.com
+In-Reply-To: <17985.45682.284634.969153@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Disposition: inline
-Date: Wed, 9 May 2007 08:00:11 -0400
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200705090800.11799.gene.heskett@gmail.com>
+Content-Disposition: inline
+References: <20070418130600.GW5967@schatzie.adilger.int>
+	 <20070424121632.GA10136@amitarora.in.ibm.com>
+	 <20070426175056.GA25321@amitarora.in.ibm.com>
+	 <20070426180332.GA7209@amitarora.in.ibm.com>
+	 <20070503212955.b1b6443c.akpm@linux-foundation.org>
+	 <17978.47502.786970.196554@cargo.ozlabs.ibm.com>
+	 <20070509101507.GA26056@in.ibm.com>
+	 <17985.42884.971318.859402@cargo.ozlabs.ibm.com>
+	 <20070509111011.GA21619@in.ibm.com>
+	 <17985.45682.284634.969153@cargo.ozlabs.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 05 May 2007, Oliver Neukum wrote:
-
-You are included this time David because 3 messages I posted this morning, 
-whose text should resemble this one, the first of those 3, were 
-also /dev/nulled.  this is BS when I can't even discuss a patch in the same 
-manner as others can.
-
-So whats wrong with this message that its filtered?
-
->Am Samstag, 5. Mai 2007 20:08 schrieb Antonino Ingargiola:
->> Now I don't want to abuse your kindness, but I (personally) would be
->> *really* interested in a similar fix for the FTDI usb-serial driver,
->> because many measurements I do use an FTDI device.
+On 5/9/07, Paul Mackerras <paulus@samba.org> wrote:
+> Suparna Bhattacharya writes:
 >
->Does this work?
+> > > Of course the interface used by an application program would have the
+> > > fd first.  Glibc can do the translation.
+> >
+> > I think that was understood.
 >
->	Regards
->		Oliver
->----
+> OK, then what does it matter what the glibc/kernel interface is, as
+> long as it works?
 >
->--- a/drivers/usb/serial/ftdi_sio.c	2007-05-05 20:21:41.000000000 +0200
->+++ b/drivers/usb/serial/ftdi_sio.c	2007-05-05 20:27:09.000000000 +0200
->@@ -1749,10 +1749,6 @@ static void ftdi_process_read (struct wo
-> 			length = 0;
-> 		}
->
->-		if (priv->rx_flags & THROTTLED) {
->-			dbg("%s - throttled", __FUNCTION__);
->-			break;
->-		}
-> 		if (tty_buffer_request_room(tty, length) < length) {
-> 			/* break out & wait for throttling/unthrottling to happen */
-> 			dbg("%s - receive room low", __FUNCTION__);
->@@ -1825,16 +1821,6 @@ static void ftdi_process_read (struct wo
-> 		dbg("%s - incomplete, %d bytes processed, %d remain",
-> 				__FUNCTION__, packet_offset,
-> 				urb->actual_length - packet_offset);
->-		/* check if we were throttled while processing */
->-		spin_lock_irqsave(&priv->rx_lock, flags);
->-		if (priv->rx_flags & THROTTLED) {
->-			priv->rx_flags |= ACTUALLY_THROTTLED;
->-			spin_unlock_irqrestore(&priv->rx_lock, flags);
->-			dbg("%s - deferring remainder until unthrottled",
->-					__FUNCTION__);
->-			return;
->-		}
->-		spin_unlock_irqrestore(&priv->rx_lock, flags);
-> 		/* if the port is closed stop trying to read */
-> 		if (port->open_count > 0){
-> 			/* delay processing of remainder */
->@@ -1856,9 +1842,15 @@ static void ftdi_process_read (struct wo
-> 			      port->read_urb->transfer_buffer,
-> port->read_urb->transfer_buffer_length, ftdi_read_bulk_callback, port);
->
->-		result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
->-		if (result)
->-			err("%s - failed resubmitting read urb, error %d", __FUNCTION__,
-> result); +		spin_lock_irqsave(&priv->rx_lock, flags);
->+		if (priv->rx_flags & THROTTLED) {
->+			priv->rx_flags |= ACTUALLY_THROTTLED;
->+		} else {
->+			result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
->+			if (result)
->+				err("%s - failed resubmitting read urb, error %d", __FUNCTION__,
-> result); +		}
->+		spin_unlock_irqrestore(&priv->rx_lock, flags);
-> 	}
->
-> 	return;
->-
+> It's only a minor point; the order of arguments can vary between
+> architectures if necessary, but it's nicer if they don't have to.
+> 32-bit powerpc will need to have the two int arguments adjacent in
+> order to avoid using more than 6 argument registers at the user/kernel
+> boundary, and s390 will need to avoid having a 64-bit argument last
+> (if I understand it correctly).
 
-Oliver:
-
-Sort of late, but,
-
-I have a couple of kernels building with this patch applied, one with the 
-sd-0.48 patch where FTDI stuff is a 40+% cpu hog and can't be used, and one 
-with the cfs-v10 patch where it can be co-erced into working if I screw with 
-it enough.
-
-I have also been using another serial patch that for unk reasons, also helps 
-the usb-serial case here, but vger won't let me repost that without stripping 
-off the headers.  That patch has some resemblance to 
-this:8250-clear-on-read-bits-LSR-MSR where I usually replace spaces with 
-dashes so I don't have to use "to surround the name" in my scripts.
-
-So these test kernels will have both patches.
-
-I'll let you know how they work later this morning.
+Ah, almost but not quite the point. But I admit it is hard to understand..
+The trouble started with the futex call which has been the first
+system call with 6 arguments. s390 supported only 5 arguments up to
+that point (%r2 - %r6). For futex we added a wrapper to the glibc that
+loaded the 6th argument to %r7. In entry.S we set up things so that
+%r7 gets stored to the kernel stack where normal C code expects the
+first overflow argument. This enabled us to use the standard futex
+system call with 6 arguments.
+fallocate now has an additional problem: the last argument is a 64 bit
+integers AND registers %r2-%r5 are already used. In this case the 64
+bit number would have to be split into the high part in %r6 and the
+low part on the stack so that the glibc wrapper can load the low part
+to %r7. But the C compiler will skip %r6 and store the 64 bit number
+on the stack.
+If the order of the arguments if modified so that %r6 is assigned to a
+32-bit argument, then the entry.S magic with %r7 would work.
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-Oh my GOD -- the SUN just fell into YANKEE STADIUM!!
-
+blue skies,
+  Martin
