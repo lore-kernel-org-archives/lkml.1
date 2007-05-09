@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758638AbXEIS46@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbXEITEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758638AbXEIS46 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 14:56:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757352AbXEIS4v
+	id S1757545AbXEITEZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 15:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbXEITES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 14:56:51 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2109 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756879AbXEIS4q (ORCPT
+	Wed, 9 May 2007 15:04:18 -0400
+Received: from wr-out-0506.google.com ([64.233.184.234]:31466 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754129AbXEITER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 14:56:46 -0400
-Date: Wed, 9 May 2007 19:56:36 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] MMC updates
-Message-ID: <20070509185636.GB26981@flint.arm.linux.org.uk>
-Mail-Followup-To: Pierre Ossman <drzeus-list@drzeus.cx>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>
-References: <46375B18.4080802@drzeus.cx>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 9 May 2007 15:04:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=jyTZXuyzJNo4BV+gGsFoNucD2WR//B7Pn2qNc1un74r/tREtZaBpXKQIRHO3AqRGycXCXuXdUPefOin3jX+nuH0uUz78W3SAvQTfKGYN1sIrlNIzuWD9HsL41rGPV28emYi5gFDnmn3SOaxvLfVFcuu4tzGLSEBYRAv7Ai4dq7g=
+Message-ID: <a781481a0705091204g1ff1eb4do2ac1bfb876b8b7e1@mail.gmail.com>
+Date: Thu, 10 May 2007 00:34:15 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Randy Dunlap" <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] doc: volatile considered evil
+Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Paul Sokolovsky" <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       rientjes@google.com, jeremy@goop.org,
+       "Jonathan Corbet" <corbet@lwn.net>
+In-Reply-To: <20070509085253.5935f90f.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46375B18.4080802@drzeus.cx>
-User-Agent: Mutt/1.4.2.1i
+References: <516386418.20070501080839@gmail.com>
+	 <20070430235642.e576e917.akpm@linux-foundation.org>
+	 <20070508121404.17bd97a6.randy.dunlap@oracle.com>
+	 <a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
+	 <20070508163452.8b71f682.randy.dunlap@oracle.com>
+	 <46418B4D.6030307@s5r6.in-berlin.de>
+	 <20070509085253.5935f90f.randy.dunlap@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 01, 2007 at 05:22:00PM +0200, Pierre Ossman wrote:
-> Linus, please pull from
-> 
->         git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
-> 
-> to receive the following updates:
+On 5/9/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
+> On Wed, 09 May 2007 10:50:21 +0200 Stefan Richter wrote:
+>
+> > Randy Dunlap wrote:
+> > > Add information on the problems with the C-language "volatile" keyword
+> > > and why it should not be used (most of the time).
+> >
+> > I like Jonathan's article http://lwn.net/Articles/233479/ a lot.
+> > It puts as much emphasis on the DOs as on the DON'Ts, which I find helpful.
+>
+> Yep.  I expect to drop my patch in favor of Jon's writeup.
 
-Dug out from the ARM kautobuild...
-
-drivers/mmc/host/pxamci.c: In function 'pxamci_cmd_done':
-drivers/mmc/host/pxamci.c:236: error: 'MMC_ALL_SEND_CID' undeclared (first use in this function)
-drivers/mmc/host/pxamci.c:236: error: (Each undeclared identifier is reported only once
-drivers/mmc/host/pxamci.c:236: error: for each function it appears in.)
-drivers/mmc/host/pxamci.c:237: error: 'MMC_SEND_CSD' undeclared (first use in this function)
-drivers/mmc/host/pxamci.c:238: error: 'MMC_SEND_CID' undeclared (first use in this function)
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Yeah, that article was both comprehensive and to-the-point indeed. I
+was trying my hand at re-organizing your original mail, but Jon's
+version is nicer.
