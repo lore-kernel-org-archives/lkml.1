@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971238AbXEIAX1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971328AbXEIAXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971238AbXEIAX1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 20:23:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968516AbXEIAXR
+	id S971328AbXEIAXq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 20:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971255AbXEIAXc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 20:23:17 -0400
-Received: from waste.org ([66.93.16.53]:49692 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S970261AbXEIAXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 20:23:16 -0400
-Date: Tue, 8 May 2007 19:23:08 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, clameter@sgi.com
-Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch added to -mm tree
-Message-ID: <20070509002307.GV11115@waste.org>
-References: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 8 May 2007 20:23:32 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47501 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S971250AbXEIAXa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 20:23:30 -0400
+Date: Wed, 9 May 2007 09:23:07 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, clameter@sgi.com,
+       akpm@linux-foundation.org, ak@suse.de, jbarnes@virtuousgeek.org
+Subject: Re: [PATCH] change zonelist order v5 [3/3] documentation
+Message-Id: <20070509092307.294cf95f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1178644135.5203.31.camel@localhost>
+References: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070508201904.0ee47ca2.kamezawa.hiroyu@jp.fujitsu.com>
+	<1178644135.5203.31.camel@localhost>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 04:02:20PM -0700, akpm@linux-foundation.org wrote:
->  	bool "SLOB (Simple Allocator)"
->  	help
->  	   SLOB replaces the SLAB allocator with a drastically simpler
->  	   allocator.  SLOB is more space efficient that SLAB but does not
-> -	   scale well (single lock for all operations) and is more susceptible
-> -	   to fragmentation. SLOB it is a great choice to reduce
-> -	   memory usage and code size for embedded systems.
-> +	   scale well (single lock for all operations) and is also highly
-> +	   susceptible to fragmentation. SLUB can accomplish a higher object
-> +	   density. It is usually better to use SLUB instead of SLOB.
+On Tue, 08 May 2007 13:08:55 -0400
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
 
-This isn't accurate.
+> On Tue, 2007-05-08 at 20:19 +0900, KAMEZAWA Hiroyuki wrote:
+> > Patch for documentation.
+> > 
+> > Signed-Off-By: KAMEZAWA hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > 
+> 
+> Will send followup patch with minor editorial changes.
+> Acked-by:  Lee Schermerhorn <lee.schermerhorn@hp.com>
+> 
+Thank you. it's helpful.
 
-First, SLOB no longer runs on SMP because SLAB grew some RCU-related
-hair. So it now effectively has no locks at all! 
+-kame
 
-Second, I think the fragmentation issues are exaggerated. Before SLAB
-was introduced, Linux's kmalloc was the moral equivalent of SLOB
-(without SLAB emulation) and fragmentation was not the driving force
-for replacement. Small Linux 1.x machines frequently had uptimes of 1+
-years without fragmenting to death. Instead, it was performance with
-large amounts of RAM - the old kmalloc (and SLOB) have performance
-proportional to memory size.
-
-Third, I don't think it's possible even in theory for a SLAB-like
-allocator to be as efficient as SLOB simply due to the constraints of
-putting only objects of the same size on a given page. So consider me
-skeptical on the density claim.
-
-It is usually better to use SLUB simply because you're more likely to
-have 1GB of RAM rather than 4MB.
-
--- 
-Mathematics is the supreme nostalgia of our time.
