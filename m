@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760125AbXEIXGL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759829AbXEIXIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760125AbXEIXGL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:06:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757984AbXEIXF4
+	id S1759829AbXEIXIk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbXEIXI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:05:56 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41569
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757225AbXEIXFz (ORCPT
+	Wed, 9 May 2007 19:08:26 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:52747 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755725AbXEIXIZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:05:55 -0400
-From: Rob Landley <rob@landley.net>
-To: linux-kernel@vger.kernel.org
-Subject: Building ppc/powerpc kernel to run under QEMU.
-Date: Wed, 9 May 2007 18:39:55 -0400
-User-Agent: KMail/1.9.1
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Wed, 9 May 2007 19:08:25 -0400
+Date: Wed, 9 May 2007 16:13:12 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: "Shahbaz Khan" <shaz.linux@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: What tools to use?
+Message-Id: <20070509161312.02560f00.randy.dunlap@oracle.com>
+In-Reply-To: <20cbb9450705091557p53e771f6g7cb2c8b0491a3d8a@mail.gmail.com>
+References: <20cbb9450705091557p53e771f6g7cb2c8b0491a3d8a@mail.gmail.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705091839.55149.rob@landley.net>
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Who do I ask about the status of the migration from ARCH=ppc to ARCH=powerpc?
+On Thu, 10 May 2007 03:57:21 +0500 Shahbaz Khan wrote:
 
-I've been putting around with my Firmware Linux project trying to add powerpc 
-as a supported platform.  I can build kernels that qemu can boot (such as 
-a "prep" kernel) using ARCH=ppc, but that one doesn't support make 
-headers_install.
+> All the experts on this list plz let me know of any good cross
+> referencing tool for source code navigation. I have tried LXR but its
+> not easy to configure for a rookie like me. Anyother as good as LXR?
 
-Using ARCH=powerpc makes headers_install work, but there's no kernel .config 
-I've been able to come up with that generates a kernel I can boot under qemu.
+It's not a web browser interface, but cscope works pretty well.
 
-I could add a special case to my build script, but so far I've got it building 
-eight targets (x86, x86-64, mips, mipsel, armv4l, armv5l, and sparc) with the 
-same ARCH= for headers_install and the actual kernel compile.  It seems there 
-_should_ be a way to do this for as prominent an architecture as PowerPC.
+http://cscope.sourceforge.net/
 
-Who should I ask about this?
 
-Rob
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
