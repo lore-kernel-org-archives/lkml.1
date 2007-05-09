@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbXEITxm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbXEIT4x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbXEITxm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 15:53:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbXEITxg
+	id S1757938AbXEIT4x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 15:56:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbXEIT4q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 15:53:36 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:46795 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbXEITxf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 15:53:35 -0400
-Message-ID: <464226BD.8000602@garzik.org>
-Date: Wed, 09 May 2007 15:53:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Wed, 9 May 2007 15:56:46 -0400
+Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:34085
+	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755512AbXEIT4q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 15:56:46 -0400
+Message-ID: <464235F4.6080006@microgate.com>
+Date: Wed, 09 May 2007 14:58:28 -0600
+From: Paul Fulghum <paulkf@microgate.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 MIME-Version: 1.0
-To: Gerhard Mack <gmack@innerfire.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [2.6.21.1] SATA freeze
-References: <Pine.LNX.4.64.0705091453310.18441@mtl.rackplans.net>
-In-Reply-To: <Pine.LNX.4.64.0705091453310.18441@mtl.rackplans.net>
+To: James Simmons <jsimmons@infradead.org>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux console project <linuxconsole-dev@lists.sourceforge.net>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] Use tty_schedule in VT code.
+References: <Pine.LNX.4.64.0705082107460.3459@pentafluge.infradead.org> <1178656361.14867.7.camel@x2.microgate.com>
+In-Reply-To: <1178656361.14867.7.camel@x2.microgate.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerhard Mack wrote:
-> May  9 14:51:35 mgerhard kernel: ata1.00: exception Emask 0x0 SAct 0x0 
-> SErr 0x1800000 action 0x2 frozen
-> May  9 14:51:35 mgerhard kernel: ata1.00: cmd 
-> 35/00:00:80:6d:c8/00:04:09:00:00/e0 tag 0 cdb 0x0 data 524288 out
-> May  9 14:51:35 mgerhard kernel:          res 
-> 40/00:c8:68:65:c8/84:00:09:00:00/e0 Emask 0x4 (timeout)
-> May  9 14:51:42 mgerhard kernel: ata1: port is slow to respond, please be 
-> patient (Status 0xd0)
-> 
-> Anything I can do to figgure out what's causing this?
+Paul Fulghum wrote:
+> As the tty flip buffer code has evolved, that delay value of 1
+> was carried along. It may have had some historical purpose, but
+> I can't figure it out and it appears to have no use currently.
 
-Provide full lspci, dmesg, kernel config?
+I looked further back and in the 2.4 kernels this scheduling
+was done with the timer task queue (process receive data on
+next timer tick).
 
-	Jeff
+I guess the schedule_delayed_work() with a time delay of 1
+was the best approximation of the previous behavior.
 
+There is no logical reason to delay the first attempt at
+processing receive data so schedule_delayed_work() in
+tty_schedule_flip() should be changed to 0 (as was the
+case for con_schedule_flip).
 
+The schedule_delayed_work in flush_to_ldisc() will continue
+to use a delay of 1 if the ldisc can't accept more data.
+This allows the user app and ldisc to catch up.
 
+Subsequent calls to tty_schedule_flip won't affect
+this 'back off' delay because once the work is scheduled
+(with a delay of 1) new scheduling calls are ignored for
+the same work structure.
+
+I've been testing the change to 0 in tty_schedule_flip()
+under various loads and data rates with no ill effects.
+
+-- 
+Paul Fulghum
+Microgate Systems, Ltd.
