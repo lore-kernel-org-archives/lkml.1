@@ -1,57 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760794AbXEIXoo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760338AbXEIXqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760794AbXEIXoo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:44:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760691AbXEIXn4
+	id S1760338AbXEIXqm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757204AbXEIXqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:43:56 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59606 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760685AbXEIXny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:43:54 -0400
-Message-ID: <46425BF0.8070401@redhat.com>
-Date: Wed, 09 May 2007 19:40:32 -0400
-From: =?UTF-8?B?S3Jpc3RpYW4gSMO4Z3NiZXJn?= <krh@redhat.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       linux-kernel@vger.kernel.org, Kristian H??gsberg <krh@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux1394-devel <linux1394-devel@lists.sourceforge.net>
-Subject: Re: [PATCH 4/6] firewire: OHCI-1394 lowlevel driver
-References: <4637A29F.6070302@redhat.com> <20070502090007.GA28174@infradead.org> <tkrat.087ee29add656926@s5r6.in-berlin.de> <tkrat.350cb4dfe522266e@s5r6.in-berlin.de> <tkrat.65aea95f1451c211@s5r6.in-berlin.de> <tkrat.2aa3f3ac11a3d60d@s5r6.in-berlin.de> <tkrat.a41f7f10d21d3cc4@s5r6.in-berlin.de> <20070504111125.GA3028@infradead.org>
-In-Reply-To: <20070504111125.GA3028@infradead.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Wed, 9 May 2007 19:46:36 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:54811 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756766AbXEIXqe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 19:46:34 -0400
+Date: Wed, 9 May 2007 16:45:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: thockin@google.com (Tim Hockin)
+Cc: ak@suse.de, vojtech@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86_64: O_EXCL on /dev/mcelog (resend)
+Message-Id: <20070509164555.c640dfef.akpm@linux-foundation.org>
+In-Reply-To: <20070507221901.GA26709@google.com>
+References: <20070507221901.GA26709@google.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
->> +	if (pci_enable_device(dev)) {
->> +		fw_error("Failed to enable OHCI hardware.\n");
->> +		return cleanup(ohci, CLEANUP_PUT_CARD, -ENODEV);
+On Mon, 7 May 2007 15:19:01 -0700
+thockin@google.com (Tim Hockin) wrote:
+
+> From: Tim Hockin <thockin@google.com>
 > 
-> Please use normal goto unwinding so the driver follows the same model
-> as almost all other pci drivers and allows people to follow your driver
-> more easily.  Also it's not a alot of cleanup code, so removing this
-> might actually be a net decrease in lines of code.
-
-Sure.  The patch I have here says 42 insertions, 44 deletions :)
-
->> +	if (software_reset(ohci)) {
+> Background:
+>  /dev/mcelog is a clear-on-read interface.  It is currently possible for
+>  multiple users to open and read() the device.  Users are protected from
+>  each other during any one read, but not across reads.
 > 
-> Please give all your function a nice prefix so that oops messages are
-> more readable.
+> Description:
+>  This patch adds support for O_EXCL to /dev/mcelog.  If a user opens the
+>  device with O_EXCL, no other user may open the device (EBUSY).  Likewise,
+>  any user that tries to open the device with O_EXCL while another user has
+>  the device will fail (EBUSY).
+> 
+> Result:
+>  Applications can get exclusive access to /dev/mcelog.  Applications that
+>  do not care will be unchanged.
+> 
+> Alternatives:
+>  A simpler choice would be to only allow one open() at all, regardless of
+>  O_EXCL.
+> 
+> Testing:
+>  I wrote an application that opens /dev/mcelog with O_EXCL and observed
+>  that any other app that tried to open /dev/mcelog would fail until the
+>  exclusive app had closed the device.
+> 
+> Caveats:
+>  None.
+> 
+> Patch:
+>  This patch is against 2.6.21.
+> 
+> Signed-off-by: Tim Hockin <thockin@google.com>
+> 
+> ---
+> 
+> This is the first version version of this patch.  The simpler alternative
+> of only one open() sounds better to me, but becomes a net change in
+> behavior.
+> 
+> 
+> diff -pruN linux-2.6.20+th/arch/x86_64/kernel/mce.c linux-2.6.20+th1.5/arch/x86_64/kernel/mce.c
+> --- linux-2.6.20+th/arch/x86_64/kernel/mce.c	2007-04-27 14:19:08.000000000 -0700
+> +++ linux-2.6.20+th1.5/arch/x86_64/kernel/mce.c	2007-05-01 21:53:10.000000000 -0700
+> @@ -465,6 +465,40 @@ void __cpuinit mcheck_init(struct cpuinf
+>   * Character device to read and clear the MCE log.
+>   */
+>  
+> +static DEFINE_SPINLOCK(mce_state_lock);
+> +static int open_count;	/* #times opened */
+> +static int open_exclu;	/* already open exclusive? */
 
-I don't see a strong precedence for this for static functions.  For example, 
-if you grep for 'static' in drivers/usb/core, there's a mix of usb_* prefixed 
-functions and functions without a consistent prefix.  Plus, when the drivers 
-are loaded as modules, the module name will be in the stack trace.  I can 
-track down the most generic sounding functions and give them a fw_ prefix, but 
-doing a whole-sale prefixing of static functions will make the source more 
-noisy and reduce readabilty - I'm not sure it's worth it.
+"open_exclusive" ;)
 
-cheers,
-Kristian
+> +static int mce_open(struct inode *inode, struct file *file)
+> +{
+> +	spin_lock(&mce_state_lock);
+> +
+> +	if (open_exclu || (open_count && (file->f_flags & O_EXCL))) {
+> +		spin_unlock(&mce_state_lock);
+> +		return -EBUSY;
+> +	}
+> +
+> +	if (file->f_flags & O_EXCL)
+> +		open_exclu = 1;
+> +	open_count++;
+> +
+> +	spin_unlock(&mce_state_lock);
+> +
+> +	return 0;
+> +}
+
+Does this guy support lseek?  If not we should toss a nonseekable_open()
+call in here.
+
+> +static int mce_release(struct inode *inode, struct file *file)
+> +{
+> +	spin_lock(&mce_state_lock);
+> +
+> +	open_count--;
+> +	open_exclu = 0;
+> +
+> +	spin_unlock(&mce_state_lock);
+> +
+> +	return 0;
+> +}
+
