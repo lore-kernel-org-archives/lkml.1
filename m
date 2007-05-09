@@ -1,65 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbXEIQm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbXEIQwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757575AbXEIQm1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 12:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbXEIQmU
+	id S1757260AbXEIQwa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 12:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756112AbXEIQwV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 12:42:20 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57957 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755799AbXEIQmT (ORCPT
+	Wed, 9 May 2007 12:52:21 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:56964 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754328AbXEIQwV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 12:42:19 -0400
-Date: Wed, 9 May 2007 09:42:07 -0700
-From: Greg KH <greg@kroah.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
-	(PCI_MULTITHREAD_PROBE)
-Message-ID: <20070509164207.GA28633@kroah.com>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com> <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org> <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com> <20070509095302.GA13053@kroah.com> <20070509153813.52a7c397@gondolin.boeblingen.de.ibm.com>
+	Wed, 9 May 2007 12:52:21 -0400
+Message-ID: <4641FC18.3030506@zytor.com>
+Date: Wed, 09 May 2007 09:51:36 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070509153813.52a7c397@gondolin.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Alexander van Heukelum <heukelum@mailshack.com>
+CC: "Antonino A. Daplas" <adaplas@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
+References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org> <20070508183232.GA13225@mailshack.com> <1178669047.4747.15.camel@daplas> <20070509085434.GA13712@mailshack.com>
+In-Reply-To: <20070509085434.GA13712@mailshack.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 03:38:13PM +0200, Cornelia Huck wrote:
-> On Wed, 9 May 2007 02:53:02 -0700,
-> Greg KH <greg@kroah.com> wrote:
+Alexander van Heukelum wrote:
 > 
-> > > 2. Sheer volume of devices on a bus. Even if the indivdual probing
-> > > doesn't take long, having all devices probed one after the other may
-> > > take a lot of time. Putting the actual probe on a thread makes it
-> > > possible to run several probes in parallel, thereby cutting probing
-> > > time.
-> > 
-> > Again, not for PCI, right?
+> Hi!
 > 
-> It seems that everyone agrees now that moving PCI over to a new probing
-> model without individual driver support was a bad idea. So generic
-> multithreaded probing is dead.
-
-Why is it dead?  Since when is PCI the only bus in the system?
-
-> > If you want to implement this for your bus type, fine, I have no
-> > objection to that at all, but not for PCI, it's just not worth it.
+> I'm making coffee now. I just don't see what I missed? Maybe you were
+> led astray by the new PARAM_VESA_PAD I added?
 > 
-> Infrastructure for async probing might not be such a bad idea, though.
-> (Aren't there some huge PCI-based machines?) However, I don't really
-> care whether PCI or SCSI or $HUGE_BUS use it, but serial synchronous
-> probing on a bus looks like a killer on most large systems.
 
-PCI probing is just reading stuff from memory.  The slowness happens
-when storage devices need to spin up and/or discover attached drives.
+Again, I object to changing a documented interface when it's not
+necessary to do so.  Just declare the structure packed.
 
-So, the async stuff can be done in those buses if wanted/needed, PCI is
-not the problem here.
-
-thanks,
-
-greg k-h
+	-hpa
