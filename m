@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbXEINpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757782AbXEINsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758266AbXEINpo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 09:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756836AbXEINpV
+	id S1757782AbXEINsU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 09:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbXEINsK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 09:45:21 -0400
-Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:61874
-	"EHLO eggplant.ddo.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751747AbXEINpT (ORCPT
+	Wed, 9 May 2007 09:48:10 -0400
+Received: from opal.biophys.uni-duesseldorf.de ([134.99.176.7]:40191 "EHLO
+	opal.biophys.uni-duesseldorf.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755821AbXEINsJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 09:45:19 -0400
-Message-ID: <2329.192.168.1.10.1178718316.squirrel@eggplant.ddo.jp>
-In-Reply-To: <1178712861.6291.5.camel@localhost.localdomain>
-References: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp><1178628407.6061.24.camel@localhost.localdomain><1638.192.168.1.10.1178710979.squirrel@eggplant.ddo.jp>
-    <1178712861.6291.5.camel@localhost.localdomain>
-Date: Wed, 9 May 2007 22:45:16 +0900 (JST)
-Subject: Re: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
-From: "kogiidena" <kogiidena@eggplant.ddo.jp>
-To: "Richard Purdie" <rpurdie@rpsys.net>
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
-Reply-To: kogiidena@eggplant.ddo.jp
-User-Agent: SquirrelMail/1.4.5
+	Wed, 9 May 2007 09:48:09 -0400
+Date: Wed, 9 May 2007 15:47:56 +0200 (CEST)
+From: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+To: Philippe De Muyter <phdm@macqel.be>
+cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
+       Linux/m68k <linux-m68k@vger.kernel.org>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: retry [PATCH] partition : add support for sysv68 partitions
+In-Reply-To: <20070509082042.GA14682@ingate.macqel.be>
+Message-ID: <Pine.LNX.4.58.0705091246240.30977@xplor.biophys.uni-duesseldorf.de>
+References: <20070413135501.GA27439@ingate.macqel.be> <Pine.LNX.4.64.0705082217340.12497@anakin>
+ <20070509072422.GA13119@ingate.macqel.be> <Pine.LNX.4.64.0705090944250.12497@anakin>
+ <20070509082042.GA14682@ingate.macqel.be>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 2007-05-09 at 20:42 +0900, kogiidena wrote:
->> >As far as I can tell, the existing timer trigger can do everything the
->> >blink trigger can (and more besides).
->> I want to blink LED in the initial state.
+> > > 	`default y if M68K && SYSV_FS'
+> >
+> > I prefer `default y if VME'.
+> >
 >
-> Are you after to set that per LED or would some standard configurable
-> default for all LEDs work?
-I'm sorry.The meaning of the question cannot be understood.
-My LED is use in the following.
-I want to blink LED while booting it.
-When boot ends, LED is turned on.
+> Incidentally, what is the problem you have with SYSV68_PARTITION ?
+> On my i586 machine, code size is 434 bytes for sysv68.o + 4 bytes more in
+> check.c
 
-> The approach is probably a good idea but you'll have to split struct
-> timer_list timer from the data structure.
->
-> Also, if default_trigger wasn't the timer trigger you have a nice oops
-> waiting to happen.
-I'm sorry that it is not possible to understand enough.
-Please teach concretely.
+Traditionally, we have always been very conservative about enabling more
+than the absolute minimum in partition format support. Some formats can be
+erroneously identified by the check code if you don't get the ordering
+right (the case I know about, MSDOS partitions vs. Atari TOS/GEM
+partitions, hinges on a particular checksum being calculated in the atari
+code). I've moved the msdos checker to the bottom of the list more often
+than I can keep track of...
 
-I think that I become more convenient if the argument can be given to "default_trigger" for "all trigger".
+If sysv68 cannot be confused with any other format, no harm done by
+enabling it by default. Otherwise, things may get interesting.
 
-kogiidena
--------------------------------
- Use example -- part of leds-landisk.c
--------------------------------
-static struct timer_trig_data default_timer_trig_data = {
-        .delay_on  = 250,
-        .delay_off = 250,
-};
-
-static struct led_classdev landisk_leds[] = {
-        [0] = {
-                        .name = "power",
-                        .brightness_set = landisk_led_set,
-                        .default_trigger = "timer",
-                        .default_trigger_data = &default_timer_trig_data,
-               },
-        [1] = {
-                        .name = "status",
-                        .brightness_set = landisk_led_set,
-                        .default_trigger = "timer",
-                        .default_trigger_data = &default_timer_trig_data,
-               },
-        [2] = {
-
+	Michael
