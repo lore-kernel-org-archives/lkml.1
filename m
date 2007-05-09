@@ -1,98 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbXEIWxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760098AbXEIWy1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760013AbXEIWxz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 18:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbXEIWxe
+	id S1760098AbXEIWy1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 18:54:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756952AbXEIWxg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 18:53:34 -0400
-Received: from mga01.intel.com ([192.55.52.88]:50944 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757252AbXEIWxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 18:53:36 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:57201 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759826AbXEIWxb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 9 May 2007 18:53:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,512,1170662400"; 
-   d="scan'208";a="243987384"
-Date: Wed, 9 May 2007 15:50:32 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>, jeff@garzik.org
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com, akpm@linux-foundation.org
-Subject: Re: [patch 6/7] SCSI: save disk in scsi_device - resend
-Message-Id: <20070509155032.57c3a55d.kristen.c.accardi@intel.com>
-In-Reply-To: <20070507082928.17878961.kristen.c.accardi@intel.com>
-References: <20070424074856.005152262@intel.com>
-	<20070504111733.f507501d.kristen.c.accardi@intel.com>
-	<1178310648.3711.56.camel@mulgrave.il.steeleye.com>
-	<20070507082928.17878961.kristen.c.accardi@intel.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Date: Wed, 9 May 2007 15:53:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Yu, Fenghua" <fenghua.yu@intel.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       <linux-kernel@vger.kernel.org>, <clameter@sgi.com>
+Subject: Re: [PATCH 2/2] Call percpu smp cacheline algin interface
+Message-Id: <20070509155326.5e02f60d.akpm@linux-foundation.org>
+In-Reply-To: <A29F7A5700A7EA4380E08C1F68C3B6D802B5F702@scsmsx411.amr.corp.intel.com>
+References: <20070509133328.c79ef48e.akpm@linux-foundation.org>
+	<A29F7A5700A7EA4380E08C1F68C3B6D802B5F702@scsmsx411.amr.corp.intel.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007 08:29:28 -0700
-Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
+On Wed, 9 May 2007 15:16:11 -0700
+"Yu, Fenghua" <fenghua.yu@intel.com> wrote:
 
-> On Fri, 04 May 2007 15:30:48 -0500
-> James Bottomley <James.Bottomley@SteelEye.com> wrote:
 > 
-> > On Fri, 2007-05-04 at 11:17 -0700, Kristen Carlson Accardi wrote:
-> > > Give anyone who has access to scsi_device access to the genhd struct as well.
-> > > 
-> > > Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-> > > Index: 2.6-git/drivers/scsi/sd.c
-> > > ===================================================================
-> > > --- 2.6-git.orig/drivers/scsi/sd.c
-> > > +++ 2.6-git/drivers/scsi/sd.c
-> > > @@ -1711,6 +1711,7 @@ static int sd_probe(struct device *dev)
-> > >  
-> > >  	dev_set_drvdata(dev, sdkp);
-> > >  	add_disk(gd);
-> > > +	sdp->disk = gd;
-> > >  
-> > >  	sdev_printk(KERN_NOTICE, sdp, "Attached scsi %sdisk %s\n",
-> > >  		    sdp->removable ? "removable " : "", gd->disk_name);
-> > > Index: 2.6-git/drivers/scsi/sr.c
-> > > ===================================================================
-> > > --- 2.6-git.orig/drivers/scsi/sr.c
-> > > +++ 2.6-git/drivers/scsi/sr.c
-> > > @@ -604,6 +604,7 @@ static int sr_probe(struct device *dev)
-> > >  	if (sdev->media_change_notify)
-> > >  		disk->flags |= GENHD_FL_MEDIA_CHANGE_NOTIFY;
-> > >  	add_disk(disk);
-> > > +	sdev->disk = disk;
-> > >  
-> > >  	sdev_printk(KERN_DEBUG, sdev,
-> > >  		    "Attached scsi CD-ROM %s\n", cd->cdi.name);
-> > > Index: 2.6-git/include/scsi/scsi_device.h
-> > > ===================================================================
-> > > --- 2.6-git.orig/include/scsi/scsi_device.h
-> > > +++ 2.6-git/include/scsi/scsi_device.h
-> > > @@ -138,7 +138,7 @@ struct scsi_device {
-> > >  
-> > >  	struct device		sdev_gendev;
-> > >  	struct class_device	sdev_classdev;
-> > > -
-> > > +	struct gendisk 		*disk;
-> > >  	struct execute_work	ew; /* used to get process context on put */
-> > >  
-> > >  	enum scsi_device_state sdev_state;
-> > 
-> > If you're going to do this, you need to take on board removing the
-> > struct gendisk from all the ULD structures (since it's now become
-> > generic).
-> > 
-> > James
-> > 
+> >hm, DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED is a bit of a mouthful.
 > 
-> Ok - I can send that as a separate patch series, or I can include it
-> in this one.  Which is preferred?
+> >I wonder if we can improve things here so that we use the
+> runtime-detected
+> >cacheline size rather than the compile-time size.  I guess not, given
+> that
+> >the offsets into the percpu area are calculated at build-time.
 > 
+> >Did you work out how much space this change will actually save?  It
+> >should be available by suitable crunching on the nm and objdump output.
+> 
+> Depending on how data fields are arranged by linker, the patches could
+> save or waste per_cpu size. Below is data I got.
+> 
+> 
+> Case 1: On linux-2.6.21-rc7-mm2 with defconfig build.
+> Case 2: On linux-2.6.21-rc7-mm2 plus the patches in this thread with
+> defconfig build.
+> Case 3: On linux-2.6.21-rc7-mm2 with defconfig with VSMP=y build.
+> Case 4: On linux-2.6.21-rc7-mm2 plus the patches in this thread with
+> defconfig with VSMP=y build.
+> 
+> Please note that on x86/x86-64, per_cpu_init_tss is placed in the first
+> place in per_cpu section in Case 1 and 3. And thus there is no padding
+> waste for per_cpu_init_tss in Case 1 and 3.
+> 
+> On X86:
+> Case 1: Size of per_cpu section is: 0x7768
+> Case 2: Size of per_cpu section is: 0x790c
+> The patches waste 0x1a4 bytes.
+> 
+> per_cpu__init_tss, per_cpu__irq_stat, and per_cpu__runqueues are moved
+> to shared_cacheline_aligned section.
+> 
+> On X86-64:
+> Case 1: Size of per_cpu section is: 0x72d0
+> Case 2: Size of per_cpu section is: 0x6540
+> The patches save 0xd90 bytes.
+> 
+> Case 3: Size of per_cpu section is: 0x72d0
+> Case 4: Size of per_cpu section is: 0x8340
+> The patches waste 0x1070 bytes. 
+> 
+> Shall we not use shared_cacheline_aligned section for VSMP case? The
+> waste of cache eventually may offset the potential gain of alignment.
+> 
+> Probably need to set up a cache line size threshold: if L1 cache line
+> size is bigger than a number CACHELINE_ALIGN_SHRESHOLD, don't do
+> cacheline alignment.
+> 
+> per_cpu__init_tss and per_cpu__runqueues are moved to
+> shared_cacheline_aligned section.
+> 
+> On ia64:
+> Case 1: Size of per_cpu section is: 0x8370
+> Case 2: Size of per_cpu section is: 0x7fc0
+> The patches save 0x3b0 bytes.
+> 
+> per_cpu_ipi_operation and per_cpu_runqueues are moved to
+> shared_cacheline_aligned section
 
-I interpret the lack of response to this question to mean that I can just
-decide for myself - in which case I prefer to send this as a separate 
-patchset after this one is integrated.
-
-Thanks!
-Kristen
+erm, it's not obviosu from all this that the patches are worth proceeding
+with, are they?
