@@ -1,76 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759814AbXEIWXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbXEIWZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759814AbXEIWXs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 18:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXEIWXk
+	id S1759955AbXEIWZB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 18:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756086AbXEIWYw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 18:23:40 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:32600 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754600AbXEIWXj (ORCPT
+	Wed, 9 May 2007 18:24:52 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:27544 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752367AbXEIWYw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 18:23:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:from:to:subject:date:user-agent:cc:mime-version:content-type:content-transfer-encoding:content-disposition:message-id;
-        b=QgQO+kQLANT1jC1UptCRcHEG14lF41hY62HcJ0o/d7KQRKwyuGmOxFLhmH7mCzcRVQLXji6sRYUhi8adGCh41FskmzgoZXJN4fT2eN1w8uzM1X2poDhLD8pUALao15bbCzny+op8BAYWuQRfB3YeJq9eq5rNe1osagRzXRFM3Pg=
-From: Jesper Juhl <jesper.juhl@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH] fix memory leak in UBI scanning unit
-Date: Thu, 10 May 2007 00:26:12 +0200
-User-Agent: KMail/1.9.6
-Cc: dedekind@linutronix.de, dedekind@infradead.org,
-       Jesper Juhl <jesper.juhl@gmail.com>
+	Wed, 9 May 2007 18:24:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=w4n5w4+O8n0NnSPAG/D7o3E8EFcdVoAC0Dien8ihHECYwI2cDGpErP6Vl+F2gid0G8ClKamPK6JNTSABW93Iz6aZOSvGahexisjvt4U5Ah4Ti9vAL/0avimW6f6Hf8h0PeRkiEs0fFbuPLWDG3W6KwaeNw0jq7IcIUWPjKMp8Xk=  ;
+X-YMail-OSG: 1JoZbXMVM1l7mLOOtuAouiMHFb98IWz.Oc0ZUzyLTMdF2OCjSNh.gA.W4FqjiyuWDDmSvEvkLQ--
+Message-ID: <46424A27.2030103@yahoo.com.au>
+Date: Thu, 10 May 2007 08:24:39 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Hugh Dickins <hugh@veritas.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
+       Christoph Hellwig <hch@infradead.org>
+Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com> <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com> <4641BFCE.6090200@yahoo.com.au> <Pine.LNX.4.64.0705091522110.15345@blonde.wat.veritas.com> <4641DE7D.6000902@yahoo.com.au> <Pine.LNX.4.64.0705091612100.18822@blonde.wat.veritas.com>
+In-Reply-To: <Pine.LNX.4.64.0705091612100.18822@blonde.wat.veritas.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705100026.12639.jesper.juhl@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hugh Dickins wrote:
+> On Thu, 10 May 2007, Nick Piggin wrote:
+> 
+>>>The filesystem (or page cache) allows pages beyond i_size to come
+>>>in there?  That wasn't a problem before, was it?  But now it is?
+>>
+>>The filesystem still doesn't, but if i_size is updated after the page
+>>is returned, we can have a problem that was previously taken care of
+>>with the truncate_count but now isn't.
+> 
+> 
+> But... I thought the page lock was now taking care of that in your
+> scheme?  truncate_inode_pages has to wait for the page lock, then
+> it finds the page is mapped and... ahh, it finds the copiee page
+> is not mapped, so doesn't do its own little unmap_mapping_range,
+> and the copied page squeaks through.  Drat.
+> 
+> I really think the truncate_count solution worked better, for
+> truncation anyway.  There may be persuasive reasons you need the
+> page lock for invalidation: I gave up on trying to understand the
+> required behaviour(s) for invalidation.
+> 
+> So, bring back (the original use of, not my tree marker use of)
+> truncate_count?  Hmm, you probably don't want to do that, because
+> there was some pleasure in removing the strange barriers associated
+> with it.
+> 
+> A second unmap_mapping_range is just one line of code - but it sure
+> feels like a defeat to me, calling the whole exercise into question.
+> (But then, you'd be right to say my perfectionism made it impossible
+> for me to come up with any solution to the invalidation issues.)
 
-In drivers/mtd/ubi/scan.c::paranoid_check_si() there's a memory leak.
-If the call 
-	err = ubi_io_is_bad(ubi, pnum);
-returns <0, then we'll return with out freeing (and thus leak) buf.
-This patch eliminates the memory leak by freeing buf before returning.
-
-Problem spotted by the Coverity checker.
+Well we could bring back the truncate_count, but I think that sucks
+because that's moving work into the page fault handler in order to
+avoid a bit of work when truncating mapped files.
 
 
-Signed-off-by: Jesper Juhl <jesper.juhl@gmail.com>
+>>>But that's a change we could have made at
+>>>any time if we'd bothered, it's not really the issue here.
+>>
+>>I don't see how you could, because you need to increment truncate_count.
+> 
+> 
+> Though indeed we did so, I don't see that we needed to increment
+> truncate_count in that case (nobody could be coming through
+> do_no_page on that file, when there are no mappings of it).
+
+Of course :P
+
 -- 
-
- drivers/mtd/ubi/scan.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/mtd/ubi/scan.c b/drivers/mtd/ubi/scan.c
-index 473f320..8ff9730 100644
---- a/drivers/mtd/ubi/scan.c
-+++ b/drivers/mtd/ubi/scan.c
-@@ -1310,9 +1310,10 @@ static int paranoid_check_si(const struct ubi_device *ubi,
- 	memset(buf, 1, ubi->peb_count);
- 	for (pnum = 0; pnum < ubi->peb_count; pnum++) {
- 		err = ubi_io_is_bad(ubi, pnum);
--		if (err < 0)
-+		if (err < 0) {
-+			kfree(buf);
- 			return err;
--		else if (err)
-+		} else if (err)
- 			buf[pnum] = 0;
- 	}
- 
-
-
-
-
-
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
-
+SUSE Labs, Novell Inc.
