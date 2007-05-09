@@ -1,85 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbXEITF1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758242AbXEITHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758118AbXEITF1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 15:05:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756488AbXEITFV
+	id S1758242AbXEITHb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 15:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756488AbXEITHZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 15:05:21 -0400
-Received: from assei1bl6.telenet-ops.be ([195.130.133.68]:39951 "EHLO
-	assei1bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756424AbXEITFT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 15:05:19 -0400
-Date: Wed, 9 May 2007 21:05:15 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Mauro Carvalho Chehab <mchehab@infradead.org>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Rechberger Markus <mrechberger@gmail.com>
-Subject: Re: [GIT PATCHES] V4L/DVB updates
-In-Reply-To: <1178706473.9614.31.camel@localhost>
-Message-ID: <Pine.LNX.4.64.0705092103550.13222@anakin>
-References: <1177706435.5163.49.camel@localhost> <Pine.LNX.4.64.0705090804310.12497@anakin>
- <1178706473.9614.31.camel@localhost>
+	Wed, 9 May 2007 15:07:25 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:44850 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756896AbXEITHY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 15:07:24 -0400
+Message-ID: <46421BB5.7040504@drzeus.cx>
+Date: Wed, 09 May 2007 21:06:29 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-911022371-1178737515=:13222"
+To: Pierre Ossman <drzeus-list@drzeus.cx>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] MMC updates
+References: <46375B18.4080802@drzeus.cx> <20070509185636.GB26981@flint.arm.linux.org.uk>
+In-Reply-To: <20070509185636.GB26981@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Russell King wrote:
+> Dug out from the ARM kautobuild...
+>
+> drivers/mmc/host/pxamci.c: In function 'pxamci_cmd_done':
+> drivers/mmc/host/pxamci.c:236: error: 'MMC_ALL_SEND_CID' undeclared (first use in this function)
+> drivers/mmc/host/pxamci.c:236: error: (Each undeclared identifier is reported only once
+> drivers/mmc/host/pxamci.c:236: error: for each function it appears in.)
+> drivers/mmc/host/pxamci.c:237: error: 'MMC_SEND_CSD' undeclared (first use in this function)
+> drivers/mmc/host/pxamci.c:238: error: 'MMC_SEND_CID' undeclared (first use in this function)
+>
+>   
 
----1463808512-911022371-1178737515=:13222
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+What are opcode defines doing in the driver?
 
-On Wed, 9 May 2007, Mauro Carvalho Chehab wrote:
-> Em Qua, 2007-05-09 às 08:30 +0200, Geert Uytterhoeven escreveu:
-> > On Fri, 27 Apr 2007, Mauro Carvalho Chehab wrote:
-> > > A short changelog:
-> > > 
-> > >    - New drivers:
-> > >         ivtv driver for Hauppauge PVR series and similar boards;
-> > 
-> > Can we please have proper Kconfig dependencies instead of
-> > 
-> > | #ifdef CONFIG_LIRC_I2C
-> > | #  error "This driver is not compatible with the LIRC I2C kernel configuration
-> > | #endif /* CONFIG_LIRC_I2C */
-> > | 
-> > | #ifndef CONFIG_PCI
-> > | #  error "This driver requires kernel PCI support."
-> > | #endif /* CONFIG_PCI */
-> > 
-> > in drivers/media/video/ivtv/ivtv-driver.h? Especially a dependency on
-> > CONFIG_PCI would be nice (CONFIG_LIRC_I2C doesn't exist in mainline?).
-> > 
-> > | drivers/media/video/video-buf.c: In function 'videobuf_queue_pci':
-> > | drivers/media/video/video-buf.c:399: error: 'pci_map_sg' undeclared (first use in this function)
-> > 
-> > Probably some new driver does a select VIDEO_BUF, which overrides that
-> > VIDEO_BUF depends on PCI?
-> 
-> Can you check if the following patch would fix it? VIDEO_BUF is selected
-> by several PCI-dependent devices. The only non-PCI device wrongly
-> selecting VIDEO_BUF seems to be em28xx.
+-- 
+     -- Pierre Ossman
 
-Yes, it fixed the issues (after manual application of the last chunk,
-which didn't apply cleanly). Thanks!
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
----1463808512-911022371-1178737515=:13222--
