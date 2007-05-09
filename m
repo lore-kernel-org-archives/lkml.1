@@ -1,107 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757416AbXEIMBA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbXEIMBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757416AbXEIMBA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:01:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756251AbXEIMAI
+	id S1757448AbXEIMBi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756304AbXEIMAS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:00:08 -0400
-Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:60868
-	"EHLO eggplant.ddo.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755187AbXEIMAF (ORCPT
+	Wed, 9 May 2007 08:00:18 -0400
+Received: from wx-out-0506.google.com ([66.249.82.231]:18638 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756262AbXEIMAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:00:05 -0400
-Message-ID: <1657.192.168.1.10.1178712003.squirrel@eggplant.ddo.jp>
-Date: Wed, 9 May 2007 21:00:03 +0900 (JST)
-Subject: [PATCH 3/3] rtc:rtc-rs5c313.c : add error handling toavoidhardware
- hangup.
-From: "kogiidena" <kogiidena@eggplant.ddo.jp>
-To: linux-kernel@vger.kernel.org
-Reply-To: kogiidena@eggplant.ddo.jp
-User-Agent: SquirrelMail/1.4.5
+	Wed, 9 May 2007 08:00:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:organization:to:subject:user-agent:cc:references:in-reply-to:mime-version:content-disposition:date:content-type:content-transfer-encoding:message-id;
+        b=UJTuEEkwbrAG8NuaTjVc4RlRKPCJCyFxgEyIrq9myV4DPQS/f/NwAF4PT7QVg2RG4UaoXpvmqoJv9Red2cZvKhkc7/fX9+WN9BOOn6EDyh2COZIFGvN2dGS9giHwOdTp3MS+UW/ZqZJXlMENvvcnIfuaFt5obUFHjCmTDHY6eIA=
+From: Gene Heskett <gene.heskett@gmail.com>
+Organization: Organization? very little
+To: Oliver Neukum <oliver@neukum.org>, David Miller <davem@davemloft.net>
+Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
+User-Agent: KMail/1.9.6
+Cc: "Antonino Ingargiola" <tritemio@gmail.com>,
+       "Paul Fulghum" <paulkf@microgate.com>,
+       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
+       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
+References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com> <5486cca80705051108p55b2cddfydce54aa15dd317f4@mail.gmail.com> <200705052035.58782.oliver@neukum.org>
+In-Reply-To: <200705052035.58782.oliver@neukum.org>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
-References: 
-In-Reply-To: 
+Content-Disposition: inline
+Date: Wed, 9 May 2007 08:00:11 -0400
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705090800.11799.gene.heskett@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is a patch that adds error processing.
-Hanging up by an infinite loop is evaded.
-Please apply.
+On Saturday 05 May 2007, Oliver Neukum wrote:
 
-Signed-off-by: kogiidena <kogiidena@eggplant.ddo.jp>
----
-diff -urpN OLD/drivers/rtc/rtc-rs5c313.c NEW/drivers/rtc/rtc-rs5c313.c
---- OLD/drivers/rtc/rtc-rs5c313.c	2007-05-08 19:52:11.000000000 +0900
-+++ NEW/drivers/rtc/rtc-rs5c313.c	2007-05-08 19:59:15.000000000 +0900
-@@ -212,7 +212,9 @@ static inline void rs5c313_write_intintv
- static int rs5c313_rtc_read_time(struct device *dev, struct rtc_time *tm)
- {
- 	int data;
-+	int cnt;
+You are included this time David because 3 messages I posted this morning, 
+whose text should resemble this one, the first of those 3, were 
+also /dev/nulled.  this is BS when I can't even discuss a patch in the same 
+manner as others can.
 
-+	cnt = 0;
- 	while (1) {
- 		RS5C313_CEENABLE;	/* CE:H */
+So whats wrong with this message that its filtered?
 
-@@ -225,6 +227,10 @@ static int rs5c313_rtc_read_time(struct
- 		RS5C313_CEDISABLE;
- 		ndelay(700);	/* CE:L */
+>Am Samstag, 5. Mai 2007 20:08 schrieb Antonino Ingargiola:
+>> Now I don't want to abuse your kindness, but I (personally) would be
+>> *really* interested in a similar fix for the FTDI usb-serial driver,
+>> because many measurements I do use an FTDI device.
+>
+>Does this work?
+>
+>	Regards
+>		Oliver
+>----
+>
+>--- a/drivers/usb/serial/ftdi_sio.c	2007-05-05 20:21:41.000000000 +0200
+>+++ b/drivers/usb/serial/ftdi_sio.c	2007-05-05 20:27:09.000000000 +0200
+>@@ -1749,10 +1749,6 @@ static void ftdi_process_read (struct wo
+> 			length = 0;
+> 		}
+>
+>-		if (priv->rx_flags & THROTTLED) {
+>-			dbg("%s - throttled", __FUNCTION__);
+>-			break;
+>-		}
+> 		if (tty_buffer_request_room(tty, length) < length) {
+> 			/* break out & wait for throttling/unthrottling to happen */
+> 			dbg("%s - receive room low", __FUNCTION__);
+>@@ -1825,16 +1821,6 @@ static void ftdi_process_read (struct wo
+> 		dbg("%s - incomplete, %d bytes processed, %d remain",
+> 				__FUNCTION__, packet_offset,
+> 				urb->actual_length - packet_offset);
+>-		/* check if we were throttled while processing */
+>-		spin_lock_irqsave(&priv->rx_lock, flags);
+>-		if (priv->rx_flags & THROTTLED) {
+>-			priv->rx_flags |= ACTUALLY_THROTTLED;
+>-			spin_unlock_irqrestore(&priv->rx_lock, flags);
+>-			dbg("%s - deferring remainder until unthrottled",
+>-					__FUNCTION__);
+>-			return;
+>-		}
+>-		spin_unlock_irqrestore(&priv->rx_lock, flags);
+> 		/* if the port is closed stop trying to read */
+> 		if (port->open_count > 0){
+> 			/* delay processing of remainder */
+>@@ -1856,9 +1842,15 @@ static void ftdi_process_read (struct wo
+> 			      port->read_urb->transfer_buffer,
+> port->read_urb->transfer_buffer_length, ftdi_read_bulk_callback, port);
+>
+>-		result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
+>-		if (result)
+>-			err("%s - failed resubmitting read urb, error %d", __FUNCTION__,
+> result); +		spin_lock_irqsave(&priv->rx_lock, flags);
+>+		if (priv->rx_flags & THROTTLED) {
+>+			priv->rx_flags |= ACTUALLY_THROTTLED;
+>+		} else {
+>+			result = usb_submit_urb(port->read_urb, GFP_ATOMIC);
+>+			if (result)
+>+				err("%s - failed resubmitting read urb, error %d", __FUNCTION__,
+> result); +		}
+>+		spin_unlock_irqrestore(&priv->rx_lock, flags);
+> 	}
+>
+> 	return;
+>-
 
-+		if (cnt++ > 100) {
-+			dev_err(dev, "%s: timeout error\n", __FUNCTION__);
-+			return -EIO;
-+		}
- 	}
+Oliver:
 
- 	data = rs5c313_read_reg(RS5C313_ADDR_SEC);
-@@ -266,7 +272,9 @@ static int rs5c313_rtc_read_time(struct
- static int rs5c313_rtc_set_time(struct device *dev, struct rtc_time *tm)
- {
- 	int data;
-+	int cnt;
+Sort of late, but,
 
-+	cnt = 0;
- 	/* busy check. */
- 	while (1) {
- 		RS5C313_CEENABLE;	/* CE:H */
-@@ -279,6 +287,11 @@ static int rs5c313_rtc_set_time(struct d
- 		RS5C313_MISCOP;
- 		RS5C313_CEDISABLE;
- 		ndelay(700);	/* CE:L */
-+
-+		if (cnt++ > 100) {
-+			dev_err(dev, "%s: timeout error\n", __FUNCTION__);
-+			return -EIO;
-+		}
- 	}
+I have a couple of kernels building with this patch applied, one with the 
+sd-0.48 patch where FTDI stuff is a 40+% cpu hog and can't be used, and one 
+with the cfs-v10 patch where it can be co-erced into working if I screw with 
+it enough.
 
- 	data = BIN2BCD(tm->tm_sec);
-@@ -317,6 +330,7 @@ static int rs5c313_rtc_set_time(struct d
- static void rs5c313_check_xstp_bit(void)
- {
- 	struct rtc_time tm;
-+	int cnt;
+I have also been using another serial patch that for unk reasons, also helps 
+the usb-serial case here, but vger won't let me repost that without stripping 
+off the headers.  That patch has some resemblance to 
+this:8250-clear-on-read-bits-LSR-MSR where I usually replace spaces with 
+dashes so I don't have to use "to surround the name" in my scripts.
 
- 	RS5C313_CEENABLE;	/* CE:H */
- 	if (rs5c313_read_cntreg() & RS5C313_CNTREG_WTEN_XSTP) {
-@@ -326,8 +340,11 @@ static void rs5c313_check_xstp_bit(void)
- 		rs5c313_write_cntreg(0x07);
+So these test kernels will have both patches.
 
- 		/* busy check. */
--		while (rs5c313_read_cntreg() & RS5C313_CNTREG_ADJ_BSY)
-+		for (cnt = 0; cnt < 100; cnt++) {
-+			if (!(rs5c313_read_cntreg() & RS5C313_CNTREG_ADJ_BSY))
-+				break;
- 			RS5C313_MISCOP;
-+		}
+I'll let you know how they work later this morning.
 
- 		memset(&tm, 0, sizeof(struct rtc_time));
- 		tm.tm_mday 	= 1;
-
-
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Oh my GOD -- the SUN just fell into YANKEE STADIUM!!
 
