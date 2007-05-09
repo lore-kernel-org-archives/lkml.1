@@ -1,46 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1033035AbXEIBHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969038AbXEIBIP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1033035AbXEIBHu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 21:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967012AbXEIBHl
+	id S969038AbXEIBIP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 21:08:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1033134AbXEIBHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 21:07:41 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:49138 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966990AbXEIBHj (ORCPT
+	Tue, 8 May 2007 21:07:53 -0400
+Received: from science.horizon.com ([192.35.100.1]:11351 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1033124AbXEIBHv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 21:07:39 -0400
-Date: Tue, 8 May 2007 18:07:38 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, ak@suse.de,
-       jbarnes@virtuousgeek.org
-Subject: Re: [PATCH] change zonelist order v5 [1/3] implements zonelist order
- selection
-In-Reply-To: <20070508175855.b126caf7.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705081806220.17207@schroedinger.engr.sgi.com>
-References: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
- <20070508201642.c63b3f65.kamezawa.hiroyu@jp.fujitsu.com>
- <1178643985.5203.27.camel@localhost> <Pine.LNX.4.64.0705081021340.9446@schroedinger.engr.sgi.com>
- <1178645622.5203.53.camel@localhost> <Pine.LNX.4.64.0705081104180.9941@schroedinger.engr.sgi.com>
- <1178656627.5203.84.camel@localhost> <20070509092912.3140bb78.kamezawa.hiroyu@jp.fujitsu.com>
- <20070508175855.b126caf7.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 8 May 2007 21:07:51 -0400
+Date: 8 May 2007 21:07:49 -0400
+Message-ID: <20070509010749.14584.qmail@science.horizon.com>
+From: linux@horizon.com
+To: linux-kernel@vger.kernel.org, mzhao@lizotech-inc.com
+Subject: Re: increase Linux kernel address space 3.5 G memory on Redhat Enterprise
+Cc: linux@horizon.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Andrew Morton wrote:
-
-> I'm still cowering in fear of these patches, btw.
+> Hi:
+> I am running Redhat Linux Enterprise version 4 update 4 on a dual-core
+> 4G memory machine.  There are many references on the web talking about
+> increasing default user address space to 3.5 G however lacking specific
+> instructions. My questions:
 > 
-> Please keep testing and sending them ;)
+> 1. What is the specific steps to be done for the kernel to support 3.5 G 
+>    address space?
+> 2. Do I need to re-compile kernel to make this happen? If so, any 
+>    specific instruction?
 
-I hope you finally get a feel for the evil nature of ZONE_DMAxx. I 
-think our x86_64 platform will have node 0 cordoned off for DMA if any 
-DMA32 or DMA devices are on the system.
+2. Yes, you need to re-compile the kernel.  Instructions all over the web.
+   Basically, "cd /usr/src/linux", make sure a reasonable default .config
+   file is installed (the distribution should supply one for its default
+   kernel), "make menuconfig" or "make xconfig", change the options you
+   want changed, then "make" and "make install".  The latter *usually*
+   works; the usual worst case is that it installs it somewhere other than
+   your boot loader is looking and rebooting will find the old kernel.
 
+   The fun comes when you left an option out of your new kernel that you
+   need to boot - like the hard drive controller!  Then you need to go
+   back to an old, known working kernel.
 
+   It's not at all difficult, but you do need to be careful; a mistake
+   can be awkward to recover from if you don't plan ahead.
+
+1. First of all, that's not necessarily a good idea.  Doing that would limit
+   you to 384 MB of kernel memory, after the usual 128 MB deduction for
+   PCI devices.  That has to fit the kernel binary, all page tables, inode
+   cache, network buffers, and so on.  For some workloads, that can be
+   a bottleneck.
+
+   If your application is heavily biased toward file data that the kernel
+   doesn't have to look at, such as databases, it might be okay.
+
+   A much better thing would be to take advantage of the fact that
+   every multi-core processor I've heard of (IBM's POWER4, Sun Niagara,
+   and a few by some companies you may not have heard of like Intel and
+   AMD) is a 64-bit processor.  So you can run a 64bit kernel and get
+   terabytes of user address space.  Even 32-bit applications get a full
+   4G of address space, as the 64-bit kernel doesn't need to share.
+
+   That would make your user application happier *and* the kernel happier.
+   It would increase kernel data structure size, but it's still usually a
+   net win.
+
+1b. If you really want to do it, it's not a normally selectable option,
+    but you can add it to arch/i386/Kconfig by following the pattern of
+    the others.  You need CONFIG_PAGE_OFFSET=0xE0000000, and you need to
+    be sure that CONFIG_HIGHMEM64G is turned OFF.  (If it's on, you're
+    using PAE, and its 3-level page table structure requires using a
+    1G boundary.)
+
+    Then configure the kernel, select CONFIG_EMBEDDED under "General setup",
+    then your memory split under "Processor type and features".
+
+    Compile, install the new kernel, and reboot.
