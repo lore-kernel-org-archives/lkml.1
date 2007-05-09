@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968816AbXEID0Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969026AbXEID1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968816AbXEID0Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 23:26:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934910AbXEID0Q
+	id S969026AbXEID1I (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 23:27:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968836AbXEID0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 23:26:16 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:59624 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754654AbXEID0P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 23:26:15 -0400
-Date: Wed, 9 May 2007 12:26:05 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Yasunori Goto <y-goto@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, akpm@osdl.org,
-       clameter@sgi.com, mel@csn.ul.ie
-Subject: Re: [RFC] memory hotremove patch take 2 [10/10] (retry swap-in
- page)
-Message-Id: <20070509122605.e178e516.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070509120947.B91A.Y-GOTO@jp.fujitsu.com>
-References: <20070509115506.B904.Y-GOTO@jp.fujitsu.com>
-	<20070509120947.B91A.Y-GOTO@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 23:26:53 -0400
+Received: from waste.org ([66.93.16.53]:57575 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S968875AbXEID0w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 23:26:52 -0400
+Date: Tue, 8 May 2007 22:25:52 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>, akpm@linux-foundation.org,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch added to -mm tree
+Message-ID: <20070509032552.GE11115@waste.org>
+References: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net> <20070509002307.GV11115@waste.org> <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com> <20070509012725.GZ11115@waste.org> <Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com> <20070509021911.GB11115@waste.org> <Pine.LNX.4.64.0705081920250.17931@schroedinger.engr.sgi.com> <4641353F.2000408@yahoo.com.au> <Pine.LNX.4.64.0705081954300.19976@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705081954300.19976@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 May 2007 12:12:32 +0900
-Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
-
-> There is a race condition between swap-in and unmap_and_move().
-> When swap-in occur, page_mapped might be not set yet.
-> So, unmap_and_move() gives up at once, and tries later.
+On Tue, May 08, 2007 at 07:57:37PM -0700, Christoph Lameter wrote:
+> On Wed, 9 May 2007, Nick Piggin wrote:
 > 
+> > > Exactly. That overhead does not exist in SLUB. Thus SLOB is less efficient
+> > > than SLUB.
+> > 
+> > What you trade for that is that one page page can only serve one slab.
 > 
-Note: this will not happen in sys_migratepage(), it holds mm->sem and
-gathers migration target page from page table.
+> Right.
+> 
+> > For small systems, I would not be surprised if that was less space
+> > efficient, even just looking at kmalloc caches in isolation. Or do you
+> > have numbers to support your conclusion?
+> 
+> No I do not have any number beyond the efficiency calculations based on 
+> whole slabs. We would have to do some experiments to figure out how much 
+> space is actually wasted through partial slabs.
 
--Kame
+The expectation would be (PAGE_SIZE + (PAGE_SIZE % size))/2 on average
+per cache.
+ 
+> The situation becomes different with allocation and frees. Then we may 
+> have lots of partial slabs that we allocate from. But the SLOB approach 
+> also will have holes to manage. So I do not see how this could be a 
+> benefit unless you only have a few precious pages and you need to put 
+> multiple object sizes into it. A 4M system still has 1000 pages.
 
+A 4M system has approximately zero pages free once you've actually got
+stuff running in userspace. The marginal utility of each page is very
+high.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
