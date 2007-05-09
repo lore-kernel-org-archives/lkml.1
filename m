@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755931AbXEIJMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756142AbXEIJN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755931AbXEIJMy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 05:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754980AbXEIJMp
+	id S1756142AbXEIJN1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbXEIJNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 05:12:45 -0400
-Received: from main.gmane.org ([80.91.229.2]:44315 "EHLO ciao.gmane.org"
+	Wed, 9 May 2007 05:13:06 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:57010 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754916AbXEIJMo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 05:12:44 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Koen Kooi <koen@dominion.kabel.utwente.nl>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-Date: Wed, 09 May 2007 11:12:12 +0200
-Message-ID: <4641906C.30407@dominion.kabel.utwente.nl>
-References: <464034CF.20700@wpkg.org> <f19298770705080148u70638ac2ue87241382681088@mail.gmail.com> <m3bqgv72sq.fsf@maximus.localdomain> <20070508155201.GA1251@xi.wantstofly.org> <m3hcqn5j0p.fsf@maximus.localdomain> <f1s2eu$26p$1@sea.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: dominion.kabel.utwente.nl
-User-Agent: Thunderbird 1.5.0.10 (Macintosh/20070221)
-In-Reply-To: <f1s2eu$26p$1@sea.gmane.org>
-X-Enigmail-Version: 0.94.2.0
-Cc: netdev@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk
+	id S1754182AbXEIJNE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 05:13:04 -0400
+Date: Wed, 9 May 2007 11:11:17 +0200 (MEST)
+Message-Id: <200705090911.l499BHJL016845@harpo.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: lenb@kernel.org, mikpe@it.uu.se
+Subject: Re: Fw: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
+Cc: ak@suse.de, johnstul@us.ibm.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
-
-Marcus Better schreef:
-> Krzysztof Halasa wrote:
->> Lennert Buytenhek <buytenh@wantstofly.org> writes:
->>> There _is_ an ARM BE version of Debian.
->>>
->>> It's not an official port, but it's not maintained any worse than
->>> the 'official' LE ARM Debian port is.
+On Tue, 8 May 2007 15:14:36 -0400, Len Brown wrote:
+> On Friday 04 May 2007 03:42, Mikael Pettersson wrote:
+> > On Thu, 03 May 2007 19:38:50 -0700, john stultz wrote:
+> > > > 	So that slow acpi_pm on x86_64 seems to be connected w/ the idle loop.
+> > > > I'm guessing the chipset halts the ACPI PM in lower C states. Do you
+> > > > have any guesses as to what might differ between x86_64 and i386 ACPI
+> > > > idle loops? Or might this be something different in what the BIOS
+> > > > exports in x86_64 mode or i386 mode?
+> > > 
+> > > Mikael,
+> > > 	Just trying to dig a bit more through the acpi_processor_idle code.
+> > > Could you run "cat /proc/acpi/processor/CPU1/power" and reply w/ the
+> > > output?
+> > 
+> > Here's that file with the x86-64 kernel:
+> > 
+> > active state:            C2
+> > max_cstate:              C8
+> > bus master activity:     00000000
+> > maximum allowed latency: 20000 usec
+> > states:
+> >     C1:                  type[C1] promotion[C2] demotion[--] latency[000] usage[00107840] duration[00000000000000000000]
+> >    *C2:                  type[C2] promotion[--] demotion[C1] latency[010] usage[-1987043693] duration[00000000003044809185]
 > 
->> Hmm... That changes a bit. Perhaps we should forget about
->> that LE thing then, and (at best) put that trivial workaround?
+> it may be that the problem is C2, not C1 on this box and thus "idle=poll" may be
+> overkill to workaround it.
 > 
-> Please keep in mind that users are unlikely to install an unofficial port
-> which lacks integration with the Debian infrastructure, security support
-> and other services.
+> You can disable C2 with "processor.max_cstate=1"
+> 
+> still a mystery, though, why this is different on i386 vs x86_64.
+> what is in this file when booted in i386 mode?
 
-Like the current debian EABI port?
+With the i386 kernel it's as follows:
 
-regards,
+active state:            C2
+max_cstate:              C8
+bus master activity:     00000000
+maximum allowed latency: 20000 usec
+states:
+    C1:                  type[C1] promotion[C2] demotion[--] latency[000] usage[00004550] duration[00000000000000000000]
+   *C2:                  type[C2] promotion[--] demotion[C1] latency[010] usage[00813483] duration[00000000023188005661]
 
-Koen
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (Darwin)
-
-iD8DBQFGQZBsMkyGM64RGpERAj8HAJ4y0UAXGZBVTPd4VyJAi+/euaGS7gCgi+no
-QRoEkQEToYgSp+vc8Gtwn2U=
-=35DJ
------END PGP SIGNATURE-----
-
+/Mikael
