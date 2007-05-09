@@ -1,64 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbXEILVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbXEILWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbXEILVh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 07:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXEILVa
+	id S1757259AbXEILWS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 07:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755736AbXEILWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 07:21:30 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:23275 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750888AbXEILV3 (ORCPT
+	Wed, 9 May 2007 07:22:03 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41546 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755724AbXEILWA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 07:21:29 -0400
-Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
-       linville@tuxdriver.com, arnd@arndb.de, maxextreme@gmail.com,
-       gregkh@suse.de
-In-Reply-To: <20070423104534.51bac974.akpm@linux-foundation.org>
-References: <20070423141123.GA21174@skybase>
-	 <20070423104534.51bac974.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Wed, 09 May 2007 13:21:50 +0200
-Message-Id: <1178709710.30649.37.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 07:22:00 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Gerd Hoffmann <kraxel@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, yhlu <yhlu.kernel@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, vgoyal@in.ibm.com,
+       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <4634483E.9030307@goop.org>
+	<m1tzuuv24z.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705080941y69ddd5d6lab170c5f3967f148@mail.gmail.com>
+	<m1sla7i68s.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705081033s19365843i5b955ae175de73eb@mail.gmail.com>
+	<86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>
+	<m1k5vji107.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705081500x682ee098y7d51f7bb98dbcff6@mail.gmail.com>
+	<4640F4B3.30408@goop.org> <4640FB2C.2060300@zytor.com>
+	<86802c440705081541v7d0773cek2c5fae1854b68bbc@mail.gmail.com>
+	<46410403.4050802@zytor.com>
+	<m17irivkhy.fsf@ebiederm.dsl.xmission.com>
+	<46413087.2020505@zytor.com>
+	<m1tzumu10k.fsf@ebiederm.dsl.xmission.com>
+	<46417F0B.1080405@redhat.com>
+Date: Wed, 09 May 2007 05:21:01 -0600
+In-Reply-To: <46417F0B.1080405@redhat.com> (Gerd Hoffmann's message of "Wed,
+	09 May 2007 09:58:03 +0200")
+Message-ID: <m16472tf8i.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-04-23 at 10:45 -0700, Andrew Morton wrote: 
-> > Andrew: I plan to add patches 1-5 to the for-andrew branch of the
-> > git390 repository if that is fine with you. The only thing that will
-> > be missing in the tree is the patch that disables wireless for s390.
-> > The code does compile but without hardware it is mute to have the
-> > config options. I'll wait until the git-wireless.patch is upstream.
-> > Patches 7-9 depend on patches found in -mm.
-> > 
-> 
-> umm, OK.  If it's Ok I think I'll duck it for now: -mm is full.
-> 
-> Over-full, really: I've been working basically continuously since Friday
-> getting the current dungpile to compile and boot, and it's still miles away
-> from that.
+Gerd Hoffmann <kraxel@redhat.com> writes:
 
-Is -mm less full now? I've seen you dropped your third patch bomb, so
-maybe there is room now ..
-I regenerated the kconfig patches. They fit on top of todays git but
-they do have some rejects on 2.6.21-mm1. The rejects are trivial to fix,
-but there are about 10 of them.
+>   Hi,
+>
+>> Since the whole point is to detect the case where we don't have
+>> a screen at all it makes sense to check several additional variables
+>> and make certain that they are all 0.  Agreed?
+>
+> Like in the attached patch?
 
-So when will be a good time to add the Kconfig patches to git390?
-And do you prefer to let them rot^H^H^Hmature in -mm for a while before
-they can go upstream?
+Looks good to me.
 
--- 
-blue skies,
-  Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
-
+> cheers,
+>   Gerd
+> Refine SCREEN_INFO sanity check for vgacon initialization.
+>
+> Checking video mode field only to see whenever SCREEN_INFO is
+> initialized is not enougth, in some cases it is zero although
+> a vga card is present.  Lets additionally check cols and lines.
+>
+> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: Andi Kleen <ak@suse.de>
+> Cc: Alan <alan@lxorguk.ukuu.org.uk>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Eric W. Biederman <ebiederm@xmission.com>
+> ---
+>  drivers/video/console/vgacon.c |    9 +++++++--
+>  1 file changed, 7 insertions(+), 2 deletions(-)
+>
+> Index: vanilla-2.6.21-git11/drivers/video/console/vgacon.c
+> ===================================================================
+> --- vanilla-2.6.21-git11.orig/drivers/video/console/vgacon.c
+> +++ vanilla-2.6.21-git11/drivers/video/console/vgacon.c
+> @@ -368,9 +368,14 @@ static const char *vgacon_startup(void)
+>  #endif
+>  	}
+>  
+> +	/* SCREEN_INFO initialized? */
+> +	if ((ORIG_VIDEO_MODE  == 0) &&
+> +	    (ORIG_VIDEO_LINES == 0) &&
+> +	    (ORIG_VIDEO_COLS  == 0))
+> +		goto no_vga;
+> +
+>  	/* VGA16 modes are not handled by VGACON */
+> - if ((ORIG_VIDEO_MODE == 0x00) || /* SCREEN_INFO not initialized */
+> -	    (ORIG_VIDEO_MODE == 0x0D) ||	/* 320x200/4 */
+> +	if ((ORIG_VIDEO_MODE == 0x0D) ||	/* 320x200/4 */
+>  	    (ORIG_VIDEO_MODE == 0x0E) ||	/* 640x200/4 */
+>  	    (ORIG_VIDEO_MODE == 0x10) ||	/* 640x350/4 */
+>  	    (ORIG_VIDEO_MODE == 0x12) ||	/* 640x480/4 */
