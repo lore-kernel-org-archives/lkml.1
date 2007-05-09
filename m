@@ -1,52 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1033692AbXEID1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1034074AbXEID2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1033692AbXEID1j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 23:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968834AbXEID1L
+	id S1034074AbXEID2Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 23:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967560AbXEID2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 23:27:11 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54770 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S969557AbXEID1J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 23:27:09 -0400
-Date: Tue, 8 May 2007 20:27:09 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Matt Mackall <mpm@selenic.com>, David Miller <davem@davemloft.net>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch
- added to -mm tree
-In-Reply-To: <46413D6A.6000502@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0705082025010.22016@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com>
- <20070509012725.GZ11115@waste.org> <Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com>
- <20070508.185141.85412154.davem@davemloft.net> <46412BB5.1060605@yahoo.com.au>
- <20070509025634.GC11115@waste.org> <46413D6A.6000502@yahoo.com.au>
+	Tue, 8 May 2007 23:28:16 -0400
+Received: from ozlabs.org ([203.10.76.45]:44256 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967531AbXEID2P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 23:28:15 -0400
+Date: Wed, 9 May 2007 13:28:11 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Andrew Morton <akpm@osdl.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-kernel@vger.kernel.org
+Subject: Remove an unused variable from get_unmapped_area()
+Message-ID: <20070509032811.GI4198@localhost.localdomain>
+Mail-Followup-To: David Gibson <david@gibson.dropbear.id.au>,
+	Andrew Morton <akpm@osdl.org>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 May 2007, Nick Piggin wrote:
+Some recent changes in get_unmapped_area() have left the 'ret'
+local unused.  This patch removes it.
 
-> SLAB_DESTROY_BY_RCU is quite a nice way to mitigate some RCU freeing
-> overheads for small objects, so I'd expect it may see wider use in
-> future. Maybe all those users would be fine too, but it's a bit nasty
-> to have already tricky RCU semantics deviate...
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
 
-Signal handling is using RCU too right?
+Index: working-2.6/mm/mmap.c
+===================================================================
+--- working-2.6.orig/mm/mmap.c	2007-05-09 13:26:33.000000000 +1000
++++ working-2.6/mm/mmap.c	2007-05-09 13:26:47.000000000 +1000
+@@ -1366,7 +1366,6 @@ unsigned long
+ get_unmapped_area(struct file *file, unsigned long addr, unsigned long len,
+ 		unsigned long pgoff, unsigned long flags)
+ {
+-	unsigned long ret;
+ 	unsigned long (*get_area)(struct file *, unsigned long,
+ 				  unsigned long, unsigned long, unsigned long);
+ 
 
-> > I think if we want RCU to actually work, we want to run ->dtor in
-> > __kmem_cache_free?
-> 
-> Yeah, thinko... thanks.
-
-According to SLAB code: RCU cannot have a dtor.
-
-kmem_cache_create()
-
-     if (flags & SLAB_DESTROY_BY_RCU)
-                BUG_ON(dtor);
-
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
