@@ -1,89 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbXEIPnl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757825AbXEIPqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbXEIPnl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:43:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbXEIPnb
+	id S1757825AbXEIPqE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbXEIPpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:43:31 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:40219 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754929AbXEIPna (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:43:30 -0400
-Date: Wed, 9 May 2007 16:38:16 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
-In-Reply-To: <4641DE7D.6000902@yahoo.com.au>
-Message-ID: <Pine.LNX.4.64.0705091612100.18822@blonde.wat.veritas.com>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>
- <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com>
- <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com>
- <4641BFCE.6090200@yahoo.com.au> <Pine.LNX.4.64.0705091522110.15345@blonde.wat.veritas.com>
- <4641DE7D.6000902@yahoo.com.au>
+	Wed, 9 May 2007 11:45:55 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:34822 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754171AbXEIPpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:45:54 -0400
+Message-ID: <4641EC7A.7060006@drzeus.cx>
+Date: Wed, 09 May 2007 17:44:58 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 09 May 2007 15:38:31.0836 (UTC) FILETIME=[190845C0:01C79250]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGFuZHJlYUBzdXNlLmRlAGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAaGNoQGluZnJhZGVhZC5vcmcAbmlja3BpZ2dpbkB5YWhvby5jb20uYXUA
-X-Brightmail-Tracker: AAAAAA==
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] MMC updates
+References: <4640E17E.7090909@drzeus.cx> <46416255.3060105@drzeus.cx> <4641643D.4040305@yahoo.com.au> <464169C8.9060002@drzeus.cx> <46416B9A.3020008@yahoo.com.au> <46417D97.9090108@drzeus.cx> <46419036.8090504@s5r6.in-berlin.de>
+In-Reply-To: <46419036.8090504@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007, Nick Piggin wrote:
-> > 
-> > The filesystem (or page cache) allows pages beyond i_size to come
-> > in there?  That wasn't a problem before, was it?  But now it is?
-> 
-> The filesystem still doesn't, but if i_size is updated after the page
-> is returned, we can have a problem that was previously taken care of
-> with the truncate_count but now isn't.
+Stefan Richter wrote:
+> Sounds to me like either struct xyz_host { atomic_t removed; } would do
+> the job, or that actually wider regions of mmc_host_remove() and
+> mmc_detect_change() need to be serialized.
+>   
 
-But... I thought the page lock was now taking care of that in your
-scheme?  truncate_inode_pages has to wait for the page lock, then
-it finds the page is mapped and... ahh, it finds the copiee page
-is not mapped, so doesn't do its own little unmap_mapping_range,
-and the copied page squeaks through.  Drat.
+AFAIK, an atomic_t doesn't guarantee any ordering, just atomicity. So an
+atomic_t with a barrier would be sufficient. But barriers are mostly
+voodoo that few people understand ;)
 
-I really think the truncate_count solution worked better, for
-truncation anyway.  There may be persuasive reasons you need the
-page lock for invalidation: I gave up on trying to understand the
-required behaviour(s) for invalidation.
+-- 
+     -- Pierre Ossman
 
-So, bring back (the original use of, not my tree marker use of)
-truncate_count?  Hmm, you probably don't want to do that, because
-there was some pleasure in removing the strange barriers associated
-with it.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
 
-A second unmap_mapping_range is just one line of code - but it sure
-feels like a defeat to me, calling the whole exercise into question.
-(But then, you'd be right to say my perfectionism made it impossible
-for me to come up with any solution to the invalidation issues.)
-
-> > Suspect you'd need a barrier of some kind between the i_size_write and
-> > the mapping_mapped test?
-> 
-> The unmap_mapping_range that runs after the truncate_inode_pages should
-> run in the correct order, I believe.
-
-Yes, if there's going to be that backup call, the first won't really
-need a barrier.
-
-> > But that's a change we could have made at
-> > any time if we'd bothered, it's not really the issue here.
-> 
-> I don't see how you could, because you need to increment truncate_count.
-
-Though indeed we did so, I don't see that we needed to increment
-truncate_count in that case (nobody could be coming through
-do_no_page on that file, when there are no mappings of it).
-
-> But I believe this is fixing the issue, even if it does so in a peripheral
-> manner, because it avoids the added cost for unmapped files.
-
-It's a small improvement to your common case, I agree.
-
-Hugh
