@@ -1,88 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbXEIP7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbXEIQBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758406AbXEIP7c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbXEIP7Z
+	id S1756545AbXEIQBb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 12:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXEIQBV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:59:25 -0400
-Received: from mga01.intel.com ([192.55.52.88]:19384 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755105AbXEIP7Y convert rfc822-to-8bit (ORCPT
+	Wed, 9 May 2007 12:01:21 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:42088 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754125AbXEIQBT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:59:24 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,510,1170662400"; 
-   d="scan'208";a="243831212"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH -mm] timer: parenthesis fix in tbase_get_deferrable() etc.
-Date: Wed, 9 May 2007 08:59:27 -0700
-Message-ID: <653FFBB4508B9042B5D43DC9E18836F55DF9FD@scsmsx415.amr.corp.intel.com>
-In-Reply-To: <20070509053144.GA995@ff.dom.local>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH -mm] timer: parenthesis fix in tbase_get_deferrable() etc.
-thread-index: AceR+nJI6GkcIdzyRl+4v2vLIMzJhQAV1K+g
-From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-To: "Jarek Poplawski" <jarkao2@o2.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>
-CC: <linux-kernel@vger.kernel.org>, "Oleg Nesterov" <oleg@tv-sign.ru>
-X-OriginalArrivalTime: 09 May 2007 15:59:22.0711 (UTC) FILETIME=[029CA670:01C79253]
+	Wed, 9 May 2007 12:01:19 -0400
+Date: Wed, 9 May 2007 21:31:02 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070509160102.GA30745@amitarora.in.ibm.com>
+References: <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070426180332.GA7209@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have the updated patches ready which take care of Andrew's comments.
+Will run some tests and post them soon.
 
->-----Original Message-----
->From: Jarek Poplawski [mailto:jarkao2@o2.pl] 
->Sent: Tuesday, May 08, 2007 10:32 PM
->To: Andrew Morton
->Cc: Pallipadi, Venkatesh; linux-kernel@vger.kernel.org; Oleg Nesterov
->Subject: Re: [PATCH -mm] timer: parenthesis fix in 
->tbase_get_deferrable() etc.
->
->On Tue, May 08, 2007 at 04:33:58PM -0700, Andrew Morton wrote:
->> On Tue, 8 May 2007 12:33:48 +0200
->> Jarek Poplawski <jarkao2@o2.pl> wrote:
->> 
->> > 
->> > Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
->> > 
->> > ---
->> > 
->> > diff -Nurp 2.6.21-mm1-/kernel/timer.c 2.6.21-mm1/kernel/timer.c
->> > --- 2.6.21-mm1-/kernel/timer.c	2007-05-08 
->11:54:48.000000000 +0200
->> > +++ 2.6.21-mm1/kernel/timer.c	2007-05-08 
->12:05:11.000000000 +0200
->> > @@ -92,24 +92,24 @@ static DEFINE_PER_CPU(tvec_base_t *, tve
->> >  /* Functions below help us manage 'deferrable' flag */
->> >  static inline unsigned int tbase_get_deferrable(tvec_base_t *base)
->> >  {
->> > -	return ((unsigned int)(unsigned long)base & 
->TBASE_DEFERRABLE_FLAG);
->> > +	return (unsigned int)((unsigned long)base & 
->TBASE_DEFERRABLE_FLAG);
->> >  }
->...
->> The change makes sense, but does it actually "fix" anything?
->> 
->
->Yes - this first place fixes logical error, so it's a sin
->- even if not punishable in practice. (It's also unnecessary
->test for long to int conversion.)
->
+But, before submitting these patches, I think it will be better to finalize
+on certain things which might be worth some discussion here:
 
-I am sorry, I don't understand. What is the logical error in the first
-one?
+1) Should the file size change when preallocation is done beyond EOF ?
+   - Andreas and Chris Wedgwood are in favor of not changing the
+     file size in this case. I also tend to agree with them. Does anyone
+     has an argument in favor of changing the filesize ?
+     If not, I will remove the code which changes the filesize, before I
+     resubmit the concerned ext4 patch.
 
-Actually, your change makes it different from what was originally
-indended.
-Original intention was to type convert base to a 32 bit value and
-bitwise& with FLAG. Even though compiler may optimize both the above to
-same code, I don't see what is the error.
+2) For FA_UNALLOCATE mode, should the file system allow unallocation
+   of normal (non-preallocated) blocks (blocks allocated via
+   regular write/truncate operations) also (i.e. work as punch()) ?
+   - Though FA_UNALLOCATE mode is yet to be implemented on ext4, still
+     we need to finalize on the convention here as a general guideline
+     to all the filesystems that implement fallocate.
 
-Thanks,
-Venki 
+3) If above is true, the file size will need to be changed
+   for "unallocation" when block holding the EOF gets unallocated.
+   - If we do not "unallocate" normal (non-preallocated) blocks and we
+     do not change the file size on preallocation, then this is a
+     non-issue.
+
+4) Should we update mtime & ctime on a successfull allocation/
+   unallocation ?
+   - David Chinner raised this question in following post:
+     http://lkml.org/lkml/2007/4/29/407
+     I think it makes sense to update the [mc]time for a successfull
+     preallocation/unallocation. Does anyone feel otherwise ?
+     It will be interesting to know how XFS behaves currently. Does XFS
+     update [mc]time for preallocation ?
+
+
+--
+Regards,
+Amit Arora
