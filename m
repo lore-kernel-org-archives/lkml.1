@@ -1,45 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759889AbXEIXEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759354AbXEIXFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759889AbXEIXEj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755838AbXEIXEW
+	id S1759354AbXEIXFH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759506AbXEIXEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:04:22 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:37992 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754731AbXEIXEU (ORCPT
+	Wed, 9 May 2007 19:04:30 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:33478 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759277AbXEIXE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:04:20 -0400
-Subject: Re: [patch 6/7] SCSI: save disk in scsi_device - resend
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Cc: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, htejun@gmail.com, akpm@linux-foundation.org
-In-Reply-To: <20070509155032.57c3a55d.kristen.c.accardi@intel.com>
-References: <20070424074856.005152262@intel.com>
-	 <20070504111733.f507501d.kristen.c.accardi@intel.com>
-	 <1178310648.3711.56.camel@mulgrave.il.steeleye.com>
-	 <20070507082928.17878961.kristen.c.accardi@intel.com>
-	 <20070509155032.57c3a55d.kristen.c.accardi@intel.com>
-Content-Type: text/plain
-Date: Wed, 09 May 2007 18:04:13 -0500
-Message-Id: <1178751853.3695.59.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Wed, 9 May 2007 19:04:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=RJydy/38c/zXsPT5ayg14Gr2yblu8NwpoInXFDVakzX098QHtOu3Urfv6ZOmhx7+Y1cUh0Pms6bizeHGCYZmP2HEQLRbJN/V5q37iIVVJg5Sx7My7Dl+89BJFu8D+qR+DefYUm0LX3yrMHYIJiaxc0x6EAaigXeeVxHhtHrbX90=
+Message-ID: <9a8748490705091604l32b0e6depbc079f69897b34e0@mail.gmail.com>
+Date: Thu, 10 May 2007 01:04:24 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Jeff Garzik" <jeff@garzik.org>
+Subject: Re: remove broken URLs from net drivers' output
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Adrian Bunk" <bunk@stusta.de>,
+       "Markus Dahms" <dahms@fh-brandenburg.de>
+In-Reply-To: <46424E12.9070307@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200705092102.l49L2Re6028694@hera.kernel.org>
+	 <46424E12.9070307@garzik.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 15:50 -0700, Kristen Carlson Accardi wrote:
-> interpret the lack of response to this question to mean that I can
-> just
-> decide for myself - in which case I prefer to send this as a separate 
-> patchset after this one is integrated.
+On 10/05/07, Jeff Garzik <jeff@garzik.org> wrote:
+> Linux Kernel Mailing List wrote:
+> > Gitweb:     http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=2c2a8c531e953c753b06605c8ad6a9161ca527fa
+> > Commit:     2c2a8c531e953c753b06605c8ad6a9161ca527fa
+> > Parent:     b96687768a9ac0fdd005c7700093ebb24b93450f
+> > Author:     Markus Dahms <dahms@fh-brandenburg.de>
+> > AuthorDate: Wed May 9 07:58:10 2007 +0200
+> > Committer:  Adrian Bunk <bunk@stusta.de>
+> > CommitDate: Wed May 9 08:58:18 2007 +0200
+> >
+> >     remove broken URLs from net drivers' output
+> >
+> >     Remove broken URLs (www.scyld.com) from network drivers' logging output.
+> >     URLs in comments and other strings are left intact.
+> >
+> >     Signed-off-by: Markus Dahms <dahms@fh-brandenburg.de>
+> >     Acked-by: Jesper Juhl <jesper.juhl@gmail.com>
+> >     Acked-by: Alan Cox <alan@redhat.com>
+> >     igned-off-by: Adrian Bunk <bunk@stusta.de>
+> > ---
+> >  drivers/net/3c509.c     |    5 ++---
+> >  drivers/net/3c59x.c     |    2 +-
+> >  drivers/net/atp.c       |    8 +++-----
+> >  drivers/net/eepro100.c  |    2 +-
+> >  drivers/net/epic100.c   |   10 ++++------
+> >  drivers/net/natsemi.c   |    1 -
+> >  drivers/net/ne2k-pci.c  |    3 +--
+> >  drivers/net/sundance.c  |    3 +--
+> >  drivers/net/yellowfin.c |    1 -
+> >  9 files changed, 13 insertions(+), 22 deletions(-)
+>
+> Grumble...  This stuff should go through my tree.
+>
+>         Jeff
+>
 
-Sorry ... was sidetracked getting tree into shape.
+Note, just for the record; I never explicitly added an Acked-by to
+this patch, I only said in a conversational email that it made sense
+to me...
+I don't actually mind, in this case, to have an Acked-by tagged on
+with my name,  but in general I think that such lines should only be
+added when people explicitly say Acked-by: John Doe, or something like
+"Feel free to add my ACK to this" etc.
 
-Yes, separate patch is preferred.
 
-James
-
-
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
