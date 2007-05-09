@@ -1,214 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbXEIVpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759228AbXEIVse@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759265AbXEIVpt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 17:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755772AbXEIVpm
+	id S1759228AbXEIVse (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 17:48:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbXEIVsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 17:45:42 -0400
-Received: from nz-out-0506.google.com ([64.233.162.236]:57380 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754881AbXEIVpl (ORCPT
+	Wed, 9 May 2007 17:48:23 -0400
+Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:63829
+	"EHLO eggplant.ddo.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757412AbXEIVsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 17:45:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=UMFZ40ldIXszO6GsAYUXnbxtxcoxf3CQRefIx3IopynMzr6n2NBBz1pk7wPsOe04LJ37J4DPaFBFGaiKmijSi3VGTZ2v9gJ+ccyuwixJdrHFrYfYvH8B/pw5Wq2QgOKDDitKMIRTBWtF6tfwxEqzF93aO02wY9MBckCaX0/tAzM=
-Message-ID: <9a8748490705091445y65ec74bcpbb9251d9184f481a@mail.gmail.com>
-Date: Wed, 9 May 2007 23:45:39 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Jonathan Corbet" <corbet@lwn.net>
-Subject: Re: [PATCH] "volatile considered harmful" document
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       "Randy Dunlap" <randy.dunlap@oracle.com>
-In-Reply-To: <25493.1178744744@lwn.net>
+	Wed, 9 May 2007 17:48:22 -0400
+Message-ID: <1229.192.168.1.10.1178747299.squirrel@eggplant.ddo.jp>
+Date: Thu, 10 May 2007 06:48:19 +0900 (JST)
+Subject: Re: [PATCH 1/2] leds:arch/sh/boards/landisk LEDs supports
+From: "kogiidena" <kogiidena@eggplant.ddo.jp>
+To: "Richard Purdie" <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
+Reply-To: kogiidena@eggplant.ddo.jp
+User-Agent: SquirrelMail/1.4.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <25493.1178744744@lwn.net>
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+References: <1743.192.168.1.10.1178627210.squirrel@eggplant.ddo.jp><1178628889.6061.33.camel@localhost.localdomain><2490.192.168.1.10.1178720780.squirrel@eggplant.ddo.jp><1178723594.6291.21.camel@localhost.localdomain>
+In-Reply-To: <1178723594.6291.21.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/05/07, Jonathan Corbet <corbet@lwn.net> wrote:
-> OK, here's an updated version of the volatile document - as a plain text
-> file this time.  It drops a new file in Documentation/, but might it be
-> better as an addition to CodingStyle?
+> On Wed, 2007-05-09 at 23:26 +0900, kogiidena wrote:
+>> Hi Richard-san
+>> The following three points were corrected.
+>> 1.
+>> > You can't do this since the trigger will appear for all LEDs and it only
+>> > applies to a single LED. There has been previous discussion of LED
+>> > specific triggers and we'll need that support before you can make
+>> > something like this work. Nobody has sent me a patch for that yet and I
+>> > haven't had time to write one...
+>> The trigger name past "disk" was changed to the name "hard".
+>> This is to mean the hardware of LANDISK controls LED.
+>> The problem of "LED specific triggers" is solved.
 >
-IMHO this is better as a sepperate document rather than an adition to
-CodingStyle. The use of volatile is not a style issue, it's a
-correctness issue, so it doesn't belong in the CodingStyle document.
-
-
-> Comments welcome,
+> No, its not solved.
 >
-Find a few below :)
-
-
-> jon
+> Imagine I connect some device with its own LEDs and LED drivers. I'll
+> use "corgi:amber" as an example.
 >
-> Tell kernel developers why they shouldn't use volatile.
+> I run:
 >
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+> 'cat /sys/class/leds/corgi:amber/triggers'
 >
-> diff -ruNp linux-2.6/Documentation/volatile.txt volatile/Documentation/volatile.txt
+> I see "hard" listed.
+>
+> 'echo "hard" > /sys/class/leds/corgi:amber/triggers'
+>
+> doesn't work though...
+>
+> If its not going to work, it shouldn't be listed.
+>
+> Regards,
+>
+> Richard
+>
 
-Might I suggest a different filename: volatile-considered-harmful.txt
+I think, "Solved it" because I changed the source code.
 
+LANDISK have two LED.
+One is power-led. The other is status-led.
+Power-led and status-led can respectively set "hard", and it operates normally.
 
-> --- linux-2.6/Documentation/volatile.txt        1969-12-31 17:00:00.000000000 -0700
-> +++ volatile/Documentation/volatile.txt 2007-05-09 14:56:40.000000000 -0600
-> @@ -0,0 +1,127 @@
-> +Why the "volatile" type class should not be used
-> +------------------------------------------------
-> +
-> +The C Programming Language, Second Edition (copyright 1988, still known as
-> +"the new C book") has the following to say about the volatile keyword:
-> +
-> +       The purpose of volatile is to force an implementation to suppress
-> +       optimization that could otherwise occur.  For example, for a
-> +       machine with memory-mapped input/output, a pointer to a device
-> +       register might be declared as a pointer to volatile, in
-> +       order to prevent the compiler from removing apparently redundant
-> +       references through the pointer.
-> +
-> +C programmers have often taken volatile to mean that the variable could be
-> +changed outside of the current thread of execution; as a result, they are
+'echo "hard" >  /sys/class/leds/power/triggers'
+It works. Power-led behaves as always lights.
+Power-led is controlled with hardware based on specific logic (CPLD) in LANDISK.
 
-you write: "... that the variable could be changed outside of the
-current thread of execution ..."
+'echo "hard" >  /sys/class/leds/status/triggers'
+It works too. Status-LED behaves as HDD-access-LED.
+Status-led is controlled with hardware based on specific logic (CPLD) in LANDISK too.
 
-I suggest: "... that the variable could be changed outside of the
-current thread of execution - a sort of simple atomic variable ..."
++/*
++ * LANDISK hardware controled LED trigger
++ *
++ *  bit[3:0] = x0xx : power-led  is allways ON.
++ *  bit[3:0] = x1x0 : power-led  is ON.
++ *  bit[3:0] = x1x1 : power-led  is OFF.
++ *  bit[3:0] = 0xxx : status-led is HDD access-LED.
++ *  bit[3:0] = 1x0x : status-led is ON
++ *  bit[3:0] = 1x1x : status-led is OFF
++ */
++static void landisk_hard_trig_activate(struct led_classdev *led_cdev)
++{
++        unsigned long flags;
++        int bitmask;
++
++        bitmask = 0x04 << (led_cdev - &landisk_leds[0]);
++
++        spin_lock_irqsave(&landisk_led_lock, flags);
++        ctrl_outb(ctrl_inb(PA_LED) & ~bitmask, PA_LED);
++        spin_unlock_irqrestore(&landisk_led_lock, flags);
++}
++
++static void landisk_hard_trig_deactivate(struct led_classdev *led_cdev)
++{
++        unsigned long flags;
++        int bitmask;
++
++        bitmask = 0x04 << (led_cdev - &landisk_leds[0]);
++
++        spin_lock_irqsave(&landisk_led_lock, flags);
++        ctrl_outb(ctrl_inb(PA_LED) | bitmask, PA_LED);
++        spin_unlock_irqrestore(&landisk_led_lock, flags);
++}
++
 
-> +sometimes tempted to use it in kernel code when shared data structures are
-> +being used.  Andrew Morton recently called out[1] use of volatile in a
-> +submitted patch, saying:
-> +
-> +       The volatiles are a worry - volatile is said to be
-> +       basically-always-wrong in-kernel, although we've never managed to
-> +       document why, and i386 cheerfully uses it in readb() and friends.
-> +
-> +In response, Randy Dunlap pulled together some email from Linus[2] on the
-> +topic and suggested that we could maybe "document why."  Here is the
-> +result.
-> +
-> +The point that Linus often makes with regard to volatile is that
-> +its purpose is to suppress optimization, which is almost never what one
-> +really wants to do.  In the kernel, one must protect accesses to data
-> +against race conditions, which is very much a different task.
-> +
-> +Like volatile, the kernel primitives which make concurrent access to data
-> +safe (spinlocks, mutexes, memory barriers, etc.) are designed to prevent
-> +unwanted optimization.  If they are being used properly, there will be no
-> +need to use volatile as well.  If volatile is still necessary, there is
-> +almost certainly a bug in the code somewhere.  In properly-written kernel
-> +code, volatile can only serve to slow things down.
-> +
-> +Consider a typical block of kernel code:
-> +
-> +    spin_lock(&the_lock);
-> +    do_something_on(&shared_data);
-> +    do_something_else_with(&shared_data);
-> +    spin_unlock(&the_lock);
-> +
-> +If all the code follows the locking rules, the value of shared_data cannot
-> +change unexpectedly while the_lock is held.  Any other code which might
-> +want to play with that data will be waiting on the lock.  The spinlock
-> +primitives act as memory barriers - they are explicitly written to do so -
-> +meaning that data accesses will not be optimized across them.  So the
-> +compiler might think it knows what will be in some_data, but the
-> +spin_lock() call will force it to forget anything it knows.  There will be
-> +no optimization problems with accesses to that data.
-> +
-> +If shared_data were declared volatile, the locking would
-> +still be necessary.  But the compiler would also be prevented from
-> +optimizing access to shared _within_ the critical section,
-> +when we know that nobody else can be working with it.  While the lock is
-> +held, shared_data is not volatile.  This is why Linus says:
-> +
-> +       Also, more importantly, "volatile" is on the wrong _part_ of the
-> +       whole system. In C, it's "data" that is volatile, but that is
-> +       insane. Data isn't volatile - _accesses_ are volatile. So it may
-> +       make sense to say "make this particular _access_ be careful", but
-> +       not "make all accesses to this data use some random strategy".
-> +
-> +When dealing with shared data, proper locking makes volatile unnecessary -
-> +and potentially harmful.
-> +
-> +The volatile storage class was originally meant for memory-mapped I/O
-> +registers.  Within the kernel, register accesses, too, should be protected
-> +by locks, but one also does not want the compiler "optimizing" register
-> +accesses within a critical section.  But, within the kernel, I/O memory
-> +accesses are always done through accessor functions; accessing I/O memory
-> +directly through pointers is frowned upon and does not work on all
-> +architectures.  Those accessors are written to prevent unwanted
-> +optimization, so, once again, volatile is unnecessary.
-> +
-> +Another situation where one might be tempted to use volatile is
-> +when the processor is busy-waiting on the value of a variable.  The right
-> +way to perform a busy wait is:
-> +
-> +    while (my_variable != what_i_want)
-> +        cpu_relax();
-> +
-> +The cpu_relax() call can lower CPU power consumption or yield to a
-> +hyperthreaded twin processor; it also happens to serve as a memory barrier,
-> +so, once again, volatile is unnecessary.  Of course, busy-waiting is
-> +generally an anti-social act to begin with.
-> +
-> +There are still a few rare situations where volatile makes sense in the
-> +kernel:
-> +
-> +  - The above-mentioned accessor functions might use volatile on
-> +    architectures where direct I/O memory access does work.  Essentially,
-> +    each accessor call becomes a little critical section on its own and
-> +    ensures that the access happens as expected by the programmer.
-> +
-> +  - Inline assembly code which changes memory, but which has no other
-> +    visible side effects, risks being deleted by GCC.  Adding the volatile
-> +    keyword to asm statements will prevent this removal.
-> +
-> +  - The jiffies variable is special in that it can have a different value
-> +    every time it is referenced, but it can be read without any special
-> +    locking.  So jiffies can be volatile, but the addition of other
-> +    variables of this type is frowned upon.  Jiffies is considered to be a
-
-suggestion: "frowned strongly upon"
-
-> +    "stupid legacy" issue in this regard.
-> +
-> +For most code, none of the above justifications for volatile
-> +apply.  As a result, the use of volatile is likely to be seen as a
-> +bug and will bring additional scrutiny to the code.  Developers who are
-> +tempted to use volatile should take a step back and think about
-> +what they are truly trying to accomplish.
-> +
-
-Suggested addition :
-
-Patches that remove volatile from current code (provided there's a
-good explanation of why the volatile can be removed and how the bug it
-was hiding has been dealt with) are a good thing.
-
-Friends don't let friends use volatile.
+kogiidena
 
 
-> +NOTES
-> +-----
-> +
-> +[1] http://lwn.net/Articles/233481/
-> +[2] http://lwn.net/Articles/233482/
-> +
-> +CREDITS
-> +-------
-> +
-> +Original impetus and research by Randy Dunlap
-> +Written by Jonathan Corbet
-> +Improvements via coments from Satyam Sharma Johannes Stezenbach
 
-
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
