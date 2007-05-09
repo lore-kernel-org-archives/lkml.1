@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760329AbXEIXmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760282AbXEIXmb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760329AbXEIXmH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759831AbXEIXlS
+	id S1760282AbXEIXmb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:42:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760008AbXEIXlY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:41:18 -0400
-Received: from mga02.intel.com ([134.134.136.20]:1391 "EHLO mga02.intel.com"
+	Wed, 9 May 2007 19:41:24 -0400
+Received: from mga03.intel.com ([143.182.124.21]:57912 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759568AbXEIXlO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:41:14 -0400
+	id S1759955AbXEIXlV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 19:41:21 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.14,512,1170662400"; 
-   d="scan'208";a="241424683"
-Date: Wed, 9 May 2007 16:38:15 -0700
+   d="scan'208";a="226366729"
+Date: Wed, 9 May 2007 16:38:21 -0700
 From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 To: jeff@garzik.org
 Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
        linux-kernel@vger.kernel.org, htejun@gmail.com,
        Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: [patch 2/7] genhd: expose AN to user space
-Message-Id: <20070509163815.be7d2b2d.kristen.c.accardi@intel.com>
+Subject: [patch 3/7] scsi: expose AN to user space
+Message-Id: <20070509163821.d2cb7732.kristen.c.accardi@intel.com>
 In-Reply-To: <20070510072247.063476979@intel.com>
 References: <20070510072247.063476979@intel.com>
 X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
@@ -29,80 +29,50 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow user space to determine if a disk supports Asynchronous Notification
-of media changes.  This is done by adding a new sysfs file "capability_flags",
-which is documented in (insert file name).  This sysfs file will export all
-disk capabilities flags to user space.  We also define a new flag to define
-the media change notification capability.
+Get media change notification capability from disk and pass this information
+to genhd by setting appropriate flag.
 
 Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-Index: 2.6-git/block/genhd.c
+Index: 2.6-git/drivers/scsi/sr.c
 ===================================================================
---- 2.6-git.orig/block/genhd.c
-+++ 2.6-git/block/genhd.c
-@@ -370,7 +370,10 @@ static ssize_t disk_size_read(struct gen
- {
- 	return sprintf(page, "%llu\n", (unsigned long long)get_capacity(disk));
- }
--
-+static ssize_t disk_capability_read(struct gendisk *disk, char *page)
-+{
-+	return sprintf(page, "%x\n", disk->flags);
-+}
- static ssize_t disk_stats_read(struct gendisk * disk, char *page)
- {
- 	preempt_disable();
-@@ -413,6 +416,10 @@ static struct disk_attribute disk_attr_s
- 	.attr = {.name = "size", .mode = S_IRUGO },
- 	.show	= disk_size_read
- };
-+static struct disk_attribute disk_attr_capability = {
-+	.attr = {.name = "capability", .mode = S_IRUGO },
-+	.show	= disk_capability_read
-+};
- static struct disk_attribute disk_attr_stat = {
- 	.attr = {.name = "stat", .mode = S_IRUGO },
- 	.show	= disk_stats_read
-@@ -453,6 +460,7 @@ static struct attribute * default_attrs[
- 	&disk_attr_removable.attr,
- 	&disk_attr_size.attr,
- 	&disk_attr_stat.attr,
-+	&disk_attr_capability.attr,
- #ifdef CONFIG_FAIL_MAKE_REQUEST
- 	&disk_attr_fail.attr,
- #endif
-Index: 2.6-git/include/linux/genhd.h
-===================================================================
---- 2.6-git.orig/include/linux/genhd.h
-+++ 2.6-git/include/linux/genhd.h
-@@ -94,6 +94,7 @@ struct hd_struct {
+--- 2.6-git.orig/drivers/scsi/sr.c
++++ 2.6-git/drivers/scsi/sr.c
+@@ -603,6 +603,8 @@ static int sr_probe(struct device *dev)
  
- #define GENHD_FL_REMOVABLE			1
- #define GENHD_FL_DRIVERFS			2
-+#define GENHD_FL_MEDIA_CHANGE_NOTIFY		4
- #define GENHD_FL_CD				8
- #define GENHD_FL_UP				16
- #define GENHD_FL_SUPPRESS_PARTITION_INFO	32
-Index: 2.6-git/Documentation/block/capability.txt
+ 	dev_set_drvdata(dev, cd);
+ 	disk->flags |= GENHD_FL_REMOVABLE;
++	if (sdev->media_change_notify)
++		disk->flags |= GENHD_FL_MEDIA_CHANGE_NOTIFY;
+ 	add_disk(disk);
+ 
+ 	sdev_printk(KERN_DEBUG, sdev,
+Index: 2.6-git/include/scsi/scsi_device.h
 ===================================================================
---- /dev/null
-+++ 2.6-git/Documentation/block/capability.txt
-@@ -0,0 +1,15 @@
-+Generic Block Device Capability
-+===============================================================================
-+This file documents the sysfs file block/<disk>/capability
+--- 2.6-git.orig/include/scsi/scsi_device.h
++++ 2.6-git/include/scsi/scsi_device.h
+@@ -126,7 +126,7 @@ struct scsi_device {
+ 	unsigned fix_capacity:1;	/* READ_CAPACITY is too high by 1 */
+ 	unsigned guess_capacity:1;	/* READ_CAPACITY might be too high by 1 */
+ 	unsigned retry_hwerror:1;	/* Retry HARDWARE_ERROR */
+-
++	unsigned media_change_notify:1; /* dev supports async media notify */
+ 	unsigned int device_blocked;	/* Device returned QUEUE_FULL. */
+ 
+ 	unsigned int max_device_blocked; /* what device_blocked counts down from  */
+Index: 2.6-git/drivers/scsi/sd.c
+===================================================================
+--- 2.6-git.orig/drivers/scsi/sd.c
++++ 2.6-git/drivers/scsi/sd.c
+@@ -1668,6 +1668,9 @@ static int sd_probe(struct device *dev)
+ 	if (sdp->removable)
+ 		gd->flags |= GENHD_FL_REMOVABLE;
+ 
++	if (sdp->media_change_notify)
++		gd->flags |= GENHD_FL_MEDIA_CHANGE_NOTIFY;
 +
-+capability is a hex word indicating which capabilities a specific disk
-+supports.  For more information on bits not listed here, see
-+include/linux/genhd.h
-+
-+Capability				Value
-+-------------------------------------------------------------------------------
-+GENHD_FL_MEDIA_CHANGE_NOTIFY		4
-+	When this bit is set, the disk supports Asynchronous Notification
-+	of media change events.  These events will be broadcast to user
-+	space via kernel uevent.
-+
+ 	dev_set_drvdata(dev, sdkp);
+ 	add_disk(gd);
+ 
 
 -- 
