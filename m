@@ -1,86 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbXEIP5c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758406AbXEIP7c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758549AbXEIP5c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:57:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757571AbXEIP5O
+	id S1758406AbXEIP7c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:59:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756093AbXEIP7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:57:14 -0400
-Received: from mx33.mail.ru ([194.67.23.194]:5577 "EHLO mx33.mail.ru"
+	Wed, 9 May 2007 11:59:25 -0400
+Received: from mga01.intel.com ([192.55.52.88]:19384 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757361AbXEIP5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:57:12 -0400
-From: Andrey Borzenkov <arvidjaar@mail.ru>
-To: "Albert Cahalan" <acahalan@gmail.com>
-Subject: Re: Long file names in VFAT broken with iocharset=utf8
-Date: Wed, 9 May 2007 19:57:06 +0400
-User-Agent: KMail/1.9.6
-Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>, hirofumi@mail.parknet.co.jp,
-       linux-kernel@vger.kernel.org, hpa@zytor.com
-References: <787b0d920705072143q63e56f23j18c6b0dbfb270883@mail.gmail.com> <Pine.LNX.4.61.0705081036000.17280@yvahk01.tjqt.qr> <787b0d920705090834p7ece0880n51d6e9288f307d1f@mail.gmail.com>
-In-Reply-To: <787b0d920705090834p7ece0880n51d6e9288f307d1f@mail.gmail.com>
+	id S1755105AbXEIP7Y convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:59:24 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,510,1170662400"; 
+   d="scan'208";a="243831212"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1932048.ZuBCudOJiY";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705091957.07557.arvidjaar@mail.ru>
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH -mm] timer: parenthesis fix in tbase_get_deferrable() etc.
+Date: Wed, 9 May 2007 08:59:27 -0700
+Message-ID: <653FFBB4508B9042B5D43DC9E18836F55DF9FD@scsmsx415.amr.corp.intel.com>
+In-Reply-To: <20070509053144.GA995@ff.dom.local>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH -mm] timer: parenthesis fix in tbase_get_deferrable() etc.
+thread-index: AceR+nJI6GkcIdzyRl+4v2vLIMzJhQAV1K+g
+From: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+To: "Jarek Poplawski" <jarkao2@o2.pl>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+CC: <linux-kernel@vger.kernel.org>, "Oleg Nesterov" <oleg@tv-sign.ru>
+X-OriginalArrivalTime: 09 May 2007 15:59:22.0711 (UTC) FILETIME=[029CA670:01C79253]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1932048.ZuBCudOJiY
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
 
-On Wednesday 09 May 2007, Albert Cahalan wrote:
-> On 5/8/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> > On May 8 2007 00:43, Albert Cahalan wrote:
-> > > Fix: the vfat driver should use the 8.3 name for such files.
-> >
-> > Or the 31-character ISO Level 1(?).
+>-----Original Message-----
+>From: Jarek Poplawski [mailto:jarkao2@o2.pl] 
+>Sent: Tuesday, May 08, 2007 10:32 PM
+>To: Andrew Morton
+>Cc: Pallipadi, Venkatesh; linux-kernel@vger.kernel.org; Oleg Nesterov
+>Subject: Re: [PATCH -mm] timer: parenthesis fix in 
+>tbase_get_deferrable() etc.
 >
-> That might be appropriate for a similar problem on CD-ROM
-> filesystems. (when the CD is rockridge KOI8 and you want UTF-8)
-> It may even be appropriate for Joliet, though 8.3 may be
-> the better choice in that case.
+>On Tue, May 08, 2007 at 04:33:58PM -0700, Andrew Morton wrote:
+>> On Tue, 8 May 2007 12:33:48 +0200
+>> Jarek Poplawski <jarkao2@o2.pl> wrote:
+>> 
+>> > 
+>> > Signed-off-by: Jarek Poplawski <jarkao2@o2.pl>
+>> > 
+>> > ---
+>> > 
+>> > diff -Nurp 2.6.21-mm1-/kernel/timer.c 2.6.21-mm1/kernel/timer.c
+>> > --- 2.6.21-mm1-/kernel/timer.c	2007-05-08 
+>11:54:48.000000000 +0200
+>> > +++ 2.6.21-mm1/kernel/timer.c	2007-05-08 
+>12:05:11.000000000 +0200
+>> > @@ -92,24 +92,24 @@ static DEFINE_PER_CPU(tvec_base_t *, tve
+>> >  /* Functions below help us manage 'deferrable' flag */
+>> >  static inline unsigned int tbase_get_deferrable(tvec_base_t *base)
+>> >  {
+>> > -	return ((unsigned int)(unsigned long)base & 
+>TBASE_DEFERRABLE_FLAG);
+>> > +	return (unsigned int)((unsigned long)base & 
+>TBASE_DEFERRABLE_FLAG);
+>> >  }
+>...
+>> The change makes sense, but does it actually "fix" anything?
+>> 
 >
-> It's not appropriate for vfat, HPFS, JFS, or NTFS. All of those
-> have built-in support for 8.3 aliases. Normally the 8.3 names
-> are like hidden hard links, except that deletion of either name
-> will wipe out the other. (same as case differences too)
-> So the names are there, and they should already work.
-> They just need to be reported for directory listings when the
-> long names would be too long.
+>Yes - this first place fixes logical error, so it's a sin
+>- even if not punishable in practice. (It's also unnecessary
+>test for long to int conversion.)
+>
 
-several problems associated with it
+I am sorry, I don't understand. What is the logical error in the first
+one?
 
-1. those names are rather meaningless. How do you find out which file they=
-=20
-refer to? It is OK for trivial cases but not in a directory full of long=20
-names; nor am I sure how many unique short names can be generated.
+Actually, your change makes it different from what was originally
+indended.
+Original intention was to type convert base to a 32 bit value and
+bitwise& with FLAG. Even though compiler may optimize both the above to
+same code, I don't see what is the error.
 
-2. directory contents is effectively invalidated upon backup and restore (t=
-ar=20
-c; rm -rf; tar x). It is impossible to infer long names from short ones.
-
-3. this still does not answer how can I *create* long name from within Linu=
-x.
-
-Currently workaround is to mount with single byte character set, like koi8-=
-r;=20
-of course it becomes quite awkward if the rest of system is using UTF-8.
-
---nextPart1932048.ZuBCudOJiY
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQBGQe9TR6LMutpd94wRAjyUAKCa1SSuY2brfe4Ngt3lfDjSG/iIBACgyQb5
-8vb4eMdk3mbGR+wgYxFU9UY=
-=/cED
------END PGP SIGNATURE-----
-
---nextPart1932048.ZuBCudOJiY--
+Thanks,
+Venki 
