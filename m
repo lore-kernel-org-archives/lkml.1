@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757545AbXEITEZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbXEITF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757545AbXEITEZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 15:04:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756081AbXEITES
+	id S1758118AbXEITF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 15:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756488AbXEITFV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 15:04:18 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:31466 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754129AbXEITER (ORCPT
+	Wed, 9 May 2007 15:05:21 -0400
+Received: from assei1bl6.telenet-ops.be ([195.130.133.68]:39951 "EHLO
+	assei1bl6.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756424AbXEITFT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 15:04:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=jyTZXuyzJNo4BV+gGsFoNucD2WR//B7Pn2qNc1un74r/tREtZaBpXKQIRHO3AqRGycXCXuXdUPefOin3jX+nuH0uUz78W3SAvQTfKGYN1sIrlNIzuWD9HsL41rGPV28emYi5gFDnmn3SOaxvLfVFcuu4tzGLSEBYRAv7Ai4dq7g=
-Message-ID: <a781481a0705091204g1ff1eb4do2ac1bfb876b8b7e1@mail.gmail.com>
-Date: Thu, 10 May 2007 00:34:15 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Randy Dunlap" <randy.dunlap@oracle.com>
-Subject: Re: [PATCH] doc: volatile considered evil
-Cc: "Stefan Richter" <stefanr@s5r6.in-berlin.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Paul Sokolovsky" <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       rientjes@google.com, jeremy@goop.org,
-       "Jonathan Corbet" <corbet@lwn.net>
-In-Reply-To: <20070509085253.5935f90f.randy.dunlap@oracle.com>
+	Wed, 9 May 2007 15:05:19 -0400
+Date: Wed, 9 May 2007 21:05:15 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Rechberger Markus <mrechberger@gmail.com>
+Subject: Re: [GIT PATCHES] V4L/DVB updates
+In-Reply-To: <1178706473.9614.31.camel@localhost>
+Message-ID: <Pine.LNX.4.64.0705092103550.13222@anakin>
+References: <1177706435.5163.49.camel@localhost> <Pine.LNX.4.64.0705090804310.12497@anakin>
+ <1178706473.9614.31.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <516386418.20070501080839@gmail.com>
-	 <20070430235642.e576e917.akpm@linux-foundation.org>
-	 <20070508121404.17bd97a6.randy.dunlap@oracle.com>
-	 <a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
-	 <20070508163452.8b71f682.randy.dunlap@oracle.com>
-	 <46418B4D.6030307@s5r6.in-berlin.de>
-	 <20070509085253.5935f90f.randy.dunlap@oracle.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-911022371-1178737515=:13222"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/9/07, Randy Dunlap <randy.dunlap@oracle.com> wrote:
-> On Wed, 09 May 2007 10:50:21 +0200 Stefan Richter wrote:
->
-> > Randy Dunlap wrote:
-> > > Add information on the problems with the C-language "volatile" keyword
-> > > and why it should not be used (most of the time).
-> >
-> > I like Jonathan's article http://lwn.net/Articles/233479/ a lot.
-> > It puts as much emphasis on the DOs as on the DON'Ts, which I find helpful.
->
-> Yep.  I expect to drop my patch in favor of Jon's writeup.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Yeah, that article was both comprehensive and to-the-point indeed. I
-was trying my hand at re-organizing your original mail, but Jon's
-version is nicer.
+---1463808512-911022371-1178737515=:13222
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+
+On Wed, 9 May 2007, Mauro Carvalho Chehab wrote:
+> Em Qua, 2007-05-09 às 08:30 +0200, Geert Uytterhoeven escreveu:
+> > On Fri, 27 Apr 2007, Mauro Carvalho Chehab wrote:
+> > > A short changelog:
+> > > 
+> > >    - New drivers:
+> > >         ivtv driver for Hauppauge PVR series and similar boards;
+> > 
+> > Can we please have proper Kconfig dependencies instead of
+> > 
+> > | #ifdef CONFIG_LIRC_I2C
+> > | #  error "This driver is not compatible with the LIRC I2C kernel configuration
+> > | #endif /* CONFIG_LIRC_I2C */
+> > | 
+> > | #ifndef CONFIG_PCI
+> > | #  error "This driver requires kernel PCI support."
+> > | #endif /* CONFIG_PCI */
+> > 
+> > in drivers/media/video/ivtv/ivtv-driver.h? Especially a dependency on
+> > CONFIG_PCI would be nice (CONFIG_LIRC_I2C doesn't exist in mainline?).
+> > 
+> > | drivers/media/video/video-buf.c: In function 'videobuf_queue_pci':
+> > | drivers/media/video/video-buf.c:399: error: 'pci_map_sg' undeclared (first use in this function)
+> > 
+> > Probably some new driver does a select VIDEO_BUF, which overrides that
+> > VIDEO_BUF depends on PCI?
+> 
+> Can you check if the following patch would fix it? VIDEO_BUF is selected
+> by several PCI-dependent devices. The only non-PCI device wrongly
+> selecting VIDEO_BUF seems to be em28xx.
+
+Yes, it fixed the issues (after manual application of the last chunk,
+which didn't apply cleanly). Thanks!
+
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+---1463808512-911022371-1178737515=:13222--
