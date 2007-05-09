@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbXEINIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757657AbXEINKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758173AbXEINIf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 09:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbXEINIZ
+	id S1757657AbXEINKX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 09:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756100AbXEINKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 09:08:25 -0400
-Received: from vms042pub.verizon.net ([206.46.252.42]:50640 "EHLO
-	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757115AbXEINIY convert rfc822-to-8bit (ORCPT
+	Wed, 9 May 2007 09:10:10 -0400
+Received: from py-out-1112.google.com ([64.233.166.183]:43365 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753395AbXEINKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 09:08:24 -0400
-Date: Wed, 09 May 2007 09:08:14 -0400
-From: Gene Heskett <gene.heskett@gmail.com>
-Subject: Re: PCI: Bus #02 (-#05) is hidden behind transparent bridge #01 (-#01)
- (try 'pci=assign-busses')
-In-reply-to: <200705091535.30607.mdontu@bitdefender.com>
-To: Mihai =?utf-8?q?Don=C8=9Bu?= <mdontu@bitdefender.com>
-Cc: linux-kernel@vger.kernel.org
-Message-id: <200705090908.14144.gene.heskett@gmail.com>
-Organization: Organization? very little
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 8BIT
-Content-disposition: inline
-References: <20070401181822.9700a7df.mailing@wodkahexe.de>
- <200705091535.30607.mdontu@bitdefender.com>
-User-Agent: KMail/1.9.6
+	Wed, 9 May 2007 09:10:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=Uf0B9NcrzDsEBm1kmqocBtNam5bVMMqsTQyHpvfM9CMCqU3nYR3YlEgv8mQTnfHNo4fxlOoYLuVmD6k7qn980ZnYwnCjVARzgxiykza7Cm+gIgbjaQ8ZaXTKtUYGY9wh3lc6sOSDs4ttBFlhHoFFapfchEjEONSbKghV1E4CkKM=
+Message-ID: <4641C80D.7020108@gmail.com>
+Date: Wed, 09 May 2007 15:09:33 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Henry Su <henry.su@amd.com>
+CC: alan@lxorguk.ukuu.org.uk, greg@kroah.com, bzolnier@gmail.com,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       xiaosuzi520@hotmail.com
+Subject: Re: [patch] Add the device IDs for AMD/ATI SB700
+References: <FFECF24D2A7F6D418B9511AF6F3586020197F6A6@shacnexch2.atitech.com>
+In-Reply-To: <FFECF24D2A7F6D418B9511AF6F3586020197F6A6@shacnexch2.atitech.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-7
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 09 May 2007, Mihai Donțu wrote:
->On Sunday 01 April 2007 19:18, you wrote:
->> > Hi,
->> >
->> > dmesg told me to report this to LKML.
->>
->>   And here is my report.
->>
->> > Have a nice day..
->>
->>   x 2 ;)
->
->    And again, from a different email address.
->
->    I would also like to take the opportunity to apologise to Gene Heskett
-> for spamming him :)
+Henry Su wrote:
+> --- linux-2.6.21.1.orig/drivers/ide/pci/atiixp.c	2007-05-10 06:30:17.000000000 +0800
+> +++ linux-2.6.21.1/drivers/ide/pci/atiixp.c	2007-05-10 07:18:39.000000000 +0800
+> @@ -353,6 +353,7 @@ static struct pci_device_id atiixp_pci_t
+>  	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP300_IDE, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+>  	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP400_IDE, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
+>  	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP600_IDE, PCI_ANY_ID, PCI_ANY_ID, 0, 0, 1},
+> +	{ PCI_VENDOR_ID_ATI, PCI_DEVICE_ID_ATI_IXP700_IDE, PCI_ANY_ID, 
+> +PCI_ANY_ID, 0, 0, 1},
+>  	{ 0, },
+>  };
+>  MODULE_DEVICE_TABLE(pci, atiixp_pci_tbl);
+> 
+> --- linux-2.6.21.1.orig/drivers/ata/ahci.c	2007-05-10 06:30:14.000000000 +0800
+> +++ linux-2.6.21.1/drivers/ata/ahci.c	2007-05-10 07:41:41.000000000 +0800
+> @@ -415,6 +415,7 @@ static const struct pci_device_id ahci_p
+>  	/* ATI */
+>  	{ PCI_VDEVICE(ATI, 0x4380), board_ahci_sb600 }, /* ATI SB600 non-raid */
+>  	{ PCI_VDEVICE(ATI, 0x4381), board_ahci }, /* ATI SB600 raid */
 
-No problem other than the duplicates.  Now if I could just reply to another 
-thread without the server getting a belly ache, we would discuss serial, and 
-usb-serial performance, but apparently that's a verbotun subject here on 
-lkml.
+Wasn't there a patch which dropped SB600 raid entry?  I think I heard
+there's no device which has 0x4381 as its DID.
 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-techtonic stress
+tejun
