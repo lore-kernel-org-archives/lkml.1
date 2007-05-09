@@ -1,81 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968904AbXEIGEO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968567AbXEIGQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968904AbXEIGEO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 02:04:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934620AbXEIGEA
+	id S968567AbXEIGQm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 02:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934666AbXEIGQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 02:04:00 -0400
-Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:34794 "HELO
-	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S933482AbXEIGD7 (ORCPT
+	Wed, 9 May 2007 02:16:32 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:52874 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934099AbXEIGQb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 02:03:59 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=PKrM4Fkdx7hB0YyiqCqiyfAxJGDbYr9l4hAqda35lyDr9clMQMZVPjIj0/9eu6QVitPK3VMhLiHel04uqlQYZSvwqMaJPGHFayGBcAfkIQNPq3qzRf2PgTsRclF8qZ29gRqz9SijDupb+FnZoddnn619xCSt6QXXuYG6oKqV06c=  ;
-X-YMail-OSG: RvD6WMsVM1mjwaEQUovpxOF0lvwXVRAqW3y3S8.Pu42fXDR8OfCKq.8lhGNbniTFG_f6pTnf_Wj_eCcddY3A3rG9IQfv_GQ4eDyq7D5Iu62EM4yGw_Z859ToYwM9MQ--
-Message-ID: <4641643D.4040305@yahoo.com.au>
-Date: Wed, 09 May 2007 16:03:41 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] MMC updates
-References: <4640E17E.7090909@drzeus.cx> <46416255.3060105@drzeus.cx>
-In-Reply-To: <46416255.3060105@drzeus.cx>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 9 May 2007 02:16:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=e+cCY8rlTDrCKJKGcUxfUahH7aNfNA13KGRsTeiV4IyBhgPV7jQ/26mmmsiObYegj/Z9kAHgTdP3+0NtShLOki5ZfqpUpEusP61kox9drTVERqAAjM8w96Wg7vkqcwMIW2wiwoqxiu+3f+b4S3DC20/WBHhBXe/WbH1UzROkd8g=
+Subject: Re: Please revert 464bdd33e9baad9806c7adbd8dfc37081a55f27e
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <46416327.3080007@zytor.com>
+References: <46413851.6070505@zytor.com> <1178690193.4747.16.camel@daplas>
+	 <46416327.3080007@zytor.com>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 14:16:14 +0800
+Message-Id: <1178691374.4747.23.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Pierre Ossman wrote:
+On Tue, 2007-05-08 at 22:59 -0700, H. Peter Anvin wrote:
+> Antonino A. Daplas wrote:
+> > On Tue, 2007-05-08 at 19:56 -0700, H. Peter Anvin wrote:
+> >> Checkin 464bdd33e9baad9806c7adbd8dfc37081a55f27e "fbdev: ignore VESA
+> >> modes if framebuffer is disabled" is just plain wrong on any system
+> >> which has support for extended text modes in its VESA BIOS.
+> >>
+> >> Antonio is incorrectly assuming this branchout is used only to set VESA
+> >> graphics modes, but it's to set any VESA mode, be it text or graphics.
+> >>
+> > 
+> > Okay.
+> > 
 > 
->>Linus, please pull from
->>
->>        git://git.kernel.org/pub/scm/linux/kernel/git/drzeus/mmc.git for-linus
->>
+> I did, however, take a cue from this and the setup rewrite now makes the
+> VESA graphics mode unselectable if CONFIG_FB is off.
 > 
-> 
-> fsck! I pushed the wrong branch :/
-> 
-> This fix should have been in the last commit.
-> 
-> Sorry,
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> commit 3b9a6d78eb439016728c598a1373b50328f5e9fe
-> Author: Pierre Ossman <drzeus@drzeus.cx>
-> Date:   Wed May 9 07:53:28 2007 +0200
-> 
->     mmc: fix wrong call to spinlock
->     
->     Fix silly typo in spinlock calls.
->     
->     Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
-> 
-> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c
-> index b6c1670..7385acf 100644
-> --- a/drivers/mmc/core/core.c
-> +++ b/drivers/mmc/core/core.c
-> @@ -501,9 +501,9 @@ void mmc_detect_change(struct mmc_host *host, unsigned long delay)
->  {
->  #ifdef CONFIG_MMC_DEBUG
->  	unsigned long flags;
-> -	spin_lock_irqsave(host->lock, flags);
-> +	spin_lock_irqsave(&host->lock, flags);
->  	BUG_ON(host->removed);
-> -	spin_unlock_irqrestore(host->lock, flags);
-> +	spin_unlock_irqrestore(&host->lock, flags);
->  #endif
 
-Do you actually need the lock there at all? What is it protecting?
+Ah, okay, thanks.
 
--- 
-SUSE Labs, Novell Inc.
+Tony
+
+
