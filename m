@@ -1,93 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbXEIJ1R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756094AbXEIJ2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbXEIJ1R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 05:27:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbXEIJ1F
+	id S1756094AbXEIJ2B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbXEIJ1v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 05:27:05 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:27859 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753294AbXEIJ1E (ORCPT
+	Wed, 9 May 2007 05:27:51 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:57312
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754367AbXEIJ1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 05:27:04 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=KGgn98RMjmGykMFypRbCoZnPHvvkXuv9jnNhx9eXTJLGUXy2L+pLMEiSCwiAuRlHUx8DhCkNvzIzXfwr0ui71PRazQ07bGY0qebOfNkBh2yAzUk7u2TiZpJndqYIJquj03CMvltUMl3gXX4PQerWZAM0bXnXyMOIH0n08RXwYho=  ;
-X-YMail-OSG: VT526qkVM1kPF.nYuqkifDZu06E9DeVpep71PBdFKp_Ghm3LbGR8CuKWExO1riNLI5zMgFqZZg--
-Message-ID: <464193DB.70205@yahoo.com.au>
-Date: Wed, 09 May 2007 19:26:51 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Wed, 9 May 2007 05:27:50 -0400
+Date: Wed, 9 May 2007 02:25:10 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Duncan Sands <duncan.sands@math.u-psud.fr>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+ (PCI_MULTITHREAD_PROBE)
+In-Reply-To: <20070509111515.0cb3e63a@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0705090216030.2213@asgard.lang.hm>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+ <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
+ <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
+ <alpine.LFD.0.98.0705081123080.3974@woody.linux-foundation.org>
+ <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
+ <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org>
+ <alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0705081314440.29403@asgard.lang.hm>
+ <20070509095812.016035ee@gondolin.boeblingen.de.ibm.com>
+ <Pine.LNX.4.64.0705090128180.2213@asgard.lang.hm>
+ <20070509111515.0cb3e63a@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: David Rientjes <rientjes@google.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       jeremy@goop.org
-Subject: Re: [PATCH] doc: volatile considered evil
-References: <516386418.20070501080839@gmail.com>	<20070430235642.e576e917.akpm@linux-foundation.org>	<20070508121404.17bd97a6.randy.dunlap@oracle.com>	<a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>	<20070508163452.8b71f682.randy.dunlap@oracle.com>	<alpine.DEB.0.99.0705081702070.28511@chino.kir.corp.google.com>	<20070508190800.1334b968.randy.dunlap@oracle.com>	<alpine.DEB.0.99.0705081934390.20751@chino.kir.corp.google.com> <20070509102134.5d722386@the-village.bc.nu>
-In-Reply-To: <20070509102134.5d722386@the-village.bc.nu>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
->>It's still ambiguous.  A much more explicit title that nobody could argue 
->>with would be "do not use the 'volatile' keyword as a type qualifier for 
->>an object."
-> 
-> 
-> Except when you do. The kernel uses the C volatile in various places
-> itself for specific good reasons (and some for historical bad ones)
-> 
-> Perhaps a closer summary would be
-> 
-> Do Not Use Volatile
-> -------------------
-> 
-> 1.	volatile is not a locking mechanism
-> 
-> Volatile does not define sufficiently sane or strong semantics for
-> locking. The kernel has proper locking mechanisms which also act as
-> compiler fetch/store barriers and where neccessary hardware barriers for
-> SMP systems. The kernel knows about all the corner cases, you probably
-> don't.
-> 
-> 2.	volatile is not needed for mmio space
-> 
-> I/O memory access are done via readb/writeb and friends. They deal with
-> volatility themselves so you don't have to. They may nor may not use
-> volatile internally to their implementation, but that is none of your
-> business.
-> 
-> 3.	volatile is not atomic
-> 
-> Using volatile does not guarantee atomic behaviour. This often requires
-> special instructions or code sequences too. We have atomic_t and the
-> atomic_* operators for this.
-> 
-> 4.	volatile is not a store or read barrier
-> 
-> Using volatile is not always sufficient to order accesses on SMP or to
-> ensure things execute in the order expected. Instead the kernel provides
-> a set of barrier operations which have clearly defined semantics on all
-> systems. Make use of rmb, wmb, barrier, smp_wmb etc instead
-> 
-> When Might You Need volatile ?
-> ------------------------------
-> 
-> When you are implementing the locking primitives on a new platform. When
-> you are implementing the I/O and atomic prmitives on a new platform. Also
-> in inline gcc assembler where "volatile" is used for subtly different
-> purposes.
+On Wed, 9 May 2007, Cornelia Huck wrote:
 
-Is there a good reason for using volatile in atomic/locking primitives?
-AFAIKS there is not.
+> On Wed, 9 May 2007 01:33:14 -0700 (PDT),
+> david@lang.hm wrote:
+>
+>> 1. why should different, unrelated busses need to wait for each other?
+>> picking two, why can't you have SCSI and USB going through their timeouts
+>> at the same time?
+>
+> If they don't have dependencies on each other, yes. Some busses should
+> be finished before probing for others start (e.g. low-level busses).
 
--- 
-SUSE Labs, Novell Inc.
+I think we are agreeing on this, I was responding to your question of if 
+we could get away to limiting things to one bus at a time.
+
+>> 2. I'm not sure that you can always do the device enumeration before you
+>> do the slow probing, there's another message in this thread that talks
+>> about a USB device where you need to load firmware to it before you can
+>> find out what is really there. in a case like this devices would either
+>> show up in a random order during step #2, or they should not be added to
+>> the system until step #3, which makes step #3 more then just waiting for
+>> the async portions to finish.
+>
+> I'm not sure whether that is not really a question of "one depends upon
+> the other". If the low level bus knows where to point its probe at, the
+> higher level should be able to look at sane devices after the firmware
+> has been loaded (or am I misunderstanding the situation here?)
+
+makeing up an example
+
+today the process would be
+call driver X to initialize it's devices.
+
+driver X follows these steps
+
+1. see if a compatible chipset/device appears to be available
+
+2. initialize the chipset/device (loading firmware)
+
+3. query the now partially initialized chipset/device to see what specific 
+options are enabled in the hardware
+
+4. for each 'thing' that's enabled in hardware, initialize and register 
+it.
+
+step 2 can take a long time and so you want it to be async so that it's 
+timeouts can be running in parallel (for that matter step 1 may have some 
+timeouts as well)
+
+however, you can't tell what devices to register until after step 3
+
+so in at least some cases, it seems as if the registratin of devices needs 
+to be after the async section.
+
+Linus made a good case fo an example (hard drives) where the registration 
+can happen first and fast, but the async section (spinning up) takes a 
+while and could come second.
+
+to acommodate both of these device models it seems to me that you can't 
+defice either
+async followed by sync
+or
+sync followed by async
+but instead need to support the combined
+sync followed by async followed by sync.
+
+now, it's very possible that I'm mistaken and one of the two-part models 
+can be used for everything, if so then it's definantly simpler to do so.
+
+David Lang
