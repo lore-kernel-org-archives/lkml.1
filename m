@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758169AbXEINli@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbXEINoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758169AbXEINli (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 09:41:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbXEINl1
+	id S1757528AbXEINoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 09:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbXEINnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 09:41:27 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:38370 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758010AbXEINl0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 09:41:26 -0400
-Date: Wed, 9 May 2007 15:39:08 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Rogier Wolff <R.E.Wolff@BitWizard.nl>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: nbd problem.
-Message-ID: <20070509133908.GW4163@kernel.dk>
-References: <20070508194053.GA23615@bitwizard.nl> <a781481a0705081333u7b910522x5aac0a0e532d5f85@mail.gmail.com> <20070509111049.GA2362@bitwizard.nl>
+	Wed, 9 May 2007 09:43:49 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46589 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752151AbXEINnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 09:43:47 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH] AFS: Further write support fixes
+To: akpm@osdl.org, netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Wed, 09 May 2007 14:43:41 +0100
+Message-ID: <20070509134341.18106.44110.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070509111049.GA2362@bitwizard.nl>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09 2007, Rogier Wolff wrote:
-> On Tue, May 08, 2007 at 01:33:52PM -0700, Satyam Sharma wrote:
-> > On 5/8/07, Rogier Wolff <R.E.Wolff@bitwizard.nl> wrote:
-> > >
-> > >Hi,
-> > >
-> > >The nbd client still reliably hangs when I use it.
-> 
-> Someone suggested to use 
-> 
-> http://git.kernel.org/?p=linux/kernel/git/axboe/linux-2.6-block.git;a=summary
-> 
-> and that fixed it.  (i.e. there is something in there that should
-> be merged....)
+Further fixes for AFS write support:
 
-Hmm, which branch? Most of my stuff is merged up with Linus as this
-point.
+ (1) The afs_send_pages() outer loop must do an extra iteration if it ends
+     with 'first == last' because 'last' is inclusive in the page set
+     otherwise it fails to send the last page and complete the RxRPC op under
+     some circumstances.
 
-> Jens, thanks for pointing out that there were different locks 
-> involved.
+ (2) Similarly, the outer loop in afs_pages_written_back() must also do an
+     extra iteration if it ends with 'first == last', otherwise it fails to
+     clear PG_writeback on the last page under some circumstances.
 
-You're welcome.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
--- 
-Jens Axboe
+ fs/afs/rxrpc.c |    2 +-
+ fs/afs/write.c |    4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/fs/afs/rxrpc.c b/fs/afs/rxrpc.c
+index 04189c4..1b36f45 100644
+--- a/fs/afs/rxrpc.c
++++ b/fs/afs/rxrpc.c
+@@ -294,7 +294,7 @@ int afs_send_pages(struct afs_call *call, struct msghdr *msg, struct kvec *iov)
+ 			put_page(pages[loop]);
+ 		if (ret < 0)
+ 			break;
+-	} while (first < last);
++	} while (first <= last);
+ 
+ 	_leave(" = %d", ret);
+ 	return ret;
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index aa03d43..67ae4db 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -669,7 +669,7 @@ void afs_pages_written_back(struct afs_vnode *vnode, struct afs_call *call)
+ 	pagevec_init(&pv, 0);
+ 
+ 	do {
+-		_debug("attach %lx-%lx", first, last);
++		_debug("done %lx-%lx", first, last);
+ 
+ 		count = last - first + 1;
+ 		if (count > PAGEVEC_SIZE)
+@@ -701,7 +701,7 @@ void afs_pages_written_back(struct afs_vnode *vnode, struct afs_call *call)
+ 		}
+ 
+ 		__pagevec_release(&pv);
+-	} while (first < last);
++	} while (first <= last);
+ 
+ 	_leave("");
+ }
 
