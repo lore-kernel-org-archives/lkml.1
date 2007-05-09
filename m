@@ -1,110 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760710AbXEIXoB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760363AbXEIXo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760710AbXEIXoB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:44:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759615AbXEIXlv
+	id S1760363AbXEIXo0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760437AbXEIXmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:41:51 -0400
-Received: from mga09.intel.com ([134.134.136.24]:15550 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760212AbXEIXlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:41:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,512,1170662400"; 
-   d="scan'208";a="85474585"
-Date: Wed, 9 May 2007 16:38:48 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: jeff@garzik.org
-Cc: linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com,
-       Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: [patch 7/7] libata: send event when AN received
-Message-Id: <20070509163848.c9b948ff.kristen.c.accardi@intel.com>
-In-Reply-To: <20070510072247.063476979@intel.com>
-References: <20070510072247.063476979@intel.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 May 2007 19:42:24 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:26140 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760428AbXEIXmV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 19:42:21 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=Qyr2sosviHnx7xXBuTen5SicMiL3Mf/2/NbWQCYW3O3Cxhw26owL2vHTjJWj381Qfqr90NwGsDcS2URl+RF6DtDbGv5Gr8kjx+bYsggcmfsvoB/9sUG+wL+RbZMsdSAe2R4RCqf4wGA9s437+32Dge9FE8v2YcwGziCPrshJZug=  ;
+X-YMail-OSG: CHaVqUAVM1nfXjhOeGfMEf90oI44LMeBqy4XJYMyrpR2qR.U
+Message-ID: <46425C55.6050000@yahoo.com.au>
+Date: Thu, 10 May 2007 09:42:13 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: David Howells <dhowells@redhat.com>
+CC: akpm@osdl.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 3/3] AFS: Implement basic file write support
+References: <20070508194358.27477.74888.stgit@warthog.cambridge.redhat.com> <20070508194411.27477.7552.stgit@warthog.cambridge.redhat.com>
+In-Reply-To: <20070508194411.27477.7552.stgit@warthog.cambridge.redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When we get an SDB FIS with the 'N' bit set, we should send
-an event to user space to indicate that there has been a
-media change.  This will be done via the block device. 
+David Howells wrote:
 
-Signed-off-by: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Index: 2.6-git/drivers/ata/ahci.c
-===================================================================
---- 2.6-git.orig/drivers/ata/ahci.c
-+++ 2.6-git/drivers/ata/ahci.c
-@@ -1218,6 +1218,28 @@ static void ahci_host_intr(struct ata_po
- 		return;
- 	}
- 
-+	if (status & PORT_IRQ_SDB_FIS) {
-+		/*
-+		 * if this is an ATAPI device with AN turned on,
-+		 * then we should interrogate the device to
-+		 * determine the cause of the interrupt
-+		 *
-+		 * for AN - this we should check the SDB FIS
-+		 * and find the I and N bits set
-+		 */
-+		const u32 *f = pp->rx_fis + RX_FIS_SDB;
-+
-+		/* check the 'N' bit in word 0 of the FIS */
-+		if (f[0] & (1 << 15)) {
-+			int port_addr =  ((f[0] & 0x00000f00) >> 8);
-+			struct ata_device *adev;
-+			if (port_addr < ATA_MAX_DEVICES) {
-+				adev = &ap->device[port_addr];
-+				if (adev->flags & ATA_DFLAG_AN)
-+					ata_scsi_media_change_notify(adev);
-+			}
-+		}
-+	}
- 	if (ap->sactive)
- 		qc_active = readl(port_mmio + PORT_SCR_ACT);
- 	else
-Index: 2.6-git/include/linux/libata.h
-===================================================================
---- 2.6-git.orig/include/linux/libata.h
-+++ 2.6-git/include/linux/libata.h
-@@ -721,6 +721,7 @@ extern void ata_host_init(struct ata_hos
- extern int ata_scsi_detect(struct scsi_host_template *sht);
- extern int ata_scsi_ioctl(struct scsi_device *dev, int cmd, void __user *arg);
- extern int ata_scsi_queuecmd(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmnd *));
-+extern void ata_scsi_media_change_notify(struct ata_device *atadev);
- extern void ata_sas_port_destroy(struct ata_port *);
- extern struct ata_port *ata_sas_port_alloc(struct ata_host *,
- 					   struct ata_port_info *, struct Scsi_Host *);
-Index: 2.6-git/drivers/ata/libata-scsi.c
-===================================================================
---- 2.6-git.orig/drivers/ata/libata-scsi.c
-+++ 2.6-git/drivers/ata/libata-scsi.c
-@@ -3112,6 +3112,22 @@ static void ata_scsi_remove_dev(struct a
- }
- 
- /**
-+ *	ata_scsi_media_change_notify - send media change event
-+ *	@atadev: Pointer to the disk device with media change event
-+ *
-+ *	Tell the block layer to send a media change notification
-+ *	event.
-+ *
-+ * 	LOCKING:
-+ * 	interrupt context, may not sleep.
-+ */
-+void ata_scsi_media_change_notify(struct ata_device *atadev)
-+{
-+	genhd_media_change_notify(atadev->sdev->disk);
-+}
-+EXPORT_SYMBOL_GPL(ata_scsi_media_change_notify);
-+
-+/**
-  *	ata_scsi_hotplug - SCSI part of hotplug
-  *	@work: Pointer to ATA port to perform SCSI hotplug on
-  *
+> +/*
+> + * prepare a page for being written to
+> + */
+> +static int afs_prepare_page(struct afs_vnode *vnode, struct page *page,
+> +			    struct key *key, unsigned offset, unsigned to)
+> +{
+> +	unsigned eof, tail, start, stop, len;
+> +	loff_t i_size, pos;
+> +	void *p;
+> +	int ret;
+> +
+> +	_enter("");
+> +
+> +	if (offset == 0 && to == PAGE_SIZE)
+> +		return 0;
+> +
+> +	p = kmap(page);
+> +
+> +	i_size = i_size_read(&vnode->vfs_inode);
+> +	pos = (loff_t) page->index << PAGE_SHIFT;
+> +	if (pos >= i_size) {
+> +		/* partial write, page beyond EOF */
+> +		_debug("beyond");
+> +		if (offset > 0)
+> +			memset(p, 0, offset);
+> +		if (to < PAGE_SIZE)
+> +			memset(p + to, 0, PAGE_SIZE - to);
+> +		kunmap(page);
+> +		return 0;
+> +	}
+> +
+> +	if (i_size - pos >= PAGE_SIZE) {
+> +		/* partial write, page entirely before EOF */
+> +		_debug("before");
+> +		tail = eof = PAGE_SIZE;
+> +	} else {
+> +		/* partial write, page overlaps EOF */
+> +		eof = i_size - pos;
+> +		_debug("overlap %u", eof);
+> +		tail = max(eof, to);
+> +		if (tail < PAGE_SIZE)
+> +			memset(p + tail, 0, PAGE_SIZE - tail);
+> +		if (offset > eof)
+> +			memset(p + eof, 0, PAGE_SIZE - eof);
+> +	}
+> +
+> +	kunmap(p);
+> +
+> +	ret = 0;
+> +	if (offset > 0 || eof > to) {
+> +		/* need to fill one or two bits that aren't going to be written
+> +		 * (cover both fillers in one read if there are two) */
+> +		start = (offset > 0) ? 0 : to;
+> +		stop = (eof > to) ? eof : offset;
+> +		len = stop - start;
+> +		_debug("wr=%u-%u av=0-%u rd=%u@%u",
+> +		       offset, to, eof, start, len);
+> +		ret = afs_fill_page(vnode, key, start, len, page);
+> +	}
+> +
+> +	_leave(" = %d", ret);
+> +	return ret;
+> +}
+> +
+> +/*
+> + * prepare to perform part of a write to a page
+> + * - the caller holds the page locked, preventing it from being written out or
+> + *   modified by anyone else
+> + */
+> +int afs_prepare_write(struct file *file, struct page *page,
+> +		      unsigned offset, unsigned to)
+> +{
+> +	struct afs_writeback *candidate, *wb;
+> +	struct afs_vnode *vnode = AFS_FS_I(file->f_dentry->d_inode);
+> +	struct key *key = file->private_data;
+> +	pgoff_t index;
+> +	int ret;
+> +
+> +	_enter("{%x:%u},{%lx},%u,%u",
+> +	       vnode->fid.vid, vnode->fid.vnode, page->index, offset, to);
+> +
+> +	candidate = kzalloc(sizeof(*candidate), GFP_KERNEL);
+> +	if (!candidate)
+> +		return -ENOMEM;
+> +	candidate->vnode = vnode;
+> +	candidate->first = candidate->last = page->index;
+> +	candidate->offset_first = offset;
+> +	candidate->to_last = to;
+> +	candidate->usage = 1;
+> +	candidate->state = AFS_WBACK_PENDING;
+> +	init_waitqueue_head(&candidate->waitq);
+> +
+> +	if (!PageUptodate(page)) {
+> +		_debug("not up to date");
+> +		ret = afs_prepare_page(vnode, page, key, offset, to);
+> +		if (ret < 0) {
+> +			kfree(candidate);
+> +			_leave(" = %d [prep]", ret);
+> +			return ret;
+> +		}
+> +		SetPageUptodate(page);
+> +	}
+
+
+Why do you call SetPageUptodate when the page is not up to date?
+That leaks uninitialised data, AFAIKS.
 
 -- 
+SUSE Labs, Novell Inc.
