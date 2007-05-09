@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971022AbXEIAGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971070AbXEIAIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971022AbXEIAGu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 20:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968382AbXEIAGl
+	id S971070AbXEIAIv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 20:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968382AbXEIAIm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 20:06:41 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:34133 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966770AbXEIAGk (ORCPT
+	Tue, 8 May 2007 20:08:42 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:24299 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S967451AbXEIAIl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 20:06:40 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=dLmzX/HDlV4mjX3WaDxmpb/uuimWtOB8HM2Rv5mgT3xenOFnzgKyhY7iPa7JtaPwt
-	xNEEqFzVnEyeiJCY7U4Jw==
-Date: Tue, 8 May 2007 17:06:23 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       jeremy@goop.org
-Subject: Re: [PATCH] doc: volatile considered evil
-In-Reply-To: <20070508163452.8b71f682.randy.dunlap@oracle.com>
-Message-ID: <alpine.DEB.0.99.0705081702070.28511@chino.kir.corp.google.com>
-References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org>
- <20070508121404.17bd97a6.randy.dunlap@oracle.com>
- <a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
- <20070508163452.8b71f682.randy.dunlap@oracle.com>
+	Tue, 8 May 2007 20:08:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=r1NWk40Z+A2ZY6gUknR9JGR5RLzMUYJNLenIwx5gr0wOrm70FyCH2gzKQgX+b9WUVzMYvhjbU4ZZFPE2YaIE45JDAbYzCSe5/T4dkcpXWNoAhovWdcMGNZDeb2Eq+vTcFLAwIy6nMadA6O9w5G8bIMNlS7u/C6Bg+DDu1MfRUcI=  ;
+X-YMail-OSG: oPUD57gVM1m_xFHArk07_wJX9BwFZe3aMKoKWGi0IMchF82Bi6agBqbadj83KZi_pm47mmcFNw--
+Message-ID: <46411102.5070301@yahoo.com.au>
+Date: Wed, 09 May 2007 10:08:34 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: get_user_pages vs mmap MAP_FIXED bug
+References: <1178434876.12284.175.camel@localhost.localdomain>	 <1178501204.7731.35.camel@localhost.localdomain>	 <20070506202225.ba6476b6.akpm@linux-foundation.org>	 <464029C2.1020003@yahoo.com.au> <1178667269.7286.44.camel@localhost.localdomain>
+In-Reply-To: <1178667269.7286.44.camel@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Randy Dunlap wrote:
+Hi Rusty!
 
-> From: Randy Dunlap <randy.dunlap@oracle.com>
+Rusty Russell wrote:
+> On Tue, 2007-05-08 at 17:41 +1000, Nick Piggin wrote:
 > 
-> Add information on the problems with the C-language "volatile" keyword
-> and why it should not be used (most of the time).
+>>Fancy that! Thanks for catching it Rusty, does the following work for
+>>you?
 > 
-> Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ---
->  Documentation/volatile-usage.txt |  129 +++++++++++++++++++++++++++++++++++++++
->  1 file changed, 129 insertions(+)
 > 
-> --- /dev/null
-> +++ linux-2.6.21-git10/Documentation/volatile-usage.txt
-> @@ -0,0 +1,129 @@
-> +***** "volatile" considered useless and evil:  Just Say NO! *****
-> +
-> +Do not use the C-language "volatile" keyword
-> +(extracted from lkml emails from Linus)
-> +~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> +
+> Hi Nick,
+> 
+> 	After 24 hours, it seems to be holding up (the original problem showed
+> up in lguest, which uses get_user_pages extensively).
+> 
+> Thanks!
+> Rusty.
 
-Again, please change this sweeping introduction to explicitly state that 
-Linus' emails were a criticism of using 'volatile' for objects (he refers 
-to them as "data structures") and can be appropriate for asm constructs.
+No, thank _you_ for finding the bug :)
+
+-- 
+SUSE Labs, Novell Inc.
