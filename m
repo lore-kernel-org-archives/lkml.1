@@ -1,78 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbXEIQHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbXEIQIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756882AbXEIQHu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 12:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754731AbXEIQHo
+	id S1757328AbXEIQIz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 12:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXEIQIs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 12:07:44 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2618 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754259AbXEIQHn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 12:07:43 -0400
-Message-ID: <4641F19F.605@shadowen.org>
-Date: Wed, 09 May 2007 17:06:55 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Steve Fox <drfickle@us.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: 2.6.21-mm1 -- x86 verify_cpu.S compile failure
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <464046EC.40301@shadowen.org> <20070508152415.GA16967@one.firstfloor.org>
-In-Reply-To: <20070508152415.GA16967@one.firstfloor.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 9 May 2007 12:08:48 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:58050 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754595AbXEIQIr (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 12:08:47 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm2 - 100% CPU on ksoftirqd/1
+In-Reply-To: Your message of "Wed, 09 May 2007 01:23:22 PDT."
+             <20070509012322.199f292b.akpm@linux-foundation.org>
+From: Valdis.Kletnieks@vt.edu
+References: <20070509012322.199f292b.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1178726923_3418P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Wed, 09 May 2007 12:08:43 -0400
+Message-ID: <4123.1178726923@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Tue, May 08, 2007 at 10:46:20AM +0100, Andy Whitcroft wrote:
->> We are seeing the following compile error on older x86 installs:
->>
->>   arch/i386/kernel/verify_cpu.S: Assembler messages:
->>   arch/i386/kernel/verify_cpu.S:13: Error: `(%esp)' is
->> 			 not a valid 16 bit base/index expression
->>
->> Seems to come from:
->>
->>   x86_64-mm-i386-verify-cpu
->>
->> Compiler:
->>
->>   gcc version 3.3.4 (Debian 1:3.3.4-3)
-> 
-> Your compiler must be a brother in spirit of Andrew's vaio.
-> 
-> Does this patch help? 
-> 
-> -Andi
-> 
-> 
-> Index: linux/arch/i386/kernel/verify_cpu.S
-> ===================================================================
-> --- linux.orig/arch/i386/kernel/verify_cpu.S
-> +++ linux/arch/i386/kernel/verify_cpu.S
-> @@ -10,7 +10,9 @@ verify_cpu:
->  
->  #if CONFIG_X86_MINIMUM_CPU_MODEL >= 4
->  	pushfl
-> -	orl	$(1<<18),(%esp)		# try setting AC
-> +	pop	%eax
-> +	orl	$(1<<18),%eax		# try setting AC
-> +	push	%eax
->  	popfl
->  	pushfl
->  	popl    %eax
-> 
-> 
+--==_Exmh_1178726923_3418P
+Content-Type: text/plain; charset=us-ascii
 
-Yep that gets us past the compile problems.  Of course she then blows up
-cause SLUB does not work on x86 in that version ... but ...
+On Wed, 09 May 2007 01:23:22 PDT, Andrew Morton said:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm2/
 
-Acked-by: Andy Whitcroft <apw@shadowen.org>
+Boots up to multiuser mostly OK.  However...
 
--apw
+It comes up with a screaming ksoftirqd - usually /1 but one boot had /0.
+Just sitting there, 100% CPU according to 'top'.  Tried 'echo t > /proc/sysrq-trigger' to get
+a trace, but it was always running on the other CPU - even after I reniced
+it down to 19 and launched 2 'for(;;)' C programs to suck the cycles.  It would
+be failing to get any CPU - until I did the 'echo t' and then it would be
+"running" again.  Anybody got any good debugging ideas here?
+
+Oddly enough, the kernel panic I was seeing at X server shutdown, related to
+-x86_64-mm-reloc64-__pa-and-__pa_symbol-address-space-separation.patch,
+seems to be gone now (not extensively tested - but it did survive one shutdown
+without crashing at a point that *had* been a 100% fatal from -rc5-mm3 to 21-mm1.
+I wish I understood why.
+
+Replicated with a boot to single-user and an untainted kernel - by that point,
+it was spinning at 100% already.
+
+Any ideas how to debug this one?  
+
+
+--==_Exmh_1178726923_3418P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGQfILcC3lWbTT17ARAspTAKCwtWNDpoKPxx8HhFzxsc2XCDq82ACgsDVh
+Nf0jpCTcom2FQPniPjpoATw=
+=rxZ6
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1178726923_3418P--
