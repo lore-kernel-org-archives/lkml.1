@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969711AbXEICjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969998AbXEICnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969711AbXEICjY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 22:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934410AbXEICjP
+	id S969998AbXEICnk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 22:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754045AbXEICnW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 22:39:15 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:2832 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934400AbXEICjO (ORCPT
+	Tue, 8 May 2007 22:43:22 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:26264 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753972AbXEICnV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 22:39:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
-	message-id:references:mime-version:content-type;
-	b=M1P4IZLpnSFkD77/ilyjeRA3SXkaTYaLAT0aO2TyXek89J2PvZ/iSCZ6aEYlD0WdA
-	Rk4KFhTkeoCOtQdgjKqTg==
-Date: Tue, 8 May 2007 19:38:56 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       jeremy@goop.org
-Subject: Re: [PATCH] doc: volatile considered evil
-In-Reply-To: <20070508190800.1334b968.randy.dunlap@oracle.com>
-Message-ID: <alpine.DEB.0.99.0705081934390.20751@chino.kir.corp.google.com>
-References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org>
- <20070508121404.17bd97a6.randy.dunlap@oracle.com>
- <a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
- <20070508163452.8b71f682.randy.dunlap@oracle.com>
- <alpine.DEB.0.99.0705081702070.28511@chino.kir.corp.google.com>
- <20070508190800.1334b968.randy.dunlap@oracle.com>
+	Tue, 8 May 2007 22:43:21 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=S5zTLnGIqecDhVIRiQ0zB1BL1mfkow5d4Mw4FiruUm5LvlTw4fCg81eFjTUhBF5hW5UJ/YADzaGEgIuLCQAw85FRARW7KrzV4A1iQ/S+FwPxj6ZKsnJf3igY4dbQFbhcuD9RwXkV1B5cjTJHCofktRhPtuOcolxdK6Yu+OuMKUg=  ;
+X-YMail-OSG: hQtUB6sVM1n56iIsn7ITK4VzSZgVO_i4Gc3J4KTvqVxWEOriO3nD7zFr8cjGbeJnMmBE1IhGqA--
+Message-ID: <4641353F.2000408@yahoo.com.au>
+Date: Wed, 09 May 2007 12:43:11 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: Christoph Lameter <clameter@sgi.com>
+CC: Matt Mackall <mpm@selenic.com>, akpm@linux-foundation.org,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch
+ added to -mm tree
+References: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net> <20070509002307.GV11115@waste.org> <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com> <20070509012725.GZ11115@waste.org> <Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com> <20070509021911.GB11115@waste.org> <Pine.LNX.4.64.0705081920250.17931@schroedinger.engr.sgi.com>
+In-Reply-To: <Pine.LNX.4.64.0705081920250.17931@schroedinger.engr.sgi.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Randy Dunlap wrote:
-
-> "volatile" used on a gcc asm extension is different, granted.
-> It's not even a C-language "volatile" keyword AFAICT, so it doesn't
-> apply in this context.
+Christoph Lameter wrote:
+> On Tue, 8 May 2007, Matt Mackall wrote:
 > 
-
-Using 'volatile' for an asm construct certainly is a keyword; in fact, C99 
-defines 'volatile' as a token which is reserved for use as a keyword.
-
-> Anyway, how is this slightly modified title?
 > 
-> +***** "volatile" considered useless and evil:  Just Say NO! *****
-> +
-> +Do not use the C-language "volatile" keyword on kernel data
-> +(extracted from lkml emails from Linus)
+>>>>Yes. It can in fact put 512 8-byte objects in a 4k page. More
+>>>
+>>>So can SLUB.
+>>
+>>Not without at least a bit per-object of overhead. So you can either
+>>fit 512 objects in 4160 bytes or 504 objects in 4k.
 > 
+> 
+> Slub uses a linked list pointer in the page struct which is NULL if all 
+> objects are allocated. There is no bit per object overhead.
+> 
+> 
+>>For the kmalloc case, we do have an 8-byte header, which works out to
+>>be about 1/8th of the slop that mainline kmalloc over SLAB has on
+> 
+> 
+> Exactly. That overhead does not exist in SLUB. Thus SLOB is less efficient 
+> than SLUB.
 
-It's still ambiguous.  A much more explicit title that nobody could argue 
-with would be "do not use the 'volatile' keyword as a type qualifier for 
-an object."
+What you trade for that is that one page page can only serve one slab.
+For small systems, I would not be surprised if that was less space
+efficient, even just looking at kmalloc caches in isolation. Or do you
+have numbers to support your conclusion?
 
-		David
+-- 
+SUSE Labs, Novell Inc.
