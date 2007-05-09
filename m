@@ -1,49 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbXEIKQd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756778AbXEIKR7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbXEIKQd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 06:16:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXEIKQZ
+	id S1756778AbXEIKR7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 06:17:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755725AbXEIKRv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 06:16:25 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:62004 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754102AbXEIKQY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 06:16:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=ts5fGeu302Teje9LAXy1V7QF0HBoRwe9wDqqNqxJCYTV8IzfbQIEKxvhytRJNjDJUJfTT8uCa07hdwuteIiJMMwHaepAo39zAYmuoIQEvHAF6o8Uts8tT2ccFXs396lEAvmG555JEj1Dmd2UwalPpzVVLw2tr5pd3KI1NNiqMig=
-Message-ID: <84144f020705090316o5e3b6d89r74638ec8e4d396d4@mail.gmail.com>
-Date: Wed, 9 May 2007 13:16:23 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [patch 2/9] lguest: the guest code
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       rusty@rustcorp.com.au, ak@suse.de, jeremy@goop.org
-In-Reply-To: <200705090951.l499pYBV020391@shell0.pdx.osdl.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 May 2007 06:17:51 -0400
+Received: from relay.dedenet.de ([195.145.96.7]:11640 "HELO relay.dedenet.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755453AbXEIKRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 06:17:51 -0400
+X-Greylist: delayed 965 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 May 2007 06:17:50 EDT
+Date: Wed, 9 May 2007 12:01:42 +0200
+From: Mario Doering <mario@dedenet.de>
+To: linux-kernel@vger.kernel.org
+Subject: D-Link DFE-580TX 4 port NIC problems
+Message-ID: <20070509120142.2305a1d1@snibbles.dedenet.de>
+X-Mailer: Claws Mail 2.7.0 (GTK+ 2.10.9; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705090951.l499pYBV020391@shell0.pdx.osdl.net>
-X-Google-Sender-Auth: 1f8d925edf39bf39
+X-DeDe-Auth: true
+X-DeDe-Envelope-To: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty,
+Hello,
 
-On 5/9/07, akpm@linux-foundation.org <akpm@linux-foundation.org> wrote:
-> +static void add_lguest_device(unsigned int index)
-> +{
-> +       struct lguest_device *new;
-> +
-> +       lguest_devices[index].status |= LGUEST_DEVICE_S_ACKNOWLEDGE;
-> +       new = kmalloc(sizeof(struct lguest_device), GFP_KERNEL);
-> +       if (!new) {
-> +               printk(KERN_EMERG "Cannot allocate lguest device %u\n", index);
-> +               lguest_devices[index].status |= LGUEST_DEVICE_S_FAILED;
+we have a D-Link DFE-580TX 4 port network card in our main router.
 
-[snip]
+It works pretty well most of the time, even though an error
+message pops up in dmesg every now and then (sometimes once a day
+sometimes once every few hours).
 
-Any reason why we don't return an error here?
+
+But every few weeks those error messages increase rapidly, spamming
+dmesg. When this happens the system does not react anymore and pushing
+the reset button is the only option left.
+
+I googled around and found out that other users have same problem,
+but no solution to this.
+
+
+Part of the message log is located here:
+http://test.dedenet.de/messages.gz
+or
+http://test.dedenet.de/messages.txt
+
+
+uname -a
+Linux router1 2.6.19-gentoo-r5 #1 Sat Feb 17 17:04:03 CET 2007 i686 AMD
+Athlon(tm) XP AuthenticAMD GNU/Linux
+
+
+driver:
+[   17.364707] sundance.c:v1.2 11-Sep-2006  Written by Donald Becker
+[   17.364711]   http://www.scyld.com/network/sundance.html
+[   17.364844] ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 17 (level,
+low) -> IRQ 17 [   17.365396] eth1: D-Link DFE-580TX 4 port Server
+Adapter at 0001bc00, 00:0d:88:cc:a5:f0, IRQ 17. [   17.366350] eth1:
+MII PHY found at address 1, status 0x7829 advertising 01e1.
+[   17.676491] ACPI: PCI Interrupt 0000:03:05.0[A] -> GSI 18 (level,
+low) -> IRQ 18 [   17.676912] eth2: D-Link DFE-580TX 4 port Server
+Adapter at 0001b800, 00:0d:88:cc:a5:f1, IRQ 18. [   17.677864] eth2:
+MII PHY found at address 1, status 0x7809 advertising 01e1.
+[   17.987730] ACPI: PCI Interrupt 0000:03:06.0[A] -> GSI 19 (level,
+low) -> IRQ 16 [   17.988107] eth3: D-Link DFE-580TX 4 port Server
+Adapter at 0001b400, 00:0d:88:cc:a5:f2, IRQ 16. [   17.989059] eth3:
+MII PHY found at address 1, status 0x7829 advertising 01e1.
+[   18.298910] ACPI: PCI Interrupt 0000:03:07.0[A] -> GSI 16 (level,
+low) -> IRQ 19 [   18.299320] eth4: D-Link DFE-580TX 4 port Server
+Adapter at 0001b000, 00:0d:88:cc:a5:f3, IRQ 19. [   18.300272] eth4:
+MII PHY found at address 1, status 0x7809 advertising 01e1.
+
+
+
+No such error message appears for about 7-10 days after a reboot. Maybe
+there is some kind of buffer running full?
+
+Do you need any additional info?
+
+
+Please CC me :-)
+
+Regards,
+Mario.
