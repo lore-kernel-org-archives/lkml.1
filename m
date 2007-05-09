@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755689AbXEIJI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbXEIJMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755689AbXEIJI3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 05:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXEIJIW
+	id S1755471AbXEIJMZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbXEIJMS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 05:08:22 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42272 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754392AbXEIJIV (ORCPT
+	Wed, 9 May 2007 05:12:18 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:32901 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754069AbXEIJMR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 05:08:21 -0400
-Date: Wed, 9 May 2007 11:08:19 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ken Moffat <zarniwhoop@ntlworld.com>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>, Andi Kleen <ak@suse.de>,
-       Valdis.Kletnieks@vt.edu
-Subject: Re: Lockup after logging out of X
-Message-ID: <20070509090819.GB15029@one.firstfloor.org>
-References: <20070508195142.GA30030@deepthought> <20070508230134.GD17482@one.firstfloor.org> <20070509001459.GA2435@deepthought>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070509001459.GA2435@deepthought>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 9 May 2007 05:12:17 -0400
+Message-ID: <46419036.8090504@s5r6.in-berlin.de>
+Date: Wed, 09 May 2007 11:11:18 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] MMC updates
+References: <4640E17E.7090909@drzeus.cx> <46416255.3060105@drzeus.cx> <4641643D.4040305@yahoo.com.au> <464169C8.9060002@drzeus.cx> <46416B9A.3020008@yahoo.com.au> <46417D97.9090108@drzeus.cx>
+In-Reply-To: <46417D97.9090108@drzeus.cx>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 01:14:59AM +0100, Ken Moffat wrote:
-> On Wed, May 09, 2007 at 01:01:34AM +0200, Andi Kleen wrote:
-> > 
-> > Already known, although it is still unclear what the bug actually is.
-> > Can you run with the appended patch please (from Eric Biederman) 
-> > and post any backtraces the WARN_ON in there spews out? 
-> > 
-> > Also do you use swiotlb?
-> > 
-> > Thanks
-> > 
-> > -Andi
-> > 
->  Had to turn off modules to get it to build.  It half-logged another
-> oops, but no backtraces, and SysRq+r does nothing.  Nothing else
-> unusual in the log.
+Pierre Ossman wrote:
+> The host->removed member is only used for this simple test. It is set in
+> mmc_host_remove() to indicate that the removal process has begun. At
+> this point it is invalid to call mmc_detect_change() (the place this
+> patch fixes). So the spinlocks are mostly there so that things are
+> properly ordered when we go SMP. Some creative barriers would probably
+> work as well, but I find spinlocks more "normal" and hence more readable.
 
-Hmm, not good.
-> 
-> May  9 00:47:12 bluesbreaker gconfd (ken-2833): Resolved address
-> "xml:readonly:/etc/gnome/gconf/gconf.xml.defaults" to a read-only
-> configuration source at position 2
-> May  9 00:52:59 bluesbreaker kernel: [  275.667737] Unable to handle
-> kernel paging request at ffff81003b4ac3e8 RIP:
-> May  9 00:52:59 bluesbreaker kernel: [  275.667742]
-> [<ffffffff8027134a>] fasync_helper+0x52/0xf0
-> May  9 00:52:59 bluesbreaker kernel: [  275.667749] PGD 8063 PUD
-> 9063 PMD 800000003b4a11e3 BAD
-> May  9 00:52:59 bluesbreaker kernel: [  275.667754] Oops: 0009 [1]
-> PREEMPT
-> May  9 00:54:26 bluesbreaker syslogd 1.4.1: restart.
-> May  9 00:54:26 bluesbreaker bootlog: Starting system log daemon...
-> [  OK  ]
-> 
->  Apparently I do use swiotlb - I didn't know that, and can't see
-> where it gets asked in menuconfig, but I can see
-> CONFIG_SWIOTLB=y
-> 
->  Let me know if there is anything else I can test (probably pm
-> tomorrow), otherwise I'll go back to -head.
-
-Yes testing head would be a good idea. It has a different bug fix
-from Linus that is supposed to address this too. Unfortunately it is
-still not known why it actually breaks; i had hoped to find that out
-using the debugging patch
-
--Andi
+Sounds to me like either struct xyz_host { atomic_t removed; } would do
+the job, or that actually wider regions of mmc_host_remove() and
+mmc_detect_change() need to be serialized.
+-- 
+Stefan Richter
+-=====-=-=== -=-= -=--=
+http://arcgraph.de/sr/
