@@ -1,55 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971070AbXEIAIv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934980AbXEIAPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971070AbXEIAIv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 20:08:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S968382AbXEIAIm
+	id S934980AbXEIAPR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 20:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934109AbXEIAPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 20:08:42 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:24299 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S967451AbXEIAIl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 20:08:41 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=r1NWk40Z+A2ZY6gUknR9JGR5RLzMUYJNLenIwx5gr0wOrm70FyCH2gzKQgX+b9WUVzMYvhjbU4ZZFPE2YaIE45JDAbYzCSe5/T4dkcpXWNoAhovWdcMGNZDeb2Eq+vTcFLAwIy6nMadA6O9w5G8bIMNlS7u/C6Bg+DDu1MfRUcI=  ;
-X-YMail-OSG: oPUD57gVM1m_xFHArk07_wJX9BwFZe3aMKoKWGi0IMchF82Bi6agBqbadj83KZi_pm47mmcFNw--
-Message-ID: <46411102.5070301@yahoo.com.au>
-Date: Wed, 09 May 2007 10:08:34 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
+	Tue, 8 May 2007 20:15:05 -0400
+Received: from mtaout03-winn.ispmail.ntl.com ([81.103.221.49]:15650 "EHLO
+	mtaout03-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933865AbXEIAPD convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 20:15:03 -0400
+Date: Wed, 9 May 2007 01:14:59 +0100
+From: Ken Moffat <zarniwhoop@ntlworld.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>, Andi Kleen <ak@suse.de>,
+       Valdis.Kletnieks@vt.edu
+Subject: Re: Lockup after logging out of X
+Message-ID: <20070509001459.GA2435@deepthought>
+References: <20070508195142.GA30030@deepthought> <20070508230134.GD17482@one.firstfloor.org>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: get_user_pages vs mmap MAP_FIXED bug
-References: <1178434876.12284.175.camel@localhost.localdomain>	 <1178501204.7731.35.camel@localhost.localdomain>	 <20070506202225.ba6476b6.akpm@linux-foundation.org>	 <464029C2.1020003@yahoo.com.au> <1178667269.7286.44.camel@localhost.localdomain>
-In-Reply-To: <1178667269.7286.44.camel@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20070508230134.GD17482@one.firstfloor.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty!
+On Wed, May 09, 2007 at 01:01:34AM +0200, Andi Kleen wrote:
+> 
+> Already known, although it is still unclear what the bug actually is.
+> Can you run with the appended patch please (from Eric Biederman) 
+> and post any backtraces the WARN_ON in there spews out? 
+> 
+> Also do you use swiotlb?
+> 
+> Thanks
+> 
+> -Andi
+> 
+ Had to turn off modules to get it to build.  It half-logged another
+oops, but no backtraces, and SysRq+r does nothing.  Nothing else
+unusual in the log.
 
-Rusty Russell wrote:
-> On Tue, 2007-05-08 at 17:41 +1000, Nick Piggin wrote:
-> 
->>Fancy that! Thanks for catching it Rusty, does the following work for
->>you?
-> 
-> 
-> Hi Nick,
-> 
-> 	After 24 hours, it seems to be holding up (the original problem showed
-> up in lguest, which uses get_user_pages extensively).
-> 
-> Thanks!
-> Rusty.
+May  9 00:47:12 bluesbreaker gconfd (ken-2833): Resolved address
+"xml:readonly:/etc/gnome/gconf/gconf.xml.defaults" to a read-only
+configuration source at position 2
+May  9 00:52:59 bluesbreaker kernel: [  275.667737] Unable to handle
+kernel paging request at ffff81003b4ac3e8 RIP:
+May  9 00:52:59 bluesbreaker kernel: [  275.667742]
+[<ffffffff8027134a>] fasync_helper+0x52/0xf0
+May  9 00:52:59 bluesbreaker kernel: [  275.667749] PGD 8063 PUD
+9063 PMD 800000003b4a11e3 BAD
+May  9 00:52:59 bluesbreaker kernel: [  275.667754] Oops: 0009 [1]
+PREEMPT
+May  9 00:54:26 bluesbreaker syslogd 1.4.1: restart.
+May  9 00:54:26 bluesbreaker bootlog: Starting system log daemon...
+[  OK  ]
 
-No, thank _you_ for finding the bug :)
+ Apparently I do use swiotlb - I didn't know that, and can't see
+where it gets asked in menuconfig, but I can see
+CONFIG_SWIOTLB=y
 
+ Let me know if there is anything else I can test (probably pm
+tomorrow), otherwise I'll go back to -head.
+
+Ken
 -- 
-SUSE Labs, Novell Inc.
+das eine Mal als Tragödie, das andere Mal als Farce
