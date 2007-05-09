@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968668AbXEIF7z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968730AbXEIGC7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968668AbXEIF7z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 01:59:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935097AbXEIF7l
+	id S968730AbXEIGC7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 02:02:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933482AbXEIGCv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 01:59:41 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:46814 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934722AbXEIF7k (ORCPT
+	Wed, 9 May 2007 02:02:51 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:47184 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S933773AbXEIGCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 01:59:40 -0400
-Date: Tue, 8 May 2007 22:59:20 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: tglx@linutronix.de
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-Message-Id: <20070508225920.258d8d34.akpm@linux-foundation.org>
-In-Reply-To: <1178463784.31213.46.camel@localhost.localdomain>
-References: <20070430102837.748238000@linutronix.de>
-	<20070430102852.042964000@linutronix.de>
-	<20070505003421.00ec45ba.akpm@linux-foundation.org>
-	<20070505115127.GA17815@elte.hu>
-	<1178463784.31213.46.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Wed, 9 May 2007 02:02:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=mk2Cqwx6E8AQRZV/KgYOwq6G3SUyNFiXQr/mBjvykv9Bef0molvcZYEJ47DDlFb6rgoRJDuT6vDi3AeKqA4wiLZyWjQ3hCwmxXTemln8Aq+JaukHlSCGJ8UFubDGkGRDSnVRewsZ95l9V0BnVY2Mf+d3zIbN6HF1joHzopGqxrI=
+Subject: Re: Please revert 464bdd33e9baad9806c7adbd8dfc37081a55f27e
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Linus Torvalds <torvalds@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <46413A7E.5050304@garzik.org>
+References: <46413851.6070505@zytor.com>  <46413A7E.5050304@garzik.org>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 14:02:24 +0800
+Message-Id: <1178690544.4747.20.camel@daplas>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 06 May 2007 17:03:03 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> Andrew,
-> 
-> On Sat, 2007-05-05 at 13:51 +0200, Ingo Molnar wrote:
-> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+On Tue, 2007-05-08 at 23:05 -0400, Jeff Garzik wrote:
+> H. Peter Anvin wrote:
+> > Checkin 464bdd33e9baad9806c7adbd8dfc37081a55f27e "fbdev: ignore VESA
+> > modes if framebuffer is disabled" is just plain wrong on any system
+> > which has support for extended text modes in its VESA BIOS.
 > > 
-> > > > Fixup the existing users.
-> > > 
-> > > This one makes the Vaio-of-fun hang during suspend to disk.  It gets 
-> > > up to "swsusp: critical section/: done (%d pages copied)" then it 
-> > > freezes.
-> > 
-> > after trying to reproduce it on 2 boxes without success it did trigger 
-> > some sw-suspend weirdness on a third box :) We are debugging it now.
+> > Antonio is incorrectly assuming this branchout is used only to set VESA
+> > graphics modes, but it's to set any VESA mode, be it text or graphics.
 > 
-> find an updated patch below. It fixes the problem on Ingo's
-> VAIO-of-fun-emulator and I got confirmation from several other affected
-> users, that the patch series is still solving their problems.
-> 
+> I wonder if this fbdev update is what causes my X session to die?
 
-The machine is still hanging with this patch applied.
+That's doubtful though, CONFIG_FB=n. For a start, you can try reverting
+changes in drivers/char/vt.c and drivers/video/console/vgacon.c
 
-suspend-to-disk gets up to "swsusp: critical section: done (NNN pages copied)"
+Tony
 
-No netconsole, no printk-timestamping.
 
-ho hum, I guess I get to debug this.
