@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbXEIMrI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbXEIMrq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757498AbXEIMrI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:47:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbXEIMq5
+	id S1754842AbXEIMrq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:47:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756220AbXEIMrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:46:57 -0400
-Received: from mtagate3.de.ibm.com ([195.212.29.152]:22704 "EHLO
-	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753278AbXEIMq4 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:46:56 -0400
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "OF-General" <general@lists.openfabrics.org>,
-       Roland Dreier <rolandd@cisco.com>
-Subject: [PATCH 0/6] IB/ehca: Assorted patches
-User-Agent: KMail/1.8.2
-Cc: "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
-       "Christoph Raisch" <raisch@de.ibm.com>,
-       "Stefan Roscher" <stefan.roscher@de.ibm.com>
+	Wed, 9 May 2007 08:47:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49325 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753251AbXEIMrf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 08:47:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: tglx@linutronix.de
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+Date: Wed, 9 May 2007 14:52:07 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       linux-acpi@vger.kernel.org
+References: <20070430102837.748238000@linutronix.de> <1178701183.3042.469.camel@localhost.localdomain> <200705091345.55207.rjw@sisk.pl>
+In-Reply-To: <200705091345.55207.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Disposition: inline
-X-Length: 6092
-Date: Wed, 9 May 2007 14:46:23 +0200
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-Id: <200705091446.23783.fenkes@de.ibm.com>
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705091452.08092.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's a set of patches containing various improvements and bugfixes for the
-IBM eHCA InfiniBand driver, bumping the version number to SVNEHCA_0023. The
-patches are, in detail:
+On Wednesday, 9 May 2007 13:45, Rafael J. Wysocki wrote:
+> On Wednesday, 9 May 2007 10:59, Thomas Gleixner wrote:
+> > On Wed, 2007-05-09 at 01:31 -0700, Andrew Morton wrote:
+> > > > I suspect I just tested the wrong thing yesterday.  Let me recheck just
+> > > > these patches against 2.6.21.
+> > > 
+> > > yup, same hang with just these three:
+> > > 
+> > > origin
+> > > clocksource-fix-resume-logic
+> > > clockevents-fix-resume-logic-updated-version
+> > 
+> > I have no idea, how this affects acpi_evaluate_object()
+> 
+> I think the problem is that the ACPI code ordering here is broken in a
+> difficult to fix way.
+> 
+> Definitely, we shouldn't execute the _BFS method after creating the image
+> and most probably _WAK shouldn't be executed here either.  Moreover,
+> acpi_leave_sleep_state() enables the runtime GPEs, which AFAICS
+> is equivalent to allowing ACPI to generate SCIs.  I'm not sure if this is a
+> good idea to do such a thing in this particular place.
+> 
+> Andrew, could you please apply the appended patch and see if that
+> helps (should apply to -mm2)?
 
-#1 - Serialize hypervisor calls in ehca_register_mr()
-#2 - correctly set GRH mask bit in ehca_modify_qp()
-#3 - Fix AQP0/1 QP number
-#4 - remove _irqsave where it's not needed;
-     move an #ifdef to where it makes even better sense
-#5 - beautify sysfs attribute code and fix compiler warnings
-#6 - disable scaling code by default and bump version number
+Argh, sorry.  This needs yet another patch (sent for review to linux-pm) to
+be applied.  The following one is against -mm2:
 
-The patches are ready for inclusion into 2.6.22 and apply on top of Roland's
-git tree (which has been pulled by Linus recently, so they should apply there,
-too).
+---
+NOTE: This is not a complete solution, because it removes the enabling of GPEs
+from the resume-during-hibernation code path entirely, which probbably is not a
+good idea in general.
+---
+ kernel/power/disk.c |    1 -
+ 1 file changed, 1 deletion(-)
 
-Cheers,
-  Joachim
-
--- 
-Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
-IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
-Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
-eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239
-
+Index: linux-2.6.21-mm2/kernel/power/disk.c
+===================================================================
+--- linux-2.6.21-mm2.orig/kernel/power/disk.c
++++ linux-2.6.21-mm2/kernel/power/disk.c
+@@ -205,7 +205,6 @@ int hibernate(void)
+ 
+ 	if (in_suspend) {
+ 		enable_nonboot_cpus();
+-		platform_finish();
+ 		device_resume();
+ 		resume_console();
+ 		pr_debug("PM: writing image.\n");
