@@ -1,94 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760019AbXEIXZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759947AbXEIX1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760019AbXEIXZJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757580AbXEIXYy
+	id S1759947AbXEIX1T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756968AbXEIX1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:24:54 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:54887 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755889AbXEIXYw (ORCPT
+	Wed, 9 May 2007 19:27:13 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:61377 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756962AbXEIX1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:24:52 -0400
-Date: Wed, 9 May 2007 16:24:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Scott Murray <scottm@somanetworks.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kristen.c.accardi@intel.com
-Subject: Re: [PATCH] cpci_hotplug: Convert to use the kthread API
-Message-Id: <20070509162430.772ae536.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705071412030.3671@rancor.yyz.somanetworks.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769657702107-git-send-email-ebiederm@xmission.com>
-	<20070422120534.GA20763@infradead.org>
-	<Pine.LNX.4.64.0704271802390.3671@rancor.yyz.somanetworks.com>
-	<20070504111215.GA3191@infradead.org>
-	<Pine.LNX.4.64.0705071412030.3671@rancor.yyz.somanetworks.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 19:27:11 -0400
+Date: Wed, 09 May 2007 17:27:05 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [PATCH] Cleanup libata HPA support
+In-reply-to: <1178692170.6962.146.camel@cunning>
+To: Ben Collins <ben.collins@ubuntu.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <464258C9.7040405@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.7iNoP7Qs8RAGjCdw2nQZBKOCxZU@ifi.uio.no>
+ <46408D43.3020300@shaw.ca> <1178692170.6962.146.camel@cunning>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007 14:18:29 -0400 (EDT)
-Scott Murray <scottm@somanetworks.com> wrote:
-
-> On Fri, 4 May 2007, Christoph Hellwig wrote:
+Ben Collins wrote:
+> On Tue, 2007-05-08 at 08:46 -0600, Robert Hancock wrote:
+>> Ben Collins wrote:
+>>> The original HPA patch that Kyle worked on has gone into current git
+>>> without some fixes that we worked through late in the Ubuntu feisty
+>>> release. Here's the main copy of the notes I sent to Alan a few weeks
+>>> ago in regards to the original patch, and a repatch against current git
+>>> to fix things up. Note we have released feisty with the patch attached
+>>> (albeit we have HPA enabled by default), and we have not had any reports
+>>> directly attributed to it. However, in gutsy (devel for next release,
+>>> based on current stock linux-2.6.git), we are already seeing reports of
+>>> the same issues we already fixed. 
+>>>
+>>> The issues we saw were mainly that some controllers didn't return the
+>>> correct size from the SET_MAX command (sata_nv is a good example). So I
+>>> added a re IDENTIFY after the SET_MAX, and compared all the numbers. If
+>>> re-id was correct, but return value from SET_MAX wasn't we print a
+>>> warning and use the IDENTIFY value regardless (since that's what the
+>>> device is going to use).
+>>>
+>>> Because we re IDENTIFY, there was also no need to keep n_sectors_boot
+>>> around, so that was removed. The ata_hpa_resize() was changed to handle
+>>> everything in a single call (checks for HPA support of the device, and
+>>> whether ignore_hpa is set or not), and it also sets dev->n_sectors
+>>> before returning.
+>>>
+>>> So far with this patch, we were able to fix all the problems we were
+>>> seeing with it (except the sata_nv issue where we had to revert to not
+>>> using adma for NO_DATA transactions, already reported to libata-dev).
+>>> We've not had any reports of further problems.
+>> That sata_nv issue should not be present anymore in the current 
+>> libata-dev tree.
 > 
-> > On Fri, Apr 27, 2007 at 06:07:49PM -0400, Scott Murray wrote:
-> > > Sorry, it took me a few days to get to testing this out.  It looks good,    
-> > > but I had to make a couple of tweaks to avoid a hang when rmmod'ing a
-> > > board driver.  The board drivers do:
-> > > 
-> > > cpci_hp_stop()
-> > > cpci_hp_unregister_controller(controller)
-> > > 
-> > > to shutdown, and the check in cpci_hp_unregister_controller if the thread
-> > > is running wasn't working due to a bit too much code being excised.  The
-> > > result was kthread_stop being called twice, which hangs.  I've indicated 
-> > > my changes to avoid this inline below.
-> > 
-> > Can you forward the patches with your fix to Andrew to make sure he
-> > picks it up?
-> 
-> Andrew, here is my updated version of Christoph's kthread conversion 
-> patch for cpci_hotplug.  I've CC'ed Kristen so she won't be surprised
-> when this eventually goes to mainline.
+> That's correct, it is not, at least the machine exception problem isn't.
+> However, the incorrect returns from SET_MAX are still an issue with that
+> hw. No idea what is causing it.
 
-A patch in this area would normally go
+Curious.. Do you have some output or other details from what was 
+actually returned? Also was this on more than one drive model?
 
-	you->kristen->mainline
-                |
-                v
-               -mm
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
-or
-
-	you->kristen->greg->mainline
-                        |
-                        v
-                       -mm
-
-or
-
-	you->me->greg->mainline		(gets an Acked-by somewhere)
-                   |
-                   v
-                  -mm
-
-or
-
-	you->kristen->Len->mainline
-                       |
-                       v
-                      -mm
-
-or something else.
-
-Kristen, how do you want to play this?
-
-Do you run a tree?  If so, lemmeatit ;)
