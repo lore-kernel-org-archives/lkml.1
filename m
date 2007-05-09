@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbXEIUEF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758376AbXEIUEZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757339AbXEIUEF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 16:04:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbXEIUDz
+	id S1758376AbXEIUEZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 16:04:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757872AbXEIUEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 16:03:55 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46702 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751722AbXEIUDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 16:03:55 -0400
-Date: Wed, 9 May 2007 12:56:16 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: <ak@suse.de>
-Cc: zaitcev@redhat.com, linux-kernel@vger.kernel.org, <joerg.roedel@amd.com>
-Subject: Andi, you broke my laptop :-)
-Message-Id: <20070509125616.cde56b8e.zaitcev@redhat.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+	Wed, 9 May 2007 16:04:14 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:46463 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751722AbXEIUEN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 16:04:13 -0400
+Subject: Re: Section mismatch warnings (was Re: [PATCH] early_pfn_to_nid
+	needs to be __meminit)
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Linas Vepstas <linas@austin.ibm.com>
+Cc: Gabriel Paubert <paubert@iram.es>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20070509194503.GZ4452@austin.ibm.com>
+References: <20070510022552.4bb1a407.sfr@canb.auug.org.au>
+	 <20070509165115.GA23576@iram.es>  <20070509194503.GZ4452@austin.ibm.com>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 14:58:13 -0500
+Message-Id: <1178740693.3086.81.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Andi:
+On Wed, 2007-05-09 at 14:45 -0500, Linas Vepstas wrote:
+> On Wed, May 09, 2007 at 06:51:15PM +0200, Gabriel Paubert wrote:
+> > On Thu, May 10, 2007 at 02:25:52AM +1000, Stephen Rothwell wrote:
+> > > This removes a section mismatch warning in those circumstances.
+> > 
+> > Speaking of this, I just tried to compile an official (Linus' git tree) 
+> > kernel for my old PMac G4 and I get a lot of section mismatch warnings at 
+> > the end of the compilation:
+> > 
+> > WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0xf50) and 'v_mapped_by_bats'
+> > 
+> > I find these 50 or so warnings so scary that I've not yet tried 
+> > to boot the kernel. Note that this is a non-modular kernel.
+> 
+> I'm getting oodles of these on an older -mm2 tree. The kernels seem to
+> work fine. Yes, they should be fixed but I'm up to my proverbial eyballs
+> in alligators.
 
-The attached patch (actually, git show output) makes my Dell 1501 to hang
-on boot. Sorry, I have no clue why... The culprit is found with git bisect.
-But yes, it's an AMD MK-36. I use an x86_64 kernel. It is 100% reproducible.
+Yeah, I see all kinds of this too.  Does anyone have an idea why they're
+being spit out?  Or if it's related to a particular binutils version,
+etc?
 
-Cheers,
--- Pete
+josh
 
-commit c5bcb5635a03da3158f121ae20ccbbf72b4fc62a
-Author: Andi Kleen <ak@suse.de>
-Date:   Wed May 2 19:27:21 2007 +0200
-
-    [PATCH] x86: Use RDTSCP for synchronous get_cycles if possible
-    
-    RDTSCP is already synchronous and doesn't need an explicit CPUID.
-    This is a little faster and more importantly avoids VMEXITs on Hypervisors.
-    
-    Original patch from Joerg Roedel, but reworked by AK
-    Also includes miscompilation fix by Eric Biederman
-    
-    Cc: "Joerg Roedel" <joerg.roedel@amd.com>
-    
-    Signed-off-by: Andi Kleen <ak@suse.de>
-
-diff --git a/include/asm-i386/tsc.h b/include/asm-i386/tsc.h
-index 0181f9d..3f3c1fa 100644
---- a/include/asm-i386/tsc.h
-+++ b/include/asm-i386/tsc.h
-@@ -38,6 +38,15 @@ static __always_inline cycles_t get_cycles_sync(void)
- 	unsigned eax;
- 
- 	/*
-+  	 * Use RDTSCP if possible; it is guaranteed to be synchronous
-+ 	 * and doesn't cause a VMEXIT on Hypervisors
-+	 */
-+	alternative_io(ASM_NOP3, ".byte 0x0f,0x01,0xf9", X86_FEATURE_RDTSCP,
-+			 	 "=A" (ret), "0" (0ULL) : "ecx", "memory");
-+	if (ret)
-+		return ret;
-+
-+	/*
- 	 * Don't do an additional sync on CPUs where we know
- 	 * RDTSC is already synchronous:
- 	 */
