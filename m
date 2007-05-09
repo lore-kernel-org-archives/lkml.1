@@ -1,47 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbXEIWoq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759496AbXEIWqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759340AbXEIWoq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 18:44:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbXEIWoh
+	id S1759496AbXEIWqe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 18:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754934AbXEIWqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 18:44:37 -0400
-Received: from waste.org ([66.93.16.53]:49502 "EHLO waste.org"
+	Wed, 9 May 2007 18:46:21 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:49565 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751187AbXEIWog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 18:44:36 -0400
-Date: Wed, 9 May 2007 17:44:23 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: David Chinner <dgc@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
-Message-ID: <20070509224423.GL11115@waste.org>
-References: <4642389E.4080804@goop.org> <20070509215538.GK11115@waste.org> <46424896.8080506@goop.org>
+	id S1754505AbXEIWqU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 18:46:20 -0400
+Message-ID: <46424F38.7010405@garzik.org>
+Date: Wed, 09 May 2007 18:46:16 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46424896.8080506@goop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [git patches] IDE update
+References: <200705100046.05280.bzolnier@gmail.com>
+In-Reply-To: <200705100046.05280.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 03:17:58PM -0700, Jeremy Fitzhardinge wrote:
-> Matt Mackall wrote:
-> >> Mercurial uses a strictly append-only model for updating its repo files,
-> >> but it looks like maybe an append operation didn't stick.
-> >>     
-> >
-> > (Unless you're using the mq extension, which regularly truncates
-> > files. But you're definitely the first person to run into this sort of
-> > thing in any case.)
-> >   
+Bartlomiej Zolnierkiewicz wrote:
+> Bartlomiej Zolnierkiewicz (11):
+>       ide: fix UDMA/MWDMA/SWDMA masks (v3)
+>       ide: rework the code for selecting the best DMA transfer mode (v3)
+>       ide: add ide_tune_dma() helper
+>       ide: make /proc/ide/ optional
+>       ide: split off ioctl handling from IDE settings (v2)
+>       ide: move IDE settings handling to ide-proc.c
+>       ide: cable detection fixes (take 2)
+>       ide: add "initializing" argument to ide_register_hw()
+>       ide: add ide_proc_register_port()
+>       ide: legacy PCI bus order probing fixes
+>       ide: fix PIO setup on resume for ATAPI devices
 > 
-> Which I am, extensively, but not on the repo that got damaged.  That's
-> why I was wondering about the nlink issues.  If I qpop a bunch of
-> patches after just pushing them, won't it simply truncate the file?
+> 
+> [ sorry but the patch is too big to be included ]
 
-Yep. But it will break links before doing that. Basically all opens go
-through a function that breaks links.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+The limit was raised to 400K IIRC.
+
+	Jeff
+
+
