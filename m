@@ -1,53 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757627AbXEIM3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756804AbXEIMdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757627AbXEIM3k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756552AbXEIM3c
+	id S1756804AbXEIMdU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755053AbXEIMdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:29:32 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4224 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753152AbXEIM3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:29:31 -0400
-Date: Mon, 7 May 2007 20:02:45 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Greg KH <gregkh@suse.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Hans-J?rgen Koch <hjk@linutronix.de>, Bill Davidsen <davidsen@tmr.com>,
-       Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org,
-       Benedikt Spranger <b.spranger@linutronix.de>
-Subject: Re: [GIT PATCH] UIO patches for 2.6.21
-Message-ID: <20070507200245.GA3868@ucw.cz>
-References: <20070427224957.GA17967@kroah.com> <4633A6D7.3030806@tmr.com> <200704282203.31141.hjk@linutronix.de> <20070428211515.4e9fd8c5@the-village.bc.nu> <1177792297.7646.297.camel@localhost.localdomain> <20070429012338.GA11147@suse.de> <1177835453.5791.7.camel@localhost.localdomain>
+	Wed, 9 May 2007 08:33:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:54897 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750833AbXEIMdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 08:33:11 -0400
+Subject: Re: [patch 2/9] lguest: the guest code
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org, ak@suse.de,
+       jeremy@goop.org
+In-Reply-To: <84144f020705090513q28784b69sd91cd2490514d44c@mail.gmail.com>
+References: <200705090951.l499pYBV020391@shell0.pdx.osdl.net>
+	 <84144f020705090316o5e3b6d89r74638ec8e4d396d4@mail.gmail.com>
+	 <1178711957.7286.87.camel@localhost.localdomain>
+	 <84144f020705090513q28784b69sd91cd2490514d44c@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 22:32:53 +1000
+Message-Id: <1178713973.7286.102.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1177835453.5791.7.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> > > I agree, if we make it entirely clear that the flag is nonpolitical. 
-> > 
-> > Hm, I don't know, what makes this different from the fact that we can
-> > mmap PCI device space today through the proc and sysfs entries?  That's
-> > how X gets direct access to the hardware for a number of different
-> > cards, and that's pretty much the same thing as the UIO interface is
-> > doing.
-> > 
-> > Unless you think we should also use the same "taint" flag on those
-> > accesses too, and if so, I have no objection.
+On Wed, 2007-05-09 at 15:13 +0300, Pekka Enberg wrote:
+> Hi Rusty,
 > 
-> Right, this is just a hint, that something in user space is accessing
-> the hardware directly. Not a too bad idea, but pretty much useless when
-> we add X to the picture as it will be set always :)
+> On 5/9/07, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> >         Hmm, where would the error go?
+> 
+> Let it propagate: scan_devices -> lguest_bus_init -> do_initcalls. We
+> probably don't want to panic() if bus_register and device_register
+> fail there either.
 
-Some people -- like me -- use X68_fbcon over vesafb, in order not to
-be tainted this way.
+Hi Pekka,
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+	Hey, thanks, I didn't realize that do_initcalls() now takes some note
+when an initcall fails.  But I'm pretty sure a local error message is
+more informative than "initcall at 0xc0123408: returned with error code
+2" etc.
+
+	And I agree about the panic: bus_register and device_register should
+panic for us if they fail this early in boot.  But I don't think they
+do...
+
+Thanks,
+Rusty.
+
