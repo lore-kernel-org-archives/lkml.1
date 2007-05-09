@@ -1,65 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757670AbXEIPNh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbXEIPP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757670AbXEIPNh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:13:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbXEIPNa
+	id S1757515AbXEIPP1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbXEIPPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:13:30 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:59128 "EHLO tim.rpsys.net"
+	Wed, 9 May 2007 11:15:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:58648 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754060AbXEIPNa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:13:30 -0400
-Subject: Re: [PATCH 1/2] leds:arch/sh/boards/landisk LEDs supports
-From: Richard Purdie <rpurdie@rpsys.net>
-To: kogiidena@eggplant.ddo.jp
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
-In-Reply-To: <2490.192.168.1.10.1178720780.squirrel@eggplant.ddo.jp>
-References: <1743.192.168.1.10.1178627210.squirrel@eggplant.ddo.jp>
-	 <1178628889.6061.33.camel@localhost.localdomain>
-	 <2490.192.168.1.10.1178720780.squirrel@eggplant.ddo.jp>
+	id S1754247AbXEIPPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:15:13 -0400
+Subject: Re: [patch 7/9] lguest: the net driver
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, ak@suse.de, jmorris@namei.org
+In-Reply-To: <4641BE65.3030807@garzik.org>
+References: <200705090951.l499pdOr020406@shell0.pdx.osdl.net>
+	 <4641BE65.3030807@garzik.org>
 Content-Type: text/plain
-Date: Wed, 09 May 2007 16:13:14 +0100
-Message-Id: <1178723594.6291.21.camel@localhost.localdomain>
+Date: Thu, 10 May 2007 01:14:55 +1000
+Message-Id: <1178723695.7286.164.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 23:26 +0900, kogiidena wrote:
-> Hi Richard-san
+Hi Jeff,
+
+	Thanks for your review.  Questions below.
+
+On Wed, 2007-05-09 at 08:28 -0400, Jeff Garzik wrote:
+> akpm@linux-foundation.org wrote:
+> > +static void transfer_packet(struct net_device *dev,
+...
+> > +	hcall(LHCALL_SEND_DMA, peer_key(info,peernum), __pa(&dma), 0);
 > 
-> The following three points were corrected.
+> __pa() should not be used in any driver.
 > 
-> 1.
-> > You can't do this since the trigger will appear for all LEDs and it only
-> > applies to a single LED. There has been previous discussion of LED
-> > specific triggers and we'll need that support before you can make
-> > something like this work. Nobody has sent me a patch for that yet and I
-> > haven't had time to write one...
-> The trigger name past "disk" was changed to the name "hard".
-> This is to mean the hardware of LANDISK controls LED.
-> The problem of "LED specific triggers" is solved.
+> At the very least, lguest helper code should wrap this.
 
-No, its not solved.
+	I realize your continual battle with this, but adding a layer of
+indirection doesn't seem like it will add clarity.  The issues with
+__pa() are reasonably known (don't hand it a vmalloc address, for
+example).  Any wrapper I create would be another hurdle to jump 8(
 
-Imagine I connect some device with its own LEDs and LED drivers. I'll
-use "corgi:amber" as an example.
+> > +static irqreturn_t lguestnet_rcv(int irq, void *dev_id)
+...
+> > +	return done ? IRQ_HANDLED : IRQ_NONE;
+> 
+> Using NAPI would be preferable...
 
-I run:
+I'm not so convinced: scheduling tends to give us pretty good interrupt
+mitigation.  However, if you wish to send a patch, I'd be happy to
+benchmark the two 8)
 
-'cat /sys/class/leds/corgi:amber/triggers'
+> > +	/* Ethernet defaults with some changes */
+> > +	ether_setup(dev);
+> > +	dev->set_mac_address = NULL;
+> 
+> why NULL?
 
-I see "hard" listed.
+Because it's not implemented: our MAC is advertised in the device page
+and we'd have to change it there too.
 
-'echo "hard" > /sys/class/leds/corgi:amber/triggers'
+Trivial to do, but is there a compelling reason to implement it?
 
-doesn't work though...
+> > +	dev->mem_start = ((unsigned long)desc->pfn << PAGE_SHIFT);
+> > +	dev->mem_end = dev->mem_start + PAGE_SIZE * desc->num_pages;
+> > +	dev->irq = lgdev->index+1;
+> 
+> don't fill in mem_start, mem_end and irq.  they are useless, and for 
+> lguest, misleading.
 
-If its not going to work, it shouldn't be listed.
+You meant to type "useful and accurate", I think?  They show up in
+ifconfig, so you can see what the underlying devices are using.  They're
+as useful for virtual hardware as they are for physical hardware.
 
-Regards,
+> > +	dev->features = NETIF_F_SG;
+> > +	if (desc->features & LGUEST_NET_F_NOCSUM)
+> > +		dev->features |= NETIF_F_NO_CSUM;
+> 
+> do not set SG without an accompanying csum bitflag
 
-Richard
+That seems... odd.  My driver can do SG, and may or may not need csums.
+The current Linux code turns SG off if I need csums and that's fine, but
+it hardly seems like my device should be making that decision.
 
+> > +	info = dev->priv;
+> 
+> use netdev_priv()
+
+OK, thanks.
+
+> > +	info->mapsize = PAGE_SIZE * desc->num_pages;
+> > +	info->peer_phys = ((unsigned long)desc->pfn << PAGE_SHIFT);
+> > +	info->peer = (void *)ioremap(info->peer_phys, info->mapsize);
+> 
+> check for NULL
+
+Erk, good catch!
+
+> > +unregister:
+> > +	unregister_netdev(dev);
+> > +free:
+> > +	free_netdev(dev);
+> 
+> missing iounmap() on error
+
+What is it about me and iomap... will fix that too.
+
+> > +static struct lguest_driver lguestnet_drv = {
+> > +	.name = "lguestnet",
+> > +	.owner = THIS_MODULE,
+> > +	.device_type = LGUEST_DEVICE_T_NET,
+> > +	.probe = lguestnet_probe,
+> > +};
+> 
+> You are distinctly missing module remove support
+
+Yes.  It is never built as a module currently (though it should work).
+
+Thanks!
+Rusty.
 
