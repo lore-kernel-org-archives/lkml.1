@@ -1,88 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757588AbXEIK10@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbXEIK1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757588AbXEIK10 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 06:27:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755796AbXEIK1K
+	id S1757594AbXEIK1m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 06:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbXEIK1P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 06:27:10 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:55291 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755681AbXEIK1G (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 06:27:06 -0400
-Date: Wed, 9 May 2007 03:27:00 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mario Doering <mario@dedenet.de>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: D-Link DFE-580TX 4 port NIC problems
-Message-Id: <20070509032700.569789a0.akpm@linux-foundation.org>
-In-Reply-To: <20070509120142.2305a1d1@snibbles.dedenet.de>
-References: <20070509120142.2305a1d1@snibbles.dedenet.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 May 2007 06:27:15 -0400
+Received: from mx33.mail.ru ([194.67.23.194]:14649 "EHLO mx33.mail.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755979AbXEIK1N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 06:27:13 -0400
+From: Andrey Borzenkov <arvidjaar@mail.ru>
+To: Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de>
+Subject: Re: Long file names in VFAT broken with iocharset=utf8
+Date: Wed, 9 May 2007 14:27:04 +0400
+User-Agent: KMail/1.9.6
+Cc: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>, linux-kernel@vger.kernel.org
+References: <200705072151.20104.arvidjaar@mail.ru> <87fy685w0m.fsf@duaron.myhome.or.jp> <BD281C0E-5278-4944-ABF0-AF692325945C@e18.physik.tu-muenchen.de>
+In-Reply-To: <BD281C0E-5278-4944-ABF0-AF692325945C@e18.physik.tu-muenchen.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed;
+  boundary="nextPart1651649.FqxuWtoWYm";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
 Content-Transfer-Encoding: 7bit
+Message-Id: <200705091427.04903.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 May 2007 12:01:42 +0200 Mario Doering <mario@dedenet.de> wrote:
+--nextPart1651649.FqxuWtoWYm
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-> Hello,
-> 
-> we have a D-Link DFE-580TX 4 port network card in our main router.
-> 
-> It works pretty well most of the time, even though an error
-> message pops up in dmesg every now and then (sometimes once a day
-> sometimes once every few hours).
-> 
-> 
-> But every few weeks those error messages increase rapidly, spamming
-> dmesg. When this happens the system does not react anymore and pushing
-> the reset button is the only option left.
-> 
-> I googled around and found out that other users have same problem,
-> but no solution to this.
-> 
-> 
-> Part of the message log is located here:
-> http://test.dedenet.de/messages.gz
-> or
-> http://test.dedenet.de/messages.txt
-> 
-> 
-> uname -a
-> Linux router1 2.6.19-gentoo-r5 #1 Sat Feb 17 17:04:03 CET 2007 i686 AMD
-> Athlon(tm) XP AuthenticAMD GNU/Linux
-> 
-> 
-> driver:
-> [   17.364707] sundance.c:v1.2 11-Sep-2006  Written by Donald Becker
-> [   17.364711]   http://www.scyld.com/network/sundance.html
-> [   17.364844] ACPI: PCI Interrupt 0000:03:04.0[A] -> GSI 17 (level,
-> low) -> IRQ 17 [   17.365396] eth1: D-Link DFE-580TX 4 port Server
-> Adapter at 0001bc00, 00:0d:88:cc:a5:f0, IRQ 17. [   17.366350] eth1:
-> MII PHY found at address 1, status 0x7829 advertising 01e1.
-> [   17.676491] ACPI: PCI Interrupt 0000:03:05.0[A] -> GSI 18 (level,
-> low) -> IRQ 18 [   17.676912] eth2: D-Link DFE-580TX 4 port Server
-> Adapter at 0001b800, 00:0d:88:cc:a5:f1, IRQ 18. [   17.677864] eth2:
-> MII PHY found at address 1, status 0x7809 advertising 01e1.
-> [   17.987730] ACPI: PCI Interrupt 0000:03:06.0[A] -> GSI 19 (level,
-> low) -> IRQ 16 [   17.988107] eth3: D-Link DFE-580TX 4 port Server
-> Adapter at 0001b400, 00:0d:88:cc:a5:f2, IRQ 16. [   17.989059] eth3:
-> MII PHY found at address 1, status 0x7829 advertising 01e1.
-> [   18.298910] ACPI: PCI Interrupt 0000:03:07.0[A] -> GSI 16 (level,
-> low) -> IRQ 19 [   18.299320] eth4: D-Link DFE-580TX 4 port Server
-> Adapter at 0001b000, 00:0d:88:cc:a5:f3, IRQ 19. [   18.300272] eth4:
-> MII PHY found at address 1, status 0x7809 advertising 01e1.
-> 
-> 
-> 
-> No such error message appears for about 7-10 days after a reboot. Maybe
-> there is some kind of buffer running full?
-> 
-> Do you need any additional info?
-> 
-> 
-> Please CC me :-)
+On Monday 07 May 2007, Roland Kuhn wrote:
+> Hi!
+>
+> On 7 May 2007, at 20:27, OGAWA Hirofumi wrote:
+> > Roland Kuhn <rkuhn@e18.physik.tu-muenchen.de> writes:
+> >> PATH_MAX specifically counts _bytes_ not characters, so UTF-8 does
+> >> not matter. ISTR that PATH_MAX was 256 at some point, but I just
+> >> quickly grepped /usr/include and found various mention of 4096, so
+> >> where's the central repository for this configuration item? A hard-
+> >> coded value of 256 somewhere inside the kernel smells like a bug.
+> >
+> > There is a nasty issue here. FAT is limited by 255 unicode chars or
+> > so.
+> > So, we would need to count number of unicode chars of filename.
+>
+> No, we don't. At least not when looking at the POSIX spec, which
+> explicitly mentions _bytes_ and _not_ unicode characters. So, to be
+> on the safe side, FAT filesystems would need to support a NAME_MAX of
+> roughly 6*255+3=3D1533 bytes (not to mention the hassles of forbidden
+> sequences, etc.; do we need to count zero-width characters?)
 
-(cc netdev)
+How is this issue related to character *width* at all?
+
+> and=20
+> report it through pathconf() to userspace, then userspace could do
+> with that whatever it liked.
+>
+> What happened to: "file names are just sequences of octets, excluding
+> '/' and NUL"? Adding unicode parsing to the kernel is completely
+> useless _and_ a big trouble maker.
+>
+
+Who speaks about unicode parsing? UCS2 - UTF-8 transformation does and=20
+requires no parsing; this is simply conversion between on-disk and in-kerne=
+l=20
+representation (like endian conversion). Anyway we are doing it now already=
+;=20
+how support for larger name length limit changes it?
+
+=2Dandrey
+
+--nextPart1651649.FqxuWtoWYm
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iD8DBQBGQaH4R6LMutpd94wRAnrkAJsGnaNBBukQuUv6CVTruWAg9BPnIgCgw7av
+HLJ2Luls7wXfSAhBZpP77JI=
+=LOZh
+-----END PGP SIGNATURE-----
+
+--nextPart1651649.FqxuWtoWYm--
