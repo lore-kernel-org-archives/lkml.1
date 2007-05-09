@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757310AbXEIUOc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbXEIUTe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757310AbXEIUOc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 16:14:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754958AbXEIUOZ
+	id S1757584AbXEIUTe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 16:19:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbXEIUT1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 16:14:25 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:53354 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751744AbXEIUOY (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 16:14:24 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm2 - 100% CPU on ksoftirqd/1
-In-Reply-To: Your message of "Wed, 09 May 2007 11:12:39 PDT."
-             <46420F17.2050106@goop.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070509012322.199f292b.akpm@linux-foundation.org> <4123.1178726923@turing-police.cc.vt.edu>
-            <46420F17.2050106@goop.org>
+	Wed, 9 May 2007 16:19:27 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45282 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754424AbXEIUT0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 16:19:26 -0400
+Date: Wed, 9 May 2007 21:23:13 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Rientjes <rientjes@google.com>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       jeremy@goop.org
+Subject: Re: [PATCH] doc: volatile considered evil
+Message-ID: <20070509212313.7d61f113@the-village.bc.nu>
+In-Reply-To: <alpine.DEB.0.99.0705091137310.22593@chino.kir.corp.google.com>
+References: <516386418.20070501080839@gmail.com>
+	<20070430235642.e576e917.akpm@linux-foundation.org>
+	<20070508121404.17bd97a6.randy.dunlap@oracle.com>
+	<a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
+	<20070508163452.8b71f682.randy.dunlap@oracle.com>
+	<alpine.DEB.0.99.0705081702070.28511@chino.kir.corp.google.com>
+	<20070508190800.1334b968.randy.dunlap@oracle.com>
+	<alpine.DEB.0.99.0705081934390.20751@chino.kir.corp.google.com>
+	<20070509102134.5d722386@the-village.bc.nu>
+	<alpine.DEB.0.99.0705090308150.17598@chino.kir.corp.google.com>
+	<20070509143621.282f2400@the-village.bc.nu>
+	<alpine.DEB.0.99.0705091137310.22593@chino.kir.corp.google.com>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1178741608_3418P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Date: Wed, 09 May 2007 16:13:29 -0400
-Message-ID: <15321.1178741609@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1178741608_3418P
-Content-Type: text/plain; charset=us-ascii
+On Wed, 9 May 2007 11:41:27 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-On Wed, 09 May 2007 11:12:39 PDT, Jeremy Fitzhardinge said:
-> It always seems to happen on the last CPU; when I run the kernel as Xen
-> guest with 4 vcpus, it happens on events/3.
+> On Wed, 9 May 2007, Alan Cox wrote:
+> 
+> > > Thus, any reliance on type-qualifying an object that represents an atomic 
+> > > or locking primitive on the keyword 'volatile' is misplaced.
+> > 
+> > arch/foo is generally implementation specific code.
+> > 
+> 
+> That's true, but what qualifies as an "access" to an object that is 
+> type qualified with the 'volatile' keyword is _implementation_ defined, 
+> meaning the behavior is defined by the compiler and not this new 
+> architecture you're proposing 'volatile' is appropriate for.  That's pure 
+> C99.
 
-Probably something different - at least once, I've caught it on /0 with
-2 real cores online (T7200).  Looking at kernel/softirq.c, the ksoftirqd()
-function is basically 2 nested while() loops.  Looks like  either local_softirq_pending()
-gets stuck true, but no obvious reason why, or something odd is getting
-set in the current-> structure so when we call schedule(), we end up returning
-rather than hitting the idle loop.
+arch/foo almost always supports a single compiler too - gcc. We simply
+don't support anything else. We use gcc inlines and features extensively.
 
-Off to go see how much mm-bisect I can do before dinnertime - the rest will be
-later tonight...
+And who cares about such fine detail of C99, did they fix the struct copy
+bug in ANSI C even ? [1]
 
+Alan
+[1] ANSI C says access to the padding fields of a struct is undefined.
+ANSI C also says that struct assignment is a memcpy. Therefore struct
+assignment in ANSI C is a violation of ANSI C...
 
---==_Exmh_1178741608_3418P
-Content-Type: application/pgp-signature
+At this point its a lot simpler not to care about other compilers pet
+insanities or areas of the spec like volatile that are vaguer and less
+credible than the output of the US congress.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGQitocC3lWbTT17ARAttRAJ0RtvzCMgBmp05GnEtWpO3xjns4zQCfcnub
-jQBTAP6bgUYml7aV43QwBfA=
-=ppyi
------END PGP SIGNATURE-----
-
---==_Exmh_1178741608_3418P--
