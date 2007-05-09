@@ -1,47 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1033456AbXEIDFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970148AbXEIDIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1033456AbXEIDFw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 23:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1032505AbXEIDFo
+	id S970148AbXEIDIs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 23:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755092AbXEIDIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 23:05:44 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39399 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1032489AbXEIDFn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 23:05:43 -0400
-Message-ID: <46413A7E.5050304@garzik.org>
-Date: Tue, 08 May 2007 23:05:34 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Tue, 8 May 2007 23:08:39 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53937 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754654AbXEIDIj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 23:08:39 -0400
+Date: Tue, 8 May 2007 20:08:38 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+cc: Matt Mackall <mpm@selenic.com>, akpm@linux-foundation.org,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch
+ added to -mm tree
+In-Reply-To: <46413A29.1000506@yahoo.com.au>
+Message-ID: <Pine.LNX.4.64.0705082005130.21580@schroedinger.engr.sgi.com>
+References: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net>
+ <20070509002307.GV11115@waste.org> <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com>
+ <20070509012725.GZ11115@waste.org> <Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com>
+ <20070509021911.GB11115@waste.org> <Pine.LNX.4.64.0705081920250.17931@schroedinger.engr.sgi.com>
+ <4641353F.2000408@yahoo.com.au> <Pine.LNX.4.64.0705081954300.19976@schroedinger.engr.sgi.com>
+ <46413A29.1000506@yahoo.com.au>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linus Torvalds <torvalds@osdl.org>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 464bdd33e9baad9806c7adbd8dfc37081a55f27e
-References: <46413851.6070505@zytor.com>
-In-Reply-To: <46413851.6070505@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Checkin 464bdd33e9baad9806c7adbd8dfc37081a55f27e "fbdev: ignore VESA
-> modes if framebuffer is disabled" is just plain wrong on any system
-> which has support for extended text modes in its VESA BIOS.
-> 
-> Antonio is incorrectly assuming this branchout is used only to set VESA
-> graphics modes, but it's to set any VESA mode, be it text or graphics.
+On Wed, 9 May 2007, Nick Piggin wrote:
 
-I wonder if this fbdev update is what causes my X session to die?
+> But that 4MB system might not even have 50 pages that you'd want to
+> use for slab.
 
-I'm using the VESA driver on my ATI R580, and just filed this bug report 
-minutes ago: http://lkml.org/lkml/2007/5/8/667
-
-	Jeff
-
+The problem here is that you trade off more objects (SLUB) against more 
+flexibility (SLOB). We need some experiments with 4M systems to see how 
+this works out. It may be better to be able to allocate more objects. I 
+estimate that we will have a need for about 30 active slabs (note the 
+low number comes about because SLUB will merge similar slabs together 
+into one) on such a system. Most of those can have two pages. So you will 
+likely still be better off with SLUB than SLOB.
 
