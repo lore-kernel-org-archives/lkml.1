@@ -1,51 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbXEIUt3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758861AbXEIUtp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758762AbXEIUt3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 16:49:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758587AbXEIUtS
+	id S1758861AbXEIUtp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 16:49:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757007AbXEIUtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 16:49:18 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51127 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755081AbXEIUtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 16:49:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: tglx@linutronix.de
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-Date: Wed, 9 May 2007 22:53:49 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       linux-acpi@vger.kernel.org
-References: <20070430102837.748238000@linutronix.de> <200705092036.20953.rjw@sisk.pl> <1178743550.3042.541.camel@localhost.localdomain>
-In-Reply-To: <1178743550.3042.541.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 9 May 2007 16:49:33 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40490
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758770AbXEIUtb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 16:49:31 -0400
+Date: Wed, 09 May 2007 13:49:32 -0700 (PDT)
+Message-Id: <20070509.134932.122941737.davem@davemloft.net>
+To: mark@mtfhpc.demon.co.uk
+Cc: wli@holomorphy.com, linux-kernel@vger.kernel.org,
+       sparclinux@vger.kernel.org, linux-serial@vger.kernel.org
+Subject: Re: [PATCH] drivers/serial/sunzilog: Interrupt enable before ISR
+ handler installed
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.61.0705091858490.29173@mtfhpc.demon.co.uk>
+References: <Pine.LNX.4.61.0704292250290.1747@mtfhpc.demon.co.uk>
+	<20070507.162042.38710851.davem@davemloft.net>
+	<Pine.LNX.4.61.0705091858490.29173@mtfhpc.demon.co.uk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705092253.49896.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 9 May 2007 22:45, Thomas Gleixner wrote:
-> On Wed, 2007-05-09 at 20:36 +0200, Rafael J. Wysocki wrote:
-> > Well, apparently, not in -mm2:
-> > 
-> > rafael@albercik:~/src/mm/linux-2.6.21-mm2> grep -r -I -l 'timekeeping_resume' *
-> > kernel/time/timekeeping.c
-> > rafael@albercik:~/src/mm/linux-2.6.21-mm2> grep clocksource_resume kernel/time/timekeeping.c
-> > rafael@albercik:~/src/mm/linux-2.6.21-mm2>
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Date: Wed, 9 May 2007 19:17:29 +0100 (BST)
+
+> Hi all,
 > 
-> Andrew dropped the patch because it did not work on his jinxed VAIO, but
-> he debugged with the patch applied.
+> I have added a from line, comment and signed-off-by line to the attached 
+> patch file.
 
-I see.
-
-In that case, since timekeeping_resume() is called via sysdev_resume, then it's
-executed before acpi_leave_sleep_state() and may very well interfere with the
-ACPI methods executed from there, depending on what's happening in the
-cs->resume() callbacks in clocksource_resume().
-
-Greetings,
-Rafael
+Patch applied, thanks Mark.
