@@ -1,60 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758228AbXEIMyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756926AbXEINBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758228AbXEIMyu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756184AbXEIMyl
+	id S1756926AbXEINBr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 09:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755625AbXEINBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:54:41 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:50184 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758161AbXEIMyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:54:39 -0400
-Date: Wed, 9 May 2007 22:54:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       rusty@rustcorp.com.au, ak@suse.de, dada1@cosmosbay.com
-Subject: Re: [patch 3/9] lguest: the host code
-Message-Id: <20070509225436.1fb5dc2d.sfr@canb.auug.org.au>
-In-Reply-To: <200705090951.l499pZF8020394@shell0.pdx.osdl.net>
-References: <200705090951.l499pZF8020394@shell0.pdx.osdl.net>
-X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Wed__9_May_2007_22_54_36_+1000_CqaM72uC/0=9vaPs"
+	Wed, 9 May 2007 09:01:40 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:53286 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753607AbXEINBi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 09:01:38 -0400
+X-Originating-Ip: 99.246.112.70
+Date: Wed, 9 May 2007 09:00:03 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Pavel Machek <pavel@ucw.cz>
+cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-pcmcia@lists.infradead.org
+Subject: Re: pcmcia ioctl removal
+In-Reply-To: <20070509125415.GA4720@ucw.cz>
+Message-ID: <Pine.LNX.4.64.0705090858240.4919@localhost.localdomain>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+ <20070501084623.GB14364@infradead.org> <20070509125415.GA4720@ucw.cz>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Wed__9_May_2007_22_54_36_+1000_CqaM72uC/0=9vaPs
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Wed, 9 May 2007, Pavel Machek wrote:
 
-On Wed, 09 May 2007 02:51:35 -0700 akpm@linux-foundation.org wrote:
+> Hi!
 >
-> +++ a/drivers/lguest/core.c
-> @@ -0,0 +1,446 @@
-> +/* World's simplest hypervisor, to test paravirt_ops and show
-> + * unbelievers that virtualization is the future.  Plus, it's fun! */
+> > >  pcmcia-delete-obsolete-pcmcia_ioctl-feature.patch
+> >
+> > ...
+> >
+> > > Dominik is busy.  Will probably re-review and send these direct to Linus.
+> >
+> > The patch above is the removal of cardmgr support.  While I'd love
+> > to see this cruft gone it definitively needs maintainer judgement
+> > on whether they time has come that no one relies on cardmgr
+> > anymore.
+>
+> I remember needing cardmgr few months ago on sa-1100 arm system. I'm
+> not sure this is obsolete-enough to kill.
 
-This may have been asked before, but is there some reason this has no
-copyright and license statement?
+in that case, someone really should update
+feature-removal-schedule.txt, which currently reads:
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+What:   PCMCIA control ioctl (needed for pcmcia-cs [cardmgr, cardctl])
+When:   November 2005
+...
 
---Signature=_Wed__9_May_2007_22_54_36_+1000_CqaM72uC/0=9vaPs
-Content-Type: application/pgp-signature
+rday
+-- 
+========================================================================
+Robert P. J. Day Linux Consulting, Training and Annoying Kernel
+Pedantry Waterloo, Ontario, CANADA
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGQcSRFdBgD/zoJvwRAtuRAJ9pb/uh9r+3SNJ9eTl8zmOyFEJFlwCdGDlG
-HhD/khRnW2FQtfgWs3pgWVM=
-=86jF
------END PGP SIGNATURE-----
-
---Signature=_Wed__9_May_2007_22_54_36_+1000_CqaM72uC/0=9vaPs--
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
