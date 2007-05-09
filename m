@@ -1,48 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbXEINIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758173AbXEINIf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbXEINIO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 09:08:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbXEINH7
+	id S1758173AbXEINIf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 09:08:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757481AbXEINIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 09:07:59 -0400
-Received: from rtr.ca ([64.26.128.89]:4041 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757471AbXEINH6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 09:07:58 -0400
-Message-ID: <4641C7AC.4050309@rtr.ca>
-Date: Wed, 09 May 2007 09:07:56 -0400
-From: Mark Lord <lkml@rtr.ca>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [BUG] Current -git kernel kills X
-References: <4641398F.5050203@garzik.org>
-In-Reply-To: <4641398F.5050203@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 09:08:25 -0400
+Received: from vms042pub.verizon.net ([206.46.252.42]:50640 "EHLO
+	vms042pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757115AbXEINIY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 09:08:24 -0400
+Date: Wed, 09 May 2007 09:08:14 -0400
+From: Gene Heskett <gene.heskett@gmail.com>
+Subject: Re: PCI: Bus #02 (-#05) is hidden behind transparent bridge #01 (-#01)
+ (try 'pci=assign-busses')
+In-reply-to: <200705091535.30607.mdontu@bitdefender.com>
+To: Mihai =?utf-8?q?Don=C8=9Bu?= <mdontu@bitdefender.com>
+Cc: linux-kernel@vger.kernel.org
+Message-id: <200705090908.14144.gene.heskett@gmail.com>
+Organization: Organization? very little
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
+Content-disposition: inline
+References: <20070401181822.9700a7df.mailing@wodkahexe.de>
+ <200705091535.30607.mdontu@bitdefender.com>
+User-Agent: KMail/1.9.6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->  
-> Symptoms: Machine boots successfully to gdm (GNOME) login screen.  When 
-> logging in, the session immediately dies.  Dialog "your session lasted 
-> less than 10 seconds" appears.  I click OK, and am returned to the gdm 
-> login screen.
-> 
-> Reproducability: 100%
+On Wednesday 09 May 2007, Mihai Donțu wrote:
+>On Sunday 01 April 2007 19:18, you wrote:
+>> > Hi,
+>> >
+>> > dmesg told me to report this to LKML.
+>>
+>>   And here is my report.
+>>
+>> > Have a nice day..
+>>
+>>   x 2 ;)
+>
+>    And again, from a different email address.
+>
+>    I would also like to take the opportunity to apologise to Gene Heskett
+> for spamming him :)
 
-Mmm... sounds more like a GNOME bug/crash than an X crash.
+No problem other than the duplicates.  Now if I could just reply to another 
+thread without the server getting a belly ache, we would discuss serial, and 
+usb-serial performance, but apparently that's a verbotun subject here on 
+lkml.
 
-I've had this situation several times in the past with GNOME,
-and each time it turned out to be some missing config file
-or subdir that got wiped in a system update or reconfig.
-
-Generally I only boot into GNOME when absolutely necessary
-to test something under that environment, so I'm no expert.
-
-KDE for me.
-
-Cheers
-
+-- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+techtonic stress
