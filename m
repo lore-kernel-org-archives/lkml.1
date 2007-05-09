@@ -1,72 +1,323 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbXEIJy1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757031AbXEIJyt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbXEIJy1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 05:54:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756477AbXEIJwh
+	id S1757031AbXEIJyt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:54:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756610AbXEIJww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 05:52:37 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59560 "EHLO
+	Wed, 9 May 2007 05:52:52 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:47189 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756412AbXEIJwf (ORCPT
+	by vger.kernel.org with ESMTP id S1756598AbXEIJwu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 05:52:35 -0400
-Message-Id: <200705090951.l499pa6G020397@shell0.pdx.osdl.net>
-Subject: [patch 4/9] lguest: the asm offsets
+	Wed, 9 May 2007 05:52:50 -0400
+Message-Id: <200705090951.l499pdsc020409@shell0.pdx.osdl.net>
+Subject: [patch 8/9] lguest: the block driver
 To: linux-kernel@vger.kernel.org
 Cc: virtualization@lists.osdl.org, akpm@linux-foundation.org,
-       rusty@rustcorp.com.au, ak@suse.de
+       rusty@rustcorp.com.au, ak@suse.de, jens.axboe@oracle.com
 From: akpm@linux-foundation.org
-Date: Wed, 09 May 2007 02:51:36 -0700
+Date: Wed, 09 May 2007 02:51:39 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rusty Russell <rusty@rustcorp.com.au>
 
-This is the structure offsets required by lg.ko's switcher.S.
+Lguest block driver
 
-Unfortunately we don't have infrastructure for private asm-offsets
-creation.
+A simple block driver for lguest.
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Andi Kleen <ak@suse.de>
+Cc: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/i386/kernel/asm-offsets.c |   19 +++++++++++++++++++
- 1 file changed, 19 insertions(+)
+ drivers/block/Makefile     |    1 
+ drivers/block/lguest_blk.c |  271 +++++++++++++++++++++++++++++++++++
+ 2 files changed, 272 insertions(+)
 
-diff -puN arch/i386/kernel/asm-offsets.c~lguest-the-asm-offsets arch/i386/kernel/asm-offsets.c
---- a/arch/i386/kernel/asm-offsets.c~lguest-the-asm-offsets
-+++ a/arch/i386/kernel/asm-offsets.c
-@@ -17,6 +17,10 @@
- #include <asm/pgtable.h>
- #include <asm/thread_info.h>
- #include <asm/elf.h>
-+#ifdef CONFIG_LGUEST_GUEST
-+#include <linux/lguest.h>
-+#include "../../../drivers/lguest/lg.h"
-+#endif
+diff -puN drivers/block/Makefile~lguest-the-block-driver drivers/block/Makefile
+--- a/drivers/block/Makefile~lguest-the-block-driver
++++ a/drivers/block/Makefile
+@@ -28,4 +28,5 @@ obj-$(CONFIG_BLK_DEV_CRYPTOLOOP) += cryp
+ obj-$(CONFIG_VIODASD)		+= viodasd.o
+ obj-$(CONFIG_BLK_DEV_SX8)	+= sx8.o
+ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
++obj-$(CONFIG_LGUEST_GUEST)	+= lguest_blk.o
  
- #define DEFINE(sym, val) \
-         asm volatile("\n->" #sym " %0 " #val : : "i" (val))
-@@ -116,4 +120,19 @@ void foo(void)
- 	OFFSET(PARAVIRT_iret, paravirt_ops, iret);
- 	OFFSET(PARAVIRT_read_cr0, paravirt_ops, read_cr0);
- #endif
+diff -puN /dev/null drivers/block/lguest_blk.c
+--- /dev/null
++++ a/drivers/block/lguest_blk.c
+@@ -0,0 +1,271 @@
++/* A simple block driver for lguest.
++ *
++ * Copyright 2006 Rusty Russell <rusty@rustcorp.com.au> IBM Corporation
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++//#define DEBUG
++#include <linux/init.h>
++#include <linux/types.h>
++#include <linux/blkdev.h>
++#include <linux/interrupt.h>
++#include <linux/lguest_bus.h>
 +
-+#ifdef CONFIG_LGUEST_GUEST
-+	BLANK();
-+	OFFSET(LGUEST_DATA_irq_enabled, lguest_data, irq_enabled);
-+	OFFSET(LGUEST_PAGES_host_gdt_desc, lguest_pages, state.host_gdt_desc);
-+	OFFSET(LGUEST_PAGES_host_idt_desc, lguest_pages, state.host_idt_desc);
-+	OFFSET(LGUEST_PAGES_host_cr3, lguest_pages, state.host_cr3);
-+	OFFSET(LGUEST_PAGES_host_sp, lguest_pages, state.host_sp);
-+	OFFSET(LGUEST_PAGES_guest_gdt_desc, lguest_pages,state.guest_gdt_desc);
-+	OFFSET(LGUEST_PAGES_guest_idt_desc, lguest_pages,state.guest_idt_desc);
-+	OFFSET(LGUEST_PAGES_guest_gdt, lguest_pages, state.guest_gdt);
-+	OFFSET(LGUEST_PAGES_regs_trapnum, lguest_pages, regs.trapnum);
-+	OFFSET(LGUEST_PAGES_regs_errcode, lguest_pages, regs.errcode);
-+	OFFSET(LGUEST_PAGES_regs, lguest_pages, regs);
-+#endif
- }
++static char next_block_index = 'a';
++
++struct blockdev
++{
++	spinlock_t lock;
++
++	/* The disk structure for the kernel. */
++	struct gendisk *disk;
++
++	/* The major number for this disk. */
++	int major;
++	int irq;
++
++	unsigned long phys_addr;
++	/* The ioremap'ed block page. */
++	struct lguest_block_page *lb_page;
++
++	/* We only have a single request outstanding at a time. */
++	struct lguest_dma dma;
++	struct request *req;
++};
++
++/* Jens gave me this nice helper to end all chunks of a request. */
++static void end_entire_request(struct request *req, int uptodate)
++{
++	if (end_that_request_first(req, uptodate, req->hard_nr_sectors))
++		BUG();
++	add_disk_randomness(req->rq_disk);
++	blkdev_dequeue_request(req);
++	end_that_request_last(req, uptodate);
++}
++
++static irqreturn_t lgb_irq(int irq, void *_bd)
++{
++	struct blockdev *bd = _bd;
++	unsigned long flags;
++
++	if (!bd->req) {
++		pr_debug("No work!\n");
++		return IRQ_NONE;
++	}
++
++	if (!bd->lb_page->result) {
++		pr_debug("No result!\n");
++		return IRQ_NONE;
++	}
++
++	spin_lock_irqsave(&bd->lock, flags);
++	end_entire_request(bd->req, bd->lb_page->result == 1);
++	bd->req = NULL;
++	bd->dma.used_len = 0;
++	blk_start_queue(bd->disk->queue);
++	spin_unlock_irqrestore(&bd->lock, flags);
++	return IRQ_HANDLED;
++}
++
++static unsigned int req_to_dma(struct request *req, struct lguest_dma *dma)
++{
++	unsigned int i = 0, idx, len = 0;
++	struct bio *bio;
++
++	rq_for_each_bio(bio, req) {
++		struct bio_vec *bvec;
++		bio_for_each_segment(bvec, bio, idx) {
++			BUG_ON(i == LGUEST_MAX_DMA_SECTIONS);
++			BUG_ON(!bvec->bv_len);
++			dma->addr[i] = page_to_phys(bvec->bv_page)
++				+ bvec->bv_offset;
++			dma->len[i] = bvec->bv_len;
++			len += bvec->bv_len;
++			i++;
++		}
++	}
++	if (i < LGUEST_MAX_DMA_SECTIONS)
++		dma->len[i] = 0;
++	return len;
++}
++
++static void empty_dma(struct lguest_dma *dma)
++{
++	dma->len[0] = 0;
++}
++
++static void setup_req(struct blockdev *bd,
++		      int type, struct request *req, struct lguest_dma *dma)
++{
++	bd->lb_page->type = type;
++	bd->lb_page->sector = req->sector;
++	bd->lb_page->result = 0;
++	bd->req = req;
++	bd->lb_page->bytes = req_to_dma(req, dma);
++}
++
++static void do_write(struct blockdev *bd, struct request *req)
++{
++	struct lguest_dma send;
++
++	pr_debug("lgb: WRITE sector %li\n", (long)req->sector);
++	setup_req(bd, 1, req, &send);
++
++	hcall(LHCALL_SEND_DMA, bd->phys_addr, __pa(&send), 0);
++}
++
++static void do_read(struct blockdev *bd, struct request *req)
++{
++	struct lguest_dma ping;
++
++	pr_debug("lgb: READ sector %li\n", (long)req->sector);
++	setup_req(bd, 0, req, &bd->dma);
++
++	empty_dma(&ping);
++	hcall(LHCALL_SEND_DMA, bd->phys_addr, __pa(&ping), 0);
++}
++
++static void do_lgb_request(request_queue_t *q)
++{
++	struct blockdev *bd;
++	struct request *req;
++
++again:
++	req = elv_next_request(q);
++	if (!req)
++		return;
++
++	bd = req->rq_disk->private_data;
++	/* Sometimes we get repeated requests after blk_stop_queue. */
++	if (bd->req)
++		return;
++
++	if (!blk_fs_request(req)) {
++		pr_debug("Got non-command 0x%08x\n", req->cmd_type);
++		req->errors++;
++		end_entire_request(req, 0);
++		goto again;
++	}
++
++	if (rq_data_dir(req) == WRITE)
++		do_write(bd, req);
++	else
++		do_read(bd, req);
++
++	/* Wait for interrupt to tell us it's done. */
++	blk_stop_queue(q);
++}
++
++static struct block_device_operations lguestblk_fops = {
++	.owner = THIS_MODULE,
++};
++
++static int lguestblk_probe(struct lguest_device *lgdev)
++{
++	struct blockdev *bd;
++	int err;
++	int irqflags = IRQF_SHARED;
++
++	bd = kmalloc(sizeof(*bd), GFP_KERNEL);
++	if (!bd)
++		return -ENOMEM;
++
++	spin_lock_init(&bd->lock);
++	bd->irq = lgdev->index+1;
++	bd->req = NULL;
++	bd->dma.used_len = 0;
++	bd->dma.len[0] = 0;
++	bd->phys_addr = (lguest_devices[lgdev->index].pfn << PAGE_SHIFT);
++
++	bd->lb_page = (void *)ioremap(bd->phys_addr, PAGE_SIZE);
++	if (!bd->lb_page) {
++		err = -ENOMEM;
++		goto out_free_bd;
++	}
++
++	bd->major = register_blkdev(0, "lguestblk");
++	if (bd->major < 0) {
++		err = bd->major;
++		goto out_unmap;
++	}
++
++	bd->disk = alloc_disk(1);
++	if (!bd->disk) {
++		err = -ENOMEM;
++		goto out_unregister_blkdev;
++	}
++
++	bd->disk->queue = blk_init_queue(do_lgb_request, &bd->lock);
++	if (!bd->disk->queue) {
++		err = -ENOMEM;
++		goto out_put_disk;
++	}
++
++	/* We can only handle a certain number of sg entries */
++	blk_queue_max_hw_segments(bd->disk->queue, LGUEST_MAX_DMA_SECTIONS);
++	/* Buffers must not cross page boundaries */
++	blk_queue_segment_boundary(bd->disk->queue, PAGE_SIZE-1);
++
++	sprintf(bd->disk->disk_name, "lgb%c", next_block_index++);
++	if (lguest_devices[lgdev->index].features & LGUEST_DEVICE_F_RANDOMNESS)
++		irqflags |= IRQF_SAMPLE_RANDOM;
++	err = request_irq(bd->irq, lgb_irq, irqflags, bd->disk->disk_name, bd);
++	if (err)
++		goto out_cleanup_queue;
++
++	hcall(LHCALL_BIND_DMA, bd->phys_addr, __pa(&bd->dma), (1<<8)+bd->irq);
++
++	bd->disk->major = bd->major;
++	bd->disk->first_minor = 0;
++	bd->disk->private_data = bd;
++	bd->disk->fops = &lguestblk_fops;
++	/* This is initialized to the disk size by the other end. */
++	set_capacity(bd->disk, bd->lb_page->num_sectors);
++	add_disk(bd->disk);
++
++	printk(KERN_INFO "%s: device %i at major %d\n",
++	       bd->disk->disk_name, lgdev->index, bd->major);
++
++	lgdev->private = bd;
++	return 0;
++
++out_cleanup_queue:
++	blk_cleanup_queue(bd->disk->queue);
++out_put_disk:
++	put_disk(bd->disk);
++out_unregister_blkdev:
++	unregister_blkdev(bd->major, "lguestblk");
++out_unmap:
++	iounmap(bd->lb_page);
++out_free_bd:
++	kfree(bd);
++	return err;
++}
++
++static struct lguest_driver lguestblk_drv = {
++	.name = "lguestblk",
++	.owner = THIS_MODULE,
++	.device_type = LGUEST_DEVICE_T_BLOCK,
++	.probe = lguestblk_probe,
++};
++
++static __init int lguestblk_init(void)
++{
++	return register_lguest_driver(&lguestblk_drv);
++}
++module_init(lguestblk_init);
++
++MODULE_DESCRIPTION("Lguest block driver");
++MODULE_LICENSE("GPL");
 _
