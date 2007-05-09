@@ -1,53 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755433AbXEIIoF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755800AbXEIIoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755433AbXEIIoF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 04:44:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754347AbXEIIng
+	id S1755800AbXEIIoh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 04:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbXEIInl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 04:43:36 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4260 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754227AbXEIInf (ORCPT
+	Wed, 9 May 2007 04:43:41 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:35407 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754723AbXEIInk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 04:43:35 -0400
-Date: Wed, 9 May 2007 09:43:24 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Chris Wedgwood <cw@f00f.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [x86-64] Add getcpu and epoll_pwait system calls.
-Message-ID: <20070509084324.GB15315@flint.arm.linux.org.uk>
-Mail-Followup-To: Chris Wedgwood <cw@f00f.org>,
-	Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org
-References: <20070508185145.B9A8E1827261@tuatara.stupidest.org> <20070508221348.GC17482@one.firstfloor.org> <20070508221656.GA6850@tuatara.stupidest.org> <20070508222432.GA15029@one.firstfloor.org> <20070508224322.GA8272@tuatara.stupidest.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 9 May 2007 04:43:40 -0400
+From: Sripathi Kodi <sripathik@in.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2/2] Use write_trylock_irqsave in ptrace_attach
+Date: Wed, 9 May 2007 14:13:27 +0530
+User-Agent: KMail/1.9.5
+Cc: akpm@osdl.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070508224322.GA8272@tuatara.stupidest.org>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200705091413.27344.sripathik@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 03:43:22PM -0700, Chris Wedgwood wrote:
-> On Wed, May 09, 2007 at 12:24:32AM +0200, Andi Kleen wrote:
-> 
-> > Somehow yes.  But i'm not going to add a useless syscall just to
-> > shut it up.
-> 
-> It turns out this has come up in other places.  Sam has a suggestion
-> on how to silence this per-arch so I'll post a patch once that change
-> is in.
+Hi,
 
-We knew about this when David and myself designed the detection
-method, and a method of ignoring those calls which were never going
-to be implemented on a particular architecture.
+This patch makes ptrace_attach use write_trylock_irqsave.
 
-Just add:
+Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
 
-#define __IGNORE_getcpu
+---
+ kernel/ptrace.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
-to asm/unistd.h, preferably in a __KERNEL__ protected area.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Index: linux-2.6.21/kernel/ptrace.c
+===================================================================
+--- linux-2.6.21.orig/kernel/ptrace.c
++++ linux-2.6.21/kernel/ptrace.c
+@@ -160,6 +160,7 @@ int ptrace_may_attach(struct task_struct
+ int ptrace_attach(struct task_struct *task)
+ {
+ 	int retval;
++	unsigned long flags = 0;
+ 
+ 	retval = -EPERM;
+ 	if (task->pid <= 1)
+@@ -178,9 +179,7 @@ repeat:
+ 	 * cpu's that may have task_lock).
+ 	 */
+ 	task_lock(task);
+-	local_irq_disable();
+-	if (!write_trylock(&tasklist_lock)) {
+-		local_irq_enable();
++	if (!write_trylock_irqsave(&tasklist_lock, flags)) {
+ 		task_unlock(task);
+ 		do {
+ 			cpu_relax();
+@@ -208,7 +207,7 @@ repeat:
+ 	force_sig_specific(SIGSTOP, task);
+ 
+ bad:
+-	write_unlock_irq(&tasklist_lock);
++	write_unlock_irqrestore(&tasklist_lock, flags);
+ 	task_unlock(task);
+ out:
+ 	return retval;
