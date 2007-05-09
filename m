@@ -1,74 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757584AbXEIUTe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbXEIUYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757584AbXEIUTe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 16:19:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754984AbXEIUT1
+	id S1757706AbXEIUYI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 16:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755774AbXEIUXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 16:19:27 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:45282 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754424AbXEIUT0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 16:19:26 -0400
-Date: Wed, 9 May 2007 21:23:13 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Rientjes <rientjes@google.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
+	Wed, 9 May 2007 16:23:55 -0400
+Received: from holomorphy.com ([66.93.40.71]:37052 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755563AbXEIUXy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 16:23:54 -0400
+Date: Wed, 9 May 2007 13:24:18 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       jeremy@goop.org
-Subject: Re: [PATCH] doc: volatile considered evil
-Message-ID: <20070509212313.7d61f113@the-village.bc.nu>
-In-Reply-To: <alpine.DEB.0.99.0705091137310.22593@chino.kir.corp.google.com>
-References: <516386418.20070501080839@gmail.com>
-	<20070430235642.e576e917.akpm@linux-foundation.org>
-	<20070508121404.17bd97a6.randy.dunlap@oracle.com>
-	<a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
-	<20070508163452.8b71f682.randy.dunlap@oracle.com>
-	<alpine.DEB.0.99.0705081702070.28511@chino.kir.corp.google.com>
-	<20070508190800.1334b968.randy.dunlap@oracle.com>
-	<alpine.DEB.0.99.0705081934390.20751@chino.kir.corp.google.com>
-	<20070509102134.5d722386@the-village.bc.nu>
-	<alpine.DEB.0.99.0705090308150.17598@chino.kir.corp.google.com>
-	<20070509143621.282f2400@the-village.bc.nu>
-	<alpine.DEB.0.99.0705091137310.22593@chino.kir.corp.google.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>, tingy@cs.umass.edu, tong.n.li@intel.com
+Subject: Re: Definition of fairness (was Re: [patch] CFS scheduler, -v11)
+Message-ID: <20070509202418.GE31925@holomorphy.com>
+References: <20070508150431.GA26977@elte.hu> <20070509180205.GA27462@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070509180205.GA27462@in.ibm.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 May 2007 11:41:27 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
+On Wed, May 09, 2007 at 11:32:05PM +0530, Srivatsa Vaddagiri wrote:
+> 	I had a question with respect to the definition of fairness used, esp
+> for tasks that are not 100% cpu hogs.
+> Ex: consider two equally important tasks T1 and T2 running on same CPU and 
+> whose execution nature is:
+> 	T1 = 100% cpu hog
+> 	T2 = 60% cpu hog (run for 600ms, sleep for 400ms)
+> Over a arbitrary observation period of 10 sec, 
+> 	T1 was ready to run for all 10sec
+> 	T2 was ready to run for 6 sec
+> Over this observation period, how much execution time should T2 get,
+> under a "fair" scheduler?
+> I was expecting both T2 and T1 to get 5 sec (50:50 split). Is this a
+> wrong expectation of fairness?
+> Anyway, results of this experiment (using testcase attached) is below.
+> T2 gets way below its fair share IMO (under both cfs and sd).
 
-> On Wed, 9 May 2007, Alan Cox wrote:
-> 
-> > > Thus, any reliance on type-qualifying an object that represents an atomic 
-> > > or locking primitive on the keyword 'volatile' is misplaced.
-> > 
-> > arch/foo is generally implementation specific code.
-> > 
-> 
-> That's true, but what qualifies as an "access" to an object that is 
-> type qualified with the 'volatile' keyword is _implementation_ defined, 
-> meaning the behavior is defined by the compiler and not this new 
-> architecture you're proposing 'volatile' is appropriate for.  That's pure 
-> C99.
+It's not even feasible much of the time. Suppose your task ran for
+100ms then slept for 900ms. It can't get more than 10% of the CPU in
+any scheduler, work-conserving or not.
 
-arch/foo almost always supports a single compiler too - gcc. We simply
-don't support anything else. We use gcc inlines and features extensively.
+Second, anything that would credit tasks for sleep in such a manner
+would flunk ringtest.c or otherwise analogues arranged to pass
+feasibility checks.
 
-And who cares about such fine detail of C99, did they fix the struct copy
-bug in ANSI C even ? [1]
+Fairness applies only to running tasks. The fair share of CPU must be
+granted while the task is running. As for sleep, it has to use its
+fair share of CPU or lose it. The numerous of pathologies that arise
+from trying to credit tasks for sleep in this fashion this are why
+fairness in the orthodox sense I describe is now such a high priority.
 
-Alan
-[1] ANSI C says access to the padding fields of a struct is undefined.
-ANSI C also says that struct assignment is a memcpy. Therefore struct
-assignment in ANSI C is a violation of ANSI C...
+However, it is possible to credit tasks for sleep in other ways. For
+instance, EEVDF (which is very close to CFS) has a deadline parameter
+expressing latency in addition to one expressing bandwidth that could,
+in principle, be used for the purpose of crediting sleeping tasks. It's
+not clear to me whether trying to use it for such purposes would be
+sound, or, for that matter, whether tasks should receive latency
+credits for sleep as opposed to other sorts of behaviors even if
+utilizing the latency parameter for credits and bonuses for various
+sorts of behavior is sound.
 
-At this point its a lot simpler not to care about other compilers pet
-insanities or areas of the spec like volatile that are vaguer and less
-credible than the output of the US congress.
 
+-- wli
