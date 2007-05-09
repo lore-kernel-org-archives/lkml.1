@@ -1,111 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbXEILQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbXEILVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756671AbXEILQV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 07:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750888AbXEILQM
+	id S1756503AbXEILVh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 07:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbXEILVa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 07:16:12 -0400
-Received: from outbound-cpk.frontbridge.com ([207.46.163.16]:37743 "EHLO
-	outbound3-cpk-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755180AbXEILPU (ORCPT
+	Wed, 9 May 2007 07:21:30 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:23275 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750888AbXEILV3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 07:15:20 -0400
-X-BigFish: V
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-7"
+	Wed, 9 May 2007 07:21:29 -0400
+Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
+       linville@tuxdriver.com, arnd@arndb.de, maxextreme@gmail.com,
+       gregkh@suse.de
+In-Reply-To: <20070423104534.51bac974.akpm@linux-foundation.org>
+References: <20070423141123.GA21174@skybase>
+	 <20070423104534.51bac974.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Wed, 09 May 2007 13:21:50 +0200
+Message-Id: <1178709710.30649.37.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Subject: =?utf-7?B?K0FGcy1wYXRjaCtBRjAtIEFkZCB0aGUgZGV2aWNlIElEcyBmb3IgQQ==?=
-	=?utf-7?B?TUQvQVRJIFNCNzAw?=
-Date: Wed, 9 May 2007 19:15:12 +0800
-Message-ID: <FFECF24D2A7F6D418B9511AF6F3586020197F6A6@shacnexch2.atitech.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: =?utf-7?B?K0FGcy1wYXRjaCtBRjAtIEFkZCB0aGUgZGV2aWNlIElEcyBmb3IgQQ==?=
-	=?utf-7?B?TUQvQVRJIFNCNzAw?=
-Thread-Index: =?utf-7?B?QWNlU0sxQUVGZnZkOFNjYVEyYVFSMmdDeUN4aEF3K0FEMEFQUS0=?=
-From: "Henry Su" <henry.su@amd.com>
-To: <alan@lxorguk.ukuu.org.uk>
-Cc: <greg@kroah.com>, <bzolnier@gmail.com>, <linux-kernel@vger.kernel.org>,
-       <linux-ide@vger.kernel.org>, <xiaosuzi520@hotmail.com>
-X-OriginalArrivalTime: 09 May 2007 11:15:16.0448 (UTC) FILETIME=[523F5600:01C7922B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: henry.su+AEA-amd.com
-Adding the device ID for AMD/ATI SB700.
-Signed-off-by:henry su +ADw-henry.su+AEA-amd.com+AD4-
-------------------------------------------
---- linux-2.6.21.1.orig/include/linux/pci+AF8-ids.h	2007-05-10 06:30:23.000000000 +-0800
-+-+-+- linux-2.6.21.1/include/linux/pci+AF8-ids.h	2007-05-10 07:10:18.000000000 +-0800
-+AEAAQA- -371,6 +-371,9 +AEAAQA-
- +ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-SRAID	0x4381
- +ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-SMBUS	0x4385
- +ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-IDE	0x438c
-+-+ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-SATA	0x4390
-+-+ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-SMBUS	0x4395
-+-+ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-IDE	0x439c
- 
- +ACM-define PCI+AF8-VENDOR+AF8-ID+AF8-VLSI		0x1004
- +ACM-define PCI+AF8-DEVICE+AF8-ID+AF8-VLSI+AF8-82C592	0x0005
+On Mon, 2007-04-23 at 10:45 -0700, Andrew Morton wrote: 
+> > Andrew: I plan to add patches 1-5 to the for-andrew branch of the
+> > git390 repository if that is fine with you. The only thing that will
+> > be missing in the tree is the patch that disables wireless for s390.
+> > The code does compile but without hardware it is mute to have the
+> > config options. I'll wait until the git-wireless.patch is upstream.
+> > Patches 7-9 depend on patches found in -mm.
+> > 
+> 
+> umm, OK.  If it's Ok I think I'll duck it for now: -mm is full.
+> 
+> Over-full, really: I've been working basically continuously since Friday
+> getting the current dungpile to compile and boot, and it's still miles away
+> from that.
 
---- linux-2.6.21.1.orig/drivers/i2c/busses/i2c-piix4.c	2007-05-10 06:30:14.000000000 +-0800
-+-+-+- linux-2.6.21.1/drivers/i2c/busses/i2c-piix4.c	2007-05-10 07:14:06.000000000 +-0800
-+AEAAQA- -399,6 +-399,8 +AEAAQA- static struct pci+AF8-device+AF8-id piix4+AF8-ids+AFsAXQ- 
- 	  .driver+AF8-data +AD0- 0 +AH0-,
- 	+AHs- PCI+AF8-DEVICE(PCI+AF8-VENDOR+AF8-ID+AF8-ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-SMBUS),
- 	  .driver+AF8-data +AD0- 0 +AH0-,
-+-	+AHs- PCI+AF8-DEVICE(PCI+AF8-VENDOR+AF8-ID+AF8-ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-SMBUS),
-+-	  .driver+AF8-data +AD0- 0 +AH0-,
- 	+AHs- PCI+AF8-DEVICE(PCI+AF8-VENDOR+AF8-ID+AF8-SERVERWORKS, PCI+AF8-DEVICE+AF8-ID+AF8-SERVERWORKS+AF8-OSB4),
- 	  .driver+AF8-data +AD0- 0 +AH0-,
- 	+AHs- PCI+AF8-DEVICE(PCI+AF8-VENDOR+AF8-ID+AF8-SERVERWORKS, PCI+AF8-DEVICE+AF8-ID+AF8-SERVERWORKS+AF8-CSB5),
---- linux-2.6.21.1.orig/drivers/ata/pata+AF8-atiixp.c	2007-05-10 06:30:14.000000000 +-0800
-+-+-+- linux-2.6.21.1/drivers/ata/pata+AF8-atiixp.c	2007-05-10 07:17:07.000000000 +-0800
-+AEAAQA- -283,6 +-283,7 +AEAAQA- static const struct pci+AF8-device+AF8-id atiixp
- 	+AHs- PCI+AF8-VDEVICE(ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP300+AF8-IDE), +AH0-,
- 	+AHs- PCI+AF8-VDEVICE(ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP400+AF8-IDE), +AH0-,
- 	+AHs- PCI+AF8-VDEVICE(ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-IDE), +AH0-,
-+-	+AHs- PCI+AF8-VDEVICE(ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-IDE), +AH0-,
- 
- 	+AHs- +AH0-,
- +AH0AOw-
+Is -mm less full now? I've seen you dropped your third patch bomb, so
+maybe there is room now ..
+I regenerated the kconfig patches. They fit on top of todays git but
+they do have some rejects on 2.6.21-mm1. The rejects are trivial to fix,
+but there are about 10 of them.
 
---- linux-2.6.21.1.orig/drivers/ide/pci/atiixp.c	2007-05-10 06:30:17.000000000 +-0800
-+-+-+- linux-2.6.21.1/drivers/ide/pci/atiixp.c	2007-05-10 07:18:39.000000000 +-0800
-+AEAAQA- -353,6 +-353,7 +AEAAQA- static struct pci+AF8-device+AF8-id atiixp+AF8-pci+AF8-t
- 	+AHs- PCI+AF8-VENDOR+AF8-ID+AF8-ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP300+AF8-IDE, PCI+AF8-ANY+AF8-ID, PCI+AF8-ANY+AF8-ID, 0, 0, 0+AH0-,
- 	+AHs- PCI+AF8-VENDOR+AF8-ID+AF8-ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP400+AF8-IDE, PCI+AF8-ANY+AF8-ID, PCI+AF8-ANY+AF8-ID, 0, 0, 0+AH0-,
- 	+AHs- PCI+AF8-VENDOR+AF8-ID+AF8-ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-IDE, PCI+AF8-ANY+AF8-ID, PCI+AF8-ANY+AF8-ID, 0, 0, 1+AH0-,
-+-	+AHs- PCI+AF8-VENDOR+AF8-ID+AF8-ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-IDE, PCI+AF8-ANY+AF8-ID, 
-+-PCI+AF8-ANY+AF8-ID, 0, 0, 1+AH0-,
- 	+AHs- 0, +AH0-,
- +AH0AOw-
- MODULE+AF8-DEVICE+AF8-TABLE(pci, atiixp+AF8-pci+AF8-tbl)+ADs-
+So when will be a good time to add the Kconfig patches to git390?
+And do you prefer to let them rot^H^H^Hmature in -mm for a while before
+they can go upstream?
 
---- linux-2.6.21.1.orig/drivers/ata/ahci.c	2007-05-10 06:30:14.000000000 +-0800
-+-+-+- linux-2.6.21.1/drivers/ata/ahci.c	2007-05-10 07:41:41.000000000 +-0800
-+AEAAQA- -415,6 +-415,7 +AEAAQA- static const struct pci+AF8-device+AF8-id ahci+AF8-p
- 	/+ACo- ATI +ACo-/
- 	+AHs- PCI+AF8-VDEVICE(ATI, 0x4380), board+AF8-ahci+AF8-sb600 +AH0-, /+ACo- ATI SB600 non-raid +ACo-/
- 	+AHs- PCI+AF8-VDEVICE(ATI, 0x4381), board+AF8-ahci +AH0-, /+ACo- ATI SB600 raid +ACo-/
-+-	+AHs- PCI+AF8-VDEVICE(ATI, 0x4390), board+AF8-ahci+AF8-sb600 +AH0-, /+ACo- ATI SB700 +ACo-/
- 
- 	/+ACo- VIA +ACo-/
- 	+AHs- PCI+AF8-VDEVICE(VIA, 0x3349), board+AF8-ahci+AF8-vt8251 +AH0-, /+ACo- VIA VT8251 +ACo-/
+-- 
+blue skies,
+  Martin.
 
---- linux-2.6.21.1.orig/drivers/pci/quirks.c	2007-05-10 06:30:17.000000000 +-0800
-+-+-+- linux-2.6.21.1/drivers/pci/quirks.c	2007-05-10 07:49:33.000000000 +-0800
-+AEAAQA- -875,6 +-875,7 +AEAAQA- static void +AF8AXw-devinit quirk+AF8-sb600+AF8-sata(s
- 	+AH0-
- +AH0-
- DECLARE+AF8-PCI+AF8-FIXUP+AF8-HEADER(PCI+AF8-VENDOR+AF8-ID+AF8-ATI, PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP600+AF8-SATA, quirk+AF8-sb600+AF8-sata)+ADs-
-+-DECLARE+AF8-PCI+AF8-FIXUP+AF8-HEADER(PCI+AF8-VENDOR+AF8-ID+AF8-ATI, 
-+-PCI+AF8-DEVICE+AF8-ID+AF8-ATI+AF8-IXP700+AF8-SATA, quirk+AF8-sb600+AF8-sata)+ADs-
- 
- /+ACo-
-  +ACo-	Serverworks CSB5 IDE does not fully support native mode
+"Reality continues to ruin my life." - Calvin.
 
 
