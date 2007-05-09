@@ -1,126 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757515AbXEIPP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756748AbXEIP3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757515AbXEIPP1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbXEIPPO
+	id S1756748AbXEIP3r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754876AbXEIP3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:15:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:58648 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754247AbXEIPPN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:15:13 -0400
-Subject: Re: [patch 7/9] lguest: the net driver
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, ak@suse.de, jmorris@namei.org
-In-Reply-To: <4641BE65.3030807@garzik.org>
-References: <200705090951.l499pdOr020406@shell0.pdx.osdl.net>
-	 <4641BE65.3030807@garzik.org>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 01:14:55 +1000
-Message-Id: <1178723695.7286.164.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 11:29:38 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:49595 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754848AbXEIP3h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:29:37 -0400
+Date: Wed, 9 May 2007 20:59:13 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Pavel Machek <pavel@ucw.cz>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, rjw@sisk.pl,
+       James.Bottomley@SteelEye.com, aneesh.kumar@gmail.com, drzeus@drzeus.cx,
+       dwmw2@infradead.org, greg@kroah.com, mingo@elte.hu, neilb@suse.de,
+       oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com, vatsa@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 128/197] freezer: add try_to_freeze calls to all kernel threads
+Message-ID: <20070509152913.GA16090@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <200705090934.l499YTvX019783@shell0.pdx.osdl.net> <4641A5F1.5080901@s5r6.in-berlin.de> <20070509104949.GA8164@elf.ucw.cz> <4641B92D.1030909@s5r6.in-berlin.de> <20070509121641.GA27109@in.ibm.com> <4641CAAF.8060103@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4641CAAF.8060103@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jeff,
-
-	Thanks for your review.  Questions below.
-
-On Wed, 2007-05-09 at 08:28 -0400, Jeff Garzik wrote:
-> akpm@linux-foundation.org wrote:
-> > +static void transfer_packet(struct net_device *dev,
-...
-> > +	hcall(LHCALL_SEND_DMA, peer_key(info,peernum), __pa(&dma), 0);
+On Wed, May 09, 2007 at 03:20:47PM +0200, Stefan Richter wrote:
+> Gautham R Shenoy wrote:
+> > freezer_exempt() as of now does what its name says. I.e, exempt the
+> > thread from all kinds of freeze chills.
+> > 
+> > But with more subsystems using the process freezer, the exemption needs
+> > to be event specific. There may be threads which should not be frozen 
+> > for say kprobes, should be frozen for cpu-hotplug. This selective
+> > freezing is not yet available. But it will be soon...
 > 
-> __pa() should not be used in any driver.
+> Thanks for the (necessary!) clarification.
+> Let me point out that the usual process would be to replace
 > 
-> At the very least, lguest helper code should wrap this.
-
-	I realize your continual battle with this, but adding a layer of
-indirection doesn't seem like it will add clarity.  The issues with
-__pa() are reasonably known (don't hand it a vmalloc address, for
-example).  Any wrapper I create would be another hurdle to jump 8(
-
-> > +static irqreturn_t lguestnet_rcv(int irq, void *dev_id)
-...
-> > +	return done ? IRQ_HANDLED : IRQ_NONE;
+> 	freezer_exempt(current);
+> 	for (;;) {
+> 		...;
+> by
+> 	freezer_exempt_for_io(current);
+> 	for (;;) {
+> 		try_to_freeze();
+> 		...;
 > 
-> Using NAPI would be preferable...
+> when or after freezer_exempt_for_io was implemented.
+>
 
-I'm not so convinced: scheduling tends to give us pretty good interrupt
-mitigation.  However, if you wish to send a patch, I'd be happy to
-benchmark the two 8)
+Well, a couple of RFC's have already been sent with this regard.
+Most of these recent freezer changes resulted due to the discussions
+that took place over  these RFC's.
 
-> > +	/* Ethernet defaults with some changes */
-> > +	ether_setup(dev);
-> > +	dev->set_mac_address = NULL;
+This was the first attempt
+http://lkml.org/lkml/2007/2/14/106
+
+and a more recent one
+http://lkml.org/lkml/2007/4/2/33
+
+> But as it was submitted now, we are temporarily left with
 > 
-> why NULL?
-
-Because it's not implemented: our MAC is advertised in the device page
-and we'd have to change it there too.
-
-Trivial to do, but is there a compelling reason to implement it?
-
-> > +	dev->mem_start = ((unsigned long)desc->pfn << PAGE_SHIFT);
-> > +	dev->mem_end = dev->mem_start + PAGE_SIZE * desc->num_pages;
-> > +	dev->irq = lgdev->index+1;
+> 	freezer_exempt(current);
+> 	for (;;) {
+> 		try_to_freeze();  /* useless irritating no-op */
+> 		...;
 > 
-> don't fill in mem_start, mem_end and irq.  they are useless, and for 
-> lguest, misleading.
-
-You meant to type "useful and accurate", I think?  They show up in
-ifconfig, so you can see what the underlying devices are using.  They're
-as useful for virtual hardware as they are for physical hardware.
-
-> > +	dev->features = NETIF_F_SG;
-> > +	if (desc->features & LGUEST_NET_F_NOCSUM)
-> > +		dev->features |= NETIF_F_NO_CSUM;
+> without any benefit.  (And this explanatory comment ^^^ wasn't even
+> added; we only have the git log as explanation.)
 > 
-> do not set SG without an accompanying csum bitflag
+> As subsystem maintainer I have to trust now that "soon" actually means
+> "soon" and not "RSN"; otherwise my responsibility would be to send a NAK.
 
-That seems... odd.  My driver can do SG, and may or may not need csums.
-The current Linux code turns SG off if I need csums and that's fine, but
-it hardly seems like my device should be making that decision.
+Soon actually does mean soon :-) 
 
-> > +	info = dev->priv;
-> 
-> use netdev_priv()
+http://lkml.org/lkml/2007/4/27/616 was sent out recently. 
+I am working on the Rafael's suggestions. 
+The only thing holding these patches back is the fact that 
+quite an amount of patches on the freezer/kthread front has gone in 
+recently, which need more review and testing. 
 
-OK, thanks.
+Will keep you posted on the freezer developments from now on.
 
-> > +	info->mapsize = PAGE_SIZE * desc->num_pages;
-> > +	info->peer_phys = ((unsigned long)desc->pfn << PAGE_SHIFT);
-> > +	info->peer = (void *)ioremap(info->peer_phys, info->mapsize);
-> 
-> check for NULL
+> -- 
+> Stefan Richter
+> -=====-=-=== -=-= -=--=
+> http://arcgraph.de/sr/
 
-Erk, good catch!
-
-> > +unregister:
-> > +	unregister_netdev(dev);
-> > +free:
-> > +	free_netdev(dev);
-> 
-> missing iounmap() on error
-
-What is it about me and iomap... will fix that too.
-
-> > +static struct lguest_driver lguestnet_drv = {
-> > +	.name = "lguestnet",
-> > +	.owner = THIS_MODULE,
-> > +	.device_type = LGUEST_DEVICE_T_NET,
-> > +	.probe = lguestnet_probe,
-> > +};
-> 
-> You are distinctly missing module remove support
-
-Yes.  It is never built as a module currently (though it should work).
-
-Thanks!
-Rusty.
-
+Thanks and Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
