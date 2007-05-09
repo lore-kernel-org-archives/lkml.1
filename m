@@ -1,82 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbXEIJTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755901AbXEIJVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756743AbXEIJTV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 05:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXEIJS4
+	id S1755901AbXEIJVq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXEIJVg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 05:18:56 -0400
-Received: from nz-out-0506.google.com ([64.233.162.224]:36801 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755470AbXEIJSz (ORCPT
+	Wed, 9 May 2007 05:21:36 -0400
+Received: from alephnull.demon.nl ([83.160.184.112]:51597 "EHLO
+	xi.wantstofly.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754427AbXEIJVe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 05:18:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=GDco54SLhhu3gKjgywMVvs4VMerNSK0uw9dTgJjKjkqH6RCfCWL7O0OQdkLI1zEChCabS1llWLneCNUuLQRQjENSiFGDIQ8Zv1jNWuK5XFAhryplR1FU7k7/PXx7hn9swytBvIvEg3j5yBQwfly/qDNgD8qAKD9KxvQbCpqxtfI=
-Message-ID: <8d6898730705090218h4ba10102u917b0943bad97a8b@mail.gmail.com>
-Date: Wed, 9 May 2007 14:48:54 +0530
-From: "Nobin Mathew" <nobin.mathew@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: [ASoC] Mic record is not working with wm9713 ASoC driver
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 05:21:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=1148133259;
+	d=wantstofly.org;
+	h=date:from:to:cc:subject:message-id:mime-version:content-type:
+	content-disposition:in-reply-to:user-agent;
+	b=cTYd4Mg3TigwrowPSN0nmnDokSElQLdpnRQzMOVWlZfNGsiFmEe+GrKrTAaVB
+	Q9bix5vXICoG4lumxzZ3m/tCw==
+Date: Wed, 9 May 2007 11:21:32 +0200
+From: Lennert Buytenhek <buytenh@wantstofly.org>
+To: Marcus Better <marcus@better.se>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+Message-ID: <20070509092132.GB6976@xi.wantstofly.org>
+References: <464034CF.20700@wpkg.org> <f19298770705080148u70638ac2ue87241382681088@mail.gmail.com> <m3bqgv72sq.fsf@maximus.localdomain> <20070508155201.GA1251@xi.wantstofly.org> <m3hcqn5j0p.fsf@maximus.localdomain> <f1s2eu$26p$1@sea.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <f1s2eu$26p$1@sea.gmane.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am trying to record mic with AsoC wm9713 driver. My Mic is connected "Mic 1".
+On Wed, May 09, 2007 at 10:58:06AM +0200, Marcus Better wrote:
 
-My settings
+> >> There _is_ an ARM BE version of Debian.
+> >>
+> >> It's not an official port, but it's not maintained any worse than
+> >> the 'official' LE ARM Debian port is.
+> 
+> > Hmm... That changes a bit. Perhaps we should forget about
+> > that LE thing then, and (at best) put that trivial workaround?
+> 
+> Please keep in mind that users are unlikely to install an unofficial port
+> which lacks integration with the Debian infrastructure, security support
+> and other services. The arm architecture (LE) is currently the third most
+> popular in Debian, whereas I suspect (?) there are very few BE Debian
+> systems out there.
 
-'Mic A Source' -> "Mic 1"
-'Mic Boost (+20dB)' [on]
-'Capture' [on]
-'Left Capture Source' "Mic 1"
-'Right Capture Source' "Mic 1"
+Note that all of your arguments also apply to the experimental
+EABI little-endian ARM port.
 
+I.e.:
+1. The EABI port is an unofficial port.
+2. The EABI port is not integrated with the Debian infrastructure.
+3. The EABI port lacks security support.
 
-i am issuing following command to record
-"arecord -M -f S16_LE sound.wav"
+You could also argue that:
+4. "There is no reason to use EABI -- old-ABI works just as well."
+5. "The perceived floating point speedups that EABI gives are
+   completely drowned out by the slowness of the rest of the system."
+6. "A lot of programs assume old-ABI behavior, it is too much work
+   to patch them all."
 
-But what i found is driver is not enabling "Mic bias" and "Mic A PGA"
+Does that mean that the Debian ARM people have their heads so far
+up their collective asses that they think that every form of change
+is bad and are unable to accept that some forms of change might be
+for the better?
 
-this dump of /sys/devices/platform/soc-audio/dapm_widget while
-"arecord" is running is given below
-
-
-Mic Bias: Off
-Mic B Pre Amp: Off
-Mic A Pre Amp: On
-Mic B PGA: Off
-Mic A PGA: Off
-Mono In: Off
-Right Line In: Off
-Left Line In: Off
-Mono Out: Off
-Out 4: Off
-Out 3: Off
-Right Speaker: Off
-Left Speaker: Off
-Right Headphone: Off
-Left Headphone: Off
-Right ADC: On
-Left ADC: On
-Aux DAC: Off
-Voice DAC: Off
-Capture Mixer: Off
-HP Mixer: Off
-AC97 Mixer: Off
-Right DAC: Off
-Left DAC: Off
-Speaker Mixer: Off
-Mono Mixer: Off
-Right HP Mixer: Off
-Left HP Mixer: Off
-PM State: D0
-
-In idea why this is happening?
-what is going wrong with my settings?
-
-Nobin Mathew
+I think you've just summarised why I don't like working on Debian.
