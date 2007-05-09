@@ -1,79 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbXEILlW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756173AbXEILnR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755739AbXEILlW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 07:41:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbXEILlO
+	id S1756173AbXEILnR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 07:43:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXEILnD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 07:41:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48980 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750708AbXEILlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 07:41:13 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-Date: Wed, 9 May 2007 13:45:54 +0200
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       John Stultz <johnstul@us.ibm.com>, linux-acpi@vger.kernel.org
-References: <20070430102837.748238000@linutronix.de> <20070509013119.dbea7233.akpm@linux-foundation.org> <1178701183.3042.469.camel@localhost.localdomain>
-In-Reply-To: <1178701183.3042.469.camel@localhost.localdomain>
+	Wed, 9 May 2007 07:43:03 -0400
+Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:60760
+	"EHLO eggplant.ddo.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750773AbXEILnB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 07:43:01 -0400
+Message-ID: <1638.192.168.1.10.1178710979.squirrel@eggplant.ddo.jp>
+Date: Wed, 9 May 2007 20:42:59 +0900 (JST)
+Subject: Re: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
+From: "kogiidena" <kogiidena@eggplant.ddo.jp>
+To: "Richard Purdie" <rpurdie@rpsys.net>
+Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
+Reply-To: kogiidena@eggplant.ddo.jp
+User-Agent: SquirrelMail/1.4.5
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705091345.55207.rjw@sisk.pl>
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+References: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp><1178628407.6061.24.camel@localhost.localdomain>
+In-Reply-To: <1178628407.6061.24.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 9 May 2007 10:59, Thomas Gleixner wrote:
-> On Wed, 2007-05-09 at 01:31 -0700, Andrew Morton wrote:
-> > > I suspect I just tested the wrong thing yesterday.  Let me recheck just
-> > > these patches against 2.6.21.
-> > 
-> > yup, same hang with just these three:
-> > 
-> > origin
-> > clocksource-fix-resume-logic
-> > clockevents-fix-resume-logic-updated-version
-> 
-> I have no idea, how this affects acpi_evaluate_object()
+Hi Richard-san
 
-I think the problem is that the ACPI code ordering here is broken in a
-difficult to fix way.
+>As far as I can tell, the existing timer trigger can do everything the
+>blink trigger can (and more besides).
+I want to blink LED in the initial state.
+Because that of "the existing timer trigger" was impossible, I made "BLINK".
 
-Definitely, we shouldn't execute the _BFS method after creating the image
-and most probably _WAK shouldn't be executed here either.  Moreover,
-acpi_leave_sleep_state() enables the runtime GPEs, which AFAICS
-is equivalent to allowing ACPI to generate SCIs.  I'm not sure if this is a
-good idea to do such a thing in this particular place.
+I thought about another solution.
+Can the change that sets an initial value to delay_on and delay_off be added?
 
-Andrew, could you please apply the appended patch and see if that
-helps (should apply to -mm2)?
+The matter of "Bitshift" is reserved until this case is solved.
 
-Rafael
-
+kogiidena
 ---
-NOTE: This is not a complete solution, because it removes the enabling of GPEs
-from the resume-during-hibernation code path entirely, which probbably is not a
-good idea in general.
----
- kernel/power/disk.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+diff -urpN OLD/include/linux/leds.h NEW/include/linux/leds.h
+--- OLD/include/linux/leds.h	2007-05-07 12:12:15.000000000 +0900
++++ NEW/include/linux/leds.h	2007-05-09 19:17:01.000000000 +0900
+@@ -14,6 +14,7 @@
 
-Index: linux-2.6.21/kernel/power/disk.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/disk.c
-+++ linux-2.6.21/kernel/power/disk.c
-@@ -131,7 +131,9 @@ int hibernation_snapshot(int platform_mo
- 	}
- 	enable_nonboot_cpus();
-  Resume_devices:
--	platform_finish(platform_mode);
-+	if (!in_suspend || error)
-+		platform_finish(platform_mode);
+ #include <linux/list.h>
+ #include <linux/spinlock.h>
++#include <linux/timer.h>
+
+ struct device;
+ struct class_device;
+@@ -41,6 +42,7 @@ struct led_classdev {
+ 	struct class_device	*class_dev;
+ 	struct list_head	 node;			/* LED Device list */
+ 	char			*default_trigger;	/* Trigger to use */
++	void			*default_trigger_data;	/* Trigger to use */
+
+ #ifdef CONFIG_LEDS_TRIGGERS
+ 	/* Protects the trigger data below */
+@@ -110,6 +112,14 @@ extern void ledtrig_ide_activity(void);
+ #define ledtrig_ide_activity() do {} while(0)
+ #endif
+
++#ifdef CONFIG_LEDS_TRIGGER_TIMER
++struct timer_trig_data {
++	unsigned long delay_on;		/* milliseconds on */
++	unsigned long delay_off;	/* milliseconds off */
++	struct timer_list timer;
++};
++#endif
 +
- 	device_resume();
- 	resume_console();
-  Finish:
+ /* For the leds-gpio driver */
+ struct gpio_led {
+ 	const char *name;
+diff -urpN OLD/drivers/leds/ledtrig-timer.c NEW/drivers/leds/ledtrig-timer.c
+--- OLD/drivers/leds/ledtrig-timer.c	2007-04-28 06:49:26.000000000 +0900
++++ NEW/drivers/leds/ledtrig-timer.c	2007-05-09 19:12:35.000000000 +0900
+@@ -24,12 +24,6 @@
+ #include <linux/leds.h>
+ #include "leds.h"
+
+-struct timer_trig_data {
+-	unsigned long delay_on;		/* milliseconds on */
+-	unsigned long delay_off;	/* milliseconds off */
+-	struct timer_list timer;
+-};
+-
+ static void led_timer_function(unsigned long data)
+ {
+ 	struct led_classdev *led_cdev = (struct led_classdev *) data;
+@@ -124,6 +118,7 @@ static CLASS_DEVICE_ATTR(delay_off, 0644
+ static void timer_trig_activate(struct led_classdev *led_cdev)
+ {
+ 	struct timer_trig_data *timer_data;
++	struct timer_trig_data *def_trig_data = led_cdev->default_trigger_data;
+ 	int rc;
+
+ 	timer_data = kzalloc(sizeof(struct timer_trig_data), GFP_KERNEL);
+@@ -143,6 +138,11 @@ static void timer_trig_activate(struct l
+ 				&class_device_attr_delay_off);
+ 	if (rc) goto err_out_delayon;
+
++	if (def_trig_data){
++		timer_data->delay_on  = def_trig_data->delay_on;
++		timer_data->delay_off = def_trig_data->delay_off;
++		mod_timer(&timer_data->timer, jiffies + 1);
++	}
+ 	return;
+
+ err_out_delayon:
+
+
+
+
+
