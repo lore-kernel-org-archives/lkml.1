@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760171AbXEIW6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760140AbXEIW7M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760171AbXEIW6c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 18:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758711AbXEIW6N
+	id S1760140AbXEIW7M (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 18:59:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbXEIW6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 18:58:13 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:47119 "EHLO mx1.redhat.com"
+	Wed, 9 May 2007 18:58:52 -0400
+Received: from mga01.intel.com ([192.55.52.88]:32196 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757431AbXEIW6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 18:58:11 -0400
-Message-ID: <464251FD.6060709@redhat.com>
-Date: Wed, 09 May 2007 18:58:05 -0400
-From: Chuck Ebbert <cebbert@redhat.com>
-Organization: Red Hat
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Gerhard Mack <gmack@innerfire.net>
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.21.1] SATA freeze
-References: <Pine.LNX.4.64.0705091453310.18441@mtl.rackplans.net> <464226BD.8000602@garzik.org> <Pine.LNX.4.64.0705091741070.31317@mtl.rackplans.net>
-In-Reply-To: <Pine.LNX.4.64.0705091741070.31317@mtl.rackplans.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1757055AbXEIW6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 18:58:51 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,512,1170662400"; 
+   d="scan'208";a="243988958"
+Date: Wed, 9 May 2007 15:55:53 -0700
+From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+To: lenb@kernel.org
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] ACPI: bay: unsuppress uevents
+Message-Id: <20070509155553.17674722.kristen.c.accardi@intel.com>
+X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerhard Mack wrote:
-> On Wed, 9 May 2007, Jeff Garzik wrote:
->> Gerhard Mack wrote:
->>> May  9 14:51:35 mgerhard kernel: ata1.00: exception Emask 0x0 SAct 0x0 SErr
->>> 0x1800000 action 0x2 frozen
->>> May  9 14:51:35 mgerhard kernel: ata1.00: cmd
->>> 35/00:00:80:6d:c8/00:04:09:00:00/e0 tag 0 cdb 0x0 data 524288 out
->>> May  9 14:51:35 mgerhard kernel:          res
->>> 40/00:c8:68:65:c8/84:00:09:00:00/e0 Emask 0x4 (timeout)
->>> May  9 14:51:42 mgerhard kernel: ata1: port is slow to respond, please be
->>> patient (Status 0xd0)
->>>
->>> Anything I can do to figgure out what's causing this?
->> Provide full lspci, dmesg, kernel config?
->>
-> Done.
-> 
+ACPI: bay: unsuppress uevents
 
-You could try:
+Since platform devices seem to get uevents suppressed by default,
+manually unsuppress for the bay device since we want to be able
+to send uevents.
 
-   pci=nomsi (kernel option)
+Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
 
-and/or
-
-   adma=0 (module option for sata_nv)
-
+Index: 2.6-git/drivers/acpi/bay.c
+===================================================================
+--- 2.6-git.orig/drivers/acpi/bay.c
++++ 2.6-git/drivers/acpi/bay.c
+@@ -287,6 +287,11 @@ static int bay_add(acpi_handle handle, i
+ 	}
+ 	new_bay->pdev = pdev;
+ 	platform_set_drvdata(pdev, new_bay);
++
++	/*
++	 * we want the bay driver to be able to send uevents
++	 */
++	pdev->dev.uevent_suppress = 0;
+ 
+ 	if (acpi_bay_add_fs(new_bay)) {
+ 		platform_device_unregister(new_bay->pdev);
