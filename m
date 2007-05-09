@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757464AbXEIKY3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757074AbXEIKZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757464AbXEIKY3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 06:24:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbXEIKYN
+	id S1757074AbXEIKZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 06:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755121AbXEIKZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 06:24:13 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2099 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755618AbXEIKYK (ORCPT
+	Wed, 9 May 2007 06:25:47 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:34316 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755024AbXEIKZq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 06:24:10 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: akpm@linux-foundation.org
-Subject: Re: [patch 7/9] lguest: the net driver
-Cc: linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       akpm@linux-foundation.org, rusty@rustcorp.com.au, ak@suse.de,
-       jeff@garzik.org, jmorris@namei.org, netdev@vger.kernel.org
-Organization: Core
-In-Reply-To: <200705090951.l499pdOr020406@shell0.pdx.osdl.net>
-X-Newsgroups: apana.lists.os.linux.kernel,apana.lists.os.linux.virtualization
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1HljA6-0001E4-00@gondolin.me.apana.org.au>
-Date: Wed, 09 May 2007 20:12:46 +1000
+	Wed, 9 May 2007 06:25:46 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:
+	message-id:references:mime-version:content-type;
+	b=TmYj8Q8ImiI1IhWLMOyDKwU6sasr9gEK98eXbUZ1knJFgWxg4qT7jov9jDSy1sZPz
+	/jEqsfMUYNpQOtLME5a6A==
+Date: Wed, 9 May 2007 03:25:06 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       jeremy@goop.org
+Subject: Re: [PATCH] doc: volatile considered evil
+In-Reply-To: <20070509102134.5d722386@the-village.bc.nu>
+Message-ID: <alpine.DEB.0.99.0705090308150.17598@chino.kir.corp.google.com>
+References: <516386418.20070501080839@gmail.com> <20070430235642.e576e917.akpm@linux-foundation.org>
+ <20070508121404.17bd97a6.randy.dunlap@oracle.com>
+ <a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
+ <20070508163452.8b71f682.randy.dunlap@oracle.com>
+ <alpine.DEB.0.99.0705081702070.28511@chino.kir.corp.google.com>
+ <20070508190800.1334b968.randy.dunlap@oracle.com>
+ <alpine.DEB.0.99.0705081934390.20751@chino.kir.corp.google.com>
+ <20070509102134.5d722386@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm@linux-foundation.org wrote:
->
-> +       if (desc->features & LGUEST_NET_F_NOCSUM)
-> +               dev->features |= NETIF_F_NO_CSUM;
+On Wed, 9 May 2007, Alan Cox wrote:
 
-Any reason why you're using NO_CSUM here instead of HW_CSUM?
-Practically there is no difference but NO_CSUM could be treated
-differently in future and I'm not sure whether such changes would
-be desirable in this driver (i.e., not even generating a partial
-checksum).
+> When Might You Need volatile ?
+> ------------------------------
+> 
+> When you are implementing the locking primitives on a new platform. When
+> you are implementing the I/O and atomic prmitives on a new platform. Also
+> in inline gcc assembler where "volatile" is used for subtly different
+> purposes.
+> 
 
-Also, there doesn't seem to be any passing of metadata to the
-backend which means that neither NO_CSUM/HW_CSUM can work if
-somebody needs to look at the checksum field.  You could use
-IP_CSUM if you do the same hack on the backend that Xen does.
-Otherwise you'll have to make do with no checksum offload at all.
+What is determined to be an "access" (read or modify) to an object such 
+as a locking primitive that is type-qualified with the keyword 'volatile' 
+is implementation defined.
 
-I think you'd also need a change_mtu function if the SG feature
-is going to be of some use since the default Ethernet one limits
-the MTU to 1500.
+You cannot guarantee that the value in such an object would agree 
+with the evaluation thus far as specified by the semantics of the code
+even at sequence points because such an object can be modified without 
+knowledge to the implementation.  The only thing you _can_ guarantee at 
+these sequence points is that their previous accesses are complete and 
+later accesses, as specified by the semantics of the code, have not yet 
+occurred.  This does not exclude the possibility that they were modified 
+without knowledge to the implementation.  In this case, the actual and 
+abstract semantics of the text may not agree.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Thus, any reliance on type-qualifying an object that represents an atomic 
+or locking primitive on the keyword 'volatile' is misplaced.
+
+		David
