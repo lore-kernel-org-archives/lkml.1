@@ -1,149 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756061AbXEITYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757458AbXEITdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756061AbXEITYb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 15:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758500AbXEITYW
+	id S1757458AbXEITdl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 15:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754123AbXEITde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 15:24:22 -0400
-Received: from wr-out-0506.google.com ([64.233.184.226]:42105 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758317AbXEITYS (ORCPT
+	Wed, 9 May 2007 15:33:34 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50858 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751526AbXEITdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 15:24:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=tGCR+oZ1H2WbiLb8GoCZcKHbolC9lNhGUJXiuRUO0fC7EhMBp5rAsZDU8laFpjDW/89mF9O3s+okbWVtt7RYnoGeE+WMyDxV1Bt41hWSI2UmsWuMs+34nW/HFTpbeoW9rDasKqOdE0dVPaAceRpgnKXGkFmDNoTeJpUpqy+9Xwo=
-Message-ID: <b647ffbd0705091224m75bf8caawa0019ecfe8bf82e7@mail.gmail.com>
-Date: Wed, 9 May 2007 21:24:17 +0200
-From: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-To: vatsa@in.ibm.com
-Subject: Re: Definition of fairness (was Re: [patch] CFS scheduler, -v11)
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Con Kolivas" <kernel@kolivas.org>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070509180205.GA27462@in.ibm.com>
+	Wed, 9 May 2007 15:33:32 -0400
+Date: Wed, 9 May 2007 20:33:15 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] optimise unlock_page
+In-Reply-To: <20070508225012.GF20174@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0705091950080.2909@blonde.wat.veritas.com>
+References: <20070508113709.GA19294@wotan.suse.de> <20070508114003.GB19294@wotan.suse.de>
+ <1178659827.14928.85.camel@localhost.localdomain> <20070508224124.GD20174@wotan.suse.de>
+ <20070508225012.GF20174@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070508150431.GA26977@elte.hu>
-	 <20070509180205.GA27462@in.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 09 May 2007 19:33:30.0243 (UTC) FILETIME=[EC567530:01C79270]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AG5waWdnaW5Ac3VzZS5kZQBsaW51eC1hcmNoQHZnZXIua2VybmVsLm9yZwBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnAGxpbnV4LW1tQGt2YWNrLm9yZwA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09/05/07, Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
-> On Tue, May 08, 2007 at 05:04:31PM +0200, Ingo Molnar wrote:
-> > thanks Mike - value 0x8 looks pretty good here and doesnt have the
-> > artifacts you found. I've done a quick -v11 release with that fixed,
-> > available at the usual place:
-> >
-> >     http://people.redhat.com/mingo/cfs-scheduler/
-> >
-> > with no other changes.
->
-> Ingo,
->         I had a question with respect to the definition of fairness used, esp
-> for tasks that are not 100% cpu hogs.
->
-> Ex: consider two equally important tasks T1 and T2 running on same CPU and
-> whose execution nature is:
->
->         T1 = 100% cpu hog
->         T2 = 60% cpu hog (run for 600ms, sleep for 400ms)
->
-> Over a arbitrary observation period of 10 sec,
->
->         T1 was ready to run for all 10sec
->         T2 was ready to run for 6 sec
->
+On Wed, 9 May 2007, Nick Piggin wrote:
+> On Wed, May 09, 2007 at 12:41:24AM +0200, Nick Piggin wrote:
+> > On Wed, May 09, 2007 at 07:30:27AM +1000, Benjamin Herrenschmidt wrote:
+> > > 
+> > > Waking them all would fix it but at the risk of causing other
+> > > problems... Maybe PG_waiters need to actually be a counter but if that
+> > > is the case, then it complicates things even more.
+> > 
+> > It will wake up 1 exclusive waiter, but no limit on non exclusive waiters.
+> > Hmm, but it won't wake up waiters behind the exclusive guy... maybe the
+> > wake up code can check whether the waitqueue is still active after the
+> > wakeup, and set PG_waiters again in that case?
+> 
+> Hm, I don't know if we can do that without a race either...
+> 
+> OTOH, waking all non exclusive waiters may not be a really bad idea.
 
-One quick observation.
+Not good enough, I'm afraid.  It looks like Ben's right and you need
+a count - and counts in the page struct are a lot harder to add than
+page flags.
 
-Isn't it important for both processes to have the same "loops_per_ms" value?
+I've now played around with the hangs on my three 4CPU machines
+(all of them in io_schedule below __lock_page, waiting on pages
+which were neither PG_locked nor PG_waiters when I looked).
 
-At least on my machine, it's not always the case. See how results
-differ in the following 2 tests:
+Seeing Ben's mail, I thought the answer would be just to remove
+the "_exclusive" from your three prepare_to_wait_exclusive()s.
+That helped, but it didn't eliminate the hangs.
 
-(1) when loops_per_ms happen to be quite different;
-(2) ----//---- pretty same values.
+After fiddling around with different ideas for some while, I came
+to realize that the ClearPageWaiters (in very misleadingly named
+__unlock_page) is hopeless.  It's just so easy for it to clear the
+PG_waiters that a third task relies upon for wakeup (and which
+cannot loop around to set it again, because it simply won't be
+woken by unlock_page/__unlock_page without it already being set).
 
-Both are for mainline 2.6.19 and both processes have equal characteristics.
-namely,
+Below is the patch I've applied to see some tests actually running
+with your patches, but it's just a joke: absurdly racy and
+presumptuous in itself (the "3" stands for us and the cache and one
+waiter; I deleted the neighbouring mb and comment, not because I
+disagree, but because it's ridiculous to pay so much attention to
+such unlikely races when there's much worse nearby).  Though I've
+not checked: if I've got the counting wrong, then maybe all my
+pages are left marked PG_waiters by now.
 
-./cpuhog 600 400 10
+(I did imagine we could go back to prepare_to_wait_exclusive
+once I'd put in the page_count test before ClearPageWaiters;
+but apparently not, that still hung.)
 
-I run them one by one from different shells.
+My intention had been to apply the patches to what I tested before
+with lmbench, to get comparative numbers; but I don't think this
+is worth the time, it's too far from being a real solution.
 
-(1)
+I was puzzled as to how you came up with any performance numbers
+yourself, when I could hardly boot.  I see you mentioned 2CPU G5,
+I guess you need a CPU or two more; or maybe it's that you didn't
+watch what happened as it booted, often those hangs recover later.
 
-dimm@dimm:/mnt/storage/kernel/sched-bench> ./cpuhog 600 400 10
-loops_per_ms = 94517.958412  <---------- (*)
+Hugh
 
-run time = 600 ms (56710775 loops), sleep time = 400 ms, epoch time = 10 s
-Obtained 6.39 seconds of execution time in 10 elapsed seconds
-Obtained 4.52 seconds of execution time in 11 elapsed seconds
-Obtained 4.47 seconds of execution time in 10 elapsed seconds
-Obtained 4.47 seconds of execution time in 10 elapsed seconds
-Obtained 4.53 seconds of execution time in 10 elapsed seconds
-Obtained 4.14 seconds of execution time in 10 elapsed seconds
-...
-
-dimm@dimm:/mnt/storage/kernel/sched-bench> ./cpuhog 600 400 10
-loops_per_ms = 51599.587203  <------------- (**)
-
-run time = 600 ms (30959752 loops), sleep time = 400 ms, epoch time = 10 s
-Obtained 3.91 seconds of execution time in 10 elapsed seconds
-Obtained 3.16 seconds of execution time in 10 elapsed seconds
-Obtained 3.18 seconds of execution time in 10 elapsed seconds
-Obtained 3.19 seconds of execution time in 10 elapsed seconds
-Obtained 2.97 seconds of execution time in 10 elapsed seconds
-
-Look at a difference between (*) and (**) and we can see the reported
-results are different.
-Although, one would expect both are treated "equally" with the current
-scheduler (whatever one puts in this meaning :)
-
-
-(2) now another attempt.
-
-dimm@dimm:/mnt/storage/kernel/sched-bench> ./cpuhog 600 400 10
-loops_per_ms = 96711.798839
-
-run time = 600 ms (58027079 loops), sleep time = 400 ms, epoch time = 10 s
-Obtained 4.32 seconds of execution time in 10 elapsed seconds
-Obtained 3.84 seconds of execution time in 11 elapsed seconds
-Obtained 3.86 seconds of execution time in 11 elapsed seconds
-Obtained 3.84 seconds of execution time in 11 elapsed seconds
-Obtained 3.86 seconds of execution time in 11 elapsed seconds
-...
-
-dimm@dimm:/mnt/storage/kernel/sched-bench> ./cpuhog 600 400 10
-loops_per_ms = 96899.224806
-
-run time = 600 ms (58139534 loops), sleep time = 400 ms, epoch time = 10 s
-Obtained 4.28 seconds of execution time in 10 elapsed seconds
-Obtained 3.88 seconds of execution time in 11 elapsed seconds
-Obtained 3.88 seconds of execution time in 10 elapsed seconds
-Obtained 3.40 seconds of execution time in 10 elapsed seconds
-Obtained 3.42 seconds of execution time in 10 elapsed seconds
-Obtained 3.89 seconds of execution time in 11 elapsed seconds
-...
-
-
-In this case, "loops_per_ms" happened to be pretty equal so the
-reported results look pretty similar. "top" showed very close numbers
-in this case as well.
-
-Maybe it's different in your case (besides I don't claim that
-everything is ok with SD and CFS) but I guess this could be one of the
-reasons.
-
-At least, fork()-ing the second process (with different
-run_time/sleep_time characteristics) from the first one would ensure
-both have the same "loop_per_ms".
-
-
--- 
-Best regards,
-Dmitry Adamushko
+--- a/mm/filemap.c	2007-05-08 20:17:31.000000000 +0100
++++ b/mm/filemap.c	2007-05-09 19:14:03.000000000 +0100
+@@ -517,13 +517,8 @@ EXPORT_SYMBOL(wait_on_page_bit);
+  */
+ void fastcall __unlock_page(struct page *page)
+ {
+-	ClearPageWaiters(page);
+- 	/*
+-	 * The mb is necessary to enforce ordering between the clear_bit and
+-	 * the read of the waitqueue (to avoid SMP races with a parallel
+-	 * wait_on_page_locked()
+-	 */
+-	smp_mb__after_clear_bit();
++	if (page_count(page) <= 3 + page_has_buffers(page)+page_mapcount(page))
++		ClearPageWaiters(page);
+ 	wake_up_page(page, PG_locked);
+ }
+ EXPORT_SYMBOL(__unlock_page);
+@@ -558,7 +553,7 @@ void fastcall __lock_page(struct page *p
+ 	DEFINE_WAIT_BIT(wait, &page->flags, PG_locked);
+ 
+ 	do {
+-		prepare_to_wait_exclusive(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
++		prepare_to_wait(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
+ 		SetPageWaiters(page);
+ 		if (likely(PageLocked(page)))
+ 			sync_page(page);
+@@ -577,7 +572,7 @@ void fastcall __lock_page_nosync(struct 
+ 	DEFINE_WAIT_BIT(wait, &page->flags, PG_locked);
+ 
+ 	do {
+-		prepare_to_wait_exclusive(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
++		prepare_to_wait(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
+ 		SetPageWaiters(page);
+ 		if (likely(PageLocked(page)))
+ 			io_schedule();
+@@ -591,7 +586,7 @@ void fastcall __wait_on_page_locked(stru
+ 	DEFINE_WAIT_BIT(wait, &page->flags, PG_locked);
+ 
+ 	do {
+-		prepare_to_wait_exclusive(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
++		prepare_to_wait(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
+ 		SetPageWaiters(page);
+ 		if (likely(PageLocked(page)))
+ 			sync_page(page);
