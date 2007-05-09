@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757938AbXEIT4x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757339AbXEIUEF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757938AbXEIT4x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 15:56:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756092AbXEIT4q
+	id S1757339AbXEIUEF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 16:04:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754240AbXEIUDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 15:56:46 -0400
-Received: from adsl-70-250-156-241.dsl.austtx.swbell.net ([70.250.156.241]:34085
-	"EHLO gw.microgate.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755512AbXEIT4q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 15:56:46 -0400
-Message-ID: <464235F4.6080006@microgate.com>
-Date: Wed, 09 May 2007 14:58:28 -0600
-From: Paul Fulghum <paulkf@microgate.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-MIME-Version: 1.0
-To: James Simmons <jsimmons@infradead.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux console project <linuxconsole-dev@lists.sourceforge.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] Use tty_schedule in VT code.
-References: <Pine.LNX.4.64.0705082107460.3459@pentafluge.infradead.org> <1178656361.14867.7.camel@x2.microgate.com>
-In-Reply-To: <1178656361.14867.7.camel@x2.microgate.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 9 May 2007 16:03:55 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46702 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751722AbXEIUDz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 16:03:55 -0400
+Date: Wed, 9 May 2007 12:56:16 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: <ak@suse.de>
+Cc: zaitcev@redhat.com, linux-kernel@vger.kernel.org, <joerg.roedel@amd.com>
+Subject: Andi, you broke my laptop :-)
+Message-Id: <20070509125616.cde56b8e.zaitcev@redhat.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Fulghum wrote:
-> As the tty flip buffer code has evolved, that delay value of 1
-> was carried along. It may have had some historical purpose, but
-> I can't figure it out and it appears to have no use currently.
+Hi, Andi:
 
-I looked further back and in the 2.4 kernels this scheduling
-was done with the timer task queue (process receive data on
-next timer tick).
+The attached patch (actually, git show output) makes my Dell 1501 to hang
+on boot. Sorry, I have no clue why... The culprit is found with git bisect.
+But yes, it's an AMD MK-36. I use an x86_64 kernel. It is 100% reproducible.
 
-I guess the schedule_delayed_work() with a time delay of 1
-was the best approximation of the previous behavior.
+Cheers,
+-- Pete
 
-There is no logical reason to delay the first attempt at
-processing receive data so schedule_delayed_work() in
-tty_schedule_flip() should be changed to 0 (as was the
-case for con_schedule_flip).
+commit c5bcb5635a03da3158f121ae20ccbbf72b4fc62a
+Author: Andi Kleen <ak@suse.de>
+Date:   Wed May 2 19:27:21 2007 +0200
 
-The schedule_delayed_work in flush_to_ldisc() will continue
-to use a delay of 1 if the ldisc can't accept more data.
-This allows the user app and ldisc to catch up.
+    [PATCH] x86: Use RDTSCP for synchronous get_cycles if possible
+    
+    RDTSCP is already synchronous and doesn't need an explicit CPUID.
+    This is a little faster and more importantly avoids VMEXITs on Hypervisors.
+    
+    Original patch from Joerg Roedel, but reworked by AK
+    Also includes miscompilation fix by Eric Biederman
+    
+    Cc: "Joerg Roedel" <joerg.roedel@amd.com>
+    
+    Signed-off-by: Andi Kleen <ak@suse.de>
 
-Subsequent calls to tty_schedule_flip won't affect
-this 'back off' delay because once the work is scheduled
-(with a delay of 1) new scheduling calls are ignored for
-the same work structure.
-
-I've been testing the change to 0 in tty_schedule_flip()
-under various loads and data rates with no ill effects.
-
--- 
-Paul Fulghum
-Microgate Systems, Ltd.
+diff --git a/include/asm-i386/tsc.h b/include/asm-i386/tsc.h
+index 0181f9d..3f3c1fa 100644
+--- a/include/asm-i386/tsc.h
++++ b/include/asm-i386/tsc.h
+@@ -38,6 +38,15 @@ static __always_inline cycles_t get_cycles_sync(void)
+ 	unsigned eax;
+ 
+ 	/*
++  	 * Use RDTSCP if possible; it is guaranteed to be synchronous
++ 	 * and doesn't cause a VMEXIT on Hypervisors
++	 */
++	alternative_io(ASM_NOP3, ".byte 0x0f,0x01,0xf9", X86_FEATURE_RDTSCP,
++			 	 "=A" (ret), "0" (0ULL) : "ecx", "memory");
++	if (ret)
++		return ret;
++
++	/*
+ 	 * Don't do an additional sync on CPUs where we know
+ 	 * RDTSC is already synchronous:
+ 	 */
