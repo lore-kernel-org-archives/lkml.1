@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970764AbXEHX5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970832AbXEIAA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970764AbXEHX5h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 19:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970379AbXEHX52
+	id S970832AbXEIAA0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 20:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970511AbXEIAAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 19:57:28 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46504 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S968143AbXEHX51 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 19:57:27 -0400
-Date: Tue, 8 May 2007 16:57:27 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Kevin Winchester <kjwinchester@gmail.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot
-In-Reply-To: <464108CC.3060604@gmail.com>
-Message-ID: <Pine.LNX.4.64.0705081655560.16476@schroedinger.engr.sgi.com>
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
- <4640FE35.2070605@gmail.com> <Pine.LNX.4.64.0705081557560.15790@schroedinger.engr.sgi.com>
- <464108CC.3060604@gmail.com>
+	Tue, 8 May 2007 20:00:08 -0400
+Received: from gw.goop.org ([64.81.55.164]:54518 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S970379AbXEIAAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 20:00:06 -0400
+Message-ID: <46410F02.906@goop.org>
+Date: Tue, 08 May 2007 17:00:02 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       David Howells <dhowells@redhat.com>,
+       Bj?rn Steinbrink <B.Steinbrink@gmx.de>
+Subject: Re: [patch 3/4] split usermodehelper setup from execution
+References: <20070508205129.064843364@goop.org>	 <20070508205517.256147592@goop.org> <1178668171.7286.55.camel@localhost.localdomain>
+In-Reply-To: <1178668171.7286.55.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007, Kevin Winchester wrote:
+Rusty Russell wrote:
+> call_usermodehelper_pipe()?  Erk.  Grepping... for core dumping via a
+> process?  Without modifying the ELF core dumper (at least) to handle
+> short writes?  Why not dump it in an agreed location and exec the
+> process with that as an arg?
+>   
 
-> [    1.376783]  [<ffffffff8067d664>] kernel_init+0xc4/0x2a0
-> [    1.376857]  [<ffffffff802080aa>] __switch_to+0x2a/0x2d0
-> [    1.376932]  [<ffffffff8020a5d8>] child_rip+0xa/0x12
-> [    1.377006]  [<ffffffff8067d5a0>] kernel_init+0x0/0x2a0
-> [    1.377080]  [<ffffffff8020a5ce>] child_rip+0x0/0x12
-> [    1.377151]
-> [    1.377221] @@@ SLUB kmalloc-256: Restoring Poison (0x6b) from
-> 0xffff810001bdecd0-0xffff810001bdedce
-> [    1.377326] @@@ SLUB kmalloc-256: Restoring Poison (0xa5) from
-> 0xffff810001bdedcf-0xffff810001bdedcf
-> [    1.377430] @@@ SLUB: kmalloc-256 slab 0xffff810001061890. Marking all
-> objects used.
+I think the idea is that you might want to send it over the net on a
+diskless system, or filter/compress the core before it hits disk because
+you don't have enough space.
 
+> When did this go in?  2.6.19... hmm, too late to rip it out I guess 8(
+>
+> Anyway, I'm not sure exposing an open-ended interface wins: refactoring
+> internally definitely makes sense though.
 
-There is more... The above describes the repair actions that were taken by 
-SLUB. Poison was restored and then the slab was taken out of circulation 
-since pointers may still exist that may damage additional objects if used 
-to store more data.
+Well, I added this specifically so I could add a cleanup callback, which
+can be used to free a dynamically allocated argv array (see the
+following patch).  And if you're going to have all this stuff, you may
+as well make it work properly together.  Why have "you can set the
+session keyring *or* use a pipe for stdin"?
 
+As distended as it is, at least it actually fits together somewhat
+coherently now.  I'd be up for dropping the single-use wrapper functions.
 
+    J
