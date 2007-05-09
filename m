@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbXEIMYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757361AbXEIM13@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbXEIMYm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbXEIMYc
+	id S1757361AbXEIM13 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:27:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756147AbXEIM1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:24:32 -0400
-Received: from web52910.mail.re2.yahoo.com ([206.190.49.20]:44700 "HELO
-	web52910.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752989AbXEIMYb (ORCPT
+	Wed, 9 May 2007 08:27:21 -0400
+Received: from hu-out-0506.google.com ([72.14.214.232]:1722 "EHLO
+	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755023AbXEIM1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:24:31 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=MRFZmvEt1uKyY+JPrKH8pUaIkDMbB9ZjYmZxrH1fBoiyw11tCdHGpik/qfX9JtLcAQytTpwjRouHWCJA+BDfS5Y0cXKUYUka/KK4RrISAtADWEsPs1kynoiHAx8S7tX/TU6qGrrhcI8bo+iPjrq/fO00fhDJg0f1bm9c9l1aATc=;
-X-YMail-OSG: dzsR3vwVM1lk57BjWUW1UVwb83YB7xQrMXD.RMrXt.5FF4HC5GQfRI9dRjpc.5vByztmjoB6saY9eVOFz_vbUb3yRQDMNDqujvjzKqn65C1jpy4TGkRDFKlLTg--
-Date: Wed, 9 May 2007 13:24:30 +0100 (BST)
-From: Chris Rankin <rankincj@yahoo.com>
-Subject: Re: [linux-usb-devel] Bug creating USB endpoints in 2.6.20.x (kernel bug 8198)
-To: Tejun Heo <htejun@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb-devel@lists.sourceforge.net,
-       linux-kernel <linux-kernel@vger.kernel.org>, Greg K-H <greg@kroah.com>
-In-Reply-To: <46419711.8050003@gmail.com>
+	Wed, 9 May 2007 08:27:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
+        b=t5sa5tWYwX2Im6iNpy6uE7x7oYwYGfS5Va3Gkb3wCLuzmQ7Hwey8Vv6OgpRIiCxwbKGtgbIQhVRTCSA6gbYGRCa1BerpGORVK/krHE+afwAsU+SRyvO6zAO+cJ3mP8tN5LsgkoZ4MHIRlSAU7EDN+hDCDbdLfjBKVZ7Pc+VKvgk=
+Date: Wed, 9 May 2007 14:26:08 +0200
+From: Frederik Deweerdt <deweerdt@free.fr>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jan Beulich <jbeulich@novell.com>,
+       Andrew Morton <akpm@linux-foundation.org>, ak@suse.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: kmem_cache_init failure (was Re: 2.6.21-mm1)
+Message-ID: <20070509122608.GC11683@slug>
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <20070508172233.GA11683@slug> <46419708.76E4.0078.0@novell.com> <20070509090046.GE17482@one.firstfloor.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <602729.80444.qm@web52910.mail.re2.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070509090046.GE17482@one.firstfloor.org>
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---- Tejun Heo <htejun@gmail.com> wrote:
-> So, we can fix the problem Chris is seeing by breaking module unload (by
-> allowing it to unload too early).  It doesn't sound too hot but module
-> unloading race is much less likely than sysfs node deletion/open race.
+On Wed, May 09, 2007 at 11:00:46AM +0200, Andi Kleen wrote:
+> On Wed, May 09, 2007 at 09:40:24AM +0200, Jan Beulich wrote:
+> > >I've bisected it down to the x86_64-mm-cpa-kerneltext.patch and the 
+> > >
+> > >+       if (!pte_present(*kpte))
+> > >+               return 0;
+> > 
+> > I the most recent version of the patch I sent to Andi this line is gone (again),
+> > as I realized it was wrong on i386 (namely for DEBUG_PAGEALLOC) and its
+> > respective variant was superfluous on x86-64.
+> 
+> Yes the version of the patch that went into Linus' tree doesn't have it.
+> Does the problem happen with mainline gitLATEST too?
+Andi,
 
-Yikes! Just temporary breakage, I hope :-)!! The only modules I unload on a regular basis these
-days are things like "microcode", which the init scripts take care of as part of the boot-up
-process.
+Latest git is OK with qemu, I'll test it on a real machine tonight.
 
-Thanks for all that hard work,
-Cheers,
-Chris
-
-
-
-      ___________________________________________________________
-Yahoo! Answers - Got a question? Someone out there knows the answer. Try it
-now.
-http://uk.answers.yahoo.com/
+Frederik
