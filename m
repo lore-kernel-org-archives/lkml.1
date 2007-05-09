@@ -1,204 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbXEIRye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757937AbXEIR4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757367AbXEIRye (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 13:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbXEIRy1
+	id S1757937AbXEIR4n (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 13:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756256AbXEIR4g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 13:54:27 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:34876 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756042AbXEIRy0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 13:54:26 -0400
-Date: Wed, 9 May 2007 23:32:05 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, tingy@cs.umass.edu, tong.n.li@intel.com
-Subject: Definition of fairness (was Re: [patch] CFS scheduler, -v11)
-Message-ID: <20070509180205.GA27462@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070508150431.GA26977@elte.hu>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="TB36FDmn/VVEgNH/"
-Content-Disposition: inline
-In-Reply-To: <20070508150431.GA26977@elte.hu>
-User-Agent: Mutt/1.5.11
+	Wed, 9 May 2007 13:56:36 -0400
+Received: from dsl081-033-126.lax1.dsl.speakeasy.net ([64.81.33.126]:43861
+	"EHLO bifrost.lang.hm" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756042AbXEIR4f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 13:56:35 -0400
+Date: Wed, 9 May 2007 10:53:52 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Duncan Sands <duncan.sands@math.u-psud.fr>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+ (PCI_MULTITHREAD_PROBE)
+In-Reply-To: <20070509194845.1caf5fd0@gondolin.boeblingen.de.ibm.com>
+Message-ID: <Pine.LNX.4.64.0705091050410.4467@asgard.lang.hm>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
+ <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
+ <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
+ <alpine.LFD.0.98.0705081123080.3974@woody.linux-foundation.org>
+ <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com>
+ <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org>
+ <alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org>
+ <Pine.LNX.4.64.0705081314440.29403@asgard.lang.hm>
+ <20070509095812.016035ee@gondolin.boeblingen.de.ibm.com>
+ <Pine.LNX.4.64.0705090128180.2213@asgard.lang.hm>
+ <20070509111515.0cb3e63a@gondolin.boeblingen.de.ibm.com>
+ <Pine.LNX.4.64.0705090216030.2213@asgard.lang.hm>
+ <20070509152024.1a57d82a@gondolin.boeblingen.de.ibm.com>
+ <Pine.LNX.4.64.0705090910050.4467@asgard.lang.hm>
+ <20070509190736.35cf51d2@gondolin.boeblingen.de.ibm.com>
+ <Pine.LNX.4.64.0705091007160.4467@asgard.lang.hm>
+ <20070509194845.1caf5fd0@gondolin.boeblingen.de.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 9 May 2007, Cornelia Huck wrote:
 
---TB36FDmn/VVEgNH/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+> On Wed, 9 May 2007 10:09:33 -0700 (PDT),
+> david@lang.hm wrote:
+>
+>>> Hm, so that sound like a case for a distinct setup() routine:
+>>>
+>>> 1. bus calls ->probe(), which return synchronously
+>>> 2. bus calls ->probe_async() for all devices (optional)
+>>> 3. bus waits for all probes to finish
+>>> 4. bus calls ->setup() for all devices (which does the registering)
+>>
+>> this is exactly what I've been trying to describe.
+>
+> Nearly, but with a slightly different spin...
+>
+>>
+>>> (->setup() can but need not be sync, although it should be for your
+>>> case)
+>>
+>> if it's not sync then you have race conditions again
+>
+> ...but not all busses will care. If your bus wants to enforce ordering,
+> it must enforce it to be sync. If your bus allows hotplug and calling
+> setup() later on, it may also allow async. (setup() is a bit
+> dual-purpose in this idea.)
 
-On Tue, May 08, 2007 at 05:04:31PM +0200, Ingo Molnar wrote:
-> thanks Mike - value 0x8 looks pretty good here and doesnt have the 
-> artifacts you found. I've done a quick -v11 release with that fixed, 
-> available at the usual place:
-> 
->     http://people.redhat.com/mingo/cfs-scheduler/
-> 
-> with no other changes.
+if you want the registration to use hotplug and be async then do do the 
+registration during step 2 and make step 4 be a noop, in fact some drivers 
+may do all their work in step 2, while others (everything currently) will 
+do all their work during step 1
 
-Ingo,
-	I had a question with respect to the definition of fairness used, esp
-for tasks that are not 100% cpu hogs.
-
-Ex: consider two equally important tasks T1 and T2 running on same CPU and 
-whose execution nature is:
-
-	T1 = 100% cpu hog
-	T2 = 60% cpu hog (run for 600ms, sleep for 400ms)
-
-Over a arbitrary observation period of 10 sec, 
-
-	T1 was ready to run for all 10sec
-	T2 was ready to run for 6 sec
-
-Over this observation period, how much execution time should T2 get,
-under a "fair" scheduler?
-
-I was expecting both T2 and T1 to get 5 sec (50:50 split). Is this a
-wrong expectation of fairness?
-
-Anyway, results of this experiment (using testcase attached) is below.
-T2 gets way below its fair share IMO (under both cfs and sd).
+David Lang
 
 
-2.6.21.1:
-
- 5444 vatsa     16   0  2468  460  388 R   59  0.0   0:19.76 3 T1
- 5443 vatsa     25   0  2468  460  388 R   40  0.0   0:15.36 3 T2
-
-
-2.6.21.1 + cfs-v11:
-
- 5460 vatsa     31   0  2464  460  388 R   70  0.0   0:15.28 3 T1
- 5461 vatsa     29   0  2468  460  388 R   30  0.0   0:05.65 3 T2
-
-
-2.6.21 + sd-0.48:
-
- 5459 vatsa     23   0  2468  460  388 R   70  0.0   0:17.02 3 T1
- 5460 vatsa     21   0  2464  460  388 R   30  0.0   0:06.21 3 T2
-
-
-Note: 
-
-T1 is started as ./cpuhog 600 0 10 > /dev/null &
-T2 is started as ./cpuhog 600 400 10 > /dev/null &
-
-First arg = runtime in ms
-Second arg = sleeptime in ms
-Third arg = Observation period in seconds
-
-
--- 
-Regards,
-vatsa
-
---TB36FDmn/VVEgNH/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="cpuhog.c"
-
-
-#include <unistd.h>
-#include <stdio.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-
-double loops_per_ms;
-
-double elapsed_time(struct timeval *tv1, struct timeval *tv2)
-{
-	double d1, d2;
-	int elapsed_ms;
-
-	d1 = tv1->tv_sec + tv1->tv_usec * 1e-6;
-	d2 = tv2->tv_sec + tv2->tv_usec * 1e-6;
-	elapsed_ms = (d2 - d1) * 1000;
-
-	return elapsed_ms;
-}
-
-void calibrate_delay(void)
-{
-	int i;
-	double elapsed_ms;
-	struct timeval tv1, tv2;
-
-	gettimeofday(&tv1, NULL);
-#define LOOP_COUNT 100000000
-	for (i=0; i < LOOP_COUNT; ++i)
-		;
-	gettimeofday(&tv2, NULL);
-	elapsed_ms = elapsed_time(&tv1, &tv2);
-	loops_per_ms = LOOP_COUNT / elapsed_ms;
-
-	printf ("loops_per_ms = %f \n", loops_per_ms);
-}
-
-int run_length  = 52; 	// in milliseconds
-int sleep_length = 24;	// in milliseconds
-int epoch_time = 5;	// in seconds
-
-main(int argc, char *argv[])
-{
-	long int i, delay;
-	time_t prevtime;
-	double prevusage = 0;
-	struct rusage stats;
-
-	if (argc > 1) {
-		run_length = atoi(argv[1]);
-		if (argc > 2)
-			sleep_length = atoi(argv[2]);
-		if (argc > 3)
-			epoch_time = atoi(argv[3]);
-	}
-
-	calibrate_delay();
-
-	delay = run_length * loops_per_ms;
-
-	printf ("run time = %d ms (%ld loops), sleep time = %d ms,"
-		" epoch time = %d s\n", run_length, delay, sleep_length,
-		 epoch_time);
-
-	prevtime = time(NULL);
-	while (1) {
-		time_t curtime, deltatime;
-		struct rusage stats;
-
-		for (i = 0; i < delay; ++i)
-			;
-		usleep(sleep_length * 1000);
-
-		curtime = time(NULL);
-		deltatime = curtime - prevtime;
-		if (deltatime >= epoch_time) {
-			double curusage, deltausage;
-
-			getrusage(0, &stats);
-			curusage = stats.ru_utime.tv_sec +
-				   stats.ru_utime.tv_usec * 1e-6 +
-				   stats.ru_stime.tv_sec + 
-				   stats.ru_stime.tv_usec * 1e-6;
-
-			deltausage = curusage - prevusage;
-			printf ("Obtained %3.2f seconds of execution time in"
-		       	      " %d elapsed seconds \n", deltausage, deltatime);
-			prevtime = curtime;
-			prevusage = curusage;
-		}
-	}
-}
-
---TB36FDmn/VVEgNH/--
