@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759952AbXEIWNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759597AbXEIWQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759952AbXEIWNb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 18:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757816AbXEIWNV
+	id S1759597AbXEIWQW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 18:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756548AbXEIWQP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 18:13:21 -0400
-Received: from mga02.intel.com ([134.134.136.20]:37190 "EHLO mga02.intel.com"
+	Wed, 9 May 2007 18:16:15 -0400
+Received: from mga02.intel.com ([134.134.136.20]:31570 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759884AbXEIWNT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 18:13:19 -0400
+	id S1754571AbXEIWQO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 18:16:14 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.14,512,1170662400"; 
-   d="scan'208";a="241395014"
-Date: Wed, 9 May 2007 15:10:22 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: lenb@kernel.org
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ACPI: dock: send envp with uevent
-Message-Id: <20070509151022.c9753632.kristen.c.accardi@intel.com>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+   d="scan'208";a="241396130"
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 2/2] Call percpu smp cacheline algin interface
+Date: Wed, 9 May 2007 15:16:11 -0700
+Message-ID: <A29F7A5700A7EA4380E08C1F68C3B6D802B5F702@scsmsx411.amr.corp.intel.com>
+In-Reply-To: <20070509133328.c79ef48e.akpm@linux-foundation.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 2/2] Call percpu smp cacheline algin interface
+Thread-Index: AceSeV97o8/1jAEgSw6GJ3v1OsB3FQABSGkg
+From: "Yu, Fenghua" <fenghua.yu@intel.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       <linux-kernel@vger.kernel.org>, <clameter@sgi.com>
+X-OriginalArrivalTime: 09 May 2007 22:16:12.0668 (UTC) FILETIME=[A7324BC0:01C79287]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ACPI: dock: send env with uevent
 
-Send an env along with our KOBJ_CHANGE uevent so that user space has 
-the option of checking for that to see if a dock or undock has occurred.
+>hm, DEFINE_PER_CPU_SHARED_CACHELINE_ALIGNED is a bit of a mouthful.
 
-Signed-off-by:  Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+>I wonder if we can improve things here so that we use the
+runtime-detected
+>cacheline size rather than the compile-time size.  I guess not, given
+that
+>the offsets into the percpu area are calculated at build-time.
 
-Index: 2.6-git/drivers/acpi/dock.c
-===================================================================
---- 2.6-git.orig/drivers/acpi/dock.c
-+++ 2.6-git/drivers/acpi/dock.c
-@@ -336,11 +336,19 @@ static void hotplug_dock_devices(struct 
- static void dock_event(struct dock_station *ds, u32 event, int num)
- {
- 	struct device *dev = &dock_device->dev;
-+	char event_string[7];
-+	char *envp[] = { event_string, NULL };
-+
-+	if (num == UNDOCK_EVENT)
-+		sprintf(event_string, "UNDOCK");
-+	else
-+		sprintf(event_string, "DOCK");
-+
- 	/*
- 	 * Indicate that the status of the dock station has
- 	 * changed.
- 	 */
--	kobject_uevent(&dev->kobj, KOBJ_CHANGE);
-+	kobject_uevent_env(&dev->kobj, KOBJ_CHANGE, envp);
- }
- 
- /**
+>Did you work out how much space this change will actually save?  It
+>should be available by suitable crunching on the nm and objdump output.
+
+Depending on how data fields are arranged by linker, the patches could
+save or waste per_cpu size. Below is data I got.
+
+
+Case 1: On linux-2.6.21-rc7-mm2 with defconfig build.
+Case 2: On linux-2.6.21-rc7-mm2 plus the patches in this thread with
+defconfig build.
+Case 3: On linux-2.6.21-rc7-mm2 with defconfig with VSMP=y build.
+Case 4: On linux-2.6.21-rc7-mm2 plus the patches in this thread with
+defconfig with VSMP=y build.
+
+Please note that on x86/x86-64, per_cpu_init_tss is placed in the first
+place in per_cpu section in Case 1 and 3. And thus there is no padding
+waste for per_cpu_init_tss in Case 1 and 3.
+
+On X86:
+Case 1: Size of per_cpu section is: 0x7768
+Case 2: Size of per_cpu section is: 0x790c
+The patches waste 0x1a4 bytes.
+
+per_cpu__init_tss, per_cpu__irq_stat, and per_cpu__runqueues are moved
+to shared_cacheline_aligned section.
+
+On X86-64:
+Case 1: Size of per_cpu section is: 0x72d0
+Case 2: Size of per_cpu section is: 0x6540
+The patches save 0xd90 bytes.
+
+Case 3: Size of per_cpu section is: 0x72d0
+Case 4: Size of per_cpu section is: 0x8340
+The patches waste 0x1070 bytes. 
+
+Shall we not use shared_cacheline_aligned section for VSMP case? The
+waste of cache eventually may offset the potential gain of alignment.
+
+Probably need to set up a cache line size threshold: if L1 cache line
+size is bigger than a number CACHELINE_ALIGN_SHRESHOLD, don't do
+cacheline alignment.
+
+per_cpu__init_tss and per_cpu__runqueues are moved to
+shared_cacheline_aligned section.
+
+On ia64:
+Case 1: Size of per_cpu section is: 0x8370
+Case 2: Size of per_cpu section is: 0x7fc0
+The patches save 0x3b0 bytes.
+
+per_cpu_ipi_operation and per_cpu_runqueues are moved to
+shared_cacheline_aligned section
