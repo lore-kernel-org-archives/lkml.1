@@ -1,68 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbXEIQBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756465AbXEIQEk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545AbXEIQBb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 12:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXEIQBV
+	id S1756465AbXEIQEk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 12:04:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXEIQEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 12:01:21 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:42088 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754125AbXEIQBT (ORCPT
+	Wed, 9 May 2007 12:04:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:27991 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751965AbXEIQE3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 12:01:19 -0400
-Date: Wed, 9 May 2007 21:31:02 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070509160102.GA30745@amitarora.in.ibm.com>
-References: <20070329115126.GB7374@amitarora.in.ibm.com> <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070426180332.GA7209@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Wed, 9 May 2007 12:04:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=tp/9d3Pp0momCZwgqUTn6yk3VX/EynZNKAp+8ZksETpjVqrd6e9LZBtdCPW3HskYAsy9hMRSix4H32EgdwYoYNkdFEIIWoakcOx5DYoHI5FLXvf7PiPRbfjYPKMFMlqzWNieedwhexWuQhxfxy5RoWupCB2c8FkOXYiXy4NyniY=
+Message-ID: <4641F100.70302@gmail.com>
+Date: Wed, 09 May 2007 18:04:16 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+MIME-Version: 1.0
+To: Chuck Ebbert <cebbert@redhat.com>
+CC: Greg K-H <greg@kroah.com>, Jeff Garzik <jeff@garzik.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       =?ISO-8859-1?Q?Mat=ED=ADas_Alejandro_Torres?= <torresmat@gmail.com>
+Subject: Re: [PATCH] pci-quirks: disable MSI on RS400-200 and RS480, take
+ #2
+References: <4641BD26.1020501@gmail.com> <4641EAA5.4030409@redhat.com> <4641EDDC.1020102@gmail.com> <4641EF46.2090506@redhat.com>
+In-Reply-To: <4641EF46.2090506@redhat.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have the updated patches ready which take care of Andrew's comments.
-Will run some tests and post them soon.
+Chuck Ebbert wrote:
+> Tejun Heo wrote:
+>>> FWIW several distros have turned off MSI by default and added
+>>> a "pci=msi" option to enable it.
+>> Yeah, it seem to cause a lot of problems on certain chips but I think
+>> the correct path is to add PCI quirks for those.  Most MSI problems I've
+>> seen are on these ATI chips.  Do you happen to know any other?
+> 
+> We had devices that didn't do MSI right, e.g. forcedeth and others I
+> can't recall now.
 
-But, before submitting these patches, I think it will be better to finalize
-on certain things which might be worth some discussion here:
+Right, driver on such devices shouldn't enable MSI.  I think we have
+several of those in ATA too.  Oh.. crap.  :-(
 
-1) Should the file size change when preallocation is done beyond EOF ?
-   - Andreas and Chris Wedgwood are in favor of not changing the
-     file size in this case. I also tend to agree with them. Does anyone
-     has an argument in favor of changing the filesize ?
-     If not, I will remove the code which changes the filesize, before I
-     resubmit the concerned ext4 patch.
-
-2) For FA_UNALLOCATE mode, should the file system allow unallocation
-   of normal (non-preallocated) blocks (blocks allocated via
-   regular write/truncate operations) also (i.e. work as punch()) ?
-   - Though FA_UNALLOCATE mode is yet to be implemented on ext4, still
-     we need to finalize on the convention here as a general guideline
-     to all the filesystems that implement fallocate.
-
-3) If above is true, the file size will need to be changed
-   for "unallocation" when block holding the EOF gets unallocated.
-   - If we do not "unallocate" normal (non-preallocated) blocks and we
-     do not change the file size on preallocation, then this is a
-     non-issue.
-
-4) Should we update mtime & ctime on a successfull allocation/
-   unallocation ?
-   - David Chinner raised this question in following post:
-     http://lkml.org/lkml/2007/4/29/407
-     I think it makes sense to update the [mc]time for a successfull
-     preallocation/unallocation. Does anyone feel otherwise ?
-     It will be interesting to know how XFS behaves currently. Does XFS
-     update [mc]time for preallocation ?
-
-
---
-Regards,
-Amit Arora
+-- 
+tejun
