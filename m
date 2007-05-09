@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbXEIIKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754499AbXEIIOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755236AbXEIIKu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 04:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbXEIIKi
+	id S1754499AbXEIIOI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 04:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754053AbXEIINy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 04:10:38 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:53514 "EHLO pasmtpB.tele.dk"
+	Wed, 9 May 2007 04:13:54 -0400
+Received: from smtp1-g19.free.fr ([212.27.42.27]:34292 "EHLO smtp1-g19.free.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751003AbXEIIKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 04:10:36 -0400
-Date: Wed, 9 May 2007 10:11:05 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@osdl.org>, Matt Domsch <Matt_Domsch@dell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86 setup rewrite tree ready for flamage^W review
-Message-ID: <20070509081105.GA5857@uranus.ravnborg.org>
-References: <464158E9.2000207@zytor.com> <20070509065122.GA5360@uranus.ravnborg.org> <46417215.6060204@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1753537AbXEIINw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 04:13:52 -0400
+From: Duncan Sands <duncan.sands@math.u-psud.fr>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11 (PCI_MULTITHREAD_PROBE)
+Date: Wed, 9 May 2007 10:14:16 +0200
+User-Agent: KMail/1.9.6
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>, Adrian Bunk <bunk@stusta.de>,
+       Greg K-H <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com> <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org> <alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <46417215.6060204@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200705091014.17109.duncan.sands@math.u-psud.fr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 12:02:45AM -0700, H. Peter Anvin wrote:
-> Sam Ravnborg wrote:
-> >> http://www.kernel.org/pub/linux/kernel/people/hpa/newsetup-36f021b5.patch
-> > 
-> > Are you planning to rebase to -linus and then let
-> > arch/x86_64/boot/Makefile be a reference to i386/boot/Makefile?
-> > 
-> > The patch for kbuild to enable this is in -linus now.
-> > 
-> > As for the important part (the code) I have not looked.
-> 
-> I have rebased to -linus, but I'm a bit scared about making that
-> particular change at this time, mostly because it requires some
-> additional Makefile work which I would be happier to apply later, in
-> order to make the "create clean patchset" task easier.
-> 
-> All the source code is shared, but for right now the Makefiles are
-> slightly different, mostly w.r.t. CFLAGS.
+Hi,
 
-OK, let me know if you want me to take a look at something specific.
+> Instead of changing existign probe functionality to be asynchronous, we 
+> could *add* a new and asynchronous part to it. For example, we could make 
+> the rule for PCI - or other bus - devices be:
+> 
+>  - the bus will *first* call the "probe()" function synchronously.
+> 
+>  - after that one has completed, we will call "probe_async()" 
+>    asynchronously at some point (it ie might be scheduled immediately 
+>    after the "probe()" call, but delayed by some arbitrary issues like 
+>    just already having too many asynchronous probes on-going or similar)
 
-	Sam
+the usbatm USB ADSL modem drivers have this functionality.  These drivers
+need to load firmware before they become useful.  The natural place to do
+this is in the probe() method, but because firmware loading can take quite
+some time (10 seconds, or even an infinite amount of time if the firmware
+is not available and the timeout has been turned off) and would block the
+USB hub thread if done from probe(), it's done in a separate kernel thread.
+Clients of usbatm, like the speedtch driver, register themselves with usbatm,
+providing a "bind" and a "heavy_init" method.  "bind" is like probe(), while
+"heavy_init" is like probe_async().  First bind is called, and if successful
+and heavy_init has been defined, then heavy_init is run in its own thread.
+If the device is unplugged, usbatm takes care of making sure that the heavy_init
+thread has stopped before calling unbind and destroying device related structures.
+
+A bunch of other USB drivers could do with similar functionality for the
+same reason (slow probe), and there was some discussion about generalizing
+this functionality to the USB layer but I didn't find time to do anything
+about it yet.  See http://marc.info/?l=linux-usb-devel&m=116551653026075&w=2
+
+Best wishes,
+
+Duncan.
