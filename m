@@ -1,145 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbXEIPAg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbXEIPBq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758278AbXEIPAg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:00:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755890AbXEIO76
+	id S1758213AbXEIPBq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:01:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756102AbXEIPBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 10:59:58 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:54459 "EHLO atmel-es2.atmel.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755041AbXEIO7y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 10:59:54 -0400
-Message-ID: <4641E1E9.5060800@rfo.atmel.com>
-Date: Wed, 09 May 2007 16:59:53 +0200
-From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-Organization: atmel
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	Wed, 9 May 2007 11:01:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:47722 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756076AbXEIPBh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:01:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=I9gKQ2SDUMG9bdmaXeiceAd+KssReFPxg4B/011RozaVYUMiDOnxnLkcngXQLI6fbuLTic3QXk1stcYseVnDg4TpES1IRv/DCMp0ulvI+1o8ttoOmQveOyldt/GK5gIpI7IQ+8e6O1d13I514k1HMRpDaP/NFIEA6AknSjY29p0=
+Message-ID: <4641E245.7040603@gmail.com>
+Date: Wed, 09 May 2007 17:01:25 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: "Antonino A. Daplas" <adaplas@gmail.com>
-CC: linux-fbdev-devel@lists.sourceforge.net,
-       Andrew Victor <andrew@sanpeople.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       Patrice Vilchez <patrice.vilchez@rfo.atmel.com>
-Subject: Re: [Linux-fbdev-devel] [PATCH] atmel_lcdfb: AT91/AT32 LCDController framebuffer driver
-References: <463F3388.7020102@rfo.atmel.com> <1178574017.4674.30.camel@daplas>
-In-Reply-To: <1178574017.4674.30.camel@daplas>
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
+To: Greg KH <greg@kroah.com>
+CC: Chris Rankin <rankincj@yahoo.com>, Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-usb-devel] Bug creating USB endpoints in 2.6.20.x	(kernel
+ bug 8198)
+References: <602729.80444.qm@web52910.mail.re2.yahoo.com> <4641CD01.6010309@gmail.com> <20070509145747.GA27259@kroah.com>
+In-Reply-To: <20070509145747.GA27259@kroah.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-ESAFE-STATUS: Mail clean
-X-ESAFE-DETAILS: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Antonino A. Daplas :
-> On Mon, 2007-05-07 at 16:11 +0200, Nicolas Ferre wrote:
->> From: Nicolas Ferre <nicolas.ferre@rfo.atmel.com>
-
->> +
->> +static struct fb_fix_screeninfo atmel_lcdfb_fix __initdata = {
->> +	.type		= FB_TYPE_PACKED_PIXELS,
->> +	.visual		= FB_VISUAL_TRUECOLOR,
->> +	.xpanstep	= 0,
->> +	.ypanstep	= 0,
->> +	.ywrapstep	= 0,
->> +	.accel		= FB_ACCEL_NONE,
->> +};
->> +
+Greg KH wrote:
+> On Wed, May 09, 2007 at 03:30:41PM +0200, Tejun Heo wrote:
+>> Chris Rankin wrote:
+>>> --- Tejun Heo <htejun@gmail.com> wrote:
+>>>> So, we can fix the problem Chris is seeing by breaking module unload (by
+>>>> allowing it to unload too early).  It doesn't sound too hot but module
+>>>> unloading race is much less likely than sysfs node deletion/open race.
+>>> Yikes! Just temporary breakage, I hope :-)!! The only modules I unload on a regular basis these
+>>> days are things like "microcode", which the init scripts take care of as part of the boot-up
+>>> process.
+>> Okay, here's a half-assed fix.  With this patch applied, if you try to
+>> unload a module while you're opening it's dev attribute, kernel will
+>> oops later when the file is accessed or closed later but it should fix
+>> the bug winecfg triggers.  I really dunno how to fix this the right way
+>> in the stable kernel.  Better ideas?  Anyone?
 > 
-> This driver has fb_pan_display() which I assume works. However, you also
-> need to set ypanstep and/or xpanstep and/or ywrapstep to a nonzero
-> value, depending on the hardware/drive capability.
-
-True, this function is here because one of our products can do pan display.
-The technique is not used for the moment but will be in a future version
-of this driver.
-
->> +static u32 pseudo_palette[16] = {
->> +	0x000000,
->> +	0xaa0000,
->> +	0x00aa00,
->> +	0xaa5500,
->> +	0x0000aa,
->> +	0xaa00aa,
->> +	0x00aaaa,
->> +	0xaaaaaa,
->> +	0x555555,
->> +	0xff5555,
->> +	0x55ff55,
->> +	0xffff55,
->> +	0x5555ff,
->> +	0xff55ff,
->> +	0x55ffff,
->> +	0xffffff
->> +};
->> +
+> This looks like the correct fix, the only reason I made this dynamic was
+> to properly set up the module owner.  And now that you have removed that
+> link in your sysfs rework, it can go and become static again.
 > 
-> Do you really need to pre-fill pseudo_palette[]? The contents are going
-> to be overwritten by the console anyway (The pseudo_palette is for
-> fbcon's use only).
-
-Ok, I have tested it with fbcon and no pre-fill : colors seem ok.
-
-> You can also include pseudo_palette[] as part of struct
-> atmel_lcdfb_info, then in your probe routine:
+> Oh, and this isn't a "device node", it's just a text file that contains
+> the major:minor number for a device node to be created from.
 > 
-> info->pseudo_palette = par->pseudo_palette;
-> 
-> to reduce the size of the kernel image. 
+> So, care to fix up the class code too and send a patch with a
+> signed-off-by:?
 
-Done.
+I think the proper fix for -stable is to free the structure in
+device_release().  I asked Chris to test it.  After he confirms, I'll
+send a proper patch with S-O-B.
 
->> +static inline u_int chan_to_field(u_int chan, const struct fb_bitfield *bf)
-> 
-> Might as well change u_int to u32 or unsigned int, for consistency.
+For -mm, yeap, we can simply make the whole thing static.  I'll send
+patch for that soon.
 
-Ok, changed to unsigned int.
+Thanks.
 
->> +static int __init atmel_lcdfb_init_fbinfo(struct atmel_lcdfb_info *sinfo)
->> +{
->> +	struct fb_info *info = sinfo->info;
->> +	int ret = 0;
->> +
->> +	memset(info->screen_base, 0, info->fix.smem_len);
-> 
-> memset_io?
-
-ok, modified.
-
-
->> +	if (dev->platform_data) {
->> +		pdata_sinfo = (struct atmel_lcdfb_info *)dev->platform_data;
->> +		sinfo->default_bpp = pdata_sinfo->default_bpp;
->> +		sinfo->default_dmacon = pdata_sinfo->default_dmacon;
->> +		sinfo->default_lcdcon2 = pdata_sinfo->default_lcdcon2;
->> +		sinfo->default_monspecs = pdata_sinfo->default_monspecs;
->> +		sinfo->atmel_lcdfb_power_control = pdata_sinfo->atmel_lcdfb_power_control;
->> +		sinfo->guard_time = pdata_sinfo->guard_time;
->> +	} else {
->> +		dev_err(dev, "cannot get default configuration\n");
->> +		goto out;
-> 
-> Wrong goto? Should be goto free_info?
-
-Right. modified to "goto free_info".
- 
->> +release_intmem:
->> +	if (map) {
->> +		release_mem_region(info->fix.smem_start, info->fix.smem_len);
->> +	}
-> 
-> Unnecessary curly braces
-
-I like curly braces... Anyway, removed.
-
-Thanks you for your comments.
-
-I resend a modified driver now in the following email.
-
-Regards,
 -- 
-Nicolas Ferre
-
-
+tejun
