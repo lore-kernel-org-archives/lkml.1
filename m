@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbXEIOWc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbXEIOXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756905AbXEIOWc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 10:22:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbXEIOWX
+	id S1757045AbXEIOXk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 10:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbXEIOXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 10:22:23 -0400
-Received: from static-72-92-88-10.phlapa.fios.verizon.net ([72.92.88.10]:54018
-	"EHLO smtp.roinet.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753925AbXEIOWW (ORCPT
+	Wed, 9 May 2007 10:23:31 -0400
+Received: from pollux.ds.pg.gda.pl ([153.19.208.7]:3685 "EHLO
+	pollux.ds.pg.gda.pl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753388AbXEIOXa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 10:22:22 -0400
-Message-ID: <4641D920.2020508@roinet.com>
-Date: Wed, 09 May 2007 10:22:24 -0400
-From: David Acker <dacker@roinet.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Wed, 9 May 2007 10:23:30 -0400
+Date: Wed, 9 May 2007 15:23:22 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+To: David Woodhouse <dwmw2@infradead.org>
+cc: Satyam Sharma <satyam.sharma@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Anton Vorontsov <cbou@mail.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+       Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+In-Reply-To: <1178646751.2824.48.camel@pmac.infradead.org>
+Message-ID: <Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl>
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz> 
+ <1178550653.11851.191.camel@pmac.infradead.org>  <20070507194949.GB3981@ucw.cz>
+  <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com> 
+ <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
+ <1178646751.2824.48.camel@pmac.infradead.org>
 MIME-Version: 1.0
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-CC: Marcus Better <marcus@better.se>, linux-arm-kernel@lists.arm.linux.org.uk,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
-References: <464034CF.20700@wpkg.org> <f1s2eu$26p$1@sea.gmane.org> <20070509092132.GB6976@xi.wantstofly.org> <200705091135.06405.marcus@better.se> <20070509110415.GA7513@xi.wantstofly.org>
-In-Reply-To: <20070509110415.GA7513@xi.wantstofly.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennert Buytenhek wrote:
-> The people who need a LE network driver can use Christian's driver,
-> as Christian's driver works in LE just fine.  The people who care
-> about LE support can add LE support to the driver that Krzysztof wrote.
-> 
-> I don't think that not supporting LE is a reason not to merge
-> Krzysztof's driver.  Don't make supporting LE systems Krzysztof's
-> problem.
-> 
-> Krzysztof has written an excellent driver, and while it would be 100%
-> Debian style to reject his driver just because it doesn't support LE[*],
-> thankfully, Linux is not Debian.  Please don't turn Linux into Debian.
+On Tue, 8 May 2007, David Woodhouse wrote:
 
-I am using the ixp425 on the avila from gateworks.  It only has 16 MB of 
-  flash built in.  We needed to squeeze a production and a failsafe 
-linux inside that so debian was not an option.  I found intel's original 
-drivers horrible to read, maintain, and use.  We are using Cristian's 
-driver (rev 0.2.1) and are preparing to go to his latest for the crypto 
-support.  I only had one bug in 0.2.1, which is fixed in later versions. 
-  I would love to see mail line support for this device, including the 
-ethernet ports and the crypto capabilities.
+> It's not an issue which needs resolving. We can spell your name just
+> fine; we just need Pavel to quit whining and join us in the 21st
+> century.
 
-We run in big endian despite the extra difficulty in toolset setup and 
-finding lots of brain0-damaged-designed-for-x86 code.  We already can 
-use up the CPU when we have the mini-pci slots populated with 802.11g 
-radios and the ethernet port in use.  Swapping packets would kill us. 
-Never mind if we do any kind of software based crypto!  For those of us 
-in the embedded space, performance matters.
+ I am pretty darn sure my name can be spelled correctly, but can it be 
+reasonably assured to be printed correctly on a reasonable subset of 
+systems out there?  Considering Linux only -- does our text-mode VGA 
+console driver make any effort to print an arbitrary UTF-8-encoded text 
+correctly?  What does it do when it runs beyond the limit of 512 
+characters?  And how about serial terminals?
 
-Big endian is the natural setup for the NPEs on this hardware according 
-to the intel documentation.  Please don't stop this driver from moving 
-forward so that a few folks can run their hardware in slow mode.
+ When such issues are resolved and a reasonable subset of people, say 80%, 
+either have or can make -- without unnecessary hassle -- their systems 
+working properly in this respect, I can start thinking about using the 
+correct spelling of my name.
 
--Ack
+ Until then I would rather work on code, sorry.  And that is not going to 
+be any code related to UTF-8 either, but I do encourage anybody who really 
+cares about it to address any or all issues raised above. :-)
+
+  Maciej
