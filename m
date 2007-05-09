@@ -1,58 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbXEIIGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755236AbXEIIKu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbXEIIGc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 04:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbXEIIFX
+	id S1755236AbXEIIKu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 04:10:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbXEIIKi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 04:05:23 -0400
-Received: from smtp102.mail.mud.yahoo.com ([209.191.85.212]:39517 "HELO
-	smtp102.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756412AbXEIIFT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 04:05:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=GhUvXJMcSy3XZuiAD0lm+OmLEck0qmrWeSWE78EG+CUuKCubNXrYRCNnFbkbox7hq0bn02pP6S9+ZoyuFVrjDUqaSm7zKsjWyoBMNaZc1K64k95LDCnG0KJydWhSPy5oKA1nf8z7FFUZILXKomz2b7I52iHLHNOj7VwfZH4swbM=  ;
-X-YMail-OSG: fxl2eXoVM1k0g1l8pMAh3WNvpV_JAsKIW5Fa12uL3P51F3s1OiOcge.IAzbZYmbs3m4i.pEP5Q--
-Message-ID: <464180B7.2090703@yahoo.com.au>
-Date: Wed, 09 May 2007 18:05:11 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] MMC updates
-References: <4640E17E.7090909@drzeus.cx> <46416255.3060105@drzeus.cx> <4641643D.4040305@yahoo.com.au> <464169C8.9060002@drzeus.cx> <46416B9A.3020008@yahoo.com.au> <46417D97.9090108@drzeus.cx>
-In-Reply-To: <46417D97.9090108@drzeus.cx>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 04:10:38 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:53514 "EHLO pasmtpB.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751003AbXEIIKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 04:10:36 -0400
+Date: Wed, 9 May 2007 10:11:05 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@osdl.org>, Matt Domsch <Matt_Domsch@dell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86 setup rewrite tree ready for flamage^W review
+Message-ID: <20070509081105.GA5857@uranus.ravnborg.org>
+References: <464158E9.2000207@zytor.com> <20070509065122.GA5360@uranus.ravnborg.org> <46417215.6060204@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46417215.6060204@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> Nick Piggin wrote:
+On Wed, May 09, 2007 at 12:02:45AM -0700, H. Peter Anvin wrote:
+> Sam Ravnborg wrote:
+> >> http://www.kernel.org/pub/linux/kernel/people/hpa/newsetup-36f021b5.patch
+> > 
+> > Are you planning to rebase to -linus and then let
+> > arch/x86_64/boot/Makefile be a reference to i386/boot/Makefile?
+> > 
+> > The patch for kbuild to enable this is in -linus now.
+> > 
+> > As for the important part (the code) I have not looked.
 > 
->>If you want to ensure you always only modify host->removed from under
->>the spinlock, it would be enforcable by introducing an accessor function
->>and doing a BUG_ON(!spin_is_locked()) in there.
->>
->>If you just want to ensure that host->removed is 0 at this point, you
->>shouldn't need any spinlocks AFAIKS... that way you can probably afford
->>to move it out from CONFIG_MMC_DEBUG and get wider testing.
->>
+> I have rebased to -linus, but I'm a bit scared about making that
+> particular change at this time, mostly because it requires some
+> additional Makefile work which I would be happier to apply later, in
+> order to make the "create clean patchset" task easier.
 > 
-> 
-> The host->removed member is only used for this simple test. It is set in
-> mmc_host_remove() to indicate that the removal process has begun. At
-> this point it is invalid to call mmc_detect_change() (the place this
-> patch fixes). So the spinlocks are mostly there so that things are
-> properly ordered when we go SMP. Some creative barriers would probably
-> work as well, but I find spinlocks more "normal" and hence more readable.
+> All the source code is shared, but for right now the Makefiles are
+> slightly different, mostly w.r.t. CFLAGS.
 
-Fair enough. No big deal :)
+OK, let me know if you want me to take a look at something specific.
 
--- 
-SUSE Labs, Novell Inc.
+	Sam
