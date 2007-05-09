@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969236AbXEIBuj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969309AbXEIBvs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969236AbXEIBuj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 21:50:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967446AbXEIBu0
+	id S969309AbXEIBvs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 21:51:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967555AbXEIBvl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 21:50:26 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:4074 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S967350AbXEIBuY (ORCPT
+	Tue, 8 May 2007 21:51:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59711
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S967446AbXEIBvl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 21:50:24 -0400
-Date: Wed, 9 May 2007 11:49:04 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: "David S. Miller" <davem@davemloft.net>,
-       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
-Subject: Re: [1/2] [NET] link_watch: Move link watch list into net_device
-Message-ID: <20070509014904.GA31072@gondor.apana.org.au>
-References: <20070504232051.411946839@goop.org> <20070504232121.492190579@goop.org> <20070505091624.GA8890@infradead.org> <463C56D3.8060609@goop.org> <20070505102305.GA12771@gondor.apana.org.au> <463F95C3.60407@goop.org> <20070508121322.GA21647@gondor.apana.org.au> <4640DB55.1050608@goop.org>
+	Tue, 8 May 2007 21:51:41 -0400
+Date: Tue, 08 May 2007 18:51:41 -0700 (PDT)
+Message-Id: <20070508.185141.85412154.davem@davemloft.net>
+To: clameter@sgi.com
+Cc: mpm@selenic.com, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: +
+ fix-spellings-of-slab-allocator-section-in-init-kconfig.patch added to -mm
+ tree
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com>
+References: <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com>
+	<20070509012725.GZ11115@waste.org>
+	<Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4640DB55.1050608@goop.org>
-User-Agent: Mutt/1.5.9i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 01:19:33PM -0700, Jeremy Fitzhardinge wrote:
-> 
-> Subject: xen: go back to using normal network stack carriers
-> 
-> This effectively reverts xen-unstable change
-> 14280:42b29f084c31. Herbert has changed the behaviour of the core
-> networking to not delay an initial down->up transition, and so the
-> timing concern has been solved.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> Cc: Herbert Xu <herbert@gondor.apana.org.au>
-> Cc: Keir Fraser <Keir.Fraser@cl.cam.ac.uk>
+From: Christoph Lameter <clameter@sgi.com>
+Date: Tue, 8 May 2007 18:32:35 -0700 (PDT)
 
-Looks good to me.
+> That SLUB cannot do. And I do not believe you. SLOB must have some way to 
+> distinguish the objects and their sizes since kfree does not include size 
+> information. You can mix slabs of different size on the same page without 
+> metadata. Magic?
+> 
+> So how does kfree then know how to free the object? There must be some way 
+> where you get the metainformation. What is the point of your 8 byte 
+> metadata that keeps getting inserted? That does not consume memory on a 
+> page?
 
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+SLOB uses metadata, but that metadata seemingly only needs to be
+uptodate in freed objects.
+
+SLOB seems to look at the descriptor in the previous blob to figure
+out how big the being-freed blob is.  That's actually kind of clever
+:-)
+
