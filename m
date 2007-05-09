@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761410AbXEKM34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761631AbXEKMaT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761410AbXEKM34 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 08:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbXEKM3s
+	id S1761631AbXEKMaT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 08:30:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbXEKM37
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 08:29:48 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1355 "EHLO spitz.ucw.cz"
+	Fri, 11 May 2007 08:29:59 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1380 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760083AbXEKM3r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 08:29:47 -0400
-Date: Thu, 10 May 2007 13:09:55 +0000
+	id S1758658AbXEKM36 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 08:29:58 -0400
+Date: Wed, 9 May 2007 20:33:35 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Peter Williams <pwil3058@bigpond.net.au>
-Cc: Esben Nielsen <nielsen.esben@googlemail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070510130954.GC4052@ucw.cz>
-References: <463854F3.3020403@linux.vnet.ibm.com> <20070502100545.GA6857@elte.hu> <46386F2B.9050307@linux.vnet.ibm.com> <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire> <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org> <20070506082911.GA32644@elte.hu> <alpine.LFD.0.98.0705061037390.25245@woody.linux-foundation.org> <Pine.LNX.4.64.0705071311040.14011@frodo.shire> <463FC5D8.2090502@bigpond.net.au>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>, Anton Vorontsov <cbou@mail.ru>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+Message-ID: <20070509203335.GA4290@ucw.cz>
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz> <1178550653.11851.191.camel@pmac.infradead.org> <20070507194949.GB3981@ucw.cz> <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com> <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl> <1178646751.2824.48.camel@pmac.infradead.org> <Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl> <1178721996.2824.199.camel@pmac.infradead.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <463FC5D8.2090502@bigpond.net.au>
+In-Reply-To: <1178721996.2824.199.camel@pmac.infradead.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> >>You say there is "no danger of overflow", and I mostly 
-> >>agree that once
-> >>we're talking about 64-bit values, the overflow issue 
-> >>simply doesn't
-> >>exist, and furthermore the difference between 63 and 
-> >>64 bits is not really
-> >>relevant, so there's no major reason to actively avoid 
-> >>signed entries.
-> >>
-> >>So in that sense, it all sounds perfectly sane. And 
-> >>I'm definitely not
-> >>sure your "292 years after bootup" worry is really 
-> >>worth even considering.
-> >>
-> >
-> >I would hate to tell mission control for Mankind's 
-> >first mission to another
-> >star to reboot every 200 years because "there is no 
-> >need to worry about it."
-> >
-> >As a matter of principle an OS should never need a 
-> >reboot (with exception for upgrading). If you say you 
-> >have to reboot every 200 years, why not every 100? 
-> >Every 50? .... Every 45 days (you know what I am 
-> >referring to :-) ?
+> > Considering Linux only -- does our text-mode VGA console driver make
+> > any effort to print an arbitrary UTF-8-encoded text 
+> > correctly?  What does it do when it runs beyond the limit of 512 
+> > characters?  
 > 
-> There's always going to be an upper limit on the 
-> representation of time. At least until we figure out 
->  how to implement infinity properly.
+> I've no idea -- I haven't used the VGA text-mode console for years
+> either. I rarely even sit in front of a box on which it even works --
+> all the workstations I have these days are PowerPC, and use fbdev.
 
-There's also upper limit on life time of this universe. 1000 bits is
-certainly enough  to represent that in u-seconds.
+Even with fbdev... you are limited to 512 characters iirc. So.. who
+has authority to say which subset of utf-8 is ok?
 
-Also notice that current cpus were not designed to work 300 years.
-When we have hw designed for 50 years+, we can start to worry.
+(Plus there is still lot of vga consoles out there -- all fedora users
+afaict?)
 
+> > And how about serial terminals?
+> 
+> It works fine over serial terminals. Why wouldn't it?
+
+He probably means serial terminals... like physical vt100. I used to
+have one (vt302 compatible or something).  Most emulators still
+emulate vt100, and yes, vt100 predates utf-8.
 							Pavel
+
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
