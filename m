@@ -1,51 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758326AbXEIPr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758048AbXEIPuG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758326AbXEIPr1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 11:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757693AbXEIPrT
+	id S1758048AbXEIPuG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 11:50:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755742AbXEIPt4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 11:47:19 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57482 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758170AbXEIPrQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 11:47:16 -0400
-Date: Wed, 9 May 2007 16:47:11 +0100
-From: Alasdair G Kergon <agk@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Heinz Mauelshagen <hjm@redhat.com>
-Subject: Re: [2.6.22 PATCH 22/26] dm: bio list helpers
-Message-ID: <20070509154711.GC18152@agk.fab.redhat.com>
-Mail-Followup-To: Andrew Morton <akpm@linux-foundation.org>,
-	dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-	Heinz Mauelshagen <hjm@redhat.com>
-References: <20070508194845.GC24114@agk.fab.redhat.com> <20070508174159.7d78a275.akpm@linux-foundation.org>
+	Wed, 9 May 2007 11:49:56 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:11555 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755185AbXEIPtz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 11:49:55 -0400
+Date: Wed, 9 May 2007 08:52:53 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       rientjes@google.com, jeremy@goop.org, Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH] doc: volatile considered evil
+Message-Id: <20070509085253.5935f90f.randy.dunlap@oracle.com>
+In-Reply-To: <46418B4D.6030307@s5r6.in-berlin.de>
+References: <516386418.20070501080839@gmail.com>
+	<20070430235642.e576e917.akpm@linux-foundation.org>
+	<20070508121404.17bd97a6.randy.dunlap@oracle.com>
+	<a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
+	<20070508163452.8b71f682.randy.dunlap@oracle.com>
+	<46418B4D.6030307@s5r6.in-berlin.de>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508174159.7d78a275.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.1i
-Organization: Red Hat UK Ltd. Registered in England and Wales, number 03798903. Registered Office: Amberley Place, 107-111 Peascod Street, Windsor, Berkshire, SL4 1TE.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 05:41:59PM -0700, Andrew Morton wrote:
-> On Tue, 8 May 2007 20:48:45 +0100
-> Alasdair G Kergon <agk@redhat.com> wrote:
-> > +#define BIO_LIST(bl) \
-> > +	struct bio_list bl = BIO_LIST_INIT
- 
-> BIO_LIST is a strange name for something which initialises storage.
- 
-Those came by analogy with list.h, with list_head -> bio_list:
+On Wed, 09 May 2007 10:50:21 +0200 Stefan Richter wrote:
 
-  #define LIST_HEAD(name) \
-        struct list_head name = LIST_HEAD_INIT(name)
+> Randy Dunlap wrote:
+> > Add information on the problems with the C-language "volatile" keyword
+> > and why it should not be used (most of the time).
+> 
+> I like Jonathan's article http://lwn.net/Articles/233479/ a lot.
+> It puts as much emphasis on the DOs as on the DON'Ts, which I find helpful.
 
-We could use something like INIT_BIO_LIST(bl) for that, but perhaps it would be
-more readable always written out in full?
-   struct bio_list bl = BIO_LIST_INIT;
+Yep.  I expect to drop my patch in favor of Jon's writeup.
 
-Alasdair
--- 
-agk@redhat.com
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
