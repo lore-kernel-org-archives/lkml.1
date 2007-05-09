@@ -1,78 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969038AbXEIBIP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969358AbXEIBR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969038AbXEIBIP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 21:08:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1033134AbXEIBHx
+	id S969358AbXEIBR6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 21:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755524AbXEIBRs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 21:07:53 -0400
-Received: from science.horizon.com ([192.35.100.1]:11351 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1033124AbXEIBHv (ORCPT
+	Tue, 8 May 2007 21:17:48 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:57802 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754877AbXEIBRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 21:07:51 -0400
-Date: 8 May 2007 21:07:49 -0400
-Message-ID: <20070509010749.14584.qmail@science.horizon.com>
-From: linux@horizon.com
-To: linux-kernel@vger.kernel.org, mzhao@lizotech-inc.com
-Subject: Re: increase Linux kernel address space 3.5 G memory on Redhat Enterprise
-Cc: linux@horizon.com
+	Tue, 8 May 2007 21:17:47 -0400
+Subject: [GIT PATCH] final SCSI updates for 2.6.21
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
+Cc: linux-scsi <linux-scsi@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Tue, 08 May 2007 20:17:39 -0500
+Message-Id: <1178673459.3737.114.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi:
-> I am running Redhat Linux Enterprise version 4 update 4 on a dual-core
-> 4G memory machine.  There are many references on the web talking about
-> increasing default user address space to 3.5 G however lacking specific
-> instructions. My questions:
-> 
-> 1. What is the specific steps to be done for the kernel to support 3.5 G 
->    address space?
-> 2. Do I need to re-compile kernel to make this happen? If so, any 
->    specific instruction?
+This should be the second half of the SCSI tree, mainly assorted driver
+updates and fixes.  The patch is available from:
 
-2. Yes, you need to re-compile the kernel.  Instructions all over the web.
-   Basically, "cd /usr/src/linux", make sure a reasonable default .config
-   file is installed (the distribution should supply one for its default
-   kernel), "make menuconfig" or "make xconfig", change the options you
-   want changed, then "make" and "make install".  The latter *usually*
-   works; the usual worst case is that it installs it somewhere other than
-   your boot loader is looking and rebooting will find the old kernel.
+master.kernel.org:/pub/scm/linux/kernel/git/jejb/scsi-misc-2.6.git
 
-   The fun comes when you left an option out of your new kernel that you
-   need to boot - like the hard drive controller!  Then you need to go
-   back to an old, known working kernel.
+The short changelog is:
 
-   It's not at all difficult, but you do need to be careful; a mistake
-   can be awkward to recover from if you don't plan ahead.
+Adrian Bunk (1):
+      qla4xxx: possible cleanups
 
-1. First of all, that's not necessarily a good idea.  Doing that would limit
-   you to 384 MB of kernel memory, after the usual 128 MB deduction for
-   PCI devices.  That has to fit the kernel binary, all page tables, inode
-   cache, network buffers, and so on.  For some workloads, that can be
-   a bottleneck.
+Amol Lad (1):
+      megaraid: replace yield() with cond_resched()
 
-   If your application is heavily biased toward file data that the kernel
-   doesn't have to look at, such as databases, it might be okay.
+Andrew Vasquez (6):
+      qla2xxx: Update version number to 8.01.07-k7.
+      qla2xxx: Add MSI support.
+      qla2xxx: Correct pci_set_msi() usage semantics.
+      qla2xxx: Attempt to stop firmware only if it had been previously executed.
+      qla2xxx: Honor NVRAM port-down-retry-count settings.
+      qla2xxx: Error-out during probe() if we're unable to complete HBA initiali
 
-   A much better thing would be to take advantage of the fact that
-   every multi-core processor I've heard of (IBM's POWER4, Sun Niagara,
-   and a few by some companies you may not have heard of like Intel and
-   AMD) is a 64-bit processor.  So you can run a 64bit kernel and get
-   terabytes of user address space.  Even 32-bit applications get a full
-   4G of address space, as the 64-bit kernel doesn't need to share.
+Brian King (11):
+      ipr: Use PCI-E reset API for new ipr adapter
+      ipr: Better handle adapter boot time errors
+      ipr: Enable multi-initator RAID support
+      ipr: Improved dual adapter errors
+      ipr: Increase adapter operational timeout
+      ipr: Handle IOA reset request
+      ipr: Handle check condition status from disk array device
+      ipr: Handle UA on disk array following an adapter reset
+      ipr: Allow driver_data to be passed for dynamic ids
+      ipr: Prevent overlapped adapter resets
+      use sysfs configured timeout for EH Start Unit timeout
 
-   That would make your user application happier *and* the kernel happier.
-   It would increase kernel data structure size, but it's still usually a
-   net win.
+Christof Schmitt (4):
+      zfcp: Fix deadlock between zfcp ERP and SCSI
+      zfcp: Locking for req_no and req_seq_no
+      zfcp: print S_ID and D_ID with 3 bytes
+      zfcp: Stop system after memory corruption
 
-1b. If you really want to do it, it's not a normally selectable option,
-    but you can add it to arch/i386/Kconfig by following the pattern of
-    the others.  You need CONFIG_PAGE_OFFSET=0xE0000000, and you need to
-    be sure that CONFIG_HIGHMEM64G is turned OFF.  (If it's on, you're
-    using PAE, and its 3-level page table structure requires using a
-    1G boundary.)
+Christoph Hellwig (2):
+      deprecate the old NCR53C9x driver
+      sas_scsi_host: Convert to use the kthread API
 
-    Then configure the kernel, select CONFIG_EMBEDDED under "General setup",
-    then your memory split under "Processor type and features".
+David Milburn (1):
+      megaraid: update version reported by MEGAIOC_QDRVRVER
 
-    Compile, install the new kernel, and reboot.
+Guennadi Liakhovetski (3):
+      tmscsim: Remove the last bus_to_virt()
+      tmscsim: remove bogus endianness conversions
+      tmscsim: remove long dead DMA_INT
+
+Heiko Carstens (3):
+      zfcp: clear boxed flag on unit reopen.
+      zfcp: clear adapter failed flag if an fsf request times out.
+      zfcp: rework request ID management.
+
+James Smart (17):
+      fc_transport: make all rports wait dev_loss_tmo before removing them
+      lpfc 8.1.12 : Change version number to 8.1.12
+      lpfc 8.1.12 : Update copyright year to 2007
+      lpfc 8.1.12 : Added support for 8G speed and new HBAs
+      lpfc 8.1.12 : Add support for async scanning
+      lpfc 8.1.12 : Don't process ERATT interrupts when issuing KILL_BOARD mbx c
+      lpfc 8.1.12 : Collapse discovery lists to a single node list
+      lpfc 8.1.12 : Reference count node structures for node lifetime management
+      lpfc 8.1.12 : Improve handling of failed ELS aborts
+      lpfc 8.1.12 : Improve diagnostic messages and change local loopback messag
+      lpfc 8.1.12 : Fixed recovery of rport after race with dev_loss_tmo
+      lpfc 8.1.12 : Round 2 of Miscellaneous fixes
+      lpfc 8.1.12 : Reorganize lpfc_nlp_list() and callers to prepare for nodeli
+      lpfc 8.1.12 : Fix unlock inside list traversal
+      lpfc 8.1.12 : Rework offline path to solve HBA reset issues
+      lpfc 8.1.12 : Modify ELS abort handling to prevent double completion
+      lpfc 8.1.12 : Misc bug fixes and code cleanup
+
+Matthias Kaehlcke (1):
+      qla1280: use DMA_64BIT_MASK instead of ~ 0ULL
+
+Olaf Hering (1):
+      mesh: cleanup variable usage in interrupt handler
+
+Salyzyn, Mark (4):
+      aacraid: correct SUN products to README
+      aacraid: superfluous adapter reset for IBM 8 series ServeRAID controllers
+      aacraid: kexec fix (reset interrupt handler)
+      aacraid: kmalloc/memset->kzalloc
+
+vignesh.babu@wipro.com (2):
+      dpt_i2o: kmalloc/memset->kzalloc
+      ch: kmalloc/memset->kzalloc
+
+walter harms (1):
+      megaraid: fix warnings when CONFIG_PROC_FS=n
+
+
+And the diffstat:
+
+ Documentation/feature-removal-schedule.txt |    9 
+ Documentation/scsi/aacraid.txt             |    4 
+ drivers/s390/scsi/zfcp_aux.c               |   90 --
+ drivers/s390/scsi/zfcp_def.h               |   41 +
+ drivers/s390/scsi/zfcp_erp.c               |   89 ++
+ drivers/s390/scsi/zfcp_ext.h               |    4 
+ drivers/s390/scsi/zfcp_fsf.c               |   50 -
+ drivers/s390/scsi/zfcp_qdio.c              |   49 -
+ drivers/s390/scsi/zfcp_scsi.c              |    9 
+ drivers/scsi/aacraid/comminit.c            |    3 
+ drivers/scsi/aacraid/commsup.c             |    6 
+ drivers/scsi/aacraid/dpcsup.c              |    6 
+ drivers/scsi/aacraid/rx.c                  |    4 
+ drivers/scsi/ch.c                          |    9 
+ drivers/scsi/dpt_i2o.c                     |   17 
+ drivers/scsi/ipr.c                         |  349 ++++++++++-
+ drivers/scsi/ipr.h                         |   33 +
+ drivers/scsi/libsas/sas_scsi_host.c        |   36 -
+ drivers/scsi/lpfc/lpfc.h                   |   33 -
+ drivers/scsi/lpfc/lpfc_attr.c              |  212 ++++--
+ drivers/scsi/lpfc/lpfc_crtn.h              |   32 -
+ drivers/scsi/lpfc/lpfc_ct.c                |   24 
+ drivers/scsi/lpfc/lpfc_disc.h              |   28 
+ drivers/scsi/lpfc/lpfc_els.c               |  552 +++++++-----------
+ drivers/scsi/lpfc/lpfc_hbadisc.c           |  884 +++++++++++++----------------
+ drivers/scsi/lpfc/lpfc_hw.h                |   11 
+ drivers/scsi/lpfc/lpfc_init.c              |  516 ++++++++--------
+ drivers/scsi/lpfc/lpfc_mbox.c              |    3 
+ drivers/scsi/lpfc/lpfc_nportdisc.c         |  307 ++++------
+ drivers/scsi/lpfc/lpfc_scsi.c              |  109 ++-
+ drivers/scsi/lpfc/lpfc_sli.c               |  427 +++++++-------
+ drivers/scsi/lpfc/lpfc_sli.h               |   12 
+ drivers/scsi/lpfc/lpfc_version.h           |    6 
+ drivers/scsi/megaraid.c                    |   20 
+ drivers/scsi/megaraid.h                    |    4 
+ drivers/scsi/megaraid/megaraid_mm.c        |    2 
+ drivers/scsi/mesh.c                        |   14 
+ drivers/scsi/qla1280.c                     |    2 
+ drivers/scsi/qla2xxx/qla_init.c            |   33 -
+ drivers/scsi/qla2xxx/qla_isr.c             |   15 
+ drivers/scsi/qla2xxx/qla_os.c              |    6 
+ drivers/scsi/qla2xxx/qla_version.h         |    2 
+ drivers/scsi/qla4xxx/ql4_dbg.c             |    4 
+ drivers/scsi/qla4xxx/ql4_glbl.h            |    9 
+ drivers/scsi/qla4xxx/ql4_init.c            |   18 
+ drivers/scsi/qla4xxx/ql4_iocb.c            |   18 
+ drivers/scsi/qla4xxx/ql4_mbx.c             |   19 
+ drivers/scsi/qla4xxx/ql4_os.c              |    9 
+ drivers/scsi/scsi_error.c                  |    3 
+ drivers/scsi/scsi_transport_fc.c           |  158 +++--
+ drivers/scsi/tmscsim.c                     |  225 ++-----
+ drivers/scsi/tmscsim.h                     |   12 
+ include/scsi/libsas.h                      |    3 
+ 53 files changed, 2396 insertions(+), 2144 deletions(-)
+
+James
+
+
