@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S970832AbXEIAA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S970918AbXEIAAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S970832AbXEIAA0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 20:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970511AbXEIAAI
+	id S970918AbXEIAAv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 20:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S970645AbXEIAAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 8 May 2007 20:00:10 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:42256 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S970442AbXEIAAI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 8 May 2007 20:00:08 -0400
-Received: from gw.goop.org ([64.81.55.164]:54518 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S970379AbXEIAAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 20:00:06 -0400
-Message-ID: <46410F02.906@goop.org>
-Date: Tue, 08 May 2007 17:00:02 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+Date: Tue, 8 May 2007 17:01:01 -0700
+From: Greg KH <greg@kroah.com>
+To: J??rn Engel <joern@lazybastard.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Thomas Gleixner <tglx@linutronix.de>, Andrew Morton <akpm@osdl.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Dave Kleikamp <shaggy@linux.vnet.ibm.com>, David Chinner <dgc@sgi.com>
+Subject: Re: [PATCH 1/2] LogFS proper
+Message-ID: <20070509000101.GB3967@kroah.com>
+References: <20070507215913.GA15054@lazybastard.org> <20070507220036.GB15054@lazybastard.org> <1178608950.3042.273.camel@localhost.localdomain> <20070508163226.GA22443@lazybastard.org> <84144f020705081215t73f2c0fq8ecb677423329cd8@mail.gmail.com> <20070508205827.GC23056@lazybastard.org> <20070508225253.GA2689@kroah.com> <20070508231009.GB25920@lazybastard.org>
 MIME-Version: 1.0
-To: Rusty Russell <rusty@rustcorp.com.au>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       David Howells <dhowells@redhat.com>,
-       Bj?rn Steinbrink <B.Steinbrink@gmx.de>
-Subject: Re: [patch 3/4] split usermodehelper setup from execution
-References: <20070508205129.064843364@goop.org>	 <20070508205517.256147592@goop.org> <1178668171.7286.55.camel@localhost.localdomain>
-In-Reply-To: <1178668171.7286.55.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070508231009.GB25920@lazybastard.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rusty Russell wrote:
-> call_usermodehelper_pipe()?  Erk.  Grepping... for core dumping via a
-> process?  Without modifying the ELF core dumper (at least) to handle
-> short writes?  Why not dump it in an agreed location and exec the
-> process with that as an arg?
->   
+On Wed, May 09, 2007 at 01:10:09AM +0200, J??rn Engel wrote:
+> 
+> The remaining question is how to deal with kernel-only code that uses
+> be64.  Convert that to __be64 as well?  Or introduce be64 in
+> include/linix/types.h instead?
 
-I think the idea is that you might want to send it over the net on a
-diskless system, or filter/compress the core before it hits disk because
-you don't have enough space.
+I say leave it alone for now, it's not that common :)
 
-> When did this go in?  2.6.19... hmm, too late to rip it out I guess 8(
->
-> Anyway, I'm not sure exposing an open-ended interface wins: refactoring
-> internally definitely makes sense though.
+thanks,
 
-Well, I added this specifically so I could add a cleanup callback, which
-can be used to free a dynamically allocated argv array (see the
-following patch).  And if you're going to have all this stuff, you may
-as well make it work properly together.  Why have "you can set the
-session keyring *or* use a pipe for stdin"?
-
-As distended as it is, at least it actually fits together somewhat
-coherently now.  I'd be up for dropping the single-use wrapper functions.
-
-    J
+greg k-h
