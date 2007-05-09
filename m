@@ -1,70 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbXEIRFB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbXEIRHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756541AbXEIRFB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 13:05:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXEIREx
+	id S1756763AbXEIRHn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 13:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbXEIRHc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 13:04:53 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:50259 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751750AbXEIREw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 13:04:52 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: tglx@linutronix.de
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-Date: Wed, 9 May 2007 19:09:24 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       linux-acpi@vger.kernel.org
-References: <20070430102837.748238000@linutronix.de> <200705091512.13171.rjw@sisk.pl> <1178716776.3042.485.camel@localhost.localdomain>
-In-Reply-To: <1178716776.3042.485.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Wed, 9 May 2007 13:07:32 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:39029 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755011AbXEIRHa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 13:07:30 -0400
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and
+	powerpc
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
+In-Reply-To: <20070509160102.GA30745@amitarora.in.ibm.com>
+References: <20070329115126.GB7374@amitarora.in.ibm.com>
+	 <20070329101010.7a2b8783.akpm@linux-foundation.org>
+	 <20070330071417.GI355@devserv.devel.redhat.com>
+	 <20070417125514.GA7574@amitarora.in.ibm.com>
+	 <20070418130600.GW5967@schatzie.adilger.int>
+	 <20070420135146.GA21352@amitarora.in.ibm.com>
+	 <20070420145918.GY355@devserv.devel.redhat.com>
+	 <20070424121632.GA10136@amitarora.in.ibm.com>
+	 <20070426175056.GA25321@amitarora.in.ibm.com>
+	 <20070426180332.GA7209@amitarora.in.ibm.com>
+	 <20070509160102.GA30745@amitarora.in.ibm.com>
+Content-Type: text/plain
+Organization: IBM LTC
+Date: Wed, 09 May 2007 10:07:25 -0700
+Message-Id: <1178730446.3815.8.camel@dyn9047017103.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705091909.25443.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday, 9 May 2007 15:19, Thomas Gleixner wrote:
-> On Wed, 2007-05-09 at 15:12 +0200, Rafael J. Wysocki wrote:
-> > On Wednesday, 9 May 2007 14:24, Thomas Gleixner wrote:
-> > > On Wed, 2007-05-09 at 13:45 +0200, Rafael J. Wysocki wrote:
-> > > > On Wednesday, 9 May 2007 10:59, Thomas Gleixner wrote:
-> > > > > On Wed, 2007-05-09 at 01:31 -0700, Andrew Morton wrote:
-> > > > > > > I suspect I just tested the wrong thing yesterday.  Let me recheck just
-> > > > > > > these patches against 2.6.21.
-> > > > > > 
-> > > > > > yup, same hang with just these three:
-> > > > > > 
-> > > > > > origin
-> > > > > > clocksource-fix-resume-logic
-> > > > > > clockevents-fix-resume-logic-updated-version
-> > > > > 
-> > > > > I have no idea, how this affects acpi_evaluate_object()
-> > > > 
-> > > > I think the problem is that the ACPI code ordering here is broken in a
-> > > > difficult to fix way.
-> > > 
-> > > Any explanation aside of witchcraft why this is affected by the clock
-> > > event resume changes ?
-> > 
-> > Well, where is unregister_time_interpolator() called from?
+On Wed, 2007-05-09 at 21:31 +0530, Amit K. Arora wrote:
+> I have the updated patches ready which take care of Andrew's comments.
+> Will run some tests and post them soon.
 > 
-> # grep -rn unregister_time_interpolator .
-> ./kernel/timer.c:1893:unregister_time_interpolator(struct time_interpolator *ti)
-> ./include/linux/timex.h:270:extern void unregister_time_interpolator(struct time_interpolator *);
+> But, before submitting these patches, I think it will be better to finalize
+> on certain things which might be worth some discussion here:
 > 
-> I don't see a caller. i386 does not use time interpolator anyway.
+> 1) Should the file size change when preallocation is done beyond EOF ?
+>    - Andreas and Chris Wedgwood are in favor of not changing the
+>      file size in this case. I also tend to agree with them. Does anyone
+>      has an argument in favor of changing the filesize ?
+>      If not, I will remove the code which changes the filesize, before I
+>      resubmit the concerned ext4 patch.
 > 
-> # find -iname Kconfig | xargs grep TIME_INTERPOLATION
-> ./arch/sparc64/Kconfig:37:config TIME_INTERPOLATION
-> ./arch/ia64/Kconfig:60:config TIME_INTERPOLATION
 
-But clocksource_resume() has no other caller, AFAICS ...
+If we chose not to update the file size beyong EOF, then for filesystem
+without fallocate() support (ext2,3 currently), posix_fallocate() will
+follow the hard way(zero-out) to do preallocation. Then we will get
+different behavior on filesystems w/o fallocate() support. It make sense
+to be consistent, IMO.
 
-Well, I don't see any explanation that wouldn't involve witchcraft.
+My point of view, preallocation is just a efficient way to allocating
+blocks for files without zero-out, other than this, the new behavior
+should be consistent with the old way: file size update,mtime/ctime,
+ENOSPC etc.
 
-Rafael
+Mingming
+
+
