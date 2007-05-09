@@ -1,56 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758396AbXEIQjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757575AbXEIQm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758396AbXEIQjX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 12:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754446AbXEIQjQ
+	id S1757575AbXEIQm1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 12:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756017AbXEIQmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 12:39:16 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:33359 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754092AbXEIQjP (ORCPT
+	Wed, 9 May 2007 12:42:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57957 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755799AbXEIQmT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 12:39:15 -0400
-Date: Wed, 9 May 2007 17:38:46 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Ulrich Drepper <drepper@redhat.com>
-cc: Nick Piggin <nickpiggin@yahoo.com.au>, Rik van Riel <riel@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jakub Jelinek <jakub@redhat.com>
-Subject: Re: [PATCH] MM: implement MADV_FREE lazy freeing of anonymous memory
-In-Reply-To: <463B598B.80200@redhat.com>
-Message-ID: <Pine.LNX.4.64.0705091724500.25202@blonde.wat.veritas.com>
-References: <4632D0EF.9050701@redhat.com> <463B108C.10602@yahoo.com.au>
- <463B598B.80200@redhat.com>
+	Wed, 9 May 2007 12:42:19 -0400
+Date: Wed, 9 May 2007 09:42:07 -0700
+From: Greg KH <greg@kroah.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Adrian Bunk <bunk@stusta.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+	(PCI_MULTITHREAD_PROBE)
+Message-ID: <20070509164207.GA28633@kroah.com>
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com> <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org> <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com> <20070509095302.GA13053@kroah.com> <20070509153813.52a7c397@gondolin.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 09 May 2007 16:39:01.0393 (UTC) FILETIME=[8C6AB810:01C79258]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAACGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAdG9ydmFsZHNAbGludXgtZm91bmRhdGlvbi5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBsaW51eC1tbUBrdmFjay5vcmcAZHJlcHBlckByZWRoYXQuY29tAGpha3ViQHJlZGhhdC5jb20AcmllbEByZWRoYXQuY29tAG5pY2twaWdnaW5AeWFob28uY29tLmF1AA==
-X-Brightmail-Tracker: AAAAAA==
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070509153813.52a7c397@gondolin.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 4 May 2007, Ulrich Drepper wrote:
+On Wed, May 09, 2007 at 03:38:13PM +0200, Cornelia Huck wrote:
+> On Wed, 9 May 2007 02:53:02 -0700,
+> Greg KH <greg@kroah.com> wrote:
 > 
-> I don't want to judge the numbers since I cannot but I want to make an
-> observations: even if in the SMP case MADV_FREE turns out to not be a
-> bigger boost then there is still the UP case to keep in mind where Rik
-> measured a significant speed-up.  As long as the SMP case isn't hurt
-> this is reaosn enough to use the patch.  With more and more cores on one
-> processor SMP systems are pushed evermore to the high-end side.  You'll
-> find many installations which today use SMP will be happy enough with
-> many-core UP machines.
+> > > 2. Sheer volume of devices on a bus. Even if the indivdual probing
+> > > doesn't take long, having all devices probed one after the other may
+> > > take a lot of time. Putting the actual probe on a thread makes it
+> > > possible to run several probes in parallel, thereby cutting probing
+> > > time.
+> > 
+> > Again, not for PCI, right?
+> 
+> It seems that everyone agrees now that moving PCI over to a new probing
+> model without individual driver support was a bad idea. So generic
+> multithreaded probing is dead.
 
-Just remembered this mail from a few days ago, and how puzzled I'd been
-by your last sentence or two: I seem to be reading it in the wrong way,
-and don't understand why users of SMP kernels will be moving to UP?
+Why is it dead?  Since when is PCI the only bus in the system?
 
-UP in the sense of one processor but many cores?  But that still needs
-an SMP kernel to use all those cores.  Or you're thinking of growing
-virtualization?  Would you please explain further?
+> > If you want to implement this for your bus type, fine, I have no
+> > objection to that at all, but not for PCI, it's just not worth it.
+> 
+> Infrastructure for async probing might not be such a bad idea, though.
+> (Aren't there some huge PCI-based machines?) However, I don't really
+> care whether PCI or SCSI or $HUGE_BUS use it, but serial synchronous
+> probing on a bus looks like a killer on most large systems.
 
-Thanks,
-Hugh
+PCI probing is just reading stuff from memory.  The slowness happens
+when storage devices need to spin up and/or discover attached drives.
+
+So, the async stuff can be done in those buses if wanted/needed, PCI is
+not the problem here.
+
+thanks,
+
+greg k-h
