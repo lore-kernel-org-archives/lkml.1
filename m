@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S967741AbXEIDaT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1034162AbXEIDbs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S967741AbXEIDaT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 23:30:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967498AbXEIDaF
+	id S1034162AbXEIDbs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 23:31:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967560AbXEIDbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 23:30:05 -0400
-Received: from mail.gmx.net ([213.165.64.20]:47174 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754293AbXEIDaB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 23:30:01 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX18pOThOwvIpGdOIaEwPx1aS94OuaOkvpPEOgX87dC
-	z4I/MZnRfkRbe+
-Subject: Re: multi-second freezes with current GIT?
-From: Mike Galbraith <efault@gmx.de>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <20070508.184458.21594839.davem@davemloft.net>
-References: <20070508.184458.21594839.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 09 May 2007 05:29:20 +0200
-Message-Id: <1178681360.7487.59.camel@Homer.simpson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.2 
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
+	Tue, 8 May 2007 23:31:39 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:42236 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S967498AbXEIDbh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 23:31:37 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: yhlu <yhlu.kernel@gmail.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       vgoyal@in.ibm.com, Gerd Hoffmann <kraxel@redhat.com>,
+       Jeff Garzik <jeff@garzik.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+References: <4634483E.9030307@goop.org>
+	<m1tzuuv24z.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705080941y69ddd5d6lab170c5f3967f148@mail.gmail.com>
+	<m1sla7i68s.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705081033s19365843i5b955ae175de73eb@mail.gmail.com>
+	<86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>
+	<m1k5vji107.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705081500x682ee098y7d51f7bb98dbcff6@mail.gmail.com>
+	<4640F4B3.30408@goop.org> <4640FB2C.2060300@zytor.com>
+	<86802c440705081541v7d0773cek2c5fae1854b68bbc@mail.gmail.com>
+	<46410403.4050802@zytor.com>
+	<m17irivkhy.fsf@ebiederm.dsl.xmission.com>
+	<46413087.2020505@zytor.com>
+Date: Tue, 08 May 2007 21:30:35 -0600
+In-Reply-To: <46413087.2020505@zytor.com> (H. Peter Anvin's message of "Tue,
+	08 May 2007 19:23:03 -0700")
+Message-ID: <m1tzumu10k.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-08 at 18:44 -0700, David Miller wrote:
-> I've been noticing this off and on for the past week or so.
-> 
-> The system seems to jam up for several seconds, anything that would
-> need to read from disk just sits there during this time.  I think it's
-> correlated with generating a lot of dirty write data.
-> 
-> My mouse moves around in X etc. so it really is only processes that
-> need to read from disk that get stuck.
-> 
-> Perhaps it's a side effect of those dirty ratio changes Linus made to
-> start off the 2.6.22 merge cycle?
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-Uhoh, that seems highly likely.
+> Eric W. Biederman wrote:
+>> 
+>> I expect I can find a few more examples where we specify
+>> video_cols and video_lines but we use video_mode == 0.
+>> 
+>> Going farther mode 0x00 is a BIOS 40x25 mode.  So the patch below is
+>> not always safe even if we boot the bzImage.  It is just highly
+>> unlikely anyone would start the kernel in 40x25 text mode. 
+>> 
+>
+> Mode 0x00 is, at least theoretically, BIOS 40x25 *grayscale*; this mode
+> (and mode 0x02 which is the same thing in 80x25) were as far as I know
+> only ever used with composite monitors off CGA cards, i.e. functionally
+> never.  Actual monochrome monitors used mode 0x07.
 
-I think those changes may have been triggered by my repeatable and truly
-horrible system stalls when writing to an ext3 data=ordered nearly full
-filesystem.  Anything that does fdatasync() and/or fsync() can cause
-very bad experiences indeed.  KDE's little menu/program launcher
-doohickey does fdatasync() for some odd reason, which has utterly killed
-my entire GUI for up to and including 20 minutes at a whack.
+I agree.  We are not at all likely to see it in practice.  Even
+if my memory is correct and vga cards and non-monochrome cga
+cards supported that mode.
 
-Switching to data=writeback cured those horrors.  Lowering the dirty
-ratio reduced the agony of data=ordered tremendously, but didn't make it
-even remotely acceptable.
+That doesn't mean checking for 0x00 is sufficient to detect
+an initialized struct screen_info, or a lack of a video screen.
 
-	-Mike
+We have in kernel historical precedent for using 0x00 as just meaning
+a text mode.  I'm fairly certain that I looked I more closely I could
+find this convention of using 0x00 to mean a text mode on ia64, mips,
+and ppc, in addition to the instances I found on alpha, arm,
 
+Since the whole point is to detect the case where we don't have
+a screen at all it makes sense to check several additional variables
+and make certain that they are all 0.  Agreed?
+
+Eric
