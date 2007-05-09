@@ -1,38 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969104AbXEIDdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1033682AbXEIDeW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969104AbXEIDdw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 23:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967303AbXEIDdp
+	id S1033682AbXEIDeW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 23:34:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S969126AbXEIDeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 23:33:45 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:58834 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S967513AbXEIDdo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 23:33:44 -0400
-Date: Tue, 8 May 2007 20:33:39 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jeff Garzik <jeff@garzik.org>
-cc: "H. Peter Anvin" <hpa@zytor.com>, "Antonino A. Daplas" <adaplas@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 464bdd33e9baad9806c7adbd8dfc37081a55f27e
-In-Reply-To: <46413A7E.5050304@garzik.org>
-Message-ID: <alpine.LFD.0.98.0705082032591.4062@woody.linux-foundation.org>
-References: <46413851.6070505@zytor.com> <46413A7E.5050304@garzik.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Tue, 8 May 2007 23:34:11 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:36439 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S967303AbXEIDeJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 8 May 2007 23:34:09 -0400
+Date: Wed, 9 May 2007 09:03:48 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: yhlu <yhlu.kernel@gmail.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Gerd Hoffmann <kraxel@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       patches@x86-64.org, linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+Message-ID: <20070509033348.GA12361@in.ibm.com>
+Reply-To: vgoyal@in.ibm.com
+References: <4638FC39.4010101@goop.org> <4638FE1B.9050901@zytor.com> <46390523.5010809@goop.org> <463909AF.9040205@zytor.com> <20070503045031.GA5794@in.ibm.com> <m1tzuuv24z.fsf@ebiederm.dsl.xmission.com> <86802c440705080941y69ddd5d6lab170c5f3967f148@mail.gmail.com> <m1sla7i68s.fsf@ebiederm.dsl.xmission.com> <86802c440705081033s19365843i5b955ae175de73eb@mail.gmail.com> <86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 8 May 2007, Jeff Garzik wrote:
+On Tue, May 08, 2007 at 11:51:35AM -0700, yhlu wrote:
+> Eric,
 > 
-> I wonder if this fbdev update is what causes my X session to die?
+> i tried to load vmlinux with kexec and got
+> Ramdisks not supported with generic elf arguments
+> 
 
-Not that particular patch, but yeah, it could certainly be the fbdev 
-update.
+This message generally appears if you did not specify --args-linux
+on kexec command line while loading vmlinux.
 
-Can you try bisecting it?
-
-		Linus
+Thanks
+Vivek
