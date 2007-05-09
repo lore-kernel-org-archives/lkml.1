@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935081AbXEIGXe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935200AbXEIGZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935081AbXEIGXe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 02:23:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934666AbXEIGX0
+	id S935200AbXEIGZN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 02:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934666AbXEIGZB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 02:23:26 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44454
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S934664AbXEIGX0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 02:23:26 -0400
-Date: Tue, 08 May 2007 23:23:26 -0700 (PDT)
-Message-Id: <20070508.232326.44096869.davem@davemloft.net>
-To: efault@gmx.de
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: multi-second freezes with current GIT?
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1178681360.7487.59.camel@Homer.simpson.net>
-References: <20070508.184458.21594839.davem@davemloft.net>
-	<1178681360.7487.59.camel@Homer.simpson.net>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Wed, 9 May 2007 02:25:01 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:39801 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934099AbXEIGZA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 02:25:00 -0400
+Date: Wed, 9 May 2007 16:23:57 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus <torvalds@linux-foundation.org>
+Subject: [PATCH 1/2] Declare {compat_}sys_utimensat
+Message-Id: <20070509162357.65ab8868.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mike Galbraith <efault@gmx.de>
-Date: Wed, 09 May 2007 05:29:20 +0200
 
-> On Tue, 2007-05-08 at 18:44 -0700, David Miller wrote:
-> > I've been noticing this off and on for the past week or so.
-> > 
-> > The system seems to jam up for several seconds, anything that would
-> > need to read from disk just sits there during this time.  I think it's
-> > correlated with generating a lot of dirty write data.
-> > 
-> > My mouse moves around in X etc. so it really is only processes that
-> > need to read from disk that get stuck.
-> > 
-> > Perhaps it's a side effect of those dirty ratio changes Linus made to
-> > start off the 2.6.22 merge cycle?
-> 
-> Uhoh, that seems highly likely.
-> 
-> I think those changes may have been triggered by my repeatable and truly
-> horrible system stalls when writing to an ext3 data=ordered nearly full
-> filesystem.  Anything that does fdatasync() and/or fsync() can cause
-> very bad experiences indeed.  KDE's little menu/program launcher
-> doohickey does fdatasync() for some odd reason, which has utterly killed
-> my entire GUI for up to and including 20 minutes at a whack.
-> 
-> Switching to data=writeback cured those horrors.  Lowering the dirty
-> ratio reduced the agony of data=ordered tremendously, but didn't make it
-> even remotely acceptable.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/linux/compat.h   |    3 +++
+ include/linux/syscalls.h |    2 ++
+ 2 files changed, 5 insertions(+), 0 deletions(-)
 
-I'm using data=ordered on my partitions too.
+This is needed before Powerpc can wire up the syscall.
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/linux/compat.h b/include/linux/compat.h
+index ccd863d..70a157a 100644
+--- a/include/linux/compat.h
++++ b/include/linux/compat.h
+@@ -253,5 +253,8 @@ asmlinkage long compat_sys_epoll_pwait(int epfd,
+ 			const compat_sigset_t __user *sigmask,
+ 			compat_size_t sigsetsize);
+ 
++asmlinkage long compat_sys_utimensat(unsigned int dfd, char __user *filename,
++				struct compat_timespec __user *t, int flags);
++
+ #endif /* CONFIG_COMPAT */
+ #endif /* _LINUX_COMPAT_H */
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index 1912c6c..3139f44 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -576,6 +576,8 @@ asmlinkage long sys_fstatat64(int dfd, char __user *filename,
+ 			       struct stat64 __user *statbuf, int flag);
+ asmlinkage long sys_readlinkat(int dfd, const char __user *path, char __user *buf,
+ 			       int bufsiz);
++asmlinkage long sys_utimensat(int dfd, char __user *filename,
++				struct timespec __user *utimes, int flags);
+ asmlinkage long compat_sys_futimesat(unsigned int dfd, char __user *filename,
+ 				     struct compat_timeval __user *t);
+ asmlinkage long compat_sys_newfstatat(unsigned int dfd, char __user * filename,
+-- 
+1.5.1.3
+
