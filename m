@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935054AbXEIA2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S935138AbXEIA3V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935054AbXEIA2j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 20:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbXEIA2b
+	id S935138AbXEIA3V (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 20:29:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754877AbXEIA3M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 20:28:31 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:44579 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752064AbXEIA2b (ORCPT
+	Tue, 8 May 2007 20:29:12 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:35463 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753189AbXEIA3K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 20:28:31 -0400
-Date: Wed, 9 May 2007 01:32:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Matt Mackall <mpm@selenic.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, clameter@sgi.com
-Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch
- added to -mm tree
-Message-ID: <20070509013220.02093f2e@the-village.bc.nu>
-In-Reply-To: <20070509002307.GV11115@waste.org>
-References: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net>
-	<20070509002307.GV11115@waste.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Tue, 8 May 2007 20:29:10 -0400
+Date: Wed, 9 May 2007 09:29:12 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Cc: clameter@sgi.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       akpm@linux-foundation.org, ak@suse.de, jbarnes@virtuousgeek.org
+Subject: Re: [PATCH] change zonelist order v5 [1/3] implements zonelist
+ order selection
+Message-Id: <20070509092912.3140bb78.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <1178656627.5203.84.camel@localhost>
+References: <20070508201401.8f78ec37.kamezawa.hiroyu@jp.fujitsu.com>
+	<20070508201642.c63b3f65.kamezawa.hiroyu@jp.fujitsu.com>
+	<1178643985.5203.27.camel@localhost>
+	<Pine.LNX.4.64.0705081021340.9446@schroedinger.engr.sgi.com>
+	<1178645622.5203.53.camel@localhost>
+	<Pine.LNX.4.64.0705081104180.9941@schroedinger.engr.sgi.com>
+	<1178656627.5203.84.camel@localhost>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> (without SLAB emulation) and fragmentation was not the driving force
-> for replacement. Small Linux 1.x machines frequently had uptimes of 1+
-> years without fragmenting to death. Instead, it was performance with
+On Tue, 08 May 2007 16:37:06 -0400
+Lee Schermerhorn <Lee.Schermerhorn@hp.com> wrote:
 
-8MB for a bit over 3 years.... (1.2.13lmp)
+> > You probably need a 
+> > configuration with a couple of nodes. Maybesomething less symmetric than 
+> > Kame? I.e. have 4GB nodes and then DMA32 takes out a sizeable chunk of it?
+> > 
+> 
+> I tested on a 2 socket, 4GB Opteron blade.  All memory is either DMA32
+> or DMA.  I added some ad hoc instrumentation to the build_zonelist_*
+> functions to see what's happening.  I have verified that the patches
+> appear to build the zonelists correctly:
+> 
+Thank you. good news.
 
-The fragmentation issue I think is overbaked. A lot of the academic work
-argues that there is pretty much no long term difference between first
-fit, best fit, and most of the clever algorithms (obviously stupid ones
-like "take the middle out of the biggest space allocator" do perform
-worse). For MMUless boxes fragmentation is a big issue but not for normal
-systems.
+-Kame
 
-Alan
