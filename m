@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757591AbXEIMC1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756640AbXEIMCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757591AbXEIMC1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:02:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757119AbXEIMBN
+	id S1756640AbXEIMCv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756926AbXEIMCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:01:13 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:2543 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755285AbXEIMBH (ORCPT
+	Wed, 9 May 2007 08:02:37 -0400
+Received: from wip-cdc-wd.wipro.com ([203.91.201.26]:43139 "EHLO
+	wip-cdc-wd.wipro.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757637AbXEIMCg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:01:07 -0400
-Date: Wed, 9 May 2007 22:00:30 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, ak@suse.de, jeff@garzik.org,
-       jmorris@namei.org, netdev@vger.kernel.org
-Subject: Re: [patch 7/9] lguest: the net driver
-Message-ID: <20070509120030.GA12853@gondor.apana.org.au>
-References: <E1HljA6-0001E4-00@gondolin.me.apana.org.au> <1178711725.7286.82.camel@localhost.localdomain>
+	Wed, 9 May 2007 08:02:36 -0400
+Subject: [KJ PATCH] Replacing alloc_pages(gfp,0) with alloc_page(gfp) in
+	arch/i386/mm/pgtable.c.
+From: Shani Moideen <shani.moideen@wipro.com>
+To: linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, kernel-janitors@lists.osdl.org
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: Linux COE, Wipro Technolgies
+Date: Wed, 09 May 2007 17:30:41 +0530
+Message-Id: <1178712041.2280.25.camel@shani-win>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178711725.7286.82.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
+X-OriginalArrivalTime: 09 May 2007 12:02:34.0107 (UTC) FILETIME=[ED9FBCB0:01C79231]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty:
-
-On Wed, May 09, 2007 at 09:55:25PM +1000, Rusty Russell wrote:
-> 
-> 	NO_CSUM because it really doesn't need a checksum.  The
-> LGUEST_NET_F_NOCSUM is only set for local inter-guest networking.  If
-> some guest were to route the packets outside the machine, this would be
-> an issue, though ("don't do that").
-
-While I can see that this is good in keeping things simple, I think
-it's something that you want to be able to support since the user
-may wish to setup a guest as a firewall appliance which would involve
-passing packets from another guest to the outside world.
+Hi,
  
-> Indeed, that would be a new feature, and is certainly a consideration
-> for more efficient inter-guest networking.  However, I consider that
-> somewhat cheating: it's nice to know that 1500 doesn't suck too hard.
-> 
-> Remember, "Features kill puppies!" 8)
+Replacing alloc_pages(gfp,0) with alloc_page(gfp) in
+arch/i386/mm/pgtable.c.
 
-Heh :)
+Signed-off-by: Shani Moideen <shani.moideen@wipro.com>
+----
 
-Cheers,
+diff --git a/arch/i386/mm/pgtable.c b/arch/i386/mm/pgtable.c
+index fa0cfbd..5d2b0fb 100644
+--- a/arch/i386/mm/pgtable.c
++++ b/arch/i386/mm/pgtable.c
+@@ -191,9 +191,9 @@ struct page *pte_alloc_one(struct mm_struct *mm, unsigned long address)
+ 	struct page *pte;
+
+ #ifdef CONFIG_HIGHPTE
+-	pte = alloc_pages(GFP_KERNEL|__GFP_HIGHMEM|__GFP_REPEAT|__GFP_ZERO, 0);
++	pte = alloc_page(GFP_KERNEL|__GFP_HIGHMEM|__GFP_REPEAT|__GFP_ZERO);
+ #else
+-	pte = alloc_pages(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO, 0);
++	pte = alloc_page(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO);
+ #endif
+ 	return pte;
+ }
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Shani 
