@@ -1,54 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759840AbXEIXQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759733AbXEIXRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759840AbXEIXQf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759395AbXEIXQF
+	id S1759733AbXEIXRT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759153AbXEIXRC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:16:05 -0400
-Received: from wr-out-0506.google.com ([64.233.184.239]:21809 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759331AbXEIXQC (ORCPT
+	Wed, 9 May 2007 19:17:02 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:33167 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758322AbXEIXQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:16:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MVSAHw3shP7JtKLfywOG2u1yPi+RuZU/85CMUt+lnw9sGVCToJNExlQsr/zcKe8OSIooUal+cMXbAaVkA1vd4ophkW1wxgLQWR03cX/z2FwoklABSx1SxbOILuxQqdLU95pOFl/xOXQm8MbLU5u39ghs2cVMkGBPkCZKTYby3/o=
-Message-ID: <9a8748490705091616m584b2249jf912da23820d8f7b@mail.gmail.com>
-Date: Thu, 10 May 2007 01:16:01 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Shahbaz Khan" <shaz.linux@gmail.com>
-Subject: Re: What tools to use?
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20cbb9450705091557p53e771f6g7cb2c8b0491a3d8a@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 19:16:59 -0400
+Date: Thu, 10 May 2007 09:16:43 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
+Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
+Message-ID: <20070509231643.GM85884050@sgi.com>
+References: <4642389E.4080804@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <20cbb9450705091557p53e771f6g7cb2c8b0491a3d8a@mail.gmail.com>
+In-Reply-To: <4642389E.4080804@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/05/07, Shahbaz Khan <shaz.linux@gmail.com> wrote:
-> All the experts on this list plz let me know of any good cross
-> referencing tool for source code navigation. I have tried LXR but its
-> not easy to configure for a rookie like me. Anyother as good as LXR?
->
-lxr is pretty good (glimpse on its own as well can be useful). If you
-don't want to set it up yourself, then you could consider to use the
-online version at http://lxr.linux.no/
+On Wed, May 09, 2007 at 02:09:50PM -0700, Jeremy Fitzhardinge wrote:
+> I've had a couple of instances of a linux-2.6 mercurial repo getting
+> corrupted in some odd way this morning.  It looks like files are being
+> truncated; not to size 0, but losing something off the end.
+> 
+> This is on an xfs filesystem.  I haven't had any crashes/oops, and I
+> don't think its the normal files getting filled with 0 problem.  I saw
+> this before the most recent set of xfs updates, but it happened again
+> afterwards too.
 
-Another good thing is "make ctags" in the kernel source dir - this
-will  let you quickly jump to declarations etc and back with a few
-simple keystrokes in editors like vim.
-http://www.faqs.org/docs/ldev/0130091154_64.htm
-http://applications.linux.com/article.pl?sid=07/01/22/167212&tid=13&tid=47
-http://cscope.sourceforge.net/cscope_vim_tutorial.html
+It looks like the latest XFS changes haven't been pulled yet, so
+it's not new code that is triggering this....
 
-"make cscope" is another good option. It'll generate an index usable
-by the cscope tool (http://cscope.sourceforge.net/).
+> Mercurial uses a strictly append-only model for updating its repo files,
+> but it looks like maybe an append operation didn't stick.
+> 
+> I'm repulling a fresh copy of the repo; I'll be able to compare
+> before/after.  Update: yep, definitely truncated:
+> 
+> $ ls -l .hg-new/store/data/_documentation/pi-futex.txt.i .hg-broken/store/data/_documentation/pi-futex.txt.i
+> 4 -rw-rw-r-- 1 jeremy jeremy 3309 May  9 09:43 .hg-broken/store/data/_documentation/pi-futex.txt.i
+> 4 -rw-rw-r-- 1 jeremy jeremy 3797 May  9 13:38 .hg-new/store/data/_documentation/pi-futex.txt.i
+> 
+> also
+>   3476 -rw-rw-r--  1 jeremy jeremy   3558208 May  9 13:55 00manifest.i
+>   3476 -rw-rw-r--  1 jeremy jeremy   3555200 May  9 09:41 00manifest.i~
+> 
+> 
+> where 00manifest.i~ is the broken one. The files are identical up to the
+> truncation point.
 
+Hmmm - that is bizarre. What is the output of xfs_bmap -vvp <filename>
+on each of those files?
+
+what happens to these files after then are downloaded? Does it only
+happen to append-only files or are other files affected as well?
+
+BTW, what's the 'xfs_info <mntpt>' output for this filesystem?
+
+> The repo passed "hg verify" just after I pulled it, so this corruption
+> came about after a while.
+> 
+> Hm, the other possibility is that nlinks is being misreported.  When
+> cloning a repo, mercurial will generally hard-link files where possible,
+> and then break the link if it sees nlink > 1.  If xfs is mis-reporting
+> the link count, then this will cause havok.  Is that possible?  Seems
+> unlikely, but it would also explain the symptoms.  I just did a linking
+> clone with an older kernel, and the link count is as expected.
+
+I'd be surprised if it was a link count problem - that would cause
+all sorts of other problems as well....
+
+> xfs_check passes without any output, which I presume is good.
+
+Yes, it means everythign is ok. You only have to worry when xfs_check
+says something - it only brings bad news ;)
+
+Cheers,
+
+Dave.
 -- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
