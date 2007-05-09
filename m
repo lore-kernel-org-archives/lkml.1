@@ -1,117 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760338AbXEIXqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760377AbXEIXsn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760338AbXEIXqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757204AbXEIXqg
+	id S1760377AbXEIXsn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:48:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbXEIXsf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:46:36 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:54811 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756766AbXEIXqe (ORCPT
+	Wed, 9 May 2007 19:48:35 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:24223 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756623AbXEIXse (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:46:34 -0400
-Date: Wed, 9 May 2007 16:45:55 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: thockin@google.com (Tim Hockin)
-Cc: ak@suse.de, vojtech@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86_64: O_EXCL on /dev/mcelog (resend)
-Message-Id: <20070509164555.c640dfef.akpm@linux-foundation.org>
-In-Reply-To: <20070507221901.GA26709@google.com>
-References: <20070507221901.GA26709@google.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 19:48:34 -0400
+Date: Wed, 09 May 2007 17:48:30 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [2.6.21.1] SATA freeze
+In-reply-to: <fa.I0i3SlPzvZnxCYuJNFL3tixqEJU@ifi.uio.no>
+To: Gerhard Mack <gmack@innerfire.net>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Jeff Garzik <jeff@garzik.org>
+Message-id: <46425DCE.1070001@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.Ngs+g4HBWK5JUzEhRMjcVQVR448@ifi.uio.no>
+ <fa.xHed6JNWpYYFYmDy7FY+p6HTjPw@ifi.uio.no>
+ <fa.I0i3SlPzvZnxCYuJNFL3tixqEJU@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 7 May 2007 15:19:01 -0700
-thockin@google.com (Tim Hockin) wrote:
+Gerhard Mack wrote:
+> On Wed, 9 May 2007, Jeff Garzik wrote:
+>> Gerhard Mack wrote:
+>>> May  9 14:51:35 mgerhard kernel: ata1.00: exception Emask 0x0 SAct 0x0 SErr
+>>> 0x1800000 action 0x2 frozen
+>>> May  9 14:51:35 mgerhard kernel: ata1.00: cmd
+>>> 35/00:00:80:6d:c8/00:04:09:00:00/e0 tag 0 cdb 0x0 data 524288 out
+>>> May  9 14:51:35 mgerhard kernel:          res
+>>> 40/00:c8:68:65:c8/84:00:09:00:00/e0 Emask 0x4 (timeout)
+>>> May  9 14:51:42 mgerhard kernel: ata1: port is slow to respond, please be
+>>> patient (Status 0xd0)
+>>>
+>>> Anything I can do to figgure out what's causing this?
 
-> From: Tim Hockin <thockin@google.com>
-> 
-> Background:
->  /dev/mcelog is a clear-on-read interface.  It is currently possible for
->  multiple users to open and read() the device.  Users are protected from
->  each other during any one read, but not across reads.
-> 
-> Description:
->  This patch adds support for O_EXCL to /dev/mcelog.  If a user opens the
->  device with O_EXCL, no other user may open the device (EBUSY).  Likewise,
->  any user that tries to open the device with O_EXCL while another user has
->  the device will fail (EBUSY).
-> 
-> Result:
->  Applications can get exclusive access to /dev/mcelog.  Applications that
->  do not care will be unchanged.
-> 
-> Alternatives:
->  A simpler choice would be to only allow one open() at all, regardless of
->  O_EXCL.
-> 
-> Testing:
->  I wrote an application that opens /dev/mcelog with O_EXCL and observed
->  that any other app that tried to open /dev/mcelog would fail until the
->  exclusive app had closed the device.
-> 
-> Caveats:
->  None.
-> 
-> Patch:
->  This patch is against 2.6.21.
-> 
-> Signed-off-by: Tim Hockin <thockin@google.com>
-> 
-> ---
-> 
-> This is the first version version of this patch.  The simpler alternative
-> of only one open() sounds better to me, but becomes a net change in
-> behavior.
-> 
-> 
-> diff -pruN linux-2.6.20+th/arch/x86_64/kernel/mce.c linux-2.6.20+th1.5/arch/x86_64/kernel/mce.c
-> --- linux-2.6.20+th/arch/x86_64/kernel/mce.c	2007-04-27 14:19:08.000000000 -0700
-> +++ linux-2.6.20+th1.5/arch/x86_64/kernel/mce.c	2007-05-01 21:53:10.000000000 -0700
-> @@ -465,6 +465,40 @@ void __cpuinit mcheck_init(struct cpuinf
->   * Character device to read and clear the MCE log.
->   */
->  
-> +static DEFINE_SPINLOCK(mce_state_lock);
-> +static int open_count;	/* #times opened */
-> +static int open_exclu;	/* already open exclusive? */
+You're showing various flags set in the SError register, which suggests 
+you're having SATA communication problems with the drive. A bad SATA 
+cable or power problems would be a strong possibility.
 
-"open_exclusive" ;)
+It really would be nice if we decoded these things more usefully for the 
+user (same with the regular ATA errors, like drivers/ide does), but in 
+general SError showing up as non-zero is a bad thing:
 
-> +static int mce_open(struct inode *inode, struct file *file)
-> +{
-> +	spin_lock(&mce_state_lock);
-> +
-> +	if (open_exclu || (open_count && (file->f_flags & O_EXCL))) {
-> +		spin_unlock(&mce_state_lock);
-> +		return -EBUSY;
-> +	}
-> +
-> +	if (file->f_flags & O_EXCL)
-> +		open_exclu = 1;
-> +	open_count++;
-> +
-> +	spin_unlock(&mce_state_lock);
-> +
-> +	return 0;
-> +}
+0x400000 = "Handshake error: When set to one, this bit indicates that 
+one or more R_ERR handshake response was received in response to frame 
+transmission. Such errors may be the result of a CRC error detected by 
+the recipient, a disparity or 10b/8b decoding error, or other error 
+condition leading to a negative handshake on a transmitted frame."
 
-Does this guy support lseek?  If not we should toss a nonseekable_open()
-call in here.
+0x1800000 = "Link Sequence Error: When set to one, this bit indicates 
+that one or more Link state machine error conditions was encountered 
+since the last time this bit was cleared. The Link Layer state machine 
+defines the conditions under which the link layer detects an erroneous 
+transition."
 
-> +static int mce_release(struct inode *inode, struct file *file)
-> +{
-> +	spin_lock(&mce_state_lock);
-> +
-> +	open_count--;
-> +	open_exclu = 0;
-> +
-> +	spin_unlock(&mce_state_lock);
-> +
-> +	return 0;
-> +}
+and
+
+"Transport state transition error: When set to one, this bit indicates 
+that an error has occurred in the transition from one state to another 
+within the Transport layer since the last time this bit was cleared."
+
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
