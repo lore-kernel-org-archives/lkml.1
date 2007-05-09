@@ -1,85 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbXEINoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbXEINp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbXEINoA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 09:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbXEINnt
+	id S1758086AbXEINp3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 09:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755650AbXEINpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 09:43:49 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:46589 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752151AbXEINnr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 09:43:47 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-Subject: [PATCH] AFS: Further write support fixes
-To: akpm@osdl.org, netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       dhowells@redhat.com
-Date: Wed, 09 May 2007 14:43:41 +0100
-Message-ID: <20070509134341.18106.44110.stgit@warthog.cambridge.redhat.com>
-User-Agent: StGIT/0.12.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Wed, 9 May 2007 09:45:19 -0400
+Received: from wx-out-0506.google.com ([66.249.82.229]:16151 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752308AbXEINpR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 09:45:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=eE9c7iPksEKImyxIqWH7kpmY7pc7W4Kj04JKQeLsvEwbb1OTgcJcRAOra7BuIfvPB4tH8Zch6BBQRMevtqGHGwd0UOXzleqhT6bbtD0s0kzmsPXBrUsiC5BbfB6433+XwKHWPfOjuEOW2nXH5zQRIGmOcMrEGAq+2Z9U05QYzh8=
+Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, lkml <linux-kernel@vger.kernel.org>
+In-Reply-To: <20070509085434.GA13712@mailshack.com>
+References: <20070505104452.GA30944@mailshack.com>
+	 <20070508032817.e4734798.akpm@linux-foundation.org>
+	 <20070508183232.GA13225@mailshack.com> <1178669047.4747.15.camel@daplas>
+	 <20070509085434.GA13712@mailshack.com>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 21:45:00 +0800
+Message-Id: <1178718300.4861.6.camel@daplas>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Further fixes for AFS write support:
+On Wed, 2007-05-09 at 10:54 +0200, Alexander van Heukelum wrote:
+> On Wed, May 09, 2007 at 08:04:07AM +0800, Antonino A. Daplas wrote:
+> > On Tue, 2007-05-08 at 20:32 +0200, Alexander van Heukelum wrote:
+> > > diff --git a/arch/i386/boot/bootsect.S b/arch/i386/boot/bootsect.S
+> > > diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
+> > > index 8143c95..8e404cb 100644
+> > > --- a/arch/i386/boot/video.S
+> > > +++ b/arch/i386/boot/video.S
+> > > @@ -95,7 +95,8 @@ #define PARAM_VESAPM_SEG	0x2e
+> > >  #define PARAM_VESAPM_OFF	0x30
+> > >  #define PARAM_LFB_PAGES		0x32
+> > >  #define PARAM_VESA_ATTRIB	0x34
+> > > -#define PARAM_CAPABILITIES	0x36
+> > > +#define PARAM_VESA_PAD		0x36
+> > > +#define PARAM_CAPABILITIES	0x38
+> > >  
+> > >  /* Define DO_STORE according to CONFIG_VIDEO_RETAIN */
+> > >  #ifdef CONFIG_VIDEO_RETAIN
+> > > diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
+> > > index b02308e..0a2e892 100644
+> > > --- a/include/linux/screen_info.h
+> > > +++ b/include/linux/screen_info.h
+> > > @@ -41,8 +41,8 @@ struct screen_info {
+> > >  	u16 vesapm_off;		/* 0x30 */
+> > >  	u16 pages;		/* 0x32 */
+> > >  	u16 vesa_attributes;	/* 0x34 */
+> > > -	u32 capabilities;       /* 0x36 */
+> > > -				/* 0x3a -- 0x3b reserved for future expansion */
+> > > +	u16 vesa_pad;		/* 0x36 */
+> > > +	u32 capabilities;       /* 0x38 */
+> > >  				/* 0x3c -- 0x3f micro stack for relocatable kernels */
+> > >  };
+> > >  
+> > 
+> > You would also need this minor change.
+> > 
+> > Tony
+> > 
+> > diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
+> > index 5e2280c..2d637d1 100644
+> > --- a/arch/i386/boot/video.S
+> > +++ b/arch/i386/boot/video.S
+> > @@ -95,7 +95,7 @@ #define PARAM_VESAPM_SEG      0x2e
+> >  #define PARAM_VESAPM_OFF       0x30
+> >  #define PARAM_LFB_PAGES                0x32
+> >  #define PARAM_VESA_ATTRIB      0x34
+> > -#define PARAM_CAPABILITIES     0x36
+> > +#define PARAM_CAPABILITIES     0x38
+> >  
+> >  /* Define DO_STORE according to CONFIG_VIDEO_RETAIN */
+> >  #ifdef CONFIG_VIDEO_RETAIN
+> 
+> Hi!
+> 
+> I'm making coffee now. I just don't see what I missed? Maybe you were
+> led astray by the new PARAM_VESA_PAD I added?
 
- (1) The afs_send_pages() outer loop must do an extra iteration if it ends
-     with 'first == last' because 'last' is inclusive in the page set
-     otherwise it fails to send the last page and complete the RxRPC op under
-     some circumstances.
+Since you moved screen_info.capabilities forward by 2 bytes, you must
+also tell video.S where to poke for the new location, otherwise, vesafb
+(which uses the capabilities field) will get confused.
 
- (2) Similarly, the outer loop in afs_pages_written_back() must also do an
-     extra iteration if it ends with 'first == last', otherwise it fails to
-     clear PG_writeback on the last page under some circumstances.
+These are the values for the unadjusted and adjusted PARAM_CAPABILITIES:
+(The latter one is correct).
 
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+capabilities: 746f0000
+capabilities: 1
 
- fs/afs/rxrpc.c |    2 +-
- fs/afs/write.c |    4 ++--
- 2 files changed, 3 insertions(+), 3 deletions(-)
+Tony
 
-diff --git a/fs/afs/rxrpc.c b/fs/afs/rxrpc.c
-index 04189c4..1b36f45 100644
---- a/fs/afs/rxrpc.c
-+++ b/fs/afs/rxrpc.c
-@@ -294,7 +294,7 @@ int afs_send_pages(struct afs_call *call, struct msghdr *msg, struct kvec *iov)
- 			put_page(pages[loop]);
- 		if (ret < 0)
- 			break;
--	} while (first < last);
-+	} while (first <= last);
- 
- 	_leave(" = %d", ret);
- 	return ret;
-diff --git a/fs/afs/write.c b/fs/afs/write.c
-index aa03d43..67ae4db 100644
---- a/fs/afs/write.c
-+++ b/fs/afs/write.c
-@@ -669,7 +669,7 @@ void afs_pages_written_back(struct afs_vnode *vnode, struct afs_call *call)
- 	pagevec_init(&pv, 0);
- 
- 	do {
--		_debug("attach %lx-%lx", first, last);
-+		_debug("done %lx-%lx", first, last);
- 
- 		count = last - first + 1;
- 		if (count > PAGEVEC_SIZE)
-@@ -701,7 +701,7 @@ void afs_pages_written_back(struct afs_vnode *vnode, struct afs_call *call)
- 		}
- 
- 		__pagevec_release(&pv);
--	} while (first < last);
-+	} while (first <= last);
- 
- 	_leave("");
- }
 
