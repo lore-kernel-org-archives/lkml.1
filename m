@@ -1,142 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758818AbXEIU4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758467AbXEIVGH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758818AbXEIU4t (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 16:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755030AbXEIU4l
+	id S1758467AbXEIVGH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 17:06:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbXEIVFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 16:56:41 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50128 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758715AbXEIU4k (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 16:56:40 -0400
-Date: Wed, 9 May 2007 21:56:33 +0100 (BST)
-From: James Simmons <jsimmons@infradead.org>
-To: Paul Fulghum <paulkf@microgate.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux console project <linuxconsole-dev@lists.sourceforge.net>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Linus Torvalds <torvalds@osdl.org>
-Subject: Re: [PATCH] Use tty_schedule in VT code.
-In-Reply-To: <464235F4.6080006@microgate.com>
-Message-ID: <Pine.LNX.4.64.0705092154290.20229@pentafluge.infradead.org>
-References: <Pine.LNX.4.64.0705082107460.3459@pentafluge.infradead.org>
- <1178656361.14867.7.camel@x2.microgate.com> <464235F4.6080006@microgate.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 9 May 2007 17:05:48 -0400
+Received: from vena.lwn.net ([206.168.112.25]:40869 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758788AbXEIVFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 17:05:46 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] "volatile considered harmful" document
+cc: akpm@linux-foundation.org, Randy Dunlap <randy.dunlap@oracle.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Wed, 09 May 2007 15:05:44 -0600
+Message-ID: <25493.1178744744@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+OK, here's an updated version of the volatile document - as a plain text
+file this time.  It drops a new file in Documentation/, but might it be
+better as an addition to CodingStyle?
 
-> Paul Fulghum wrote:
-> > As the tty flip buffer code has evolved, that delay value of 1
-> > was carried along. It may have had some historical purpose, but
-> > I can't figure it out and it appears to have no use currently.
-> 
-> I looked further back and in the 2.4 kernels this scheduling
-> was done with the timer task queue (process receive data on
-> next timer tick).
-> 
-> I guess the schedule_delayed_work() with a time delay of 1
-> was the best approximation of the previous behavior.
-> 
-> There is no logical reason to delay the first attempt at
-> processing receive data so schedule_delayed_work() in
-> tty_schedule_flip() should be changed to 0 (as was the
-> case for con_schedule_flip).
-> 
-> The schedule_delayed_work in flush_to_ldisc() will continue
-> to use a delay of 1 if the ldisc can't accept more data.
-> This allows the user app and ldisc to catch up.
-> 
-> Subsequent calls to tty_schedule_flip won't affect
-> this 'back off' delay because once the work is scheduled
-> (with a delay of 1) new scheduling calls are ignored for
-> the same work structure.
-> 
-> I've been testing the change to 0 in tty_schedule_flip()
-> under various loads and data rates with no ill effects.
+Comments welcome,
 
-Great!!!! Here is the patch updated with the delay value set to zero.
+jon
 
-Signed-Off: James Simmons <jsimmons@infradead.org>
+Tell kernel developers why they shouldn't use volatile.
 
-diff --git a/drivers/char/keyboard.c b/drivers/char/keyboard.c
-index 1b09450..0027736 100644
---- a/drivers/char/keyboard.c
-+++ b/drivers/char/keyboard.c
-@@ -277,7 +277,7 @@ static void put_queue(struct vc_data *vc, int ch)
- 
- 	if (tty) {
- 		tty_insert_flip_char(tty, ch, 0);
--		con_schedule_flip(tty);
-+		tty_schedule_flip(tty);
- 	}
- }
- 
-@@ -292,7 +292,7 @@ static void puts_queue(struct vc_data *vc, char *cp)
- 		tty_insert_flip_char(tty, *cp, 0);
- 		cp++;
- 	}
--	con_schedule_flip(tty);
-+	tty_schedule_flip(tty);
- }
- 
- static void applkey(struct vc_data *vc, int key, char mode)
-@@ -523,7 +523,7 @@ static void fn_send_intr(struct vc_data *vc)
- 	if (!tty)
- 		return;
- 	tty_insert_flip_char(tty, 0, TTY_BREAK);
--	con_schedule_flip(tty);
-+	tty_schedule_flip(tty);
- }
- 
- static void fn_scroll_forw(struct vc_data *vc)
-diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
-index 7710a6a..0174c3f 100644
---- a/drivers/char/tty_io.c
-+++ b/drivers/char/tty_io.c
-@@ -530,7 +530,7 @@ void tty_schedule_flip(struct tty_struct *tty)
- 	if (tty->buf.tail != NULL)
- 		tty->buf.tail->commit = tty->buf.tail->used;
- 	spin_unlock_irqrestore(&tty->buf.lock, flags);
--	schedule_delayed_work(&tty->buf.work, 1);
-+	schedule_delayed_work(&tty->buf.work, 0);
- }
- EXPORT_SYMBOL(tty_schedule_flip);
- 
-diff --git a/drivers/char/vt.c b/drivers/char/vt.c
-index bbd9fc4..283e189 100644
---- a/drivers/char/vt.c
-+++ b/drivers/char/vt.c
-@@ -1261,7 +1261,7 @@ static void respond_string(const char *p, struct tty_struct *tty)
- 		tty_insert_flip_char(tty, *p, 0);
- 		p++;
- 	}
--	con_schedule_flip(tty);
-+	tty_schedule_flip(tty);
- }
- 
- static void cursor_report(struct vc_data *vc, struct tty_struct *tty)
-diff --git a/include/linux/kbd_kern.h b/include/linux/kbd_kern.h
-index 506ad20..7b24a0d 100644
---- a/include/linux/kbd_kern.h
-+++ b/include/linux/kbd_kern.h
-@@ -149,16 +149,4 @@ void compute_shiftstate(void);
- 
- extern unsigned int keymap_count;
- 
--/* console.c */
--
--static inline void con_schedule_flip(struct tty_struct *t)
--{
--	unsigned long flags;
--	spin_lock_irqsave(&t->buf.lock, flags);
--	if (t->buf.tail != NULL)
--		t->buf.tail->commit = t->buf.tail->used;
--	spin_unlock_irqrestore(&t->buf.lock, flags);
--	schedule_delayed_work(&t->buf.work, 0);
--}
--
- #endif
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 
+diff -ruNp linux-2.6/Documentation/volatile.txt volatile/Documentation/volatile.txt
+--- linux-2.6/Documentation/volatile.txt	1969-12-31 17:00:00.000000000 -0700
++++ volatile/Documentation/volatile.txt	2007-05-09 14:56:40.000000000 -0600
+@@ -0,0 +1,127 @@
++Why the "volatile" type class should not be used
++------------------------------------------------
++
++The C Programming Language, Second Edition (copyright 1988, still known as
++"the new C book") has the following to say about the volatile keyword:
++
++	The purpose of volatile is to force an implementation to suppress
++	optimization that could otherwise occur.  For example, for a
++	machine with memory-mapped input/output, a pointer to a device
++	register might be declared as a pointer to volatile, in
++	order to prevent the compiler from removing apparently redundant
++	references through the pointer.
++
++C programmers have often taken volatile to mean that the variable could be
++changed outside of the current thread of execution; as a result, they are
++sometimes tempted to use it in kernel code when shared data structures are
++being used.  Andrew Morton recently called out[1] use of volatile in a
++submitted patch, saying:
++
++	The volatiles are a worry - volatile is said to be
++	basically-always-wrong in-kernel, although we've never managed to
++	document why, and i386 cheerfully uses it in readb() and friends.
++
++In response, Randy Dunlap pulled together some email from Linus[2] on the
++topic and suggested that we could maybe "document why."  Here is the
++result.
++
++The point that Linus often makes with regard to volatile is that
++its purpose is to suppress optimization, which is almost never what one
++really wants to do.  In the kernel, one must protect accesses to data
++against race conditions, which is very much a different task.  
++
++Like volatile, the kernel primitives which make concurrent access to data
++safe (spinlocks, mutexes, memory barriers, etc.) are designed to prevent
++unwanted optimization.  If they are being used properly, there will be no
++need to use volatile as well.  If volatile is still necessary, there is
++almost certainly a bug in the code somewhere.  In properly-written kernel
++code, volatile can only serve to slow things down.
++
++Consider a typical block of kernel code:
++
++    spin_lock(&the_lock);
++    do_something_on(&shared_data);
++    do_something_else_with(&shared_data);
++    spin_unlock(&the_lock);
++
++If all the code follows the locking rules, the value of shared_data cannot
++change unexpectedly while the_lock is held.  Any other code which might
++want to play with that data will be waiting on the lock.  The spinlock
++primitives act as memory barriers - they are explicitly written to do so -
++meaning that data accesses will not be optimized across them.  So the
++compiler might think it knows what will be in some_data, but the
++spin_lock() call will force it to forget anything it knows.  There will be
++no optimization problems with accesses to that data.
++
++If shared_data were declared volatile, the locking would
++still be necessary.  But the compiler would also be prevented from
++optimizing access to shared _within_ the critical section,
++when we know that nobody else can be working with it.  While the lock is
++held, shared_data is not volatile.  This is why Linus says:
++
++	Also, more importantly, "volatile" is on the wrong _part_ of the
++	whole system. In C, it's "data" that is volatile, but that is
++	insane. Data isn't volatile - _accesses_ are volatile. So it may
++	make sense to say "make this particular _access_ be careful", but
++	not "make all accesses to this data use some random strategy".
++
++When dealing with shared data, proper locking makes volatile unnecessary -
++and potentially harmful.
++
++The volatile storage class was originally meant for memory-mapped I/O
++registers.  Within the kernel, register accesses, too, should be protected
++by locks, but one also does not want the compiler "optimizing" register
++accesses within a critical section.  But, within the kernel, I/O memory
++accesses are always done through accessor functions; accessing I/O memory
++directly through pointers is frowned upon and does not work on all
++architectures.  Those accessors are written to prevent unwanted
++optimization, so, once again, volatile is unnecessary.
++
++Another situation where one might be tempted to use volatile is
++when the processor is busy-waiting on the value of a variable.  The right
++way to perform a busy wait is:
++
++    while (my_variable != what_i_want)
++        cpu_relax();
++
++The cpu_relax() call can lower CPU power consumption or yield to a
++hyperthreaded twin processor; it also happens to serve as a memory barrier,
++so, once again, volatile is unnecessary.  Of course, busy-waiting is
++generally an anti-social act to begin with.
++
++There are still a few rare situations where volatile makes sense in the
++kernel:
++
++  - The above-mentioned accessor functions might use volatile on
++    architectures where direct I/O memory access does work.  Essentially,
++    each accessor call becomes a little critical section on its own and
++    ensures that the access happens as expected by the programmer.
++
++  - Inline assembly code which changes memory, but which has no other
++    visible side effects, risks being deleted by GCC.  Adding the volatile
++    keyword to asm statements will prevent this removal.
++
++  - The jiffies variable is special in that it can have a different value
++    every time it is referenced, but it can be read without any special
++    locking.  So jiffies can be volatile, but the addition of other
++    variables of this type is frowned upon.  Jiffies is considered to be a
++    "stupid legacy" issue in this regard.
++
++For most code, none of the above justifications for volatile
++apply.  As a result, the use of volatile is likely to be seen as a
++bug and will bring additional scrutiny to the code.  Developers who are
++tempted to use volatile should take a step back and think about
++what they are truly trying to accomplish.
++
++NOTES
++-----
++
++[1] http://lwn.net/Articles/233481/
++[2] http://lwn.net/Articles/233482/
++
++CREDITS
++-------
++
++Original impetus and research by Randy Dunlap
++Written by Jonathan Corbet
++Improvements via coments from Satyam Sharma Johannes Stezenbach 
 
