@@ -1,59 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756444AbXEII5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbXEII56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756444AbXEII5h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 04:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755697AbXEII47
+	id S1756521AbXEII56 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 04:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbXEII5E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 04:56:59 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43981 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755633AbXEII45 (ORCPT
+	Wed, 9 May 2007 04:57:04 -0400
+Received: from m-relay.rz.uni-saarland.de ([134.96.7.3]:55525 "EHLO
+	m-relay.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755751AbXEII5B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 04:56:57 -0400
-Date: Wed, 9 May 2007 14:26:12 +0530
-From: Gautham R Shenoy <ego@in.ibm.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>, vatsa@in.ibm.com,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       Nathan Lynch <nathanl@austin.ibm.com>,
-       Joel Schopp <jschopp@austin.ibm.com>, Ashok Raj <ashok.raj@intel.com>,
-       Heiko Carstens <heiko.carstens@de.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       paulmck@us.ibm.com
-Subject: Re: [BUG] cpu-hotplug: Can't offline the CPU with naughty	realtime processes
-Message-ID: <20070509085611.GA4431@in.ibm.com>
-Reply-To: ego@in.ibm.com
-References: <87bqgxrlky.wl%takeuchi_satoru@jp.fujitsu.com> <1178545373.28438.7.camel@localhost.localdomain> <877irkrq8a.wl%takeuchi_satoru@jp.fujitsu.com> <1178593345.28438.29.camel@localhost.localdomain> <874pmoro1c.wl%takeuchi_satoru@jp.fujitsu.com> <20070508041033.GB25030@in.ibm.com> <87irb3g4zt.wl%takeuchi_satoru@jp.fujitsu.com> <20070508164850.GS7311@in.ibm.com> <87ejlqg77m.wl%takeuchi_satoru@jp.fujitsu.com> <46411A36.2050609@yahoo.com.au>
-MIME-Version: 1.0
+	Wed, 9 May 2007 04:57:01 -0400
+Date: Wed, 9 May 2007 10:54:34 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: "Antonino A. Daplas" <adaplas@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Make bootsector stub 16-bit-only (i386)
+Message-ID: <20070509085434.GA13712@mailshack.com>
+References: <20070505104452.GA30944@mailshack.com> <20070508032817.e4734798.akpm@linux-foundation.org> <20070508183232.GA13225@mailshack.com> <1178669047.4747.15.camel@daplas>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46411A36.2050609@yahoo.com.au>
-User-Agent: Mutt/1.5.12-2006-07-14
+In-Reply-To: <1178669047.4747.15.camel@daplas>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.5.1 (m-relay.rz.uni-saarland.de [134.96.7.3]); Wed, 09 May 2007 10:55:58 +0200 (CEST)
+X-AntiVirus: checked by AntiVir Milter (version: 1.1.3-1; AVE: 7.3.1.53; VDF: 6.38.1.19; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 10:47:50AM +1000, Nick Piggin wrote:
+On Wed, May 09, 2007 at 08:04:07AM +0800, Antonino A. Daplas wrote:
+> On Tue, 2007-05-08 at 20:32 +0200, Alexander van Heukelum wrote:
+> > diff --git a/arch/i386/boot/bootsect.S b/arch/i386/boot/bootsect.S
+> > diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
+> > index 8143c95..8e404cb 100644
+> > --- a/arch/i386/boot/video.S
+> > +++ b/arch/i386/boot/video.S
+> > @@ -95,7 +95,8 @@ #define PARAM_VESAPM_SEG	0x2e
+> >  #define PARAM_VESAPM_OFF	0x30
+> >  #define PARAM_LFB_PAGES		0x32
+> >  #define PARAM_VESA_ATTRIB	0x34
+> > -#define PARAM_CAPABILITIES	0x36
+> > +#define PARAM_VESA_PAD		0x36
+> > +#define PARAM_CAPABILITIES	0x38
+> >  
+> >  /* Define DO_STORE according to CONFIG_VIDEO_RETAIN */
+> >  #ifdef CONFIG_VIDEO_RETAIN
+> > diff --git a/include/linux/screen_info.h b/include/linux/screen_info.h
+> > index b02308e..0a2e892 100644
+> > --- a/include/linux/screen_info.h
+> > +++ b/include/linux/screen_info.h
+> > @@ -41,8 +41,8 @@ struct screen_info {
+> >  	u16 vesapm_off;		/* 0x30 */
+> >  	u16 pages;		/* 0x32 */
+> >  	u16 vesa_attributes;	/* 0x34 */
+> > -	u32 capabilities;       /* 0x36 */
+> > -				/* 0x3a -- 0x3b reserved for future expansion */
+> > +	u16 vesa_pad;		/* 0x36 */
+> > +	u32 capabilities;       /* 0x38 */
+> >  				/* 0x3c -- 0x3f micro stack for relocatable kernels */
+> >  };
+> >  
 > 
-> We've seen the same problem with other stop_machine_run sites in the kernel.
-> module remove was one.
+> You would also need this minor change.
 > 
-> Reserving the top priority slot for stop machine (and migration thread, I
-> guess) isn't a bad idea.
-
-I second this thought.
-The process freezer, if used will only safeguard cpu-hotplug, but not other
-sites which use stop_machine_run.
-
+> Tony
 > 
-> -- 
-> SUSE Labs, Novell Inc.
+> diff --git a/arch/i386/boot/video.S b/arch/i386/boot/video.S
+> index 5e2280c..2d637d1 100644
+> --- a/arch/i386/boot/video.S
+> +++ b/arch/i386/boot/video.S
+> @@ -95,7 +95,7 @@ #define PARAM_VESAPM_SEG      0x2e
+>  #define PARAM_VESAPM_OFF       0x30
+>  #define PARAM_LFB_PAGES                0x32
+>  #define PARAM_VESA_ATTRIB      0x34
+> -#define PARAM_CAPABILITIES     0x36
+> +#define PARAM_CAPABILITIES     0x38
+>  
+>  /* Define DO_STORE according to CONFIG_VIDEO_RETAIN */
+>  #ifdef CONFIG_VIDEO_RETAIN
 
-Regards
-gautham.
--- 
-Gautham R Shenoy
-Linux Technology Center
-IBM India.
-"Freedom comes with a price tag of responsibility, which is still a bargain,
-because Freedom is priceless!"
+Hi!
+
+I'm making coffee now. I just don't see what I missed? Maybe you were
+led astray by the new PARAM_VESA_PAD I added?
+
+Greetings,
+	Alexander
