@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbXEIKnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbXEIKo2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbXEIKnr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 06:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbXEIKnh
+	id S1757913AbXEIKo2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 06:44:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXEIKoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 06:43:37 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:28688 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754320AbXEIKng (ORCPT
+	Wed, 9 May 2007 06:44:18 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:15456 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756662AbXEIKoR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 06:43:36 -0400
+	Wed, 9 May 2007 06:44:17 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Q4Zw2LGOOcicKHynMQnZu70oUL4MiykHMGvRcESC6wMWuxFdACn+rEKHmOigDRyaf1FibPbeQGQ8rhZMV10fm54QcqdkqBcSrEGB8QCi7F2+EPZ+FH41sigjn4JWAGo3S1GU5lXRkjjNvrveHldH1flUTpu3yBlM4bEE2B8jkoc=
-Message-ID: <a44ae5cd0705090343n6ddae15he51198a0e448198a@mail.gmail.com>
-Date: Wed, 9 May 2007 03:43:34 -0700
-From: "Miles Lane" <miles.lane@gmail.com>
-To: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Anton Vorontsov" <cbou@mail.ru>
-Subject: =?WINDOWS-1252?Q?Re:_2.6.21-mm2_--_Compile_er?= =?WINDOWS-1252?Q?ror:_include/linux/power=5Fsupp?= =?WINDOWS-1252?Q?ly.h:125:_error:_field_=91chan?= =?WINDOWS-1252?Q?ged=5Fwork=92_has_incomplete_type?=
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=WZd7KSiYb0PCWTLgcSBpZF1dVbw/u+oq5V/CBgvJxDtGTcl5rIdd+E3IM7Cv3r7QcLqhho3STpkmBDafWovDo3R7fM1DeLRry2SEV8bOaK7jSxg0NJ8hc3fs4VV5116fGnWZXg+S5sHcfOgsSY7GnPSX/qJl8RxbUCi9O3VJxwM=
+Message-ID: <8d6898730705090344ofc820d9r96cb4723722027be@mail.gmail.com>
+Date: Wed, 9 May 2007 16:14:15 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: "Liam Girdwood" <lg@opensource.wolfsonmicro.com>
+Subject: Re: [ASoC] Mic record is not working with wm9713 ASoC driver
 Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1178706334.3740.24.camel@a10072.wolfsonmicro.main>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <8d6898730705090218h4ba10102u917b0943bad97a8b@mail.gmail.com>
+	 <1178706334.3740.24.camel@a10072.wolfsonmicro.main>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  CC      drivers/power/power_supply_core.o
-In file included from drivers/power/power_supply_core.c:18:
-include/linux/power_supply.h:125: error: field 'changed_work' has
-incomplete type
-drivers/power/power_supply_core.c: In function 'power_supply_changed_work':
-drivers/power/power_supply_core.c:25: warning: type defaults to 'int'
-in declaration of '__mptr'
-drivers/power/power_supply_core.c:25: warning: initialization from
-incompatible pointer type
-drivers/power/power_supply_core.c: In function 'power_supply_changed':
-drivers/power/power_supply_core.c:57: warning: implicit declaration of
-function 'schedule_work'
-drivers/power/power_supply_core.c: In function 'power_supply_register':
-drivers/power/power_supply_core.c:103: warning: implicit declaration
-of function 'INIT_WORK'
-drivers/power/power_supply_core.c: In function 'power_supply_unregister':
-drivers/power/power_supply_core.c:128: warning: implicit declaration
-of function 'flush_scheduled_work'
-make[2]: *** [drivers/power/power_supply_core.o] Error 1
+Liam Sorry for disturbing you again,
+
+I could not find that reply on alsa devel mailing list
+
+Can u send that to me
+
+Thanks
+
+
+On 5/9/07, Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
+> On Wed, 2007-05-09 at 14:48 +0530, Nobin Mathew wrote:
+> > I am trying to record mic with AsoC wm9713 driver. My Mic is connected "Mic 1".
+>
+> I've replied to this duplicate post on alsa-dev.
+>
+> Liam
+>
+>
