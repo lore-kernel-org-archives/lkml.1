@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758030AbXEIUtI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbXEIUt3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758030AbXEIUtI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 16:49:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbXEIUs4
+	id S1758762AbXEIUt3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 16:49:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758587AbXEIUtS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 16:48:56 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:43584 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753377AbXEIUsz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 16:48:55 -0400
-Date: Wed, 9 May 2007 13:48:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Ollie Wild" <aaw@google.com>
-Cc: "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
-       linux-arch@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
-       "Andi Kleen" <ak@suse.de>
-Subject: Re: [patch] removes MAX_ARG_PAGES
-Message-Id: <20070509134815.81cb9aa9.akpm@linux-foundation.org>
-In-Reply-To: <65dd6fd50705060151m78bb9b4fpcb941b16a8c4709e@mail.gmail.com>
-References: <65dd6fd50705060151m78bb9b4fpcb941b16a8c4709e@mail.gmail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 May 2007 16:49:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51127 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755081AbXEIUtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 16:49:16 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: tglx@linutronix.de
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+Date: Wed, 9 May 2007 22:53:49 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       linux-acpi@vger.kernel.org
+References: <20070430102837.748238000@linutronix.de> <200705092036.20953.rjw@sisk.pl> <1178743550.3042.541.camel@localhost.localdomain>
+In-Reply-To: <1178743550.3042.541.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705092253.49896.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 6 May 2007 01:51:34 -0700
-"Ollie Wild" <aaw@google.com> wrote:
-
-> A while back, I sent out a preliminary patch
-> (http://thread.gmane.org/gmane.linux.ports.hppa/752) to remove the
-> MAX_ARG_PAGES limit on command line sizes.  Since then, Peter Zijlstra
-> and I have fixed a number of bugs and addressed the various
-> outstanding issues.
+On Wednesday, 9 May 2007 22:45, Thomas Gleixner wrote:
+> On Wed, 2007-05-09 at 20:36 +0200, Rafael J. Wysocki wrote:
+> > Well, apparently, not in -mm2:
+> > 
+> > rafael@albercik:~/src/mm/linux-2.6.21-mm2> grep -r -I -l 'timekeeping_resume' *
+> > kernel/time/timekeeping.c
+> > rafael@albercik:~/src/mm/linux-2.6.21-mm2> grep clocksource_resume kernel/time/timekeeping.c
+> > rafael@albercik:~/src/mm/linux-2.6.21-mm2>
 > 
-> The attached patch incorporates the following changes:
-> 
-> - Fixes a BUG_ON() assertion failure discovered by Ingo Molnar.
-> - Adds CONFIG_STACK_GROWSUP (parisc) support.
-> - Adds auditing support.
-> - Reverts to the old behavior on architectures with no MMU.
-> - Fixes broken execution of 64-bit binaries from 32-bit binaries.
-> - Adds elf_fdpic support.
-> - Fixes cache coherency bugs.
-> 
-> We've tested the following architectures: i386, x86_64, um/i386,
-> parisc, and frv.  These are representative of the various scenarios
-> which this patch addresses, but other architecture teams should try it
-> out to make sure there aren't any unexpected gotchas.
+> Andrew dropped the patch because it did not work on his jinxed VAIO, but
+> he debugged with the patch applied.
 
-I'll duck this for now, given the couple of problems which people have reported.
+I see.
 
-But please keep going ;)  We sorely need this.
+In that case, since timekeeping_resume() is called via sysdev_resume, then it's
+executed before acpi_leave_sleep_state() and may very well interfere with the
+ACPI methods executed from there, depending on what's happening in the
+cs->resume() callbacks in clocksource_resume().
+
+Greetings,
+Rafael
