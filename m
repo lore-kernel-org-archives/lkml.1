@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbXEINWY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbXEIN2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756930AbXEINWY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 09:22:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756779AbXEINWM
+	id S1757314AbXEIN2Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 09:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbXEIN2Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 09:22:12 -0400
-Received: from lucidpixels.com ([75.144.35.66]:60230 "EHLO lucidpixels.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756750AbXEINWK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 09:22:10 -0400
-Date: Wed, 9 May 2007 09:22:08 -0400 (EDT)
-From: Justin Piszcz <jpiszcz@lucidpixels.com>
-X-X-Sender: jpiszcz@p34.internal.lan
-To: axboe@suse.de
-cc: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       Alan Piszcz <ap@solarrain.com>
-Subject: Chaining sg lists for big I/O commands: Question
-Message-ID: <Pine.LNX.4.64.0705090918390.12857@p34.internal.lan>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 9 May 2007 09:28:16 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:48373 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754114AbXEIN2P (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 09:28:15 -0400
+Date: Wed, 9 May 2007 14:31:51 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: David Rientjes <rientjes@google.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
+       jeremy@goop.org
+Subject: Re: [PATCH] doc: volatile considered evil
+Message-ID: <20070509143151.6f0731fe@the-village.bc.nu>
+In-Reply-To: <464193DB.70205@yahoo.com.au>
+References: <516386418.20070501080839@gmail.com>
+	<20070430235642.e576e917.akpm@linux-foundation.org>
+	<20070508121404.17bd97a6.randy.dunlap@oracle.com>
+	<a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
+	<20070508163452.8b71f682.randy.dunlap@oracle.com>
+	<alpine.DEB.0.99.0705081702070.28511@chino.kir.corp.google.com>
+	<20070508190800.1334b968.randy.dunlap@oracle.com>
+	<alpine.DEB.0.99.0705081934390.20751@chino.kir.corp.google.com>
+	<20070509102134.5d722386@the-village.bc.nu>
+	<464193DB.70205@yahoo.com.au>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://kerneltrap.org/node/8176
+> > When you are implementing the locking primitives on a new platform. When
+> > you are implementing the I/O and atomic prmitives on a new platform. Also
+> > in inline gcc assembler where "volatile" is used for subtly different
+> > purposes.
+> 
+> Is there a good reason for using volatile in atomic/locking primitives?
+> AFAIKS there is not.
 
-I am a mdadm/disk/hard drive fanatic, I was curious:
-
-> On i386, we can at most fit 256 scatterlist elements into a page,
-> and on x86-64 we are stuck with 128. So that puts us somewhere
-> between 512kb and 1024kb for a single IO.
-
-How come 32bit is 256 and 64 is only 128?
-I am sure it is something very fundamental/simple but I was curious, I 
-would think x86_64 would fit/support more scatterlists in a page.
-
-Also, when this patch is implemented for x86_64 and if merged into 
-mainline, what does this mean for performance?
-
-I have an mdadm raid5 of 10 raptors and get 434MB/s write and 622MB/s 
-read, would I see an increase in performance with this patch?
-
-Justin.
-
+Depends on the platform. If you are writing a new architecture then who
+knows what you will need to get the barriers right - you may want to use
+volatile, you may want to use asm.
