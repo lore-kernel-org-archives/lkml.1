@@ -1,120 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968719AbXEIHBR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969094AbXEIHC6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968719AbXEIHBR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 03:01:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXEIHBG
+	id S969094AbXEIHC6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 03:02:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXEIHCu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 03:01:06 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:30012 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751739AbXEIHBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 03:01:04 -0400
-Message-ID: <46417137.5080501@sw.ru>
-Date: Wed, 09 May 2007 10:59:03 +0400
-From: Vasily Averin <vvs@sw.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
-MIME-Version: 1.0
-To: Eric Dumazet <dada1@cosmosbay.com>, Patrick McHardy <kaber@trash.net>,
-       "David S. Miller" <davem@davemloft.net>,
-       netfilter-devel@lists.netfilter.org
-CC: rusty@rustcorp.com.au,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       devel@openvz.org
-Subject: [NETFILTER] early_drop() imrovement (v3)
-References: <4615FE1D.80206@sw.ru> <20070406102433.d3a670a5.dada1@cosmosbay.com> <4616203A.80203@sw.ru> <4616626C.9020100@trash.net> <4617845F.7080203@sw.ru> <461789CF.8000106@cosmosbay.com> <46187770.1070106@sw.ru>
-In-Reply-To: <46187770.1070106@sw.ru>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 03:02:50 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:57481 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751709AbXEIHCt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 03:02:49 -0400
+Date: Wed, 9 May 2007 00:02:00 -0700
+Message-Id: <200705090702.l49720aC029866@tazenda.hos.anvin.org>
+From: "H. Peter Anvin" <hpa@zytor.com>
+Subject: [PATCH] i386: cpu/transmeta.c: fix definition of USER686
+To: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When the number of conntracks is reached nf_conntrack_max limit, early_drop()
-tries to free one of already used conntracks. If it does not find any conntracks
-that may be freed, it leads to transmission errors.
-In current implementation the conntracks are searched in one hash bucket only.
-It have some drawbacks: if used hash bucket is empty we have not any chances to
-find something. On the other hand the hash bucket can contain a huge number of
-conntracks and its check can last a long time.
-The proposed patch limits the number of checked conntracks by default number of
-conntracks in one hash bucket (NF_CT_PER_BUCKET) and allows to search conntracks
-in other hash buckets. As result in any case the search will have the same
-chances to free one of the conntracks and the check will not lead to long delays.
+The definition of USER686 is supposed to be a mask of feature bits,
+not an OR of feature numbers!  It happened to work anyway on the only
+processor affected, simply by pure coincidence.  Fix.
 
-Signed-off-by:	Vasily Averin <vvs@sw.ru>
+Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+---
+ arch/i386/kernel/cpu/transmeta.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
 
-diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
-index e132c8a..d984bce 100644
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -76,6 +76,8 @@ static unsigned int nf_conntrack_next_id;
- DEFINE_PER_CPU(struct ip_conntrack_stat, nf_conntrack_stat);
- EXPORT_PER_CPU_SYMBOL(nf_conntrack_stat);
-
-+#define NF_CT_PER_BUCKET	8U
-+
- /*
-  * This scheme offers various size of "struct nf_conn" dependent on
-  * features(helper, nat, ...)
-@@ -525,7 +527,7 @@ EXPORT_SYMBOL_GPL(nf_conntrack_tuple_taken);
-
- /* There's a small race here where we may free a just-assured
-    connection.  Too bad: we're in trouble anyway. */
--static int early_drop(struct list_head *chain)
-+static int __early_drop(struct list_head *chain, unsigned int *cnt)
- {
- 	/* Traverse backwards: gives us oldest, which is roughly LRU */
- 	struct nf_conntrack_tuple_hash *h;
-@@ -540,6 +542,8 @@ static int early_drop(struct list_head *chain)
- 			atomic_inc(&ct->ct_general.use);
- 			break;
- 		}
-+		if (!--(*cnt))
-+			break;
- 	}
- 	read_unlock_bh(&nf_conntrack_lock);
-
-@@ -555,6 +559,21 @@ static int early_drop(struct list_head *chain)
- 	return dropped;
- }
-
-+static int early_drop(const struct nf_conntrack_tuple *orig)
-+{
-+	unsigned int i, hash, cnt;
-+	int ret = 0;
-+
-+	hash = hash_conntrack(orig);
-+	cnt = NF_CT_PER_BUCKET;
-+
-+	for (i = 0;
-+		!ret && cnt && i < nf_conntrack_htable_size;
-+			++i, hash = ++hash % nf_conntrack_htable_size)
-+		ret = __early_drop(&nf_conntrack_hash[hash], &cnt);
-+	return ret;
-+}
-+
- static struct nf_conn *
- __nf_conntrack_alloc(const struct nf_conntrack_tuple *orig,
- 		     const struct nf_conntrack_tuple *repl,
-@@ -574,9 +593,7 @@ __nf_conntrack_alloc(const struct nf_conntrack_tuple *orig,
-
- 	if (nf_conntrack_max
- 	    && atomic_read(&nf_conntrack_count) > nf_conntrack_max) {
--		unsigned int hash = hash_conntrack(orig);
--		/* Try dropping from this hash chain. */
--		if (!early_drop(&nf_conntrack_hash[hash])) {
-+		if (!early_drop(orig)) {
- 			atomic_dec(&nf_conntrack_count);
- 			if (net_ratelimit())
- 				printk(KERN_WARNING
-@@ -1226,7 +1243,7 @@ int __init nf_conntrack_init(void)
- 		if (nf_conntrack_htable_size < 16)
- 			nf_conntrack_htable_size = 16;
- 	}
--	nf_conntrack_max = 8 * nf_conntrack_htable_size;
-+	nf_conntrack_max = NF_CT_PER_BUCKET * nf_conntrack_htable_size;
-
- 	printk("nf_conntrack version %s (%u buckets, %d max)\n",
- 	       NF_CONNTRACK_VERSION, nf_conntrack_htable_size,
-
+diff --git a/arch/i386/kernel/cpu/transmeta.c b/arch/i386/kernel/cpu/transmeta.c
+index 6471a5a..200fb3f 100644
+--- a/arch/i386/kernel/cpu/transmeta.c
++++ b/arch/i386/kernel/cpu/transmeta.c
+@@ -77,8 +77,10 @@ static void __cpuinit init_transmeta(struct cpuinfo_x86 *c)
+ 	set_bit(X86_FEATURE_CONSTANT_TSC, c->x86_capability);
+ 	
+ 	/* If we can run i686 user-space code, call us an i686 */
+-#define USER686 (X86_FEATURE_TSC|X86_FEATURE_CX8|X86_FEATURE_CMOV)
+-        if ( c->x86 == 5 && (c->x86_capability[0] & USER686) == USER686 )
++#define USER686 ((1 << X86_FEATURE_TSC)|\
++		 (1 << X86_FEATURE_CX8)|\
++		 (1 << X86_FEATURE_CMOV))
++        if (c->x86 == 5 && (c->x86_capability[0] & USER686) == USER686)
+ 		c->x86 = 6;
+ 
+ #ifdef CONFIG_SYSCTL
+-- 
+1.5.1.3
 
