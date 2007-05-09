@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbXEIJS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756743AbXEIJTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756028AbXEIJS6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 05:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754460AbXEIJSu
+	id S1756743AbXEIJTV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXEIJS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 05:18:50 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34025 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754198AbXEIJSt (ORCPT
+	Wed, 9 May 2007 05:18:56 -0400
+Received: from nz-out-0506.google.com ([64.233.162.224]:36801 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755470AbXEIJSz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 05:18:49 -0400
-Date: Wed, 9 May 2007 10:21:34 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Rientjes <rientjes@google.com>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Paul Sokolovsky <pmiscml@gmail.com>, linux-kernel@vger.kernel.org,
-       jeremy@goop.org
-Subject: Re: [PATCH] doc: volatile considered evil
-Message-ID: <20070509102134.5d722386@the-village.bc.nu>
-In-Reply-To: <alpine.DEB.0.99.0705081934390.20751@chino.kir.corp.google.com>
-References: <516386418.20070501080839@gmail.com>
-	<20070430235642.e576e917.akpm@linux-foundation.org>
-	<20070508121404.17bd97a6.randy.dunlap@oracle.com>
-	<a781481a0705081307r546f8889qecca3db16ea03fb8@mail.gmail.com>
-	<20070508163452.8b71f682.randy.dunlap@oracle.com>
-	<alpine.DEB.0.99.0705081702070.28511@chino.kir.corp.google.com>
-	<20070508190800.1334b968.randy.dunlap@oracle.com>
-	<alpine.DEB.0.99.0705081934390.20751@chino.kir.corp.google.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 May 2007 05:18:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=GDco54SLhhu3gKjgywMVvs4VMerNSK0uw9dTgJjKjkqH6RCfCWL7O0OQdkLI1zEChCabS1llWLneCNUuLQRQjENSiFGDIQ8Zv1jNWuK5XFAhryplR1FU7k7/PXx7hn9swytBvIvEg3j5yBQwfly/qDNgD8qAKD9KxvQbCpqxtfI=
+Message-ID: <8d6898730705090218h4ba10102u917b0943bad97a8b@mail.gmail.com>
+Date: Wed, 9 May 2007 14:48:54 +0530
+From: "Nobin Mathew" <nobin.mathew@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: [ASoC] Mic record is not working with wm9713 ASoC driver
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It's still ambiguous.  A much more explicit title that nobody could argue 
-> with would be "do not use the 'volatile' keyword as a type qualifier for 
-> an object."
+I am trying to record mic with AsoC wm9713 driver. My Mic is connected "Mic 1".
 
-Except when you do. The kernel uses the C volatile in various places
-itself for specific good reasons (and some for historical bad ones)
+My settings
 
-Perhaps a closer summary would be
+'Mic A Source' -> "Mic 1"
+'Mic Boost (+20dB)' [on]
+'Capture' [on]
+'Left Capture Source' "Mic 1"
+'Right Capture Source' "Mic 1"
 
-Do Not Use Volatile
--------------------
 
-1.	volatile is not a locking mechanism
+i am issuing following command to record
+"arecord -M -f S16_LE sound.wav"
 
-Volatile does not define sufficiently sane or strong semantics for
-locking. The kernel has proper locking mechanisms which also act as
-compiler fetch/store barriers and where neccessary hardware barriers for
-SMP systems. The kernel knows about all the corner cases, you probably
-don't.
+But what i found is driver is not enabling "Mic bias" and "Mic A PGA"
 
-2.	volatile is not needed for mmio space
+this dump of /sys/devices/platform/soc-audio/dapm_widget while
+"arecord" is running is given below
 
-I/O memory access are done via readb/writeb and friends. They deal with
-volatility themselves so you don't have to. They may nor may not use
-volatile internally to their implementation, but that is none of your
-business.
 
-3.	volatile is not atomic
+Mic Bias: Off
+Mic B Pre Amp: Off
+Mic A Pre Amp: On
+Mic B PGA: Off
+Mic A PGA: Off
+Mono In: Off
+Right Line In: Off
+Left Line In: Off
+Mono Out: Off
+Out 4: Off
+Out 3: Off
+Right Speaker: Off
+Left Speaker: Off
+Right Headphone: Off
+Left Headphone: Off
+Right ADC: On
+Left ADC: On
+Aux DAC: Off
+Voice DAC: Off
+Capture Mixer: Off
+HP Mixer: Off
+AC97 Mixer: Off
+Right DAC: Off
+Left DAC: Off
+Speaker Mixer: Off
+Mono Mixer: Off
+Right HP Mixer: Off
+Left HP Mixer: Off
+PM State: D0
 
-Using volatile does not guarantee atomic behaviour. This often requires
-special instructions or code sequences too. We have atomic_t and the
-atomic_* operators for this.
+In idea why this is happening?
+what is going wrong with my settings?
 
-4.	volatile is not a store or read barrier
-
-Using volatile is not always sufficient to order accesses on SMP or to
-ensure things execute in the order expected. Instead the kernel provides
-a set of barrier operations which have clearly defined semantics on all
-systems. Make use of rmb, wmb, barrier, smp_wmb etc instead
-
-When Might You Need volatile ?
-------------------------------
-
-When you are implementing the locking primitives on a new platform. When
-you are implementing the I/O and atomic prmitives on a new platform. Also
-in inline gcc assembler where "volatile" is used for subtly different
-purposes.
-
-Possibly very special cases we haven't thought about yet. However if you
-find one remember the need for portability and ask whether it should be
-using volatile or there is a gap in the existing hardware abstraction.
-
+Nobin Mathew
