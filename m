@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbXEIKvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbXEIKvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757913AbXEIKvR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 06:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbXEIKvC
+	id S1758201AbXEIKvx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 06:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755003AbXEIKvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 06:51:02 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:4028 "EHLO mail.z-net.ru"
+	Wed, 9 May 2007 06:51:42 -0400
+Received: from ozlabs.org ([203.10.76.45]:41294 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756205AbXEIKvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 06:51:00 -0400
-Date: Wed, 9 May 2007 14:50:20 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm2 -- Compile =?utf8?Q?error?=
-	=?utf8?Q?=3A_include=2Flinux=2Fpower=5Fsupply=2Eh=3A125=3A_error=3A_field?=
-	=?utf8?B?IOKAmGNoYW5nZWRfd29ya+KAmQ==?= has incomplete type
-Message-ID: <20070509105019.GA20209@zarina>
-Reply-To: cbou@mail.ru
-References: <a44ae5cd0705090343n6ddae15he51198a0e448198a@mail.gmail.com>
+	id S1750719AbXEIKvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 06:51:41 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <a44ae5cd0705090343n6ddae15he51198a0e448198a@mail.gmail.com>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17985.42884.971318.859402@cargo.ozlabs.ibm.com>
+Date: Wed, 9 May 2007 20:50:44 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: suparna@in.ibm.com
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
+       xfs@oss.sgi.com, cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+In-Reply-To: <20070509101507.GA26056@in.ibm.com>
+References: <20070330071417.GI355@devserv.devel.redhat.com>
+	<20070417125514.GA7574@amitarora.in.ibm.com>
+	<20070418130600.GW5967@schatzie.adilger.int>
+	<20070420135146.GA21352@amitarora.in.ibm.com>
+	<20070420145918.GY355@devserv.devel.redhat.com>
+	<20070424121632.GA10136@amitarora.in.ibm.com>
+	<20070426175056.GA25321@amitarora.in.ibm.com>
+	<20070426180332.GA7209@amitarora.in.ibm.com>
+	<20070503212955.b1b6443c.akpm@linux-foundation.org>
+	<17978.47502.786970.196554@cargo.ozlabs.ibm.com>
+	<20070509101507.GA26056@in.ibm.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 03:43:34AM -0700, Miles Lane wrote:
->   CC      drivers/power/power_supply_core.o
->  In file included from drivers/power/power_supply_core.c:18:
->  include/linux/power_supply.h:125: error: field 'changed_work' has
->  incomplete type
->  drivers/power/power_supply_core.c: In function 'power_supply_changed_work':
->  drivers/power/power_supply_core.c:25: warning: type defaults to 'int'
->  in declaration of '__mptr'
->  drivers/power/power_supply_core.c:25: warning: initialization from
->  incompatible pointer type
->  drivers/power/power_supply_core.c: In function 'power_supply_changed':
->  drivers/power/power_supply_core.c:57: warning: implicit declaration of
->  function 'schedule_work'
->  drivers/power/power_supply_core.c: In function 'power_supply_register':
->  drivers/power/power_supply_core.c:103: warning: implicit declaration
->  of function 'INIT_WORK'
->  drivers/power/power_supply_core.c: In function 'power_supply_unregister':
->  drivers/power/power_supply_core.c:128: warning: implicit declaration
->  of function 'flush_scheduled_work'
->  make[2]: *** [drivers/power/power_supply_core.o] Error 1
+Suparna Bhattacharya writes:
 
-Oh oh.. yet another refactors in -mm. It compiles clean on bare
-2.6.21, though. But power_supply.h is indeed wrong, it assumed that
-workqueue.h included by other headers, it is not. I hope following patch
-will fix it.
+> > This looks like it will have the same problem on s390 as
+> > sys_sync_file_range.  Maybe the prototype should be:
+> > 
+> > asmlinkage long sys_fallocate(loff_t offset, loff_t len, int fd, int mode)
+> 
+> Yes, but the trouble is that there was a contrary viewpoint preferring that fd
+> first be maintained as a convention like other syscalls (see the following
+> posts)
 
+Of course the interface used by an application program would have the
+fd first.  Glibc can do the translation.
 
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index 14e617b..2f47df7 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -14,6 +14,7 @@
- #define __LINUX_POWER_SUPPLY_H__
- 
- #include <linux/device.h>
-+#include <linux/workqueue.h>
- #include <linux/leds.h>
- 
- /*
+Paul.
