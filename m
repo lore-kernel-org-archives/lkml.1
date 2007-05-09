@@ -1,55 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756107AbXEIItg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756234AbXEIIuD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756107AbXEIItg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 04:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754541AbXEIIt0
+	id S1756234AbXEIIuD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 04:50:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbXEIItr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 04:49:26 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:2100 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754375AbXEIIt0 (ORCPT
+	Wed, 9 May 2007 04:49:47 -0400
+Received: from fed1rmmtao102.cox.net ([68.230.241.44]:58119 "EHLO
+	fed1rmmtao102.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754541AbXEIItp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 04:49:26 -0400
-Message-ID: <46418B0C.5040205@shadowen.org>
-Date: Wed, 09 May 2007 09:49:16 +0100
-From: Andy Whitcroft <apw@shadowen.org>
-User-Agent: Icedove 1.5.0.9 (X11/20061220)
+	Wed, 9 May 2007 04:49:45 -0400
+From: Junio C Hamano <junkio@cox.net>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= 
+	<ukleinek@informatik.uni-freiburg.de>
+Cc: git@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] GIT 1.5.1.4
+References: <7vhcqmxyj0.fsf@assigned-by-dhcp.cox.net>
+	<20070509083234.GD5294@informatik.uni-freiburg.de>
+Date: Wed, 09 May 2007 01:49:42 -0700
+In-Reply-To: <20070509083234.GD5294@informatik.uni-freiburg.de> (Uwe
+	=?utf-8?Q?Kleine-K=C3=B6nig's?= message of "Wed, 9 May 2007 10:32:35
+ +0200")
+Message-ID: <7v3b26wfdl.fsf@assigned-by-dhcp.cox.net>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org, Steve Fox <drfickle@us.ibm.com>,
-       Mel Gorman <mel@csn.ul.ie>
-Subject: Re: 2.6.21-mm1 -- x86 verify_cpu.S compile failure
-References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <464046EC.40301@shadowen.org> <20070508152415.GA16967@one.firstfloor.org>
-In-Reply-To: <20070508152415.GA16967@one.firstfloor.org>
-X-Enigmail-Version: 0.94.2.0
-OpenPGP: url=http://www.shadowen.org/~apw/public-key
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> On Tue, May 08, 2007 at 10:46:20AM +0100, Andy Whitcroft wrote:
->> We are seeing the following compile error on older x86 installs:
->>
->>   arch/i386/kernel/verify_cpu.S: Assembler messages:
->>   arch/i386/kernel/verify_cpu.S:13: Error: `(%esp)' is
->> 			 not a valid 16 bit base/index expression
->>
->> Seems to come from:
->>
->>   x86_64-mm-i386-verify-cpu
->>
->> Compiler:
->>
->>   gcc version 3.3.4 (Debian 1:3.3.4-3)
-> 
-> Your compiler must be a brother in spirit of Andrew's vaio.
-> 
-> Does this patch help? 
+Uwe Kleine-König  <ukleinek@informatik.uni-freiburg.de> writes:
 
-Heh, it often feels like they are kin.  I've submitted some tests and
-will let you know, but it looks plausable :).
+> Hello Junio,
+>
+> you either overlooked my mail "Documentation Bugs"[1] or you choosed to
+> ignore it :-(  Note that the second issue was only me being stupid.
 
--apw
+The best way to prod busy maintainer is to resend an applicable
+patch, not sending a URL.  Thanks.
+
