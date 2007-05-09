@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S971432AbXEIAm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S971519AbXEIAna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S971432AbXEIAm5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 8 May 2007 20:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971354AbXEIAml
+	id S971519AbXEIAna (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 8 May 2007 20:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S971354AbXEIAnH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 8 May 2007 20:42:41 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:50645 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S971348AbXEIAmj (ORCPT
+	Tue, 8 May 2007 20:43:07 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:48274 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S971457AbXEIAnF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 8 May 2007 20:42:39 -0400
-Date: Tue, 8 May 2007 17:41:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alasdair G Kergon <agk@redhat.com>
-Cc: dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       Heinz Mauelshagen <hjm@redhat.com>
-Subject: Re: [2.6.22 PATCH 22/26] dm: bio list helpers
-Message-Id: <20070508174159.7d78a275.akpm@linux-foundation.org>
-In-Reply-To: <20070508194845.GC24114@agk.fab.redhat.com>
-References: <20070508194845.GC24114@agk.fab.redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 8 May 2007 20:43:05 -0400
+Date: Tue, 8 May 2007 17:43:04 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Matt Mackall <mpm@selenic.com>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch
+ added to -mm tree
+In-Reply-To: <20070509003323.GX11115@waste.org>
+Message-ID: <Pine.LNX.4.64.0705081742430.16860@schroedinger.engr.sgi.com>
+References: <200705082302.l48N2KrZ004229@shell0.pdx.osdl.net>
+ <20070509002307.GV11115@waste.org> <20070509013220.02093f2e@the-village.bc.nu>
+ <20070509003323.GX11115@waste.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 20:48:45 +0100
-Alasdair G Kergon <agk@redhat.com> wrote:
+On Tue, 8 May 2007, Matt Mackall wrote:
 
-> +#define BIO_LIST_INIT { .head = NULL, .tail = NULL }
-> +
-> +#define BIO_LIST(bl) \
-> +	struct bio_list bl = BIO_LIST_INIT
+> Further, the received wisdom that fragmentation of SLAB-like systems
+> is better is not above doubt. Our own issues with dcache fragmentation
+> suggest it's far from perfect.
 
-BIO_LIST is a strange name for something which initialises storage.
-
->  static inline void bio_list_init(struct bio_list *bl)
->  {
->  	bl->head = bl->tail = NULL;
->  }
->  
-> +#define bio_list_for_each(bio, bl) \
-> +	for (bio = (bl)->head; bio && ({ prefetch(bio->bi_next); 1; }); \
-> +	     bio = bio->bi_next)
-> +
-
-I have this vague memory from a long time ago that one particular CPU type
-wants to go oops when prefetching from an invalid address.
-
-Maybe that went away for some reason - we'd have hit it again if it was
-real.
+I guess that you have not seen the slab defrag code for SLUB then.
 
