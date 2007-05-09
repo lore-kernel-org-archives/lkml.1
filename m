@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760377AbXEIXsn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbXEIXt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760377AbXEIXsn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:48:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758611AbXEIXsf
+	id S1760587AbXEIXt5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757518AbXEIXtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:48:35 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:24223 "EHLO
-	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756623AbXEIXse (ORCPT
+	Wed, 9 May 2007 19:49:50 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:54488 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756272AbXEIXts (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:48:34 -0400
-Date: Wed, 09 May 2007 17:48:30 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [2.6.21.1] SATA freeze
-In-reply-to: <fa.I0i3SlPzvZnxCYuJNFL3tixqEJU@ifi.uio.no>
-To: Gerhard Mack <gmack@innerfire.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Jeff Garzik <jeff@garzik.org>
-Message-id: <46425DCE.1070001@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.Ngs+g4HBWK5JUzEhRMjcVQVR448@ifi.uio.no>
- <fa.xHed6JNWpYYFYmDy7FY+p6HTjPw@ifi.uio.no>
- <fa.I0i3SlPzvZnxCYuJNFL3tixqEJU@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Wed, 9 May 2007 19:49:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=c8jriuAljpA13kxhy4Z0FtYg8WlsFHX80BMzCtAKiN/vg3/uVksH8bGjuldcmWsSJfuxnlf9Ncg0PQlqxiZcep80JZbQzfkO/WvlzndSL/pP7D/C/9xOuRMLjRtnELc+2mLJ1B0YiegTATJCFBtJCBjvhJCO3z6eL8D95SrySnM=
+Message-ID: <787b0d920705091649m76d5f5f4m9768a6862b048659@mail.gmail.com>
+Date: Wed, 9 May 2007 19:49:42 -0400
+From: "Albert Cahalan" <acahalan@gmail.com>
+To: "Andrey Borzenkov" <arvidjaar@mail.ru>
+Subject: Re: Long file names in VFAT broken with iocharset=utf8
+Cc: "Jan Engelhardt" <jengelh@linux01.gwdg.de>, hirofumi@mail.parknet.co.jp,
+       linux-kernel@vger.kernel.org, hpa@zytor.com
+In-Reply-To: <200705091957.07557.arvidjaar@mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <787b0d920705072143q63e56f23j18c6b0dbfb270883@mail.gmail.com>
+	 <Pine.LNX.4.61.0705081036000.17280@yvahk01.tjqt.qr>
+	 <787b0d920705090834p7ece0880n51d6e9288f307d1f@mail.gmail.com>
+	 <200705091957.07557.arvidjaar@mail.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerhard Mack wrote:
-> On Wed, 9 May 2007, Jeff Garzik wrote:
->> Gerhard Mack wrote:
->>> May  9 14:51:35 mgerhard kernel: ata1.00: exception Emask 0x0 SAct 0x0 SErr
->>> 0x1800000 action 0x2 frozen
->>> May  9 14:51:35 mgerhard kernel: ata1.00: cmd
->>> 35/00:00:80:6d:c8/00:04:09:00:00/e0 tag 0 cdb 0x0 data 524288 out
->>> May  9 14:51:35 mgerhard kernel:          res
->>> 40/00:c8:68:65:c8/84:00:09:00:00/e0 Emask 0x4 (timeout)
->>> May  9 14:51:42 mgerhard kernel: ata1: port is slow to respond, please be
->>> patient (Status 0xd0)
->>>
->>> Anything I can do to figgure out what's causing this?
+On 5/9/07, Andrey Borzenkov <arvidjaar@mail.ru> wrote:
+> On Wednesday 09 May 2007, Albert Cahalan wrote:
+...
+>>> On May 8 2007 00:43, Albert Cahalan wrote:
 
-You're showing various flags set in the SError register, which suggests 
-you're having SATA communication problems with the drive. A bad SATA 
-cable or power problems would be a strong possibility.
+>>>> Fix: the vfat driver should use the 8.3 name for such files.
+...
+>> It's not appropriate for vfat, HPFS, JFS, or NTFS. All of those
+>> have built-in support for 8.3 aliases. Normally the 8.3 names
+>> are like hidden hard links, except that deletion of either name
+>> will wipe out the other. (same as case differences too)
+>> So the names are there, and they should already work.
+>> They just need to be reported for directory listings when the
+>> long names would be too long.
+>
+> several problems associated with it
+>
+> 1. those names are rather meaningless. How do you find out which file they
+> refer to? It is OK for trivial cases but not in a directory full of long
+> names; nor am I sure how many unique short names can be generated.
 
-It really would be nice if we decoded these things more usefully for the 
-user (same with the regular ATA errors, like drivers/ide does), but in 
-general SError showing up as non-zero is a bad thing:
+If a short name can not be generated, then no OS could
+create the file at all. The vfat and iso9660 filesystems require
+short names. Any OS writing to such a filesystem MUST
+generate short names in addition to any long names.
+Mount your vfat as filesystem type "msdos" to see.
 
-0x400000 = "Handshake error: When set to one, this bit indicates that 
-one or more R_ERR handshake response was received in response to frame 
-transmission. Such errors may be the result of a CRC error detected by 
-the recipient, a disparity or 10b/8b decoding error, or other error 
-condition leading to a negative handshake on a transmitted frame."
+By default, Windows will also generate short names on NTFS.
 
-0x1800000 = "Link Sequence Error: When set to one, this bit indicates 
-that one or more Link state machine error conditions was encountered 
-since the last time this bit was cleared. The Link Layer state machine 
-defines the conditions under which the link layer detects an erroneous 
-transition."
+Note that you can't put your files on a CD-ROM in a way
+that Windows could read the filenames. Windows limits
+CD-ROM filenames to 63 characters; you get at most 103
+if you violate the spec.
 
-and
+> 2. directory contents is effectively invalidated upon backup and restore (tar
+> c; rm -rf; tar x). It is impossible to infer long names from short ones.
 
-"Transport state transition error: When set to one, this bit indicates 
-that an error has occurred in the transition from one state to another 
-within the Transport layer since the last time this bit was cleared."
+It may be that tar fails to use the vfat ioctl calls to save
+and restore short names. You could try using Wine to
+run a Windows-native backup program. This shouldn't
+really matter though; you'd only be getting short names
+for files that had truly unreasonable long names anyway.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+I suppose somebody should check to see if there is a
+danger of overwrite when the short-named files get
+written back. The safest thing might be to mount the
+filesystem as type "msdos".
 
+> 3. this still does not answer how can I *create* long name from within Linux.
+
+WTF? These names are too annoying to use, even if there
+weren't this limit. Anything over about 29 characters is in
+need of a rename. (that'd be 58 bytes for you, which is OK)
+The limit is already 4 times larger than what is reasonable.
