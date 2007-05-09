@@ -1,58 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755926AbXEILhj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbXEILlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755926AbXEILhj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 07:37:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbXEILha
+	id S1755739AbXEILlW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 07:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750773AbXEILlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 07:37:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:52625 "EHLO ozlabs.org"
+	Wed, 9 May 2007 07:41:14 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48980 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751690AbXEILh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 07:37:29 -0400
+	id S1750708AbXEILlN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 07:41:13 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: tglx@linutronix.de, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+Date: Wed, 9 May 2007 13:45:54 +0200
+User-Agent: KMail/1.9.5
+Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       John Stultz <johnstul@us.ibm.com>, linux-acpi@vger.kernel.org
+References: <20070430102837.748238000@linutronix.de> <20070509013119.dbea7233.akpm@linux-foundation.org> <1178701183.3042.469.camel@localhost.localdomain>
+In-Reply-To: <1178701183.3042.469.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-Message-ID: <17985.45682.284634.969153@cargo.ozlabs.ibm.com>
-Date: Wed, 9 May 2007 21:37:22 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: suparna@in.ibm.com
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-In-Reply-To: <20070509111011.GA21619@in.ibm.com>
-References: <20070418130600.GW5967@schatzie.adilger.int>
-	<20070420135146.GA21352@amitarora.in.ibm.com>
-	<20070420145918.GY355@devserv.devel.redhat.com>
-	<20070424121632.GA10136@amitarora.in.ibm.com>
-	<20070426175056.GA25321@amitarora.in.ibm.com>
-	<20070426180332.GA7209@amitarora.in.ibm.com>
-	<20070503212955.b1b6443c.akpm@linux-foundation.org>
-	<17978.47502.786970.196554@cargo.ozlabs.ibm.com>
-	<20070509101507.GA26056@in.ibm.com>
-	<17985.42884.971318.859402@cargo.ozlabs.ibm.com>
-	<20070509111011.GA21619@in.ibm.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
+Content-Disposition: inline
+Message-Id: <200705091345.55207.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Suparna Bhattacharya writes:
-
-> > Of course the interface used by an application program would have the
-> > fd first.  Glibc can do the translation.
+On Wednesday, 9 May 2007 10:59, Thomas Gleixner wrote:
+> On Wed, 2007-05-09 at 01:31 -0700, Andrew Morton wrote:
+> > > I suspect I just tested the wrong thing yesterday.  Let me recheck just
+> > > these patches against 2.6.21.
+> > 
+> > yup, same hang with just these three:
+> > 
+> > origin
+> > clocksource-fix-resume-logic
+> > clockevents-fix-resume-logic-updated-version
 > 
-> I think that was understood.
+> I have no idea, how this affects acpi_evaluate_object()
 
-OK, then what does it matter what the glibc/kernel interface is, as
-long as it works?
+I think the problem is that the ACPI code ordering here is broken in a
+difficult to fix way.
 
-It's only a minor point; the order of arguments can vary between
-architectures if necessary, but it's nicer if they don't have to.
-32-bit powerpc will need to have the two int arguments adjacent in
-order to avoid using more than 6 argument registers at the user/kernel
-boundary, and s390 will need to avoid having a 64-bit argument last
-(if I understand it correctly).
+Definitely, we shouldn't execute the _BFS method after creating the image
+and most probably _WAK shouldn't be executed here either.  Moreover,
+acpi_leave_sleep_state() enables the runtime GPEs, which AFAICS
+is equivalent to allowing ACPI to generate SCIs.  I'm not sure if this is a
+good idea to do such a thing in this particular place.
 
-Paul.
+Andrew, could you please apply the appended patch and see if that
+helps (should apply to -mm2)?
+
+Rafael
+
+---
+NOTE: This is not a complete solution, because it removes the enabling of GPEs
+from the resume-during-hibernation code path entirely, which probbably is not a
+good idea in general.
+---
+ kernel/power/disk.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.21/kernel/power/disk.c
+===================================================================
+--- linux-2.6.21.orig/kernel/power/disk.c
++++ linux-2.6.21/kernel/power/disk.c
+@@ -131,7 +131,9 @@ int hibernation_snapshot(int platform_mo
+ 	}
+ 	enable_nonboot_cpus();
+  Resume_devices:
+-	platform_finish(platform_mode);
++	if (!in_suspend || error)
++		platform_finish(platform_mode);
++
+ 	device_resume();
+ 	resume_console();
+  Finish:
