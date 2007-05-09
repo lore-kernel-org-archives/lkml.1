@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S969095AbXEIEm5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968960AbXEIEwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S969095AbXEIEm5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 00:42:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967601AbXEIEmr
+	id S968960AbXEIEwZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 00:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754654AbXEIEwQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 00:42:47 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42514 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966217AbXEIEmq (ORCPT
+	Wed, 9 May 2007 00:52:16 -0400
+Received: from wr-out-0506.google.com ([64.233.184.226]:16330 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754615AbXEIEwP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 00:42:46 -0400
-Date: Wed, 9 May 2007 06:42:47 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.16.51
-Message-ID: <20070509044247.GK4226@stusta.de>
+	Wed, 9 May 2007 00:52:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=M2epAzy2g6Mys/h/YabNVHGjMye4l2YQuHcRq3C36wZYGzXncFkQPLwEHhxEAkgQOBB/fvLGiQ75eT0CQ/WwPkp8Qdfpk7F1YRQpeRUWVd+VxNy4PrGmSamra54YIkWPwVIcOC6HxnbxZkWuCvubtx2s52BIEr8ogDPIoqcSTsk=
+Message-ID: <86802c440705082152g49d4d3echf3eb165ce4feb2e9@mail.gmail.com>
+Date: Tue, 8 May 2007 21:52:14 -0700
+From: yhlu <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       vgoyal@in.ibm.com, "Gerd Hoffmann" <kraxel@redhat.com>,
+       "Jeff Garzik" <jeff@garzik.org>, patches@x86-64.org,
+       linux-kernel@vger.kernel.org,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       "Rusty Russell" <rusty@rustcorp.com.au>, "Andi Kleen" <ak@suse.de>,
+       "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <m1tzumu10k.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+References: <4634483E.9030307@goop.org>
+	 <m1k5vji107.fsf@ebiederm.dsl.xmission.com>
+	 <86802c440705081500x682ee098y7d51f7bb98dbcff6@mail.gmail.com>
+	 <4640F4B3.30408@goop.org> <4640FB2C.2060300@zytor.com>
+	 <86802c440705081541v7d0773cek2c5fae1854b68bbc@mail.gmail.com>
+	 <46410403.4050802@zytor.com>
+	 <m17irivkhy.fsf@ebiederm.dsl.xmission.com>
+	 <46413087.2020505@zytor.com>
+	 <m1tzumu10k.fsf@ebiederm.dsl.xmission.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Location:
-ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
+On 5/8/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> Since the whole point is to detect the case where we don't have
+> a screen at all it makes sense to check several additional variables
+> and make certain that they are all 0.  Agreed?
 
-git tree:
-git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+need one good way to find if there is support vga console.
 
-RSS feed of the git tree:
-http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
-
-
-Changes since 2.6.16.50:
-
-Adrian Bunk (3):
-      x86_64: ACPI_CPU_FREQ must select CPU_FREQ_TABLE
-      Linux 2.6.16.51-rc1
-      Linux 2.6.16.51
-
-Andrew Hendry (1):
-      [X.25]: Add missing sock_put in x25_receive_data
-
-Hugh Dickins (4):
-      holepunch: fix shmem_truncate_range punching too far
-      holepunch: fix shmem_truncate_range punch locking
-      holepunch: fix disconnected pages after second truncate
-      holepunch: fix mmap_sem i_mutex deadlock
-
-Jaroslav Kysela (1):
-      [NETFILTER]: ipt_CLUSTERIP: fix oops in checkentry function
-
-Jean Delvare (1):
-      hwmon/w83627ehf: Don't redefine REGION_OFFSET
-
-Jorge Boncompte (1):
-      [NETFILTER]: ip_nat_proto_gre: do not modify/corrupt GREv0 packets through NAT
-
-
- Makefile                                              |    2 
- arch/x86_64/kernel/cpufreq/Kconfig                    |    1 
- drivers/hwmon/w83627ehf.c                             |   14 -
- include/linux/netfilter_ipv4/ip_conntrack_proto_gre.h |   19 -
- mm/madvise.c                                          |   19 +
- mm/shmem.c                                            |  132 +++++++---
- net/ipv4/netfilter/ip_nat_proto_gre.c                 |   21 -
- net/ipv4/netfilter/ipt_CLUSTERIP.c                    |    2 
- net/x25/x25_dev.c                                     |    1 
- 9 files changed, 132 insertions(+), 79 deletions(-)
-
+YH
