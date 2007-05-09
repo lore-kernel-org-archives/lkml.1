@@ -1,191 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbXEIK7J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757543AbXEILAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757260AbXEIK7J (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 06:59:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbXEIK64
+	id S1757543AbXEILAQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 07:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbXEILAA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 06:58:56 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:23124 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751559AbXEIK6z (ORCPT
+	Wed, 9 May 2007 07:00:00 -0400
+Received: from mail.syneticon.net ([213.239.212.131]:42387 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754856AbXEIK77 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 06:58:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:references;
-        b=sSpvL8zulO5UhPHpX6CULSJKqSMTCfYnZACMDnLF2FwRsYNb7Ut9riFA7FUmTKIB/zCPn4mVz7PgRQy+8zI6QPoUqJnb9VdF3c+55ghHNHnilv8vhYFN+XhXD4vpbw1fx+3gxbLrm+f05XDfiOPWPtd1ZXeW9czTo8DgSdOg3gs=
-Message-ID: <8d6898730705090358g104d9a9fjd4ad2697c44ec39b@mail.gmail.com>
-Date: Wed, 9 May 2007 16:28:24 +0530
-From: "Nobin Mathew" <nobin.mathew@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Fwd: [ASoC] Mic record is not working with wm9713 ASoC driver
-In-Reply-To: <8d6898730705090355v6966309av6aff6c1e93c5a876@mail.gmail.com>
+	Wed, 9 May 2007 06:59:59 -0400
+Message-ID: <4641A959.6000704@wpkg.org>
+Date: Wed, 09 May 2007 12:58:33 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_141969_27538895.1178708304337"
-References: <8d6898730705090218h4ba10102u917b0943bad97a8b@mail.gmail.com>
-	 <1178706334.3740.24.camel@a10072.wolfsonmicro.main>
-	 <8d6898730705090344ofc820d9r96cb4723722027be@mail.gmail.com>
-	 <1178707947.3740.30.camel@a10072.wolfsonmicro.main>
-	 <8d6898730705090355v6966309av6aff6c1e93c5a876@mail.gmail.com>
+To: linux-kernel@vger.kernel.org, mikpe@it.uu.se, netdev@vger.kernel.org
+Subject: Re: [PATCH] Intel IXP4xx network drivers v.2 - Ethernet and HSS
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_141969_27538895.1178708304337
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+> On Wed, 9 May 2007 11:35:03 +0200, Marcus Better wrote:
+>> Lennert Buytenhek wrote:
+>> > Does that mean that the Debian ARM people have their heads so far
+>> > up their collective asses that they think that every form of change
+>> > is bad and are unable to accept that some forms of change might be
+>> > for the better?
+>> 
+>> Well, I am not one of the Debian ARM people, just a user... and I do hope the
+>> EABI port becomes supported in the future! But in the meatime there is a
+>> crowd of users running Debian on consumer devices like the NSLU2, and they
+>> need a LE network driver.
+> 
+> 1) Development _should_ happen in small individually-manageable steps.
+>    It's wrong to delay integration of the new IXP4xx eth driver just
+>    because it's not yet LE-compatible.
 
----------- Forwarded message ----------
-From: Nobin Mathew <nobin.mathew@gmail.com>
-Date: May 9, 2007 4:25 PM
-Subject: Re: [ASoC] Mic record is not working with wm9713 ASoC driver
-To: Liam Girdwood <lg@opensource.wolfsonmicro.com>
+True.
 
 
-Liam i got the mail.
-I am not setting any audio paths in my machine driver
+> 2) LE Debian/ARM users do have alternatives: they can use USB-Ethernet
+>    adapters, for instance.
+
+In case of Freecom FSG-3, that would be four USB-ethernet adapters. With 
+the cost roughly half of the cost of the whole device. And all USB-ports 
+occupied. Provided you don't use them for something else.
+
+Someone could ask "why has this device four mice connected?" :) (for 
+someone who doesn't work much with computers, a USB-ISDN or USB-ethernet 
+adapter looks just like a mouse).
 
 
-On 5/9/07, Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
-> The mail server is probably a little behind..... give it about 30
-> mins...
->
-> Liam
->
-> On Wed, 2007-05-09 at 16:14 +0530, Nobin Mathew wrote:
-> > Liam Sorry for disturbing you again,
-> >
-> > I could not find that reply on alsa devel mailing list
-> >
-> > Can u send that to me
-> >
-> > Thanks
-> >
-> >
-> > On 5/9/07, Liam Girdwood <lg@opensource.wolfsonmicro.com> wrote:
-> > > On Wed, 2007-05-09 at 14:48 +0530, Nobin Mathew wrote:
-> > > > I am trying to record mic with AsoC wm9713 driver. My Mic is connected "Mic 1".
-> > >
-> > > I've replied to this duplicate post on alsa-dev.
-> > >
-> > > Liam
-> > >
-> > >
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
->
->
+And yet another viable alternative is to use a totally different device 
+which is fully supported under Linux or another system, right? :)
 
-------=_Part_141969_27538895.1178708304337
-Content-Type: text/x-csrc; name=identity_wm9713.c; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f1hog9vw
-Content-Disposition: attachment; filename="identity_wm9713.c"
 
-LyoKICogIFNpUkYgVGVjaG5vbG9neSwgSW5jLiBHUFMgU29mdHdhcmUgCiAqCiAqICBDb3B5cmln
-aHQgKEMpIDIwMDYgYnkgU2lSRiBUZWNobm9sb2d5LCBJbmMuIEFsbCByaWdodHMgcmVzZXJ2ZWQu
-CiAqCiAqICBsaW51eC9zb3VuZC9zb2Mvc2lyZjNhL2lkZW50aXR5X3dtOTcxMy5jCiAqICAKICog
-VGhpcyBwcm9ncmFtIGlzIGZyZWUgc29mdHdhcmU7IHlvdSBjYW4gcmVkaXN0cmlidXRlIGl0IGFu
-ZC9vciBtb2RpZnkKICogaXQgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJs
-aWMgTGljZW5zZSBhcyBwdWJsaXNoZWQgYnkKICogdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlv
-bjsgZWl0aGVyIHZlcnNpb24gMiBvZiB0aGUgTGljZW5zZSwgb3IKICogKGF0IHlvdXIgb3B0aW9u
-KSBhbnkgbGF0ZXIgdmVyc2lvbi4KICoKICogVGhpcyBwcm9ncmFtIGlzIGRpc3RyaWJ1dGVkIGlu
-IHRoZSBob3BlIHRoYXQgaXQgd2lsbCBiZSB1c2VmdWwsCiAqIGJ1dCBXSVRIT1VUIEFOWSBXQVJS
-QU5UWTsgd2l0aG91dCBldmVuIHRoZSBpbXBsaWVkIHdhcnJhbnR5IG9mCiAqIE1FUkNIQU5UQUJJ
-TElUWSBvciBGSVRORVNTIEZPUiBBIFBBUlRJQ1VMQVIgUFVSUE9TRS4gIFNlZSB0aGUKICogR05V
-IEdlbmVyYWwgUHVibGljIExpY2Vuc2UgZm9yIG1vcmUgZGV0YWlscy4KICoKICogWW91IHNob3Vs
-ZCBoYXZlIHJlY2VpdmVkIGEgY29weSBvZiB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UK
-ICogYWxvbmcgd2l0aCB0aGlzIHByb2dyYW07IGlmIG5vdCwgd3JpdGUgdG8gdGhlIEZyZWUgU29m
-dHdhcmUKICogRm91bmRhdGlvbiwgSW5jLiwgNTkgVGVtcGxlIFBsYWNlLCBTdWl0ZSAzMzAsIEJv
-c3RvbiwgTUEgIDAyMTExLTEzMDcgIFVTQQogKi8KCi8qCiAqIE1hY2hpbmUgU3BlY2lmaWMgY29k
-ZWZvciBBU29DIGRyaXZlcgogKiBUaGlzIHdpbGwgc2V0dXAgYWM5NyBjb250cm9sbGVyIHdpdGgg
-d205NzEzIGNvZGVjIHN1cHBvcnQKICovCgojaW5jbHVkZSA8bGludXgvbW9kdWxlLmg+CiNpbmNs
-dWRlIDxsaW51eC9kZWxheS5oPgojaW5jbHVkZSA8bGludXgvaW5pdC5oPgojaW5jbHVkZSA8bGlu
-dXgvaW9wb3J0Lmg+CiNpbmNsdWRlIDxsaW51eC9kZXZpY2UuaD4KI2luY2x1ZGUgPGxpbnV4L3Nw
-aW5sb2NrLmg+CiNpbmNsdWRlIDxsaW51eC9pbnRlcnJ1cHQuaD4KI2luY2x1ZGUgPGxpbnV4L2Vy
-ci5oPgojaW5jbHVkZSA8bGludXgvYW1iYS9idXMuaD4KI2luY2x1ZGUgPGxpbnV4L2RtYS1tYXBw
-aW5nLmg+CS8qIERNQSBtZW1vcnkgaXMgdXNlZCBmb3IgdGhlIGJ1ZmZlciBldmVuIGlmIG5vIERN
-QSBmb3IgdGhpcyBhcmNoaXRlY3R1cmUgKi8KI2luY2x1ZGUgPGxpbnV4L3BtLmg+CgoKI2luY2x1
-ZGUgPGFzbS9pby5oPgojaW5jbHVkZSA8YXNtL2lycS5oPgojaW5jbHVkZSA8YXNtL3NpemVzLmg+
-CgojaWZkZWYgQ09ORklHX0FSTV9BTUJBX0RNQQojIGluY2x1ZGUgPGFzbS9tYWNoLXR5cGVzLmg+
-CiNlbmRpZgoKI2luY2x1ZGUgPHNvdW5kL2RyaXZlci5oPgojaW5jbHVkZSA8c291bmQvY29yZS5o
-PgojaW5jbHVkZSA8c291bmQvaW5pdHZhbC5oPgojaW5jbHVkZSA8c291bmQvYWM5N19jb2RlYy5o
-PgojaW5jbHVkZSA8c291bmQvcGNtLmg+CiNpbmNsdWRlIDxzb3VuZC9wY21fcGFyYW1zLmg+CiNp
-bmNsdWRlIDxzb3VuZC9zb2MuaD4KI2luY2x1ZGUgPHNvdW5kL3NvYy1kYXBtLmg+CgojaW5jbHVk
-ZSAiLi4vY29kZWNzL2FjOTcuaCIKI2luY2x1ZGUgInBsYXRmb3JtX3NvdW5kLmgiCiNpbmNsdWRl
-ICJhYWNpLmgiCgpleHRlcm4gc3RydWN0IHNuZF9zb2NfY3B1X2RhaSBhYWNpX2FjOTdfZGFpW107
-CmV4dGVybiBzdHJ1Y3Qgc25kX3NvY19jb2RlY19kYWkgd205NzEzX2RhaVtdOwpleHRlcm4gc3Ry
-dWN0IHNuZF9zb2NfcGxhdGZvcm0gc2lyZjNhX3NvY19wbGF0Zm9ybTsKZXh0ZXJuIHN0cnVjdCBz
-bmRfc29jX2NvZGVjX2RldmljZSBzb2NfY29kZWNfZGV2X3dtOTcxMzsKZXh0ZXJuIHN0cnVjdCBh
-Yzk3X3BjbSBhYzk3X2RlZnNbXTsKCmV4dGVybiBpbnQgc2lyZjNhX2FjOTdfcHJvYmUoc3RydWN0
-IHBsYXRmb3JtX2RldmljZSAqKTsKZXh0ZXJuIHZvaWQgc2lyZjNhX2FjOTdfcmVtb3ZlKHN0cnVj
-dCBwbGF0Zm9ybV9kZXZpY2UgKik7CmV4dGVybiB2b2lkIHNuZF9hYzk3X2J1c19wcm9jX2luaXQo
-c3RydWN0IHNuZF9hYzk3X2J1cyAqKTsKZXh0ZXJuIHZvaWQgc25kX2FjOTdfYnVzX3Byb2NfZG9u
-ZShzdHJ1Y3Qgc25kX2FjOTdfYnVzICopOwoKCnN0YXRpYyBpbnQgaWRlbnRpdHlfd205NzEzX3N0
-YXJ0dXAoc25kX3BjbV9zdWJzdHJlYW1fdCAqc3Vic3RyZWFtKQp7CglyZXR1cm4gMDsKfQoKc3Rh
-dGljIHN0cnVjdCBzbmRfc29jX29wcyBpZGVudGl0eV93bTk3MTNfb3BzID0gewoJLnN0YXJ0dXAg
-PSBpZGVudGl0eV93bTk3MTNfc3RhcnR1cCwKfTsKCnN0YXRpYyBpbnQgaWRlbnRpdHlfd205NzEz
-X2FjOTdfaW5pdChzdHJ1Y3Qgc25kX3NvY19jb2RlYyAqY29kZWMpCnsKCXN0cnVjdCBwbGF0Zm9y
-bV9jb250cm9sbGVyICpjb250cm9sbGVyID0gY29kZWMtPmFjOTctPmJ1cy0+cHJpdmF0ZV9kYXRh
-OwoJc3RydWN0IGFhY2kgKmFhY2kgPSAoc3RydWN0IGFhY2kgKiljb250cm9sbGVyLT5idXNfY29u
-dHJvbGxlcjsKCiAgICAJc25kX2FjOTdfcGNtX2Fzc2lnbihjb2RlYy0+YWM5Ny0+YnVzLCAzLCBh
-Yzk3X2RlZnMpOwogICAgCWFhY2ktPmFjOTdfYnVzID0gY29kZWMtPmFjOTctPmJ1czsKICAgIAog
-ICAgCS8qCgkgKiAgICAgKiBEaXNhYmxlIEFDOTcgUEMgQmVlcCBpbnB1dCBvbiBhdWRpbyBjb2Rl
-Y3MuCgkgKiAgICAgICAgICAqLwogICAgCWlmIChhYzk3X2lzX2F1ZGlvKGNvZGVjLT5hYzk3KSkK
-ICAgIAkJc25kX2FjOTdfd3JpdGVfY2FjaGUoY29kZWMtPmFjOTcsIEFDOTdfUENfQkVFUCwgMHg4
-MDFlKTsgCiAgICAJcmV0dXJuIDA7Cn0KdW5zaWduZWQgaW50IGlkZW50aXR5X3dtOTcxM19jb25m
-aWdfc3lzY2xrKHN0cnVjdCBzbmRfc29jX3BjbV9ydW50aW1lICpydGQsCglzdHJ1Y3Qgc25kX3Nv
-Y19jbG9ja19pbmZvICppbmZvKQp7CglyZXR1cm4gcnRkLT5jb2RlY19kYWktPmNvbmZpZ19zeXNj
-bGsocnRkLT5jb2RlY19kYWksIGluZm8sIDEyMTg3NTAwKTsKfQoKCnN0YXRpYyBzdHJ1Y3Qgc25k
-X3NvY19kYWlfbGluayBpZGVudGl0eV93bTk3MTNfZGFpW10gPSB7Cgl7CgkJLm5hbWUgPSAiQUM5
-NyIsCgkJLnN0cmVhbV9uYW1lID0gIkFDOTcgSGlGaSIsCgkJLmNwdV9kYWkgPSAmYWFjaV9hYzk3
-X2RhaVswXSwKCQkuY29kZWNfZGFpID0gJndtOTcxM19kYWlbMF0sCgkJLmluaXQgPSBpZGVudGl0
-eV93bTk3MTNfYWM5N19pbml0LAoJCS5jb25maWdfc3lzY2xrID0gaWRlbnRpdHlfd205NzEzX2Nv
-bmZpZ19zeXNjbGssCgoJfSwKCS8qCgl7CgkJLm5hbWUgPSAiV005NzEzIiwKCQkuc3RyZWFtX25h
-bWUgPSAiQkxVRVRPT1RIIFZPSUNFIiwKCQkuY3B1X2RhaSA9ICZhYWNpX2FjOTdfZGFpWzFdLAoJ
-CS5jb2RlY19kYWkgPSAmd205NzEzX2RhaVsyXSwKCX0sCiovCQp9OwoKaW50IGlkZW50aXR5X3dt
-OTcxM19wcm9iZShzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlICpwZGV2KQp7CglpbnQgcmV0ID0gMDsK
-CXN0cnVjdCBzbmRfc29jX2RldmljZSAqc29jZGV2OwoKCXNvY2RldiA9IHBsYXRmb3JtX2dldF9k
-cnZkYXRhKHBkZXYpOwoJc29jZGV2LT5tYWNoaW5lLT5kYWlfbGluay0+Y3B1X2RhaS0+cHJvYmUg
-PSBzaXJmM2FfYWM5N19wcm9iZTsJCglzb2NkZXYtPm1hY2hpbmUtPmRhaV9saW5rLT5jcHVfZGFp
-LT5yZW1vdmUgPSBzaXJmM2FfYWM5N19yZW1vdmU7CQoKCXJldHVybiByZXQ7Cn0KCmludCBpZGVu
-dGl0eV93bTk3MTNfc3VzcGVuZF9wcmUoc3RydWN0IHBsYXRmb3JtX2RldmljZSAqcGRldiwgcG1f
-bWVzc2FnZV90IHN0YXRlKQp7CglzdHJ1Y3Qgc25kX3NvY19kZXZpY2UgKnNvY2RldiA9IHBsYXRm
-b3JtX2dldF9kcnZkYXRhKHBkZXYpOwoJc3RydWN0IHNuZF9zb2NfY29kZWMgKmNvZGVjID0gc29j
-ZGV2LT5jb2RlYzsKCXN0cnVjdCBzbmRfc29jX2NvZGVjX2RhaSAqZGFpID0gY29kZWMtPmRhaTsK
-CXN0cnVjdCBwbGF0Zm9ybV9jb250cm9sbGVyICpjb250cm9sbGVyID0gZGFpLT5wcml2YXRlX2Rh
-dGE7CgoJY29udHJvbGxlci0+c3RhdGUuZXZlbnQgPSBzdGF0ZS5ldmVudDsKCXJldHVybiAwOwp9
-CgppbnQgaWRlbnRpdHlfd205NzEzX3Jlc3VtZV9wb3N0KHN0cnVjdCBwbGF0Zm9ybV9kZXZpY2Ug
-KnBkZXYpCnsKCXN0cnVjdCBzbmRfc29jX2RldmljZSAqc29jZGV2ID0gcGxhdGZvcm1fZ2V0X2Ry
-dmRhdGEocGRldik7CglzdHJ1Y3Qgc25kX3NvY19jb2RlYyAqY29kZWMgPSBzb2NkZXYtPmNvZGVj
-OwoJc3RydWN0IHNuZF9zb2NfY29kZWNfZGFpICpkYWkgPSBjb2RlYy0+ZGFpOwoJc3RydWN0IHBs
-YXRmb3JtX2NvbnRyb2xsZXIgKmNvbnRyb2xsZXIgPSBkYWktPnByaXZhdGVfZGF0YTsKCgljb250
-cm9sbGVyLT5zdGF0ZS5ldmVudCA9IFBNX0VWRU5UX09OOwkKCXJldHVybiAwOwp9CgpzdGF0aWMg
-c3RydWN0IHNuZF9zb2NfbWFjaGluZSBpZGVudGl0eV93bTk3MTMgPSB7CgkubmFtZSA9ICJJREVO
-VElUWSIsCgkucHJvYmUgPSBpZGVudGl0eV93bTk3MTNfcHJvYmUsCgkuc3VzcGVuZF9wcmUgPSBp
-ZGVudGl0eV93bTk3MTNfc3VzcGVuZF9wcmUsCgkucmVzdW1lX3Bvc3QgPSBpZGVudGl0eV93bTk3
-MTNfcmVzdW1lX3Bvc3QsCgkuZGFpX2xpbmsgPSBpZGVudGl0eV93bTk3MTNfZGFpLAoJLm51bV9s
-aW5rcyA9IEFSUkFZX1NJWkUoaWRlbnRpdHlfd205NzEzX2RhaSksCgkub3BzID0gJmlkZW50aXR5
-X3dtOTcxM19vcHMsCn07CgpzdGF0aWMgc3RydWN0IHNuZF9zb2NfZGV2aWNlIGlkZW50aXR5X3dt
-OTcxM19zbmRfZGV2ZGF0YSA9IHsKCS5tYWNoaW5lID0gJmlkZW50aXR5X3dtOTcxMywKCS5wbGF0
-Zm9ybSA9ICZzaXJmM2Ffc29jX3BsYXRmb3JtLAoJLmNvZGVjX2RldiA9ICZzb2NfY29kZWNfZGV2
-X3dtOTcxMywKfTsKCmV4dGVybiBzdHJ1Y3QgcGxhdGZvcm1fZGV2aWNlIGlkZW50aXR5X3NuZF9k
-ZXZpY2U7CnN0cnVjdCBwbGF0Zm9ybV9kZXZpY2UgKnBpZGVudGl0eV93bTk3MTNfc25kX2Rldmlj
-ZSA9ICZpZGVudGl0eV9zbmRfZGV2aWNlOwoKc3RhdGljIGludCBfX2luaXQgaWRlbnRpdHlfd205
-NzEzX2luaXQodm9pZCkKewoJaW50IHJldDsKCglkZXZpY2VfaW5pdGlhbGl6ZSgmcGlkZW50aXR5
-X3dtOTcxM19zbmRfZGV2aWNlLT5kZXYpOwoJcGxhdGZvcm1fc2V0X2RydmRhdGEocGlkZW50aXR5
-X3dtOTcxM19zbmRfZGV2aWNlLCAmaWRlbnRpdHlfd205NzEzX3NuZF9kZXZkYXRhKTsKCWlkZW50
-aXR5X3dtOTcxM19zbmRfZGV2ZGF0YS5kZXYgPSAmcGlkZW50aXR5X3dtOTcxM19zbmRfZGV2aWNl
-LT5kZXY7CglyZXQgPSBwbGF0Zm9ybV9kZXZpY2VfYWRkKHBpZGVudGl0eV93bTk3MTNfc25kX2Rl
-dmljZSk7CgoJaWYgKHJldCkKCQlwbGF0Zm9ybV9kZXZpY2VfcHV0KHBpZGVudGl0eV93bTk3MTNf
-c25kX2RldmljZSk7CgoJcmV0dXJuIHJldDsKfQoKc3RhdGljIHZvaWQgX19leGl0IGlkZW50aXR5
-X3dtOTcxM19leGl0KHZvaWQpCnsKCXBsYXRmb3JtX2RldmljZV91bnJlZ2lzdGVyKHBpZGVudGl0
-eV93bTk3MTNfc25kX2RldmljZSk7Cn0KCm1vZHVsZV9pbml0KGlkZW50aXR5X3dtOTcxM19pbml0
-KTsKbW9kdWxlX2V4aXQoaWRlbnRpdHlfd205NzEzX2V4aXQpOwoKLyogTW9kdWxlIGluZm9ybWF0
-aW9uICovCk1PRFVMRV9BVVRIT1IoIk5vYmluIE1hdGhldyIpOwpNT0RVTEVfREVTQ1JJUFRJT04o
-IkFMU0EgU29DIFNpUkYzQSIpOwpNT0RVTEVfTElDRU5TRSgiR1BMIik7Cg==
-------=_Part_141969_27538895.1178708304337--
+-- 
+Tomasz Chmielewski
+http://wpkg.org
