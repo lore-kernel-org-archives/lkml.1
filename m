@@ -1,72 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbXEIQyX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbXEIRFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758574AbXEIQyX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 12:54:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756397AbXEIQyI
+	id S1756541AbXEIRFB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 13:05:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753043AbXEIREx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 12:54:08 -0400
-Received: from mail.clusterfs.com ([206.168.112.78]:54118 "EHLO
-	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755744AbXEIQyD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 12:54:03 -0400
-Date: Wed, 9 May 2007 09:54:02 -0700
-From: Andreas Dilger <adilger@clusterfs.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070509165402.GO6375@schatzie.adilger.int>
-Mail-Followup-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-	torvalds@osdl.org, akpm@linux-foundation.org,
-	linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-	cmm@us.ibm.com
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 9 May 2007 13:04:53 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:50259 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751750AbXEIREw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 13:04:52 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: tglx@linutronix.de
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+Date: Wed, 9 May 2007 19:09:24 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       linux-acpi@vger.kernel.org
+References: <20070430102837.748238000@linutronix.de> <200705091512.13171.rjw@sisk.pl> <1178716776.3042.485.camel@localhost.localdomain>
+In-Reply-To: <1178716776.3042.485.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070509160102.GA30745@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
+Message-Id: <200705091909.25443.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 09, 2007  21:31 +0530, Amit K. Arora wrote:
-> 2) For FA_UNALLOCATE mode, should the file system allow unallocation
->    of normal (non-preallocated) blocks (blocks allocated via
->    regular write/truncate operations) also (i.e. work as punch()) ?
->    - Though FA_UNALLOCATE mode is yet to be implemented on ext4, still
->      we need to finalize on the convention here as a general guideline
->      to all the filesystems that implement fallocate.
+On Wednesday, 9 May 2007 15:19, Thomas Gleixner wrote:
+> On Wed, 2007-05-09 at 15:12 +0200, Rafael J. Wysocki wrote:
+> > On Wednesday, 9 May 2007 14:24, Thomas Gleixner wrote:
+> > > On Wed, 2007-05-09 at 13:45 +0200, Rafael J. Wysocki wrote:
+> > > > On Wednesday, 9 May 2007 10:59, Thomas Gleixner wrote:
+> > > > > On Wed, 2007-05-09 at 01:31 -0700, Andrew Morton wrote:
+> > > > > > > I suspect I just tested the wrong thing yesterday.  Let me recheck just
+> > > > > > > these patches against 2.6.21.
+> > > > > > 
+> > > > > > yup, same hang with just these three:
+> > > > > > 
+> > > > > > origin
+> > > > > > clocksource-fix-resume-logic
+> > > > > > clockevents-fix-resume-logic-updated-version
+> > > > > 
+> > > > > I have no idea, how this affects acpi_evaluate_object()
+> > > > 
+> > > > I think the problem is that the ACPI code ordering here is broken in a
+> > > > difficult to fix way.
+> > > 
+> > > Any explanation aside of witchcraft why this is affected by the clock
+> > > event resume changes ?
+> > 
+> > Well, where is unregister_time_interpolator() called from?
+> 
+> # grep -rn unregister_time_interpolator .
+> ./kernel/timer.c:1893:unregister_time_interpolator(struct time_interpolator *ti)
+> ./include/linux/timex.h:270:extern void unregister_time_interpolator(struct time_interpolator *);
+> 
+> I don't see a caller. i386 does not use time interpolator anyway.
+> 
+> # find -iname Kconfig | xargs grep TIME_INTERPOLATION
+> ./arch/sparc64/Kconfig:37:config TIME_INTERPOLATION
+> ./arch/ia64/Kconfig:60:config TIME_INTERPOLATION
 
-I would only allow this on FA_ALLOCATE extents.  That means it won't be
-possible to do this for filesystems that don't understand unwritten
-extents unless there are blocks allocated beyond EOF.
+But clocksource_resume() has no other caller, AFAICS ...
 
-> 3) If above is true, the file size will need to be changed
->    for "unallocation" when block holding the EOF gets unallocated.
->    - If we do not "unallocate" normal (non-preallocated) blocks and we
->      do not change the file size on preallocation, then this is a
->      non-issue.
+Well, I don't see any explanation that wouldn't involve witchcraft.
 
-Not necessarily.  That will just make the file sparse.  If FA_ALLOCATE
-does not change the file size, why should FA_UNALLOCATE.
-
-> 4) Should we update mtime & ctime on a successfull allocation/
->    unallocation ?
-
-I would say yes.  If glibc does the fallback fallocate via write() the
-mtime/ctime will be updated, so it makes sense to be consistent for
-both methods.  Also, it just makes sense from the "this file was modified"
-point of view.
-
-Cheers, Andreas
---
-Andreas Dilger
-Principal Software Engineer
-Cluster File Systems, Inc.
-
+Rafael
