@@ -1,100 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756088AbXEIOpo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757259AbXEIOrI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756088AbXEIOpo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 10:45:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXEIOpg
+	id S1757259AbXEIOrI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 10:47:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754106AbXEIOq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 10:45:36 -0400
-Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:29573 "HELO
-	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751220AbXEIOpf (ORCPT
+	Wed, 9 May 2007 10:46:57 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:53205 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751581AbXEIOq5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 10:45:35 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=JRnt2PBSGXwp6fklLCSqS3L0L89lx3K6iNzvS1Jzg8wJLd/JVyccMrgRhnc5ZDp6zeYoi+AfeQaLBvqV8YETon2PROTsoAq33lbbnvlrHIkJmOEf1TxQItbyqzXSRQw0rH04LgWP50d4Yh9N9jBz/6XsBWwQHHwxrp+sxgyFZHM=  ;
-X-YMail-OSG: R5CYG2QVM1kPp.7W.ORAsvB0zw6u8ATZ0L6L6gsRDcLjCfdJFR1z06ktInu37p4b2lPUt_7Cqw--
-Message-ID: <4641DE7D.6000902@yahoo.com.au>
-Date: Thu, 10 May 2007 00:45:17 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Andrea Arcangeli <andrea@suse.de>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: 2.6.22 -mm merge plans -- vm bugfixes
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <4636FDD7.9080401@yahoo.com.au> <Pine.LNX.4.64.0705011931520.16502@blonde.wat.veritas.com> <4638009E.3070408@yahoo.com.au> <Pine.LNX.4.64.0705021418030.16517@blonde.wat.veritas.com> <4641BFCE.6090200@yahoo.com.au> <Pine.LNX.4.64.0705091522110.15345@blonde.wat.veritas.com>
-In-Reply-To: <Pine.LNX.4.64.0705091522110.15345@blonde.wat.veritas.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Wed, 9 May 2007 10:46:57 -0400
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Maciej W. Rozycki" <macro@linux-mips.org>
+Cc: Satyam Sharma <satyam.sharma@gmail.com>, Pavel Machek <pavel@ucw.cz>,
+       Anton Vorontsov <cbou@mail.ru>, Greg KH <gregkh@suse.de>,
+       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+       Andrew Morton <akpm@osdl.org>
+In-Reply-To: <Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl>
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz>
+	 <1178550653.11851.191.camel@pmac.infradead.org>
+	 <20070507194949.GB3981@ucw.cz>
+	 <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com>
+	 <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
+	 <1178646751.2824.48.camel@pmac.infradead.org>
+	 <Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl>
+Content-Type: text/plain
+Date: Wed, 09 May 2007 15:46:36 +0100
+Message-Id: <1178721996.2824.199.camel@pmac.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by canuck.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Wed, 9 May 2007, Nick Piggin wrote:
-> 
->>Hugh Dickins wrote:
->>
->>>On Wed, 2 May 2007, Nick Piggin wrote:
->>
->>>>>But I'm pretty sure (to use your words!) regular truncate was not racy
->>>>>before: I believe Andrea's sequence count was handling that case fine,
->>>>>without a second unmap_mapping_range.
->>>>
->>>>OK, I think you're right. I _think_ it should also be OK with the
->>>>lock_page version as well: we should not be able to have any pages
->>>>after the first unmap_mapping_range call, because of the i_size
->>>>write. So if we have no pages, there is nothing to 'cow' from.
->>>
->>>I'd be delighted if you can remove those later unmap_mapping_ranges.
->>>As I recall, the important thing for the copy pages is to be holding
->>>the page lock (or whatever other serialization) on the copied page
->>>still while the copy page is inserted into pagetable: that looks
->>>to be so in your __do_fault.
->>
->>Hmm, on second thoughts, I think I was right the first time, and do
->>need the unmap after the pages are truncated. With the lock_page code,
->>after the first unmap, we can get new ptes mapping pages, and
->>subsequently they can be COWed and then the original pte zapped before
->>the truncate loop checks it.
-> 
-> 
-> The filesystem (or page cache) allows pages beyond i_size to come
-> in there?  That wasn't a problem before, was it?  But now it is?
+On Wed, 2007-05-09 at 15:23 +0100, Maciej W. Rozycki wrote:
+>  I am pretty darn sure my name can be spelled correctly, but can it be 
+> reasonably assured to be printed correctly on a reasonable subset of 
+> systems out there?  
 
-The filesystem still doesn't, but if i_size is updated after the page
-is returned, we can have a problem that was previously taken care of
-with the truncate_count but now isn't.
+Yes. I haven't used a system on which it cannot for a number of years.
 
->>However, I wonder if we can't test mapping_mapped before the spinlock,
->>which would make most truncates cheaper?
-> 
-> 
-> Slightly cheaper, yes, though I doubt it'd be much in comparison with
-> actually doing any work in unmap_mapping_range or truncate_inode_pages.
+> Considering Linux only -- does our text-mode VGA console driver make
+> any effort to print an arbitrary UTF-8-encoded text 
+> correctly?  What does it do when it runs beyond the limit of 512 
+> characters?  
 
-But if we're supposing the common case for truncate is unmapped mappings,
-then the main cost there will be the locking, which I'm trying to avoid.
-Hopefully with this patch, most truncate workloads would get faster, even
-though truncate mapped files is going to be unavoidably slower.
+I've no idea -- I haven't used the VGA text-mode console for years
+either. I rarely even sit in front of a box on which it even works --
+all the workstations I have these days are PowerPC, and use fbdev.
 
+> And how about serial terminals?
 
-> Suspect you'd need a barrier of some kind between the i_size_write and
-> the mapping_mapped test?
+It works fine over serial terminals. Why wouldn't it?
 
-The unmap_mapping_range that runs after the truncate_inode_pages should
-run in the correct order, I believe.
+>  Until then I would rather work on code, sorry.  And that is not going to 
+> be any code related to UTF-8 either, but I do encourage anybody who really 
+> cares about it to address any or all issues raised above. :-)
 
->  But that's a change we could have made at
-> any time if we'd bothered, it's not really the issue here.
-
-I don't see how you could, because you need to increment truncate_count.
-
-But I believe this is fixing the issue, even if it does so in a peripheral
-manner, because it avoids the added cost for unmapped files.
+You mean the VGA text console 'issue'? I might if I had suitable
+hardware, or if it was important. But it isn't something that bothers
+me.
 
 -- 
-SUSE Labs, Novell Inc.
+dwmw2
+
