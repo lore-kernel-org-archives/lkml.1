@@ -1,46 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbXEIXWh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760019AbXEIXZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760131AbXEIXWh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 19:22:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758667AbXEIXWZ
+	id S1760019AbXEIXZJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 19:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757580AbXEIXYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 19:22:25 -0400
-Received: from main.gmane.org ([80.91.229.2]:47238 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757390AbXEIXWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 19:22:23 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Parag Warudkar <parag.warudkar@gmail.com>
-Subject: Re: What tools to use?
-Date: Wed, 09 May 2007 19:22:01 -0400
-Message-ID: <46425799.1020809@gmail.com>
-References: <20cbb9450705091557p53e771f6g7cb2c8b0491a3d8a@mail.gmail.com>
+	Wed, 9 May 2007 19:24:54 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:54887 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755889AbXEIXYw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 19:24:52 -0400
+Date: Wed, 9 May 2007 16:24:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Scott Murray <scottm@somanetworks.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kristen.c.accardi@intel.com
+Subject: Re: [PATCH] cpci_hotplug: Convert to use the kthread API
+Message-Id: <20070509162430.772ae536.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705071412030.3671@rancor.yyz.somanetworks.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769657702107-git-send-email-ebiederm@xmission.com>
+	<20070422120534.GA20763@infradead.org>
+	<Pine.LNX.4.64.0704271802390.3671@rancor.yyz.somanetworks.com>
+	<20070504111215.GA3191@infradead.org>
+	<Pine.LNX.4.64.0705071412030.3671@rancor.yyz.somanetworks.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-X-Gmane-NNTP-Posting-Host: c-68-60-176-179.hsd1.mi.comcast.net
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-In-Reply-To: <20cbb9450705091557p53e771f6g7cb2c8b0491a3d8a@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shahbaz Khan wrote:
-> All the experts on this list plz let me know of any good cross
-> referencing tool for source code navigation. I have tried LXR but its
-> not easy to configure for a rookie like me. Anyother as good as LXR?
+On Mon, 7 May 2007 14:18:29 -0400 (EDT)
+Scott Murray <scottm@somanetworks.com> wrote:
+
+> On Fri, 4 May 2007, Christoph Hellwig wrote:
 > 
-> Thank you.
+> > On Fri, Apr 27, 2007 at 06:07:49PM -0400, Scott Murray wrote:
+> > > Sorry, it took me a few days to get to testing this out.  It looks good,    
+> > > but I had to make a couple of tweaks to avoid a hang when rmmod'ing a
+> > > board driver.  The board drivers do:
+> > > 
+> > > cpci_hp_stop()
+> > > cpci_hp_unregister_controller(controller)
+> > > 
+> > > to shutdown, and the check in cpci_hp_unregister_controller if the thread
+> > > is running wasn't working due to a bit too much code being excised.  The
+> > > result was kthread_stop being called twice, which hangs.  I've indicated 
+> > > my changes to avoid this inline below.
+> > 
+> > Can you forward the patches with your fix to Andrew to make sure he
+> > picks it up?
+> 
+> Andrew, here is my updated version of Christoph's kthread conversion 
+> patch for cpci_hotplug.  I've CC'ed Kristen so she won't be surprised
+> when this eventually goes to mainline.
 
-http://opensolaris.org/os/project/opengrok/ - Works well if you don't 
-mind the need for Java application server to run it. It is relatively 
-easy to setup.
+A patch in this area would normally go
 
-There is an blog article on setting it up for use with Linux kernel - 
-http://uadmin.blogspot.com/2005/12/opengrok-zfs-linux-2612.html .
+	you->kristen->mainline
+                |
+                v
+               -mm
 
-HTH
-Parag
+or
 
+	you->kristen->greg->mainline
+                        |
+                        v
+                       -mm
+
+or
+
+	you->me->greg->mainline		(gets an Acked-by somewhere)
+                   |
+                   v
+                  -mm
+
+or
+
+	you->kristen->Len->mainline
+                       |
+                       v
+                      -mm
+
+or something else.
+
+Kristen, how do you want to play this?
+
+Do you run a tree?  If so, lemmeatit ;)
