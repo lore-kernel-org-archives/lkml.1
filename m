@@ -1,62 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757651AbXEIKuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbXEIKvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757651AbXEIKuR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 06:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXEIKuE
+	id S1757913AbXEIKvR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 06:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756550AbXEIKvC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 06:50:04 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:38029 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755251AbXEIKuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 06:50:01 -0400
-Date: Wed, 9 May 2007 12:49:49 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: akpm@linux-foundation.org, torvalds@linux-foundation.org, rjw@sisk.pl,
-       James.Bottomley@SteelEye.com, aneesh.kumar@gmail.com, drzeus@drzeus.cx,
-       dwmw2@infradead.org, ego@in.ibm.com, greg@kroah.com, mingo@elte.hu,
-       neilb@suse.de, oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com,
-       vatsa@in.ibm.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 128/197] freezer: add try_to_freeze calls to all kernel threads
-Message-ID: <20070509104949.GA8164@elf.ucw.cz>
-References: <200705090934.l499YTvX019783@shell0.pdx.osdl.net> <4641A5F1.5080901@s5r6.in-berlin.de>
+	Wed, 9 May 2007 06:51:02 -0400
+Received: from mail.z-net.ru ([89.113.80.10]:4028 "EHLO mail.z-net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756205AbXEIKvA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 06:51:00 -0400
+Date: Wed, 9 May 2007 14:50:20 +0400
+From: Anton Vorontsov <cbou@mail.ru>
+To: Miles Lane <miles.lane@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm2 -- Compile =?utf8?Q?error?=
+	=?utf8?Q?=3A_include=2Flinux=2Fpower=5Fsupply=2Eh=3A125=3A_error=3A_field?=
+	=?utf8?B?IOKAmGNoYW5nZWRfd29ya+KAmQ==?= has incomplete type
+Message-ID: <20070509105019.GA20209@zarina>
+Reply-To: cbou@mail.ru
+References: <a44ae5cd0705090343n6ddae15he51198a0e448198a@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <4641A5F1.5080901@s5r6.in-berlin.de>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <a44ae5cd0705090343n6ddae15he51198a0e448198a@mail.gmail.com>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Wed, May 09, 2007 at 03:43:34AM -0700, Miles Lane wrote:
+>   CC      drivers/power/power_supply_core.o
+>  In file included from drivers/power/power_supply_core.c:18:
+>  include/linux/power_supply.h:125: error: field 'changed_work' has
+>  incomplete type
+>  drivers/power/power_supply_core.c: In function 'power_supply_changed_work':
+>  drivers/power/power_supply_core.c:25: warning: type defaults to 'int'
+>  in declaration of '__mptr'
+>  drivers/power/power_supply_core.c:25: warning: initialization from
+>  incompatible pointer type
+>  drivers/power/power_supply_core.c: In function 'power_supply_changed':
+>  drivers/power/power_supply_core.c:57: warning: implicit declaration of
+>  function 'schedule_work'
+>  drivers/power/power_supply_core.c: In function 'power_supply_register':
+>  drivers/power/power_supply_core.c:103: warning: implicit declaration
+>  of function 'INIT_WORK'
+>  drivers/power/power_supply_core.c: In function 'power_supply_unregister':
+>  drivers/power/power_supply_core.c:128: warning: implicit declaration
+>  of function 'flush_scheduled_work'
+>  make[2]: *** [drivers/power/power_supply_core.o] Error 1
 
-> > Add try_to_freeze() calls to the remaining kernel threads that do not call
-> > try_to_freeze() already, although they set PF_NOFREEZE.
-> > 
-> > In the future we are going to replace PF_NOFREEZE with a set of flags that
-> > will be set to indicate in which situations the task should not be frozen (for
-> > example, there can be a task that should be frozen for the CPU hotplugging and
-> > should not be frozen for the system suspend).  For this reason every kernel
-> > thread should be able to freeze itself (ie.  call try_to_freeze()), so that it
-> > can be frozen whenever necessary.
-> 
-> A few questions:
-> 
-> Does try_to_freeze()'s kerneldoc document that try_to_freeze() is a
-> no-op sometimes but should nevertheless be called for this and that
-> reason?  (I don't know the entire patch series.)
-> 
-> Why add no-op-try_to_freeze() everywhere now, instead of adding it later
-> when it will actually be needed?  (I.e. "in the future".)
+Oh oh.. yet another refactors in -mm. It compiles clean on bare
+2.6.21, though. But power_supply.h is indeed wrong, it assumed that
+workqueue.h included by other headers, it is not. I hope following patch
+will fix it.
 
-It is needed later in the patch series... for kprobes, etc.
 
-> Can we please have a future where no device driver has to care if and
-> when and how to freeze its threads?
-
-No. Freezing is useful for kprobes/cpu hotplug as well as suspend.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
+index 14e617b..2f47df7 100644
+--- a/include/linux/power_supply.h
++++ b/include/linux/power_supply.h
+@@ -14,6 +14,7 @@
+ #define __LINUX_POWER_SUPPLY_H__
+ 
+ #include <linux/device.h>
++#include <linux/workqueue.h>
+ #include <linux/leds.h>
+ 
+ /*
