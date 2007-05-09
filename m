@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbXEIJ4p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbXEIJ5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754916AbXEIJ4p (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 05:56:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756788AbXEIJxp
+	id S1757402AbXEIJ5G (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 05:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757006AbXEIJyr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 05:53:45 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:18740 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756783AbXEIJxn (ORCPT
+	Wed, 9 May 2007 05:54:47 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57449 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756836AbXEIJyp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 05:53:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=SiUW5k2o4xwVr/L4He1VUlSp8t76AwHAq4y6SWcGDCLQtg9zyYeUhRkdT0wk/JrmHCOHsemEycjXhuytP3AwO3zbMmlGG4Lmt73C3V4YcAjtq6pDer5kgZTdZbJhyzmPVynR7YkX8rt7Tv4SgGyV2mUn4zp/EnQZuUAELpp/wVM=
-Message-ID: <5486cca80705090253h7860267mfb5a3a52aeba36f1@mail.gmail.com>
-Date: Wed, 9 May 2007 11:53:42 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Oliver Neukum" <oliver@neukum.org>
-Subject: Re: [SOLVED] Serial buffer corruption [was Re: FTDI usb-serial possible bug]
-Cc: "Paul Fulghum" <paulkf@microgate.com>,
-       "Alan Cox" <alan@lxorguk.ukuu.org.uk>,
-       linux-usb-users@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <5486cca80705060006y38da02e1yddb0059a9b717b3a@mail.gmail.com>
+	Wed, 9 May 2007 05:54:45 -0400
+Date: Wed, 9 May 2007 02:55:32 -0700
+From: Greg KH <greg@kroah.com>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, cornelia.huck@de.ibm.com, bunk@stusta.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
+	(PCI_MULTITHREAD_PROBE)
+Message-ID: <20070509095532.GB13053@kroah.com>
+References: <20070508212117.0be9dfe5@gondolin.boeblingen.de.ibm.com> <alpine.LFD.0.98.0705081227230.3882@woody.linux-foundation.org> <alpine.LFD.0.98.0705081249540.3882@woody.linux-foundation.org> <20070508.144154.31643026.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <5486cca80705040138r6ac16e9bp77e4f6217720ea8@mail.gmail.com>
-	 <1178384675.3379.26.camel@x2>
-	 <5486cca80705051108p55b2cddfydce54aa15dd317f4@mail.gmail.com>
-	 <200705052035.58782.oliver@neukum.org>
-	 <5486cca80705060006y38da02e1yddb0059a9b717b3a@mail.gmail.com>
+In-Reply-To: <20070508.144154.31643026.davem@davemloft.net>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/6, Antonino Ingargiola <tritemio@gmail.com>:
-> 2007/5/5, Oliver Neukum <oliver@neukum.org>:
-> > Am Samstag, 5. Mai 2007 20:08 schrieb Antonino Ingargiola:
-> > > Now I don't want to abuse your kindness, but I (personally) would be
-> > > *really* interested in a similar fix for the FTDI usb-serial driver,
-> > > because many measurements I do use an FTDI device.
-> >
-> > Does this work?
-> >
->
-> Thanks for the patch! Alas, I will have access to an FTDI device only
-> on Tuesday, then I'll test it and report results.
+On Tue, May 08, 2007 at 02:41:54PM -0700, David Miller wrote:
+> From: Linus Torvalds <torvalds@linux-foundation.org>
+> Date: Tue, 8 May 2007 13:01:21 -0700 (PDT)
+> 
+> > In fact, there is nothing wrong with having *both* a synchronous part, and 
+> > an async part:
+> > 
+> > 	.probe = mydriver_setup,
+> > 	.probe_async = mydriver_spin_up_and_probe_devices,
+>  ...
+> > Hmm? Would something like this work? I dunno, but it seems a hell of a lot 
+> > safer and more capable than the aborted PCI multithreaded probing that was 
+> > an "all or nothing" approach.
+> 
+> I definitely agree that we need a transitonary approach to this.
+> 
+> Although I kind of preferred the idea you mentioned where the
+> device could launch the asynchronous probe and just return from
+> the normal ->probe() immediately.
 
-Sorry. I've not been able to try this ftdi patch yet. My work pc has
-ubuntu dapper with 2.6.15 kernel. I've compiled 2.6.21 there but the
-leap is too much and there are probably udev incompatibilities so the
-/dev entry is not created for any USB device.
+Yes, let this be a decision the individual PCI driver does, I don't want
+to put this two-stage thing in the driver core, but any individual bus
+can implement it if they really want to.
 
-I need to install a newer distro to work with mainline.
+> This might get tricky if the callers do some kind of reference
+> counting or other resource management based upon the ->probe()
+> return value since it wouldn't know what happened to the
+> launched asynchronous probe when it returns from ->probe().
 
-This mail is just to point out that the patch is not forgotten, just
-need more time to try it.
+As long as the ->probe() call returns that the driver has clamed the
+device, and the ->remove() call can be handled properly while the driver
+is off doing whatever it wants to in the initialization, the driver core
+should work just fine, no changes needed.
 
+thanks,
 
-Regards,
-
-  ~ Antonio
+greg k-h
