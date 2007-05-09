@@ -1,56 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S968973AbXEIGwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S968719AbXEIHBR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S968973AbXEIGwQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 02:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752274AbXEIGwD
+	id S968719AbXEIHBR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 03:01:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXEIHBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 02:52:03 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:58228 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751709AbXEIGwB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 02:52:01 -0400
-Date: Wed, 9 May 2007 08:49:23 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Heinz Mauelshagen <hjm@redhat.com>
-Subject: Re: [2.6.22 PATCH 22/26] dm: bio list helpers
-Message-ID: <20070509064923.GO4163@kernel.dk>
-References: <20070508194845.GC24114@agk.fab.redhat.com> <20070508174159.7d78a275.akpm@linux-foundation.org>
+	Wed, 9 May 2007 03:01:06 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:30012 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751739AbXEIHBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 03:01:04 -0400
+Message-ID: <46417137.5080501@sw.ru>
+Date: Wed, 09 May 2007 10:59:03 +0400
+From: Vasily Averin <vvs@sw.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070508174159.7d78a275.akpm@linux-foundation.org>
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAA==
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+To: Eric Dumazet <dada1@cosmosbay.com>, Patrick McHardy <kaber@trash.net>,
+       "David S. Miller" <davem@davemloft.net>,
+       netfilter-devel@lists.netfilter.org
+CC: rusty@rustcorp.com.au,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org
+Subject: [NETFILTER] early_drop() imrovement (v3)
+References: <4615FE1D.80206@sw.ru> <20070406102433.d3a670a5.dada1@cosmosbay.com> <4616203A.80203@sw.ru> <4616626C.9020100@trash.net> <4617845F.7080203@sw.ru> <461789CF.8000106@cosmosbay.com> <46187770.1070106@sw.ru>
+In-Reply-To: <46187770.1070106@sw.ru>
+X-Enigmail-Version: 0.94.2.0
+Content-Type: text/plain; charset=KOI8-R
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08 2007, Andrew Morton wrote:
-> >  static inline void bio_list_init(struct bio_list *bl)
-> >  {
-> >  	bl->head = bl->tail = NULL;
-> >  }
-> >  
-> > +#define bio_list_for_each(bio, bl) \
-> > +	for (bio = (bl)->head; bio && ({ prefetch(bio->bi_next); 1; }); \
-> > +	     bio = bio->bi_next)
-> > +
-> 
-> I have this vague memory from a long time ago that one particular CPU type
-> wants to go oops when prefetching from an invalid address.
-> 
-> Maybe that went away for some reason - we'd have hit it again if it was
-> real.
+When the number of conntracks is reached nf_conntrack_max limit, early_drop()
+tries to free one of already used conntracks. If it does not find any conntracks
+that may be freed, it leads to transmission errors.
+In current implementation the conntracks are searched in one hash bucket only.
+It have some drawbacks: if used hash bucket is empty we have not any chances to
+find something. On the other hand the hash bucket can contain a huge number of
+conntracks and its check can last a long time.
+The proposed patch limits the number of checked conntracks by default number of
+conntracks in one hash bucket (NF_CT_PER_BUCKET) and allows to search conntracks
+in other hash buckets. As result in any case the search will have the same
+chances to free one of the conntracks and the check will not lead to long delays.
 
-Besides, manual prefetching is very rarely a win. I dabbled with some
-benchmarks a few weeks back (with the doubly linked lists), and in most
-cases it was actually a loss. So I'd vote for just removing the
-prefetch() above.
+Signed-off-by:	Vasily Averin <vvs@sw.ru>
 
--- 
-Jens Axboe
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index e132c8a..d984bce 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -76,6 +76,8 @@ static unsigned int nf_conntrack_next_id;
+ DEFINE_PER_CPU(struct ip_conntrack_stat, nf_conntrack_stat);
+ EXPORT_PER_CPU_SYMBOL(nf_conntrack_stat);
+
++#define NF_CT_PER_BUCKET	8U
++
+ /*
+  * This scheme offers various size of "struct nf_conn" dependent on
+  * features(helper, nat, ...)
+@@ -525,7 +527,7 @@ EXPORT_SYMBOL_GPL(nf_conntrack_tuple_taken);
+
+ /* There's a small race here where we may free a just-assured
+    connection.  Too bad: we're in trouble anyway. */
+-static int early_drop(struct list_head *chain)
++static int __early_drop(struct list_head *chain, unsigned int *cnt)
+ {
+ 	/* Traverse backwards: gives us oldest, which is roughly LRU */
+ 	struct nf_conntrack_tuple_hash *h;
+@@ -540,6 +542,8 @@ static int early_drop(struct list_head *chain)
+ 			atomic_inc(&ct->ct_general.use);
+ 			break;
+ 		}
++		if (!--(*cnt))
++			break;
+ 	}
+ 	read_unlock_bh(&nf_conntrack_lock);
+
+@@ -555,6 +559,21 @@ static int early_drop(struct list_head *chain)
+ 	return dropped;
+ }
+
++static int early_drop(const struct nf_conntrack_tuple *orig)
++{
++	unsigned int i, hash, cnt;
++	int ret = 0;
++
++	hash = hash_conntrack(orig);
++	cnt = NF_CT_PER_BUCKET;
++
++	for (i = 0;
++		!ret && cnt && i < nf_conntrack_htable_size;
++			++i, hash = ++hash % nf_conntrack_htable_size)
++		ret = __early_drop(&nf_conntrack_hash[hash], &cnt);
++	return ret;
++}
++
+ static struct nf_conn *
+ __nf_conntrack_alloc(const struct nf_conntrack_tuple *orig,
+ 		     const struct nf_conntrack_tuple *repl,
+@@ -574,9 +593,7 @@ __nf_conntrack_alloc(const struct nf_conntrack_tuple *orig,
+
+ 	if (nf_conntrack_max
+ 	    && atomic_read(&nf_conntrack_count) > nf_conntrack_max) {
+-		unsigned int hash = hash_conntrack(orig);
+-		/* Try dropping from this hash chain. */
+-		if (!early_drop(&nf_conntrack_hash[hash])) {
++		if (!early_drop(orig)) {
+ 			atomic_dec(&nf_conntrack_count);
+ 			if (net_ratelimit())
+ 				printk(KERN_WARNING
+@@ -1226,7 +1243,7 @@ int __init nf_conntrack_init(void)
+ 		if (nf_conntrack_htable_size < 16)
+ 			nf_conntrack_htable_size = 16;
+ 	}
+-	nf_conntrack_max = 8 * nf_conntrack_htable_size;
++	nf_conntrack_max = NF_CT_PER_BUCKET * nf_conntrack_htable_size;
+
+ 	printk("nf_conntrack version %s (%u buckets, %d max)\n",
+ 	       NF_CONNTRACK_VERSION, nf_conntrack_htable_size,
+
 
