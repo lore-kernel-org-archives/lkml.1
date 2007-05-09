@@ -1,128 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbXEIMOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbXEIMRZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbXEIMOp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 08:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755684AbXEIMOf
+	id S1757065AbXEIMRZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 08:17:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbXEIMRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 08:14:35 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:35842 "EHLO tim.rpsys.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753024AbXEIMOe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 08:14:34 -0400
-Subject: Re: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
-From: Richard Purdie <rpurdie@rpsys.net>
-To: kogiidena@eggplant.ddo.jp
-Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
-In-Reply-To: <1638.192.168.1.10.1178710979.squirrel@eggplant.ddo.jp>
-References: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp>
-	 <1178628407.6061.24.camel@localhost.localdomain>
-	 <1638.192.168.1.10.1178710979.squirrel@eggplant.ddo.jp>
-Content-Type: text/plain
-Date: Wed, 09 May 2007 13:14:21 +0100
-Message-Id: <1178712861.6291.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 08:17:18 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:48288 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752992AbXEIMRR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 08:17:17 -0400
+Date: Wed, 9 May 2007 17:46:41 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Pavel Machek <pavel@ucw.cz>, akpm@linux-foundation.org,
+       torvalds@linux-foundation.org, rjw@sisk.pl,
+       James.Bottomley@SteelEye.com, aneesh.kumar@gmail.com, drzeus@drzeus.cx,
+       dwmw2@infradead.org, greg@kroah.com, mingo@elte.hu, neilb@suse.de,
+       oleg@tv-sign.ru, paulmck@linux.vnet.ibm.com, vatsa@in.ibm.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 128/197] freezer: add try_to_freeze calls to all kernel threads
+Message-ID: <20070509121641.GA27109@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <200705090934.l499YTvX019783@shell0.pdx.osdl.net> <4641A5F1.5080901@s5r6.in-berlin.de> <20070509104949.GA8164@elf.ucw.cz> <4641B92D.1030909@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4641B92D.1030909@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 20:42 +0900, kogiidena wrote:
-> >As far as I can tell, the existing timer trigger can do everything the
-> >blink trigger can (and more besides).
-> I want to blink LED in the initial state.
+Hi Stefan, 
+On Wed, May 09, 2007 at 02:06:05PM +0200, Stefan Richter wrote:
+> Pavel Machek wrote:
+> >> > Add try_to_freeze() calls to the remaining kernel threads that do not call
+> >> > try_to_freeze() already, although they set PF_NOFREEZE.
+> >> > 
+> >> > In the future we are going to replace PF_NOFREEZE with a set of flags that
+> >> > will be set to indicate in which situations the task should not be frozen (for
+> >> > example, there can be a task that should be frozen for the CPU hotplugging and
+> >> > should not be frozen for the system suspend).
+> [...]
+> >> Why add no-op-try_to_freeze() everywhere now, instead of adding it later
+> >> when it will actually be needed?  (I.e. "in the future".)
+> > 
+> > It is needed later in the patch series... for kprobes, etc.
+> 
+> So does freezer_exempt() still do what its name says, or does it
+> freezer_exempt_but_not_always() now?
 
-Are you after to set that per LED or would some standard configurable
-default for all LEDs work? 
+freezer_exempt() as of now does what its name says. I.e, exempt the
+thread from all kinds of freeze chills.
 
-> Because that of "the existing timer trigger" was impossible, I made "BLINK".
-> 
-> I thought about another solution.
-> Can the change that sets an initial value to delay_on and delay_off be added?
+But with more subsystems using the process freezer, the exemption needs
+to be event specific. There may be threads which should not be frozen 
+for say kprobes, should be frozen for cpu-hotplug. This selective
+freezing is not yet available. But it will be soon...
 
-That would be the preferred solution.
+> -- 
+> Stefan Richter
+> -=====-=-=== -=-= -=--=
+> http://arcgraph.de/sr/
 
-> The matter of "Bitshift" is reserved until this case is solved.
-> 
-> kogiidena
-> ---
-> diff -urpN OLD/include/linux/leds.h NEW/include/linux/leds.h
-> --- OLD/include/linux/leds.h	2007-05-07 12:12:15.000000000 +0900
-> +++ NEW/include/linux/leds.h	2007-05-09 19:17:01.000000000 +0900
-> @@ -14,6 +14,7 @@
-> 
->  #include <linux/list.h>
->  #include <linux/spinlock.h>
-> +#include <linux/timer.h>
-> 
->  struct device;
->  struct class_device;
-> @@ -41,6 +42,7 @@ struct led_classdev {
->  	struct class_device	*class_dev;
->  	struct list_head	 node;			/* LED Device list */
->  	char			*default_trigger;	/* Trigger to use */
-> +	void			*default_trigger_data;	/* Trigger to use */
-> 
->  #ifdef CONFIG_LEDS_TRIGGERS
->  	/* Protects the trigger data below */
-> @@ -110,6 +112,14 @@ extern void ledtrig_ide_activity(void);
->  #define ledtrig_ide_activity() do {} while(0)
->  #endif
-> 
-> +#ifdef CONFIG_LEDS_TRIGGER_TIMER
-> +struct timer_trig_data {
-> +	unsigned long delay_on;		/* milliseconds on */
-> +	unsigned long delay_off;	/* milliseconds off */
-> +	struct timer_list timer;
-> +};
-> +#endif
-> +
->  /* For the leds-gpio driver */
->  struct gpio_led {
->  	const char *name;
-> diff -urpN OLD/drivers/leds/ledtrig-timer.c NEW/drivers/leds/ledtrig-timer.c
-> --- OLD/drivers/leds/ledtrig-timer.c	2007-04-28 06:49:26.000000000 +0900
-> +++ NEW/drivers/leds/ledtrig-timer.c	2007-05-09 19:12:35.000000000 +0900
-> @@ -24,12 +24,6 @@
->  #include <linux/leds.h>
->  #include "leds.h"
-> 
-> -struct timer_trig_data {
-> -	unsigned long delay_on;		/* milliseconds on */
-> -	unsigned long delay_off;	/* milliseconds off */
-> -	struct timer_list timer;
-> -};
-> -
->  static void led_timer_function(unsigned long data)
->  {
->  	struct led_classdev *led_cdev = (struct led_classdev *) data;
-> @@ -124,6 +118,7 @@ static CLASS_DEVICE_ATTR(delay_off, 0644
->  static void timer_trig_activate(struct led_classdev *led_cdev)
->  {
->  	struct timer_trig_data *timer_data;
-> +	struct timer_trig_data *def_trig_data = led_cdev->default_trigger_data;
->  	int rc;
-> 
->  	timer_data = kzalloc(sizeof(struct timer_trig_data), GFP_KERNEL);
-> @@ -143,6 +138,11 @@ static void timer_trig_activate(struct l
->  				&class_device_attr_delay_off);
->  	if (rc) goto err_out_delayon;
-> 
-> +	if (def_trig_data){
-> +		timer_data->delay_on  = def_trig_data->delay_on;
-> +		timer_data->delay_off = def_trig_data->delay_off;
-> +		mod_timer(&timer_data->timer, jiffies + 1);
-> +	}
->  	return;
-> 
->  err_out_delayon:
-
-The approach is probably a good idea but you'll have to split struct
-timer_list timer from the data structure.
-
-Also, if default_trigger wasn't the timer trigger you have a nice oops
-waiting to happen.
-
-Regards,
-
-Richard
-
+Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
