@@ -1,52 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S935299AbXEIEmU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S969095AbXEIEm5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S935299AbXEIEmU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 00:42:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S935191AbXEIEmG
+	id S969095AbXEIEm5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 00:42:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S967601AbXEIEmr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 00:42:06 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:28033 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S935008AbXEIEmD (ORCPT
+	Wed, 9 May 2007 00:42:47 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:42514 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S966217AbXEIEmq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 00:42:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=TErtHRCUhoHjh4UzO31fg8scTY+b2OTPz7Srjd8vhFq/rU9N4TEq4DfxNdAQP6Gj15A0XaOCqZZ3y7J/KdXdyhUQJBJN+dfskzXJ6XST4lXOI1xZ1qWydK0sQB85qJSh3ug8rOvAADyIIunKVEyY7T5Earpk/YtKB+/fe4J1xgA=
-Message-ID: <86802c440705082142u7ee2b402q9ae09edbed32766a@mail.gmail.com>
-Date: Tue, 8 May 2007 21:42:02 -0700
-From: yhlu <yhlu.kernel@gmail.com>
-To: vgoyal@in.ibm.com
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>,
-       "Gerd Hoffmann" <kraxel@redhat.com>, "Jeff Garzik" <jeff@garzik.org>,
-       patches@x86-64.org, linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>
-In-Reply-To: <20070509033348.GA12361@in.ibm.com>
+	Wed, 9 May 2007 00:42:46 -0400
+Date: Wed, 9 May 2007 06:42:47 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: linux-kernel@vger.kernel.org
+Subject: Linux 2.6.16.51
+Message-ID: <20070509044247.GK4226@stusta.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <4638FC39.4010101@goop.org> <46390523.5010809@goop.org>
-	 <463909AF.9040205@zytor.com> <20070503045031.GA5794@in.ibm.com>
-	 <m1tzuuv24z.fsf@ebiederm.dsl.xmission.com>
-	 <86802c440705080941y69ddd5d6lab170c5f3967f148@mail.gmail.com>
-	 <m1sla7i68s.fsf@ebiederm.dsl.xmission.com>
-	 <86802c440705081033s19365843i5b955ae175de73eb@mail.gmail.com>
-	 <86802c440705081151r6bfd82e4o50c6a34b2b2a833f@mail.gmail.com>
-	 <20070509033348.GA12361@in.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/8/07, Vivek Goyal <vgoyal@in.ibm.com> wrote:
-> On Tue, May 08, 2007 at 11:51:35AM -0700, yhlu wrote:
-> This message generally appears if you did not specify --args-linux
-> on kexec command line while loading vmlinux.
->
-besides elf-x86_64, still need --args-linux to pass sth? but how to
-let it load ramdisk?
+Location:
+ftp://ftp.kernel.org/pub/linux/kernel/v2.6/
 
-YH
+git tree:
+git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.16.y.git
+
+RSS feed of the git tree:
+http://www.kernel.org/git/?p=linux/kernel/git/stable/linux-2.6.16.y.git;a=rss
+
+
+Changes since 2.6.16.50:
+
+Adrian Bunk (3):
+      x86_64: ACPI_CPU_FREQ must select CPU_FREQ_TABLE
+      Linux 2.6.16.51-rc1
+      Linux 2.6.16.51
+
+Andrew Hendry (1):
+      [X.25]: Add missing sock_put in x25_receive_data
+
+Hugh Dickins (4):
+      holepunch: fix shmem_truncate_range punching too far
+      holepunch: fix shmem_truncate_range punch locking
+      holepunch: fix disconnected pages after second truncate
+      holepunch: fix mmap_sem i_mutex deadlock
+
+Jaroslav Kysela (1):
+      [NETFILTER]: ipt_CLUSTERIP: fix oops in checkentry function
+
+Jean Delvare (1):
+      hwmon/w83627ehf: Don't redefine REGION_OFFSET
+
+Jorge Boncompte (1):
+      [NETFILTER]: ip_nat_proto_gre: do not modify/corrupt GREv0 packets through NAT
+
+
+ Makefile                                              |    2 
+ arch/x86_64/kernel/cpufreq/Kconfig                    |    1 
+ drivers/hwmon/w83627ehf.c                             |   14 -
+ include/linux/netfilter_ipv4/ip_conntrack_proto_gre.h |   19 -
+ mm/madvise.c                                          |   19 +
+ mm/shmem.c                                            |  132 +++++++---
+ net/ipv4/netfilter/ip_nat_proto_gre.c                 |   21 -
+ net/ipv4/netfilter/ipt_CLUSTERIP.c                    |    2 
+ net/x25/x25_dev.c                                     |    1 
+ 9 files changed, 132 insertions(+), 79 deletions(-)
+
