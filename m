@@ -1,102 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759340AbXEIWbY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbXEIWfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759340AbXEIWbY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 18:31:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754927AbXEIWbQ
+	id S1759230AbXEIWfr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 18:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbXEIWfi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 18:31:16 -0400
-Received: from wr-out-0506.google.com ([64.233.184.234]:3534 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754684AbXEIWbO (ORCPT
+	Wed, 9 May 2007 18:35:38 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:44656 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbXEIWfg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 18:31:14 -0400
+	Wed, 9 May 2007 18:35:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BSGIPrOqxAAivezslIpek1tjDYNpdzwxvyQfvjNKBNPDR9HadEHoILyIwWn6O+dgrpSaftNfT3uq5c34nJAUwjrzQVtp5tp2GbAOv2GZxXck4JM74VKLHXGPkpRA7nOplhSqH99Xw9yELsn9K/IP8h44FM+5h5SsemeDz60xIxU=
-Message-ID: <a781481a0705091531x6d4174abmf181371e43bfaffe@mail.gmail.com>
-Date: Thu, 10 May 2007 04:01:12 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Jesper Juhl" <jesper.juhl@gmail.com>
-Subject: Re: [PATCH] "volatile considered harmful" document
-Cc: "Jonathan Corbet" <corbet@lwn.net>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, "Randy Dunlap" <randy.dunlap@oracle.com>
-In-Reply-To: <9a8748490705091445y65ec74bcpbb9251d9184f481a@mail.gmail.com>
+        h=received:from:to:subject:date:user-agent:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=YpPSqpKASpQUxHxb/JKYQDNF3zgLCJsuAYfskiq3arBnj3zqGb0VifWHFhg2Qf0oY5WmPW2tW73zB3NfJodPsKmQDkU94Smdrt+qpNyg6dtHVL5Ow9acqrWL9uKnmr74GBPmskc3H16S+j/qh4mAFd8RP14/5qQxhl9bFxnluN0=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [git patches] IDE update
+Date: Thu, 10 May 2007 00:46:05 +0200
+User-Agent: KMail/1.9.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <25493.1178744744@lwn.net>
-	 <9a8748490705091445y65ec74bcpbb9251d9184f481a@mail.gmail.com>
+Message-Id: <200705100046.05280.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/10/07, Jesper Juhl <jesper.juhl@gmail.com> wrote:
-> On 09/05/07, Jonathan Corbet <corbet@lwn.net> wrote:
-> > OK, here's an updated version of the volatile document - as a plain text
-> > file this time.  It drops a new file in Documentation/, but might it be
-> > better as an addition to CodingStyle?
-> >
-> IMHO this is better as a sepperate document rather than an adition to
-> CodingStyle. The use of volatile is not a style issue, it's a
-> correctness issue, so it doesn't belong in the CodingStyle document.
 
-Yes, definitely.
+[ I've sent it to Linus a moment ago, here is a copy for linux-{ide,kernel} ]
 
-> > diff -ruNp linux-2.6/Documentation/volatile.txt volatile/Documentation/volatile.txt
->
-> Might I suggest a different filename: volatile-considered-harmful.txt
 
-Yes, I feel it's important to have a filename that strongly states the
-dim view its contents take on its subject (the "volatile" type
-qualifier in this case). Sort of like stable-api-nonsense.txt vs
-stable-api.txt
+Highlights of this update:
 
-> > --- linux-2.6/Documentation/volatile.txt        1969-12-31 17:00:00.000000000 -0700
-> > +++ volatile/Documentation/volatile.txt 2007-05-09 14:56:40.000000000 -0600
-> > @@ -0,0 +1,127 @@
-> > +Why the "volatile" type class should not be used
-> > +------------------------------------------------
-> > +
-> > +The C Programming Language, Second Edition (copyright 1988, still known as
-> > +"the new C book") has the following to say about the volatile keyword:
-> > +
-> > +       The purpose of volatile is to force an implementation to suppress
-> > +       optimization that could otherwise occur.  For example, for a
-> > +       machine with memory-mapped input/output, a pointer to a device
-> > +       register might be declared as a pointer to volatile, in
-> > +       order to prevent the compiler from removing apparently redundant
-> > +       references through the pointer.
-> > +
-> > +C programmers have often taken volatile to mean that the variable could be
-> > +changed outside of the current thread of execution; as a result, they are
->
-> you write: "... that the variable could be changed outside of the
-> current thread of execution ..."
->
-> I suggest: "... that the variable could be changed outside of the
-> current thread of execution - a sort of simple atomic variable ..."
+* the code for selecting and programming the best DMA transfer mode
+  has been reworked to be cleaner, more generic and more libata-like,
+  (> 500 LOCs gone and this change allows the change described below)
 
-I'm not so sure here. Why would any C programmer (worth his weight in
-salt) think that volatile objects are automatically _atomic_? At
-worst, the mistake someone might make would be to _implement_ locking
-primitives using volatile. "that the variable could be changed outside
-of the current thread of execution" sounds sufficient to me, and after
-all, that is exactly what volatile hints to the compiler.
+* more cable detection fixes, also be more user-friendly [+ developer
+  friendly when it comes to debugging problems :) ] and inform user about
+  limiting DMA speed to UDMA/33 if the 40-wire cable was detected instead
+  of 80-wire one
 
-> > +For most code, none of the above justifications for volatile
-> > +apply.  As a result, the use of volatile is likely to be seen as a
-> > +bug and will bring additional scrutiny to the code.  Developers who are
-> > +tempted to use volatile should take a step back and think about
-> > +what they are truly trying to accomplish.
-> > +
->
-> Suggested addition :
->
-> Patches that remove volatile from current code (provided there's a
-> good explanation of why the volatile can be removed and how the bug it
-> was hiding has been dealt with) are a good thing.
->
-> Friends don't let friends use volatile.
+* make /proc/ide interface optional (but enabled by default) as all
+  important functionality should be now available through sysfs (+ ioctls),
+  while at it do some cleanup/fixes of IDE procfs code
 
-Yes, this addition would be nice :-)
+
+Please pull from:
+
+master.kernel.org:/pub/scm/linux/kernel/git/bart/ide-2.6.git/
+
+to receive the following updates:
+
+ drivers/ide/Kconfig            |   14 ++
+ drivers/ide/Makefile           |    2 +-
+ drivers/ide/arm/bast-ide.c     |    2 +-
+ drivers/ide/arm/icside.c       |    9 +-
+ drivers/ide/arm/ide_arm.c      |    2 +-
+ drivers/ide/arm/rapide.c       |    2 +-
+ drivers/ide/cris/ide-cris.c    |    4 +-
+ drivers/ide/h8300/ide-h8300.c  |    2 +-
+ drivers/ide/ide-cd.c           |   20 +-
+ drivers/ide/ide-disk.c         |  101 +++++++--
+ drivers/ide/ide-dma.c          |   94 ++++++++
+ drivers/ide/ide-floppy.c       |   30 ++--
+ drivers/ide/ide-generic.c      |    2 -
+ drivers/ide/ide-io.c           |   17 +-
+ drivers/ide/ide-iops.c         |   55 +++---
+ drivers/ide/ide-lib.c          |  132 ++---------
+ drivers/ide/ide-pnp.c          |    2 +-
+ drivers/ide/ide-probe.c        |    3 +
+ drivers/ide/ide-proc.c         |  344 +++++++++++++++++++++++++++--
+ drivers/ide/ide-tape.c         |   49 ++--
+ drivers/ide/ide.c              |  470 ++++++++--------------------------------
+ drivers/ide/legacy/ali14xx.c   |    3 +-
+ drivers/ide/legacy/buddha.c    |    2 +-
+ drivers/ide/legacy/dtc2278.c   |    3 +-
+ drivers/ide/legacy/falconide.c |    2 +-
+ drivers/ide/legacy/gayle.c     |    2 +-
+ drivers/ide/legacy/ht6560b.c   |    3 +-
+ drivers/ide/legacy/ide-cs.c    |    2 +-
+ drivers/ide/legacy/macide.c    |    6 +-
+ drivers/ide/legacy/q40ide.c    |    2 +-
+ drivers/ide/legacy/qd65xx.c    |    7 +-
+ drivers/ide/legacy/umc8672.c   |    3 +-
+ drivers/ide/mips/au1xxx-ide.c  |    3 +
+ drivers/ide/mips/swarm.c       |    3 +
+ drivers/ide/pci/aec62xx.c      |   62 ++----
+ drivers/ide/pci/alim15x3.c     |   97 +++------
+ drivers/ide/pci/amd74xx.c      |    6 +-
+ drivers/ide/pci/atiixp.c       |   40 +----
+ drivers/ide/pci/cmd64x.c       |   90 +++------
+ drivers/ide/pci/cs5520.c       |   20 ++-
+ drivers/ide/pci/cs5535.c       |   33 +---
+ drivers/ide/pci/delkin_cb.c    |    2 +-
+ drivers/ide/pci/hpt34x.c       |   27 +--
+ drivers/ide/pci/hpt366.c       |   85 +++-----
+ drivers/ide/pci/it8213.c       |   39 +---
+ drivers/ide/pci/it821x.c       |   20 +--
+ drivers/ide/pci/jmicron.c      |   40 +----
+ drivers/ide/pci/pdc202xx_new.c |   40 +---
+ drivers/ide/pci/pdc202xx_old.c |   54 +----
+ drivers/ide/pci/piix.c         |  163 +++-----------
+ drivers/ide/pci/scc_pata.c     |   21 +--
+ drivers/ide/pci/serverworks.c  |   31 ++-
+ drivers/ide/pci/sgiioc4.c      |    2 +-
+ drivers/ide/pci/siimage.c      |   45 ++--
+ drivers/ide/pci/sis5513.c      |   44 +---
+ drivers/ide/pci/slc90e66.c     |   24 +--
+ drivers/ide/pci/tc86c001.c     |   20 +--
+ drivers/ide/pci/triflex.c      |   15 +-
+ drivers/ide/ppc/pmac.c         |    2 +
+ drivers/ide/setup-pci.c        |   27 ++-
+ drivers/macintosh/mediabay.c   |    2 +-
+ drivers/scsi/ide-scsi.c        |   30 ++-
+ include/linux/ide.h            |   93 +++++----
+ 63 files changed, 1107 insertions(+), 1464 deletions(-)
+
+
+Bartlomiej Zolnierkiewicz (11):
+      ide: fix UDMA/MWDMA/SWDMA masks (v3)
+      ide: rework the code for selecting the best DMA transfer mode (v3)
+      ide: add ide_tune_dma() helper
+      ide: make /proc/ide/ optional
+      ide: split off ioctl handling from IDE settings (v2)
+      ide: move IDE settings handling to ide-proc.c
+      ide: cable detection fixes (take 2)
+      ide: add "initializing" argument to ide_register_hw()
+      ide: add ide_proc_register_port()
+      ide: legacy PCI bus order probing fixes
+      ide: fix PIO setup on resume for ATAPI devices
+
+
+[ sorry but the patch is too big to be included ]
