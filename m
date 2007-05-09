@@ -1,78 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758750AbXEIV2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758938AbXEIVa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758750AbXEIV2k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 17:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbXEIV2e
+	id S1758938AbXEIVa2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 17:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754092AbXEIVaW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 17:28:34 -0400
-Received: from mail.z-net.ru ([89.113.80.10]:1568 "EHLO mail.z-net.ru"
+	Wed, 9 May 2007 17:30:22 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48004 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753077AbXEIV2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 17:28:33 -0400
-Date: Thu, 10 May 2007 01:27:42 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Andreas Mohr <andi@rhlx01.hs-esslingen.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm2: power_supply_core.c build failure
-Message-ID: <20070509212742.GA10967@zarina>
-Reply-To: cbou@mail.ru
-References: <20070509210818.GA7672@rhlx01.hs-esslingen.de>
+	id S1751571AbXEIVaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 17:30:21 -0400
+Message-ID: <46423D62.2070200@garzik.org>
+Date: Wed, 09 May 2007 17:30:10 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20070509210818.GA7672@rhlx01.hs-esslingen.de>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+To: Chuck Lever <chuck.lever@oracle.com>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NeilBrown <neilb@suse.de>, Adrian Bunk <bunk@stusta.de>
+Subject: [bisect] NFS regression breaks X
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 11:08:20PM +0200, Andreas Mohr wrote:
-> Hi,
-> 
->   CC      drivers/power/power_supply_core.o
-> In file included from drivers/power/power_supply_core.c:18:
-> include/linux/power_supply.h:125: error: field 'changed_work' has incomplete type
-> drivers/power/power_supply_core.c: In function 'power_supply_changed_work':
-> drivers/power/power_supply_core.c:25: warning: type defaults to 'int' in declaration of '__mptr'
-> drivers/power/power_supply_core.c:25: warning: initialization from incompatible pointer type
-> drivers/power/power_supply_core.c: In function 'power_supply_changed':
-> drivers/power/power_supply_core.c:57: warning: implicit declaration of function 'schedule_work'
-> drivers/power/power_supply_core.c: In function 'power_supply_register':
-> drivers/power/power_supply_core.c:103: warning: implicit declaration of function 'INIT_WORK'
-> drivers/power/power_supply_core.c: In function 'power_supply_unregister':
-> drivers/power/power_supply_core.c:128: warning: implicit declaration of function 'flush_scheduled_work'
-> make[3]: *** [drivers/power/power_supply_core.o] Error 1
-> make[2]: *** [drivers/power] Error 2
-> make[1]: *** [drivers] Error 2
-> make[1]: Leaving directory `/usr/src/linux-2.6.21-mm2.agp'
-> make: *** [debian/stamp-build-kernel] Error 2
-> 
-> CONFIG_POWER_SUPPLY=y
-> # CONFIG_POWER_SUPPLY_DEBUG is not set
-> # CONFIG_PDA_POWER is not set
-> # CONFIG_BATTERY_DS2760 is not set
-> # CONFIG_BATTERY_OLPC is not set
-> 
-> P3/700 UP, gcc 4.1.3.
-> 
-> Care to add a #include <linux/workqueue.h> or so? ;)
-> (worked for me when adding to include/linux/power_supply.h)
-> 
-> Ugh, such a pain following ever-outdated and always-broken -mm versions ;)
-> 
-> Andreas Mohr
 
-http://lkml.org/lkml/2007/5/9/163
+Original bug report, with hardware and software info:
+http://lkml.org/lkml/2007/5/8/667
 
-Already fixed in battery2-2.6.git. But thanks anyway for reporting. ;-)
+I love bisect :)  bisect has identified the following commit as the one 
+that causes my GNOME login to die, within 10 seconds of logging in:
 
-I really do test builds prior commiting them, but headers changed
-recently, and now including workqueue.h should be explicit. Wondering why
-this worked prior, though. ;-)
+	commit 2bea90d43a050bbc4021d44e59beb34f384438db
+	Author: Chuck Lever <chuck.lever@oracle.com>
+	Date:   Thu Mar 29 16:47:53 2007 -0400
 
-Thanks,
+	SUNRPC: RPC buffer size estimates are too large
 
--- 
-Anton Vorontsov
-email: cbou@mail.ru
-backup email: ya-cbou@yandex.ru
-irc://irc.freenode.org/bd2
+100% reproducible, verified regression.  My home directory is an NFSv4 
+mount, and the problem appears on my client workstation, so this makes 
+some sense:
+> sunrpc on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw)
+> pretzel:/ on /g type nfs4 (rw,noatime,proto=tcp,addr=10.10.10.1)
+
+
+
+As an aside, let me express the hope that the NFS developers develop 
+better patch creation methods.  My bisect compile repeatedly died at
+
+>   CHK     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   CHK     include/linux/compile.h
+> fs/nfs/pagelist.c:239: error: conflicting types for ‘nfs_pageio_init’
+> include/linux/nfs_page.h:80: error: previous declaration of ‘nfs_pageio_init’ was here
+> make[2]: *** [fs/nfs/pagelist.o] Error 1
+> make[1]: *** [fs/nfs] Error 2
+> make: *** [fs] Error 2
+
+which indicates that someone on the NFS team did not create 
+wholly-contained patches when submitted to the kernel.  Build breakage 
+should not be fixed in a later commit (unless the breakage already went 
+upstream), because -- as we see here -- it breaks bisection.
+
+	Jeff, occasionally guilty of same, and trying to reform
+
+
