@@ -1,110 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760106AbXEJADS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbXEJAEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760106AbXEJADS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 20:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXEJADI
+	id S1760034AbXEJAEi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 20:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754973AbXEJAEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 20:03:08 -0400
-Received: from mga02.intel.com ([134.134.136.20]:57399 "EHLO mga02.intel.com"
+	Wed, 9 May 2007 20:04:30 -0400
+Received: from gw.goop.org ([64.81.55.164]:44127 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752338AbXEJADF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 20:03:05 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.14,512,1170662400"; 
-   d="scan'208";a="241433740"
-Date: Wed, 9 May 2007 17:00:06 -0700
-From: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Scott Murray <scottm@somanetworks.com>,
-       Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] cpci_hotplug: Convert to use the kthread API
-Message-Id: <20070509170006.05c5b231.kristen.c.accardi@intel.com>
-In-Reply-To: <20070509162430.772ae536.akpm@linux-foundation.org>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769657702107-git-send-email-ebiederm@xmission.com>
-	<20070422120534.GA20763@infradead.org>
-	<Pine.LNX.4.64.0704271802390.3671@rancor.yyz.somanetworks.com>
-	<20070504111215.GA3191@infradead.org>
-	<Pine.LNX.4.64.0705071412030.3671@rancor.yyz.somanetworks.com>
-	<20070509162430.772ae536.akpm@linux-foundation.org>
-X-Mailer: Sylpheed version 2.2.10 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1755751AbXEJAEa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 20:04:30 -0400
+Message-ID: <46426194.3040403@goop.org>
+Date: Wed, 09 May 2007 17:04:36 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: David Chinner <dgc@sgi.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
+Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an
+ nlink problem?
+References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com>
+In-Reply-To: <20070510000119.GO85884050@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 May 2007 16:24:30 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+David Chinner wrote:
+> Seems very unlikely. Have you unmounted and mounted the filesystem
+> (or rebooted or suspended) between the files being seen good and
+> the files being seen bad?
+>   
 
-> On Mon, 7 May 2007 14:18:29 -0400 (EDT)
-> Scott Murray <scottm@somanetworks.com> wrote:
-> 
-> > On Fri, 4 May 2007, Christoph Hellwig wrote:
-> > 
-> > > On Fri, Apr 27, 2007 at 06:07:49PM -0400, Scott Murray wrote:
-> > > > Sorry, it took me a few days to get to testing this out.  It looks good,    
-> > > > but I had to make a couple of tweaks to avoid a hang when rmmod'ing a
-> > > > board driver.  The board drivers do:
-> > > > 
-> > > > cpci_hp_stop()
-> > > > cpci_hp_unregister_controller(controller)
-> > > > 
-> > > > to shutdown, and the check in cpci_hp_unregister_controller if the thread
-> > > > is running wasn't working due to a bit too much code being excised.  The
-> > > > result was kthread_stop being called twice, which hangs.  I've indicated 
-> > > > my changes to avoid this inline below.
-> > > 
-> > > Can you forward the patches with your fix to Andrew to make sure he
-> > > picks it up?
-> > 
-> > Andrew, here is my updated version of Christoph's kthread conversion 
-> > patch for cpci_hotplug.  I've CC'ed Kristen so she won't be surprised
-> > when this eventually goes to mainline.
-> 
-> A patch in this area would normally go
-> 
-> 	you->kristen->mainline
->                 |
->                 v
->                -mm
-> 
-> or
-> 
-> 	you->kristen->greg->mainline
->                         |
->                         v
->                        -mm
-> 
-> or
-> 
-> 	you->me->greg->mainline		(gets an Acked-by somewhere)
->                    |
->                    v
->                   -mm
-> 
-> or
-> 
-> 	you->kristen->Len->mainline
->                        |
->                        v
->                       -mm
-> 
-> or something else.
-> 
-> Kristen, how do you want to play this?
-> 
-> Do you run a tree?  If so, lemmeatit ;)
-> 
+There was definitely a suspend-resume, and maybe a reboot.  I'll try
+again later on.
 
-So, we (Greg and I) have talked about this before - I do have a tree,
-but I normally send things to Greg rather than directly to you.  I should
-probably change that (why add levels of indirection...), but for the
-immediate purpose of getting this patch tested etc just go ahead and take
-it in and when I get my act together I will put it in my tree.
-
-Thanks,
-Kristen
+    J
