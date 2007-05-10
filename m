@@ -1,72 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbXEJB0c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754864AbXEJBam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754927AbXEJB0c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 21:26:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbXEJB0Y
+	id S1754864AbXEJBam (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 21:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbXEJBaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 21:26:24 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37945 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751672AbXEJB0X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 21:26:23 -0400
-Date: Thu, 10 May 2007 11:26:09 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: David Chinner <dgc@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
-Message-ID: <20070510012609.GU85884050@sgi.com>
-References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <20070510004918.GS85884050@sgi.com> <46426D31.8070000@goop.org>
+	Wed, 9 May 2007 21:30:35 -0400
+Received: from ozlabs.org ([203.10.76.45]:57356 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1749667AbXEJBae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 21:30:34 -0400
+Subject: Re: lguest re-review
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <20070509175018.a4a685b8.akpm@linux-foundation.org>
+References: <20070509025122.f3cb7247.akpm@linux-foundation.org>
+	 <1178756648.7286.182.camel@localhost.localdomain>
+	 <20070509175018.a4a685b8.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 11:30:32 +1000
+Message-Id: <1178760632.7286.187.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46426D31.8070000@goop.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 05:54:09PM -0700, Jeremy Fitzhardinge wrote:
-> David Chinner wrote:
-> > Suspend-resume, eh?
-> >
-> > There's an immediate suspect. Can you test this specifically for us?
-> > i.e. download a known good file set, do some stuff, suspend, resume,
-> > then check the files? If it doesn't show up the first time, can
-> > you do it a few times just to rule it out?
+On Wed, 2007-05-09 at 17:50 -0700, Andrew Morton wrote:
+> On Thu, 10 May 2007 10:24:08 +1000
+> Rusty Russell <rusty@rustcorp.com.au> wrote:
 > 
-> Well, I've been doing suspend-resume with xfs for a while without
-> problems; the problems seem to be recent and easily repeatable.  Which
-> just means that it could be a new suspend-resume problem, of course.
-
-Ok. I'm just trying to find a relatively simple test case for the
-problem - seeing as you seem to be able to reliably reproduce this
-we should be able to work out the trigger...
-
-> > If suspend/resume does cause the problem, can you try again but this
-> > time please run 'xfs_freeze -f <mtpt>' on the filesystem before
-> > suspend, and then 'xfs_freeze -u <mtpt>' after the resume and see if
-> > the problem still occurs?
+> > On Wed, 2007-05-09 at 02:51 -0700, Andrew Morton wrote:
+> > > Some concern was expressed over the lguest review status, so I shall send
+> > > the patches out again for people to review, to test, to make observations
+> > > about the author's personal appearance, etc.
+> > 
+> > Thanks Andrew,
+> > 
+> > 	This means I can finally ack this patch (thanks Eric):
+> > 
+> > From: ebiederm@xmission.com (Eric W. Biederman)
+> > Subject: [PATCH] Revert "[PATCH] paravirt: Add startup infrastructure for paravirtualization"
+> > 
+> > This reverts commit c9ccf30d77f04064fe5436027ab9d2230c7cdd94.
 > 
-> OK, but I tend to find that xfs_freeze ends up locking up large parts of
-> the system...  (For example, I tried to do the xfs_freeze + lvm snapshot
-> thing, but the lvm snapshot just blocked on the frozen filesystem until
-> I unfroze it).
+> I don't get it.  Does lguest no longer need this code, or will
+> it be reintroduced with an lguest merge, or something else?
 
-Yes, because LVM snapshot freezes the filesystem for you - if you've
-already frozen the filesystem the snapshot will block until you unfreeze
-it and then it will freeze it itself to take the snapshot.
+Lguest no longer needs it (the magic signature patch you took).
 
-> But I'll try it out.  Hm, is there some script I can
-> stick it into?
+HPA and Eric are brewing a new, shinier way for booting not-a-normal-pc
+which will address lguest as well as others.  But it seems they first
+need to go through the "who knows most about ancient PCs" slapfight.
 
-No idea.....
+Thanks!
+Rusty.
 
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
