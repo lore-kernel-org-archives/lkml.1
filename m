@@ -1,52 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758553AbXEJPpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbXEJPvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758553AbXEJPpr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 11:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754615AbXEJPpl
+	id S1758868AbXEJPvQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 11:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbXEJPvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 11:45:41 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:19251 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753043AbXEJPpk (ORCPT
+	Thu, 10 May 2007 11:51:03 -0400
+Received: from wx-out-0506.google.com ([66.249.82.239]:38489 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752989AbXEJPvC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 11:45:40 -0400
-Date: Thu, 10 May 2007 08:48:02 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andy Whitcroft <apw@shadowen.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       paulus@samba.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm2 -- powerpc missing kset
-Message-Id: <20070510084802.04476f66.randy.dunlap@oracle.com>
-In-Reply-To: <20070510221631.5eb38bdd.sfr@canb.auug.org.au>
-References: <20070509012322.199f292b.akpm@linux-foundation.org>
-	<4643068C.8010302@shadowen.org>
-	<20070510221631.5eb38bdd.sfr@canb.auug.org.au>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 May 2007 11:51:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=uXhCkplL7R4Abkf46/VCv+P1TvJYmEZhWhxYhsgBNXTw6ZcEgwMEk3hayF6MBUkB5VsfoeciqHXbZXIT503XCqA8uDSPBaMdyjh2u6QSl0X7HqEzT90HMF7xLYm860ffrvO/1tHtdLN+5AIarKi6c05o6r/OYZg69fXDL6SMraw=
+Message-ID: <b6fcc0a0705100851q70381238t55542f60fbbdbb8e@mail.gmail.com>
+Date: Thu, 10 May 2007 18:51:01 +0300
+From: "Alexey Dobriyan" <adobriyan@gmail.com>
+To: "Florin Iucha" <florin@iucha.net>
+Subject: Re: Current git fails to compile on AMD64 for three days in a row
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>, "Andi Kleen" <ak@suse.de>,
+       "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <20070510151642.GH26751@iucha.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Content-Disposition: inline
+References: <20070510151642.GH26751@iucha.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 22:16:31 +1000 Stephen Rothwell wrote:
+On 5/10/07, Florin Iucha <florin@iucha.net> wrote:
+> I just pulled the current git (de5603748af8bf7deac403e6ba92887f8d18e812)
+> and tried to compile it on my AMD64 box, to test Chuck's RPC fix.  It
+> fails:
+>
+>    arch/x86_64/kernel/head64.c: In function 'x86_64_start_kernel':
+>    arch/x86_64/kernel/head64.c:70: error: size of array 'type name' is
+> negative
 
-> On Thu, 10 May 2007 12:48:28 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
-> >
-> > arch/powerpc/platforms/pseries/power.c:31: warning: `struct subsystem'
-> > declared inside parameter list
-> 
-> There is no explicit reference to struct subsystem in the current version
-> of that file.
-
-There is in 2.6.21-mm2.  Are you saying that it's been fixed
-somewhere else?  (where?)
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Multiplying CONFIG_PHYSICAL_START by two in .config should fix it.
