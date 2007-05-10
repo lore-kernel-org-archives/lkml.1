@@ -1,200 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761583AbXEJTC7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761723AbXEJTDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761583AbXEJTC7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 15:02:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbXEJTCw
+	id S1761723AbXEJTDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 15:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755760AbXEJTD1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 15:02:52 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:51170 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754627AbXEJTCu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 15:02:50 -0400
-Date: Thu, 10 May 2007 12:02:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org,
-       Heinz Mauelshagen <mauelshagen@redhat.com>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: [2.6.22 PATCH 23/26] dm delay:
-Message-Id: <20070510120223.bb4c22df.akpm@linux-foundation.org>
-In-Reply-To: <20070508175410.d5b7e91f.akpm@linux-foundation.org>
-References: <20070508194859.GD24114@agk.fab.redhat.com>
-	<20070508175410.d5b7e91f.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 15:03:27 -0400
+Received: from mail4.iitk.ac.in ([203.197.196.4]:54333 "EHLO mail4.iitk.ac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755278AbXEJTD0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 15:03:26 -0400
+X-Virus-Scanner: This message was checked by NOD32 Antivirus system
+	for Linux Server. For more information on NOD32 Antivirus System,
+	please, visit our website: http://www.nod32.com/.
+Date: Fri, 11 May 2007 00:32:02 +0530 (IST)
+From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+To: linux-kernel@vger.kernel.org
+cc: akpm@linux-foundation.org, mingo@elte.hu, sripathik@in.ibm.com
+Subject: [PATCH -mm 2/2] Reintroduce write_trylock_irqsave()
+Message-ID: <Pine.LNX.4.64.0705110031050.30531@cselinux1.cse.iitk.ac.in>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 17:54:10 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+Reintroduce the new write_trylock_irqsave() implementation: slightly faster,
+less invasive and similar in style to the implementation of
+spin_trylock_irqsave() in mainline and -mm.
 
-> On Tue, 8 May 2007 20:48:59 +0100
-> Alasdair G Kergon <agk@redhat.com> wrote:
-> 
-> > From: Heinz Mauelshagen <mauelshagen@redhat.com>
-> > 
-> > New device-mapper target that can delay I/O (for testing).
-> > Reads can be separated from writes, redirected to different underlying
-> > devices and delayed by differing amounts of time.
-> > 
-> > ..
-> >
-> > +/*
-> > + * Copyright (C) 2005-2007 Red Hat GmbH
-> > + *
-> > + * A target that delays reads and/or writes and can send
-> > + * them to different devices.
-> > + *
-> > + * This file is released under the GPL.
-> > + */
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/init.h>
-> > +#include <linux/blkdev.h>
-> > +#include <linux/bio.h>
-> > +#include <linux/slab.h>
-> > +
-> > +#include "dm.h"
-> > +#include "dm-bio-list.h"
-> > +
-> > +#define DM_MSG_PREFIX "delay"
-> > +
-> > +struct delay_c {
-> > +	struct timer_list delay_timer;
-> > +	struct semaphore timer_lock;
-> 
-> Can we get this converted to a mutex asap, please?
-> 
-> It's only used in a single place and perhaps we don't need this lock at
-> all?
-> 
-> > +	struct work_struct flush_expired_bios;
-> > +	struct list_head delayed_bios;
-> > +	atomic_t may_delay;
-> > +	mempool_t *delayed_pool;
-> > +
-> > +	struct dm_dev *dev_read;
-> > +	sector_t start_read;
-> > +	unsigned read_delay;
-> > +	unsigned reads;
-> > +
-> > +	struct dm_dev *dev_write;
-> > +	sector_t start_write;
-> > +	unsigned write_delay;
-> > +	unsigned writes;
-> > +};
-> > +
-> > +struct delay_info {
-> > +	struct delay_c *context;
-> > +	struct list_head list;
-> > +	struct bio *bio;
-> > +	unsigned long expires;
-> > +};
-> > +
-> > +static DEFINE_MUTEX(delayed_bios_lock);
-> > +
-> > +static struct workqueue_struct *kdelayd_wq;
-> > +static struct kmem_cache *delayed_cache;
-> > +
-> > +static void handle_delayed_timer(unsigned long data)
-> > +{
-> > +	struct delay_c *dc = (struct delay_c *)data;
-> > +
-> > +	queue_work(kdelayd_wq, &dc->flush_expired_bios);
-> > +}
-> > +
-> > +static void queue_timeout(struct delay_c *dc, unsigned long expires)
-> > +{
-> > +	down(&dc->timer_lock);
-> > +
-> > +	if (!timer_pending(&dc->delay_timer) || expires < dc->delay_timer.expires)
-> > +		mod_timer(&dc->delay_timer, expires);
-> > +
-> > +	up(&dc->timer_lock);
-> > +}
-> >
-> > ...
-> >
-> > +
-> > +	init_timer(&dc->delay_timer);
-> > +	dc->delay_timer.function = handle_delayed_timer;
-> > +	dc->delay_timer.data = (unsigned long)dc;
-> 
-> setup_timer() could be used here.
-> 
-> > +	INIT_WORK(&dc->flush_expired_bios, flush_expired_bios);
-> > +	INIT_LIST_HEAD(&dc->delayed_bios);
-> > +	init_MUTEX(&dc->timer_lock);
-> > +	atomic_set(&dc->may_delay, 1);
-> > +
-> > +	ti->private = dc;
-> > +	return 0;
-> > +
-> > +bad:
-> > +	kfree(dc);
-> > +	return -EINVAL;
-> > +}
-> > +
-> >
-> > ...
-> >
-> > +
-> > +static int __init dm_delay_init(void)
-> > +{
-> > +	int r = -ENOMEM;
-> > +
-> > +	kdelayd_wq = create_workqueue("kdelayd");
-> > +	if (!kdelayd_wq) {
-> > +		DMERR("Couldn't start kdelayd");
-> > +		goto bad_queue;
-> > +	}
-> 
-> Do we really really need one instance of kdelayd on each CPU?
-> 
-> I suspect a single-threaded workqueue would suffice here.  We have a big
-> global lock in this driver anyway....
-> 
-> Probably create_workqueue() should have defaulted to single-threaded on day
-> one.  Oh well.
-> 
-> 
-> > +	delayed_cache = kmem_cache_create("dm-delay",
-> > +					  sizeof(struct delay_info),
-> > +					  __alignof__(struct delay_info),
-> > +					  0, NULL, NULL);
-> 
-> We have an ugly^Wnice new KMEM_CACHE macro for this now.
-> 
-> What's that __alignof__ doing in there?
-> 
-> > +	if (!delayed_cache) {
-> > +		DMERR("Couldn't create delayed bio cache.");
-> > +		goto bad_memcache;
-> > +	}
-> > +
-> > +	r = dm_register_target(&delay_target);
-> > +	if (r < 0) {
-> > +		DMERR("register failed %d", r);
-> > +		goto bad_register;
-> > +	}
-> > +
-> > +	return 0;
-> > +
-> > +bad_register:
-> > +	kmem_cache_destroy(delayed_cache);
-> > +bad_memcache:
-> > +	destroy_workqueue(kdelayd_wq);
-> > +bad_queue:
-> > +	return r;
-> > +}
-> > +
-> 
+Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
+Cc: Sripathi Kodi <sripathik@in.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
 
-Guys, could I please get some response to this before I forget about it? 
-The new per-cpu kernel thread problem is particularly important.  We already
-fail to boot on 4096-CPU due to running out of pids.
+---
 
-Thanks.
+  include/linux/spinlock.h |    7 +++++++
+  1 file changed, 7 insertions(+)
+
+---
+
+diff -ruNp a/include/linux/spinlock.h b/include/linux/spinlock.h
+--- a/include/linux/spinlock.h	2007-05-11 00:25:34.000000000 +0530
++++ b/include/linux/spinlock.h	2007-05-11 00:27:35.000000000 +0530
+@@ -282,6 +282,13 @@ do {						\
+  	1 : ({ local_irq_restore(flags); 0; }); \
+  })
+
++#define write_trylock_irqsave(lock, flags) \
++({ \
++	local_irq_save(flags); \
++	write_trylock(lock) ? \
++	1 : ({ local_irq_restore(flags); 0; }); \
++})
++
+  /*
+   * Locks two spinlocks l1 and l2.
+   * l1_first indicates if spinlock l1 should be taken first.
 
