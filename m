@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757298AbXEJJuN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbXEJJuk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757298AbXEJJuN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 05:50:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756421AbXEJJt7
+	id S1760535AbXEJJuk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 05:50:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbXEJJu3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 05:49:59 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:55680 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753643AbXEJJt6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 05:49:58 -0400
-Date: Thu, 10 May 2007 02:48:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Rodolfo Giometti <giometti@enneenne.com>, linux-kernel@vger.kernel.org,
-       linuxpps@ml.enneenne.com
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-Message-Id: <20070510024837.39be3396.akpm@linux-foundation.org>
-In-Reply-To: <20070510002740.c4350813.akpm@linux-foundation.org>
-References: <20070321074121.GA13843@enneenne.com>
-	<20070502193314.GA23367@enneenne.com>
-	<20070510002740.c4350813.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 05:50:29 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:47540 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754874AbXEJJu0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 05:50:26 -0400
+Date: Thu, 10 May 2007 11:48:48 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: NeilBrown <neilb@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 002 of 2] md: Improve the is_mddev_idle test
+In-Reply-To: <1070510062231.20403@suse.de>
+Message-ID: <Pine.LNX.4.61.0705101143540.32349@yvahk01.tjqt.qr>
+References: <20070510161940.20204.patches@notabene> <1070510062231.20403@suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 00:27:40 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> - Can we get rid of the private dbg, err and info macros?  Surely there are
->   generic ones somewhere.
+On May 10 2007 16:22, NeilBrown wrote:
+>
+>diff .prev/drivers/md/md.c ./drivers/md/md.c
+>--- .prev/drivers/md/md.c	2007-05-10 15:51:54.000000000 +1000
+>+++ ./drivers/md/md.c	2007-05-10 16:05:10.000000000 +1000
+>@@ -5095,7 +5095,7 @@ static int is_mddev_idle(mddev_t *mddev)
+> 		 *
+> 		 * Note: the following is an unsigned comparison.
+> 		 */
+>-		if ((curr_events - rdev->last_events + 4096) > 8192) {
+>+		if ((long)curr_events - (long)rdev->last_events > 4096) {
+> 			rdev->last_events = curr_events;
+> 			idle = 0;
+> 		}
 
-i386 allmodconfig:
+What did really change? Unless I am seriously mistaken,
 
-In file included from drivers/usb/misc/uss720.c:48:
-include/linux/usb.h:1505:1: warning: "dbg" redefined
-In file included from include/linux/parport.h:108,
-                 from drivers/usb/misc/uss720.c:46:
-include/linux/pps.h:139:1: warning: this is the location of the previous definition
-In file included from drivers/usb/misc/uss720.c:48:
-include/linux/usb.h:1511:1: warning: "err" redefined
-In file included from include/linux/parport.h:108,
-                 from drivers/usb/misc/uss720.c:46:
-include/linux/pps.h:145:1: warning: this is the location of the previous definition
-In file included from drivers/usb/misc/uss720.c:48:
-include/linux/usb.h:1513:1: warning: "info" redefined
-In file included from include/linux/parport.h:108,
-                 from drivers/usb/misc/uss720.c:46:
-include/linux/pps.h:147:1: warning: this is the location of the previous definition
+    curr_events - last_evens + 4096 > 8192
+
+is mathematically equivalent to
+
+    curr_events - last_evens        > 4096
+
+The casting to (long) may however force a signed comparison which turns
+things quite upside down, and the comment does not apply anymore.
 
 
+	Jan
+-- 
