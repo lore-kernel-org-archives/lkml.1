@@ -1,425 +1,542 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbXEJCLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbXEJCMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757187AbXEJCLq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 22:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754178AbXEJCLi
+	id S1756291AbXEJCMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 22:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbXEJCL7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 22:11:38 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:57565 "EHLO smtp.polymtl.ca"
+	Wed, 9 May 2007 22:11:59 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:57633 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754082AbXEJCLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 22:11:37 -0400
-Message-Id: <20070510020917.793321759@polymtl.ca>
+	id S1754355AbXEJCL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 22:11:57 -0400
+Message-Id: <20070510020915.609367244@polymtl.ca>
 References: <20070510015555.973107048@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 May 2007 21:56:04 -0400
+Date: Wed, 09 May 2007 21:55:57 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
        Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       <linux-arch@vger.kernel.org>
-Subject: [patch 09/10] Linux Kernel Markers - Use EXTRA_RWDATA in architectures
-Content-Disposition: inline; filename=linux-kernel-markers-use-extra_rwdata-in-architectures.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 10 May 2007 02:09:18 +0000
+       Adrian Bunk <bunk@stusta.de>
+Subject: [patch 02/10] Linux Kernel Markers, architecture independent code.
+Content-Disposition: inline; filename=linux-kernel-markers-architecture-independant-code.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 10 May 2007 02:09:16 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[bunk@stusta.de: marker exports must be EXPORT_SYMBOL_GPL]
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: <linux-arch@vger.kernel.org>
+Signed-off-by: Adrian Bunk <bunk@stusta.de>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- arch/alpha/kernel/vmlinux.lds.S            |    1 +
- arch/arm/kernel/vmlinux.lds.S              |    1 +
- arch/arm26/kernel/vmlinux-arm26-xip.lds.in |    1 +
- arch/arm26/kernel/vmlinux-arm26.lds.in     |    1 +
- arch/avr32/kernel/vmlinux.lds.c            |    1 +
- arch/cris/arch-v10/vmlinux.lds.S           |    1 +
- arch/cris/arch-v32/vmlinux.lds.S           |    1 +
- arch/frv/kernel/vmlinux.lds.S              |    1 +
- arch/h8300/kernel/vmlinux.lds.S            |    4 +++-
- arch/i386/kernel/vmlinux.lds.S             |    1 +
- arch/ia64/kernel/vmlinux.lds.S             |    2 +-
- arch/m32r/kernel/vmlinux.lds.S             |    1 +
- arch/m68k/kernel/vmlinux-std.lds           |    1 +
- arch/m68k/kernel/vmlinux-sun3.lds          |    1 +
- arch/m68knommu/kernel/vmlinux.lds.S        |    1 +
- arch/mips/kernel/vmlinux.lds.S             |    2 ++
- arch/parisc/kernel/vmlinux.lds.S           |    1 +
- arch/powerpc/kernel/vmlinux.lds.S          |    2 ++
- arch/ppc/kernel/vmlinux.lds.S              |    1 +
- arch/s390/kernel/vmlinux.lds.S             |    1 +
- arch/sh/kernel/vmlinux.lds.S               |    1 +
- arch/sh64/kernel/vmlinux.lds.S             |    1 +
- arch/sparc/kernel/vmlinux.lds.S            |    1 +
- arch/sparc64/kernel/vmlinux.lds.S          |    1 +
- arch/um/kernel/dyn.lds.S                   |    1 +
- arch/um/kernel/uml.lds.S                   |    1 +
- arch/v850/kernel/vmlinux.lds.S             |    1 +
- arch/x86_64/kernel/vmlinux.lds.S           |    1 +
- arch/xtensa/kernel/vmlinux.lds.S           |    2 +-
- 29 files changed, 33 insertions(+), 3 deletions(-)
+ include/asm-generic/vmlinux.lds.h |   13 +
+ include/linux/marker.h            |  124 +++++++++++++++++
+ include/linux/module.h            |    4 
+ kernel/module.c                   |  273 ++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 414 insertions(+)
 
-Index: linux-2.6-lttng/arch/alpha/kernel/vmlinux.lds.S
+Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/alpha/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/alpha/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -90,6 +90,7 @@
-   _data = .;
-   .data : {					/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
-   }
- 
-Index: linux-2.6-lttng/arch/arm/kernel/vmlinux.lds.S
+--- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-05-09 18:14:52.000000000 -0400
++++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-05-09 18:15:55.000000000 -0400
+@@ -121,6 +121,19 @@
+         __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
+ 		*(__ksymtab_strings)					\
+ 	}								\
++	/* Kernel markers : pointers */					\
++	.markers : AT(ADDR(.markers) - LOAD_OFFSET) {			\
++		VMLINUX_SYMBOL(__start___markers) = .;			\
++		*(.markers)						\
++		VMLINUX_SYMBOL(__stop___markers) = .;			\
++	}								\
++	.markers.c : AT(ADDR(.markers.c) - LOAD_OFFSET) {		\
++		VMLINUX_SYMBOL(__start___markers_c) = .;		\
++		*(.markers.c)						\
++		VMLINUX_SYMBOL(__stop___markers_c) = .;			\
++	}								\
++	__end_rodata = .;						\
++	. = ALIGN(4096);						\
+ 									\
+ 	/* Built-in module parameters. */				\
+ 	__param : AT(ADDR(__param) - LOAD_OFFSET) {			\
+Index: linux-2.6-lttng/include/linux/marker.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/arm/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/arm/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -159,6 +159,7 @@
- 		 * and the usual data section
- 		 */
- 		*(.data)
-+		EXTRA_RWDATA
- 		CONSTRUCTORS
- 
- 		_edata = .;
-Index: linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26-xip.lds.in
-===================================================================
---- linux-2.6-lttng.orig/arch/arm26/kernel/vmlinux-arm26-xip.lds.in	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26-xip.lds.in	2007-05-09 18:16:17.000000000 -0400
-@@ -112,6 +112,7 @@
- 		 * and the usual data section
- 		 */
- 		*(.data)
-+		EXTRA_RWDATA
- 		CONSTRUCTORS
- 
- 		*(.init.data)
-Index: linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26.lds.in
-===================================================================
---- linux-2.6-lttng.orig/arch/arm26/kernel/vmlinux-arm26.lds.in	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/arm26/kernel/vmlinux-arm26.lds.in	2007-05-09 18:16:17.000000000 -0400
-@@ -107,6 +107,7 @@
- 		 * and the usual data section
- 		 */
- 		*(.data)
-+		EXTRA_RWDATA
- 		CONSTRUCTORS
- 
- 		_edata = .;
-Index: linux-2.6-lttng/arch/avr32/kernel/vmlinux.lds.c
-===================================================================
---- linux-2.6-lttng.orig/arch/avr32/kernel/vmlinux.lds.c	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/avr32/kernel/vmlinux.lds.c	2007-05-09 18:16:17.000000000 -0400
-@@ -113,6 +113,7 @@
- 		/* And the rest... */
- 		*(.data.rel*)
- 		*(.data)
-+		EXTRA_RWDATA
- 		CONSTRUCTORS
- 
- 		_edata = .;
-Index: linux-2.6-lttng/arch/cris/arch-v10/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/cris/arch-v10/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/cris/arch-v10/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -45,6 +45,7 @@
- 	__Sdata = . ;
- 	.data : {                     /* Data */
- 		*(.data)
-+		EXTRA_RWDATA
- 	}
- 	__edata = . ;                 /* End of data section */
- 	_edata = . ;
-Index: linux-2.6-lttng/arch/cris/arch-v32/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/cris/arch-v32/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/cris/arch-v32/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -50,6 +50,7 @@
- 	__Sdata = . ;
- 	.data : {                     /* Data */
- 		*(.data)
-+		EXTRA_RWDATA
- 	}
- 	__edata = . ;		/* End of data section. */
- 	_edata = . ;
-Index: linux-2.6-lttng/arch/frv/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/frv/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/frv/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -137,6 +137,7 @@
-   .data : {			/* Data */
- 	*(.data .data.*)
- 	*(.exit.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/h8300/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/h8300/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/h8300/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -105,7 +105,9 @@
- 	. = ALIGN(0x4) ;
- 		*(.data)
- 	. = ALIGN(0x4) ;
--		*(.data.*)	
-+		*(.data.*)
-+	. = ALIGN(0x4) ;
-+	EXTRA_RWDATA
- 
- 	. = ALIGN(0x4) ;
- 	___init_begin = .;
-Index: linux-2.6-lttng/arch/i386/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -77,6 +77,7 @@
-   . = ALIGN(4096);
-   .data : AT(ADDR(.data) - LOAD_OFFSET) {	/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	} :data
- 
-Index: linux-2.6-lttng/arch/ia64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/ia64/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/ia64/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -214,7 +214,7 @@
- 
-   data : { } :data
-   .data : AT(ADDR(.data) - LOAD_OFFSET)
--	{ *(.data) *(.data1) *(.gnu.linkonce.d*) CONSTRUCTORS }
-+	{ *(.data) *(.data1) *(.gnu.linkonce.d*) EXTRA_RWDATA CONSTRUCTORS }
- 
-   . = ALIGN(16);	/* gp must be 16-byte aligned for exc. table */
-   .got : AT(ADDR(.got) - LOAD_OFFSET)
-Index: linux-2.6-lttng/arch/m32r/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/m32r/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/m32r/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -51,6 +51,7 @@
- 	*(.spu)
- 	*(.spi)
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/m68k/kernel/vmlinux-std.lds
-===================================================================
---- linux-2.6-lttng.orig/arch/m68k/kernel/vmlinux-std.lds	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/m68k/kernel/vmlinux-std.lds	2007-05-09 18:16:17.000000000 -0400
-@@ -29,6 +29,7 @@
- 
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
- 
-Index: linux-2.6-lttng/arch/m68k/kernel/vmlinux-sun3.lds
-===================================================================
---- linux-2.6-lttng.orig/arch/m68k/kernel/vmlinux-sun3.lds	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/m68k/kernel/vmlinux-sun3.lds	2007-05-09 18:16:17.000000000 -0400
-@@ -24,6 +24,7 @@
- 
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	. = ALIGN(16);		/* Exception table */
- 	__start___ex_table = .;
-Index: linux-2.6-lttng/arch/m68knommu/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/m68knommu/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/m68knommu/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -134,6 +134,7 @@
- 		. = ALIGN(4);
- 		_sdata = . ;
- 		*(.data)
-+		EXTRA_RWDATA
- 		. = ALIGN(8192) ;
- 		*(.data.init_task)
- 		_edata = . ;
-Index: linux-2.6-lttng/arch/mips/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/mips/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/mips/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -64,6 +64,8 @@
- 
-     *(.data)
- 
-+    EXTRA_RWDATA
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/include/linux/marker.h	2007-05-09 18:15:55.000000000 -0400
+@@ -0,0 +1,124 @@
++#ifndef _LINUX_MARKER_H
++#define _LINUX_MARKER_H
 +
-     CONSTRUCTORS
-   }
-   _gp = . + 0x8000;
-Index: linux-2.6-lttng/arch/parisc/kernel/vmlinux.lds.S
++/*
++ * marker.h
++ *
++ * Code markup for dynamic and static tracing.
++ *
++ * See Documentation/marker.txt.
++ *
++ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#ifdef __KERNEL__
++
++struct __mark_marker_data;
++
++typedef void marker_probe_func(const struct __mark_marker_data *mdata,
++	const char *fmt, ...);
++
++struct __mark_marker_data {
++	const char *name;
++	const char *format;
++	const char *args;
++	int flags;
++	marker_probe_func *call;
++	void *pdata;
++} __attribute__((packed));
++
++struct __mark_marker {
++	struct __mark_marker_data *mdata;
++	void *enable;
++} __attribute__((packed));
++
++#ifdef CONFIG_MARKERS
++
++/* Marker flags : selects the mechanism used to connect the probes to the
++ * markers and what can be executed within the probes. This is primarily
++ * used at reentrancy-unfriendly sites. */
++#define MF_OPTIMIZED	(1 << 0)	/* Use optimized markers */
++#define MF_LOCKDEP	(1 << 1)	/* Can call lockdep */
++#define MF_PRINTK	(1 << 2)	/* vprintk can be called in the probe */
++#define _MF_NR		3		/* Number of marker flags */
++
++/* Generic marker flavor always available */
++#define trace_mark_generic(flags, name, format, args...) \
++	do { \
++		static const char __mstrtab_name_##name[] \
++		__attribute__((section("__markers_strings"))) \
++		= #name; \
++		static const char __mstrtab_format_##name[] \
++		__attribute__((section("__markers_strings"))) \
++		= format; \
++		static const char __mstrtab_args_##name[] \
++		__attribute__((section("__markers_strings"))) \
++		= #args; \
++		static struct __mark_marker_data __mark_data_##name \
++		__attribute__((section("__markers_data"))) = \
++		{ __mstrtab_name_##name,  __mstrtab_format_##name, \
++		__mstrtab_args_##name, \
++		(flags) & ~MF_OPTIMIZED, __mark_empty_function, NULL }; \
++		static char __marker_enable_##name = 0; \
++		static const struct __mark_marker __mark_##name \
++			__attribute__((section("__markers"))) = \
++			{ &__mark_data_##name, &__marker_enable_##name } ; \
++		asm volatile ( "" : : "i" (&__mark_##name)); \
++		__mark_check_format(format, ## args); \
++		if (unlikely(__marker_enable_##name)) { \
++			preempt_disable(); \
++			(*__mark_data_##name.call)(&__mark_data_##name, \
++						format, ## args); \
++			preempt_enable(); \
++		} \
++	} while (0)
++
++#define MARK_GENERIC_ENABLE_IMMEDIATE_OFFSET 0
++#define MARK_GENERIC_ENABLE_TYPE char
++/* Dereference enable as lvalue from a pointer to its instruction */
++#define MARK_GENERIC_ENABLE(a) \
++	*(MARK_GENERIC_ENABLE_TYPE*) \
++		((char*)a+MARK_GENERIC_ENABLE_IMMEDIATE_OFFSET)
++
++static inline int marker_generic_set_enable(void *address, char enable)
++{
++	MARK_GENERIC_ENABLE(address) = enable;
++	return 0;
++}
++
++#else /* !CONFIG_MARKERS */
++#define MARK_GENERIC(flags, name, format, args...) \
++		__mark_check_format(format, ## args)
++#endif /* CONFIG_MARKERS */
++
++#ifdef CONFIG_MARKERS_ENABLE_OPTIMIZATION
++#include <asm/marker.h>			/* optimized marker flavor */
++#else
++#include <asm-generic/marker.h>		/* fallback on generic markers */
++#endif
++
++#define MARK_MAX_FORMAT_LEN	1024
++/* Pass this as a format string for a marker with no argument */
++#define MARK_NOARGS " "
++
++/* To be used for string format validity checking with sparse */
++static inline
++void __mark_check_format(const char *fmt, ...)
++{ }
++
++extern marker_probe_func __mark_empty_function;
++
++extern int _marker_set_probe(int flags, const char *name, const char *format,
++				marker_probe_func *probe, void *pdata);
++
++#define marker_set_probe(name, format, probe, pdata) \
++	_marker_set_probe(MF_DEFAULT, name, format, probe, pdata)
++
++extern int marker_remove_probe(const char *name);
++extern int marker_list_probe(marker_probe_func *probe);
++
++#endif /* __KERNEL__ */
++#endif
+Index: linux-2.6-lttng/include/linux/module.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/parisc/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/parisc/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -92,6 +92,7 @@
-   . = ALIGN(L1_CACHE_BYTES);
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
+--- linux-2.6-lttng.orig/include/linux/module.h	2007-05-09 18:14:52.000000000 -0400
++++ linux-2.6-lttng/include/linux/module.h	2007-05-09 18:15:55.000000000 -0400
+@@ -356,6 +356,9 @@
+ 	/* The command line arguments (may be mangled).  People like
+ 	   keeping pointers to this stuff */
+ 	char *args;
++
++	const struct __mark_marker *markers;
++	unsigned int num_markers;
+ };
  
-Index: linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -170,11 +170,13 @@
- 		*(.data)
- 		*(.sdata)
- 		*(.got.plt) *(.got)
-+		EXTRA_RWDATA
- 	}
- #else
- 	.data : {
- 		*(.data .data.rel* .toc1)
- 		*(.branch_lt)
-+		EXTRA_RWDATA
- 	}
+ /* FIXME: It'd be nice to isolate modules during init, too, so they
+@@ -467,6 +470,7 @@
+ int unregister_module_notifier(struct notifier_block * nb);
  
- 	.opd : {
-Index: linux-2.6-lttng/arch/ppc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/ppc/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/ppc/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -73,6 +73,7 @@
-     *(.sdata2)
-     *(.got.plt) *(.got)
-     *(.dynamic)
-+    EXTRA_RWDATA
-     CONSTRUCTORS
-   }
+ extern void print_modules(void);
++extern void list_modules(void);
  
-Index: linux-2.6-lttng/arch/s390/kernel/vmlinux.lds.S
+ #else /* !CONFIG_MODULES... */
+ #define EXPORT_SYMBOL(sym)
+Index: linux-2.6-lttng/kernel/module.c
 ===================================================================
---- linux-2.6-lttng.orig/arch/s390/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/s390/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -49,6 +49,7 @@
+--- linux-2.6-lttng.orig/kernel/module.c	2007-05-09 18:15:34.000000000 -0400
++++ linux-2.6-lttng/kernel/module.c	2007-05-09 18:15:55.000000000 -0400
+@@ -142,6 +142,8 @@
+ extern const unsigned long __start___kcrctab_gpl_future[];
+ extern const unsigned long __start___kcrctab_unused[];
+ extern const unsigned long __start___kcrctab_unused_gpl[];
++extern const struct __mark_marker __start___markers[];
++extern const struct __mark_marker __stop___markers[];
  
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
+ #ifndef CONFIG_MODVERSIONS
+ #define symversion(base, idx) NULL
+@@ -302,6 +304,229 @@
+ 	return NULL;
+ }
  
-Index: linux-2.6-lttng/arch/sh/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sh/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/sh/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -42,6 +42,7 @@
++#ifdef CONFIG_MARKERS
++
++/* Empty callback provided as a probe to the markers. By providing this to a
++ * disabled marker, we makes sure the  execution flow is always valid even
++ * though the function pointer change and the marker enabling are two distinct
++ * operations that modifies the execution flow of preemptible code. */
++void __mark_empty_function(const struct __mark_marker_data *mdata,
++	const char *fmt, ...)
++{
++}
++EXPORT_SYMBOL_GPL(__mark_empty_function);
++
++/* Set the enable bit of the marker, choosing the generic or architecture
++ * specific functions depending on the marker's flags.
++ */
++static int marker_set_enable(void *address, char enable, int flags)
++{
++	if (flags & MF_OPTIMIZED)
++		return marker_optimized_set_enable(address, enable);
++	else
++		return marker_generic_set_enable(address, enable);
++}
++
++/* Sets the probe callback and enables the markers corresponding to a range of
++ * markers. The enable bit and function address are set out of order, and it's
++ * ok : the state is always coherent because of the empty callback we provide.
++ */
++static int _marker_set_probe_range(int flags, const char *name,
++	const char *format,
++	marker_probe_func *probe,
++	void *pdata,
++	const struct __mark_marker *begin,
++	const struct __mark_marker *end)
++{
++	const struct __mark_marker *iter;
++	int found = 0;
++
++	for (iter = begin; iter < end; iter++) {
++		if (strcmp(name, iter->mdata->name) == 0) {
++			if (format
++				&& strcmp(format, iter->mdata->format) != 0) {
++				printk(KERN_NOTICE
++					"Format mismatch for probe %s "
++					"(%s), marker (%s)\n",
++					name,
++					format,
++					iter->mdata->format);
++				continue;
++			}
++			if (flags & MF_LOCKDEP
++				&& !(iter->mdata->flags & MF_LOCKDEP)) {
++					printk(KERN_NOTICE
++					"Incompatible lockdep flags for "
++					"probe %s\n",
++					name);
++					continue;
++			}
++			if (flags & MF_PRINTK
++				&& !(iter->mdata->flags & MF_PRINTK)) {
++					printk(KERN_NOTICE
++					"Incompatible printk flags for "
++					"probe %s\n",
++					name);
++					continue;
++			}
++			if (probe == __mark_empty_function) {
++				if (iter->mdata->call
++					!= __mark_empty_function) {
++					iter->mdata->call =
++						__mark_empty_function;
++				}
++				marker_set_enable(iter->enable, 0,
++					iter->mdata->flags);
++			} else {
++				if (iter->mdata->call
++					!= __mark_empty_function) {
++					if (iter->mdata->call != probe) {
++						printk(KERN_NOTICE
++							"Marker %s busy, "
++							"probe %p already "
++							"installed\n",
++							name,
++							iter->mdata->call);
++						continue;
++					}
++				} else {
++					found++;
++					iter->mdata->call = probe;
++				}
++				iter->mdata->pdata = pdata;
++				smp_wmb();
++				marker_set_enable(iter->enable, 1,
++					iter->mdata->flags);
++			}
++			found++;
++		}
++	}
++	return found;
++}
++
++/* Sets a range of markers to a disabled state : unset the enable bit and
++ * provide the empty callback. */
++static int marker_remove_probe_range(const char *name,
++	const struct __mark_marker *begin,
++	const struct __mark_marker *end)
++{
++	const struct __mark_marker *iter;
++	int found = 0;
++
++	for (iter = begin; iter < end; iter++) {
++		if (strcmp(name, iter->mdata->name) == 0) {
++			marker_set_enable(iter->enable, 0,
++				iter->mdata->flags);
++			iter->mdata->call = __mark_empty_function;
++			found++;
++		}
++	}
++	return found;
++}
++
++/* Provides a listing of the markers present in the kernel with their type
++ * (optimized or generic), state (enabled or disabled), callback and format
++ * string. */
++static int marker_list_probe_range(marker_probe_func *probe,
++	const struct __mark_marker *begin,
++	const struct __mark_marker *end)
++{
++	const struct __mark_marker *iter;
++	int found = 0;
++
++	for (iter = begin; iter < end; iter++) {
++		if (probe)
++			if (probe != iter->mdata->call) continue;
++		printk("name %s \n", iter->mdata->name);
++		if (iter->mdata->flags & MF_OPTIMIZED)
++			printk("  enable %u optimized ",
++				MARK_OPTIMIZED_ENABLE(iter->enable));
++		else
++			printk("  enable %u generic ",
++				MARK_GENERIC_ENABLE(iter->enable));
++		printk("  func 0x%p format \"%s\"\n",
++			iter->mdata->call, iter->mdata->format);
++		found++;
++	}
++	return found;
++}
++
++/* Calls _marker_set_probe_range for the core markers and modules markers.
++ * Marker enabling/disabling use the modlist_lock to synchronise. */
++int _marker_set_probe(int flags, const char *name, const char *format,
++				marker_probe_func *probe,
++				void *pdata)
++{
++	struct module *mod;
++	int found = 0;
++
++	mutex_lock(&module_mutex);
++	/* Core kernel markers */
++	found += _marker_set_probe_range(flags, name, format, probe,
++			pdata,
++			__start___markers, __stop___markers);
++	/* Markers in modules. */
++	list_for_each_entry(mod, &modules, list) {
++		if (!mod->taints)
++			found += _marker_set_probe_range(flags, name, format,
++			probe, pdata,
++			mod->markers, mod->markers+mod->num_markers);
++	}
++	mutex_unlock(&module_mutex);
++	return found;
++}
++EXPORT_SYMBOL_GPL(_marker_set_probe);
++
++/* Calls _marker_remove_probe_range for the core markers and modules markers.
++ * Marker enabling/disabling use the modlist_lock to synchronise. */
++int marker_remove_probe(const char *name)
++{
++	struct module *mod;
++	int found = 0;
++
++	mutex_lock(&module_mutex);
++	/* Core kernel markers */
++	found += marker_remove_probe_range(name,
++			__start___markers, __stop___markers);
++	/* Markers in modules. */
++	list_for_each_entry(mod, &modules, list) {
++		if (!mod->taints)
++			found += marker_remove_probe_range(name,
++				mod->markers, mod->markers+mod->num_markers);
++	}
++	mutex_unlock(&module_mutex);
++	return found;
++}
++EXPORT_SYMBOL_GPL(marker_remove_probe);
++
++/* Calls _marker_list_probe_range for the core markers and modules markers.
++ * Marker listing uses the modlist_lock to synchronise.
++ * TODO : should output this listing to a procfs file. */
++int marker_list_probe(marker_probe_func *probe)
++{
++	struct module *mod;
++	int found = 0;
++
++	mutex_lock(&module_mutex);
++	/* Core kernel markers */
++	printk("Listing kernel markers\n");
++	found += marker_list_probe_range(probe,
++			__start___markers, __stop___markers);
++	/* Markers in modules. */
++	printk("Listing module markers\n");
++	list_for_each_entry(mod, &modules, list) {
++		if (!mod->taints) {
++			printk("Listing markers for module %s\n", mod->name);
++			found += marker_list_probe_range(probe,
++				mod->markers, mod->markers+mod->num_markers);
++		}
++	}
++	mutex_unlock(&module_mutex);
++	return found;
++}
++EXPORT_SYMBOL_GPL(marker_list_probe);
++#endif
++
+ #ifdef CONFIG_SMP
+ /* Number of blocks used and allocated. */
+ static unsigned int pcpu_num_used, pcpu_num_allocated;
+@@ -1659,6 +1884,9 @@
+ 	unsigned int unusedcrcindex;
+ 	unsigned int unusedgplindex;
+ 	unsigned int unusedgplcrcindex;
++	unsigned int markersindex;
++	unsigned int markersdataindex;
++	unsigned int markersstringsindex;
+ 	struct module *mod;
+ 	long err = 0;
+ 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
+@@ -1755,6 +1983,10 @@
+ #ifdef ARCH_UNWIND_SECTION_NAME
+ 	unwindex = find_sec(hdr, sechdrs, secstrings, ARCH_UNWIND_SECTION_NAME);
+ #endif
++	markersindex = find_sec(hdr, sechdrs, secstrings, "__markers");
++	markersdataindex = find_sec(hdr, sechdrs, secstrings, "__markers_data");
++	markersstringsindex = find_sec(hdr, sechdrs, secstrings,
++				"__markers_strings");
  
-   .data : {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
+ 	/* Don't keep modinfo section */
+ 	sechdrs[infoindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
+@@ -1765,6 +1997,22 @@
+ #endif
+ 	if (unwindex)
+ 		sechdrs[unwindex].sh_flags |= SHF_ALLOC;
++#ifdef CONFIG_MARKERS
++	if (markersindex)
++		sechdrs[markersindex].sh_flags |= SHF_ALLOC;
++	if (markersdataindex)
++		sechdrs[markersdataindex].sh_flags |= SHF_ALLOC;
++	if (markersstringsindex)
++		sechdrs[markersstringsindex].sh_flags |= SHF_ALLOC;
++#else
++	if (markersindex)
++		sechdrs[markersindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
++	if (markersdataindex)
++		sechdrs[markersdataindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
++	if (markersstringsindex)
++		sechdrs[markersstringsindex].sh_flags
++					&= ~(unsigned long)SHF_ALLOC;
++#endif
  
-  	 /* Align the initial ramdisk image (INITRD) on page boundaries. */
-  	 . = ALIGN(PAGE_SIZE);
-Index: linux-2.6-lttng/arch/sh64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sh64/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/sh64/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -79,6 +79,7 @@
+ 	/* Check module struct version now, before we try to use module. */
+ 	if (!check_modstruct_version(sechdrs, versindex, mod)) {
+@@ -1905,6 +2153,11 @@
+ 	mod->gpl_future_syms = (void *)sechdrs[gplfutureindex].sh_addr;
+ 	if (gplfuturecrcindex)
+ 		mod->gpl_future_crcs = (void *)sechdrs[gplfuturecrcindex].sh_addr;
++	if (markersindex) {
++		mod->markers = (void *)sechdrs[markersindex].sh_addr;
++		mod->num_markers =
++			sechdrs[markersindex].sh_size / sizeof(*mod->markers);
++	}
  
-   .data : C_PHYS(.data) {			/* Data */
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	}
+ 	mod->unused_syms = (void *)sechdrs[unusedindex].sh_addr;
+ 	if (unusedcrcindex)
+@@ -2399,6 +2652,26 @@
+ 	.show	= m_show
+ };
  
-Index: linux-2.6-lttng/arch/sparc/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -23,6 +23,7 @@
-   .data    :
-   {
-     *(.data)
-+    EXTRA_RWDATA
-     CONSTRUCTORS
-   }
-   .data1   : { *(.data1) }
-Index: linux-2.6-lttng/arch/sparc64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/sparc64/kernel/vmlinux.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/sparc64/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -28,6 +28,7 @@
-   .data    :
-   {
-     *(.data)
-+    EXTRA_RWDATA
-     CONSTRUCTORS
-   }
-   .data1   : { *(.data1) }
-Index: linux-2.6-lttng/arch/um/kernel/dyn.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/um/kernel/dyn.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/um/kernel/dyn.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -98,6 +98,7 @@
-     . = ALIGN(KERNEL_STACK_SIZE);		/* init_task */
-     *(.data.init_task)
-     *(.data .data.* .gnu.linkonce.d.*)
-+    EXTRA_RWDATA
-     SORT(CONSTRUCTORS)
-   }
-   .data1          : { *(.data1) }
-Index: linux-2.6-lttng/arch/um/kernel/uml.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/um/kernel/uml.lds.S	2007-05-09 18:14:50.000000000 -0400
-+++ linux-2.6-lttng/arch/um/kernel/uml.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -61,6 +61,7 @@
-     *(.data.init_task)
-     *(.data)
-     *(.gnu.linkonce.d*)
-+    EXTRA_RWDATA
-     CONSTRUCTORS
-   }
-   .data1   : { *(.data1) }
-Index: linux-2.6-lttng/arch/v850/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/v850/kernel/vmlinux.lds.S	2007-05-09 18:14:51.000000000 -0400
-+++ linux-2.6-lttng/arch/v850/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -116,6 +116,7 @@
-         	*(.data)						      \
- 			*(.exit.data)	/* 2.5 convention */		      \
- 			*(.data.exit)	/* 2.4 convention */		      \
-+		EXTRA_RWDATA						      \
- 		. = ALIGN (16) ;					      \
- 		*(.data.cacheline_aligned)				      \
- 		. = ALIGN (0x2000) ;					      \
-Index: linux-2.6-lttng/arch/x86_64/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/kernel/vmlinux.lds.S	2007-05-09 18:14:51.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -56,6 +56,7 @@
- 				/* Data */
-   .data : AT(ADDR(.data) - LOAD_OFFSET) {
- 	*(.data)
-+	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	} :data
- 
-Index: linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S
-===================================================================
---- linux-2.6-lttng.orig/arch/xtensa/kernel/vmlinux.lds.S	2007-05-09 18:14:51.000000000 -0400
-+++ linux-2.6-lttng/arch/xtensa/kernel/vmlinux.lds.S	2007-05-09 18:16:17.000000000 -0400
-@@ -144,7 +144,7 @@
-   _fdata = .;
-   .data :
-   {
--    *(.data) CONSTRUCTORS
-+    *(.data) EXTRA_RWDATA CONSTRUCTORS
-     . = ALIGN(XCHAL_ICACHE_LINESIZE);
-     *(.data.cacheline_aligned)
-   }
++void list_modules(void)
++{
++	/* Enumerate loaded modules */
++	struct list_head	*i;
++	struct module		*mod;
++	unsigned long refcount = 0;
++
++	mutex_lock(&module_mutex);
++	list_for_each(i, &modules) {
++		mod = list_entry(i, struct module, list);
++#ifdef CONFIG_MODULE_UNLOAD
++		refcount = local_read(&mod->ref[0].count);
++#endif //CONFIG_MODULE_UNLOAD
++		trace_mark(list_module, "%s %d %lu",
++				mod->name, mod->state, refcount);
++	}
++	mutex_unlock(&module_mutex);
++}
++EXPORT_SYMBOL_GPL(list_modules);
++
+ /* Given an address, look for it in the module exception tables. */
+ const struct exception_table_entry *search_module_extables(unsigned long addr)
+ {
 
 -- 
 Mathieu Desnoyers
