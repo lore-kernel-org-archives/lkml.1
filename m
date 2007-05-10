@@ -1,40 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761267AbXEJM0s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758995AbXEJMdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761267AbXEJM0s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:26:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbXEJM0m
+	id S1758995AbXEJMdc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbXEJMd0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:26:42 -0400
-Received: from mx2.suse.de ([195.135.220.15]:49824 "EHLO mx2.suse.de"
+	Thu, 10 May 2007 08:33:26 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58368 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754794AbXEJM0l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:26:41 -0400
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [patch 1/4] KMON - kmon device/instrumentation ...
-References: <send-serie.davidel@xmailserver.org.27461.1178495355.1>
-From: Andi Kleen <andi@firstfloor.org>
-Date: 10 May 2007 15:23:50 +0200
-In-Reply-To: <send-serie.davidel@xmailserver.org.27461.1178495355.1>
-Message-ID: <p73k5vgg6c9.fsf@bingen.suse.de>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.3
+	id S1751349AbXEJMdZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 08:33:25 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070510115927.GB16409@srv1-m700-lanp.koti>
+References: <20070510115927.GB16409@srv1-m700-lanp.koti>
+To: mikukkon@iki.fi
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Bug in fs/afs/write.c function afs_write_back_from_locked_page()
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 10 May 2007 13:33:18 +0100
+Message-ID: <10764.1178800398@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi <davidel@xmailserver.org> writes:
 
-> This patch serie introduces a way to log high frequency/volume data
-> out of the kernel. Logging scheduler operations for example, with
-> loads that generate tenths of thousands of context switches per second
-> (possibly from multiple CPUs), can overload the kernel printk. Also,
-> logging in binary form helps in reducing the size of the logged data
-> that is tranfered from kernel to userspace. The kmon logger uses per
-> CPU buffers (rings) that are flushed at a given frequency to all the
-> instances of the kmon devices.
+How about the attached instead?
 
-Sounds like you reinvented relayfs? (and ktrace before that)
+David
+---
+AFS: Fix interminable loop in afs_write_back_from_locked_page()
 
--Andi
+From: Mika Kukkonen <mikukkon@miku.homelinux.net>
+
+Following bug was uncovered by compiling with '-W' flag:
+
+  CC [M]  fs/afs/write.o
+fs/afs/write.c: In function ‘afs_write_back_from_locked_page’:
+fs/afs/write.c:398: warning: comparison of unsigned expression >= 0 is always true
+
+Loop variable 'n' is unsigned, so wraps around happily as far as I can
+see. Trival fix attached (compile tested only).
+
+Signed-Off-By: Mika Kukkonen <mikukkon@iki.fi>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ fs/afs/write.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index 67ae4db..c26d5e8 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -395,8 +395,10 @@ static int afs_write_back_from_locked_page(struct afs_writeback *wb,
+ 		if (n == 0)
+ 			goto no_more;
+ 		if (pages[0]->index != start) {
+-			for (n--; n >= 0; n--)
+-				put_page(pages[n]);
++			do {
++				put_page(pages[--n]);
++			} while (n > 0);
++			put_page(pages[0]);
+ 			goto no_more;
+ 		}
+ 
