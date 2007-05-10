@@ -1,99 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754519AbXEJBiN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755457AbXEJBjL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754519AbXEJBiN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 21:38:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbXEJBh7
+	id S1755457AbXEJBjL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 21:39:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbXEJBi6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 21:37:59 -0400
-Received: from mail04.syd.optusnet.com.au ([211.29.132.185]:34930 "EHLO
-	mail04.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751526AbXEJBh6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 21:37:58 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
-Date: Thu, 10 May 2007 11:34:33 +1000
-User-Agent: KMail/1.9.5
-Cc: Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705100928.34056.kernel@kolivas.org> <464261B5.6030809@yahoo.com.au>
-In-Reply-To: <464261B5.6030809@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 21:38:58 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:42980 "EHLO havoc.gtf.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751555AbXEJBi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 21:38:58 -0400
+Date: Wed, 9 May 2007 21:38:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       linux-usb-devel@lists.sourceforge.net
+Subject: [git patch] move USB net drivers to drivers/net
+Message-ID: <20070510013855.GA3402@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705101134.34350.kernel@kolivas.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 May 2007 10:05, Nick Piggin wrote:
-> Con Kolivas wrote:
-> > Well how about that? That was the difference with a swap _file_ as I
-> > said, but I went ahead and checked with a swap partition as I used to
-> > have. I didn't notice, but somewhere in the last few months, swap
-> > prefetch code itself being unchanged for a year, seems to have been
-> > broken by other changes in the vm and it doesn't even start up
-> > prefetching often and has stale swap entries in its list. Once it breaks
-> > like that it does nothing from then on. So that leaves me with a quandry
-> > now.
-> >
-> >
-> > Do I:
-> >
-> > 1. Go ahead and find whatever breakage was introduced and fix it with
-> > hopefully a trivial change
-> >
-> > 2. Do option 1. and then implement support for yet another kernel feature
-> > (cpusets) that will be used perhaps never with swap prefetch [No Nick I
-> > don't believe you that cpusets have anything to do with normal users on a
-> > desktop ever; if it's used on a desktop it will only be by a kernel
-> > developer testing the cpusets code].
-> >
-> > or
-> >
-> > 3. Dump swap prefetch forever and ignore that it ever worked and was
-> > helpful and was a lot of work to implement and so on.
-> >
-> >
-> > Given that even if I do 1 and/or 2 it'll still be blocked from ever going
-> > to mainline I think the choice is clear.
-> >
-> > Nick since you're personally the gatekeeper for this code, would you like
-> > to make a call? Just say 3 and put me out of my misery please.
->
-> I'm not the gatekeeper and it is completely up to you whether you want
-> to work on something or not... but I'm sure you understand where I was
-> coming from when I suggested it doesn't get merged yet.
 
-No matter how you spin it, you're the gatekeeper.
+This was ACK'd by Greg, as you see in the sign-offs.  See the commit
+below for rationale.
 
-> You may not believe this, but I agree that swap prefetching (and
-> prefetching in general) has some potential to help desktop workloads :).
-> But it still should go through the normal process of being tested and
-> questioned and having a look at options for first improving existing
-> code in those problematic cases.
+USB is now treated like other buses, for network drivers:
+* USB network driver patches should go to me and netdev
+* Just like in PCI or PCMCIA land, bus-specific code may
+  originate from the USB side of the house (Greg's tree).
 
-Not this again? Proof was there ages ago that it helped and no proof that it 
-harmed could be found yet you cunningly pretend it never existed. It's been 
-done to death and I'm sick of this.
 
-> Once that process happens and it is shown to work nicely, etc., then I
-> would not be able to (or want to) keep it from getting merged.
->
-> As far as cpusets goes... if your code goes in last, then you have to
-> make it work with what is there, as a rule. People are using cpusets
-> for memory resource control, which would have uses on a desktop system.
-> It is just a really bad precedent to set, having different parts of the
-> VM not work correctly together. Even if you made them mutually
-> exclusive CONFIG_ options, that is still not a very nice solution.
 
-That's as close to a 3 as I'm likely to get out of you.
+Please pull from 'usb-move' branch of
+master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git usb-move
 
-Andrew you'll be relieved to know I would like you to throw swap prefetch and 
-related patches into the bin. Thanks.
+to receive the following update:
 
--- 
--ck
+
+commit 5b2fc499917e5897a13add780e181b4cef197072
+Author: Jeff Garzik <jeff@garzik.org>
+Date:   Wed May 9 21:31:55 2007 -0400
+
+    Move USB network drivers to drivers/net/usb.
+    
+    It is preferable to group drivers by usage (net, scsi, ATA, ...) than
+    by bus.  When reviewing drivers, the [PCI|USB|PCMCIA|...] maintainer
+    is probably less qualified on networking issues than a networking
+    maintainer.  Also, from a practical standpoint, chips often
+    appear on multiple buses, which is why we do not put drivers into
+    drivers/pci/net.
+    
+    Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+    Signed-off-by: Jeff Garzik <jeff@garzik.org>
+
+
+ drivers/net/Kconfig                       |    2 ++
+ drivers/net/Makefile                      |    8 ++++++++
+ drivers/{usb/net => net/usb}/Kconfig      |    0 
+ drivers/{usb/net => net/usb}/Makefile     |    0 
+ drivers/{usb/net => net/usb}/asix.c       |    0 
+ drivers/{usb/net => net/usb}/catc.c       |    0 
+ drivers/{usb/net => net/usb}/cdc_ether.c  |    0 
+ drivers/{usb/net => net/usb}/cdc_subset.c |    0 
+ drivers/{usb/net => net/usb}/dm9601.c     |    0 
+ drivers/{usb/net => net/usb}/gl620a.c     |    0 
+ drivers/{usb/net => net/usb}/kaweth.c     |    0 
+ drivers/{usb/net => net/usb}/kawethfw.h   |    0 
+ drivers/{usb/net => net/usb}/mcs7830.c    |    0 
+ drivers/{usb/net => net/usb}/net1080.c    |    0 
+ drivers/{usb/net => net/usb}/pegasus.c    |    0 
+ drivers/{usb/net => net/usb}/pegasus.h    |    0 
+ drivers/{usb/net => net/usb}/plusb.c      |    0 
+ drivers/{usb/net => net/usb}/rndis_host.c |    0 
+ drivers/{usb/net => net/usb}/rtl8150.c    |    0 
+ drivers/{usb/net => net/usb}/usbnet.c     |    0 
+ drivers/{usb/net => net/usb}/usbnet.h     |    0 
+ drivers/{usb/net => net/usb}/zaurus.c     |    0 
+ drivers/usb/Kconfig                       |    2 --
+ drivers/usb/Makefile                      |    7 -------
+ 24 files changed, 10 insertions(+), 9 deletions(-)
+ rename drivers/{usb/net => net/usb}/Kconfig (100%)
+ rename drivers/{usb/net => net/usb}/Makefile (100%)
+ rename drivers/{usb/net => net/usb}/asix.c (100%)
+ rename drivers/{usb/net => net/usb}/catc.c (100%)
+ rename drivers/{usb/net => net/usb}/cdc_ether.c (100%)
+ rename drivers/{usb/net => net/usb}/cdc_subset.c (100%)
+ rename drivers/{usb/net => net/usb}/dm9601.c (100%)
+ rename drivers/{usb/net => net/usb}/gl620a.c (100%)
+ rename drivers/{usb/net => net/usb}/kaweth.c (100%)
+ rename drivers/{usb/net => net/usb}/kawethfw.h (100%)
+ rename drivers/{usb/net => net/usb}/mcs7830.c (100%)
+ rename drivers/{usb/net => net/usb}/net1080.c (100%)
+ rename drivers/{usb/net => net/usb}/pegasus.c (100%)
+ rename drivers/{usb/net => net/usb}/pegasus.h (100%)
+ rename drivers/{usb/net => net/usb}/plusb.c (100%)
+ rename drivers/{usb/net => net/usb}/rndis_host.c (100%)
+ rename drivers/{usb/net => net/usb}/rtl8150.c (100%)
+ rename drivers/{usb/net => net/usb}/usbnet.c (100%)
+ rename drivers/{usb/net => net/usb}/usbnet.h (100%)
+ rename drivers/{usb/net => net/usb}/zaurus.c (100%)
+
+
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index b86ccd2..d9842d8 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2499,6 +2499,8 @@ source "drivers/net/tokenring/Kconfig"
+ 
+ source "drivers/net/wireless/Kconfig"
+ 
++source "drivers/net/usb/Kconfig"
++
+ source "drivers/net/pcmcia/Kconfig"
+ 
+ source "drivers/net/wan/Kconfig"
+diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+index 59c0459..c5d8423 100644
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -206,6 +206,14 @@ obj-$(CONFIG_TR) += tokenring/
+ obj-$(CONFIG_WAN) += wan/
+ obj-$(CONFIG_ARCNET) += arcnet/
+ obj-$(CONFIG_NET_PCMCIA) += pcmcia/
++
++obj-$(CONFIG_USB_CATC)          += usb/
++obj-$(CONFIG_USB_KAWETH)        += usb/
++obj-$(CONFIG_USB_PEGASUS)       += usb/
++obj-$(CONFIG_USB_RTL8150)       += usb/
++obj-$(CONFIG_USB_USBNET)        += usb/
++obj-$(CONFIG_USB_ZD1201)        += usb/
++
+ obj-y += wireless/
+ obj-$(CONFIG_NET_TULIP) += tulip/
+ obj-$(CONFIG_HAMRADIO) += hamradio/
+
+[SNIP ADD PATCHES AS OBVIOUS]
+
+diff --git a/drivers/usb/Kconfig b/drivers/usb/Kconfig
+index b847bbc..278a22c 100644
+--- a/drivers/usb/Kconfig
++++ b/drivers/usb/Kconfig
+@@ -87,8 +87,6 @@ source "drivers/usb/storage/Kconfig"
+ 
+ source "drivers/usb/image/Kconfig"
+ 
+-source "drivers/usb/net/Kconfig"
+-
+ source "drivers/usb/mon/Kconfig"
+ 
+ comment "USB port drivers"
+diff --git a/drivers/usb/Makefile b/drivers/usb/Makefile
+index 0ef090b..72464b5 100644
+--- a/drivers/usb/Makefile
++++ b/drivers/usb/Makefile
+@@ -23,13 +23,6 @@ obj-$(CONFIG_USB_PRINTER)	+= class/
+ obj-$(CONFIG_USB_STORAGE)	+= storage/
+ obj-$(CONFIG_USB)		+= storage/
+ 
+-obj-$(CONFIG_USB_CATC)		+= net/
+-obj-$(CONFIG_USB_KAWETH)	+= net/
+-obj-$(CONFIG_USB_PEGASUS)	+= net/
+-obj-$(CONFIG_USB_RTL8150)	+= net/
+-obj-$(CONFIG_USB_USBNET)	+= net/
+-obj-$(CONFIG_USB_ZD1201)	+= net/
+-
+ obj-$(CONFIG_USB_MDC800)	+= image/
+ obj-$(CONFIG_USB_MICROTEK)	+= image/
+ 
+[SNIP REMOVE PATCHES AS OBVIOUS]
