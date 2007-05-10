@@ -1,62 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbXEJVNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759398AbXEJVOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761408AbXEJVNk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755704AbXEJVNd
+	id S1759398AbXEJVOF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761570AbXEJVNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:13:33 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48428 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1758618AbXEJVNc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:13:32 -0400
-Cc: mtk-manpages@gmx.net
-Content-Type: text/plain; charset="us-ascii"
-Date: Thu, 10 May 2007 23:13:30 +0200
-From: "Michael Kerrisk" <mtk-manpages@gmx.net>
-Message-ID: <20070510211330.88390@gmx.net>
-MIME-Version: 1.0
-Subject: man-pages-2.47 and man-pages-2.48 are released
-To: linux-kernel@vger.kernel.org
-X-Authenticated: #24879014
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX1/nemVnoQLnykNqNNWeVJhry9VFD0JXB8SK/zBMGM
- grJhd8QTN84xpKH92EQ/8S8E3q+qiarT6vQw== 
-Content-Transfer-Encoding: 7bit
-X-GMX-UID: zrh0ce5bbGInXd/pFmVngwRvcmZ1Zpym
+	Thu, 10 May 2007 17:13:52 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:57231 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762002AbXEJVNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:13:51 -0400
+Date: Thu, 10 May 2007 23:14:46 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Chris Wedgwood <cw@f00f.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: (hacky) [PATCH] silence MODPOST section mismatch warnings
+Message-ID: <20070510211446.GB23149@uranus.ravnborg.org>
+References: <20070510203417.GA23019@tuatara.stupidest.org> <20070510204037.GE29713@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070510204037.GE29713@flint.arm.linux.org.uk>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gidday,
+On Thu, May 10, 2007 at 09:40:38PM +0100, Russell King wrote:
+> On Thu, May 10, 2007 at 01:34:18PM -0700, Chris Wedgwood wrote:
+> > MODPOST seems to be spewing bogus warnings.  It's not clear how best
+> > to fix it so perhaps we should silence it for now?
+> 
+> I agree.  Example bogus warning:
+> 
+> WARNING: arch/arm/mach-iop32x/built-in.o - Section mismatch:
+>  reference to .init.text: from .data between 'iq80321_timer'
+>  (at offset 0x428) and 'iq80321_serial_device'
+> 
+> c04088fc d iq80321_timer
+> c0408950 d iq80321_serial_device
+> 
+> It's completely unclear what is referencing what, what the two named
+> symbols mean, and even what "at offset" relates to.
 
-I just released man-pages-2.47 and man-pages-2.48.
+The error message tells you that somewhere _between_ the symbol
+iq80312_timer and iq80321_serial_device there is a recerence to an address
+in the .init.text section.
+The referenced address could not be resolved to an actual symbol.
 
-These releases are now available for download at:
+Lets take a look:
+git grep iq80321_timer reveals:
+arch/arm/mach-iop32x/iq80321.c:static void __init iq80321_timer_init(void)
+arch/arm/mach-iop32x/iq80321.c:static struct sys_timer iq80321_timer = {
+arch/arm/mach-iop32x/iq80321.c: .init           = iq80321_timer_init,
+arch/arm/mach-iop32x/iq80321.c: .timer          = &iq80321_timer,
 
-    http://www.kernel.org/pub/linux/docs/manpages
-    or ftp://ftp.kernel.org/pub/linux/docs/manpages
-    or mirrors: ftp://ftp.XX.kernel.org/pub/linux/docs/manpages
+So the one to look at is this structure:
 
-and soon at:
+static struct sys_timer iq80321_timer = {
+	.init		= iq80321_timer_init,
+	.offset		= iop_gettimeoffset,
+};
 
-    ftp://ftp.win.tue.nl/pub/linux-local/manpages
 
-These releases consist mainly of formatting fixes and source file 
-layout changes (in a large number of pages) to achieve greater 
-consistency across pages.
+iq80321_timer_init is a function marked __init
+So we have a reference from .data to .init.text
 
-Cheers,
+If you remove the static definition of iq80321_timer then you will see
+that modpost can resolve the symbol for you.
 
-Michael
+The usage of iq80321_timer is obscufated inside a MACHINCE_START/MACHINE_END
+macor so I did not look further.
+But based on the naming of the member in the struct ".init" I will assume
+this is legitime reference to .init.text from .data.
 
--- 
-Michael Kerrisk
-maintainer of Linux man pages Sections 2, 3, 4, 5, and 7 
+Today modpost whitelist (avoid warnings) if a variable are named on of the 
+following:
 
-Want to help with man page maintenance?  
-Grab the latest tarball at
-ftp://ftp.win.tue.nl/pub/linux-local/manpages/, 
-read the HOWTOHELP file and grep the source 
-files for 'FIXME'.
+*driver, *_template, *_sht, *_ops, *_probe, *probe_one
 
+We could add *timer to silence this particular warning indeed.
+Or we could rename the varibale.
+Or we could find a way to annotate the data to say "references to .init.*
+is OK and should not be warned.
+
+
+The latter seems to be most appropriate so this is the direction I'm heading.
+
+	Sam
