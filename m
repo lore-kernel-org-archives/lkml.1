@@ -1,79 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758525AbXEJIS4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbXEJITb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758525AbXEJIS4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 04:18:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756129AbXEJISp
+	id S1759612AbXEJITb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 04:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757019AbXEJITS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 04:18:45 -0400
-Received: from mailout.stusta.mhn.de ([141.84.69.5]:43793 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755675AbXEJISo (ORCPT
+	Thu, 10 May 2007 04:19:18 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:61199 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758686AbXEJITP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 04:18:44 -0400
-Date: Thu, 10 May 2007 10:18:45 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: John Anthony Kazos Jr <jakj@j-a-k-j.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: Re: include files: convert "include" subdirectory to UTF-8
-Message-ID: <20070510081845.GJ23574@stusta.de>
-References: <200705092102.l49L2axT029607@hera.kernel.org> <Pine.LNX.4.64.0705100921230.13222@anakin>
+	Thu, 10 May 2007 04:19:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=beta;
+        h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
+        b=Z4cLHQfN9JUgpNiBmzqsZ3kJfn8dLUz2KW8hwoSBI2pW21FWqkclb//QpuQn0+Qe9kIoA7ApNxQqZ8UzJazg9Gp5NqSsmQx+yFl4CklJmHRXUudg6QZrrGa/1f3fti5EE6ZWkzg3vNsGWqdUb9m9Vfns+umUporJ10WMssGe7gY=
+Date: Thu, 10 May 2007 10:19:00 +0200 (CEST)
+From: Esben Nielsen <nielsen.esben@googlemail.com>
+X-X-Sender: simlo@frodo.shire
+To: Li Yu <raise.sail@gmail.com>
+cc: Steven Rostedt <srostedt@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Hi, I have one question about rt_mutex.
+In-Reply-To: <4642CB06.2080409@gmail.com>
+Message-ID: <Pine.LNX.4.64.0705100947570.12299@frodo.shire>
+References: <4642CB06.2080409@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0705100921230.13222@anakin>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 09:22:44AM +0200, Geert Uytterhoeven wrote:
-> On Wed, 9 May 2007, Linux Kernel Mailing List wrote:
-> > diff --git a/include/asm-m68k/atarihw.h b/include/asm-m68k/atarihw.h
-> > index f28acd0..6211363 100644
-> > --- a/include/asm-m68k/atarihw.h
-> > +++ b/include/asm-m68k/atarihw.h
-> > @@ -2,7 +2,7 @@
-> >  ** linux/atarihw.h -- This header defines some macros and pointers for
-> >  **                    the various Atari custom hardware registers.
-> >  **
-> > -** Copyright 1994 by Bj?rn Brauel
-> > +** Copyright 1994 by Bjrn Brauel
-> >  **
-> >  ** 5/1/94 Roman Hodek:
-> >  **   Added definitions for TT specific chips.
-> > diff --git a/include/asm-m68k/atariints.h b/include/asm-m68k/atariints.h
-> > index 0ed454f..ce6c445 100644
-> > --- a/include/asm-m68k/atariints.h
-> > +++ b/include/asm-m68k/atariints.h
-> > @@ -1,7 +1,7 @@
-> >  /*
-> >  ** atariints.h -- Atari Linux interrupt handling structs and prototypes
-> >  **
-> > -** Copyright 1994 by Bj?rn Brauel
-> > +** Copyright 1994 by Bjrn Brauel
-> >  **
-> >  ** 5/2/94 Roman Hodek:
-> >  **   TT interrupt definitions added.
-> 
-> These two seem to have failed.
 
-They changed from wrong and invalid UTF-8 to wrong and valid UTF-8.
 
-I saw this when applying the patch, but I wasn't sure which character 
-would be correct in this name.
+On Thu, 10 May 2007, Li Yu wrote:
 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
+> Hi, Steven.
+>
+> Nice to meet you again.
+>
+> I have read the rt-mutex-design.txt that you wrote. That is excellent
+> description of rt_mutex. But I have a question for rt_mutex.
+>
+> As you said:
+>
+>
+>> Now since mutexes can be defined by user-land applications, we don't
+> want a DOS
+>> type of application that nests large amounts of mutexes to create a large
+>> PI chain, and have the code holding spin locks while looking at a large
+>> amount of data. So to prevent this, the implementation not only implements
+>> a maximum lock depth, but also only holds at most two different locks at a
+>> time, as it walks the PI chain. More about this below.
+>
+> After read the implementation of rt_mutex_adjust_prio_chain(), I found
+> the we really require maximin lock depth (1024 default), but I can not
+> see the check for more same locks duplication. Does this doc is
+> inconsistent with code?
+>
+> Thanks in advanced.
+>
+> Good luck.
+> - Li Yu
 
-cu
-Adrian
+At the label "again:" inside rt_mutex_adjust_prio_chain() no spinlocks are 
+held. That is the kernel can reschedule at that point in the loop. So if 
+you as a priority X task try to take a lock you will not delay any higher 
+priority than X by more than the amount of time it takes to go 
+around in the loop once. The max lock depth is just an extra safety.
 
--- 
+The whole idea in a priority based real-time system is that the latency on 
+priorty X only depends on what is going on at priority X and higher 
+(including interrupt handlers). What ever goes on at lower priority can only
+interfere with a fixed, predetermined, small amount of jitter.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
+Esben
 
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
