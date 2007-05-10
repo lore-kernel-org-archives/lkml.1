@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762611AbXEJOMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761732AbXEJONt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762611AbXEJOMn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 10:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761693AbXEJOMf
+	id S1761732AbXEJONt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 10:13:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbXEJONn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 10:12:35 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:29171 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759668AbXEJOMd (ORCPT
+	Thu, 10 May 2007 10:13:43 -0400
+Received: from mail.syneticon.net ([213.239.212.131]:43382 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755176AbXEJONm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 10:12:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=Qk4HK8934x5SqjbxFcogeM2aAPANdmpeQ/QE6n6zpgTF9H/p3DTqQ5T8HnzOGyFANDD2RgUI7vSaGDsA8QK1eTFeTlGGCNC7bOtReOExz8zG/DzcFcvT24bJ+LwE14zOTIagVSn7gRY3RGw/1nZbZjSwZDU/6Wkh2BPF+PzvLLI=
-Message-ID: <547a31ab0705100712w740e8fbuece5013d05a449b9@mail.gmail.com>
-Date: Thu, 10 May 2007 16:12:32 +0200
-From: "Croulder Croulder" <croulder@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: Kernel BUG: NULL pointer dereference , reference to sys_recvmsg
+	Thu, 10 May 2007 10:13:42 -0400
+Message-ID: <4643283B.2060203@wpkg.org>
+Date: Thu, 10 May 2007 16:12:11 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
+       rshitrit@marvell.com, dan.j.williams@intel.com, nickpiggin@yahoo.com.au,
+       Justin Piszcz <jpiszcz@lucidpixels.com>, ilmari@ilmari.org
+Subject: RE: [PATCH 00/16] raid acceleration and asynchronous offload api
+ for 2.6.22
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings,
+Ronen Shitrit wrote:
 
-The next report is a Kernel NULL pointer dereference in tcp/ip (IPv4).
+> The resync numbers you sent, looks very promising :)
+> Do you have any performance numbers that you can share for these set of
+> patches, which shows the Rd/Wr IO bandwidth.
 
-I see that message all time in syslog.conf and console.
+I have some simple tests made with hdparm, with the results I don't 
+understand.
 
-Kernel compiled with gcc 4.1.1    ->   (Debian 4.1.1-21)
-Kernel Version: 2.6.21.1 (official source code)
-Processor: 2 x Xeon 2.8
-Ram: 1G
-Swap: 1G
-Raid: Using raid software (Raid1 and Rai5)
-Network report: 2Mb/sg output , 512Kb/sg input
-Protocols: tcp, udp, icmp, arp
+We see hdparm results are fine if we access the whole device:
 
+thecus:~# hdparm -Tt /dev/sdd
 
-server kernel: EIP: [<c03bc7df>] sys_recvmsg+0x100/0x1cd SS:ESP 0068:ec9f1e7c
-May 10 13:41:22 server kernel: BUG: unable to handle kernel NULL
-pointer dereference at virtual address 0000000f
-May 10 13:41:22 server kernel:  printing eip:
-May 10 13:41:22 server kernel: c03bc7df
-May 10 13:41:22 server kernel: *pde = 00000000
-May 10 13:41:22 server kernel: Oops: 0000 [#64]
-May 10 13:41:22 server kernel: SMP
-May 10 13:41:22 server kernel: Modules linked in:
-May 10 13:41:22 server kernel: CPU:    1
-May 10 13:41:22 server kernel: EIP:    0060:[<c03bc7df>]    Not tainted VLI
-May 10 13:41:22 server kernel: EFLAGS: 00010202   (2.6.21.1-dh1 #7)
-May 10 13:41:22 server kernel: EIP is at sys_recvmsg+0x100/0x1cd
-May 10 13:41:22 server kernel: eax: bf5f4148   ebx: 00000000   ecx:
-00007d00   edx: 00000040
-May 10 13:41:22 server kernel: esi: ffffffff   edi: 00000000   ebp:
-ec9f1f08   esp: ec9f1e7c
-May 10 13:41:22 server kernel: ds: 007b   es: 007b   fs: 00d8  gs:
-0033  ss: 0068
-May 10 13:41:22 server kernel: Process hlxserverplus (pid: 32149,
-ti=ec9f0000 task=f4bc90b0 task.ti=ec9f0000)
-May 10 13:41:22 server kernel: Stack: 00000001 bf5f4148 00000008
-c0139979 00000002 00000044 00000002 00000000
-May 10 13:41:22 server kernel:        000280d2 c0563630 00000000
-00000001 3aa4bcb4 00000001 ff4be90f 5761ed52
-May 10 13:41:22 server kernel:        c13edca0 0000096c 000280d2
-c0563628 f4bc90b0 c0139a47 00000044 ec9f1efa
-May 10 13:41:22 server kernel: Call Trace:
-May 10 13:41:22 server kernel:  [<c0139979>] get_page_from_freelist+0x24d/0x2c9
-May 10 13:41:22 server kernel:  [<c0139a47>] __alloc_pages+0x52/0x286
-May 10 13:41:22 server kernel:  [<c03f3171>] tcp_v4_hash+0xfe/0x110
-May 10 13:41:22 server kernel:  [<c03bd968>] release_sock+0x12/0x9c
-May 10 13:41:22 server kernel:  [<c03bcf46>] sys_socketcall+0x239/0x242
-May 10 13:41:22 server kernel:  [<c0110bde>] do_page_fault+0x0/0x512
-May 10 13:41:22 server kernel:  [<c0102578>] syscall_call+0x7/0xb
-May 10 13:41:22 server kernel:  =======================
-May 10 13:41:22 server kernel: Code: c0 89 c1 89 84 24 ec 00 00 00 0f
-88 a9 00 00 00 8b 84 24 dc 00 00 00 c7 84 24 e4 00 00 00 00 00 00 00
-89 da 83 ca 40 89 44 24 04 <8b> 46 10 f6 40 19 08 89 f0 0f 45 da 8d 94
-24 cc 00 00 00 89 1c
-May 10 13:41:22 server kernel: EIP: [<c03bc7df>]
-sys_recvmsg+0x100/0x1cd SS:ESP 0068:ec9f1e7c
+/dev/sdd:
+  Timing cached reads:   392 MB in  2.00 seconds = 195.71 MB/sec
+  Timing buffered disk reads:  146 MB in  3.01 seconds =  48.47 MB/sec
 
 
+But are 10 times worse (Timing buffered disk reads) when we access 
+partitions:
 
-any fix?
+thecus:/# hdparm -Tt /dev/sdc1 /dev/sdd1
+
+/dev/sdc1:
+  Timing cached reads:   396 MB in  2.01 seconds = 197.18 MB/sec
+  Timing buffered disk reads:   16 MB in  3.32 seconds =   4.83 MB/sec
+
+/dev/sdd1:
+  Timing cached reads:   394 MB in  2.00 seconds = 196.89 MB/sec
+  Timing buffered disk reads:   16 MB in  3.13 seconds =   5.11 MB/sec
+
+
+Why is it so much worse?
+
+
+I used 2.6.21-iop1 patches from http://sf.net/projects/xscaleiop; right 
+now I use 2.6.17-iop1, for which the results are ~35 MB/s when accessing 
+a device (/dev/sdd) or a partition (/dev/sdd1).
+
+
+In kernel config, I enabled Intel DMA engines.
+
+The device I use is Thecus n4100, it is "Platform: IQ31244 (XScale)", 
+and has 600 MHz CPU.
+
+
+-- 
+Tomasz Chmielewski
+http://wpkg.org
+
