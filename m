@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbXEJSwp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760919AbXEJSw4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760011AbXEJSwp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 14:52:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbXEJSwh
+	id S1760919AbXEJSw4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 14:52:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbXEJSwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 14:52:37 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:52677 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751769AbXEJSwg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 14:52:38 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:58321 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752989AbXEJSwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 May 2007 14:52:36 -0400
-Date: Thu, 10 May 2007 19:52:26 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Neil Brown <neilb@suse.de>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] utimensat implementation
-Message-ID: <20070510185226.GA1458@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Ulrich Drepper <drepper@redhat.com>, Neil Brown <neilb@suse.de>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com> <17969.22692.855242.359680@notabene.brown> <46315C61.30001@redhat.com> <464363DC.7060607@redhat.com>
+Subject: Re: Fw: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
+From: john stultz <johnstul@us.ibm.com>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Cc: lenb@kernel.org, ak@suse.de, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de
+In-Reply-To: <200705090911.l499BHJL016845@harpo.it.uu.se>
+References: <200705090911.l499BHJL016845@harpo.it.uu.se>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 11:52:33 -0700
+Message-Id: <1178823153.6011.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464363DC.7060607@redhat.com>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 11:26:36AM -0700, Ulrich Drepper wrote:
-> >That's still on the table.  We might end up with an fpathconf() solution.
-> 
-> OK, the pathconf()-based solution will most probably be in the next 
-> POSIX spec.
-> 
-> Now, somebody has to provide a way to get to this information.  The 
-> kernel does not export it so far.  Is it finally time to break down and 
-> allow pathconf() and fpathconf() syscalls into the kernel?
+On Wed, 2007-05-09 at 11:11 +0200, Mikael Pettersson wrote:
+> On Tue, 8 May 2007 15:14:36 -0400, Len Brown wrote:
+> > On Friday 04 May 2007 03:42, Mikael Pettersson wrote:
+> > > On Thu, 03 May 2007 19:38:50 -0700, john stultz wrote:
+> > > > > 	So that slow acpi_pm on x86_64 seems to be connected w/ the idle loop.
+> > > > > I'm guessing the chipset halts the ACPI PM in lower C states. Do you
+> > > > > have any guesses as to what might differ between x86_64 and i386 ACPI
+> > > > > idle loops? Or might this be something different in what the BIOS
+> > > > > exports in x86_64 mode or i386 mode?
+> > > > 
+> > > > Mikael,
+> > > > 	Just trying to dig a bit more through the acpi_processor_idle code.
+> > > > Could you run "cat /proc/acpi/processor/CPU1/power" and reply w/ the
+> > > > output?
+> > > 
+> > > Here's that file with the x86-64 kernel:
+> > > 
+> > > active state:            C2
+> > > max_cstate:              C8
+> > > bus master activity:     00000000
+> > > maximum allowed latency: 20000 usec
+> > > states:
+> > >     C1:                  type[C1] promotion[C2] demotion[--] latency[000] usage[00107840] duration[00000000000000000000]
+> > >    *C2:                  type[C2] promotion[--] demotion[C1] latency[010] usage[-1987043693] duration[00000000003044809185]
+> > 
+> > it may be that the problem is C2, not C1 on this box and thus "idle=poll" may be
+> > overkill to workaround it.
+> > 
+> > You can disable C2 with "processor.max_cstate=1"
 
-I'd be happy to have them.  While it's not the nicest API in the world
-it's in Posix and we have to support it at the library level, so we
-should better get it right.
+Hey Mikael, 
+	Did booting w/ processor.max_cstate=1 have the same effect as booting
+w/ idle=poll ?
 
-I'd like to avoid having a big swithc statement in every filesystem,
-though, instead of we should have a table-driven approach instead
-where each filesystem defines one table (or multiple ones when it
-supports subtypes with different limits) and just sets a pointer in
-the superblock to it.
+thanks
+-john
 
-E.g.
-
-long foofs_pathconf {
-	[_PC_LINK_MAX]		= 16384,
-	[_PC_2_SYMLINKS]	= 1,
-	...
-}
-
-and then in fill_super:
-
-	sb->s_pathconf = &foofs_pathconf;
