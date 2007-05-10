@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbXEJTjQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759426AbXEJTj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759532AbXEJTjQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 15:39:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753925AbXEJTjE
+	id S1759426AbXEJTj3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 15:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759413AbXEJTjQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 15:39:04 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:55747 "EHLO fieldses.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750893AbXEJTjB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 15:39:01 -0400
-Date: Thu, 10 May 2007 15:38:59 -0400
-To: Doug Chapman <doug.chapman@hp.com>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
-       Marc Eshel <eshel@almaden.ibm.com>
-Subject: Re: post 2.6.21 regression in F_GETLK
-Message-ID: <20070510193859.GR13719@fieldses.org>
-References: <1178823375.7247.11.camel@dchapman.boston.redhat.com> <20070510193050.GQ13719@fieldses.org>
+	Thu, 10 May 2007 15:39:16 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:36188 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759288AbXEJTjO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 15:39:14 -0400
+Message-ID: <46437416.4070401@zytor.com>
+Date: Thu, 10 May 2007 12:35:50 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510193050.GQ13719@fieldses.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: Jonathan Corbet <corbet@lwn.net>
+CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: [PATCH] "volatile considered harmful" document
+References: <25493.1178744744@lwn.net>
+In-Reply-To: <25493.1178744744@lwn.net>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 03:30:50PM -0400, bfields wrote:
-> On Thu, May 10, 2007 at 02:56:15PM -0400, Doug Chapman wrote:
-> > A recent regression (introduced after 2.6.21) was caught by the LTP test
-> > fcntl11.  It appears that F_GETLK is not properly checking for existing
-> > F_RDLCK and allows taking out a write lock.
+Jonathan Corbet wrote:
+> OK, here's an updated version of the volatile document - as a plain text
+> file this time.  It drops a new file in Documentation/, but might it be
+> better as an addition to CodingStyle?
 > 
-> Ouch.
-> 
-> > This can be demonstrated by either running fcntl11 from the LTP suite or
-> > I have hacked up a much shorter version which demonstrates the issue and
-> > am attaching it.
-> > 
-> > Using git bisect I came up with this commit as the one that introduced
-> > the issue.
-> 
-> Thanks for the report--investigating....
+> Comments welcome,
 
-Argh.  Looks like a cut-n-paste error.  Does this fix it?
+I have found one use of volatile which I consider legitimate: pointers
+to data structures read or written by I/O devices in coherent memory
+(typically pci_coherent memory.)  This is local to device drivers, but
+as far as I can tell, the use of volatile here is legitimate, although
+arguably it will be redundant in > 90% of all cases due to the
+incidental presence of other memory barriers.
 
---b.
+In Ethernet drivers, for example, it is common for the network card to
+maintain a pointer in host memory the the latest descriptor written; you
+will generally have a loop of the form:
 
-diff --git a/fs/locks.c b/fs/locks.c
-index 671a034..909f454 100644
---- a/fs/locks.c
-+++ b/fs/locks.c
-@@ -1632,6 +1632,7 @@ static int posix_lock_to_flock(struct flock *flock, struct file_lock *fl)
- 	flock->l_len = fl->fl_end == OFFSET_MAX ? 0 :
- 		fl->fl_end - fl->fl_start + 1;
- 	flock->l_whence = 0;
-+	flock->l_type = fl->fl_type;
- 	return 0;
- }
- 
+	while ((this_pointer = *pointer_ptr) > my_last_pointer) {
+		for (pkt = my_last_pointer; pkt < this_pointer; pkt++)
+			receeive_packet(pkt);
+		my_last_pointer = this_pointer;
+	}
+
+pointer_p can then be a volatile pointer into said coherent memory.
+
+	-hpa
+
+		
