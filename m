@@ -1,38 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbXEJCah@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbXEJCw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756550AbXEJCah (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 22:30:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbXEJCaa
+	id S1754842AbXEJCw6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 22:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbXEJCwt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 22:30:30 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:55603 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754300AbXEJCa3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 22:30:29 -0400
-Date: Wed, 9 May 2007 19:30:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: [patch 00/10] Linux Kernel Markers for 2.6.21-mm2
-Message-Id: <20070509193008.b3f0a2f7.akpm@linux-foundation.org>
-In-Reply-To: <20070510015555.973107048@polymtl.ca>
+	Wed, 9 May 2007 22:52:49 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:35937 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751677AbXEJCws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 22:52:48 -0400
+Message-Id: <20070510020917.463378427@polymtl.ca>
 References: <20070510015555.973107048@polymtl.ca>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: quilt/0.46-1
+Date: Wed, 09 May 2007 21:56:03 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       <linux-arch@vger.kernel.org>
+Subject: [patch 08/10] Defines the linker macro EXTRA_RWDATA for the marker data section.
+Content-Disposition: inline; filename=linux-kernel-markers-define-the-linker-macro-extra_rwdata.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 10 May 2007 02:52:38 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 09 May 2007 21:55:55 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+Defines the linker macro EXTRA_RWDATA for the marker data section.  It puts
+the marker data in a separate section that will not pollute the normal .data
+section, which minimize the cache impact.  Markers need such a special section
+because they define a lot of spreaded and small data structures at multiple
+sites.
 
-> He is an updated, folded, version of the Linux Kernel Markers. It replaces the
-> version found in 2.6.21-mm2 at the exact same spot in the series file.
+This patch also creates the __markers_strings section (ro marker strings) and
+makes sure the __markers section is aligned by putting it before the
+__ksymtab_strings (not after).
 
-urgh.  That basically takes us back to square one with whatever review has
-happened.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: <linux-arch@vger.kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
 
-I suppose I could do s/MARK/trace_mark/g on the existing diffs then have a
-go at generating incremental diffs so we can review these changes.
+ include/asm-generic/vmlinux.lds.h |   25 +++++++++++++------------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
 
+Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-05-08 17:07:12.000000000 -0400
++++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-05-08 17:09:12.000000000 -0400
+@@ -116,21 +116,19 @@
+ 		*(__kcrctab_gpl_future)					\
+ 		VMLINUX_SYMBOL(__stop___kcrctab_gpl_future) = .;	\
+ 	}								\
+-									\
+-	/* Kernel symbol table: strings */				\
+-        __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
+-		*(__ksymtab_strings)					\
+-	}								\
+ 	/* Kernel markers : pointers */					\
+-	.markers : AT(ADDR(.markers) - LOAD_OFFSET) {			\
++	__markers : AT(ADDR(__markers) - LOAD_OFFSET) {			\
+ 		VMLINUX_SYMBOL(__start___markers) = .;			\
+-		*(.markers)						\
++		*(__markers)						\
+ 		VMLINUX_SYMBOL(__stop___markers) = .;			\
+ 	}								\
+-	.markers.c : AT(ADDR(.markers.c) - LOAD_OFFSET) {		\
+-		VMLINUX_SYMBOL(__start___markers_c) = .;		\
+-		*(.markers.c)						\
+-		VMLINUX_SYMBOL(__stop___markers_c) = .;			\
++	/* Kernel symbol table: strings */				\
++        __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
++		*(__ksymtab_strings)					\
++	}								\
++	/* Kernel markers : strings */					\
++	__markers_strings : AT(ADDR(__markers_strings) - LOAD_OFFSET) {	\
++		*(__markers_strings)					\
+ 	}								\
+ 	__end_rodata = .;						\
+ 	. = ALIGN(4096);						\
+@@ -145,6 +143,10 @@
+ 									\
+ 	. = ALIGN(4096);
+ 
++#define EXTRA_RWDATA							\
++	. = ALIGN(8);							\
++	*(__markers_data)						\
++
+ #define SECURITY_INIT							\
+ 	.security_initcall.init : AT(ADDR(.security_initcall.init) - LOAD_OFFSET) { \
+ 		VMLINUX_SYMBOL(__security_initcall_start) = .;		\
+@@ -241,4 +243,3 @@
+   	*(.initcall6s.init)						\
+   	*(.initcall7.init)						\
+   	*(.initcall7s.init)
+-
+
+-- 
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
