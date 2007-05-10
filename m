@@ -1,94 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760969AbXEJLog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762042AbXEJLos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760969AbXEJLog (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760827AbXEJLlU
+	id S1762042AbXEJLos (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760875AbXEJLlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:41:20 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:4886 "EHLO kernel.dk"
+	Thu, 10 May 2007 07:41:21 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:4887 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758056AbXEJLlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758158AbXEJLlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 May 2007 07:41:09 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 5/12] scsi: convert to using sg helpers
-Date: Thu, 10 May 2007 13:40:30 +0200
-Message-Id: <11787972373853-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 6/12] i386 dma_map_sg: convert to using sg helpers
+Date: Thu, 10 May 2007 13:40:31 +0200
+Message-Id: <11787972371458-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <11787972373654-git-send-email-jens.axboe@oracle.com>
 References: <11787972373654-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This converts the SCSI mid layer to using the sg helpers for looking up
-sg elements, instead of doing it manually.
+The dma mapping helpers need to be converted to using
+sg helpers as well, so they will work with a chained
+sglist setup.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- drivers/scsi/scsi_lib.c |   20 +++++++++++---------
- 1 files changed, 11 insertions(+), 9 deletions(-)
+ include/asm-i386/dma-mapping.h |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 1f5a07b..f944690 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -302,14 +302,15 @@ static int scsi_req_map_sg(struct request *rq, struct scatterlist *sgl,
- 	struct request_queue *q = rq->q;
- 	int nr_pages = (bufflen + sgl[0].offset + PAGE_SIZE - 1) >> PAGE_SHIFT;
- 	unsigned int data_len = 0, len, bytes, off;
-+	struct scatterlist *sg;
- 	struct page *page;
- 	struct bio *bio = NULL;
- 	int i, err, nr_vecs = 0;
+diff --git a/include/asm-i386/dma-mapping.h b/include/asm-i386/dma-mapping.h
+index 183eebe..a956ec1 100644
+--- a/include/asm-i386/dma-mapping.h
++++ b/include/asm-i386/dma-mapping.h
+@@ -2,10 +2,10 @@
+ #define _ASM_I386_DMA_MAPPING_H
  
--	for (i = 0; i < nsegs; i++) {
--		page = sgl[i].page;
--		off = sgl[i].offset;
--		len = sgl[i].length;
-+	for_each_sg(sgl, sg, nsegs, i) {
-+		page = sg->page;
-+		off = sg->offset;
-+		len = sg->length;
- 		data_len += len;
+ #include <linux/mm.h>
++#include <linux/scatterlist.h>
  
- 		while (len > 0) {
-@@ -2240,18 +2241,19 @@ EXPORT_SYMBOL_GPL(scsi_target_unblock);
-  *
-  * Returns virtual address of the start of the mapped page
-  */
--void *scsi_kmap_atomic_sg(struct scatterlist *sg, int sg_count,
-+void *scsi_kmap_atomic_sg(struct scatterlist *sgl, int sg_count,
- 			  size_t *offset, size_t *len)
+ #include <asm/cache.h>
+ #include <asm/io.h>
+-#include <asm/scatterlist.h>
+ #include <asm/bug.h>
+ 
+ #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
+@@ -35,18 +35,19 @@ dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t size,
+ }
+ 
+ static inline int
+-dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
++dma_map_sg(struct device *dev, struct scatterlist *sglist, int nents,
+ 	   enum dma_data_direction direction)
  {
- 	int i;
- 	size_t sg_len = 0, len_complete = 0;
 +	struct scatterlist *sg;
- 	struct page *page;
+ 	int i;
  
- 	WARN_ON(!irqs_disabled());
+ 	BUG_ON(!valid_dma_direction(direction));
+-	WARN_ON(nents == 0 || sg[0].length == 0);
++	WARN_ON(nents == 0 || sglist[0].length == 0);
  
--	for (i = 0; i < sg_count; i++) {
-+	for_each_sg(sgl, sg, sg_count, i) {
- 		len_complete = sg_len; /* Complete sg-entries */
--		sg_len += sg[i].length;
-+		sg_len += sg->length;
- 		if (sg_len > *offset)
- 			break;
+-	for (i = 0; i < nents; i++ ) {
+-		BUG_ON(!sg[i].page);
++	for_each_sg(sglist, sg, nents, i) {
++		BUG_ON(!sg->page);
+ 
+-		sg[i].dma_address = page_to_phys(sg[i].page) + sg[i].offset;
++		sg->dma_address = page_to_phys(sg->page) + sg->offset;
  	}
-@@ -2265,10 +2267,10 @@ void *scsi_kmap_atomic_sg(struct scatterlist *sg, int sg_count,
- 	}
  
- 	/* Offset starting from the beginning of first page in this sg-entry */
--	*offset = *offset - len_complete + sg[i].offset;
-+	*offset = *offset - len_complete + sg->offset;
- 
- 	/* Assumption: contiguous pages can be accessed as "page + i" */
--	page = nth_page(sg[i].page, (*offset >> PAGE_SHIFT));
-+	page = nth_page(sg->page, (*offset >> PAGE_SHIFT));
- 	*offset &= ~PAGE_MASK;
- 
- 	/* Bytes in this sg-entry from *offset to the end of the page */
+ 	flush_write_buffers();
 -- 
 1.5.2.rc1
 
