@@ -1,78 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762105AbXEJNXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757077AbXEJNXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762105AbXEJNXR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 09:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbXEJNXF
+	id S1757077AbXEJNXk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 09:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760216AbXEJNXb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 09:23:05 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39717 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755742AbXEJNXE convert rfc822-to-8bit (ORCPT
+	Thu, 10 May 2007 09:23:31 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:47451 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759720AbXEJNXa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 09:23:04 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <10764.1178800398@redhat.com>
-References: <10764.1178800398@redhat.com> <20070510115927.GB16409@srv1-m700-lanp.koti>
-Cc: mikukkon@iki.fi, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Bug in fs/afs/write.c function afs_write_back_from_locked_page()
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+	Thu, 10 May 2007 09:23:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=j0XHgWVSKJTD/U8fUN4bJs3Hhr9FJHxW8yaZKnfgfmSqcaTzum11Y9tUYx+bvQ0QP06tY75mXq45II+LWlLIJJXfSU3HN9dAGnYqVQ+NzwZb7VPxzaMAvqPopKpTdNeiBPZ4DSjnvbC7AS/GQ8p7Ri1kG0rPgzS0W54897mlaLk=
+Message-ID: <a781481a0705100623s53730502kc5470b6dc6fc6a45@mail.gmail.com>
+Date: Thu, 10 May 2007 18:53:28 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Jens Axboe" <jens.axboe@oracle.com>
+Subject: Re: [PATCH 7/12] i386 sg: add support for chaining scatterlists
+Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>
+In-Reply-To: <11787972373410-git-send-email-jens.axboe@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 10 May 2007 13:35:24 +0100
-Message-ID: <11285.1178800524@redhat.com>
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <11787972373654-git-send-email-jens.axboe@oracle.com>
+	 <11787972373410-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Howells <dhowells@redhat.com> wrote:
+On 5/10/07, Jens Axboe <jens.axboe@oracle.com> wrote:
+> [...]
+> +static inline void sg_chain(struct scatterlist *prv, unsigned int prv_nents,
+> +                           struct scatterlist *sgl)
+> +{
+> +#ifndef ARCH_HAS_SG_CHAIN
+> +       BUG();
+> +#endif
 
-> How about the attached instead?
+Hmmm ... so we better also make sure all users call this from within
+an "#ifdef ARCH_HAS_SG_CHAIN" themselves (or else make this a config
+option defined in the arch/.../defconfig of archs that support this
+and then make the calling code's Kconfig option "depends on ... &&
+ARCH_FOO").
 
-Blech.  How about this instead?  I forgot to remove the extra put_page() you
-added.
-
-David
----
-AFS: Fix interminable loop in afs_write_back_from_locked_page()
-
-From: Mika Kukkonen <mikukkon@miku.homelinux.net>
-
-Following bug was uncovered by compiling with '-W' flag:
-
-  CC [M]  fs/afs/write.o
-fs/afs/write.c: In function ‘afs_write_back_from_locked_page’:
-fs/afs/write.c:398: warning: comparison of unsigned expression >= 0 is always true
-
-Loop variable 'n' is unsigned, so wraps around happily as far as I can
-see. Trival fix attached (compile tested only).
-
-Signed-Off-By: Mika Kukkonen <mikukkon@iki.fi>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/afs/write.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/fs/afs/write.c b/fs/afs/write.c
-index 67ae4db..28f3751 100644
---- a/fs/afs/write.c
-+++ b/fs/afs/write.c
-@@ -395,8 +395,9 @@ static int afs_write_back_from_locked_page(struct afs_writeback *wb,
- 		if (n == 0)
- 			goto no_more;
- 		if (pages[0]->index != start) {
--			for (n--; n >= 0; n--)
--				put_page(pages[n]);
-+			do {
-+				put_page(pages[--n]);
-+			} while (n > 0);
- 			goto no_more;
- 		}
- 
+(Just saw a previous thread, Andrew seems to have beaten me to this observation)
