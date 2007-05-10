@@ -1,139 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762066AbXEJRMR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758484AbXEJRXu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762066AbXEJRMR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 13:12:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761793AbXEJRLo
+	id S1758484AbXEJRXu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 13:23:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755900AbXEJRXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 13:11:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59461 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761753AbXEJRLm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 13:11:42 -0400
-Date: Thu, 10 May 2007 19:10:25 +0200
-From: Tomas Janousek <tjanouse@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
-       tsmetana@redhat.com, riel@redhat.com
-Subject: [PATCH] Introduce boot based time
-Message-ID: <3108b4e2c91097ec9469420b3f0836f0499068a6.1178816485.git.tomi@nomi.cz>
-References: <1178302732.5929.23.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178302732.5929.23.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Thu, 10 May 2007 13:23:43 -0400
+Received: from gateway-1237.mvista.com ([63.81.120.158]:39844 "EHLO
+	localhost.localdomain" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755745AbXEJRXn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 13:23:43 -0400
+Message-Id: <20070510172223.898755987@mvista.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 10 May 2007 10:22:23 -0700
+From: Daniel Walker <dwalker@mvista.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] use defines in sys_getpriority/sys_setpriority
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commits
-  411187fb05cd11676b0979d9fbf3291db69dbce2 (GTOD: persistent clock support)
-  c1d370e167d66b10bca3b602d3740405469383de (i386: use GTOD persistent clock
-    support)
-changed the monotonic time so that it no longer jumps after resume, but it's
-not possible to use it for boot time and process start time calculations then.
-Also, the uptime no longer increases during suspend.
+Switch to the defines for these two checks, instead of hard
+coding the values.
 
-I add a variable to track the wall_to_monotonic changes, a function to get the
-real boot time and a function to get the boot based time from the monotonic
-one.
+Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
-Signed-off-by: Tomas Janousek <tjanouse@redhat.com>
-Cc: Tomas Smetana <tsmetana@redhat.com>
-Cc: John Stultz <johnstul@us.ibm.com>
 ---
- include/linux/time.h      |    2 ++
- kernel/time/timekeeping.c |   41 +++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 43 insertions(+), 0 deletions(-)
+ kernel/sys.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/time.h b/include/linux/time.h
-index 8997b61..06f3eaf 100644
---- a/include/linux/time.h
-+++ b/include/linux/time.h
-@@ -116,6 +116,8 @@ extern int do_setitimer(int which, struct itimerval *value,
- extern unsigned int alarm_setitimer(unsigned int seconds);
- extern int do_getitimer(int which, struct itimerval *value);
- extern void getnstimeofday(struct timespec *tv);
-+extern void getboottime(struct timespec *ts);
-+extern void monotonic_to_bootbased(struct timespec *ts);
+Index: linux-2.6.21/kernel/sys.c
+===================================================================
+--- linux-2.6.21.orig/kernel/sys.c
++++ linux-2.6.21/kernel/sys.c
+@@ -598,7 +598,7 @@ asmlinkage long sys_setpriority(int whic
+ 	int error = -EINVAL;
+ 	struct pid *pgrp;
  
- extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
- extern int timekeeping_is_continuous(void);
-diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-index f9217bf..dd9647a 100644
---- a/kernel/time/timekeeping.c
-+++ b/kernel/time/timekeeping.c
-@@ -36,9 +36,17 @@ EXPORT_SYMBOL(xtime_lock);
-  * at zero at system boot time, so wall_to_monotonic will be negative,
-  * however, we will ALWAYS keep the tv_nsec part positive so we can use
-  * the usual normalization.
-+ *
-+ * wall_to_monotonic is moved after resume from suspend for the monotonic
-+ * time not to jump. We need to add total_sleep_time to wall_to_monotonic
-+ * to get the real boot based time offset.
-+ *
-+ * - wall_to_monotonic is no longer the boot time, getboottime must be
-+ * used instead.
-  */
- struct timespec xtime __attribute__ ((aligned (16)));
- struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
-+static unsigned long total_sleep_time;
+-	if (which > 2 || which < 0)
++	if (which > PRIO_USER || which < PRIO_PROCESS)
+ 		goto out;
  
- EXPORT_SYMBOL(xtime);
+ 	/* normalize: avoid signed division (rounding problems) */
+@@ -662,7 +662,7 @@ asmlinkage long sys_getpriority(int whic
+ 	long niceval, retval = -ESRCH;
+ 	struct pid *pgrp;
  
-@@ -251,6 +259,7 @@ void __init timekeeping_init(void)
- 	xtime.tv_nsec = 0;
- 	set_normalized_timespec(&wall_to_monotonic,
- 		-xtime.tv_sec, -xtime.tv_nsec);
-+	total_sleep_time = 0;
+-	if (which > 2 || which < 0)
++	if (which > PRIO_USER || which < PRIO_PROCESS)
+ 		return -EINVAL;
  
- 	write_sequnlock_irqrestore(&xtime_lock, flags);
- }
-@@ -280,6 +289,7 @@ static int timekeeping_resume(struct sys_device *dev)
- 
- 		xtime.tv_sec += sleep_length;
- 		wall_to_monotonic.tv_sec -= sleep_length;
-+		total_sleep_time += sleep_length;
- 	}
- 	/* re-base the last cycle value */
- 	clock->cycle_last = clocksource_read(clock);
-@@ -474,3 +484,34 @@ void update_wall_time(void)
- 	change_clocksource();
- 	update_vsyscall(&xtime, clock);
- }
-+
-+/**
-+ * getboottime - Return the real time of system boot.
-+ * @ts:		pointer to the timespec to be set
-+ *
-+ * Returns the time of day in a timespec.
-+ *
-+ * This is based on the wall_to_monotonic offset and the total suspend
-+ * time. Calls to settimeofday will affect the value returned (which
-+ * basically means that however wrong your real time clock is at boot time,
-+ * you get the right time here).
-+ */
-+void getboottime(struct timespec *ts)
-+{
-+	set_normalized_timespec(ts,
-+		- (wall_to_monotonic.tv_sec + total_sleep_time),
-+		- wall_to_monotonic.tv_nsec);
-+}
-+
-+EXPORT_SYMBOL(getboottime);
-+
-+/**
-+ * monotonic_to_bootbased - Convert the monotonic time to boot based.
-+ * @ts:		pointer to the timespec to be converted
-+ */
-+void monotonic_to_bootbased(struct timespec *ts)
-+{
-+	ts->tv_sec += total_sleep_time;
-+}
-+
-+EXPORT_SYMBOL(monotonic_to_bootbased);
+ 	read_lock(&tasklist_lock);
 -- 
-1.5.1.4
-
 
 -- 
-TJ. (Brno, CZ), BaseOS, Red Hat
