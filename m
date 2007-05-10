@@ -1,59 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762273AbXEJVmo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762467AbXEJVnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762273AbXEJVmo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759502AbXEJVmZ
+	id S1762467AbXEJVnk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758477AbXEJVnd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:42:25 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:33771 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759304AbXEJVmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:42:24 -0400
-X-Greylist: delayed 347 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 17:42:24 EDT
-Date: Thu, 10 May 2007 23:40:15 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Heinz Mauelshagen <hjm@redhat.com>
-Subject: Re: [2.6.22 PATCH 22/26] dm: bio list helpers
-Message-ID: <20070510214014.GA4163@kernel.dk>
-References: <20070508194845.GC24114@agk.fab.redhat.com> <20070508174159.7d78a275.akpm@linux-foundation.org> <20070509064923.GO4163@kernel.dk> <Pine.LNX.4.61.0705101617170.32349@yvahk01.tjqt.qr> <20070510152957.5c1ddec9@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510152957.5c1ddec9@the-village.bc.nu>
+	Thu, 10 May 2007 17:43:33 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:58799 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757263AbXEJVnc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:43:32 -0400
+Date: Thu, 10 May 2007 14:43:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Nicolas.Mailhot@LaPoste.net,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2,
+ mode:0x84020
+Message-Id: <20070510144319.48d2841a.akpm@linux-foundation.org>
+In-Reply-To: <200705102128.l4ALSI2A017437@fire-2.osdl.org>
+References: <200705102128.l4ALSI2A017437@fire-2.osdl.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10 2007, Alan Cox wrote:
-> On Thu, 10 May 2007 16:17:57 +0200 (MEST)
-> Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> 
-> > 
-> > On May 9 2007 08:49, Jens Axboe wrote:
-> > >On Tue, May 08 2007, Andrew Morton wrote:
-> > >> > +#define bio_list_for_each(bio, bl) \
-> > >> > +	for (bio = (bl)->head; bio && ({ prefetch(bio->bi_next); 1; }); \
-> > >> > +	     bio = bio->bi_next)
-> > >> > +
-> > >
-> > >Besides, manual prefetching is very rarely a win. I dabbled with some
-> > >benchmarks a few weeks back (with the doubly linked lists), and in most
-> > >cases it was actually a loss. So I'd vote for just removing the
-> > >prefetch() above.
-> > 
-> > So is the prefetching in the basic ADTs (e.g. linux/list.h) a loss too?
-> 
-> Depends on the box it seems. On the newest systems the processor
-> prefetching seems to be very much smarter. On a "classic" AMD Athlon the
-> prefetching made the scheduler about 1.5% faster...
+On Thu, 10 May 2007 14:28:18 -0700
+bugme-daemon@bugzilla.kernel.org wrote:
 
-It very much depends on the box, indeed. The ones I tested on were
-_slower_ with the prefetching, perhaps the dumber CPU's will benefit. In
-the long run, I don't think the manual prefetching is a good idea.
+> http://bugzilla.kernel.org/show_bug.cgi?id=8464
+> 
+>            Summary: autoreconf: page allocation failure. order:2,
+>                     mode:0x84020
+>     Kernel Version: 2.6.21-mm2 with SLUB
+>             Status: NEW
+>           Severity: normal
+>              Owner: clameter@sgi.com
+>          Submitter: Nicolas.Mailhot@LaPoste.net
+>                 CC: akpm@osdl.org
+> 
+> 
+> Most recent kernel where this bug did *NOT* occur: 2.6.21-rc6.mm1 with SLAB
+> Distribution: Fedora Devel
+> Hardware Environment: AMD X2 on CK804
+> Software Environment: N/A
+> Problem Description:
+> 
+> Just noticed this in kernel logs :
+> 
+>  autoreconf: page allocation failure. order:2, mode:0x84020
+> May 10 20:13:13 rousalka kernel: 
+> May 10 20:13:13 rousalka kernel: Call Trace:
+> May 10 20:13:13 rousalka kernel: [<ffffffff8025b56a>] __alloc_pages+0x2aa/0x2c3
+> May 10 20:13:13 rousalka kernel: [<ffffffff8029c05f>] bio_alloc+0x10/0x1f
+> May 10 20:13:13 rousalka kernel: [<ffffffff8027519d>] __slab_alloc+0x196/0x586
+> May 10 20:13:13 rousalka kernel: [<ffffffff80300d21>]
+> radix_tree_node_alloc+0x36/0x7e
+> May 10 20:13:13 rousalka kernel: [<ffffffff80275922>] kmem_cache_alloc+0x32/0x4e
+> May 10 20:13:13 rousalka kernel: [<ffffffff80300d21>]
+> radix_tree_node_alloc+0x36/0x7e
+> May 10 20:13:13 rousalka kernel: [<ffffffff803011a4>] radix_tree_insert+0xcb/0x18c
+> May 10 20:13:13 rousalka kernel: [<ffffffff88029bd0>] :ext3:ext3_get_block+0x0/0xe4
+> May 10 20:13:13 rousalka kernel: [<ffffffff80256ac4>] add_to_page_cache+0x3d/0x95
+> May 10 20:13:13 rousalka kernel: [<ffffffff8029fe29>] mpage_readpages+0x85/0x12c
+> May 10 20:13:13 rousalka kernel: [<ffffffff88029bd0>] :ext3:ext3_get_block+0x0/0xe4
+> May 10 20:13:13 rousalka kernel: [<ffffffff8025cde1>]
+> __do_page_cache_readahead+0x158/0x22d
+> May 10 20:13:13 rousalka kernel: [<ffffffff88084aa7>]
+> :dm_mod:dm_table_any_congested+0x46/0x63
+> May 10 20:13:13 rousalka kernel: [<ffffffff88082ce8>]
+> :dm_mod:dm_any_congested+0x3b/0x42
+> May 10 20:13:13 rousalka kernel: [<ffffffff80258802>] filemap_fault+0x162/0x347
+> May 10 20:13:13 rousalka kernel: [<ffffffff80261c66>] __do_fault+0x66/0x446
+> May 10 20:13:13 rousalka kernel: [<ffffffff80263ca9>] __handle_mm_fault+0x4b1/0x8f5
+> May 10 20:13:13 rousalka kernel: [<ffffffff80419e84>] do_page_fault+0x39a/0x7b7
+> May 10 20:13:13 rousalka kernel: [<ffffffff80419f31>] do_page_fault+0x447/0x7b7
+> May 10 20:13:13 rousalka kernel: [<ffffffff8041847d>] error_exit+0x0/0x84
+> 
 
--- 
-Jens Axboe
+This looks bad.
+
+It's a bit hard to tell who failed - was it bio_alloc() or was it
+radix-tree node allocation?  Give the allocation mode, I'd suspect
+bio_alloc(), but I don't immediately see where we'd be doing an atomic
+allocation for a bio.
+
+Either way, it would worry me greatly if slub is fiddling with the mapping
+of object-size-to-page-allocation-order.  A _lot_ of things which were
+previously relaible and hugely tested would become less reliable, and less
+tested.
+
+Christoph, can we please take a look at /proc/slabinfo and its slub
+equivalent (I forget what that is?) and review any and all changes to the
+underlying allocation size for each cache?
+
+Because this is *not* something we should change lightly.
 
