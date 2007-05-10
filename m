@@ -1,101 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbXEJMNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760371AbXEJMQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761338AbXEJMNZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759593AbXEJMNE
+	id S1760371AbXEJMQr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXEJMQl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:13:04 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:36159 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1759194AbXEJMNB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:13:01 -0400
-Date: Thu, 10 May 2007 14:12:59 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: HDIO_DRIVE_CMD and hdparm
-Message-ID: <Pine.LNX.4.62.0705101327170.759@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 10 May 2007 08:16:41 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:36218 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754923AbXEJMQk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 08:16:40 -0400
+Date: Thu, 10 May 2007 22:16:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andy Whitcroft <apw@shadowen.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
+       paulus@samba.org, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm2 -- powerpc missing kset
+Message-Id: <20070510221631.5eb38bdd.sfr@canb.auug.org.au>
+In-Reply-To: <4643068C.8010302@shadowen.org>
+References: <20070509012322.199f292b.akpm@linux-foundation.org>
+	<4643068C.8010302@shadowen.org>
+X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Thu__10_May_2007_22_16_31_+1000_3HuKn4/ZQPPOnIhR"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-	Hi,
+--Signature=_Thu__10_May_2007_22_16_31_+1000_3HuKn4/ZQPPOnIhR
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-`hdparm -t' uses HDIO_DRIVE_CMD(null) to flush the disk's buffer.
-When using it on my own block device (the new PS3 disk storage driver), hdparm
-gives the following error message:
+On Thu, 10 May 2007 12:48:28 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
+>
+> arch/powerpc/platforms/pseries/power.c:31: warning: `struct subsystem'
+> declared inside parameter list
 
-| HDIO_DRIVE_CMD(null) (wait for flush complete) failed: Inappropriate ioctl for device
-
-When using it on an ATA or SCSI device, no such error message is printed.
-
-According to the hdparm sources, hdparm expects the HDIO_DRIVE_CMD(null) ioctl
-to either succeed, or to fail with errno EINVAL.
-
-Apparently handling of ioctls is different for the different device types:
-  - ATA/SATA handle HDIO_DRIVE_CMD(null) (and a few other variants)
-    => fine for hdparm
-  - SCSI doesn't handle HDIO_DRIVE_CMD(null), and returns EINVAL
-    => fine for hdparm
-  - If a block device doesn't support the ioctl, blkdev_driver_ioctl() returns
-    ENOTTY
-    => hdparm error message
-
-Which one is correct?
-  - blkdev_ioctl()/blkdev_driver_ioctl() return -ENOTTY
-  - scsi_cmd_ioctl() returns -ENOTTY
-  - scsi_ioctl() returns -EINVAL
-  - cdrom_ioctl() returns -ENOSYS to mean not handled, continue
-  - some block layer routines return -ENOIOCTLCMD to mean not handled, continue
-
-This causes constructs with different tests like e.g.:
-
-	sr_block_ioctl()
-	{
-		...
-		ret = cdrom_ioctl(...);
-		if (ret != -ENOSYS)
-			return ret;
-		...
-		return scsi_ioctl(...);
-	}
-
-	cdrom_ioctl()
-	{
-		...
-		ret = scsi_cmd_ioctl(...);
-		if (ret != -ENOTTY)
-			return ret;
-		...
-		return -ENOSYS;
-	}
-
-	blkdev_ioctl()
-	{
-		...
-		ret = blkdev_locked_ioctl(...);
-		...
-		if (ret != -ENOIOCTLCMD)
-			return ret;
-
-		return blkdev_driver_ioctl(...);
-	}
-
-My questions:
-  1. Does any of these have to be fixed?
-  2. Shall I add a dummy HDIO_DRIVE_CMD(null) handler to my block device to
-     return -EINVAL?
-  3. Shall I just ignore the hdparm error message?
-
-Thanks!
-
-Gr{oetje,eeting}s,
-
-						Geert
+There is no explicit reference to struct subsystem in the current version
+of that file.
 
 --
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Thu__10_May_2007_22_16_31_+1000_3HuKn4/ZQPPOnIhR
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGQw0kFdBgD/zoJvwRAvZyAJwM3NoM8kedpL+fUT3LHfI68tDqVACfTHX6
+cMfZ2F/JfCoNfCXbEM3DmF0=
+=l/Nd
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__10_May_2007_22_16_31_+1000_3HuKn4/ZQPPOnIhR--
