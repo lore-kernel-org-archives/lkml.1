@@ -1,68 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbXEJPan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758956AbXEJPdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757975AbXEJPan (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 11:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbXEJPah
+	id S1758956AbXEJPdi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 11:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbXEJPda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 11:30:37 -0400
-Received: from mr.exanet.com ([212.143.73.109]:53701 "EHLO mr.exanet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754017AbXEJPag convert rfc822-to-8bit (ORCPT
+	Thu, 10 May 2007 11:33:30 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:37863 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754145AbXEJPd3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 11:30:36 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 10 May 2007 11:33:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=PkDs4u5Ua4QX0VAJ5KFf+mGDK8OeWdAYntwTpVlIGqkoNQnZbb7pq2NqpP7UxX7d+lpGSRaU3CFV/c3m9YQCPiQp1G67UHsc/mBtsr0fCt+wVCUcjMTu8n9svVise3tLak0V39SjQ+ZSVBF991swOGHFBXamP+tpFtK55itW0do=
+Message-ID: <3ae72650705100833h35dbc5fer7553529d643c742c@mail.gmail.com>
+Date: Thu, 10 May 2007 17:33:27 +0200
+From: "Kay Sievers" <kay.sievers@vrfy.org>
+To: "Tejun Heo" <htejun@gmail.com>
+Subject: Re: [PATCH] driver-core: don't free devt_attr till the device is released
+Cc: "Greg KH" <greg@kroah.com>, "Chris Rankin" <rankincj@yahoo.com>,
+       "Alan Stern" <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
+In-Reply-To: <46432FFD.1040304@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] NLM program ID for user space NLM server
-Date: Thu, 10 May 2007 18:30:35 +0300
-Message-ID: <A6FDE6B975803043804A49F12F49028E0F59D3@hawk.exanet-il.co.il>
-In-Reply-To: <1178804340.6481.3.camel@heimdal.trondhjem.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] NLM program ID for user space NLM server
-Thread-Index: AceTCJP3x5ZjeNujT2qsCRbHdrRKswAD4F+Q
-From: "Menny Hamburger" <menny@exanet.com>
-To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
-Cc: "Neil Brown" <neilb@suse.de>, <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <602729.80444.qm@web52910.mail.re2.yahoo.com>
+	 <4641CD01.6010309@gmail.com> <20070509145747.GA27259@kroah.com>
+	 <4641E245.7040603@gmail.com> <20070509154039.GA27681@kroah.com>
+	 <46432FFD.1040304@gmail.com>
+X-Google-Sender-Auth: 7f039bb7cceec90b
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The idea in the change was to be able to override NLM_PROGRAM with
-another definition (from our slightly customized build system), so that
-the kernel never tries to register port 100021.
+On 5/10/07, Tejun Heo <htejun@gmail.com> wrote:
+> Currently, devt_attr for the "dev" file is freed immediately on device
+> removal, but if the "dev" sysfs file is open when a device is removed,
+> sysfs will access its attribute structure for further access including
+> close resulting in jumping to garbled address.  Fix it by postponing
+> freeing devt_attr to device release time.
+>
+> Note that devt_attr for class_device is already freed on release.
 
-We understand that if all mounts are with 'nolock' this wouldn't happen,
-and indeed, we configured our mounts that way, but we want to protect
-ourself from some innocent mounter that doesn't know/care about NLM,
-doesn't use 'nolock' and could cause the kernel to take away our port.
-This of course happened in real life.
+Hi Tejun,
+your rework removes the "owner" field from the attributes. I think we
+kept the "dev" and "uevent" attribute as part of "struct device" only
+to be able to assign it the actual owner of the module that has
+created the device. The attribute can probably just live as one
+instance statically in the driver core now?
 
-If such patch would be accepted, it could save some time to anyone who
-tries to run user mode NLM server, but it's pretty esoteric, so maybe
-this discussion is enough to document the issue. 
-
------Original Message-----
-From: Trond Myklebust [mailto:trond.myklebust@fys.uio.no] 
-Sent: Thursday, May 10, 2007 3:39 PM
-To: Menny Hamburger
-Cc: Neil Brown; linux-kernel@vger.kernel.org
-Subject: RE: [PATCH] NLM program ID for user space NLM server
-
-On Thu, 2007-05-10 at 13:59 +0300, Menny Hamburger wrote:
-> Hi,
-> 
-> We have a our own userland NFSD and NLM service running that implement
-
-> all the NLM/NFS functionality.
-> We do not want to modify the way the client does his mounts.
-> 
-> M.
-
-The client needs to have lockd running (as service 100021) in order to
-allow the NSM daemon to notify it of server reboots.
-
-Trond
-
+Thanks,
+Kay
