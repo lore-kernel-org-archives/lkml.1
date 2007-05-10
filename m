@@ -1,103 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758776AbXEJHf4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759325AbXEJHha@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758776AbXEJHf4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 03:35:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755171AbXEJHfu
+	id S1759325AbXEJHha (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 03:37:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbXEJHhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 03:35:50 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:56388 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755108AbXEJHft (ORCPT
+	Thu, 10 May 2007 03:37:23 -0400
+Received: from nz-out-0506.google.com ([64.233.162.227]:2470 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755171AbXEJHhW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 03:35:49 -0400
-Date: Thu, 10 May 2007 00:35:28 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-Message-Id: <20070510003528.395b122b.akpm@linux-foundation.org>
-In-Reply-To: <1178778951.14928.215.camel@localhost.localdomain>
-References: <20070510052622.3E8D5DDF4B@ozlabs.org>
-	<20070509224113.cca81a24.akpm@linux-foundation.org>
-	<1178778951.14928.215.camel@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 May 2007 03:37:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:content-type:content-transfer-encoding;
+        b=tfdRwvQZC1ORzgZgUsRx2cdtt1ayaCHZi79IrwjMWQ4ufrsvy+vZWFZl+u9LJpc20v90CapW2ac++eEB/29cZSNBis/vl7njbtX/Ru2j8SHMRB95V1WNZBPqb03hLoxt6W2G1l9clesRHYTGmoOB6J7m4o+Ps3YX0Ar3rwEnnpA=
+Message-ID: <4642CB06.2080409@gmail.com>
+Date: Thu, 10 May 2007 15:34:30 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+MIME-Version: 1.0
+To: Steven Rostedt <srostedt@redhat.com>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Hi, I have one question about rt_mutex.
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 16:35:51 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Hi, Steven.
 
-> On Wed, 2007-05-09 at 22:41 -0700, Andrew Morton wrote:
-> > On Thu, 10 May 2007 15:25:58 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> > 
-> > > --- linux-cell.orig/include/linux/interrupt.h	2007-05-10 14:51:22.000000000 +1000
-> > > +++ linux-cell/include/linux/interrupt.h	2007-05-10 15:18:04.000000000 +1000
-> > > @@ -241,6 +241,16 @@ static inline void __deprecated save_and
-> > >  #define save_and_cli(x)	save_and_cli(&x)
-> > >  #endif /* CONFIG_SMP */
-> > >  
-> > > +/* Some architectures might implement lazy enabling/disabling of
-> > > + * interrupts. In some cases, such as stop_machine, we might want
-> > > + * to ensure that after a local_irq_disable(), interrupts have
-> > > + * really been disabled in hardware. Such architectures need to
-> > > + * implement the following hook.
-> > > + */
-> > > +#ifndef hard_irq_disable
-> > > +#define hard_irq_disable()	do { } while(0)
-> > > +#endif
-> > 
-> > We absolutely require that the architecture's hard_irq_disable() be defined
-> > when we do this.  If it happens that the definition of hard_irq_disable()
-> > is implemented three levels deep in nested includes then we risk getting
-> > into a situation where different .c files see different implementations of
-> > hard_irq_disable(), which could lead to confusing results, to say the least.
-> 
-> Yes, I'm indeed a bit worried about that... I've been wondering what's
-> the best include path here... I tried to follow who gets to hw_irq.h and
-> didn't come to any conclusive results.
-> 
-> powerpc gets it from asm/system.h but I haven't verified other arch
-> (though it only matters on arch that have their own here).
-> 
-> I've verified that a #error on ppc up there will not trigger thus it's
-> fine on powerpc, but I agree it's a bit fragile.
+Nice to meet you again.
 
-I think saying "system.h must provide this" is reasonable.  The fact that
-powerpc does that via another inclusion is a powerpc detail - just don't
-break it ;)
+I have read the rt-mutex-design.txt that you wrote. That is excellent
+description of rt_mutex. But I have a question for rt_mutex.
+
+As you said:
 
 
-> > Your implementation comes via the inclusion of system.h which then includes
-> > hw_irq.h.  That's perhaps a little fragile and it would be better to
-> > 
-> > a) include in the comment the name of the arch file which must implement
-> >    hard_irq_disable() and
-> > 
-> > b) include that file directly from this one.
-> 
-> Fair enough. I was just worried that including hw_irq.h here might cause
-> trouble for some archs though (as I said, we get it indirectly on
-> powerpc via some other asm thingy, not via some linux/*.h). I've looked
-> around and seen all sort of horrors in arch include dependencies
-> (including some circular stuff that must work by mere luck).
-> 
-> > Oh, and your comment layout style is wrong ;)
-> 
-> What about my comment layout style ? I've been using that forever ... Or
-> do you mean I should use a function documentation style layout there ?
+> Now since mutexes can be defined by user-land applications, we don't
+want a DOS
+> type of application that nests large amounts of mutexes to create a large
+> PI chain, and have the code holding spin locks while looking at a large
+> amount of data. So to prevent this, the implementation not only implements
+> a maximum lock depth, but also only holds at most two different locks at a
+> time, as it walks the PI chain. More about this below.
 
-/* This
- * is
- * wrong
- */
+After read the implementation of rt_mutex_adjust_prio_chain(), I found
+the we really require maximin lock depth (1024 default), but I can not
+see the check for more same locks duplication. Does this doc is
+inconsistent with code?
 
-/*
- * This
- * is
- * right
- */
+Thanks in advanced.
 
-
+Good luck.
+- Li Yu
