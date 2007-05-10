@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761342AbXEJWVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762252AbXEJWWb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761342AbXEJWVh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756909AbXEJWVb
+	id S1762252AbXEJWWb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:22:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbXEJWWW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:21:31 -0400
-Received: from smtprelay04.ispgateway.de ([80.67.18.16]:56180 "EHLO
-	smtprelay04.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756100AbXEJWVa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:21:30 -0400
-From: Ingo Oeser <ioe-lkml@rameria.de>
-To: john stultz <johnstul@us.ibm.com>, Tomas Janousek <tjanouse@redhat.com>
-Subject: Re: [PATCH] Introduce boot based time
-Date: Fri, 11 May 2007 00:22:54 +0200
-User-Agent: KMail/1.9.6
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tsmetana@redhat.com, riel@redhat.com
-References: <1178302732.5929.23.camel@localhost.localdomain> <200705102149.01714.ioe-lkml@rameria.de> <1178827376.6011.11.camel@localhost.localdomain>
-In-Reply-To: <1178827376.6011.11.camel@localhost.localdomain>
+	Thu, 10 May 2007 18:22:22 -0400
+Received: from gw.goop.org ([64.81.55.164]:35548 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755110AbXEJWWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 18:22:21 -0400
+Message-ID: <46439B19.7010706@goop.org>
+Date: Thu, 10 May 2007 15:22:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>,
+       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Valdis.Kletnieks@vt.edu
+Subject: Re: [1/2] [NET] link_watch: Move link watch list into net_device
+References: <20070504232051.411946839@goop.org>	<20070504232121.492190579@goop.org>	<20070505091624.GA8890@infradead.org>	<463C56D3.8060609@goop.org>	<20070505102305.GA12771@gondor.apana.org.au>	<463F95C3.60407@goop.org>	<20070508121322.GA21647@gondor.apana.org.au>	<464395E5.2090500@goop.org> <20070510151426.d808384f.akpm@linux-foundation.org>
+In-Reply-To: <20070510151426.d808384f.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705110022.55862.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi John and Tomas, 
+Andrew Morton wrote:
+> Five minutes after boot is when jiffies wraps.  Are you sure it's
+> a list-screwup rather than a jiffy-wrap screwup?
+>   
 
-On Thursday 10 May 2007, john stultz wrote:
-> I'm not sure I follow this. 
-> 
-> total_sleep_time stores seconds. So on 32bit systems that's 130some
-> years, so it shouldn't be an issue.
-> 
-> Is the reason you want it to be a ktime is because you want a way to
-> keep sub-second sleep granularity?
 
-No, I'm just overworked and getting sloppy :-/ 
+Hm, its suggestive, isn't it?  Apparently they've already fixed this in
+the sekret networking clubhouse, so I'll need to track it down.
 
-Sorry for the noise...
-
-Best regards
-
-Ingo Oeser
+    J
