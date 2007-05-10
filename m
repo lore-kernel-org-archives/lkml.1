@@ -1,145 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759022AbXEJSmp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759789AbXEJSoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759022AbXEJSmp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 14:42:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbXEJSmj
+	id S1759789AbXEJSoO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 14:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbXEJSn5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 14:42:39 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:53990 "EHLO e6.ny.us.ibm.com"
+	Thu, 10 May 2007 14:43:57 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:35041 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754584AbXEJSmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 14:42:38 -0400
-Subject: Re: [PATCH] Introduce boot based time
-From: john stultz <johnstul@us.ibm.com>
-To: Tomas Janousek <tjanouse@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       tsmetana@redhat.com, riel@redhat.com
-In-Reply-To: <3108b4e2c91097ec9469420b3f0836f0499068a6.1178816485.git.tomi@nomi.cz>
-References: <1178302732.5929.23.camel@localhost.localdomain>
-	 <3108b4e2c91097ec9469420b3f0836f0499068a6.1178816485.git.tomi@nomi.cz>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 11:42:33 -0700
-Message-Id: <1178822553.6011.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1754689AbXEJSn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 14:43:57 -0400
+Date: Thu, 10 May 2007 20:41:05 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Justin Piszcz <jpiszcz@lucidpixels.com>, linux-kernel@vger.kernel.org,
+       linux-raid@vger.kernel.org, Alan Piszcz <ap@solarrain.com>
+Subject: Re: Chaining sg lists for big I/O commands: Question
+In-Reply-To: <20070509133830.GV4163@kernel.dk>
+Message-ID: <Pine.LNX.4.61.0705102040090.6426@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.64.0705090918390.12857@p34.internal.lan>
+ <20070509133830.GV4163@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-10 at 19:10 +0200, Tomas Janousek wrote:
-> The commits
->   411187fb05cd11676b0979d9fbf3291db69dbce2 (GTOD: persistent clock support)
->   c1d370e167d66b10bca3b602d3740405469383de (i386: use GTOD persistent clock
->     support)
-> changed the monotonic time so that it no longer jumps after resume, but it's
-> not possible to use it for boot time and process start time calculations then.
-> Also, the uptime no longer increases during suspend.
-> 
-> I add a variable to track the wall_to_monotonic changes, a function to get the
-> real boot time and a function to get the boot based time from the monotonic
-> one.
-> 
-> Signed-off-by: Tomas Janousek <tjanouse@redhat.com>
-> Cc: Tomas Smetana <tsmetana@redhat.com>
-> Cc: John Stultz <johnstul@us.ibm.com>
+On May 9 2007 15:38, Jens Axboe wrote:
+>> I am a mdadm/disk/hard drive fanatic, I was curious:
+>> 
+>> >On i386, we can at most fit 256 scatterlist elements into a page,
+>> >and on x86-64 we are stuck with 128. So that puts us somewhere
+>> >between 512kb and 1024kb for a single IO.
+>> 
+>> How come 32bit is 256 and 64 is only 128?
+>>
+>> I am sure it is something very fundamental/simple but I was curious, I 
+>> would think x86_64 would fit/support more scatterlists in a page.
+>
+>Because of the size of the scatterlist structure. As pointers are bigger
+>on 64-bit archs, the scatterlist structure ends up being bigger. The
+>page size on x86-64 is 4kb, hence the number of structures you can fit
+>in a page is smaller.
 
-Looks good! Thanks again for catching this!
+I take it this problem "goes away" on arches with 8KB page_size?
 
-Acked-by: John Stultz <johnstul@us.ibm.com>
 
-> ---
->  include/linux/time.h      |    2 ++
->  kernel/time/timekeeping.c |   41 +++++++++++++++++++++++++++++++++++++++++
->  2 files changed, 43 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/linux/time.h b/include/linux/time.h
-> index 8997b61..06f3eaf 100644
-> --- a/include/linux/time.h
-> +++ b/include/linux/time.h
-> @@ -116,6 +116,8 @@ extern int do_setitimer(int which, struct itimerval *value,
->  extern unsigned int alarm_setitimer(unsigned int seconds);
->  extern int do_getitimer(int which, struct itimerval *value);
->  extern void getnstimeofday(struct timespec *tv);
-> +extern void getboottime(struct timespec *ts);
-> +extern void monotonic_to_bootbased(struct timespec *ts);
-> 
->  extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
->  extern int timekeeping_is_continuous(void);
-> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> index f9217bf..dd9647a 100644
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -36,9 +36,17 @@ EXPORT_SYMBOL(xtime_lock);
->   * at zero at system boot time, so wall_to_monotonic will be negative,
->   * however, we will ALWAYS keep the tv_nsec part positive so we can use
->   * the usual normalization.
-> + *
-> + * wall_to_monotonic is moved after resume from suspend for the monotonic
-> + * time not to jump. We need to add total_sleep_time to wall_to_monotonic
-> + * to get the real boot based time offset.
-> + *
-> + * - wall_to_monotonic is no longer the boot time, getboottime must be
-> + * used instead.
->   */
->  struct timespec xtime __attribute__ ((aligned (16)));
->  struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
-> +static unsigned long total_sleep_time;
-> 
->  EXPORT_SYMBOL(xtime);
-> 
-> @@ -251,6 +259,7 @@ void __init timekeeping_init(void)
->  	xtime.tv_nsec = 0;
->  	set_normalized_timespec(&wall_to_monotonic,
->  		-xtime.tv_sec, -xtime.tv_nsec);
-> +	total_sleep_time = 0;
-> 
->  	write_sequnlock_irqrestore(&xtime_lock, flags);
->  }
-> @@ -280,6 +289,7 @@ static int timekeeping_resume(struct sys_device *dev)
-> 
->  		xtime.tv_sec += sleep_length;
->  		wall_to_monotonic.tv_sec -= sleep_length;
-> +		total_sleep_time += sleep_length;
->  	}
->  	/* re-base the last cycle value */
->  	clock->cycle_last = clocksource_read(clock);
-> @@ -474,3 +484,34 @@ void update_wall_time(void)
->  	change_clocksource();
->  	update_vsyscall(&xtime, clock);
->  }
-> +
-> +/**
-> + * getboottime - Return the real time of system boot.
-> + * @ts:		pointer to the timespec to be set
-> + *
-> + * Returns the time of day in a timespec.
-> + *
-> + * This is based on the wall_to_monotonic offset and the total suspend
-> + * time. Calls to settimeofday will affect the value returned (which
-> + * basically means that however wrong your real time clock is at boot time,
-> + * you get the right time here).
-> + */
-> +void getboottime(struct timespec *ts)
-> +{
-> +	set_normalized_timespec(ts,
-> +		- (wall_to_monotonic.tv_sec + total_sleep_time),
-> +		- wall_to_monotonic.tv_nsec);
-> +}
-> +
-> +EXPORT_SYMBOL(getboottime);
-> +
-> +/**
-> + * monotonic_to_bootbased - Convert the monotonic time to boot based.
-> + * @ts:		pointer to the timespec to be converted
-> + */
-> +void monotonic_to_bootbased(struct timespec *ts)
-> +{
-> +	ts->tv_sec += total_sleep_time;
-> +}
-> +
-> +EXPORT_SYMBOL(monotonic_to_bootbased);
-> -- 
-> 1.5.1.4
-> 
-> 
-
+	Jan
+-- 
