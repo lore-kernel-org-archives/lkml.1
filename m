@@ -1,39 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761941AbXEJWza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbXEJW5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761941AbXEJWza (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXEJWzW
+	id S1762151AbXEJW5i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbXEJW5b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:55:22 -0400
-Received: from 216-99-217-87.dsl.aracnet.com ([216.99.217.87]:51137 "EHLO
-	sous-sol.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751749AbXEJWzV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:55:21 -0400
-Date: Thu, 10 May 2007 15:53:08 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: David Miller <davem@davemloft.net>, akpm@linux-foundation.org,
-       herbert@gondor.apana.org.au, hch@infradead.org, ak@suse.de,
-       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
-       chrisw@sous-sol.org, ian.pratt@xensource.com,
-       Christian.Limpach@cl.cam.ac.uk, netdev@vger.kernel.org, jeff@garzik.org,
-       shemminger@linux-foundation.org, rusty@rustcorp.com.au,
-       Valdis.Kletnieks@vt.edu
-Subject: Re: [1/2] [NET] link_watch: Move link watch list into net_device
-Message-ID: <20070510225308.GL3505@sequoia.sous-sol.org>
-References: <464395E5.2090500@goop.org> <20070510151426.d808384f.akpm@linux-foundation.org> <46439B19.7010706@goop.org> <20070510.152552.117703057.davem@davemloft.net> <4643A096.7000909@goop.org>
+	Thu, 10 May 2007 18:57:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36931 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754359AbXEJW5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 18:57:30 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.22 - part 2
+Date: Thu, 10 May 2007 18:56:10 -0400
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200705100411.32349.lenb@kernel.org> <alpine.LFD.0.98.0705101330320.3986@woody.linux-foundation.org> <alpine.LFD.0.98.0705101353370.3986@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705101353370.3986@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4643A096.7000909@goop.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Message-Id: <200705101856.11048.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jeremy Fitzhardinge (jeremy@goop.org) wrote:
-> Yep, this patch gets rid of my spinning thread.  I can't find this patch
-> or any discussion on marc.info; is there a better netdev list archive?
+On Thursday 10 May 2007 16:56, Linus Torvalds wrote:
+> 
+> On Thu, 10 May 2007, Linus Torvalds wrote:
+> > 
+> > Seems to work for me. My evo correctly started the fan, and stopped it 
+> > when the temperature went down again.
+> 
+> Looking at things in "top", I do end up occasionally seeing spikes where 
+> kacpid takes 17% of CPU time, and kacpi_notify takes a few percent too. 
+> But the machine works ok, and it doesn't seem to be horrible:
+> 
+>    64 ?        S<     0:15 [kacpid]
+>    65 ?        S<     0:08 [kacpi_notify]
+> 
+> so they've gotten 23 seconds of CPU time over the 37 minutes that laptop 
+> has been up now. That's arguably too much, but on the other hand, I did 
+> end up trying to stress it out by doing some 3D stuff while compiling the 
+> kernel and doing "git grep" over the kernel tree etc.
 
-See the "linkwatch bustage in git-net" thread on netdev
+Thanks, I noticed the same thing on an nx6325.
+The goal at the moment is to revert to the simplest functional & stable solution --
+as what is shipping today crashes on some boxes.
 
-http://thread.gmane.org/gmane.linux.network/61800/focus=61812
+We've got a couple of tweaks in mind where we think Linux can get
+smarter -- but this is an area where several platform vendors are taking
+advantage of Windows' implementation in (different) twisted ways.
+For us to reach our goal of Linux handling any system out there
+in as optimal a way as possible, we need to study each one in detail.
+
+That said, can you send me or point me to the acpidump output
+for your EVO.  Yes, I'm sure you've sent it before a long time
+ago, but that was about probably 2,000,000 e-mail messages
+and a couple of disk crashes ago:-)
+
+thanks,
+-Len
