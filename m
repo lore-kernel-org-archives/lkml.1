@@ -1,61 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbXEJVj6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbXEJVlr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760251AbXEJVj6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:39:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbXEJVjw
+	id S1761314AbXEJVlr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756558AbXEJVlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:39:52 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:42466 "EHLO pasmtpA.tele.dk"
+	Thu, 10 May 2007 17:41:40 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:43727 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754996AbXEJVjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:39:52 -0400
-Date: Thu, 10 May 2007 23:37:43 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Benny Halevy <bhalevy@panasas.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/12] crypto: don't pollute the global namespace with  sg_next()
-Message-ID: <20070510213743.GY4163@kernel.dk>
-References: <11787972373654-git-send-email-jens.axboe@oracle.com> <11787972372499-git-send-email-jens.axboe@oracle.com> <4643243C.8030906@panasas.com>
+	id S1754130AbXEJVlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:41:39 -0400
+Date: Thu, 10 May 2007 23:34:29 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Jonathan Corbet <corbet@lwn.net>
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>
+Subject: Re: [PATCH] "volatile considered harmful", take 2
+In-Reply-To: <6143.1178828419@lwn.net>
+Message-ID: <Pine.LNX.4.61.0705102326470.6426@yvahk01.tjqt.qr>
+References: <6143.1178828419@lwn.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4643243C.8030906@panasas.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10 2007, Benny Halevy wrote:
-> Jens Axboe wrote:
-> > It's a subsystem function, prefix it as such.
-> 
-> Jens, Boaz and I talked about this over lunch.
-> I wonder whether the crypto code must use your implementation
-> instead of its own as it needs to over the sglist, e.g. for
-> calculating iscsi (data) digest.
 
-The thought did cross my mind, and yes I think that would be a good
-idea. The whole thing should probably just migrate to
-lib/scattersomething.c
+On May 10 2007 14:20, Jonathan Corbet wrote:
+>
+>Who knew a documentation patch would get so many reviews?  I like it...
 
-> The crypto implementation of chained sglists in crypto/scatterwalk.h
-> determines the chain link by !sg->length which will sorta work
-> with your implementation, however the marker bit on page pointer must
-> be cleared to use it.
+And the next thing is register-considered-harmful.txt. Running
 
-I don't like using sg->length, as that may be modified for legitimate
-reason. That's why I chose to use the lsb bit of the page pointer.
+	grep -Pr '\bregister\s+(unsigned|char|short|int|long|float|
+	double|struct|union|uint|u\d+|s\d+)\b' linux-2.6.21/ | wc -l
 
-> Also, is it possible that after the original sglist has gone through
-> dma_map_sg and entries were merged, some entries will have zero
-> length?  I'm not sure... If so, if the crypto implementation scans
-> the sg list after it was dma mapped (maybe in a retry path) it
-> may hit an entry that looks to it like a chaining link.  This
-> might be an existing bug and another reason for the crypto code
-> to use your implementation.
+turns up no less than 1106+2 hits.
 
-It's hard to say, depends heavily on the sub system or arch. Even if
-using the pointer tagging mechanism seems a bit nasty, I think it's the
-more resilient approach.
 
+	Jan
 -- 
-Jens Axboe
-
