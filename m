@@ -1,77 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758834AbXEJSwO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760011AbXEJSwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758834AbXEJSwO (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 14:52:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752897AbXEJSwA
+	id S1760011AbXEJSwp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 14:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754627AbXEJSwh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 14:52:00 -0400
-Received: from moutng.kundenserver.de ([212.227.126.183]:54142 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751769AbXEJSv7 (ORCPT
+	Thu, 10 May 2007 14:52:37 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:52677 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751769AbXEJSwg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 14:51:59 -0400
-From: Christian <christiand59@web.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: [patch] CFS scheduler, -v11
-Date: Thu, 10 May 2007 20:51:09 +0200
-User-Agent: KMail/1.9.6
-References: <20070508150431.GA26977@elte.hu> <200705101859.11696.christiand59@web.de> <1178817044.25266.8.camel@localhost>
-In-Reply-To: <1178817044.25266.8.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 14:52:36 -0400
+Date: Thu, 10 May 2007 19:52:26 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Neil Brown <neilb@suse.de>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] utimensat implementation
+Message-ID: <20070510185226.GA1458@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Ulrich Drepper <drepper@redhat.com>, Neil Brown <neilb@suse.de>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com> <17969.22692.855242.359680@notabene.brown> <46315C61.30001@redhat.com> <464363DC.7060607@redhat.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705102051.09432.christiand59@web.de>
-X-Provags-ID: V01U2FsdGVkX18V+djRcOJZvbwz6jeVkc0JT3o+8eil2w0dg7P
- qVogc4ikXifqxQCj6Uh8YGGu9xnjxPLrA9S6WJQb7pmI4KfgUH
- rRwogwAah00Gm1sQbbnEw==
+In-Reply-To: <464363DC.7060607@redhat.com>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 May 2007 19:10:44 Kasper Sandberg wrote:
-> On Thu, 2007-05-10 at 18:59 +0200, Christian wrote:
-> > Hello lkml, hello Ingo!
-> >
-> > I've been using CFS-v10 for a few days and I must say that I'm verry
-> > impressed ;-)
-> >
-> > Desktop performance without any manual renicing is excellent, even with
-> > make -j20. Gaming performance is at least on par with SD now! I've tried
-> > to
->
-> Which games are you trying? and have you tried other workloads then make
-> -j20?
->
-> try have a window with some 3d game open, and a browser besides it, and
-> press a link. i cant seem to get smooth results with CFS.
->
-> Perhaps i could also conduct tests with the games you are trying on my
-> hardware.
->
-> > change the sched_load_smoothing config to "8" but there is no visible
-> > difference when it's set to "7".
-> >
-> > Both schedulers are verrry good! I can't really tell which one is better.
-> > I noticed that while compiling a kernel (with -j4) my CPU temperature is
-> > two to three degrees hotter than with mainline. I have not done any
-> > timing tests, but I suspect that it's a little faster while preserving
-> > excellent desktop usability. Great work!! :-)
-> >
-> > -Christian
-> > -
-> > To unsubscribe from this list: send the line "unsubscribe linux-kernel"
-> > in the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > Please read the FAQ at  http://www.tux.org/lkml/
+On Thu, May 10, 2007 at 11:26:36AM -0700, Ulrich Drepper wrote:
+> >That's still on the table.  We might end up with an fpathconf() solution.
+> 
+> OK, the pathconf()-based solution will most probably be in the next 
+> POSIX spec.
+> 
+> Now, somebody has to provide a way to get to this information.  The 
+> kernel does not export it so far.  Is it finally time to break down and 
+> allow pathconf() and fpathconf() syscalls into the kernel?
 
-I've tried many different workloads, kernel compile (normal -j4), extreme 
-kernel compile (-j20) and Browsing/Open Office. GLXGears, Briquolo and 
-enemy-territory work relly well under these loads.
+I'd be happy to have them.  While it's not the nicest API in the world
+it's in Posix and we have to support it at the library level, so we
+should better get it right.
 
-I just tried another test with "nice make -j20" and I see latency blips while 
-gaming. SD did not have this. Latencies with nice are _worse_ than latencies 
-without nice on my system. Playing with sched_load_smoothing does not change 
-anything. (I've tested values in the range 1-10)
+I'd like to avoid having a big swithc statement in every filesystem,
+though, instead of we should have a table-driven approach instead
+where each filesystem defines one table (or multiple ones when it
+supports subtypes with different limits) and just sets a pointer in
+the superblock to it.
 
--Christian
+E.g.
+
+long foofs_pathconf {
+	[_PC_LINK_MAX]		= 16384,
+	[_PC_2_SYMLINKS]	= 1,
+	...
+}
+
+and then in fill_super:
+
+	sb->s_pathconf = &foofs_pathconf;
