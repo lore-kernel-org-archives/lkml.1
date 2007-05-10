@@ -1,48 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760077AbXEJSHU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbXEJSHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760077AbXEJSHU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 14:07:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756989AbXEJSHH
+	id S1761010AbXEJSHl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 14:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757391AbXEJSHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 14:07:07 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:54944 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753023AbXEJSHG (ORCPT
+	Thu, 10 May 2007 14:07:11 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53984 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756816AbXEJSHI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 14:07:06 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46435EF5.5010306@s5r6.in-berlin.de>
-Date: Thu, 10 May 2007 20:05:41 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Thu, 10 May 2007 14:07:08 -0400
+Date: Thu, 10 May 2007 11:07:08 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+cc: Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Andrew Morton <akpm@osdl.org>,
+       Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [RFC] memory hotremove patch take 2 [03/10] (drain all pages)
+In-Reply-To: <20070509120337.B90A.Y-GOTO@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0705101105350.10002@schroedinger.engr.sgi.com>
+References: <20070509115506.B904.Y-GOTO@jp.fujitsu.com>
+ <20070509120337.B90A.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net,
-       Kristian H?gsberg <krh@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
-       John Stoffel <john@stoffel.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
-       Olaf Hering <olh@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
-       Adrian Bunk <bunk@stusta.de>,
-       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
-       Bill Fink <billfink@mindspring.com>
-Subject: Re: [git pull] New firewire stack (updated)
-References: <4637A29F.6070302@redhat.com> <tkrat.b635518ff171071d@s5r6.in-berlin.de> <20070510173850.GA31826@infradead.org>
-In-Reply-To: <20070510173850.GA31826@infradead.org>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> ACK from me.  I still have some comments but none of them is a merge
-> blocker.
+On Wed, 9 May 2007, Yasunori Goto wrote:
 
-I put one small fix that Kristian sent on hold (const char * vs char *
-for shostt->proc_name) to let a related patch go to scsi-misc first.
-So this open item is my fault, not his. :-)
--- 
-Stefan Richter
--=====-=-=== -=-= -=-=-
-http://arcgraph.de/sr/
+> This patch add function drain_all_pages(void) to drain all 
+> pages on per-cpu-freelist.
+> Page isolation will catch them in free_one_page.
+
+This is only draining the pcps of the local processor. I would think 
+that you need to drain all other processors pcps of this zone as well. And 
+there is no need to drain this processors pcps of other zones.
+
