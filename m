@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbXEJM6l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761771AbXEJM6x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761542AbXEJM6l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:58:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbXEJM6f
+	id S1761771AbXEJM6x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:58:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761728AbXEJM6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:58:35 -0400
-Received: from smtp.boksi.fi ([195.10.143.42]:52942 "EHLO smtp1.boksi.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755347AbXEJM6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:58:34 -0400
-Date: Thu, 10 May 2007 15:58:32 +0300
-From: Mika Kukkonen <mikukkon@miku.homelinux.net>
-To: akpm@google.com, ashwin.chaugule@celunite.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix bug in mm/thrash.c function grab_swap_token()
-Message-ID: <20070510125832.GA16461@srv1-m700-lanp.koti>
-Reply-To: mikukkon@iki.fi
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Thu, 10 May 2007 08:58:43 -0400
+Received: from mx0.towertech.it ([213.215.222.73]:49114 "HELO mx0.towertech.it"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1761497AbXEJM6m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 08:58:42 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 08:58:41 EDT
+Date: Thu, 10 May 2007 14:49:52 +0200
+From: Alessandro Zummo <alessandro.zummo@towertech.it>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add driver for Dallas DS1682 elapsed time recorder
+Message-ID: <20070510144952.1d741051@inspiron>
+In-Reply-To: <20070510134850.64075278@hyperion.delvare>
+References: <11785707423303-git-send-email-grant.likely@secretlab.ca>
+	<20070510134850.64075278@hyperion.delvare>
+Organization: Tower Technologies
+X-Mailer: Sylpheed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Following bug was uncovered by compiling with '-W' flag:
+On Thu, 10 May 2007 13:48:50 +0200
+Jean Delvare <khali@linux-fr.org> wrote:
 
-  CC      mm/thrash.o
-mm/thrash.c: In function ‘grab_swap_token’:
-mm/thrash.c:52: warning: comparison of unsigned expression < 0 is always false
+> I know this isn't exactly a RTC chip, but this is still related with
+> timekeeping, so wouldn't it be better placed under drivers/rtc?
+> Alessandro, what do you think?
 
-Field token_priority is unsigned, so decrementing first and the checking
-is not a good plan. Attached patch (compile tested) reverses the order.
+ Hi,
 
-Btw, I'm not sure if likely() makes any sense in this new situation.
+   I don't know if the rtc subsystem can offer help/framework
+ for such a kind of driver. maybe it could be extended to 
+ incorporate it. probably the alarms could be handled
+ in some way.
 
-Signed-off-by: Mika Kukkonen <mikukkon@iki.fi>
+-- 
 
-diff --git a/mm/thrash.c b/mm/thrash.c
-index 9ef9071..c4c5205 100644
---- a/mm/thrash.c
-+++ b/mm/thrash.c
-@@ -48,9 +48,8 @@ void grab_swap_token(void)
- 		if (current_interval < current->mm->last_interval)
- 			current->mm->token_priority++;
- 		else {
--			current->mm->token_priority--;
--			if (unlikely(current->mm->token_priority < 0))
--				current->mm->token_priority = 0;
-+			if (likely(current->mm->token_priority > 0))
-+				current->mm->token_priority--;
- 		}
- 		/* Check if we deserve the token */
- 		if (current->mm->token_priority >
+ Best regards,
+
+ Alessandro Zummo,
+  Tower Technologies - Torino, Italy
+
+  http://www.towertech.it
 
