@@ -1,117 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762473AbXEJWkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761170AbXEJWow@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762473AbXEJWkb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbXEJWkW
+	id S1761170AbXEJWow (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:44:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbXEJWop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:40:22 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41875 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754954AbXEJWkU (ORCPT
+	Thu, 10 May 2007 18:44:45 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:36638 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756135AbXEJWoo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:40:20 -0400
-Date: Fri, 11 May 2007 08:39:50 +1000
-From: David Chinner <dgc@sgi.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: David Chinner <dgc@sgi.com>, torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070510223950.GD86004887@sgi.com>
-References: <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com> <20070510005926.GT85884050@sgi.com> <20070510115620.GB21400@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 May 2007 18:44:44 -0400
+Date: Thu, 10 May 2007 23:44:41 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Nicolas.Mailhot@LaPoste.net,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
+Message-ID: <20070510224441.GA15332@skynet.ie>
+References: <200705102128.l4ALSI2A017437@fire-2.osdl.org> <20070510144319.48d2841a.akpm@linux-foundation.org> <Pine.LNX.4.64.0705101447120.12874@schroedinger.engr.sgi.com> <20070510220657.GA14694@skynet.ie> <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com> <20070510221607.GA15084@skynet.ie> <Pine.LNX.4.64.0705101522250.13504@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070510115620.GB21400@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0705101522250.13504@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 05:26:20PM +0530, Amit K. Arora wrote:
-> On Thu, May 10, 2007 at 10:59:26AM +1000, David Chinner wrote:
-> > On Wed, May 09, 2007 at 09:31:02PM +0530, Amit K. Arora wrote:
-> > > I have the updated patches ready which take care of Andrew's comments.
-> > > Will run some tests and post them soon.
-> > > 
-> > > But, before submitting these patches, I think it will be better to
-> > > finalize on certain things which might be worth some discussion here:
-> > > 
-> > > 1) Should the file size change when preallocation is done beyond EOF ?
-> > > - Andreas and Chris Wedgwood are in favor of not changing the file size
-> > > in this case. I also tend to agree with them. Does anyone has an
-> > > argument in favor of changing the filesize ?  If not, I will remove the
-> > > code which changes the filesize, before I resubmit the concerned ext4
-> > > patch.
-> > 
-> > I think there needs to be both. If we don't have a mechanism to atomically
-> > change the file size with the preallocation, then applications that use
-> > stat() to work out if they need to preallocate more space will end up
-> > racing.
+On (10/05/07 15:27), Christoph Lameter didst pronounce:
+> On Thu, 10 May 2007, Mel Gorman wrote:
 > 
-> By "both" above, do you mean we should give user the flexibility if it wants
-> the filesize changed or not ? It can be done by having *two* modes for
-> preallocation in the system call - say FA_PREALLOCATE and FA_ALLOCATE. If we
-> use FA_PREALLOCATE mode, fallocate() will allocate blocks, but will not
-> change the filesize and [cm]time. If FA_ALLOCATE mode is used, fallocate()
-> will change the filesize if required (i.e.  when allocation is beyond EOF)
-> and also update [cm]time.  This way, the application can decide what it
-> wants.
-
-Yes, that's right.
-
-> This will be helpfull for the partial allocation scenario also. Think of the
-> case when we do not change the filesize in fallocate() and expect
-> applications/posix_fallocate() to do ftruncate() after fallocate() for this.
-> Now if fallocate() results in a partial allocation with -ENOSPC error
-> returned, applications/posix_fallocate() will not know for what length
-> ftruncate() has to be called.  :(
-
-Well, posix_fallocate() either gets all the space or it fails. If
-you truncate to extend the file size after an ENOSPC, then that is
-a buggy implementation.
-
-The same could be said for any application, or even the fallocate()
-call itself if it changes the filesize without having completely
-preallocated the space asked....
-
-> Hence it may be a good idea to give user the flexibility if it wants to
-> atomically change the file size with preallocation or not. But, with more
-> flexibility there comes inconsistency in behavior, which is worth
-> considering.
-
-We've got different modes to specify different behaviour. That's
-what the mode field was put there for in the first place - the
-interface is *designed* to support different preallocation
-behaviours....
-
-> > > 2) For FA_UNALLOCATE mode, should the file system allow unallocation of
-> > > normal (non-preallocated) blocks (blocks allocated via regular
-> > > write/truncate operations) also (i.e. work as punch()) ?
+> > On (10/05/07 15:11), Christoph Lameter didst pronounce:
+> > > On Thu, 10 May 2007, Mel Gorman wrote:
+> > > 
+> > > > I see the gfpmask was 0x84020. That doesn't look like __GFP_WAIT was set,
+> > > > right? Does that mean that SLUB is trying to allocate pages atomically? If so,
+> > > > it would explain why this situation could still occur even though high-order
+> > > > allocations that could sleep would succeed.
+> > > 
+> > > SLUB is following the gfp mask of the caller like all well behaved slab 
+> > > allocators do. If the caller does not set __GFP_WAIT then the page 
+> > > allocator also cannot wait.
 > > 
-> > Yes. That is the current XFS implementation for XFS_IOC_UNRESVSP, and what
-> > i did for FA_UNALLOCATE as well.
+> > Then SLUB should not use the higher orders for slab allocations that cannot
+> > sleep during allocations. What could be done in the longer term is decide
+> > how to tell kswapd to keep pages free at an order other than 0 when it is
+> > known there are a large number of high-order long-lived allocations like this.
 > 
-> Ok. But, some people may not expect/like this. I think, we can keep it on
-> the backburner for a while, till other issues are sorted out.
+> I cannot predict how allocations on a slab will be performed. In order 
+> to avoid the higher order allocations in we would have to add a flag 
+> that tells SLUB at slab creation creation time that this cache will be 
+> used for atomic allocs and thus we can avoid configuring slabs in such a 
+> way that they use higher order allocs.
+> 
 
-How can it be a "backburner" issue when it defines the
-implementation?  I've already implemented some thing in XFS that
-sort of does what I think that the interface is supposed to do, but
-I need that interface to be nailed down before proceeding any
-further.
+It is an option. I had the gfp flags passed in to kmem_cache_create() in
+mind for determining this but SLUB creates slabs differently and different
+flags could be passed into kmem_cache_alloc() of course.
 
-All I'm really interested in right now is that the fallocate
-_interface_ can be used as a *complete replacement* for the
-pre-existing XFS-specific ioctls that are already used by
-applications.  What ext4 can or can't do right now is irrelevant to
-this discussion - the interface definition needs to take priority
-over implementation....
+> The other solution is not to use higher order allocations by dropping the 
+> antifrag patches in mm that allow SLUB to use higher order allocations. 
+> But then there would be no higher order allocations at all that would
+> use the benefits of antifrag measures.
 
-Cheers,
+That would be an immediate solution.
 
-Dave,
+Another alternative is that anti-frag used to also group high-order
+allocations together and make it hard to fallback to those areas
+for non-atomic allocations. It is currently backed out by the
+patch dont-group-high-order-atomic-allocations.patch because
+it was intended for rare high-order short-lived allocations
+such as e1000 that are currently dealt with by MIGRATE_RESERVE
+(bias-the-location-of-pages-freed-for-min_free_kbytes-in-the-same-max_order_nr_pages-blocks.patch)
+. The high-order atomic groupings may help here because the high-order
+allocations are long-lived and would claim contiguous areas.
+
+The last alternative I think I mentioned already is to have the minimum
+order kswapd reclaims as the same order SLUB uses instead of 0 so that
+min_free_kbytes is kept at higher orders than current.
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
