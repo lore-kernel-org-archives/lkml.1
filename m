@@ -1,173 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759909AbXEJAYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759672AbXEJAa0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759909AbXEJAYT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 20:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbXEJAYM
+	id S1759672AbXEJAa0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 20:30:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757338AbXEJAaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 20:24:12 -0400
-Received: from ozlabs.org ([203.10.76.45]:33223 "EHLO ozlabs.org"
+	Wed, 9 May 2007 20:30:13 -0400
+Received: from lixom.net ([66.141.50.11]:32945 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756855AbXEJAYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 20:24:10 -0400
-Subject: Re: lguest re-review
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <20070509025122.f3cb7247.akpm@linux-foundation.org>
-References: <20070509025122.f3cb7247.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 10:24:08 +1000
-Message-Id: <1178756648.7286.182.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1757148AbXEJAaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 20:30:12 -0400
+Date: Wed, 9 May 2007 19:32:29 -0500
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-pcmcia@lists.infradead.org
+Subject: PCMCIA on ppc64, and the joys of io port ranges on mmio-only platforms
+Message-ID: <20070510003229.GA15682@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: olof@lixom.net (Olof Johansson)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 02:51 -0700, Andrew Morton wrote:
-> Some concern was expressed over the lguest review status, so I shall send
-> the patches out again for people to review, to test, to make observations
-> about the author's personal appearance, etc.
+Hi,
 
-Thanks Andrew,
+We've got a very simple CF interface on our eval board, sitting on
+localbus with a couple of gpios for control. mem and i/o port ranges
+are mapped to two mmio ranges, i.e. 0xf0000000 and 0xf1000000 in our case.
 
-	This means I can finally ack this patch (thanks Eric):
+I've got a pcmcia driver for the slot to handle all the probing, etc. It ioremaps both
+the mem and io ranges, and provides that with the registered device:
 
-From: ebiederm@xmission.com (Eric W. Biederman)
-Subject: [PATCH] Revert "[PATCH] paravirt: Add startup infrastructure for paravirtualization"
+        cf->mem_base = ioremap(mem->start, mem->end - mem->start);
+        cf->io_base = ioremap(io->start, io->end - io->start);
+[...]
+        /* pcmcia layer only remaps "real" memory not iospace */
+        cf->socket.io_offset = (unsigned long)cf->io_base;
 
-This reverts commit c9ccf30d77f04064fe5436027ab9d2230c7cdd94.
+        /* reserve chip-select regions */
+        if (!request_mem_region(mem->start, mem->end + 1 - mem->start,
+[...]
+        if (!request_mem_region(io->start, io->end + 1 - io->start, driver_name))
+[...]
+        cf->socket.dev.parent = &ofdev->dev;
+        cf->socket.ops = &electra_cf_ops;
+        cf->socket.resource_ops = &pccard_static_ops;
+        cf->socket.features = SS_CAP_PCCARD | SS_CAP_STATIC_MAP | SS_CAP_MEM_ALIGN;
+[...]
 
-Entering the kernel at startup_32 without passing our real mode data
-in %esi, and without guaranteeing that physical and virtual addresses
-are identity mapped makes head.S impossible to maintain.
+(I'll post the full driver separately, but wanted to bring this up first).
 
-The only user of this infrastructure is lguest which is not merged so
-nothing we currently support will break by removing this over designed
-nightmare, and only the pending lguest patches will be affected. The
-pending Xen patches have a different entry point that they use.
+Bottom line is that io_offset points to the ioremap()ed memory, i.e a
+64-bit kernel address.
 
-We are currently discussing what Xen and lguest need to do to boot the
-kernel in a more normal fashion so using startup_32 in this weird
-manner is clearly not their long term direction.
+The problems show up further up the stack, in this case in the
+pata_pcmcia driver, where pcmcia_request_io() is used to handle the
+address allocation. That in turn calls alloc_io_space(), which takes an
+ioaddr_t * as argument and does math on it.
 
-So let's remove this code in head.S before it causes brain damage to
-people trying to maintain head.S
+ioaddr_t is 32-bit, causing obvious problems since io_offset is
+64-bit. There's a compatible kio_addr_t available, but I'm guessing it's
+already not used because of ABI requiremenets given the big warning at
+the definition of ioaddr_t.
 
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Chris Wright <chrisw@sous-sol.org>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Zachary Amsden <zach@vmware.com>
-Cc: Andrew Morton <akpm@osdl.org>
-CC: H. Peter Anvin <hpa@zytor.com>
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- arch/i386/kernel/head.S        |   38 --------------------------------------
- arch/i386/kernel/paravirt.c    |    1 -
- arch/i386/kernel/vmlinux.lds.S |    6 ------
- include/asm-i386/paravirt.h    |    5 -----
- 4 files changed, 50 deletions(-)
-
-===================================================================
---- a/arch/i386/kernel/head.S
-+++ b/arch/i386/kernel/head.S
-@@ -70,12 +70,6 @@ INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + 
-  */
- .section .text.head,"ax",@progbits
- ENTRY(startup_32)
--
--#ifdef CONFIG_PARAVIRT
--        movl %cs, %eax
--        testl $0x3, %eax
--        jnz startup_paravirt
--#endif
- 
- /*
-  * Set segments to known values.
-@@ -501,38 +495,6 @@ ignore_int:
- 	iret
- 
- .section .text
--#ifdef CONFIG_PARAVIRT
--startup_paravirt:
--	cld
-- 	movl $(init_thread_union+THREAD_SIZE),%esp
--
--	/* We take pains to preserve all the regs. */
--	pushl	%edx
--	pushl	%ecx
--	pushl	%eax
--
--	pushl	$__start_paravirtprobe
--1:
--	movl	0(%esp), %eax
--	cmpl	$__stop_paravirtprobe, %eax
--	je	unhandled_paravirt
--	pushl	(%eax)
--	movl	8(%esp), %eax
--	call	*(%esp)
--	popl	%eax
--
--	movl	4(%esp), %eax
--	movl	8(%esp), %ecx
--	movl	12(%esp), %edx
--
--	addl	$4, (%esp)
--	jmp	1b
--
--unhandled_paravirt:
--	/* Nothing wanted us: we're screwed. */
--	ud2
--#endif
--
- /*
-  * Real beginning of normal "text" segment
-  */
-===================================================================
---- a/arch/i386/kernel/paravirt.c
-+++ b/arch/i386/kernel/paravirt.c
-@@ -19,7 +19,6 @@
- #include <linux/module.h>
- #include <linux/efi.h>
- #include <linux/bcd.h>
--#include <linux/start_kernel.h>
- #include <linux/highmem.h>
- 
- #include <asm/bug.h>
-===================================================================
---- a/arch/i386/kernel/vmlinux.lds.S
-+++ b/arch/i386/kernel/vmlinux.lds.S
-@@ -80,12 +80,6 @@ SECTIONS
- 	EXTRA_RWDATA
- 	CONSTRUCTORS
- 	} :data
--
--  .paravirtprobe : AT(ADDR(.paravirtprobe) - LOAD_OFFSET) {
--  	__start_paravirtprobe = .;
--	*(.paravirtprobe)
--  	__stop_paravirtprobe = .;
--  }
- 
-   . = ALIGN(4096);
-   .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
-===================================================================
---- a/include/asm-i386/paravirt.h
-+++ b/include/asm-i386/paravirt.h
-@@ -221,11 +221,6 @@ struct paravirt_ops
- 	void (*irq_enable_sysexit)(void);
- 	void (*iret)(void);
- };
--
--/* Mark a paravirt probe function. */
--#define paravirt_probe(fn)						\
-- static asmlinkage void (*__paravirtprobe_##fn)(void) __attribute_used__ \
--		__attribute__((__section__(".paravirtprobe"))) = fn
- 
- extern struct paravirt_ops paravirt_ops;
- 
+Since ppc64 never has had pcmcia before (We're the first platform with
+it), changing the type under ifdef like mips/arm shouldn't be a problem,
+at least it won't lead to regressions -- there's no previous user apps
+to regress.
 
 
+However, that's not enough in this case: Next thing that will fail is
+ioport_map() in ppc-specific code, called from devm_ioport_map(). It
+currently assumes to be passed the bus-local port number and adding
+it to the ioremap base of the (normally only) bus with I/O ports,
+i.e. ISA/LPC. Since we already use that for other devices (UARTS, etc),
+we now have more than one base register.
+
+I see two ways to solve this:
+
+1. Create infrastructure to track the various io-port ranges, register
+them and let the infrastructure take care of the ioremap, pick the right
+ioport_map(), etc. I.e. create virtual io port ranges.
+
+2. Make ioport_map() detect already mapped arguments (i.e.:
++       if (port >= IMALLOC_BASE && (port+len) < IMALLOC_END)
++               return (void __iomem *)port;
+
+(1) would be appealing if it was the only change needed, and if that
+meant that I didn't have to change ioaddr_t. It doesn't though, since
+the pcmcia code still stores the ioport_map():ed value in an ioaddr_t,
+so it really just adds complexity without that much benefit.
+
+I'm tempted to go with (2) + type change but if someone has a third
+option I'm all ears.
+
+
+-Olof
