@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbXEJErS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbXEJEsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756368AbXEJErS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 00:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbXEJErJ
+	id S1757180AbXEJEsQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 00:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbXEJEsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 00:47:09 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37694 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751052AbXEJErH (ORCPT
+	Thu, 10 May 2007 00:48:01 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:43723 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751052AbXEJEsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 00:47:07 -0400
-Date: Wed, 9 May 2007 21:47:06 -0700
-From: Paul Jackson <pj@sgi.com>
-To: balbir@linux.vnet.ibm.com
-Cc: vatsa@in.ibm.com, linux-kernel@vger.kernel.org,
-       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
-       xemul@sw.ru, dev@sw.ru, rohitseth@google.com, ebiederm@xmission.com,
-       mbligh@google.com, containers@lists.osdl.org, serue@us.ibm.com,
-       menage@google.com, svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 1/9] Containers (V9): Basic container
- framework
-Message-Id: <20070509214706.5b05eec5.pj@sgi.com>
-In-Reply-To: <46429B13.6090402@linux.vnet.ibm.com>
-References: <20070427104607.252541000@menage.corp.google.com>
-	<20070427111300.015604000@menage.corp.google.com>
-	<46377BA4.6030701@linux.vnet.ibm.com>
-	<20070501114030.62b85494.pj@sgi.com>
-	<46380901.2050001@linux.vnet.ibm.com>
-	<20070501231254.4267777e.pj@sgi.com>
-	<46429B13.6090402@linux.vnet.ibm.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 00:48:00 -0400
+Date: Thu, 10 May 2007 06:47:59 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jesper Juhl <jesper.juhl@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Markus Dahms <dahms@fh-brandenburg.de>
+Subject: Re: remove broken URLs from net drivers' output
+Message-ID: <20070510044759.GG23574@stusta.de>
+References: <200705092102.l49L2Re6028694@hera.kernel.org> <46424E12.9070307@garzik.org> <9a8748490705091604l32b0e6depbc079f69897b34e0@mail.gmail.com> <20070510040739.GF23574@stusta.de> <46429E23.6050404@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46429E23.6050404@garzik.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir wrote:
-> Thanks for the script. Would you like to contribute this script to
-> LTP for wider availability and testing?
+On Thu, May 10, 2007 at 12:22:59AM -0400, Jeff Garzik wrote:
+> Adrian Bunk wrote:
+>> I thought it was just an informal tag to mark which people did agree with 
+>> the patch (and the line between your "Makes good sense to me." and a "Feel 
+>> free to add my ACK to this" is really thin).
+>
+> No, the line is easy and obvious:  if there is any doubt, DO NOT ASSUME.
+> 
+> If they do not explicitly ACK it, then do not presume to speak for them.
 
-Sounds good - though I'm a tad lazy, and don't know how to contribute
-this to the LTP.
+There is no doubt that Jesper did explicitly ACK the patch.
+We are ONLY discussing whether his informal ACK can be translated into 
+an "Acked-by:" line.
 
-You're welcome to contribute it yourself, if that's easier for you,
-or to point me in the direction of some information on this.
+The line I mentioned only exists if "Acked-by:" is considered a formal 
+tag someone must explicitely give, and not an informal indication that 
+someone agrees with the patch. But in this case, we should better 
+require people to give explicit "Acked-by:" lines, like we already 
+require for "Signed-off-by:" lines.
 
-Since it's GPL, you can republish it, under that license.
+I've seen many cases where people other than me added "Acked-by:" tags 
+when there was only a "Makes good sense to me." or "Fine with me.", but 
+no formal "Acked-by:" given.
 
-... Most likely however, it will take a little tweaking to make this
-test work well for LTP.  Most automated test environments have some
-requirements on the behaviour of each test, and it would be surprising
-if this test happen already to conform to LTP's requirements.
+If "Acked-by:" should be considered a formal tag, it
+- should be documented in Documentation/SubmittingPatches and
+- the practice must change to always require people to give
+  a formal "Acked-by:".
+
+> 	Jeff
+
+cu
+Adrian
 
 -- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
