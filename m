@@ -1,67 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbXEJJox@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbXEJJrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754326AbXEJJox (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 05:44:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbXEJJor
+	id S1759475AbXEJJrU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 05:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754516AbXEJJrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 05:44:47 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:35845 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753643AbXEJJoq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 05:44:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qS6ELFRHBcAEmeHS5iEUqlwKdY8H0/9DN5rLthmgBA2xDhvTfe+UNMn98L4yyvxorlbeZaDqFKD4DF41mQqqK/VkryrtDHIDd8yIsH0/qqmxjeKh6gfI1Z+TtxK9GZHpEn1pogPHq1azcDw5sLpBgPRnVDApyN9T3BfD5GU5YVg=
-Message-ID: <9a8748490705100244v58cc6ac5x1d575d177f6f62a1@mail.gmail.com>
-Date: Thu, 10 May 2007 11:44:45 +0200
-From: "Jesper Juhl" <jesper.juhl@gmail.com>
-To: "Adrian Bunk" <bunk@stusta.de>
-Subject: Re: remove broken URLs from net drivers' output
-Cc: "Jeff Garzik" <jeff@garzik.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Markus Dahms" <dahms@fh-brandenburg.de>
-In-Reply-To: <20070510044759.GG23574@stusta.de>
+	Thu, 10 May 2007 05:47:12 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:37417 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754335AbXEJJrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 05:47:10 -0400
+From: Neil Brown <neilb@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Thu, 10 May 2007 19:46:38 +1000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200705092102.l49L2Re6028694@hera.kernel.org>
-	 <46424E12.9070307@garzik.org>
-	 <9a8748490705091604l32b0e6depbc079f69897b34e0@mail.gmail.com>
-	 <20070510040739.GF23574@stusta.de> <46429E23.6050404@garzik.org>
-	 <20070510044759.GG23574@stusta.de>
+Message-ID: <17986.59902.831796.721280@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 002 of 2] md: Improve the is_mddev_idle test
+In-Reply-To: message from Andrew Morton on Thursday May 10
+References: <20070510161940.20204.patches@notabene>
+	<1070510062231.20403@suse.de>
+	<20070510003304.c5fc35d2.akpm@linux-foundation.org>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 10/05/07, Adrian Bunk <bunk@stusta.de> wrote:
-> On Thu, May 10, 2007 at 12:22:59AM -0400, Jeff Garzik wrote:
-> > Adrian Bunk wrote:
-> >> I thought it was just an informal tag to mark which people did agree with
-> >> the patch (and the line between your "Makes good sense to me." and a "Feel
-> >> free to add my ACK to this" is really thin).
+On Thursday May 10, akpm@linux-foundation.org wrote:
+> On Thu, 10 May 2007 16:22:31 +1000 NeilBrown <neilb@suse.de> wrote:
+> 
+> > The test currently looks for any (non-fuzz) difference, either
+> > positive or negative.  This clearly is not needed.  Any non-sync
+> > activity will cause the total sectors to grow faster than the sync_io
+> > count (never slower) so we only need to look for a positive differences.
+> > 
+> > ...
 > >
-> > No, the line is easy and obvious:  if there is any doubt, DO NOT ASSUME.
-> >
-> > If they do not explicitly ACK it, then do not presume to speak for them.
->
-> There is no doubt that Jesper did explicitly ACK the patch.
-> We are ONLY discussing whether his informal ACK can be translated into
-> an "Acked-by:" line.
->
-Right. The patch is fine. What I said when I commented on it was an
-ACK, that's not being debated.
-I just thought that Acked-by: was considered a lot more formal and was
-surprised to see that line with my name on the patch. But I've since
-checked up on that assumption and I can't find anything that states
-that it is considered as formal as I thought it was, so the mistake is
-all mine and what you did is fine.
+> > --- .prev/drivers/md/md.c	2007-05-10 15:51:54.000000000 +1000
+> > +++ ./drivers/md/md.c	2007-05-10 16:05:10.000000000 +1000
+> > @@ -5095,7 +5095,7 @@ static int is_mddev_idle(mddev_t *mddev)
+> >  		 *
+> >  		 * Note: the following is an unsigned comparison.
+> >  		 */
+> > -		if ((curr_events - rdev->last_events + 4096) > 8192) {
+> > +		if ((long)curr_events - (long)rdev->last_events > 4096) {
+> >  			rdev->last_events = curr_events;
+> >  			idle = 0;
+> 
+> In which case would unsigned counters be more appropriate?
 
-If Acked-by: should be made more formal or not is a different discussion.
+I guess.....
 
--- 
-Jesper Juhl <jesper.juhl@gmail.com>
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
-Plain text mails only, please      http://www.expita.com/nomime.html
+It is really the comparison that I want to be signed, I don't much
+care about the counted - they are expected to wrap (though they might
+not).
+So maybe I really want
+
+     if ((signed long)(curr_events - rdev->last_events) > 4096) {
+
+to make it clear...
+But people expect number to be signed by default, so that probably
+isn't necessary.
+
+Yeah, I'll make them signed one day.
+
+Thanks,
+NeilBrown
