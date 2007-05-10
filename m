@@ -1,93 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbXEJVOX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762132AbXEJVQn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933099AbXEJVOX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:14:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762298AbXEJVOL
+	id S1762132AbXEJVQn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:16:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758381AbXEJVQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:14:11 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59959 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762287AbXEJVOH (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:14:07 -0400
-Date: Fri, 11 May 2007 07:13:48 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: David Chinner <dgc@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com,
-       michal.k.k.piotrowski@gmail.com
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
-Message-ID: <20070510211348.GC86004887@sgi.com>
-References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <20070510004918.GS85884050@sgi.com> <46426D31.8070000@goop.org> <20070510012609.GU85884050@sgi.com> <46433049.4020003@goop.org>
+	Thu, 10 May 2007 17:16:37 -0400
+Received: from www.osadl.org ([213.239.205.134]:57455 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757937AbXEJVQg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:16:36 -0400
+Subject: Re: drivers/mtd/devices/at91_dataflash26.c
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: David Brownell <david-b@pacbell.net>
+Cc: =?ISO-8859-1?Q?Hans-J=FCrgen?= Koch <hjk@linutronix.de>,
+       dwmw2@infradead.org, Andrew Victor <andrew@sanpeople.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+In-Reply-To: <200705101307.19794.david-b@pacbell.net>
+References: <200704271812.26392.david-b@pacbell.net>
+	 <200704280336.44913.hjk@linutronix.de>
+	 <200704271908.17403.david-b@pacbell.net>
+	 <200705101307.19794.david-b@pacbell.net>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 10 May 2007 23:19:33 +0200
+Message-Id: <1178831974.22481.9.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46433049.4020003@goop.org>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 07:46:33AM -0700, Jeremy Fitzhardinge wrote:
-> David Chinner wrote:
-> > On Wed, May 09, 2007 at 05:54:09PM -0700, Jeremy Fitzhardinge wrote:
-> >   
-> >> David Chinner wrote:
-> >>     
-> >>> Suspend-resume, eh?
-> >>>
-> >>> There's an immediate suspect. Can you test this specifically for us?
-> >>> i.e. download a known good file set, do some stuff, suspend, resume,
-> >>> then check the files? If it doesn't show up the first time, can
-> >>> you do it a few times just to rule it out?
-> >>>       
-> >> Well, I've been doing suspend-resume with xfs for a while without
-> >> problems; the problems seem to be recent and easily repeatable.  Which
-> >> just means that it could be a new suspend-resume problem, of course.
-> >>     
-> >
-> > Ok. I'm just trying to find a relatively simple test case for the
-> > problem - seeing as you seem to be able to reliably reproduce this
-> > we should be able to work out the trigger...
-> >   
+David,
+
+On Thu, 2007-05-10 at 13:07 -0700, David Brownell wrote:
+> On Friday 27 April 2007, David Brownell wrote:
+> > On Friday 27 April 2007, Hans-Jürgen Koch wrote:
+> > 
+> > > > 	 the m25p80 driver
+> > > > was pretty close to working with those Atmel devices too ...
+> > > > most of the commands are identical.
+> > > 
+> > > Thanks for that hint, I'll have a look at the data sheet.
 > 
-> OK, I was able to reproduce it reliably with a script with did basically:
+> Any progress on that?  I looked again, and yes most commands
+> are identical.
 > 
->     for i in `seq 20`; do
->     	hg clone -U --pull a b-$i
->     	hg verify b-$i		# always OK
->     	umount /home
->     	sleep 5
->     	mount /home
->     	hg verify b-$i		# often found truncated files
->     done
->       
+>  - That driver relies on an AT91-only SPI stack that's not
+>    going upstream, instead of drivers/spi/atmel_spi.c;
 > 
-> No suspend/resumes involved.  The trees are linux kernel ones, so fairly
-> large, but small enough to fit entirely in core.  My script also
-> captured xfs_bmap before/after output for files which had tended to be
-> corrupted in the past, but unfortunately none of them got corrupted in
-> these tests.  But I do have all the trees lying around to extract more
-> detail for if you like.
+>  - Driver can't even be selected on kernel.org kernel (!!);
+> 
+>  - The m25p80 driver will need at most minor tweaks to
+>    handle those AT26 (and AT25) series chips;
+> 
+> So 340ea370c2ce89d1c15fbf785460f2f74314ce58 should be reverted.
 
-Ok, so most of the of the integrity errors are processed by an
-error like this:
+We look into this and fix the problem. There is no need to revert it
+right now. It does no harm and we remove it with the merge into the
+m25p80 driver, ok ?
 
-drivers/scsi/sata_sil24.c index contains -98 extra bytes
-unpacking file drivers/scsi/sata_sil24.c 5715cdfceaca: Error -5 while decompressing data
+	tglx
 
-That's an -EIO and not a normal error to report. Are there any
-errors in dmesg or syslog corresponding to this?
 
-The errors tend to imply problems decompressing and patching files,
-not that truncates are occurring once the files have been patched.
-Can you check that what is being pulled from the repository is correct
-before it gets uncompressed?
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
