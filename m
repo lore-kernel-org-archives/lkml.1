@@ -1,40 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759651AbXEJQ1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760928AbXEJQ1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759651AbXEJQ1W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 12:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbXEJQ1Q
+	id S1760928AbXEJQ1g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 12:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760376AbXEJQ12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 12:27:16 -0400
-Received: from pat.uio.no ([129.240.10.15]:36416 "EHLO pat.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752921AbXEJQ1Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 12:27:16 -0400
-Subject: RE: [PATCH] NLM program ID for user space NLM server
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Menny Hamburger <menny@exanet.com>
-Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org
-In-Reply-To: <A6FDE6B975803043804A49F12F49028E0F59D3@hawk.exanet-il.co.il>
-References: <A6FDE6B975803043804A49F12F49028E0F59D3@hawk.exanet-il.co.il>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 12:27:11 -0400
-Message-Id: <1178814431.6775.1.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 10 May 2007 12:27:28 -0400
+Received: from merkurneu.hrz.uni-giessen.de ([134.176.2.3]:50474 "EHLO
+	merkurneu.hrz.uni-giessen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760351AbXEJQ11 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 12:27:27 -0400
+X-Greylist: delayed 901 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 12:27:26 EDT
+From: Marc Dietrich <Marc.Dietrich@ap.physik.uni-giessen.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-mm2
+Date: Thu, 10 May 2007 18:11:35 +0200
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org
+References: <20070509012322.199f292b.akpm@linux-foundation.org>
+In-Reply-To: <20070509012322.199f292b.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
-X-UiO-Resend: resent
-X-UiO-Spam-info: not spam, SpamAssassin (score=-0.5, required=12.0, autolearn=disabled, AWL=-0.469)
-X-UiO-Scanned: 0B01ADA2E802D4FBE1764345D2A075D708985140
-X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -4 maxlevel 200 minaction 2 bait 0 mail/h: 503 total 1649858 max/h 8345 blacklist 0 greylist 0 ratelimit 0
+Content-Disposition: inline
+Message-Id: <200705101811.43635.marc.dietrich@ap.physik.uni-giessen.de>
+X-HRZ-JLUG-MailScanner-Information: Passed JLUG virus check
+X-HRZ-JLUG-MailScanner: No virus found
+X-MailScanner-From: marc.dietrich@ap.physik.uni-giessen.de
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-10 at 18:30 +0300, Menny Hamburger wrote:
-> The idea in the change was to be able to override NLM_PROGRAM with
-> another definition (from our slightly customized build system), so that
-> the kernel never tries to register port 100021.
 
-I repeat: The kernel _NEEDS_ to register RPC service 100021 on the
-client so that rpc.statd can find it and notify it of server reboots.
+Hi,
 
-Trond
+Am Wednesday 09 May 2007 10:23 schrieb Andrew Morton:
+> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21
+>-mm2/
+>
+>
+> - git-acpi was temporarily dropped due to git conflicts which I didn't feel
+>   like fixing.
+>
+> - So was git-kvm
+>
+> - A handful of IDE patches were dropped due to compilation failures.  Bart
+>   may have fixed this since I last downloaded his tree..
+>
+> - The adaptive readahead patches were dropped.  We're expecting a new, much
+>   simpler version of these.
 
+since -mm1 I cannot create files on nfs4 shares. 
+
+#me@localhost:/home: touch t
+touch: setting times of `t': Input/output error
+#me@localhost:/home: dmesg|tail -n1
+decode_attr_group: reply buffer overflowed in line 2676.
+
+This problem was reported before in a different thread, but no reaction....
+
+http://marc.info/?l=linux-kernel&m=117837974628893&w=2
+
+thanks
+
+Marc
+
+-- 
+	"The enemy commits atrocities knowingly; if we make unfortunate mistakes, it 
+is involuntary."
+		 Lord Arthur Ponsonby, "Falsehood in Wartime: Propaganda Lies of the First 
+World War", 1928
