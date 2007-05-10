@@ -1,59 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760372AbXEJVWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761669AbXEJVWI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760372AbXEJVWb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762099AbXEJVWQ
+	id S1761669AbXEJVWI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:22:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762099AbXEJVVz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:22:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:49381 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932700AbXEJVWO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:22:14 -0400
-Message-ID: <46438D03.8030100@goop.org>
-Date: Thu, 10 May 2007 14:22:11 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 10 May 2007 17:21:55 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:53021 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755785AbXEJVVx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:21:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=AVJLQWiHbUWU83N7gpAsST2KENYr7m7FBLvQON/RDlmxTMJuiZrksVCefcyfC1FXQ
+	3H0Tf7gDwjQIhvssbQvOQ==
+Message-ID: <6599ad830705101421t54a2e7eay49713341fcc9faea@mail.gmail.com>
+Date: Thu, 10 May 2007 14:21:39 -0700
+From: "Paul Menage" <menage@google.com>
+To: balbir@linux.vnet.ibm.com
+Subject: Re: [ckrm-tech] [PATCH 3/9] Containers (V9): Add tasks file interface
+Cc: vatsa@in.ibm.com, svaidy@linux.vnet.ibm.com,
+       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
+       xemul@sw.ru, linux-kernel@vger.kernel.org, containers@lists.osdl.org,
+       pj@sgi.com, ebiederm@xmission.com, mbligh@google.com,
+       rohitseth@google.com, serue@us.ibm.com, akpm@linux-foundation.org,
+       dev@sw.ru, devel@openvz.org
+In-Reply-To: <46408E58.7090306@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Christoph Lameter <clameter@sgi.com>
-CC: William Lee Irwin III <wli@holomorphy.com>,
-       Hugh Dickins <hugh@veritas.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slub-i386-support.patch
-References: <Pine.LNX.4.64.0705102028550.25681@blonde.wat.veritas.com> <20070510203102.GO19966@holomorphy.com> <Pine.LNX.4.64.0705101333420.11826@schroedinger.engr.sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0705101333420.11826@schroedinger.engr.sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070427104607.252541000@menage.corp.google.com>
+	 <20070427111300.406327000@menage.corp.google.com>
+	 <46378311.6000703@linux.vnet.ibm.com>
+	 <6599ad830705011337r6f200baen841919ac17c6f38b@mail.gmail.com>
+	 <20070502032541.GA7311@in.ibm.com>
+	 <6599ad830705012025r64eed906sebe4b38d9977c036@mail.gmail.com>
+	 <46408E58.7090306@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
->> This is wrong; pgd's are smaller than PAGE_SIZE on PAE. Burning lowmem
->> like this is very, very bad for such systems. pmd_cache is rather
->> trivial to convert to quicklists, since all it does is zero pages. I
->> still don't approve of even the !SHARED_KERNEL_PMD case using PAGE_SIZE
->> -sized pgd's. Xen should really be fixed to avoid requiring guests to
->> have recursive pagetables or whatever it's doing.
->>     
+On 5/8/07, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 >
-> But the Xen guys need the full sized pgd?
->   
+> I now have a use case for maintaining a per-container task list.
+> I am trying to build a per-container stats similar to taskstats.
+> I intend to support container accounting of
+>
+> 1. Tasks running
+> 2. Tasks stopped
+> 3. Tasks un-interruptible
+> 4. Tasks blocked on IO
+> 5. Tasks sleeping
+>
+> This would provide statistics similar to the patch that Pavel had sent out.
+>
+> I faced the following problems while trying to implement this feature
+>
+> 1. There is no easy way to get a list of all tasks belonging to a container
+>    (we need to walk all threads)
 
-Yes, Xen needs a page-sized PGD.  There are two reasons:
+Well, walking the taks list is pretty easy - but yes, it could become
+inefficient when there are many small containers in use.
 
-   1. Xen inherently needs a whole page for the pgd, because it
-      classifies pages by type, and the pgd is a pagetable-typed page.
-   2. When the kernel mappings are not being shared between processes,
-      as in non-PAE or PAE with !SHARED_KERNEL_PMD, it maintains a
-      pgd_list linked though the index field in the page structure's
-      index field.  For this to work, you can't have more than one pgd
-      per page.  The pgd_list is needed to sync the vmalloc mappings
-      across all the pagetables.
+I've got some ideas for a way of tracking this specifically for
+containers with subsystems that want this, while avoiding the overhead
+for subsystems that don't really need it. I'll try to add them to the
+next patchset.
 
-Xen needs to set !SHARED_KERNEL_PMD for PAE when running a 32-bit kernel
-under a 32-bit hypervisor; when running under a 64-bit hypervisor,
-there's no need to steal any guest address space for the hypervisor.  (I
-haven't implemented this on the Linux side yet.)
+> 2. There is no concept of a container identifier. When a user issues a command
+>    to extract statistics, the only unique container identifier is the container
+>    path, which means that we need to do a path lookup to determine the dentry
+>    for the container (which gets quite ugly with all the string manipulation)
 
-    J
+We could just cache the container path permanently in the container,
+and invalidate it if any of its parents gets renamed. (I imagine this
+happens almost never.)
+
+>
+>    Adding  a container id, will make it easier to find a container and return
+>    statistics belonging to the container.
+
+Not unreasonable, but there are a few questions that would have to be answered:
+
+- how is the container id picked? Like a pid, or user-defined? Or some
+kind of string?
+
+- how would it be exposed to userspace? A generic control file
+provided by the container filesystem in all container directories?
+
+- can you give a more concrete example of how this would actually be
+useful? For your container stats, it seems that just reading a control
+file in the container's directory would give you the stats that you
+want, and userspace already knows the container's name/id since it
+opened the control file.
+
+Paul
