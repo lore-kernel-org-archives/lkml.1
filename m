@@ -1,62 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbXEJQPV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759258AbXEJQQx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758501AbXEJQPV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 12:15:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXEJQPJ
+	id S1759258AbXEJQQx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 12:16:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753607AbXEJQQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 12:15:09 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:32823 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753996AbXEJQPI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 12:15:08 -0400
-Date: Thu, 10 May 2007 12:14:46 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-cc: Bodo Eggert <7eggert@gmx.de>, Albert Cahalan <acahalan@gmail.com>,
-       Andrey Borzenkov <arvidjaar@mail.ru>, hirofumi@mail.parknet.co.jp,
-       linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: Re: Long file names in VFAT broken with iocharset=utf8
-In-Reply-To: <Pine.LNX.4.61.0705101654480.24536@yvahk01.tjqt.qr>
-Message-ID: <alpine.DEB.0.98.0705101209130.8169@sigma.j-a-k-j.com>
-References: <8ipOe-5KI-3@gated-at.bofh.it> <8ityz-2Xz-31@gated-at.bofh.it>
- <8iWqS-5Ba-15@gated-at.bofh.it> <8iWKp-619-29@gated-at.bofh.it>
- <8j4eK-QR-13@gated-at.bofh.it> <E1Hm9xo-0000vV-Po@be1.lrz>
- <Pine.LNX.4.61.0705101654480.24536@yvahk01.tjqt.qr>
+	Thu, 10 May 2007 12:16:47 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:48647 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752784AbXEJQQq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 12:16:46 -0400
+Date: Thu, 10 May 2007 18:12:51 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Jeff Garzik <jeff@garzik.org>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       linux-usb-devel@lists.sourceforge.net
+Subject: Re: [another git patch] move USB net drivers to drivers/net
+In-Reply-To: <20070510013855.GA3402@havoc.gtf.org>
+Message-ID: <Pine.LNX.4.61.0705101735080.24536@yvahk01.tjqt.qr>
+References: <20070510013855.GA3402@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >Just because you limit yourself to 80 chars minus "ls -l"-clutter, this is
-> >no reason why I shouldn't use long filenames. If I need to handle these
-> >filenames, I can enlarge the terminal window or read the next line.
-> >
-> >E.g.: I have a music file named "artist - title.ext", where the artist
-> >name is 103 characters long, using abbreviations. In order to enter that
-> >name, I have to press seven keys, including the escape character.
-> >There is nothing unreasonable in using that name.
-> 
-> What name would that be? I cannot dream up any IME that outputs _that_
-> many characters for that few keystrokes. Even with CJ(K), 7 keystrokes can
-> make at most 21 bytes if I had to take a good guess.
+Hi Jeff,
 
-Probably talking about tab-completion in the shell, countering the comment 
-that names that long are too unwieldy to use.
 
-On the other hand, limits are always bad. Haven't we seen bajillions of 
-cases in computing history where we start with limits (like only N of the 
-first characters of identifiers used in compilers), followed by people 
-finding those limits annoying, then followed by the limits being removed? 
-How about the Year-20?? limitations? Same thing: limits that were fine, 
-then limits were not fine, then limits were removed.
+On May 9 2007 21:38, Jeff Garzik wrote:
+>diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+>index 59c0459..c5d8423 100644
+>--- a/drivers/net/Makefile
+>+++ b/drivers/net/Makefile
+>@@ -206,6 +206,14 @@ obj-$(CONFIG_TR) += tokenring/
+> obj-$(CONFIG_WAN) += wan/
+> obj-$(CONFIG_ARCNET) += arcnet/
+> obj-$(CONFIG_NET_PCMCIA) += pcmcia/
+>+
+>+obj-$(CONFIG_USB_CATC)          += usb/
+>+obj-$(CONFIG_USB_KAWETH)        += usb/
+>+obj-$(CONFIG_USB_PEGASUS)       += usb/
+>+obj-$(CONFIG_USB_RTL8150)       += usb/
+>+obj-$(CONFIG_USB_USBNET)        += usb/
+>+obj-$(CONFIG_USB_ZD1201)        += usb/
+>+
 
-In this era, couldn't we just skip the whole thing and stop putting limits 
-in from the beginning? The only reason to have a PATH_MAX/NAME_MAX at all 
-is to make life easier for programmers implementing things and people 
-using things. It would require a LOT of work and changes, but life would 
-be so much better if there were a (configurable, of course!) option to say 
-"use standard values" or "use custom values" or "use runtime-dynamic 
-values". Option 1: No change. Option 2: Alter your limits.h too, and 
-recompile programs (or fix them). Option 3: Change programs from 
-compile-time inclusion of limits.h to run-time checking of a /sys value.
+This looks, well, a bit ugly. Since we seem to be going in the direction
+of using "menuconfig"s (Kconfig language object) anyway, I propose the
+patch below.
+
+diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
+new file mode 100644
+index 0000000..3de564b
+--- /dev/null
++++ b/drivers/net/usb/Kconfig
+@@ -0,0 +1,338 @@
++#
++# USB Network devices configuration
++#
++comment "Networking support is needed for USB Network Adapter support"
++       depends on USB && !NET
+
+This comment is superfluous. If !NET, then NETDEVICES is not even available.
+Since you just moved/renamed it, you are not to blame. Though, I remove
+it in below's patch (applies on top of
+commit 5b2fc499917e5897a13add780e181b4cef197072).
+
+
+Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
+
+diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+index c5d8423..5f6112d 100644
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -207,12 +207,7 @@ obj-$(CONFIG_WAN) += wan/
+ obj-$(CONFIG_ARCNET) += arcnet/
+ obj-$(CONFIG_NET_PCMCIA) += pcmcia/
+ 
+-obj-$(CONFIG_USB_CATC)          += usb/
+-obj-$(CONFIG_USB_KAWETH)        += usb/
+-obj-$(CONFIG_USB_PEGASUS)       += usb/
+-obj-$(CONFIG_USB_RTL8150)       += usb/
+-obj-$(CONFIG_USB_USBNET)        += usb/
+-obj-$(CONFIG_USB_ZD1201)        += usb/
++obj-$(CONFIG_NETDEV_USB) += usb/
+ 
+ obj-y += wireless/
+ obj-$(CONFIG_NET_TULIP) += tulip/
+diff --git a/drivers/net/usb/Kconfig b/drivers/net/usb/Kconfig
+index 3de564b..2458f99 100644
+--- a/drivers/net/usb/Kconfig
++++ b/drivers/net/usb/Kconfig
+@@ -1,11 +1,12 @@
+ #
+ # USB Network devices configuration
+ #
+-comment "Networking support is needed for USB Network Adapter support"
+-	depends on USB && !NET
+-
+-menu "USB Network Adapters"
++menuconfig NETDEVICES_USB
++	bool "USB Network Adapters"
+ 	depends on USB && NET
++	default y
++
++if NETDEVICES_USB
+ 
+ config USB_CATC
+ 	tristate "USB CATC NetMate-based Ethernet device support (EXPERIMENTAL)"
+@@ -334,5 +335,4 @@ config USB_NET_ZAURUS
+ 	  really need this non-conformant variant of CDC Ethernet (or in
+ 	  some cases CDC MDLM) protocol, not "g_ether".
+ 
+-
+-endmenu
++endif # NETDEVICES_USB
+#<EOF>
+
+	Jan
+-- 
