@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761546AbXEJNWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762105AbXEJNXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761546AbXEJNWX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 09:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757079AbXEJNWR
+	id S1762105AbXEJNXR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 09:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758835AbXEJNXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 09:22:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:39533 "EHLO mx1.redhat.com"
+	Thu, 10 May 2007 09:23:05 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:39717 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756102AbXEJNWQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 09:22:16 -0400
-Message-ID: <4643176C.6050305@redhat.com>
-Date: Thu, 10 May 2007 09:00:28 -0400
-From: Steven Rostedt <srostedt@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+	id S1755742AbXEJNXE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 09:23:04 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <10764.1178800398@redhat.com>
+References: <10764.1178800398@redhat.com> <20070510115927.GB16409@srv1-m700-lanp.koti>
+Cc: mikukkon@iki.fi, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Bug in fs/afs/write.c function afs_write_back_from_locked_page()
+X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
 MIME-Version: 1.0
-To: Li Yu <raise.sail@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Hi, I have one question about rt_mutex.
-References: <4642CCEB.6010908@gmail.com>
-In-Reply-To: <4642CCEB.6010908@gmail.com>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+Date: Thu, 10 May 2007 13:35:24 +0100
+Message-ID: <11285.1178800524@redhat.com>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Li Yu wrote:
->> Now since mutexes can be defined by user-land applications, we don't
-> want a DOS
->> type of application that nests large amounts of mutexes to create a large
->> PI chain, and have the code holding spin locks while looking at a large
->> amount of data. So to prevent this, the implementation not only implements
->> a maximum lock depth, but also only holds at most two different locks at a
->> time, as it walks the PI chain. More about this below.
-> 
-> After read the implementation of rt_mutex_adjust_prio_chain(), I found
-> the we really require maximin lock depth (1024 default), but I can not
-> see the check for more same locks duplication. Does this doc is
-> inconsistent with code?
+David Howells <dhowells@redhat.com> wrote:
 
-Nope, the code and the doc are still the same.
+> How about the attached instead?
 
-The thing that was most difficult in writing that document, was a way to
-talk about the user locks (futex - fast user mutex) and the kernel locks
-(spin_locks) without confusing the two.  The max depth is in reference
-to the user futex, but the comment about the "at most two different
-locks" is referencing the kernel's spin_locks.
+Blech.  How about this instead?  I forgot to remove the extra put_page() you
+added.
 
-I don't remember talking about looking for "lock duplication", which I'm
-thinking you are referring to circular dead locks. I didn't cover that
-in the document and I believe I even mentioned that I would not cover
-the debug aspect of the code which would handle catching circular deadlocks.
+David
+---
+AFS: Fix interminable loop in afs_write_back_from_locked_page()
 
-But back to the "no more than two kernel locks held". This is very
-important. Some PI implementations requires all locks in the PI chain to
-have their internal locks held (as in spin_locks).  But letting user
-space determine the number of spin locks held can cause large latencies
-for the rest of the system.  So we designed a method to only need to
-hold two internal spin_locks in the PI chain at a time.  The kernel
-doesn't care if the user application is abusing itself (holding too many
-of it's own user locks).  But the kernel does care if a user application
-can affect other non related applications.
+From: Mika Kukkonen <mikukkon@miku.homelinux.net>
 
-As Esben already mentioned, the PI chain even lets the locking user
-mutex schedule without holding any kernel locks.  This is very key. It
-keeps the latency down on setting up a PI chain which can be very expensive.
+Following bug was uncovered by compiling with '-W' flag:
 
-Note: Esben helped a lot in the development of the final design of
-rtmutex.c.
+  CC [M]  fs/afs/write.o
+fs/afs/write.c: In function ‘afs_write_back_from_locked_page’:
+fs/afs/write.c:398: warning: comparison of unsigned expression >= 0 is always true
 
--- Steve
+Loop variable 'n' is unsigned, so wraps around happily as far as I can
+see. Trival fix attached (compile tested only).
 
+Signed-Off-By: Mika Kukkonen <mikukkon@iki.fi>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ fs/afs/write.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index 67ae4db..28f3751 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -395,8 +395,9 @@ static int afs_write_back_from_locked_page(struct afs_writeback *wb,
+ 		if (n == 0)
+ 			goto no_more;
+ 		if (pages[0]->index != start) {
+-			for (n--; n >= 0; n--)
+-				put_page(pages[n]);
++			do {
++				put_page(pages[--n]);
++			} while (n > 0);
+ 			goto no_more;
+ 		}
+ 
