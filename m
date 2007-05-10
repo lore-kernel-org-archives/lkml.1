@@ -1,64 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759013AbXEKMZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759518AbXEKM3I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759013AbXEKMZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 08:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbXEKMZQ
+	id S1759518AbXEKM3I (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 08:29:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbXEKM25
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 08:25:16 -0400
-Received: from nz-out-0506.google.com ([64.233.162.235]:1419 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754510AbXEKMZP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 08:25:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=RgXleKEYu1p7nxmnbNpYuobfiA0ugIFS6jbfSglHnVgYlZ2nyhDAIncMZrDQhsEsEorB8BxayVJQKmDEAeRU+voQAbAPfCZbnnfBJgaItnAI3Fq1BrC0m/bvimgVaQdK0XwhM6psGh47CQ7K2OxZpkScaOEghPzW1DxzWZmKnV0=
-Message-ID: <9b53a56d0705110525o336eb0b8sb963d95608c94b9@mail.gmail.com>
-Date: Fri, 11 May 2007 08:25:13 -0400
-From: "Chris Smith" <smitty1elkml@gmail.com>
-To: "Arne Georg Gleditsch" <argggh@dolphinics.no>
-Subject: Re: [RFC] - LXR on kernel.org ? was: Re: What tools to use?
-Cc: devzero@web.de, linux-kernel@vger.kernel.org, jcm@redhat.com
-In-Reply-To: <873b23ivr2.fsf@pelargir.dolphinics.no>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 11 May 2007 08:28:57 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1346 "EHLO spitz.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755845AbXEKM24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 08:28:56 -0400
+Date: Thu, 10 May 2007 11:36:24 +0000
+From: Pavel Machek <pavel@ucw.cz>
+To: Albert Cahalan <acahalan@gmail.com>
+Cc: johnstul@us.ibm.com, tjanouse@redhat.com, linux-kernel@vger.kernel.org,
+       tsmetana@redhat.com, riel@redhat.com
+Subject: Re: Broken process startup times after suspend (regression)
+Message-ID: <20070510113623.GB4052@ucw.cz>
+References: <787b0d920705052016o2d7e36ffsdc80302228b0ee1e@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <1783741195@web.de> <873b23ivr2.fsf@pelargir.dolphinics.no>
+In-Reply-To: <787b0d920705052016o2d7e36ffsdc80302228b0ee1e@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11 May 2007 10:56:33 +0200, Arne Georg Gleditsch
-<argggh@dolphinics.no> wrote:
-> devzero@web.de writes:
-> > I like lxr pretty much.  i`m not a programmer, but i often need some
-> > information on "what`s the driver version of xyz in latest kernel" or
-> > "was this or that feature/patch already being merged" or "i have this
-> > line of code in kernel - how does it look in recent kernel , did it
-> > change " ?
-> >
-> > over the years, i have downloaded tons of kernels for this, very much
-> > waste of bandwidth and time - because whenever i need to take a look,
-> > i have no recent kernel source around - so i need to download that big
-> > thing and go trough that untar orgy. having recent
-> > browsable/searchable and easy to find lxr`ed kernel-source online
-> > would be really great
-> >
-> > i seldom find lxr for current kernels on the net, so i just wonder:
-> > [..]
->
-> I maintain the original LXR site at lxr.linux.no, which unfortunately
-> tends to lag behind quite a bit.  This is partly due to lack of time
-> to keep it current on my part, but also due to the fact that adding
-> new kernels to the version running on lxr.linux.no is a bit more time
-> and resource-consuming than it ought to be.  Better support for both
-> incremental indexing and git-based repos is forthcoming, and I hope
-> the situation will improve a bit with that.  I'll keep you posted.
->
-> --
-Now, if you merged the beauty of LXR with the wiki goodness of
-kernelnewbies.org, and somehow kept it current <waves hands> that
-could be cool.
---
-Chris
+Hi!
+
+> >Indeed. The monotonic clock's behavior around suspend 
+> >and resume
+> >is poorly defined. When we increased it, folks didn't 
+> >like the
+> >fact that uptime would increase while a system was 
+> >suspended.
+> 
+> The uptime really does need to increase during suspend. 
+> Otherwise,
+> things get really weird with devices like the OLPC XO 
+> which will be
+> sleeping between keystrokes. You could run the device 
+> for hours,
+> yet get an uptime of only a few minutes. Suspended time 
+> should get
+> counted as stolen time, same as when a hypervisor takes 
+> away time.
+
+Yes, please. Just revert the offending patches, we don't want another
+/proc/stat field.
+							Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
