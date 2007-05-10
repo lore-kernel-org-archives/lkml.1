@@ -1,56 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760406AbXEJBAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbXEJBFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760406AbXEJBAk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 21:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbXEJBAc
+	id S1759612AbXEJBFe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 21:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbXEJBF1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 21:00:32 -0400
-Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:45572 "HELO
-	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757832AbXEJBAa (ORCPT
+	Wed, 9 May 2007 21:05:27 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:37435
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754018AbXEJBF0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 21:00:30 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=TM1ln5eP2O+HN7mud6ck057vkg8QZMery6aPPRrtGSF15yN3wS+U5jRJ6st9GsvcRHFcUkB+eiRpVLD5WxhLDH87P9j3G8FufF8l/RXVt5N9ZTqFx8Sm87Er8K5C3e1GAKpSnTxHrxB3yeKJATP0h58+tXLEhxCkfy0zJ3cdb4I=  ;
-X-YMail-OSG: tWPi_XoVM1l6EN40oE5T7cNPLm8HEdxJdKAHTkK299UR4E6vmAN.urM7_er.JJRdS54jALFK9Q--
-Message-ID: <46426EA1.4030408@yahoo.com.au>
-Date: Thu, 10 May 2007 11:00:17 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
+	Wed, 9 May 2007 21:05:26 -0400
+From: Rob Landley <rob@landley.net>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: David Miller <davem@davemloft.net>, clameter@sgi.com, mpm@selenic.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch
- added to -mm tree
-References: <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com>	<20070509012725.GZ11115@waste.org>	<Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com>	<20070508.185141.85412154.davem@davemloft.net>	<46412BB5.1060605@yahoo.com.au> <20070509174238.b4152887.akpm@linux-foundation.org>
-In-Reply-To: <20070509174238.b4152887.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Subject: Re: [patch] removes MAX_ARG_PAGES
+Date: Wed, 9 May 2007 21:04:42 -0400
+User-Agent: KMail/1.9.1
+Cc: "Ollie Wild" <aaw@google.com>, "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org, parisc-linux@lists.parisc-linux.org,
+       linux-mm@kvack.org, linux-arch@vger.kernel.org,
+       "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <ak@suse.de>
+References: <65dd6fd50705060151m78bb9b4fpcb941b16a8c4709e@mail.gmail.com> <20070509134815.81cb9aa9.akpm@linux-foundation.org>
+In-Reply-To: <20070509134815.81cb9aa9.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705092104.43353.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 09 May 2007 12:02:29 +1000
-> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+On Wednesday 09 May 2007 4:48 pm, Andrew Morton wrote:
+> On Sun, 6 May 2007 01:51:34 -0700
+> "Ollie Wild" <aaw@google.com> wrote:
 > 
-> 
->>BTW, we _really_ should be doing RCU properly in slob, because you
->>technically can't noop RCU on UP (even though the current users may be
->>safe...).
->>
->>Patch attached to do that.
-> 
-> 
-> Does it work?
+> > A while back, I sent out a preliminary patch
+> > (http://thread.gmane.org/gmane.linux.ports.hppa/752) to remove the
+> > MAX_ARG_PAGES limit on command line sizes.  Since then, Peter Zijlstra
+> > and I have fixed a number of bugs and addressed the various
+> > outstanding issues.
+> > 
+> > The attached patch incorporates the following changes:
+> > 
+> > - Fixes a BUG_ON() assertion failure discovered by Ingo Molnar.
+> > - Adds CONFIG_STACK_GROWSUP (parisc) support.
+> > - Adds auditing support.
+> > - Reverts to the old behavior on architectures with no MMU.
+> > - Fixes broken execution of 64-bit binaries from 32-bit binaries.
+> > - Adds elf_fdpic support.
+> > - Fixes cache coherency bugs.
+> > 
+> > We've tested the following architectures: i386, x86_64, um/i386,
+> > parisc, and frv.  These are representative of the various scenarios
+> > which this patch addresses, but other architecture teams should try it
+> > out to make sure there aren't any unexpected gotchas.
+>
+> I'll duck this for now, given the couple of problems which people have
+> reported. 
 
-That one booted my desktop (very slowly) but as Matt pointed out, it broke
-alignment on RCU slabs. The last version I posted should work and has the
-alignment problem fixed. I can retest and resubmit it to you if you like,
-I was just waiting on an ack from Matt.
+Just FYI, a really really quick and dirty way of testing this sort of thing on 
+more architectures and you're likely to physically have?
 
--- 
-SUSE Labs, Novell Inc.
+1) Install QEMU.
+
+2) Grab http://landley.net/code/firmware (releases in the downloads directory, 
+or tarball of most recent repository snapshot is 
+wget "http://landley.net/hg/firmware?ca=tip;type=gz").
+
+3) Edit "download.sh" to point at the URL of your tarball instead of whatever 
+kernel.org version it's using.  (Or add your patch to sources/patches if it 
+applies to the version it's already using.  Note that if you set SHA1= blank 
+in download.sh it'll skip the checksum test, so you don't have to recalculate 
+the sha1sum if you don't want to.)
+
+4) Run ./build.sh for the architecture you're interested in.  (I suggest 
+armv4l, i686, mipsel, and x86_64.  Both sparc and ppc are currently broken 
+for different reasons; I'm working on it.)  Wait a longish time for it to 
+finish compiling. :)
+
+5) "cd build; ./run-armv4l.sh" and your shell prompt should now be in qemu 
+running a kernel for the appropriate architecture.  (You even have a native 
+version of gcc you can build stuff with, although you may have 
+to "ln -s /tools/lib /lib" to run the results, for reasons Linux From Scratch 
+developers will recognize. :)
+
+This won't help you test real hardware (at least hardware qemu doesn't 
+emulate), but for stuff like filesystems or executable file formats, it's 
+handy. :)
+
+Email me if something doesn't work...
+
+Rob
