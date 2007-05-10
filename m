@@ -1,51 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbXEJUAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760953AbXEJUBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759910AbXEJUAz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 16:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbXEJUAo
+	id S1760953AbXEJUBm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 16:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbXEJUBa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 16:00:44 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50571 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755031AbXEJUAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 16:00:43 -0400
-Date: Thu, 10 May 2007 22:00:33 +0200
-From: Tomas Janousek <tjanouse@redhat.com>
-To: Ingo Oeser <ioe-lkml@rameria.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
-       tsmetana@redhat.com, riel@redhat.com
-Subject: Re: [PATCH] Introduce boot based time
-Message-ID: <20070510200033.GA31048@redhat.com>
-References: <1178302732.5929.23.camel@localhost.localdomain> <3108b4e2c91097ec9469420b3f0836f0499068a6.1178816485.git.tomi@nomi.cz> <200705102149.01714.ioe-lkml@rameria.de>
-MIME-Version: 1.0
+	Thu, 10 May 2007 16:01:30 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:39882 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750833AbXEJUB3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 16:01:29 -0400
+Date: Thu, 10 May 2007 13:01:27 -0700
+From: Andreas Dilger <adilger@clusterfs.com>
+To: "Serge E. Hallyn" <serue@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
+       Andrew Morton <akpm@linux-foundation.org>, jeffschroeder@computer.org,
+       Chris Wright <chrisw@sous-sol.org>,
+       Karl MacMillan <kmacmillan@mentalrootkit.com>,
+       KaiGai Kohei <kaigai@kaigai.gr.jp>
+Subject: Re: [PATCH 2/2] file capabilities: accomodate >32 bit capabilities
+Message-ID: <20070510200127.GH6375@schatzie.adilger.int>
+Mail-Followup-To: "Serge E. Hallyn" <serue@us.ibm.com>,
+	lkml <linux-kernel@vger.kernel.org>,
+	linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+	James Morris <jmorris@namei.org>,
+	Stephen Smalley <sds@tycho.nsa.gov>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	jeffschroeder@computer.org, Chris Wright <chrisw@sous-sol.org>,
+	Karl MacMillan <kmacmillan@mentalrootkit.com>,
+	KaiGai Kohei <kaigai@kaigai.gr.jp>
+References: <20070508191548.GA29913@sergelap.austin.ibm.com> <20070508191704.GC29913@sergelap.austin.ibm.com> <20070508205826.GH6375@schatzie.adilger.int> <20070508214914.GA27582@sergelap.austin.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705102149.01714.ioe-lkml@rameria.de>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+In-Reply-To: <20070508214914.GA27582@sergelap.austin.ibm.com>
+User-Agent: Mutt/1.4.1i
+X-GPG-Key: 1024D/0D35BED6
+X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-
-On Thu, May 10, 2007 at 09:48:59PM +0200, Ingo Oeser wrote:
-> > +static unsigned long total_sleep_time;
+On May 08, 2007  16:49 -0500, Serge E. Hallyn wrote:
+> Quoting Andreas Dilger (adilger@clusterfs.com):
+> > One of the important use cases I can see today is the ability to
+> > split the heavily-overloaded e.g. CAP_SYS_ADMIN into much more fine
+> > grained attributes.
 > 
-> Could you make that a ktime_t (or struct ktime)?
-> There are machines, which sleep more than they are awake. 
-> Just imagine a surveillance camera triggered by door entrance.
+> Sounds plausible, though it suffers from both making capabilities far
+> more cumbersome (i.e. finding the right capability for what you wanted
+> to do) and backward compatibility.  Perhaps at that point we should
+> introduce security.capabilityv2 xattrs.  A binary can then carry
+> security.capability=CAP_SYS_ADMIN=p, and
+> security.capabilityv2=cap_may_clone_mntns=p.
+
+Well, the overhead of each EA is non-trivial (16 bytes/EA) for storing
+12 bytes worth of data, so it is probably just better to keep extending
+the original capability fields as was in the proposal.
+
+> > What we definitely do NOT want to happen is an application that needs
+> > priviledged access (e.g. e2fsck, mount) to stop running because the
+> > new capabilities _would_ have been granted by the new kernel and are
+> > not by the old kernel and STRICTXATTR is used.
+> > 
+> > To me it would seem that having extra capabilities on an old kernel
+> > is relatively harmless if the old kernel doesn't know what they are.
+> > It's like having a key to a door that you don't know where it is.
 > 
-> Yes, these things might run Linux (e.g. on "cris" architecture).
-> 
-> Or your VCR.
-> Yes, these devices might sleep more than they are awake, 
-> if you are not a TV junkie :-)
+> If we ditch the STRICTXATTR option do the semantics seem sane to you?
 
-The value is in seconds. It can hold up to 136 years of sleep. I'd rather
-spend the money on beer than on a VCR that I'm gonna suspend for 137 years :)
+Seems reasonable.
 
-(or do we have a 16-bit long anywhere?)
+Cheers, Andreas
+--
+Andreas Dilger
+Principal Software Engineer
+Cluster File Systems, Inc.
 
-Regards,
--- 
-TJ. (Brno, CZ), BaseOS, Red Hat
