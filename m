@@ -1,77 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbXEJMl6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759859AbXEJMoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760785AbXEJMl6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:41:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbXEJMls
+	id S1759859AbXEJMoX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbXEJMoQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:41:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57415 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754924AbXEJMlr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:41:47 -0400
-Date: Thu, 10 May 2007 13:41:45 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: HDIO_DRIVE_CMD and hdparm
-Message-ID: <20070510124145.GA19856@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
-References: <Pine.LNX.4.62.0705101327170.759@pademelon.sonytel.be>
+	Thu, 10 May 2007 08:44:16 -0400
+Received: from [81.2.110.250] ([81.2.110.250]:33603 "EHLO the-village.bc.nu"
+	rhost-flags-FAIL-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754974AbXEJMoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 08:44:15 -0400
+Date: Thu, 10 May 2007 13:48:16 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 07/10] Linux Kernel Markers - Documentation
+Message-ID: <20070510134816.5e57e3cb@the-village.bc.nu>
+In-Reply-To: <20070510114158.GA16741@infradead.org>
+References: <20070510015555.973107048@polymtl.ca>
+	<20070510020917.172554217@polymtl.ca>
+	<20070510065847.GE8019@infradead.org>
+	<20070510124120.6e8ac5aa@the-village.bc.nu>
+	<20070510114158.GA16741@infradead.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.62.0705101327170.759@pademelon.sonytel.be>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 02:12:59PM +0200, Geert Uytterhoeven wrote:
-> 	Hi,
-> 
-> `hdparm -t' uses HDIO_DRIVE_CMD(null) to flush the disk's buffer.
-> When using it on my own block device (the new PS3 disk storage driver), hdparm
-> gives the following error message:
-> 
-> | HDIO_DRIVE_CMD(null) (wait for flush complete) failed: Inappropriate ioctl for device
-> 
-> When using it on an ATA or SCSI device, no such error message is printed.
-> 
-> According to the hdparm sources, hdparm expects the HDIO_DRIVE_CMD(null) ioctl
-> to either succeed, or to fail with errno EINVAL.
-> 
-> Apparently handling of ioctls is different for the different device types:
->   - ATA/SATA handle HDIO_DRIVE_CMD(null) (and a few other variants)
->     => fine for hdparm
->   - SCSI doesn't handle HDIO_DRIVE_CMD(null), and returns EINVAL
->     => fine for hdparm
->   - If a block device doesn't support the ioctl, blkdev_driver_ioctl() returns
->     ENOTTY
->     => hdparm error message
-> 
-> Which one is correct?
->   - blkdev_ioctl()/blkdev_driver_ioctl() return -ENOTTY
->   - scsi_cmd_ioctl() returns -ENOTTY
->   - scsi_ioctl() returns -EINVAL
->   - cdrom_ioctl() returns -ENOSYS to mean not handled, continue
->   - some block layer routines return -ENOIOCTLCMD to mean not handled, continue
+> Documentation of kernel facilities should not mention big outside
+> blobs of crap nerverless, which is something totally different from
 
-ENOTTY is the traditional unix errno value for this ioctl is not implemented.
-ENOIOCTLCMD is a new fashioned code meaning about the same.  In the block
-layer the latter should be used as generic code should handlde this.
+Christoph , you are sounding even more arrogant than RMS now, which is
+quite an achievement, although one you shouldn't be proud of.
 
-> 
-> My questions:
->   1. Does any of these have to be fixed?
->   2. Shall I add a dummy HDIO_DRIVE_CMD(null) handler to my block device to
->      return -EINVAL?
->   3. Shall I just ignore the hdparm error message?
+"blobs of crap" - in whose opinion. Yours. So you don't want the kernel
+to mention things you personally don't approve of. Thats straight forward
+censorship and has no place in free software.
 
-I suspect you can just ignore this.  Even better send a patch to the hdparm
-maintainer to deal with ENOTTY aswell.
+If you want to control everything people say and think you might want to
+apply from a job at the EU commission instead.
+
+Alan
