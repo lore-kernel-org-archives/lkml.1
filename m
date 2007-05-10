@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbXEJJne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754326AbXEJJox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758888AbXEJJne (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 05:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756859AbXEJJn1
+	id S1754326AbXEJJox (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 05:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbXEJJor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 05:43:27 -0400
-Received: from wr-out-0506.google.com ([64.233.184.224]:6818 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753827AbXEJJn0 (ORCPT
+	Thu, 10 May 2007 05:44:47 -0400
+Received: from an-out-0708.google.com ([209.85.132.248]:35845 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753643AbXEJJoq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 05:43:26 -0400
+	Thu, 10 May 2007 05:44:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=IgRdptkqVE2D9nn2G8Vpo2fuZLqQTSho9MjD+5bKL2MMEyjRDi70HDMZqA+xnymOyZQQf3MmFM1RL0ouNZ7fSXp8rmDaf3nTc7sHdDVAWi5F6pmaDRRrLXuYdmOrRqBc1GNdkV0/vl0zxSVPzeiE1PBsDd7vk1t3JV9Vg5CWdGg=
-Message-ID: <4642E92D.5010509@gmail.com>
-Date: Thu, 10 May 2007 11:43:09 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=qS6ELFRHBcAEmeHS5iEUqlwKdY8H0/9DN5rLthmgBA2xDhvTfe+UNMn98L4yyvxorlbeZaDqFKD4DF41mQqqK/VkryrtDHIDd8yIsH0/qqmxjeKh6gfI1Z+TtxK9GZHpEn1pogPHq1azcDw5sLpBgPRnVDApyN9T3BfD5GU5YVg=
+Message-ID: <9a8748490705100244v58cc6ac5x1d575d177f6f62a1@mail.gmail.com>
+Date: Thu, 10 May 2007 11:44:45 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "Adrian Bunk" <bunk@stusta.de>
+Subject: Re: remove broken URLs from net drivers' output
+Cc: "Jeff Garzik" <jeff@garzik.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Markus Dahms" <dahms@fh-brandenburg.de>
+In-Reply-To: <20070510044759.GG23574@stusta.de>
 MIME-Version: 1.0
-To: Robert Hancock <hancockr@shaw.ca>
-CC: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH] libata: add human-readable error value decoding
-References: <46428103.3040003@shaw.ca>
-In-Reply-To: <46428103.3040003@shaw.ca>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <200705092102.l49L2Re6028694@hera.kernel.org>
+	 <46424E12.9070307@garzik.org>
+	 <9a8748490705091604l32b0e6depbc079f69897b34e0@mail.gmail.com>
+	 <20070510040739.GF23574@stusta.de> <46429E23.6050404@garzik.org>
+	 <20070510044759.GG23574@stusta.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert Hancock wrote:
-> This adds human-readable decoding of the ATA status and error registers
-> (similar
-> to what drivers/ide does) as well as the SATA Serror register to libata
-> error
-> handling output. This prevents the need to pore through standards documents
-> to figure out the meaning of the bits in these registers when looking at
-> error
-> reports. Some bits that drivers/ide decoded are not decoded here, since
-> the bits
-> are either command-dependent or obsolete, and properly parsing them
-> would add
-> too much complexity.
-> 
-> Signed-off-by: Robert Hancock <hancockr@shaw.ca>
-> 
-> --- linux-2.6.21.1/drivers/ata/libata-eh.c    2007-04-27
-> 15:49:26.000000000 -0600
-> +++ linux-2.6.21.1edit/drivers/ata/libata-eh.c    2007-05-09
-> 19:47:53.000000000 -0600
-> @@ -1523,6 +1523,27 @@ static void ata_eh_report(struct ata_por
->             ata_port_printk(ap, KERN_ERR, "(%s)\n", desc);
->     }
-> 
-> +    if (ehc->i.serror)
-> +        ata_port_printk(ap, KERN_ERR,
-> +          "SError: {%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s}\n",
-> +          ehc->i.serror & SERR_DATA_RECOVERED ? "RecovDataErr " : "",
-> +          ehc->i.serror & SERR_COMM_RECOVERED ? "RecovCommErr " : "",
-> +          ehc->i.serror & SERR_DATA ? "UnrecovDataErr " : "",
-> +          ehc->i.serror & SERR_PERSISTENT ? "PersistErr " : "",
-> +          ehc->i.serror & SERR_PROTOCOL ? "ProtocolErr " : "",
-> +          ehc->i.serror & SERR_INTERNAL ? "HostInternalErr " : "",
-> +          ehc->i.serror & SERR_PHYRDY_CHG ? "PHYRdyChg " : "",
-> +          ehc->i.serror & SERR_PHY_INT_ERR ? "PHYInternalErr " : "",
-> +          ehc->i.serror & SERR_COMM_WAKE ? "CommWake " : "",
-> +          ehc->i.serror & SERR_10B_8B_ERR ? "10B8BErr " : "",
-> +          ehc->i.serror & SERR_DISPARITY ? "Disparity " : "",
-> +          ehc->i.serror & SERR_CRC ? "CRCErr " : "",
-> +          ehc->i.serror & SERR_HANDSHAKE ? "HandshakeErr " : "",
-> +          ehc->i.serror & SERR_LINK_SEQ_ERR ? "LinkSeqErr " : "",
-> +          ehc->i.serror & SERR_TRANS_ST_ERROR ? "TransStatTransErr " : "",
-> +          ehc->i.serror & SERR_UNRECOG_FIS ? "UnrecogFIS " : "",
-> +          ehc->i.serror & SERR_DEV_XCHG ? "DevExchanged " : "" );
+On 10/05/07, Adrian Bunk <bunk@stusta.de> wrote:
+> On Thu, May 10, 2007 at 12:22:59AM -0400, Jeff Garzik wrote:
+> > Adrian Bunk wrote:
+> >> I thought it was just an informal tag to mark which people did agree with
+> >> the patch (and the line between your "Makes good sense to me." and a "Feel
+> >> free to add my ACK to this" is really thin).
+> >
+> > No, the line is easy and obvious:  if there is any doubt, DO NOT ASSUME.
+> >
+> > If they do not explicitly ACK it, then do not presume to speak for them.
+>
+> There is no doubt that Jesper did explicitly ACK the patch.
+> We are ONLY discussing whether his informal ACK can be translated into
+> an "Acked-by:" line.
+>
+Right. The patch is fine. What I said when I commented on it was an
+ACK, that's not being debated.
+I just thought that Acked-by: was considered a lot more formal and was
+surprised to see that line with my name on the patch. But I've since
+checked up on that assumption and I can't find anything that states
+that it is considered as formal as I thought it was, so the mistake is
+all mine and what you did is fine.
 
-I'm not really convinced whether this is necessary.  The human readable
-form is also a bit cryptic and can get quite long.  So, mild NACK from me.
+If Acked-by: should be made more formal or not is a different discussion.
 
 -- 
-tejun
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
