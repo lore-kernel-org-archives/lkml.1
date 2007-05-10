@@ -1,52 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbXEJJ3f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760388AbXEJJaX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbXEJJ3f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 05:29:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbXEJJ32
+	id S1760388AbXEJJaX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 05:30:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXEJJaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 05:29:28 -0400
-Received: from mx12.go2.pl ([193.17.41.142]:37264 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754881AbXEJJ31 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 05:29:27 -0400
-Date: Thu, 10 May 2007 11:35:49 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Pallipadi\, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH] timer: revert parenthesis fix in tbase_get_deferrable() etc.
-Message-ID: <20070510093549.GB2741@ff.dom.local>
-References: <653FFBB4508B9042B5D43DC9E18836F55DFC44@scsmsx415.amr.corp.intel.com> <20070510073904.GB2021@ff.dom.local> <20070510005738.cebd2a40.akpm@linux-foundation.org> <20070510092947.GA2741@ff.dom.local>
+	Thu, 10 May 2007 05:30:09 -0400
+Received: from gate.crashing.org ([63.228.1.57]:47428 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753643AbXEJJaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 05:30:07 -0400
+Subject: Re: [PATCH 2/3] Add hard_irq_disable()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, rusty@rustcorp.com.au
+In-Reply-To: <20070510.015328.104645983.davem@davemloft.net>
+References: <20070510003528.395b122b.akpm@linux-foundation.org>
+	 <1178786505.14928.225.camel@localhost.localdomain>
+	 <20070510015036.ebded3ac.akpm@linux-foundation.org>
+	 <20070510.015328.104645983.davem@davemloft.net>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 19:29:06 +1000
+Message-Id: <1178789346.5575.2.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510092947.GA2741@ff.dom.local>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 11:29:47AM +0200, Jarek Poplawski wrote:
-...
-> [PATCH] timer: revert parenthesis fix in tbase_get_deferrable() etc.
+On Thu, 2007-05-10 at 01:53 -0700, David Miller wrote:
+> From: Andrew Morton <akpm@linux-foundation.org>
+> Date: Thu, 10 May 2007 01:50:36 -0700
 > 
-> > > On 09-05-2007 21:10, Pallipadi, Venkatesh wrote:
-> > > ...
-> > > > On a 64 bit system, converting pointer to int causes unnecessary
-> > > > compiler
-> > > > warning, and intermediate long conversion was to avoid that. I will have
-> > > > to rephrase my comment to remove 32 bit value and use int, as that is
-> > > > what
-> > > > the function returns.
+> > We discussed this a couple of months back.  davem landed firmly in the
+> > second camp and everyone then shut up ;)
 > 
-> So, this patch reverts all changes done by my previous patch.
+> No I landed in the first :-)))
 > 
-> I appologize for my wrong comment about "logical error" here.
+> I think the empty lines are a waste and only serve to eat
+> up precious screen real-estate when reading code.
+> 
+> It is possible that I used to use the empty line thing in
+> the past, but I definitely don't do that any more.
 
-Should be:
+Yup, I used to do the other one too but nowadays, I much prefer not
+wasting that additional line unless specific circumstances, like I
+want a kind of "title" in front of a whole block of other definitions
+with their own comments.
 
-I apologize for my wrong comment about "logical error" here.
+Something like:
 
-Jarek P.
 
-PS: Why I couldn't be sorry, as usual...
+/*
+ * foo management stuff
+ */
+
+
+/* This puts the bar in the foo
+ */
+code code code code
+
+/* This does something you don't want to know about
+ */
+code code code code
+
+
+But does it realy matter that much ? :-)
+
+Cheers,
+Ben.
+
+
