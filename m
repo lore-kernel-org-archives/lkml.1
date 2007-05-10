@@ -1,49 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbXEJEYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756690AbXEJE0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757391AbXEJEYH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 00:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbXEJEXz
+	id S1756690AbXEJE0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 00:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754717AbXEJE0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 00:23:55 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52168 "EHLO mail.dvmed.net"
+	Thu, 10 May 2007 00:26:08 -0400
+Received: from ns2.lanforge.com ([66.165.47.211]:37696 "EHLO ns2.lanforge.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754785AbXEJEXz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 00:23:55 -0400
-Message-ID: <46429E59.1050505@garzik.org>
-Date: Thu, 10 May 2007 00:23:53 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1754714AbXEJE0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 00:26:07 -0400
+Message-ID: <46429ED2.10809@candelatech.com>
+Date: Wed, 09 May 2007 21:25:54 -0700
+From: Ben Greear <greearb@candelatech.com>
+Organization: Candela Technologies
+User-Agent: Thunderbird 1.5.0.10 (X11/20070301)
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: remove broken URLs from net drivers' output
-References: <200705092102.l49L2Re6028694@hera.kernel.org> <46424E12.9070307@garzik.org> <20070510035733.GE23574@stusta.de>
-In-Reply-To: <20070510035733.GE23574@stusta.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Kyle Moffett <mrmacman_g4@mac.com>
+CC: netdev@vger.kernel.org, LKML Kernel <linux-kernel@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       OSDL Linux Bridging <bridge@osdl.org>
+Subject: Re: [BUG][debian-2.6.20-1-686] bridging + vlans + "vconfig rem" ==
+ stuck kernel
+References: <2638DE26-D672-4245-BE88-D13B7F0F34A9@mac.com>
+In-Reply-To: <2638DE26-D672-4245-BE88-D13B7F0F34A9@mac.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adrian Bunk wrote:
-> It had been sent twice to both linux-kernel and netdev, and when going 
-> through old linux-kernel emails I considered it trivial enough (people 
-> might argue about dead email addresses, but not about dead URLs).
-> 
-> I could send such patches to Andrew for that he includes them in -mm and 
-> therefore will include them in his huge list of "forward again and again 
-> to the maintainer until there is any reaction" patches.
-> 
-> But IMHO for such trivial patches it's enough if the maintainer had the 
-> chance to veto them.
+Kyle Moffett wrote:
+>
+> vconfig       D 83CCD8CE     0 16564  16562                     (NOTLB)
+>        efdd7e7c 00000086 ee120afb 83ccd8ce 98f00788 b7083ffa 5384b49a 
+> c76c0b05
+>        9ebaf791 00000004 efdd7e4e 00000007 f1468a90 2ab74174 00000362 
+> 00000326
+>        f1468b9c c180e420 00000001 00000286 c012933c efdd7e8c df98a000 
+> c180e468
+> Call Trace:
+> [<c012933c>] lock_timer_base+0x15/0x2f
+> [<c0129445>] __mod_timer+0x91/0x9b
+> [<c02988f5>] schedule_timeout+0x70/0x8d
+> [<f8b75209>] vlan_device_event+0x13/0xf8 [8021q]
+
+Looks like a deadlock in the vlan code.  Any chance you can run this 
+test with
+lockdep enabled?
+
+You could also add a printk in vlan_device_event() to check which event 
+it is hanging on, and
+the netdevice that is passed in.
+
+Since the vlan code holds RTNL at this point, then most other network 
+tasks will eventually
+hang as well.
+
+Thanks,
+Ben
 
 
-Please follow the rule that everybody else follows:  send to me and 
-netdev.  It's that simple :)
-
-	Jeff
+-- 
+Ben Greear <greearb@candelatech.com> 
+Candela Technologies Inc  http://www.candelatech.com
 
 
