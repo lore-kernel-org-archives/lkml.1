@@ -1,94 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762642AbXEJVX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbXEJV1S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762642AbXEJVX4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755573AbXEJVXs
+	id S1761608AbXEJV1S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:27:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbXEJV1K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:23:48 -0400
-Received: from waste.org ([66.93.16.53]:53775 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755635AbXEJVXr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:23:47 -0400
-Date: Thu, 10 May 2007 16:23:23 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: David Chinner <dgc@sgi.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, michal.k.k.piotrowski@gmail.com
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
-Message-ID: <20070510212323.GS11115@waste.org>
-References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <20070510004918.GS85884050@sgi.com> <46426D31.8070000@goop.org> <20070510012609.GU85884050@sgi.com> <46433049.4020003@goop.org> <20070510211348.GC86004887@sgi.com>
+	Thu, 10 May 2007 17:27:10 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:2125 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754130AbXEJV1J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:27:09 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Thu, 10 May 2007 14:27:08 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@alien.or.mcafeemobile.com
+To: Charles Gagalac <charle97@yahoo.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Bugme-new] [Bug 8462] New: applications under wine freezes
+In-Reply-To: <72664.35032.qm@web60012.mail.yahoo.com>
+Message-ID: <Pine.LNX.4.64.0705101426160.18318@alien.or.mcafeemobile.com>
+References: <72664.35032.qm@web60012.mail.yahoo.com>
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510211348.GC86004887@sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 07:13:48AM +1000, David Chinner wrote:
-> On Thu, May 10, 2007 at 07:46:33AM -0700, Jeremy Fitzhardinge wrote:
-> > David Chinner wrote:
-> > > On Wed, May 09, 2007 at 05:54:09PM -0700, Jeremy Fitzhardinge wrote:
-> > >   
-> > >> David Chinner wrote:
-> > >>     
-> > >>> Suspend-resume, eh?
-> > >>>
-> > >>> There's an immediate suspect. Can you test this specifically for us?
-> > >>> i.e. download a known good file set, do some stuff, suspend, resume,
-> > >>> then check the files? If it doesn't show up the first time, can
-> > >>> you do it a few times just to rule it out?
-> > >>>       
-> > >> Well, I've been doing suspend-resume with xfs for a while without
-> > >> problems; the problems seem to be recent and easily repeatable.  Which
-> > >> just means that it could be a new suspend-resume problem, of course.
-> > >>     
-> > >
-> > > Ok. I'm just trying to find a relatively simple test case for the
-> > > problem - seeing as you seem to be able to reliably reproduce this
-> > > we should be able to work out the trigger...
-> > >   
-> > 
-> > OK, I was able to reproduce it reliably with a script with did basically:
-> > 
-> >     for i in `seq 20`; do
-> >     	hg clone -U --pull a b-$i
-> >     	hg verify b-$i		# always OK
-> >     	umount /home
-> >     	sleep 5
-> >     	mount /home
-> >     	hg verify b-$i		# often found truncated files
-> >     done
-> >       
-> > 
-> > No suspend/resumes involved.  The trees are linux kernel ones, so fairly
-> > large, but small enough to fit entirely in core.  My script also
-> > captured xfs_bmap before/after output for files which had tended to be
-> > corrupted in the past, but unfortunately none of them got corrupted in
-> > these tests.  But I do have all the trees lying around to extract more
-> > detail for if you like.
-> 
-> Ok, so most of the of the integrity errors are processed by an
-> error like this:
-> 
-> drivers/scsi/sata_sil24.c index contains -98 extra bytes
-> unpacking file drivers/scsi/sata_sil24.c 5715cdfceaca: Error -5 while decompressing data
-> 
-> That's an -EIO and not a normal error to report. Are there any
-> errors in dmesg or syslog corresponding to this?
-> 
-> The errors tend to imply problems decompressing and patching files,
-> not that truncates are occurring once the files have been patched.
-> Can you check that what is being pulled from the repository is correct
-> before it gets uncompressed?
+On Thu, 10 May 2007, Charles Gagalac wrote:
 
-Notice that verify gets run twice. Before unmount, it's fine, after
-remount, it's not.
+> 
+> --- Davide Libenzi <davidel@xmailserver.org> wrote:
+> 
+> > Thank you Charles. Would you mind giving the patch
+> > below a try?
+> > 
+> 
+> i applied the patch and i'm still encountering
+> freezing problems with starcraft, pokerstars, and
+> firefox under wine.
 
-That message saying that the file contains -98 extra bytes is
-Mercurial detecting the truncation before if tries to read and decompress the
-truncated bit.
+Ok, thanks for testing. I've installing wine and firefox on a 32 bit box 
+and will test by myself ...
 
--- 
-Mathematics is the supreme nostalgia of our time.
+
+
+- Davide
+
+
