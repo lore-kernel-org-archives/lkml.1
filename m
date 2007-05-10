@@ -1,54 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755481AbXEJC1d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbXEJCah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755481AbXEJC1d (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 22:27:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754317AbXEJC1Z
+	id S1756550AbXEJCah (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 22:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754351AbXEJCaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 22:27:25 -0400
-Received: from waste.org ([66.93.16.53]:46018 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754241AbXEJC1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 22:27:25 -0400
-Date: Wed, 9 May 2007 21:27:07 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Miller <davem@davemloft.net>, clameter@sgi.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch added to -mm tree
-Message-ID: <20070510022707.GO11115@waste.org>
-References: <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com> <20070509012725.GZ11115@waste.org> <Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com> <20070508.185141.85412154.davem@davemloft.net> <46412BB5.1060605@yahoo.com.au> <20070509174238.b4152887.akpm@linux-foundation.org> <46426EA1.4030408@yahoo.com.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46426EA1.4030408@yahoo.com.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 9 May 2007 22:30:30 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:55603 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754300AbXEJCa3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 22:30:29 -0400
+Date: Wed, 9 May 2007 19:30:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [patch 00/10] Linux Kernel Markers for 2.6.21-mm2
+Message-Id: <20070509193008.b3f0a2f7.akpm@linux-foundation.org>
+In-Reply-To: <20070510015555.973107048@polymtl.ca>
+References: <20070510015555.973107048@polymtl.ca>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 11:00:17AM +1000, Nick Piggin wrote:
-> Andrew Morton wrote:
-> >On Wed, 09 May 2007 12:02:29 +1000
-> >Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> >
-> >
-> >>BTW, we _really_ should be doing RCU properly in slob, because you
-> >>technically can't noop RCU on UP (even though the current users may be
-> >>safe...).
-> >>
-> >>Patch attached to do that.
-> >
-> >
-> >Does it work?
-> 
-> That one booted my desktop (very slowly) but as Matt pointed out, it broke
-> alignment on RCU slabs. The last version I posted should work and has the
-> alignment problem fixed. I can retest and resubmit it to you if you like,
-> I was just waiting on an ack from Matt.
+On Wed, 09 May 2007 21:55:55 -0400 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-Looks good to me, but haven't had time to actually test it.
+> He is an updated, folded, version of the Linux Kernel Markers. It replaces the
+> version found in 2.6.21-mm2 at the exact same spot in the series file.
 
-Acked-by: Matt Mackall <mpm@selenic.com>
+urgh.  That basically takes us back to square one with whatever review has
+happened.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+I suppose I could do s/MARK/trace_mark/g on the existing diffs then have a
+go at generating incremental diffs so we can review these changes.
+
