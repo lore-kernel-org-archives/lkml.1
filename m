@@ -1,61 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbXEJFlo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757505AbXEJFmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756738AbXEJFlo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 01:41:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbXEJFlg
+	id S1757505AbXEJFmw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 01:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752854AbXEJFmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 01:41:36 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:40461 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752237AbXEJFlf (ORCPT
+	Thu, 10 May 2007 01:42:44 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59582 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752540AbXEJFmn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 01:41:35 -0400
-Date: Wed, 9 May 2007 22:41:13 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-Message-Id: <20070509224113.cca81a24.akpm@linux-foundation.org>
-In-Reply-To: <20070510052622.3E8D5DDF4B@ozlabs.org>
-References: <20070510052622.3E8D5DDF4B@ozlabs.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 May 2007 01:42:43 -0400
+Date: Thu, 10 May 2007 14:41:07 +0900
+From: Yasunori Goto <y-goto@jp.fujitsu.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: Section mismatch warnings (was Re: [PATCH] early_pfn_to_nid needs to be __meminit)
+Cc: Linas Vepstas <linas@austin.ibm.com>, Gabriel Paubert <paubert@iram.es>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Andrew Morton <akpm@linux-foundation.org>, paulus@samba.org,
+       LKML <linux-kernel@vger.kernel.org>, ppc-dev <linuxppc-dev@ozlabs.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <1178740693.3086.81.camel@zod.rchland.ibm.com>
+References: <20070509194503.GZ4452@austin.ibm.com> <1178740693.3086.81.camel@zod.rchland.ibm.com>
+X-Mailer-Plugin: BkASPil for Becky!2 Ver.2.068
+Message-Id: <20070510141827.A967.Y-GOTO@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.27 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 15:25:58 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Add to CC: Sam-san. :-)
 
-> --- linux-cell.orig/include/linux/interrupt.h	2007-05-10 14:51:22.000000000 +1000
-> +++ linux-cell/include/linux/interrupt.h	2007-05-10 15:18:04.000000000 +1000
-> @@ -241,6 +241,16 @@ static inline void __deprecated save_and
->  #define save_and_cli(x)	save_and_cli(&x)
->  #endif /* CONFIG_SMP */
->  
-> +/* Some architectures might implement lazy enabling/disabling of
-> + * interrupts. In some cases, such as stop_machine, we might want
-> + * to ensure that after a local_irq_disable(), interrupts have
-> + * really been disabled in hardware. Such architectures need to
-> + * implement the following hook.
-> + */
-> +#ifndef hard_irq_disable
-> +#define hard_irq_disable()	do { } while(0)
-> +#endif
+> On Wed, 2007-05-09 at 14:45 -0500, Linas Vepstas wrote:
+> > On Wed, May 09, 2007 at 06:51:15PM +0200, Gabriel Paubert wrote:
+> > > On Thu, May 10, 2007 at 02:25:52AM +1000, Stephen Rothwell wrote:
+> > > > This removes a section mismatch warning in those circumstances.
+> > > 
+> > > Speaking of this, I just tried to compile an official (Linus' git tree) 
+> > > kernel for my old PMac G4 and I get a lot of section mismatch warnings at 
+> > > the end of the compilation:
+> > > 
+> > > WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0xf50) and 'v_mapped_by_bats'
+> > > 
+> > > I find these 50 or so warnings so scary that I've not yet tried 
+> > > to boot the kernel. Note that this is a non-modular kernel.
+> > 
+> > I'm getting oodles of these on an older -mm2 tree. The kernels seem to
+> > work fine. Yes, they should be fixed but I'm up to my proverbial eyballs
+> > in alligators.
+> 
+> Yeah, I see all kinds of this too.  Does anyone have an idea why they're
+> being spit out?  Or if it's related to a particular binutils version,
+> etc?
 
-We absolutely require that the architecture's hard_irq_disable() be defined
-when we do this.  If it happens that the definition of hard_irq_disable()
-is implemented three levels deep in nested includes then we risk getting
-into a situation where different .c files see different implementations of
-hard_irq_disable(), which could lead to confusing results, to say the least.
+These warnings are showed by scripts/mod/modposts.c. 
+It checks section mismatch stricter than before.
 
-Your implementation comes via the inclusion of system.h which then includes
-hw_irq.h.  That's perhaps a little fragile and it would be better to
+Some of them are not defined as __init even if it's called at just
+boottime. This is simple to fix.
 
-a) include in the comment the name of the arch file which must implement
-   hard_irq_disable() and
+Second case is that the functions judge which functions
+should call (boottime or normal) by themselves.
+pte_alloc_one_kernel() looks its case.
+In this case, they must be registered in whitelist of modpost.c
 
-b) include that file directly from this one.
+Other possibility is they are just rare called functions.
+It should be investigated....
 
-Oh, and your comment layout style is wrong ;)
+Bye.
+
+-- 
+Yasunori Goto 
+
+
