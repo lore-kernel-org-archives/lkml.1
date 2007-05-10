@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762274AbXEJWrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933498AbXEJWrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762274AbXEJWrc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754722AbXEJWrZ
+	id S933498AbXEJWrr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760004AbXEJWr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:47:25 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:35459 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753153AbXEJWrY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:47:24 -0400
-Date: Thu, 10 May 2007 15:46:40 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@ucw.cz>
-Subject: Re: [PATCH] UDF: check for allocated memory for inode data
-Message-Id: <20070510154640.c0299a52.akpm@linux-foundation.org>
-In-Reply-To: <20070510140000.GA12399@cvg>
-References: <20070510140000.GA12399@cvg>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 18:47:27 -0400
+Received: from cantor.suse.de ([195.135.220.2]:46533 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756829AbXEJWr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 18:47:26 -0400
+Date: Fri, 11 May 2007 01:44:46 +0200
+From: Andi Kleen <ak@suse.de>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Andi Kleen <ak@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: getcpu after sched_setaffinity
+Message-ID: <20070510234446.GC2012@bingen.suse.de>
+References: <46439BBA.2070705@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46439BBA.2070705@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 18:00:00 +0400
-Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-
-> This patch adds cheking for granted memory while
-> filling up inode data to prevent possible NULL
-> pointer usage. If there is not enough memory to
-> fill inode data we just mark it as "bad".
+On Thu, May 10, 2007 at 03:24:58PM -0700, Ulrich Drepper wrote:
+> The attached test program fails on a dual core (and probably SMP) 
+> machine on x86-64.  Depending on where the thread starts, in one of the 
+> iterations the sched_setffinity() call succeeds but then sched_getcpu() 
+> fails to report the correct CPU.
 > 
-> Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
+> In set_cpus_allowed migrate_task() is called if the new CPU set does not 
+> include the current CPU.  I hope that migrate_task() also works for 
+> p==current.
 > 
-> Please check the patch, maybe just marking inode as
-> "bad" is not a good solution.
-> 
+> This leaves the x86-64 vgetcpu() implementation as the weak point.  Is 
+> the caching causing problems?  
 
-yes, make_bad_inode() is appropriate here.
+Probably. In principle getcpu() (where does the sched_ come from btw?)
+is only designed for the case where you don't set the affinity explicitely;
+otherwise you should already know where you are and don't need it.
 
-> 
-> diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-> index c846155..91cddae 100644
-> --- a/fs/udf/inode.c
-> +++ b/fs/udf/inode.c
-> @@ -1144,6 +1144,13 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
->  		UDF_I_EFE(inode) = 1;
->  		UDF_I_USE(inode) = 0;
->  		UDF_I_DATA(inode) = kmalloc(inode->i_sb->s_blocksize - sizeof(struct extendedFileEntry), GFP_KERNEL);
-> +		if (!UDF_I_DATA(inode))
-> +		{
-> +			printk(KERN_ERR "udf: udf_fill_inode(ino %ld) no free memory\n",
-> +			       inode->i_ino);
-> +			make_bad_inode(inode);
-> +			return;
-> +		}
+The cache is optimized for the case when you run without affinity
+and change CPUs only rarely (which is normal) so it is kept valid for a 
+jiffie. And you always need to handle an outdated result from getcpu
+anyways because you can't disable preemption from user space and could
+switch any time.
 
-But please let's not add three copies of identical code.  Do something like:
+In short your test case has a broken design.
 
-static int udf_check_inode(struct inode *inode)
-{
-	if (!UDF_I_DATA(inode)) {
-		printk(KERN_ERR "udf: udf_fill_inode(ino %ld) no free memory\n",
-			inode->i_ino);
-		make_bad_inode(inode);
-		return -1;
-	}
-	return 0;
-}
+> is reset?
 
+The vsyscall/kernel can't reset the cache because it is managed by the
+application.
 
-	if (udf_check_inode(inode))
-		return;
+Hmm ok one could probably define memset(..., 0) as a invalidation
+interface, but because of the considerations above i don't think
+it is really needed.
 
-In fact you can also do the kmalloc in that helper function too:
-
-static int udf_alloc_i_data(struct inode *inode, size_t size)
-{
-	UDF_I_DATA(inode) = kmalloc(...);
-	...
-}
+-Andi
