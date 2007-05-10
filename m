@@ -1,375 +1,292 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966051AbXEKTNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763169AbXEKTOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966051AbXEKTNv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762934AbXEKTKh
+	id S1763169AbXEKTOV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763150AbXEKTKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:10:37 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35305 "EHLO
+	Fri, 11 May 2007 15:10:41 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35302 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965565AbXEKTKe (ORCPT
+	with ESMTP id S1762018AbXEKTKj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:10:34 -0400
-Message-Id: <20070511000028.148652000@goop.org>
+	Fri, 11 May 2007 15:10:39 -0400
+Message-Id: <20070511000025.697184000@goop.org>
 References: <20070510235708.155502000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 16:57:13 -0700
+Date: Thu, 10 May 2007 16:57:09 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       David Howells <dhowells@redhat.com>,
-       Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>
-Subject: [patch 5/7] split usermodehelper setup from execution
-Content-Disposition: inline; filename=usermodehelper-split-init.patch
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [patch 1/7] i386: move common parts of smp into their own file
+Content-Disposition: inline; filename=i386-common-smp.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rather than having hundreds of variations of call_usermodehelper for
-various pieces of usermode state which could be set up, split the
-info allocation and initialization from the actual process execution.
-
-This means the general pattern becomes:
- info = call_usermodehelper_setup(path, argv, envp); /* basic state */
- call_usermodehelper_<SET EXTRA STATE>(info, stuff...);	/* extra state */
- call_usermodehelper_exec(info, wait);	/* run process and free info */
-
-This patch introduces wrappers for all the existing calling styles for
-call_usermodehelper_*, but folds their implementations into one.
+Several parts of kernel/smp.c and smpboot.c are generally useful for
+other subarchitectures and paravirt_ops implementations, so make them
+available for reuse.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Bj?rn Steinbrink <B.Steinbrink@gmx.de>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Chris Wright <chrisw@sous-sol.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
 
 ---
- include/linux/kmod.h |   44 +++++++++-
- kernel/kmod.c        |  207 ++++++++++++++++++++++++++++++++++----------------
- 2 files changed, 184 insertions(+), 67 deletions(-)
+ arch/i386/kernel/Makefile    |    1 
+ arch/i386/kernel/smp.c       |   65 +++-------------------------------
+ arch/i386/kernel/smpboot.c   |   22 -----------
+ arch/i386/kernel/smpcommon.c |   79 ++++++++++++++++++++++++++++++++++++++++++
+ include/asm-i386/processor.h |    4 ++
+ 5 files changed, 90 insertions(+), 81 deletions(-)
 
 ===================================================================
---- a/include/linux/kmod.h
-+++ b/include/linux/kmod.h
-@@ -36,13 +36,51 @@ static inline int request_module(const c
- #define try_then_request_module(x, mod...) ((x) ?: (request_module(mod), (x)))
- 
- struct key;
--extern int call_usermodehelper_keys(char *path, char *argv[], char *envp[],
--				    struct key *session_keyring, int wait);
-+struct file;
-+struct subprocess_info;
-+
-+/* Allocate a subprocess_info structure */
-+struct subprocess_info *call_usermodehelper_setup(char *path,
-+						  char **argv, char **envp);
-+
-+/* Set various pieces of state into the subprocess_info structure */
-+void call_usermodehelper_setkeys(struct subprocess_info *info,
-+				 struct key *session_keyring);
-+int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
-+				  struct file **filp);
-+void call_usermodehelper_setcleanup(struct subprocess_info *info,
-+				    void (*cleanup)(char **argv, char **envp));
-+
-+/* Actually execute the sub-process */
-+int call_usermodehelper_exec(struct subprocess_info *info, int wait);
-+
-+/* Free the subprocess_info. This is only needed if you're not going
-+   to call call_usermodehelper_exec */
-+void call_usermodehelper_freeinfo(struct subprocess_info *info);
- 
- static inline int
- call_usermodehelper(char *path, char **argv, char **envp, int wait)
- {
--	return call_usermodehelper_keys(path, argv, envp, NULL, wait);
-+	struct subprocess_info *info;
-+
-+	info = call_usermodehelper_setup(path, argv, envp);
-+	if (info == NULL)
-+		return -ENOMEM;
-+	return call_usermodehelper_exec(info, wait);
-+}
-+
-+static inline int
-+call_usermodehelper_keys(char *path, char **argv, char **envp,
-+			 struct key *session_keyring, int wait)
-+{
-+	struct subprocess_info *info;
-+
-+	info = call_usermodehelper_setup(path, argv, envp);
-+	if (info == NULL)
-+		return -ENOMEM;
-+
-+	call_usermodehelper_setkeys(info, session_keyring);
-+	return call_usermodehelper_exec(info, wait);
- }
- 
- extern void usermodehelper_init(void);
+--- a/arch/i386/kernel/Makefile
++++ b/arch/i386/kernel/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_MICROCODE)		+= microcode.o
+ obj-$(CONFIG_MICROCODE)		+= microcode.o
+ obj-$(CONFIG_APM)		+= apm.o
+ obj-$(CONFIG_X86_SMP)		+= smp.o smpboot.o tsc_sync.o
++obj-$(CONFIG_SMP)		+= smpcommon.o
+ obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
+ obj-$(CONFIG_X86_MPPARSE)	+= mpparse.o
+ obj-$(CONFIG_X86_LOCAL_APIC)	+= apic.o nmi.o
 ===================================================================
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -123,6 +123,7 @@ struct subprocess_info {
- 	int wait;
- 	int retval;
- 	struct file *stdin;
-+	void (*cleanup)(char **argv, char **envp);
- };
- 
- /*
-@@ -176,6 +177,14 @@ static int ____call_usermodehelper(void 
- 	do_exit(0);
- }
- 
-+void call_usermodehelper_freeinfo(struct subprocess_info *info)
-+{
-+	if (info->cleanup)
-+		(*info->cleanup)(info->argv, info->envp);
-+	kfree(info);
-+}
-+EXPORT_SYMBOL(call_usermodehelper_freeinfo);
-+
- /* Keventd can't block, but this (a child) can. */
- static int wait_for_helper(void *data)
+--- a/arch/i386/kernel/smp.c
++++ b/arch/i386/kernel/smp.c
+@@ -468,7 +468,7 @@ void flush_tlb_all(void)
+  * it goes straight through and wastes no time serializing
+  * anything. Worst case is that we lose a reschedule ...
+  */
+-void native_smp_send_reschedule(int cpu)
++static void native_smp_send_reschedule(int cpu)
  {
-@@ -218,7 +227,7 @@ static int wait_for_helper(void *data)
- 	}
- 
- 	if (sub_info->wait < 0)
--		kfree(sub_info);
-+		call_usermodehelper_freeinfo(sub_info);
- 	else
- 		complete(sub_info->complete);
+ 	WARN_ON(cpu_is_offline(cpu));
+ 	send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
+@@ -547,9 +547,10 @@ static void __smp_call_function(void (*f
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
+  */
+-int native_smp_call_function_mask(cpumask_t mask,
+-				  void (*func)(void *), void *info,
+-				  int wait)
++static int
++native_smp_call_function_mask(cpumask_t mask,
++			      void (*func)(void *), void *info,
++			      int wait)
+ {
+ 	struct call_data_struct data;
+ 	cpumask_t allbutself;
+@@ -600,60 +601,6 @@ int native_smp_call_function_mask(cpumas
  	return 0;
-@@ -253,11 +262,94 @@ static void __call_usermodehelper(struct
  }
  
- /**
-- * call_usermodehelper_keys - start a usermode application
-- * @path: pathname for the application
-- * @argv: null-terminated argument list
-- * @envp: null-terminated environment list
-- * @session_keyring: session keyring for process (NULL for an empty keyring)
-+ * call_usermodehelper_setup - prepare to call a usermode helper
-+ * @path - path to usermode executable
-+ * @argv - arg vector for process
-+ * @envp - environment for process
-+ *
-+ * Returns either NULL on allocation failure, or a subprocess_info
-+ * structure.  This should be passed to call_usermodehelper_exec to
-+ * exec the process and free the structure.
-+ */
-+struct subprocess_info *call_usermodehelper_setup(char *path,
-+						  char **argv, char **envp)
-+{
-+	struct subprocess_info *sub_info;
-+	sub_info = kzalloc(sizeof(struct subprocess_info),  GFP_ATOMIC);
-+	if (!sub_info)
-+		goto out;
-+
-+	INIT_WORK(&sub_info->work, __call_usermodehelper);
-+	sub_info->path = path;
-+	sub_info->argv = argv;
-+	sub_info->envp = envp;
-+
-+  out:
-+	return sub_info;
-+}
-+EXPORT_SYMBOL(call_usermodehelper_setup);
-+
-+/**
-+ * call_usermodehelper_setkeys - set the session keys for usermode helper
-+ * @info: a subprocess_info returned by call_usermodehelper_setup
-+ * @session_keyring: the session keyring for the process
-+ */
-+void call_usermodehelper_setkeys(struct subprocess_info *info,
-+				 struct key *session_keyring)
-+{
-+	info->ring = session_keyring;
-+}
-+EXPORT_SYMBOL(call_usermodehelper_setkeys);
-+
-+/**
-+ * call_usermodehelper_setcleanup - set a cleanup function
-+ * @info: a subprocess_info returned by call_usermodehelper_setup
-+ * @cleanup: a cleanup function
-+ *
-+ * The cleanup function is just befor ethe subprocess_info is about to
-+ * be freed.  This can be used for freeing the argv and envp.  The
-+ * Function must be runnable in either a process context or the
-+ * context in which call_usermodehelper_exec is called.
-+ */
-+void call_usermodehelper_setcleanup(struct subprocess_info *info,
-+				    void (*cleanup)(char **argv, char **envp))
-+{
-+	info->cleanup = cleanup;
-+}
-+EXPORT_SYMBOL(call_usermodehelper_setcleanup);
-+
-+/**
-+ * call_usermodehelper_stdinpipe - set up a pipe to be used for stdin
-+ * @sub_info: a subprocess_info returned by call_usermodehelper_setup
-+ * @filp: set to the write-end of a pipe
-+ *
-+ * This constructs a pipe, and sets the read end to be the stdin of the
-+ * subprocess, and returns the write-end in *@filp.
-+ */
-+int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
-+				  struct file **filp)
-+{
-+	struct file *f;
-+
-+	f = create_write_pipe();
-+	if (IS_ERR(f))
-+		return PTR_ERR(f);
-+	*filp = f;
-+
-+	f = create_read_pipe(f);
-+	if (IS_ERR(f)) {
-+		free_write_pipe(*filp);
-+		return PTR_ERR(f);
-+	}
-+	sub_info->stdin = f;
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL(call_usermodehelper_stdinpipe);
-+
-+/**
-+ * call_usermodehelper_exec - start a usermode application
-+ * @sub_info: information about the subprocessa
-  * @wait: wait for the application to finish and return status.
-  *        when -1 don't wait at all, but you get no useful error back when
-  *        the program couldn't be exec'ed. This makes it safe to call
-@@ -266,33 +358,24 @@ static void __call_usermodehelper(struct
-  * Runs a user-space application.  The application is started
-  * asynchronously if wait is not set, and runs as a child of keventd.
-  * (ie. it runs with full root capabilities).
+-/**
+- * smp_call_function(): Run a function on all other CPUs.
+- * @func: The function to run. This must be fast and non-blocking.
+- * @info: An arbitrary pointer to pass to the function.
+- * @nonatomic: Unused.
+- * @wait: If true, wait (atomically) until function has completed on other CPUs.
 - *
-- * Must be called from process context.  Returns a negative error code
-- * if program was not execed successfully, or 0.
+- * Returns 0 on success, else a negative status code.
+- *
+- * If @wait is true, then returns once @func has returned; otherwise
+- * it returns just before the target cpu calls @func.
+- *
+- * You must not call this function with disabled interrupts or from a
+- * hardware interrupt handler or from a bottom half handler.
 - */
--int call_usermodehelper_keys(char *path, char **argv, char **envp,
--			     struct key *session_keyring, int wait)
-+ */
-+int call_usermodehelper_exec(struct subprocess_info *sub_info,
-+			     int wait)
- {
- 	DECLARE_COMPLETION_ONSTACK(done);
--	struct subprocess_info *sub_info;
- 	int retval;
- 
--	if (!khelper_wq)
+-int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
+-		      int wait)
+-{
+-	return smp_call_function_mask(cpu_online_map, func, info, wait);
+-}
+-EXPORT_SYMBOL(smp_call_function);
+-
+-/**
+- * smp_call_function_single - Run a function on another CPU
+- * @cpu: The target CPU.  Cannot be the calling CPU.
+- * @func: The function to run. This must be fast and non-blocking.
+- * @info: An arbitrary pointer to pass to the function.
+- * @nonatomic: Unused.
+- * @wait: If true, wait until function has completed on other CPUs.
+- *
+- * Returns 0 on success, else a negative status code.
+- *
+- * If @wait is true, then returns once @func has returned; otherwise
+- * it returns just before the target cpu calls @func.
+- */
+-int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+-			     int nonatomic, int wait)
+-{
+-	/* prevent preemption and reschedule on another processor */
+-	int ret;
+-	int me = get_cpu();
+-	if (cpu == me) {
+-		WARN_ON(1);
+-		put_cpu();
 -		return -EBUSY;
+-	}
 -
--	if (path[0] == '\0')
--		return 0;
+-	ret = smp_call_function_mask(cpumask_of_cpu(cpu), func, info, wait);
 -
--	sub_info = kzalloc(sizeof(struct subprocess_info),  GFP_ATOMIC);
--	if (!sub_info)
--		return -ENOMEM;
+-	put_cpu();
+-	return ret;
+-}
+-EXPORT_SYMBOL(smp_call_function_single);
 -
--	INIT_WORK(&sub_info->work, __call_usermodehelper);
-+	if (sub_info->path[0] == '\0') {
-+		retval = 0;
-+		goto out;
-+	}
-+
-+	if (!khelper_wq) {
-+		retval = -EBUSY;
-+		goto out;
-+	}
-+
- 	sub_info->complete = &done;
--	sub_info->path = path;
--	sub_info->argv = argv;
--	sub_info->envp = envp;
--	sub_info->ring = session_keyring;
- 	sub_info->wait = wait;
+ static void stop_this_cpu (void * dummy)
+ {
+ 	local_irq_disable();
+@@ -671,7 +618,7 @@ static void stop_this_cpu (void * dummy)
+  * this function calls the 'stop' function on all other CPUs in the system.
+  */
  
- 	queue_work(khelper_wq, &sub_info->work);
-@@ -300,47 +383,43 @@ int call_usermodehelper_keys(char *path,
- 		return 0;
- 	wait_for_completion(&done);
- 	retval = sub_info->retval;
--	kfree(sub_info);
-+
-+  out:
-+	call_usermodehelper_freeinfo(sub_info);
- 	return retval;
- }
--EXPORT_SYMBOL(call_usermodehelper_keys);
+-void native_smp_send_stop(void)
++static void native_smp_send_stop(void)
+ {
+ 	/* Don't deadlock on the call lock in panic */
+ 	int nolock = !spin_trylock(&call_lock);
+===================================================================
+--- a/arch/i386/kernel/smpboot.c
++++ b/arch/i386/kernel/smpboot.c
+@@ -99,9 +99,6 @@ EXPORT_SYMBOL(x86_cpu_to_apicid);
+ 
+ u8 apicid_2_node[MAX_APICID];
+ 
+-DEFINE_PER_CPU(unsigned long, this_cpu_off);
+-EXPORT_PER_CPU_SYMBOL(this_cpu_off);
 -
-+EXPORT_SYMBOL(call_usermodehelper_exec);
+ /*
+  * Trampoline 80x86 program as an array.
+  */
+@@ -766,25 +763,6 @@ static inline struct task_struct * alloc
+ #define alloc_idle_task(cpu) fork_idle(cpu)
+ #endif
+ 
+-/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
+-   (still using the master per-cpu area), or a CPU doing it for a
+-   secondary which will soon come up. */
+-static __cpuinit void init_gdt(int cpu)
+-{
+-	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
+-
+-	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
+-			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
+-			__per_cpu_offset[cpu], 0xFFFFF,
+-			0x80 | DESCTYPE_S | 0x2, 0x8);
+-
+-	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
+-	per_cpu(cpu_number, cpu) = cpu;
+-}
+-
+-/* Defined in head.S */
+-extern struct Xgt_desc_struct early_gdt_descr;
+-
+ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+ /*
+  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
+===================================================================
+--- /dev/null
++++ b/arch/i386/kernel/smpcommon.c
+@@ -0,0 +1,79 @@
++/*
++ * SMP stuff which is common to all sub-architectures.
++ */
++#include <linux/module.h>
++#include <asm/smp.h>
++
++DEFINE_PER_CPU(unsigned long, this_cpu_off);
++EXPORT_PER_CPU_SYMBOL(this_cpu_off);
++
++/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
++   (still using the master per-cpu area), or a CPU doing it for a
++   secondary which will soon come up. */
++__cpuinit void init_gdt(int cpu)
++{
++	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
++
++	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
++			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
++			__per_cpu_offset[cpu], 0xFFFFF,
++			0x80 | DESCTYPE_S | 0x2, 0x8);
++
++	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
++	per_cpu(cpu_number, cpu) = cpu;
++}
++
 +
 +/**
-+ * call_usermodehelper_pipe - call a usermode helper process with a pipe stdin
-+ * @path: path to usermode executable
-+ * @argv: arg vector for process
-+ * @envp: environment for process
-+ * @filp: set to the write-end of a pipe
++ * smp_call_function(): Run a function on all other CPUs.
++ * @func: The function to run. This must be fast and non-blocking.
++ * @info: An arbitrary pointer to pass to the function.
++ * @nonatomic: Unused.
++ * @wait: If true, wait (atomically) until function has completed on other CPUs.
 + *
-+ * This is a simple wrapper which executes a usermode-helper function
-+ * with a pipe as stdin.  It is implemented entirely in terms of
-+ * lower-level call_usermodehelper_* functions.
++ * Returns 0 on success, else a negative status code.
++ *
++ * If @wait is true, then returns once @func has returned; otherwise
++ * it returns just before the target cpu calls @func.
++ *
++ * You must not call this function with disabled interrupts or from a
++ * hardware interrupt handler or from a bottom half handler.
 + */
- int call_usermodehelper_pipe(char *path, char **argv, char **envp,
- 			     struct file **filp)
- {
--	DECLARE_COMPLETION(done);
--	struct subprocess_info sub_info = {
--		.work		= __WORK_INITIALIZER(sub_info.work,
--						     __call_usermodehelper),
--		.complete	= &done,
--		.path		= path,
--		.argv		= argv,
--		.envp		= envp,
--		.retval		= 0,
--	};
--	struct file *f;
--
--	if (!khelper_wq)
--		return -EBUSY;
--
--	if (path[0] == '\0')
--		return 0;
--
--	f = create_write_pipe();
--	if (IS_ERR(f))
--		return PTR_ERR(f);
--	*filp = f;
--
--	f = create_read_pipe(f);
--	if (IS_ERR(f)) {
--		free_write_pipe(*filp);
--		return PTR_ERR(f);
--	}
--	sub_info.stdin = f;
--
--	queue_work(khelper_wq, &sub_info.work);
--	wait_for_completion(&done);
--	return sub_info.retval;
-+	struct subprocess_info *sub_info;
++int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
++		      int wait)
++{
++	return smp_call_function_mask(cpu_online_map, func, info, wait);
++}
++EXPORT_SYMBOL(smp_call_function);
++
++/**
++ * smp_call_function_single - Run a function on another CPU
++ * @cpu: The target CPU.  Cannot be the calling CPU.
++ * @func: The function to run. This must be fast and non-blocking.
++ * @info: An arbitrary pointer to pass to the function.
++ * @nonatomic: Unused.
++ * @wait: If true, wait until function has completed on other CPUs.
++ *
++ * Returns 0 on success, else a negative status code.
++ *
++ * If @wait is true, then returns once @func has returned; otherwise
++ * it returns just before the target cpu calls @func.
++ */
++int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
++			     int nonatomic, int wait)
++{
++	/* prevent preemption and reschedule on another processor */
 +	int ret;
++	int me = get_cpu();
++	if (cpu == me) {
++		WARN_ON(1);
++		put_cpu();
++		return -EBUSY;
++	}
 +
-+	sub_info = call_usermodehelper_setup(path, argv, envp);
-+	if (sub_info == NULL)
-+		return -ENOMEM;
++	ret = smp_call_function_mask(cpumask_of_cpu(cpu), func, info, wait);
 +
-+	ret = call_usermodehelper_stdinpipe(sub_info, filp);
-+	if (ret < 0)
-+		goto out;
-+
-+	return call_usermodehelper_exec(sub_info, 1);
-+
-+  out:
-+	call_usermodehelper_freeinfo(sub_info);
++	put_cpu();
 +	return ret;
- }
- EXPORT_SYMBOL(call_usermodehelper_pipe);
++}
++EXPORT_SYMBOL(smp_call_function_single);
+===================================================================
+--- a/include/asm-i386/processor.h
++++ b/include/asm-i386/processor.h
+@@ -749,9 +749,13 @@ extern void enable_sep_cpu(void);
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
+ 
++/* Defined in head.S */
++extern struct Xgt_desc_struct early_gdt_descr;
++
+ extern void cpu_set_gdt(int);
+ extern void switch_to_new_gdt(void);
+ extern void cpu_init(void);
++extern void init_gdt(int cpu);
+ 
+ extern int force_mwait;
  
 
 -- 
