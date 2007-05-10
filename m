@@ -1,78 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762603AbXEJWQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762912AbXEJWQc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762603AbXEJWQR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXEJWQF
+	id S1762912AbXEJWQc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:16:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbXEJWQL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:16:05 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:39326 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754954AbXEJWQE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:16:04 -0400
-Date: Fri, 11 May 2007 00:16:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>, cw@f00f.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: (hacky) [PATCH] silence MODPOST section mismatch warnings
-Message-ID: <20070510221659.GA23915@uranus.ravnborg.org>
-References: <20070510203417.GA23019@tuatara.stupidest.org> <20070510.135147.55726615.davem@davemloft.net> <20070510205427.GF29713@flint.arm.linux.org.uk> <20070510.140725.99616053.davem@davemloft.net> <20070510215920.GH29713@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 May 2007 18:16:11 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:49112 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760004AbXEJWQK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 18:16:10 -0400
+X-Greylist: delayed 549 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 18:16:10 EDT
+Date: Thu, 10 May 2007 23:16:07 +0100
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Mel Gorman <mel@skynet.skynet.ie>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Nicolas.Mailhot@LaPoste.net,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
+Message-ID: <20070510221607.GA15084@skynet.ie>
+References: <200705102128.l4ALSI2A017437@fire-2.osdl.org> <20070510144319.48d2841a.akpm@linux-foundation.org> <Pine.LNX.4.64.0705101447120.12874@schroedinger.engr.sgi.com> <20070510220657.GA14694@skynet.ie> <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20070510215920.GH29713@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 10:59:20PM +0100, Russell King wrote:
-> On Thu, May 10, 2007 at 02:07:25PM -0700, David Miller wrote:
-> > From: Russell King <rmk+lkml@arm.linux.org.uk>
-> > Date: Thu, 10 May 2007 21:54:27 +0100
-> > 
-> > > I've not had one accurate one on ARM yet.
-> > > 
-> > > Here's another example:
-> > > 
-> > > WARNING: init/built-in.o - Section mismatch: reference to .init.text:
-> > >  from .text between 'rest_init' (at offset 0x4c) and 'run_init_process'
-> > > 
-> > > from init/main.c:
-> > > 
-> > > static void noinline rest_init(void)
-> > >         __releases(kernel_lock)
-> > > 
-> > > static void run_init_process(char *init_filename)
-> > > 
-> > > Clearly, it just does _not_ work.
-> > 
-> > Russell, the symbols are where the reference to an .init.text
-> > section are coming from, they are not the .init.text function
-> > being referenced itself.
-> > 
-> > It is saying that something between rest_init and run_init_processes,
-> > which are not .init.text, are referencing an .init.text object.
+On (10/05/07 15:11), Christoph Lameter didst pronounce:
+> On Thu, 10 May 2007, Mel Gorman wrote:
 > 
-> I'd like to make a suggestion to make the wording of the warning
-> clearer:
+> > I see the gfpmask was 0x84020. That doesn't look like __GFP_WAIT was set,
+> > right? Does that mean that SLUB is trying to allocate pages atomically? If so,
+> > it would explain why this situation could still occur even though high-order
+> > allocations that could sleep would succeed.
 > 
-> WARNING: init/built-in.o(.text+0x4c): section mismatch: reference to
->  .init.text:blah (between 'rest_init' and 'run_init_process')
-> 
-> I think this would remove the confusion - the primary information
-> relating to where the reference is located is contained together
-> ("init/built-in.o(.text+0x4c)") and the confusing "between" clause
-> which seems to only be a hint becomes entirely secondary.
-> 
-> Moreover, it's similar to binutils warnings - which are of the form:
-> 
-> file:(section+offset): message
+> SLUB is following the gfp mask of the caller like all well behaved slab 
+> allocators do. If the caller does not set __GFP_WAIT then the page 
+> allocator also cannot wait.
 
-I like the new format - thanks!
-Did you drop the ':' after the file on purpose?
+Then SLUB should not use the higher orders for slab allocations that cannot
+sleep during allocations. What could be done in the longer term is decide
+how to tell kswapd to keep pages free at an order other than 0 when it is
+known there are a large number of high-order long-lived allocations like this.
 
-[I am not familiar with this particular binutils warning so I did not
-know an easy way to provoke it]
-
-PS. Will apply the path you submitted in next mail.
-
-	Sam
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
