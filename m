@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbXEJLAM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbXEJLAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759285AbXEJLAM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:00:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbXEJK77
+	id S1757926AbXEJLAg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758689AbXEJLAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 06:59:59 -0400
-Received: from mail.exanet.com ([212.143.73.109]:45772 "EHLO mr.exanet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752141AbXEJK76 convert rfc822-to-8bit (ORCPT
+	Thu, 10 May 2007 07:00:17 -0400
+Received: from gw-e.panasas.com ([65.194.124.178]:33788 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759443AbXEJLAP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 06:59:58 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 10 May 2007 07:00:15 -0400
+Message-ID: <4642FB1B.80702@panasas.com>
+Date: Thu, 10 May 2007 13:59:39 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] NLM program ID for user space NLM server
-Date: Thu, 10 May 2007 13:59:57 +0300
-Message-ID: <A6FDE6B975803043804A49F12F49028E0F59CC@hawk.exanet-il.co.il>
-In-Reply-To: <17986.60861.587591.548652@notabene.brown>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] NLM program ID for user space NLM server
-Thread-Index: AceS6myfOMuIA90NTXqXI5zAdP9FpAABy6uw
-From: "Menny Hamburger" <menny@exanet.com>
-To: "Neil Brown" <neilb@suse.de>
-Cc: <linux-kernel@vger.kernel.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/13] i386 sg: add support for chaining scatterlists
+References: <11787925152319-git-send-email-jens.axboe@oracle.com> <11787925162760-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <11787925162760-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 May 2007 10:59:40.0587 (UTC) FILETIME=[4ED807B0:01C792F2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Jens Axboe wrote:
+> +#define sg_is_chain(sg)		((unsigned long) (sg)->page & 0x01)
+> +#define sg_chain_ptr(sg)	\
+> +	((struct scatterlist *) ((unsigned long) (sg)->page & ~0x01))
+> +
+> +/*
+> + * We overload the meaning of ->page for sg chaining. If the LSB is
+> + * set, the page member contains a pointer to the next sgtable.
+> + */
+> +static inline struct scatterlist *sg_next(struct scatterlist *sg)
+> +{
+> +	if (sg_is_chain(sg))
+> +		return sg_chain_ptr(sg);
+> +
+> +	return sg + 1;
+> +}
 
-We have a our own userland NFSD and NLM service running that implement
-all the NLM/NFS functionality.
-We do not want to modify the way the client does his mounts.
+Jens, should sg_next ever return the sg containing the chain link?
+If sg points at the entry right before the link entry, don't we
+want to skip it?
 
-M.
+E.g.:
 
+static inline struct scatterlist *sg_next(struct scatterlist *sg)
+{
+	struct scatterlist *next;
 
+	/* just in case, shouldn't really ever be here */
+	if (sg_is_chain(sg))
+		return sg_chain_ptr(sg);
 
------Original Message-----
-From: Neil Brown [mailto:neilb@suse.de] 
-Sent: Thursday, May 10, 2007 12:03 PM
-To: Menny Hamburger
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] NLM program ID for user space NLM server
+	next = sg + 1;
 
-On Thursday May 10, menny@exanet.com wrote:
-> Hi,
-> 
-> Since the current kernel cannot be compiled with NFS client and 
-> without lockd, it is not possible to register a user space NLM server 
-> Without colliding with the kernel service registered in 
-> .../fs/lockd/lockd.c.
+	if (sg_is_chain(next))
+		return sg_chain_ptr(next);
 
-This doesn't make any sense to me at all.
-You can certainly have the NFS client compiled and even running without
-lockd running (if you mount with "-o nolock") and in that case you are
-free you register your owner user-space NLM server (though I'm not sure
-what good it would do you).
-
-And if you want to mount an NFS filesystem without "-o nolock", then you
-really need the kernel lockd running, or locking will not work.
-
-Can you explain what you are trying to do - I'm curious.
-
->  
-> +#ifndef
->  #define NLM_PROGRAM		100021
-> +#endif
-
-Uhm...  Do you mean
-
-  +#ifndef NLM_PROGRAM
-
-??  Still not sure how that helps.
-
-NeilBrown
+	return next;
+}
