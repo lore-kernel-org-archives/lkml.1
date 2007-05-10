@@ -1,70 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbXEJAS2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760197AbXEJATp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759275AbXEJAS2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 20:18:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760197AbXEJASM
+	id S1760197AbXEJATp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 20:19:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbXEJATi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 20:18:12 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:50650 "EHLO mail.dvmed.net"
+	Wed, 9 May 2007 20:19:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:33164 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758830AbXEJASJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 20:18:09 -0400
-Message-ID: <464264BE.2090301@garzik.org>
-Date: Wed, 09 May 2007 20:18:06 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Jesse Barnes <jesse.barnes@intel.com>
-CC: linux-ide@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git patches] libata updates
-References: <20070429161542.GA12501@havoc.gtf.org> <200705011434.40440.jesse.barnes@intel.com>
-In-Reply-To: <200705011434.40440.jesse.barnes@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1756569AbXEJATh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 20:19:37 -0400
+Subject: Re: [patch 5/9] lguest: the Makefile and Kconfig
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, ak@suse.de
+In-Reply-To: <20070509204725.GB10336@uranus.ravnborg.org>
+References: <200705090951.l499pb6H020400@shell0.pdx.osdl.net>
+	 <20070509204725.GB10336@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 10:19:35 +1000
+Message-Id: <1178756375.7286.178.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.3 (----)
-X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Sunday, April 29, 2007 9:15 am Jeff Garzik wrote:
->> Noteworthy changes:
->> * remove combined mode PCI quirk.  IDE driver selection (libata or
->>   old-IDE) is now determined purely by module load order.
->> * new driver API, that is far more like other kernel APIs:
->>   alloc...register...unregister...free.
->> * More Alan PATA work
->> * Lots of other little bits.
-> 
->>  drivers/pci/quirks.c                |  113 ----
-> 
-> Looks like you removed the combined_mode quirk (yay!) but didn't update
-> kernel-parameters.txt...  might confuse people.  Here's a patch to remove
-> mention of it from the documentation.
-> 
-> Signed-off-by:  Jesse Barnes <jesse.barnes@intel.com>
-> 
-> Thanks,
-> Jesse
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 84c3bd0..49b1ea3 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -722,14 +722,6 @@ and is between 256 and 4096 characters. It is defined in the file
->  	inport.irq=	[HW] Inport (ATI XL and Microsoft) busmouse driver
->  			Format: <irq>
->  
-> -	combined_mode=	[HW] control which driver uses IDE ports in combined
-> -			mode: legacy IDE driver, libata, or both
-> -			(in the libata case, libata.atapi_enabled=1 may be
-> -			useful as well).  Note that using the ide or libata
-> -			options may affect your device naming (e.g. by
-> -			changing hdc to sdb).
-> -			Format: combined (default), ide, or libata
-> -
+On Wed, 2007-05-09 at 22:47 +0200, Sam Ravnborg wrote:
+> > diff -puN /dev/null drivers/lguest/Makefile
+> > --- /dev/null
+> > +++ a/drivers/lguest/Makefile
+> > @@ -0,0 +1,7 @@
+> > +# Guest requires the paravirt_ops replacement and the bus driver.
+> > +obj-$(CONFIG_LGUEST_GUEST) += lguest.o lguest_asm.o lguest_bus.o
+> > +
+> > +# Host requires the other files, which can be a module.
+> > +obj-$(CONFIG_LGUEST)	+= lg.o
+> > +lg-objs := core.o hypercalls.o page_tables.o interrupts_and_traps.o \
+> > +	segments.o io.o lguest_user.o switcher.o
+> Please use: lg-y :=
+> Using -objs is no longer preferred.
 
-applied
+Hi Sam!
 
+	Thanks, will patch.
+
+Cheers,
+Rusty.
 
