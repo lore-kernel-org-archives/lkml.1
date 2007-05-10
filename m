@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbXEJW5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762590AbXEJW65@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762151AbXEJW5i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755936AbXEJW5b
+	id S1762590AbXEJW65 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:58:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754359AbXEJW6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:57:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36931 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754359AbXEJW5a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:57:30 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [GIT PATCH] ACPI patches for 2.6.22 - part 2
-Date: Thu, 10 May 2007 18:56:10 -0400
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200705100411.32349.lenb@kernel.org> <alpine.LFD.0.98.0705101330320.3986@woody.linux-foundation.org> <alpine.LFD.0.98.0705101353370.3986@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705101353370.3986@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 18:58:51 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42670 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754017AbXEJW6u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 18:58:50 -0400
+Date: Fri, 11 May 2007 08:58:34 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Chuck Ebbert <cebbert@redhat.com>, David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
+Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
+Message-ID: <20070510225834.GF86004887@sgi.com>
+References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <46439185.5060207@redhat.com> <464392B4.3070009@goop.org> <464393E1.3050705@redhat.com> <46439491.9010604@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705101856.11048.lenb@kernel.org>
+In-Reply-To: <46439491.9010604@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 May 2007 16:56, Linus Torvalds wrote:
+On Thu, May 10, 2007 at 02:54:25PM -0700, Jeremy Fitzhardinge wrote:
+> Chuck Ebbert wrote:
+> > Jeremy Fitzhardinge wrote:
+> >   
+> >> Chuck Ebbert wrote:
+> >>     
+> >>> What CPU architecture is this happening on? Not i686 with PAE by
+> >>> any chance?
+> >>>       
+> >> Yes.  Why?
+> >>     
+> >
+> > I have a bug report where NFS files are corrupted only with PAE clients.
+> > Corruption is at the end of the (newly untarred) files. Doesn't happen
+> > without PAE.
+> >   
 > 
-> On Thu, 10 May 2007, Linus Torvalds wrote:
-> > 
-> > Seems to work for me. My evo correctly started the fan, and stopped it 
-> > when the temperature went down again.
+> Hm, suggestive, but I'm not convinced.  Two differences to this situation:
 > 
-> Looking at things in "top", I do end up occasionally seeing spikes where 
-> kacpid takes 17% of CPU time, and kacpi_notify takes a few percent too. 
-> But the machine works ok, and it doesn't seem to be horrible:
-> 
->    64 ?        S<     0:15 [kacpid]
->    65 ?        S<     0:08 [kacpi_notify]
-> 
-> so they've gotten 23 seconds of CPU time over the 37 minutes that laptop 
-> has been up now. That's arguably too much, but on the other hand, I did 
-> end up trying to stress it out by doing some 3D stuff while compiling the 
-> kernel and doing "git grep" over the kernel tree etc.
+>    1. Immediately after the clone ("untar"), the contents are completely
+>       OK; it's only after a umount/mount cycle to problems appear
+>    2. There's no corruption as such; the files are just too short.  And
+>       it seems they're at a previously OK length, not some random size.
 
-Thanks, I noticed the same thing on an nx6325.
-The goal at the moment is to revert to the simplest functional & stable solution --
-as what is shipping today crashes on some boxes.
+Just to confirm this isn't a result of a recent change, can you reproduce
+this on a 2.6.20 or 2.6.21 kernel? (sorry if you've already done this - I've juggling
+some many things at once it's easy to forget little things).
 
-We've got a couple of tweaks in mind where we think Linux can get
-smarter -- but this is an area where several platform vendors are taking
-advantage of Windows' implementation in (different) twisted ways.
-For us to reach our goal of Linux handling any system out there
-in as optimal a way as possible, we need to study each one in detail.
+Cheers,
 
-That said, can you send me or point me to the acpidump output
-for your EVO.  Yes, I'm sure you've sent it before a long time
-ago, but that was about probably 2,000,000 e-mail messages
-and a couple of disk crashes ago:-)
-
-thanks,
--Len
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
