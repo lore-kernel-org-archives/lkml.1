@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762654AbXEJWAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762857AbXEJWAx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762654AbXEJWAZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759358AbXEJWAK
+	id S1762857AbXEJWAx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:00:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759358AbXEJWAp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:00:10 -0400
-Received: from gw.goop.org ([64.81.55.164]:43177 "EHLO mail.goop.org"
+	Thu, 10 May 2007 18:00:45 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:41297 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757268AbXEJWAI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:00:08 -0400
-Message-ID: <464395E5.2090500@goop.org>
-Date: Thu, 10 May 2007 15:00:05 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1759085AbXEJWAp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 18:00:45 -0400
+Date: Thu, 10 May 2007 23:38:39 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 8/12] x86-64: update iommu/dma mapping functions to sg  helpers
+Message-ID: <20070510213839.GZ4163@kernel.dk>
+References: <11787972373654-git-send-email-jens.axboe@oracle.com> <11787972373765-git-send-email-jens.axboe@oracle.com> <464322BC.50101@panasas.com>
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: "David S. Miller" <davem@davemloft.net>,
-       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminge@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Valdis.Kletnieks@vt.edu
-Subject: Re: [1/2] [NET] link_watch: Move link watch list into net_device
-References: <20070504232051.411946839@goop.org> <20070504232121.492190579@goop.org> <20070505091624.GA8890@infradead.org> <463C56D3.8060609@goop.org> <20070505102305.GA12771@gondor.apana.org.au> <463F95C3.60407@goop.org> <20070508121322.GA21647@gondor.apana.org.au>
-In-Reply-To: <20070508121322.GA21647@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464322BC.50101@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Herbert Xu wrote:
-> [NET] link_watch: Move link watch list into net_device
->
-> These days the link watch mechanism is an integral part of the
-> network subsystem as it manages the carrier status.  So it now
-> makes sense to allocate some memory for it in net_device rather
-> than allocating it on demand.
+On Thu, May 10 2007, Benny Halevy wrote:
+> Jens Axboe wrote:
+> <snip>
+> > @@ -323,13 +324,17 @@ static int __dma_map_cont(struct scatterlist *sg, int start, int stopat,
+> >  {
+> >  	unsigned long iommu_start = alloc_iommu(pages);
+> >  	unsigned long iommu_page = iommu_start; 
+> > -	int i;
+> > +	struct scatterlist *s;
+> > +	int i, nelems;
+> >  
+> >  	if (iommu_start == -1)
+> >  		return -1;
+> > +
+> > +	nelems = stopat - start;
+> > +	while (start--)
+> > +		sg = sg_next(sg);
+> 
+> Ouch.  This will suck if we merge many times in a long list.
+> How about keeping and passing start as a struct scatterlist * rather
+> than an index? (see attached example, (compiles, bu untested though)
 
-I think there's a problem with one of these two patches.  I've been
-noticing that one of my events/X threads has been going into a spin for
-about 5 mins after boot.  I added some debugging to
-kernel/workqueue.c:run_workqueue, since its that loop which seems to be
-spinning due to list corruption.
+It will suck indeed, I like your patch! I'll review and incorporate.
+Your other points are good, noted.
 
-When I look to see if that loop has iterated for more than 100 times in
-one go (which seems unlikely),  I get this:
+-- 
+Jens Axboe
 
-BUG: cpu 3, count=101 list screwup on c04babe4, func c03217e8
-func=linkwatch_event+0x0/0x2a
- [<c0109173>] show_trace_log_lvl+0x1a/0x30
- [<c0109c7f>] show_trace+0x12/0x14
- [<c0109d0c>] dump_stack+0x16/0x18
- [<c0137c25>] run_workqueue+0x97/0x18c
- [<c01386a4>] worker_thread+0xe5/0xf5
- [<c013afe9>] kthread+0x3b/0x62
- [<c0108d47>] kernel_thread_helper+0x7/0x10
- =======================
-
-
-I wonder if the problem is that the linkwatch_work is being rescheduled
-when its already been scheduled, or something like that?
-
-    J
