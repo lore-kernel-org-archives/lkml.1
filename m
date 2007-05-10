@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756942AbXEJL2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbXEJL3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756942AbXEJL2n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757926AbXEJL2f
+	id S1760751AbXEJL3S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756942AbXEJL3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:28:35 -0400
-Received: from py-out-1112.google.com ([64.233.166.178]:64427 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757671AbXEJL2e (ORCPT
+	Thu, 10 May 2007 07:29:09 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3818 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754100AbXEJL3H (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 07:28:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=SvSidMiY/0pbXzEpxVVwssROL6On38hhkFaC8SZIc4e4Ciur4NrQZObNqcgjXCkFCaXhwjJn/Dqwdse/OHKp/synFVlntwUvZ40BfR9thG1AcnaziqabaYmS5Xrz5Yk3IwqJALi9/y2VpfVDzVmCuKuDjk4pgSTG5WMQOKpwYmM=
-Message-ID: <464301D3.5060306@gmail.com>
-Date: Thu, 10 May 2007 13:28:19 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 10 May 2007 07:29:07 -0400
+Message-ID: <4643020C.1010307@shadowen.org>
+Date: Thu, 10 May 2007 12:29:16 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: libata reset-seq merge broke sata_sil on sh
-References: <20070510072005.GA27316@linux-sh.org>
-In-Reply-To: <20070510072005.GA27316@linux-sh.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=us-ascii
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm2 -- compat_core_sys_select() kmalloc(0)
+References: <20070509012322.199f292b.akpm@linux-foundation.org>
+In-Reply-To: <20070509012322.199f292b.akpm@linux-foundation.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Seems that compat_core_sys_select() is using kmalloc(0) and SLUB is
+picking up on it.  Occuring on an older x86_64 numa system.
 
-Paul Mundt wrote:
-[--snip, thanks a lot for the detailed report--]
-> However, if I go back before any of the reset changes were introduced,
-> things were working fine, and there were no problems with waiting for
-> the reset. Ideas?
+BUG: at include/linux/slub_def.h:88 kmalloc_index()
 
-Hmm... It worked so well on all my sil's.  I'm a bit puzzled because we
-also failed the same condition before the change too.  The only change
-is we're less patient with the initial tries but in the end we give more
-than enough time to the device to prepare itself.
+Call Trace:
+ [<ffffffff80270392>] get_slab+0x50/0x1f7
+ [<ffffffff802706d0>] __kmalloc+0xf/0x6d
+ [<ffffffff802a0421>] compat_core_sys_select+0x7e/0x1d8
+ [<ffffffff802a061d>] compat_sys_select+0xa2/0x131
+ [<ffffffff8021acb2>] ia32_sysret+0x0/0xa
 
-* Does your drive start spun down when it boots?  Can you post dmesg
-with printk timestamp turned on with kernel prior to reset-seq merge?
 
-* In ata_bus_softreset() and sata_std_hardreset(), there's msleep(150)
-delay before checking the status post-reset.  Does increasing the delay
-make any difference?  Please try to increase it exponentially till it
-reaches 10sec.
+This appears to occur when a 32 bit app uses select(0, ...) as a
+timeout.  I think its safe as it is, in that we'll never touch the
+pointers if n==0 but more eyes would help.  It might be clearer to
+special case the n==0 case to avoid all this.
 
--- 
-tejun
+-apw
