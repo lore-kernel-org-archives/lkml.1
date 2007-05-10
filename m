@@ -1,252 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761436AbXEJO6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbXEJPAW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761436AbXEJO6V (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 10:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755062AbXEJO6J
+	id S1759587AbXEJPAW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 11:00:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753023AbXEJPAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 10:58:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:37291 "EHLO mail.goop.org"
+	Thu, 10 May 2007 11:00:08 -0400
+Received: from smtp19.orange.fr ([80.12.242.17]:59765 "EHLO smtp19.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752140AbXEJO6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 10:58:08 -0400
-Message-ID: <46433309.7010507@goop.org>
-Date: Thu, 10 May 2007 07:58:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [BUG] Re: mm snapshot broken-out-2007-05-10-03-06.tar.gz uploaded
-References: <200705101009.l4AA9kY8017872@shell0.pdx.osdl.net> <464315FF.3060203@googlemail.com>
-In-Reply-To: <464315FF.3060203@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-2
-Content-Transfer-Encoding: 8bit
+	id S1752784AbXEJPAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 11:00:06 -0400
+X-ME-UUID: 20070510150004646.9DCB31C00057@mwinf1909.orange.fr
+Subject: Re: Please revert 5b479c91da90eef605f851508744bfe8269591a0 (md
+	partition rescan)
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Neil Brown <neilb@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-raid@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       David Greaves <david@dgreaves.com>, Doug Ledford <dledford@redhat.com>
+In-Reply-To: <Pine.LNX.4.61.0705101650340.24536@yvahk01.tjqt.qr>
+References: <17986.26930.952993.510918@notabene.brown>
+	 <alpine.LFD.0.98.0705091848370.4062@woody.linux-foundation.org>
+	 <Pine.LNX.4.61.0705101650340.24536@yvahk01.tjqt.qr>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 16:59:57 +0200
+Message-Id: <1178809197.7699.4.camel@frg-rhel40-em64t-04>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-27) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michal Piotrowski wrote:
-> Hi Jeremy,
->
-> akpm@linux-foundation.org napisa³(a):
->   
->> The mm snapshot broken-out-2007-05-10-03-06.tar.gz has been uploaded to
->>
->>    ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/broken-out-2007-05-10-03-06.tar.gz
->>
->>     
->
-> Bug reported here http://lkml.org/lkml/2007/4/25/400 is back.
->   
+On Thu, 2007-05-10 at 16:51 +0200, Jan Engelhardt wrote:
+> >(But Andrew never saw your email, I suspect: "akpm@suse.de" is
+> probably 
+> >some strange mixup of Andrew Morton and Andi Kleen in your mind ;)
+> 
+> What do the letters kp stand for?
 
-Yes, we never worked out what was going wrong.  It seems to be a strange
-interaction between lock API testing and Andi's sched_clock() changes,
-which is triggered by my softlockup changes.  But given that lock API
-testing has no explicit interaction with either sched_clock() or the
-softlockup watchdog, its completely mysterious that it should be
-affected in this way.
+"Keep Patching" ?
 
-We ended up with an appeal to Ingo, but he's ignored it so far.
 
-    J
-
-> [    0.000000] ------------------------
-> [    0.000000] | Locking API testsuite:
-> [    0.000000] ----------------------------------------------------------------------------
-> [    0.000000]                                  | spin |wlock |rlock |mutex | wsem | rsem |
-> [    0.000000]   --------------------------------------------------------------------------
-> [    0.000000]                      A-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000000]                  A-B-B-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000001]              A-B-B-C-C-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000001]              A-B-C-A-B-C deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000002]          A-B-B-C-C-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000003]          A-B-C-D-B-D-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000004]          A-B-C-D-B-C-D-A deadlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000006]                     double unlock:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000006]                   initialize held:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000006]                  bad unlock order:  ok  |  ok  |  ok  |  ok  |  ok  |  ok  |
-> [    0.000007]   --------------------------------------------------------------------------
-> [    0.000007]               recursive read-lock:             |  ok  |             |  ok  |
-> [    0.000007]            recursive read-lock #2:             |  ok  |             |  ok  |
-> [    0.000007]             mixed read-write-lock:             |  ok  |             |  ok  |
-> [    0.000007]             mixed write-read-lock:             |  ok  |             |  ok  |
-> [    0.000007]   --------------------------------------------------------------------------
-> [    0.000007]      hard-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
-> [    0.000007]      soft-irqs-on + irq-safe-A/12:  ok  |  ok  |  ok  |
-> [    0.000007]      hard-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
-> [    0.000007]      soft-irqs-on + irq-safe-A/21:  ok  |  ok  |  ok  |
-> [    0.000007]        sirq-safe-A => hirqs-on/12:  ok  |  ok  |irq event stamp: 472
-> [    0.000008] hardirqs last  enabled at (472): [<c020e4d6>] irqsafe2A_rlock_12+0xb6/0xc7
-> [    0.000008] hardirqs last disabled at (471): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (468): [<c020e4c1>] irqsafe2A_rlock_12+0xa1/0xc7
-> [    0.000008] softirqs last disabled at (464): [<c020e42c>] irqsafe2A_rlock_12+0xc/0xc7
-> [    0.000008] FAILED| [<c0105276>] dump_trace+0x63/0x1eb
-> [    0.000008]  [<c0105418>] show_trace_log_lvl+0x1a/0x30
-> [    0.000008]  [<c010605a>] show_trace+0x12/0x14
-> [    0.000008]  [<c01060f7>] dump_stack+0x16/0x18
-> [    0.000008]  [<c020c0eb>] dotest+0x8d/0x3f4
-> [    0.000008]  [<c0216879>] locking_selftest+0x915/0x1a58
-> [    0.000008]  [<c04fa8f3>] start_kernel+0x27d/0x34f
-> [    0.000008]  =======================
-> [    0.000008]
-> [    0.000008]        sirq-safe-A => hirqs-on/21:irq event stamp: 476
-> [    0.000008] hardirqs last  enabled at (476): [<c020e1e7>] irqsafe2A_spin_21+0x1c/0xc7
-> [    0.000008] hardirqs last disabled at (475): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (468): [<c020e4c1>] irqsafe2A_rlock_12+0xa1/0xc7
-> [    0.000008] softirqs last disabled at (464): [<c020e42c>] irqsafe2A_rlock_12+0xc/0xc7
-> [    0.000008]   ok  |irq event stamp: 480
-> [    0.000008] hardirqs last  enabled at (480): [<c020e375>] irqsafe2A_wlock_21+0x1c/0xc7
-> [    0.000008] hardirqs last disabled at (479): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (468): [<c020e4c1>] irqsafe2A_rlock_12+0xa1/0xc7
-> [    0.000008] softirqs last disabled at (464): [<c020e42c>] irqsafe2A_rlock_12+0xc/0xc7
-> [    0.000008]   ok  |irq event stamp: 484
-> [    0.000008] hardirqs last  enabled at (484): [<c020e503>] irqsafe2A_rlock_21+0x1c/0xc7
-> [    0.000008] hardirqs last disabled at (483): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (468): [<c020e4c1>] irqsafe2A_rlock_12+0xa1/0xc7
-> [    0.000008] softirqs last disabled at (464): [<c020e42c>] irqsafe2A_rlock_12+0xc/0xc7
-> [    0.000008] FAILED| [<c0105276>] dump_trace+0x63/0x1eb
-> [    0.000008]  [<c0105418>] show_trace_log_lvl+0x1a/0x30
-> [    0.000008]  [<c010605a>] show_trace+0x12/0x14
-> [    0.000008]  [<c01060f7>] dump_stack+0x16/0x18
-> [    0.000008]  [<c020c0eb>] dotest+0x8d/0x3f4
-> [    0.000008]  [<c02168cf>] locking_selftest+0x96b/0x1a58
-> [    0.000008]  [<c04fa8f3>] start_kernel+0x27d/0x34f
-> [    0.000008]  =======================
-> [    0.000008]
-> [    0.000008]          hard-safe-A + irqs-on/12:  ok  |  ok  |irq event stamp: 500
-> [    0.000008] hardirqs last  enabled at (500): [<c0212873>] irqsafe2B_hard_rlock_12+0xaf/0xc0
-> [    0.000008] hardirqs last disabled at (499): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (468): [<c020e4c1>] irqsafe2A_rlock_12+0xa1/0xc7
-> [    0.000008] softirqs last disabled at (464): [<c020e42c>] irqsafe2A_rlock_12+0xc/0xc7
-> [    0.000008] FAILED| [<c0105276>] dump_trace+0x63/0x1eb
-> [    0.000008]  [<c0105418>] show_trace_log_lvl+0x1a/0x30
-> [    0.000008]  [<c010605a>] show_trace+0x12/0x14
-> [    0.000008]  [<c01060f7>] dump_stack+0x16/0x18
-> [    0.000008]  [<c020c0eb>] dotest+0x8d/0x3f4
-> [    0.000008]  [<c0216925>] locking_selftest+0x9c1/0x1a58
-> [    0.000008]  [<c04fa8f3>] start_kernel+0x27d/0x34f
-> [    0.000008]  =======================
-> [    0.000008]
-> [    0.000008]          soft-safe-A + irqs-on/12:  ok  |  ok  |irq event stamp: 534
-> [    0.000008] hardirqs last  enabled at (534): [<c0129748>] local_bh_enable+0x1b9/0x1e5
-> [    0.000008] hardirqs last disabled at (533): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (532): [<c020e7ed>] irqsafe2B_soft_rlock_12+0xb5/0xc5
-> [    0.000008] softirqs last disabled at (530): [<c020e7de>] irqsafe2B_soft_rlock_12+0xa6/0xc5
-> [    0.000008] FAILED| [<c0105276>] dump_trace+0x63/0x1eb
-> [    0.000008]  [<c0105418>] show_trace_log_lvl+0x1a/0x30
-> [    0.000008]  [<c010605a>] show_trace+0x12/0x14
-> [    0.000008]  [<c01060f7>] dump_stack+0x16/0x18
-> [    0.000008]  [<c020c0eb>] dotest+0x8d/0x3f4
-> [    0.000008]  [<c021697b>] locking_selftest+0xa17/0x1a58
-> [    0.000008]  [<c04fa8f3>] start_kernel+0x27d/0x34f
-> [    0.000008]  =======================
-> [    0.000008]
-> [    0.000008]          hard-safe-A + irqs-on/21:irq event stamp: 538
-> [    0.000008] hardirqs last  enabled at (538): [<c0212720>] irqsafe2B_hard_spin_21+0x1c/0xc0
-> [    0.000008] hardirqs last disabled at (537): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (532): [<c020e7ed>] irqsafe2B_soft_rlock_12+0xb5/0xc5
-> [    0.000008] softirqs last disabled at (530): [<c020e7de>] irqsafe2B_soft_rlock_12+0xa6/0xc5
-> [    0.000008]   ok  |irq event stamp: 542
-> [    0.000008] hardirqs last  enabled at (542): [<c0212a20>] irqsafe2B_hard_wlock_21+0x1c/0xc0
-> [    0.000008] hardirqs last disabled at (541): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (532): [<c020e7ed>] irqsafe2B_soft_rlock_12+0xb5/0xc5
-> [    0.000008] softirqs last disabled at (530): [<c020e7de>] irqsafe2B_soft_rlock_12+0xa6/0xc5
-> [    0.000008]   ok  |irq event stamp: 546
-> [    0.000008] hardirqs last  enabled at (546): [<c02128a0>] irqsafe2B_hard_rlock_21+0x1c/0xc0
-> [    0.000008] hardirqs last disabled at (545): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (532): [<c020e7ed>] irqsafe2B_soft_rlock_12+0xb5/0xc5
-> [    0.000008] softirqs last disabled at (530): [<c020e7de>] irqsafe2B_soft_rlock_12+0xa6/0xc5
-> [    0.000008] FAILED| [<c0105276>] dump_trace+0x63/0x1eb
-> [    0.000008]  [<c0105418>] show_trace_log_lvl+0x1a/0x30
-> [    0.000008]  [<c010605a>] show_trace+0x12/0x14
-> [    0.000008]  [<c01060f7>] dump_stack+0x16/0x18
-> [    0.000008]  [<c020c0eb>] dotest+0x8d/0x3f4
-> [    0.000008]  [<c02169d1>] locking_selftest+0xa6d/0x1a58
-> [    0.000008]  [<c04fa8f3>] start_kernel+0x27d/0x34f
-> [    0.000008]  =======================
-> [    0.000008]
-> [    0.000008]          soft-safe-A + irqs-on/21:irq event stamp: 552
-> [    0.000008] hardirqs last  enabled at (552): [<c0129748>] local_bh_enable+0x1b9/0x1e5
-> [    0.000008] hardirqs last disabled at (551): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (550): [<c020e68e>] irqsafe2B_soft_spin_21+0x1b/0xc5
-> [    0.000008] softirqs last disabled at (548): [<c020e67f>] irqsafe2B_soft_spin_21+0xc/0xc5
-> [    0.000008]   ok  |irq event stamp: 558
-> [    0.000008] hardirqs last  enabled at (558): [<c0129748>] local_bh_enable+0x1b9/0x1e5
-> [    0.000008] hardirqs last disabled at (557): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (556): [<c020e9a2>] irqsafe2B_soft_wlock_21+0x1b/0xc5
-> [    0.000008] softirqs last disabled at (554): [<c020e993>] irqsafe2B_soft_wlock_21+0xc/0xc5
-> [    0.000008]   ok  |irq event stamp: 564
-> [    0.000008] hardirqs last  enabled at (564): [<c0129748>] local_bh_enable+0x1b9/0x1e5
-> [    0.000008] hardirqs last disabled at (563): [<c010a900>] native_sched_clock+0x70/0x118
-> [    0.000008] softirqs last  enabled at (562): [<c020e818>] irqsafe2B_soft_rlock_21+0x1b/0xc5
-> [    0.000008] softirqs last disabled at (560): [<c020e809>] irqsafe2B_soft_rlock_21+0xc/0xc5
-> [    0.000008] FAILED| [<c0105276>] dump_trace+0x63/0x1eb
-> [    0.000008]  [<c0105418>] show_trace_log_lvl+0x1a/0x30
-> [    0.000008]  [<c010605a>] show_trace+0x12/0x14
-> [    0.000008]  [<c01060f7>] dump_stack+0x16/0x18
-> [    0.000008]  [<c020c0eb>] dotest+0x8d/0x3f4
-> [    0.000008]  [<c0216a27>] locking_selftest+0xac3/0x1a58
-> [    0.000008]  [<c04fa8f3>] start_kernel+0x27d/0x34f
-> [    0.000008]  =======================
-> [    0.000008]
-> [    0.000008]     hard-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
-> [    0.000008]     soft-safe-A + unsafe-B #1/123:  ok  |  ok  |  ok  |
-> [    0.000009]     hard-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
-> [    0.000009]     soft-safe-A + unsafe-B #1/132:  ok  |  ok  |  ok  |
-> [    0.000009]     hard-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
-> [    0.000010]     soft-safe-A + unsafe-B #1/213:  ok  |  ok  |  ok  |
-> [    0.000010]     hard-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
-> [    0.000010]     soft-safe-A + unsafe-B #1/231:  ok  |  ok  |  ok  |
-> [    0.000010]     hard-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
-> [    0.000010]     soft-safe-A + unsafe-B #1/312:  ok  |  ok  |  ok  |
-> [    0.000011]     hard-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
-> [    0.000011]     soft-safe-A + unsafe-B #1/321:  ok  |  ok  |  ok  |
-> [    0.000011]     hard-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
-> [    0.000011]     soft-safe-A + unsafe-B #2/123:  ok  |  ok  |  ok  |
-> [    0.000011]     hard-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
-> [    0.000012]     soft-safe-A + unsafe-B #2/132:  ok  |  ok  |  ok  |
-> [    0.000012]     hard-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
-> [    0.000012]     soft-safe-A + unsafe-B #2/213:  ok  |  ok  |  ok  |
-> [    0.000012]     hard-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
-> [    0.000013]     soft-safe-A + unsafe-B #2/231:  ok  |  ok  |  ok  |
-> [    0.000013]     hard-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
-> [    0.000013]     soft-safe-A + unsafe-B #2/312:  ok  |  ok  |  ok  |
-> [    0.000013]     hard-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
-> [    0.000013]     soft-safe-A + unsafe-B #2/321:  ok  |  ok  |  ok  |
-> [    0.000014]       hard-irq lock-inversion/123:  ok  |  ok  |  ok  |
-> [    0.000014]       soft-irq lock-inversion/123:  ok  |  ok  |  ok  |
-> [    0.000014]       hard-irq lock-inversion/132:  ok  |  ok  |  ok  |
-> [    0.000014]       soft-irq lock-inversion/132:  ok  |  ok  |  ok  |
-> [    0.000014]       hard-irq lock-inversion/213:  ok  |  ok  |  ok  |
-> [    0.000015]       soft-irq lock-inversion/213:  ok  |  ok  |  ok  |
-> [    0.000015]       hard-irq lock-inversion/231:  ok  |  ok  |  ok  |
-> [    0.000015]       soft-irq lock-inversion/231:  ok  |  ok  |  ok  |
-> [    0.000015]       hard-irq lock-inversion/312:  ok  |  ok  |  ok  |
-> [    0.000015]       soft-irq lock-inversion/312:  ok  |  ok  |  ok  |
-> [    0.000016]       hard-irq lock-inversion/321:  ok  |  ok  |  ok  |
-> [    0.000016]       soft-irq lock-inversion/321:  ok  |  ok  |  ok  |
-> [    0.000016]       hard-irq read-recursion/123:  ok  |
-> [    0.000016]       soft-irq read-recursion/123:  ok  |
-> [    0.000016]       hard-irq read-recursion/132:  ok  |
-> [    0.000016]       soft-irq read-recursion/132:  ok  |
-> [    0.000016]       hard-irq read-recursion/213:  ok  |
-> [    0.000016]       soft-irq read-recursion/213:  ok  |
-> [    0.000016]       hard-irq read-recursion/231:  ok  |
-> [    0.000017]       soft-irq read-recursion/231:  ok  |
-> [    0.000017]       hard-irq read-recursion/312:  ok  |
-> [    0.000017]       soft-irq read-recursion/312:  ok  |
-> [    0.000017]       hard-irq read-recursion/321:  ok  |
-> [    0.000017]       soft-irq read-recursion/321:  ok  |
-> [    0.000017] -----------------------------------------------------------------
-> [    0.000017] BUG:   6 unexpected failures (out of 218) - debugging disabled! |
-> [    0.000017] -----------------------------------------------------------------
->
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-05-10-03-06/mm-config
-> http://www.stardust.webpages.pl/files/tbf/bitis-gabonica/broken-out-2007-05-10-03-06/mm-dmesg
->
-> Regards,
-> Michal
->
->   
 
