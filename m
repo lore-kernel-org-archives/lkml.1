@@ -1,87 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759398AbXEJVOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933099AbXEJVOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759398AbXEJVOF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761570AbXEJVNw
+	id S933099AbXEJVOX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762298AbXEJVOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:13:52 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:57231 "EHLO pasmtpA.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762002AbXEJVNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:13:51 -0400
-Date: Thu, 10 May 2007 23:14:46 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Chris Wedgwood <cw@f00f.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: (hacky) [PATCH] silence MODPOST section mismatch warnings
-Message-ID: <20070510211446.GB23149@uranus.ravnborg.org>
-References: <20070510203417.GA23019@tuatara.stupidest.org> <20070510204037.GE29713@flint.arm.linux.org.uk>
+	Thu, 10 May 2007 17:14:11 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:59959 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762287AbXEJVOH (ORCPT
+	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:14:07 -0400
+Date: Fri, 11 May 2007 07:13:48 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com,
+       michal.k.k.piotrowski@gmail.com
+Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
+Message-ID: <20070510211348.GC86004887@sgi.com>
+References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <20070510004918.GS85884050@sgi.com> <46426D31.8070000@goop.org> <20070510012609.GU85884050@sgi.com> <46433049.4020003@goop.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070510204037.GE29713@flint.arm.linux.org.uk>
+In-Reply-To: <46433049.4020003@goop.org>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 09:40:38PM +0100, Russell King wrote:
-> On Thu, May 10, 2007 at 01:34:18PM -0700, Chris Wedgwood wrote:
-> > MODPOST seems to be spewing bogus warnings.  It's not clear how best
-> > to fix it so perhaps we should silence it for now?
+On Thu, May 10, 2007 at 07:46:33AM -0700, Jeremy Fitzhardinge wrote:
+> David Chinner wrote:
+> > On Wed, May 09, 2007 at 05:54:09PM -0700, Jeremy Fitzhardinge wrote:
+> >   
+> >> David Chinner wrote:
+> >>     
+> >>> Suspend-resume, eh?
+> >>>
+> >>> There's an immediate suspect. Can you test this specifically for us?
+> >>> i.e. download a known good file set, do some stuff, suspend, resume,
+> >>> then check the files? If it doesn't show up the first time, can
+> >>> you do it a few times just to rule it out?
+> >>>       
+> >> Well, I've been doing suspend-resume with xfs for a while without
+> >> problems; the problems seem to be recent and easily repeatable.  Which
+> >> just means that it could be a new suspend-resume problem, of course.
+> >>     
+> >
+> > Ok. I'm just trying to find a relatively simple test case for the
+> > problem - seeing as you seem to be able to reliably reproduce this
+> > we should be able to work out the trigger...
+> >   
 > 
-> I agree.  Example bogus warning:
+> OK, I was able to reproduce it reliably with a script with did basically:
 > 
-> WARNING: arch/arm/mach-iop32x/built-in.o - Section mismatch:
->  reference to .init.text: from .data between 'iq80321_timer'
->  (at offset 0x428) and 'iq80321_serial_device'
+>     for i in `seq 20`; do
+>     	hg clone -U --pull a b-$i
+>     	hg verify b-$i		# always OK
+>     	umount /home
+>     	sleep 5
+>     	mount /home
+>     	hg verify b-$i		# often found truncated files
+>     done
+>       
 > 
-> c04088fc d iq80321_timer
-> c0408950 d iq80321_serial_device
-> 
-> It's completely unclear what is referencing what, what the two named
-> symbols mean, and even what "at offset" relates to.
+> No suspend/resumes involved.  The trees are linux kernel ones, so fairly
+> large, but small enough to fit entirely in core.  My script also
+> captured xfs_bmap before/after output for files which had tended to be
+> corrupted in the past, but unfortunately none of them got corrupted in
+> these tests.  But I do have all the trees lying around to extract more
+> detail for if you like.
 
-The error message tells you that somewhere _between_ the symbol
-iq80312_timer and iq80321_serial_device there is a recerence to an address
-in the .init.text section.
-The referenced address could not be resolved to an actual symbol.
+Ok, so most of the of the integrity errors are processed by an
+error like this:
 
-Lets take a look:
-git grep iq80321_timer reveals:
-arch/arm/mach-iop32x/iq80321.c:static void __init iq80321_timer_init(void)
-arch/arm/mach-iop32x/iq80321.c:static struct sys_timer iq80321_timer = {
-arch/arm/mach-iop32x/iq80321.c: .init           = iq80321_timer_init,
-arch/arm/mach-iop32x/iq80321.c: .timer          = &iq80321_timer,
+drivers/scsi/sata_sil24.c index contains -98 extra bytes
+unpacking file drivers/scsi/sata_sil24.c 5715cdfceaca: Error -5 while decompressing data
 
-So the one to look at is this structure:
+That's an -EIO and not a normal error to report. Are there any
+errors in dmesg or syslog corresponding to this?
 
-static struct sys_timer iq80321_timer = {
-	.init		= iq80321_timer_init,
-	.offset		= iop_gettimeoffset,
-};
+The errors tend to imply problems decompressing and patching files,
+not that truncates are occurring once the files have been patched.
+Can you check that what is being pulled from the repository is correct
+before it gets uncompressed?
 
+Cheers,
 
-iq80321_timer_init is a function marked __init
-So we have a reference from .data to .init.text
-
-If you remove the static definition of iq80321_timer then you will see
-that modpost can resolve the symbol for you.
-
-The usage of iq80321_timer is obscufated inside a MACHINCE_START/MACHINE_END
-macor so I did not look further.
-But based on the naming of the member in the struct ".init" I will assume
-this is legitime reference to .init.text from .data.
-
-Today modpost whitelist (avoid warnings) if a variable are named on of the 
-following:
-
-*driver, *_template, *_sht, *_ops, *_probe, *probe_one
-
-We could add *timer to silence this particular warning indeed.
-Or we could rename the varibale.
-Or we could find a way to annotate the data to say "references to .init.*
-is OK and should not be warned.
-
-
-The latter seems to be most appropriate so this is the direction I'm heading.
-
-	Sam
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
