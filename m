@@ -1,79 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758409AbXEJIKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbXEJIKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758409AbXEJIKM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 04:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752927AbXEJIJ6
+	id S1759475AbXEJIKo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 04:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758755AbXEJIK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 04:09:58 -0400
-Received: from mail02.vsnet.ch ([153.109.10.41]:55912 "EHLO mail02.vsnet.ch"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752674AbXEJIJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 04:09:57 -0400
-X-Greylist: delayed 989 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 04:09:57 EDT
-From: Marc Pignat <marc.pignat@hevs.ch>
-Organization: HEVs
-To: andrew@sanpeople.com
-Subject: [PATCHv2] at91: fix enable/disable_irq_wake symmetry in pcmcia driver
-Date: Thu, 10 May 2007 10:09:35 +0200
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, dbrownell@users.sourceforge.net
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705101009.36302.marc.pignat@hevs.ch>
-X-VSnet-MailScanner: Found to be clean
+	Thu, 10 May 2007 04:10:28 -0400
+Received: from smtp.nokia.com ([131.228.20.173]:36347 "EHLO
+	mgw-ext14.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755108AbXEJIKZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 04:10:25 -0400
+Subject: Re: [PATCH] fix memory leak in UBI scanning unit
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Jesper Juhl <jesper.juhl@gmail.com>
+Cc: linux-kernel@vger.kernel.org, dedekind@linutronix.de
+In-Reply-To: <200705100026.12639.jesper.juhl@gmail.com>
+References: <200705100026.12639.jesper.juhl@gmail.com>
+Content-Type: text/plain; charset=utf-8
+Date: Thu, 10 May 2007 11:09:33 +0300
+Message-Id: <1178784573.3734.5.camel@sauron>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 10 May 2007 08:09:50.0006 (UTC) FILETIME=[94C8C560:01C792DA]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-from Marc Pignat <marc.pignat@hevs.ch>
+On Thu, 2007-05-10 at 00:26 +0200, Jesper Juhl wrote:
+> In drivers/mtd/ubi/scan.c::paranoid_check_si() there's a memory leak.
+> If the call 
+> 	err = ubi_io_is_bad(ubi, pnum);
+> returns <0, then we'll return with out freeing (and thus leak) buf.
+> This patch eliminates the memory leak by freeing buf before returning.
+> 
+> Problem spotted by the Coverity checker.
 
-fix enable_irq_wake and disable_irq_wake symmetry in at91 pcmcia driver
+It was already reported and fixed in our git tree. But thanks anyway.
 
-Signed-off-by: Marc Pignat <marc.pignat@hevs.ch>
----
-Please forget the [PATCH] at91: fix enable/disable_irq_wake symmetry in pcmcia driver,
-it doesn't compile... Here is the good patch!
+-- 
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
 
-This patch applies to the 2.6.21.1 kernel.
-
-disable_irq_wake call must be symmetric with enable_irq_wake. This patch fix 
-that problem for the at91_pcmia driver.
-It seems that this patch was forgotten when we've fixed irq_wake symmetry in 
-all at91 related drivers.
-It was discussed in the "at91 drivers and [enable/disable]_irq_wake (wrong?) 
-usage" thread on the linux-arm-kernel mailing list.
-
-Regards
-
-Marc
-
---- 2.6.21.1/drivers/pcmcia/at91_cf.c.orig	2007-05-10 08:43:16.000000000 +0200
-+++ 2.6.21.1/drivers/pcmcia/at91_cf.c	2007-05-10 10:03:58.000000000 +0200
-@@ -336,16 +336,21 @@ static int at91_cf_suspend(struct platfo
- 		enable_irq_wake(board->det_pin);
- 		if (board->irq_pin)
- 			enable_irq_wake(board->irq_pin);
--	} else {
--		disable_irq_wake(board->det_pin);
--		if (board->irq_pin)
--			disable_irq_wake(board->irq_pin);
- 	}
- 	return 0;
- }
-
- static int at91_cf_resume(struct platform_device *pdev)
- {
-+	struct at91_cf_socket	*cf = platform_get_drvdata(pdev);
-+	struct at91_cf_data	*board = cf->board;
-+
-+	if (device_may_wakeup(&pdev->dev)) {
-+		disable_irq_wake(board->det_pin);
-+		if (board->irq_pin)
-+			disable_irq_wake(board->irq_pin);
-+	}
-+
- 	pcmcia_socket_dev_resume(&pdev->dev);
- 	return 0;
- }
