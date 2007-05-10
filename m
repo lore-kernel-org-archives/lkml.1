@@ -1,96 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbXEJHFT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbXEJHSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbXEJHFT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 03:05:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXEJHFI
+	id S1757583AbXEJHSY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 03:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbXEJHSR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 03:05:08 -0400
-Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:29827 "HELO
-	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750888AbXEJHFH (ORCPT
+	Thu, 10 May 2007 03:18:17 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38469 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752342AbXEJHSQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 03:05:07 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
-  b=EFu4/zARi4b6f36QNdpipYouJ/2gVERA7b6NlAjDy1O4GOsNJYPIsdw+ufk3DXYq1D6Zln5+/gAG28H2ZfS3hhrAU65NO1rLEDddR2c4J71EQGDBrRuQNo+YNKSl1MRKbz0PZvBE/EuqktAa6l/9pW37kncSEcD6uvLPmbmctxk=  ;
-X-YMail-OSG: bQ6100AVM1kvHN0_xmv86JsOoit85ilCbysUSvs7q2XhVwSeUdHaObVroZ0UwV_wo4.C835Nrg--
-Message-ID: <4642C416.3000205@yahoo.com.au>
-Date: Thu, 10 May 2007 17:04:54 +1000
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
-X-Accept-Language: en
-MIME-Version: 1.0
-To: Ray Lee <ray-lk@madrabbit.org>
-CC: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
-       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
-References: <20070430162007.ad46e153.akpm@linux-foundation.org>	 <200705100928.34056.kernel@kolivas.org>	 <464261B5.6030809@yahoo.com.au>	 <200705101134.34350.kernel@kolivas.org> <46427BDB.30004@yahoo.com.au>	 <2c0942db0705092048m38b36e7fo3a7c2c59fe1612b2@mail.gmail.com>	 <46429801.8030202@yahoo.com.au> <2c0942db0705092252n13a6a79aq39f13fcfae534de2@mail.gmail.com>
-In-Reply-To: <2c0942db0705092252n13a6a79aq39f13fcfae534de2@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu, 10 May 2007 03:18:16 -0400
+Date: Thu, 10 May 2007 16:16:11 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: linux-kernel@vger.kernel.org
+Cc: Linux-MM <linux-mm@kvack.org>, Lee.Schermerhorn@hp.com, apw@shadowen.org,
+       Christoph Lameter <clameter@sgi.com>, AKPM <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, jbarnes@virtuousgeek.org,
+       "kamezawa.hiroyu@jp.fujitsu.com" <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [Request-For-Test] [PATCH] change zonelist order v6 [0/3]
+ Introduction
+Message-Id: <20070510161611.fe1a696b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ray Lee wrote:
-> On 5/9/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
-> 
->> Ray Lee wrote:
->> > On 5/9/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
->> >
->> >> You said it helped with the updatedb problem. That says we should 
->> look at
->> >> why it is going bad first, and for example improve use-once 
->> algorithms.
->> >> After we do that, then swap prefetching might still help, which is 
->> fine.
->> >
->> > Nick, if you're volunteering to do that analysis, then great. If not,
->> > then you're just providing a airy hope with nothing to back up when or
->> > if that work would ever occur.
->>
->> I'd like to try helping. Tell me your problem.
-> 
-> 
-> Huh? You already stated one version of it above, namely updatedb. But
+This is zonelist-order-fix patch version 6. against 2.6.21-mm2.
 
-So a swapping problem with updatedb should be unusual and we'd like to see
-if we can fix it without resorting to prefetching.
+Works as expected in my ia64/NUMA environment and found no problem
+in x86/non-NUMA arch. (This patch has no change for non-NUMA)
 
-I know the theory behind swap prefetching, and I'm not saying it doesn't
-work, so I'll snip the rest of that.
+There are many types of NUMA systems  and this patch affects *all* NUMA
+system's memory allocation logic. please test.
+
+ChangeLog V5 -> V6
+- some cleanups and compile fixes (no logic change)
+- merged documentaion fix from Lee Schermerhon.
+- simplified kernel-parameter.txt
+- adjusted to 2.6.21-mm2.
+
+ChangeLog V4 -> V5
+- separated 'doc' patch and rewrote it.
+- more clean ups.
+- sysctl/boot option params are simplified.
+
+ChangeLog V2 -> V4
+- automatic configuration is added.
+- automatic configuration is now default.
+- relaxed_zone_order is renamed to be numa_zonelist_order
+  you can specify value "default" , "zone" , "numa"
+- clean-up from Lee Schermerhorn
+- patch is speareted to "base" and "autoconfiguration algorithm"
+
+Changelog from V1 -> V2
+- sysctl name is changed to be relaxed_zone_order
+- NORMAL->NORMAL->....->DMA->DMA->DMA order (new ordering) is now default.
+  NORMAL->DMA->NORMAL->DMA order (old ordering) is optional.
+- addes boot opttion to set relaxed_zone_order. ia64 is supported now.
+- Added documentation
+
+As previous post, thanks to Lee Schermerhon for his great help.
+
+[patch set]
+[1/3] ---- add zonelist selection logic.
+[2/3] ---- add automatic configuration of zonelist order
+[3/3] ---- add documentaion.
+
+Any comments are welcome.
+
+[Description]
+This patch modifies zonelist order in NUMA. This patch offers two zonelist
+order.
+(TypeA) zone is ordered by node locality, then zone type
+(TypeB) zone is ordered by zone type, then node locality
+
+(TypeA) is called as "Node Order", (TypeB) is called as "Zone Order"
+Default zonelist order is determined by the kernel automatically.
 
 
->> What's wrong with the use-once we have? What improvements are you talking
->> about?
-> 
-> 
-> You said, effectively: "Use-once could be improved to deal with
-> updatedb". I said I've been reading emails from Rik and others talking
-> about that for four years now, and we're still talking about it. Were
-> it merely updatedb, I'd say us userspace folk should step up and
-> rewrite the damn thing to amortize its work. However, I and others
-> feel it's only an example -- glaring, obviously -- of a more pervasive
-> issue. A small issue, to be sure!, but an issue nevertheless.
+Assume 2 Node NUMA, Node(0) has ZONE_DMA/ZONE_NORMAL and Node(1) has ZONE_NORMAL.
+In this case, zonelist for GFP_KERNEL in Node(0) will be
 
-It isn't going to get fixed unless people complain about it. If you
-cover the use-once problem with swap prefetching, then it will never
-get fixed.
+In "Node Order",  Node(0)NORMAL -> Node(0)DMA -> Node(1)NORMAL
+In "Zone Order",  Node(0)NORMAL -> Node(1)NORMAL -> Node(0) DMA
 
+"Node Order" will guarantee "better locality" but  "Zone Order" places
+ZONE_DMA at the tail of zonelist. This will offer robust zonelist agatist OOM on ZONE_DMA, which is tend to be small.
 
->> I don't think it is about energy or being mean, I'm just stating the
->> issues I have with it.
-> 
-> 
-> Nick, I in no way think you're being mean, and I'm sorry if I've given
-> you that impression. However, if you're just stating the issues you
-> have with it, then can I assume that you won't lobby against having
-> this experiment merged?
+"Which is better ?" 
+It depends on a system's environment and memory usage, I think.
 
-Anybody is free to merge anything into their kernel. And if somebody
-asks for my issues with the swap prefetching patch, then I'll give
-them :)
+[Case Study]
+On my (and other) ia64 NUMA box, only Node(0) has 2Gbytes of ZONE_DMA.
+Assume a machine with following configuration.
 
--- 
-SUSE Labs, Novell Inc.
+Node 0:   12GB of memory   10GB NORMAL 2GB DMA
+Node 1:   12GB of memory   12GB NORMAL
+Node 2:   12GB of memory   12GB NORMAL
+
+Start a process which uses 12GB of memory on Node(0), then memory usage
+will be
+Node 0:   0/12 GB of memory is available, NORMAL: empty DMA: empty
+Node 1:  12/12 GB of memory is available. NORMAL: 12G
+Node 2:  12/12 GB of memory is available. NORMAL: 12G
+
+An interesting matter is "ZONE_DMA is exhausted before ZONE_NORMAL".
+This is current kernel's behavior. This can cause OOM very easily if the
+system has a device which uses GFP_DMA. 
+
+This patch fixes this kind of situation as following. (by using "Zone Order")
+Node 0:   2/12 GB of memory is available, NORMAL: empty DMA: 2G
+Node 1:  10/12 GB of memory is available. NORMAL: 10G
+Node 2:  12/12 GB of memory is available. NORMAL  12G
+
+A user can say "Good bye OOM-Killer" but 2GB of memory is allocated from
+off-node memory. it's trade-off.
+
+-Kame
+
