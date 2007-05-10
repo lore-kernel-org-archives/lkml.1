@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762370AbXEJVfi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbXEJVj6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762370AbXEJVfi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:35:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757944AbXEJVfc
+	id S1760251AbXEJVj6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:39:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbXEJVjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:35:32 -0400
-Received: from mail.fieldses.org ([66.93.2.214]:35905 "EHLO fieldses.org"
+	Thu, 10 May 2007 17:39:52 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:42466 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756558AbXEJVfb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:35:31 -0400
-Date: Thu, 10 May 2007 17:35:27 -0400
-To: Doug Chapman <doug.chapman@hp.com>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
-       Marc Eshel <eshel@almaden.ibm.com>
-Subject: Re: post 2.6.21 regression in F_GETLK
-Message-ID: <20070510213527.GY13719@fieldses.org>
-References: <1178823375.7247.11.camel@dchapman.boston.redhat.com> <20070510193050.GQ13719@fieldses.org> <20070510193859.GR13719@fieldses.org> <20070510202313.GV13719@fieldses.org> <1178830865.7247.26.camel@dchapman.boston.redhat.com> <20070510210421.GX13719@fieldses.org>
+	id S1754996AbXEJVjw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:39:52 -0400
+Date: Thu, 10 May 2007 23:37:43 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Benny Halevy <bhalevy@panasas.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/12] crypto: don't pollute the global namespace with  sg_next()
+Message-ID: <20070510213743.GY4163@kernel.dk>
+References: <11787972373654-git-send-email-jens.axboe@oracle.com> <11787972372499-git-send-email-jens.axboe@oracle.com> <4643243C.8030906@panasas.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070510210421.GX13719@fieldses.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+In-Reply-To: <4643243C.8030906@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 05:04:21PM -0400, bfields wrote:
-> On Thu, May 10, 2007 at 05:01:05PM -0400, Doug Chapman wrote:
-> > You are partly right on the test however note that it is using a start
-> > and len that are specific to the RDLCK so that should _only_ conflict
-> > with that lock.  I did notice that the LTP test is taking a new lock on
-> > the entire file which should be blocked by eithe rthe RDLCK or the WRLCK
-> > and it doesn't check both, I plan on fixing that once this is resolved.
-> > 
-> > But, much more importantly F_GETLK is returning F_UNLCK saying that
-> > there was no conflict at all.
+On Thu, May 10 2007, Benny Halevy wrote:
+> Jens Axboe wrote:
+> > It's a subsystem function, prefix it as such.
 > 
-> Argh, OK.  I still can't see the problem yet, then.  What filesystem is
-> this on?
+> Jens, Boaz and I talked about this over lunch.
+> I wonder whether the crypto code must use your implementation
+> instead of its own as it needs to over the sglist, e.g. for
+> calculating iscsi (data) digest.
 
-Oh, cripes.  I'm a loser.  Next to figure out what's up with the
-connectathon locking tests that they pass when GETLK never finds a
-conflicting lock....
+The thought did cross my mind, and yes I think that would be a good
+idea. The whole thing should probably just migrate to
+lib/scattersomething.c
 
---b.
+> The crypto implementation of chained sglists in crypto/scatterwalk.h
+> determines the chain link by !sg->length which will sorta work
+> with your implementation, however the marker bit on page pointer must
+> be cleared to use it.
 
-diff --git a/fs/locks.c b/fs/locks.c
-index 53b0cd1..7fd2d17 100644
---- a/fs/locks.c
-+++ b/fs/locks.c
-@@ -670,7 +670,6 @@ posix_test_lock(struct file *filp, struct file_lock *fl)
- {
- 	struct file_lock *cfl;
- 
--	fl->fl_type = F_UNLCK;
- 	lock_kernel();
- 	for (cfl = filp->f_path.dentry->d_inode->i_flock; cfl; cfl = cfl->fl_next) {
- 		if (!IS_POSIX(cfl))
-@@ -682,7 +681,8 @@ posix_test_lock(struct file *filp, struct file_lock *fl)
- 		__locks_copy_lock(fl, cfl);
- 		unlock_kernel();
- 		return 1;
--	}
-+	} else
-+		fl->fl_type = F_UNLCK;
- 	unlock_kernel();
- 	return 0;
- }
+I don't like using sg->length, as that may be modified for legitimate
+reason. That's why I chose to use the lsb bit of the page pointer.
+
+> Also, is it possible that after the original sglist has gone through
+> dma_map_sg and entries were merged, some entries will have zero
+> length?  I'm not sure... If so, if the crypto implementation scans
+> the sg list after it was dma mapped (maybe in a retry path) it
+> may hit an entry that looks to it like a chaining link.  This
+> might be an existing bug and another reason for the crypto code
+> to use your implementation.
+
+It's hard to say, depends heavily on the sub system or arch. Even if
+using the pointer tagging mechanism seems a bit nasty, I think it's the
+more resilient approach.
+
+-- 
+Jens Axboe
+
