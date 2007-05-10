@@ -1,58 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbXEJRzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759375AbXEJR5G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758868AbXEJRzu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 13:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbXEJRzn
+	id S1759375AbXEJR5G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 13:57:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756654AbXEJR44
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 13:55:43 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53196 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756222AbXEJRzn (ORCPT
+	Thu, 10 May 2007 13:56:56 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:54250 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756647AbXEJR44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 13:55:43 -0400
-Date: Thu, 10 May 2007 10:55:42 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Arjan van de Ven <arjan@linux.intel.com>
-cc: linux-kernel@vger.kernel.org
-Subject: VM statistics: Make timer deferrable
-Message-ID: <Pine.LNX.4.64.0705101055060.9982@schroedinger.engr.sgi.com>
+	Thu, 10 May 2007 13:56:56 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <46435CC2.2060909@s5r6.in-berlin.de>
+Date: Thu, 10 May 2007 19:56:18 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Hellwig <hch@infradead.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux1394-devel@lists.sourceforge.net,
+       Kristian H?gsberg <krh@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       John Stoffel <john@stoffel.org>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Olaf Hering <olh@suse.de>, Gene Heskett <gene.heskett@gmail.com>,
+       Adrian Bunk <bunk@stusta.de>,
+       Jonathan Woithe <jwoithe@physics.adelaide.edu.au>,
+       Bill Fink <billfink@mindspring.com>
+Subject: Re: [git pull] New firewire stack (updated)
+References: <4637A29F.6070302@redhat.com> <tkrat.b635518ff171071d@s5r6.in-berlin.de> <20070510173850.GA31826@infradead.org>
+In-Reply-To: <20070510173850.GA31826@infradead.org>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-VM statistics updates do not matter if the kernel is in idle powersaving mode.
-So allow the timer to be deferred.
+Christoph Hellwig wrote:
+> On Thu, May 10, 2007 at 07:26:56PM +0200, Stefan Richter wrote:
+>>   - The drivers still live in drivers/firewire/, i.e. have not been put
+>>     into mainline's drivers/ieee1394/.
+> 
+> I don't quite like that.  Then again git handles renames pretty nicely
+> and I hope we'll just shift the new drivers in place when the old code
+> goes away completely to give people a seamless migration.
 
-It would be better though if we could switch the timer between deferrable
-and nondeferrable based on differentials present. The timer would
-start out nondeferrable and if we find that there were no updates in
-the last statistics interval then we would switch the timer to deferrable.
-If the timer later finds again that there are differentials then go to
-nondeferrable again.
-
-And yet another way would be to run the timer shortly before going to idle?
-
-The solution here means that the VM counters may be slightly off during idle
-since differentials may be still pending while the timer is deferred.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
----
- mm/vmstat.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: slub/mm/vmstat.c
-===================================================================
---- slub.orig/mm/vmstat.c	2007-05-10 10:09:19.000000000 -0700
-+++ slub/mm/vmstat.c	2007-05-10 10:10:14.000000000 -0700
-@@ -698,7 +698,7 @@ static void __devinit start_cpu_timer(in
- {
- 	struct delayed_work *vmstat_work = &per_cpu(vmstat_work, cpu);
- 
--	INIT_DELAYED_WORK(vmstat_work, vmstat_update);
-+	INIT_DELAYED_WORK_DEFERRABLE(vmstat_work, vmstat_update);
- 	schedule_delayed_work_on(cpu, vmstat_work, HZ + cpu);
- }
- 
+There were some comments in this and past reviews pro and contra the
+directory split.  For me, it was easier to deal with patch handling that
+way since the stack went into -mm, but once the stack is in Linus' tree,
+my work will probably be easier anyway.
+-- 
+Stefan Richter
+-=====-=-=== -=-= -=-=-
+http://arcgraph.de/sr/
