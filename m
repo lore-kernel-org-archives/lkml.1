@@ -1,102 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762467AbXEJVnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761987AbXEJVpA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762467AbXEJVnk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758477AbXEJVnd
+	id S1761987AbXEJVpA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:45:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758448AbXEJVow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:43:33 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:58799 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757263AbXEJVnc (ORCPT
+	Thu, 10 May 2007 17:44:52 -0400
+Received: from wr-out-0506.google.com ([64.233.184.231]:57487 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756931AbXEJVow (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:43:32 -0400
-Date: Thu, 10 May 2007 14:43:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Nicolas.Mailhot@LaPoste.net,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2,
- mode:0x84020
-Message-Id: <20070510144319.48d2841a.akpm@linux-foundation.org>
-In-Reply-To: <200705102128.l4ALSI2A017437@fire-2.osdl.org>
-References: <200705102128.l4ALSI2A017437@fire-2.osdl.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 May 2007 17:44:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=akbwAW4MzUU7y8zZA+iTZ0FboOzX6PYxRCi6E5uc6xKycNcjYTjszKBsMFDpI2M0k6MJ4paf/3yS/E+DTaTdFb/D69qsTVFoWhmUWHEKO6nCm1ZfLOUwJIiC9KlhsfwY50MVUGE+HLXLE8mv0U6DMI5Wz1c0TGagk6YOrjFmBxk=
+Message-ID: <a781481a0705101444o4d04bb99xac7cbb587355e56f@mail.gmail.com>
+Date: Fri, 11 May 2007 03:14:50 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "jimmy bahuleyan" <knight.camelot@gmail.com>
+Subject: Re: [PATCH] "volatile considered harmful", take 2
+Cc: "Jonathan Corbet" <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Heikki Orsila" <shdl@zakalwe.fi>, "H. Peter Anvin" <hpa@zytor.com>
+In-Reply-To: <464382DE.5020206@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <6143.1178828419@lwn.net> <464382DE.5020206@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 14:28:18 -0700
-bugme-daemon@bugzilla.kernel.org wrote:
+On 5/11/07, jimmy bahuleyan <knight.camelot@gmail.com> wrote:
+> Jonathan Corbet wrote:
+> [snip..]
+> > +
+> > +  - The jiffies variable is special in that it can have a different value
+> > +    every time it is referenced, but it can be read without any special
+> > +    locking.  So jiffies can be volatile, but the addition of other
+> > +    variables of this type is strongly frowned upon.  Jiffies is considered
+> > +    to be a "stupid legacy" issue in this regard.
+>
+> Why is it that you consider jiffies to be a "stupid legacy"?
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=8464
-> 
->            Summary: autoreconf: page allocation failure. order:2,
->                     mode:0x84020
->     Kernel Version: 2.6.21-mm2 with SLUB
->             Status: NEW
->           Severity: normal
->              Owner: clameter@sgi.com
->          Submitter: Nicolas.Mailhot@LaPoste.net
->                 CC: akpm@osdl.org
-> 
-> 
-> Most recent kernel where this bug did *NOT* occur: 2.6.21-rc6.mm1 with SLAB
-> Distribution: Fedora Devel
-> Hardware Environment: AMD X2 on CK804
-> Software Environment: N/A
-> Problem Description:
-> 
-> Just noticed this in kernel logs :
-> 
->  autoreconf: page allocation failure. order:2, mode:0x84020
-> May 10 20:13:13 rousalka kernel: 
-> May 10 20:13:13 rousalka kernel: Call Trace:
-> May 10 20:13:13 rousalka kernel: [<ffffffff8025b56a>] __alloc_pages+0x2aa/0x2c3
-> May 10 20:13:13 rousalka kernel: [<ffffffff8029c05f>] bio_alloc+0x10/0x1f
-> May 10 20:13:13 rousalka kernel: [<ffffffff8027519d>] __slab_alloc+0x196/0x586
-> May 10 20:13:13 rousalka kernel: [<ffffffff80300d21>]
-> radix_tree_node_alloc+0x36/0x7e
-> May 10 20:13:13 rousalka kernel: [<ffffffff80275922>] kmem_cache_alloc+0x32/0x4e
-> May 10 20:13:13 rousalka kernel: [<ffffffff80300d21>]
-> radix_tree_node_alloc+0x36/0x7e
-> May 10 20:13:13 rousalka kernel: [<ffffffff803011a4>] radix_tree_insert+0xcb/0x18c
-> May 10 20:13:13 rousalka kernel: [<ffffffff88029bd0>] :ext3:ext3_get_block+0x0/0xe4
-> May 10 20:13:13 rousalka kernel: [<ffffffff80256ac4>] add_to_page_cache+0x3d/0x95
-> May 10 20:13:13 rousalka kernel: [<ffffffff8029fe29>] mpage_readpages+0x85/0x12c
-> May 10 20:13:13 rousalka kernel: [<ffffffff88029bd0>] :ext3:ext3_get_block+0x0/0xe4
-> May 10 20:13:13 rousalka kernel: [<ffffffff8025cde1>]
-> __do_page_cache_readahead+0x158/0x22d
-> May 10 20:13:13 rousalka kernel: [<ffffffff88084aa7>]
-> :dm_mod:dm_table_any_congested+0x46/0x63
-> May 10 20:13:13 rousalka kernel: [<ffffffff88082ce8>]
-> :dm_mod:dm_any_congested+0x3b/0x42
-> May 10 20:13:13 rousalka kernel: [<ffffffff80258802>] filemap_fault+0x162/0x347
-> May 10 20:13:13 rousalka kernel: [<ffffffff80261c66>] __do_fault+0x66/0x446
-> May 10 20:13:13 rousalka kernel: [<ffffffff80263ca9>] __handle_mm_fault+0x4b1/0x8f5
-> May 10 20:13:13 rousalka kernel: [<ffffffff80419e84>] do_page_fault+0x39a/0x7b7
-> May 10 20:13:13 rousalka kernel: [<ffffffff80419f31>] do_page_fault+0x447/0x7b7
-> May 10 20:13:13 rousalka kernel: [<ffffffff8041847d>] error_exit+0x0/0x84
-> 
+You could find better explanations in previous threads, but to
+summarize my understanding of the matter:
 
-This looks bad.
+Because it is not humanly possible to audit the entire kernel tree to
+find all usages of jiffies and fix them appropriately (i.e. "stupid
+legacy reasons"). Hence, we just define jiffies as volatile.
 
-It's a bit hard to tell who failed - was it bio_alloc() or was it
-radix-tree node allocation?  Give the allocation mode, I'd suspect
-bio_alloc(), but I don't immediately see where we'd be doing an atomic
-allocation for a bio.
+> Isn't it natural to have a externally modified variable which is only /read/ to
+> be volatile?
 
-Either way, it would worry me greatly if slub is fiddling with the mapping
-of object-size-to-page-allocation-order.  A _lot_ of things which were
-previously relaible and hugely tested would become less reliable, and less
-tested.
+No, even in such a case, it would have been saner to simply define the
+jiffies _without_ volatile, and only cast _accesses_ to it with the
+volatile type qualifier.
 
-Christoph, can we please take a look at /proc/slabinfo and its slub
-equivalent (I forget what that is?) and review any and all changes to the
-underlying allocation size for each cache?
+Unfortunately, even this is not possible to do in all existing users
+in the kernel (i.e. "stupid legacy reasons").
 
-Because this is *not* something we should change lightly.
+> (or is jiffies supposed to be replaced with something smarter/better :)
 
+Not _replace_ jiffies. But if it were _really_ possible to do so (i.e.
+assuming for a moment that we could change all kernel code in one
+magic sweep), then again we wouldn't need to use volatile for jiffies
+(or even use a volatile cast, IMO).
+
+Just ensure all accesses to jiffies are protected behind an
+appropriate barrier() instead, the effects of which are more clearly
+defined than the vague and insufficient "volatile", and which
+*guarantees* that all memory would be re-read from that point (note
+that "volatile" is merely a hint to a C compiler, it comes with no
+guarantees at all, which is particularly worrisome these days when
+compilers are not the only entities that can re-order code -- hardware
+can do so too).
+
+However, yet again, it is _not_ possible to fix the above for all the
+existing kernel code that uses jiffies (i.e. "stupid legacy reasons"),
+so we just define jiffies as volatile.
+
+My understanding, at least.
