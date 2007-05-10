@@ -1,115 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761211AbXEJKw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758689AbXEJK7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761211AbXEJKw7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 06:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbXEJKwj
+	id S1758689AbXEJK7W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 06:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbXEJK7P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 06:52:39 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:9213 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755045AbXEJKwi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 06:52:38 -0400
-Date: Thu, 10 May 2007 12:52:09 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 11/13] SCSI: support for allocating large scatterlists
-Message-ID: <20070510105208.GN4629@kernel.dk>
-References: <11787925152319-git-send-email-jens.axboe@oracle.com> <11787925161084-git-send-email-jens.axboe@oracle.com> <20070510034804.3caa9fa9.akpm@linux-foundation.org>
-Mime-Version: 1.0
+	Thu, 10 May 2007 06:59:15 -0400
+Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:45057 "EHLO
+	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752141AbXEJK7O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 06:59:14 -0400
+Date: Thu, 10 May 2007 12:58:37 +0200
+From: Rodolfo Giometti <giometti@enneenne.com>
+To: David Miller <davem@davemloft.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linuxpps@ml.enneenne.com
+Message-ID: <20070510105837.GB979@enneenne.com>
+References: <20070321074121.GA13843@enneenne.com> <20070502193314.GA23367@enneenne.com> <20070510002740.c4350813.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070510034804.3caa9fa9.akpm@linux-foundation.org>
+In-Reply-To: <20070510002740.c4350813.akpm@linux-foundation.org>
+Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
+X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-SA-Exim-Connect-IP: 192.168.32.1
+X-SA-Exim-Mail-From: giometti@enneenne.com
+Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
+X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
+X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10 2007, Andrew Morton wrote:
-> On Thu, 10 May 2007 12:21:53 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+On Thu, May 10, 2007 at 12:27:40AM -0700, Andrew Morton wrote:
 > 
-> > This is what enables large commands. If we need to allocate an
-> > sgtable that doesn't fit in a single page, allocate several
-> > SCSI_MAX_SG_SEGMENTS sized tables and chain them together.
-> > 
-> > We default to the safe setup of NOT chaining, for now.
-> > 
-> > ...
-> >
-> > +/*
-> > + * Should fit within a single page, and must be a power-of-2.
-> > + */
-> > +#define SCSI_MAX_SG_SEGMENTS	128
+>   Please check with Dave Miller that this:
 > 
-> But what units is it in?  Bytes?  sizeof(void*)?
+> 	#define NETLINK_PPSAPI          20
+> 
+>   reservation is OK.
 
-sg elements. It's not new, just juggled around a bit. The comment is a
-bit stale now though, it doesn't have to be a pow-of-2. Ideally we just
-want to make sure that sizeof(struct scatterlist) * SCSI_MAX_SG_SEGMENTS
-<= PAGE_SIZE to avoid 2^1 allocations.
+Hello, as you can see here Andrew Morton asked to me to check with you
+about NETLINK_PPSAPI reservation.
 
-> > +struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *cmd, gfp_t gfp_mask)
-> > +{
-> > +	struct scsi_host_sg_pool *sgp;
-> > +	struct scatterlist *sgl, *prev, *ret;
-> > +	unsigned int index;
-> > +	int this, left;
-> > +
-> > +	BUG_ON(!cmd->use_sg);
-> > +
-> > +	left = cmd->use_sg;
-> > +	ret = prev = NULL;
-> > +	do {
-> > +		this = left;
-> > +		if (this > SCSI_MAX_SG_SEGMENTS) {
-> > +			this = SCSI_MAX_SG_SEGMENTS;
-> > +			index = SG_MEMPOOL_NR - 1;
-> > +		} else
-> > +			index = scsi_sgtable_index(this);
-> > +
-> > +		left -= this;
-> > +
-> > +		/*
-> > +		 * if we have more entries after this round, reserve a slot
-> > +		 * for the chain pointer.
-> > +		 */
-> > +		if (left)
-> > +			left++;
-> > +
-> > +		sgp = scsi_sg_pools + index;
-> > +
-> > +		sgl = mempool_alloc(sgp->pool, gfp_mask);
-> > +		if (unlikely(!sgl))
-> > +			goto enomem;
-> > +
-> > +		memset(sgl, 0, sizeof(*sgl) * sgp->size);
-> > +
-> > +		/*
-> > +		 * first loop through, set initial index and return value
-> > +		 */
-> > +		if (!ret) {
-> > +			cmd->sglist_len = index;
-> > +			ret = sgl;
-> > +		}
-> > +
-> > +		/*
-> > +		 * chain previous sglist, if any. we know the previous
-> > +		 * sglist must be the biggest one, or we would not have
-> > +		 * ended up doing another loop.
-> > +		 */
-> > +		if (prev)
-> > +			sg_chain(prev, SCSI_MAX_SG_SEGMENTS, sgl);
-> > +
-> > +		/*
-> > +		 * don't allow subsequent mempool allocs to sleep, it would
-> > +		 * violate the mempool principle.
-> > +		 */
-> > +		gfp_mask &= ~__GFP_WAIT;
-> 
-> hrm.
-> 
-> Might want to set __GFP_HIGH here too.
+Please, let me know if it's ok.
 
-Agree, I did consider that (clear wait, set ATOMIC to get the __HIGH).
+Thanks,
+
+Rodolfo
 
 -- 
-Jens Axboe
 
+GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
+Linux Device Driver                             giometti@gnudd.com
+Embedded Systems                     		giometti@linux.it
+UNIX programming                     phone:     +39 349 2432127
