@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759265AbXEJTbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbXEJTcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759265AbXEJTbo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 15:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbXEJTbh
+	id S1759000AbXEJTcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 15:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbXEJTb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 15:31:37 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52875 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753201AbXEJTbg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 15:31:36 -0400
-Date: Thu, 10 May 2007 12:30:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Scott Murray <scottm@somanetworks.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>, containers@lists.osdl.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kristen.c.accardi@intel.com
-Subject: Re: [PATCH] cpci_hotplug: Convert to use the kthread API
-Message-Id: <20070510123046.0def6b9e.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705101425400.3671@rancor.yyz.somanetworks.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769657702107-git-send-email-ebiederm@xmission.com>
-	<20070422120534.GA20763@infradead.org>
-	<Pine.LNX.4.64.0704271802390.3671@rancor.yyz.somanetworks.com>
-	<20070504111215.GA3191@infradead.org>
-	<Pine.LNX.4.64.0705071412030.3671@rancor.yyz.somanetworks.com>
-	<20070509162430.772ae536.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705101425400.3671@rancor.yyz.somanetworks.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 10 May 2007 15:31:59 -0400
+Received: from mail0.lsil.com ([147.145.40.20]:54072 "EHLO mail0.lsil.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757481AbXEJTb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 15:31:58 -0400
+Subject: [PATCH]: Update Maintainer email-id for MegaRAID SCSI drivers
+From: Sumant Patro <sumant.patro@lsi.com>
+To: akpm@osdl.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       James.Bottomley@SteelEye.com
+Cc: Neela.Kolli@lsi.com, Bo.Yang@lsi.com, sumant.patro@lsi.com
+Content-Type: text/plain
+Date: Thu, 10 May 2007 07:22:35 -0700
+Message-Id: <1178806955.4681.13.camel@dumbo>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.0.2 (2.0.2-22) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 14:29:29 -0400 (EDT) Scott Murray <scottm@somanetworks.com> wrote:
 
-> > or
-> > 
-> > 	you->kristen->Len->mainline
-> >                        |
-> >                        v
-> >                       -mm
-> > 
-> > or something else.
-> 
-> My apologies, it wasn't entirely clear to me that that was happening with 
-> the other kthread conversion patches in the big batch, so I didn't follow 
-> the normal procedure.  I'll try to stick to the regular flow up the chain
-> going forward.
+Update Maintainer email-id for MegaRAID SCSI drivers.
 
-oh that's OK.  I'm kind of a catchall routing service.  It's just that in
-this case I wasn't sure which direction the next hop lay in.
+Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
+---
+
+diff -uprN orig/MAINTAINERS new/MAINTAINERS
+--- orig/MAINTAINERS	2007-05-10 07:13:22.000000000 -0700
++++ new/MAINTAINERS	2007-05-10 07:12:58.000000000 -0700
+@@ -2268,7 +2268,7 @@ S:	Maintained
+ 
+ MEGARAID SCSI DRIVERS
+ P:	Neela Syam Kolli
+-M:	Neela.Kolli@engenio.com
++M:	megaraidlinux@lsi.com
+ S:	linux-scsi@vger.kernel.org
+ W:	http://megaraid.lsilogic.com
+ S:	Maintained
+
+
