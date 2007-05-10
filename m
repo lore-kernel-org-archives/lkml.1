@@ -1,37 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759789AbXEJUKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbXEJURv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759789AbXEJUKU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 16:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756231AbXEJUKH
+	id S1758839AbXEJURv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 16:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbXEJURo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 16:10:07 -0400
-Received: from main.gmane.org ([80.91.229.2]:37198 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755289AbXEJUKG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 16:10:06 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Parag Warudkar <parag.warudkar@gmail.com>
-Subject: Re: 2.6.21-mm2 -- Why would HAL from Ubuntu 7.04 not recognize that
- my machine is a laptop?
-Date: Thu, 10 May 2007 16:04:39 -0400
-Message-ID: <46437AD7.5000009@gmail.com>
-References: <a44ae5cd0705101241m219cb0a0kddab6340d53f505c@mail.gmail.com>
+	Thu, 10 May 2007 16:17:44 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:38265 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755635AbXEJURn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 16:17:43 -0400
+Date: Thu, 10 May 2007 13:17:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: slub-i386-support.patch
+Message-Id: <20070510131724.150e1e99.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705102028550.25681@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0705102028550.25681@blonde.wat.veritas.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-X-Gmane-NNTP-Posting-Host: c-68-60-176-179.hsd1.mi.comcast.net
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-In-Reply-To: <a44ae5cd0705101241m219cb0a0kddab6340d53f505c@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This may be helpful -
+On Thu, 10 May 2007 21:03:39 +0100 (BST)
+Hugh Dickins <hugh@veritas.com> wrote:
 
-http://www.mail-archive.com/debian-bugs-dist@lists.debian.org/msg342994.html 
+> Just want to report that I've been running SLUB on i386, both in -mm
+> and with slub-i386-support.patch applied to 2.6.21-git, and observed
+> no problems with it.  I'm anxious that it (or an equivalent) go into
+> 2.6.22-rc1, i386 being now the last ARCH_USES_SLAB_PAGE_STRUCT holdout.
+> 
+> In the frenzy over PowerPC, maybe Linus overlooked that i386
+> was still not supporting SLUB; and I fear that once people get
+> "# CONFIG_SLUB is not set" into their .config, they're less likely to
+> switch over to testing CONFIG_SLUB=y - I remain anxious that it see
+> as much testing as possible (but under EXPERIMENTAL for 2.6.22, yes).
 
+ok..
 
-Parag
+> Though when I look at the patchset (copied below), I do wonder why
+> it puts a quicklist_trim() into i386's cpu_idle() and flush_tlb_mm():
+> neither is where I'd expect us to be secretly freeing pages.  Ah,
+> several arches do it in cpu_idle(): how odd, oh well.
 
+Christoph, could you please check that this is justified?
