@@ -1,81 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760816AbXEJLiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbXEJLjq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760816AbXEJLiT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbXEJLiH
+	id S1760432AbXEJLjq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:39:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757840AbXEJLjj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:38:07 -0400
-Received: from [209.180.55.243] ([209.180.55.243]:51007 "EHLO
-	jdub.homelinux.org" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1754558AbXEJLiG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 07:38:06 -0400
-X-Greylist: delayed 1773 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 07:38:06 EDT
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-From: Josh Boyer <jwboyer@jdub.homelinux.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: David Miller <davem@davemloft.net>, linuxppc-dev@ozlabs.org,
-       akpm@linux-foundation.org, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1178789346.5575.2.camel@localhost.localdomain>
-References: <20070510003528.395b122b.akpm@linux-foundation.org>
-	 <1178786505.14928.225.camel@localhost.localdomain>
-	 <20070510015036.ebded3ac.akpm@linux-foundation.org>
-	 <20070510.015328.104645983.davem@davemloft.net>
-	 <1178789346.5575.2.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 06:01:03 -0500
-Message-Id: <1178794863.11271.20.camel@vader.jdub.homelinux.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7) 
+	Thu, 10 May 2007 07:39:39 -0400
+Received: from mx1.cdac.in ([203.199.132.35]:3073 "EHLO mx1.cdac.in"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755054AbXEJLji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 07:39:38 -0400
+Message-ID: <464304DD.9070600@cdac.in>
+Date: Thu, 10 May 2007 17:11:17 +0530
+From: Mahesh <maheshk@cdac.in>
+User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: linux-kernel@vger.kernel.org, kernelnewbies@nl.linux.org
+Subject: Re: [HOWTO] accessing the DMA mapped data
+References: <4642D095.6070305@cdac.in><20070510.014751.74749340.davem@daveml
+		oft.net><4642FFA7.4040303@cdac.in> 
+	<20070510.043233.08323827.davem@davemloft.net>
+In-Reply-To: <20070510.043233.08323827.davem@davemloft.net>
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	format=flowed
 Content-Transfer-Encoding: 7bit
+X-imss-version: 2.046
+X-imss-result: Passed
+X-imss-scanInfo: M:P L:E SM:0
+X-imss-tmaseResult: TT:0 TS:0.0000 TC:00 TRN:0 TV:3.6.1039(15166.003)
+X-imss-scores: Clean:99.90000 C:2 M:3 S:5 R:5
+X-imss-settings: Baseline:2 C:1 M:1 S:1 R:1 (0.1500 0.1500)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-10 at 19:29 +1000, Benjamin Herrenschmidt wrote:
-> On Thu, 2007-05-10 at 01:53 -0700, David Miller wrote:
-> > From: Andrew Morton <akpm@linux-foundation.org>
-> > Date: Thu, 10 May 2007 01:50:36 -0700
-> > 
-> > > We discussed this a couple of months back.  davem landed firmly in the
-> > > second camp and everyone then shut up ;)
-> > 
-> > No I landed in the first :-)))
-> > 
-> > I think the empty lines are a waste and only serve to eat
-> > up precious screen real-estate when reading code.
-> > 
-> > It is possible that I used to use the empty line thing in
-> > the past, but I definitely don't do that any more.
-> 
-> Yup, I used to do the other one too but nowadays, I much prefer not
-> wasting that additional line unless specific circumstances, like I
-> want a kind of "title" in front of a whole block of other definitions
-> with their own comments.
-> 
-> Something like:
-> 
-> 
-> /*
->  * foo management stuff
->  */
-> 
-> 
-> /* This puts the bar in the foo
->  */
-> code code code code
-> 
-> /* This does something you don't want to know about
->  */
-> code code code code
+Hi,
+> You haven't given an example of where this might actually happen.
+>
+> The driver is where the DMA mappings almost always occur because
+> that is the layer that knows the bus technology and therefore
+> the correct DMA interfaces to call.
+>
+> What kind of driver do you have and what is this upper layer
+> doing the mappings for you but not giving you a pointer to
+> the kernel buffer as well?
+>   
+Here I am dealing with a infiniband (see www.openfabrics.org) network 
+device driver. The layer above the
+driver is the standard infiniband core interface. Now I have a situation 
+where I need to peek into the packets
+and do some modifications(some hacking). So I just want know whether I 
+can access the original data region
+using the bus address generated by the dma_map_single.
 
-Now your examples are just wrong.  One liners should be:
+FYI, architecture I am working on is x86_64.
 
-/* This puts the bar in the foo */
+-Mahesh
 
-Are we having fun yet? ;)
-
-/me goes to look for something better to do
-
-josh
 
