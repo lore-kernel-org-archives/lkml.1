@@ -1,66 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760537AbXEJPha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbXEJPjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760537AbXEJPha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 11:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756260AbXEJPhR
+	id S1759941AbXEJPjR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 11:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbXEJPjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 11:37:17 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:33863 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754930AbXEJPhP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 11:37:15 -0400
-Subject: Re: Kconfig warnings on latest GIT
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Simon Horman <horms@verge.net.au>
-Cc: Timur Tabi <timur@freescale.com>,
-       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       Ismail =?ISO-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Michael Schmitz <schmitz@debian.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20070510051042.GA16812@verge.net.au>
-References: <200705080004.14570.ismail@pardus.org.tr>
-	 <20070508143127.38fafa3c.kim.phillips@freescale.com>
-	 <4640D988.1040504@freescale.com>  <20070510051042.GA16812@verge.net.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-3bQchR82OfYt+AOLlfWa"
-Date: Thu, 10 May 2007 17:39:29 +0200
-Message-Id: <1178811570.3806.18.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 10 May 2007 11:39:01 -0400
+Received: from waste.org ([66.93.16.53]:49090 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755344AbXEJPjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 11:39:00 -0400
+Date: Thu, 10 May 2007 10:38:33 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, michal.k.k.piotrowski@gmail.com
+Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
+Message-ID: <20070510153832.GQ11115@waste.org>
+References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <20070510004918.GS85884050@sgi.com> <46426D31.8070000@goop.org> <20070510012609.GU85884050@sgi.com> <46433049.4020003@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46433049.4020003@goop.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 10, 2007 at 07:46:33AM -0700, Jeremy Fitzhardinge wrote:
+> David Chinner wrote:
+> > On Wed, May 09, 2007 at 05:54:09PM -0700, Jeremy Fitzhardinge wrote:
+> >   
+> >> David Chinner wrote:
+> >>     
+> >>> Suspend-resume, eh?
+> >>>
+> >>> There's an immediate suspect. Can you test this specifically for us?
+> >>> i.e. download a known good file set, do some stuff, suspend, resume,
+> >>> then check the files? If it doesn't show up the first time, can
+> >>> you do it a few times just to rule it out?
+> >>>       
+> >> Well, I've been doing suspend-resume with xfs for a while without
+> >> problems; the problems seem to be recent and easily repeatable.  Which
+> >> just means that it could be a new suspend-resume problem, of course.
+> >>     
+> >
+> > Ok. I'm just trying to find a relatively simple test case for the
+> > problem - seeing as you seem to be able to reliably reproduce this
+> > we should be able to work out the trigger...
+> >   
+> 
+> OK, I was able to reproduce it reliably with a script with did basically:
+> 
+>     for i in `seq 20`; do
+>     	hg clone -U --pull a b-$i
+>     	hg verify b-$i		# always OK
+>     	umount /home
+>     	sleep 5
+>     	mount /home
+>     	hg verify b-$i		# often found truncated files
+>     done
+>       
+> 
+> No suspend/resumes involved.  The trees are linux kernel ones, so fairly
+> large, but small enough to fit entirely in core.  My script also
+> captured xfs_bmap before/after output for files which had tended to be
+> corrupted in the past, but unfortunately none of them got corrupted in
+> these tests.  But I do have all the trees lying around to extract more
+> detail for if you like.
+> 
+> Interestingly, the corruption happened in each case around the same
+> place in the tree, often in the sata drivers.  I wonder if that was just
+> related to the timing of this script.
 
---=-3bQchR82OfYt+AOLlfWa
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I guess this pins it as an XFS problem pretty solidly.
 
-On Thu, 2007-05-10 at 14:10 +0900, Simon Horman wrote:
+This test looks like it should consist solely of open-for-append and
+write on about 20k files in the target directory. Because of the
+--pull, no hardlinks are involved. It shouldn't be all that different
+from doing tar cf - a | tar xf - b.
 
-> drivers/macintosh/Kconfig:112:warning: 'select' used by config symbol 'PM=
-AC_APM_EMU' refer to undefined symbol 'SYS_SUPPORTS_APM_EMULATION'
+The files get visited in alphabetical order, so the start of the
+corruption may be telling.
 
-Argh. Is that with ARCH=3Dppc? I keep forgetting that it still exists,
-sorry.
-
-johannes
-
---=-3bQchR82OfYt+AOLlfWa
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGQzyw/ETPhpq3jKURAuMwAJ41EKy0sU4c2KQg82PywbUEia2SkwCaAynC
-f27703LSTmqVHAvGfsFqNgw=
-=+vWV
------END PGP SIGNATURE-----
-
---=-3bQchR82OfYt+AOLlfWa--
-
+-- 
+Mathematics is the supreme nostalgia of our time.
