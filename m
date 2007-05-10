@@ -1,120 +1,376 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763465AbXEKTNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966051AbXEKTNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763465AbXEKTNe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965638AbXEKTK0
+	id S966051AbXEKTNv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762934AbXEKTKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:10:26 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:60113 "EHLO
+	Fri, 11 May 2007 15:10:37 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35305 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762018AbXEKTKZ (ORCPT
+	with ESMTP id S965565AbXEKTKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:10:25 -0400
-Message-Id: <20070511001204.948444000@goop.org>
-References: <20070511000643.025196000@goop.org>
+	Fri, 11 May 2007 15:10:34 -0400
+Message-Id: <20070511000028.148652000@goop.org>
+References: <20070510235708.155502000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:07:02 -0700
+Date: Thu, 10 May 2007 16:57:13 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 19/28]xen: Add early printk support via hvc console
-Content-Disposition: inline; filename=xen-hvc-earlyprintk.patch
+       Rusty Russell <rusty@rustcorp.com.au>,
+       David Howells <dhowells@redhat.com>,
+       Bj?rn Steinbrink <B.Steinbrink@gmx.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [patch 5/7] split usermodehelper setup from execution
+Content-Disposition: inline; filename=usermodehelper-split-init.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add early printk support via hvc console, enable using
-"earlyprintk=xen" on the kernel command line.
+Rather than having hundreds of variations of call_usermodehelper for
+various pieces of usermode state which could be set up, split the
+info allocation and initialization from the actual process execution.
 
-From: Gerd Hoffmann <kraxel@suse.de>
+This means the general pattern becomes:
+ info = call_usermodehelper_setup(path, argv, envp); /* basic state */
+ call_usermodehelper_<SET EXTRA STATE>(info, stuff...);	/* extra state */
+ call_usermodehelper_exec(info, wait);	/* run process and free info */
+
+This patch introduces wrappers for all the existing calling styles for
+call_usermodehelper_*, but folds their implementations into one.
+
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: David Howells <dhowells@redhat.com>
+Cc: Bj?rn Steinbrink <B.Steinbrink@gmx.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
 
 ---
- arch/x86_64/kernel/early_printk.c |    5 +++++
- drivers/char/hvc_xen.c            |   25 +++++++++++++++++++++++++
- drivers/xen/Makefile              |    1 +
- include/xen/hvc-console.h         |    6 ++++++
- 4 files changed, 37 insertions(+)
+ include/linux/kmod.h |   44 +++++++++-
+ kernel/kmod.c        |  207 ++++++++++++++++++++++++++++++++++----------------
+ 2 files changed, 184 insertions(+), 67 deletions(-)
 
 ===================================================================
---- a/arch/x86_64/kernel/early_printk.c
-+++ b/arch/x86_64/kernel/early_printk.c
-@@ -6,6 +6,7 @@
- #include <asm/io.h>
- #include <asm/processor.h>
- #include <asm/fcntl.h>
-+#include <xen/hvc-console.h>
+--- a/include/linux/kmod.h
++++ b/include/linux/kmod.h
+@@ -36,13 +36,51 @@ static inline int request_module(const c
+ #define try_then_request_module(x, mod...) ((x) ?: (request_module(mod), (x)))
  
- /* Simple VGA output */
- 
-@@ -242,6 +243,10 @@ static int __init setup_early_printk(cha
-  		simnow_init(buf + 6);
-  		early_console = &simnow_console;
-  		keep_early = 1;
-+#ifdef CONFIG_XEN
-+	} else if (!strncmp(buf, "xen", 3)) {
-+ 		early_console = &xenboot_console;
-+#endif
- 	}
- 	register_console(early_console);
- 	return 0;
-===================================================================
---- a/drivers/char/hvc_xen.c
-+++ b/drivers/char/hvc_xen.c
-@@ -28,6 +28,7 @@
- #include <xen/page.h>
- #include <xen/events.h>
- #include <xen/interface/io/console.h>
-+#include <xen/hvc-console.h>
- 
- #include "hvc_console.h"
- 
-@@ -132,3 +133,27 @@ module_init(xen_init);
- module_init(xen_init);
- module_exit(xen_fini);
- console_initcall(xen_cons_init);
+ struct key;
+-extern int call_usermodehelper_keys(char *path, char *argv[], char *envp[],
+-				    struct key *session_keyring, int wait);
++struct file;
++struct subprocess_info;
 +
-+static void xenboot_write_console(struct console *console, const char *string,
-+				  unsigned len)
-+{
-+	unsigned int linelen, off = 0;
-+	const char *pos;
++/* Allocate a subprocess_info structure */
++struct subprocess_info *call_usermodehelper_setup(char *path,
++						  char **argv, char **envp);
 +
-+	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
-+		linelen = pos-string+off;
-+		if (off + linelen > len)
-+			break;
-+		write_console(0, string+off, linelen);
-+		write_console(0, "\r\n", 2);
-+		off += linelen + 1;
-+	}
-+	if (off < len)
-+		write_console(0, string+off, len-off);
++/* Set various pieces of state into the subprocess_info structure */
++void call_usermodehelper_setkeys(struct subprocess_info *info,
++				 struct key *session_keyring);
++int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
++				  struct file **filp);
++void call_usermodehelper_setcleanup(struct subprocess_info *info,
++				    void (*cleanup)(char **argv, char **envp));
++
++/* Actually execute the sub-process */
++int call_usermodehelper_exec(struct subprocess_info *info, int wait);
++
++/* Free the subprocess_info. This is only needed if you're not going
++   to call call_usermodehelper_exec */
++void call_usermodehelper_freeinfo(struct subprocess_info *info);
+ 
+ static inline int
+ call_usermodehelper(char *path, char **argv, char **envp, int wait)
+ {
+-	return call_usermodehelper_keys(path, argv, envp, NULL, wait);
++	struct subprocess_info *info;
++
++	info = call_usermodehelper_setup(path, argv, envp);
++	if (info == NULL)
++		return -ENOMEM;
++	return call_usermodehelper_exec(info, wait);
 +}
 +
-+struct console xenboot_console = {
-+	.name		= "xenboot",
-+	.write		= xenboot_write_console,
-+	.flags		= CON_PRINTBUFFER | CON_BOOT,
-+};
-===================================================================
---- /dev/null
-+++ b/drivers/xen/Makefile
-@@ -0,0 +1,1 @@
-+obj-y	+= grant-table.o
-===================================================================
---- /dev/null
-+++ b/include/xen/hvc-console.h
-@@ -0,0 +1,6 @@
-+#ifndef XEN_HVC_CONSOLE_H
-+#define XEN_HVC_CONSOLE_H
++static inline int
++call_usermodehelper_keys(char *path, char **argv, char **envp,
++			 struct key *session_keyring, int wait)
++{
++	struct subprocess_info *info;
 +
-+extern struct console xenboot_console;
++	info = call_usermodehelper_setup(path, argv, envp);
++	if (info == NULL)
++		return -ENOMEM;
 +
-+#endif	/* XEN_HVC_CONSOLE_H */
++	call_usermodehelper_setkeys(info, session_keyring);
++	return call_usermodehelper_exec(info, wait);
+ }
+ 
+ extern void usermodehelper_init(void);
+===================================================================
+--- a/kernel/kmod.c
++++ b/kernel/kmod.c
+@@ -123,6 +123,7 @@ struct subprocess_info {
+ 	int wait;
+ 	int retval;
+ 	struct file *stdin;
++	void (*cleanup)(char **argv, char **envp);
+ };
+ 
+ /*
+@@ -176,6 +177,14 @@ static int ____call_usermodehelper(void 
+ 	do_exit(0);
+ }
+ 
++void call_usermodehelper_freeinfo(struct subprocess_info *info)
++{
++	if (info->cleanup)
++		(*info->cleanup)(info->argv, info->envp);
++	kfree(info);
++}
++EXPORT_SYMBOL(call_usermodehelper_freeinfo);
++
+ /* Keventd can't block, but this (a child) can. */
+ static int wait_for_helper(void *data)
+ {
+@@ -218,7 +227,7 @@ static int wait_for_helper(void *data)
+ 	}
+ 
+ 	if (sub_info->wait < 0)
+-		kfree(sub_info);
++		call_usermodehelper_freeinfo(sub_info);
+ 	else
+ 		complete(sub_info->complete);
+ 	return 0;
+@@ -253,11 +262,94 @@ static void __call_usermodehelper(struct
+ }
+ 
+ /**
+- * call_usermodehelper_keys - start a usermode application
+- * @path: pathname for the application
+- * @argv: null-terminated argument list
+- * @envp: null-terminated environment list
+- * @session_keyring: session keyring for process (NULL for an empty keyring)
++ * call_usermodehelper_setup - prepare to call a usermode helper
++ * @path - path to usermode executable
++ * @argv - arg vector for process
++ * @envp - environment for process
++ *
++ * Returns either NULL on allocation failure, or a subprocess_info
++ * structure.  This should be passed to call_usermodehelper_exec to
++ * exec the process and free the structure.
++ */
++struct subprocess_info *call_usermodehelper_setup(char *path,
++						  char **argv, char **envp)
++{
++	struct subprocess_info *sub_info;
++	sub_info = kzalloc(sizeof(struct subprocess_info),  GFP_ATOMIC);
++	if (!sub_info)
++		goto out;
++
++	INIT_WORK(&sub_info->work, __call_usermodehelper);
++	sub_info->path = path;
++	sub_info->argv = argv;
++	sub_info->envp = envp;
++
++  out:
++	return sub_info;
++}
++EXPORT_SYMBOL(call_usermodehelper_setup);
++
++/**
++ * call_usermodehelper_setkeys - set the session keys for usermode helper
++ * @info: a subprocess_info returned by call_usermodehelper_setup
++ * @session_keyring: the session keyring for the process
++ */
++void call_usermodehelper_setkeys(struct subprocess_info *info,
++				 struct key *session_keyring)
++{
++	info->ring = session_keyring;
++}
++EXPORT_SYMBOL(call_usermodehelper_setkeys);
++
++/**
++ * call_usermodehelper_setcleanup - set a cleanup function
++ * @info: a subprocess_info returned by call_usermodehelper_setup
++ * @cleanup: a cleanup function
++ *
++ * The cleanup function is just befor ethe subprocess_info is about to
++ * be freed.  This can be used for freeing the argv and envp.  The
++ * Function must be runnable in either a process context or the
++ * context in which call_usermodehelper_exec is called.
++ */
++void call_usermodehelper_setcleanup(struct subprocess_info *info,
++				    void (*cleanup)(char **argv, char **envp))
++{
++	info->cleanup = cleanup;
++}
++EXPORT_SYMBOL(call_usermodehelper_setcleanup);
++
++/**
++ * call_usermodehelper_stdinpipe - set up a pipe to be used for stdin
++ * @sub_info: a subprocess_info returned by call_usermodehelper_setup
++ * @filp: set to the write-end of a pipe
++ *
++ * This constructs a pipe, and sets the read end to be the stdin of the
++ * subprocess, and returns the write-end in *@filp.
++ */
++int call_usermodehelper_stdinpipe(struct subprocess_info *sub_info,
++				  struct file **filp)
++{
++	struct file *f;
++
++	f = create_write_pipe();
++	if (IS_ERR(f))
++		return PTR_ERR(f);
++	*filp = f;
++
++	f = create_read_pipe(f);
++	if (IS_ERR(f)) {
++		free_write_pipe(*filp);
++		return PTR_ERR(f);
++	}
++	sub_info->stdin = f;
++
++	return 0;
++}
++EXPORT_SYMBOL(call_usermodehelper_stdinpipe);
++
++/**
++ * call_usermodehelper_exec - start a usermode application
++ * @sub_info: information about the subprocessa
+  * @wait: wait for the application to finish and return status.
+  *        when -1 don't wait at all, but you get no useful error back when
+  *        the program couldn't be exec'ed. This makes it safe to call
+@@ -266,33 +358,24 @@ static void __call_usermodehelper(struct
+  * Runs a user-space application.  The application is started
+  * asynchronously if wait is not set, and runs as a child of keventd.
+  * (ie. it runs with full root capabilities).
+- *
+- * Must be called from process context.  Returns a negative error code
+- * if program was not execed successfully, or 0.
+- */
+-int call_usermodehelper_keys(char *path, char **argv, char **envp,
+-			     struct key *session_keyring, int wait)
++ */
++int call_usermodehelper_exec(struct subprocess_info *sub_info,
++			     int wait)
+ {
+ 	DECLARE_COMPLETION_ONSTACK(done);
+-	struct subprocess_info *sub_info;
+ 	int retval;
+ 
+-	if (!khelper_wq)
+-		return -EBUSY;
+-
+-	if (path[0] == '\0')
+-		return 0;
+-
+-	sub_info = kzalloc(sizeof(struct subprocess_info),  GFP_ATOMIC);
+-	if (!sub_info)
+-		return -ENOMEM;
+-
+-	INIT_WORK(&sub_info->work, __call_usermodehelper);
++	if (sub_info->path[0] == '\0') {
++		retval = 0;
++		goto out;
++	}
++
++	if (!khelper_wq) {
++		retval = -EBUSY;
++		goto out;
++	}
++
+ 	sub_info->complete = &done;
+-	sub_info->path = path;
+-	sub_info->argv = argv;
+-	sub_info->envp = envp;
+-	sub_info->ring = session_keyring;
+ 	sub_info->wait = wait;
+ 
+ 	queue_work(khelper_wq, &sub_info->work);
+@@ -300,47 +383,43 @@ int call_usermodehelper_keys(char *path,
+ 		return 0;
+ 	wait_for_completion(&done);
+ 	retval = sub_info->retval;
+-	kfree(sub_info);
++
++  out:
++	call_usermodehelper_freeinfo(sub_info);
+ 	return retval;
+ }
+-EXPORT_SYMBOL(call_usermodehelper_keys);
+-
++EXPORT_SYMBOL(call_usermodehelper_exec);
++
++/**
++ * call_usermodehelper_pipe - call a usermode helper process with a pipe stdin
++ * @path: path to usermode executable
++ * @argv: arg vector for process
++ * @envp: environment for process
++ * @filp: set to the write-end of a pipe
++ *
++ * This is a simple wrapper which executes a usermode-helper function
++ * with a pipe as stdin.  It is implemented entirely in terms of
++ * lower-level call_usermodehelper_* functions.
++ */
+ int call_usermodehelper_pipe(char *path, char **argv, char **envp,
+ 			     struct file **filp)
+ {
+-	DECLARE_COMPLETION(done);
+-	struct subprocess_info sub_info = {
+-		.work		= __WORK_INITIALIZER(sub_info.work,
+-						     __call_usermodehelper),
+-		.complete	= &done,
+-		.path		= path,
+-		.argv		= argv,
+-		.envp		= envp,
+-		.retval		= 0,
+-	};
+-	struct file *f;
+-
+-	if (!khelper_wq)
+-		return -EBUSY;
+-
+-	if (path[0] == '\0')
+-		return 0;
+-
+-	f = create_write_pipe();
+-	if (IS_ERR(f))
+-		return PTR_ERR(f);
+-	*filp = f;
+-
+-	f = create_read_pipe(f);
+-	if (IS_ERR(f)) {
+-		free_write_pipe(*filp);
+-		return PTR_ERR(f);
+-	}
+-	sub_info.stdin = f;
+-
+-	queue_work(khelper_wq, &sub_info.work);
+-	wait_for_completion(&done);
+-	return sub_info.retval;
++	struct subprocess_info *sub_info;
++	int ret;
++
++	sub_info = call_usermodehelper_setup(path, argv, envp);
++	if (sub_info == NULL)
++		return -ENOMEM;
++
++	ret = call_usermodehelper_stdinpipe(sub_info, filp);
++	if (ret < 0)
++		goto out;
++
++	return call_usermodehelper_exec(sub_info, 1);
++
++  out:
++	call_usermodehelper_freeinfo(sub_info);
++	return ret;
+ }
+ EXPORT_SYMBOL(call_usermodehelper_pipe);
+ 
 
 -- 
 
