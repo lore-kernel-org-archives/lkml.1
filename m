@@ -1,54 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761103AbXEJMuF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761164AbXEJMwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761103AbXEJMuF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:50:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758553AbXEJMt4
+	id S1761164AbXEJMwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756364AbXEJMw3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:49:56 -0400
-Received: from smtp.ocgnet.org ([64.20.243.3]:48111 "EHLO smtp.ocgnet.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755200AbXEJMtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:49:55 -0400
-Date: Thu, 10 May 2007 21:49:26 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Roland Dreier <rdreier@cisco.com>
-Cc: Roland Dreier <rolandd@cisco.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: trivial MLX4_DEBUG dependency fix.
-Message-ID: <20070510124926.GB18534@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Roland Dreier <rdreier@cisco.com>,
-	Roland Dreier <rolandd@cisco.com>, linux-kernel@vger.kernel.org
-References: <20070510035028.GA26453@linux-sh.org> <aday7jw29ci.fsf@cisco.com>
+	Thu, 10 May 2007 08:52:29 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:53525 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755061AbXEJMw2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 08:52:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=LShmHTJEuPjCY6AHLzc93/eiBnRdviF33gXyodW+V7Aa8Z1WudzJEq1sjhYHf4ayA790c6IZYvkP86NjtDDdmLXfY3HkHtFwf6pO3zqbifazh9kDF/zy9i5aAGM9mJII8cZHQAWRfnblIyp+Vjxe87iftwDvI56vAhcCrq/Z/Uc=
+Message-ID: <84144f020705100552u3f988e80u29fc412737522259@mail.gmail.com>
+Date: Thu, 10 May 2007 15:52:26 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [patch 07/10] Linux Kernel Markers - Documentation
+Cc: "Christoph Hellwig" <hch@infradead.org>,
+       "Mathieu Desnoyers" <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070510134816.5e57e3cb@the-village.bc.nu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <aday7jw29ci.fsf@cisco.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+References: <20070510015555.973107048@polymtl.ca>
+	 <20070510020917.172554217@polymtl.ca>
+	 <20070510065847.GE8019@infradead.org>
+	 <20070510124120.6e8ac5aa@the-village.bc.nu>
+	 <20070510114158.GA16741@infradead.org>
+	 <20070510134816.5e57e3cb@the-village.bc.nu>
+X-Google-Sender-Auth: a0abeaf5e6f5057c
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 04:42:37AM -0700, Roland Dreier wrote:
->  > CONFIG_MLX4_DEBUG works out to a def_bool y for those that
->  > have CONFIG_EMBEDDED set. Make it depend on MLX4_CORE..
-> 
-> Thanks, applied...  (by the way, this bug just results in an
-> extraneous CONFIG variable being defined, right?  There's no further
-> breakage -- or am I misunderstanding the situation?)
-> 
-Correct, there was no real breakage, just the extraneous variable.
-SLUB_DEBUG had the same symptoms, which is why I referenced it ;-)
+On 5/10/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> "blobs of crap" - in whose opinion. Yours. So you don't want the kernel
+> to mention things you personally don't approve of. Thats straight forward
+> censorship and has no place in free software.
 
->  > I'll let someone else wonder why debugging output is default enabled,
->  > this seems to be a worrying trend as of late.
-> 
-> Actually this option just controls whether to build the debugging
-> output at all.  The output is controlled at runtime with a module
-> parameter (which can be changed via sysfs after the module is loaded),
-> and the output defaults to off.
-> 
-> The reason why I want building the debugging stuff to default to y is
-> so that distros automatically build modules with debugging enabled.
-> Otherwise it's a pain to try and gather info from someone who has
-> problems with a kernel they didn't build.
-> 
-That's more reasonable at least. Thanks for the clarification.
+Out of kernel code comes and goes, so why mention it in-tree? Besides,
+what's wrong with the suggested "can be used for tracing or
+performance accounting?"
