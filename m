@@ -1,52 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757736AbXEJI1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbXEJIeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757736AbXEJI1W (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 04:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758454AbXEJI0k
+	id S1758517AbXEJIeS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 04:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756139AbXEJIeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 04:26:40 -0400
-Received: from mx1.cdac.in ([203.199.132.35]:4774 "EHLO mx1.cdac.in"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758010AbXEJI0j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 04:26:39 -0400
-X-Greylist: delayed 1819 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 04:26:38 EDT
-Message-ID: <4642D095.6070305@cdac.in>
-Date: Thu, 10 May 2007 13:28:13 +0530
-From: Mahesh <maheshk@cdac.in>
-User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
+	Thu, 10 May 2007 04:34:08 -0400
+Received: from hellhawk.shadowen.org ([80.68.90.175]:3621 "EHLO
+	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756129AbXEJIeH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 04:34:07 -0400
+Message-ID: <4642D8D9.4020302@shadowen.org>
+Date: Thu, 10 May 2007 09:33:29 +0100
+From: Andy Whitcroft <apw@shadowen.org>
+User-Agent: Icedove 1.5.0.9 (X11/20061220)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: kernelnewbies@nl.linux.org
-Subject: [HOWTO] accessing the DMA mapped data
-Content-Type: text/plain;
-	charset=ISO-8859-1;
-	format=flowed
+To: Andi Kleen <ak@suse.de>
+CC: Andy Whitcroft <apw@shadowen.org>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Steve Fox <drfickle@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: 2.6.21-mm1 -- x86 verify_cpu.S compile failure
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org> <464046EC.40301@shadowen.org> <20070508152415.GA16967@one.firstfloor.org> <4641F19F.605@shadowen.org>
+In-Reply-To: <4641F19F.605@shadowen.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: url=http://www.shadowen.org/~apw/public-key
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-imss-version: 2.046
-X-imss-result: Passed
-X-imss-scanInfo: M:P L:E SM:0
-X-imss-tmaseResult: TT:0 TS:0.0000 TC:00 TRN:0 TV:3.6.1039(15166.003)
-X-imss-scores: Clean:42.23425 C:2 M:3 S:5 R:5
-X-imss-settings: Baseline:2 C:1 M:1 S:1 R:1 (0.1500 0.1500)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi list,
+Andy Whitcroft wrote:
+> Andi Kleen wrote:
+>> On Tue, May 08, 2007 at 10:46:20AM +0100, Andy Whitcroft wrote:
+>>> We are seeing the following compile error on older x86 installs:
+>>>
+>>>   arch/i386/kernel/verify_cpu.S: Assembler messages:
+>>>   arch/i386/kernel/verify_cpu.S:13: Error: `(%esp)' is
+>>> 			 not a valid 16 bit base/index expression
+>>>
+>>> Seems to come from:
+>>>
+>>>   x86_64-mm-i386-verify-cpu
+>>>
+>>> Compiler:
+>>>
+>>>   gcc version 3.3.4 (Debian 1:3.3.4-3)
+>> Your compiler must be a brother in spirit of Andrew's vaio.
+>>
+>> Does this patch help? 
+>>
+>> -Andi
+>>
+>>
+>> Index: linux/arch/i386/kernel/verify_cpu.S
+>> ===================================================================
+>> --- linux.orig/arch/i386/kernel/verify_cpu.S
+>> +++ linux/arch/i386/kernel/verify_cpu.S
+>> @@ -10,7 +10,9 @@ verify_cpu:
+>>  
+>>  #if CONFIG_X86_MINIMUM_CPU_MODEL >= 4
+>>  	pushfl
+>> -	orl	$(1<<18),(%esp)		# try setting AC
+>> +	pop	%eax
+>> +	orl	$(1<<18),%eax		# try setting AC
+>> +	push	%eax
+>>  	popfl
+>>  	pushfl
+>>  	popl    %eax
+>>
+>>
+> 
+> Yep that gets us past the compile problems.  Of course she then blows up
+> cause SLUB does not work on x86 in that version ... but ...
+> 
+> Acked-by: Andy Whitcroft <apw@shadowen.org>
 
-I have a small question regarding the accessing the data in the DMA 
-mapped  region (in the driver).  In my driver I only have the 
-'dma_addr_t addr' variable which is result after the 'dma_map_single'. 
-I don't have access to the virtual address of the data region.
+I note that this problem is also up in mainline, since 2.6.21-git6.
+Andi can you push this fix up too?
 
-Is there helper routine which we will give me the virtual address back 
-from the DMA mapped address???
-
-After some searching in the net about it found 'dma_sync_single' which 
-will help to synchronize it after 'modifying' the contents of the DMA mapped 
-region. But to 'modify' the contents of DMA mapped region I require the virtual 
-address, which is not available in my case.
-
-Regards,
-Mahesh.
-
-
+-apw
