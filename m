@@ -1,212 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761162AbXEJTjt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759808AbXEJTlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761162AbXEJTjt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 15:39:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758564AbXEJTjj
+	id S1759808AbXEJTlV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 15:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755909AbXEJTlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 15:39:39 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:34439 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758478AbXEJTji (ORCPT
+	Thu, 10 May 2007 15:41:15 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:22301 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754524AbXEJTlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 15:39:38 -0400
-Date: Thu, 10 May 2007 15:39:36 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, wfg@ustc.edu
-Subject: Re: 2.6.22 -mm merge plans
-Message-ID: <20070510193936.GA6320@Krystal>
-References: <20070502094707.4197ab7a.akpm@linux-foundation.org> <20070502172934.GA17782@infradead.org> <20070502203627.GA18733@Krystal> <20070502135336.6d6d3569.akpm@linux-foundation.org> <20070502231104.GA26045@Krystal> <20070502162135.f949e371.akpm@linux-foundation.org> <20070503150415.GC26864@Krystal> <20070503151201.GA27281@infradead.org> <20070503171646.GA506@Krystal> <20070503172546.GA13392@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 May 2007 15:41:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=mmLhaNrGTDHVs3t/tx2BO2nJcZZZHIEgzFNsILuJaagW2ygAqezQQJWyNFL2OTdc3KTq4ReH66l4gPdGZveryclUWvtAwx8b9kp4rryG86EEEJW2GgyLvaSosPNd0pg3BULuRe/UWY5YPogDIBO8ZGTXrZFXbGp57Of+8WBI0k4=
+Message-ID: <a44ae5cd0705101241m219cb0a0kddab6340d53f505c@mail.gmail.com>
+Date: Thu, 10 May 2007 12:41:12 -0700
+From: "Miles Lane" <miles.lane@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: 2.6.21-mm2 -- Why would HAL from Ubuntu 7.04 not recognize that my machine is a laptop?
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070503172546.GA13392@infradead.org>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 14:40:48 up 97 days,  8:47,  5 users,  load average: 2.14, 2.15, 2.17
-User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Christoph Hellwig (hch@infradead.org) wrote:
-> On Thu, May 03, 2007 at 01:16:46PM -0400, Mathieu Desnoyers wrote:
-> > > kprobes does this kind of synchronization internally, so the marker
-> > > wrapper should probabl aswell.
-> > > 
-> > 
-> > The problem appears on heavily loaded systems. Doing 50
-> > synchronize_sched() calls in a row can take up to a few seconds on a
-> > 4-way machine. This is why I prefer to do it in the module to which
-> > the callbacks belong.
-> 
-> We recently had a discussion on batch unreistration interface for
-> kprobes.  I'm not very happy with having so different interfaces for
-> different kind of probe registrations.
-> 
+Hi.  When I run my test kernel, I notice that gnome-power-manager
+doesn't display its applet icon in my gnome panel.  I am wondering if
+I am:
+1)  using the wrong compile options, which is causing HAL to not be happy
+or
+2)  something is busted in the kernel
+or
+3)  there is a HAL version issue (ubuntu's HAL support isn't current)
 
-Ok, I've had a look at the kprobes batch registration mechanisms and..
-well, it does not look well suited for the markers. Adding
-supplementary data structures such as linked lists of probes does not
-look like a good match.
+I ran g-p-m in debug mode and got the following:
 
-However, I agree with you that providing a similar API is good.
-
-Therefore, here is my proposal :
-
-The goal is to do the synchronize just after we unregister the last
-probe handler provided by a given module. Since the unregistration
-functions iterate on every marker present in the kernel, we can keep a
-count of how many probes provided by the same module are still present.
-If we see that we unregistered the last probe pointing to this module,
-we issue a synchronize_sched().
-
-It adds no data structure and keeps the same order of complexity as what
-is already there, we only have to do 2 passes in the marker structures :
-the first one finds the module associated with the callback and the
-second disables the callbacks and keep a count of the number of
-callbacks associated with the module.
-
-Mathieu
-
-P.S.: here is the code.
-
-
-Linux Kernel Markers - Architecture Independant code Provide internal
-synchronize_sched() in batch.
-
-The goal is to do the synchronize just after we unregister the last
-probe handler provided by a given module. Since the unregistration
-functions iterate on every marker present in the kernel, we can keep a
-count of how many probes provided by the same module are still present.
-If we see that we unregistered the last probe pointing to this module,
-we issue a synchronize_sched().
-
-It adds no data structure and keeps the same order of complexity as what
-is already there, we only have to do 2 passes in the marker structures : 
-the first one finds the module associated with the callback and the 
-second disables the callbacks and keep a count of the number of
-callbacks associated with the module.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- kernel/module.c |   62 ++++++++++++++++++++++++++++++++++++++++++++++----------
- 1 file changed, 52 insertions(+), 10 deletions(-)
-
-Index: linux-2.6-lttng/kernel/module.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2007-05-10 14:48:28.000000000 -0400
-+++ linux-2.6-lttng/kernel/module.c	2007-05-10 15:38:27.000000000 -0400
-@@ -404,8 +404,12 @@
- }
- 
- /* Sets a range of markers to a disabled state : unset the enable bit and
-- * provide the empty callback. */
-+ * provide the empty callback.
-+ * Keep a count of other markers connected to the same module as the one
-+ * provided as parameter. */
- static int marker_remove_probe_range(const char *name,
-+	struct module *probe_module,
-+	int *ref_count,
- 	const struct __mark_marker *begin,
- 	const struct __mark_marker *end)
- {
-@@ -413,12 +417,17 @@
- 	int found = 0;
- 
- 	for (iter = begin; iter < end; iter++) {
--		if (strcmp(name, iter->mdata->name) == 0) {
--			marker_set_enable(iter->enable, 0,
--				iter->mdata->flags);
--			iter->mdata->call = __mark_empty_function;
--			found++;
-+		if (strcmp(name, iter->mdata->name) != 0) {
-+			if (probe_module)
-+				if (__module_text_address(
-+					(unsigned long)iter->mdata->call)
-+						== probe_module)
-+					(*ref_count)++;
-+			continue;
- 		}
-+		marker_set_enable(iter->enable, 0, iter->mdata->flags);
-+		iter->mdata->call = __mark_empty_function;
-+		found++;
- 	}
- 	return found;
- }
-@@ -450,6 +459,29 @@
- 	return found;
- }
- 
-+/* Get the module to which the probe handler's text belongs.
-+ * Called with module_mutex taken.
-+ * Returns NULL if the probe handler is not in a module. */
-+static struct module *__marker_get_probe_module(const char *name)
-+{
-+	struct module *mod;
-+	const struct __mark_marker *iter;
-+
-+	list_for_each_entry(mod, &modules, list) {
-+		if (mod->taints)
-+			continue;
-+		for (iter = mod->markers;
-+			iter < mod->markers+mod->num_markers; iter++) {
-+			if (strcmp(name, iter->mdata->name) != 0)
-+				continue;
-+			if (iter->mdata->call)
-+				return __module_text_address(
-+					(unsigned long)iter->mdata->call);
-+		}
-+	}
-+	return NULL;
-+}
-+
- /* Calls _marker_set_probe_range for the core markers and modules markers.
-  * Marker enabling/disabling use the modlist_lock to synchronise. */
- int _marker_set_probe(int flags, const char *name, const char *format,
-@@ -477,23 +509,33 @@
- EXPORT_SYMBOL_GPL(_marker_set_probe);
- 
- /* Calls _marker_remove_probe_range for the core markers and modules markers.
-- * Marker enabling/disabling use the modlist_lock to synchronise. */
-+ * Marker enabling/disabling use the modlist_lock to synchronise.
-+ * ref_count is the number of markers still connected to the same module
-+ * as the one in which sits the probe handler currently removed, excluding the
-+ * one currently removed. If the count is 0, we issue a synchronize_sched() to
-+ * make sure the module can safely unload. */
- int marker_remove_probe(const char *name)
- {
--	struct module *mod;
-+	struct module *mod, *probe_module;
- 	int found = 0;
-+	int ref_count = 0;
- 
- 	mutex_lock(&module_mutex);
-+	/* In what module is the probe handler ? */
-+	probe_module = __marker_get_probe_module(name);
- 	/* Core kernel markers */
--	found += marker_remove_probe_range(name,
-+	found += marker_remove_probe_range(name, probe_module, &ref_count,
- 			__start___markers, __stop___markers);
- 	/* Markers in modules. */
- 	list_for_each_entry(mod, &modules, list) {
- 		if (!mod->taints)
--			found += marker_remove_probe_range(name,
-+			found += marker_remove_probe_range(name, probe_module,
-+				&ref_count,
- 				mod->markers, mod->markers+mod->num_markers);
- 	}
- 	mutex_unlock(&module_mutex);
-+	if (!ref_count)
-+		synchronize_sched();
- 	return found;
- }
- EXPORT_SYMBOL_GPL(marker_remove_probe);
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+$ gnome-power-manager --no-daemon --verbose --debug power
+[gpm_debug_init] gpm-debug.c:217 (12:32:57):     Verbose debugging enabled
+[main] gpm-main.c:205 (12:32:57):        GNOME Power Manager 2.18.2
+[gpm_proxy_connect] gpm-proxy.c:101 (12:32:57):  emitting proxy-status
+TRUE: org.freedesktop.Hal
+[gpm_proxy_connect] gpm-proxy.c:101 (12:32:57):  emitting proxy-status
+TRUE: org.freedesktop.Hal
+[gpm_ac_adapter_init] gpm-ac-adapter.c:234 (12:32:57):   No devices of
+capability ac_adapter
+[gpm_control_init] gpm-control.c:863 (12:32:57):         Using a
+supressed policy timeout of 5 seconds
+[gpm_refcount_add] gpm-refcount.c:101 (12:32:57):        refcount now: 1
+[gpm_refcount_add] gpm-refcount.c:102 (12:32:57):        non zero, so
+sending REFCOUNT_ADDED
+[gpm_power_refcount_added] gpm-power.c:138 (12:32:57):   Data is now not trusted
+[gpm_hash_new_kind_cache] gpm-power.c:1727 (12:32:57):   creating cache
+[gpm_hash_new_device_cache] gpm-power.c:1761 (12:32:57):         creating cache
+[gpm_warning_init] gpm-warning.c:260 (12:32:57):         Using
+per-time notification policy
+[gpm_proxy_connect] gpm-proxy.c:101 (12:32:57):  emitting proxy-status
+TRUE: org.freedesktop.Hal
+[gpm_cpufreq_set_governor] gpm-cpufreq.c:191 (12:32:57):         Doing
+SetCPUFreqGovernor (ondemand)
+[gpm_cpufreq_set_consider_nice] gpm-cpufreq.c:506 (12:32:57):    Doing
+SetCPUFreqConsiderNice (0)
+[gpm_cpufreq_set_performance] gpm-cpufreq.c:126 (12:32:57):      Doing
+SetCPUFreqPerformance (85)
+[gpm_proxy_connect] gpm-proxy.c:101 (12:32:57):  emitting proxy-status
+TRUE: org.gnome.ScreenSaver
+[gpm_srv_backlight_sync_policy] gpm-srv-backlight.c:151 (12:32:57):
+  choosing sensible default
+[gpm_hal_is_laptop] gpm-hal.c:1130 (12:32:57):   This machine is not
+identified as a laptop.system.formfactor is unknown.
+[gpm_srv_backlight_sync_policy] gpm-srv-backlight.c:156 (12:32:57):
+  not laptop, so use GPM_SRV_BACKLIGHT_METHOD_STAGGER
+[gpm_srv_backlight_sync_policy] gpm-srv-backlight.c:185 (12:32:57):
+  SRV_BACKLIGHT parameters 1800 1800 3600, method '1'
+[gpm_dpms_set_enabled] gpm-dpms.c:435 (12:32:57):        setting DPMS enabled: 1
+[x11_sync_server_dpms_settings] gpm-dpms.c:130 (12:32:57):
+Syncing DPMS settings enabled=1 timeouts=0 0 0
+[x11_sync_server_dpms_settings] gpm-dpms.c:130 (12:32:57):
+Syncing DPMS settings enabled=1 timeouts=0 0 0
+[gpm_idle_set_check_cpu] gpm-idle.c:306 (12:32:57):      Setting the
+CPU load check to 0
+[gpm_manager_init] gpm-manager.c:1564 (12:32:57):        creating new
+inhibit instance
+[gpm_manager_init] gpm-manager.c:1575 (12:32:57):        creating new
+control instance
+[gpm_manager_init] gpm-manager.c:1585 (12:32:57):        creating new tray icon
+[gpm_manager_init] gpm-manager.c:1594 (12:32:57):        initialising
+info infrastructure
+[gpm_hal_is_laptop] gpm-hal.c:1130 (12:32:57):   This machine is not
+identified as a laptop.system.formfactor is unknown.
+[gpm_hal_is_laptop] gpm-hal.c:1130 (12:32:57):   This machine is not
+identified as a laptop.system.formfactor is unknown.
+[gpm_hal_enable_power_save] gpm-hal.c:1410 (12:32:57):   We are not a
+laptop, so not even trying
+[gpm_idle_set_system_timeout] gpm-idle.c:357 (12:32:57):
+Setting system idle timeout: 0
+[get_stock_id] gpm-tray-icon.c:680 (12:32:57):   Trying CRITICAL icon:
+primary, ups, mouse, keyboard
+[get_stock_id] gpm-tray-icon.c:704 (12:32:57):   Trying CHARGING icon:
+primary, ups
+[get_stock_id] gpm-tray-icon.c:716 (12:32:57):   no devices
+(dis)charging, so no icon will be displayed.
+[gpm_tray_icon_sync] gpm-tray-icon.c:763 (12:32:57):     Going to use
+stock id: (null)
+[gpm_tray_icon_sync] gpm-tray-icon.c:783 (12:32:57):     no icon will
+be displayed
+[gpm_refcount_auto_decrement] gpm-refcount.c:75 (12:32:57):      zero,
+so sending REFCOUNT_ZERO
+[gpm_power_refcount_zero] gpm-power.c:123 (12:32:57):    Data is now trusted
+[get_stock_id] gpm-tray-icon.c:680 (12:32:57):   Trying CRITICAL icon:
+primary, ups, mouse, keyboard
+[get_stock_id] gpm-tray-icon.c:704 (12:32:57):   Trying CHARGING icon:
+primary, ups
+[get_stock_id] gpm-tray-icon.c:716 (12:32:57):   no devices
+(dis)charging, so no icon will be displayed.
+[gpm_tray_icon_sync] gpm-tray-icon.c:763 (12:32:57):     Going to use
+stock id: (null)
+[gpm_tray_icon_sync] gpm-tray-icon.c:783 (12:32:57):     no icon will
+be displayed
+[battery_status_changed_primary] gpm-manager.c:957 (12:32:57):
+Laptop battery is not discharging
