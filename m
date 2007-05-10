@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759416AbXEJIq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759735AbXEJIrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759416AbXEJIq0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 04:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbXEJIqT
+	id S1759735AbXEJIrX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 04:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757304AbXEJIrP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 04:46:19 -0400
-Received: from gate.crashing.org ([63.228.1.57]:41941 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757304AbXEJIqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 04:46:18 -0400
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <a781481a0705100054r45c373a0lfd35b8b31b0e6032@mail.gmail.com>
-References: <20070510052622.3E8D5DDF4B@ozlabs.org>
-	 <20070509224113.cca81a24.akpm@linux-foundation.org>
-	 <a781481a0705092345rf9fdc9cs8495516299a28fae@mail.gmail.com>
-	 <1178781677.14928.221.camel@localhost.localdomain>
-	 <a781481a0705100054r45c373a0lfd35b8b31b0e6032@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 18:46:01 +1000
-Message-Id: <1178786761.14928.232.camel@localhost.localdomain>
+	Thu, 10 May 2007 04:47:15 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44584 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755986AbXEJIrN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 04:47:13 -0400
+Date: Thu, 10 May 2007 01:46:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: tglx@linutronix.de
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+Message-Id: <20070510014645.c4e79032.akpm@linux-foundation.org>
+In-Reply-To: <1178745983.3042.565.camel@localhost.localdomain>
+References: <20070430102837.748238000@linutronix.de>
+	<200705092036.20953.rjw@sisk.pl>
+	<1178743550.3042.541.camel@localhost.localdomain>
+	<200705092253.49896.rjw@sisk.pl>
+	<1178745983.3042.565.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-10 at 13:24 +0530, Satyam Sharma wrote:
-> But then, what _is_ the problem with your approach above? An arch that
-> wants (and implements) hard_irq_disable will also #define that dummy
-> macro, so we just need to pull in the appropriate header (directly,
-> indirectly, anyhow -- we don't really care) into
-> include/linux/interrupt.h and then just do the exact same "#ifndef
-> hard_irq_disable" check that you're doing right now. I must be missing
-> something trivial (either that or I need to go and have a coffee :-)
-> because I don't see the possibility of hitting multiple _different_
-> definitions with the approach you mentioned just now.
+On Wed, 09 May 2007 23:26:22 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Sure, the only problem is that I don't want to pull asm/hw_irq.h
-directly from linux/interrupts.h unless all arch maintainers around
-verify it's ok, because those headers are a bit of a can of worm at the
-moment ...
+> Andrew,
+> 
+> can you test the alternative replacement patch for 
+> 
+> clockevents: Fix resume logic - updated version
+> 
+> It does not touch the interrupt controller, it does the PIT restart
+> different. That's a patch from Chris Wright and confirmed to work on the
+> affected machines - except the @%$#! VAIO of course.
+> 
+> If that patch makes the problem go away, then we should have a quite
+> good hint what we need to look at.
 
-So I'd rather say that if your arch has a custom version of
-hard_irq_disable(), make sure that asm/system.h pulls it in a way or
-another. And that's already included.
-
-Ben.
-
-
+No joy, sorry.  It still hangs at the last statement in acpi_evaluate_object().
