@@ -1,196 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763085AbXEKTJ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762278AbXEKTKZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763085AbXEKTJ4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:09:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761526AbXEKTJc
+	id S1762278AbXEKTKZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:10:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759196AbXEKTJi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:09:32 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:60047 "EHLO
+	Fri, 11 May 2007 15:09:38 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:60049 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758858AbXEKTJb (ORCPT
+	with ESMTP id S1758745AbXEKTJg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:09:31 -0400
-Message-Id: <20070511001200.985239000@goop.org>
-References: <20070511000643.025196000@goop.org>
+	Fri, 11 May 2007 15:09:36 -0400
+Message-Id: <20070511000026.673875000@goop.org>
+References: <20070510235708.155502000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:06:55 -0700
+Date: Thu, 10 May 2007 16:57:10 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       john stultz <johnstul@us.ibm.com>, Rik van Riel <riel@redhat.com>
-Subject: [patch 12/28]xen: Account for time stolen by Xen
-Content-Disposition: inline; filename=xen-stolen-time.patch
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.com>
+Subject: [patch 2/7] use elfnote.h to generate vsyscall notes.
+Content-Disposition: inline; filename=vsyscall-note-use-elfnote_h.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This accounts for the time Xen steals from our VCPUs.  This accounting
-gets run on each timer interrupt, just as a way to get it run
-relatively often, and when interesting things are going on.
-
-Stolen time is not really used by much in the kernel; it is reported
-in /proc/stats, and that's about it.
+Use existing elfnote.h to generate vsyscall notes, rather than doing
+it locally.  Changes elfnote.h a bit to suite, since this is the first
+asm user, and it wasn't quite right.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Acked-by: Chris Wright <chrisw@sous-sol.org>
-Cc: john stultz <johnstul@us.ibm.com>
-Cc: Rik van Riel <riel@redhat.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Roland McGrath <roland@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.com>
+
 ---
- arch/i386/xen/time.c |  106 +++++++++++++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 105 insertions(+), 1 deletion(-)
+ arch/i386/kernel/vsyscall-note.S |   23 ++++++-----------------
+ arch/x86_64/vdso/vdso-note.S     |    4 ++--
+ include/linux/elfnote.h          |   18 +++++++++++++-----
+ 3 files changed, 21 insertions(+), 24 deletions(-)
 
 ===================================================================
---- a/arch/i386/xen/time.c
-+++ b/arch/i386/xen/time.c
-@@ -2,6 +2,7 @@
- #include <linux/interrupt.h>
- #include <linux/clocksource.h>
- #include <linux/clockchips.h>
-+#include <linux/kernel_stat.h>
+--- a/arch/i386/kernel/vsyscall-note.S
++++ b/arch/i386/kernel/vsyscall-note.S
+@@ -3,23 +3,12 @@
+  * Here we can supply some information useful to userland.
+  */
  
- #include <asm/xen/hypervisor.h>
- #include <asm/xen/hypercall.h>
-@@ -14,6 +15,7 @@
+-#include <linux/uts.h>
+ #include <linux/version.h>
++#include <linux/elfnote.h>
  
- #define XEN_SHIFT 22
- #define TIMER_SLOP	100000	/* Xen may fire a timer up to this many ns early */
-+#define NS_PER_TICK	(1000000000ll / HZ)
+-#define ASM_ELF_NOTE_BEGIN(name, flags, vendor, type)			      \
+-	.section name, flags;						      \
+-	.balign 4;							      \
+-	.long 1f - 0f;		/* name length */			      \
+-	.long 3f - 2f;		/* data length */			      \
+-	.long type;		/* note type */				      \
+-0:	.asciz vendor;		/* vendor name */			      \
+-1:	.balign 4;							      \
+-2:
+-
+-#define ASM_ELF_NOTE_END						      \
+-3:	.balign 4;		/* pad out section */			      \
+-	.previous
+-
+-	ASM_ELF_NOTE_BEGIN(".note.kernel-version", "a", UTS_SYSNAME, 0)
++/* Ideally this would use UTS_NAME, but using a quoted string here
++   doesn't work. Remember to change this when changing the
++   kernel's name. */
++ELFNOTE_START(Linux, 0, "a")
+ 	.long LINUX_VERSION_CODE
+-	ASM_ELF_NOTE_END
++ELFNOTE_END
+===================================================================
+--- a/arch/x86_64/vdso/vdso-note.S
++++ b/arch/x86_64/vdso/vdso-note.S
+@@ -8,5 +8,5 @@
+ #include <linux/elfnote.h>
  
- /* These are perodically updated in shared_info, and then copied here. */
- struct shadow_time_info {
-@@ -26,6 +28,104 @@ struct shadow_time_info {
- 
- static DEFINE_PER_CPU(struct shadow_time_info, shadow_time);
- 
-+/* runstate info updated by Xen */
-+static DEFINE_PER_CPU(struct vcpu_runstate_info, runstate);
+ 	/* Supply version information to coredumps */
+-	ELFNOTE(kernelversion, 0, .long, LINUX_VERSION_CODE)
+-	ELFNOTE(os, 0, .asciz, UTS_SYSNAME)
++	ELFNOTE(kernelversion, 0, .long LINUX_VERSION_CODE)
++	ELFNOTE(os, 0, .asciz UTS_SYSNAME)
+===================================================================
+--- a/include/linux/elfnote.h
++++ b/include/linux/elfnote.h
+@@ -38,17 +38,25 @@
+  * e.g. ELFNOTE(XYZCo, 42, .asciz, "forty-two")
+  *      ELFNOTE(XYZCo, 12, .long, 0xdeadbeef)
+  */
+-#define ELFNOTE(name, type, desctype, descdata)	\
+-.pushsection .note.name, "",@note	;	\
++#define ELFNOTE_START(name, type, flags)	\
++.pushsection .note.name, flags,@note	;	\
+   .align 4				;	\
+   .long 2f - 1f		/* namesz */	;	\
+-  .long 4f - 3f		/* descsz */	;	\
++  .long 4484f - 3f	/* descsz */	;	\
+   .long type				;	\
+ 1:.asciz #name				;	\
+ 2:.align 4				;	\
+-3:desctype descdata			;	\
+-4:.align 4				;	\
++3:
 +
-+/* snapshots of runstate info */
-+static DEFINE_PER_CPU(struct vcpu_runstate_info, runstate_snapshot);
++#define ELFNOTE_END				\
++4484:.align 4				;	\
+ .popsection				;
 +
-+/* unused ns of stolen and blocked time */
-+static DEFINE_PER_CPU(u64, residual_stolen);
-+static DEFINE_PER_CPU(u64, residual_blocked);
++#define ELFNOTE(name, type, desc)		\
++	ELFNOTE_START(name, type, "")		\
++		desc			;	\
++	ELFNOTE_END
 +
-+/*
-+ * Runstate accounting
-+ */
-+static void get_runstate_snapshot(struct vcpu_runstate_info *res)
-+{
-+	u64 state_time;
-+	struct vcpu_runstate_info *state;
-+
-+	preempt_disable();
-+
-+	state = &__get_cpu_var(runstate);
-+
-+	/*
-+	 * The runstate info is always updated by the hypervisor on
-+	 * the current CPU, so there's no need to use anything
-+	 * stronger than a compiler barrier when fetching it.
-+	 */
-+	do {
-+		state_time = state->state_entry_time;
-+		barrier();
-+		*res = *state;
-+		barrier();
-+	} while(state->state_entry_time != state_time);
-+
-+	preempt_enable();
-+}
-+
-+static void setup_runstate_info(void)
-+{
-+	struct vcpu_register_runstate_memory_area area;
-+
-+	area.addr.v = &__get_cpu_var(runstate);
-+
-+	if (HYPERVISOR_vcpu_op(VCPUOP_register_runstate_memory_area,
-+			       smp_processor_id(), &area))
-+		BUG();
-+
-+	get_runstate_snapshot(&__get_cpu_var(runstate_snapshot));
-+}
-+
-+static void do_stolen_accounting(void)
-+{
-+	struct vcpu_runstate_info state;
-+	struct vcpu_runstate_info *snap;
-+	u64 blocked, runnable, offline, stolen;
-+	cputime_t ticks;
-+
-+	get_runstate_snapshot(&state);
-+
-+	WARN_ON(state.state != RUNSTATE_running);
-+
-+	snap = &__get_cpu_var(runstate_snapshot);
-+
-+	/* work out how much time the VCPU has not been runn*ing*  */
-+	blocked = state.time[RUNSTATE_blocked] - snap->time[RUNSTATE_blocked];
-+	runnable = state.time[RUNSTATE_runnable] - snap->time[RUNSTATE_runnable];
-+	offline = state.time[RUNSTATE_offline] - snap->time[RUNSTATE_offline];
-+
-+	*snap = state;
-+
-+	/* Add the appropriate number of ticks of stolen time,
-+	   including any left-overs from last time.  Passing NULL to
-+	   account_steal_time accounts the time as stolen. */
-+	stolen = runnable + offline + __get_cpu_var(residual_stolen);
-+	ticks = 0;
-+	while(stolen >= NS_PER_TICK) {
-+		ticks++;
-+		stolen -= NS_PER_TICK;
-+	}
-+	__get_cpu_var(residual_stolen) = stolen;
-+	account_steal_time(NULL, ticks);
-+
-+	/* Add the appropriate number of ticks of blocked time,
-+	   including any left-overs from last time.  Passing idle to
-+	   account_steal_time accounts the time as idle/wait. */
-+	blocked += __get_cpu_var(residual_blocked);
-+	ticks = 0;
-+	while(blocked >= NS_PER_TICK) {
-+		ticks++;
-+		blocked -= NS_PER_TICK;
-+	}
-+	__get_cpu_var(residual_blocked) = blocked;
-+	account_steal_time(idle_task(smp_processor_id()), ticks);
-+}
-+
-+
-+
-+/* Get the CPU speed from Xen */
- unsigned long xen_cpu_khz(void)
- {
- 	u64 cpu_khz = 1000000ULL << 32;
-@@ -338,6 +438,8 @@ static irqreturn_t xen_timer_interrupt(i
- 		ret = IRQ_HANDLED;
- 	}
- 
-+	do_stolen_accounting();
-+
- 	return ret;
- }
- 
-@@ -364,6 +466,8 @@ static void xen_setup_timer(int cpu)
- 	evt->irq = irq;
- 	clockevents_register_device(evt);
- 
-+	setup_runstate_info();
-+
- 	put_cpu_var(xen_clock_events);
- }
- 
-@@ -376,7 +480,7 @@ __init void xen_time_init(void)
- 	clocksource_register(&xen_clocksource);
- 
- 	if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL) == 0) {
--		/* Successfully turned off 100hz tick, so we have the
-+		/* Successfully turned off 100Hz tick, so we have the
- 		   vcpuop-based timer interface */
- 		printk(KERN_DEBUG "Xen: using vcpuop timer interface\n");
- 		xen_clockevent = &xen_vcpuop_clockevent;
+ #else	/* !__ASSEMBLER__ */
+ #include <linux/elf.h>
+ /*
 
 -- 
 
