@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbXEJEed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756368AbXEJErS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbXEJEed (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 00:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXEJEeY
+	id S1756368AbXEJErS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 00:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754585AbXEJErJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 00:34:24 -0400
-Received: from smtpout.mac.com ([17.250.248.178]:55335 "EHLO smtpout.mac.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754585AbXEJEeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 00:34:24 -0400
-In-Reply-To: <46429ED2.10809@candelatech.com>
-References: <2638DE26-D672-4245-BE88-D13B7F0F34A9@mac.com> <46429ED2.10809@candelatech.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <EE6715FC-176D-4DA3-A0B3-6BDCC16122A6@mac.com>
-Cc: netdev@vger.kernel.org, LKML Kernel <linux-kernel@vger.kernel.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       OSDL Linux Bridging <bridge@osdl.org>
+	Thu, 10 May 2007 00:47:09 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:37694 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751052AbXEJErH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 00:47:07 -0400
+Date: Wed, 9 May 2007 21:47:06 -0700
+From: Paul Jackson <pj@sgi.com>
+To: balbir@linux.vnet.ibm.com
+Cc: vatsa@in.ibm.com, linux-kernel@vger.kernel.org,
+       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
+       xemul@sw.ru, dev@sw.ru, rohitseth@google.com, ebiederm@xmission.com,
+       mbligh@google.com, containers@lists.osdl.org, serue@us.ibm.com,
+       menage@google.com, svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org,
+       devel@openvz.org
+Subject: Re: [ckrm-tech] [PATCH 1/9] Containers (V9): Basic container
+ framework
+Message-Id: <20070509214706.5b05eec5.pj@sgi.com>
+In-Reply-To: <46429B13.6090402@linux.vnet.ibm.com>
+References: <20070427104607.252541000@menage.corp.google.com>
+	<20070427111300.015604000@menage.corp.google.com>
+	<46377BA4.6030701@linux.vnet.ibm.com>
+	<20070501114030.62b85494.pj@sgi.com>
+	<46380901.2050001@linux.vnet.ibm.com>
+	<20070501231254.4267777e.pj@sgi.com>
+	<46429B13.6090402@linux.vnet.ibm.com>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-From: Kyle Moffett <mrmacman_g4@mac.com>
-Subject: Re: [BUG][debian-2.6.20-1-686] bridging + vlans + "vconfig rem" == stuck kernel
-Date: Thu, 10 May 2007 00:34:11 -0400
-To: Ben Greear <greearb@candelatech.com>
-X-Mailer: Apple Mail (2.752.2)
-X-Brightmail-Tracker: AAAAAA==
-X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 10, 2007, at 00:25:54, Ben Greear wrote:
-> Kyle Moffett wrote:
->> vconfig       D 83CCD8CE     0 16564  16562                      
->> (NOTLB)
->>        efdd7e7c 00000086 ee120afb 83ccd8ce 98f00788 b7083ffa  
->> 5384b49a c76c0b05
->>        9ebaf791 00000004 efdd7e4e 00000007 f1468a90 2ab74174  
->> 00000362 00000326
->>        f1468b9c c180e420 00000001 00000286 c012933c efdd7e8c  
->> df98a000 c180e468
->> Call Trace:
->> [<c012933c>] lock_timer_base+0x15/0x2f
->> [<c0129445>] __mod_timer+0x91/0x9b
->> [<c02988f5>] schedule_timeout+0x70/0x8d
->> [<f8b75209>] vlan_device_event+0x13/0xf8 [8021q]
->
-> Looks like a deadlock in the vlan code.  Any chance you can run  
-> this test with lockdep enabled?
->
-> You could also add a printk in vlan_device_event() to check which  
-> event it is hanging on, and the netdevice that is passed in.
+Balbir wrote:
+> Thanks for the script. Would you like to contribute this script to
+> LTP for wider availability and testing?
 
-Ok, I'll try building a 2.6.21 kernel with lockdep and some debugging  
-printk()s in the vlan_device_event() function and get back to you  
-tomorrow.  Thanks for the quick response!
+Sounds good - though I'm a tad lazy, and don't know how to contribute
+this to the LTP.
 
-> Since the vlan code holds RTNL at this point, then most other  
-> network tasks will eventually hang as well.
+You're welcome to contribute it yourself, if that's easier for you,
+or to point me in the direction of some information on this.
 
-Well, it's less of an "eventually" and more of an "almost  
-immediately".  When that happens pretty close to everything more  
-complicated than socket(), bind(), and connect() with straightforward  
-UNIX or INET sockets tends to stick completely.
+Since it's GPL, you can republish it, under that license.
 
-Thanks again!
+... Most likely however, it will take a little tweaking to make this
+test work well for LTP.  Most automated test environments have some
+requirements on the behaviour of each test, and it would be surprising
+if this test happen already to conform to LTP's requirements.
 
-Cheers,
-Kyle Moffett
-
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
