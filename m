@@ -1,69 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758661AbXEJT6M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbXEJT7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758661AbXEJT6M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 15:58:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbXEJT56
+	id S1760096AbXEJT7N (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 15:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbXEJT66
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 15:57:58 -0400
-Received: from holomorphy.com ([66.93.40.71]:40190 "EHLO holomorphy.com"
+	Thu, 10 May 2007 15:58:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49926 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751208AbXEJT56 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 15:57:58 -0400
-Date: Thu, 10 May 2007 12:58:40 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org,
-       Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [RFC] Slab allocators: Drop support for destructors
-Message-ID: <20070510195840.GN19966@holomorphy.com>
-References: <Pine.LNX.4.64.0705101156190.10663@schroedinger.engr.sgi.com> <84144f020705101221y6070ed93he837c59053084fae@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <84144f020705101221y6070ed93he837c59053084fae@mail.gmail.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1751208AbXEJT65 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 15:58:57 -0400
+Subject: Re: Please pull 'revert-libertas' branch of wireless-2.6
+From: Dan Williams <dcbw@redhat.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Marcelo Tosatti <marcelo@kvack.org>, David Miller <davem@davemloft.net>,
+       penberg@cs.helsinki.fi, linville@tuxdriver.com, hch@infradead.org,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org
+In-Reply-To: <46424018.2010306@garzik.org>
+References: <20070507141143.GB5125@tuxdriver.com>
+	 <463F443A.5000306@garzik.org>
+	 <84144f020705080247v74ebcd26y27c2f1e61529b215@mail.gmail.com>
+	 <20070508.132737.104034594.davem@davemloft.net>
+	 <4640E3BF.8080401@garzik.org>
+	 <1178659763.14888.2.camel@localhost.localdomain>
+	 <4640FC76.4090908@garzik.org> <20070508234118.GA3472@dmt>
+	 <1178674020.16181.4.camel@localhost.localdomain>
+	 <20070509142516.a31467c5.randy.dunlap@oracle.com>
+	 <1178746884.9590.18.camel@localhost.localdomain>
+	 <46424018.2010306@garzik.org>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 14:35:44 -0400
+Message-Id: <1178822144.4028.0.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/10/07, Christoph Lameter <clameter@sgi.com> wrote:
->> Or are there valid reason to keep them around? It seems they were mainly
->> used for list management which required them to take a spinlock. Taking a
->> spinlock in a destructor is a bit risky since the slab allocators may run
->> the destructors anytime they decide a slab is no longer needed.
->> Or do we want to continue support destructors? If so why?
+On Wed, 2007-05-09 at 17:41 -0400, Jeff Garzik wrote:
+> Dan Williams wrote:
+> > I can fix those up; but setting KBUILD_VERBOSE=1 and recompiling doesn't
+> > show any of them in current libertas-2.6; -Wall is definitely defined.
+> > Is there another way to enable something give yet more verbose debug
+> > output?
+> 
+> 
+> The copious libertas warnings are present in vanilla upstream 
+> linux-2.6.git.
+> 
+> Just do "make allmodconfig && make -sj4".
+> 
+> 	Jeff
+> 
+> 
+> P.S. Make sure libertas is free of sparse warnings, as all drivers 
+> should be.  Read Documentation/sparse.txt.
 
-On Thu, May 10, 2007 at 10:21:08PM +0300, Pekka Enberg wrote:
-> Well, constructors are on their way out too because they don't seem to
-> give the performance benefit they were designed for anymore. As for
-> destructors, they have been pretty useless in Linux for a long time
-> now and we really don't do much "complex initialization" that requires
-> undo (releasing resources).
+Sparse stuff fixed.  Still getting working on 64-bit compiles.
 
-The anti-constructor trend is counterproductive. The cache effects are
-not being properly monitored and people are failing to understand the
-importance of conserving cache.
+Dan
 
-Microbenchmarks where you pound the potentially preconstructed data
-structures like wild monkeys are not why constructors are used. They're
-to avoid burning cachelines in the cases where you need the cache for
-other purposes besides building up and tearing down the structures in
-question. Data structure layout becomes relevant to this; the
-preconstructed cachelines need to be separated from ones that must be
-clobbered regardless immediately after allocation. The effect is
-cumulative and broadly dispersed. The constructor elimination patches
-are incrementally filling up caches with the formerly preconstructed
-objects' cachelines, where the degradation from each individual change
-is so small as to be difficult to to discern or potentially even seen
-to be advantageous on unrealistic microbenchmarks. The net effect of
-removing constructors altogether will be degradations in real-world
-workloads on account of the combined effect of the cache footprint
-increases. The cache should rather be saved for userspace.
+> 	Jeff
+> 
+> 
+> 
 
-What would make this easier to see would be cache instrumentation not
-available to most people. Specifically, tabulating what the various
-cachelines in the cache are caching. Simulators may be useful to help
-determine all that.
-
-
--- wli
