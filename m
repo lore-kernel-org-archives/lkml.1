@@ -1,86 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbXEJPjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759304AbXEJPmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759941AbXEJPjR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 11:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbXEJPjB
+	id S1759304AbXEJPmS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 11:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754562AbXEJPmJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 11:39:01 -0400
-Received: from waste.org ([66.93.16.53]:49090 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755344AbXEJPjA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 11:39:00 -0400
-Date: Thu, 10 May 2007 10:38:33 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: David Chinner <dgc@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       xfs@oss.sgi.com, michal.k.k.piotrowski@gmail.com
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
-Message-ID: <20070510153832.GQ11115@waste.org>
-References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <20070510004918.GS85884050@sgi.com> <46426D31.8070000@goop.org> <20070510012609.GU85884050@sgi.com> <46433049.4020003@goop.org>
+	Thu, 10 May 2007 11:42:09 -0400
+Received: from py-out-1112.google.com ([64.233.166.182]:57088 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754530AbXEJPmH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 11:42:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=QHoeNOYnf0XURaVLcs2pt/5JRxsLLf8FaIoi0zCNovSBlaHJEo+zBsfmZMJIaO2H+0JZJ0Jp5b6xPgaN/tB9i2LOjxcLO32V1kVfpRsEcwF8IuRfDXNMlSNbUD9pNGpmKRhUxgOwliac9b4yYxXdt7x8wrZEg8yPpJuQQrzFLgY=
+Message-ID: <46433D42.2060101@gmail.com>
+Date: Thu, 10 May 2007 17:41:54 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46433049.4020003@goop.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Kay Sievers <kay.sievers@vrfy.org>
+CC: Greg KH <greg@kroah.com>, Chris Rankin <rankincj@yahoo.com>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       linux-usb-devel@lists.sourceforge.net,
+       linux-kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
+Subject: Re: [PATCH] driver-core: don't free devt_attr till the device is
+ released
+References: <602729.80444.qm@web52910.mail.re2.yahoo.com>	 <4641CD01.6010309@gmail.com> <20070509145747.GA27259@kroah.com>	 <4641E245.7040603@gmail.com> <20070509154039.GA27681@kroah.com>	 <46432FFD.1040304@gmail.com> <3ae72650705100833h35dbc5fer7553529d643c742c@mail.gmail.com>
+In-Reply-To: <3ae72650705100833h35dbc5fer7553529d643c742c@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 07:46:33AM -0700, Jeremy Fitzhardinge wrote:
-> David Chinner wrote:
-> > On Wed, May 09, 2007 at 05:54:09PM -0700, Jeremy Fitzhardinge wrote:
-> >   
-> >> David Chinner wrote:
-> >>     
-> >>> Suspend-resume, eh?
-> >>>
-> >>> There's an immediate suspect. Can you test this specifically for us?
-> >>> i.e. download a known good file set, do some stuff, suspend, resume,
-> >>> then check the files? If it doesn't show up the first time, can
-> >>> you do it a few times just to rule it out?
-> >>>       
-> >> Well, I've been doing suspend-resume with xfs for a while without
-> >> problems; the problems seem to be recent and easily repeatable.  Which
-> >> just means that it could be a new suspend-resume problem, of course.
-> >>     
-> >
-> > Ok. I'm just trying to find a relatively simple test case for the
-> > problem - seeing as you seem to be able to reliably reproduce this
-> > we should be able to work out the trigger...
-> >   
+Kay Sievers wrote:
+> On 5/10/07, Tejun Heo <htejun@gmail.com> wrote:
+>> Currently, devt_attr for the "dev" file is freed immediately on device
+>> removal, but if the "dev" sysfs file is open when a device is removed,
+>> sysfs will access its attribute structure for further access including
+>> close resulting in jumping to garbled address.  Fix it by postponing
+>> freeing devt_attr to device release time.
+>>
+>> Note that devt_attr for class_device is already freed on release.
 > 
-> OK, I was able to reproduce it reliably with a script with did basically:
-> 
->     for i in `seq 20`; do
->     	hg clone -U --pull a b-$i
->     	hg verify b-$i		# always OK
->     	umount /home
->     	sleep 5
->     	mount /home
->     	hg verify b-$i		# often found truncated files
->     done
->       
-> 
-> No suspend/resumes involved.  The trees are linux kernel ones, so fairly
-> large, but small enough to fit entirely in core.  My script also
-> captured xfs_bmap before/after output for files which had tended to be
-> corrupted in the past, but unfortunately none of them got corrupted in
-> these tests.  But I do have all the trees lying around to extract more
-> detail for if you like.
-> 
-> Interestingly, the corruption happened in each case around the same
-> place in the tree, often in the sata drivers.  I wonder if that was just
-> related to the timing of this script.
+> Hi Tejun,
+> your rework removes the "owner" field from the attributes. I think we
+> kept the "dev" and "uevent" attribute as part of "struct device" only
+> to be able to assign it the actual owner of the module that has
+> created the device. The attribute can probably just live as one
+> instance statically in the driver core now?
 
-I guess this pins it as an XFS problem pretty solidly.
-
-This test looks like it should consist solely of open-for-append and
-write on about 20k files in the target directory. Because of the
---pull, no hardlinks are involved. It shouldn't be all that different
-from doing tar cf - a | tar xf - b.
-
-The files get visited in alphabetical order, so the start of the
-corruption may be telling.
+Yeah, that's -mm and this is for -stable and -22.  For -mm, we can just
+make all those attributes static which is the other patch is this
+thread.  :-)
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+tejun
