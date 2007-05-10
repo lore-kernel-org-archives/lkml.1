@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758825AbXEJPN3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759602AbXEJPPV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758825AbXEJPN3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 11:13:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753972AbXEJPNW
+	id S1759602AbXEJPPV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 11:15:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755226AbXEJPPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 11:13:22 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:11345 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753664AbXEJPNW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 11:13:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=AJjPJr8nipqDVv73i+0ZG8AfHGoqL8pYTlqnk5lCR3m3IVJJUb6b/rzKqKjy6Xvtq4mpeQT8tYdt+WFDEObDyGDQN2RQeEfgIKl0Ym7wKUJjS4ZBaxvtoRUg3+4Aql5xL4Is7Jgmaurqe2Am5ipykWGhSSYLmLncDXaBJ71epXw=
-Message-ID: <46433686.6080007@gmail.com>
-Date: Thu, 10 May 2007 17:13:10 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Thu, 10 May 2007 11:15:06 -0400
+Received: from smtp.boksi.fi ([195.10.143.42]:1785 "EHLO smtp1.boksi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755043AbXEJPPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 11:15:04 -0400
+Date: Thu, 10 May 2007 18:15:01 +0300
+From: Mika Kukkonen <mikukkon@miku.homelinux.net>
+To: mhalcrow@us.ibm.com, ecryptfs-devel@lists.sourceforge.net
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Couple fixes to fs/ecryptfs/inode.c
+Message-ID: <20070510151501.GA16480@srv1-m700-lanp.koti>
+Reply-To: mikukkon@iki.fi
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Chris Rankin <rankincj@yahoo.com>, Alan Stern <stern@rowland.harvard.edu>,
-       linux-usb-devel@lists.sourceforge.net,
-       linux-kernel <linux-kernel@vger.kernel.org>, stable@kernel.org
-Subject: Re: [PATCH] driver-core: don't free devt_attr till the device is
- released
-References: <602729.80444.qm@web52910.mail.re2.yahoo.com> <4641CD01.6010309@gmail.com> <20070509145747.GA27259@kroah.com> <4641E245.7040603@gmail.com> <20070509154039.GA27681@kroah.com> <46432FFD.1040304@gmail.com> <20070510150501.GA22752@kroah.com>
-In-Reply-To: <20070510150501.GA22752@kroah.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
->> Applies well to 2.6.20 and 21.  As sysfs-immediate-disconnect doesn't
->> seem to be included in 2.6.22, this should be included in linus#master
->> too (applies well there as well).
-> 
-> As I don't think we should be adding your sysfs rework to 2.6.22 just
-> yet, any objections to me just sending this to Linus for 2.6.22 and
-> waiting on your previous one for when the whole sysfs rework patchset is
-> sent?
+Following was uncovered by compiling the kernel with '-W' flag:
 
-No objection at all.  That actually is exactly my intention.  The
-make-attrs-static patch will conflict with this fix tho.  Just let me
-know when it breaks, I'll post updated one.
+  CC [M]  fs/ecryptfs/inode.o
+fs/ecryptfs/inode.c: In function ‘ecryptfs_lookup’:
+fs/ecryptfs/inode.c:304: warning: comparison of unsigned expression < 0 is always false
+fs/ecryptfs/inode.c: In function ‘ecryptfs_symlink’:
+fs/ecryptfs/inode.c:486: warning: comparison of unsigned expression < 0 is always false
 
-Thanks.
+Function ecryptfs_encode_filename() can return -ENOMEM, so change the
+variables to plain int, as in the first case the only real use actually
+expects int, and in latter case there is no use beoynd the error check.
 
--- 
-tejun
+Signed-off-by: Mika Kukkonen <mikukkon@iki.fi>
+
+diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+index 1548be2..d230a48 100644
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -282,7 +282,7 @@ static struct dentry *ecryptfs_lookup(struct inode *dir, struct dentry *dentry,
+ 	struct dentry *lower_dentry;
+ 	struct vfsmount *lower_mnt;
+ 	char *encoded_name;
+-	unsigned int encoded_namelen;
++	int encoded_namelen;
+ 	struct ecryptfs_crypt_stat *crypt_stat = NULL;
+ 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat;
+ 	char *page_virt = NULL;
+@@ -473,7 +473,7 @@ static int ecryptfs_symlink(struct inode *dir, struct dentry *dentry,
+ 	struct dentry *lower_dir_dentry;
+ 	umode_t mode;
+ 	char *encoded_symname;
+-	unsigned int encoded_symlen;
++	int encoded_symlen;
+ 	struct ecryptfs_crypt_stat *crypt_stat = NULL;
+ 
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
