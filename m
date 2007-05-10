@@ -1,165 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758168AbXEJHCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbXEJHFT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758168AbXEJHCE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 03:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751559AbXEJHBz
+	id S1757427AbXEJHFT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 03:05:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXEJHFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 03:01:55 -0400
-Received: from smtp1.yandex.ru ([213.180.223.87]:2514 "EHLO smtp1.yandex.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbXEJHBy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 03:01:54 -0400
-X-Greylist: delayed 850 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 03:01:54 EDT
-X-Comment: RFC 2476 MSA function at smtp1.yandex.ru logged sender identity as: nshmyrev
-Subject: Re: [PATCH 2/3] v4l: saa7134: enable ir-remote for 10moons TM300
-	card
-From: "Nickolay V. Shmyrev" <nshmyrev@yandex.ru>
-To: Tony Wan <wankai@sjtu.org>
-Cc: mchehab@infradead.org, michael@mihu.de, video4linux-list@redhat.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1178766248.29993.41.camel@wankai.sjtu.org>
-References: <1178766248.29993.41.camel@wankai.sjtu.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-q4yeFoY5BmWgL41sy8j5"
-Date: Thu, 10 May 2007 10:14:33 +0400
-Message-Id: <1178777673.3120.6.camel@gnome.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.9.5 (2.9.5-2.fc7) 
+	Thu, 10 May 2007 03:05:08 -0400
+Received: from smtp105.mail.mud.yahoo.com ([209.191.85.215]:29827 "HELO
+	smtp105.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750888AbXEJHFH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 03:05:07 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=EFu4/zARi4b6f36QNdpipYouJ/2gVERA7b6NlAjDy1O4GOsNJYPIsdw+ufk3DXYq1D6Zln5+/gAG28H2ZfS3hhrAU65NO1rLEDddR2c4J71EQGDBrRuQNo+YNKSl1MRKbz0PZvBE/EuqktAa6l/9pW37kncSEcD6uvLPmbmctxk=  ;
+X-YMail-OSG: bQ6100AVM1kvHN0_xmv86JsOoit85ilCbysUSvs7q2XhVwSeUdHaObVroZ0UwV_wo4.C835Nrg--
+Message-ID: <4642C416.3000205@yahoo.com.au>
+Date: Thu, 10 May 2007 17:04:54 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Ray Lee <ray-lk@madrabbit.org>
+CC: Con Kolivas <kernel@kolivas.org>, Ingo Molnar <mingo@elte.hu>,
+       ck list <ck@vds.kolivas.org>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>	 <200705100928.34056.kernel@kolivas.org>	 <464261B5.6030809@yahoo.com.au>	 <200705101134.34350.kernel@kolivas.org> <46427BDB.30004@yahoo.com.au>	 <2c0942db0705092048m38b36e7fo3a7c2c59fe1612b2@mail.gmail.com>	 <46429801.8030202@yahoo.com.au> <2c0942db0705092252n13a6a79aq39f13fcfae534de2@mail.gmail.com>
+In-Reply-To: <2c0942db0705092252n13a6a79aq39f13fcfae534de2@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ray Lee wrote:
+> On 5/9/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> 
+>> Ray Lee wrote:
+>> > On 5/9/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+>> >
+>> >> You said it helped with the updatedb problem. That says we should 
+>> look at
+>> >> why it is going bad first, and for example improve use-once 
+>> algorithms.
+>> >> After we do that, then swap prefetching might still help, which is 
+>> fine.
+>> >
+>> > Nick, if you're volunteering to do that analysis, then great. If not,
+>> > then you're just providing a airy hope with nothing to back up when or
+>> > if that work would ever occur.
+>>
+>> I'd like to try helping. Tell me your problem.
+> 
+> 
+> Huh? You already stated one version of it above, namely updatedb. But
 
---=-q4yeFoY5BmWgL41sy8j5
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+So a swapping problem with updatedb should be unusual and we'd like to see
+if we can fix it without resorting to prefetching.
 
-Hello Tony. Very nice patch, thanks.
-
-=D0=92 =D0=A7=D1=82=D0=B2, 10/05/2007 =D0=B2 11:04 +0800, Tony Wan =D0=BF=
-=D0=B8=D1=88=D0=B5=D1=82:
-> Enable the IR-remote of the 10moons TM300 card and add the key-codes for
-> it's remote. But to enable all the keys, "IR_KEYTAB_SIZE", the size of
-> code tables should be at least 256.
-
-> It has been tested using lirc. All the key codes are accepted.
->=20
-> This patch depends on the "[PATCH 1/3] v4l: Support 10moons TM300
-> (saa7130) Card"
->=20
-> Signed-off-by: Tony Wan <wankai@sjtu.org>
-> ---
->  drivers/media/common/ir-keymaps.c           |   71
-> +++++++++++++++++++++++++++
->  drivers/media/video/saa7134/saa7134-cards.c |    1 +
->  drivers/media/video/saa7134/saa7134-input.c |    6 ++
->  include/media/ir-common.h                   |    1 +
->  4 files changed, 79 insertions(+), 0 deletions(-)
->=20
-> diff --git a/drivers/media/common/ir-keymaps.c
-> b/drivers/media/common/ir-keymaps.c
-> index cbd1184..df11ed4 100644
-> --- a/drivers/media/common/ir-keymaps.c
-> +++ b/drivers/media/common/ir-keymaps.c
-> @@ -1783,3 +1783,74 @@ IR_KEYTAB_TYPE ir_codes_tt_1500[IR_KEYTAB_SIZE] =
-=3D
-> {
->  };
-> =20
->  EXPORT_SYMBOL_GPL(ir_codes_tt_1500);
-> +
-> +/* 10MOONS TM300 */
-> +IR_KEYTAB_TYPE ir_codes_10moonstm3[IR_KEYTAB_SIZE] =3D {
-> +	[ 0x10 ] =3D KEY_POWER,           // Power
-> +	[ 0x0d ] =3D KEY_MUTE,            // Mute
-> +	[ 0x1e ] =3D KEY_TUNER,           // Cable
-> +	[ 0x00 ] =3D KEY_VIDEO,           // Composite / S-Video
-> +	[ 0x01 ] =3D KEY_RADIO,           // Music
-> +	[ 0x02 ] =3D KEY_TEXT,            // Photo
-> +
-> +	[ 0x1f ] =3D KEY_1,
-> +	[ 0x03 ] =3D KEY_2,
-> +	[ 0x04 ] =3D KEY_3,
-> +	[ 0x05 ] =3D KEY_4,
-> +	[ 0x1c ] =3D KEY_5,
-> +	[ 0x06 ] =3D KEY_6,
-> +	[ 0x07 ] =3D KEY_7,
-> +	[ 0x08 ] =3D KEY_8,
-> +	[ 0x1d ] =3D KEY_9,
-> +	[ 0x09 ] =3D KEY_SELECT,          // 2 digit select (-/--)
-> +	[ 0x0a ] =3D KEY_0,
-> +	[ 0x0b ] =3D KEY_AGAIN,           // Recall
-> +
-> +	[ 0x14 ] =3D KEY_F1,              // Begin
-> +	[ 0x15 ] =3D KEY_F2,              // End
-> +
-> +	[ 0x16 ] =3D KEY_CHANNELUP,       // CH+
-> +	[ 0x12 ] =3D KEY_CHANNELDOWN,     // CH-
-> +	[ 0x0c ] =3D KEY_VOLUMEUP,        // VOL+
-> +	[ 0x17 ] =3D KEY_VOLUMEDOWN,      // VOL-
-> +	[ 0x18 ] =3D KEY_OK,              // OK
-> +
-> +	[ 0x0e ] =3D KEY_EXIT,            // Exit
-> +	[ 0x13 ] =3D KEY_COMPUTER,        // Desktop
-> +	[ 0x11 ] =3D KEY_TAB,             // TAB
-> +	[ 0x19 ] =3D KEY_CYCLEWINDOWS,    // Switch task
-> +
-> +	[ 0x1a ] =3D KEY_MENU,            // Menu
-> +	[ 0x1b ] =3D KEY_ZOOM,            // Fullscreen
-> +#if IR_KEYTAB_SIZE>=3D256
-> +	[ 0x84 ] =3D KEY_ARCHIVE,         // Time shifting
-> +	[ 0x80 ] =3D KEY_SWITCHVIDEOMODE, // Selcect source
-> +
-> +	[ 0x9a ] =3D KEY_RECORD,          // Record
-> +	[ 0x82 ] =3D KEY_PLAY,            // Play/Pause
-> +	[ 0x85 ] =3D KEY_STOP,            // Stop
-> +	[ 0x83 ] =3D KEY_CAMERA,          // Snapshot
-> +
-> +	[ 0x88 ] =3D KEY_BACK,            // Backward <<
-> +	[ 0x8a ] =3D KEY_FORWARD,         // Forward >>
-> +	[ 0x89 ] =3D KEY_PREVIOUS,        // Back |<<
-> +	[ 0x8b ] =3D KEY_NEXT,            // End >>|
-> +
-> +	[ 0x8c ] =3D KEY_PROGRAM,         // Multi-view
-> +	[ 0x8d ] =3D KEY_AUDIO,           // Audio Tracks
-> +	[ 0x8e ] =3D KEY_SOUND,           // Sound
-> +	[ 0x8f ] =3D KEY_SUBTITLE,        // Subtitles
-> +
-> +	[ 0x90 ] =3D KEY_TIME,            // Set timer
-> +	[ 0x91 ] =3D KEY_CHANNEL,         // Stereo
-> +	[ 0x92 ] =3D KEY_LANGUAGE,        // Language
-> +	[ 0x93 ] =3D KEY_TEXT,            // Text
-> +
-> +	[ 0x99 ] =3D KEY_RED,             // RED
-> +	[ 0x81 ] =3D KEY_GREEN,           // GREEN
-> +	[ 0x87 ] =3D KEY_YELLOW,          // YELLOW
-> +	[ 0x97 ] =3D KEY_BLUE,            // BLUE
-> +#endif /* IR_KEYTAB_SIZE>=3D256 */
-> +};
-> +
-
-Size of 256 is not required. You've just selected incorrect keymask,
-that's why you have so big values. Look through your values, in the
-upper 4 bits only two bits are used - 0x80 and 0x10. So you should
-probably use mask_keycode with 0x47800000 instead of mask_keycode =3D
-0x7f80000. Or even smaller mask. Include only bits which change the
-values, nothing more.
+I know the theory behind swap prefetching, and I'm not saying it doesn't
+work, so I'll snip the rest of that.
 
 
+>> What's wrong with the use-once we have? What improvements are you talking
+>> about?
+> 
+> 
+> You said, effectively: "Use-once could be improved to deal with
+> updatedb". I said I've been reading emails from Rik and others talking
+> about that for four years now, and we're still talking about it. Were
+> it merely updatedb, I'd say us userspace folk should step up and
+> rewrite the damn thing to amortize its work. However, I and others
+> feel it's only an example -- glaring, obviously -- of a more pervasive
+> issue. A small issue, to be sure!, but an issue nevertheless.
 
---=-q4yeFoY5BmWgL41sy8j5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: =?koi8-r?Q?=FC=D4=C1?= =?koi8-r?Q?_=DE=C1=D3=D4=D8?=
-	=?koi8-r?Q?_=D3=CF=CF=C2=DD=C5=CE=C9=D1?=
-	=?koi8-r?Q?_=D0=CF=C4=D0=C9=D3=C1=CE=C1?=
-	=?koi8-r?Q?_=C3=C9=C6=D2=CF=D7=CF=CA?=
-	=?koi8-r?Q?_=D0=CF=C4=D0=C9=D3=D8=C0?=
+It isn't going to get fixed unless people complain about it. If you
+cover the use-once problem with swap prefetching, then it will never
+get fixed.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.2.2 (GNU/Linux)
 
-iD8DBQBGQrhJLCDh4YwOt9kRAtYfAKCpUe6ULsecQ0YNIqIzXpCiSdzsJQCfat5J
-nBfggRIOCqpW5gPY3DkXCmY=
-=oYht
------END PGP SIGNATURE-----
+>> I don't think it is about energy or being mean, I'm just stating the
+>> issues I have with it.
+> 
+> 
+> Nick, I in no way think you're being mean, and I'm sorry if I've given
+> you that impression. However, if you're just stating the issues you
+> have with it, then can I assume that you won't lobby against having
+> this experiment merged?
 
---=-q4yeFoY5BmWgL41sy8j5--
+Anybody is free to merge anything into their kernel. And if somebody
+asks for my issues with the swap prefetching patch, then I'll give
+them :)
 
+-- 
+SUSE Labs, Novell Inc.
