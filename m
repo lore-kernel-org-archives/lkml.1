@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762025AbXEJM44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbXEJM6l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762025AbXEJM44 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755200AbXEJM4t
+	id S1761542AbXEJM6l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:58:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755709AbXEJM6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:56:49 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:59648 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755347AbXEJM4s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:56:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=tsDLk5MRQYvPTeVTXnG9+m7YrI2Lz8Xxm+rk/93eNzW7zFmXKwzjyQRWOeWATkKsonDNxlW7P26vqEIO4ea01pxC9BRYaOmKRV6YE4dziKPPanY1d+VXeqeBCyaJIBE8tTP93lh099oEcIw8M1dV4HHhhNsuB+uV48LPeeW8YpE=
-Message-ID: <84144f020705100556x2fd70556p37cde356520e515d@mail.gmail.com>
-Date: Thu, 10 May 2007 15:56:47 +0300
-From: "Pekka Enberg" <penberg@cs.helsinki.fi>
-To: "Andrew Morton" <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4] ext2: remove inode constructor
-Cc: linux-kernel@vger.kernel.org, sct@redhat.com, adilger@clusterfs.com,
-       clameter@sgi.com
-In-Reply-To: <20070509133948.814128f4.akpm@linux-foundation.org>
+	Thu, 10 May 2007 08:58:35 -0400
+Received: from smtp.boksi.fi ([195.10.143.42]:52942 "EHLO smtp1.boksi.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755347AbXEJM6e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 08:58:34 -0400
+Date: Thu, 10 May 2007 15:58:32 +0300
+From: Mika Kukkonen <mikukkon@miku.homelinux.net>
+To: akpm@google.com, ashwin.chaugule@celunite.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix bug in mm/thrash.c function grab_swap_token()
+Message-ID: <20070510125832.GA16461@srv1-m700-lanp.koti>
+Reply-To: mikukkon@iki.fi
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-References: <Pine.LNX.4.64.0705051256530.20886@sbz-30.cs.Helsinki.FI>
-	 <20070509133948.814128f4.akpm@linux-foundation.org>
-X-Google-Sender-Auth: a11434423b7121b4
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> ext2 has no truncate_mutex.
+Following bug was uncovered by compiling with '-W' flag:
 
-I think it does:
+  CC      mm/thrash.o
+mm/thrash.c: In function ‘grab_swap_token’:
+mm/thrash.c:52: warning: comparison of unsigned expression < 0 is always false
 
--               mutex_init(&ei->truncate_mutex);
--               inode_init_once(&ei->vfs_inode);
--       }
--}
+Field token_priority is unsigned, so decrementing first and the checking
+is not a good plan. Attached patch (compile tested) reverses the order.
 
-And fs/ext2/super.c:init_once() from 2.6.21-mm2 says:
+Btw, I'm not sure if likely() makes any sense in this new situation.
 
-                mutex_init(&ei->truncate_mutex);
-                inode_init_once(&ei->vfs_inode);
-        }
-}
+Signed-off-by: Mika Kukkonen <mikukkon@iki.fi>
 
-Hmm?
+diff --git a/mm/thrash.c b/mm/thrash.c
+index 9ef9071..c4c5205 100644
+--- a/mm/thrash.c
++++ b/mm/thrash.c
+@@ -48,9 +48,8 @@ void grab_swap_token(void)
+ 		if (current_interval < current->mm->last_interval)
+ 			current->mm->token_priority++;
+ 		else {
+-			current->mm->token_priority--;
+-			if (unlikely(current->mm->token_priority < 0))
+-				current->mm->token_priority = 0;
++			if (likely(current->mm->token_priority > 0))
++				current->mm->token_priority--;
+ 		}
+ 		/* Check if we deserve the token */
+ 		if (current->mm->token_priority >
 
-On 5/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
-> These patches are rather tangled up with the unmerged __GFP_RECLAIMABLE
-> stuff.  I'll duck them for now.
-
-Ok. I would appreciate any kind of heads-up when you're ready to eat
-these patches again. ;-)
