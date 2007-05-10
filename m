@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759413AbXEJMLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760618AbXEJMNJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759413AbXEJMLa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbXEJMLX
+	id S1760618AbXEJMNJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:13:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753568AbXEJMM4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:11:23 -0400
-Received: from wr-out-0506.google.com ([64.233.184.230]:9238 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753395AbXEJMLX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:11:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=BC6VVEO7bYxNzKvQsvjy4gep3UK1FwUfb653kquFNgcOAmE0B83Rju7aAplrsB8BD8cybCAfidcYuPwuP9sl9J2+Ih4ECLFAaqBmeiL34BM//jrQzwGMXGdHEMHGC1XwtjOk/ff2a+ayKTzshrMy71oICObdZuVgS2kVj1recKM=
-Message-ID: <a781481a0705100511l1bfdc7f3tc2669eb916f76594@mail.gmail.com>
-Date: Thu, 10 May 2007 17:41:21 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Roland Dreier" <rdreier@cisco.com>
-Subject: Re: [PATCH] net: trivial MLX4_DEBUG dependency fix.
-Cc: "Paul Mundt" <lethal@linux-sh.org>, "Roland Dreier" <rolandd@cisco.com>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <aday7jw29ci.fsf@cisco.com>
+	Thu, 10 May 2007 08:12:56 -0400
+Received: from neon.samage.net ([85.17.153.66]:59644 "EHLO neon.samage.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753395AbXEJMM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 08:12:56 -0400
+Message-ID: <1358.81.207.0.53.1178799167.squirrel@secure.samage.net>
+In-Reply-To: <20070510013855.GA3402@havoc.gtf.org>
+References: <20070510013855.GA3402@havoc.gtf.org>
+Date: Thu, 10 May 2007 14:12:47 +0200 (CEST)
+Subject: Re: [git patch] move USB net drivers to drivers/net
+From: "Indan Zupancic" <indan@nul.nu>
+To: "Jeff Garzik" <jeff@garzik.org>, duncan.sands@free.fr
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "LKML" <linux-kernel@vger.kernel.org>, gregkh@suse.de,
+       linux-usb-devel@lists.sourceforge.net
+User-Agent: SquirrelMail/1.4.8
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070510035028.GA26453@linux-sh.org> <aday7jw29ci.fsf@cisco.com>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+X-Spam-Score: -1.8
+X-Scan-Signature: e462de357cb394d64966911c06262bc8
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello,
 
-On 5/10/07, Roland Dreier <rdreier@cisco.com> wrote:
->  > CONFIG_MLX4_DEBUG works out to a def_bool y for those that
->  > have CONFIG_EMBEDDED set. Make it depend on MLX4_CORE..
+On Thu, May 10, 2007 03:38, Jeff Garzik wrote:
 >
-> Thanks, applied...  (by the way, this bug just results in an
-> extraneous CONFIG variable being defined, right?  There's no further
-> breakage -- or am I misunderstanding the situation?)
-
-Yeah, it won't cause any build breakage. It doesn't cause anything to
-even get _built_ actually, because of the way this config option is
-used directly in the .h and .c sources in drivers/net/mlx4/ (which is
-itself compiled only when MLX4_CORE=y or m), and not in a Makefile.
-
->  > I'll let someone else wonder why debugging output is default enabled,
->  > this seems to be a worrying trend as of late.
+> This was ACK'd by Greg, as you see in the sign-offs.  See the commit
+> below for rationale.
 >
-> Actually this option just controls whether to build the debugging
-> output at all.  The output is controlled at runtime with a module
-> parameter (which can be changed via sysfs after the module is loaded),
-> and the output defaults to off.
+> USB is now treated like other buses, for network drivers:
+> * USB network driver patches should go to me and netdev
+> * Just like in PCI or PCMCIA land, bus-specific code may
+>   originate from the USB side of the house (Greg's tree).
 >
-> The reason why I want building the debugging stuff to default to y is
-> so that distros automatically build modules with debugging enabled.
-> Otherwise it's a pain to try and gather info from someone who has
-> problems with a kernel they didn't build.
+>
+>
+> Please pull from 'usb-move' branch of
+> master.kernel.org:/pub/scm/linux/kernel/git/jgarzik/netdev-2.6.git usb-move
+>
+> to receive the following update:
+>
+>
+> commit 5b2fc499917e5897a13add780e181b4cef197072
+> Author: Jeff Garzik <jeff@garzik.org>
+> Date:   Wed May 9 21:31:55 2007 -0400
+>
+>     Move USB network drivers to drivers/net/usb.
+>
+>     It is preferable to group drivers by usage (net, scsi, ATA, ...) than
+>     by bus.  When reviewing drivers, the [PCI|USB|PCMCIA|...] maintainer
+>     is probably less qualified on networking issues than a networking
+>     maintainer.  Also, from a practical standpoint, chips often
+>     appear on multiple buses, which is why we do not put drivers into
+>     drivers/pci/net.
 
-IMHO default configs must be aimed at production usage scenarios, so
-are better off without debugging enabled by default. Except if the
-driver is really new / EXPERIMENTAL where the goal is to get it tested
-out by all users asap (and no production systems would be using it
-anyway).
+What about drivers/usb/atm/?
 
-Just my 2 paise,
-Satyam
+Greetings,
+
+Indan
+
+
