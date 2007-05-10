@@ -1,86 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759551AbXEJTSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759389AbXEJTVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759551AbXEJTSW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 15:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755762AbXEJTSP
+	id S1759389AbXEJTVU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 15:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755528AbXEJTVL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 15:18:15 -0400
-Received: from smtp104.sbc.mail.mud.yahoo.com ([68.142.198.203]:32621 "HELO
-	smtp104.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755528AbXEJTSP (ORCPT
+	Thu, 10 May 2007 15:21:11 -0400
+Received: from ug-out-1314.google.com ([66.249.92.175]:45324 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755762AbXEJTVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 15:18:15 -0400
-X-YMail-OSG: rzLi4g8VM1lwuKS7lr7B799ngIHuL.ptI6Tt21Yx4885vCJmIRrBaPIvOy_xnUZWpf7CRdFkyw--
-Date: Thu, 10 May 2007 12:18:11 -0700
-From: Chris Wedgwood <cw@f00f.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: William Lee Irwin III <wli@holomorphy.com>, trond.myklebust@fys.uio.no
-Subject: [RFC] nfs: memclear_highpage_flush -> zero_user_page conversion
-Message-ID: <20070510191811.GA17220@tuatara.stupidest.org>
+	Thu, 10 May 2007 15:21:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=Mk9cFQd5qIpB+t2d+VQ7RK02xyQNw7JOiEEWnuyfl4cu+YlCC/T9BPOXY2qJ9IcUG7G9E457bOWyM31nGS/1ReC7b57UlxVcDlQWhx4Cxd6lR4FD2M+Bcu2TEdA917oXdnk6Dg0jt3ClOaZHJMeuhG5pYlVfszoxoqf5GJSF1To=
+Message-ID: <84144f020705101221y6070ed93he837c59053084fae@mail.gmail.com>
+Date: Thu, 10 May 2007 22:21:08 +0300
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+To: "Christoph Lameter" <clameter@sgi.com>
+Subject: Re: [RFC] Slab allocators: Drop support for destructors
+Cc: linux-kernel@vger.kernel.org, "Paul Mundt" <lethal@linux-sh.org>
+In-Reply-To: <Pine.LNX.4.64.0705101156190.10663@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
+References: <Pine.LNX.4.64.0705101156190.10663@schroedinger.engr.sgi.com>
+X-Google-Sender-Auth: 0472f4018d1a0724
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Does this look correct?
+On 5/10/07, Christoph Lameter <clameter@sgi.com> wrote:
+> Or are there valid reason to keep them around? It seems they were mainly
+> used for list management which required them to take a spinlock. Taking a
+> spinlock in a destructor is a bit risky since the slab allocators may run
+> the destructors anytime they decide a slab is no longer needed.
+>
+> Or do we want to continue support destructors? If so why?
 
-diff --git a/fs/nfs/read.c b/fs/nfs/read.c
-index 9a55807..7bd7cb9 100644
---- a/fs/nfs/read.c
-+++ b/fs/nfs/read.c
-@@ -79,7 +79,7 @@ void nfs_readdata_release(void *data)
- static
- int nfs_return_empty_page(struct page *page)
- {
--	memclear_highpage_flush(page, 0, PAGE_CACHE_SIZE);
-+	zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
- 	SetPageUptodate(page);
- 	unlock_page(page);
- 	return 0;
-@@ -103,10 +103,10 @@ static void nfs_readpage_truncate_uninitialised_page(struct nfs_read_data *data)
- 	pglen = PAGE_CACHE_SIZE - base;
- 	for (;;) {
- 		if (remainder <= pglen) {
--			memclear_highpage_flush(*pages, base, remainder);
-+			zero_user_page(*pages, base, remainder, KM_USER0);
- 			break;
- 		}
--		memclear_highpage_flush(*pages, base, pglen);
-+		zero_user_page(*pages, base, pglen, KM_USER0);
- 		pages++;
- 		remainder -= pglen;
- 		pglen = PAGE_CACHE_SIZE;
-@@ -130,7 +130,7 @@ static int nfs_readpage_async(struct nfs_open_context *ctx, struct inode *inode,
- 		return PTR_ERR(new);
- 	}
- 	if (len < PAGE_CACHE_SIZE)
--		memclear_highpage_flush(page, len, PAGE_CACHE_SIZE - len);
-+		zero_user_page(page, len, PAGE_CACHE_SIZE - len, KM_USER0);
- 
- 	nfs_list_add_request(new, &one_request);
- 	if (NFS_SERVER(inode)->rsize < PAGE_CACHE_SIZE)
-@@ -532,7 +532,7 @@ readpage_async_filler(void *data, struct page *page)
- 			return PTR_ERR(new);
- 	}
- 	if (len < PAGE_CACHE_SIZE)
--		memclear_highpage_flush(page, len, PAGE_CACHE_SIZE - len);
-+		zero_user_page(page, len, PAGE_CACHE_SIZE - len, KM_USER0);
- 	nfs_pageio_add_request(desc->pgio, new);
- 	return 0;
- }
-diff --git a/fs/nfs/write.c b/fs/nfs/write.c
-index de92b95..211d0b1 100644
---- a/fs/nfs/write.c
-+++ b/fs/nfs/write.c
-@@ -168,7 +168,7 @@ static void nfs_mark_uptodate(struct page *page, unsigned int base, unsigned int
- 	if (count != nfs_page_length(page))
- 		return;
- 	if (count != PAGE_CACHE_SIZE)
--		memclear_highpage_flush(page, count, PAGE_CACHE_SIZE - count);
-+		zero_user_page(page, count, PAGE_CACHE_SIZE - count, KM_USER0);
- 	SetPageUptodate(page);
- }
- 
+Well, constructors are on their way out too because they don't seem to
+give the performance benefit they were designed for anymore. As for
+destructors, they have been pretty useless in Linux for a long time
+now and we really don't do much "complex initialization" that requires
+undo (releasing resources).
 
+Looks good to me.
 
+Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+
+                             Pekka
