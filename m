@@ -1,90 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbXEJGgr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757674AbXEJGio@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758017AbXEJGgr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 02:36:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbXEJGgi
+	id S1757674AbXEJGio (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 02:38:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbXEJGih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 02:36:38 -0400
-Received: from adelie.ubuntu.com ([82.211.81.139]:49557 "EHLO
-	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756094AbXEJGgg (ORCPT
+	Thu, 10 May 2007 02:38:37 -0400
+Received: from ausmtp06.au.ibm.com ([202.81.18.155]:36581 "EHLO
+	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756092AbXEJGig (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 02:36:36 -0400
-Subject: Re: [PATCH] Cleanup libata HPA support
-From: Ben Collins <ben.collins@ubuntu.com>
-To: Robert Hancock <hancockr@shaw.ca>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <464258C9.7040405@shaw.ca>
-References: <fa.7iNoP7Qs8RAGjCdw2nQZBKOCxZU@ifi.uio.no>
-	 <46408D43.3020300@shaw.ca> <1178692170.6962.146.camel@cunning>
-	 <464258C9.7040405@shaw.ca>
-Content-Type: text/plain
-Organization: Canonical
-Date: Thu, 10 May 2007 08:36:32 +0200
-Message-Id: <1178778992.5910.24.camel@cunning>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Thu, 10 May 2007 02:38:36 -0400
+From: Sripathi Kodi <sripathik@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PREEMPT_RT] [PATCH 1/2] Introduce write_trylock_irqsave
+Date: Thu, 10 May 2007 12:07:48 +0530
+User-Agent: KMail/1.9.5
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Roland McGrath <roland@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705101207.48906.sripathik@in.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 17:27 -0600, Robert Hancock wrote:
-> Ben Collins wrote:
-> > On Tue, 2007-05-08 at 08:46 -0600, Robert Hancock wrote:
-> >> Ben Collins wrote:
-> >>> The original HPA patch that Kyle worked on has gone into current git
-> >>> without some fixes that we worked through late in the Ubuntu feisty
-> >>> release. Here's the main copy of the notes I sent to Alan a few weeks
-> >>> ago in regards to the original patch, and a repatch against current git
-> >>> to fix things up. Note we have released feisty with the patch attached
-> >>> (albeit we have HPA enabled by default), and we have not had any reports
-> >>> directly attributed to it. However, in gutsy (devel for next release,
-> >>> based on current stock linux-2.6.git), we are already seeing reports of
-> >>> the same issues we already fixed. 
-> >>>
-> >>> The issues we saw were mainly that some controllers didn't return the
-> >>> correct size from the SET_MAX command (sata_nv is a good example). So I
-> >>> added a re IDENTIFY after the SET_MAX, and compared all the numbers. If
-> >>> re-id was correct, but return value from SET_MAX wasn't we print a
-> >>> warning and use the IDENTIFY value regardless (since that's what the
-> >>> device is going to use).
-> >>>
-> >>> Because we re IDENTIFY, there was also no need to keep n_sectors_boot
-> >>> around, so that was removed. The ata_hpa_resize() was changed to handle
-> >>> everything in a single call (checks for HPA support of the device, and
-> >>> whether ignore_hpa is set or not), and it also sets dev->n_sectors
-> >>> before returning.
-> >>>
-> >>> So far with this patch, we were able to fix all the problems we were
-> >>> seeing with it (except the sata_nv issue where we had to revert to not
-> >>> using adma for NO_DATA transactions, already reported to libata-dev).
-> >>> We've not had any reports of further problems.
-> >> That sata_nv issue should not be present anymore in the current 
-> >> libata-dev tree.
-> > 
-> > That's correct, it is not, at least the machine exception problem isn't.
-> > However, the incorrect returns from SET_MAX are still an issue with that
-> > hw. No idea what is causing it.
-> 
-> Curious.. Do you have some output or other details from what was 
-> actually returned? Also was this on more than one drive model?
+Hi Ingo,
 
-I no longer have these outputs handy, although a bug report on
-launchpad.net might have it (linux-source-2.6.20 package).
+I am trying to fix the BUG I mentioned here: 
+http://lkml.org/lkml/2007/04/20/41. The problem arises because 
+ptrace_attach() calls local_irq_disable() and write_trylock() and later calls 
+write_unlock_irq. On -rt write_unlock_irq doesn't restore irqs for regular 
+rwlock_t, so irqs remain disabled. I have also sent patches for mainline 
+kernel. Please refer http://lkml.org/lkml/2007/05/09/76 , 
+http://lkml.org/lkml/2007/05/09/79 and http://lkml.org/lkml/2007/05/09/550
 
-It was an abnormally huge value (hence the exposed signed extension
-problems I fixed). The incorrect value was always the same for the same
-controller/drive pair. It was not specific to a drive model, only
-sata_nv (and I think pata_amd) was common to these cases.
+This patch adds write_trylock_irqsave function.
 
-Due to the extreme proximity of this bug being exposed to our release
-deadline, we did not investigate the absolute cause of the issue, just
-implemented a safer HPA detection to avoid them. If you have a sata_nv,
-it is easy to get these values even with my patch since it outputs a
-warning with the incorrect read back from SET_MAX. So the problems wont
-go unnoticed.
+Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
 
--- 
-Ubuntu   : http://www.ubuntu.com/
-Linux1394: http://wiki.linux1394.org/
-
+Index: linux-2.6.21-rt1_patch/include/linux/spinlock.h
+===================================================================
+--- linux-2.6.21-rt1_patch.orig/include/linux/spinlock.h	2007-05-10 
+11:28:35.000000000 +0530
++++ linux-2.6.21-rt1_patch/include/linux/spinlock.h	2007-05-10 
+11:29:13.000000000 +0530
+@@ -323,6 +323,7 @@
+ 
+ # define _read_trylock(rwl)	rt_read_trylock(rwl)
+ # define _write_trylock(rwl)	rt_write_trylock(rwl)
++#define _write_trylock_irqsave(rwl, flags)  rt_write_trylock_irqsave(rwl, 
+flags)
+ 
+ # define _read_lock(rwl)	rt_read_lock(rwl)
+ # define _write_lock(rwl)	rt_write_lock(rwl)
+@@ -398,6 +399,19 @@
+ 	else __bad_rwlock_type();					\
+ } while (0)
+ 
++#define PICK_RW_OP2_RET(optype, op, lock, flags)			\
++({									\
++	unsigned long __ret;						\
++									\
++	if (TYPE_EQUAL((lock), raw_rwlock_t))				\
++		__ret = __##optype##op((raw_rwlock_t *)(lock), flags);	\
++	else if (TYPE_EQUAL(lock, rwlock_t))				\
++		__ret = _##optype##op((rwlock_t *)(lock), flags);	\
++	else __bad_rwlock_type();					\
++									\
++	__ret;								\
++})
++
+ #ifdef CONFIG_DEBUG_SPINLOCK
+   extern void __raw_spin_lock_init(raw_spinlock_t *lock, const char *name,
+ 				   struct lock_class_key *key);
+@@ -473,6 +487,9 @@
+ //#define write_trylock(lock)	_write_trylock(lock)
+ #define write_trylock(lock)	__cond_lock(lock, PICK_RW_OP_RET(write, _trylock, 
+lock))
+ 
++#define write_trylock_irqsave(lock, flags) \
++	__cond_lock(lock, PICK_RW_OP2_RET(write, _trylock_irqsave, lock, &flags))
++
+ #define __spin_can_lock(lock)	__raw_spin_can_lock(&(lock)->raw_lock)
+ #define __read_can_lock(lock)	__raw_read_can_lock(&(lock)->raw_lock)
+ #define __write_can_lock(lock)	__raw_write_can_lock(&(lock)->raw_lock)
+Index: linux-2.6.21-rt1_patch/include/linux/spinlock_api_smp.h
+===================================================================
+--- linux-2.6.21-rt1_patch.orig/include/linux/spinlock_api_smp.h	2007-05-10 
+11:28:35.000000000 +0530
++++ linux-2.6.21-rt1_patch/include/linux/spinlock_api_smp.h	2007-05-10 
+11:29:13.000000000 +0530
+@@ -48,6 +48,8 @@
+ __spin_trylock_irqsave(raw_spinlock_t *lock, unsigned long *flags);
+ int __lockfunc __read_trylock(raw_rwlock_t *lock);
+ int __lockfunc __write_trylock(raw_rwlock_t *lock);
++int __lockfunc
++__write_trylock_irqsave(raw_rwlock_t *lock, unsigned long *flags);
+ int __lockfunc __spin_trylock_bh(raw_spinlock_t *lock);
+ int __lockfunc __spin_trylock_irq(raw_spinlock_t *lock);
+ void __lockfunc __spin_unlock(raw_spinlock_t *lock)		RELEASE_SPIN;
+Index: linux-2.6.21-rt1_patch/include/linux/spinlock_api_up.h
+===================================================================
+--- linux-2.6.21-rt1_patch.orig/include/linux/spinlock_api_up.h	2007-05-10 
+11:28:35.000000000 +0530
++++ linux-2.6.21-rt1_patch/include/linux/spinlock_api_up.h	2007-05-10 
+11:29:13.000000000 +0530
+@@ -41,6 +41,8 @@
+ 
+ #define __spin_trylock_irqsave(lock, flags)	__TRYLOCK_IRQSAVE(lock, flags)
+ 
++#define __write_trylock_irqsave(lock, flags)	__TRYLOCK_IRQSAVE(lock, flags)
++
+ #define __UNLOCK(lock) \
+   do { preempt_enable(); __release(lock); (void)(lock); } while (0)
+ 
+Index: linux-2.6.21-rt1_patch/kernel/rt.c
+===================================================================
+--- linux-2.6.21-rt1_patch.orig/kernel/rt.c	2007-05-10 11:28:35.000000000 
++0530
++++ linux-2.6.21-rt1_patch/kernel/rt.c	2007-05-10 11:29:13.000000000 +0530
+@@ -173,6 +173,12 @@
+ }
+ EXPORT_SYMBOL(rt_write_trylock);
+ 
++int __lockfunc rt_write_trylock_irqsave(rwlock_t *rwlock, unsigned long 
+*flags)
++{
++	*flags = 0;
++	return rt_write_trylock(rwlock);
++}
++
+ int __lockfunc rt_read_trylock(rwlock_t *rwlock)
+ {
+ 	struct rt_mutex *lock = &rwlock->lock;
+Index: linux-2.6.21-rt1_patch/kernel/spinlock.c
+===================================================================
+--- linux-2.6.21-rt1_patch.orig/kernel/spinlock.c	2007-05-10 
+11:28:35.000000000 +0530
++++ linux-2.6.21-rt1_patch/kernel/spinlock.c	2007-05-10 11:29:13.000000000 
++0530
+@@ -97,6 +97,20 @@
+ }
+ EXPORT_SYMBOL(__write_trylock);
+ 
++int __lockfunc __write_trylock_irqsave(raw_rwlock_t *lock, unsigned long 
+*flags)
++{
++	int ret;
++
++	local_irq_save(*flags);
++	ret = __write_trylock(lock);
++	if (ret)
++		return ret;
++
++	local_irq_restore(*flags);
++	return 0;
++}
++EXPORT_SYMBOL(__write_trylock_irqsave);
++
+ /*
+  * If lockdep is enabled then we use the non-preemption spin-ops
+  * even on CONFIG_PREEMPT, because lockdep assumes that interrupts are
