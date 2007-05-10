@@ -1,88 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761271AbXEJNja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbXEJNjp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761271AbXEJNja (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 09:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758185AbXEJNjJ
+	id S1758712AbXEJNjp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 09:39:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760200AbXEJNjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 09:39:09 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:32880 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbXEJNjI (ORCPT
+	Thu, 10 May 2007 09:39:20 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:50506 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759586AbXEJNjS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 09:39:08 -0400
-Message-ID: <46431FEC.7000901@oracle.com>
-Date: Thu, 10 May 2007 09:36:44 -0400
-From: Chuck Lever <chuck.lever@oracle.com>
-Reply-To: chuck.lever@oracle.com
-Organization: Oracle Corporation
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       NeilBrown <neilb@suse.de>, Adrian Bunk <bunk@stusta.de>
-Subject: Re: [bisect] NFS regression breaks X
-References: <46423D62.2070200@garzik.org>	 <1178748206.6760.3.camel@heimdal.trondhjem.org>	 <20070509155228.d1b9d644.akpm@linux-foundation.org> <1178755813.6760.26.camel@heimdal.trondhjem.org>
-In-Reply-To: <1178755813.6760.26.camel@heimdal.trondhjem.org>
-Content-Type: multipart/mixed;
- boundary="------------050203050704090904090506"
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Thu, 10 May 2007 09:39:18 -0400
+Date: Thu, 10 May 2007 14:43:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pekka J Enberg <penberg@cs.helsinki.fi>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 07/10] Linux Kernel Markers - Documentation
+Message-ID: <20070510144302.6a7826d6@the-village.bc.nu>
+In-Reply-To: <Pine.LNX.4.64.0705101606130.22625@sbz-30.cs.Helsinki.FI>
+References: <20070510015555.973107048@polymtl.ca>
+	<20070510020917.172554217@polymtl.ca>
+	<20070510065847.GE8019@infradead.org>
+	<20070510124120.6e8ac5aa@the-village.bc.nu>
+	<20070510114158.GA16741@infradead.org>
+	<20070510134816.5e57e3cb@the-village.bc.nu>
+	<84144f020705100552u3f988e80u29fc412737522259@mail.gmail.com>
+	<20070510140452.25ae6765@the-village.bc.nu>
+	<Pine.LNX.4.64.0705101606130.22625@sbz-30.cs.Helsinki.FI>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050203050704090904090506
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+O> Oh, I am not advocating censorship. I was merely pointing out that it 
+> seems silly to mention out-of-tree users because they come and go. Who 
+> knows whether LTTng or SystemTAP will be relevant five years from now? 
 
-Trond Myklebust wrote:
-> On Wed, 2007-05-09 at 15:52 -0700, Andrew Morton wrote:
->> It's a bit rough that Jeff spent a large amount of time hunting down an
->> already-known bug.  That's normally my job :(
+And in the intervening five years (or more likely 7 or more for
+systemtap) the documentation will be very useful.
+
+> Besides, are we sure the document includes all potential users now? We 
+> wouldn't want to show favorism to any particular projects, now would we?
+
+Absolutely not - and isn't it more useful to let users know about all of
+the tools that this enables ?
+
 > 
-> The bug was reported by Florin Iucha (on lkml!) on Saturday. It has only
-> just been debugged, and I was in fact in the middle of marshalling the
-> fixes.
+> On Thu, 10 May 2007, Alan Cox wrote: 
+> > And as I keep saying the tree is full of references to out of tree stuff.
+> > The documentation directory alone currently contains over a thousand http
+> > URLS as of 2.6.21-rc6-mm1.
 > 
->> This five-week-old diff only ever appeared in 2.6.21-mm1, which was
->> released four days ago.  It was then whizzed into mainline.  We thus lost
->> five weeks public testing which would probably have saved Jeff his pain.
->>
->> What went wrong?
-> 
-> Probably my fault. I've had a couple of weeks of heavy travel due to
-> various circumstances that were beyond my control, and so I had little
-> time in which to test the stuff and push it out.
-> 
-> Another factor that is affecting us is the slow but gradual collapse of
-> the OSDL NFSv4 regression testing effort.
+> Many of the already out of date or expiring in the near future... 
 
-I had expected that many of these issues would be caught by the OSDL 
-test harness.  I learned only yesterday that it was no longer available, 
-so I am making an effort to broaden my personal test regime.
+Have you done a statistically valid sampling or is this guessing ?
 
---------------050203050704090904090506
-Content-Type: text/x-vcard; charset=utf-8;
- name="chuck.lever.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="chuck.lever.vcf"
-
-begin:vcard
-fn:Chuck Lever
-n:Lever;Chuck
-org:Oracle Corporation;Corporate Architecture: Linux Projects Group
-adr:;;1015 Granger Avenue;Ann Arbor;MI;48104;USA
-title:Principal Member of Staff
-tel;work:+1 248 614 5091
-x-mozilla-html:FALSE
-url:http://oss.oracle.com/~cel/
-version:2.1
-end:vcard
-
-
---------------050203050704090904090506--
+Alan
