@@ -1,542 +1,843 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbXEJCMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbXEJCMk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756291AbXEJCMU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 22:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbXEJCL7
+	id S1759605AbXEJCMk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 22:12:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759309AbXEJCMQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 22:11:59 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:57633 "EHLO smtp.polymtl.ca"
+	Wed, 9 May 2007 22:12:16 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:57702 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754355AbXEJCL5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 22:11:57 -0400
-Message-Id: <20070510020915.609367244@polymtl.ca>
+	id S1757695AbXEJCMM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 22:12:12 -0400
+Message-Id: <20070510020918.085866258@polymtl.ca>
 References: <20070510015555.973107048@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 May 2007 21:55:57 -0400
+Date: Wed, 09 May 2007 21:56:05 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Adrian Bunk <bunk@stusta.de>
-Subject: [patch 02/10] Linux Kernel Markers, architecture independent code.
-Content-Disposition: inline; filename=linux-kernel-markers-architecture-independant-code.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 10 May 2007 02:09:16 +0000
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 10/10] Port of blktrace to the Linux Kernel Markers.
+Content-Disposition: inline; filename=linux-kernel-markers-port-blktrace-to-markers.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 10 May 2007 02:09:18 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[bunk@stusta.de: marker exports must be EXPORT_SYMBOL_GPL]
+Here is a proof of concept patch, for demonstration purpose, of moving
+blktrace to the markers.
+
+A few remarks : this patch has the positive effect of removing some code
+from the block io tracing hot paths, minimizing the i-cache impact in a
+system where the io tracing is compiled in but inactive.
+
+It also moves the blk tracing code from a header (and therefore from the
+body of the instrumented functions) to a separate C file.
+
+There, as soon as one device has to be traced, every devices have to
+fall into the tracing function call. This is slower than the previous
+inline function which tested the condition quickly. If it becomes a
+show stopper, it could be fixed by having the possibility to test a
+supplementary condition, dependant of the marker context, at the marker
+site, just after the enable/disable test.
+
+It does not make the code smaller, since I left all the specialized
+tracing functions for requests, bio, generic, remap, which would go away
+once a generic infrastructure is in place to serialize the information
+passed to the marker. This is mostly why I consider it a proof a
+concept.
+
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/asm-generic/vmlinux.lds.h |   13 +
- include/linux/marker.h            |  124 +++++++++++++++++
- include/linux/module.h            |    4 
- kernel/module.c                   |  273 ++++++++++++++++++++++++++++++++++++++
- 4 files changed, 414 insertions(+)
+ block/Kconfig                |    1 
+ block/blktrace.c             |  282 ++++++++++++++++++++++++++++++++++++++++++-
+ block/elevator.c             |    6 
+ block/ll_rw_blk.c            |   27 ++--
+ drivers/block/cciss.c        |    4 
+ drivers/md/dm.c              |   14 +-
+ fs/bio.c                     |    4 
+ include/linux/blktrace_api.h |  146 +---------------------
+ mm/bounce.c                  |    4 
+ mm/highmem.c                 |    2 
+ 10 files changed, 323 insertions(+), 167 deletions(-)
 
-Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
+Index: linux-2.6-lttng/block/elevator.c
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-05-09 18:14:52.000000000 -0400
-+++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-05-09 18:15:55.000000000 -0400
-@@ -121,6 +121,19 @@
-         __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
- 		*(__ksymtab_strings)					\
- 	}								\
-+	/* Kernel markers : pointers */					\
-+	.markers : AT(ADDR(.markers) - LOAD_OFFSET) {			\
-+		VMLINUX_SYMBOL(__start___markers) = .;			\
-+		*(.markers)						\
-+		VMLINUX_SYMBOL(__stop___markers) = .;			\
-+	}								\
-+	.markers.c : AT(ADDR(.markers.c) - LOAD_OFFSET) {		\
-+		VMLINUX_SYMBOL(__start___markers_c) = .;		\
-+		*(.markers.c)						\
-+		VMLINUX_SYMBOL(__stop___markers_c) = .;			\
-+	}								\
-+	__end_rodata = .;						\
-+	. = ALIGN(4096);						\
- 									\
- 	/* Built-in module parameters. */				\
- 	__param : AT(ADDR(__param) - LOAD_OFFSET) {			\
-Index: linux-2.6-lttng/include/linux/marker.h
+--- linux-2.6-lttng.orig/block/elevator.c	2007-05-09 18:09:47.000000000 -0400
++++ linux-2.6-lttng/block/elevator.c	2007-05-09 18:16:30.000000000 -0400
+@@ -32,7 +32,7 @@
+ #include <linux/init.h>
+ #include <linux/compiler.h>
+ #include <linux/delay.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <linux/hash.h>
+ 
+ #include <asm/uaccess.h>
+@@ -551,7 +551,7 @@
+ 	unsigned ordseq;
+ 	int unplug_it = 1;
+ 
+-	blk_add_trace_rq(q, rq, BLK_TA_INSERT);
++	trace_mark(blk_request_insert, "%p %p", q, rq);
+ 
+ 	rq->q = q;
+ 
+@@ -730,7 +730,7 @@
+ 			 * not be passed by new incoming requests
+ 			 */
+ 			rq->cmd_flags |= REQ_STARTED;
+-			blk_add_trace_rq(q, rq, BLK_TA_ISSUE);
++			trace_mark(blk_request_issue, "%p %p", q, rq);
+ 		}
+ 
+ 		if (!q->boundary_rq || q->boundary_rq == rq) {
+Index: linux-2.6-lttng/block/ll_rw_blk.c
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/linux/marker.h	2007-05-09 18:15:55.000000000 -0400
-@@ -0,0 +1,124 @@
-+#ifndef _LINUX_MARKER_H
-+#define _LINUX_MARKER_H
+--- linux-2.6-lttng.orig/block/ll_rw_blk.c	2007-05-09 18:14:40.000000000 -0400
++++ linux-2.6-lttng/block/ll_rw_blk.c	2007-05-09 18:16:30.000000000 -0400
+@@ -28,6 +28,7 @@
+ #include <linux/task_io_accounting_ops.h>
+ #include <linux/interrupt.h>
+ #include <linux/cpu.h>
++#include <linux/marker.h>
+ #include <linux/blktrace_api.h>
+ #include <linux/fault-inject.h>
+ 
+@@ -1551,7 +1552,7 @@
+ 
+ 	if (!test_and_set_bit(QUEUE_FLAG_PLUGGED, &q->queue_flags)) {
+ 		mod_timer(&q->unplug_timer, jiffies + q->unplug_delay);
+-		blk_add_trace_generic(q, NULL, 0, BLK_TA_PLUG);
++		trace_mark(blk_plug_device, "%p %p %d", q, NULL, 0);
+ 	}
+ }
+ 
+@@ -1617,7 +1618,7 @@
+ 	 * devices don't necessarily have an ->unplug_fn defined
+ 	 */
+ 	if (q->unplug_fn) {
+-		blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
++		trace_mark(blk_pdu_unplug_io, "%p %p %d", q, NULL,
+ 					q->rq.count[READ] + q->rq.count[WRITE]);
+ 
+ 		q->unplug_fn(q);
+@@ -1628,7 +1629,7 @@
+ {
+ 	request_queue_t *q = container_of(work, request_queue_t, unplug_work);
+ 
+-	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_IO, NULL,
++	trace_mark(blk_pdu_unplug_io, "%p %p %d", q, NULL,
+ 				q->rq.count[READ] + q->rq.count[WRITE]);
+ 
+ 	q->unplug_fn(q);
+@@ -1638,7 +1639,7 @@
+ {
+ 	request_queue_t *q = (request_queue_t *)data;
+ 
+-	blk_add_trace_pdu_int(q, BLK_TA_UNPLUG_TIMER, NULL,
++	trace_mark(blk_pdu_unplug_timer, "%p %p %d", q, NULL,
+ 				q->rq.count[READ] + q->rq.count[WRITE]);
+ 
+ 	kblockd_schedule_work(&q->unplug_work);
+@@ -2150,7 +2151,7 @@
+ 	
+ 	rq_init(q, rq);
+ 
+-	blk_add_trace_generic(q, bio, rw, BLK_TA_GETRQ);
++	trace_mark(blk_get_request, "%p %p %d", q, bio, rw);
+ out:
+ 	return rq;
+ }
+@@ -2180,7 +2181,7 @@
+ 		if (!rq) {
+ 			struct io_context *ioc;
+ 
+-			blk_add_trace_generic(q, bio, rw, BLK_TA_SLEEPRQ);
++			trace_mark(blk_sleep_request, "%p %p %d", q, bio, rw);
+ 
+ 			__generic_unplug_device(q);
+ 			spin_unlock_irq(q->queue_lock);
+@@ -2254,7 +2255,7 @@
+  */
+ void blk_requeue_request(request_queue_t *q, struct request *rq)
+ {
+-	blk_add_trace_rq(q, rq, BLK_TA_REQUEUE);
++	trace_mark(blk_requeue, "%p %p", q, rq);
+ 
+ 	if (blk_rq_tagged(rq))
+ 		blk_queue_end_tag(q, rq);
+@@ -2940,7 +2941,7 @@
+ 			if (!ll_back_merge_fn(q, req, bio))
+ 				break;
+ 
+-			blk_add_trace_bio(q, bio, BLK_TA_BACKMERGE);
++			trace_mark(blk_bio_backmerge, "%p %p", q, bio);
+ 
+ 			req->biotail->bi_next = bio;
+ 			req->biotail = bio;
+@@ -2957,7 +2958,7 @@
+ 			if (!ll_front_merge_fn(q, req, bio))
+ 				break;
+ 
+-			blk_add_trace_bio(q, bio, BLK_TA_FRONTMERGE);
++			trace_mark(blk_bio_frontmerge, "%p %p", q, bio);
+ 
+ 			bio->bi_next = req->bio;
+ 			req->bio = bio;
+@@ -3187,10 +3188,10 @@
+ 		blk_partition_remap(bio);
+ 
+ 		if (old_sector != -1)
+-			blk_add_trace_remap(q, bio, old_dev, bio->bi_sector, 
+-					    old_sector);
++			trace_mark(blk_remap, "%p %p %u %llu %llu", q, bio, old_dev,
++					(u64)bio->bi_sector, (u64)old_sector);
+ 
+-		blk_add_trace_bio(q, bio, BLK_TA_QUEUE);
++		trace_mark(blk_bio_queue, "%p %p", q, bio);
+ 
+ 		old_sector = bio->bi_sector;
+ 		old_dev = bio->bi_bdev->bd_dev;
+@@ -3332,7 +3333,7 @@
+ 	int total_bytes, bio_nbytes, error, next_idx = 0;
+ 	struct bio *bio;
+ 
+-	blk_add_trace_rq(req->q, req, BLK_TA_COMPLETE);
++	trace_mark(blk_request_complete, "%p %p", req->q, req);
+ 
+ 	/*
+ 	 * extend uptodate bool to allow < 0 value to be direct io error
+Index: linux-2.6-lttng/block/Kconfig
+===================================================================
+--- linux-2.6-lttng.orig/block/Kconfig	2007-05-09 18:14:19.000000000 -0400
++++ linux-2.6-lttng/block/Kconfig	2007-05-09 18:16:30.000000000 -0400
+@@ -32,6 +32,7 @@
+ 	depends on SYSFS
+ 	select RELAY
+ 	select DEBUG_FS
++	select MARKERS
+ 	help
+ 	  Say Y here, if you want to be able to trace the block layer actions
+ 	  on a given queue. Tracing allows you to see any traffic happening
+Index: linux-2.6-lttng/block/blktrace.c
+===================================================================
+--- linux-2.6-lttng.orig/block/blktrace.c	2007-05-09 18:06:30.000000000 -0400
++++ linux-2.6-lttng/block/blktrace.c	2007-05-09 18:16:30.000000000 -0400
+@@ -23,11 +23,19 @@
+ #include <linux/mutex.h>
+ #include <linux/debugfs.h>
+ #include <linux/time.h>
++#include <linux/marker.h>
+ #include <asm/uaccess.h>
+ 
+ static DEFINE_PER_CPU(unsigned long long, blk_trace_cpu_offset) = { 0, };
+ static unsigned int blktrace_seq __read_mostly = 1;
+ 
++/* Global reference count of probes */
++static DEFINE_MUTEX(blk_probe_mutex);
++static int blk_probes_ref;
 +
-+/*
-+ * marker.h
++int blk_probe_arm(void);
++void blk_probe_disarm(void);
++
+ /*
+  * Send out a notify message.
+  */
+@@ -179,7 +187,7 @@
+ EXPORT_SYMBOL_GPL(__blk_add_trace);
+ 
+ static struct dentry *blk_tree_root;
+-static struct mutex blk_tree_mutex;
++static DEFINE_MUTEX(blk_tree_mutex);
+ static unsigned int root_users;
+ 
+ static inline void blk_remove_root(void)
+@@ -229,6 +237,10 @@
+ 	blk_remove_tree(bt->dir);
+ 	free_percpu(bt->sequence);
+ 	kfree(bt);
++	mutex_lock(&blk_probe_mutex);
++	if (--blk_probes_ref == 0)
++		blk_probe_disarm();
++	mutex_unlock(&blk_probe_mutex);
+ }
+ 
+ static int blk_trace_remove(request_queue_t *q)
+@@ -386,6 +398,11 @@
+ 		goto err;
+ 	}
+ 
++	mutex_lock(&blk_probe_mutex);
++	if (!blk_probes_ref++)
++		blk_probe_arm();
++	mutex_unlock(&blk_probe_mutex);
++
+ 	return 0;
+ err:
+ 	if (dir)
+@@ -549,9 +566,270 @@
+ #endif
+ }
+ 
++/**
++ * blk_add_trace_rq - Add a trace for a request oriented action
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @rq:		the source request
 + *
-+ * Code markup for dynamic and static tracing.
++ * Description:
++ *     Records an action against a request. Will log the bio offset + size.
 + *
-+ * See Documentation/marker.txt.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+#ifdef __KERNEL__
-+
-+struct __mark_marker_data;
-+
-+typedef void marker_probe_func(const struct __mark_marker_data *mdata,
-+	const char *fmt, ...);
-+
-+struct __mark_marker_data {
-+	const char *name;
-+	const char *format;
-+	const char *args;
-+	int flags;
-+	marker_probe_func *call;
-+	void *pdata;
-+} __attribute__((packed));
-+
-+struct __mark_marker {
-+	struct __mark_marker_data *mdata;
-+	void *enable;
-+} __attribute__((packed));
-+
-+#ifdef CONFIG_MARKERS
-+
-+/* Marker flags : selects the mechanism used to connect the probes to the
-+ * markers and what can be executed within the probes. This is primarily
-+ * used at reentrancy-unfriendly sites. */
-+#define MF_OPTIMIZED	(1 << 0)	/* Use optimized markers */
-+#define MF_LOCKDEP	(1 << 1)	/* Can call lockdep */
-+#define MF_PRINTK	(1 << 2)	/* vprintk can be called in the probe */
-+#define _MF_NR		3		/* Number of marker flags */
-+
-+/* Generic marker flavor always available */
-+#define trace_mark_generic(flags, name, format, args...) \
-+	do { \
-+		static const char __mstrtab_name_##name[] \
-+		__attribute__((section("__markers_strings"))) \
-+		= #name; \
-+		static const char __mstrtab_format_##name[] \
-+		__attribute__((section("__markers_strings"))) \
-+		= format; \
-+		static const char __mstrtab_args_##name[] \
-+		__attribute__((section("__markers_strings"))) \
-+		= #args; \
-+		static struct __mark_marker_data __mark_data_##name \
-+		__attribute__((section("__markers_data"))) = \
-+		{ __mstrtab_name_##name,  __mstrtab_format_##name, \
-+		__mstrtab_args_##name, \
-+		(flags) & ~MF_OPTIMIZED, __mark_empty_function, NULL }; \
-+		static char __marker_enable_##name = 0; \
-+		static const struct __mark_marker __mark_##name \
-+			__attribute__((section("__markers"))) = \
-+			{ &__mark_data_##name, &__marker_enable_##name } ; \
-+		asm volatile ( "" : : "i" (&__mark_##name)); \
-+		__mark_check_format(format, ## args); \
-+		if (unlikely(__marker_enable_##name)) { \
-+			preempt_disable(); \
-+			(*__mark_data_##name.call)(&__mark_data_##name, \
-+						format, ## args); \
-+			preempt_enable(); \
-+		} \
-+	} while (0)
-+
-+#define MARK_GENERIC_ENABLE_IMMEDIATE_OFFSET 0
-+#define MARK_GENERIC_ENABLE_TYPE char
-+/* Dereference enable as lvalue from a pointer to its instruction */
-+#define MARK_GENERIC_ENABLE(a) \
-+	*(MARK_GENERIC_ENABLE_TYPE*) \
-+		((char*)a+MARK_GENERIC_ENABLE_IMMEDIATE_OFFSET)
-+
-+static inline int marker_generic_set_enable(void *address, char enable)
++ **/
++static void blk_add_trace_rq(const struct __mark_marker_data *mdata,
++	const char *fmt, ...)
 +{
-+	MARK_GENERIC_ENABLE(address) = enable;
++	va_list args;
++	u32 what;
++	struct blk_trace *bt;
++	int rw;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct request *rq;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	rq = va_arg(args, struct request *);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++	rw = rq->cmd_flags & 0x03;
++
++	if (likely(!bt))
++		return;
++
++	if (blk_pc_request(rq)) {
++		what |= BLK_TC_ACT(BLK_TC_PC);
++		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors, sizeof(rq->cmd), rq->cmd);
++	} else  {
++		what |= BLK_TC_ACT(BLK_TC_FS);
++		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9, rw, what, rq->errors, 0, NULL);
++	}
++}
++
++/**
++ * blk_add_trace_bio - Add a trace for a bio oriented action
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ *
++ * Description:
++ *     Records an action against a bio. Will log the bio offset + size.
++ *
++ **/
++static void blk_add_trace_bio(const struct __mark_marker_data *mdata,
++	const char *fmt, ...)
++{
++	va_list args;
++	u32 what;
++	struct blk_trace *bt;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct bio *bio;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	bio = va_arg(args, struct bio *);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++
++	if (likely(!bt))
++		return;
++
++	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), 0, NULL);
++}
++
++/**
++ * blk_add_trace_generic - Add a trace for a generic action
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ * @rw:		the data direction
++ *
++ * Description:
++ *     Records a simple trace
++ *
++ **/
++static void blk_add_trace_generic(const struct __mark_marker_data *mdata,
++	const char *fmt, ...)
++{
++	va_list args;
++	struct blk_trace *bt;
++	u32 what;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct bio *bio;
++	int rw;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	bio = va_arg(args, struct bio *);
++	rw = va_arg(args, int);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++
++	if (likely(!bt))
++		return;
++
++	if (bio)
++		blk_add_trace_bio(mdata, "%p %p", q, bio);
++	else
++		__blk_add_trace(bt, 0, 0, rw, what, 0, 0, NULL);
++}
++
++/**
++ * blk_add_trace_pdu_int - Add a trace for a bio with an integer payload
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ * @pdu:	the integer payload
++ *
++ * Description:
++ *     Adds a trace with some integer payload. This might be an unplug
++ *     option given as the action, with the depth at unplug time given
++ *     as the payload
++ *
++ **/
++static void blk_add_trace_pdu_int(const struct __mark_marker_data *mdata,
++	const char *fmt, ...)
++{
++	va_list args;
++	struct blk_trace *bt;
++	u32 what;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct bio *bio;
++	unsigned int pdu;
++	__be64 rpdu;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	bio = va_arg(args, struct bio *);
++	pdu = va_arg(args, unsigned int);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++	rpdu = cpu_to_be64(pdu);
++
++	if (likely(!bt))
++		return;
++
++	if (bio)
++		__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), sizeof(rpdu), &rpdu);
++	else
++		__blk_add_trace(bt, 0, 0, 0, what, 0, sizeof(rpdu), &rpdu);
++}
++
++/**
++ * blk_add_trace_remap - Add a trace for a remap operation
++ * Expected variable arguments :
++ * @q:		queue the io is for
++ * @bio:	the source bio
++ * @dev:	target device
++ * @from:	source sector
++ * @to:		target sector
++ *
++ * Description:
++ *     Device mapper or raid target sometimes need to split a bio because
++ *     it spans a stripe (or similar). Add a trace for that action.
++ *
++ **/
++static void blk_add_trace_remap(const struct __mark_marker_data *mdata,
++	const char *fmt, ...)
++{
++	va_list args;
++	struct blk_trace *bt;
++	struct blk_io_trace_remap r;
++	u32 what;
++	struct blk_probe_data *pinfo = mdata->pdata;
++	struct request_queue *q;
++	struct bio *bio;
++	u64 dev, from, to;
++
++	va_start(args, fmt);
++	q = va_arg(args, struct request_queue *);
++	bio = va_arg(args, struct bio *);
++	dev = va_arg(args, u64);
++	from = va_arg(args, u64);
++	to = va_arg(args, u64);
++	va_end(args);
++
++	what = pinfo->flags;
++	bt = q->blk_trace;
++
++	if (likely(!bt))
++		return;
++
++	r.device = cpu_to_be32(dev);
++	r.sector = cpu_to_be64(to);
++
++	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
++}
++
++#define FACILITY_NAME "blk"
++
++static struct blk_probe_data probe_array[] =
++{
++	{ "blk_bio_queue", "%p %p", BLK_TA_QUEUE, blk_add_trace_bio },
++	{ "blk_bio_backmerge", "%p %p", BLK_TA_BACKMERGE, blk_add_trace_bio },
++	{ "blk_bio_frontmerge", "%p %p", BLK_TA_FRONTMERGE, blk_add_trace_bio },
++	{ "blk_get_request", "%p %p %d", BLK_TA_GETRQ, blk_add_trace_generic },
++	{ "blk_sleep_request", "%p %p %d", BLK_TA_SLEEPRQ,
++		blk_add_trace_generic },
++	{ "blk_requeue", "%p %p", BLK_TA_REQUEUE, blk_add_trace_rq },
++	{ "blk_request_issue", "%p %p", BLK_TA_ISSUE, blk_add_trace_rq },
++	{ "blk_request_complete", "%p %p", BLK_TA_COMPLETE, blk_add_trace_rq },
++	{ "blk_plug_device", "%p %p %d", BLK_TA_PLUG, blk_add_trace_generic },
++	{ "blk_pdu_unplug_io", "%p %p %d", BLK_TA_UNPLUG_IO,
++		blk_add_trace_pdu_int },
++	{ "blk_pdu_unplug_timer", "%p %p %d", BLK_TA_UNPLUG_TIMER,
++		blk_add_trace_pdu_int },
++	{ "blk_request_insert", "%p %p", BLK_TA_INSERT,
++		blk_add_trace_rq },
++	{ "blk_pdu_split", "%p %p %d", BLK_TA_SPLIT,
++		blk_add_trace_pdu_int },
++	{ "blk_bio_bounce", "%p %p", BLK_TA_BOUNCE, blk_add_trace_bio },
++	{ "blk_remap", "%p %p %u %llu %llu", BLK_TA_REMAP,
++		blk_add_trace_remap },
++};
++
++
++int blk_probe_arm(void)
++{
++	int result;
++	int i;
++
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		result = marker_set_probe(probe_array[i].name,
++				probe_array[i].format,
++				probe_array[i].callback, &probe_array[i]);
++		if (!result)
++			printk(KERN_INFO
++				"blktrace unable to register probe %s\n",
++				probe_array[i].name);
++	}
 +	return 0;
 +}
 +
-+#else /* !CONFIG_MARKERS */
-+#define MARK_GENERIC(flags, name, format, args...) \
-+		__mark_check_format(format, ## args)
-+#endif /* CONFIG_MARKERS */
++void blk_probe_disarm(void)
++{
++	int i;
 +
-+#ifdef CONFIG_MARKERS_ENABLE_OPTIMIZATION
-+#include <asm/marker.h>			/* optimized marker flavor */
-+#else
-+#include <asm-generic/marker.h>		/* fallback on generic markers */
-+#endif
++	for (i = 0; i < ARRAY_SIZE(probe_array); i++) {
++		marker_remove_probe(probe_array[i].name);
++	}
++	synchronize_sched();	/* Wait for probes to finish */
++}
 +
-+#define MARK_MAX_FORMAT_LEN	1024
-+/* Pass this as a format string for a marker with no argument */
-+#define MARK_NOARGS " "
 +
-+/* To be used for string format validity checking with sparse */
-+static inline
-+void __mark_check_format(const char *fmt, ...)
-+{ }
-+
-+extern marker_probe_func __mark_empty_function;
-+
-+extern int _marker_set_probe(int flags, const char *name, const char *format,
-+				marker_probe_func *probe, void *pdata);
-+
-+#define marker_set_probe(name, format, probe, pdata) \
-+	_marker_set_probe(MF_DEFAULT, name, format, probe, pdata)
-+
-+extern int marker_remove_probe(const char *name);
-+extern int marker_list_probe(marker_probe_func *probe);
-+
-+#endif /* __KERNEL__ */
-+#endif
-Index: linux-2.6-lttng/include/linux/module.h
+ static __init int blk_trace_init(void)
+ {
+-	mutex_init(&blk_tree_mutex);
+ 	on_each_cpu(blk_trace_check_cpu_time, NULL, 1, 1);
+ 	blk_trace_set_ht_offsets();
+ 
+Index: linux-2.6-lttng/include/linux/blktrace_api.h
 ===================================================================
---- linux-2.6-lttng.orig/include/linux/module.h	2007-05-09 18:14:52.000000000 -0400
-+++ linux-2.6-lttng/include/linux/module.h	2007-05-09 18:15:55.000000000 -0400
-@@ -356,6 +356,9 @@
- 	/* The command line arguments (may be mangled).  People like
- 	   keeping pointers to this stuff */
- 	char *args;
-+
-+	const struct __mark_marker *markers;
-+	unsigned int num_markers;
+--- linux-2.6-lttng.orig/include/linux/blktrace_api.h	2007-05-09 18:06:46.000000000 -0400
++++ linux-2.6-lttng/include/linux/blktrace_api.h	2007-05-09 18:16:30.000000000 -0400
+@@ -3,6 +3,7 @@
+ 
+ #include <linux/blkdev.h>
+ #include <linux/relay.h>
++#include <linux/marker.h>
+ 
+ /*
+  * Trace categories
+@@ -142,149 +143,24 @@
+ 	u32 pid;
  };
  
- /* FIXME: It'd be nice to isolate modules during init, too, so they
-@@ -467,6 +470,7 @@
- int unregister_module_notifier(struct notifier_block * nb);
++/* Probe data used for probe-marker connection */
++struct blk_probe_data {
++	const char *name;
++	const char *format;
++	u32 flags;
++	marker_probe_func *callback;
++};
++
+ #if defined(CONFIG_BLK_DEV_IO_TRACE)
+ extern int blk_trace_ioctl(struct block_device *, unsigned, char __user *);
+ extern void blk_trace_shutdown(request_queue_t *);
+ extern void __blk_add_trace(struct blk_trace *, sector_t, int, int, u32, int, int, void *);
+-
+-/**
+- * blk_add_trace_rq - Add a trace for a request oriented action
+- * @q:		queue the io is for
+- * @rq:		the source request
+- * @what:	the action
+- *
+- * Description:
+- *     Records an action against a request. Will log the bio offset + size.
+- *
+- **/
+-static inline void blk_add_trace_rq(struct request_queue *q, struct request *rq,
+-				    u32 what)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-	int rw = rq->cmd_flags & 0x03;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	if (blk_pc_request(rq)) {
+-		what |= BLK_TC_ACT(BLK_TC_PC);
+-		__blk_add_trace(bt, 0, rq->data_len, rw, what, rq->errors, sizeof(rq->cmd), rq->cmd);
+-	} else  {
+-		what |= BLK_TC_ACT(BLK_TC_FS);
+-		__blk_add_trace(bt, rq->hard_sector, rq->hard_nr_sectors << 9, rw, what, rq->errors, 0, NULL);
+-	}
+-}
+-
+-/**
+- * blk_add_trace_bio - Add a trace for a bio oriented action
+- * @q:		queue the io is for
+- * @bio:	the source bio
+- * @what:	the action
+- *
+- * Description:
+- *     Records an action against a bio. Will log the bio offset + size.
+- *
+- **/
+-static inline void blk_add_trace_bio(struct request_queue *q, struct bio *bio,
+-				     u32 what)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), 0, NULL);
+-}
+-
+-/**
+- * blk_add_trace_generic - Add a trace for a generic action
+- * @q:		queue the io is for
+- * @bio:	the source bio
+- * @rw:		the data direction
+- * @what:	the action
+- *
+- * Description:
+- *     Records a simple trace
+- *
+- **/
+-static inline void blk_add_trace_generic(struct request_queue *q,
+-					 struct bio *bio, int rw, u32 what)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	if (bio)
+-		blk_add_trace_bio(q, bio, what);
+-	else
+-		__blk_add_trace(bt, 0, 0, rw, what, 0, 0, NULL);
+-}
+-
+-/**
+- * blk_add_trace_pdu_int - Add a trace for a bio with an integer payload
+- * @q:		queue the io is for
+- * @what:	the action
+- * @bio:	the source bio
+- * @pdu:	the integer payload
+- *
+- * Description:
+- *     Adds a trace with some integer payload. This might be an unplug
+- *     option given as the action, with the depth at unplug time given
+- *     as the payload
+- *
+- **/
+-static inline void blk_add_trace_pdu_int(struct request_queue *q, u32 what,
+-					 struct bio *bio, unsigned int pdu)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-	__be64 rpdu = cpu_to_be64(pdu);
+-
+-	if (likely(!bt))
+-		return;
+-
+-	if (bio)
+-		__blk_add_trace(bt, bio->bi_sector, bio->bi_size, bio->bi_rw, what, !bio_flagged(bio, BIO_UPTODATE), sizeof(rpdu), &rpdu);
+-	else
+-		__blk_add_trace(bt, 0, 0, 0, what, 0, sizeof(rpdu), &rpdu);
+-}
+-
+-/**
+- * blk_add_trace_remap - Add a trace for a remap operation
+- * @q:		queue the io is for
+- * @bio:	the source bio
+- * @dev:	target device
+- * @from:	source sector
+- * @to:		target sector
+- *
+- * Description:
+- *     Device mapper or raid target sometimes need to split a bio because
+- *     it spans a stripe (or similar). Add a trace for that action.
+- *
+- **/
+-static inline void blk_add_trace_remap(struct request_queue *q, struct bio *bio,
+-				       dev_t dev, sector_t from, sector_t to)
+-{
+-	struct blk_trace *bt = q->blk_trace;
+-	struct blk_io_trace_remap r;
+-
+-	if (likely(!bt))
+-		return;
+-
+-	r.device = cpu_to_be32(dev);
+-	r.sector = cpu_to_be64(to);
+-
+-	__blk_add_trace(bt, from, bio->bi_size, bio->bi_rw, BLK_TA_REMAP, !bio_flagged(bio, BIO_UPTODATE), sizeof(r), &r);
+-}
++extern int blk_probe_connect(void);
++extern void blk_probe_disconnect(void);
  
- extern void print_modules(void);
-+extern void list_modules(void);
+ #else /* !CONFIG_BLK_DEV_IO_TRACE */
+ #define blk_trace_ioctl(bdev, cmd, arg)		(-ENOTTY)
+ #define blk_trace_shutdown(q)			do { } while (0)
+-#define blk_add_trace_rq(q, rq, what)		do { } while (0)
+-#define blk_add_trace_bio(q, rq, what)		do { } while (0)
+-#define blk_add_trace_generic(q, rq, rw, what)	do { } while (0)
+-#define blk_add_trace_pdu_int(q, what, bio, pdu)	do { } while (0)
+-#define blk_add_trace_remap(q, bio, dev, f, t)	do {} while (0)
+ #endif /* CONFIG_BLK_DEV_IO_TRACE */
  
- #else /* !CONFIG_MODULES... */
- #define EXPORT_SYMBOL(sym)
-Index: linux-2.6-lttng/kernel/module.c
+ #endif
+Index: linux-2.6-lttng/mm/bounce.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/module.c	2007-05-09 18:15:34.000000000 -0400
-+++ linux-2.6-lttng/kernel/module.c	2007-05-09 18:15:55.000000000 -0400
-@@ -142,6 +142,8 @@
- extern const unsigned long __start___kcrctab_gpl_future[];
- extern const unsigned long __start___kcrctab_unused[];
- extern const unsigned long __start___kcrctab_unused_gpl[];
-+extern const struct __mark_marker __start___markers[];
-+extern const struct __mark_marker __stop___markers[];
+--- linux-2.6-lttng.orig/mm/bounce.c	2007-05-09 18:06:57.000000000 -0400
++++ linux-2.6-lttng/mm/bounce.c	2007-05-09 18:16:30.000000000 -0400
+@@ -13,7 +13,7 @@
+ #include <linux/init.h>
+ #include <linux/hash.h>
+ #include <linux/highmem.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <asm/tlbflush.h>
  
- #ifndef CONFIG_MODVERSIONS
- #define symversion(base, idx) NULL
-@@ -302,6 +304,229 @@
- 	return NULL;
+ #define POOL_SIZE	64
+@@ -237,7 +237,7 @@
+ 	if (!bio)
+ 		return;
+ 
+-	blk_add_trace_bio(q, *bio_orig, BLK_TA_BOUNCE);
++	trace_mark(blk_bio_bounce, "%p %p", q, *bio_orig);
+ 
+ 	/*
+ 	 * at least one page was bounced, fill in possible non-highmem
+Index: linux-2.6-lttng/mm/highmem.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/highmem.c	2007-05-09 18:12:48.000000000 -0400
++++ linux-2.6-lttng/mm/highmem.c	2007-05-09 18:16:30.000000000 -0400
+@@ -26,7 +26,7 @@
+ #include <linux/init.h>
+ #include <linux/hash.h>
+ #include <linux/highmem.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <asm/tlbflush.h>
+ 
+ /*
+Index: linux-2.6-lttng/fs/bio.c
+===================================================================
+--- linux-2.6-lttng.orig/fs/bio.c	2007-05-09 18:12:44.000000000 -0400
++++ linux-2.6-lttng/fs/bio.c	2007-05-09 18:16:30.000000000 -0400
+@@ -25,7 +25,7 @@
+ #include <linux/module.h>
+ #include <linux/mempool.h>
+ #include <linux/workqueue.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <scsi/sg.h>		/* for struct sg_iovec */
+ 
+ #define BIO_POOL_SIZE 2
+@@ -1081,7 +1081,7 @@
+ 	if (!bp)
+ 		return bp;
+ 
+-	blk_add_trace_pdu_int(bdev_get_queue(bi->bi_bdev), BLK_TA_SPLIT, bi,
++	trace_mark(blk_pdu_split, "%p %p %d", bdev_get_queue(bi->bi_bdev), bi,
+ 				bi->bi_sector + first_sectors);
+ 
+ 	BUG_ON(bi->bi_vcnt != 1);
+Index: linux-2.6-lttng/drivers/block/cciss.c
+===================================================================
+--- linux-2.6-lttng.orig/drivers/block/cciss.c	2007-05-09 18:09:47.000000000 -0400
++++ linux-2.6-lttng/drivers/block/cciss.c	2007-05-09 18:16:30.000000000 -0400
+@@ -37,7 +37,7 @@
+ #include <linux/hdreg.h>
+ #include <linux/spinlock.h>
+ #include <linux/compat.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <asm/uaccess.h>
+ #include <asm/io.h>
+ 
+@@ -2502,7 +2502,7 @@
+ 	}
+ 	cmd->rq->data_len = 0;
+ 	cmd->rq->completion_data = cmd;
+-	blk_add_trace_rq(cmd->rq->q, cmd->rq, BLK_TA_COMPLETE);
++	trace_mark(blk_request_complete, "%p %p", cmd->rq->q, cmd->rq);
+ 	blk_complete_request(cmd->rq);
  }
  
-+#ifdef CONFIG_MARKERS
-+
-+/* Empty callback provided as a probe to the markers. By providing this to a
-+ * disabled marker, we makes sure the  execution flow is always valid even
-+ * though the function pointer change and the marker enabling are two distinct
-+ * operations that modifies the execution flow of preemptible code. */
-+void __mark_empty_function(const struct __mark_marker_data *mdata,
-+	const char *fmt, ...)
-+{
-+}
-+EXPORT_SYMBOL_GPL(__mark_empty_function);
-+
-+/* Set the enable bit of the marker, choosing the generic or architecture
-+ * specific functions depending on the marker's flags.
-+ */
-+static int marker_set_enable(void *address, char enable, int flags)
-+{
-+	if (flags & MF_OPTIMIZED)
-+		return marker_optimized_set_enable(address, enable);
-+	else
-+		return marker_generic_set_enable(address, enable);
-+}
-+
-+/* Sets the probe callback and enables the markers corresponding to a range of
-+ * markers. The enable bit and function address are set out of order, and it's
-+ * ok : the state is always coherent because of the empty callback we provide.
-+ */
-+static int _marker_set_probe_range(int flags, const char *name,
-+	const char *format,
-+	marker_probe_func *probe,
-+	void *pdata,
-+	const struct __mark_marker *begin,
-+	const struct __mark_marker *end)
-+{
-+	const struct __mark_marker *iter;
-+	int found = 0;
-+
-+	for (iter = begin; iter < end; iter++) {
-+		if (strcmp(name, iter->mdata->name) == 0) {
-+			if (format
-+				&& strcmp(format, iter->mdata->format) != 0) {
-+				printk(KERN_NOTICE
-+					"Format mismatch for probe %s "
-+					"(%s), marker (%s)\n",
-+					name,
-+					format,
-+					iter->mdata->format);
-+				continue;
-+			}
-+			if (flags & MF_LOCKDEP
-+				&& !(iter->mdata->flags & MF_LOCKDEP)) {
-+					printk(KERN_NOTICE
-+					"Incompatible lockdep flags for "
-+					"probe %s\n",
-+					name);
-+					continue;
-+			}
-+			if (flags & MF_PRINTK
-+				&& !(iter->mdata->flags & MF_PRINTK)) {
-+					printk(KERN_NOTICE
-+					"Incompatible printk flags for "
-+					"probe %s\n",
-+					name);
-+					continue;
-+			}
-+			if (probe == __mark_empty_function) {
-+				if (iter->mdata->call
-+					!= __mark_empty_function) {
-+					iter->mdata->call =
-+						__mark_empty_function;
-+				}
-+				marker_set_enable(iter->enable, 0,
-+					iter->mdata->flags);
-+			} else {
-+				if (iter->mdata->call
-+					!= __mark_empty_function) {
-+					if (iter->mdata->call != probe) {
-+						printk(KERN_NOTICE
-+							"Marker %s busy, "
-+							"probe %p already "
-+							"installed\n",
-+							name,
-+							iter->mdata->call);
-+						continue;
-+					}
-+				} else {
-+					found++;
-+					iter->mdata->call = probe;
-+				}
-+				iter->mdata->pdata = pdata;
-+				smp_wmb();
-+				marker_set_enable(iter->enable, 1,
-+					iter->mdata->flags);
-+			}
-+			found++;
-+		}
-+	}
-+	return found;
-+}
-+
-+/* Sets a range of markers to a disabled state : unset the enable bit and
-+ * provide the empty callback. */
-+static int marker_remove_probe_range(const char *name,
-+	const struct __mark_marker *begin,
-+	const struct __mark_marker *end)
-+{
-+	const struct __mark_marker *iter;
-+	int found = 0;
-+
-+	for (iter = begin; iter < end; iter++) {
-+		if (strcmp(name, iter->mdata->name) == 0) {
-+			marker_set_enable(iter->enable, 0,
-+				iter->mdata->flags);
-+			iter->mdata->call = __mark_empty_function;
-+			found++;
-+		}
-+	}
-+	return found;
-+}
-+
-+/* Provides a listing of the markers present in the kernel with their type
-+ * (optimized or generic), state (enabled or disabled), callback and format
-+ * string. */
-+static int marker_list_probe_range(marker_probe_func *probe,
-+	const struct __mark_marker *begin,
-+	const struct __mark_marker *end)
-+{
-+	const struct __mark_marker *iter;
-+	int found = 0;
-+
-+	for (iter = begin; iter < end; iter++) {
-+		if (probe)
-+			if (probe != iter->mdata->call) continue;
-+		printk("name %s \n", iter->mdata->name);
-+		if (iter->mdata->flags & MF_OPTIMIZED)
-+			printk("  enable %u optimized ",
-+				MARK_OPTIMIZED_ENABLE(iter->enable));
-+		else
-+			printk("  enable %u generic ",
-+				MARK_GENERIC_ENABLE(iter->enable));
-+		printk("  func 0x%p format \"%s\"\n",
-+			iter->mdata->call, iter->mdata->format);
-+		found++;
-+	}
-+	return found;
-+}
-+
-+/* Calls _marker_set_probe_range for the core markers and modules markers.
-+ * Marker enabling/disabling use the modlist_lock to synchronise. */
-+int _marker_set_probe(int flags, const char *name, const char *format,
-+				marker_probe_func *probe,
-+				void *pdata)
-+{
-+	struct module *mod;
-+	int found = 0;
-+
-+	mutex_lock(&module_mutex);
-+	/* Core kernel markers */
-+	found += _marker_set_probe_range(flags, name, format, probe,
-+			pdata,
-+			__start___markers, __stop___markers);
-+	/* Markers in modules. */
-+	list_for_each_entry(mod, &modules, list) {
-+		if (!mod->taints)
-+			found += _marker_set_probe_range(flags, name, format,
-+			probe, pdata,
-+			mod->markers, mod->markers+mod->num_markers);
-+	}
-+	mutex_unlock(&module_mutex);
-+	return found;
-+}
-+EXPORT_SYMBOL_GPL(_marker_set_probe);
-+
-+/* Calls _marker_remove_probe_range for the core markers and modules markers.
-+ * Marker enabling/disabling use the modlist_lock to synchronise. */
-+int marker_remove_probe(const char *name)
-+{
-+	struct module *mod;
-+	int found = 0;
-+
-+	mutex_lock(&module_mutex);
-+	/* Core kernel markers */
-+	found += marker_remove_probe_range(name,
-+			__start___markers, __stop___markers);
-+	/* Markers in modules. */
-+	list_for_each_entry(mod, &modules, list) {
-+		if (!mod->taints)
-+			found += marker_remove_probe_range(name,
-+				mod->markers, mod->markers+mod->num_markers);
-+	}
-+	mutex_unlock(&module_mutex);
-+	return found;
-+}
-+EXPORT_SYMBOL_GPL(marker_remove_probe);
-+
-+/* Calls _marker_list_probe_range for the core markers and modules markers.
-+ * Marker listing uses the modlist_lock to synchronise.
-+ * TODO : should output this listing to a procfs file. */
-+int marker_list_probe(marker_probe_func *probe)
-+{
-+	struct module *mod;
-+	int found = 0;
-+
-+	mutex_lock(&module_mutex);
-+	/* Core kernel markers */
-+	printk("Listing kernel markers\n");
-+	found += marker_list_probe_range(probe,
-+			__start___markers, __stop___markers);
-+	/* Markers in modules. */
-+	printk("Listing module markers\n");
-+	list_for_each_entry(mod, &modules, list) {
-+		if (!mod->taints) {
-+			printk("Listing markers for module %s\n", mod->name);
-+			found += marker_list_probe_range(probe,
-+				mod->markers, mod->markers+mod->num_markers);
-+		}
-+	}
-+	mutex_unlock(&module_mutex);
-+	return found;
-+}
-+EXPORT_SYMBOL_GPL(marker_list_probe);
-+#endif
-+
- #ifdef CONFIG_SMP
- /* Number of blocks used and allocated. */
- static unsigned int pcpu_num_used, pcpu_num_allocated;
-@@ -1659,6 +1884,9 @@
- 	unsigned int unusedcrcindex;
- 	unsigned int unusedgplindex;
- 	unsigned int unusedgplcrcindex;
-+	unsigned int markersindex;
-+	unsigned int markersdataindex;
-+	unsigned int markersstringsindex;
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
-@@ -1755,6 +1983,10 @@
- #ifdef ARCH_UNWIND_SECTION_NAME
- 	unwindex = find_sec(hdr, sechdrs, secstrings, ARCH_UNWIND_SECTION_NAME);
- #endif
-+	markersindex = find_sec(hdr, sechdrs, secstrings, "__markers");
-+	markersdataindex = find_sec(hdr, sechdrs, secstrings, "__markers_data");
-+	markersstringsindex = find_sec(hdr, sechdrs, secstrings,
-+				"__markers_strings");
+Index: linux-2.6-lttng/drivers/md/dm.c
+===================================================================
+--- linux-2.6-lttng.orig/drivers/md/dm.c	2007-05-09 18:12:32.000000000 -0400
++++ linux-2.6-lttng/drivers/md/dm.c	2007-05-09 18:16:30.000000000 -0400
+@@ -19,7 +19,7 @@
+ #include <linux/slab.h>
+ #include <linux/idr.h>
+ #include <linux/hdreg.h>
+-#include <linux/blktrace_api.h>
++#include <linux/marker.h>
+ #include <linux/smp_lock.h>
  
- 	/* Don't keep modinfo section */
- 	sechdrs[infoindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
-@@ -1765,6 +1997,22 @@
- #endif
- 	if (unwindex)
- 		sechdrs[unwindex].sh_flags |= SHF_ALLOC;
-+#ifdef CONFIG_MARKERS
-+	if (markersindex)
-+		sechdrs[markersindex].sh_flags |= SHF_ALLOC;
-+	if (markersdataindex)
-+		sechdrs[markersdataindex].sh_flags |= SHF_ALLOC;
-+	if (markersstringsindex)
-+		sechdrs[markersstringsindex].sh_flags |= SHF_ALLOC;
-+#else
-+	if (markersindex)
-+		sechdrs[markersindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
-+	if (markersdataindex)
-+		sechdrs[markersdataindex].sh_flags &= ~(unsigned long)SHF_ALLOC;
-+	if (markersstringsindex)
-+		sechdrs[markersstringsindex].sh_flags
-+					&= ~(unsigned long)SHF_ALLOC;
-+#endif
+ #define DM_MSG_PREFIX "core"
+@@ -485,8 +485,8 @@
+ 			wake_up(&io->md->wait);
  
- 	/* Check module struct version now, before we try to use module. */
- 	if (!check_modstruct_version(sechdrs, versindex, mod)) {
-@@ -1905,6 +2153,11 @@
- 	mod->gpl_future_syms = (void *)sechdrs[gplfutureindex].sh_addr;
- 	if (gplfuturecrcindex)
- 		mod->gpl_future_crcs = (void *)sechdrs[gplfuturecrcindex].sh_addr;
-+	if (markersindex) {
-+		mod->markers = (void *)sechdrs[markersindex].sh_addr;
-+		mod->num_markers =
-+			sechdrs[markersindex].sh_size / sizeof(*mod->markers);
-+	}
+ 		if (io->error != DM_ENDIO_REQUEUE) {
+-			blk_add_trace_bio(io->md->queue, io->bio,
+-					  BLK_TA_COMPLETE);
++			trace_mark(blk_request_complete, "%p %p",
++				io->md->queue, io->bio);
  
- 	mod->unused_syms = (void *)sechdrs[unusedindex].sh_addr;
- 	if (unusedcrcindex)
-@@ -2399,6 +2652,26 @@
- 	.show	= m_show
- };
+ 			bio_endio(io->bio, io->bio->bi_size, io->error);
+ 		}
+@@ -582,10 +582,10 @@
+ 	r = ti->type->map(ti, clone, &tio->info);
+ 	if (r == DM_MAPIO_REMAPPED) {
+ 		/* the bio has been remapped so dispatch it */
+-
+-		blk_add_trace_remap(bdev_get_queue(clone->bi_bdev), clone,
+-				    tio->io->bio->bi_bdev->bd_dev, sector,
+-				    clone->bi_sector);
++		trace_mark(blk_remap, "%p %p %u %llu %llu",
++			bdev_get_queue(clone->bi_bdev), clone,
++			(u64)tio->io->bio->bi_bdev->bd_dev, (u64)sector,
++			(u64)clone->bi_sector);
  
-+void list_modules(void)
-+{
-+	/* Enumerate loaded modules */
-+	struct list_head	*i;
-+	struct module		*mod;
-+	unsigned long refcount = 0;
-+
-+	mutex_lock(&module_mutex);
-+	list_for_each(i, &modules) {
-+		mod = list_entry(i, struct module, list);
-+#ifdef CONFIG_MODULE_UNLOAD
-+		refcount = local_read(&mod->ref[0].count);
-+#endif //CONFIG_MODULE_UNLOAD
-+		trace_mark(list_module, "%s %d %lu",
-+				mod->name, mod->state, refcount);
-+	}
-+	mutex_unlock(&module_mutex);
-+}
-+EXPORT_SYMBOL_GPL(list_modules);
-+
- /* Given an address, look for it in the module exception tables. */
- const struct exception_table_entry *search_module_extables(unsigned long addr)
- {
+ 		generic_make_request(clone);
+ 	} else if (r < 0 || r == DM_MAPIO_REQUEUE) {
 
 -- 
 Mathieu Desnoyers
