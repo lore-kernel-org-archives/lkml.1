@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbXEJAKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbXEJAKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760632AbXEJAKX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 20:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759596AbXEJAKH
+	id S1760727AbXEJAKl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 20:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759770AbXEJAKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 20:10:07 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:51844 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757417AbXEJAKE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 20:10:04 -0400
-Date: Wed, 9 May 2007 17:09:26 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Florian Fainelli <florian.fainelli@int-evry.fr>
-Cc: linux-kernel@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH] time locale in gen_initramfs_list.sh
-Message-Id: <20070509170926.27fad8bb.akpm@linux-foundation.org>
-In-Reply-To: <200705080755.31157.florian.fainelli@int-evry.fr>
-References: <200705080755.31157.florian.fainelli@int-evry.fr>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 9 May 2007 20:10:19 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:16289 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760602AbXEJAKQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 20:10:16 -0400
+X-IronPort-AV: i="4.14,512,1170662400"; 
+   d="scan'208"; a="58592883:sNHT15048152"
+Subject: Re: [bisect] NFS regression breaks X
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Chuck Lever <chuck.lever@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       NeilBrown <neilb@suse.de>, Adrian Bunk <bunk@stusta.de>
+In-Reply-To: <20070509155228.d1b9d644.akpm@linux-foundation.org>
+References: <46423D62.2070200@garzik.org>
+	 <1178748206.6760.3.camel@heimdal.trondhjem.org>
+	 <20070509155228.d1b9d644.akpm@linux-foundation.org>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: Network Appliance Inc
+Date: Wed, 09 May 2007 20:10:13 -0400
+Message-Id: <1178755813.6760.26.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 10 May 2007 00:10:28.0005 (UTC) FILETIME=[9D4BB550:01C79297]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 8 May 2007 07:55:26 +0200
-Florian Fainelli <florian.fainelli@int-evry.fr> wrote:
+On Wed, 2007-05-09 at 15:52 -0700, Andrew Morton wrote:
+> It's a bit rough that Jeff spent a large amount of time hunting down an
+> already-known bug.  That's normally my job :(
 
-> I noticed that some zsh users who forced their ls formatting to something non 
-> standard could not generate the initramfs file list. Forcing the locale to C 
-> while generating seems not to be enough. Adding --time-style=locale will use 
-> C locale ls output and will let them generate the initramfs list. It has no 
-> side effects for other users.
-> 
-> Signed-off-by: Florian Fainelli <florian.fainelli@int-evry.fr>
-> --
-> 
-> 
-> [time_locale.patch  text/plain (761B)]
-> diff --git a/scripts/gen_initramfs_list.sh b/scripts/gen_initramfs_list.sh
-> index 683eb12..1f96b9b 100644
-> --- a/scripts/gen_initramfs_list.sh
-> +++ b/scripts/gen_initramfs_list.sh
-> @@ -125,7 +125,7 @@ parse() {
->  			str="${ftype} ${name} ${location} ${str}"
->  			;;
->  		"nod")
-> -			local dev=`LC_ALL=C ls -l "${location}"`
-> +			local dev=`LC_ALL=C ls --time-style=locale -l "${location}"`
->  			local maj=`field 5 ${dev}`
->  			local min=`field 6 ${dev}`
->  			maj=${maj%,}
-> @@ -135,7 +135,7 @@ parse() {
->  			str="${ftype} ${name} ${str} ${dev} ${maj} ${min}"
->  			;;
->  		"slink")
-> -			local target=`field 11 $(LC_ALL=C ls -l "${location}")`
-> +			local target=`field 11 $(LC_ALL=C ls --time-style=locale -l "${location}")`
->  			str="${ftype} ${name} ${target} ${str}"
->  			;;
+The bug was reported by Florin Iucha (on lkml!) on Saturday. It has only
+just been debugged, and I was in fact in the middle of marshalling the
+fixes.
 
-hm, --time-style sounds rather gnu-specific and perhaps we'd rather not
-add that requirement.  Or perhaps we already require gnu ls, dunno.
+> This five-week-old diff only ever appeared in 2.6.21-mm1, which was
+> released four days ago.  It was then whizzed into mainline.  We thus lost
+> five weeks public testing which would probably have saved Jeff his pain.
+> 
+> What went wrong?
 
-I'll dump the problem in Sam's lap ;)
+Probably my fault. I've had a couple of weeks of heavy travel due to
+various circumstances that were beyond my control, and so I had little
+time in which to test the stuff and push it out.
+
+Another factor that is affecting us is the slow but gradual collapse of
+the OSDL NFSv4 regression testing effort.
+
+Trond
