@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760813AbXEJTY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758211AbXEJTbA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760813AbXEJTY1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 15:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbXEJTYV
+	id S1758211AbXEJTbA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 15:31:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754307AbXEJTax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 15:24:21 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:53330 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753201AbXEJTYU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 15:24:20 -0400
-Date: Thu, 10 May 2007 12:24:20 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [RFC] Slab allocators: Drop support for destructors
-In-Reply-To: <84144f020705101221y6070ed93he837c59053084fae@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0705101223010.10935@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0705101156190.10663@schroedinger.engr.sgi.com>
- <84144f020705101221y6070ed93he837c59053084fae@mail.gmail.com>
+	Thu, 10 May 2007 15:30:53 -0400
+Received: from mail.fieldses.org ([66.93.2.214]:35473 "EHLO fieldses.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753656AbXEJTax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 15:30:53 -0400
+Date: Thu, 10 May 2007 15:30:50 -0400
+To: Doug Chapman <doug.chapman@hp.com>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
+       Marc Eshel <eshel@almaden.ibm.com>
+Subject: Re: post 2.6.21 regression in F_GETLK
+Message-ID: <20070510193050.GQ13719@fieldses.org>
+References: <1178823375.7247.11.camel@dchapman.boston.redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178823375.7247.11.camel@dchapman.boston.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007, Pekka Enberg wrote:
+On Thu, May 10, 2007 at 02:56:15PM -0400, Doug Chapman wrote:
+> A recent regression (introduced after 2.6.21) was caught by the LTP test
+> fcntl11.  It appears that F_GETLK is not properly checking for existing
+> F_RDLCK and allows taking out a write lock.
 
-> > Or do we want to continue support destructors? If so why?
+Ouch.
+
+> This can be demonstrated by either running fcntl11 from the LTP suite or
+> I have hacked up a much shorter version which demonstrates the issue and
+> am attaching it.
 > 
-> Well, constructors are on their way out too because they don't seem to
-> give the performance benefit they were designed for anymore. As for
-> destructors, they have been pretty useless in Linux for a long time
-> now and we really don't do much "complex initialization" that requires
-> undo (releasing resources).
+> Using git bisect I came up with this commit as the one that introduced
+> the issue.
 
-Well I am not too sure about removing constructors. Andrew's test seems to 
-show some benefit. That is just one test though. We need more. I do not 
-like constructors either but if performance tests show regressions then we 
-need to keep them.
+Thanks for the report--investigating....
 
+--b.
