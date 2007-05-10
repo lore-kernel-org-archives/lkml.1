@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbXEJLpQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761745AbXEJLps@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758346AbXEJLpQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:45:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761414AbXEJLme
+	id S1761745AbXEJLps (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:45:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761463AbXEJLmk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:42:34 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:50966 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761402AbXEJLmd (ORCPT
+	Thu, 10 May 2007 07:42:40 -0400
+Received: from sj-iport-5.cisco.com ([171.68.10.87]:26439 "EHLO
+	sj-iport-5.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755024AbXEJLmi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 07:42:33 -0400
-Date: Thu, 10 May 2007 12:41:58 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 07/10] Linux Kernel Markers - Documentation
-Message-ID: <20070510114158.GA16741@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-References: <20070510015555.973107048@polymtl.ca> <20070510020917.172554217@polymtl.ca> <20070510065847.GE8019@infradead.org> <20070510124120.6e8ac5aa@the-village.bc.nu>
-Mime-Version: 1.0
+	Thu, 10 May 2007 07:42:38 -0400
+X-IronPort-AV: i="4.14,517,1170662400"; 
+   d="scan'208"; a="420551336:sNHT43097962"
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: Roland Dreier <rolandd@cisco.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: trivial MLX4_DEBUG dependency fix.
+X-Message-Flag: Warning: May contain useful information
+References: <20070510035028.GA26453@linux-sh.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 10 May 2007 04:42:37 -0700
+In-Reply-To: <20070510035028.GA26453@linux-sh.org> (Paul Mundt's message of "Thu, 10 May 2007 12:50:28 +0900")
+Message-ID: <aday7jw29ci.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510124120.6e8ac5aa@the-village.bc.nu>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-OriginalArrivalTime: 10 May 2007 11:42:37.0708 (UTC) FILETIME=[4EED7CC0:01C792F8]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 12:41:20PM +0100, Alan Cox wrote:
-> On Thu, 10 May 2007 07:58:47 +0100
-> Christoph Hellwig <hch@infradead.org> wrote:
-> 
-> > On Wed, May 09, 2007 at 09:56:02PM -0400, Mathieu Desnoyers wrote:
-> > > Here is some documentation explaining what is/how to use the Linux
-> > > Kernel Markers.
-> > 
-> > Please remove all references to out of tree code from the kernel documentation.
-> 
-> Christoph stop being ridiculous. Its one thing to object to kernel
-> markers
+ > CONFIG_MLX4_DEBUG works out to a def_bool y for those that
+ > have CONFIG_EMBEDDED set. Make it depend on MLX4_CORE..
 
-I do not object kernel markers, and I have no idea where you got
-that crap from.  Quite contrary I've worked with Matthew on
-getting both markers and lttng good enough that we can merge
-it eventually.
+Thanks, applied...  (by the way, this bug just results in an
+extraneous CONFIG variable being defined, right?  There's no further
+breakage -- or am I misunderstanding the situation?)
 
-Documentation of kernel facilities should not mention big outside
-blobs of crap nerverless, which is something totally different from
-not mentionining userspace code contrary to your ill-advised position.
+ > I'll let someone else wonder why debugging output is default enabled,
+ > this seems to be a worrying trend as of late.
+
+Actually this option just controls whether to build the debugging
+output at all.  The output is controlled at runtime with a module
+parameter (which can be changed via sysfs after the module is loaded),
+and the output defaults to off.
+
+The reason why I want building the debugging stuff to default to y is
+so that distros automatically build modules with debugging enabled.
+Otherwise it's a pain to try and gather info from someone who has
+problems with a kernel they didn't build.
+
+Thanks,
+  Roland
