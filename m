@@ -1,57 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbXEJHZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbXEJH1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759476AbXEJHZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 03:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbXEJHZV
+	id S1759251AbXEJH1A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 03:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbXEJH0x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 03:25:21 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:35655 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755150AbXEJHZT (ORCPT
+	Thu, 10 May 2007 03:26:53 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:54461 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755269AbXEJH0w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 03:25:19 -0400
-Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
-       linville@tuxdriver.com, arnd@arndb.de, maxextreme@gmail.com,
-       gregkh@suse.de
-In-Reply-To: <20070509093547.55ca7f8c.akpm@linux-foundation.org>
-References: <20070423141123.GA21174@skybase>
-	 <20070423104534.51bac974.akpm@linux-foundation.org>
-	 <1178709710.30649.37.camel@localhost>
-	 <20070509093547.55ca7f8c.akpm@linux-foundation.org>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Thu, 10 May 2007 09:25:41 +0200
-Message-Id: <1178781941.24359.7.camel@localhost>
+	Thu, 10 May 2007 03:26:52 -0400
+Date: Thu, 10 May 2007 16:26:49 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, Lee.Schermerhorn@hp.com,
+       apw@shadowen.org, clameter@sgi.com, akpm@linux-foundation.org,
+       ak@suse.de, jbarnes@virtuousgeek.org
+Subject: [Request-For-Test] [PATCH] change zonelist order v6 [3/3]
+ documentaion
+Message-Id: <20070510162649.6410c12f.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20070510161611.fe1a696b.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20070510161611.fe1a696b.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: Fujitsu
+X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 09:35 -0700, Andrew Morton wrote:
-> > So when will be a good time to add the Kconfig patches to git390?
-> 
-> Go wild.
-> 
-> > And do you prefer to let them rot^H^H^Hmature in -mm for a while before
-> > they can go upstream?
-> 
-> Your call.  I'd be inclined to push them early personally - Kconfig
-> problems tend to be easy to spot and easy to fix and there's ample time to
-> fine tune it.
+Documentation for numa_zonelist_order.
 
-Ok, that is my feeling as well. The patches won't get better by waiting.
-I will add them to the for-linus/for-andrew branches and include them in
-the next please-pull for Linus. Be prepared for some breakage in -mm..
 
--- 
-blue skies,
-  Martin.
+Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-"Reality continues to ruin my life." - Calvin.
+ Documentation/kernel-parameters.txt |    5 +++
+ Documentation/sysctl/vm.txt         |   46 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 51 insertions(+)
 
+Index: linux-2.6.21-mm2/Documentation/sysctl/vm.txt
+===================================================================
+--- linux-2.6.21-mm2.orig/Documentation/sysctl/vm.txt
++++ linux-2.6.21-mm2/Documentation/sysctl/vm.txt
+@@ -33,6 +33,7 @@ Currently, these files are in /proc/sys/
+ - panic_on_oom
+ - swap_prefetch
+ - stat_interval
++- numa_zonelist_order
+ 
+ ==============================================================
+ 
+@@ -248,3 +249,48 @@ determines the frequency of these consol
+ 
+ The default value is 1 second.
+ 
++==============================================================
++
++numa_zonelist_order
++
++This sysctl is only for NUMA.
++'where the memory is allocated from' is controlled by zonelists.
++(This documentation ignores ZONE_HIGHMEM/ZONE_DMA32 for simple explanation.
++ you may be able to read ZONE_DMA as ZONE_DMA32...)
++
++In non-NUMA case, a zonelist for GFP_KERNEL is ordered as following.
++ZONE_NORMAL -> ZONE_DMA
++This means that a memory allocation request for GFP_KERNEL will
++get memory from ZONE_DMA only when ZONE_NORMAL is not available.
++
++In NUMA case, you can think of following 2 types of order.
++Assume 2 node NUMA and below is zonelist of Node(0)'s GFP_KERNEL
++
++(A) Node(0) ZONE_NORMAL -> Node(0) ZONE_DMA -> Node(1) ZONE_NORMAL
++(B) Node(0) ZONE_NORMAL -> Node(1) ZONE_NORMAL -> Node(0) ZONE_DMA.
++
++Type(A) offers the best locality for processes on Node(0), but ZONE_DMA
++will be used before ZONE_NORMAL exhaustion. This increases possibility of
++out-of-memory(OOM) of ZONE_DMA because ZONE_DMA is tend to be small.
++
++Type(B) cannot offer the best locality but is more robust against OOM of
++the DMA zone.
++
++Type(A) is called as "Node" order. Type (B) is "Zone" order.
++
++"Node order" orders the zonelists by node, then by zone within each node.
++Specify "[Nn]ode" for zone order
++
++"Zone Order" orders the zonelists by zone type, then by node within each
++zone.  Specify "[Zz]one"for zode order.
++
++Specify "[Dd]efault" to request automatic configuration.  Autoconfiguration
++will select "node" order in following case.
++(1) if the DMA zone does not exist or
++(2) if the DMA zone comprises greater than 50% of the available memory or
++(3) if any node's DMA zone comprises greater than 60% of its local memory and
++    the amount of local memory is big enough.
++
++Otherwise, "zone" order will be selected. Default order is recommended unless
++this is causing problems for your system/application.
++
+Index: linux-2.6.21-mm2/Documentation/kernel-parameters.txt
+===================================================================
+--- linux-2.6.21-mm2.orig/Documentation/kernel-parameters.txt
++++ linux-2.6.21-mm2/Documentation/kernel-parameters.txt
+@@ -1231,6 +1231,11 @@ and is between 256 and 4096 characters. 
+ 
+ 	nowb		[ARM]
+ 
++	numa_zonelist_order= [KNL, BOOT] Select zonelist order for NUMA.
++			one of ['zone', 'node', 'default'] can be specified
++			This can be set from sysctl after boot.
++			See Documentation/sysctl/vm.txt for details.
++
+ 	nr_uarts=	[SERIAL] maximum number of UARTs to be registered.
+ 
+ 	opl3=		[HW,OSS]
 
