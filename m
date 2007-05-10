@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761356AbXEJRL2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761729AbXEJRLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761356AbXEJRL2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 13:11:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbXEJRLE
+	id S1761729AbXEJRLl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 13:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761017AbXEJRLW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 13:11:04 -0400
-Received: from pfepc.post.tele.dk ([195.41.46.237]:40076 "EHLO
-	pfepc.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756263AbXEJRLB (ORCPT
+	Thu, 10 May 2007 13:11:22 -0400
+Received: from mr.exanet.com ([212.143.73.109]:39003 "EHLO mr.exanet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760953AbXEJRLV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 13:11:01 -0400
-Subject: Re: [patch] CFS scheduler, -v11
-From: Kasper Sandberg <lkml@metanurb.dk>
-To: Christian <christiand59@web.de>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <200705101859.11696.christiand59@web.de>
-References: <20070508150431.GA26977@elte.hu>
-	 <200705101859.11696.christiand59@web.de>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 19:10:44 +0200
-Message-Id: <1178817044.25266.8.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.4.0 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 13:11:21 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] NLM program ID for user space NLM server
+Date: Thu, 10 May 2007 20:11:19 +0300
+Message-ID: <A6FDE6B975803043804A49F12F49028E0F59DA@hawk.exanet-il.co.il>
+In-Reply-To: <1178816661.6775.12.camel@heimdal.trondhjem.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] NLM program ID for user space NLM server
+Thread-Index: AceTJUM2HweLjK/ITee5kT5DBlDE+gAAICCQ
+From: "Menny Hamburger" <menny@exanet.com>
+To: "Trond Myklebust" <trond.myklebust@fys.uio.no>
+Cc: "Neil Brown" <neilb@suse.de>, <linux-kernel@vger.kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-10 at 18:59 +0200, Christian wrote:
-> Hello lkml, hello Ingo!
-> 
-> I've been using CFS-v10 for a few days and I must say that I'm verry 
-> impressed ;-)
-> 
-> Desktop performance without any manual renicing is excellent, even with 
-> make -j20. Gaming performance is at least on par with SD now! I've tried to 
-Which games are you trying? and have you tried other workloads then make
--j20?
+Well,
 
-try have a window with some 3d game open, and a browser besides it, and
-press a link. i cant seem to get smooth results with CFS.
+That maybe a better idea then what we do - we'll try it.
 
-Perhaps i could also conduct tests with the games you are trying on my
-hardware.
+Thnx,
+Menny
 
-> change the sched_load_smoothing config to "8" but there is no visible 
-> difference when it's set to "7".
-> 
-> Both schedulers are verrry good! I can't really tell which one is better.
-> I noticed that while compiling a kernel (with -j4) my CPU temperature is two 
-> to three degrees hotter than with mainline. I have not done any timing tests, 
-> but I suspect that it's a little faster while preserving excellent desktop 
-> usability. Great work!! :-)
-> 
-> -Christian
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+-----Original Message-----
+From: Trond Myklebust [mailto:trond.myklebust@fys.uio.no] 
+Sent: Thursday, May 10, 2007 7:04 PM
+To: Menny Hamburger
+Cc: Neil Brown; linux-kernel@vger.kernel.org
+Subject: RE: [PATCH] NLM program ID for user space NLM server
+
+On Thu, 2007-05-10 at 19:45 +0300, Menny Hamburger wrote:
+> Yes, but in our case we don't care. This is a dedicated server where 
+> we don't see any usage for NLM client. We just want to prevent the 
+> kernel from taking the port in case of some accidental NFS mount that 
+> ommitted 'nolock'.
+
+Which is _wrong_. If you omit the 'nolock' mount option, then the client
+_does_ use NLM locking, and so will need the RPC downcall.
+
+If you don't need NLM locking, and want to make sure nobody else can
+enable it, then you can triviall 'fix' this on your server by patching
+it to force the nolock mount option. This isn't a patch that we
+particularly want to see in mainline, though.
+
+Trond
 
