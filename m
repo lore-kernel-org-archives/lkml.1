@@ -1,247 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757245AbXEJCxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756347AbXEJCzA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757245AbXEJCxx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 22:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754714AbXEJCw5
+	id S1756347AbXEJCzA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 22:55:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbXEJCyw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 22:52:57 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:35962 "EHLO smtp.polymtl.ca"
+	Wed, 9 May 2007 22:54:52 -0400
+Received: from smtpout.mac.com ([17.250.248.177]:54912 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754680AbXEJCwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 22:52:55 -0400
-Message-Id: <20070510020916.508519573@polymtl.ca>
-References: <20070510015555.973107048@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Wed, 09 May 2007 21:56:00 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Andi Kleen <ak@muc.de>
-Subject: [patch 05/10] Linux Kernel Markers - i386 optimized version
-Content-Disposition: inline; filename=linux-kernel-markers-i386-optimization.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 10 May 2007 02:52:42 +0000
+	id S1754006AbXEJCyv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 22:54:51 -0400
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2638DE26-D672-4245-BE88-D13B7F0F34A9@mac.com>
+Cc: LKML Kernel <linux-kernel@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       OSDL Linux Bridging <bridge@osdl.org>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: [BUG][debian-2.6.20-1-686] bridging + vlans + "vconfig rem" == stuck kernel
+Date: Wed, 9 May 2007 22:54:41 -0400
+To: netdev@vger.kernel.org
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[bunk@stusta.de: marker exports must be EXPORT_SYMBOL_GPL]
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Andi Kleen <ak@muc.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+I've managed to fairly reliably trigger a deadlock in some portion of  
+the linux networking code on my Debian test box (using the debian  
+kernel linux-image-2.6.20-1-686).  I'm pretty sure that it's a race  
+condition of some sort as it doesn't trigger if I ifdown the  
+interfaces one by one, but if I run "ifdown -a" then it triggers  
+halfway through reliably (although not with the same reference count  
+numbers, once it was 6, this time it was 2).
 
- arch/i386/kernel/Makefile |    1 
- arch/i386/kernel/marker.c |   99 ++++++++++++++++++++++++++++++++++++++++++++++
- include/asm-i386/marker.h |   84 +++++++++++++++++++++++++++++++++++++++
- 3 files changed, 184 insertions(+)
+The message I get is: "unregister_netdevice: waiting for world0 to  
+become free. Usage count = 2"
 
-Index: linux-2.6-lttng/arch/i386/kernel/Makefile
-===================================================================
---- linux-2.6-lttng.orig/arch/i386/kernel/Makefile	2007-05-09 18:14:51.000000000 -0400
-+++ linux-2.6-lttng/arch/i386/kernel/Makefile	2007-05-09 18:16:03.000000000 -0400
-@@ -33,6 +33,7 @@
- obj-y				+= sysenter.o vsyscall.o
- obj-$(CONFIG_ACPI_SRAT) 	+= srat.o
- obj-$(CONFIG_EFI) 		+= efi.o efi_stub.o
-+obj-$(CONFIG_MARKERS_ENABLE_OPTIMIZATION)	+= marker.o
- obj-$(CONFIG_DOUBLEFAULT) 	+= doublefault.o
- obj-$(CONFIG_SERIAL_8250)	+= legacy_serial.o
- obj-$(CONFIG_VM86)		+= vm86.o
-Index: linux-2.6-lttng/arch/i386/kernel/marker.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/arch/i386/kernel/marker.c	2007-05-09 18:16:03.000000000 -0400
-@@ -0,0 +1,99 @@
-+/* marker.c
-+ *
-+ * Erratum 49 fix for Intel PIII and higher.
-+ *
-+ * Permits marker activation by XMC with correct serialization.
-+ *
-+ * Reentrant for NMI and trap handler instrumentation. Permits XMC to a
-+ * location that has preemption enabled because it involves no temporary or
-+ * reused data structure.
-+ *
-+ * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ */
-+
-+#include <linux/notifier.h>
-+#include <linux/mutex.h>
-+#include <linux/preempt.h>
-+#include <linux/smp.h>
-+#include <linux/notifier.h>
-+#include <linux/module.h>
-+#include <linux/marker.h>
-+#include <linux/kdebug.h>
-+
-+#include <asm/cacheflush.h>
-+
-+#define BREAKPOINT_INSTRUCTION  0xcc
-+#define BREAKPOINT_INS_LEN 1
-+
-+static DEFINE_MUTEX(mark_mutex);
-+static long target_eip = 0;
-+
-+static void mark_synchronize_core(void *info)
-+{
-+	sync_core();	/* use cpuid to stop speculative execution */
-+}
-+
-+/* We simply skip the 2 bytes load immediate here, leaving the register in an
-+ * undefined state. We don't care about the content (0 or !0), because we are
-+ * changing the value 0->1 or 1->0. This small window of undefined value
-+ * doesn't matter.
-+ */
-+static int mark_notifier(struct notifier_block *nb,
-+	unsigned long val, void *data)
-+{
-+	enum die_val die_val = (enum die_val) val;
-+	struct die_args *args = (struct die_args *)data;
-+
-+	if (!args->regs || user_mode_vm(args->regs))
-+		return NOTIFY_DONE;
-+
-+	if (die_val == DIE_INT3	&& args->regs->eip == target_eip) {
-+		args->regs->eip += 1; /* Skip the next byte of load immediate */
-+		return NOTIFY_STOP;
-+	}
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block mark_notify = {
-+	.notifier_call = mark_notifier,
-+	.priority = 0x7fffffff,	/* we need to be notified first */
-+};
-+
-+int marker_optimized_set_enable(void *address, char enable)
-+{
-+	char saved_byte;
-+	int ret;
-+	char *dest = address;
-+
-+	if (!(enable ^ dest[1])) /* Must be a state change 0<->1 to execute */
-+		return 0;
-+
-+	mutex_lock(&mark_mutex);
-+	target_eip = (long)address + BREAKPOINT_INS_LEN;
-+	/* register_die_notifier has memory barriers */
-+	register_die_notifier(&mark_notify);
-+	saved_byte = *dest;
-+	*dest = BREAKPOINT_INSTRUCTION;
-+	wmb();
-+	/* Execute serializing instruction on each CPU.
-+	 * Acts as a memory barrier. */
-+	ret = on_each_cpu(mark_synchronize_core, NULL, 1, 1);
-+	BUG_ON(ret != 0);
-+
-+	dest[1] = enable;
-+	wmb();
-+	*dest = saved_byte;
-+		/* Wait for all int3 handlers to end
-+		   (interrupts are disabled in int3).
-+		   This CPU is clearly not in a int3 handler
-+		   (not preemptible).
-+		   synchronize_sched has memory barriers */
-+	synchronize_sched();
-+	unregister_die_notifier(&mark_notify);
-+	/* unregister_die_notifier has memory barriers */
-+	target_eip = 0;
-+	mutex_unlock(&mark_mutex);
-+	flush_icache_range(address, size);
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(marker_optimized_set_enable);
-Index: linux-2.6-lttng/include/asm-i386/marker.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/asm-i386/marker.h	2007-05-09 18:16:03.000000000 -0400
-@@ -0,0 +1,84 @@
-+#ifndef _ASM_I386_MARKER_H
-+#define _ASM_I386_MARKER_H
-+
-+/*
-+ * marker.h
-+ *
-+ * Code markup for dynamic and static tracing. i386 architecture optimisations.
-+ *
-+ * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-+ *
-+ * This file is released under the GPLv2.
-+ * See the file COPYING for more details.
-+ */
-+
-+
-+#ifdef CONFIG_MARKERS
-+
-+#define MF_DEFAULT (MF_OPTIMIZED | MF_LOCKDEP | MF_PRINTK)
-+
-+/* Optimized version of the markers */
-+#define trace_mark_optimized(flags, name, format, args...) \
-+	do { \
-+		static const char __mstrtab_name_##name[] \
-+		__attribute__((section("__markers_strings"))) \
-+		= #name; \
-+		static const char __mstrtab_format_##name[] \
-+		__attribute__((section("__markers_strings"))) \
-+		= format; \
-+		static const char __mstrtab_args_##name[] \
-+		__attribute__((section("__markers_strings"))) \
-+		= #args; \
-+		static struct __mark_marker_data __mark_data_##name \
-+		__attribute__((section("__markers_data"))) = \
-+		{ __mstrtab_name_##name,  __mstrtab_format_##name, \
-+		__mstrtab_args_##name, \
-+		(flags) | MF_OPTIMIZED, __mark_empty_function, NULL }; \
-+		char condition; \
-+		asm volatile(	".section __markers, \"a\", @progbits;\n\t" \
-+					".long %1, 0f;\n\t" \
-+					".previous;\n\t" \
-+					".align 2\n\t" \
-+					"0:\n\t" \
-+					"movb $0,%0;\n\t" \
-+				: "=r" (condition) \
-+				: "m" (__mark_data_##name)); \
-+		__mark_check_format(format, ## args); \
-+		if (likely(!condition)) { \
-+		} else { \
-+			preempt_disable(); \
-+			(*__mark_data_##name.call)(&__mark_data_##name, \
-+						format, ## args); \
-+			preempt_enable(); \
-+		} \
-+	} while (0)
-+
-+/* Marker macro selecting the generic or optimized version of marker, depending
-+ * on the flags specified. */
-+#define _trace_mark(flags, format, args...) \
-+do { \
-+	if (((flags) & MF_LOCKDEP) && ((flags) & MF_OPTIMIZED)) \
-+		trace_mark_optimized(flags, format, ## args); \
-+	else \
-+		trace_mark_generic(flags, format, ## args); \
-+} while (0)
-+
-+/* Marker with default behavior */
-+#define trace_mark(format, args...) _trace_mark(MF_DEFAULT, format, ## args)
-+
-+/* Architecture dependant marker information, used internally for marker
-+ * activation. */
-+
-+/* Offset of the immediate value from the start of the movb instruction, in
-+ * bytes. */
-+#define MARK_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET 1
-+#define MARK_OPTIMIZED_ENABLE_TYPE char
-+/* Dereference enable as lvalue from a pointer to its instruction */
-+#define MARK_OPTIMIZED_ENABLE(a) \
-+	*(MARK_OPTIMIZED_ENABLE_TYPE*) \
-+		((char*)a+MARK_OPTIMIZED_ENABLE_IMMEDIATE_OFFSET)
-+
-+extern int marker_optimized_set_enable(void *address, char enable);
-+
-+#endif
-+#endif //_ASM_I386_MARKER_H
+My /etc/network/interfaces file uses a couple custom-made if-pre-up.d  
+and if-post-down.d scripts to set up the bridges and VLANs a little  
+more cleanly than the standard debian scripts do, but the general  
+configuration is as follows:
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+net0: Tigon-3 onboard gigabit NIC, hooked to managed switch, untagged  
+packets
+   wfi0: (net0.2 before renaming) WAP-connected VLAN 2 on the managed  
+switch
+   world0: (net0.4094 before renaming) Internet connection, runs DHCP
+
+lan: Local Area Network bridge of "net0" and "wfi0" (current box has  
+lowest STP priority)  This will eventually also have another untagged- 
+only ethernet port attached to it.
+   lan:0: Alias for acting as primary nameserver
+
+world: pseudo-bridge of "world0" for highly-available DHCP client.
+
+Just for a bit of background on why this is so complex:  When I get  
+this networking problem sorted out I'm going to set up heartbeat and  
+a dummy "world1" interface with a shared MAC which is added to the  
+"world" bridge when the current system is the DHCP-client master.   
+Hopefully that way I can have 3 systems act as a highly-available  
+router.  Whichever one is currently the master will add the dummy  
+world1 interface with shared MAC address to its "world" bridge and  
+bring dhcp3-client up on the "world1" interface with the latest copy  
+of the leases file from the previous master (even if the previous  
+master mysteriously crashed.  This should keep my public IP from  
+changing unnecessarily and should allow me to reboot any one of the 3  
+router/firewall/mailserver/fileserver/etc systems without adversely  
+affecting the internet connection or other critical services.
+
+Eventually I plan to add ebtables to help filter traffic between wfi*  
+interfaces and untagged VLAN-1 net* interfaces, but for now there's  
+no filtering.
+
+Anyways, after the unregister_netdevice messages start popping up all  
+sorts of networking related things start to hang hard in the kernel;  
+I can't "ip link set down" any interfaces, etc.  I've captured sysrq  
+dumps of the process state on the system at the time with most  
+processes.  See the attached syslog.bz2 file.
+
+The important part is probably the stuck "vconfig" process, but I  
+don't really understand enough about the timer stuff to interpret  
+that backtrace.
+
+vconfig       D 83CCD8CE     0 16564  16562                     (NOTLB)
+        efdd7e7c 00000086 ee120afb 83ccd8ce 98f00788 b7083ffa  
+5384b49a c76c0b05
+        9ebaf791 00000004 efdd7e4e 00000007 f1468a90 2ab74174  
+00000362 00000326
+        f1468b9c c180e420 00000001 00000286 c012933c efdd7e8c  
+df98a000 c180e468
+Call Trace:
+[<c012933c>] lock_timer_base+0x15/0x2f
+[<c0129445>] __mod_timer+0x91/0x9b
+[<c02988f5>] schedule_timeout+0x70/0x8d
+[<f8b75209>] vlan_device_event+0x13/0xf8 [8021q]
+[<c0128bfe>] process_timeout+0x0/0x5
+[<c01295db>] msleep+0x1a/0x1f
+[<c023e5a9>] netdev_run_todo+0x10f/0x203
+[<f8b757d4>] vlan_ioctl_handler+0x4dc/0x594 [8021q]
+[<c023398d>] sock_ioctl+0x145/0x1be
+[<c0233848>] sock_ioctl+0x0/0x1be
+[<c016c39f>] do_ioctl+0x1f/0x62
+[<c016c626>] vfs_ioctl+0x244/0x256
+[<c016c684>] sys_ioctl+0x4c/0x64
+[<c0102d70>] syscall_call+0x7/0xb
+
+
+There's also a whole bunch of processes stuck in netdev_run_todo()  
+trying to lock a mutex.  This even frustratingly affects things like  
+rndc which use netlink sockets:
+
+rpc.mountd    D C9F2BD14     0  4351      1          4425  4229 (NOTLB)
+        c9f2bd28 00000086 00000002 c9f2bd14 c9f2bd10 00000000  
+000010ff 46422e36
+        00000000 00000002 00000202 00000007 ed266030 495bcd12  
+000003a5 00013461
+        ed26613c c180e420 00000001 00000000 dffc8200 dfaeb580  
+000010ff df99ce00
+Call Trace:
+[<c0298c09>] __mutex_lock_slowpath+0x48/0x77
+[<c0298ac0>] mutex_lock+0xa/0xb
+[<c023e4aa>] netdev_run_todo+0x10/0x203
+[<c0251460>] netlink_run_queue+0x9f/0xbe
+[<c0243ac9>] rtnetlink_rcv_msg+0x0/0x1d9
+[<c0243a97>] rtnetlink_rcv+0x34/0x3d
+[<c0251880>] netlink_data_ready+0x12/0x4c
+[<c0250841>] netlink_sendskb+0x19/0x30
+[<c0251862>] netlink_sendmsg+0x26a/0x276
+[<c02341b9>] sock_sendmsg+0xd0/0xeb
+[<c0131e95>] autoremove_wake_function+0x0/0x35
+[<c020a2be>] extract_entropy+0x45/0x89
+[<c011a485>] __wake_up+0x32/0x43
+[<c0250aa6>] netlink_insert+0x10f/0x119
+[<c02344e3>] sys_sendto+0x116/0x140
+[<c014841a>] find_get_page+0x18/0x41
+[<c014a736>] filemap_nopage+0x197/0x2f9
+[<c0234ea9>] sys_getsockname+0x86/0xb0
+[<c015341a>] __handle_mm_fault+0x2ee/0x7d4
+[<c0235207>] sys_socketcall+0x15e/0x242
+[<c0102d70>] syscall_call+0x7/0xb
+
+The "zz-km-vlan" script is the bash if-post-down.d script in charge  
+of disassembling VLAN interfaces.  There is an equivalent "zz-km- 
+bridge" script for bridge interfaces, as well as if-pre-up.d scripts  
+called "00-km-vlan" and "00-km-bridge" to create the interfaces.
+
+If anyone has any suggestions, patches, or debugging tips I'm very  
+interested to hear from you.  Thanks!
+
+Cheers,
+Kyle Moffett
