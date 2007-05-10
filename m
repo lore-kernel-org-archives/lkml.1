@@ -1,123 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbXEJHSY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbXEJHUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757583AbXEJHSY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 03:18:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbXEJHSR
+	id S1757950AbXEJHUl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 03:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752920AbXEJHUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 03:18:17 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38469 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbXEJHSQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 03:18:16 -0400
-Date: Thu, 10 May 2007 16:16:11 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: linux-kernel@vger.kernel.org
-Cc: Linux-MM <linux-mm@kvack.org>, Lee.Schermerhorn@hp.com, apw@shadowen.org,
-       Christoph Lameter <clameter@sgi.com>, AKPM <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, jbarnes@virtuousgeek.org,
-       "kamezawa.hiroyu@jp.fujitsu.com" <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [Request-For-Test] [PATCH] change zonelist order v6 [0/3]
- Introduction
-Message-Id: <20070510161611.fe1a696b.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 03:20:33 -0400
+Received: from holomorphy.com ([66.93.40.71]:32768 "EHLO holomorphy.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752342AbXEJHUd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 03:20:33 -0400
+Date: Thu, 10 May 2007 00:20:51 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Ray Lee <ray-lk@madrabbit.org>, Con Kolivas <kernel@kolivas.org>,
+       Ingo Molnar <mingo@elte.hu>, ck list <ck@vds.kolivas.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org
+Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
+Message-ID: <20070510072051.GK19966@holomorphy.com>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705100928.34056.kernel@kolivas.org> <464261B5.6030809@yahoo.com.au> <200705101134.34350.kernel@kolivas.org> <46427BDB.30004@yahoo.com.au> <2c0942db0705092048m38b36e7fo3a7c2c59fe1612b2@mail.gmail.com> <46429801.8030202@yahoo.com.au> <2c0942db0705092252n13a6a79aq39f13fcfae534de2@mail.gmail.com> <4642C416.3000205@yahoo.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4642C416.3000205@yahoo.com.au>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is zonelist-order-fix patch version 6. against 2.6.21-mm2.
+Ray Lee wrote:
+>> Huh? You already stated one version of it above, namely updatedb. But
 
-Works as expected in my ia64/NUMA environment and found no problem
-in x86/non-NUMA arch. (This patch has no change for non-NUMA)
+On Thu, May 10, 2007 at 05:04:54PM +1000, Nick Piggin wrote:
+> So a swapping problem with updatedb should be unusual and we'd like to see
+> if we can fix it without resorting to prefetching.
+> I know the theory behind swap prefetching, and I'm not saying it doesn't
+> work, so I'll snip the rest of that.
 
-There are many types of NUMA systems  and this patch affects *all* NUMA
-system's memory allocation logic. please test.
-
-ChangeLog V5 -> V6
-- some cleanups and compile fixes (no logic change)
-- merged documentaion fix from Lee Schermerhon.
-- simplified kernel-parameter.txt
-- adjusted to 2.6.21-mm2.
-
-ChangeLog V4 -> V5
-- separated 'doc' patch and rewrote it.
-- more clean ups.
-- sysctl/boot option params are simplified.
-
-ChangeLog V2 -> V4
-- automatic configuration is added.
-- automatic configuration is now default.
-- relaxed_zone_order is renamed to be numa_zonelist_order
-  you can specify value "default" , "zone" , "numa"
-- clean-up from Lee Schermerhorn
-- patch is speareted to "base" and "autoconfiguration algorithm"
-
-Changelog from V1 -> V2
-- sysctl name is changed to be relaxed_zone_order
-- NORMAL->NORMAL->....->DMA->DMA->DMA order (new ordering) is now default.
-  NORMAL->DMA->NORMAL->DMA order (old ordering) is optional.
-- addes boot opttion to set relaxed_zone_order. ia64 is supported now.
-- Added documentation
-
-As previous post, thanks to Lee Schermerhon for his great help.
-
-[patch set]
-[1/3] ---- add zonelist selection logic.
-[2/3] ---- add automatic configuration of zonelist order
-[3/3] ---- add documentaion.
-
-Any comments are welcome.
-
-[Description]
-This patch modifies zonelist order in NUMA. This patch offers two zonelist
-order.
-(TypeA) zone is ordered by node locality, then zone type
-(TypeB) zone is ordered by zone type, then node locality
-
-(TypeA) is called as "Node Order", (TypeB) is called as "Zone Order"
-Default zonelist order is determined by the kernel automatically.
+I've not run updatedb in years, so I have no idea what it does to a
+modern kernel. It used to be an unholy terror of slab fragmentation
+and displacing user memory. The case of streaming kernel metadata IO
+is probably not quite as easy as streaming file IO.
 
 
-Assume 2 Node NUMA, Node(0) has ZONE_DMA/ZONE_NORMAL and Node(1) has ZONE_NORMAL.
-In this case, zonelist for GFP_KERNEL in Node(0) will be
+Ray Lee wrote:
+>> You said, effectively: "Use-once could be improved to deal with
+>> updatedb". I said I've been reading emails from Rik and others talking
+>> about that for four years now, and we're still talking about it. Were
+>> it merely updatedb, I'd say us userspace folk should step up and
+>> rewrite the damn thing to amortize its work. However, I and others
+>> feel it's only an example -- glaring, obviously -- of a more pervasive
+>> issue. A small issue, to be sure!, but an issue nevertheless.
 
-In "Node Order",  Node(0)NORMAL -> Node(0)DMA -> Node(1)NORMAL
-In "Zone Order",  Node(0)NORMAL -> Node(1)NORMAL -> Node(0) DMA
+On Thu, May 10, 2007 at 05:04:54PM +1000, Nick Piggin wrote:
+> It isn't going to get fixed unless people complain about it. If you
+> cover the use-once problem with swap prefetching, then it will never
+> get fixed.
 
-"Node Order" will guarantee "better locality" but  "Zone Order" places
-ZONE_DMA at the tail of zonelist. This will offer robust zonelist agatist OOM on ZONE_DMA, which is tend to be small.
+The policy people need to clean this up once and for all at some point.
+clameter's targeted reclaim bits for slub look like a plausible tactic,
+but are by no means comprehensive. Things need to attempt to eat their
+own tails before eating everyone else alive. Maybe we need to take hits
+on things such as badari's dd's to resolve the pathologies.
 
-"Which is better ?" 
-It depends on a system's environment and memory usage, I think.
 
-[Case Study]
-On my (and other) ia64 NUMA box, only Node(0) has 2Gbytes of ZONE_DMA.
-Assume a machine with following configuration.
-
-Node 0:   12GB of memory   10GB NORMAL 2GB DMA
-Node 1:   12GB of memory   12GB NORMAL
-Node 2:   12GB of memory   12GB NORMAL
-
-Start a process which uses 12GB of memory on Node(0), then memory usage
-will be
-Node 0:   0/12 GB of memory is available, NORMAL: empty DMA: empty
-Node 1:  12/12 GB of memory is available. NORMAL: 12G
-Node 2:  12/12 GB of memory is available. NORMAL: 12G
-
-An interesting matter is "ZONE_DMA is exhausted before ZONE_NORMAL".
-This is current kernel's behavior. This can cause OOM very easily if the
-system has a device which uses GFP_DMA. 
-
-This patch fixes this kind of situation as following. (by using "Zone Order")
-Node 0:   2/12 GB of memory is available, NORMAL: empty DMA: 2G
-Node 1:  10/12 GB of memory is available. NORMAL: 10G
-Node 2:  12/12 GB of memory is available. NORMAL  12G
-
-A user can say "Good bye OOM-Killer" but 2GB of memory is allocated from
-off-node memory. it's trade-off.
-
--Kame
-
+-- wli
