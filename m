@@ -1,61 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758073AbXEJVcd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761537AbXEJVds@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758073AbXEJVcd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:32:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755926AbXEJVc0
+	id S1761537AbXEJVds (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:33:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXEJVdl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:32:26 -0400
-Received: from gw.goop.org ([64.81.55.164]:34397 "EHLO mail.goop.org"
+	Thu, 10 May 2007 17:33:41 -0400
+Received: from rtr.ca ([64.26.128.89]:4561 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754558AbXEJVcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:32:25 -0400
-Message-ID: <46438F67.9060503@goop.org>
-Date: Thu, 10 May 2007 14:32:23 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1755354AbXEJVdk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:33:40 -0400
+Message-ID: <46438FAC.1030702@rtr.ca>
+Date: Thu, 10 May 2007 17:33:32 -0400
+From: Mark Lord <liml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com,
-       michal.k.k.piotrowski@gmail.com
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an
- nlink problem?
-References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <20070510004918.GS85884050@sgi.com> <46426D31.8070000@goop.org> <20070510012609.GU85884050@sgi.com> <46433049.4020003@goop.org> <20070510211348.GC86004887@sgi.com>
-In-Reply-To: <20070510211348.GC86004887@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tejun Heo <htejun@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] libata: add human-readable error value decoding
+References: <46428103.3040003@shaw.ca> <4642E92D.5010509@gmail.com> <46431D19.1070308@rtr.ca> <46434AE5.8060605@garzik.org>
+In-Reply-To: <46434AE5.8060605@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Chinner wrote:
-> Ok, so most of the of the integrity errors are processed by an
-> error like this:
->
-> drivers/scsi/sata_sil24.c index contains -98 extra bytes
-> unpacking file drivers/scsi/sata_sil24.c 5715cdfceaca: Error -5 while decompressing data
->
-> That's an -EIO and not a normal error to report. Are there any
-> errors in dmesg or syslog corresponding to this?
->   
+Jeff Garzik wrote:
+> Mark Lord wrote:
+>> Same here, but I would like to see it in there under a 
+>> CONFIG_DEBUG_LIBATA
+>> kernel build option or something.  Kind of like the 
+>> "FANCY_STATUS_DUMPS" flag
+>> that drivers/ide used to have for this kind of stuff.
+> 
+> 
+> The long term goal is to enable verbose output with a module option 
+> and/or sysfs knob, rather than a compile-time switch.
 
-No, that's an error code from zlib:
-#define Z_BUF_ERROR    (-5)
+If we're compiling the messages into the kernel regardless,
+then it doesn't really make much sense to NOT show all of them
+on the error paths.
 
-I think it means it got a truncated buffer while decompressing.
+This stuff (fancy status dumps) is mostly just for the error paths,
+where more information is always a good thing.
 
-> The errors tend to imply problems decompressing and patching files,
-> not that truncates are occurring once the files have been patched.
-> Can you check that what is being pulled from the repository is correct
-> before it gets uncompressed?
->   
+Controlling the rest of the ata_msg_xxx stuff from sysctl is fine
+for non-error paths.
 
-The hg verify checks the integrity of all the files by decompressing
-them and making sure their sha1 hashes are correct.  The fact that the
-first hg verify passed is a very strong check that the whole repo's
-integrity is sound, both in structure and content.  The second failing
-hg verify's messages are all related to truncation.  I haven't checked
-this comprehensively, but in every instance I've checked the files are
-identical up to the truncation point.  All the error messages are
-consistent with pure truncation, not content differences or IO errors.
-
-    J
+Cheers
