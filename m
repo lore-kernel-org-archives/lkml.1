@@ -1,77 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761732AbXEJONt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762412AbXEJOPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761732AbXEJONt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 10:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756037AbXEJONn
+	id S1762412AbXEJOPK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 10:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757880AbXEJOO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 10:13:43 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:43382 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755176AbXEJONm (ORCPT
+	Thu, 10 May 2007 10:14:59 -0400
+Received: from tomts43.bellnexxia.net ([209.226.175.110]:41093 "EHLO
+	tomts43-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752880AbXEJOO6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 10:13:42 -0400
-Message-ID: <4643283B.2060203@wpkg.org>
-Date: Thu, 10 May 2007 16:12:11 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linux-raid@vger.kernel.org,
-       rshitrit@marvell.com, dan.j.williams@intel.com, nickpiggin@yahoo.com.au,
-       Justin Piszcz <jpiszcz@lucidpixels.com>, ilmari@ilmari.org
-Subject: RE: [PATCH 00/16] raid acceleration and asynchronous offload api
- for 2.6.22
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+	Thu, 10 May 2007 10:14:58 -0400
+Date: Thu, 10 May 2007 10:14:58 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 07/10] Linux Kernel Markers - Documentation
+Message-ID: <20070510141458.GG22424@Krystal>
+References: <20070510015555.973107048@polymtl.ca> <20070510020917.172554217@polymtl.ca> <20070510065847.GE8019@infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070510065847.GE8019@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 10:13:39 up 97 days,  4:20,  5 users,  load average: 2.10, 2.14, 2.22
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ronen Shitrit wrote:
+* Christoph Hellwig (hch@infradead.org) wrote:
+> On Wed, May 09, 2007 at 09:56:02PM -0400, Mathieu Desnoyers wrote:
+> > Here is some documentation explaining what is/how to use the Linux
+> > Kernel Markers.
+> 
+> Please remove all references to out of tree code from the kernel documentation.
+> 
 
-> The resync numbers you sent, looks very promising :)
-> Do you have any performance numbers that you can share for these set of
-> patches, which shows the Rd/Wr IO bandwidth.
-
-I have some simple tests made with hdparm, with the results I don't 
-understand.
-
-We see hdparm results are fine if we access the whole device:
-
-thecus:~# hdparm -Tt /dev/sdd
-
-/dev/sdd:
-  Timing cached reads:   392 MB in  2.00 seconds = 195.71 MB/sec
-  Timing buffered disk reads:  146 MB in  3.01 seconds =  48.47 MB/sec
-
-
-But are 10 times worse (Timing buffered disk reads) when we access 
-partitions:
-
-thecus:/# hdparm -Tt /dev/sdc1 /dev/sdd1
-
-/dev/sdc1:
-  Timing cached reads:   396 MB in  2.01 seconds = 197.18 MB/sec
-  Timing buffered disk reads:   16 MB in  3.32 seconds =   4.83 MB/sec
-
-/dev/sdd1:
-  Timing cached reads:   394 MB in  2.00 seconds = 196.89 MB/sec
-  Timing buffered disk reads:   16 MB in  3.13 seconds =   5.11 MB/sec
-
-
-Why is it so much worse?
-
-
-I used 2.6.21-iop1 patches from http://sf.net/projects/xscaleiop; right 
-now I use 2.6.17-iop1, for which the results are ~35 MB/s when accessing 
-a device (/dev/sdd) or a partition (/dev/sdd1).
-
-
-In kernel config, I enabled Intel DMA engines.
-
-The device I use is Thecus n4100, it is "Platform: IQ31244 (XScale)", 
-and has 600 MHz CPU.
-
+Hrm, I see.. you are objecting to mentioning of "LTTng, LKET, SystemTAP"...
+I agree : it belongs to a changelog (which is bounded in time) rather
+than to the documentation itself.
 
 -- 
-Tomasz Chmielewski
-http://wpkg.org
-
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
