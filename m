@@ -1,108 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbXEJKNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760783AbXEJKNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759345AbXEJKNQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 06:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754511AbXEJKNH
+	id S1760783AbXEJKNu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 06:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760665AbXEJKNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 06:13:07 -0400
-Received: from gw-e.panasas.com ([65.194.124.178]:32968 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753669AbXEJKNF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 06:13:05 -0400
-Message-ID: <4642F018.7020902@panasas.com>
-Date: Thu, 10 May 2007 13:12:40 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
-MIME-Version: 1.0
-To: Pete Zaitcev <zaitcev@redhat.com>, Andi Kleen <ak@suse.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Andi, you broke my laptop :-)
-References: <4642E8AA.7060501@panasas.com>
-In-Reply-To: <4642E8AA.7060501@panasas.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 10 May 2007 10:12:42.0048 (UTC) FILETIME=[BEDD1C00:01C792EB]
+	Thu, 10 May 2007 06:13:35 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55971 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760618AbXEJKNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 06:13:34 -0400
+Message-Id: <20070510101128.970795626@chello.nl>
+References: <20070510100839.621199408@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Thu, 10 May 2007 12:08:43 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: miklos@szeredi.hu, akpm@linux-foundation.org, neilb@suse.de, dgc@sgi.com,
+       tomoki.sekiyama.qu@hitachi.com, a.p.zijlstra@chello.nl,
+       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
+       yingchao.zhou@gmail.com
+Subject: [PATCH 04/15] lib: percpu_counter_set
+Content-Disposition: inline; filename=percpu_counter_set.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andy, Pete, this patch also causes our test machines to hang hard during boot.
-x86_64 smp kernel, single cpu Athlon 64 machine,
-cpuinfo below.
+Provide a method to set a percpu counter to a specified value.
 
-Benny
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ include/linux/percpu_counter.h |    6 ++++++
+ lib/percpu_counter.c           |   13 +++++++++++++
+ 2 files changed, 19 insertions(+)
 
-$ cat /proc/cpuinfo
-processor       : 0
-vendor_id       : AuthenticAMD
-cpu family      : 15
-model           : 79
-model name      : AMD Athlon(tm) 64 Processor 3800+
-stepping        : 2
-cpu MHz         : 2412.397
-cache size      : 512 KB
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 1
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext fxsr_opt rdtscp lm 3dnowext 3dnow up pni cx16 lahf_lm svm cr8_legacy
-bogomips        : 4828.89
-TLB size        : 1024 4K pages
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 40 bits physical, 48 bits virtual
-power management: ts fid vid ttp tm stc
+Index: linux-2.6/include/linux/percpu_counter.h
+===================================================================
+--- linux-2.6.orig/include/linux/percpu_counter.h	2007-05-02 12:44:13.000000000 +0200
++++ linux-2.6/include/linux/percpu_counter.h	2007-05-02 19:06:44.000000000 +0200
+@@ -38,6 +38,7 @@ static inline void percpu_counter_destro
+ 	free_percpu(fbc->counters);
+ }
+ 
++void percpu_counter_set(struct percpu_counter *fbc, s64 amount);
+ void __percpu_counter_mod(struct percpu_counter *fbc, s32 amount, s32 batch);
+ void __percpu_counter_mod64(struct percpu_counter *fbc, s64 amount, s32 batch);
+ s64 percpu_counter_sum(struct percpu_counter *fbc);
+@@ -87,6 +88,11 @@ static inline void percpu_counter_destro
+ {
+ }
+ 
++static inline void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
++{
++	fbc->count = amount;
++}
++
+ #define __percpu_counter_mod(fbc, amount, batch) \
+ 	percpu_counter_mod(fbc, amount)
+ 
+Index: linux-2.6/lib/percpu_counter.c
+===================================================================
+--- linux-2.6.orig/lib/percpu_counter.c	2007-05-02 12:44:13.000000000 +0200
++++ linux-2.6/lib/percpu_counter.c	2007-05-02 19:08:12.000000000 +0200
+@@ -5,6 +5,19 @@
+ #include <linux/percpu_counter.h>
+ #include <linux/module.h>
+ 
++void percpu_counter_set(struct percpu_counter *fbc, s64 amount)
++{
++	int cpu;
++
++	spin_lock(&fbc->lock);
++	for_each_possible_cpu(cpu) {
++		s32 *pcount = per_cpu_ptr(fbc->counters, cpu);
++		*pcount = 0;
++	}
++	fbc->count = amount;
++	spin_unlock(&fbc->lock);
++}
++
+ void __percpu_counter_mod(struct percpu_counter *fbc, s32 amount, s32 batch)
+ {
+ 	long count;
 
-Pete Zaitcev <zaitcev@redhat.com> wrote:
-> 
-> Hi, Andi:
-> 
-> The attached patch (actually, git show output) makes my Dell 1501 to hang
-> on boot. Sorry, I have no clue why... The culprit is found with git bisect.
-> But yes, it's an AMD MK-36. I use an x86_64 kernel. It is 100% reproducible.
-> 
-> Cheers,
-> -- Pete
-> 
-> commit c5bcb5635a03da3158f121ae20ccbbf72b4fc62a
-> Author: Andi Kleen <ak@suse.de>
-> Date:   Wed May 2 19:27:21 2007 +0200
-> 
->     [PATCH] x86: Use RDTSCP for synchronous get_cycles if possible
->     
->     RDTSCP is already synchronous and doesn't need an explicit CPUID.
->     This is a little faster and more importantly avoids VMEXITs on Hypervisors.
->     
->     Original patch from Joerg Roedel, but reworked by AK
->     Also includes miscompilation fix by Eric Biederman
->     
->     Cc: "Joerg Roedel" <joerg.roedel@amd.com>
->     
->     Signed-off-by: Andi Kleen <ak@suse.de>
-> 
-> diff --git a/include/asm-i386/tsc.h b/include/asm-i386/tsc.h
-> index 0181f9d..3f3c1fa 100644
-> --- a/include/asm-i386/tsc.h
-> +++ b/include/asm-i386/tsc.h
-> @@ -38,6 +38,15 @@ static __always_inline cycles_t get_cycles_sync(void)
->  	unsigned eax;
->  
->  	/*
-> +  	 * Use RDTSCP if possible; it is guaranteed to be synchronous
-> + 	 * and doesn't cause a VMEXIT on Hypervisors
-> +	 */
-> +	alternative_io(ASM_NOP3, ".byte 0x0f,0x01,0xf9", X86_FEATURE_RDTSCP,
-> +			 	 "=A" (ret), "0" (0ULL) : "ecx", "memory");
-> +	if (ret)
-> +		return ret;
-> +
-> +	/*
->  	 * Don't do an additional sync on CPUs where we know
->  	 * RDTSC is already synchronous:
->  	 */
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+-- 
 
