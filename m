@@ -1,73 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760808AbXEJXpt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762161AbXEJXru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760808AbXEJXpt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 19:45:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbXEJXpm
+	id S1762161AbXEJXru (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 19:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755076AbXEJXrn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 19:45:42 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:36233 "EHLO smtps.tip.net.au"
+	Thu, 10 May 2007 19:47:43 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:33699 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753278AbXEJXpl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 19:45:41 -0400
-Date: Fri, 11 May 2007 09:45:30 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-       paulus@samba.org, linux-kernel@vger.kernel.org
-Subject: Re: 2.6.21-mm2 -- powerpc missing kset
-Message-Id: <20070511094530.59271fdb.sfr@canb.auug.org.au>
-In-Reply-To: <20070510084802.04476f66.randy.dunlap@oracle.com>
-References: <20070509012322.199f292b.akpm@linux-foundation.org>
-	<4643068C.8010302@shadowen.org>
-	<20070510221631.5eb38bdd.sfr@canb.auug.org.au>
-	<20070510084802.04476f66.randy.dunlap@oracle.com>
-X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Fri__11_May_2007_09_45_30_+1000_JP.3Gv.TUVkX0Wut"
+	id S1754409AbXEJXrm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 19:47:42 -0400
+Message-ID: <4643AF19.5080309@garzik.org>
+Date: Thu, 10 May 2007 19:47:37 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Robert Hancock <hancockr@shaw.ca>
+CC: Mark Lord <liml@rtr.ca>, Tejun Heo <htejun@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] libata: add human-readable error value decoding
+References: <46428103.3040003@shaw.ca> <4642E92D.5010509@gmail.com> <46431D19.1070308@rtr.ca> <46434AE5.8060605@garzik.org> <46438FAC.1030702@rtr.ca> <464391B3.7040708@garzik.org> <4643AB76.1000408@shaw.ca>
+In-Reply-To: <4643AB76.1000408@shaw.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Fri__11_May_2007_09_45_30_+1000_JP.3Gv.TUVkX0Wut
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Robert Hancock wrote:
+> I don't think this is as big of a deal here as in other cases, like oops 
+> output. With libata errors, if they're at the console (which they'd have 
+> to be to see these messages), unless something has actually caused a 
+> panic the scrollback buffer should still be functional and they'd be 
+> able to see the entire output..
 
-On Thu, 10 May 2007 08:48:02 -0700 Randy Dunlap <randy.dunlap@oracle.com> wrote:
->
-> On Thu, 10 May 2007 22:16:31 +1000 Stephen Rothwell wrote:
->
-> > On Thu, 10 May 2007 12:48:28 +0100 Andy Whitcroft <apw@shadowen.org> wrote:
-> > >
-> > > arch/powerpc/platforms/pseries/power.c:31: warning: `struct subsystem'
-> > > declared inside parameter list
-> >
-> > There is no explicit reference to struct subsystem in the current version
-> > of that file.
->
-> There is in 2.6.21-mm2.  Are you saying that it's been fixed
-> somewhere else?  (where?)
 
-Linus' tree.  It was fixed by commit
-823bccfc4002296ba88c3ad0f049e1abd8108d30 ('remove "struct subsystem" as
-it is no longer needed') from Greg Kroah-Hartman dated 2007-04-14 which
-was applied before v2.6.21-mm2 (according to gitk).
+Scrollback rarely works as planned, for me.  Overall, a balance must be 
+found.
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+More information is more helpful.  But.
 
---Signature=_Fri__11_May_2007_09_45_30_+1000_JP.3Gv.TUVkX0Wut
-Content-Type: application/pgp-signature
+There are downsides to spewing everything possible, upon error.  You 
+cause logging to the possibly problematic disk, you push older messages 
+out of the printk ring buffer, etc., etc.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+	Jeff
 
-iD8DBQFGQ66iFdBgD/zoJvwRAioKAJ9EQnHa2KDcz7UfCkgDVpuXOZqcGwCeKuD3
-FF+KQ38cc485Ay1q+ubiEQ4=
-=QxJn
------END PGP SIGNATURE-----
 
---Signature=_Fri__11_May_2007_09_45_30_+1000_JP.3Gv.TUVkX0Wut--
