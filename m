@@ -1,54 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbXEJPXJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753043AbXEJPXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbXEJPXJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 11:23:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbXEJPW6
+	id S1753043AbXEJPXd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 11:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756704AbXEJPXW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 11:22:58 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3737 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753043AbXEJPW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 11:22:57 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Thu, 10 May 2007 08:22:51 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Andi Kleen <andi@firstfloor.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       William Lee Irwin III <wli@holomorphy.com>
-Subject: Re: [patch 1/4] KMON - kmon device/instrumentation ...
-In-Reply-To: <p73k5vgg6c9.fsf@bingen.suse.de>
-Message-ID: <Pine.LNX.4.64.0705100819070.17907@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.27461.1178495355.1>
- <p73k5vgg6c9.fsf@bingen.suse.de>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Thu, 10 May 2007 11:23:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:52589 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755092AbXEJPXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 11:23:20 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/2] AFS: Fix interminable loop in
+	afs_write_back_from_locked_page()
+To: akpm@osdl.org, netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Thu, 10 May 2007 15:33:34 +0100
+Message-ID: <20070510143334.19485.26042.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007, Andi Kleen wrote:
+Following bug was uncovered by compiling with '-W' flag:
 
-> Davide Libenzi <davidel@xmailserver.org> writes:
-> 
-> > This patch serie introduces a way to log high frequency/volume data
-> > out of the kernel. Logging scheduler operations for example, with
-> > loads that generate tenths of thousands of context switches per second
-> > (possibly from multiple CPUs), can overload the kernel printk. Also,
-> > logging in binary form helps in reducing the size of the logged data
-> > that is tranfered from kernel to userspace. The kmon logger uses per
-> > CPU buffers (rings) that are flushed at a given frequency to all the
-> > instances of the kmon devices.
-> 
-> Sounds like you reinvented relayfs? (and ktrace before that)
+  CC [M]  fs/afs/write.o
+fs/afs/write.c: In function ‘afs_write_back_from_locked_page’:
+fs/afs/write.c:398: warning: comparison of unsigned expression >= 0 is always true
 
-I simply didn't know about relayfs ;) Randy told me when I posted 
-those, that BTW were never intended for merging. The buffering method used 
-is more similar to oprofile though.
+Loop variable 'n' is unsigned, so wraps around happily as far as I can
+see. Trival fix attached (compile tested only).
 
+Signed-Off-By: Mika Kukkonen <mikukkon@iki.fi>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-- Davide
+ fs/afs/write.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index 67ae4db..28f3751 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -395,8 +395,9 @@ static int afs_write_back_from_locked_page(struct afs_writeback *wb,
+ 		if (n == 0)
+ 			goto no_more;
+ 		if (pages[0]->index != start) {
+-			for (n--; n >= 0; n--)
+-				put_page(pages[n]);
++			do {
++				put_page(pages[--n]);
++			} while (n > 0);
+ 			goto no_more;
+ 		}
+ 
 
