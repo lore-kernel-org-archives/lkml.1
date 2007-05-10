@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbXEJQjl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760195AbXEJQk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758874AbXEJQjl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 12:39:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbXEJQje
+	id S1760195AbXEJQk1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 12:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755670AbXEJQkM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 12:39:34 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49420 "EHLO mx1.redhat.com"
+	Thu, 10 May 2007 12:40:12 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:57594 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754775AbXEJQjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 12:39:33 -0400
-Date: Thu, 10 May 2007 09:31:53 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: "Joerg Roedel" <joerg.roedel@amd.com>
-Cc: "Andi Kleen" <andi@firstfloor.org>, ak@suse.de,
-       linux-kernel@vger.kernel.org, "Benny Halevy" <bhalevy@panasas.com>,
-       akpm@linux-foundation.org, zaitcev@redhat.com
-Subject: Re: Andi, you broke my laptop :-)
-Message-Id: <20070510093153.9f0accfb.zaitcev@redhat.com>
-In-Reply-To: <20070510133555.GA5705@amd.com>
-References: <20070509125616.cde56b8e.zaitcev@redhat.com>
-	<20070510130144.GI14898@one.firstfloor.org>
-	<20070510133555.GA5705@amd.com>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754233AbXEJQkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 12:40:10 -0400
+Message-ID: <46434AE5.8060605@garzik.org>
+Date: Thu, 10 May 2007 12:40:05 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Mark Lord <lkml@rtr.ca>
+CC: Tejun Heo <htejun@gmail.com>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] libata: add human-readable error value decoding
+References: <46428103.3040003@shaw.ca> <4642E92D.5010509@gmail.com> <46431D19.1070308@rtr.ca>
+In-Reply-To: <46431D19.1070308@rtr.ca>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 15:35:56 +0200, "Joerg Roedel" <joerg.roedel@amd.com> wrote:
+Mark Lord wrote:
+> Same here, but I would like to see it in there under a CONFIG_DEBUG_LIBATA
+> kernel build option or something.  Kind of like the "FANCY_STATUS_DUMPS" 
+> flag
+> that drivers/ide used to have for this kind of stuff.
 
-> I debugged this problem a bit and my compiler[1]interprets the =A
-> constraint as %rax instead of %edx:%eax on x86_64 which causes the
-> problem. The appended patch provides a workaround for this and fixed the
-> hang on my machine.
-> 
-> [1] gcc version 4.1.3 20070429 (prerelease) (Debian 4.1.2-5)
 
->  	alternative_io(ASM_NOP3, ".byte 0x0f,0x01,0xf9", X86_FEATURE_RDTSCP,
-> -			 	 "=A" (ret), "0" (0ULL) : "ecx", "memory");
-> +		       ASM_OUTPUT2("=a" (eax), "=d" (edx)),
-> +		       "a" (0U), "d" (0U) : "ecx", "memory");
+The long term goal is to enable verbose output with a module option 
+and/or sysfs knob, rather than a compile-time switch.
 
-This works for me. Thanks, Joerg.
+That's what ata_msg_xxx is for.  We just don't have the knob yet. 
+Patches welcome...
 
-gcc version 4.1.2 20070424 (Red Hat 4.1.2-11)
+	Jeff
 
--- Pete
+
+
