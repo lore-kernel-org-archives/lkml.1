@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759724AbXEJHy7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758720AbXEJH55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759724AbXEJHy7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 03:54:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757156AbXEJHyv
+	id S1758720AbXEJH55 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 03:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbXEJH5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 03:54:51 -0400
-Received: from wr-out-0506.google.com ([64.233.184.231]:25016 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758640AbXEJHyu (ORCPT
+	Thu, 10 May 2007 03:57:50 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:57862 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753182AbXEJH5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 03:54:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=qcE80psx/GYDu89vbhbIofp0JWp8rZNLRJCgOWXFPiARaz330I8H9Mz7sDxn1HiGh+0BCKP8X02kSA+Xrfy3jpLy1RJy6OLvH752qyWcQx9zcaqeDEekc032tVzaAA1ADGPL4kLXN5OiOlU+kI9qz27E7sXkJOE+5xSUBTqcQXQ=
-Message-ID: <a781481a0705100054r45c373a0lfd35b8b31b0e6032@mail.gmail.com>
-Date: Thu, 10 May 2007 13:24:48 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, "Rusty Russell" <rusty@rustcorp.com.au>
-In-Reply-To: <1178781677.14928.221.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 10 May 2007 03:57:49 -0400
+Date: Thu, 10 May 2007 00:57:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jarek Poplawski <jarkao2@o2.pl>
+Cc: "Pallipadi\, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: [PATCH -mm] timer: parenthesis fix in tbase_get_deferrable()
+ etc.
+Message-Id: <20070510005738.cebd2a40.akpm@linux-foundation.org>
+In-Reply-To: <20070510073904.GB2021@ff.dom.local>
+References: <653FFBB4508B9042B5D43DC9E18836F55DFC44@scsmsx415.amr.corp.intel.com>
+	<20070510073904.GB2021@ff.dom.local>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070510052622.3E8D5DDF4B@ozlabs.org>
-	 <20070509224113.cca81a24.akpm@linux-foundation.org>
-	 <a781481a0705092345rf9fdc9cs8495516299a28fae@mail.gmail.com>
-	 <1178781677.14928.221.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/10/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
-> > So you're saying that this mechanism forces the arch (that really
-> > wants hard_irq_disable) to _#define_ hard_irq_disable (as a macro),
-> > and if it implements it as an inline function, for example, then we're
-> > screwed?
->
-> No. The idea is to do like we did for a few other things already
-> (according to Linus request in fact), which is to write
->
-> static inline void hard_irq_disable(void)
-> {
->         .../...
-> }
-> #define hard_irq_disable hard_irq_disable
->
-> This is nicer than having an ARCH_HAS_xxx
+On Thu, 10 May 2007 09:39:04 +0200 Jarek Poplawski <jarkao2@o2.pl> wrote:
 
-Ok, that's reasonable, we don't want to end up with zillions of
-ARCH_HAS_THIS and ARCH_HAS_THAT.
+> On 09-05-2007 21:10, Pallipadi, Venkatesh wrote:
+> ...
+> > On a 64 bit system, converting pointer to int causes unnecessary
+> > compiler
+> > warning, and intermediate long conversion was to avoid that. I will have
+> > to rephrase my comment to remove 32 bit value and use int, as that is
+> > what
+> > the function returns.
+> 
+> Sorry!!! So, it's perfectly right and logical.
+> 
+> It's a pity, you couldn't NACK this patch a little sooner.
+> I hope there is no problem to remove this patch now. 
 
-But then, what _is_ the problem with your approach above? An arch that
-wants (and implements) hard_irq_disable will also #define that dummy
-macro, so we just need to pull in the appropriate header (directly,
-indirectly, anyhow -- we don't really care) into
-include/linux/interrupt.h and then just do the exact same "#ifndef
-hard_irq_disable" check that you're doing right now. I must be missing
-something trivial (either that or I need to go and have a coffee :-)
-because I don't see the possibility of hitting multiple _different_
-definitions with the approach you mentioned just now.
+Please send a new patch.  That way we get a nice explanation for the
+reversion, and we have well-oiled processes for applying patches, but
+crappy processes for reverting them.
