@@ -1,86 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbXEJIAR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758360AbXEJIFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758517AbXEJIAR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 04:00:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754458AbXEJIAF
+	id S1758360AbXEJIFz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 04:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbXEJIFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 04:00:05 -0400
-Received: from web60013.mail.yahoo.com ([209.73.178.76]:49007 "HELO
-	web60013.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752927AbXEJIAE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 04:00:04 -0400
-X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 04:00:04 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=HvrFjaXJVDcFEYl7D3bG9TfV7+ja+JF14zuGtfG2V2I/fI08U9j2qu7DUfwg07KlPHxVUGVn1wYHYxewutpIqbreoeutcXHKHrWQGKq6/RX2S6VIcA4F5QWMFRIA88agppoVGTcfYSlZh9VMfQFW2kFkRjxEr1T4Q8LCp6oxbsE=;
-X-YMail-OSG: CuRBqykVM1n3l4gGuVx9Kqmk2Ym751arWtHYBdPSlGtRnXU9QrZxmuvIE3kUlJVecALY0wtk748icRFfRnyX0jAf6yDQ1lzpRjpQDx5F4BQpfMW0hXqItYaP6i3CPoY-
-Date: Thu, 10 May 2007 00:53:20 -0700 (PDT)
-From: Charles Gagalac <charle97@yahoo.com>
-Reply-To: charle97@yahoo.com
-Subject: Re: [Bugme-new] [Bug 8462] New: applications under wine freezes
-To: Davide Libenzi <davidel@xmailserver.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       charle97@yahoo.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0705092329260.16104@alien.or.mcafeemobile.com>
+	Thu, 10 May 2007 04:05:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49891 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752674AbXEJIFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 04:05:40 -0400
+From: Len Brown <lenb@kernel.org>
+Organization: Intel Open Source Technology Center
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+Subject: Re: ACPI build problem (2.6.21 CONFIG_X86_64_ACPI_NUMA)
+Date: Thu, 10 May 2007 04:04:17 -0400
+User-Agent: KMail/1.9.5
+Cc: Steven Whitehouse <swhiteho@redhat.com>, Andi Kleen <ak@suse.de>,
+       Shai Fultheim <shai@scalex86.org>, linux-kernel@vger.kernel.org
+References: <1177593963.5462.12.camel@quoit.chygwyn.com> <200704280159.46337.lenb@kernel.org> <20070430182838.GA5558@localhost.localdomain>
+In-Reply-To: <20070430182838.GA5558@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <421462.15161.qm@web60013.mail.yahoo.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705100404.17852.lenb@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-> Is it possible to have more information? Like CPU,
-
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 3
-model name	: Intel(R) Pentium(R) 4 CPU 3.00GHz
-stepping	: 4
-cpu MHz		: 3000.000
-cache size	: 1024 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 1
-fdiv_bug	: no
-hlt_bug		: no
-f00f_bug	: no
-coma_bug	: no
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 3
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep
-mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr
-sse sse2 ss ht tm pbe constant_tsc pni monitor ds_cpl
-cid xtpr
-bogomips	: 5989.96
-clflush size	: 64
-
-> kernel 32/64, userspace 
-> 32/64 ...?
-kernel is 32 
-userspace is 32
-
-> Does the problem happens with some other publicly
-> available software that 
-> runs under wine, so that I can test it?
+On Monday 30 April 2007 14:28, Ravikiran G Thirumalai wrote:
+> On Sat, Apr 28, 2007 at 01:59:46AM -0400, Len Brown wrote:
+> > On Thursday 26 April 2007 09:26, you wrote:
+> > ... 
+> > CONFIG_ACPI depends on CONFIG_PM, yet this build fails because you have
+> > CONFIG_ACPI=y and CONFIG_PM=n
+> > 
+> > Unfortunately kconfig doesn't trace dependencies when "select" is used,
+> > making select sort of evil.  Ie. select can't target anything which
+> > itself has dependencies.
+> > 
+> > In 2.6.15, b0bd35e622ffbda2c01dc67a0381c6a18817a29a added the select below,
+> > and subsequently ACPI became dependent on PM, which broke your build.
+> > Technically, this could have broken your build in other ways too
+> > since ACPI already had other dependencies.
+> > 
+> > +# Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
+> > +
+> > +config X86_64_ACPI_NUMA
+> > +       bool "ACPI NUMA detection"
+> > +       depends on NUMA
+> > +       select ACPI 
+> > +       select ACPI_NUMA
+> > +       default y
+> > +       help
+> > +	 Enable ACPI SRAT based node topology detection.
+> > 
+> > If you de-select CONFIG_X86_64_ACPI_NUMA then the select goes away
+> > and kconfig should work properly.
+> > 
+> > It isn't immediately clear to me how the NUMA Kconfig patch is a step
+> > forward, but perhaps the authors can comment.
+> >
 > 
+> Before the above change, to select NUMA for em64T systems, you *had* to
+> select K8_NUMA in the 'Processor type and features'  sub menu to select
+> CONFIG_NUMA, and then select ACPI NUMA from the generic PM menu, which is
+> not very intuitive when you have a EM64T NUMA system.
+> 
+> On x86_64 platforms, NUMA topology detection could be K8 style detection,
+> ACPI based topology  or NUMA emulation.  Most of the real NUMA systems
+> would need ACPI detection, older AMD platforms would need K8_NUMA, and 
+> NUMA emulation is a debugging/emulation option to emulate NUMA topology on
+> a regular SMP box.  Since CONFIG_NUMA + CONFIG_NUMA_EMU is a valid
+> combination, and since CONFIG_NUMA + CONFIG_K8_NUMA is a valid combination,
+> it makes sense to have X86_64_ACPI_NUMA on its own, and grouped along with
+> other NUMA topology styles in the Processor menu.  Hope this is good enough
+> reason :)
 
-i just installed the windows version of firefox
-2.0.0.3 under wine and firefox also froze after a few
-minutes of use.
+well, you totally lost me on that, but maybe that was the point...
+If the distros always get this right by selecting everything under the sun,
+then it probably isn't worth the complexity of an additional option.
+The number of people who build a numa-capable kernel and try to save
+some text space by leaving out some options is likely a pretty small group.
 
-also, wine version is wine-0.9.36.
+> Regarding the subject build breakage, CONFIG_ACPI depends on CONFIG_PM with
+> an explicit 'depends' keyword. If PM does not get selected and CONFIG_ACPI
+> gets selected, I would think it is a Kconfig bug which needs fixing no?
+> Else, we can add a workaround by selecting CONFIG_PM if X86_64_ACPI_NUMA is
+> chosen.  But AFAICT the right thing is to fix the Kconfig bug.
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+Of course the "right thing to do" is to fix the kernel build sub-system.
+But this issue has come up many times before and the fix has always
+been to not use the existing build systems in ways that it breaks.
+
+> > +# Dummy CONFIG option to select ACPI_NUMA from drivers/acpi/Kconfig.
+> > +
+> > +config X86_64_ACPI_NUMA
+> > +       bool "ACPI NUMA detection"
+> > +       depends on NUMA
+> > +       select ACPI 
+
+any chance you can depend on ACPI instead of selecting it?
+
+> > +       select ACPI_NUMA
+> > +       default y
+> > +       help
+> > +	 Enable ACPI SRAT based node topology detection.
+
+-Len
+
