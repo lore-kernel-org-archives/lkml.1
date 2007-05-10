@@ -1,76 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756840AbXEJEcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbXEJEed@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756840AbXEJEcS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 00:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbXEJEcJ
+	id S1756754AbXEJEed (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 00:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754638AbXEJEeY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 00:32:09 -0400
-Received: from mail4.iitk.ac.in ([203.197.196.4]:43585 "EHLO mail4.iitk.ac.in"
+	Thu, 10 May 2007 00:34:24 -0400
+Received: from smtpout.mac.com ([17.250.248.178]:55335 "EHLO smtpout.mac.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754785AbXEJEcI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 00:32:08 -0400
-X-Virus-Scanner: This message was checked by NOD32 Antivirus system
-	for Linux Server. For more information on NOD32 Antivirus System,
-	please, visit our website: http://www.nod32.com/.
-Date: Thu, 10 May 2007 02:50:20 +0530 (IST)
-From: Satyam Sharma <ssatyam@cse.iitk.ac.in>
-To: Corey Minyard <minyard@acm.org>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, bunk@stusta.de
-Subject: Re: [PATCH (trivial)] Fix wrong identifier name in Documentation/kref.txt
-In-Reply-To: <463B8037.70701@acm.org>
-Message-ID: <Pine.LNX.4.64.0705100242080.10484@cselinux1.cse.iitk.ac.in>
-References: <Pine.LNX.4.64.0705041949130.14683@cselinux1.cse.iitk.ac.in>
- <463B8037.70701@acm.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	id S1754585AbXEJEeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 00:34:24 -0400
+In-Reply-To: <46429ED2.10809@candelatech.com>
+References: <2638DE26-D672-4245-BE88-D13B7F0F34A9@mac.com> <46429ED2.10809@candelatech.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <EE6715FC-176D-4DA3-A0B3-6BDCC16122A6@mac.com>
+Cc: netdev@vger.kernel.org, LKML Kernel <linux-kernel@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       OSDL Linux Bridging <bridge@osdl.org>
+Content-Transfer-Encoding: 7bit
+From: Kyle Moffett <mrmacman_g4@mac.com>
+Subject: Re: [BUG][debian-2.6.20-1-686] bridging + vlans + "vconfig rem" == stuck kernel
+Date: Thu, 10 May 2007 00:34:11 -0400
+To: Ben Greear <greearb@candelatech.com>
+X-Mailer: Apple Mail (2.752.2)
+X-Brightmail-Tracker: AAAAAA==
+X-Brightmail-scanned: yes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
-
-Nobody seems to have picked this up -- I didn't see it in the other 
-trivial stuff you pushed to Linus earlier today (my mistake, I hadn't 
-copied you in the original post), and it's not in the latest git either. 
-If somebody can please pick this up for upstream ...
-
-Thanks,
-Satyam
-
-
-On Fri, 4 May 2007, Corey Minyard wrote:
-> Yes, please add this.  Thanks.
+On May 10, 2007, at 00:25:54, Ben Greear wrote:
+> Kyle Moffett wrote:
+>> vconfig       D 83CCD8CE     0 16564  16562                      
+>> (NOTLB)
+>>        efdd7e7c 00000086 ee120afb 83ccd8ce 98f00788 b7083ffa  
+>> 5384b49a c76c0b05
+>>        9ebaf791 00000004 efdd7e4e 00000007 f1468a90 2ab74174  
+>> 00000362 00000326
+>>        f1468b9c c180e420 00000001 00000286 c012933c efdd7e8c  
+>> df98a000 c180e468
+>> Call Trace:
+>> [<c012933c>] lock_timer_base+0x15/0x2f
+>> [<c0129445>] __mod_timer+0x91/0x9b
+>> [<c02988f5>] schedule_timeout+0x70/0x8d
+>> [<f8b75209>] vlan_device_event+0x13/0xf8 [8021q]
 >
-> -corey
+> Looks like a deadlock in the vlan code.  Any chance you can run  
+> this test with lockdep enabled?
 >
-> Satyam Sharma wrote:
->> Here's another trivial one I've been meaning to send since ... a long time 
->> back.
->> 
->> Cheers,
->> Satyam
->> 
->> ---
->> 
->> There's a typo / wrong identifier name in Documentation/kref.txt. Fix it.
->>
->>     Signed-off-by: Satyam Sharma <ssatyam@cse.iitk.ac.in>
->> 
->> ---
->> 
->> diff -ruNp linux-2.6.21.1/Documentation/kref.txt 
->> linux-2.6.21.1~patch/Documentation/kref.txt
->> --- linux-2.6.21.1/Documentation/kref.txt    2007-05-04 19:40:01.000000000 
->> +0530
->> +++ linux-2.6.21.1~patch/Documentation/kref.txt    2007-05-04 
->> 19:41:04.000000000 +0530
->> @@ -67,7 +67,7 @@ void more_data_handling(void *cb_data)
->>      .
->>      . do stuff with data here
->>      .
->> -    kref_put(data, data_release);
->> +    kref_put(&data->refcount, data_release);
->>  }
->>
->>  int my_data_handler(void)
->
->
+> You could also add a printk in vlan_device_event() to check which  
+> event it is hanging on, and the netdevice that is passed in.
+
+Ok, I'll try building a 2.6.21 kernel with lockdep and some debugging  
+printk()s in the vlan_device_event() function and get back to you  
+tomorrow.  Thanks for the quick response!
+
+> Since the vlan code holds RTNL at this point, then most other  
+> network tasks will eventually hang as well.
+
+Well, it's less of an "eventually" and more of an "almost  
+immediately".  When that happens pretty close to everything more  
+complicated than socket(), bind(), and connect() with straightforward  
+UNIX or INET sockets tends to stick completely.
+
+Thanks again!
+
+Cheers,
+Kyle Moffett
+
