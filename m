@@ -1,63 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbXEJEth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756348AbXEJE6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbXEJEth (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 00:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755038AbXEJEt3
+	id S1756348AbXEJE6h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 00:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXEJE6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 00:49:29 -0400
-Received: from ausmtp04.au.ibm.com ([202.81.18.152]:41870 "EHLO
-	ausmtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754981AbXEJEt2 (ORCPT
+	Thu, 10 May 2007 00:58:32 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:43728 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754682AbXEJE6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 00:49:28 -0400
-Message-ID: <4642A445.8050106@linux.vnet.ibm.com>
-Date: Thu, 10 May 2007 10:19:09 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-Organization: IBM
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Thu, 10 May 2007 00:58:31 -0400
+Date: Thu, 10 May 2007 06:58:31 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: remove broken URLs from net drivers' output
+Message-ID: <20070510045831.GH23574@stusta.de>
+References: <200705092102.l49L2Re6028694@hera.kernel.org> <46424E12.9070307@garzik.org> <20070510035733.GE23574@stusta.de> <46429E59.1050505@garzik.org>
 MIME-Version: 1.0
-To: Paul Jackson <pj@sgi.com>
-CC: vatsa@in.ibm.com, linux-kernel@vger.kernel.org,
-       ckrm-tech@lists.sourceforge.net, balbir@in.ibm.com, haveblue@us.ibm.com,
-       xemul@sw.ru, dev@sw.ru, rohitseth@google.com, ebiederm@xmission.com,
-       mbligh@google.com, containers@lists.osdl.org, serue@us.ibm.com,
-       menage@google.com, svaidy@linux.vnet.ibm.com, akpm@linux-foundation.org,
-       devel@openvz.org
-Subject: Re: [ckrm-tech] [PATCH 1/9] Containers (V9): Basic container framework
-References: <20070427104607.252541000@menage.corp.google.com> <20070427111300.015604000@menage.corp.google.com> <46377BA4.6030701@linux.vnet.ibm.com> <20070501114030.62b85494.pj@sgi.com> <46380901.2050001@linux.vnet.ibm.com> <20070501231254.4267777e.pj@sgi.com> <46429B13.6090402@linux.vnet.ibm.com> <20070509214706.5b05eec5.pj@sgi.com>
-In-Reply-To: <20070509214706.5b05eec5.pj@sgi.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <46429E59.1050505@garzik.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Jackson wrote:
-> Balbir wrote:
->> Thanks for the script. Would you like to contribute this script to
->> LTP for wider availability and testing?
-> 
-> Sounds good - though I'm a tad lazy, and don't know how to contribute
-> this to the LTP.
-> 
-> You're welcome to contribute it yourself, if that's easier for you,
-> or to point me in the direction of some information on this.
-> 
-> Since it's GPL, you can republish it, under that license.
-> 
-> ... Most likely however, it will take a little tweaking to make this
-> test work well for LTP.  Most automated test environments have some
-> requirements on the behaviour of each test, and it would be surprising
-> if this test happen already to conform to LTP's requirements.
-> 
+On Thu, May 10, 2007 at 12:23:53AM -0400, Jeff Garzik wrote:
+> Adrian Bunk wrote:
+>> It had been sent twice to both linux-kernel and netdev, and when going 
+>> through old linux-kernel emails I considered it trivial enough (people 
+>> might argue about dead email addresses, but not about dead URLs).
+>> I could send such patches to Andrew for that he includes them in -mm and 
+>> therefore will include them in his huge list of "forward again and again 
+>> to the maintainer until there is any reaction" patches.
+>> But IMHO for such trivial patches it's enough if the maintainer had the 
+>> chance to veto them.
+>
+>
+> Please follow the rule that everybody else follows:  send to me and netdev. 
+>  It's that simple :)
 
-I'll figure out more, once I am comfortable with the script and the
-setup environment, I'll try and get this into LTP with a GPL
-license.
+This doesn't answer the main question:
+How often, if there's no maintainer reaction?
 
+It happens that Andrew forwards patches from me in -mm 5 or 10 times to 
+a maintainer until he gets any reaction from the maintainer.
+
+Before I'd start the same with trivial patches, it would be easier to 
+change the "trivial@kernel.org" mail alias to point to Andrew so that 
+trivial patches can also become part of his "forward patches to 
+maintainers again and again until there's any reaction" process.
+
+That's not meant as a threat or anything like that, it's a serious 
+suggestion to avoid duplicated work.
+
+> 	Jeff
+
+cu
+Adrian
 
 -- 
-	Thanks,
-	Balbir Singh
-	Linux Technology Center
-	IBM, ISTL
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
