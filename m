@@ -1,74 +1,496 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbXEJNJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761159AbXEJNLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760194AbXEJNJV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 09:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756824AbXEJNJN
+	id S1761159AbXEJNLp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 09:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755981AbXEJNLj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 09:09:13 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:26428 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754460AbXEJNJK (ORCPT
+	Thu, 10 May 2007 09:11:39 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:45666 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757282AbXEJNLi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 09:09:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=cAy6W9ATAgDx2M4wJw0ZXw6lN9mi3zhWvz+WZskchfG4YaUjKoeu12heA135E4+xYF5p0BlYWcf4iUWHNRjHOvBq/hli4baeXmKqebse0oypR8RILoOx+4EN+HbFj+bMwrC5biB3T8wa5m7Kajhbi6vf8n21yCrz8GWZRBohZ7o=
-Message-ID: <4643196B.7070806@gmail.com>
-Date: Thu, 10 May 2007 15:08:59 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Paul Mundt <lethal@linux-sh.org>, Tejun Heo <htejun@gmail.com>,
-       jeff@garzik.org, linux-ide@vger.kernel.org,
+	Thu, 10 May 2007 09:11:38 -0400
+Date: Thu, 10 May 2007 09:11:37 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org
-Subject: Re: libata reset-seq merge broke sata_sil on sh
-References: <20070510072005.GA27316@linux-sh.org> <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com> <20070510072005.GA27316@linux-sh.org> <464301D3.5060306@gmail.com> <20070510124645.GA18534@linux-sh.org>
-In-Reply-To: <20070510124645.GA18534@linux-sh.org>
-X-Enigmail-Version: 0.95.0
+Subject: Re: [patch 06/10] Linux Kernel Markers - Non optimized architectures
+Message-ID: <20070510131137.GC22424@Krystal>
+References: <20070510015555.973107048@polymtl.ca> <20070510020916.836290342@polymtl.ca> <20070510065636.GB8019@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20070510065636.GB8019@infradead.org>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.4.34-grsec (i686)
+X-Uptime: 09:08:49 up 97 days,  3:15,  5 users,  load average: 2.30, 2.75, 2.67
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Mundt wrote:
-> Yes, it's spun down at boot. I'll get the logs with the timestamps and
-> the results of the mdelay() incrementing in the morning when I've got the
-> board handy again.
+Linux Kernel Markers - Non Optimized Architectures fix 2
 
-I see.  That's where the expected initial prereset failure comes from.
+Fix comments in headers
+- Remove Copyright notice in one-liner header
+- Transfer generic header note "using asm to fix a gcc bug" to where it belongs
+  now : in linux/marker.h.
+- Fix optimisation -> optimization typo in powerpc and i386 headers.
 
-> On Thu, May 10, 2007 at 01:53:48PM +0200, Tejun Heo wrote:
->> * According to the report, things still work till 27c78b37 - commit for
->> the actual merge and there's no related change till the current master
->> from there.  So, which commit actually breaks detection?  Or is
->> detection just flaky after b8cffc6a?
->>
-> The detection is simply flaky after that point, however before the
-> current master it never hit the 35 second point (and thus never implied
-> that the link was down). I'll double check the bisect log to see if there
-> was anything beyond that that may have caused it.
-> 
-> The -ENODEV at least implies that the SRST fails, so at least that's a
-> starting point.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ include/asm-arm/marker.h       |   12 ------------
+ include/asm-cris/marker.h      |   12 ------------
+ include/asm-frv/marker.h       |   12 ------------
+ include/asm-generic/marker.h   |   12 ------------
+ include/asm-h8300/marker.h     |   12 ------------
+ include/asm-i386/marker.h      |    2 +-
+ include/asm-ia64/marker.h      |   12 ------------
+ include/asm-m32r/marker.h      |   12 ------------
+ include/asm-m68k/marker.h      |   12 ------------
+ include/asm-m68knommu/marker.h |   12 ------------
+ include/asm-mips/marker.h      |   12 ------------
+ include/asm-parisc/marker.h    |   12 ------------
+ include/asm-powerpc/marker.h   |    2 +-
+ include/asm-ppc/marker.h       |   12 ------------
+ include/asm-s390/marker.h      |   12 ------------
+ include/asm-sh/marker.h        |   12 ------------
+ include/asm-sh64/marker.h      |   12 ------------
+ include/asm-sparc/marker.h     |   12 ------------
+ include/asm-sparc64/marker.h   |   12 ------------
+ include/asm-um/marker.h        |   12 ------------
+ include/asm-v850/marker.h      |   12 ------------
+ include/asm-x86_64/marker.h    |   12 ------------
+ include/asm-xtensa/marker.h    |   12 ------------
+ include/linux/marker.h         |    4 +++-
+ 24 files changed, 5 insertions(+), 255 deletions(-)
 
-If prereset() fails to get the initial DRDY before 10secs, it assumes
-something went wrong and escalates to hardreset.  sil family of
-controllers report 0xff status while the link is broken and it seems
-that your particular drive needs more than the current 150ms to recover
-phy link.  It probably went unnoticed till now because the device was
-never hardreset before.  If the diagnosis is correct, increasing the
-delay in hardreset should fix the problem.  Well, let's see.  :-)
-
-> One other curious thing is that it seems to misreport the IRQ. In this
-> case the log indicates 0, whereas it's actually on IRQ 66. When the
-> system is booted, /proc/interrupts reflects that sata_sil is on the
-> proper IRQ (even when it's reported as 0 in the boot printk()).
-
-That's somthing I've missed during init model conversion.  It's just
-printk problem.  I'll fix it.
-
-Thanks.
-
+Index: linux-2.6-lttng/include/asm-arm/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-arm/marker.h	2007-05-10 09:02:16.000000000 -0400
++++ linux-2.6-lttng/include/asm-arm/marker.h	2007-05-10 09:02:31.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-cris/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-cris/marker.h	2007-05-10 09:02:16.000000000 -0400
++++ linux-2.6-lttng/include/asm-cris/marker.h	2007-05-10 09:02:35.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-frv/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-frv/marker.h	2007-05-10 09:02:16.000000000 -0400
++++ linux-2.6-lttng/include/asm-frv/marker.h	2007-05-10 09:02:38.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-generic/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-generic/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-generic/marker.h	2007-05-10 09:04:14.000000000 -0400
+@@ -1,18 +1,6 @@
+ #ifndef _ASM_GENERIC_MARKER_H
+ #define _ASM_GENERIC_MARKER_H
+ 
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Generic header.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- *
+- * Note : the empty asm volatile with read constraint is used here instead of a
+- * "used" attribute to fix a gcc 4.1.x bug.
+- */
+-
+ #define _MF_DEFAULT			(_MF_LOCKDEP | _MF_PRINTK)
+ 
+ #define MARK_OPTIMIZED			MARK_GENERIC
+Index: linux-2.6-lttng/include/asm-h8300/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-h8300/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-h8300/marker.h	2007-05-10 09:04:23.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-i386/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-i386/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-i386/marker.h	2007-05-10 09:05:06.000000000 -0400
+@@ -4,7 +4,7 @@
+ /*
+  * marker.h
+  *
+- * Code markup for dynamic and static tracing. i386 architecture optimisations.
++ * Code markup for dynamic and static tracing. i386 architecture optimizations.
+  *
+  * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+  *
+Index: linux-2.6-lttng/include/asm-ia64/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-ia64/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-ia64/marker.h	2007-05-10 09:05:09.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-m32r/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-m32r/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-m32r/marker.h	2007-05-10 09:05:12.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-m68k/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-m68k/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-m68k/marker.h	2007-05-10 09:05:15.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-m68knommu/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-m68knommu/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-m68knommu/marker.h	2007-05-10 09:05:19.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-mips/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-mips/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-mips/marker.h	2007-05-10 09:05:21.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-parisc/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-parisc/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-parisc/marker.h	2007-05-10 09:05:24.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-powerpc/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-powerpc/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-powerpc/marker.h	2007-05-10 09:05:34.000000000 -0400
+@@ -5,7 +5,7 @@
+  * marker.h
+  *
+  * Code markup for dynamic and static tracing. PowerPC architecture
+- * optimisations.
++ * optimizations.
+  *
+  * (C) Copyright 2006 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+  *
+Index: linux-2.6-lttng/include/asm-ppc/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-ppc/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-ppc/marker.h	2007-05-10 09:05:38.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-s390/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-s390/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-s390/marker.h	2007-05-10 09:05:40.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-sh/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-sh/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-sh/marker.h	2007-05-10 09:05:47.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-sh64/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-sh64/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-sh64/marker.h	2007-05-10 09:05:43.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-sparc/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-sparc/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-sparc/marker.h	2007-05-10 09:05:52.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-sparc64/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-sparc64/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-sparc64/marker.h	2007-05-10 09:05:50.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-um/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-um/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-um/marker.h	2007-05-10 09:05:56.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-v850/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-v850/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-v850/marker.h	2007-05-10 09:05:59.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-x86_64/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-x86_64/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-x86_64/marker.h	2007-05-10 09:06:02.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/asm-xtensa/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/asm-xtensa/marker.h	2007-05-10 09:02:17.000000000 -0400
++++ linux-2.6-lttng/include/asm-xtensa/marker.h	2007-05-10 09:06:07.000000000 -0400
+@@ -1,13 +1 @@
+-/*
+- * marker.h
+- *
+- * Code markup for dynamic and static tracing. Architecture specific
+- * optimisations.
+- *
+- * No optimisation implemented.
+- *
+- * This file is released under the GPLv2.
+- * See the file COPYING for more details.
+- */
+-
+ #include <asm-generic/marker.h>
+Index: linux-2.6-lttng/include/linux/marker.h
+===================================================================
+--- linux-2.6-lttng.orig/include/linux/marker.h	2007-05-10 09:03:25.000000000 -0400
++++ linux-2.6-lttng/include/linux/marker.h	2007-05-10 09:03:51.000000000 -0400
+@@ -45,7 +45,9 @@
+ #define MF_PRINTK	(1 << 2)	/* vprintk can be called in the probe */
+ #define _MF_NR		3		/* Number of marker flags */
+ 
+-/* Generic marker flavor always available */
++/* Generic marker flavor always available.
++ * Note : the empty asm volatile with read constraint is used here instead of a
++ * "used" attribute to fix a gcc 4.1.x bug. */
+ #define trace_mark_generic(flags, name, format, args...) \
+ 	do { \
+ 		static const char __mstrtab_name_##name[] \
 -- 
-tejun
+Mathieu Desnoyers
+Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
