@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbXEJJT0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbXEJJUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758679AbXEJJT0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 05:19:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755699AbXEJJTS
+	id S1758866AbXEJJUy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 05:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbXEJJUq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 05:19:18 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:42096 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755425AbXEJJTR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 05:19:17 -0400
-Date: Thu, 10 May 2007 02:18:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       linux-acpi@vger.kernel.org
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-Message-Id: <20070510021841.2dff9233.akpm@linux-foundation.org>
-In-Reply-To: <1178787345.4646.4.camel@chaos>
-References: <20070430102837.748238000@linutronix.de>
-	<200705092036.20953.rjw@sisk.pl>
-	<1178743550.3042.541.camel@localhost.localdomain>
-	<200705092253.49896.rjw@sisk.pl>
-	<1178745983.3042.565.camel@localhost.localdomain>
-	<20070510014645.c4e79032.akpm@linux-foundation.org>
-	<1178787345.4646.4.camel@chaos>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Thu, 10 May 2007 05:20:46 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:22262 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755699AbXEJJUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 05:20:45 -0400
+Date: Thu, 10 May 2007 11:20:17 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@infradead.org
+Subject: Re: [patch 10/10] Port of blktrace to the Linux Kernel Markers.
+Message-ID: <20070510092015.GJ4629@kernel.dk>
+References: <20070510015555.973107048@polymtl.ca> <20070510020918.085866258@polymtl.ca>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070510020918.085866258@polymtl.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 10:55:45 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Thu, 2007-05-10 at 01:46 -0700, Andrew Morton wrote:
-> > On Wed, 09 May 2007 23:26:22 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > Andrew,
-> > > 
-> > > can you test the alternative replacement patch for 
-> > > 
-> > > clockevents: Fix resume logic - updated version
-> > > 
-> > > It does not touch the interrupt controller, it does the PIT restart
-> > > different. That's a patch from Chris Wright and confirmed to work on the
-> > > affected machines - except the @%$#! VAIO of course.
-> > > 
-> > > If that patch makes the problem go away, then we should have a quite
-> > > good hint what we need to look at.
-> > 
-> > No joy, sorry.  It still hangs at the last statement in acpi_evaluate_object().
+On Wed, May 09 2007, Mathieu Desnoyers wrote:
+> Here is a proof of concept patch, for demonstration purpose, of moving
+> blktrace to the markers.
 > 
-> Can you add "nolapic_timer" to the command line please ?
+> A few remarks : this patch has the positive effect of removing some code
+> from the block io tracing hot paths, minimizing the i-cache impact in a
+> system where the io tracing is compiled in but inactive.
 > 
+> It also moves the blk tracing code from a header (and therefore from the
+> body of the instrumented functions) to a separate C file.
+> 
+> There, as soon as one device has to be traced, every devices have to
+> fall into the tracing function call. This is slower than the previous
+> inline function which tested the condition quickly. If it becomes a
+> show stopper, it could be fixed by having the possibility to test a
+> supplementary condition, dependant of the marker context, at the marker
+> site, just after the enable/disable test.
 
-That works.
+Did you benchmark it?
+
+-- 
+Jens Axboe
+
