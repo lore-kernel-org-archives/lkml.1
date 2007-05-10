@@ -1,134 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759372AbXEJQeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758874AbXEJQjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759372AbXEJQeM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 12:34:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXEJQd7
+	id S1758874AbXEJQjl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 12:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755006AbXEJQje
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 12:33:59 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:50260 "EHLO e1.ny.us.ibm.com"
+	Thu, 10 May 2007 12:39:34 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49420 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753201AbXEJQd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 12:33:59 -0400
-Date: Thu, 10 May 2007 22:11:58 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Con Kolivas" <kernel@kolivas.org>,
-       "Mike Galbraith" <efault@gmx.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Subject: Re: Definition of fairness (was Re: [patch] CFS scheduler, -v11)
-Message-ID: <20070510164158.GB9173@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070508150431.GA26977@elte.hu> <20070509180205.GA27462@in.ibm.com> <b647ffbd0705091224m75bf8caawa0019ecfe8bf82e7@mail.gmail.com>
+	id S1754775AbXEJQjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 12:39:33 -0400
+Date: Thu, 10 May 2007 09:31:53 -0700
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: "Joerg Roedel" <joerg.roedel@amd.com>
+Cc: "Andi Kleen" <andi@firstfloor.org>, ak@suse.de,
+       linux-kernel@vger.kernel.org, "Benny Halevy" <bhalevy@panasas.com>,
+       akpm@linux-foundation.org, zaitcev@redhat.com
+Subject: Re: Andi, you broke my laptop :-)
+Message-Id: <20070510093153.9f0accfb.zaitcev@redhat.com>
+In-Reply-To: <20070510133555.GA5705@amd.com>
+References: <20070509125616.cde56b8e.zaitcev@redhat.com>
+	<20070510130144.GI14898@one.firstfloor.org>
+	<20070510133555.GA5705@amd.com>
+Organization: Red Hat, Inc.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="6TrnltStXW4iwmi0"
-Content-Disposition: inline
-In-Reply-To: <b647ffbd0705091224m75bf8caawa0019ecfe8bf82e7@mail.gmail.com>
-User-Agent: Mutt/1.5.11
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 May 2007 15:35:56 +0200, "Joerg Roedel" <joerg.roedel@amd.com> wrote:
 
---6TrnltStXW4iwmi0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On Wed, May 09, 2007 at 09:24:17PM +0200, Dmitry Adamushko wrote:
-> One quick observation.
+> I debugged this problem a bit and my compiler[1]interprets the =A
+> constraint as %rax instead of %edx:%eax on x86_64 which causes the
+> problem. The appended patch provides a workaround for this and fixed the
+> hang on my machine.
 > 
-> Isn't it important for both processes to have the same "loops_per_ms" value?
+> [1] gcc version 4.1.3 20070429 (prerelease) (Debian 4.1.2-5)
 
-Good catch.
+>  	alternative_io(ASM_NOP3, ".byte 0x0f,0x01,0xf9", X86_FEATURE_RDTSCP,
+> -			 	 "=A" (ret), "0" (0ULL) : "ecx", "memory");
+> +		       ASM_OUTPUT2("=a" (eax), "=d" (edx)),
+> +		       "a" (0U), "d" (0U) : "ecx", "memory");
 
-I have modified the testcase based on this observation (using
-setitimer).
+This works for me. Thanks, Joerg.
 
--- 
-Regards,
-vatsa
+gcc version 4.1.2 20070424 (Red Hat 4.1.2-11)
 
---6TrnltStXW4iwmi0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="cpuhog.c"
-
-#include <unistd.h>
-#include <stdio.h>
-#include <signal.h>
-#include <string.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/time.h>
-#include <sys/resource.h>
-
-volatile int time_elapsed;
-int run_length  = 52; 	// in milliseconds
-int sleep_length = 24;	// in milliseconds
-int epoch_time = 5;	// in seconds
-
-void alrm_handler(int signo)
-{
-	time_elapsed = 1;
-}
-
-main(int argc, char *argv[])
-{
-	double prevusage = 0;
-	struct itimerval timer;
-	time_t prevtime;
-
-	if (argc > 1) {
-		run_length = atoi(argv[1]);
-		if (argc > 2)
-			sleep_length = atoi(argv[2]);
-		if (argc > 3)
-			epoch_time = atoi(argv[3]);
-	}
-
-	signal(SIGVTALRM, alrm_handler);
-	memset(&timer, 0, sizeof(timer));
-
-	timer.it_value.tv_sec = run_length / 1000;
-	timer.it_value.tv_usec = (run_length % 1000) * 1000;
-
-	printf ("run time = %d ms (%d sec + %d usec), sleep time = %d ms,"
-		" epoch time = %d s\n", run_length, timer.it_value.tv_sec,
-		timer.it_value.tv_usec, sleep_length, epoch_time);
-
-	prevtime = time(NULL);
-	while (1) {
-		time_t curtime, deltatime;
-		struct rusage stats;
-		int rc;
-
-		rc = setitimer(ITIMER_VIRTUAL, &timer, NULL);
-		if (rc < 0) {
-			perror("setitimer");
-			exit(1);
-		}
-
-		time_elapsed = 0;
-		while (!time_elapsed)
-		;
-
-		usleep(sleep_length * 1000);
-
-		curtime = time(NULL);
-		deltatime = curtime - prevtime;
-		if (deltatime >=  epoch_time) {
-			double curusage, deltausage;
-
-			getrusage(0, &stats);
-			curusage = stats.ru_utime.tv_sec +
-				   stats.ru_utime.tv_usec * 1e-6 +
-				   stats.ru_stime.tv_sec + 
-				   stats.ru_stime.tv_usec * 1e-6;
-
-			deltausage = curusage - prevusage;
-			printf ("Obtained %3.2f seconds of execution time in"
-		       	      " %d elapsed seconds \n", deltausage, deltatime);
-			prevtime = curtime;
-			prevusage = curusage;
-		}
-	}
-}
-
---6TrnltStXW4iwmi0--
+-- Pete
