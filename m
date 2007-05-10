@@ -1,48 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762612AbXEJOZl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762792AbXEJOZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762612AbXEJOZl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 10:25:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751130AbXEJOZe
+	id S1762792AbXEJOZy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 10:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbXEJOZq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 10:25:34 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:59021 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750844AbXEJOZd (ORCPT
+	Thu, 10 May 2007 10:25:46 -0400
+Received: from gw-e.panasas.com ([65.194.124.178]:38933 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762701AbXEJOZp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 10:25:33 -0400
-Date: Thu, 10 May 2007 10:25:33 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 06/10] Linux Kernel Markers - Non optimized architectures
-Message-ID: <20070510142533.GH22424@Krystal>
-References: <20070510015555.973107048@polymtl.ca> <20070510020916.836290342@polymtl.ca> <20070510065636.GB8019@infradead.org> <20070510131137.GC22424@Krystal> <20070510144039.57f8771b@the-village.bc.nu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 May 2007 10:25:45 -0400
+Message-ID: <46432B43.9060709@panasas.com>
+Date: Thu, 10 May 2007 17:25:07 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>, Joerg Roedel <joerg.roedel@amd.com>
+CC: Pete Zaitcev <zaitcev@redhat.com>, ak@suse.de,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: Andi, you broke my laptop :-)
+References: <20070509125616.cde56b8e.zaitcev@redhat.com> <20070510130144.GI14898@one.firstfloor.org> <20070510133555.GA5705@amd.com> <20070510141942.GM14898@one.firstfloor.org>
+In-Reply-To: <20070510141942.GM14898@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070510144039.57f8771b@the-village.bc.nu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 10:23:45 up 97 days,  4:30,  5 users,  load average: 2.47, 3.43, 2.89
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 10 May 2007 14:25:09.0929 (UTC) FILETIME=[03B45190:01C7930F]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > - Fix optimisation -> optimization typo in powerpc and i386 headers.
-> 
-> That isn't a typo, it's correct as is.
-> 
-> Alan
+Joerg's patch works for me too.
 
-Well, it's correct or not depending on which side of the ocean you are.
-but as I used "optimization" everywhere else in my code, I simply try to
-be consistent.
+Thanks,
+
+Benny
+
+Andi Kleen wrote:
+> On Thu, May 10, 2007 at 03:35:56PM +0200, Joerg Roedel wrote:
+>> On Thu, May 10, 2007 at 03:01:44PM +0200, Andi Kleen wrote:
+>>> On Wed, May 09, 2007 at 12:56:16PM -0700, Pete Zaitcev wrote:
+>>>> Hi, Andi:
+>>>>
+>>>> The attached patch (actually, git show output) makes my Dell 1501 to hang
+>>>> on boot. Sorry, I have no clue why... The culprit is found with git bisect.
+>>>> But yes, it's an AMD MK-36. I use an x86_64 kernel. It is 100% reproducible.
+>>> MK-36? Does it have SVM? 
+>>>
+>>> Anyways we previously had issues with this being miscompiled, but 
+>>> I thought the latest patch should have been ok. What compiler do you use?
+>>>
+>>> Can you send me a disassembly listing of arch/x86_64/kernel/time.o?
+>> I debugged this problem a bit and my compiler[1]interprets the =A
+>> constraint as %rax instead of %edx:%eax on x86_64 which causes the
+>> problem. The appended patch provides a workaround for this and fixed the
+>> hang on my machine.
+> 
+> Hmm yes now I can reproduce it too. I didn't see any hangs so i suppose 
+> my (and that of most -mm tester's) compiled binary always happened to have a 
+> suitable value in edx
+> 
+> Thanks for the patch.
+> 
+> -Andi
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
 
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Benny Halevy
+Panasas Inc.
+Accelerating Time to Results(TM) with Clustered Storage
+
+www.panasas.com
+bhalevy@panasas.com
+Tel/Fax: +972-3-647-8340
+Mobile: +972-54-802-8340
