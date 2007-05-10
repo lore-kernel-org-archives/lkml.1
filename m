@@ -1,48 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758866AbXEJJUy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759708AbXEJJVL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758866AbXEJJUy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 05:20:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbXEJJUq
+	id S1759708AbXEJJVL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 05:21:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757470AbXEJJUt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 05:20:46 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:22262 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755699AbXEJJUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 05:20:45 -0400
-Date: Thu, 10 May 2007 11:20:17 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@infradead.org
-Subject: Re: [patch 10/10] Port of blktrace to the Linux Kernel Markers.
-Message-ID: <20070510092015.GJ4629@kernel.dk>
-References: <20070510015555.973107048@polymtl.ca> <20070510020918.085866258@polymtl.ca>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 May 2007 05:20:49 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:41481
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756734AbXEJJUr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 05:20:47 -0400
+From: Rob Landley <rob@landley.net>
+To: "Ollie Wild" <aaw@google.com>
+Subject: Re: [patch] removes MAX_ARG_PAGES
+Date: Thu, 10 May 2007 05:19:37 -0400
+User-Agent: KMail/1.9.1
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       parisc-linux@lists.parisc-linux.org, linux-mm@kvack.org,
+       linux-arch@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>,
+       "Andi Kleen" <ak@suse.de>
+References: <65dd6fd50705060151m78bb9b4fpcb941b16a8c4709e@mail.gmail.com> <200705092104.43353.rob@landley.net> <65dd6fd50705092106i15722e97g85f43191ceb5a3d7@mail.gmail.com>
+In-Reply-To: <65dd6fd50705092106i15722e97g85f43191ceb5a3d7@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070510020918.085866258@polymtl.ca>
+Message-Id: <200705100519.38073.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09 2007, Mathieu Desnoyers wrote:
-> Here is a proof of concept patch, for demonstration purpose, of moving
-> blktrace to the markers.
+On Thursday 10 May 2007 12:06 am, Ollie Wild wrote:
+> On 5/9/07, Rob Landley <rob@landley.net> wrote:
+> > Just FYI, a really really quick and dirty way of testing this sort of 
+thing on
+> > more architectures and you're likely to physically have?
 > 
-> A few remarks : this patch has the positive effect of removing some code
-> from the block io tracing hot paths, minimizing the i-cache impact in a
-> system where the io tracing is compiled in but inactive.
-> 
-> It also moves the blk tracing code from a header (and therefore from the
-> body of the instrumented functions) to a separate C file.
-> 
-> There, as soon as one device has to be traced, every devices have to
-> fall into the tracing function call. This is slower than the previous
-> inline function which tested the condition quickly. If it becomes a
-> show stopper, it could be fixed by having the possibility to test a
-> supplementary condition, dependant of the marker context, at the marker
-> site, just after the enable/disable test.
+> Does this properly emulate caching?  On parisc, cache coherency was
+> the main issue we ran into.  I suspect this might be the case with
+> other architectures as well.
 
-Did you benchmark it?
+This is really a QEMU question.  I've been focused on making cross-compilers 
+and using those to create kernels and a minimal native build environment I 
+could use to natively compile packages with.  (The way I designed the thing 
+you could substitute real hardware for the qemu step, assuming you had it.  
+Or another emulator like armulator for a specific platform.)
 
--- 
-Jens Axboe
+I don't believe QEMU emulates parisc yet, although it adds new platforms all 
+the time.  (It just grew an alpha emulation last month.)  It's under very 
+active development.
 
+Rob
