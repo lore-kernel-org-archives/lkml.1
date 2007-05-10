@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbXEJMkR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760785AbXEJMl6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbXEJMkR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:40:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXEJMkF
+	id S1760785AbXEJMl6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:41:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755123AbXEJMls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:40:05 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43993 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754173AbXEJMkE (ORCPT
+	Thu, 10 May 2007 08:41:48 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:57415 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754924AbXEJMlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:40:04 -0400
-Date: Thu, 10 May 2007 14:40:04 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Romano Giannetti <romano@dea.icai.upcomillas.es>
-Cc: Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, linux-pcmcia@lists.infradead.org
-Subject: Re: pcmcia ioctl removal
-Message-ID: <20070510124004.GK23574@stusta.de>
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501084623.GB14364@infradead.org> <20070509125415.GA4720@ucw.cz> <20070509130346.GC23574@stusta.de> <1178737912.18573.25.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+	Thu, 10 May 2007 08:41:47 -0400
+Date: Thu, 10 May 2007 13:41:45 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: HDIO_DRIVE_CMD and hdparm
+Message-ID: <20070510124145.GA19856@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org
+References: <Pine.LNX.4.62.0705101327170.759@pademelon.sonytel.be>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1178737912.18573.25.camel@localhost>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <Pine.LNX.4.62.0705101327170.759@pademelon.sonytel.be>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 09:11:52PM +0200, Romano Giannetti wrote:
-> On Wed, 2007-05-09 at 15:03 +0200, Adrian Bunk wrote:
-> > On Wed, May 09, 2007 at 12:54:16PM +0000, Pavel Machek wrote:
-> >  relies on cardmgr anymore.
-> > >
-> > > I remember needing cardmgr few months ago on sa-1100 arm system. I'm
-> > > not sure this is obsolete-enough to kill.
-> >
-> > Why didn't pcmciautils work?
+On Thu, May 10, 2007 at 02:12:59PM +0200, Geert Uytterhoeven wrote:
+> 	Hi,
 > 
-> I have had a problem until 2.6.20 was out with pcmciautils (it did not
-> recognise the second function of multi-functions pcmcia cards that
-> needed a firmware .cis file), and the only way to use it was with
-> cardmgr, way after Nov 2005 :-).
+> `hdparm -t' uses HDIO_DRIVE_CMD(null) to flush the disk's buffer.
+> When using it on my own block device (the new PS3 disk storage driver), hdparm
+> gives the following error message:
 > 
-> Now it is solved (modulo that sometime the pcmcia modem is ttyS1,
-> sometime ttyS2, but that's another history --- and probably my fault).
-> But I wonder if similar problems are hidden away... what about put the
-> ioctls under a normally-disabled option and let a kernel out with it?
+> | HDIO_DRIVE_CMD(null) (wait for flush complete) failed: Inappropriate ioctl for device
+> 
+> When using it on an ATA or SCSI device, no such error message is printed.
+> 
+> According to the hdparm sources, hdparm expects the HDIO_DRIVE_CMD(null) ioctl
+> to either succeed, or to fail with errno EINVAL.
+> 
+> Apparently handling of ioctls is different for the different device types:
+>   - ATA/SATA handle HDIO_DRIVE_CMD(null) (and a few other variants)
+>     => fine for hdparm
+>   - SCSI doesn't handle HDIO_DRIVE_CMD(null), and returns EINVAL
+>     => fine for hdparm
+>   - If a block device doesn't support the ioctl, blkdev_driver_ioctl() returns
+>     ENOTTY
+>     => hdparm error message
+> 
+> Which one is correct?
+>   - blkdev_ioctl()/blkdev_driver_ioctl() return -ENOTTY
+>   - scsi_cmd_ioctl() returns -ENOTTY
+>   - scsi_ioctl() returns -EINVAL
+>   - cdrom_ioctl() returns -ENOSYS to mean not handled, continue
+>   - some block layer routines return -ENOIOCTLCMD to mean not handled, continue
 
-It already prints a runtime warning to the user since 2005.
-And people won't notice a changed default when using "make oldconfig".
+ENOTTY is the traditional unix errno value for this ioctl is not implemented.
+ENOIOCTLCMD is a new fashioned code meaning about the same.  In the block
+layer the latter should be used as generic code should handlde this.
 
-Are there any known known regressions left?
-Otherwise, the best way for getting problem reports for pcmciautils is 
-to remove the ioctl (that's an experience from similar cases in other 
-parts of the kernel)...
+> 
+> My questions:
+>   1. Does any of these have to be fixed?
+>   2. Shall I add a dummy HDIO_DRIVE_CMD(null) handler to my block device to
+>      return -EINVAL?
+>   3. Shall I just ignore the hdparm error message?
 
-> Romano
-
-cu
-Adrian
-
--- 
-
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+I suspect you can just ignore this.  Even better send a patch to the hdparm
+maintainer to deal with ENOTTY aswell.
