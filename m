@@ -1,109 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756354AbXEJQ7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759341AbXEJREc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756354AbXEJQ7o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 12:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760476AbXEJQ7W
+	id S1759341AbXEJREc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 13:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbXEJRE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 12:59:22 -0400
-Received: from tomts25.bellnexxia.net ([209.226.175.188]:61476 "EHLO
-	tomts25-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756164AbXEJQ7T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 12:59:19 -0400
-Date: Thu, 10 May 2007 12:59:18 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Andi Kleen <ak@muc.de>, systemtap@sources.redhat.com, prasanna@in.ibm.com,
-       ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       hch@infradead.org
-Subject: Re: [patch 05/10] Linux Kernel Markers - i386 optimized version
-Message-ID: <20070510165918.GK22424@Krystal>
-References: <20070510015555.973107048@polymtl.ca> <20070510020916.508519573@polymtl.ca> <20070510090656.GA57297@muc.de> <20070510155501.GI22424@Krystal> <20070510172843.7aa72237@the-village.bc.nu>
+	Thu, 10 May 2007 13:04:26 -0400
+Received: from pat.uio.no ([129.240.10.15]:57198 "EHLO pat.uio.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754522AbXEJREZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 13:04:25 -0400
+Subject: RE: [PATCH] NLM program ID for user space NLM server
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Menny Hamburger <menny@exanet.com>
+Cc: Neil Brown <neilb@suse.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <A6FDE6B975803043804A49F12F49028E0F59D8@hawk.exanet-il.co.il>
+References: <A6FDE6B975803043804A49F12F49028E0F59D8@hawk.exanet-il.co.il>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 13:04:21 -0400
+Message-Id: <1178816661.6775.12.camel@heimdal.trondhjem.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20070510172843.7aa72237@the-village.bc.nu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 12:40:38 up 97 days,  6:47,  4 users,  load average: 2.68, 2.43, 2.27
-User-Agent: Mutt/1.5.13 (2006-08-11)
+X-UiO-Resend: resent
+X-UiO-Spam-info: not spam, SpamAssassin (score=-0.2, required=12.0, autolearn=disabled, AWL=-0.188)
+X-UiO-Scanned: 7ED731DF98535DF5EE15E7D4F45C13290D48E1A4
+X-UiO-SPAM-Test: remote_host: 129.240.10.9 spam_score: -1 maxlevel 200 minaction 2 bait 0 mail/h: 76 total 1650470 max/h 8345 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
-> > * First issue : Impact on the system. If we try to make this system
-> >   scale, we will create very long irq disable sections. The expected
-> >   duration is the worse case IPI latency plus the time it takes to CPU A
-> >   to change the variable. We therefore directly grow the worse case
-> >   system's interrupt latency.
-> 
-> Not a huge problem. It doesn't scale in really horrible ways and the IPI
-> latency on a PIV or later is actually very good. Also the impact is less
-> than you might think as on huge huge boxes you want multiple copies of
-> the kernel text pages to reduce NUMA traffic, so you only have to sync
-> the group of processors involved 
-> 
-> > * Second issue : irq disabling does not protect us from NMI and traps.
-> >   We cannot use this algorithm to mark these code segments.
-> 
-> If you synchronize all the other processors and disable local interrupts
-> then the only traps you have to worry about are those you cause, and the
-> only person taking the trap will be you so you're ok.
-> 
-> NMI is hard but NMI is a special case not worth solving IMHO.
-> 
+On Thu, 2007-05-10 at 19:45 +0300, Menny Hamburger wrote:
+> Yes, but in our case we don't care. This is a dedicated server where we
+> don't see any usage for NLM client. We just want to prevent the kernel
+> from taking the port in case of some accidental NFS mount that ommitted
+> 'nolock'. 
 
-Not caring about NMIs may have more impact than one could expect. You
-have to be aware that (at least) the following code is executed in NMI
-context. Trying to patch any of these functions could result in a dying
-CPU :
+Which is _wrong_. If you omit the 'nolock' mount option, then the client
+_does_ use NLM locking, and so will need the RPC downcall.
 
-default_do_nmi
-  notify_die
-  nmi_watchdog_tick
-    printk
-    die_nmi (should cause a OOPS, not kill the cpu..)
-  do_nmi_callback
-    unknown_nmi_panic_callback
-      sprintf
-  unknown_nmi_error
-    panic
-  reassert_nmi
+If you don't need NLM locking, and want to make sure nobody else can
+enable it, then you can triviall 'fix' this on your server by patching
+it to force the nolock mount option. This isn't a patch that we
+particularly want to see in mainline, though.
 
-In entry.S, there is also a call to local_irq_enable(), which falls into
-lockdep code.
+Trond
 
-Tracing those core kernel functions is a fundamental need of crash
-tracing. So, in my point of view, it is not "just" about tracing NMIs,
-but it's about tracing code that can be touched by NMIs.
-
-> > * Third issue : Scalability. Changing code will stop every CPU on the
-> >   system for a while. Compared to this, the int3-based approach will run
-> >   through the breakpoint handler "if" one of the CPU happens to execute
-> >   this code at the wrong time. The standard case is just an IPI (to
-> 
-> If I read the errata right then patching in an int3 will itself trigger
-> the errata so anything could happen.
-> 
-> I believe there are other safe sequences for doing code patching - perhaps
-> one of the Intel folk can advise ?
-> 
-
-I'll let the Intel guys confirm this, I don't have the reference nearby
-(I got this information by talking with the kprobe team members, and
-they got this information directly from Intel developers) but the
-int3 is the one special case to which the errata does not apply.
-Otherwise, kprobes and gdb would have a big, big issue.
-
-Mathieu
-
-
-> Alan
-
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
