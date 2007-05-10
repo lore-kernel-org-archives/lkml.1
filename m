@@ -1,44 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762252AbXEJWWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761653AbXEJWZW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762252AbXEJWWb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbXEJWWW
+	id S1761653AbXEJWZW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:25:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbXEJWZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:22:22 -0400
-Received: from gw.goop.org ([64.81.55.164]:35548 "EHLO mail.goop.org"
+	Thu, 10 May 2007 18:25:10 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:43232 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755110AbXEJWWV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:22:21 -0400
-Message-ID: <46439B19.7010706@goop.org>
-Date: Thu, 10 May 2007 15:22:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1758310AbXEJWZI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 18:25:08 -0400
+Message-ID: <46439BBA.2070705@redhat.com>
+Date: Thu, 10 May 2007 15:24:58 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Herbert Xu <herbert@gondor.apana.org.au>,
-       "David S. Miller" <davem@davemloft.net>,
-       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
-       Stephen Hemminger <shemminger@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Valdis.Kletnieks@vt.edu
-Subject: Re: [1/2] [NET] link_watch: Move link watch list into net_device
-References: <20070504232051.411946839@goop.org>	<20070504232121.492190579@goop.org>	<20070505091624.GA8890@infradead.org>	<463C56D3.8060609@goop.org>	<20070505102305.GA12771@gondor.apana.org.au>	<463F95C3.60407@goop.org>	<20070508121322.GA21647@gondor.apana.org.au>	<464395E5.2090500@goop.org> <20070510151426.d808384f.akpm@linux-foundation.org>
-In-Reply-To: <20070510151426.d808384f.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Andi Kleen <ak@suse.de>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: getcpu after sched_setaffinity
+Content-Type: multipart/mixed;
+ boundary="------------030705060804040500020104"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> Five minutes after boot is when jiffies wraps.  Are you sure it's
-> a list-screwup rather than a jiffy-wrap screwup?
->   
+This is a multi-part message in MIME format.
+--------------030705060804040500020104
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
+The attached test program fails on a dual core (and probably SMP) 
+machine on x86-64.  Depending on where the thread starts, in one of the 
+iterations the sched_setffinity() call succeeds but then sched_getcpu() 
+fails to report the correct CPU.
 
-Hm, its suggestive, isn't it?  Apparently they've already fixed this in
-the sekret networking clubhouse, so I'll need to track it down.
+In set_cpus_allowed migrate_task() is called if the new CPU set does not 
+include the current CPU.  I hope that migrate_task() also works for 
+p==current.
 
-    J
+This leaves the x86-64 vgetcpu() implementation as the weak point.  Is 
+the caching causing problems?  Should migrate_task() make sure the cache 
+is reset?
+
+You need a very recent glibc to compile (glibc-2.5.90-22 in rawhide). 
+If this is not available replace the sched_getcpu() call.  But make sure 
+you pass a pointer to a cache.
+
+-- 
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+
+--------------030705060804040500020104
+Content-Type: text/plain;
+ name="tst-getcpu.c"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="tst-getcpu.c"
+
+I2luY2x1ZGUgPGVycm5vLmg+CiNpbmNsdWRlIDxzdGRpby5oPgojaW5jbHVkZSA8c2NoZWQu
+aD4KCgppbnQKbWFpbiAodm9pZCkKewogIGNwdV9zZXRfdCBjczsKICBpZiAoc2NoZWRfZ2V0
+YWZmaW5pdHkgKGdldHBpZCAoKSwgc2l6ZW9mIChjcyksICZjcykgIT0gMCkKICAgIHsKICAg
+ICAgcHJpbnRmICgiZ2V0YWZmaW5pdHkgZmFpbGVkOiAlbVxuIik7CiAgICAgIHJldHVybiAx
+OwogICAgfQoKICBpbnQgcmVzdWx0ID0gMDsKICBpbnQgY3B1ID0gMDsKICB3aGlsZSAoQ1BV
+X0NPVU5UICgmY3MpICE9IDApCiAgICB7CiAgICAgIGlmIChDUFVfSVNTRVQgKGNwdSwgJmNz
+KSkKCXsKCSAgY3B1X3NldF90IGNzMjsKCSAgQ1BVX1pFUk8gKCZjczIpOwoJICBDUFVfU0VU
+IChjcHUsICZjczIpOwoJICBpZiAoc2NoZWRfc2V0YWZmaW5pdHkgKGdldHBpZCAoKSwgc2l6
+ZW9mIChjczIpLCAmY3MyKSAhPSAwKQoJICAgIHsKCSAgICAgIHByaW50ZiAoInNldGFmZmlu
+aXR5KCVkKSBmYWlsZWQ6ICVtXG4iLCBjcHUpOwoJICAgICAgcmVzdWx0ID0gMTsKCSAgICB9
+CgkgIGVsc2UKCSAgICB7CgkgICAgICBpbnQgY3B1MiA9IHNjaGVkX2dldGNwdSAoKTsKCSAg
+ICAgIGlmIChjcHUyID09IC0xICYmIGVycm5vID09IEVOT1NZUykKCQl7CgkJICBwdXRzICgi
+Z2V0Y3B1IHN5c2NhbGwgbm90IGltcGxlbWVudGVkIik7CgkJICByZXR1cm4gMDsKCQl9Cgkg
+ICAgICBpZiAoY3B1MiAhPSBjcHUpCgkJewoJCSAgcHJpbnRmICgiZ2V0Y3B1IHJlc3VsdHMg
+JWQgbm90IHBvc3NpYmxlXG4iLCBjcHUyKTsKCQkgIHJlc3VsdCA9IDE7CgkJfQoJICAgIH0K
+CSAgQ1BVX0NMUiAoY3B1LCAmY3MpOwoJfQogICAgICArK2NwdTsKICAgIH0KCiAgcmV0dXJu
+IHJlc3VsdDsKfQo=
+--------------030705060804040500020104--
