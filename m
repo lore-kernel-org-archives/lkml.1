@@ -1,58 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762415AbXEJXJi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760831AbXEJXOp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762415AbXEJXJi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 19:09:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758760AbXEJXJb
+	id S1760831AbXEJXOp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 19:14:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbXEJXOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 19:09:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57466 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758570AbXEJXJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 19:09:30 -0400
-Message-ID: <4643A616.3090202@redhat.com>
-Date: Thu, 10 May 2007 16:09:10 -0700
-From: Ulrich Drepper <drepper@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Thu, 10 May 2007 19:14:37 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:33654 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754537AbXEJXOg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 19:14:36 -0400
+Date: Fri, 11 May 2007 00:14:14 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: William Lee Irwin III <wli@holomorphy.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: slub-i386-support.patch
+In-Reply-To: <20070510203102.GO19966@holomorphy.com>
+Message-ID: <Pine.LNX.4.64.0705102349150.24200@blonde.wat.veritas.com>
+References: <Pine.LNX.4.64.0705102028550.25681@blonde.wat.veritas.com>
+ <20070510203102.GO19966@holomorphy.com>
 MIME-Version: 1.0
-To: Andi Kleen <ak@suse.de>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: getcpu after sched_setaffinity
-References: <46439BBA.2070705@redhat.com> <20070510234446.GC2012@bingen.suse.de>
-In-Reply-To: <20070510234446.GC2012@bingen.suse.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 10 May 2007 23:14:35.0586 (UTC) FILETIME=[F982EA20:01C79358]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGFrQHN1c2UuZGUAbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZwBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAHRvcnZhbGRzQGxpbnV4LWZvdW5kYXRpb24ub3JnAGNsYW1ldGVyQHNnaS5jb20Ad2xpQGhvbG9tb3JwaHkuY29tAA==
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Probably. In principle getcpu() (where does the sched_ come from btw?)
+On Thu, 10 May 2007, William Lee Irwin III wrote:
+> On Thu, May 10, 2007 at 09:03:39PM +0100, Hugh Dickins wrote:
+> > Though when I look at the patchset (copied below), I do wonder why
+> > it puts a quicklist_trim() into i386's cpu_idle() and flush_tlb_mm():
+> > neither is where I'd expect us to be secretly freeing pages.  Ah,
+> > several arches do it in cpu_idle(): how odd, oh well.
+> 
+> So now quicklist semantics vs. TLB flushing are the motive behind the
+> odd flush_tlb_mm() affair. The real trick with it is that flushing
+> must never occur until the TLB flush. Any change to the core quicklist
+> code that retires pages back to the page allocator earlier (e.g. based
+> on some limit) will break things badly.
 
-getcpu() is an unacceptable name.  All te other functions dealing with 
-CPU (sets, etc) have a sched_ prefix.
+I don't think that's right.  It's vital that TLB (of an active mm)
+be flushed before freeing its page back to the quicklist, before it's
+recycled to another mm (or elsewhere in this mm); but having done that,
+it really doesn't matter much when quicklist_trim() (check_pgt_cache)
+is called to free surplus pages from quicklist back to page_alloc.c.
 
+tlb_finish_mmu() happens to be the traditional place it's done, and
+that's where we expect it.  flush_tlb_mm() avoids flushing TLB unless
+it's actually required for the mm in question: so wouldn't be a good
+place to rely on flushing TLB for pages freed earlier from other mms
+(but we'd already be in trouble to be leaving them that late).
 
-> is only designed for the case where you don't set the affinity explicitely;
-> otherwise you should already know where you are and don't need it.
+I'm guessing (haven't rechecked source) that the cpu_idle() call comes
+about because the top level pgd of a process gets freed very late in
+its exit, and after a great flurry of processes have just exited,
+perhaps there was nothing to free up the accumulation.  Though
+it still strikes me as an odd place to do it.
 
-That's not true in general.  Yes, because I want to test vgetcpu() I 
-restrict the set to just one CPU.
-
-But if I have more than 2 "CPUs" and I set the affinity to two CPUs 
-which currently are not used you cannot make this argument.
-
-getcpu should always work correctly not only if you cannot determine it 
-in another way.
-
-
-> Hmm ok one could probably define memset(..., 0) as a invalidation
-> interface, but because of the considerations above i don't think
-> it is really needed.
-
-It is needed.
-
-For now I added the cache clearing in the setaffinity calls in libc. 
-Resetting to cache to {0,0} seems to work.
-
--- 
-➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
+Hugh
