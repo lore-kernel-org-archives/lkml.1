@@ -1,53 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762912AbXEJWQc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760119AbXEJWQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762912AbXEJWQc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:16:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760752AbXEJWQL
+	id S1760119AbXEJWQr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762822AbXEJWQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:16:11 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:49112 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760004AbXEJWQK (ORCPT
+	Thu, 10 May 2007 18:16:23 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:58756 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762720AbXEJWQU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:16:10 -0400
-X-Greylist: delayed 549 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 18:16:10 EDT
-Date: Thu, 10 May 2007 23:16:07 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@skynet.skynet.ie>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Nicolas.Mailhot@LaPoste.net,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
-Message-ID: <20070510221607.GA15084@skynet.ie>
-References: <200705102128.l4ALSI2A017437@fire-2.osdl.org> <20070510144319.48d2841a.akpm@linux-foundation.org> <Pine.LNX.4.64.0705101447120.12874@schroedinger.engr.sgi.com> <20070510220657.GA14694@skynet.ie> <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.skynet.ie (Mel Gorman)
+	Thu, 10 May 2007 18:16:20 -0400
+Date: Thu, 10 May 2007 15:14:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>,
+       "David S. Miller" <davem@davemloft.net>,
+       Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>, Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       netdev@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Valdis.Kletnieks@vt.edu
+Subject: Re: [1/2] [NET] link_watch: Move link watch list into net_device
+Message-Id: <20070510151426.d808384f.akpm@linux-foundation.org>
+In-Reply-To: <464395E5.2090500@goop.org>
+References: <20070504232051.411946839@goop.org>
+	<20070504232121.492190579@goop.org>
+	<20070505091624.GA8890@infradead.org>
+	<463C56D3.8060609@goop.org>
+	<20070505102305.GA12771@gondor.apana.org.au>
+	<463F95C3.60407@goop.org>
+	<20070508121322.GA21647@gondor.apana.org.au>
+	<464395E5.2090500@goop.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (10/05/07 15:11), Christoph Lameter didst pronounce:
-> On Thu, 10 May 2007, Mel Gorman wrote:
-> 
-> > I see the gfpmask was 0x84020. That doesn't look like __GFP_WAIT was set,
-> > right? Does that mean that SLUB is trying to allocate pages atomically? If so,
-> > it would explain why this situation could still occur even though high-order
-> > allocations that could sleep would succeed.
-> 
-> SLUB is following the gfp mask of the caller like all well behaved slab 
-> allocators do. If the caller does not set __GFP_WAIT then the page 
-> allocator also cannot wait.
+On Thu, 10 May 2007 15:00:05 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Then SLUB should not use the higher orders for slab allocations that cannot
-sleep during allocations. What could be done in the longer term is decide
-how to tell kswapd to keep pages free at an order other than 0 when it is
-known there are a large number of high-order long-lived allocations like this.
+> Herbert Xu wrote:
+> > [NET] link_watch: Move link watch list into net_device
+> >
+> > These days the link watch mechanism is an integral part of the
+> > network subsystem as it manages the carrier status.  So it now
+> > makes sense to allocate some memory for it in net_device rather
+> > than allocating it on demand.
+> 
+> I think there's a problem with one of these two patches.  I've been
+> noticing that one of my events/X threads has been going into a spin for
+> about 5 mins after boot.  I added some debugging to
+> kernel/workqueue.c:run_workqueue, since its that loop which seems to be
+> spinning due to list corruption.
+> 
+> When I look to see if that loop has iterated for more than 100 times in
+> one go (which seems unlikely),  I get this:
+> 
+> BUG: cpu 3, count=101 list screwup on c04babe4, func c03217e8
+> func=linkwatch_event+0x0/0x2a
+>  [<c0109173>] show_trace_log_lvl+0x1a/0x30
+>  [<c0109c7f>] show_trace+0x12/0x14
+>  [<c0109d0c>] dump_stack+0x16/0x18
+>  [<c0137c25>] run_workqueue+0x97/0x18c
+>  [<c01386a4>] worker_thread+0xe5/0xf5
+>  [<c013afe9>] kthread+0x3b/0x62
+>  [<c0108d47>] kernel_thread_helper+0x7/0x10
+>  =======================
+> 
+> 
+> I wonder if the problem is that the linkwatch_work is being rescheduled
+> when its already been scheduled, or something like that?
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Five minutes after boot is when jiffies wraps.  Are you sure it's
+a list-screwup rather than a jiffy-wrap screwup?
