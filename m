@@ -1,116 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760211AbXEJAVE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759909AbXEJAYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760211AbXEJAVE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 20:21:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbXEJAUx
+	id S1759909AbXEJAYT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 20:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757148AbXEJAYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 20:20:53 -0400
-Received: from gw.goop.org ([64.81.55.164]:37080 "EHLO mail.goop.org"
+	Wed, 9 May 2007 20:24:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:33223 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756827AbXEJAUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 20:20:52 -0400
-Message-ID: <4642656B.9020501@goop.org>
-Date: Wed, 09 May 2007 17:20:59 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
+	id S1756855AbXEJAYK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 20:24:10 -0400
+Subject: Re: lguest re-review
+From: Rusty Russell <rusty@rustcorp.com.au>
 To: Andrew Morton <akpm@linux-foundation.org>
-CC: Ken Chen <kenchen@google.com>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Alexey Dobriyan <adobriyan@sw.ru>
-Subject: Re: 2.6.21-git11: BUG in loop.ko
-References: <46425EC9.5070209@goop.org> <20070509170521.ec2c9ae7.akpm@linux-foundation.org>
-In-Reply-To: <20070509170521.ec2c9ae7.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org,
+       "virtualization@lists.osdl.org" <virtualization@lists.osdl.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <20070509025122.f3cb7247.akpm@linux-foundation.org>
+References: <20070509025122.f3cb7247.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 10:24:08 +1000
+Message-Id: <1178756648.7286.182.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Wed, 09 May 2007 16:52:41 -0700
-> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> Seems to be getting a 0 refcount.  I don't see anything in the recent
->> changes which might cause this, but this is relatively new behaviour. 
->> It was working for me in the 2.6.21-pre time period, but I haven't tried
->> this since 2.6.21 was released.
->>
->> The BUG is actually triggered by the __module_get(THIS_MODULE) in
->> loop_set_fd.
->>
->>     J
->>
->> loop: module loaded
->> device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
->> ------------[ cut here ]------------
->> kernel BUG at /home/jeremy/hg/xen/paravirt/linux/include/linux/module.h:396!
->> invalid opcode: 0000 [#1]
->> PREEMPT SMP 
->> Modules linked in: dm_snapshot dm_mod loop
->> CPU:    1
->> EIP:    0061:[<d085a911>]    Not tainted VLI
->> EFLAGS: 00010246   (2.6.21-paravirt #1339)
->> EIP is at lo_ioctl+0x65/0xa52 [loop]
->> eax: 00000000   ebx: cfb92c98   ecx: d085e480   edx: 00000200
->> esi: 00004c00   edi: cf8ad428   ebp: cf37fdc0   esp: cf37fbf8
->> ds: 007b   es: 007b   fs: 00d8  gs: 0033  ss: 0069
->> Process losetup (pid: 440, ti=cf37e000 task=cf30b4d0 task.ti=cf37e000)
->> Stack: c1390080 c1390080 cf37fc10 00000008 cf8ad428 cfbb2258 00000000 cf37fc34 
->>        c01458c5 cfb92c98 c1392a40 cf30ba70 cf30b4d0 cf30ba54 00000002 cf30ba70 
->>        cf30b4d0 cf30ba54 00000002 00000003 c134c088 c134c088 cf37fc90 c01215b8 
->> Call Trace:
->>  [<c0109173>] show_trace_log_lvl+0x1a/0x30
->>  [<c0109226>] show_stack_log_lvl+0x9d/0xa5
->>  [<c0109425>] show_registers+0x1f7/0x336
->>  [<c010967d>] die+0x119/0x21b
->>  [<c0382c78>] do_trap+0x8a/0xa4
->>  [<c0109ad1>] do_invalid_op+0x88/0x92
->>  [<c0382a42>] error_code+0x72/0x78
->>  [<c0211c79>] blkdev_driver_ioctl+0x4c/0x5d
->>  [<c02123de>] blkdev_ioctl+0x754/0x7a2
->>  [<c0198840>] block_ioctl+0x1b/0x1f
->>  [<c0182e2e>] do_ioctl+0x22/0x68
->>  [<c01830a6>] vfs_ioctl+0x232/0x245
->>  [<c0183102>] sys_ioctl+0x49/0x63
->>  [<c0108080>] syscall_call+0x7/0xb
->>  =======================
->> Code: ff 83 f8 06 0f 87 5a 09 00 00 ff 24 85 5c bc 85 d0 8b 9b cc 01 00 00 b8 80 e4 85 d0 89 9d 5c fe ff ff e8 37 0a 8f ef 85 c0 75 04 <0f> 0b eb fe b8 01 00 00 00 e8 79 9f 8c ef e8 ec 4b 9c ef c1 e0 
->> EIP: [<d085a911>] lo_ioctl+0x65/0xa52 [loop] SS:ESP 0069:cf37fbf8
->>
->>     
->
-> A few people have been playing with module refcounting lately.  Did you
-> work out a reproduce-it recipe?
->   
+On Wed, 2007-05-09 at 02:51 -0700, Andrew Morton wrote:
+> Some concern was expressed over the lguest review status, so I shall send
+> the patches out again for people to review, to test, to make observations
+> about the author's personal appearance, etc.
+
+Thanks Andrew,
+
+	This means I can finally ack this patch (thanks Eric):
+
+From: ebiederm@xmission.com (Eric W. Biederman)
+Subject: [PATCH] Revert "[PATCH] paravirt: Add startup infrastructure for paravirtualization"
+
+This reverts commit c9ccf30d77f04064fe5436027ab9d2230c7cdd94.
+
+Entering the kernel at startup_32 without passing our real mode data
+in %esi, and without guaranteeing that physical and virtual addresses
+are identity mapped makes head.S impossible to maintain.
+
+The only user of this infrastructure is lguest which is not merged so
+nothing we currently support will break by removing this over designed
+nightmare, and only the pending lguest patches will be affected. The
+pending Xen patches have a different entry point that they use.
+
+We are currently discussing what Xen and lguest need to do to boot the
+kernel in a more normal fashion so using startup_32 in this weird
+manner is clearly not their long term direction.
+
+So let's remove this code in head.S before it causes brain damage to
+people trying to maintain head.S
+
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Chris Wright <chrisw@sous-sol.org>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Zachary Amsden <zach@vmware.com>
+Cc: Andrew Morton <akpm@osdl.org>
+CC: H. Peter Anvin <hpa@zytor.com>
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ arch/i386/kernel/head.S        |   38 --------------------------------------
+ arch/i386/kernel/paravirt.c    |    1 -
+ arch/i386/kernel/vmlinux.lds.S |    6 ------
+ include/asm-i386/paravirt.h    |    5 -----
+ 4 files changed, 50 deletions(-)
+
+===================================================================
+--- a/arch/i386/kernel/head.S
++++ b/arch/i386/kernel/head.S
+@@ -70,12 +70,6 @@ INIT_MAP_BEYOND_END = BOOTBITMAP_SIZE + 
+  */
+ .section .text.head,"ax",@progbits
+ ENTRY(startup_32)
+-
+-#ifdef CONFIG_PARAVIRT
+-        movl %cs, %eax
+-        testl $0x3, %eax
+-        jnz startup_paravirt
+-#endif
+ 
+ /*
+  * Set segments to known values.
+@@ -501,38 +495,6 @@ ignore_int:
+ 	iret
+ 
+ .section .text
+-#ifdef CONFIG_PARAVIRT
+-startup_paravirt:
+-	cld
+- 	movl $(init_thread_union+THREAD_SIZE),%esp
+-
+-	/* We take pains to preserve all the regs. */
+-	pushl	%edx
+-	pushl	%ecx
+-	pushl	%eax
+-
+-	pushl	$__start_paravirtprobe
+-1:
+-	movl	0(%esp), %eax
+-	cmpl	$__stop_paravirtprobe, %eax
+-	je	unhandled_paravirt
+-	pushl	(%eax)
+-	movl	8(%esp), %eax
+-	call	*(%esp)
+-	popl	%eax
+-
+-	movl	4(%esp), %eax
+-	movl	8(%esp), %ecx
+-	movl	12(%esp), %edx
+-
+-	addl	$4, (%esp)
+-	jmp	1b
+-
+-unhandled_paravirt:
+-	/* Nothing wanted us: we're screwed. */
+-	ud2
+-#endif
+-
+ /*
+  * Real beginning of normal "text" segment
+  */
+===================================================================
+--- a/arch/i386/kernel/paravirt.c
++++ b/arch/i386/kernel/paravirt.c
+@@ -19,7 +19,6 @@
+ #include <linux/module.h>
+ #include <linux/efi.h>
+ #include <linux/bcd.h>
+-#include <linux/start_kernel.h>
+ #include <linux/highmem.h>
+ 
+ #include <asm/bug.h>
+===================================================================
+--- a/arch/i386/kernel/vmlinux.lds.S
++++ b/arch/i386/kernel/vmlinux.lds.S
+@@ -80,12 +80,6 @@ SECTIONS
+ 	EXTRA_RWDATA
+ 	CONSTRUCTORS
+ 	} :data
+-
+-  .paravirtprobe : AT(ADDR(.paravirtprobe) - LOAD_OFFSET) {
+-  	__start_paravirtprobe = .;
+-	*(.paravirtprobe)
+-  	__stop_paravirtprobe = .;
+-  }
+ 
+   . = ALIGN(4096);
+   .data_nosave : AT(ADDR(.data_nosave) - LOAD_OFFSET) {
+===================================================================
+--- a/include/asm-i386/paravirt.h
++++ b/include/asm-i386/paravirt.h
+@@ -221,11 +221,6 @@ struct paravirt_ops
+ 	void (*irq_enable_sysexit)(void);
+ 	void (*iret)(void);
+ };
+-
+-/* Mark a paravirt probe function. */
+-#define paravirt_probe(fn)						\
+- static asmlinkage void (*__paravirtprobe_##fn)(void) __attribute_used__ \
+-		__attribute__((__section__(".paravirtprobe"))) = fn
+ 
+ extern struct paravirt_ops paravirt_ops;
+ 
 
 
-100% reliable, but a bit obscure.  I'm booting an FC6 livecd with a
-paravirt_ops kernel under Xen.  The relevant part of the iso's initrd
-script is:
-
-+ mknod /dev/loop118 b 7 118
-+ mknod /dev/loop119 b 7 119
-+ mknod /dev/loop120 b 7 120
-+ mknod /dev/loop121 b 7 121
-+ mkdir -p /dev/mapper
-+ mknod /dev/mapper/control c 10 63
-+ modprobe loop max_loop=128
-loop: the max_loop option is obsolete and will be removed in March 2008
-loop: module loaded
-+ modprobe dm_snapshot
-device-mapper: ioctl: 4.11.0-ioctl (2006-10-12) initialised: dm-devel@redhat.com
-+ '[' 0 == 1 ']'
-+ losetup /dev/loop120 /sysroot/squashfs.img
-------------[ cut here ]------------
-kernel BUG at /home/jeremy/hg/xen/paravirt/linux/include/linux/module.h:396!
-invalid opcode: 0000 [#1]
-PREEMPT SMP 
-Modules linked in: dm_snapshot dm_mod loop
-CPU:    0
-EIP:    0061:[<d085a911>]    Not tainted VLI
-EFLAGS: 00010246   (2.6.21-paravirt #1339)
-[...]
-
-
-    J
