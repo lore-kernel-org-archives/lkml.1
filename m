@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbXEJTqu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761284AbXEJTrn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761051AbXEJTqu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 15:46:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755992AbXEJTql
+	id S1761284AbXEJTrn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 15:47:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbXEJTrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 15:46:41 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:52257 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755326AbXEJTqk (ORCPT
+	Thu, 10 May 2007 15:47:36 -0400
+Received: from smtprelay02.ispgateway.de ([80.67.18.14]:44983 "EHLO
+	smtprelay02.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbXEJTrg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 15:46:40 -0400
-Date: Thu, 10 May 2007 15:46:38 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@infradead.org,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [patch 02/10] Linux Kernel Markers, architecture independent code.
-Message-ID: <20070510194638.GC6320@Krystal>
-References: <20070510015555.973107048@polymtl.ca> <20070510020915.609367244@polymtl.ca> <20070510051043.GA6640@martell.zuzino.mipt.ru> <20070510131240.GD22424@Krystal> <20070510190027.GA5709@martell.zuzino.mipt.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 May 2007 15:47:36 -0400
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: Tomas Janousek <tjanouse@redhat.com>
+Subject: Re: [PATCH] Introduce boot based time
+Date: Thu, 10 May 2007 21:48:59 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
+       tsmetana@redhat.com, riel@redhat.com
+References: <1178302732.5929.23.camel@localhost.localdomain> <3108b4e2c91097ec9469420b3f0836f0499068a6.1178816485.git.tomi@nomi.cz>
+In-Reply-To: <3108b4e2c91097ec9469420b3f0836f0499068a6.1178816485.git.tomi@nomi.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070510190027.GA5709@martell.zuzino.mipt.ru>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.4.34-grsec (i686)
-X-Uptime: 15:46:27 up 97 days,  9:53,  4 users,  load average: 2.17, 2.40, 2.63
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200705102149.01714.ioe-lkml@rameria.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alexey Dobriyan (adobriyan@gmail.com) wrote:
-> On Thu, May 10, 2007 at 09:12:41AM -0400, Mathieu Desnoyers wrote:
-> > Linux Kernel Markers - Architecture Independant Code fix 2
-> >
-> > Fix trivial SMP bug in list_modules.
-> 
-> > --- linux-2.6-lttng.orig/kernel/module.c	2007-05-10 08:51:02.000000000 -0400
-> > +++ linux-2.6-lttng/kernel/module.c	2007-05-10 08:51:06.000000000 -0400
-> > @@ -2657,13 +2657,16 @@
-> >  	/* Enumerate loaded modules */
-> >  	struct list_head	*i;
-> >  	struct module		*mod;
-> > -	unsigned long refcount = 0;
-> > +	unsigned long refcount;
-> > +	int cpu;
-> >
-> >  	mutex_lock(&module_mutex);
-> >  	list_for_each(i, &modules) {
-> >  		mod = list_entry(i, struct module, list);
-> > +		refcount = 0;
-> >  #ifdef CONFIG_MODULE_UNLOAD
-> > -		refcount = local_read(&mod->ref[0].count);
-> > +		for_each_online_cpu(cpu)
-> > +			refcount += local_read(&mod->ref[cpu].count);
-> >  #endif //CONFIG_MODULE_UNLOAD
-> 
-> Still wrong: module_get on cpu X, cpu X hot unplugged. There is
-> module_refcount() for you.
+Hi Tomas,
 
-Ok, fixing. thanks.
+On Thursday 10 May 2007, Tomas Janousek wrote:
+> diff --git a/include/linux/time.h b/include/linux/time.h
+> index 8997b61..06f3eaf 100644
+> --- a/include/linux/time.h
+> +++ b/include/linux/time.h
+> @@ -116,6 +116,8 @@ extern int do_setitimer(int which, struct itimerval *value,
+>  extern unsigned int alarm_setitimer(unsigned int seconds);
+>  extern int do_getitimer(int which, struct itimerval *value);
+>  extern void getnstimeofday(struct timespec *tv);
+> +extern void getboottime(struct timespec *ts);
+> +extern void monotonic_to_bootbased(struct timespec *ts);
+>  
+>  extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
+>  extern int timekeeping_is_continuous(void);
+> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+> index f9217bf..dd9647a 100644
+> --- a/kernel/time/timekeeping.c
+> +++ b/kernel/time/timekeeping.c
+> @@ -36,9 +36,17 @@ EXPORT_SYMBOL(xtime_lock);
+>   * at zero at system boot time, so wall_to_monotonic will be negative,
+>   * however, we will ALWAYS keep the tv_nsec part positive so we can use
+>   * the usual normalization.
+> + *
+> + * wall_to_monotonic is moved after resume from suspend for the monotonic
+> + * time not to jump. We need to add total_sleep_time to wall_to_monotonic
+> + * to get the real boot based time offset.
+> + *
+> + * - wall_to_monotonic is no longer the boot time, getboottime must be
+> + * used instead.
+>   */
+>  struct timespec xtime __attribute__ ((aligned (16)));
+>  struct timespec wall_to_monotonic __attribute__ ((aligned (16)));
+> +static unsigned long total_sleep_time;
 
--- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Could you make that a ktime_t (or struct ktime)?
+There are machines, which sleep more than they are awake. 
+Just imagine a surveillance camera triggered by door entrance.
+
+Yes, these things might run Linux (e.g. on "cris" architecture).
+
+Or your VCR.
+Yes, these devices might sleep more than they are awake, 
+if you are not a TV junkie :-)
+
+
+Best regards
+
+Ingo Oeser
