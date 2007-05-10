@@ -1,69 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758594AbXEJGXj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbXEJGgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758594AbXEJGXj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 02:23:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757706AbXEJGXE
+	id S1757304AbXEJGgS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 02:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbXEJGgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 02:23:04 -0400
-Received: from mx1.suse.de ([195.135.220.2]:40825 "EHLO mx1.suse.de"
+	Thu, 10 May 2007 02:36:09 -0400
+Received: from gate.crashing.org ([63.228.1.57]:37015 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757649AbXEJGXB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 02:23:01 -0400
-From: NeilBrown <neilb@suse.de>
+	id S1755945AbXEJGgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 02:36:07 -0400
+Subject: Re: [PATCH 2/3] Add hard_irq_disable()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Andrew Morton <akpm@linux-foundation.org>
-Date: Thu, 10 May 2007 16:22:31 +1000
-Message-Id: <1070510062231.20403@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Neil Brown <neilb@suse.de>
-Subject: [PATCH 002 of 2] md: Improve the is_mddev_idle test
-References: <20070510161940.20204.patches@notabene>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Rusty Russell <rusty@rustcorp.com.au>
+In-Reply-To: <20070509224113.cca81a24.akpm@linux-foundation.org>
+References: <20070510052622.3E8D5DDF4B@ozlabs.org>
+	 <20070509224113.cca81a24.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 16:35:51 +1000
+Message-Id: <1178778951.14928.215.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 2007-05-09 at 22:41 -0700, Andrew Morton wrote:
+> On Thu, 10 May 2007 15:25:58 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > --- linux-cell.orig/include/linux/interrupt.h	2007-05-10 14:51:22.000000000 +1000
+> > +++ linux-cell/include/linux/interrupt.h	2007-05-10 15:18:04.000000000 +1000
+> > @@ -241,6 +241,16 @@ static inline void __deprecated save_and
+> >  #define save_and_cli(x)	save_and_cli(&x)
+> >  #endif /* CONFIG_SMP */
+> >  
+> > +/* Some architectures might implement lazy enabling/disabling of
+> > + * interrupts. In some cases, such as stop_machine, we might want
+> > + * to ensure that after a local_irq_disable(), interrupts have
+> > + * really been disabled in hardware. Such architectures need to
+> > + * implement the following hook.
+> > + */
+> > +#ifndef hard_irq_disable
+> > +#define hard_irq_disable()	do { } while(0)
+> > +#endif
+> 
+> We absolutely require that the architecture's hard_irq_disable() be defined
+> when we do this.  If it happens that the definition of hard_irq_disable()
+> is implemented three levels deep in nested includes then we risk getting
+> into a situation where different .c files see different implementations of
+> hard_irq_disable(), which could lead to confusing results, to say the least.
 
-During a 'resync' or similar activity, md checks if the devices in the
-array are otherwise active and winds back resync activity when they
-are.  This test in done in is_mddev_idle, and it is somewhat fragile -
-it sometimes thinks there is non-sync io when there isn't.
+Yes, I'm indeed a bit worried about that... I've been wondering what's
+the best include path here... I tried to follow who gets to hw_irq.h and
+didn't come to any conclusive results.
 
-The test compares the total sectors of io (disk_stat_read) with the sectors
-of resync io (disk->sync_io).
-This has problems because total sectors gets updated when a request completes,
-while resync io gets updated when the request is submitted.  The time difference
-can cause large differenced between the two which do not actually imply 
-non-resync activity.  The test currently allows for some fuzz (+/- 4096)
-but there are some cases when it is not enough.
+powerpc gets it from asm/system.h but I haven't verified other arch
+(though it only matters on arch that have their own here).
 
-The test currently looks for any (non-fuzz) difference, either
-positive or negative.  This clearly is not needed.  Any non-sync
-activity will cause the total sectors to grow faster than the sync_io
-count (never slower) so we only need to look for a positive differences.
+I've verified that a #error on ppc up there will not trigger thus it's
+fine on powerpc, but I agree it's a bit fragile.
 
-If we do this then the amount of in-flight sync io will never cause
-the appearance of non-sync IO.  Once enough non-sync IO to worry about
-starts happening, resync will be slowed down and the measurements will
-thus be more precise (as there is less in-flight) and control of resync
-will still be suitably responsive.
+> Your implementation comes via the inclusion of system.h which then includes
+> hw_irq.h.  That's perhaps a little fragile and it would be better to
+> 
+> a) include in the comment the name of the arch file which must implement
+>    hard_irq_disable() and
+> 
+> b) include that file directly from this one.
 
+Fair enough. I was just worried that including hw_irq.h here might cause
+trouble for some archs though (as I said, we get it indirectly on
+powerpc via some other asm thingy, not via some linux/*.h). I've looked
+around and seen all sort of horrors in arch include dependencies
+(including some circular stuff that must work by mere luck).
 
-Signed-off-by: Neil Brown <neilb@suse.de>
+> Oh, and your comment layout style is wrong ;)
 
-### Diffstat output
- ./drivers/md/md.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+What about my comment layout style ? I've been using that forever ... Or
+do you mean I should use a function documentation style layout there ?
 
-diff .prev/drivers/md/md.c ./drivers/md/md.c
---- .prev/drivers/md/md.c	2007-05-10 15:51:54.000000000 +1000
-+++ ./drivers/md/md.c	2007-05-10 16:05:10.000000000 +1000
-@@ -5095,7 +5095,7 @@ static int is_mddev_idle(mddev_t *mddev)
- 		 *
- 		 * Note: the following is an unsigned comparison.
- 		 */
--		if ((curr_events - rdev->last_events + 4096) > 8192) {
-+		if ((long)curr_events - (long)rdev->last_events > 4096) {
- 			rdev->last_events = curr_events;
- 			idle = 0;
- 		}
+Cheers,
+Ben.
+
