@@ -1,54 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762580AbXEJN66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762609AbXEJN71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762580AbXEJN66 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 09:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760858AbXEJN4b
+	id S1762609AbXEJN71 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 09:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760900AbXEJN4d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 09:56:31 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:55417 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760299AbXEJN4V (ORCPT
+	Thu, 10 May 2007 09:56:33 -0400
+Received: from mtagate6.de.ibm.com ([195.212.29.155]:5822 "EHLO
+	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760387AbXEJN4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 09:56:21 -0400
-Message-Id: <20070510135644.668728319@de.ibm.com>
+	Thu, 10 May 2007 09:56:22 -0400
+Message-Id: <20070510135645.453943569@de.ibm.com>
 References: <20070510135152.178104939@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 15:52:00 +0200
+Date: Thu, 10 May 2007 15:52:03 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
-Subject: [patch 08/15] Avoid compile warning.
-Content-Disposition: inline; filename=008-warning.diff
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 11/15] Kconfig: unwanted menus for s390.
+Content-Disposition: inline; filename=102-kconfig-menu-s390.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-arch/s390/mm/fault.c: In function `signal_return': 
-arch/s390/mm/fault.c:256: warning: unused variable `compat' 
+Disable some more menus in the configuration files that are of no
+interest to a s390 machine.
 
-Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 ---
 
- arch/s390/mm/fault.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ drivers/dma/Kconfig     |    1 +
+ drivers/input/Kconfig   |    1 +
+ drivers/isdn/Kconfig    |    1 +
+ drivers/net/phy/Kconfig |    1 +
+ drivers/rtc/Kconfig     |    1 +
+ net/ax25/Kconfig        |    2 +-
+ net/bluetooth/Kconfig   |    2 +-
+ net/irda/Kconfig        |    2 +-
+ 8 files changed, 8 insertions(+), 3 deletions(-)
 
-Index: quilt-2.6/arch/s390/mm/fault.c
+Index: quilt-2.6/drivers/dma/Kconfig
 ===================================================================
---- quilt-2.6.orig/arch/s390/mm/fault.c
-+++ quilt-2.6/arch/s390/mm/fault.c
-@@ -253,7 +253,10 @@ static int signal_return(struct mm_struc
- 			 unsigned long address, unsigned long error_code)
- {
- 	u16 instruction;
--	int rc, compat;
-+	int rc;
-+#ifdef CONFIG_COMPAT
-+	int compat;
-+#endif
+--- quilt-2.6.orig/drivers/dma/Kconfig
++++ quilt-2.6/drivers/dma/Kconfig
+@@ -3,6 +3,7 @@
+ #
  
- 	pagefault_disable();
- 	rc = __get_user(instruction, (u16 __user *) regs->psw.addr);
+ menu "DMA Engine support"
++	depends on !S390
+ 
+ config DMA_ENGINE
+ 	bool "Support for DMA engines"
+Index: quilt-2.6/drivers/input/Kconfig
+===================================================================
+--- quilt-2.6.orig/drivers/input/Kconfig
++++ quilt-2.6/drivers/input/Kconfig
+@@ -3,6 +3,7 @@
+ #
+ 
+ menu "Input device support"
++	depends on !S390
+ 
+ config INPUT
+ 	tristate "Generic input layer (needed for keyboard, mouse, ...)" if EMBEDDED
+Index: quilt-2.6/drivers/isdn/Kconfig
+===================================================================
+--- quilt-2.6.orig/drivers/isdn/Kconfig
++++ quilt-2.6/drivers/isdn/Kconfig
+@@ -3,6 +3,7 @@
+ #
+ 
+ menu "ISDN subsystem"
++	depends on !S390
+ 
+ config ISDN
+ 	tristate "ISDN support"
+Index: quilt-2.6/drivers/net/phy/Kconfig
+===================================================================
+--- quilt-2.6.orig/drivers/net/phy/Kconfig
++++ quilt-2.6/drivers/net/phy/Kconfig
+@@ -3,6 +3,7 @@
+ #
+ 
+ menu "PHY device support"
++	depends on !S390
+ 
+ config PHYLIB
+ 	tristate "PHY Device support and infrastructure"
+Index: quilt-2.6/drivers/rtc/Kconfig
+===================================================================
+--- quilt-2.6.orig/drivers/rtc/Kconfig
++++ quilt-2.6/drivers/rtc/Kconfig
+@@ -3,6 +3,7 @@
+ #
+ 
+ menu "Real Time Clock"
++	depends on !S390
+ 
+ config RTC_LIB
+ 	tristate
+Index: quilt-2.6/net/ax25/Kconfig
+===================================================================
+--- quilt-2.6.orig/net/ax25/Kconfig
++++ quilt-2.6/net/ax25/Kconfig
+@@ -3,7 +3,7 @@
+ #
+ 
+ menuconfig HAMRADIO
+-	depends on NET
++	depends on NET && !S390
+ 	bool "Amateur Radio support"
+ 	help
+ 	  If you want to connect your Linux box to an amateur radio, answer Y
+Index: quilt-2.6/net/bluetooth/Kconfig
+===================================================================
+--- quilt-2.6.orig/net/bluetooth/Kconfig
++++ quilt-2.6/net/bluetooth/Kconfig
+@@ -3,7 +3,7 @@
+ #
+ 
+ menuconfig BT
+-	depends on NET
++	depends on NET && !S390
+ 	tristate "Bluetooth subsystem support"
+ 	help
+ 	  Bluetooth is low-cost, low-power, short-range wireless technology.
+Index: quilt-2.6/net/irda/Kconfig
+===================================================================
+--- quilt-2.6.orig/net/irda/Kconfig
++++ quilt-2.6/net/irda/Kconfig
+@@ -3,7 +3,7 @@
+ #
+ 
+ menuconfig IRDA
+-	depends on NET
++	depends on NET && !S390
+ 	tristate "IrDA (infrared) subsystem support"
+ 	select CRC_CCITT
+ 	---help---
 
 -- 
 blue skies,
