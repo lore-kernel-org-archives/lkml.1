@@ -1,60 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbXEJVBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761784AbXEJVCX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761593AbXEJVBx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761815AbXEJVBh
+	id S1761784AbXEJVCX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:02:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761837AbXEJVCG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:01:37 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53526
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1761787AbXEJVBf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:01:35 -0400
-Date: Thu, 10 May 2007 14:01:38 -0700 (PDT)
-Message-Id: <20070510.140138.133012852.davem@davemloft.net>
-To: rmk+lkml@arm.linux.org.uk
-Cc: cw@f00f.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: (hacky) [PATCH] silence MODPOST section mismatch warnings
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070510204037.GE29713@flint.arm.linux.org.uk>
-References: <20070510203417.GA23019@tuatara.stupidest.org>
-	<20070510204037.GE29713@flint.arm.linux.org.uk>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 10 May 2007 17:02:06 -0400
+Received: from atlrel6.hp.com ([156.153.255.205]:52230 "EHLO atlrel6.hp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762038AbXEJVCD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:02:03 -0400
+Subject: Re: post 2.6.21 regression in F_GETLK
+From: Doug Chapman <doug.chapman@hp.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
+       Marc Eshel <eshel@almaden.ibm.com>
+In-Reply-To: <20070510202313.GV13719@fieldses.org>
+References: <1178823375.7247.11.camel@dchapman.boston.redhat.com>
+	 <20070510193050.GQ13719@fieldses.org> <20070510193859.GR13719@fieldses.org>
+	 <20070510202313.GV13719@fieldses.org>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 17:01:05 -0400
+Message-Id: <1178830865.7247.26.camel@dchapman.boston.redhat.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.0.2 (2.0.2-34.el4) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-Date: Thu, 10 May 2007 21:40:38 +0100
+On Thu, 2007-05-10 at 16:23 -0400, J. Bruce Fields wrote:
+> On Thu, May 10, 2007 at 03:38:59PM -0400, bfields wrote:
+> > On Thu, May 10, 2007 at 03:30:50PM -0400, bfields wrote:
+> > > On Thu, May 10, 2007 at 02:56:15PM -0400, Doug Chapman wrote:
+> > > > A recent regression (introduced after 2.6.21) was caught by the LTP test
+> > > > fcntl11.  It appears that F_GETLK is not properly checking for existing
+> > > > F_RDLCK and allows taking out a write lock.
+> 
+> Hm, actually, could you double-check the test results?  Looking at your
+> test case, it appears that it fails when the lock returned from the
+> fcntl(.,F_GETLK,.) has an l_type != F_RDLCK.  That doesn't necessarily
+> mean the F_GETLK is reporting no conflict.  I believe the bug is
+> actually that it's reporting the wrong kind of conflict--so it's
+> returning l_type == F_WRLCK, not F_UNLCK.
 
-> On Thu, May 10, 2007 at 01:34:18PM -0700, Chris Wedgwood wrote:
-> > MODPOST seems to be spewing bogus warnings.  It's not clear how best
-> > to fix it so perhaps we should silence it for now?
-> 
-> I agree.  Example bogus warning:
-> 
-> WARNING: arch/arm/mach-iop32x/built-in.o - Section mismatch:
->  reference to .init.text: from .data between 'iq80321_timer'
->  (at offset 0x428) and 'iq80321_serial_device'
-> 
-> c04088fc d iq80321_timer
-> c0408950 d iq80321_serial_device
-> 
-> It's completely unclear what is referencing what, what the two named
-> symbols mean, and even what "at offset" relates to.
-> 
-> What I can say is that iq80321_timer doesn't reference iq80321_serial_device
-> nor vice versa, and iq80321_timer is far smaller than 0x428 bytes.
 
-The range of symbols is just provided to handle inaccuracies
-in mid-function and mid-object references, it actually helps.
+You are partly right on the test however note that it is using a start
+and len that are specific to the RDLCK so that should _only_ conflict
+with that lock.  I did notice that the LTP test is taking a new lock on
+the entire file which should be blocked by eithe rthe RDLCK or the WRLCK
+and it doesn't check both, I plan on fixing that once this is resolved.
 
-In this particular case iq80321_timer, which is not init-data,
-is referencing iq80321_timer_init() which is init.text
+But, much more importantly F_GETLK is returning F_UNLCK saying that
+there was no conflict at all.
 
-If this is legitimate (which I believe this case is, the init function
-method can be init but the offset one is not), add an exception case
-like we already have for console drivers et al. to modpost.c and this
-warning will go away.
+> Also, this affects only F_GETLK, not F_SETLK, so you're not actually
+> managing to acquire a conflicting lock, right?
+> 
+
+True, this doesn't actually acquire the lock.  I have not tested to see
+if trying a conflicting F_SETLK blocks as it should.  I will test that
+later.  I missed lunch today so I won't get back to this until later
+tonight or tomorrow....
+
+- Doug
+
+
+
