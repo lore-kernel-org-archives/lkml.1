@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760183AbXEJOwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759269AbXEJO5J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760183AbXEJOwy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 10:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbXEJOws
+	id S1759269AbXEJO5J (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 10:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752330AbXEJO46
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 10:52:48 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:29814 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752881AbXEJOwr (ORCPT
+	Thu, 10 May 2007 10:56:58 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:37931 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751600AbXEJO45 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 10:52:47 -0400
-Date: Thu, 10 May 2007 10:52:43 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-Subject: Re: [GIT PULL] MMC updates
-In-reply-to: <46432502.4050901@drzeus.cx>
-X-X-Sender: nico@xanadu.home
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.0.99.0705101037220.24220@xanadu.home>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <46375B18.4080802@drzeus.cx>
- <20070509185636.GB26981@flint.arm.linux.org.uk> <46421BB5.7040504@drzeus.cx>
- <20070509221253.GC26981@flint.arm.linux.org.uk> <4642B122.5070609@drzeus.cx>
- <46432502.4050901@drzeus.cx>
+	Thu, 10 May 2007 10:56:57 -0400
+Message-ID: <4643327A.4090906@s5r6.in-berlin.de>
+Date: Thu, 10 May 2007 16:55:54 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: Phillip Susi <psusi@cfl.rr.com>
+CC: david@lang.hm, Linus Torvalds <torvalds@linux-foundation.org>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>, Adrian Bunk <bunk@stusta.de>,
+       Greg K-H <greg@kroah.com>, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11 (PCI_MULTITHREAD_PROBE)
+References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com> <20070508141149.GJ4226@stusta.de> <alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org> <20070508183846.28a94797@gondolin.boeblingen.de.ibm.com> <alpine.LFD.0.98.0705081123080.3974@woody. <46424D44.2040003@s5r6.in-berlin.de> <46432AF8.9050505@cfl.rr.com>
+In-Reply-To: <46432AF8.9050505@cfl.rr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007, Pierre Ossman wrote:
-
-> You seem to be the source of this workaround, and also the maintainer of
-> PXA.
-
-Well... I used to.
-
-But the only MMC capable PXA hardware in working conditions I have 
-access to at the moment is PXA255 based which doesn't suffer from this 
-erratum.
-
-> Pierre Ossman wrote:
-> > Russell King wrote:
-> >   
-> >> See the comments immediately above and below its use.
-> >>
-> >> Welcome to buggy hardware.
-> >>
-> >>   
-> >>     
-> >
-> > I've read through the erratum, and to me it seems like the bug affects
-> > all long replies, not just these codes. So I think the code should be
-> > fixed to look at the response flag, not the opcode.
-> >
-> > Do you have hardware so that you can test such a change?
-> >
-> >   
+Phillip Susi wrote:
+> Stefan Richter wrote:
+>> The SCSI stack already has infrastructure for multi-threaded discovery
+>> and probing.
 > 
-> I guess the same question goes to you. :)
+> So?  It would still benefit from using a generic framework that other 
+> buses can use as well.
 
-People in better position than I currently do to test a fix are most 
-likely to be found on lak.
+Perhaps, perhaps not.  Many details of the If and How of asynchronous,
+parallelized probing rest with the low-level drivers.
 
+[BTW, which ever team attempts to design this generic framework please
+brings in detailed knowledge of a variety of bus architectures.  I for
+one would like to contribute with what I know about IEEE 1394, but
+before that I still have to experiment on my own before I have a good
+understanding of how to parallelize IEEE 1394 scanning and probing, and
+the IEEE 1394 core is being radically reworked at the moment anyway.]
 
-Nicolas
+> Not to mention that the current scsi specific 
+> framework tends to cause unstable names doesn't it?
+
+No.  Reality causes "unstable" names.  Or more precisely, we ultimately
+can't get persistent names from dumb enumerations according to probing
+order.  We get persistent names by reading persistent device properties
+in userspace and by letting userspace rename or give aliases to devices.
+
+Names based on probing order are fine for really simplistic setups like
+the famous Aunt Tilly's home computer --- but not for the general case
+that you are trying to cover.
+
+(Sorry for repeating what has been said before in this thread.)
+-- 
+Stefan Richter
+-=====-=-=== -=-= -=-=-
+http://arcgraph.de/sr/
