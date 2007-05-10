@@ -1,56 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760480AbXEJItz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760068AbXEJIuu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760480AbXEJItz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 04:49:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760098AbXEJItn
+	id S1760068AbXEJIuu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 04:50:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757701AbXEJIun
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 04:49:43 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37999
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1760277AbXEJItm (ORCPT
+	Thu, 10 May 2007 04:50:43 -0400
+Received: from mail.syneticon.net ([213.239.212.131]:43069 "EHLO
+	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757562AbXEJIum (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 04:49:42 -0400
-Date: Thu, 10 May 2007 01:49:44 -0700 (PDT)
-Message-Id: <20070510.014944.41634852.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, rusty@rustcorp.com.au
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1178786505.14928.225.camel@localhost.localdomain>
-References: <1178778951.14928.215.camel@localhost.localdomain>
-	<20070510003528.395b122b.akpm@linux-foundation.org>
-	<1178786505.14928.225.camel@localhost.localdomain>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 10 May 2007 04:50:42 -0400
+Message-ID: <4642DC89.7080007@wpkg.org>
+Date: Thu, 10 May 2007 10:49:13 +0200
+From: Tomasz Chmielewski <mangoo@wpkg.org>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add LZO1X compression support to the kernel
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 10 May 2007 18:41:45 +1000
+David Woodhouse wrote:
 
+> On Wed, 2007-05-09 at 23:21 -0700, Andrew Morton wrote:
+>> Well that's attractive-looking code.
 > 
-> > > What about my comment layout style ? I've been using that forever ... Or
-> > > do you mean I should use a function documentation style layout there ?
-> > 
-> > /* This
-> >  * is
-> >  * wrong
-> >  */
-> > 
-> > /*
-> >  * This
-> >  * is
-> >  * right
-> >  */
+> It's compression code. I've never seen compression code look nice :)
 > 
-> Hrm... how bad are you about that one ? I must say I prefer my style :-)
+>> Why is this needed?  What code plans to use it?
+> 
+> I'm itching to use it in JFFS2. Richard claims a 10% boot time speedup
+> and 40% improvement on file read speed, with only a slight drop in the
+> file compression ratio (when compared to zlib).
 
-I think the "wrong" one is right because screen real-estate matters.
-In fact that's the one I use and enforce throughout the networking
-and sparc ports.
+Would be interesting to have it as a shared base for 
+planned-for-May-2020 "compressed tmpfs" (and, perhaps a filesystem with 
+compression, which seems even harder to engineer properly).
 
-I even hand edit out those empty comment lines in patches submitted
-to me when I spot them.
+
+-- 
+Tomasz Chmielewski
+
