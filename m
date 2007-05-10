@@ -1,46 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758712AbXEJSUf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758871AbXEJS1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758712AbXEJSUf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 14:20:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbXEJSU2
+	id S1758871AbXEJS1Q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 14:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbXEJS1F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 14:20:28 -0400
-Received: from sj-iport-1-in.cisco.com ([171.71.176.70]:15984 "EHLO
-	sj-iport-1.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751044AbXEJSU2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 14:20:28 -0400
-X-IronPort-AV: i="4.14,518,1170662400"; 
-   d="scan'208"; a="771881659:sNHT42655282"
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: "Paul Mundt" <lethal@linux-sh.org>, "Roland Dreier" <rolandd@cisco.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] net: trivial MLX4_DEBUG dependency fix.
-X-Message-Flag: Warning: May contain useful information
-References: <20070510035028.GA26453@linux-sh.org> <aday7jw29ci.fsf@cisco.com>
-	<a781481a0705100511l1bfdc7f3tc2669eb916f76594@mail.gmail.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 10 May 2007 11:20:14 -0700
-In-Reply-To: <a781481a0705100511l1bfdc7f3tc2669eb916f76594@mail.gmail.com> (Satyam Sharma's message of "Thu, 10 May 2007 17:41:21 +0530")
-Message-ID: <ada8xbw1qxt.fsf@cisco.com>
-User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 10 May 2007 18:20:15.0058 (UTC) FILETIME=[DB043320:01C7932F]
-Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim3002 verified; ); 
+	Thu, 10 May 2007 14:27:05 -0400
+Received: from webshield-02.med.umich.edu ([141.214.17.21]:51881 "HELO
+	webshield-02.med.umich.edu" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755318AbXEJS1E convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 14:27:04 -0400
+X-Greylist: delayed 10393 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 14:27:04 EDT
+Message-Id: <46430312.10A8.00F9.0@med.umich.edu>
+X-Mailer: Novell GroupWise Internet Agent 7.0.2 
+Date: Thu, 10 May 2007 11:33:41 -0400
+From: "Nicholas Berry" <nikberry@med.umich.edu>
+To: <alan@lxorguk.ukuu.org.uk>, <mathieu.desnoyers@polymtl.ca>
+Cc: <linux-kernel@vger.kernel.org>
+Subject: Re: [patch 06/10] Linux Kernel Markers - Non optimized
+	architectures
+References: <20070510015555.973107048@polymtl.ca>
+ <20070510020916.836290342@polymtl.ca>
+ <20070510065636.GB8019@infradead.org> <20070510131137.GC22424@Krystal>
+ <20070510144039.57f8771b@the-village.bc.nu>
+In-Reply-To: <20070510144039.57f8771b@the-village.bc.nu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+X-NAIMIME-Disclaimer: 1
+X-NAIMIME-Modified: 1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- > IMHO default configs must be aimed at production usage scenarios, so
- > are better off without debugging enabled by default. Except if the
- > driver is really new / EXPERIMENTAL where the goal is to get it tested
- > out by all users asap (and no production systems would be using it
- > anyway).
 
-I agree, but I would hope that MLX4_DEBUG *is* enabled in production.
-It doesn't print anything or introduce any measurable overhead except
-for slightly larger code size unless the debug level is explicitly
-increased, so the only reason to turn it off is if a few bytes of code
-makes a big difference to you (hence making it selectable only if
-EMBEDDED is selected).
+>>> Alan Cox <alan@lxorguk.ukuu.org.uk> 5/10/2007 9:40 AM >>>
+> - Fix optimisation -> optimization typo in powerpc and i386 headers.
+
+That isn't a typo, it's correct as is.
+
+Alan
+
+OED lists it under optimization, with s form as a variant.
+
+Nik
+
+
+
+
+
+**********************************************************
+Electronic Mail is not secure, may not be read every day, and should not be used for urgent or sensitive issues.
