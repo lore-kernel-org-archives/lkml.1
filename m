@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbXEJHcw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759670AbXEJHdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759525AbXEJHcw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 03:32:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758564AbXEJHcn
+	id S1759670AbXEJHdZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 03:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756771AbXEJHdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 03:32:43 -0400
-Received: from mx2.go2.pl ([193.17.41.42]:46454 "EHLO poczta.o2.pl"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758630AbXEJHcm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 03:32:42 -0400
-Date: Thu, 10 May 2007 09:39:04 +0200
-From: Jarek Poplawski <jarkao2@o2.pl>
-To: "Pallipadi\, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Satyam Sharma <satyam.sharma@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: [PATCH -mm] timer: parenthesis fix in tbase_get_deferrable() etc.
-Message-ID: <20070510073904.GB2021@ff.dom.local>
+	Thu, 10 May 2007 03:33:16 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:53095 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752927AbXEJHdO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 03:33:14 -0400
+Date: Thu, 10 May 2007 00:33:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: NeilBrown <neilb@suse.de>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 002 of 2] md: Improve the is_mddev_idle test
+Message-Id: <20070510003304.c5fc35d2.akpm@linux-foundation.org>
+In-Reply-To: <1070510062231.20403@suse.de>
+References: <20070510161940.20204.patches@notabene>
+	<1070510062231.20403@suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <653FFBB4508B9042B5D43DC9E18836F55DFC44@scsmsx415.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 09-05-2007 21:10, Pallipadi, Venkatesh wrote:
-...
-> On a 64 bit system, converting pointer to int causes unnecessary
-> compiler
-> warning, and intermediate long conversion was to avoid that. I will have
-> to rephrase my comment to remove 32 bit value and use int, as that is
-> what
-> the function returns.
+On Thu, 10 May 2007 16:22:31 +1000 NeilBrown <neilb@suse.de> wrote:
 
-Sorry!!! So, it's perfectly right and logical.
+> The test currently looks for any (non-fuzz) difference, either
+> positive or negative.  This clearly is not needed.  Any non-sync
+> activity will cause the total sectors to grow faster than the sync_io
+> count (never slower) so we only need to look for a positive differences.
+> 
+> ...
+>
+> --- .prev/drivers/md/md.c	2007-05-10 15:51:54.000000000 +1000
+> +++ ./drivers/md/md.c	2007-05-10 16:05:10.000000000 +1000
+> @@ -5095,7 +5095,7 @@ static int is_mddev_idle(mddev_t *mddev)
+>  		 *
+>  		 * Note: the following is an unsigned comparison.
+>  		 */
+> -		if ((curr_events - rdev->last_events + 4096) > 8192) {
+> +		if ((long)curr_events - (long)rdev->last_events > 4096) {
+>  			rdev->last_events = curr_events;
+>  			idle = 0;
 
-It's a pity, you couldn't NACK this patch a little sooner.
-I hope there is no problem to remove this patch now. 
-
-It seems this type of conversion isn't popular enough, yet.
-
-Thanks for explanation & regards,
-Jarek P.
+In which case would unsigned counters be more appropriate?
