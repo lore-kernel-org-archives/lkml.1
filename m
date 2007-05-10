@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbXEJHVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbXEJHXB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758630AbXEJHVo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 03:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbXEJHVh
+	id S1758669AbXEJHXB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 03:23:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbXEJHWx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 03:21:37 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44853 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752342AbXEJHVg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 03:21:36 -0400
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <a781481a0705092345rf9fdc9cs8495516299a28fae@mail.gmail.com>
-References: <20070510052622.3E8D5DDF4B@ozlabs.org>
-	 <20070509224113.cca81a24.akpm@linux-foundation.org>
-	 <a781481a0705092345rf9fdc9cs8495516299a28fae@mail.gmail.com>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 17:21:17 +1000
-Message-Id: <1178781677.14928.221.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 03:22:53 -0400
+Received: from hoboe2bl1.telenet-ops.be ([195.130.137.73]:41676 "EHLO
+	hoboe2bl1.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752342AbXEJHWw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 03:22:52 -0400
+Date: Thu, 10 May 2007 09:22:44 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: John Anthony Kazos Jr <jakj@j-a-k-j.com>, Adrian Bunk <bunk@stusta.de>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: include files: convert "include" subdirectory to UTF-8
+In-Reply-To: <200705092102.l49L2axT029607@hera.kernel.org>
+Message-ID: <Pine.LNX.4.64.0705100921230.13222@anakin>
+References: <200705092102.l49L2axT029607@hera.kernel.org>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="-1463808512-1711465675-1178781764=:13222"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-> So you're saying that this mechanism forces the arch (that really
-> wants hard_irq_disable) to _#define_ hard_irq_disable (as a macro),
-> and if it implements it as an inline function, for example, then we're
-> screwed?
+---1463808512-1711465675-1178781764=:13222
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-No. The idea is to do like we did for a few other things already
-(according to Linus request in fact), which is to write
+On Wed, 9 May 2007, Linux Kernel Mailing List wrote:
+> diff --git a/include/asm-m68k/atarihw.h b/include/asm-m68k/atarihw.h
+> index f28acd0..6211363 100644
+> --- a/include/asm-m68k/atarihw.h
+> +++ b/include/asm-m68k/atarihw.h
+> @@ -2,7 +2,7 @@
+>  ** linux/atarihw.h -- This header defines some macros and pointers for
+>  **                    the various Atari custom hardware registers.
+>  **
+> -** Copyright 1994 by Bj”rn Brauel
+> +** Copyright 1994 by BjÂ”rn Brauel
+>  **
+>  ** 5/1/94 Roman Hodek:
+>  **   Added definitions for TT specific chips.
+> diff --git a/include/asm-m68k/atariints.h b/include/asm-m68k/atariints.h
+> index 0ed454f..ce6c445 100644
+> --- a/include/asm-m68k/atariints.h
+> +++ b/include/asm-m68k/atariints.h
+> @@ -1,7 +1,7 @@
+>  /*
+>  ** atariints.h -- Atari Linux interrupt handling structs and prototypes
+>  **
+> -** Copyright 1994 by Bj”rn Brauel
+> +** Copyright 1994 by BjÂ”rn Brauel
+>  **
+>  ** 5/2/94 Roman Hodek:
+>  **   TT interrupt definitions added.
 
-static inline void hard_irq_disable(void)
-{
-	.../...
-}
-#define hard_irq_disable hard_irq_disable
+These two seem to have failed.
 
-This is nicer than having an ARCH_HAS_xxx
+Gr{oetje,eeting}s,
 
-> 1. Introduce some CONFIG_WANTS_HARD_IRQ_DISABLE that is #defined (or
-> left undefined) by the arch/.../defconfig (depending upon whether or
-> not that arch implements a hard_irq_disable() for itself or not)
->
-> 2. Then pull-in that code into include/linux/interrupt.h somehow
-> (through some known / fixed header file, or through asm/system.h, or
-> anyhow -- it doesn't really matter)
-> 
-> 3. And:
-> 
-> #ifndef CONFIG_WANTS_HARD_IRQ_DISABLE
-> #define hard_irq_disable() do { } while(0)
-> #endif
+						Geert
 
-Well, last time I tried that, Linus NACKed it in favor of what I
-described above.
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-> We don't need to standardize on some particular arch-specific header
-> filename in this case.
-
-True, that's my main problem here. Though really only the archs who
-actually implement something special here need to be careful.
-
-Ben.
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
+---1463808512-1711465675-1178781764=:13222--
