@@ -1,117 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759094AbXEJHYd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759476AbXEJHZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759094AbXEJHYd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 03:24:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbXEJHY1
+	id S1759476AbXEJHZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 03:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755811AbXEJHZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 03:24:27 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38830 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755811AbXEJHY0 (ORCPT
+	Thu, 10 May 2007 03:25:21 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:35655 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755150AbXEJHZT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 03:24:26 -0400
-Date: Thu, 10 May 2007 16:24:33 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org, Lee.Schermerhorn@hp.com,
-       apw@shadowen.org, clameter@sgi.com, akpm@linux-foundation.org,
-       ak@suse.de, jbarnes@virtuousgeek.org
-Subject: [Request-For-Test] [PATCH] change zonelist order v6 [2/3] auto
- configuration
-Message-Id: <20070510162433.b091286a.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20070510161611.fe1a696b.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20070510161611.fe1a696b.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
+	Thu, 10 May 2007 03:25:19 -0400
+Subject: Re: [PATCH 0/9] Kconfig: cleanup s390 v2.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Reply-To: schwidefsky@de.ibm.com
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org, mb@bu3sch.de,
+       linville@tuxdriver.com, arnd@arndb.de, maxextreme@gmail.com,
+       gregkh@suse.de
+In-Reply-To: <20070509093547.55ca7f8c.akpm@linux-foundation.org>
+References: <20070423141123.GA21174@skybase>
+	 <20070423104534.51bac974.akpm@linux-foundation.org>
+	 <1178709710.30649.37.camel@localhost>
+	 <20070509093547.55ca7f8c.akpm@linux-foundation.org>
+Content-Type: text/plain
+Organization: IBM Corporation
+Date: Thu, 10 May 2007 09:25:41 +0200
+Message-Id: <1178781941.24359.7.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add auto zone ordering configuration.
+On Wed, 2007-05-09 at 09:35 -0700, Andrew Morton wrote:
+> > So when will be a good time to add the Kconfig patches to git390?
+> 
+> Go wild.
+> 
+> > And do you prefer to let them rot^H^H^Hmature in -mm for a while before
+> > they can go upstream?
+> 
+> Your call.  I'd be inclined to push them early personally - Kconfig
+> problems tend to be easy to spot and easy to fix and there's ample time to
+> fine tune it.
 
-This function will select ZONE_ORDER_NODE when
+Ok, that is my feeling as well. The patches won't get better by waiting.
+I will add them to the for-linus/for-andrew branches and include them in
+the next please-pull for Linus. Be prepared for some breakage in -mm..
 
-There are only ZONE_DMA or ZONE_DMA32.
-|| size of (ZONE_DMA/DMA32) > (System Total Memory)/2
-|| Assume Node(A)
-	Node (A) is enough big &&
-	Node (A)'s ZONE_DMA/DMA32 occupies 60% of Node(A)'s memory.
-	(In this case, ZONE_ORDER_ZONE may not offer enough locality...)
+-- 
+blue skies,
+  Martin.
 
-otherwise, ZONE_ORDER_ZONE is selected.
+"Reality continues to ruin my life." - Calvin.
 
-Maybe there is no best way to configure zone order. I wrote this base on
-my experience and discussion on the list.
-
-Anyway, a user can specifiy zone order from boot option/sysctl.
-
-Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
- mm/page_alloc.c |   51 +++++++++++++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 49 insertions(+), 2 deletions(-)
-
-Index: linux-2.6.21-mm2/mm/page_alloc.c
-===================================================================
---- linux-2.6.21-mm2.orig/mm/page_alloc.c
-+++ linux-2.6.21-mm2/mm/page_alloc.c
-@@ -2204,8 +2204,55 @@ static void build_zonelists_in_zone_orde
- 
- static int default_zonelist_order(void)
- {
--	/* dummy, just select node order. */
--	return ZONELIST_ORDER_NODE;
-+	int nid, zone_type;
-+	unsigned long low_kmem_size,total_size;
-+	struct zone *z;
-+	int average_size;
-+	/*
-+         * ZONE_DMA and ZONE_DMA32 can be very small area in the sytem.
-+	 * If they are really small and used heavily, the system can fall
-+	 * into OOM very easily.
-+	 * This function detect ZONE_DMA/DMA32 size and confgigures zone order.
-+	 */
-+	/* Is there ZONE_NORMAL ? (ex. ppc has only DMA zone..) */
-+	low_kmem_size = 0;
-+	total_size = 0;
-+	for_each_online_node(nid) {
-+		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
-+			z = &NODE_DATA(nid)->node_zones[zone_type];
-+			if (populated_zone(z)) {
-+				if (zone_type < ZONE_NORMAL)
-+					low_kmem_size += z->present_pages;
-+				total_size += z->present_pages;
-+			}
-+		}
-+	}
-+	if (!low_kmem_size ||  /* there are no DMA area. */
-+	    low_kmem_size > total_size/2) /* DMA/DMA32 is big. */
-+		return ZONELIST_ORDER_NODE;
-+	/*
-+	 * look into each node's config.
-+  	 * If there is a node whose DMA/DMA32 memory is very big area on
-+ 	 * local memory, NODE_ORDER may be suitable.
-+         */
-+	average_size = total_size / (num_online_nodes() + 1);
-+	for_each_online_node(nid) {
-+		low_kmem_size = 0;
-+		total_size = 0;
-+		for (zone_type = 0; zone_type < MAX_NR_ZONES; zone_type++) {
-+			z = &NODE_DATA(nid)->node_zones[zone_type];
-+			if (populated_zone(z)) {
-+				if (zone_type < ZONE_NORMAL)
-+					low_kmem_size += z->present_pages;
-+				total_size += z->present_pages;
-+			}
-+		}
-+		if (low_kmem_size &&
-+		    total_size > average_size && /* ignore small node */
-+		    low_kmem_size > total_size * 70/100)
-+			return ZONELIST_ORDER_NODE;
-+	}
-+	return ZONELIST_ORDER_ZONE;
- }
- 
- static void set_zonelist_order(void)
 
