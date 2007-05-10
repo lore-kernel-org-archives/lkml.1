@@ -1,44 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756076AbXEJBYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754927AbXEJB0c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756076AbXEJBYR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 21:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751906AbXEJBXt
+	id S1754927AbXEJB0c (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 21:26:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751187AbXEJB0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 21:23:49 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:49544 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750833AbXEJBXs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 21:23:48 -0400
-X-Greylist: delayed 1222 seconds by postgrey-1.27 at vger.kernel.org; Wed, 09 May 2007 21:23:47 EDT
-Message-Id: <20070510010247.078635958@polymtl.ca>
-References: <20070510005935.850493440@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Wed, 09 May 2007 20:59:36 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org, ak@suse.de,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [patch 1/1] x86_64 : fix default_do_nmi() missing return after a if ()
-Content-Disposition: inline; filename=x86_64-fix-default-do-nmi.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 10 May 2007 01:02:47 +0000
+	Wed, 9 May 2007 21:26:24 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:37945 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751672AbXEJB0X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 21:26:23 -0400
+Date: Thu, 10 May 2007 11:26:09 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
+Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
+Message-ID: <20070510012609.GU85884050@sgi.com>
+References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <20070510004918.GS85884050@sgi.com> <46426D31.8070000@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46426D31.8070000@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Index: linux-2.6-lttng/arch/x86_64/kernel/traps.c
-===================================================================
---- linux-2.6-lttng.orig/arch/x86_64/kernel/traps.c	2007-05-09 17:29:51.000000000 -0400
-+++ linux-2.6-lttng/arch/x86_64/kernel/traps.c	2007-05-09 17:30:07.000000000 -0400
-@@ -779,6 +779,7 @@
- 			return;
- 		if (notify_die(DIE_NMI_POST, "nmi_post", regs, reason, 2, 0)
- 								== NOTIFY_STOP)
-+			return;
- 		if (!do_nmi_callback(regs,cpu))
- 			unknown_nmi_error(reason, regs);
- 
+On Wed, May 09, 2007 at 05:54:09PM -0700, Jeremy Fitzhardinge wrote:
+> David Chinner wrote:
+> > Suspend-resume, eh?
+> >
+> > There's an immediate suspect. Can you test this specifically for us?
+> > i.e. download a known good file set, do some stuff, suspend, resume,
+> > then check the files? If it doesn't show up the first time, can
+> > you do it a few times just to rule it out?
+> 
+> Well, I've been doing suspend-resume with xfs for a while without
+> problems; the problems seem to be recent and easily repeatable.  Which
+> just means that it could be a new suspend-resume problem, of course.
 
+Ok. I'm just trying to find a relatively simple test case for the
+problem - seeing as you seem to be able to reliably reproduce this
+we should be able to work out the trigger...
+
+> > If suspend/resume does cause the problem, can you try again but this
+> > time please run 'xfs_freeze -f <mtpt>' on the filesystem before
+> > suspend, and then 'xfs_freeze -u <mtpt>' after the resume and see if
+> > the problem still occurs?
+> 
+> OK, but I tend to find that xfs_freeze ends up locking up large parts of
+> the system...  (For example, I tried to do the xfs_freeze + lvm snapshot
+> thing, but the lvm snapshot just blocked on the frozen filesystem until
+> I unfroze it).
+
+Yes, because LVM snapshot freezes the filesystem for you - if you've
+already frozen the filesystem the snapshot will block until you unfreeze
+it and then it will freeze it itself to take the snapshot.
+
+> But I'll try it out.  Hm, is there some script I can
+> stick it into?
+
+No idea.....
+
+Cheers,
+
+Dave.
 -- 
-Mathieu Desnoyers
-Computer Engineering Ph.D. Student, Ecole Polytechnique de Montreal
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
