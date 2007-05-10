@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbXEJBAO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760406AbXEJBAk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759822AbXEJBAO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 21:00:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757832AbXEJA76
+	id S1760406AbXEJBAk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 21:00:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbXEJBAc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 20:59:58 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36986 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757590AbXEJA74 (ORCPT
+	Wed, 9 May 2007 21:00:32 -0400
+Received: from smtp107.mail.mud.yahoo.com ([209.191.85.217]:45572 "HELO
+	smtp107.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757832AbXEJBAa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 20:59:56 -0400
-Date: Thu, 10 May 2007 10:59:26 +1000
-From: David Chinner <dgc@sgi.com>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070510005926.GT85884050@sgi.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070509160102.GA30745@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 9 May 2007 21:00:30 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=TM1ln5eP2O+HN7mud6ck057vkg8QZMery6aPPRrtGSF15yN3wS+U5jRJ6st9GsvcRHFcUkB+eiRpVLD5WxhLDH87P9j3G8FufF8l/RXVt5N9ZTqFx8Sm87Er8K5C3e1GAKpSnTxHrxB3yeKJATP0h58+tXLEhxCkfy0zJ3cdb4I=  ;
+X-YMail-OSG: tWPi_XoVM1l6EN40oE5T7cNPLm8HEdxJdKAHTkK299UR4E6vmAN.urM7_er.JJRdS54jALFK9Q--
+Message-ID: <46426EA1.4030408@yahoo.com.au>
+Date: Thu, 10 May 2007 11:00:17 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: David Miller <davem@davemloft.net>, clameter@sgi.com, mpm@selenic.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: + fix-spellings-of-slab-allocator-section-in-init-kconfig.patch
+ added to -mm tree
+References: <Pine.LNX.4.64.0705081746500.16914@schroedinger.engr.sgi.com>	<20070509012725.GZ11115@waste.org>	<Pine.LNX.4.64.0705081828300.17376@schroedinger.engr.sgi.com>	<20070508.185141.85412154.davem@davemloft.net>	<46412BB5.1060605@yahoo.com.au> <20070509174238.b4152887.akpm@linux-foundation.org>
+In-Reply-To: <20070509174238.b4152887.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 09:31:02PM +0530, Amit K. Arora wrote:
-> I have the updated patches ready which take care of Andrew's comments.
-> Will run some tests and post them soon.
+Andrew Morton wrote:
+> On Wed, 09 May 2007 12:02:29 +1000
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
 > 
-> But, before submitting these patches, I think it will be better to finalize
-> on certain things which might be worth some discussion here:
 > 
-> 1) Should the file size change when preallocation is done beyond EOF ?
->    - Andreas and Chris Wedgwood are in favor of not changing the
->      file size in this case. I also tend to agree with them. Does anyone
->      has an argument in favor of changing the filesize ?
->      If not, I will remove the code which changes the filesize, before I
->      resubmit the concerned ext4 patch.
-
-I think there needs to be both. If we don't have a mechanism to
-atomically change the file size with the preallocation, then
-applications that use stat() to work out if they need to preallocate
-more space will end up racing.
-
-> 2) For FA_UNALLOCATE mode, should the file system allow unallocation
->    of normal (non-preallocated) blocks (blocks allocated via
->    regular write/truncate operations) also (i.e. work as punch()) ?
-
-Yes. That is the current XFS implementation for XFS_IOC_UNRESVSP, and
-what i did for FA_UNALLOCATE as well.
-
->    - Though FA_UNALLOCATE mode is yet to be implemented on ext4, still
->      we need to finalize on the convention here as a general guideline
->      to all the filesystems that implement fallocate.
+>>BTW, we _really_ should be doing RCU properly in slob, because you
+>>technically can't noop RCU on UP (even though the current users may be
+>>safe...).
+>>
+>>Patch attached to do that.
 > 
-> 3) If above is true, the file size will need to be changed
->    for "unallocation" when block holding the EOF gets unallocated.
+> 
+> Does it work?
 
-No - we punch a hole. If you want the filesize to change, then
-you use ftruncate() to remove the blocks at EOF and change the
-file size atomically.
+That one booted my desktop (very slowly) but as Matt pointed out, it broke
+alignment on RCU slabs. The last version I posted should work and has the
+alignment problem fixed. I can retest and resubmit it to you if you like,
+I was just waiting on an ack from Matt.
 
-> 4) Should we update mtime & ctime on a successfull allocation/
->    unallocation ?
->    - David Chinner raised this question in following post:
->      http://lkml.org/lkml/2007/4/29/407
->      I think it makes sense to update the [mc]time for a successfull
->      preallocation/unallocation. Does anyone feel otherwise ?
->      It will be interesting to know how XFS behaves currently. Does XFS
->      update [mc]time for preallocation ?
-
-No, XFS does *not* update a/m/ctime on prealloc/punch unless the file size
-changes. If the filesize changes, it behaves exactly the same way that
-ftruncate() behaves.
-
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+SUSE Labs, Novell Inc.
