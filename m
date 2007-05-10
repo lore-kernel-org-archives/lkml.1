@@ -1,98 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbXEJCw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755903AbXEJCxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754842AbXEJCw6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 22:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbXEJCwt
+	id S1755903AbXEJCxX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 22:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbXEJCww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 22:52:49 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:35937 "EHLO smtp.polymtl.ca"
+	Wed, 9 May 2007 22:52:52 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:35939 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751677AbXEJCws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 22:52:48 -0400
-Message-Id: <20070510020917.463378427@polymtl.ca>
+	id S1753972AbXEJCwu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 9 May 2007 22:52:50 -0400
+Message-Id: <20070510020917.172554217@polymtl.ca>
 References: <20070510015555.973107048@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Wed, 09 May 2007 21:56:03 -0400
+Date: Wed, 09 May 2007 21:56:02 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org
 Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       <linux-arch@vger.kernel.org>
-Subject: [patch 08/10] Defines the linker macro EXTRA_RWDATA for the marker data section.
-Content-Disposition: inline; filename=linux-kernel-markers-define-the-linker-macro-extra_rwdata.patch
-X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 10 May 2007 02:52:38 +0000
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [patch 07/10] Linux Kernel Markers - Documentation
+Content-Disposition: inline; filename=linux-kernel-markers-documentation.patch
+X-Poly-FromMTA: (dijkstra.casi.polymtl.ca [132.207.72.10]) at Thu, 10 May 2007 02:52:40 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Defines the linker macro EXTRA_RWDATA for the marker data section.  It puts
-the marker data in a separate section that will not pollute the normal .data
-section, which minimize the cache impact.  Markers need such a special section
-because they define a lot of spreaded and small data structures at multiple
-sites.
-
-This patch also creates the __markers_strings section (ro marker strings) and
-makes sure the __markers section is aligned by putting it before the
-__ksymtab_strings (not after).
+Here is some documentation explaining what is/how to use the Linux
+Kernel Markers.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: <linux-arch@vger.kernel.org>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 ---
 
- include/asm-generic/vmlinux.lds.h |   25 +++++++++++++------------
- 1 file changed, 13 insertions(+), 12 deletions(-)
+ Documentation/marker.txt |  266 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 266 insertions(+)
 
-Index: linux-2.6-lttng/include/asm-generic/vmlinux.lds.h
+Index: linux-2.6-lttng/Documentation/marker.txt
 ===================================================================
---- linux-2.6-lttng.orig/include/asm-generic/vmlinux.lds.h	2007-05-08 17:07:12.000000000 -0400
-+++ linux-2.6-lttng/include/asm-generic/vmlinux.lds.h	2007-05-08 17:09:12.000000000 -0400
-@@ -116,21 +116,19 @@
- 		*(__kcrctab_gpl_future)					\
- 		VMLINUX_SYMBOL(__stop___kcrctab_gpl_future) = .;	\
- 	}								\
--									\
--	/* Kernel symbol table: strings */				\
--        __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
--		*(__ksymtab_strings)					\
--	}								\
- 	/* Kernel markers : pointers */					\
--	.markers : AT(ADDR(.markers) - LOAD_OFFSET) {			\
-+	__markers : AT(ADDR(__markers) - LOAD_OFFSET) {			\
- 		VMLINUX_SYMBOL(__start___markers) = .;			\
--		*(.markers)						\
-+		*(__markers)						\
- 		VMLINUX_SYMBOL(__stop___markers) = .;			\
- 	}								\
--	.markers.c : AT(ADDR(.markers.c) - LOAD_OFFSET) {		\
--		VMLINUX_SYMBOL(__start___markers_c) = .;		\
--		*(.markers.c)						\
--		VMLINUX_SYMBOL(__stop___markers_c) = .;			\
-+	/* Kernel symbol table: strings */				\
-+        __ksymtab_strings : AT(ADDR(__ksymtab_strings) - LOAD_OFFSET) {	\
-+		*(__ksymtab_strings)					\
-+	}								\
-+	/* Kernel markers : strings */					\
-+	__markers_strings : AT(ADDR(__markers_strings) - LOAD_OFFSET) {	\
-+		*(__markers_strings)					\
- 	}								\
- 	__end_rodata = .;						\
- 	. = ALIGN(4096);						\
-@@ -145,6 +143,10 @@
- 									\
- 	. = ALIGN(4096);
- 
-+#define EXTRA_RWDATA							\
-+	. = ALIGN(8);							\
-+	*(__markers_data)						\
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6-lttng/Documentation/marker.txt	2007-05-09 18:16:13.000000000 -0400
+@@ -0,0 +1,266 @@
++ 	             Using the Linux Kernel Markers
 +
- #define SECURITY_INIT							\
- 	.security_initcall.init : AT(ADDR(.security_initcall.init) - LOAD_OFFSET) { \
- 		VMLINUX_SYMBOL(__security_initcall_start) = .;		\
-@@ -241,4 +243,3 @@
-   	*(.initcall6s.init)						\
-   	*(.initcall7.init)						\
-   	*(.initcall7s.init)
--
++			    Mathieu Desnoyers
++
++
++	This document introduces to markers and discusses its purpose. It
++shows some usage examples of the Linux Kernel Markers : how to insert markers
++within the kernel and how to connect probes to a marker. Finally, it has some
++probe module examples. This is what connects to a marker.
++
++
++* Purpose of markers
++
++A marker placed in your code provides a hook to a function (probe) that
++you can provide at runtime. A marker can be "on" (a probe is connected to it)
++or "off" (no probe is attached). An "off" marker has no effect. When turned on,
++the function you provide is called each time the marker is executed in the
++execution context of the caller. When the function provided ends its execution,
++it returns to the caller (marker site).
++
++You can put markers at important locations in the code. They act as
++lightweight hooks that can pass an arbitrary number of parameters,
++described in a printk-like format string, to a function whenever the marker
++code is reached.
++
++They can be used for tracing (LTTng, LKET over SystemTAP), overall performance
++accounting (SystemTAP). They could also be used to implement
++efficient hooks for SELinux or any other subsystem that would have this
++kind of need.
++
++Using the markers for system audit (SELinux) would require to pass a
++variable by address that would be later checked by the marked routine.
++
++
++* Usage
++
++In order to use the macro MARK, you should include linux/marker.h.
++
++#include <linux/marker.h>
++
++Add, in your code :
++
++trace_mark(subsystem_event, "%d %s", someint, somestring);
++Where :
++- subsystem_event is an identifier unique to your event
++    - subsystem is the name of your subsystem.
++    - event is the name of the event to mark.
++- "%d %s" is the formatted string for the serializer.
++- someint is an integer.
++- somestring is a char pointer.
++
++Connecting a function (probe) to a marker is done by providing a probe
++(function to call) for the specific marker through marker_set_probe(). It will
++automatically connect the function and enable the marker site. Removing a probe
++is done through marker_remove_probe(). Probe removal is preempt safe because
++preemption is disabled around the probe call. See the "Probe example" section
++below for a sample probe module.
++
++The marker mechanism supports multiple instances of the same marker.
++Markers can be put in inline functions, inlined static functions and
++unrolled loops.
++
++Note : It is safe to put markers within preempt-safe code : preempt_enable()
++will not call the scheduler due to the tests in preempt_schedule().
++
++
++* Optimization for a given architecture
++
++You will find, in asm-*/marker.h, optimisations for given architectures
++(currently i386 and powerpc). They use a load immediate instead of a data load,
++which saves a data cache hit, but also requires cross CPU code modification. In
++order to support embedded systems which use read-only memory for their code, the
++optimization can be disabled through menu options.
++
++The MF_* flags can be used to control the type of marker. See the
++include/marker.h header for the list of flags. They can be specified as the
++first parameter of the _trace_mark() macro, such as the following example which
++is safe with respect to lockdep.c (useful for marking lockdep.c and printk
++functions).
++
++_trace_mark(MF_DEFAULT | ~MF_LOCKDEP, subsystem_eventb, MARK_NOARGS);
++
++Another example is to specify that a specific marker must never call printk :
++_trace_mark(MF_DEFAULT | ~MF_PRINTK, subsystem_eventc,
++  "%d %s", someint, somestring,);
++
++Flag compatibility is checked before connecting the probe to the marker : the
++right flags must be given to _marker_set_enable().
++
++
++* Probe example
++
++You can build the kernel modules, probe-example.ko and marker-example.ko,
++using the following Makefile:
++------------------------------ CUT -------------------------------------
++obj-m := probe-example.o marker-example.o
++KDIR := /lib/modules/$(shell uname -r)/build
++PWD := $(shell pwd)
++default:
++	$(MAKE) -C $(KDIR) SUBDIRS=$(PWD) modules
++clean:
++	rm -f *.mod.c *.ko *.o
++------------------------------ CUT -------------------------------------
++/* probe-example.c
++ *
++ * Connects two functions to marker call sites.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/sched.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <asm/atomic.h>
++
++#define NUM_PROBES ARRAY_SIZE(probe_array)
++
++struct probe_data {
++	const char *name;
++	const char *format;
++	marker_probe_func *probe_func;
++};
++
++void probe_subsystem_event(const struct __mark_marker_c *mdata,
++		const char *format, ...)
++{
++	va_list ap;
++	/* Declare args */
++	unsigned int value;
++	const char *mystr;
++
++	/* Assign args */
++	va_start(ap, format);
++	value = va_arg(ap, typeof(value));
++	mystr = va_arg(ap, typeof(mystr));
++
++	/* Call printk */
++	printk("Value %u, string %s\n", value, mystr);
++
++	/* or count, check rights, serialize data in a buffer */
++
++	va_end(ap);
++}
++
++atomic_t eventb_count = ATOMIC_INIT(0);
++
++void probe_subsystem_eventb(const struct __mark_marker_c *mdata,
++	const char *format, ...)
++{
++	/* Increment counter */
++	atomic_inc(&eventb_count);
++}
++
++static struct probe_data probe_array[] =
++{
++	{	.name = "subsystem_event",
++		.format = "%d %s",
++		.probe_func = probe_subsystem_event },
++	{	.name = "subsystem_eventb",
++		.format = MARK_NOARGS,
++		.probe_func = probe_subsystem_eventb },
++};
++
++static int __init probe_init(void)
++{
++	int result;
++	uint8_t eID;
++
++	for (eID = 0; eID < NUM_PROBES; eID++) {
++		result = marker_set_probe(probe_array[eID].name,
++				probe_array[eID].format,
++				probe_array[eID].probe_func, &probe_array[eID]);
++		if (!result)
++			printk(KERN_INFO "Unable to register probe %s\n",
++				probe_array[eID].name);
++	}
++	return 0;
++}
++
++static void __exit probe_fini(void)
++{
++	uint8_t eID;
++
++	for (eID = 0; eID < NUM_PROBES; eID++) {
++		marker_remove_probe(probe_array[eID].name);
++	}
++	synchronize_sched();	/* Wait for probes to finish */
++	printk("Number of event b : %u\n", atomic_read(&eventb_count));
++}
++
++module_init(probe_init);
++module_exit(probe_fini);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("SUBSYSTEM Probe");
++------------------------------ CUT -------------------------------------
++/* marker-example.c
++ *
++ * Executes a marker when /proc/marker-example is opened.
++ *
++ * (C) Copyright 2007 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
++ *
++ * This file is released under the GPLv2.
++ * See the file COPYING for more details.
++ */
++
++#include <linux/module.h>
++#include <linux/marker.h>
++#include <linux/sched.h>
++#include <linux/proc_fs.h>
++
++struct proc_dir_entry *pentry_example = NULL;
++
++static int my_open(struct inode *inode, struct file *file)
++{
++	int i;
++
++	trace_mark(subsystem_event, "%d %s", 123, "example string");
++	for (i=0; i<10; i++) {
++		trace_mark(subsystem_eventb, MARK_NOARGS);
++	}
++	return -EPERM;
++}
++
++static struct file_operations mark_ops = {
++	.open = my_open,
++};
++
++static int example_init(void)
++{
++	printk(KERN_ALERT "example init\n");
++	pentry_example = create_proc_entry("marker-example", 0444, NULL);
++	if (pentry_example)
++		pentry_example->proc_fops = &mark_ops;
++	else
++		return -EPERM;
++	return 0;
++}
++
++static void example_exit(void)
++{
++	printk(KERN_ALERT "example exit\n");
++	remove_proc_entry("marker-example", NULL);
++}
++
++module_init(example_init)
++module_exit(example_exit)
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Mathieu Desnoyers");
++MODULE_DESCRIPTION("Linux Trace Toolkit example");
++------------------------------ CUT -------------------------------------
++Sequence of operations : (as root)
++make
++insmod marker-example.ko
++insmod probe-example.ko
++  (it is important to load the probe after the marked code)
++cat /proc/marker-example (returns an expected error)
++rmmod marker-example probe-example
++dmesg
++------------------------------ CUT -------------------------------------
 
 -- 
 Mathieu Desnoyers
