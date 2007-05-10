@@ -1,75 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758995AbXEJMdc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759672AbXEJMeY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758995AbXEJMdc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:33:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753640AbXEJMd0
+	id S1759672AbXEJMeY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:34:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756364AbXEJMeR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:33:26 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58368 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751349AbXEJMdZ convert rfc822-to-8bit (ORCPT
+	Thu, 10 May 2007 08:34:17 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:57762 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753640AbXEJMeQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:33:25 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
-	David Owens (Ireland)
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20070510115927.GB16409@srv1-m700-lanp.koti>
-References: <20070510115927.GB16409@srv1-m700-lanp.koti>
-To: mikukkon@iki.fi
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Bug in fs/afs/write.c function afs_write_back_from_locked_page()
-X-Mailer: MH-E 8.0; nmh 1.1; GNU Emacs 22.0.50
+	Thu, 10 May 2007 08:34:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=SYd2bMp/LRzF2qysyIFi3CZjfe1dMusIfh3EDAamv0qndrA1lqIB8h8hPixvMJH2QKDrpTUyVv/EXYcX2Qqetn+tB1aLN2V+tcX//CHL+bWHtGgYHNDPIJ7M3sgmguNND7b8BTe0oclhp7KGHa2KEGoVG4n4zri9RbypvGuFCIY=
+Message-ID: <2c0942db0705100534xd4bc77eq76dd728fedc855b9@mail.gmail.com>
+Date: Thu, 10 May 2007 05:34:16 -0700
+From: "Ray Lee" <ray-lk@madrabbit.org>
+To: "Nick Piggin" <nickpiggin@yahoo.com.au>
+Subject: Re: swap-prefetch: 2.6.22 -mm merge plans
+Cc: "Con Kolivas" <kernel@kolivas.org>, "Ingo Molnar" <mingo@elte.hu>,
+       "ck list" <ck@vds.kolivas.org>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+In-Reply-To: <4642C416.3000205@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
-Date: Thu, 10 May 2007 13:33:18 +0100
-Message-ID: <10764.1178800398@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	 <200705100928.34056.kernel@kolivas.org>
+	 <464261B5.6030809@yahoo.com.au>
+	 <200705101134.34350.kernel@kolivas.org> <46427BDB.30004@yahoo.com.au>
+	 <2c0942db0705092048m38b36e7fo3a7c2c59fe1612b2@mail.gmail.com>
+	 <46429801.8030202@yahoo.com.au>
+	 <2c0942db0705092252n13a6a79aq39f13fcfae534de2@mail.gmail.com>
+	 <4642C416.3000205@yahoo.com.au>
+X-Google-Sender-Auth: a83312f85a47e3f4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 5/10/07, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> > Huh? You already stated one version of it above, namely updatedb. But
+>
+> So a swapping problem with updatedb should be unusual and we'd like to see
+> if we can fix it without resorting to prefetching.
+>
+> I know the theory behind swap prefetching, and I'm not saying it doesn't
+> work, so I'll snip the rest of that.
 
-How about the attached instead?
+updatedb is only part of the problem. The other part is that the
+kernel has an opportunity to preemptively return some of the evicted
+working set to RAM before I ask for it. No fancy use-once algorithm is
+going to address that, so your solution is provably incomplete for my
+problem.
 
-David
----
-AFS: Fix interminable loop in afs_write_back_from_locked_page()
-
-From: Mika Kukkonen <mikukkon@miku.homelinux.net>
-
-Following bug was uncovered by compiling with '-W' flag:
-
-  CC [M]  fs/afs/write.o
-fs/afs/write.c: In function ‘afs_write_back_from_locked_page’:
-fs/afs/write.c:398: warning: comparison of unsigned expression >= 0 is always true
-
-Loop variable 'n' is unsigned, so wraps around happily as far as I can
-see. Trival fix attached (compile tested only).
-
-Signed-Off-By: Mika Kukkonen <mikukkon@iki.fi>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
-
- fs/afs/write.c |    6 ++++--
- 1 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/fs/afs/write.c b/fs/afs/write.c
-index 67ae4db..c26d5e8 100644
---- a/fs/afs/write.c
-+++ b/fs/afs/write.c
-@@ -395,8 +395,10 @@ static int afs_write_back_from_locked_page(struct afs_writeback *wb,
- 		if (n == 0)
- 			goto no_more;
- 		if (pages[0]->index != start) {
--			for (n--; n >= 0; n--)
--				put_page(pages[n]);
-+			do {
-+				put_page(pages[--n]);
-+			} while (n > 0);
-+			put_page(pages[0]);
- 			goto no_more;
- 		}
- 
+What's so hard to understand about that?
