@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761423AbXEJRFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761631AbXEJRF5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761423AbXEJRFo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 13:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760551AbXEJRF3
+	id S1761631AbXEJRF5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 13:05:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761307AbXEJRFk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 13:05:29 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:46510 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760241AbXEJRF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 13:05:28 -0400
-Date: Thu, 10 May 2007 22:43:12 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: William Lee Irwin III <wli@holomorphy.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Williams <pwil3058@bigpond.net.au>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, tingy@cs.umass.edu, tong.n.li@intel.com
-Subject: Re: Definition of fairness (was Re: [patch] CFS scheduler, -v11)
-Message-ID: <20070510171312.GB27462@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070508150431.GA26977@elte.hu> <20070509180205.GA27462@in.ibm.com> <20070509202418.GE31925@holomorphy.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 10 May 2007 13:05:40 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:59470 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761141AbXEJRFj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 13:05:39 -0400
+From: Christian <christiand59@web.de>
+To: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [patch] CFS scheduler, -v11
+Date: Thu, 10 May 2007 18:59:11 +0200
+User-Agent: KMail/1.9.6
+References: <20070508150431.GA26977@elte.hu>
+In-Reply-To: <20070508150431.GA26977@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070509202418.GE31925@holomorphy.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200705101859.11696.christiand59@web.de>
+X-Provags-ID: V01U2FsdGVkX1+Fhgybdhhf95oA6G3teobC3gZqvEA0z6hm0Ie
+ VmkT/Ib3FlO7/Rm7e4ipQ9XkhOXHUsraOIl2zIifHJ5WLKNFM9
+ 4R/eWZTJ5WufE2E4E6NHg==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 01:24:18PM -0700, William Lee Irwin III wrote:
-> It's not even feasible much of the time. Suppose your task ran for
-> 100ms then slept for 900ms. It can't get more than 10% of the CPU in
-> any scheduler, work-conserving or not.
+Hello lkml, hello Ingo!
 
-sure. The question of fairnes arises when such a task has to "fight" for
-space/cputime in those 100ms, resulting in lesser than 10% bandwidth.
-Having some statistics shown on cpu demand vs obtained bandwidth may be
-good?
+I've been using CFS-v10 for a few days and I must say that I'm verry 
+impressed ;-)
 
-> Fairness applies only to running tasks. The fair share of CPU must be
-> granted while the task is running. As for sleep, it has to use its
-> fair share of CPU or lose it. The numerous of pathologies that arise
-> from trying to credit tasks for sleep in this fashion this are why
-> fairness in the orthodox sense I describe is now such a high priority.
-> 
-> However, it is possible to credit tasks for sleep in other ways. For
-> instance, EEVDF (which is very close to CFS) has a deadline parameter
-> expressing latency in addition to one expressing bandwidth that could,
-> in principle, be used for the purpose of crediting sleeping tasks. It's
-> not clear to me whether trying to use it for such purposes would be
-> sound, or, for that matter, whether tasks should receive latency
-> credits for sleep as opposed to other sorts of behaviors even if
-> utilizing the latency parameter for credits and bonuses for various
-> sorts of behavior is sound.
+Desktop performance without any manual renicing is excellent, even with 
+make -j20. Gaming performance is at least on par with SD now! I've tried to 
+change the sched_load_smoothing config to "8" but there is no visible 
+difference when it's set to "7".
 
-I guess fairness interval also matters, as Mike pointed out. Over
-shorter intervals, it may appear more fair to such sleeping tasks than over
-longer intervals.  Btw CFS seems to leave this fairness interval undefined (its 
-dependent on N, number of tasks and sysctl_sched_granularity?).
+Both schedulers are verrry good! I can't really tell which one is better.
+I noticed that while compiling a kernel (with -j4) my CPU temperature is two 
+to three degrees hotter than with mainline. I have not done any timing tests, 
+but I suspect that it's a little faster while preserving excellent desktop 
+usability. Great work!! :-)
 
-I suspect container/database/webserver workloads would like to receive
-such latency/bandwidth credits for sleep. Will check with our
-database/workload management folks on this.
-
--- 
-Regards,
-vatsa
+-Christian
