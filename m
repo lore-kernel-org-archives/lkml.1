@@ -1,55 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760592AbXEJIyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760031AbXEJI4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760592AbXEJIyV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 04:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbXEJIyG
+	id S1760031AbXEJI4S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 04:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756672AbXEJI4K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 04:54:06 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:44677 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758553AbXEJIyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 04:54:04 -0400
-Subject: Re: [PATCH] Add LZO1X compression support to the kernel
-From: Richard Purdie <richard@openedhand.com>
-To: David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org
-In-Reply-To: <1178785576.28494.17.camel@pmac.infradead.org>
-References: <1178096183.5860.25.camel@localhost.localdomain>
-	 <20070509232129.371f49d5.akpm@linux-foundation.org>
-	 <1178785576.28494.17.camel@pmac.infradead.org>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 09:53:44 +0100
-Message-Id: <1178787224.5828.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 04:56:10 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:26396 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756477AbXEJI4J convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 04:56:09 -0400
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 1/6] IB/ehca: Serialize hypervisor calls in ehca_register_mr()
+Date: Thu, 10 May 2007 10:55:46 +0200
+User-Agent: KMail/1.8.2
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "OF-General" <general@lists.openfabrics.org>,
+       Roland Dreier <rolandd@cisco.com>,
+       "Hoang-Nam Nguyen" <hnguyen@de.ibm.com>,
+       "Christoph Raisch" <raisch@de.ibm.com>,
+       "Stefan Roscher" <stefan.roscher@de.ibm.com>
+References: <200705091347.57470.fenkes@de.ibm.com>
+In-Reply-To: <200705091347.57470.fenkes@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705101055.46433.fenkes@de.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-10 at 09:26 +0100, David Woodhouse wrote:
-> On Wed, 2007-05-09 at 23:21 -0700, Andrew Morton wrote:
-> > Well that's attractive-looking code.
-> 
-> It's compression code. I've never seen compression code look nice :)
-> 
-> > Why is this needed?  What code plans to use it?
-> 
-> I'm itching to use it in JFFS2. Richard claims a 10% boot time speedup
-> and 40% improvement on file read speed, with only a slight drop in the
-> file compression ratio (when compared to zlib).
+On Wednesday 09 May 2007 13:47, Joachim Fenkes wrote:
 
-Right, the speed improvement is noticeable and useful. JFFS2 is the
-primary use case, I've also implemented a crypto interface for it.
+> --- a/drivers/infiniband/hw/ehca/hcp_if.c
+> +++ b/drivers/infiniband/hw/ehca/hcp_if.c
+> @@ -154,7 +154,9 @@ static long ehca_plpar_hcall9(unsigned l
+>  			      unsigned long arg9)
+>  {
+>  	long ret;
+> -	int i, sleep_msecs;
+> +	int i, sleep_msecs, lock_is_set = 0;
+> +	unsigned long flags;
+> +
+>  
+>  	ehca_gen_dbg("opcode=%lx arg1=%lx arg2=%lx arg3=%lx arg4=%lx "
+>  		     "arg5=%lx arg6=%lx arg7=%lx arg8=%lx arg9=%lx",
+> @@ -162,10 +164,18 @@ static long ehca_plpar_hcall9(unsigned l
 
-> > How many buffer overruns are there in it?
-> 
-> That I'm afraid I cannot tell you.
+Whoops, that's one too many empty line...
+Roland, when you apply this patch, could you apply the following patch on top:
 
-There is a "safe" decompression function which does bounds checking so
-its at least been thought about by the author. The code has been around
-in userspace for a while so hopefully any issues have been ironed out
-before now.
+--- a/drivers/infiniband/hw/ehca/hcp_if.c
++++ b/drivers/infiniband/hw/ehca/hcp_if.c
+@@ -157,7 +157,6 @@ static long ehca_plpar_hcall9(unsigned l
+        int i, sleep_msecs, lock_is_set = 0;
+        unsigned long flags;
 
-Richard
+-
+        ehca_gen_dbg("opcode=%lx arg1=%lx arg2=%lx arg3=%lx arg4=%lx "
+                     "arg5=%lx arg6=%lx arg7=%lx arg8=%lx arg9=%lx",
+                     opcode, arg1, arg2, arg3, arg4, arg5, arg6, arg7,
+
+
+Thanks!
+  Joachim
+
+-- 
+Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239
+
 
