@@ -1,62 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756283AbXEJPPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757109AbXEJPQw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756283AbXEJPPm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 11:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbXEJPPJ
+	id S1757109AbXEJPQw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 11:16:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbXEJPQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 11:15:09 -0400
-Received: from xenotime.net ([66.160.160.81]:46909 "HELO xenotime.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755086AbXEJPPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 11:15:04 -0400
-Date: Thu, 10 May 2007 08:19:59 -0700
-From: Randy Dunlap <rdunlap@xenotime.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kristen Carlson Accardi <kristen.c.accardi@intel.com>, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org, htejun@gmail.com,
-       "Randy.Dunlap" <rdunlap@xenotime.net>
-Subject: Re: [patch 1/7] libata: check for AN support
-Message-Id: <20070510081959.ba599dd0.rdunlap@xenotime.net>
-In-Reply-To: <20070509220952.5fa34822.akpm@linux-foundation.org>
-References: <20070510072247.063476979@intel.com>
-	<20070509163809.7b0b3fde.kristen.c.accardi@intel.com>
-	<20070509220952.5fa34822.akpm@linux-foundation.org>
-Organization: YPO4
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 11:16:45 -0400
+Received: from iucha.net ([209.98.146.184]:55720 "EHLO mail.iucha.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753144AbXEJPQo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 11:16:44 -0400
+Date: Thu, 10 May 2007 10:16:43 -0500
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Current git fails to compile on AMD64 for three days in a row
+Message-ID: <20070510151642.GH26751@iucha.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="QnBU6tTI9sljzm9u"
+Content-Disposition: inline
+X-GPG-Key: http://iucha.net/florin_iucha.gpg
+X-GPG-Fingerprint: 5E59 C2E7 941E B592 3BA4  7DCF 343D 2B14 2376 6F5B
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: florin@iucha.net (Florin Iucha)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 9 May 2007 22:09:52 -0700 Andrew Morton wrote:
 
-> On Wed, 9 May 2007 16:38:09 -0700 Kristen Carlson Accardi <kristen.c.accardi@intel.com> wrote:
-> 
-> >  /**
-> > + *	ata_dev_set_AN - Issue SET FEATURES - SATA FEATURES
-> > + *                       with sector count set to indicate
-> > + *                       Asynchronous Notification feature
-> 
-> I think kenreldoc requires that all this be on a single line?
+--QnBU6tTI9sljzm9u
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Correct.
+I just pulled the current git (de5603748af8bf7deac403e6ba92887f8d18e812)
+and tried to compile it on my AMD64 box, to test Chuck's RPC fix.  It
+fails:
 
-> > + *	@dev: Device to which command will be sent
-> > + *
-> > + *	Issue SET FEATURES - SATA FEATURES command to device @dev
-> > + *	on port @ap.
-> > + *
-> > + *	LOCKING:
-> > + *	PCI/etc. bus probe sem.
-> > + *
-> > + *	RETURNS:
-> > + *	0 on success, AC_ERR_* mask otherwise.
-> > + */
-> 
-> ooh, locking and return value documentation.  Often missed, and nice.
+   arch/x86_64/kernel/head64.c: In function =E2=80=98x86_64_start_kernel=E2=
+=80=99:
+   arch/x86_64/kernel/head64.c:70: error: size of array =E2=80=98type name=
+=E2=80=99 is negative
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+It is failing in the same way since Monday.
+
+florin
+
+--=20
+Bruce Schneier expects the Spanish Inquisition.
+      http://geekz.co.uk/schneierfacts/fact/163
+
+--QnBU6tTI9sljzm9u
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGQzdaND0rFCN2b1sRAq2dAJ4+TuzUhgMMFpO8Edy8CxCfKfVpGQCgmwc8
+XD3zMrEd48Xzm0Js0hCdoYs=
+=Hbj+
+-----END PGP SIGNATURE-----
+
+--QnBU6tTI9sljzm9u--
