@@ -1,51 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760748AbXEJOdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762399AbXEJOeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760748AbXEJOdW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 10:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752338AbXEJOdP
+	id S1762399AbXEJOeA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 10:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755687AbXEJOdx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 10:33:15 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:48201 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752573AbXEJOdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 10:33:15 -0400
-Date: Thu, 10 May 2007 16:30:15 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Richard Purdie <richard@openedhand.com>,
-       LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
-       David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Add LZO1X compression support to the kernel
-In-Reply-To: <20070509232129.371f49d5.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.61.0705101627580.24536@yvahk01.tjqt.qr>
-References: <1178096183.5860.25.camel@localhost.localdomain>
- <20070509232129.371f49d5.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Thu, 10 May 2007 10:33:53 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:50001 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756090AbXEJOdw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 10:33:52 -0400
+Date: Thu, 10 May 2007 16:33:48 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MMC: Flush mmc workqueue late in the boot sequence
+Message-ID: <20070510163348.0a117d92@dhcp-252-105.norway.atmel.com>
+In-Reply-To: <46432212.9070008@drzeus.cx>
+References: <117879333788-git-send-email-hskinnemoen@atmel.com>
+	<46430A49.9090803@drzeus.cx>
+	<20070510143737.54969394@dhcp-252-105.norway.atmel.com>
+	<46432212.9070008@drzeus.cx>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 May 2007 15:45:54 +0200
+Pierre Ossman <drzeus@drzeus.cx> wrote:
 
-On May 9 2007 23:21, Andrew Morton wrote:
->On Wed, 02 May 2007 09:56:23 +0100 Richard Purdie <richard@openedhand.com> wrote:
->
->> Add LZO1X compression/decompression support to the kernel.
->> 
->> This is based on the standard userspace lzo library, particularly
->> minilzo with the headers much trimmed down and simplified for kernel
->> use. Its structured so that it should still diff with the userspace
->> version for ease of future updating.
->
->Well that's attractive-looking code.
->Why is this needed?  What code plans to use it?
+> Haavard Skinnemoen wrote:
+> > 
+> > What exactly makes this unreliable? This is done almost exactly the
+> > same way for SCSI. See drivers/scsi/scsi_wait_scan.c.
+> > 
+> 
+> I am not against the function of waiting for an initial scan, what I oppose is
+> using side effects to achieve that function. I do not want to take
+> responsibility for something that easily breaks because we use a kernel
+> subsystem for something it wasn't meant for.
 
-Perhaps squashfs [not included] could use it as an alternative to
-zlib or LZMA* [not included either].
+Ok, is there any better way to achieve the same this? As far as I
+can tell, mmc_remove_host() uses mmc_flush_scheduled_work() for the
+same purpose -- it ensures that scans that have already been started
+will have completed before the function continues.
 
-* That's floating patches not in the official squashfs AFAICT.
+> That said, if there is a precedent for achieving this function a certain way, I
+> might be convinced to let it in. I'll have a look at that scsi example.
 
+Thanks.
 
-	Jan
--- 
+> > I don't know about USB, but root=/dev/mmcblk0p1 used to work before
+> > 2.6.20 and it doesn't work anymore. Doesn't that make this a regression?
+> > 
+> 
+> Yes and no. It depends on if it was an official function, or just an effect of
+> how things currently were implemented. As far as I can see, it's the latter. The
+> MMC layer goes through several steps that could very well get delayed or happen
+> in parallel. So the fact that it happened to work the way you wanted it to was
+> sheer luck.
+
+I wouldn't call it luck. The way mmc_rescan() is implemented, any scans
+that are started before late_initcall time are completed before
+mmc_finish_detect() returns. The steps are all done synchronously in
+the workqueue function.
+
+And I never realized that using a block device as a parameter to the
+root= parameter could possibly be "unofficial" functionality...?
+
+Haavard
