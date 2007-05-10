@@ -1,64 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758936AbXEJQ5k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbXEJQ7V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758936AbXEJQ5k (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 12:57:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbXEJQ5e
+	id S1760353AbXEJQ7V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 12:59:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755101AbXEJQ7F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 12:57:34 -0400
-Received: from smtpauth02.prod.mesa1.secureserver.net ([64.202.165.182]:50306
-	"HELO smtpauth02.prod.mesa1.secureserver.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754307AbXEJQ5e (ORCPT
+	Thu, 10 May 2007 12:59:05 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:42830 "EHLO
+	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754952AbXEJQ7D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 12:57:34 -0400
-Message-ID: <46434EFC.1040209@seclark.us>
-Date: Thu, 10 May 2007 12:57:32 -0400
-From: Stephen Clark <Stephen.Clark@seclark.us>
-Reply-To: Stephen.Clark@seclark.us
-User-Agent: Mozilla/5.0 (X11; U; Linux 2.2.16-22smp i686; en-US; m18) Gecko/20010110 Netscape6/6.5
-X-Accept-Language: en-us, en
+	Thu, 10 May 2007 12:59:03 -0400
+Message-ID: <46434ED0.6030808@freescale.com>
+Date: Thu, 10 May 2007 11:56:48 -0500
+From: Timur Tabi <timur@freescale.com>
+Organization: Freescale
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.2pre) Gecko/20070111 SeaMonkey/1.1
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: keith.packard@intel.com, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: =?ISO-8859-1?Q?Re=3A_Announcing_free_software_drivers_?=
- =?ISO-8859-1?Q?for_the_new_Intel=AE_965GM_Express_Chipset?=
-References: <1178762720.20083.306.camel@neko.keithp.com> <46429F72.8030007@garzik.org>
-In-Reply-To: <46429F72.8030007@garzik.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Simon Horman <horms@verge.net.au>
+CC: Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       =?ISO-8859-1?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Michael Schmitz <schmitz@debian.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: Kconfig warnings on latest GIT
+References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au>
+In-Reply-To: <20070510051042.GA16812@verge.net.au>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
+Simon Horman wrote:
 
->Great news.
->
->Here's hoping that Intel produces a standalone video card eventually, to 
->further take away market share from closed source competitors.
->
->	Jeff, not biased at all...
->
->
->
->-
->To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
->Please read the FAQ at  http://www.tux.org/lkml/
->
->  
->
-Yeah me too - I have a laptop with the 945gm an I am extremely happy 
-with intel's support.
+>> So my question is: in which Kconfig do I define "UCC_FAST_TEMP" and 
+>> "UCC_SLOW_TEMP"?  At first I thought, just put it in drivers/Kconfig, but that 
+>> Kconfig does nothing but including other Kconfigs.  I believe that if I submit 
+>> a patch that adds "UCC_FAST_TEMP" and "UCC_SLOW_TEMP" to drivers/Kconfig, it 
+>> will be rejected.  Either that, or I'll spend six weeks trying to persuade 
+>> everyone that it's a good idea.
+>>
+>> Does anyone have any suggestions on how I can fix this?
+> 
+> That does seem like a reasonable suggestion, and one that
+> would probably work well with the other similar problems
+> that have been introduced sice 2.6.21.
 
-Steve
+Looks like the fix is simpler than I thought.  Instead of having
+
+UCC_GETH
+	select UCC_FAST
+
+I need to do
+
+UCC_FAST
+	default y if UCC_GETH
+
+I'll have a patch that fixes this out later today.
+
+I chose the first method because I wanted each individual UCC device driver to select 
+UCC_FAST or UCC_SLOW as appropriate, so that I wouldn't have to update 
+arch/powerpc/sysdev/qe_lib/Kconfig every time we add a new UCC driver.  Oh well.
 
 -- 
-
-"They that give up essential liberty to obtain temporary safety, 
-deserve neither liberty nor safety."  (Ben Franklin)
-
-"The course of history shows that as a government grows, liberty 
-decreases."  (Thomas Jefferson)
-
-
-
+Timur Tabi
+Linux Kernel Developer @ Freescale
