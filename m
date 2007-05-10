@@ -1,43 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762505AbXEJWMA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbXEJWMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762505AbXEJWMA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:12:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759362AbXEJWLx
+	id S1760096AbXEJWMf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762119AbXEJWMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:11:53 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:40129 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759138AbXEJWLx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:11:53 -0400
-Date: Thu, 10 May 2007 15:11:52 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.skynet.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Nicolas.Mailhot@LaPoste.net,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2,
- mode:0x84020
-In-Reply-To: <20070510220657.GA14694@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com>
-References: <200705102128.l4ALSI2A017437@fire-2.osdl.org>
- <20070510144319.48d2841a.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705101447120.12874@schroedinger.engr.sgi.com>
- <20070510220657.GA14694@skynet.ie>
+	Thu, 10 May 2007 18:12:17 -0400
+Received: from gw.goop.org ([64.81.55.164]:56067 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755030AbXEJWMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 18:12:15 -0400
+Message-ID: <464398BB.8030606@goop.org>
+Date: Thu, 10 May 2007 15:12:11 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Miller <davem@davemloft.net>
+CC: herbert@gondor.apana.org.au, hch@infradead.org, ak@suse.de,
+       akpm@linux-foundation.org, virtualization@lists.osdl.org,
+       linux-kernel@vger.kernel.org, chrisw@sous-sol.org,
+       ian.pratt@xensource.com, Christian.Limpach@cl.cam.ac.uk,
+       netdev@vger.kernel.org, jeff@garzik.org, shemminge@linux-foundation.org,
+       rusty@rustcorp.com.au, Valdis.Kletnieks@vt.edu
+Subject: Re: [1/2] [NET] link_watch: Move link watch list into net_device
+References: <463F95C3.60407@goop.org>	<20070508121322.GA21647@gondor.apana.org.au>	<464395E5.2090500@goop.org> <20070510.150750.118628150.davem@davemloft.net>
+In-Reply-To: <20070510.150750.118628150.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007, Mel Gorman wrote:
+David Miller wrote:
+> From: Jeremy Fitzhardinge <jeremy@goop.org>
+> Date: Thu, 10 May 2007 15:00:05 -0700
+>
+>   
+>> Herbert Xu wrote:
+>>     
+>>> [NET] link_watch: Move link watch list into net_device
+>>>
+>>> These days the link watch mechanism is an integral part of the
+>>> network subsystem as it manages the carrier status.  So it now
+>>> makes sense to allocate some memory for it in net_device rather
+>>> than allocating it on demand.
+>>>       
+>> I think there's a problem with one of these two patches.
+>>     
+>
+> Yes, there are :-)
+>
+> Did you catch the follow-on bug fixes?
+>   
 
-> I see the gfpmask was 0x84020. That doesn't look like __GFP_WAIT was set,
-> right? Does that mean that SLUB is trying to allocate pages atomically? If so,
-> it would explain why this situation could still occur even though high-order
-> allocations that could sleep would succeed.
+Nope.  Guess I got dropped from the cc: list.  Was this on lkml or netdev?
 
-SLUB is following the gfp mask of the caller like all well behaved slab 
-allocators do. If the caller does not set __GFP_WAIT then the page 
-allocator also cannot wait.
+    J
+
