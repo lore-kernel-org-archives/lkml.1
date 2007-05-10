@@ -1,277 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbXEJLoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760969AbXEJLog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761145AbXEJLoS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760759AbXEJLlT
+	id S1760969AbXEJLog (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760827AbXEJLlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:41:19 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:4890 "EHLO kernel.dk"
+	Thu, 10 May 2007 07:41:20 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:4886 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758408AbXEJLlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1758056AbXEJLlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 10 May 2007 07:41:09 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 8/12] x86-64: update iommu/dma mapping functions to sg helpers
-Date: Thu, 10 May 2007 13:40:33 +0200
-Message-Id: <11787972373765-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 5/12] scsi: convert to using sg helpers
+Date: Thu, 10 May 2007 13:40:30 +0200
+Message-Id: <11787972373853-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <11787972373654-git-send-email-jens.axboe@oracle.com>
 References: <11787972373654-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This prepares x86-64 for sg chaining support.
+This converts the SCSI mid layer to using the sg helpers for looking up
+sg elements, instead of doing it manually.
 
-igned-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- arch/x86_64/kernel/pci-calgary.c |   25 ++++++++++++---------
- arch/x86_64/kernel/pci-gart.c    |   44 ++++++++++++++++++++++---------------
- arch/x86_64/kernel/pci-nommu.c   |    5 ++-
- 3 files changed, 43 insertions(+), 31 deletions(-)
+ drivers/scsi/scsi_lib.c |   20 +++++++++++---------
+ 1 files changed, 11 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86_64/kernel/pci-calgary.c b/arch/x86_64/kernel/pci-calgary.c
-index 5bd20b5..c472b14 100644
---- a/arch/x86_64/kernel/pci-calgary.c
-+++ b/arch/x86_64/kernel/pci-calgary.c
-@@ -35,6 +35,7 @@
- #include <linux/pci_ids.h>
- #include <linux/pci.h>
- #include <linux/delay.h>
-+#include <linux/scatterlist.h>
- #include <asm/proto.h>
- #include <asm/calgary.h>
- #include <asm/tce.h>
-@@ -341,17 +342,19 @@ static void iommu_free(struct iommu_table *tbl, dma_addr_t dma_addr,
- static void __calgary_unmap_sg(struct iommu_table *tbl,
- 	struct scatterlist *sglist, int nelems, int direction)
- {
--	while (nelems--) {
-+	struct scatterlist *s;
-+	int i;
-+
-+	for_each_sg(sglist, s, nelems, i) {
- 		unsigned int npages;
--		dma_addr_t dma = sglist->dma_address;
--		unsigned int dmalen = sglist->dma_length;
-+		dma_addr_t dma = s->dma_address;
-+		unsigned int dmalen = s->dma_length;
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 1f5a07b..f944690 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -302,14 +302,15 @@ static int scsi_req_map_sg(struct request *rq, struct scatterlist *sgl,
+ 	struct request_queue *q = rq->q;
+ 	int nr_pages = (bufflen + sgl[0].offset + PAGE_SIZE - 1) >> PAGE_SHIFT;
+ 	unsigned int data_len = 0, len, bytes, off;
++	struct scatterlist *sg;
+ 	struct page *page;
+ 	struct bio *bio = NULL;
+ 	int i, err, nr_vecs = 0;
  
- 		if (dmalen == 0)
- 			break;
+-	for (i = 0; i < nsegs; i++) {
+-		page = sgl[i].page;
+-		off = sgl[i].offset;
+-		len = sgl[i].length;
++	for_each_sg(sgl, sg, nsegs, i) {
++		page = sg->page;
++		off = sg->offset;
++		len = sg->length;
+ 		data_len += len;
  
- 		npages = num_dma_pages(dma, dmalen);
- 		__iommu_free(tbl, dma, npages);
--		sglist++;
- 	}
- }
- 
-@@ -374,10 +377,10 @@ void calgary_unmap_sg(struct device *dev, struct scatterlist *sglist,
- static int calgary_nontranslate_map_sg(struct device* dev,
- 	struct scatterlist *sg, int nelems, int direction)
- {
-+	struct scatterlist *s;
- 	int i;
- 
-- 	for (i = 0; i < nelems; i++ ) {
--		struct scatterlist *s = &sg[i];
-+	for_each_sg(sg, s, nelems, i) {
- 		BUG_ON(!s->page);
- 		s->dma_address = virt_to_bus(page_address(s->page) +s->offset);
- 		s->dma_length = s->length;
-@@ -389,6 +392,7 @@ int calgary_map_sg(struct device *dev, struct scatterlist *sg,
- 	int nelems, int direction)
- {
- 	struct iommu_table *tbl = to_pci_dev(dev)->bus->self->sysdata;
-+	struct scatterlist *s;
- 	unsigned long flags;
- 	unsigned long vaddr;
- 	unsigned int npages;
-@@ -400,8 +404,7 @@ int calgary_map_sg(struct device *dev, struct scatterlist *sg,
- 
- 	spin_lock_irqsave(&tbl->it_lock, flags);
- 
--	for (i = 0; i < nelems; i++ ) {
--		struct scatterlist *s = &sg[i];
-+	for_each_sg(sg, s, nelems, i) {
- 		BUG_ON(!s->page);
- 
- 		vaddr = (unsigned long)page_address(s->page) + s->offset;
-@@ -428,9 +431,9 @@ int calgary_map_sg(struct device *dev, struct scatterlist *sg,
- 	return nelems;
- error:
- 	__calgary_unmap_sg(tbl, sg, nelems, direction);
--	for (i = 0; i < nelems; i++) {
--		sg[i].dma_address = bad_dma_address;
--		sg[i].dma_length = 0;
-+	for_each_sg(sg, s, nelems, i) {
-+		s->dma_address = bad_dma_address;
-+		s->dma_length = 0;
- 	}
- 	spin_unlock_irqrestore(&tbl->it_lock, flags);
- 	return 0;
-diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
-index 373ef66..8bc2ed7 100644
---- a/arch/x86_64/kernel/pci-gart.c
-+++ b/arch/x86_64/kernel/pci-gart.c
-@@ -23,6 +23,7 @@
- #include <linux/interrupt.h>
- #include <linux/bitops.h>
- #include <linux/kdebug.h>
-+#include <linux/scatterlist.h>
- #include <asm/atomic.h>
- #include <asm/io.h>
- #include <asm/mtrr.h>
-@@ -277,10 +278,10 @@ void gart_unmap_single(struct device *dev, dma_addr_t dma_addr,
+ 		while (len > 0) {
+@@ -2240,18 +2241,19 @@ EXPORT_SYMBOL_GPL(scsi_target_unblock);
+  *
+  * Returns virtual address of the start of the mapped page
   */
- void gart_unmap_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+-void *scsi_kmap_atomic_sg(struct scatterlist *sg, int sg_count,
++void *scsi_kmap_atomic_sg(struct scatterlist *sgl, int sg_count,
+ 			  size_t *offset, size_t *len)
  {
-+	struct scatterlist *s;
  	int i;
+ 	size_t sg_len = 0, len_complete = 0;
++	struct scatterlist *sg;
+ 	struct page *page;
  
--	for (i = 0; i < nents; i++) {
--		struct scatterlist *s = &sg[i];
-+	for_each_sg(sg, s, nents, i) {
- 		if (!s->dma_length || !s->length)
+ 	WARN_ON(!irqs_disabled());
+ 
+-	for (i = 0; i < sg_count; i++) {
++	for_each_sg(sgl, sg, sg_count, i) {
+ 		len_complete = sg_len; /* Complete sg-entries */
+-		sg_len += sg[i].length;
++		sg_len += sg->length;
+ 		if (sg_len > *offset)
  			break;
- 		gart_unmap_single(dev, s->dma_address, s->dma_length, dir);
-@@ -291,14 +292,14 @@ void gart_unmap_sg(struct device *dev, struct scatterlist *sg, int nents, int di
- static int dma_map_sg_nonforce(struct device *dev, struct scatterlist *sg,
- 			       int nents, int dir)
- {
-+	struct scatterlist *s;
- 	int i;
- 
- #ifdef CONFIG_IOMMU_DEBUG
- 	printk(KERN_DEBUG "dma_map_sg overflow\n");
- #endif
- 
-- 	for (i = 0; i < nents; i++ ) {
--		struct scatterlist *s = &sg[i];
-+	for_each_sg(sg, s, nents, i) {
- 		unsigned long addr = page_to_phys(s->page) + s->offset; 
- 		if (nonforced_iommu(dev, addr, s->length)) { 
- 			addr = dma_map_area(dev, addr, s->length, dir);
-@@ -323,13 +324,17 @@ static int __dma_map_cont(struct scatterlist *sg, int start, int stopat,
- {
- 	unsigned long iommu_start = alloc_iommu(pages);
- 	unsigned long iommu_page = iommu_start; 
--	int i;
-+	struct scatterlist *s;
-+	int i, nelems;
- 
- 	if (iommu_start == -1)
- 		return -1;
-+
-+	nelems = stopat - start;
-+	while (start--)
-+		sg = sg_next(sg);
- 	
--	for (i = start; i < stopat; i++) {
--		struct scatterlist *s = &sg[i];
-+	for_each_sg(sg, s, nelems, i) {
- 		unsigned long pages, addr;
- 		unsigned long phys_addr = s->dma_address;
- 		
-@@ -360,12 +365,14 @@ static inline int dma_map_cont(struct scatterlist *sg, int start, int stopat,
- 		      struct scatterlist *sout,
- 		      unsigned long pages, int need)
- {
--	if (!need) { 
-+	if (!need) {
- 		BUG_ON(stopat - start != 1);
--		*sout = sg[start]; 
--		sout->dma_length = sg[start].length; 
-+		while (--start)
-+			sg = sg_next(sg);
-+		*sout = *sg;
-+		sout->dma_length = sg->length;
- 		return 0;
--	} 
-+	}
- 	return __dma_map_cont(sg, start, stopat, sout, pages);
- }
- 		
-@@ -380,6 +387,7 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
- 	int start;
- 	unsigned long pages = 0;
- 	int need = 0, nextneed;
-+	struct scatterlist *s, *ps;
- 
- 	if (nents == 0) 
- 		return 0;
-@@ -389,8 +397,8 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
- 
- 	out = 0;
- 	start = 0;
--	for (i = 0; i < nents; i++) {
--		struct scatterlist *s = &sg[i];
-+	ps = NULL; /* shut up gcc */
-+	for_each_sg(sg, s, nents, i) {
- 		dma_addr_t addr = page_to_phys(s->page) + s->offset;
- 		s->dma_address = addr;
- 		BUG_ON(s->length == 0); 
-@@ -399,7 +407,6 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
- 
- 		/* Handle the previous not yet processed entries */
- 		if (i > start) {
--			struct scatterlist *ps = &sg[i-1];
- 			/* Can only merge when the last chunk ends on a page 
- 			   boundary and the new one doesn't have an offset. */
- 			if (!iommu_merge || !nextneed || !need || s->offset ||
-@@ -415,13 +422,14 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
- 
- 		need = nextneed;
- 		pages += to_pages(s->offset, s->length);
-+		ps = s;
  	}
- 	if (dma_map_cont(sg, start, i, sg+out, pages, need) < 0)
- 		goto error;
- 	out++;
- 	flush_gart();
--	if (out < nents) 
--		sg[out].dma_length = 0; 
-+	if (out < nents)
-+		ps->dma_length = 0;
- 	return out;
+@@ -2265,10 +2267,10 @@ void *scsi_kmap_atomic_sg(struct scatterlist *sg, int sg_count,
+ 	}
  
- error:
-@@ -436,8 +444,8 @@ error:
- 	if (panic_on_overflow)
- 		panic("dma_map_sg: overflow on %lu pages\n", pages);
- 	iommu_full(dev, pages << PAGE_SHIFT, dir);
--	for (i = 0; i < nents; i++)
--		sg[i].dma_address = bad_dma_address;
-+	for_each_sg(sg, s, nents, i)
-+		s->dma_address = bad_dma_address;
- 	return 0;
- } 
+ 	/* Offset starting from the beginning of first page in this sg-entry */
+-	*offset = *offset - len_complete + sg[i].offset;
++	*offset = *offset - len_complete + sg->offset;
  
-diff --git a/arch/x86_64/kernel/pci-nommu.c b/arch/x86_64/kernel/pci-nommu.c
-index 6dade0c..24c9faf 100644
---- a/arch/x86_64/kernel/pci-nommu.c
-+++ b/arch/x86_64/kernel/pci-nommu.c
-@@ -5,6 +5,7 @@
- #include <linux/pci.h>
- #include <linux/string.h>
- #include <linux/dma-mapping.h>
-+#include <linux/scatterlist.h>
+ 	/* Assumption: contiguous pages can be accessed as "page + i" */
+-	page = nth_page(sg[i].page, (*offset >> PAGE_SHIFT));
++	page = nth_page(sg->page, (*offset >> PAGE_SHIFT));
+ 	*offset &= ~PAGE_MASK;
  
- #include <asm/proto.h>
- #include <asm/processor.h>
-@@ -57,10 +58,10 @@ void nommu_unmap_single(struct device *dev, dma_addr_t addr,size_t size,
- int nommu_map_sg(struct device *hwdev, struct scatterlist *sg,
- 	       int nents, int direction)
- {
-+	struct scatterlist *s;
- 	int i;
- 
-- 	for (i = 0; i < nents; i++ ) {
--		struct scatterlist *s = &sg[i];
-+	for_each_sg(sg, s, nents, i) {
- 		BUG_ON(!s->page);
- 		s->dma_address = virt_to_bus(page_address(s->page) +s->offset);
- 		if (!check_addr("map_sg", hwdev, s->dma_address, s->length))
+ 	/* Bytes in this sg-entry from *offset to the end of the page */
 -- 
 1.5.2.rc1
 
