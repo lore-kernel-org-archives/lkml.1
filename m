@@ -1,42 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759801AbXEJQFV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760902AbXEJQGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759801AbXEJQFV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 12:05:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbXEJQFI
+	id S1760902AbXEJQGf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 12:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbXEJQG3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 12:05:08 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:60878 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754145AbXEJQFH (ORCPT
+	Thu, 10 May 2007 12:06:29 -0400
+Received: from ik-out-1112.google.com ([66.249.90.181]:59720 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754732AbXEJQG2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 12:05:07 -0400
-Date: Thu, 10 May 2007 17:09:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Nicholas Berry" <nikberry@med.umich.edu>
-Cc: <mathieu.desnoyers@polymtl.ca>, <linux-kernel@vger.kernel.org>
-Subject: Re: [patch 06/10] Linux Kernel Markers - Non optimized
- architectures
-Message-ID: <20070510170914.7704c282@the-village.bc.nu>
-In-Reply-To: <46430312.10A8.00F9.0@med.umich.edu>
-References: <20070510015555.973107048@polymtl.ca>
-	<20070510020916.836290342@polymtl.ca>
-	<20070510065636.GB8019@infradead.org>
-	<20070510131137.GC22424@Krystal>
-	<20070510144039.57f8771b@the-village.bc.nu>
-	<46430312.10A8.00F9.0@med.umich.edu>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 May 2007 12:06:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=rT41c1x7GnZ78BznAV8aL/7eb4LES2I16RdRZD3cHkla5T9ZGp69vypsowtJUpw8yho04Vw8Gz+apTapwP35yK+h76gXnIDDNkr9QH1IhYsUXdtM83Mmx2OGZM5sTWLnZJ71NbEIhPN3evFrFHCXLvKKYxshVu2NgFZ5G/FqUlM=
+Message-ID: <4643426B.1040207@gmail.com>
+Date: Thu, 10 May 2007 18:03:55 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Bob Tracy <rct@gherkin.frus.com>
+CC: Ondrej Zary <linux@rainbow-software.org>, Andrew Morton <akpm@osdl.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: New Mitsumi legacy CD-ROM driver
+References: <20070508211236.95087DBA1@gherkin.frus.com>
+In-Reply-To: <20070508211236.95087DBA1@gherkin.frus.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 11:33:41 -0400
-"Nicholas Berry" <nikberry@med.umich.edu> wrote:
+On 05/08/2007 11:12 PM, Bob Tracy wrote:
 
-> OED lists it under optimization, with s form as a variant.
+> Agreed.  I've still got a GUS in one of my museum pieces that runs MS-Win
+> 3.1 by default.  The BIOS is too old to support booting from anything
+> except hda, sda and floppy, but because I enjoy pain I'll be happy to
+> modify the startup floppy images for a 2.6.X-based live CD distro (DSL,
+> anyone?) and give the new drivers a spin when they're ready for testing.
 
-As I said - its not a typo. 
+Okay, thanks. Which drive(s) do you have? If mitsumi, the driver as posted 
+is already functioning well for data. My LU005 drive is a single speed drive 
+(150 K/s) but it's giving me close to 400 K/s. At the moment I also have it 
+hanging of a GUS...
 
-I'm not objecting to the change which is consistent within the markers
-code.
+> The motherboard is a curiosity: it has ISA, PCI, *and* VLB slots.
+
+Mmm. Never seen that...
+
+Rene.
