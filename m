@@ -1,21 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762449AbXEJVEw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932179AbXEJVHA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762449AbXEJVEw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:04:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761925AbXEJVEj
+	id S932179AbXEJVHA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:07:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756898AbXEJVGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:04:39 -0400
-Received: from S01060016b61d1226.cg.shawcable.net ([68.147.67.118]:40422 "EHLO
+	Thu, 10 May 2007 17:06:53 -0400
+Received: from S01060016b61d1226.cg.shawcable.net ([68.147.67.118]:55633 "EHLO
 	sandbox.secretlab.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762358AbXEJVEh (ORCPT
+	with ESMTP id S1756303AbXEJVGw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:04:37 -0400
+	Thu, 10 May 2007 17:06:52 -0400
 From: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 1/2] Eliminate references to new_client in i2c documentation
+Subject: [PATCH 2/2] Add driver for Dallas DS1682 elapsed time recorder
 To: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
        linux-kernel@vger.kernel.org
-Date: Thu, 10 May 2007 15:04:16 -0600
-Message-ID: <20070510210409.11678.5134.stgit@trillian.secretlab.ca>
+Date: Thu, 10 May 2007 15:06:42 -0600
+Message-ID: <20070510210429.11678.86781.stgit@trillian.secretlab.ca>
+In-Reply-To: <20070510210409.11678.5134.stgit@trillian.secretlab.ca>
+References: <20070510210409.11678.5134.stgit@trillian.secretlab.ca>
 User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -23,110 +25,335 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The use of 'new_client' in i2c device allocation has been refered to as
-a 'disease'.  Replace all occurances of 'struct i2c_client *new_client'
-in documentation examples with 'struct i2c_client *client'.
-
-Also remove unnecessary zero initializtion of .flags since kzalloc is used.
-
 Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 ---
 
- Documentation/i2c/writing-clients |   29 ++++++++++++++---------------
- 1 files changed, 14 insertions(+), 15 deletions(-)
+Updated patch based on comments received from mailing list.  I think
+I've addressed all the comments except the idea of moving this to a
+new style i2c driver.
 
-diff --git a/Documentation/i2c/writing-clients b/Documentation/i2c/writing-clients
-index fbcff96..bd61480 100644
---- a/Documentation/i2c/writing-clients
-+++ b/Documentation/i2c/writing-clients
-@@ -260,7 +260,7 @@ For now, you can ignore the `flags' parameter. It is there for future use.
-   {
-     int err = 0;
-     int i;
--    struct i2c_client *new_client;
-+    struct i2c_client *client;
-     struct foo_data *data;
-     const char *client_name = ""; /* For non-`sensors' drivers, put the real
-                                      name here! */
-@@ -323,13 +323,12 @@ For now, you can ignore the `flags' parameter. It is there for future use.
-       goto ERROR0;
-     }
- 
--    new_client = &data->client;
--    i2c_set_clientdata(new_client, data);
-+    client = &data->client;
-+    i2c_set_clientdata(client, data);
- 
--    new_client->addr = address;
--    new_client->adapter = adapter;
--    new_client->driver = &foo_driver;
--    new_client->flags = 0;
-+    client->addr = address;
-+    client->adapter = adapter;
-+    client->driver = &foo_driver;
- 
-     /* Now, we do the remaining detection. If no `force' parameter is used. */
- 
-@@ -337,7 +336,7 @@ For now, you can ignore the `flags' parameter. It is there for future use.
-        parameter was used. */
-     if (kind < 0) {
-       /* The below is of course bogus */
--      if (foo_read(new_client,FOO_REG_GENERIC) != FOO_GENERIC_VALUE)
-+      if (foo_read(client,FOO_REG_GENERIC) != FOO_GENERIC_VALUE)
-          goto ERROR1;
-     }
- 
-@@ -349,7 +348,7 @@ For now, you can ignore the `flags' parameter. It is there for future use.
-     /* Determine the chip type. Not needed if a `force_CHIPTYPE' parameter
-        was used. */
-     if (kind <= 0) {
--      i = foo_read(new_client,FOO_REG_CHIPTYPE);
-+      i = foo_read(client,FOO_REG_CHIPTYPE);
-       if (i == FOO_TYPE_1) 
-         kind = chip1; /* As defined in the enum */
-       else if (i == FOO_TYPE_2)
-@@ -377,7 +376,7 @@ For now, you can ignore the `flags' parameter. It is there for future use.
-     /* SENSORS ONLY END */
- 
-     /* Fill in the remaining client fields. */
--    strcpy(new_client->name,client_name);
-+    strcpy(client->name,client_name);
- 
-     /* SENSORS ONLY BEGIN */
-     data->type = kind;
-@@ -389,14 +388,14 @@ For now, you can ignore the `flags' parameter. It is there for future use.
-     /* Any other initializations in data must be done here too. */
- 
-     /* Tell the i2c layer a new client has arrived */
--    if ((err = i2c_attach_client(new_client)))
-+    if ((err = i2c_attach_client(client)))
-       goto ERROR3;
- 
-     /* SENSORS ONLY BEGIN */
-     /* Register a new directory entry with module sensors. See below for
-        the `template' structure. */
--    if ((i = i2c_register_entry(new_client, type_name,
--                                    foo_dir_table_template,THIS_MODULE)) < 0) {
-+    if ((i = i2c_register_entry(client, type_name,
-+                                foo_dir_table_template,THIS_MODULE)) < 0) {
-       err = i;
-       goto ERROR4;
-     }
-@@ -406,14 +405,14 @@ For now, you can ignore the `flags' parameter. It is there for future use.
- 
-     /* This function can write default values to the client registers, if
-        needed. */
--    foo_init_client(new_client);
-+    foo_init_client(client);
-     return 0;
- 
-     /* OK, this is not exactly good programming practice, usually. But it is
-        very code-efficient in this case. */
- 
-     ERROR4:
--      i2c_detach_client(new_client);
-+      i2c_detach_client(client);
-     ERROR3:
-     ERROR2:
-     /* SENSORS ONLY START */
+ drivers/i2c/chips/ds1682.c |  315 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 315 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/i2c/chips/ds1682.c b/drivers/i2c/chips/ds1682.c
+new file mode 100644
+index 0000000..b7f33e5
+--- /dev/null
++++ b/drivers/i2c/chips/ds1682.c
+@@ -0,0 +1,315 @@
++/*
++ * Dallas Semiconductor DS1682 Elapsed Time Recorder device driver
++ *
++ * Written by: Grant Likely <grant.likely@secretlab.ca>
++ *
++ * Copyright (C) 2007 Secret Lab Technologies Ltd.
++ * Copyright (C) 2005 James Chapman <jchapman@katalix.com>
++ * Copyright (C) 2000 Russell King
++ *
++ * Derived from ds1337 real time clock device driver
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++/*
++ * The DS1682 elapsed timer recorder is a simple device that implements
++ * one elapsed time counter, one event counter, an alarm signal and 10
++ * bytes of general purpose EEPROM.
++ *
++ * This driver provides access to the DS1682 counters and user data via
++ * the sysfs.  The following attributes are added to the device node:
++ *     elapsed_time (u32): Total elapsed event time in ms resolution
++ *     alarm_time (u32): When elapsed time exceeds the value in alarm_time,
++ *                       then the alarm pin is asserted.
++ *     event_count (u16): number of times the event pin has gone low.
++ *     eeprom (u8[10]): general purpose EEPROM
++ *
++ * Counter registers and user data are both read/write unless the device
++ * has been write protected.  This driver does not support turning off write
++ * protection.  Once write protection is turned on, it is impossible to
++ * turn it off again, so I have left the feature out of this driver to avoid
++ * accidental enabling, but it is trivial to add write protect support.
++ *
++ */
++
++#include <linux/module.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/i2c.h>
++#include <linux/string.h>
++#include <linux/list.h>
++#include <linux/sysfs.h>
++#include <linux/ctype.h>
++#include <linux/hwmon-sysfs.h>
++
++/* Device registers */
++#define DS1682_REG_CONFIG		0x00
++#define DS1682_REG_ALARM		0x01
++#define DS1682_REG_ELAPSED		0x05
++#define DS1682_REG_EVT_CNTR		0x09
++#define DS1682_REG_EEPROM		0x0b
++#define DS1682_REG_RESET		0x1d
++#define DS1682_REG_WRITE_DISABLE	0x1e
++#define DS1682_REG_WRITE_MEM_DISABLE	0x1f
++
++#define DS1682_EEPROM_SIZE		10
++
++/*
++ * Device address
++ */
++static unsigned short normal_i2c[] = { 0x6B, I2C_CLIENT_END };
++I2C_CLIENT_INSMOD;
++
++/*
++ * Low level chip access functions
++ */
++static int ds1682_read(struct i2c_client *client, int reg, void *buf, int len)
++{
++	u8 *bytes = buf;
++	int val;
++
++	dev_dbg(&client->dev, "ds1682_read(reg=%i, buf=%p, len=%i)\n",
++		reg, buf, len);
++
++	while (len--) {
++		val = i2c_smbus_read_byte_data(client, reg++);
++		if (val < 0)
++			return -EIO;
++		*bytes++ = val;
++	}
++	return 0;
++}
++
++/*
++ * Generic counter attributes
++ */
++static ssize_t ds1682_show(struct device *dev, struct device_attribute *attr,
++			   char *buf)
++{
++	struct sensor_device_attribute_2 *sattr = to_sensor_dev_attr_2(attr);
++	__le32 val = 0;
++
++	dev_dbg(dev, "ds1682_show() called on %s\n", attr->attr.name);
++
++	/* Read the register */
++	if (ds1682_read(to_i2c_client(dev), sattr->index, &val, sattr->nr))
++		return -EIO;
++
++	/* Special case: the 32 bit regs are time values with 1/4s
++	 * resolution, scale them up to milliseconds */
++	if (sattr->nr == 4)
++		return sprintf(buf, "%lli\n", ((u64) le32_to_cpu(val)) * 250);
++
++	/* Format the output string and return # of bytes */
++	return sprintf(buf, "%li\n", (long)le32_to_cpu(val));
++}
++
++static ssize_t ds1682_store(struct device *dev, struct device_attribute *attr,
++			    const char *buf, size_t count)
++{
++	struct sensor_device_attribute_2 *sattr = to_sensor_dev_attr_2(attr);
++	struct i2c_client *client = to_i2c_client(dev);
++	char *endp;
++	u64 val;
++	__le32 val_le;
++	int rc;
++
++	dev_dbg(dev, "ds1682_store() called on %s\n", attr->attr.name);
++
++	/* Decode input */
++	val = simple_strtoull(buf, &endp, 0);
++	if (buf == endp) {
++		dev_dbg(dev, "input string not a number\n");
++		return -EIO;
++	}
++
++	/* Special case: the 32 bit regs are time values with 1/4s
++	 * resolution, scale input down to quarter-seconds */
++	if (sattr->nr == 4)
++		do_div(val, 250);
++
++	/* write out the value */
++	val_le = cpu_to_le32(val);
++	rc = i2c_smbus_write_i2c_block_data(client, sattr->index, sattr->nr,
++					    (u8 *) & val);
++	if (rc < 0) {
++		dev_err(dev, "register write failed; reg=0x%x, size=%i\n",
++			sattr->index, sattr->nr);
++		return -EIO;
++	}
++
++	return count;
++}
++
++/*
++ * Simple register attributes
++ */
++SENSOR_DEVICE_ATTR_2(config, S_IRUGO, ds1682_show, NULL, DS1682_REG_CONFIG, 1);
++SENSOR_DEVICE_ATTR_2(elapsed_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
++		     4, DS1682_REG_ELAPSED);
++SENSOR_DEVICE_ATTR_2(alarm_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
++		     4, DS1682_REG_ALARM);
++SENSOR_DEVICE_ATTR_2(event_count, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
++		     2, DS1682_REG_EVT_CNTR);
++
++static const struct attribute_group ds1682_group = {
++	.attrs = (struct attribute *[]) {
++		&sensor_dev_attr_config.dev_attr.attr,
++		&sensor_dev_attr_elapsed_time.dev_attr.attr,
++		&sensor_dev_attr_alarm_time.dev_attr.attr,
++		&sensor_dev_attr_event_count.dev_attr.attr,
++		NULL,
++	},
++};
++
++/*
++ * User data attribute
++ */
++static ssize_t ds1682_eeprom_read(struct kobject *kobj, char *buf, loff_t off,
++				  size_t count)
++{
++	struct i2c_client *client = kobj_to_i2c_client(kobj);
++
++	dev_dbg(&client->dev, "ds1682_eeprom_read(buf=%p, off=%i, count=%i)\n",
++		buf, (int)off, (int)count);
++
++	if (off > DS1682_EEPROM_SIZE)
++		return 0;
++
++	if (off + count > DS1682_EEPROM_SIZE)
++		count = DS1682_EEPROM_SIZE - off;
++
++	if (ds1682_read(client, DS1682_REG_EEPROM + off, buf, count))
++		return -EIO;
++
++	return count;
++}
++
++static ssize_t ds1682_eeprom_write(struct kobject *kobj, char *buf, loff_t off,
++				   size_t count)
++{
++	struct i2c_client *client = kobj_to_i2c_client(kobj);
++
++	dev_dbg(&client->dev, "ds1682_eeprom_write(buf=%p, off=%i, count=%i)\n",
++		buf, (int)off, (int)count);
++
++	if (off >= DS1682_EEPROM_SIZE)
++		return -ENOSPC;
++
++	if (off + count > DS1682_EEPROM_SIZE)
++		count = DS1682_EEPROM_SIZE - off;
++
++	/* Write out to the device */
++	if (i2c_smbus_write_i2c_block_data(client, DS1682_REG_EEPROM + off,
++					   count, buf) < 0)
++		return -EIO;
++
++	return count;
++}
++
++static struct bin_attribute ds1682_eeprom_attr = {
++	.attr = {
++		.name = "eeprom",
++		.mode = S_IRUGO | S_IWUSR,
++		.owner = THIS_MODULE,
++	},
++	.size = DS1682_EEPROM_SIZE,
++	.read = ds1682_eeprom_read,
++	.write = ds1682_eeprom_write,
++};
++
++/*
++ * Called when a device is found at the ds1682 address
++ */
++static struct i2c_driver ds1682_driver;
++static int ds1682_detect(struct i2c_adapter *adapter, int address, int kind)
++{
++	struct i2c_client *client;
++	int err = 0;
++
++	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_READ_BYTE_DATA |
++				     I2C_FUNC_SMBUS_WRITE_I2C_BLOCK))
++		goto exit;
++
++	if (!(client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL))) {
++		err = -ENOMEM;
++		goto exit;
++	}
++
++	client->addr = address;
++	client->adapter = adapter;
++	client->driver = &ds1682_driver;
++
++	/* Note: Ignoring 'kind' value as the ds1682 uses a fixed address */
++
++	/* We can fill in the remaining client fields */
++	strlcpy(client->name, "ds1682", I2C_NAME_SIZE);
++
++	/* Tell the I2C layer a new client has arrived */
++	if ((err = i2c_attach_client(client)))
++		goto exit_free;
++
++	if (sysfs_create_group(&client->dev.kobj, &ds1682_group))
++		goto exit_group_attr;
++
++	if (sysfs_create_bin_file(&client->dev.kobj, &ds1682_eeprom_attr))
++		goto exit_bin_attr;
++
++	return 0;
++
++      exit_bin_attr:
++	sysfs_remove_group(&client->dev.kobj, &ds1682_group);
++      exit_group_attr:
++	i2c_detach_client(client);
++      exit_free:
++	kfree(client);
++      exit:
++	return err;
++}
++
++static int ds1682_attach_adapter(struct i2c_adapter *adapter)
++{
++	return i2c_probe(adapter, &addr_data, ds1682_detect);
++}
++
++static int ds1682_detach_client(struct i2c_client *client)
++{
++	int err;
++
++	sysfs_remove_bin_file(&client->dev.kobj, &ds1682_eeprom_attr);
++	sysfs_remove_group(&client->dev.kobj, &ds1682_group);
++
++	if ((err = i2c_detach_client(client)))
++		return err;
++
++	kfree(client);
++	return 0;
++}
++
++static struct i2c_driver ds1682_driver = {
++	.driver = {
++		.name = "ds1682",
++	},
++	.attach_adapter = ds1682_attach_adapter,
++	.detach_client = ds1682_detach_client,
++};
++
++static int __init ds1682_init(void)
++{
++	return i2c_add_driver(&ds1682_driver);
++}
++
++static void __exit ds1682_exit(void)
++{
++	i2c_del_driver(&ds1682_driver);
++}
++
++MODULE_AUTHOR("Grant Likely <grant.likely@secretlab.ca>");
++MODULE_DESCRIPTION("DS1682 Elapsed Time Indicator driver");
++MODULE_LICENSE("GPL");
++
++module_init(ds1682_init);
++module_exit(ds1682_exit);
 
