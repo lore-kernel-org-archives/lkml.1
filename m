@@ -1,86 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761170AbXEJWow@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762308AbXEJWpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761170AbXEJWow (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:44:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbXEJWop
+	id S1762308AbXEJWpz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756135AbXEJWpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:44:45 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:36638 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756135AbXEJWoo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:44:44 -0400
-Date: Thu, 10 May 2007 23:44:41 +0100
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Nicolas.Mailhot@LaPoste.net,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
-Message-ID: <20070510224441.GA15332@skynet.ie>
-References: <200705102128.l4ALSI2A017437@fire-2.osdl.org> <20070510144319.48d2841a.akpm@linux-foundation.org> <Pine.LNX.4.64.0705101447120.12874@schroedinger.engr.sgi.com> <20070510220657.GA14694@skynet.ie> <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com> <20070510221607.GA15084@skynet.ie> <Pine.LNX.4.64.0705101522250.13504@schroedinger.engr.sgi.com>
+	Thu, 10 May 2007 18:45:46 -0400
+Received: from gw.goop.org ([64.81.55.164]:51150 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755956AbXEJWpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 18:45:45 -0400
+Message-ID: <4643A096.7000909@goop.org>
+Date: Thu, 10 May 2007 15:45:42 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705101522250.13504@schroedinger.engr.sgi.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.skynet.ie (Mel Gorman)
+To: David Miller <davem@davemloft.net>
+CC: akpm@linux-foundation.org, herbert@gondor.apana.org.au, hch@infradead.org,
+       ak@suse.de, virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, ian.pratt@xensource.com,
+       Christian.Limpach@cl.cam.ac.uk, netdev@vger.kernel.org, jeff@garzik.org,
+       shemminger@linux-foundation.org, rusty@rustcorp.com.au,
+       Valdis.Kletnieks@vt.edu
+Subject: Re: [1/2] [NET] link_watch: Move link watch list into net_device
+References: <464395E5.2090500@goop.org>	<20070510151426.d808384f.akpm@linux-foundation.org>	<46439B19.7010706@goop.org> <20070510.152552.117703057.davem@davemloft.net>
+In-Reply-To: <20070510.152552.117703057.davem@davemloft.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (10/05/07 15:27), Christoph Lameter didst pronounce:
-> On Thu, 10 May 2007, Mel Gorman wrote:
-> 
-> > On (10/05/07 15:11), Christoph Lameter didst pronounce:
-> > > On Thu, 10 May 2007, Mel Gorman wrote:
-> > > 
-> > > > I see the gfpmask was 0x84020. That doesn't look like __GFP_WAIT was set,
-> > > > right? Does that mean that SLUB is trying to allocate pages atomically? If so,
-> > > > it would explain why this situation could still occur even though high-order
-> > > > allocations that could sleep would succeed.
-> > > 
-> > > SLUB is following the gfp mask of the caller like all well behaved slab 
-> > > allocators do. If the caller does not set __GFP_WAIT then the page 
-> > > allocator also cannot wait.
-> > 
-> > Then SLUB should not use the higher orders for slab allocations that cannot
-> > sleep during allocations. What could be done in the longer term is decide
-> > how to tell kswapd to keep pages free at an order other than 0 when it is
-> > known there are a large number of high-order long-lived allocations like this.
-> 
-> I cannot predict how allocations on a slab will be performed. In order 
-> to avoid the higher order allocations in we would have to add a flag 
-> that tells SLUB at slab creation creation time that this cache will be 
-> used for atomic allocs and thus we can avoid configuring slabs in such a 
-> way that they use higher order allocs.
-> 
+David Miller wrote:
+> I'm not so certain now that we know it's the jiffies wrap point :-)
+>
+> The fixes in question are attached below and they were posted and
+> discussed on netdev:
+>   
 
-It is an option. I had the gfp flags passed in to kmem_cache_create() in
-mind for determining this but SLUB creates slabs differently and different
-flags could be passed into kmem_cache_alloc() of course.
+Yep, this patch gets rid of my spinning thread.  I can't find this patch
+or any discussion on marc.info; is there a better netdev list archive?
 
-> The other solution is not to use higher order allocations by dropping the 
-> antifrag patches in mm that allow SLUB to use higher order allocations. 
-> But then there would be no higher order allocations at all that would
-> use the benefits of antifrag measures.
-
-That would be an immediate solution.
-
-Another alternative is that anti-frag used to also group high-order
-allocations together and make it hard to fallback to those areas
-for non-atomic allocations. It is currently backed out by the
-patch dont-group-high-order-atomic-allocations.patch because
-it was intended for rare high-order short-lived allocations
-such as e1000 that are currently dealt with by MIGRATE_RESERVE
-(bias-the-location-of-pages-freed-for-min_free_kbytes-in-the-same-max_order_nr_pages-blocks.patch)
-. The high-order atomic groupings may help here because the high-order
-allocations are long-lived and would claim contiguous areas.
-
-The last alternative I think I mentioned already is to have the minimum
-order kswapd reclaims as the same order SLUB uses instead of 0 so that
-min_free_kbytes is kept at higher orders than current.
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+    J
