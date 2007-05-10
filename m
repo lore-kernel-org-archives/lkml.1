@@ -1,57 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758905AbXEJLIy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759346AbXEJLLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758905AbXEJLIy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:08:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752869AbXEJLIr
+	id S1759346AbXEJLLI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753250AbXEJLK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:08:47 -0400
-Received: from mr.exanet.com ([212.143.73.109]:46896 "EHLO mr.exanet.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751049AbXEJLIr convert rfc822-to-8bit (ORCPT
+	Thu, 10 May 2007 07:10:57 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:45580 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752869AbXEJLKz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 07:08:47 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
+	Thu, 10 May 2007 07:10:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=IRv2UI0zkFb+k2IcGDE5MezzNgDNbkmzfR3LN8hlMOlIrscvH7Cfzi+DV404o0ulAH1lOSTJTC3hxOlOWGX+cz1k02DnvNvY3TfnqSVaS9vKRajPNpkatn/ZUwcF94aqaZlprTflvoG1wFo2999CdLKiIXMqjKSp/rLmOMr1jfE=
+Message-ID: <d1af83620705100410n482f4f9h428b7cab5501d963@mail.gmail.com>
+Date: Thu, 10 May 2007 08:10:54 -0300
+From: "Kevin Winchester" <kjwinchester@gmail.com>
+To: "Herbert Xu" <herbert@gondor.apana.org.au>
+Subject: Re: 2.6.21-mm1 and now 2.6.21-git: SLUB Crashes on boot - crypto?
+Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <20070509030257.GA31876@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] interface for doing a full host scsi rescan
-Date: Thu, 10 May 2007 14:08:34 +0300
-Message-ID: <A6FDE6B975803043804A49F12F49028E0F59CD@hawk.exanet-il.co.il>
-In-Reply-To: <20070510100929.GA13771@infradead.org>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] interface for doing a full host scsi rescan
-Thread-Index: AceS606hHslH96DETHiCyrR0lVDEvgACDe3w
-From: "Menny Hamburger" <menny@exanet.com>
-To: "Christoph Hellwig" <hch@infradead.org>
-Cc: <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070505014955.8f3990b5.akpm@linux-foundation.org>
+	 <4640FE35.2070605@gmail.com>
+	 <Pine.LNX.4.64.0705081557560.15790@schroedinger.engr.sgi.com>
+	 <464108CC.3060604@gmail.com>
+	 <Pine.LNX.4.64.0705081639570.16372@schroedinger.engr.sgi.com>
+	 <46411CA1.8060506@gmail.com>
+	 <20070509030257.GA31876@gondor.apana.org.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thnx,
+On 5/9/07, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> On Tue, May 08, 2007 at 09:58:09PM -0300, Kevin Winchester wrote:
+> >
+> > Not having any idea what I'm doing, I looked at cryptomgr_probe and
+> > cryptomgr_notify, and can't seem to see much, except for the following
+> > odd lines.
+> >
+> > From cryptomgr_schedule_probe, which is almost certainly inlined into
+> > crypto_notify:
+>
+> Thanks for reporting this.  This patch should fix the problem.
+>
+> Cheers,
+> --
+> Visit Openswan at http://www.openswan.org/
+> Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+> Home Page: http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> --
+> diff -puN crypto/cryptomgr.c~crypto-fix crypto/cryptomgr.c
+> --- a/crypto/cryptomgr.c~crypto-fix
+> +++ a/crypto/cryptomgr.c
+> @@ -24,8 +24,6 @@
+>  #include "internal.h"
+>
+>  struct cryptomgr_param {
+> -       struct task_struct *thread;
+> -
+>         struct rtattr *tb[CRYPTOA_MAX];
+>
+>         struct {
+> @@ -81,6 +79,7 @@ err:
+>
+>  static int cryptomgr_schedule_probe(struct crypto_larval *larval)
+>  {
+> +       struct task_struct *thread;
+>         struct cryptomgr_param *param;
+>         const char *name = larval->alg.cra_name;
+>         const char *p;
+> @@ -130,8 +129,8 @@ static int cryptomgr_schedule_probe(stru
+>
+>         memcpy(param->larval.name, larval->alg.cra_name, CRYPTO_MAX_ALG_NAME);
+>
+> -       param->thread = kthread_run(cryptomgr_probe, param, "cryptomgr");
+> -       if (IS_ERR(param->thread))
+> +       thread = kthread_run(cryptomgr_probe, param, "cryptomgr");
+> +       if (IS_ERR(thread))
+>                 goto err_free_param;
+>
+>         return NOTIFY_STOP;
+> _
+>
 
-I'll check that
+I see that this patch made it in to mainline, and latest -git now
+works for me, so I assume this was the correct solution.  I thought I
+had tried this exact change without success when I was looking at the
+problem, but I guess I did something wrong along the way.
 
-M. 
-
------Original Message-----
-From: Christoph Hellwig [mailto:hch@infradead.org] 
-Sent: Thursday, May 10, 2007 12:10 PM
-To: Menny Hamburger
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] interface for doing a full host scsi rescan
-
-On Thu, May 10, 2007 at 01:01:55PM +0300, Menny Hamburger wrote:
-> Hi,
-> 
-> When we do want to rescan the SCSI host, a userland script needs to be
-
-> provided that does add/remove.
-> This patch adds an interface for doing this inside the kernel - seems 
-> more appropriate:
-
-/proc/scsi/scsi is deprecated, don't use it.  But you can do a full
-rescan through /sys/.../scan
-
+Thanks for the fix,
+Kevin
