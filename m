@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbXEJMhs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbXEJMkR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759989AbXEJMhs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:37:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754760AbXEJMhm
+	id S1756823AbXEJMkR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:40:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755041AbXEJMkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:37:42 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:63436 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751349AbXEJMhl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:37:41 -0400
-Date: Thu, 10 May 2007 14:37:37 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MMC: Flush mmc workqueue late in the boot sequence
-Message-ID: <20070510143737.54969394@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <46430A49.9090803@drzeus.cx>
-References: <117879333788-git-send-email-hskinnemoen@atmel.com>
-	<46430A49.9090803@drzeus.cx>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 08:40:05 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:43993 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754173AbXEJMkE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 08:40:04 -0400
+Date: Thu, 10 May 2007 14:40:04 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Romano Giannetti <romano@dea.icai.upcomillas.es>
+Cc: Pavel Machek <pavel@ucw.cz>, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, linux-pcmcia@lists.infradead.org
+Subject: Re: pcmcia ioctl removal
+Message-ID: <20070510124004.GK23574@stusta.de>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <20070501084623.GB14364@infradead.org> <20070509125415.GA4720@ucw.cz> <20070509130346.GC23574@stusta.de> <1178737912.18573.25.camel@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1178737912.18573.25.camel@localhost>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 14:04:25 +0200
-Pierre Ossman <drzeus@drzeus.cx> wrote:
-
-> Haavard Skinnemoen wrote:
-> > At some point before 2.6.20, the mmc subsystem moved the card
-> > detection code to its own workqueue. One consequence of this change
-> > is that when using an mmc card as a root device, the card may get
-> > detected after the init task attempts to mount the root filesystem,
-> > causing a kernel panic because the root device could not be opened.
-> > 
-> > This patch adds a call to mmc_flush_scheduled_work() late in the boot
-> > sequence so that we can be sure the mmc card detection scans are
-> > complete before attempting to use an mmc device as a root device.
-> > 
-> > Signed-off-by: Haavard Skinnemoen <hskinnemoen@atmel.com>
+On Wed, May 09, 2007 at 09:11:52PM +0200, Romano Giannetti wrote:
+> On Wed, 2007-05-09 at 15:03 +0200, Adrian Bunk wrote:
+> > On Wed, May 09, 2007 at 12:54:16PM +0000, Pavel Machek wrote:
+> >  relies on cardmgr anymore.
+> > >
+> > > I remember needing cardmgr few months ago on sa-1100 arm system. I'm
+> > > not sure this is obsolete-enough to kill.
+> >
+> > Why didn't pcmciautils work?
 > 
-> NAK. This is still hackish and not a reliable, controlled way of handling the
-> issue of rootfs on removable media.
+> I have had a problem until 2.6.20 was out with pcmciautils (it did not
+> recognise the second function of multi-functions pcmcia cards that
+> needed a firmware .cis file), and the only way to use it was with
+> cardmgr, way after Nov 2005 :-).
+> 
+> Now it is solved (modulo that sometime the pcmcia modem is ttyS1,
+> sometime ttyS2, but that's another history --- and probably my fault).
+> But I wonder if similar problems are hidden away... what about put the
+> ioctls under a normally-disabled option and let a kernel out with it?
 
-What exactly makes this unreliable? This is done almost exactly the
-same way for SCSI. See drivers/scsi/scsi_wait_scan.c.
+It already prints a runtime warning to the user since 2005.
+And people won't notice a changed default when using "make oldconfig".
 
-> For reference, how is this handled in USB (which is conceptually identical)? The
-> normal case for removable media is usually an initrd that can wait for hotplug
-> events.
+Are there any known known regressions left?
+Otherwise, the best way for getting problem reports for pcmciautils is 
+to remove the ioctl (that's an experience from similar cases in other 
+parts of the kernel)...
 
-I don't know about USB, but root=/dev/mmcblk0p1 used to work before
-2.6.20 and it doesn't work anymore. Doesn't that make this a regression?
+> Romano
 
-Haavard
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
