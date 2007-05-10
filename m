@@ -1,355 +1,277 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761789AbXEJLny@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761145AbXEJLoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761789AbXEJLny (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:43:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758534AbXEJLlS
+	id S1761145AbXEJLoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760759AbXEJLlT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:41:18 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:4895 "EHLO kernel.dk"
+	Thu, 10 May 2007 07:41:19 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:4890 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758467AbXEJLlK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 07:41:10 -0400
+	id S1758408AbXEJLlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 07:41:09 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 11/12] SCSI: support for allocating large scatterlists
-Date: Thu, 10 May 2007 13:40:36 +0200
-Message-Id: <11787972371083-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 8/12] x86-64: update iommu/dma mapping functions to sg helpers
+Date: Thu, 10 May 2007 13:40:33 +0200
+Message-Id: <11787972373765-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <11787972373654-git-send-email-jens.axboe@oracle.com>
 References: <11787972373654-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is what enables large commands. If we need to allocate an
-sgtable that doesn't fit in a single page, allocate several
-SCSI_MAX_SG_SEGMENTS sized tables and chain them together.
+This prepares x86-64 for sg chaining support.
 
-We default to the safe setup of NOT chaining, for now.
-
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+igned-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- drivers/scsi/scsi_lib.c  |  204 +++++++++++++++++++++++++++++++++++-----------
- include/scsi/scsi.h      |    7 --
- include/scsi/scsi_cmnd.h |    1 +
- 3 files changed, 158 insertions(+), 54 deletions(-)
+ arch/x86_64/kernel/pci-calgary.c |   25 ++++++++++++---------
+ arch/x86_64/kernel/pci-gart.c    |   44 ++++++++++++++++++++++---------------
+ arch/x86_64/kernel/pci-nommu.c   |    5 ++-
+ 3 files changed, 43 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 26236b1..2b36c09 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -29,39 +29,26 @@
- #include "scsi_priv.h"
- #include "scsi_logging.h"
+diff --git a/arch/x86_64/kernel/pci-calgary.c b/arch/x86_64/kernel/pci-calgary.c
+index 5bd20b5..c472b14 100644
+--- a/arch/x86_64/kernel/pci-calgary.c
++++ b/arch/x86_64/kernel/pci-calgary.c
+@@ -35,6 +35,7 @@
+ #include <linux/pci_ids.h>
+ #include <linux/pci.h>
+ #include <linux/delay.h>
++#include <linux/scatterlist.h>
+ #include <asm/proto.h>
+ #include <asm/calgary.h>
+ #include <asm/tce.h>
+@@ -341,17 +342,19 @@ static void iommu_free(struct iommu_table *tbl, dma_addr_t dma_addr,
+ static void __calgary_unmap_sg(struct iommu_table *tbl,
+ 	struct scatterlist *sglist, int nelems, int direction)
+ {
+-	while (nelems--) {
++	struct scatterlist *s;
++	int i;
++
++	for_each_sg(sglist, s, nelems, i) {
+ 		unsigned int npages;
+-		dma_addr_t dma = sglist->dma_address;
+-		unsigned int dmalen = sglist->dma_length;
++		dma_addr_t dma = s->dma_address;
++		unsigned int dmalen = s->dma_length;
  
+ 		if (dmalen == 0)
+ 			break;
+ 
+ 		npages = num_dma_pages(dma, dmalen);
+ 		__iommu_free(tbl, dma, npages);
+-		sglist++;
+ 	}
+ }
+ 
+@@ -374,10 +377,10 @@ void calgary_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ static int calgary_nontranslate_map_sg(struct device* dev,
+ 	struct scatterlist *sg, int nelems, int direction)
+ {
++	struct scatterlist *s;
+ 	int i;
+ 
+- 	for (i = 0; i < nelems; i++ ) {
+-		struct scatterlist *s = &sg[i];
++	for_each_sg(sg, s, nelems, i) {
+ 		BUG_ON(!s->page);
+ 		s->dma_address = virt_to_bus(page_address(s->page) +s->offset);
+ 		s->dma_length = s->length;
+@@ -389,6 +392,7 @@ int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+ 	int nelems, int direction)
+ {
+ 	struct iommu_table *tbl = to_pci_dev(dev)->bus->self->sysdata;
++	struct scatterlist *s;
+ 	unsigned long flags;
+ 	unsigned long vaddr;
+ 	unsigned int npages;
+@@ -400,8 +404,7 @@ int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+ 
+ 	spin_lock_irqsave(&tbl->it_lock, flags);
+ 
+-	for (i = 0; i < nelems; i++ ) {
+-		struct scatterlist *s = &sg[i];
++	for_each_sg(sg, s, nelems, i) {
+ 		BUG_ON(!s->page);
+ 
+ 		vaddr = (unsigned long)page_address(s->page) + s->offset;
+@@ -428,9 +431,9 @@ int calgary_map_sg(struct device *dev, struct scatterlist *sg,
+ 	return nelems;
+ error:
+ 	__calgary_unmap_sg(tbl, sg, nelems, direction);
+-	for (i = 0; i < nelems; i++) {
+-		sg[i].dma_address = bad_dma_address;
+-		sg[i].dma_length = 0;
++	for_each_sg(sg, s, nelems, i) {
++		s->dma_address = bad_dma_address;
++		s->dma_length = 0;
+ 	}
+ 	spin_unlock_irqrestore(&tbl->it_lock, flags);
+ 	return 0;
+diff --git a/arch/x86_64/kernel/pci-gart.c b/arch/x86_64/kernel/pci-gart.c
+index 373ef66..8bc2ed7 100644
+--- a/arch/x86_64/kernel/pci-gart.c
++++ b/arch/x86_64/kernel/pci-gart.c
+@@ -23,6 +23,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/bitops.h>
+ #include <linux/kdebug.h>
++#include <linux/scatterlist.h>
+ #include <asm/atomic.h>
+ #include <asm/io.h>
+ #include <asm/mtrr.h>
+@@ -277,10 +278,10 @@ void gart_unmap_single(struct device *dev, dma_addr_t dma_addr,
+  */
+ void gart_unmap_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+ {
++	struct scatterlist *s;
+ 	int i;
+ 
+-	for (i = 0; i < nents; i++) {
+-		struct scatterlist *s = &sg[i];
++	for_each_sg(sg, s, nents, i) {
+ 		if (!s->dma_length || !s->length)
+ 			break;
+ 		gart_unmap_single(dev, s->dma_address, s->dma_length, dir);
+@@ -291,14 +292,14 @@ void gart_unmap_sg(struct device *dev, struct scatterlist *sg, int nents, int di
+ static int dma_map_sg_nonforce(struct device *dev, struct scatterlist *sg,
+ 			       int nents, int dir)
+ {
++	struct scatterlist *s;
+ 	int i;
+ 
+ #ifdef CONFIG_IOMMU_DEBUG
+ 	printk(KERN_DEBUG "dma_map_sg overflow\n");
+ #endif
+ 
+- 	for (i = 0; i < nents; i++ ) {
+-		struct scatterlist *s = &sg[i];
++	for_each_sg(sg, s, nents, i) {
+ 		unsigned long addr = page_to_phys(s->page) + s->offset; 
+ 		if (nonforced_iommu(dev, addr, s->length)) { 
+ 			addr = dma_map_area(dev, addr, s->length, dir);
+@@ -323,13 +324,17 @@ static int __dma_map_cont(struct scatterlist *sg, int start, int stopat,
+ {
+ 	unsigned long iommu_start = alloc_iommu(pages);
+ 	unsigned long iommu_page = iommu_start; 
+-	int i;
++	struct scatterlist *s;
++	int i, nelems;
+ 
+ 	if (iommu_start == -1)
+ 		return -1;
++
++	nelems = stopat - start;
++	while (start--)
++		sg = sg_next(sg);
+ 	
+-	for (i = start; i < stopat; i++) {
+-		struct scatterlist *s = &sg[i];
++	for_each_sg(sg, s, nelems, i) {
+ 		unsigned long pages, addr;
+ 		unsigned long phys_addr = s->dma_address;
+ 		
+@@ -360,12 +365,14 @@ static inline int dma_map_cont(struct scatterlist *sg, int start, int stopat,
+ 		      struct scatterlist *sout,
+ 		      unsigned long pages, int need)
+ {
+-	if (!need) { 
++	if (!need) {
+ 		BUG_ON(stopat - start != 1);
+-		*sout = sg[start]; 
+-		sout->dma_length = sg[start].length; 
++		while (--start)
++			sg = sg_next(sg);
++		*sout = *sg;
++		sout->dma_length = sg->length;
+ 		return 0;
+-	} 
++	}
+ 	return __dma_map_cont(sg, start, stopat, sout, pages);
+ }
+ 		
+@@ -380,6 +387,7 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+ 	int start;
+ 	unsigned long pages = 0;
+ 	int need = 0, nextneed;
++	struct scatterlist *s, *ps;
+ 
+ 	if (nents == 0) 
+ 		return 0;
+@@ -389,8 +397,8 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+ 
+ 	out = 0;
+ 	start = 0;
+-	for (i = 0; i < nents; i++) {
+-		struct scatterlist *s = &sg[i];
++	ps = NULL; /* shut up gcc */
++	for_each_sg(sg, s, nents, i) {
+ 		dma_addr_t addr = page_to_phys(s->page) + s->offset;
+ 		s->dma_address = addr;
+ 		BUG_ON(s->length == 0); 
+@@ -399,7 +407,6 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+ 
+ 		/* Handle the previous not yet processed entries */
+ 		if (i > start) {
+-			struct scatterlist *ps = &sg[i-1];
+ 			/* Can only merge when the last chunk ends on a page 
+ 			   boundary and the new one doesn't have an offset. */
+ 			if (!iommu_merge || !nextneed || !need || s->offset ||
+@@ -415,13 +422,14 @@ int gart_map_sg(struct device *dev, struct scatterlist *sg, int nents, int dir)
+ 
+ 		need = nextneed;
+ 		pages += to_pages(s->offset, s->length);
++		ps = s;
+ 	}
+ 	if (dma_map_cont(sg, start, i, sg+out, pages, need) < 0)
+ 		goto error;
+ 	out++;
+ 	flush_gart();
+-	if (out < nents) 
+-		sg[out].dma_length = 0; 
++	if (out < nents)
++		ps->dma_length = 0;
+ 	return out;
+ 
+ error:
+@@ -436,8 +444,8 @@ error:
+ 	if (panic_on_overflow)
+ 		panic("dma_map_sg: overflow on %lu pages\n", pages);
+ 	iommu_full(dev, pages << PAGE_SHIFT, dir);
+-	for (i = 0; i < nents; i++)
+-		sg[i].dma_address = bad_dma_address;
++	for_each_sg(sg, s, nents, i)
++		s->dma_address = bad_dma_address;
+ 	return 0;
+ } 
+ 
+diff --git a/arch/x86_64/kernel/pci-nommu.c b/arch/x86_64/kernel/pci-nommu.c
+index 6dade0c..24c9faf 100644
+--- a/arch/x86_64/kernel/pci-nommu.c
++++ b/arch/x86_64/kernel/pci-nommu.c
+@@ -5,6 +5,7 @@
+ #include <linux/pci.h>
+ #include <linux/string.h>
+ #include <linux/dma-mapping.h>
 +#include <linux/scatterlist.h>
  
- #define SG_MEMPOOL_NR		ARRAY_SIZE(scsi_sg_pools)
- #define SG_MEMPOOL_SIZE		2
- 
- struct scsi_host_sg_pool {
- 	size_t		size;
--	char		*name; 
-+	char		*name;
- 	struct kmem_cache	*slab;
- 	mempool_t	*pool;
- };
- 
--#if (SCSI_MAX_PHYS_SEGMENTS < 32)
--#error SCSI_MAX_PHYS_SEGMENTS is too small
--#endif
--
--#define SP(x) { x, "sgpool-" #x } 
-+#define SP(x) { x, "sgpool-" #x }
- static struct scsi_host_sg_pool scsi_sg_pools[] = {
- 	SP(8),
- 	SP(16),
- 	SP(32),
--#if (SCSI_MAX_PHYS_SEGMENTS > 32)
- 	SP(64),
--#if (SCSI_MAX_PHYS_SEGMENTS > 64)
- 	SP(128),
--#if (SCSI_MAX_PHYS_SEGMENTS > 128)
--	SP(256),
--#if (SCSI_MAX_PHYS_SEGMENTS > 256)
--#error SCSI_MAX_PHYS_SEGMENTS is too large
--#endif
--#endif
--#endif
--#endif
--}; 	
-+};
- #undef SP
- 
- static void scsi_run_queue(struct request_queue *q);
-@@ -702,45 +689,126 @@ static struct scsi_cmnd *scsi_end_request(struct scsi_cmnd *cmd, int uptodate,
- 	return NULL;
- }
- 
--struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *cmd, gfp_t gfp_mask)
--{
--	struct scsi_host_sg_pool *sgp;
--	struct scatterlist *sgl;
-+/*
-+ * The maximum number of SG segments that we will put inside a scatterlist
-+ * (unless chaining is used). Should ideally fit inside a single page, to
-+ * avoid a higher order allocation.
-+ */
-+#define SCSI_MAX_SG_SEGMENTS	128
- 
--	BUG_ON(!cmd->use_sg);
-+static inline unsigned int scsi_sgtable_index(unsigned short nents)
-+{
-+	unsigned int index;
- 
--	switch (cmd->use_sg) {
-+	switch (nents) {
- 	case 1 ... 8:
--		cmd->sglist_len = 0;
-+		index = 0;
- 		break;
- 	case 9 ... 16:
--		cmd->sglist_len = 1;
-+		index = 1;
- 		break;
- 	case 17 ... 32:
--		cmd->sglist_len = 2;
-+		index = 2;
- 		break;
--#if (SCSI_MAX_PHYS_SEGMENTS > 32)
- 	case 33 ... 64:
--		cmd->sglist_len = 3;
-+		index = 3;
- 		break;
--#if (SCSI_MAX_PHYS_SEGMENTS > 64)
--	case 65 ... 128:
--		cmd->sglist_len = 4;
-+	case 65 ... SCSI_MAX_SG_SEGMENTS:
-+		index = 4;
- 		break;
--#if (SCSI_MAX_PHYS_SEGMENTS  > 128)
--	case 129 ... 256:
--		cmd->sglist_len = 5;
--		break;
--#endif
--#endif
--#endif
- 	default:
--		return NULL;
-+		printk(KERN_ERR "scsi: bad segment count=%d\n", nents);
-+		BUG();
- 	}
- 
--	sgp = scsi_sg_pools + cmd->sglist_len;
--	sgl = mempool_alloc(sgp->pool, gfp_mask);
--	return sgl;
-+	return index;
-+}
-+
-+struct scatterlist *scsi_alloc_sgtable(struct scsi_cmnd *cmd, gfp_t gfp_mask)
-+{
-+	struct scsi_host_sg_pool *sgp;
-+	struct scatterlist *sgl, *prev, *ret;
-+	unsigned int index;
-+	int this, left;
-+
-+	BUG_ON(!cmd->use_sg);
-+
-+	left = cmd->use_sg;
-+	ret = prev = NULL;
-+	do {
-+		this = left;
-+		if (this > SCSI_MAX_SG_SEGMENTS) {
-+			this = SCSI_MAX_SG_SEGMENTS;
-+			index = SG_MEMPOOL_NR - 1;
-+		} else
-+			index = scsi_sgtable_index(this);
-+
-+		left -= this;
-+
-+		/*
-+		 * if we have more entries after this round, reserve a slot
-+		 * for the chain pointer.
-+		 */
-+		if (left)
-+			left++;
-+
-+		sgp = scsi_sg_pools + index;
-+
-+		sgl = mempool_alloc(sgp->pool, gfp_mask);
-+		if (unlikely(!sgl))
-+			goto enomem;
-+
-+		memset(sgl, 0, sizeof(*sgl) * sgp->size);
-+
-+		/*
-+		 * first loop through, set initial index and return value
-+		 */
-+		if (!ret) {
-+			cmd->sglist_len = index;
-+			ret = sgl;
-+		}
-+
-+		/*
-+		 * chain previous sglist, if any. we know the previous
-+		 * sglist must be the biggest one, or we would not have
-+		 * ended up doing another loop.
-+		 */
-+		if (prev)
-+			sg_chain(prev, SCSI_MAX_SG_SEGMENTS, sgl);
-+
-+		/*
-+		 * don't allow subsequent mempool allocs to sleep, it would
-+		 * violate the mempool principle.
-+		 */
-+		gfp_mask &= ~__GFP_WAIT;
-+		gfp_mask |= __GFP_HIGH;
-+		prev = sgl;
-+	} while (left);
-+
-+	/*
-+	 * ->use_sg may get modified after dma mapping has potentially
-+	 * shrunk the number of segments, so keep a copy of it for free.
-+	 */
-+	cmd->__use_sg = cmd->use_sg;
-+	return ret;
-+enomem:
-+	if (ret) {
-+		/*
-+		 * Free entries chained off ret. Since we were trying to
-+		 * allocate another sglist, we know that all entries are of
-+		 * the max size.
-+		 */
-+		sgp = scsi_sg_pools + SG_MEMPOOL_NR - 1;
-+		prev = &ret[SCSI_MAX_SG_SEGMENTS - 1];
-+
-+		while ((sgl = sg_chain_ptr(ret)) != NULL) {
-+			ret = &sgl[SCSI_MAX_SG_SEGMENTS - 1];
-+			mempool_free(sgl, sgp->pool);
-+		}
-+
-+		mempool_free(prev, sgp->pool);
-+	}
-+	return NULL;
- }
- 
- EXPORT_SYMBOL(scsi_alloc_sgtable);
-@@ -752,6 +820,42 @@ void scsi_free_sgtable(struct scsi_cmnd *cmd)
- 
- 	BUG_ON(cmd->sglist_len >= SG_MEMPOOL_NR);
- 
-+	/*
-+	 * if this is the biggest size sglist, check if we have
-+	 * chained parts we need to free
-+	 */
-+	if (cmd->__use_sg > SCSI_MAX_SG_SEGMENTS) {
-+		unsigned short this, left;
-+		struct scatterlist *next;
-+		unsigned int index;
-+
-+		left = cmd->__use_sg - SCSI_MAX_SG_SEGMENTS;
-+		next = sg_chain_ptr(&sgl[SCSI_MAX_SG_SEGMENTS - 1]);
-+		do {
-+			sgl = next;
-+			this = left;
-+			if (this > SCSI_MAX_SG_SEGMENTS) {
-+				this = SCSI_MAX_SG_SEGMENTS;
-+				index = SG_MEMPOOL_NR - 1;
-+			} else
-+				index = scsi_sgtable_index(this);
-+
-+			left -= this;
-+
-+			sgp = scsi_sg_pools + index;
-+
-+			if (left)
-+				next = sg_chain_ptr(&sgl[sgp->size - 1]);
-+
-+			mempool_free(sgl, sgp->pool);
-+		} while (left);
-+
-+		/*
-+		 * Restore original, will be freed below
-+		 */
-+		sgl = cmd->request_buffer;
-+	}
-+
- 	sgp = scsi_sg_pools + cmd->sglist_len;
- 	mempool_free(sgl, sgp->pool);
- }
-@@ -993,7 +1097,6 @@ EXPORT_SYMBOL(scsi_io_completion);
- static int scsi_init_io(struct scsi_cmnd *cmd)
+ #include <asm/proto.h>
+ #include <asm/processor.h>
+@@ -57,10 +58,10 @@ void nommu_unmap_single(struct device *dev, dma_addr_t addr,size_t size,
+ int nommu_map_sg(struct device *hwdev, struct scatterlist *sg,
+ 	       int nents, int direction)
  {
- 	struct request     *req = cmd->request;
--	struct scatterlist *sgpnt;
- 	int		   count;
++	struct scatterlist *s;
+ 	int i;
  
- 	/*
-@@ -1006,14 +1109,13 @@ static int scsi_init_io(struct scsi_cmnd *cmd)
- 	/*
- 	 * If sg table allocation fails, requeue request later.
- 	 */
--	sgpnt = scsi_alloc_sgtable(cmd, GFP_ATOMIC);
--	if (unlikely(!sgpnt)) {
-+	cmd->request_buffer = scsi_alloc_sgtable(cmd, GFP_ATOMIC);
-+	if (unlikely(!cmd->request_buffer)) {
- 		scsi_unprep_request(req);
- 		return BLKPREP_DEFER;
- 	}
- 
- 	req->buffer = NULL;
--	cmd->request_buffer = (char *) sgpnt;
- 	if (blk_pc_request(req))
- 		cmd->request_bufflen = req->data_len;
- 	else
-@@ -1577,8 +1679,16 @@ struct request_queue *__scsi_alloc_queue(struct Scsi_Host *shost,
- 	if (!q)
- 		return NULL;
- 
-+	/*
-+	 * this limit is imposed by hardware restrictions
-+	 */
- 	blk_queue_max_hw_segments(q, shost->sg_tablesize);
--	blk_queue_max_phys_segments(q, SCSI_MAX_PHYS_SEGMENTS);
-+
-+	/*
-+	 * we can chain scatterlists, so this limit is fairly arbitrary
-+	 */
-+	blk_queue_max_phys_segments(q, SCSI_MAX_SG_SEGMENTS);
-+
- 	blk_queue_max_sectors(q, shost->max_sectors);
- 	blk_queue_bounce_limit(q, scsi_calculate_bounce_limit(shost));
- 	blk_queue_segment_boundary(q, shost->dma_boundary);
-diff --git a/include/scsi/scsi.h b/include/scsi/scsi.h
-index 9f8f80a..702fcfe 100644
---- a/include/scsi/scsi.h
-+++ b/include/scsi/scsi.h
-@@ -11,13 +11,6 @@
- #include <linux/types.h>
- 
- /*
-- *	The maximum sg list length SCSI can cope with
-- *	(currently must be a power of 2 between 32 and 256)
-- */
--#define SCSI_MAX_PHYS_SEGMENTS	MAX_PHYS_SEGMENTS
--
--
--/*
-  *	SCSI command lengths
-  */
- 
-diff --git a/include/scsi/scsi_cmnd.h b/include/scsi/scsi_cmnd.h
-index d7db992..fc649af 100644
---- a/include/scsi/scsi_cmnd.h
-+++ b/include/scsi/scsi_cmnd.h
-@@ -72,6 +72,7 @@ struct scsi_cmnd {
- 	/* These elements define the operation we ultimately want to perform */
- 	unsigned short use_sg;	/* Number of pieces of scatter-gather */
- 	unsigned short sglist_len;	/* size of malloc'd scatter-gather list */
-+	unsigned short __use_sg;
- 
- 	unsigned underflow;	/* Return error if less than
- 				   this amount is transferred */
+- 	for (i = 0; i < nents; i++ ) {
+-		struct scatterlist *s = &sg[i];
++	for_each_sg(sg, s, nents, i) {
+ 		BUG_ON(!s->page);
+ 		s->dma_address = virt_to_bus(page_address(s->page) +s->offset);
+ 		if (!check_addr("map_sg", hwdev, s->dma_address, s->length))
 -- 
 1.5.2.rc1
 
