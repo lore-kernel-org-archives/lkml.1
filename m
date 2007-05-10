@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbXEJRwB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbXEJRzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759631AbXEJRwB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 13:52:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758619AbXEJRvw
+	id S1758868AbXEJRzu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 13:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756647AbXEJRzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 13:51:52 -0400
-Received: from wr-out-0506.google.com ([64.233.184.236]:4127 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757287AbXEJRvv (ORCPT
+	Thu, 10 May 2007 13:55:43 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:53196 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756222AbXEJRzn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 13:51:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=fgmsezB/D9GR3LEZ70XWbiTXjpSzigkfJEY3eSP6vnnPDJ906wSqXLRJ+ykbdSRg1nmxR11m0t4HKy7TsH3rfdu++wZkBldZ1nSUuqbmw8EZjT+Z9p53bC8CjI00QQ/VQGt9hKlDQFAxa+8R4WVnLfd6CjN6Khjxa8GJg3cFuyY=
-Message-ID: <f383264b0705101051r4c8ebc73hc7f6119393fe46c9@mail.gmail.com>
-Date: Thu, 10 May 2007 10:51:50 -0700
-From: "Matt Reimer" <mattjreimer@gmail.com>
-To: "Haavard Skinnemoen" <hskinnemoen@atmel.com>
-Subject: Re: [PATCH] MMC: Flush mmc workqueue late in the boot sequence
-Cc: "Pierre Ossman" <drzeus@drzeus.cx>, linux-kernel@vger.kernel.org
-In-Reply-To: <20070510182749.219351cb@dhcp-252-105.norway.atmel.com>
+	Thu, 10 May 2007 13:55:43 -0400
+Date: Thu, 10 May 2007 10:55:42 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Arjan van de Ven <arjan@linux.intel.com>
+cc: linux-kernel@vger.kernel.org
+Subject: VM statistics: Make timer deferrable
+Message-ID: <Pine.LNX.4.64.0705101055060.9982@schroedinger.engr.sgi.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <117879333788-git-send-email-hskinnemoen@atmel.com>
-	 <46430A49.9090803@drzeus.cx>
-	 <20070510143737.54969394@dhcp-252-105.norway.atmel.com>
-	 <46432212.9070008@drzeus.cx>
-	 <20070510163348.0a117d92@dhcp-252-105.norway.atmel.com>
-	 <46434123.8040801@drzeus.cx>
-	 <20070510182749.219351cb@dhcp-252-105.norway.atmel.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/10/07, Haavard Skinnemoen <hskinnemoen@atmel.com> wrote:
-> Btw, how can I wait for the scanning to complete from early userspace?
+VM statistics updates do not matter if the kernel is in idle powersaving mode.
+So allow the timer to be deferred.
 
-A workaround is to pass the kernel argument rootdelay=5 or something
-like that (the value specifies seconds).
+It would be better though if we could switch the timer between deferrable
+and nondeferrable based on differentials present. The timer would
+start out nondeferrable and if we find that there were no updates in
+the last statistics interval then we would switch the timer to deferrable.
+If the timer later finds again that there are differentials then go to
+nondeferrable again.
 
-Matt
+And yet another way would be to run the timer shortly before going to idle?
+
+The solution here means that the VM counters may be slightly off during idle
+since differentials may be still pending while the timer is deferred.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ mm/vmstat.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: slub/mm/vmstat.c
+===================================================================
+--- slub.orig/mm/vmstat.c	2007-05-10 10:09:19.000000000 -0700
++++ slub/mm/vmstat.c	2007-05-10 10:10:14.000000000 -0700
+@@ -698,7 +698,7 @@ static void __devinit start_cpu_timer(in
+ {
+ 	struct delayed_work *vmstat_work = &per_cpu(vmstat_work, cpu);
+ 
+-	INIT_DELAYED_WORK(vmstat_work, vmstat_update);
++	INIT_DELAYED_WORK_DEFERRABLE(vmstat_work, vmstat_update);
+ 	schedule_delayed_work_on(cpu, vmstat_work, HZ + cpu);
+ }
+ 
