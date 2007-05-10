@@ -1,62 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759672AbXEJLWQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbXEJLYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759672AbXEJLWQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:22:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXEJLWE
+	id S1759475AbXEJLYc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754809AbXEJLYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:22:04 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:24544 "EHLO kernel.dk"
+	Thu, 10 May 2007 07:24:25 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:22249 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754476AbXEJLWC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 07:22:02 -0400
-Date: Thu, 10 May 2007 13:21:33 +0200
+	id S1753201AbXEJLYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 07:24:25 -0400
+Date: Thu, 10 May 2007 13:23:55 +0200
 From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
+To: Benny Halevy <bhalevy@panasas.com>
 Cc: linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 7/13] i386 sg: add support for chaining scatterlists
-Message-ID: <20070510112132.GP4629@kernel.dk>
-References: <11787925152319-git-send-email-jens.axboe@oracle.com> <11787925162760-git-send-email-jens.axboe@oracle.com> <20070510034331.2d3e9410.akpm@linux-foundation.org> <20070510104454.GL4629@kernel.dk> <20070510104653.GM4629@kernel.dk> <20070510035207.37a528ae.akpm@linux-foundation.org>
+Message-ID: <20070510112355.GQ4629@kernel.dk>
+References: <11787925152319-git-send-email-jens.axboe@oracle.com> <11787925162760-git-send-email-jens.axboe@oracle.com> <4642FB1B.80702@panasas.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070510035207.37a528ae.akpm@linux-foundation.org>
+In-Reply-To: <4642FB1B.80702@panasas.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10 2007, Andrew Morton wrote:
-> On Thu, 10 May 2007 12:46:53 +0200 Jens Axboe <jens.axboe@oracle.com> wrote:
+On Thu, May 10 2007, Benny Halevy wrote:
+> Jens Axboe wrote:
+> > +#define sg_is_chain(sg)		((unsigned long) (sg)->page & 0x01)
+> > +#define sg_chain_ptr(sg)	\
+> > +	((struct scatterlist *) ((unsigned long) (sg)->page & ~0x01))
+> > +
+> > +/*
+> > + * We overload the meaning of ->page for sg chaining. If the LSB is
+> > + * set, the page member contains a pointer to the next sgtable.
+> > + */
+> > +static inline struct scatterlist *sg_next(struct scatterlist *sg)
+> > +{
+> > +	if (sg_is_chain(sg))
+> > +		return sg_chain_ptr(sg);
+> > +
+> > +	return sg + 1;
+> > +}
 > 
-> > On Thu, May 10 2007, Jens Axboe wrote:
-> > > Yeah, I'm inclined to agree. Perhaps it would be better to put this
-> > > stuff in lib/scatterlist.c or something like that instead?
-> > > 
-> > > > > +/*
-> > > > > + * Chain previous sglist to this one
-> > > > > + */
-> > > > > +static inline void sg_chain(struct scatterlist *prv, unsigned int prv_nents,
-> > > > > +			    struct scatterlist *sgl)
-> > > > > +{
-> > > > > +#ifndef ARCH_HAS_SG_CHAIN
-> > > > > +	BUG();
-> > > > > +#endif
-> > > > 
-> > > > Can use BUILD_BUG_ON here.  Or just #error.
-> > > 
-> > > Good idea, thanks!
-> > 
-> > No wait a second, that wont work. The code is always being built in sg
-> > scsi_lib.c, it should just not be called unless we can do chaining. We
-> > will never have a large number of segments that require chaining without
-> > ARCH_HAS_SG_CHAIN, so it'll never be called in that case. So it has to
-> > remain as it is, a BUG().
+> Jens, should sg_next ever return the sg containing the chain link?
+> If sg points at the entry right before the link entry, don't we
+> want to skip it?
 > 
-> Confused.  If it should never be called, why does it even get compiled in?
+> E.g.:
+> 
+> static inline struct scatterlist *sg_next(struct scatterlist *sg)
+> {
+> 	struct scatterlist *next;
+> 
+> 	/* just in case, shouldn't really ever be here */
+> 	if (sg_is_chain(sg))
+> 		return sg_chain_ptr(sg);
+> 
+> 	next = sg + 1;
+> 
+> 	if (sg_is_chain(next))
+> 		return sg_chain_ptr(next);
+> 
+> 	return next;
+> }
 
-I can hide it behind ARCH_HAS_SG_CHAIN and provide something ala
+You are right, I got that mixed up, I changed the setup to overloading
+->page right before posting it. So:
 
-#define sg_chain(prv, x, sgl)   BUG()
+static inline struct scatterlist *sg_next(struct scatterlist *sg)
+{
+        sg++;
 
-for when that is not defined. It still needs to be visible.
+        if (unlikely(sg_is_chain(sg)))
+                sg = sg_chain_ptr(sg);
+
+        return sg;
+}
 
 -- 
 Jens Axboe
