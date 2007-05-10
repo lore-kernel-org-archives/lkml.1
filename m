@@ -1,112 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760151AbXEJRLN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761356AbXEJRL2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760151AbXEJRLN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 13:11:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755058AbXEJRLA
+	id S1761356AbXEJRL2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 13:11:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757014AbXEJRLE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 13:11:00 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59155 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752216AbXEJRK7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 13:10:59 -0400
-Date: Thu, 10 May 2007 19:10:42 +0200
-From: Tomas Janousek <tjanouse@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
-       tsmetana@redhat.com, riel@redhat.com
-Subject: [PATCH] Use boot based time for process start time and boot time
-	in /proc
-Message-ID: <f3c12bbf0772543db18c7a5251ce92f4f4f6758e.1178816485.git.tomi@nomi.cz>
-References: <3108b4e2c91097ec9469420b3f0836f0499068a6.1178816485.git.tomi@nomi.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <3108b4e2c91097ec9469420b3f0836f0499068a6.1178816485.git.tomi@nomi.cz>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+	Thu, 10 May 2007 13:11:04 -0400
+Received: from pfepc.post.tele.dk ([195.41.46.237]:40076 "EHLO
+	pfepc.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756263AbXEJRLB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 13:11:01 -0400
+Subject: Re: [patch] CFS scheduler, -v11
+From: Kasper Sandberg <lkml@metanurb.dk>
+To: Christian <christiand59@web.de>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <200705101859.11696.christiand59@web.de>
+References: <20070508150431.GA26977@elte.hu>
+	 <200705101859.11696.christiand59@web.de>
+Content-Type: text/plain
+Date: Thu, 10 May 2007 19:10:44 +0200
+Message-Id: <1178817044.25266.8.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.4.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 411187fb05cd11676b0979d9fbf3291db69dbce2 caused boot time to move and
-process start times to become invalid after suspend. Using boot based time for
-those restores the old behaviour and fixes the issue.
+On Thu, 2007-05-10 at 18:59 +0200, Christian wrote:
+> Hello lkml, hello Ingo!
+> 
+> I've been using CFS-v10 for a few days and I must say that I'm verry 
+> impressed ;-)
+> 
+> Desktop performance without any manual renicing is excellent, even with 
+> make -j20. Gaming performance is at least on par with SD now! I've tried to 
+Which games are you trying? and have you tried other workloads then make
+-j20?
 
-Signed-off-by: Tomas Janousek <tjanouse@redhat.com>
-Cc: Tomas Smetana <tsmetana@redhat.com>
-Cc: John Stultz <johnstul@us.ibm.com>
----
- fs/proc/array.c       |    5 +++--
- fs/proc/proc_misc.c   |    8 +++++---
- include/linux/sched.h |    2 +-
- kernel/fork.c         |    2 ++
- 4 files changed, 11 insertions(+), 6 deletions(-)
+try have a window with some 3d game open, and a browser besides it, and
+press a link. i cant seem to get smooth results with CFS.
 
-diff --git a/fs/proc/array.c b/fs/proc/array.c
-index 74f30e0..e798e11 100644
---- a/fs/proc/array.c
-+++ b/fs/proc/array.c
-@@ -405,8 +405,9 @@ static int do_task_stat(struct task_struct *task, char * buffer, int whole)
- 
- 	/* Temporary variable needed for gcc-2.96 */
- 	/* convert timespec -> nsec*/
--	start_time = (unsigned long long)task->start_time.tv_sec * NSEC_PER_SEC
--				+ task->start_time.tv_nsec;
-+	start_time =
-+		(unsigned long long)task->real_start_time.tv_sec * NSEC_PER_SEC
-+				+ task->real_start_time.tv_nsec;
- 	/* convert nsec -> ticks */
- 	start_time = nsec_to_clock_t(start_time);
- 
-diff --git a/fs/proc/proc_misc.c b/fs/proc/proc_misc.c
-index 4636be7..0782d34 100644
---- a/fs/proc/proc_misc.c
-+++ b/fs/proc/proc_misc.c
-@@ -445,12 +445,14 @@ static int show_stat(struct seq_file *p, void *v)
- 	unsigned long jif;
- 	cputime64_t user, nice, system, idle, iowait, irq, softirq, steal;
- 	u64 sum = 0;
-+	struct timespec boottime;
- 
- 	user = nice = system = idle = iowait =
- 		irq = softirq = steal = cputime64_zero;
--	jif = - wall_to_monotonic.tv_sec;
--	if (wall_to_monotonic.tv_nsec)
--		--jif;
-+	getboottime(&boottime);
-+	jif = boottime.tv_sec;
-+	if (boottime.tv_nsec)
-+		++jif;
- 
- 	for_each_possible_cpu(i) {
- 		int j;
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 40645b4..386ff51 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -918,7 +918,7 @@ struct task_struct {
- 	unsigned int rt_priority;
- 	cputime_t utime, stime;
- 	unsigned long nvcsw, nivcsw; /* context switch counts */
--	struct timespec start_time;
-+	struct timespec start_time, real_start_time;
- /* mm fault and swap info: this can arguably be seen as either mm-specific or thread-specific */
- 	unsigned long min_flt, maj_flt;
- 
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 4239de2..3aa82bc 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -1059,6 +1059,8 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 
- 	p->lock_depth = -1;		/* -1 = no lock */
- 	do_posix_clock_monotonic_gettime(&p->start_time);
-+	p->real_start_time = p->start_time;
-+	monotonic_to_bootbased(&p->real_start_time);
- 	p->security = NULL;
- 	p->io_context = NULL;
- 	p->io_wait = NULL;
--- 
-1.5.1.4
+Perhaps i could also conduct tests with the games you are trying on my
+hardware.
 
+> change the sched_load_smoothing config to "8" but there is no visible 
+> difference when it's set to "7".
+> 
+> Both schedulers are verrry good! I can't really tell which one is better.
+> I noticed that while compiling a kernel (with -j4) my CPU temperature is two 
+> to three degrees hotter than with mainline. I have not done any timing tests, 
+> but I suspect that it's a little faster while preserving excellent desktop 
+> usability. Great work!! :-)
+> 
+> -Christian
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
--- 
-TJ. (Brno, CZ), BaseOS, Red Hat
