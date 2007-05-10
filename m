@@ -1,52 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758839AbXEJURv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759214AbXEJUU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758839AbXEJURv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 16:17:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757350AbXEJURo
+	id S1759214AbXEJUU1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 16:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755635AbXEJUUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 16:17:44 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:38265 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755635AbXEJURn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 16:17:43 -0400
-Date: Thu, 10 May 2007 13:17:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Christoph Lameter <clameter@sgi.com>,
-       William Lee Irwin III <wli@holomorphy.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slub-i386-support.patch
-Message-Id: <20070510131724.150e1e99.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705102028550.25681@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0705102028550.25681@blonde.wat.veritas.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 16:20:20 -0400
+Received: from vena.lwn.net ([206.168.112.25]:58277 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755115AbXEJUUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 16:20:19 -0400
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] "volatile considered harmful", take 2
+cc: akpm@linux-foundation.org, "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       Heikki Orsila <shdl@zakalwe.fi>, "H. Peter Anvin" <hpa@zytor.com>,
+       "Satyam Sharma" <satyam.sharma@gmail.com>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Thu, 10 May 2007 14:20:19 -0600
+Message-ID: <6143.1178828419@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 21:03:39 +0100 (BST)
-Hugh Dickins <hugh@veritas.com> wrote:
+Who knew a documentation patch would get so many reviews?  I like it...
 
-> Just want to report that I've been running SLUB on i386, both in -mm
-> and with slub-i386-support.patch applied to 2.6.21-git, and observed
-> no problems with it.  I'm anxious that it (or an equivalent) go into
-> 2.6.22-rc1, i386 being now the last ARCH_USES_SLAB_PAGE_STRUCT holdout.
-> 
-> In the frenzy over PowerPC, maybe Linus overlooked that i386
-> was still not supporting SLUB; and I fear that once people get
-> "# CONFIG_SLUB is not set" into their .config, they're less likely to
-> switch over to testing CONFIG_SLUB=y - I remain anxious that it see
-> as much testing as possible (but under EXPERIMENTAL for 2.6.22, yes).
+Anyway, here's a new version in which I attempt to respond to all the
+comments that came in.  Thanks to everybody for looking it over.
 
-ok..
+jon
 
-> Though when I look at the patchset (copied below), I do wonder why
-> it puts a quicklist_trim() into i386's cpu_idle() and flush_tlb_mm():
-> neither is where I'd expect us to be secretly freeing pages.  Ah,
-> several arches do it in cpu_idle(): how odd, oh well.
+Steer developers away from the volatile type.
 
-Christoph, could you please check that this is justified?
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+
+diff --git a/Documentation/volatile-considered-harmful.txt b/Documentation/volatile-considered-harmful.txt
+new file mode 100644
+index 0000000..e67745f
+--- /dev/null
++++ b/Documentation/volatile-considered-harmful.txt
+@@ -0,0 +1,118 @@
++Why the "volatile" type class should not be used
++------------------------------------------------
++
++C programmers have often taken volatile to mean that the variable could be
++changed outside of the current thread of execution; as a result, they are
++sometimes tempted to use it in kernel code when shared data structures are
++being used.  In other words, they have been known to treat volatile types
++as a sort of easy atomic variable, which they are not.  The use of volatile in
++kernel code is almost never correct; this document describes why.
++
++The key point to understand with regard to volatile is that its purpose is
++to suppress optimization, which is almost never what one really wants to
++do.  In the kernel, one must protect shared data structures against
++unwanted concurrent access, which is very much a different task.  As it
++happens, once the critical sections are properly implemented, the compiler
++optimization issues which volatile was added to prevent will have been
++taken care of in a more efficient way.
++
++Like volatile, the kernel primitives which make concurrent access to data
++safe (spinlocks, mutexes, memory barriers, etc.) are designed to prevent
++unwanted optimization.  If they are being used properly, there will be no
++need to use volatile as well.  If volatile is still necessary, there is
++almost certainly a bug in the code somewhere.  In properly-written kernel
++code, volatile can only serve to slow things down.
++
++Consider a typical block of kernel code:
++
++    spin_lock(&the_lock);
++    do_something_on(&shared_data);
++    do_something_else_with(&shared_data);
++    spin_unlock(&the_lock);
++
++If all the code follows the locking rules, the value of shared_data cannot
++change unexpectedly while the_lock is held.  Any other code which might
++want to play with that data will be waiting on the lock.  The spinlock
++primitives act as memory barriers - they are explicitly written to do so -
++meaning that data accesses will not be optimized across them.  So the
++compiler might think it knows what will be in some_data, but the
++spin_lock() call, since it acts as a memory barrier, will force it to
++forget anything it knows.  There will be no optimization problems with
++accesses to that data.
++
++If shared_data were declared volatile, the locking would still be
++necessary.  But the compiler would also be prevented from optimizing access
++to shared_data _within_ the critical section, when we know that nobody else
++can be working with it.  While the lock is held, shared_data is not
++volatile.  When dealing with shared data, proper locking makes volatile
++unnecessary - and potentially harmful.
++
++The volatile storage class was originally meant for memory-mapped I/O
++registers.  Within the kernel, register accesses, too, should be protected
++by locks, but one also does not want the compiler "optimizing" register
++accesses within a critical section.  But, within the kernel, I/O memory
++accesses are always done through accessor functions; accessing I/O memory
++directly through pointers is frowned upon and does not work on all
++architectures.  Those accessors are written to prevent unwanted
++optimization, so, once again, volatile is unnecessary.
++
++Another situation where one might be tempted to use volatile is
++when the processor is busy-waiting on the value of a variable.  The right
++way to perform a busy wait is:
++
++    while (my_variable != what_i_want)
++        cpu_relax();
++
++The cpu_relax() call can lower CPU power consumption or yield to a
++hyperthreaded twin processor; it also happens to serve as a memory barrier,
++so, once again, volatile is unnecessary.  Of course, busy-waiting is
++generally an anti-social act to begin with.
++
++There are still a few rare situations where volatile makes sense in the
++kernel:
++
++  - The above-mentioned accessor functions might use volatile on
++    architectures where direct I/O memory access does work.  Essentially,
++    each accessor call becomes a little critical section on its own and
++    ensures that the access happens as expected by the programmer.
++
++  - Inline assembly code which changes memory, but which has no other
++    visible side effects, risks being deleted by GCC.  Adding the volatile
++    keyword to asm statements will prevent this removal.
++
++  - The jiffies variable is special in that it can have a different value
++    every time it is referenced, but it can be read without any special
++    locking.  So jiffies can be volatile, but the addition of other
++    variables of this type is strongly frowned upon.  Jiffies is considered
++    to be a "stupid legacy" issue in this regard.
++
++  - Pointers to data structures in coherent memory which might be modified
++    by I/O devices can, sometimes, legitimately be volatile.  A ring buffer
++    used by a network adapter, where that adapter changes pointers to
++    indicate which descriptors have been processed, is an example of this
++    type of situation.
++
++For most code, none of the above justifications for volatile apply.  As a
++result, the use of volatile is likely to be seen as a bug and will bring
++additional scrutiny to the code.  Developers who are tempted to use
++volatile should take a step back and think about what they are truly trying
++to accomplish.  
++
++Patches to remove volatile variables are generally welcome - as long as
++they come with a justification which shows that the concurrency issues have
++been properly thought through.
++
++
++NOTES
++-----
++
++[1] http://lwn.net/Articles/233481/
++[2] http://lwn.net/Articles/233482/
++
++CREDITS
++-------
++
++Original impetus and research by Randy Dunlap
++Written by Jonathan Corbet
++Improvements via coments from Satyam Sharma, Johannes Stezenbach, Jesper
++	Juhl, Heikki Orsila, and H. Peter Anvin
