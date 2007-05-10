@@ -1,45 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761314AbXEJVlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762555AbXEJVmG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761314AbXEJVlr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756558AbXEJVlk
+	id S1762555AbXEJVmG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:42:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758908AbXEJVlm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:41:40 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:43727 "EHLO mailer.gwdg.de"
+	Thu, 10 May 2007 17:41:42 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57731 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754130AbXEJVlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:41:39 -0400
-Date: Thu, 10 May 2007 23:34:29 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Jonathan Corbet <corbet@lwn.net>
-cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>
-Subject: Re: [PATCH] "volatile considered harmful", take 2
-In-Reply-To: <6143.1178828419@lwn.net>
-Message-ID: <Pine.LNX.4.61.0705102326470.6426@yvahk01.tjqt.qr>
-References: <6143.1178828419@lwn.net>
+	id S1758448AbXEJVll (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:41:41 -0400
+Message-ID: <46439185.5060207@redhat.com>
+Date: Thu, 10 May 2007 17:41:25 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
+Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an
+ nlink problem?
+References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org>
+In-Reply-To: <46426194.3040403@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jeremy Fitzhardinge wrote:
+> David Chinner wrote:
+>> Seems very unlikely. Have you unmounted and mounted the filesystem
+>> (or rebooted or suspended) between the files being seen good and
+>> the files being seen bad?
+>>   
+> 
+> There was definitely a suspend-resume, and maybe a reboot.  I'll try
+> again later on.
+> 
 
-On May 10 2007 14:20, Jonathan Corbet wrote:
->
->Who knew a documentation patch would get so many reviews?  I like it...
-
-And the next thing is register-considered-harmful.txt. Running
-
-	grep -Pr '\bregister\s+(unsigned|char|short|int|long|float|
-	double|struct|union|uint|u\d+|s\d+)\b' linux-2.6.21/ | wc -l
-
-turns up no less than 1106+2 hits.
-
-
-	Jan
--- 
+What CPU architecture is this happening on? Not i686 with PAE by
+any chance?
