@@ -1,92 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbXEJQ2E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759372AbXEJQeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761299AbXEJQ2E (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 12:28:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbXEJQ1y
+	id S1759372AbXEJQeM (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 12:34:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754775AbXEJQd7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 12:27:54 -0400
-Received: from nat-132.atmel.no ([80.232.32.132]:65287 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755492AbXEJQ1w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 12:27:52 -0400
-Date: Thu, 10 May 2007 18:27:49 +0200
-From: Haavard Skinnemoen <hskinnemoen@atmel.com>
-To: Pierre Ossman <drzeus@drzeus.cx>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MMC: Flush mmc workqueue late in the boot sequence
-Message-ID: <20070510182749.219351cb@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <46434123.8040801@drzeus.cx>
-References: <117879333788-git-send-email-hskinnemoen@atmel.com>
-	<46430A49.9090803@drzeus.cx>
-	<20070510143737.54969394@dhcp-252-105.norway.atmel.com>
-	<46432212.9070008@drzeus.cx>
-	<20070510163348.0a117d92@dhcp-252-105.norway.atmel.com>
-	<46434123.8040801@drzeus.cx>
-Organization: Atmel Norway
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 10 May 2007 12:33:59 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:50260 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753201AbXEJQd7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 12:33:59 -0400
+Date: Thu, 10 May 2007 22:11:58 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: "Dmitry Adamushko" <dmitry.adamushko@gmail.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Con Kolivas" <kernel@kolivas.org>,
+       "Mike Galbraith" <efault@gmx.de>,
+       "Linux Kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: Definition of fairness (was Re: [patch] CFS scheduler, -v11)
+Message-ID: <20070510164158.GB9173@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070508150431.GA26977@elte.hu> <20070509180205.GA27462@in.ibm.com> <b647ffbd0705091224m75bf8caawa0019ecfe8bf82e7@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="6TrnltStXW4iwmi0"
+Content-Disposition: inline
+In-Reply-To: <b647ffbd0705091224m75bf8caawa0019ecfe8bf82e7@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 17:58:27 +0200
-Pierre Ossman <drzeus@drzeus.cx> wrote:
 
-> Haavard Skinnemoen wrote:
-> > 
-> > Ok, is there any better way to achieve the same this? As far as I
-> > can tell, mmc_remove_host() uses mmc_flush_scheduled_work() for the
-> > same purpose -- it ensures that scans that have already been started
-> > will have completed before the function continues.
-> > 
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Wed, May 09, 2007 at 09:24:17PM +0200, Dmitry Adamushko wrote:
+> One quick observation.
 > 
-> Not quite. mmc_remove_host() doesn't care if a detect has been executed or not,
-> it only cares about whether or not one is executing right now. So in order for
-> your patch to work, there must be no way that mmc_finish_detect() is called
-> before the detect is scheduled.
+> Isn't it important for both processes to have the same "loops_per_ms" value?
 
-Is there any way this can happen? Host controller drivers register
-themselves from module_init(), their probe() function gets called,
-which calls mmc_add_host(), which schedules the initial scan. If
-multiple host controllers are present, they will all schedule their
-scans before all module_init()s have been called. Am I missing
-something?
+Good catch.
 
-> > I wouldn't call it luck. The way mmc_rescan() is implemented, any scans
-> > that are started before late_initcall time are completed before
-> > mmc_finish_detect() returns. The steps are all done synchronously in
-> > the workqueue function.
-> > 
-> 
-> Indeed. But it is not by design that they are scheduled before late_initcall().
-> Also, flushing the workqueue is also not a by-design way of completing a scan,
-> it just happens to be that way right now.
+I have modified the testcase based on this observation (using
+setitimer).
 
-So how is it supposed to work "by design"?
+-- 
+Regards,
+vatsa
 
-> > And I never realized that using a block device as a parameter to the
-> > root= parameter could possibly be "unofficial" functionality...?
-> 
-> Then you've learned something new. ;)
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="cpuhog.c"
 
-Guess so. It seems like the prepare_namespace stuff is getting less
-useful every day.
+#include <unistd.h>
+#include <stdio.h>
+#include <signal.h>
+#include <string.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/time.h>
+#include <sys/resource.h>
 
-> Only some devices work that way (generally only those with "simple" interfaces).
-> And most things are these days behind more advanced buses, more akin to a network.
+volatile int time_elapsed;
+int run_length  = 52; 	// in milliseconds
+int sleep_length = 24;	// in milliseconds
+int epoch_time = 5;	// in seconds
 
-It's funny that NFS root does not have these kinds of problems then...
+void alrm_handler(int signo)
+{
+	time_elapsed = 1;
+}
 
-> Generally, not waiting for a lot of hardware is a good thing as it speeds up
-> boot times. In my mind, the proper way is having a script in an initrd that
-> waits for just the parts of the hardware that this particular system needs.
-> Everything else can be brought up in the background.
+main(int argc, char *argv[])
+{
+	double prevusage = 0;
+	struct itimerval timer;
+	time_t prevtime;
 
-Yeah, but I suspect most users will rather have a system that actually
-boots than a system that would have booted very quickly if it had booted
-at all.
+	if (argc > 1) {
+		run_length = atoi(argv[1]);
+		if (argc > 2)
+			sleep_length = atoi(argv[2]);
+		if (argc > 3)
+			epoch_time = atoi(argv[3]);
+	}
 
-Btw, how can I wait for the scanning to complete from early userspace?
+	signal(SIGVTALRM, alrm_handler);
+	memset(&timer, 0, sizeof(timer));
 
-Haavard
+	timer.it_value.tv_sec = run_length / 1000;
+	timer.it_value.tv_usec = (run_length % 1000) * 1000;
+
+	printf ("run time = %d ms (%d sec + %d usec), sleep time = %d ms,"
+		" epoch time = %d s\n", run_length, timer.it_value.tv_sec,
+		timer.it_value.tv_usec, sleep_length, epoch_time);
+
+	prevtime = time(NULL);
+	while (1) {
+		time_t curtime, deltatime;
+		struct rusage stats;
+		int rc;
+
+		rc = setitimer(ITIMER_VIRTUAL, &timer, NULL);
+		if (rc < 0) {
+			perror("setitimer");
+			exit(1);
+		}
+
+		time_elapsed = 0;
+		while (!time_elapsed)
+		;
+
+		usleep(sleep_length * 1000);
+
+		curtime = time(NULL);
+		deltatime = curtime - prevtime;
+		if (deltatime >=  epoch_time) {
+			double curusage, deltausage;
+
+			getrusage(0, &stats);
+			curusage = stats.ru_utime.tv_sec +
+				   stats.ru_utime.tv_usec * 1e-6 +
+				   stats.ru_stime.tv_sec + 
+				   stats.ru_stime.tv_usec * 1e-6;
+
+			deltausage = curusage - prevusage;
+			printf ("Obtained %3.2f seconds of execution time in"
+		       	      " %d elapsed seconds \n", deltausage, deltatime);
+			prevtime = curtime;
+			prevusage = curusage;
+		}
+	}
+}
+
+--6TrnltStXW4iwmi0--
