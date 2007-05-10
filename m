@@ -1,256 +1,374 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031123AbXEKTYc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763668AbXEKTYt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031123AbXEKTYc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:24:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966267AbXEKTTy
+	id S1763668AbXEKTYt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:24:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762897AbXEKTUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:19:54 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:36796 "EHLO
+	Fri, 11 May 2007 15:20:11 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:36801 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966249AbXEKTTw (ORCPT
+	with ESMTP id S966265AbXEKTUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:19:52 -0400
-Message-Id: <20070511001204.173739000@goop.org>
-References: <20070511000643.025196000@goop.org>
+	Fri, 11 May 2007 15:20:03 -0400
+Message-Id: <20070511000028.446470000@goop.org>
+References: <20070510235708.155502000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:07:01 -0700
+Date: Thu, 10 May 2007 16:57:14 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+Cc: Andrew Morton <akpm@linux-foundation.org>,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Olof Johansson <olof@lixom.net>
-Subject: [patch 18/28]xen: Use the hvc console infrastructure for Xen console
-Content-Disposition: inline; filename=xen-hvc-console.patch
+       Len Brown <lenb@kernel.org>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, Arnd Bergmann <arnd@arndb.de>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 6/7] Add common orderly_poweroff()
+Content-Disposition: inline; filename=orderly-poweroff.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement a Xen back-end for hvc console.
+Various pieces of code around the kernel want to be able to trigger an
+orderly poweroff.  This pulls them together into a single
+implementation.
 
-From: Gerd Hoffmann <kraxel@suse.de>
+By default the poweroff command is /sbin/poweroff, but it can be set
+via sysctl: kernel/poweroff_cmd.  This is split at whitespace, so it
+can include command-line arguments.
+
+This patch replaces four other instances of invoking either "poweroff"
+or "shutdown -h now": one sparc64, two sbus drivers, and acpi thermal
+management.
+
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Acked-by: Olof Johansson <olof@lixom.net>
+Acked-by: Len Brown <lenb@kernel.org>
+Cc: Chris Wright <chrisw@sous-sol.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: David S. Miller <davem@davemloft.net>
+
 ---
- arch/i386/xen/events.c |    3 -
- drivers/Makefile       |    3 +
- drivers/char/Kconfig   |    8 ++
- drivers/char/Makefile  |    1 
- drivers/char/hvc_xen.c |  134 ++++++++++++++++++++++++++++++++++++++++++++++++
- include/xen/events.h   |    1 
- 6 files changed, 149 insertions(+), 1 deletion(-)
+ arch/sparc64/kernel/power.c     |   40 +-------------------------
+ drivers/acpi/thermal.c          |   24 +---------------
+ drivers/sbus/char/bbc_envctrl.c |    5 +--
+ drivers/sbus/char/envctrl.c     |    7 +---
+ include/linux/reboot.h          |    5 +++
+ include/linux/sysctl.h          |    1 
+ kernel/sys.c                    |   58 +++++++++++++++++++++++++++++++++++++++
+ kernel/sysctl.c                 |   10 ++++++
+ 8 files changed, 82 insertions(+), 68 deletions(-)
 
 ===================================================================
---- a/arch/i386/xen/events.c
-+++ b/arch/i386/xen/events.c
-@@ -244,7 +244,7 @@ static int find_unbound_irq(void)
- 	return irq;
+--- a/arch/sparc64/kernel/power.c
++++ b/arch/sparc64/kernel/power.c
+@@ -13,6 +13,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/pm.h>
+ #include <linux/syscalls.h>
++#include <linux/reboot.h>
+ 
+ #include <asm/system.h>
+ #include <asm/auxio.h>
+@@ -32,14 +33,13 @@ int scons_pwroff = 1;
+ #include <linux/pci.h>
+ static void __iomem *power_reg;
+ 
+-static DECLARE_WAIT_QUEUE_HEAD(powerd_wait);
+ static int button_pressed;
+ 
+ static irqreturn_t power_handler(int irq, void *dev_id)
+ {
+ 	if (button_pressed == 0) {
+ 		button_pressed = 1;
+-		wake_up(&powerd_wait);
++		orderly_poweroff(true);
+ 	}
+ 
+ 	/* FIXME: Check registers for status... */
+@@ -75,36 +75,6 @@ EXPORT_SYMBOL(pm_power_off);
+ EXPORT_SYMBOL(pm_power_off);
+ 
+ #ifdef CONFIG_PCI
+-static int powerd(void *__unused)
+-{
+-	static char *envp[] = { "HOME=/", "TERM=linux", "PATH=/sbin:/usr/sbin:/bin:/usr/bin", NULL };
+-	char *argv[] = { "/sbin/shutdown", "-h", "now", NULL };
+-	DECLARE_WAITQUEUE(wait, current);
+-
+-	daemonize("powerd");
+-
+-	add_wait_queue(&powerd_wait, &wait);
+-again:
+-	for (;;) {
+-		set_task_state(current, TASK_INTERRUPTIBLE);
+-		if (button_pressed)
+-			break;
+-		flush_signals(current);
+-		schedule();
+-	}
+-	__set_current_state(TASK_RUNNING);
+-	remove_wait_queue(&powerd_wait, &wait);
+-
+-	/* Ok, down we go... */
+-	button_pressed = 0;
+-	if (kernel_execve("/sbin/shutdown", argv, envp) < 0) {
+-		printk("powerd: shutdown execution failed\n");
+-		add_wait_queue(&powerd_wait, &wait);
+-		goto again;
+-	}
+-	return 0;
+-}
+-
+ static int __init has_button_interrupt(unsigned int irq, struct device_node *dp)
+ {
+ 	if (irq == PCI_IRQ_NONE)
+@@ -128,12 +98,6 @@ static int __devinit power_probe(struct 
+ 	poweroff_method = machine_halt;  /* able to use the standard halt */
+ 
+ 	if (has_button_interrupt(irq, op->node)) {
+-		if (kernel_thread(powerd, NULL, CLONE_FS) < 0) {
+-			printk("Failed to start power daemon.\n");
+-			return 0;
+-		}
+-		printk("powerd running.\n");
+-
+ 		if (request_irq(irq,
+ 				power_handler, 0, "power", NULL) < 0)
+ 			printk("power: Error, cannot register IRQ handler.\n");
+===================================================================
+--- a/drivers/acpi/thermal.c
++++ b/drivers/acpi/thermal.c
+@@ -40,6 +40,7 @@
+ #include <linux/jiffies.h>
+ #include <linux/kmod.h>
+ #include <linux/seq_file.h>
++#include <linux/reboot.h>
+ #include <asm/uaccess.h>
+ 
+ #include <acpi/acpi_bus.h>
+@@ -61,7 +62,6 @@
+ #define ACPI_THERMAL_MODE_ACTIVE	0x00
+ #define ACPI_THERMAL_MODE_PASSIVE	0x01
+ #define ACPI_THERMAL_MODE_CRITICAL   	0xff
+-#define ACPI_THERMAL_PATH_POWEROFF	"/sbin/poweroff"
+ 
+ #define ACPI_THERMAL_MAX_ACTIVE	10
+ #define ACPI_THERMAL_MAX_LIMIT_STR_LEN 65
+@@ -431,26 +431,6 @@ static int acpi_thermal_get_devices(stru
+ 	return 0;
  }
  
--static int bind_evtchn_to_irq(unsigned int evtchn)
-+int bind_evtchn_to_irq(unsigned int evtchn)
+-static int acpi_thermal_call_usermode(char *path)
+-{
+-	char *argv[2] = { NULL, NULL };
+-	char *envp[3] = { NULL, NULL, NULL };
+-
+-
+-	if (!path)
+-		return -EINVAL;
+-
+-	argv[0] = path;
+-
+-	/* minimal command environment */
+-	envp[0] = "HOME=/";
+-	envp[1] = "PATH=/sbin:/bin:/usr/sbin:/usr/bin";
+-
+-	call_usermodehelper(argv[0], argv, envp, 0);
+-
+-	return 0;
+-}
+-
+ static int acpi_thermal_critical(struct acpi_thermal *tz)
  {
- 	int irq;
+ 	if (!tz || !tz->trips.critical.flags.valid)
+@@ -468,7 +448,7 @@ static int acpi_thermal_critical(struct 
+ 	acpi_bus_generate_event(tz->device, ACPI_THERMAL_NOTIFY_CRITICAL,
+ 				tz->trips.critical.flags.enabled);
  
-@@ -269,6 +269,7 @@ static int bind_evtchn_to_irq(unsigned i
+-	acpi_thermal_call_usermode(ACPI_THERMAL_PATH_POWEROFF);
++	orderly_poweroff(true);
  
- 	return irq;
+ 	return 0;
  }
-+EXPORT_SYMBOL_GPL(bind_evtchn_to_irq);
+===================================================================
+--- a/drivers/sbus/char/bbc_envctrl.c
++++ b/drivers/sbus/char/bbc_envctrl.c
+@@ -7,6 +7,7 @@
+ #include <linux/kthread.h>
+ #include <linux/delay.h>
+ #include <linux/kmod.h>
++#include <linux/reboot.h>
+ #include <asm/oplib.h>
+ #include <asm/ebus.h>
  
- static int bind_ipi_to_irq(unsigned int ipi, unsigned int cpu)
+@@ -170,8 +171,6 @@ static void do_envctrl_shutdown(struct b
+ static void do_envctrl_shutdown(struct bbc_cpu_temperature *tp)
  {
-===================================================================
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -14,6 +14,9 @@ obj-$(CONFIG_ACPI)		+= acpi/
- # was used and do nothing if so
- obj-$(CONFIG_PNP)		+= pnp/
- obj-$(CONFIG_ARM_AMBA)		+= amba/
-+
-+# Xen is the default console when running as a guest
-+obj-$(CONFIG_XEN)		+= xen/
+ 	static int shutting_down = 0;
+-	static char *envp[] = { "HOME=/", "TERM=linux", "PATH=/sbin:/usr/sbin:/bin:/usr/bin", NULL };
+-	char *argv[] = { "/sbin/shutdown", "-h", "now", NULL };
+ 	char *type = "???";
+ 	s8 val = -1;
  
- # char/ comes before serial/ etc so that the VT console is the boot-time
- # default.
-===================================================================
---- a/drivers/char/Kconfig
-+++ b/drivers/char/Kconfig
-@@ -650,6 +650,14 @@ config HVC_BEAT
- 	help
- 	  Toshiba's Cell Reference Set Beat Console device driver
+@@ -195,7 +194,7 @@ static void do_envctrl_shutdown(struct b
+ 	printk(KERN_CRIT "kenvctrld: Shutting down the system now.\n");
  
-+config HVC_XEN
-+	bool "Xen Hypervisor Console support"
-+	depends on XEN
-+	select HVC_DRIVER
-+	default y
-+	help
-+	  Xen virtual console device driver
-+
- config HVCS
- 	tristate "IBM Hypervisor Virtual Console Server support"
- 	depends on PPC_PSERIES
+ 	shutting_down = 1;
+-	if (call_usermodehelper("/sbin/shutdown", argv, envp, 0) < 0)
++	if (orderly_poweroff(true) < 0)
+ 		printk(KERN_CRIT "envctrl: shutdown execution failed\n");
+ }
+ 
 ===================================================================
---- a/drivers/char/Makefile
-+++ b/drivers/char/Makefile
-@@ -43,6 +43,7 @@ obj-$(CONFIG_SX)		+= sx.o generic_serial
- obj-$(CONFIG_SX)		+= sx.o generic_serial.o
- obj-$(CONFIG_RIO)		+= rio/ generic_serial.o
- obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
-+obj-$(CONFIG_HVC_XEN)		+= hvc_xen.o
- obj-$(CONFIG_HVC_ISERIES)	+= hvc_iseries.o
- obj-$(CONFIG_HVC_RTAS)		+= hvc_rtas.o
- obj-$(CONFIG_HVC_BEAT)		+= hvc_beat.o
+--- a/drivers/sbus/char/envctrl.c
++++ b/drivers/sbus/char/envctrl.c
+@@ -26,6 +26,7 @@
+ #include <linux/ioport.h>
+ #include <linux/miscdevice.h>
+ #include <linux/kmod.h>
++#include <linux/reboot.h>
+ 
+ #include <asm/ebus.h>
+ #include <asm/uaccess.h>
+@@ -965,10 +966,6 @@ static void envctrl_do_shutdown(void)
+ static void envctrl_do_shutdown(void)
+ {
+ 	static int inprog = 0;
+-	static char *envp[] = {	
+-		"HOME=/", "TERM=linux", "PATH=/sbin:/usr/sbin:/bin:/usr/bin", NULL };
+-	char *argv[] = { 
+-		"/sbin/shutdown", "-h", "now", NULL };	
+ 	int ret;
+ 
+ 	if (inprog != 0)
+@@ -976,7 +973,7 @@ static void envctrl_do_shutdown(void)
+ 
+ 	inprog = 1;
+ 	printk(KERN_CRIT "kenvctrld: WARNING: Shutting down the system now.\n");
+-	ret = call_usermodehelper("/sbin/shutdown", argv, envp, 0);
++	ret = orderly_poweroff(true);
+ 	if (ret < 0) {
+ 		printk(KERN_CRIT "kenvctrld: WARNING: system shutdown failed!\n"); 
+ 		inprog = 0;  /* unlikely to succeed, but we could try again */
 ===================================================================
---- /dev/null
-+++ b/drivers/char/hvc_xen.c
-@@ -0,0 +1,134 @@
-+/*
-+ * xen console driver interface to hvc_console.c
-+ *
-+ * (c) 2007 Gerd Hoffmann <kraxel@suse.de>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
+--- a/include/linux/reboot.h
++++ b/include/linux/reboot.h
+@@ -67,6 +67,11 @@ extern void kernel_power_off(void);
+ 
+ void ctrl_alt_del(void);
+ 
++#define POWEROFF_CMD_PATH_LEN	256
++extern char poweroff_cmd[POWEROFF_CMD_PATH_LEN];
 +
-+#include <linux/console.h>
-+#include <linux/delay.h>
-+#include <linux/err.h>
-+#include <linux/init.h>
-+#include <linux/types.h>
++extern int orderly_poweroff(bool force);
 +
-+#include <asm/xen/hypervisor.h>
-+#include <xen/page.h>
-+#include <xen/events.h>
-+#include <xen/interface/io/console.h>
-+
-+#include "hvc_console.h"
-+
-+#define HVC_COOKIE   0x58656e /* "Xen" in hex */
-+
-+static struct hvc_struct *hvc;
-+static int xencons_irq;
-+
-+/* ------------------------------------------------------------------ */
-+
-+static inline struct xencons_interface *xencons_interface(void)
-+{
-+	return mfn_to_virt(xen_start_info->console.domU.mfn);
-+}
-+
-+static inline void notify_daemon(void)
-+{
-+	/* Use evtchn: this is called early, before irq is set up. */
-+	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
-+}
-+
-+static int write_console(uint32_t vtermno, const char *data, int len)
-+{
-+	struct xencons_interface *intf = xencons_interface();
-+	XENCONS_RING_IDX cons, prod;
-+	int sent = 0;
-+
-+	cons = intf->out_cons;
-+	prod = intf->out_prod;
-+	mb();
-+	BUG_ON((prod - cons) > sizeof(intf->out));
-+
-+	while ((sent < len) && ((prod - cons) < sizeof(intf->out)))
-+		intf->out[MASK_XENCONS_IDX(prod++, intf->out)] = data[sent++];
-+
-+	wmb();
-+	intf->out_prod = prod;
-+
-+	notify_daemon();
-+	return sent;
-+}
-+
-+static int read_console(uint32_t vtermno, char *buf, int len)
-+{
-+	struct xencons_interface *intf = xencons_interface();
-+	XENCONS_RING_IDX cons, prod;
-+	int recv = 0;
-+
-+	cons = intf->in_cons;
-+	prod = intf->in_prod;
-+	mb();
-+	BUG_ON((prod - cons) > sizeof(intf->in));
-+
-+	while (cons != prod && recv < len)
-+		buf[recv++] = intf->in[MASK_XENCONS_IDX(cons++,intf->in)];
-+
-+	mb();
-+	intf->in_cons = cons;
-+
-+	notify_daemon();
-+	return recv;
-+}
-+
-+static struct hv_ops hvc_ops = {
-+	.get_chars = read_console,
-+	.put_chars = write_console,
-+};
-+
-+static int __init xen_init(void)
-+{
-+	struct hvc_struct *hp;
-+
-+	if (!is_running_on_xen())
-+		return 0;
-+
-+	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
-+	if (xencons_irq < 0)
-+		xencons_irq = 0 /* NO_IRQ */;
-+	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
-+	if (IS_ERR(hp))
-+		return PTR_ERR(hp);
-+
-+	hvc = hp;
-+	return 0;
-+}
-+
-+static void __exit xen_fini(void)
-+{
-+	if (hvc)
-+		hvc_remove(hvc);
-+}
-+
-+static int xen_cons_init(void)
-+{
-+	if (!is_running_on_xen())
-+		return 0;
-+
-+	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
-+	return 0;
-+}
-+
-+module_init(xen_init);
-+module_exit(xen_fini);
-+console_initcall(xen_cons_init);
+ /*
+  * Emergency restart, callable from an interrupt handler.
+  */
 ===================================================================
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -13,6 +13,7 @@ enum ipi_vector {
- 	XEN_NR_IPIS,
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -165,6 +165,7 @@ enum
+ 	KERN_MAX_LOCK_DEPTH=74,
+ 	KERN_NMI_WATCHDOG=75, /* int: enable/disable nmi watchdog */
+ 	KERN_PANIC_ON_NMI=76, /* int: whether we will panic on an unrecovered */
++	KERN_POWEROFF_CMD=77,	/* string: poweroff command line */
  };
  
-+int bind_evtchn_to_irq(unsigned int evtchn);
- int bind_evtchn_to_irqhandler(unsigned int evtchn,
- 			      irq_handler_t handler,
- 			      unsigned long irqflags, const char *devname,
+ 
+===================================================================
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -2208,3 +2208,61 @@ asmlinkage long sys_getcpu(unsigned __us
+ 	}
+ 	return err ? -EFAULT : 0;
+ }
++
++char poweroff_cmd[POWEROFF_CMD_PATH_LEN] = "/sbin/poweroff";
++
++static void argv_cleanup(char **argv, char **envp)
++{
++	argv_free(argv);
++}
++
++/**
++ * Trigger an orderly system poweroff
++ * @force: force poweroff if command execution fails
++ *
++ * This may be called from any context to trigger a system shutdown.
++ * If the orderly shutdown fails, it will force an immediate shutdown.
++ */
++int orderly_poweroff(bool force)
++{
++	int argc;
++	char **argv = argv_split(GFP_ATOMIC, poweroff_cmd, &argc);
++	static char *envp[] = {
++		"HOME=/",
++		"PATH=/sbin:/bin:/usr/sbin:/usr/bin",
++		NULL
++	};
++	int ret = -ENOMEM;
++	struct subprocess_info *info;
++
++	if (argv == NULL) {
++		printk(KERN_WARNING "%s failed to allocate memory for \"%s\"\n",
++		       __func__, poweroff_cmd);
++		goto out;
++	}
++
++	info = call_usermodehelper_setup(argv[0], argv, envp);
++	if (info == NULL) {
++		argv_free(argv);
++		goto out;
++	}
++
++	call_usermodehelper_setcleanup(info, argv_cleanup);
++
++	ret = call_usermodehelper_exec(info, -1);
++
++  out:
++	if (ret && force) {
++		printk(KERN_WARNING "Failed to start orderly shutdown: "
++		       "forcing the issue\n");
++
++		/* I guess this should try to kick off some daemon to
++		   sync and poweroff asap.  Or not even bother syncing
++		   if we're doing an emergency shutdown? */
++		emergency_sync();
++		kernel_power_off();
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(orderly_poweroff);
+===================================================================
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -45,6 +45,7 @@
+ #include <linux/syscalls.h>
+ #include <linux/nfs_fs.h>
+ #include <linux/acpi.h>
++#include <linux/reboot.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/processor.h>
+@@ -603,6 +604,15 @@ static ctl_table kern_table[] = {
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ #endif
++	{
++		.ctl_name	= KERN_POWEROFF_CMD,
++		.procname	= "poweroff_cmd",
++		.data		= &poweroff_cmd,
++		.maxlen		= POWEROFF_CMD_PATH_LEN,
++		.mode		= 0644,
++		.proc_handler	= &proc_dostring,
++		.strategy	= &sysctl_string,
++	},
+ 
+ 	{ .ctl_name = 0 }
+ };
 
 -- 
 
