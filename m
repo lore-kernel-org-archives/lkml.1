@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbXEJPwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760905AbXEJPxQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760724AbXEJPwk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 11:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbXEJPwd
+	id S1760905AbXEJPxQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 11:53:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbXEJPxA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 11:52:33 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:58694 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754788AbXEJPwd (ORCPT
+	Thu, 10 May 2007 11:53:00 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51635 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755553AbXEJPw7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 11:52:33 -0400
-Date: Thu, 10 May 2007 11:52:32 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: Greg KH <greg@kroah.com>, Chris Rankin <rankincj@yahoo.com>,
-       <linux-usb-devel@lists.sourceforge.net>,
-       linux-kernel <linux-kernel@vger.kernel.org>, <stable@kernel.org>
-Subject: Re: [PATCH] driver-core: don't free devt_attr till the device is
- released
-In-Reply-To: <46432FFD.1040304@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0705101150100.3498-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 10 May 2007 11:52:59 -0400
+Date: Thu, 10 May 2007 16:52:57 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Simon Horman <horms@verge.net.au>
+Cc: linux-kernel@vger.kernel.org, Christoph Hellwig <hch@lst.de>,
+       Andi Kleen <ak@suse.de>, Bergmann <arnd@arndb.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Allow compat_ioctl.c to compile without CONFIG_NET
+Message-ID: <20070510155257.GA27834@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Simon Horman <horms@verge.net.au>, linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@lst.de>, Andi Kleen <ak@suse.de>,
+	Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>
+References: <20070510094110.GA16051@verge.net.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070510094110.GA16051@verge.net.au>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007, Tejun Heo wrote:
-
-> Currently, devt_attr for the "dev" file is freed immediately on device
-> removal, but if the "dev" sysfs file is open when a device is removed,
-> sysfs will access its attribute structure for further access including
-> close resulting in jumping to garbled address.  Fix it by postponing
-> freeing devt_attr to device release time.
+On Thu, May 10, 2007 at 06:41:20PM +0900, Simon Horman wrote:
+> A small regression appears to have been introduced in the recent patch
+> "cleanup compat ioctl handling", which was included in Linus' tree after
+> 2.6.20.
 > 
-> Note that devt_attr for class_device is already freed on release.
+> siocdevprivate_ioctl() is no longer defined if CONFIG_NET is undefined,
+> whereas previously it was a dummy function in this case.
 > 
-> This bug is reported by Chris Rankin as bugzilla bug#8198.
+> This causes compilation with CONFIG_COMPAT but without CONFIG_NET to fail.
 > 
-> Signed-off-by: Tejun Heo <htejun@gmail.com>
-> Cc: Chris Rankin <rankincj@yahoo.com>
-> ---
-> Applies well to 2.6.20 and 21.  As sysfs-immediate-disconnect doesn't
-> seem to be included in 2.6.22, this should be included in linus#master
-> too (applies well there as well).
+> fs/compat_ioctl.c: In function `compat_sys_ioctl':
+> fs/compat_ioctl.c:3571: warning: implicit declaration of function `siocdevprivate_ioctl'
+> 
+> Cc: Christoph Hellwig <hch@lst.de>
+> From: Simon Horman <horms@verge.net.au>
 
-Although sysfs-immediate-disconnect may not be included in 2.6.22, the old 
-attribute-orphan code by Oliver Neukum is present there and also in 
-2.6.21.  Shouldn't that suffice?
-
-Alan Stern
-
+Ok.
