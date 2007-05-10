@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbXEJWtg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760888AbXEJWxc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762811AbXEJWtg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 18:49:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760174AbXEJWtS
+	id S1760888AbXEJWxc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 18:53:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbXEJWxX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 18:49:18 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42286 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760040AbXEJWtR (ORCPT
+	Thu, 10 May 2007 18:53:23 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49038
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751749AbXEJWxW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 18:49:17 -0400
-Date: Thu, 10 May 2007 15:49:16 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Mel Gorman <mel@skynet.skynet.ie>
-cc: Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Nicolas.Mailhot@LaPoste.net,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2,
- mode:0x84020
-In-Reply-To: <20070510224441.GA15332@skynet.ie>
-Message-ID: <Pine.LNX.4.64.0705101547020.14064@schroedinger.engr.sgi.com>
-References: <200705102128.l4ALSI2A017437@fire-2.osdl.org>
- <20070510144319.48d2841a.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705101447120.12874@schroedinger.engr.sgi.com>
- <20070510220657.GA14694@skynet.ie> <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com>
- <20070510221607.GA15084@skynet.ie> <Pine.LNX.4.64.0705101522250.13504@schroedinger.engr.sgi.com>
- <20070510224441.GA15332@skynet.ie>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 10 May 2007 18:53:22 -0400
+Date: Thu, 10 May 2007 15:53:24 -0700 (PDT)
+Message-Id: <20070510.155324.111718436.davem@davemloft.net>
+To: jeremy@goop.org
+Cc: akpm@linux-foundation.org, herbert@gondor.apana.org.au, hch@infradead.org,
+       ak@suse.de, virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
+       chrisw@sous-sol.org, ian.pratt@xensource.com,
+       Christian.Limpach@cl.cam.ac.uk, netdev@vger.kernel.org, jeff@garzik.org,
+       shemminger@linux-foundation.org, rusty@rustcorp.com.au,
+       Valdis.Kletnieks@vt.edu
+Subject: Re: [1/2] [NET] link_watch: Move link watch list into net_device
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4643A096.7000909@goop.org>
+References: <46439B19.7010706@goop.org>
+	<20070510.152552.117703057.davem@davemloft.net>
+	<4643A096.7000909@goop.org>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007, Mel Gorman wrote:
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+Date: Thu, 10 May 2007 15:45:42 -0700
 
-> > I cannot predict how allocations on a slab will be performed. In order 
-> > to avoid the higher order allocations in we would have to add a flag 
-> > that tells SLUB at slab creation creation time that this cache will be 
-> > used for atomic allocs and thus we can avoid configuring slabs in such a 
-> > way that they use higher order allocs.
-> > 
+> David Miller wrote:
+> > I'm not so certain now that we know it's the jiffies wrap point :-)
+> >
+> > The fixes in question are attached below and they were posted and
+> > discussed on netdev:
+> >   
 > 
-> It is an option. I had the gfp flags passed in to kmem_cache_create() in
-> mind for determining this but SLUB creates slabs differently and different
-> flags could be passed into kmem_cache_alloc() of course.
+> Yep, this patch gets rid of my spinning thread.  I can't find this patch
+> or any discussion on marc.info; is there a better netdev list archive?
 
-So we have a collection of flags to add
+I don't see it there either... let me check my mail archive...
 
-SLAB_USES_ATOMIC
-SLAB_TEMPORARY
-SLAB_PERSISTENT
-SLAB_RECLAIMABLE
-SLAB_MOVABLE
-
-?
-
-> Another alternative is that anti-frag used to also group high-order
-> allocations together and make it hard to fallback to those areas
-> for non-atomic allocations. It is currently backed out by the
-> patch dont-group-high-order-atomic-allocations.patch because
-> it was intended for rare high-order short-lived allocations
-> such as e1000 that are currently dealt with by MIGRATE_RESERVE
-> (bias-the-location-of-pages-freed-for-min_free_kbytes-in-the-same-max_order_nr_pages-blocks.patch)
->  The high-order atomic groupings may help here because the high-order
-> allocations are long-lived and would claim contiguous areas.
-> 
-> The last alternative I think I mentioned already is to have the minimum
-> order kswapd reclaims as the same order SLUB uses instead of 0 so that
-> min_free_kbytes is kept at higher orders than current.
-
-Would you get a patch to Nicholas to test either of these solutions?
+Indeed, they were "posted" to netdev but were blocked by the vger
+regexp filters on the keyword "urgent" so that postings never made it
+to the list.  I removed that filter regexp so that never happens
+again, sorry.
