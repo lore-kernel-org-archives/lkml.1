@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbXEJUY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbXEJUab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760848AbXEJUY0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 16:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756227AbXEJUYT
+	id S1759267AbXEJUab (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 16:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755581AbXEJUaY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 16:24:19 -0400
-Received: from atlrel6.hp.com ([156.153.255.205]:60750 "EHLO atlrel6.hp.com"
+	Thu, 10 May 2007 16:30:24 -0400
+Received: from holomorphy.com ([66.93.40.71]:54492 "EHLO holomorphy.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755383AbXEJUYS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 16:24:18 -0400
-Subject: Re: post 2.6.21 regression in F_GETLK
-From: Doug Chapman <doug.chapman@hp.com>
-To: "J. Bruce Fields" <bfields@fieldses.org>
-Cc: linux-kernel@vger.kernel.org, hch@infradead.org,
-       Marc Eshel <eshel@almaden.ibm.com>
-In-Reply-To: <20070510193859.GR13719@fieldses.org>
-References: <1178823375.7247.11.camel@dchapman.boston.redhat.com>
-	 <20070510193050.GQ13719@fieldses.org> <20070510193859.GR13719@fieldses.org>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 16:24:07 -0400
-Message-Id: <1178828647.7247.16.camel@dchapman.boston.redhat.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-34.el4) 
-Content-Transfer-Encoding: 7bit
+	id S1755571AbXEJUaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 16:30:23 -0400
+Date: Thu, 10 May 2007 13:31:02 -0700
+From: William Lee Irwin III <wli@holomorphy.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>, Andi Kleen <ak@suse.de>,
+       Christoph Lameter <clameter@sgi.com>, linux-kernel@vger.kernel.org
+Subject: Re: slub-i386-support.patch
+Message-ID: <20070510203102.GO19966@holomorphy.com>
+References: <Pine.LNX.4.64.0705102028550.25681@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705102028550.25681@blonde.wat.veritas.com>
+Organization: The Domain of Holomorphy
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-10 at 15:38 -0400, J. Bruce Fields wrote:
-> On Thu, May 10, 2007 at 03:30:50PM -0400, bfields wrote:
-> > On Thu, May 10, 2007 at 02:56:15PM -0400, Doug Chapman wrote:
-> > > A recent regression (introduced after 2.6.21) was caught by the LTP test
-> > > fcntl11.  It appears that F_GETLK is not properly checking for existing
-> > > F_RDLCK and allows taking out a write lock.
-> > 
-> > Ouch.
-> > 
-> > > This can be demonstrated by either running fcntl11 from the LTP suite or
-> > > I have hacked up a much shorter version which demonstrates the issue and
-> > > am attaching it.
-> > > 
-> > > Using git bisect I came up with this commit as the one that introduced
-> > > the issue.
-> > 
-> > Thanks for the report--investigating....
-> 
-> Argh.  Looks like a cut-n-paste error.  Does this fix it?
-> 
-> --b.
-> 
-> diff --git a/fs/locks.c b/fs/locks.c
-> index 671a034..909f454 100644
-> --- a/fs/locks.c
-> +++ b/fs/locks.c
-> @@ -1632,6 +1632,7 @@ static int posix_lock_to_flock(struct flock *flock, struct file_lock *fl)
->  	flock->l_len = fl->fl_end == OFFSET_MAX ? 0 :
->  		fl->fl_end - fl->fl_start + 1;
->  	flock->l_whence = 0;
-> +	flock->l_type = fl->fl_type;
->  	return 0;
->  }
->  
+On Thu, May 10, 2007 at 09:03:39PM +0100, Hugh Dickins wrote:
+> Just want to report that I've been running SLUB on i386, both in -mm
+> and with slub-i386-support.patch applied to 2.6.21-git, and observed
+> no problems with it.  I'm anxious that it (or an equivalent) go into
+> 2.6.22-rc1, i386 being now the last ARCH_USES_SLAB_PAGE_STRUCT holdout.
+> In the frenzy over PowerPC, maybe Linus overlooked that i386
+> was still not supporting SLUB; and I fear that once people get
+> "# CONFIG_SLUB is not set" into their .config, they're less likely to
+> switch over to testing CONFIG_SLUB=y - I remain anxious that it see
+> as much testing as possible (but under EXPERIMENTAL for 2.6.22, yes).
+> Though when I look at the patchset (copied below), I do wonder why
+> it puts a quicklist_trim() into i386's cpu_idle() and flush_tlb_mm():
+> neither is where I'd expect us to be secretly freeing pages.  Ah,
+> several arches do it in cpu_idle(): how odd, oh well.
 
-Bruce,
+I need to fix this up a bit. I'll point out the issues in the sequel.
 
-This doesn't fix the problem but it does look like it should be there.
-I imagine this would have been the next bug we tripped over once the
-original one is fixed.
-
-- Doug
+So now quicklist semantics vs. TLB flushing are the motive behind the
+odd flush_tlb_mm() affair. The real trick with it is that flushing
+must never occur until the TLB flush. Any change to the core quicklist
+code that retires pages back to the page allocator earlier (e.g. based
+on some limit) will break things badly.
 
 
+On Thu, May 10, 2007 at 09:03:39PM +0100, Hugh Dickins wrote:
+>> -struct kmem_cache *pgd_cache;
+>>  struct kmem_cache *pmd_cache;
+>>  
+>>  void __init pgtable_cache_init(void)
+>> @@ -776,12 +775,6 @@ void __init pgtable_cache_init(void)
+>>  			pgd_size = PAGE_SIZE;
+>>  		}
+>>  	}
+>> -	pgd_cache = kmem_cache_create("pgd",
+>> -				pgd_size,
+>> -				pgd_size,
+>> -				SLAB_PANIC,
+>> -				pgd_ctor,
+>> -				(!SHARED_KERNEL_PMD) ? pgd_dtor : NULL);
+>>  }
+
+This is wrong; pgd's are smaller than PAGE_SIZE on PAE. Burning lowmem
+like this is very, very bad for such systems. pmd_cache is rather
+trivial to convert to quicklists, since all it does is zero pages. I
+still don't approve of even the !SHARED_KERNEL_PMD case using PAGE_SIZE
+-sized pgd's. Xen should really be fixed to avoid requiring guests to
+have recursive pagetables or whatever it's doing.
+
+
+>> @@ -205,8 +206,6 @@ void pmd_ctor(void *pmd, struct kmem_cac
+>>   * against pageattr.c; it is the unique case in which a valid change
+>>   * of kernel pagetables can't be lazily synchronized by vmalloc faults.
+>>   * vmalloc faults work because attached pagetables are never freed.
+>> - * The locking scheme was chosen on the basis of manfred's
+>> - * recommendations and having no core impact whatsoever.
+>>   * -- wli
+>>   */
+>>  DEFINE_SPINLOCK(pgd_lock);
+
+This comment deletion is bogus, as the locking scheme has not changed.
+
+
+-- wli
