@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbXEJNx6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760038AbXEJNz5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756568AbXEJNx6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 09:53:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759126AbXEJNxv
+	id S1760038AbXEJNz5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 09:55:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbXEJNzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 09:53:51 -0400
-Received: from hellhawk.shadowen.org ([80.68.90.175]:3990 "EHLO
-	hellhawk.shadowen.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754948AbXEJNxu (ORCPT
+	Thu, 10 May 2007 09:55:51 -0400
+Received: from gw-e.panasas.com ([65.194.124.178]:37973 "EHLO
+	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754948AbXEJNzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 09:53:50 -0400
-From: Andy Whitcroft <apw@shadowen.org>
-To: gregkh@suse.de
-Cc: paulus@samba.org, Andrew Morton <akpm@osdl.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andy Whitcroft <apw@shadowen.org>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH] update sysfs kset initialisation in PPC64 DLPAR IO driver
-References: <464322F3.3010808@shadowen.org>
-InReply-To: <464322F3.3010808@shadowen.org>
-Message-ID: <2c705c055fcd12202673ee8a3056153b@pinky>
-Date: Thu, 10 May 2007 15:00:50 +0100
+	Thu, 10 May 2007 09:55:51 -0400
+Message-ID: <4643243C.8030906@panasas.com>
+Date: Thu, 10 May 2007 16:55:08 +0300
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/12] crypto: don't pollute the global namespace with
+ sg_next()
+References: <11787972373654-git-send-email-jens.axboe@oracle.com> <11787972372499-git-send-email-jens.axboe@oracle.com>
+In-Reply-To: <11787972372499-git-send-email-jens.axboe@oracle.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 10 May 2007 13:55:09.0785 (UTC) FILETIME=[D2BC2490:01C7930A]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jens Axboe wrote:
+> It's a subsystem function, prefix it as such.
 
-Move the rpadlpar device from "struct subsystem" to "struct kset"
-following the changes in sysfs.
+Jens, Boaz and I talked about this over lunch.
+I wonder whether the crypto code must use your implementation
+instead of its own as it needs to over the sglist, e.g. for
+calculating iscsi (data) digest.
 
-Signed-off-by: Andy Whitcroft <apw@shadowen.org>
----
+The crypto implementation of chained sglists in crypto/scatterwalk.h
+determines the chain link by !sg->length which will sorta work
+with your implementation, however the marker bit on page pointer must
+be cleared to use it.
 
-	Ok, this patch seems to sort out the compile problem
-	here and indeed boots and runs kernbench.  Perhaps
-	you could confirm this is sufficient.
+Also, is it possible that after the original sglist has gone through
+dma_map_sg and entries were merged, some entries will have zero
+length?  I'm not sure... If so, if the crypto implementation scans
+the sg list after it was dma mapped (maybe in a retry path) it
+may hit an entry that looks to it like a chaining link.  This
+might be an existing bug and another reason for the crypto code
+to use your implementation.
 
+Thanks,
 
-diff --git a/drivers/pci/hotplug/rpadlpar_sysfs.c b/drivers/pci/hotplug/rpadlpar_sysfs.c
-index 6c5be3f..ed4de59 100644
---- a/drivers/pci/hotplug/rpadlpar_sysfs.c
-+++ b/drivers/pci/hotplug/rpadlpar_sysfs.c
-@@ -129,13 +129,13 @@ struct kobj_type ktype_dlpar_io = {
- };
- 
- struct kset dlpar_io_kset = {
--	.subsys = &pci_hotplug_slots_subsys,
- 	.kobj = {.name = DLPAR_KOBJ_NAME, .ktype=&ktype_dlpar_io,},
- 	.ktype = &ktype_dlpar_io,
- };
- 
- int dlpar_sysfs_init(void)
- {
-+	kobj_set_kset_s(&dlpar_io_kset, pci_hotplug_slots_subsys);
- 	if (kset_register(&dlpar_io_kset)) {
- 		printk(KERN_ERR "rpadlpar_io: cannot register kset for %s\n",
- 				dlpar_io_kset.kobj.name);
+Benny
+
