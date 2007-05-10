@@ -1,77 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758438AbXEJJkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758932AbXEJJlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758438AbXEJJkh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 05:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbXEJJka
+	id S1758932AbXEJJlb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 05:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbXEJJlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 05:40:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:31751 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753643AbXEJJk3 (ORCPT
+	Thu, 10 May 2007 05:41:25 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:44161 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754577AbXEJJlZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 05:40:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=kV8/lqOiBy96xHx/XvIWvNVWU7Dh2NlDA1aFnulIC6sCLe+Jik/VEVtWxoRSAME+SE3NxIMVLEF8JLrAI7Xl5I2WFbmczZpK/V9mSzlYHSCEIFUyu0q1SkbtU5VU7BcGJcFWxxnJyI+n+vOi0mNBTD/Lf7b3lRaBgyXfTQr2ygw=
-Message-ID: <b6a2187b0705100240h3916f206l22cb59a4012fabc6@mail.gmail.com>
-Date: Thu, 10 May 2007 17:40:28 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: PCI changed from 2.6.10-rc1 to 2.6.10-rc2. help needed.
+	Thu, 10 May 2007 05:41:25 -0400
+Date: Thu, 10 May 2007 18:41:20 +0900
+From: Simon Horman <horms@verge.net.au>
+To: linux-kernel@vger.kernel.org
+Cc: Christoph Hellwig <hch@lst.de>, Andi Kleen <ak@suse.de>,
+       Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Allow compat_ioctl.c to compile without CONFIG_NET
+Message-ID: <20070510094110.GA16051@verge.net.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm trying to get the Brooktrout TR1034 fax card to run with
-Linux-2.6.21, but it just won't run, so I downgraded to 2.6.9 and it
-seems to load just fine. Then I tried 2.6.10-rc1, and with a few
-changes, it seems to work. But, when I tried 2.6.10-rc2, it failed.
+A small regression appears to have been introduced in the recent patch
+"cleanup compat ioctl handling", which was included in Linus' tree after
+2.6.20.
 
-Here's what I patched to make it run from 2.6.9 to 2.6.10-rc1.
+siocdevprivate_ioctl() is no longer defined if CONFIG_NET is undefined,
+whereas previously it was a dummy function in this case.
 
-I need some guidance to try to get the card to work, hopefully with
-2.6.21 eventually.
+This causes compilation with CONFIG_COMPAT but without CONFIG_NET to fail.
 
-Is this possible? It seems the PCI layer has changed quite a lot and I
-doubt a quick patch can do the job. I can get the module to compile
-and load, but since other bits are in binary, I've no way to confirm
-that they're ok. It's tough to get vendor to do a 2.6.21. version.
+fs/compat_ioctl.c: In function `compat_sys_ioctl':
+fs/compat_ioctl.c:3571: warning: implicit declaration of function `siocdevprivate_ioctl'
 
-Thanks,
-Jeff.
+Cc: Christoph Hellwig <hch@lst.de>
+From: Simon Horman <horms@verge.net.au>
 
-
---- kerndep.c.2610      2007-05-10 14:26:18 +0800
-+++ kerndep.c.269       2007-05-08 21:52:09 +0800
-@@ -597,7 +597,7 @@
-
- void *kerndep_pci_find_dev(unsigned vend_id,unsigned dev_id,void *dev)
- {
--    return(pci_get_device(vend_id,dev_id,dev));
-+    return(pci_find_device(vend_id,dev_id,dev));
- }
-
- unsigned kerndep_dev_vend_id(void *dev)
-@@ -655,7 +655,6 @@
-
- int kerndep_pci_read_config_word(void *dev,unsigned off,void *addr)
- {
--    pci_dev_put(dev);
-     return(pci_read_config_word(dev,off,addr));
- }
-
-@@ -825,8 +824,8 @@
-
- #if LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,0)
- #define PARM_DECL_INT(v) module_param(v,int,0)
--#define PARM_DECL_INT_ARRAY_8(v) module_param_array(v,int,&isa_addr_size,0)
--#define PARM_DECL_INT_ARRAY_64(v) module_param_array(v,int,&mod_val_size,0)
-+#define PARM_DECL_INT_ARRAY_8(v) module_param_array(v,int,isa_addr_size,0)
-+#define PARM_DECL_INT_ARRAY_64(v) module_param_array(v,int,mod_val_size,0)
- int isa_addr_size;
- int mod_val_size;
- #else
+Index: linux-2.6/fs/compat_ioctl.c
+===================================================================
+--- linux-2.6.orig/fs/compat_ioctl.c	2007-05-10 18:40:19.000000000 +0900
++++ linux-2.6/fs/compat_ioctl.c	2007-05-10 18:40:23.000000000 +0900
+@@ -3566,10 +3566,13 @@ asmlinkage long compat_sys_ioctl(unsigne
+ 			goto found_handler;
+ 	}
+ 
++#ifdef CONFIG_NET
+ 	if (S_ISSOCK(filp->f_path.dentry->d_inode->i_mode) &&
+ 	    cmd >= SIOCDEVPRIVATE && cmd <= (SIOCDEVPRIVATE + 15)) {
+ 		error = siocdevprivate_ioctl(fd, cmd, arg);
+-	} else {
++	} else
++#endif
++	{
+ 		static int count;
+ 
+ 		if (++count <= 50)
