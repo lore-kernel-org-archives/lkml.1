@@ -1,51 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760687AbXEJLB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758780AbXEJLGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760687AbXEJLB6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbXEJLBv
+	id S1758780AbXEJLGa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754113AbXEJLGY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:01:51 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38384
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1756823AbXEJLBu (ORCPT
+	Thu, 10 May 2007 07:06:24 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:34403 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751049AbXEJLGX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 07:01:50 -0400
-Date: Thu, 10 May 2007 04:01:52 -0700 (PDT)
-Message-Id: <20070510.040152.39159048.davem@davemloft.net>
-To: giometti@enneenne.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linuxpps@ml.enneenne.com
-Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070510105837.GB979@enneenne.com>
-References: <20070502193314.GA23367@enneenne.com>
-	<20070510002740.c4350813.akpm@linux-foundation.org>
-	<20070510105837.GB979@enneenne.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Thu, 10 May 2007 07:06:23 -0400
+Date: Thu, 10 May 2007 13:06:20 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Zhao Forrest <forrest.zhao@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>, discuss@x86-64.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [discuss] A question about GART aperture unmap
+Message-ID: <20070510110620.GE15029@one.firstfloor.org>
+References: <ac8af0be0705092259p65f057bcoe5e1b9abb963d5e3@mail.gmail.com> <20070510094908.GB14898@one.firstfloor.org> <ac8af0be0705100314p43a11d3cw10ce8e5726f9672c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac8af0be0705100314p43a11d3cw10ce8e5726f9672c@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rodolfo Giometti <giometti@enneenne.com>
-Date: Thu, 10 May 2007 12:58:37 +0200
+> Sorry, I missed the last sentence. This bug is reproduced by copying a
+> large file(8G) and in the meanwhile compiling a linux kernel for about
+> 1 to 2 days.
 
-> On Thu, May 10, 2007 at 12:27:40AM -0700, Andrew Morton wrote:
-> > 
-> >   Please check with Dave Miller that this:
-> > 
-> > 	#define NETLINK_PPSAPI          20
-> > 
-> >   reservation is OK.
-> 
-> Hello, as you can see here Andrew Morton asked to me to check with you
-> about NETLINK_PPSAPI reservation.
-> 
-> Please, let me know if it's ok.
+Ok that is then more expected. Don't know what causes the sync flood,
+but data corruption is at least expected without the clear_kernel_mapping().
+Just don't comment it out if you care about your data.
 
-It's not OK, please use the generic netlink interface and as
-such you will not need to allocate any numbers at all.
-
-Documentation/networking/generic_netlink.txt gives a link
-to some infomration on this topic.
+-Andi
