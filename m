@@ -1,48 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760655AbXEJLch@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758814AbXEJLgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760655AbXEJLch (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:32:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757579AbXEJLca
+	id S1758814AbXEJLgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754492AbXEJLgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:32:30 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:49159
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757474AbXEJLca (ORCPT
+	Thu, 10 May 2007 07:36:07 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:56748 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754173AbXEJLgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 07:32:30 -0400
-Date: Thu, 10 May 2007 04:32:33 -0700 (PDT)
-Message-Id: <20070510.043233.08323827.davem@davemloft.net>
-To: maheshk@cdac.in
-Cc: linux-kernel@vger.kernel.org, kernelnewbies@nl.linux.org
-Subject: Re: [HOWTO] accessing the DMA mapped data
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <4642FFA7.4040303@cdac.in>
-References: <4642D095.6070305@cdac.in>
-	<20070510.014751.74749340.davem@davemloft.net>
-	<4642FFA7.4040303@cdac.in>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 10 May 2007 07:36:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=OlqWsRuxpSB6y4O4Wp+QvsZGjyy4F09IhBbnXRR5amM+Aup2dF6g6A93hEsjfk4VOCwHe4q7WYogHvE1fD0rZ0oV/OKeF+74jHel9O+UYxvfp9sHTtndRDqU3fB7gBEGxSVKDLTu4p8i2gSwFf78mHm9QeERFwWXxLrjp2n9SGQ=
+Message-ID: <a781481a0705100436r389bad5ct85bd2a1bec9ab0d0@mail.gmail.com>
+Date: Thu, 10 May 2007 17:06:04 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/4] ext2: remove inode constructor
+Cc: "Pekka J Enberg" <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org,
+       sct@redhat.com, adilger@clusterfs.com, clameter@sgi.com
+In-Reply-To: <20070509133948.814128f4.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0705051256530.20886@sbz-30.cs.Helsinki.FI>
+	 <20070509133948.814128f4.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mahesh <maheshk@cdac.in>
-Date: Thu, 10 May 2007 16:49:03 +0530
+On 5/10/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Sat, 5 May 2007 12:57:46 +0300 (EEST)
+> Pekka J Enberg <penberg@cs.helsinki.fi> wrote:
+>
+> > From: Pekka Enberg <penberg@cs.helsinki.fi>
+> >
+> > As alloc_inode() touches the same cache line as init_once(), we gain
+> > nothing from using slab constructors.
+> >
+> > Cc: Stephen C. Tweedie <sct@redhat.com>
+> > Cc: Andreas Dilger <adilger@clusterfs.com>
+> > Cc: Christoph Lameter <clameter@sgi.com>
+> > Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+> > ---
+> >  fs/ext2/super.c |   32 +++++++++++++-------------------
+> >  1 file changed, 13 insertions(+), 19 deletions(-)
+> >
+> > Index: 26-mm/fs/ext2/super.c
+> > ===================================================================
+> > --- 26-mm.orig/fs/ext2/super.c        2007-05-05 12:26:15.000000000 +0300
+> > +++ 26-mm/fs/ext2/super.c     2007-05-05 12:30:50.000000000 +0300
+> > @@ -140,16 +140,24 @@ static struct kmem_cache * ext2_inode_ca
+> >  static struct inode *ext2_alloc_inode(struct super_block *sb)
+> >  {
+> >       struct ext2_inode_info *ei;
+> > -     ei = (struct ext2_inode_info *)kmem_cache_alloc(ext2_inode_cachep,
+> > -                                             GFP_KERNEL|__GFP_RECLAIMABLE);
+> > +     struct inode *inode;
+> > +
+> > +     ei = kmem_cache_alloc(ext2_inode_cachep, GFP_KERNEL|__GFP_RECLAIMABLE);
+> >       if (!ei)
+> >               return NULL;
+> > +     rwlock_init(&ei->i_meta_lock);
+> > +#ifdef CONFIG_EXT2_FS_XATTR
+> > +     init_rwsem(&ei->xattr_sem);
+> > +#endif
+> > +     mutex_init(&ei->truncate_mutex);
+>
+> ext2 has no truncate_mutex.
 
-> I think you have not understood my question properly. My problem is, the 
-> layer above the driver will do
-> dma_map_single on a kmalloc'ed buffer and passes the result  (bus 
-> address) to the device driver. Now
-> the driver has to modify the contents of the the original buffer.
-> Is it possible to do that ??
+2.6.21-mm2/broken-out/ext2-reservations.patch seems to have added one.
 
-You haven't given an example of where this might actually happen.
+> These patches are rather tangled up with the unmerged __GFP_RECLAIMABLE
+> stuff.
 
-The driver is where the DMA mappings almost always occur because
-that is the layer that knows the bus technology and therefore
-the correct DMA interfaces to call.
+So _and_ the unmerged ext2-reservations stuff, you mean :-)
 
-What kind of driver do you have and what is this upper layer
-doing the mappings for you but not giving you a pointer to
-the kernel buffer as well?
+> I'll duck them for now.
