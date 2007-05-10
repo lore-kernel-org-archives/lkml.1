@@ -1,54 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762375AbXEJVT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761438AbXEJVVp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762375AbXEJVT3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755080AbXEJVTX
+	id S1761438AbXEJVVp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:21:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755679AbXEJVVh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:19:23 -0400
-Received: from mail.tmr.com ([64.65.253.246]:33067 "EHLO gaimboi.tmr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754015AbXEJVTW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:19:22 -0400
-Message-ID: <46438C54.20101@tmr.com>
-Date: Thu, 10 May 2007 17:19:16 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-Newsgroups: gmane.linux.kernel
-To: Lee Revell <rlrevell@joe-job.com>
-CC: Linux Kernel mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Preempt of BKL and with tickless systems
-References: <4640E64D.3070304@tmr.com> <75b66ecd0705081701n414c29f7r74b0e4836798393a@mail.gmail.com>
-In-Reply-To: <75b66ecd0705081701n414c29f7r74b0e4836798393a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 10 May 2007 17:21:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:56451
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755616AbXEJVVf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:21:35 -0400
+Date: Thu, 10 May 2007 14:21:38 -0700 (PDT)
+Message-Id: <20070510.142138.54188362.davem@davemloft.net>
+To: cebbert@redhat.com
+Cc: croulder@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Kernel BUG: NULL pointer dereference , reference to sys_recvmsg
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <464389A2.6080606@redhat.com>
+References: <547a31ab0705100712w740e8fbuece5013d05a449b9@mail.gmail.com>
+	<464389A2.6080606@redhat.com>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lee Revell wrote:
-> On 5/8/07, Bill Davidsen <davidsen@tmr.com> wrote:
->> I think I have a reasonable grip on the voluntary and full preempt
->> models, can anyone give me any wisdom on the preempt of the BKL? I know
->> what it does, the question is where it might make a difference under
->> normal loads. Define normal as servers and desktops.
-> 
-> This was introduced by Ingo to solve a real problem that I found,
-> where some codepath would hold the BKL for long enough to introduce
-> excessive scheduling latencies - search list archive for details.  But
-> I don't remember the code path (scrolling the FB console?  VT
-> switching? reiser3?  misc. ioctl()s?).  Basically, taking the BKL
-> disabled preemption which caused long latencies.
-> 
-> It's certainly possible that whatever issue led to this was solved in
-> another way since.
-> 
-Anything is possible. I feel that using voluntary + bkl is probably good 
-for most servers, forced preempt for desktop, although it really doesn't 
-seem to do much beyond voluntary.
+From: Chuck Ebbert <cebbert@redhat.com>
+Date: Thu, 10 May 2007 17:07:46 -0400
 
-Thanks for the clarification.
+> Here in sys_recvmsg() line 1911:
+> 
+> ==>     if (sock->file->f_flags & O_NONBLOCK)
+>                 flags |= MSG_DONTWAIT;
+>         err = sock_recvmsg(sock, &msg_sys, total_len, flags);
+> 
+> sock == -1, apparently because that's what sockfd_lookup_light() 
+> returned earlier in the function. (It doesn't check err, just
+> that the returned sock is nonzero.)
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+sockfd_lookup_light() returns NULL in all cases where 'err'
+is set non-zero.
+
+I suspect file->private_data has been corrupted somehow.
