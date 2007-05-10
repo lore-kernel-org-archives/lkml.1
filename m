@@ -1,36 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762778AbXEJVqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761567AbXEJVtj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762778AbXEJVqk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbXEJVqd
+	id S1761567AbXEJVtj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXEJVtd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:46:33 -0400
-Received: from gw.goop.org ([64.81.55.164]:41160 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755592AbXEJVqb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:46:31 -0400
-Message-ID: <464392B4.3070009@goop.org>
-Date: Thu, 10 May 2007 14:46:28 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Thu, 10 May 2007 17:49:33 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38910 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754560AbXEJVtc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:49:32 -0400
+Date: Thu, 10 May 2007 14:49:31 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-mm@kvack.org, Mel Gorman <mel@skynet.ie>,
+       linux-kernel@vger.kernel.org, Nicolas.Mailhot@LaPoste.net,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2,
+ mode:0x84020
+In-Reply-To: <20070510144319.48d2841a.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705101447120.12874@schroedinger.engr.sgi.com>
+References: <200705102128.l4ALSI2A017437@fire-2.osdl.org>
+ <20070510144319.48d2841a.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Chuck Ebbert <cebbert@redhat.com>
-CC: David Chinner <dgc@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an
- nlink problem?
-References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <46439185.5060207@redhat.com>
-In-Reply-To: <46439185.5060207@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chuck Ebbert wrote:
-> What CPU architecture is this happening on? Not i686 with PAE by
-> any chance?
+On Thu, 10 May 2007, Andrew Morton wrote:
 
-Yes.  Why?
+> Christoph, can we please take a look at /proc/slabinfo and its slub
+> equivalent (I forget what that is?) and review any and all changes to the
+> underlying allocation size for each cache?
+> 
+> Because this is *not* something we should change lightly.
 
-    J
+It was changed specially for mm in order to stress the antifrag code. If 
+this causes trouble then do not merge the patches against SLUB that 
+exploit the antifrag methods. This failure should help see how effective 
+Mel's antifrag patches are. He needs to get on this dicussion.
+
+Upstream has slub_max_order=1.
