@@ -1,85 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbXEJGgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758017AbXEJGgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757304AbXEJGgS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 02:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755985AbXEJGgJ
+	id S1758017AbXEJGgr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 02:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbXEJGgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 02:36:09 -0400
-Received: from gate.crashing.org ([63.228.1.57]:37015 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755945AbXEJGgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 02:36:07 -0400
-Subject: Re: [PATCH 2/3] Add hard_irq_disable()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Rusty Russell <rusty@rustcorp.com.au>
-In-Reply-To: <20070509224113.cca81a24.akpm@linux-foundation.org>
-References: <20070510052622.3E8D5DDF4B@ozlabs.org>
-	 <20070509224113.cca81a24.akpm@linux-foundation.org>
+	Thu, 10 May 2007 02:36:38 -0400
+Received: from adelie.ubuntu.com ([82.211.81.139]:49557 "EHLO
+	adelie.ubuntu.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756094AbXEJGgg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 02:36:36 -0400
+Subject: Re: [PATCH] Cleanup libata HPA support
+From: Ben Collins <ben.collins@ubuntu.com>
+To: Robert Hancock <hancockr@shaw.ca>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <464258C9.7040405@shaw.ca>
+References: <fa.7iNoP7Qs8RAGjCdw2nQZBKOCxZU@ifi.uio.no>
+	 <46408D43.3020300@shaw.ca> <1178692170.6962.146.camel@cunning>
+	 <464258C9.7040405@shaw.ca>
 Content-Type: text/plain
-Date: Thu, 10 May 2007 16:35:51 +1000
-Message-Id: <1178778951.14928.215.camel@localhost.localdomain>
+Organization: Canonical
+Date: Thu, 10 May 2007 08:36:32 +0200
+Message-Id: <1178778992.5910.24.camel@cunning>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-09 at 22:41 -0700, Andrew Morton wrote:
-> On Thu, 10 May 2007 15:25:58 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+On Wed, 2007-05-09 at 17:27 -0600, Robert Hancock wrote:
+> Ben Collins wrote:
+> > On Tue, 2007-05-08 at 08:46 -0600, Robert Hancock wrote:
+> >> Ben Collins wrote:
+> >>> The original HPA patch that Kyle worked on has gone into current git
+> >>> without some fixes that we worked through late in the Ubuntu feisty
+> >>> release. Here's the main copy of the notes I sent to Alan a few weeks
+> >>> ago in regards to the original patch, and a repatch against current git
+> >>> to fix things up. Note we have released feisty with the patch attached
+> >>> (albeit we have HPA enabled by default), and we have not had any reports
+> >>> directly attributed to it. However, in gutsy (devel for next release,
+> >>> based on current stock linux-2.6.git), we are already seeing reports of
+> >>> the same issues we already fixed. 
+> >>>
+> >>> The issues we saw were mainly that some controllers didn't return the
+> >>> correct size from the SET_MAX command (sata_nv is a good example). So I
+> >>> added a re IDENTIFY after the SET_MAX, and compared all the numbers. If
+> >>> re-id was correct, but return value from SET_MAX wasn't we print a
+> >>> warning and use the IDENTIFY value regardless (since that's what the
+> >>> device is going to use).
+> >>>
+> >>> Because we re IDENTIFY, there was also no need to keep n_sectors_boot
+> >>> around, so that was removed. The ata_hpa_resize() was changed to handle
+> >>> everything in a single call (checks for HPA support of the device, and
+> >>> whether ignore_hpa is set or not), and it also sets dev->n_sectors
+> >>> before returning.
+> >>>
+> >>> So far with this patch, we were able to fix all the problems we were
+> >>> seeing with it (except the sata_nv issue where we had to revert to not
+> >>> using adma for NO_DATA transactions, already reported to libata-dev).
+> >>> We've not had any reports of further problems.
+> >> That sata_nv issue should not be present anymore in the current 
+> >> libata-dev tree.
+> > 
+> > That's correct, it is not, at least the machine exception problem isn't.
+> > However, the incorrect returns from SET_MAX are still an issue with that
+> > hw. No idea what is causing it.
 > 
-> > --- linux-cell.orig/include/linux/interrupt.h	2007-05-10 14:51:22.000000000 +1000
-> > +++ linux-cell/include/linux/interrupt.h	2007-05-10 15:18:04.000000000 +1000
-> > @@ -241,6 +241,16 @@ static inline void __deprecated save_and
-> >  #define save_and_cli(x)	save_and_cli(&x)
-> >  #endif /* CONFIG_SMP */
-> >  
-> > +/* Some architectures might implement lazy enabling/disabling of
-> > + * interrupts. In some cases, such as stop_machine, we might want
-> > + * to ensure that after a local_irq_disable(), interrupts have
-> > + * really been disabled in hardware. Such architectures need to
-> > + * implement the following hook.
-> > + */
-> > +#ifndef hard_irq_disable
-> > +#define hard_irq_disable()	do { } while(0)
-> > +#endif
-> 
-> We absolutely require that the architecture's hard_irq_disable() be defined
-> when we do this.  If it happens that the definition of hard_irq_disable()
-> is implemented three levels deep in nested includes then we risk getting
-> into a situation where different .c files see different implementations of
-> hard_irq_disable(), which could lead to confusing results, to say the least.
+> Curious.. Do you have some output or other details from what was 
+> actually returned? Also was this on more than one drive model?
 
-Yes, I'm indeed a bit worried about that... I've been wondering what's
-the best include path here... I tried to follow who gets to hw_irq.h and
-didn't come to any conclusive results.
+I no longer have these outputs handy, although a bug report on
+launchpad.net might have it (linux-source-2.6.20 package).
 
-powerpc gets it from asm/system.h but I haven't verified other arch
-(though it only matters on arch that have their own here).
+It was an abnormally huge value (hence the exposed signed extension
+problems I fixed). The incorrect value was always the same for the same
+controller/drive pair. It was not specific to a drive model, only
+sata_nv (and I think pata_amd) was common to these cases.
 
-I've verified that a #error on ppc up there will not trigger thus it's
-fine on powerpc, but I agree it's a bit fragile.
+Due to the extreme proximity of this bug being exposed to our release
+deadline, we did not investigate the absolute cause of the issue, just
+implemented a safer HPA detection to avoid them. If you have a sata_nv,
+it is easy to get these values even with my patch since it outputs a
+warning with the incorrect read back from SET_MAX. So the problems wont
+go unnoticed.
 
-> Your implementation comes via the inclusion of system.h which then includes
-> hw_irq.h.  That's perhaps a little fragile and it would be better to
-> 
-> a) include in the comment the name of the arch file which must implement
->    hard_irq_disable() and
-> 
-> b) include that file directly from this one.
-
-Fair enough. I was just worried that including hw_irq.h here might cause
-trouble for some archs though (as I said, we get it indirectly on
-powerpc via some other asm thingy, not via some linux/*.h). I've looked
-around and seen all sort of horrors in arch include dependencies
-(including some circular stuff that must work by mere luck).
-
-> Oh, and your comment layout style is wrong ;)
-
-What about my comment layout style ? I've been using that forever ... Or
-do you mean I should use a function documentation style layout there ?
-
-Cheers,
-Ben.
+-- 
+Ubuntu   : http://www.ubuntu.com/
+Linux1394: http://wiki.linux1394.org/
 
