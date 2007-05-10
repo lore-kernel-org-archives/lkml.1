@@ -1,61 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbXEJOIu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761473AbXEJOKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760818AbXEJOIu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 10:08:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbXEJOIk
+	id S1761473AbXEJOKo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 10:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756687AbXEJOKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 10:08:40 -0400
-Received: from khc.piap.pl ([195.187.100.11]:45653 "EHLO khc.piap.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751908AbXEJOIj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 10:08:39 -0400
-To: Lennert Buytenhek <buytenh@wantstofly.org>
-Cc: Michael-Luke Jones <mlj28@cam.ac.uk>, Jeff Garzik <jeff@garzik.org>,
-       netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>,
-       ARM Linux Mailing List 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: Re: [PATCH] Intel IXP4xx network drivers v.3 - QMGR
-References: <m3vef5biob.fsf@maximus.localdomain>
-	<5BB7E1AB-5CE1-43C8-8CE3-E0DE0236BD09@cam.ac.uk>
-	<m3hcqoa772.fsf@maximus.localdomain>
-	<86D26EBE-5899-468F-9C79-23E83E0DE04B@cam.ac.uk>
-	<m33b289zku.fsf@maximus.localdomain>
-	<m31whs5ehn.fsf_-_@maximus.localdomain>
-	<20070508113232.GA32055@xi.wantstofly.org>
-	<m3k5vj76bi.fsf@maximus.localdomain>
-	<20070508144001.GC387@xi.wantstofly.org>
-	<m3ps5b5k07.fsf@maximus.localdomain>
-	<20070509102136.GG6976@xi.wantstofly.org>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Thu, 10 May 2007 16:08:35 +0200
-In-Reply-To: <20070509102136.GG6976@xi.wantstofly.org> (Lennert Buytenhek's message of "Wed, 9 May 2007 12:21:36 +0200")
-Message-ID: <m38xbwydng.fsf@maximus.localdomain>
+	Thu, 10 May 2007 10:10:36 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:47340 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756568AbXEJOKf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 10:10:35 -0400
+Message-Id: <1178806235.18785.1189115515@webmail.messagingengine.com>
+X-Sasl-Enc: 5WxB1We5mdK8stQ5vjwm09iEbz5/gWTgm0x0JjfZpNj/ 1178806235
+From: "Alexander van Heukelum" <heukelum@fastmail.fm>
+To: "H. Peter Anvin" <hpa@zytor.com>, "Antonino A. Daplas" <adaplas@gmail.com>,
+       "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@osdl.org>,
+       "Matt Domsch" <Matt_Domsch@dell.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>,
+       "James Bottomley" <James.Bottomley@HansenPar>
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Alexander van Heukelum" <heukelum@mailshack.com>
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="ISO-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+X-Mailer: MessagingEngine.com Webmail Interface
+References: <464158E9.2000207@zytor.com>
+Subject: Re: x86 setup rewrite tree ready for flamage^W review
+In-Reply-To: <464158E9.2000207@zytor.com>
+Date: Thu, 10 May 2007 16:10:35 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Lennert Buytenhek <buytenh@wantstofly.org> writes:
+On Tue, 08 May 2007 22:15:21 -0700, "H. Peter Anvin" <hpa@zytor.com>
+said:
+> I believe the x86 setup tree is now finished.  I will turn it into a
+> "clean patchset" later this week, but I wanted to get flamed^W feedback
+> on it first.
 
-> The way I see it, that means that you do want to scale back your
-> other SRAM allocations if you know that you're going to need a lot
-> of SRAM (say, for ethernet RX/TX queues.)
+Hi!
 
-Yep, I will then add "queue_size" parameter to the platform data.
-Or something like that.
+Only tiny sparks^Wremarks, I'm afraid. ;)
 
-> Or you can put this knowledge in the board support code (cleaner, IMHO.)
+I've briefly looked at the new code in arch/i386/boot and as far 
+as I can determine in a short amount of time all functionality is
+basically there, with the exception of the 'scan' functionality for 
+bios modes. Maybe it is not needed anymore? I have used this 
+functionality to find non-standard modes recently (for a kernel 
+crash during boot).
 
-Sure.
+Random remarks about config-differences:
 
-> That way, you can _guarantee_ that you'll always have enough SRAM
-> to be able to use the functionality that is exposed on the board you
-> are running on (which is a desirable property, IMHO), which is
-> something that you can't achieve with an allocator, as far as I can
-> see.
+The new code does not use VIDEO_SELECT and X86_SPEEDSTEP_SMI
+(i386-only): both parts are always compiled in. The new code uses FB:
+the old code allowed setting a graphics mode, even without FB support.
+Shared config options that affect the code generation: EDD, RELOCATABLE,
+FIRMWARE_EDID, and APM (i386-only). Some code also depends on X86_ELAN
+and X86_VOYAGER.
 
-I'd have to put SRAM address in the board code instead. Certainly
-not required at this point, and perhaps it will be never needed.
+Allnoconfig realmode kernel part increases by about 3.5 kb:
+old x86_64:  Boot sector 512 bytes. / Setup is 4737 bytes.
+new x86_64:  Setup is 8808 bytes (padded to 9216 bytes).
+old i386:  Boot sector 512 bytes. / Setup is 4842 bytes.
+new i386:  Setup is 8776 bytes (padded to 9216 bytes).
+
+When all relevant options are enabled about 1.5 kb:
+old x86_64:  Boot sector 512 bytes. / Setup is 7394 bytes.
+new x86_64:  Setup is 9672 bytes (padded to 9728 bytes).
+old i386:  Boot sector 512 bytes. / Setup is 7649 bytes.
+new i386:  Setup is 9896 bytes (padded to 10240 bytes).
+
+So the code explosion is not too bad. Although... it is helps quite a
+bit that the old setup contains a chunk of slightly more than 3 kb of
+zeros which has disappeared with the new code. On the other hand, the
+new code provides a valuable debugging tool in the form of a printf
+function.
+
+$ size arch/i386/boot/setup.elf
+   text    data     bss     dec     hex filename
+   9768      96    6056   15920    3e30 setup.elf
+
+How much memory should we expect to be available? Is the assert for
+32 kb for text+data+bss in setup.ld reasonable? Is it guaranteed
+that the bootloader stores the commandline after _end?
+
+The amount of code that depends on config options is relatively small.
+Would it make sense to just compile everything independent of config
+options and determine what should be done at run-time? And/or separate
+the bootcode related config-options and put them under EMBEDDED/TINY?
+
+If space is not that much of an issue, could you imagine putting
+the decompression/relocation/misc.c code in setup too? This would
+make it easier to start thinking of a new kernel image format without
+breaking bootloaders that use a bzImage in the intended way.
+
+Good luck,
+        Alexander
 -- 
-Krzysztof Halasa
+  Alexander van Heukelum
+  heukelum@fastmail.fm
+
+-- 
+http://www.fastmail.fm - A fast, anti-spam email service.
+
