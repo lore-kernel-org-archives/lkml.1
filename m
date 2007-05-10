@@ -1,88 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760346AbXEJAzS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759822AbXEJBAO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760346AbXEJAzS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 9 May 2007 20:55:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbXEJAzF
+	id S1759822AbXEJBAO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 9 May 2007 21:00:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757832AbXEJA76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 20:55:05 -0400
-Received: from an-out-0708.google.com ([209.85.132.248]:7492 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757544AbXEJAzD (ORCPT
+	Wed, 9 May 2007 20:59:58 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36986 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757590AbXEJA74 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 20:55:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=h/72oY+oYLXFeSqDMoG0QcurqiNkpPL4gEZ9NnWm43bn3vIVDOP5xchplaNP8t/b7jQHrzzcUdn1l8cHJXsc0/TJkzWRL8l2u3MFnuvhusycEqNNxcclcn0GBYYZYubKwqU/E/3guzPchH7T6IbIIc6a59gVLxWO2cUZFqMsGkc=
-Message-ID: <86802c440705091755y4bc72d4budb8e1d513d304c32@mail.gmail.com>
-Date: Wed, 9 May 2007 17:55:02 -0700
-From: yhlu <yhlu.kernel@gmail.com>
-To: "Gerd Hoffmann" <kraxel@redhat.com>
-Subject: Re: [patches] [PATCH] [21/22] x86_64: Extend bzImage protocol for relocatable bzImage
-Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>, vgoyal@in.ibm.com,
-       "Jeff Garzik" <jeff@garzik.org>, patches@x86-64.org,
-       linux-kernel@vger.kernel.org,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       "Rusty Russell" <rusty@rustcorp.com.au>, "Andi Kleen" <ak@suse.de>,
-       "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <46417F0B.1080405@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 9 May 2007 20:59:56 -0400
+Date: Thu, 10 May 2007 10:59:26 +1000
+From: David Chinner <dgc@sgi.com>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
+Message-ID: <20070510005926.GT85884050@sgi.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <4634483E.9030307@goop.org>
-	 <86802c440705081500x682ee098y7d51f7bb98dbcff6@mail.gmail.com>
-	 <4640F4B3.30408@goop.org> <4640FB2C.2060300@zytor.com>
-	 <86802c440705081541v7d0773cek2c5fae1854b68bbc@mail.gmail.com>
-	 <46410403.4050802@zytor.com>
-	 <m17irivkhy.fsf@ebiederm.dsl.xmission.com>
-	 <46413087.2020505@zytor.com>
-	 <m1tzumu10k.fsf@ebiederm.dsl.xmission.com>
-	 <46417F0B.1080405@redhat.com>
+In-Reply-To: <20070509160102.GA30745@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/9/07, Gerd Hoffmann <kraxel@redhat.com> wrote:
-> Refine SCREEN_INFO sanity check for vgacon initialization.
->
-> Checking video mode field only to see whenever SCREEN_INFO is
-> initialized is not enougth, in some cases it is zero although
-> a vga card is present.  Lets additionally check cols and lines.
->
-> Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: Alan <alan@lxorguk.ukuu.org.uk>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Eric W. Biederman <ebiederm@xmission.com>
-> ---
->  drivers/video/console/vgacon.c |    9 +++++++--
->  1 file changed, 7 insertions(+), 2 deletions(-)
->
-> Index: vanilla-2.6.21-git11/drivers/video/console/vgacon.c
-> ===================================================================
-> --- vanilla-2.6.21-git11.orig/drivers/video/console/vgacon.c
-> +++ vanilla-2.6.21-git11/drivers/video/console/vgacon.c
-> @@ -368,9 +368,14 @@ static const char *vgacon_startup(void)
->  #endif
->         }
->
-> +       /* SCREEN_INFO initialized? */
-> +       if ((ORIG_VIDEO_MODE  == 0) &&
-> +           (ORIG_VIDEO_LINES == 0) &&
-> +           (ORIG_VIDEO_COLS  == 0))
-> +               goto no_vga;
-> +
->         /* VGA16 modes are not handled by VGACON */
-> -       if ((ORIG_VIDEO_MODE == 0x00) ||        /* SCREEN_INFO not initialized */
-> -           (ORIG_VIDEO_MODE == 0x0D) ||        /* 320x200/4 */
-> +       if ((ORIG_VIDEO_MODE == 0x0D) ||        /* 320x200/4 */
->             (ORIG_VIDEO_MODE == 0x0E) ||        /* 640x200/4 */
->             (ORIG_VIDEO_MODE == 0x10) ||        /* 640x350/4 */
->             (ORIG_VIDEO_MODE == 0x12) ||        /* 640x480/4 */
->
-it works.
+On Wed, May 09, 2007 at 09:31:02PM +0530, Amit K. Arora wrote:
+> I have the updated patches ready which take care of Andrew's comments.
+> Will run some tests and post them soon.
+> 
+> But, before submitting these patches, I think it will be better to finalize
+> on certain things which might be worth some discussion here:
+> 
+> 1) Should the file size change when preallocation is done beyond EOF ?
+>    - Andreas and Chris Wedgwood are in favor of not changing the
+>      file size in this case. I also tend to agree with them. Does anyone
+>      has an argument in favor of changing the filesize ?
+>      If not, I will remove the code which changes the filesize, before I
+>      resubmit the concerned ext4 patch.
 
-YH
+I think there needs to be both. If we don't have a mechanism to
+atomically change the file size with the preallocation, then
+applications that use stat() to work out if they need to preallocate
+more space will end up racing.
+
+> 2) For FA_UNALLOCATE mode, should the file system allow unallocation
+>    of normal (non-preallocated) blocks (blocks allocated via
+>    regular write/truncate operations) also (i.e. work as punch()) ?
+
+Yes. That is the current XFS implementation for XFS_IOC_UNRESVSP, and
+what i did for FA_UNALLOCATE as well.
+
+>    - Though FA_UNALLOCATE mode is yet to be implemented on ext4, still
+>      we need to finalize on the convention here as a general guideline
+>      to all the filesystems that implement fallocate.
+> 
+> 3) If above is true, the file size will need to be changed
+>    for "unallocation" when block holding the EOF gets unallocated.
+
+No - we punch a hole. If you want the filesize to change, then
+you use ftruncate() to remove the blocks at EOF and change the
+file size atomically.
+
+> 4) Should we update mtime & ctime on a successfull allocation/
+>    unallocation ?
+>    - David Chinner raised this question in following post:
+>      http://lkml.org/lkml/2007/4/29/407
+>      I think it makes sense to update the [mc]time for a successfull
+>      preallocation/unallocation. Does anyone feel otherwise ?
+>      It will be interesting to know how XFS behaves currently. Does XFS
+>      update [mc]time for preallocation ?
+
+No, XFS does *not* update a/m/ctime on prealloc/punch unless the file size
+changes. If the filesize changes, it behaves exactly the same way that
+ftruncate() behaves.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
