@@ -1,50 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762725AbXEJXIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762415AbXEJXJi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762725AbXEJXIW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 19:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759827AbXEJXIK
+	id S1762415AbXEJXJi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 19:09:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758760AbXEJXJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 19:08:10 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:43219 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754359AbXEJXIJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 19:08:09 -0400
-Date: Fri, 11 May 2007 09:07:55 +1000
-From: David Chinner <dgc@sgi.com>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, David Chinner <dgc@sgi.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
-Message-ID: <20070510230755.GG86004887@sgi.com>
-References: <4642389E.4080804@goop.org> <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <46439185.5060207@redhat.com> <464392B4.3070009@goop.org> <464393E1.3050705@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464393E1.3050705@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 10 May 2007 19:09:31 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57466 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758570AbXEJXJa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 19:09:30 -0400
+Message-ID: <4643A616.3090202@redhat.com>
+Date: Thu, 10 May 2007 16:09:10 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andi Kleen <ak@suse.de>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: getcpu after sched_setaffinity
+References: <46439BBA.2070705@redhat.com> <20070510234446.GC2012@bingen.suse.de>
+In-Reply-To: <20070510234446.GC2012@bingen.suse.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 05:51:29PM -0400, Chuck Ebbert wrote:
-> Jeremy Fitzhardinge wrote:
-> > Chuck Ebbert wrote:
-> >> What CPU architecture is this happening on? Not i686 with PAE by
-> >> any chance?
-> > 
-> > Yes.  Why?
-> 
-> I have a bug report where NFS files are corrupted only with PAE clients.
-> Corruption is at the end of the (newly untarred) files. Doesn't happen
-> without PAE.
+Andi Kleen wrote:
+> Probably. In principle getcpu() (where does the sched_ come from btw?)
 
-Chuck, can you post a pointer to this thread?
+getcpu() is an unacceptable name.  All te other functions dealing with 
+CPU (sets, etc) have a sched_ prefix.
 
-Cheers,
 
-Dave.
+> is only designed for the case where you don't set the affinity explicitely;
+> otherwise you should already know where you are and don't need it.
+
+That's not true in general.  Yes, because I want to test vgetcpu() I 
+restrict the set to just one CPU.
+
+But if I have more than 2 "CPUs" and I set the affinity to two CPUs 
+which currently are not used you cannot make this argument.
+
+getcpu should always work correctly not only if you cannot determine it 
+in another way.
+
+
+> Hmm ok one could probably define memset(..., 0) as a invalidation
+> interface, but because of the considerations above i don't think
+> it is really needed.
+
+It is needed.
+
+For now I added the cache clearing in the setaffinity calls in libc. 
+Resetting to cache to {0,0} seems to work.
+
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
