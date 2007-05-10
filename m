@@ -1,71 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758514AbXEJGi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757549AbXEJGlp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758514AbXEJGi4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 02:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756094AbXEJGii
+	id S1757549AbXEJGlp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 02:41:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755490AbXEJGli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 02:38:38 -0400
-Received: from ausmtp06.au.ibm.com ([202.81.18.155]:36727 "EHLO
-	ausmtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756146AbXEJGig (ORCPT
+	Thu, 10 May 2007 02:41:38 -0400
+Received: from wr-out-0506.google.com ([64.233.184.229]:59449 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755442AbXEJGlh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 02:38:36 -0400
-From: Sripathi Kodi <sripathik@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PREEMPT_RT] [PATCH 2/2] Use write_trylock_irqsave in ptrace_attach
-Date: Thu, 10 May 2007 12:07:53 +0530
-User-Agent: KMail/1.9.5
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>, Roland McGrath <roland@redhat.com>
+	Thu, 10 May 2007 02:41:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=s/tXEKpTwB8+5+7Pb6eLwr3aCYf8HuqtYmJF83pOnf6rPiUxNatZJ3xUMwUpNemAPqBgnwOAeqf13N1WYHODIO/E3euS7Dxi7bmpagJcPdVO/ArLhYJemZjh9zYX1mf3nmus2/2sJV8pbqmXkSaKgrRiqQ8pI28TgpKhY6srLv4=
+Message-ID: <a8f16e2b0705092341w14204283q9ddc225db73a5001@mail.gmail.com>
+Date: Thu, 10 May 2007 10:41:36 +0400
+From: "Dan Kruchinin" <dubalom@gmail.com>
+To: "Randy Dunlap" <rdunlap@xenotime.net>, linux-kernel@vger.kernel.org,
+       linux-usb-devel@projects.sourceforge.net
+Subject: Re: [linux-usb-devel] [PATCH -mm] drivers/usb/core/config.c: kzalloc(0, ..)
+In-Reply-To: <20070508094502.efc32182.rdunlap@xenotime.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705101207.53330.sripathik@in.ibm.com>
+References: <20070508141453.GA12771@kroah.com>
+	 <Pine.LNX.4.44L0.0705081152590.3217-100000@iolanthe.rowland.org>
+	 <20070508094502.efc32182.rdunlap@xenotime.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+On 5/8/07, Randy Dunlap <rdunlap@xenotime.net> wrote:
+> On Tue, 8 May 2007 11:57:07 -0400 (EDT) Alan Stern wrote:
+>
+> > On Tue, 8 May 2007, Greg KH wrote:
+> >
+> > > >  The problem was in drivers/usb/core/config.c in function
+> > > >  usb_parse_interface:
+> > > >  ---
+> > > >  num_ep = num_ep_orig = alt->desc.bNumEndpoints;
+> > > >  ...
+> > > >  len = sizeof(struct usb_host_endpoint) * num_ep;
+> > > >  alt->endpoint = kzalloc(len, GFP_KERNEL);
+> > > >  ---
+> > > >
+> > > >  num_ep can be 0, as it was in my case, so following patch makes this
+> > > >  situation more obvious
+> > > >  and clear.
+> >
+> > How about instead just doing:
+> >
+> > +     num_ep = max(num_ep, 1);
+> >       len = sizeof(struct usb_host_endpoint) * num_ep;
+> >
+> > Also, wasn't it true at one point that it was legal to call kmalloc() with
+> > a length of 0?  ISTR seeing somewhere that it's true for regular malloc().
+>
+> kmalloc(0) was legal with CONFIG_SLAB=y.  However, there is now
+> something called SLUB, which just returned an error when size == 0.
 
-This patch makes ptrace_attach() use the new API write_trylock_irqsave(). With 
-this, the code in ptrace_attach() will be same for mainline and -rt. On -rt, 
-write_trylock_irqsave() doesn't disable irqs and hence the problem is 
-avoided.
+SLUB works correctly with kmalloc(0) too, but it calls
+WARN_ON_ONCE(size == 0);
+in include/linux/slub_def.h: kmalloc_index.
 
-Signed-off-by: Sripathi Kodi <sripathik@in.ibm.com>
+btw: as I know when kmalloc(0) both slub and slab allocate the
+smallest possible size. Can this size be smaller than sizeof(struct
+usb_host_endpoint)? If it is, may it be a problem?
 
-Index: linux-2.6.21-rt1_patch/kernel/ptrace.c
-===================================================================
---- linux-2.6.21-rt1_patch.orig/kernel/ptrace.c	2007-05-10 11:28:57.000000000 
-+0530
-+++ linux-2.6.21-rt1_patch/kernel/ptrace.c	2007-05-10 11:29:13.000000000 +0530
-@@ -160,6 +160,7 @@
- int ptrace_attach(struct task_struct *task)
- {
- 	int retval;
-+	unsigned long flags;
- 
- 	retval = -EPERM;
- 	if (task->pid <= 1)
-@@ -178,9 +179,7 @@
- 	 * cpu's that may have task_lock).
- 	 */
- 	task_lock(task);
--	local_irq_disable();
--	if (!write_trylock(&tasklist_lock)) {
--		local_irq_enable();
-+	if (!write_trylock_irqsave(&tasklist_lock, flags)) {
- 		task_unlock(task);
- 		do {
- 			cpu_relax();
-@@ -208,7 +207,7 @@
- 	force_sig_specific(SIGSTOP, task);
- 
- bad:
--	write_unlock_irq(&tasklist_lock);
-+	write_unlock_irqrestore(&tasklist_lock, flags);
- 	task_unlock(task);
- out:
- 	return retval;
+thanks.
 
+Dan Kruchinin.
+
+> It has recently been modified to mirror the SLAB behavior but also
+> do a stack dump so that "bad" callers can be fixed.
+>
