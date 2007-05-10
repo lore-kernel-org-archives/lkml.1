@@ -1,48 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757077AbXEJNXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762167AbXEJNYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757077AbXEJNXk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 09:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760216AbXEJNXb
+	id S1762167AbXEJNYw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 09:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758487AbXEJNYo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 09:23:31 -0400
-Received: from wr-out-0506.google.com ([64.233.184.235]:47451 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759720AbXEJNXa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 09:23:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=j0XHgWVSKJTD/U8fUN4bJs3Hhr9FJHxW8yaZKnfgfmSqcaTzum11Y9tUYx+bvQ0QP06tY75mXq45II+LWlLIJJXfSU3HN9dAGnYqVQ+NzwZb7VPxzaMAvqPopKpTdNeiBPZ4DSjnvbC7AS/GQ8p7Ri1kG0rPgzS0W54897mlaLk=
-Message-ID: <a781481a0705100623s53730502kc5470b6dc6fc6a45@mail.gmail.com>
-Date: Thu, 10 May 2007 18:53:28 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Jens Axboe" <jens.axboe@oracle.com>
-Subject: Re: [PATCH 7/12] i386 sg: add support for chaining scatterlists
-Cc: linux-kernel@vger.kernel.org, "Andrew Morton" <akpm@linux-foundation.org>
-In-Reply-To: <11787972373410-git-send-email-jens.axboe@oracle.com>
+	Thu, 10 May 2007 09:24:44 -0400
+Received: from rtr.ca ([64.26.128.89]:3024 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755742AbXEJNYn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 09:24:43 -0400
+Message-ID: <46431D19.1070308@rtr.ca>
+Date: Thu, 10 May 2007 09:24:41 -0400
+From: Mark Lord <lkml@rtr.ca>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+Cc: Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH] libata: add human-readable error value decoding
+References: <46428103.3040003@shaw.ca> <4642E92D.5010509@gmail.com>
+In-Reply-To: <4642E92D.5010509@gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <11787972373654-git-send-email-jens.axboe@oracle.com>
-	 <11787972373410-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/10/07, Jens Axboe <jens.axboe@oracle.com> wrote:
-> [...]
-> +static inline void sg_chain(struct scatterlist *prv, unsigned int prv_nents,
-> +                           struct scatterlist *sgl)
-> +{
-> +#ifndef ARCH_HAS_SG_CHAIN
-> +       BUG();
-> +#endif
+Tejun Heo wrote:
+> Robert Hancock wrote:
+>> This adds human-readable decoding of the ATA status and error registers
+>> (similar
+>> to what drivers/ide does) as well as the SATA Serror register to libata
+...
+> I'm not really convinced whether this is necessary.  The human readable
+> form is also a bit cryptic and can get quite long.  So, mild NACK from me.
 
-Hmmm ... so we better also make sure all users call this from within
-an "#ifdef ARCH_HAS_SG_CHAIN" themselves (or else make this a config
-option defined in the arch/.../defconfig of archs that support this
-and then make the calling code's Kconfig option "depends on ... &&
-ARCH_FOO").
+Same here, but I would like to see it in there under a CONFIG_DEBUG_LIBATA
+kernel build option or something.  Kind of like the "FANCY_STATUS_DUMPS" flag
+that drivers/ide used to have for this kind of stuff.
 
-(Just saw a previous thread, Andrew seems to have beaten me to this observation)
+Cheers
+
