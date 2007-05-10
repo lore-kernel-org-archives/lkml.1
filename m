@@ -1,67 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760741AbXEJMqq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761500AbXEJMq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760741AbXEJMqq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:46:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXEJMqk
+	id S1761500AbXEJMq6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754048AbXEJMqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:46:40 -0400
-Received: from hu-out-0506.google.com ([72.14.214.227]:25706 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751276AbXEJMqj (ORCPT
+	Thu, 10 May 2007 08:46:49 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:48416 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760873AbXEJMqs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:46:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=DHxLNsH0Wqy47lLG5QFiiSk3pC3JDgiGxtEimmHovpeYgfLyujsxxVJ8HB9TVZFZ5dY0wqwG9vizSV00j/eIIWjj96KysxsQdwybOVf0oele4cW9R/7AdWBepgl4aMUOxSauMIJ2db/L0tH7vfh6Wse7r+UjKDqYFcMkPpPeiGc=
-Date: Thu, 10 May 2007 14:45:26 +0200
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, a.zummo@towertech.it, dtor@mail.ru
-Subject: Re: ixp4xx compile error (was Re: 2.6.21-mm2)
-Message-ID: <20070510124526.GD17402@slug>
-References: <20070509012322.199f292b.akpm@linux-foundation.org> <20070510122129.GC17402@slug>
+	Thu, 10 May 2007 08:46:48 -0400
+Date: Thu, 10 May 2007 13:46:45 +0100 (IST)
+From: Mel Gorman <mel@csn.ul.ie>
+X-X-Sender: mel@skynet.skynet.ie
+To: Yasunori Goto <y-goto@jp.fujitsu.com>
+cc: linux-mm <linux-mm@kvack.org>,
+       Linux Kernel ML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, Christoph Lameter <clameter@sgi.com>
+Subject: Re: [RFC] memory hotremove patch take 2 [01/10] (counter of removable
+ page)
+In-Reply-To: <20070509120132.B906.Y-GOTO@jp.fujitsu.com>
+Message-ID: <Pine.LNX.4.64.0705101326190.1581@skynet.skynet.ie>
+References: <20070509115506.B904.Y-GOTO@jp.fujitsu.com>
+ <20070509120132.B906.Y-GOTO@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510122129.GC17402@slug>
-User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 02:21:29PM +0200, Frederik Deweerdt wrote:
-> On Wed, May 09, 2007 at 01:23:22AM -0700, Andrew Morton wrote:
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm2/
-> > 
-> Hi all,
-> 
-> I've got this compile error while building arm ipx4xx:
-> 
->   CC [M]  drivers/input/misc/ixp4xx-beeper.o
-> drivers/input/misc/ixp4xx-beeper.c: In function 'ixp4xx_spkr_event':
-> drivers/input/misc/ixp4xx-beeper.c:54: error: 'input_dev' undeclared (first use in this function)
-> drivers/input/misc/ixp4xx-beeper.c:54: error: (Each undeclared identifier is reported only once
-> drivers/input/misc/ixp4xx-beeper.c:54: error: for each function it appears in.)
-> make[3]: *** [drivers/input/misc/ixp4xx-beeper.o] Error 1
-> make[2]: *** [drivers/input/misc] Error 2
-> make[1]: *** [drivers/input] Error 2
-> make: *** [drivers] Error 2
-> 
-> Following patch fixes the problem.
+On Wed, 9 May 2007, Yasunori Goto wrote:
 
-Err, got it backwards. Here's the correct fix:
+> Show #of Movable pages and vmstat.
+>
+> Signed-Off-By: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+>
+> arch/ia64/mm/init.c    |    2 ++
+> drivers/base/node.c    |    4 ++++
+> fs/proc/proc_misc.c    |    4 ++++
+> include/linux/kernel.h |    2 ++
+> include/linux/swap.h   |    1 +
+> mm/page_alloc.c        |   22 ++++++++++++++++++++++
+> 6 files changed, 35 insertions(+)
+>
+> Index: current_test/mm/page_alloc.c
+> ===================================================================
+> --- current_test.orig/mm/page_alloc.c	2007-05-08 15:06:50.000000000 +0900
+> +++ current_test/mm/page_alloc.c	2007-05-08 15:08:36.000000000 +0900
+> @@ -58,6 +58,7 @@ unsigned long totalram_pages __read_most
+> unsigned long totalreserve_pages __read_mostly;
+> long nr_swap_pages;
+> int percpu_pagelist_fraction;
+> +unsigned long total_movable_pages __read_mostly;
+>
 
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+Is it really necessary to have this as a separate value? It could be 
+calculated at the same time as nr_free_movable_pages() seeing as that is 
+called for meminfo anyway if the read was protected with 
+zone_span_seqbegin()+zone_span_seqretry().
 
---- drivers/input/misc/ixp4xx-beeper.c.ori	2007-05-10 07:59:56.000000000 +0200
-+++ drivers/input/misc/ixp4xx-beeper.c	2007-05-10 08:00:53.000000000 +0200
-@@ -51,7 +51,7 @@
- 
- static int ixp4xx_spkr_event(struct input_dev *dev, unsigned int type, unsigned int code, int value)
- {
--	unsigned int pin = (unsigned int) input_get_drvdata(input_dev);
-+	unsigned int pin = (unsigned int) input_get_drvdata(dev);
- 	unsigned int count = 0;
- 
- 	if (type != EV_SND)
+> static void __free_pages_ok(struct page *page, unsigned int order);
+>
+> @@ -1827,6 +1828,18 @@ static unsigned int nr_free_zone_pages(i
+> 	return sum;
+> }
+>
+> +unsigned int nr_free_movable_pages(void)
+> +{
+> +	unsigned long nr_pages = 0;
+> +	struct zone *zone;
+> +	int nid;
+> +
+> +	for_each_online_node(nid) {
+> +		zone = &(NODE_DATA(nid)->node_zones[ZONE_MOVABLE]);
+> +		nr_pages += zone_page_state(zone, NR_FREE_PAGES);
+> +	}
+> +	return nr_pages;
+> +}
+> /*
+>  * Amount of free RAM allocatable within ZONE_DMA and ZONE_NORMAL
+>  */
+> @@ -1889,6 +1902,8 @@ void si_meminfo(struct sysinfo *val)
+> 	val->totalhigh = totalhigh_pages;
+> 	val->freehigh = nr_free_highpages();
+> 	val->mem_unit = PAGE_SIZE;
+> +	val->movable = total_movable_pages;
+> +	val->free_movable = nr_free_movable_pages();
+> }
+>
+> EXPORT_SYMBOL(si_meminfo);
+> @@ -1908,6 +1923,11 @@ void si_meminfo_node(struct sysinfo *val
+> 	val->totalhigh = 0;
+> 	val->freehigh = 0;
+> #endif
+> +
+> +	val->movable = pgdat->node_zones[ZONE_MOVABLE].present_pages;
+
+I think this has to be protected with zone_span_seqbegin()
+
+> +	val->free_movable = zone_page_state(&pgdat->node_zones[ZONE_MOVABLE],
+> +				NR_FREE_PAGES);
+> +
+> 	val->mem_unit = PAGE_SIZE;
+> }
+> #endif
+> @@ -3216,6 +3236,8 @@ static void __meminit free_area_init_cor
+>
+> 		zone->spanned_pages = size;
+> 		zone->present_pages = realsize;
+> +		if (j == ZONE_MOVABLE)
+> +			total_movable_pages += realsize;
+
+If total_movable_pages is calculated at the same time as free pages, 
+this could go away. Similar for online_page() later
+
+> #ifdef CONFIG_NUMA
+> 		zone->node = nid;
+> 		zone->min_unmapped_pages = (realsize*sysctl_min_unmapped_ratio)
+> Index: current_test/include/linux/kernel.h
+> ===================================================================
+> --- current_test.orig/include/linux/kernel.h	2007-05-08 15:06:49.000000000 +0900
+> +++ current_test/include/linux/kernel.h	2007-05-08 15:07:20.000000000 +0900
+> @@ -352,6 +352,8 @@ struct sysinfo {
+> 	unsigned short pad;		/* explicit padding for m68k */
+> 	unsigned long totalhigh;	/* Total high memory size */
+> 	unsigned long freehigh;		/* Available high memory size */
+> +	unsigned long movable;		/* pages used only for data */
+> +	unsigned long free_movable;	/* Avaiable pages in movable */
+> 	unsigned int mem_unit;		/* Memory unit size in bytes */
+> 	char _f[20-2*sizeof(long)-sizeof(int)];	/* Padding: libc5 uses this.. */
+> };
+> Index: current_test/fs/proc/proc_misc.c
+> ===================================================================
+> --- current_test.orig/fs/proc/proc_misc.c	2007-05-08 15:06:48.000000000 +0900
+> +++ current_test/fs/proc/proc_misc.c	2007-05-08 15:07:20.000000000 +0900
+> @@ -161,6 +161,8 @@ static int meminfo_read_proc(char *page,
+> 		"LowTotal:     %8lu kB\n"
+> 		"LowFree:      %8lu kB\n"
+> #endif
+> +		"MovableTotal: %8lu kB\n"
+> +		"MovableFree:  %8lu kB\n"
+> 		"SwapTotal:    %8lu kB\n"
+> 		"SwapFree:     %8lu kB\n"
+> 		"Dirty:        %8lu kB\n"
+> @@ -191,6 +193,8 @@ static int meminfo_read_proc(char *page,
+> 		K(i.totalram-i.totalhigh),
+> 		K(i.freeram-i.freehigh),
+> #endif
+> +		K(i.movable),
+> +		K(i.free_movable),
+> 		K(i.totalswap),
+> 		K(i.freeswap),
+> 		K(global_page_state(NR_FILE_DIRTY)),
+> Index: current_test/drivers/base/node.c
+> ===================================================================
+> --- current_test.orig/drivers/base/node.c	2007-05-08 15:06:10.000000000 +0900
+> +++ current_test/drivers/base/node.c	2007-05-08 15:07:20.000000000 +0900
+> @@ -55,6 +55,8 @@ static ssize_t node_read_meminfo(struct
+> 		       "Node %d LowTotal:     %8lu kB\n"
+> 		       "Node %d LowFree:      %8lu kB\n"
+> #endif
+> +		       "Node %d MovableTotal: %8lu kB\n"
+> +		       "Node %d MovableFree:  %8lu kB\n"
+> 		       "Node %d Dirty:        %8lu kB\n"
+> 		       "Node %d Writeback:    %8lu kB\n"
+> 		       "Node %d FilePages:    %8lu kB\n"
+> @@ -77,6 +79,8 @@ static ssize_t node_read_meminfo(struct
+> 		       nid, K(i.totalram - i.totalhigh),
+> 		       nid, K(i.freeram - i.freehigh),
+> #endif
+> +		       nid, K(i.movable),
+> +		       nid, K(i.free_movable),
+> 		       nid, K(node_page_state(nid, NR_FILE_DIRTY)),
+> 		       nid, K(node_page_state(nid, NR_WRITEBACK)),
+> 		       nid, K(node_page_state(nid, NR_FILE_PAGES)),
+> Index: current_test/arch/ia64/mm/init.c
+> ===================================================================
+> --- current_test.orig/arch/ia64/mm/init.c	2007-05-08 15:06:38.000000000 +0900
+> +++ current_test/arch/ia64/mm/init.c	2007-05-08 15:08:29.000000000 +0900
+> @@ -700,6 +700,8 @@ void online_page(struct page *page)
+> 	__free_page(page);
+> 	totalram_pages++;
+> 	num_physpages++;
+> +	if (page_zonenum(page) == ZONE_MOVABLE)
+> +		total_movable_pages++;
+> }
+>
+> int arch_add_memory(int nid, u64 start, u64 size)
+> Index: current_test/include/linux/swap.h
+> ===================================================================
+> --- current_test.orig/include/linux/swap.h	2007-05-08 15:06:49.000000000 +0900
+> +++ current_test/include/linux/swap.h	2007-05-08 15:07:20.000000000 +0900
+> @@ -169,6 +169,7 @@ extern void swapin_readahead(swp_entry_t
+> /* linux/mm/page_alloc.c */
+> extern unsigned long totalram_pages;
+> extern unsigned long totalreserve_pages;
+> +extern unsigned long total_movable_pages;
+
+If total_movable_pages was calculated on the fly, this extern could also 
+go away because online_page() would not need it any more.
+
+> extern long nr_swap_pages;
+> extern unsigned int nr_free_buffer_pages(void);
+> extern unsigned int nr_free_pagecache_pages(void);
+>
+> -- 
+> Yasunori Goto
+>
+>
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
