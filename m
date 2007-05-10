@@ -1,40 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758134AbXEJFeP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756738AbXEJFlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758134AbXEJFeP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 01:34:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756977AbXEJFd5
+	id S1756738AbXEJFlo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 01:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752834AbXEJFlg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 01:33:57 -0400
-Received: from ozlabs.org ([203.10.76.45]:48737 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756827AbXEJFd4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 01:33:56 -0400
-Subject: Re: [PATCH 3/3] stop_machine() now uses hard_irq_disable
-From: Rusty Russell <rusty@rustcorp.com.au>
+	Thu, 10 May 2007 01:41:36 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:40461 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752237AbXEJFlf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 01:41:35 -0400
+Date: Wed, 9 May 2007 22:41:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070510052624.06AD7DDF2E@ozlabs.org>
-References: <20070510052624.06AD7DDF2E@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 10 May 2007 15:33:54 +1000
-Message-Id: <1178775234.7286.189.camel@localhost.localdomain>
+Cc: <linux-kernel@vger.kernel.org>, <linuxppc-dev@ozlabs.org>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 2/3] Add hard_irq_disable()
+Message-Id: <20070509224113.cca81a24.akpm@linux-foundation.org>
+In-Reply-To: <20070510052622.3E8D5DDF4B@ozlabs.org>
+References: <20070510052622.3E8D5DDF4B@ozlabs.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2007-05-10 at 15:25 +1000, Benjamin Herrenschmidt wrote:
-> Add a call to hard_irq_disable() to stop_machine so that we make sure
-> IRQs are really disabled and not only lazy-disabled on archs like
-> powerpc as some users of stop_machine() may rely on that.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Thu, 10 May 2007 15:25:58 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+> --- linux-cell.orig/include/linux/interrupt.h	2007-05-10 14:51:22.000000000 +1000
+> +++ linux-cell/include/linux/interrupt.h	2007-05-10 15:18:04.000000000 +1000
+> @@ -241,6 +241,16 @@ static inline void __deprecated save_and
+>  #define save_and_cli(x)	save_and_cli(&x)
+>  #endif /* CONFIG_SMP */
+>  
+> +/* Some architectures might implement lazy enabling/disabling of
+> + * interrupts. In some cases, such as stop_machine, we might want
+> + * to ensure that after a local_irq_disable(), interrupts have
+> + * really been disabled in hardware. Such architectures need to
+> + * implement the following hook.
+> + */
+> +#ifndef hard_irq_disable
+> +#define hard_irq_disable()	do { } while(0)
+> +#endif
 
-Thanks,
-Rusty.
+We absolutely require that the architecture's hard_irq_disable() be defined
+when we do this.  If it happens that the definition of hard_irq_disable()
+is implemented three levels deep in nested includes then we risk getting
+into a situation where different .c files see different implementations of
+hard_irq_disable(), which could lead to confusing results, to say the least.
 
+Your implementation comes via the inclusion of system.h which then includes
+hw_irq.h.  That's perhaps a little fragile and it would be better to
 
+a) include in the comment the name of the arch file which must implement
+   hard_irq_disable() and
+
+b) include that file directly from this one.
+
+Oh, and your comment layout style is wrong ;)
