@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759486AbXEJUyn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759631AbXEJU6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759486AbXEJUyn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 16:54:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbXEJUyg
+	id S1759631AbXEJU6T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 16:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755323AbXEJU6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 16:54:36 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2733 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754429AbXEJUyf (ORCPT
+	Thu, 10 May 2007 16:58:11 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42594 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754429AbXEJU6J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 16:54:35 -0400
-Date: Thu, 10 May 2007 21:54:27 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
-Cc: cw@f00f.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
-Subject: Re: (hacky) [PATCH] silence MODPOST section mismatch warnings
-Message-ID: <20070510205427.GF29713@flint.arm.linux.org.uk>
-Mail-Followup-To: David Miller <davem@davemloft.net>, cw@f00f.org,
-	linux-kernel@vger.kernel.org, sam@ravnborg.org
-References: <20070510203417.GA23019@tuatara.stupidest.org> <20070510.135147.55726615.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510.135147.55726615.davem@davemloft.net>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 10 May 2007 16:58:09 -0400
+Date: Thu, 10 May 2007 13:56:39 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Len Brown <lenb@kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [GIT PATCH] ACPI patches for 2.6.22 - part 2
+In-Reply-To: <alpine.LFD.0.98.0705101330320.3986@woody.linux-foundation.org>
+Message-ID: <alpine.LFD.0.98.0705101353370.3986@woody.linux-foundation.org>
+References: <200705100411.32349.lenb@kernel.org>
+ <alpine.LFD.0.98.0705101330320.3986@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 01:51:47PM -0700, David Miller wrote:
-> From: Chris Wedgwood <cw@f00f.org>
-> Date: Thu, 10 May 2007 13:34:18 -0700
+
+
+On Thu, 10 May 2007, Linus Torvalds wrote:
 > 
-> > MODPOST seems to be spewing bogus warnings.  It's not clear how best
-> > to fix it so perhaps we should silence it for now?
-> 
-> Most of them are legitimate, the only one that needs sorting
-> is the mm/slab.c case and people are working on that.
-> 
-> The rest are useful and I've been working to fix things up
-> on sparc64 and the networking, and in fact I'm very happy
-> about these notifications.
-> 
-> Please don't apply a sledgehammer to this issue, thanks.
+> Seems to work for me. My evo correctly started the fan, and stopped it 
+> when the temperature went down again.
 
-I've not had one accurate one on ARM yet.
+Looking at things in "top", I do end up occasionally seeing spikes where 
+kacpid takes 17% of CPU time, and kacpi_notify takes a few percent too. 
+But the machine works ok, and it doesn't seem to be horrible:
 
-Here's another example:
+   64 ?        S<     0:15 [kacpid]
+   65 ?        S<     0:08 [kacpi_notify]
 
-WARNING: init/built-in.o - Section mismatch: reference to .init.text:
- from .text between 'rest_init' (at offset 0x4c) and 'run_init_process'
+so they've gotten 23 seconds of CPU time over the 37 minutes that laptop 
+has been up now. That's arguably too much, but on the other hand, I did 
+end up trying to stress it out by doing some 3D stuff while compiling the 
+kernel and doing "git grep" over the kernel tree etc.
 
-from init/main.c:
-
-static void noinline rest_init(void)
-        __releases(kernel_lock)
-
-static void run_init_process(char *init_filename)
-
-Clearly, it just does _not_ work.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+			Linus
