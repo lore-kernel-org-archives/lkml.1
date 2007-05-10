@@ -1,89 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbXEJFKs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbXEJFLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757868AbXEJFKs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 01:10:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbXEJFK1
+	id S1757106AbXEJFLT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 01:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbXEJFKu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 01:10:27 -0400
-Received: from ug-out-1314.google.com ([66.249.92.175]:33456 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757050AbXEJFKY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 01:10:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=i9kLjbRxaGsI3/wkqn6QUwSUnmTbeWfGQdE10H9WqI60WbxjCQIGnXll+oRgn+NgtPpKFzn0aGlSb7zlmxphsN4757AmrWmGJAoax1s/34N4boxC2rYP2o40zbzon0S/hunffuoJX17C51855E537qT4/zROD+2fkdtBZ2bPFv4=
-Date: Thu, 10 May 2007 09:10:43 +0400
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, hch@infradead.org,
-       Adrian Bunk <bunk@stusta.de>
-Subject: Re: [patch 02/10] Linux Kernel Markers, architecture independent code.
-Message-ID: <20070510051043.GA6640@martell.zuzino.mipt.ru>
-References: <20070510015555.973107048@polymtl.ca> <20070510020915.609367244@polymtl.ca>
+	Thu, 10 May 2007 01:10:50 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:43303 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755507AbXEJFKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 01:10:46 -0400
+Date: Thu, 10 May 2007 14:10:42 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Timur Tabi <timur@freescale.com>
+Cc: Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Michael Schmitz <schmitz@debian.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: Kconfig warnings on latest GIT
+Message-ID: <20070510051042.GA16812@verge.net.au>
+References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070510020915.609367244@polymtl.ca>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4640D988.1040504@freescale.com>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 09:55:57PM -0400, Mathieu Desnoyers wrote:
-> --- /dev/null
-> +++ linux-2.6-lttng/include/linux/marker.h
-> @@ -0,0 +1,124 @@
+On Tue, May 08, 2007 at 03:11:52PM -0500, Timur Tabi wrote:
+> Kim Phillips wrote:
+> >On Tue, 8 May 2007 00:04:14 +0300
+> >Ismail Dönmez <ismail@pardus.org.tr> wrote:
+> >>drivers/net/Kconfig:2279:warning: 'select' used by config symbol 'UCC_GETH' 
+> >>refers to undefined symbol 'UCC_FAST'
+> >looks like this introduces the error:
+> >commit 7d776cb596994219584257eb5956b87628e5deaf
+> >Author: Timur Tabi <timur@freescale.com>
+> >Date:   Mon Mar 12 15:40:27 2007 -0500
+> >    [POWERPC] QE: automatically select QE options
+> 
+> I have a dilemma, so I need help fixing this bug.
+> 
+> This particular patch is necessary because without it, selecting support for 
+> the QE is too complicated.
+> 
+> Background: The QUICC Engine (QE) is a microcontroller on some Freescale CPUs 
+> that can mimic a wide variety of devices.  It has multiple controllers (called 
+> UCCs), and each one can be an ethernet device, or a UART, or an HDLC thingy, 
+> etc.  There's a QE library and a bunch of other support code in the 
+> arch/powerpc directory, so the QE is a powerpc-specific device.  However, all 
+> of the drivers that use it are located in drivers/xxx.
+> 
+> This isn't a new problem.  The common solution is to define some intermediate 
+> Kconfig option, like UCC_FAST_TEMP in the driver's Kconfig.  Selecting UCC_FAST 
+> will then also set UCC_FAST_TEMP.  The device driver then depends on 
+> UCC_FAST_TEMP.
+> 
+> There's also a UCC_SLOW option with the same problem.
+> 
+> The dillema is that there is no single device driver class that depends on 
+> UCC_FAST. Currently, there's only one that uses UCC_FAST: the ucc_geth driver.  
+> But I'm also working on a UART driver.
+> 
+> So my question is: in which Kconfig do I define "UCC_FAST_TEMP" and 
+> "UCC_SLOW_TEMP"?  At first I thought, just put it in drivers/Kconfig, but that 
+> Kconfig does nothing but including other Kconfigs.  I believe that if I submit 
+> a patch that adds "UCC_FAST_TEMP" and "UCC_SLOW_TEMP" to drivers/Kconfig, it 
+> will be rejected.  Either that, or I'll spend six weeks trying to persuade 
+> everyone that it's a good idea.
+> 
+> Does anyone have any suggestions on how I can fix this?
 
-> +#ifdef __KERNEL__
+That does seem like a reasonable suggestion, and one that
+would probably work well with the other similar problems
+that have been introduced sice 2.6.21.
 
-Just don't add this file to include/linux/Kbuild and remove __KERNEL__
-ifdef.
+drivers/input/keyboard/Kconfig:170:warning: 'select' used by config symbol 'KEYBOARD_ATARI' refer to undefined symbol 'ATARI_KBD_CORE'
+drivers/input/mouse/Kconfig:102:warning: 'select' used by config symbol 'MOUSE_ATARI' refer to undefined symbol 'ATARI_KBD_CORE'
 
-> --- linux-2.6-lttng.orig/include/linux/module.h
-> +++ linux-2.6-lttng/include/linux/module.h
-> @@ -356,6 +356,9 @@
->  	/* The command line arguments (may be mangled).  People like
->  	   keeping pointers to this stuff */
->  	char *args;
-> +
-> +	const struct __mark_marker *markers;
-> +	unsigned int num_markers;
+Which seem to be introduced by:
 
-#ifdef CONFIG_MARKERS, please.
+commit c04cb856e20a8bf68762d60737b84328c1ab5900
+Author: Michael Schmitz <schmitz@opal.biophys.uni-duesseldorf.de>
+Date:   Tue May 1 22:32:38 2007 +0200
 
-> --- linux-2.6-lttng.orig/kernel/module.c
-> +++ linux-2.6-lttng/kernel/module.c
+    m68k: Atari keyboard and mouse support.
+    
+    Atari keyboard and mouse support.
+    (reformating and Kconfig fixes by Roman Zippel)
+    
+    Signed-off-by: Michael Schmitz <schmitz@debian.org>
+    Signed-off-by: Roman Zippel <zippel@linux-m68k.org>
+    Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+    Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 
-> @@ -1659,6 +1884,9 @@
->  	unsigned int unusedcrcindex;
->  	unsigned int unusedgplindex;
->  	unsigned int unusedgplcrcindex;
-> +	unsigned int markersindex;
-> +	unsigned int markersdataindex;
-> +	unsigned int markersstringsindex;
+drivers/macintosh/Kconfig:112:warning: 'select' used by config symbol 'PMAC_APM_EMU' refer to undefined symbol 'SYS_SUPPORTS_APM_EMULATION'
 
-Bunch of underscores wouldn't hurt.
+Which seems to have been introduced by:
 
-> +void list_modules(void)
-> +{
-> +	/* Enumerate loaded modules */
-> +	struct list_head	*i;
-> +	struct module		*mod;
-> +	unsigned long refcount = 0;
-> +
-> +	mutex_lock(&module_mutex);
-> +	list_for_each(i, &modules) {
-> +		mod = list_entry(i, struct module, list);
-> +#ifdef CONFIG_MODULE_UNLOAD
-> +		refcount = local_read(&mod->ref[0].count);
-						^
-Buy second CPU, already. ;-)
+commit b302887854d6f0c6f9fc3f1080535e7c1bd53134
+Author: Johannes Berg <johannes@sipsolutions.net>
+Date:   Tue Mar 20 05:18:02 2007 +1100
 
-> +#endif //CONFIG_MODULE_UNLOAD
-> +		trace_mark(list_module, "%s %d %lu",
-> +				mod->name, mod->state, refcount);
-> +	}
-> +	mutex_unlock(&module_mutex);
-> +}
+    [POWERPC] apm_emu: Use generic apm-emulation
+    
+    This patch removes a huge amount of code that is now in common code
+    in drivers/char/apm-emulation.c
+    
+    Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+    Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
+
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
