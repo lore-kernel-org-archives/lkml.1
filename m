@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759000AbXEJTcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758753AbXEJTiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759000AbXEJTcS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 15:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbXEJTb7
+	id S1758753AbXEJTiR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 15:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbXEJTiH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 15:31:59 -0400
-Received: from mail0.lsil.com ([147.145.40.20]:54072 "EHLO mail0.lsil.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757481AbXEJTb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 15:31:58 -0400
-Subject: [PATCH]: Update Maintainer email-id for MegaRAID SCSI drivers
-From: Sumant Patro <sumant.patro@lsi.com>
-To: akpm@osdl.org, linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       James.Bottomley@SteelEye.com
-Cc: Neela.Kolli@lsi.com, Bo.Yang@lsi.com, sumant.patro@lsi.com
-Content-Type: text/plain
-Date: Thu, 10 May 2007 07:22:35 -0700
-Message-Id: <1178806955.4681.13.camel@dumbo>
+	Thu, 10 May 2007 15:38:07 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:39480 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750893AbXEJTiG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 15:38:06 -0400
+Date: Thu, 10 May 2007 12:37:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Alasdair G Kergon <agk@redhat.com>, dm-devel@redhat.com,
+       linux-kernel@vger.kernel.org,
+       Heinz Mauelshagen <mauelshagen@redhat.com>
+Subject: Re: [2.6.22 PATCH 23/26] dm delay:
+Message-Id: <20070510123755.09dbc70c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705101204150.10698@schroedinger.engr.sgi.com>
+References: <20070508194859.GD24114@agk.fab.redhat.com>
+	<20070508175410.d5b7e91f.akpm@linux-foundation.org>
+	<20070510120223.bb4c22df.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705101204150.10698@schroedinger.engr.sgi.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.0.2 (2.0.2-22) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 May 2007 12:04:50 -0700 (PDT) Christoph Lameter <clameter@sgi.com> wrote:
 
-Update Maintainer email-id for MegaRAID SCSI drivers.
+> On Thu, 10 May 2007, Andrew Morton wrote:
+> 
+> > > > +	delayed_cache = kmem_cache_create("dm-delay",
+> > > > +					  sizeof(struct delay_info),
+> > > > +					  __alignof__(struct delay_info),
+> > > > +					  0, NULL, NULL);
+> > > 
+> > > We have an ugly^Wnice new KMEM_CACHE macro for this now.
+> 
+> How could I nicify the macro? Lower case?
 
-Signed-off-by: Sumant Patro <sumant.patro@lsi.com>
----
+Lower case would be worse, IMO.  Upper-case says "this is a macro".  Lower-case
+macros are OK when they are macros pretending to be functions, but KMEM_CACHE
+is not such a thing.
 
-diff -uprN orig/MAINTAINERS new/MAINTAINERS
---- orig/MAINTAINERS	2007-05-10 07:13:22.000000000 -0700
-+++ new/MAINTAINERS	2007-05-10 07:12:58.000000000 -0700
-@@ -2268,7 +2268,7 @@ S:	Maintained
- 
- MEGARAID SCSI DRIVERS
- P:	Neela Syam Kolli
--M:	Neela.Kolli@engenio.com
-+M:	megaraidlinux@lsi.com
- S:	linux-scsi@vger.kernel.org
- W:	http://megaraid.lsilogic.com
- S:	Maintained
+I don't think it can be nicified, except by removing it.  We generally
+prefer to open-code things rather than wrapping them up in macros.
 
-
+But given the amount of variation amongst callers and the number of times
+this got screwed up, I agree that burying those details at a single site
+makes sense in this instance.
