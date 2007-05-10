@@ -1,96 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761369AbXEJLmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761465AbXEJLmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761369AbXEJLmZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 07:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758415AbXEJLlN
+	id S1761465AbXEJLmk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 07:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760531AbXEJLlO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 07:41:13 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:4880 "EHLO kernel.dk"
+	Thu, 10 May 2007 07:41:14 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:4889 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757228AbXEJLlI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 07:41:08 -0400
+	id S1758281AbXEJLlJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 07:41:09 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org
 Cc: Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 4/12] block: convert to using sg helpers
-Date: Thu, 10 May 2007 13:40:29 +0200
-Message-Id: <11787972374108-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 9/12] x86-64: enable sg chaining
+Date: Thu, 10 May 2007 13:40:34 +0200
+Message-Id: <11787972371310-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.5.2.rc1
 In-Reply-To: <11787972373654-git-send-email-jens.axboe@oracle.com>
 References: <11787972373654-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert the main rq mapper (blk_rq_map_sg()) to the sg helper setup.
-
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- block/ll_rw_blk.c |   19 ++++++++++++-------
- 1 files changed, 12 insertions(+), 7 deletions(-)
+ include/asm-x86_64/dma-mapping.h |    3 +--
+ include/asm-x86_64/scatterlist.h |    2 ++
+ 2 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
-index 17e1889..b01a5f2 100644
---- a/block/ll_rw_blk.c
-+++ b/block/ll_rw_blk.c
-@@ -30,6 +30,7 @@
- #include <linux/cpu.h>
- #include <linux/blktrace_api.h>
- #include <linux/fault-inject.h>
-+#include <linux/scatterlist.h>
- 
- /*
-  * for max sense size
-@@ -1307,9 +1308,11 @@ static int blk_hw_contig_segment(request_queue_t *q, struct bio *bio,
-  * map a request to scatterlist, return number of sg entries setup. Caller
-  * must make sure sg can hold rq->nr_phys_segments entries
+diff --git a/include/asm-x86_64/dma-mapping.h b/include/asm-x86_64/dma-mapping.h
+index 6897e2a..ecd0f61 100644
+--- a/include/asm-x86_64/dma-mapping.h
++++ b/include/asm-x86_64/dma-mapping.h
+@@ -6,8 +6,7 @@
+  * documentation.
   */
--int blk_rq_map_sg(request_queue_t *q, struct request *rq, struct scatterlist *sg)
-+int blk_rq_map_sg(request_queue_t *q, struct request *rq,
-+		  struct scatterlist *sglist)
- {
- 	struct bio_vec *bvec, *bvprv;
-+	struct scatterlist *next_sg, *sg;
- 	struct bio *bio;
- 	int nsegs, i, cluster;
  
-@@ -1320,6 +1323,7 @@ int blk_rq_map_sg(request_queue_t *q, struct request *rq, struct scatterlist *sg
- 	 * for each bio in rq
- 	 */
- 	bvprv = NULL;
-+	sg = next_sg = &sglist[0];
- 	rq_for_each_bio(bio, rq) {
- 		/*
- 		 * for each segment in bio
-@@ -1328,7 +1332,7 @@ int blk_rq_map_sg(request_queue_t *q, struct request *rq, struct scatterlist *sg
- 			int nbytes = bvec->bv_len;
+-
+-#include <asm/scatterlist.h>
++#include <linux/scatterlist.h>
+ #include <asm/io.h>
+ #include <asm/swiotlb.h>
  
- 			if (bvprv && cluster) {
--				if (sg[nsegs - 1].length + nbytes > q->max_segment_size)
-+				if (sg->length + nbytes > q->max_segment_size)
- 					goto new_segment;
+diff --git a/include/asm-x86_64/scatterlist.h b/include/asm-x86_64/scatterlist.h
+index eaf7ada..ef3986b 100644
+--- a/include/asm-x86_64/scatterlist.h
++++ b/include/asm-x86_64/scatterlist.h
+@@ -11,6 +11,8 @@ struct scatterlist {
+     unsigned int        dma_length;
+ };
  
- 				if (!BIOVEC_PHYS_MERGEABLE(bvprv, bvec))
-@@ -1336,14 +1340,15 @@ int blk_rq_map_sg(request_queue_t *q, struct request *rq, struct scatterlist *sg
- 				if (!BIOVEC_SEG_BOUNDARY(q, bvprv, bvec))
- 					goto new_segment;
++#define ARCH_HAS_SG_CHAIN
++
+ #define ISA_DMA_THRESHOLD (0x00ffffff)
  
--				sg[nsegs - 1].length += nbytes;
-+				sg->length += nbytes;
- 			} else {
- new_segment:
--				memset(&sg[nsegs],0,sizeof(struct scatterlist));
--				sg[nsegs].page = bvec->bv_page;
--				sg[nsegs].length = nbytes;
--				sg[nsegs].offset = bvec->bv_offset;
-+				sg = next_sg;
-+				next_sg = sg_next(sg);
- 
-+				sg->page = bvec->bv_page;
-+				sg->length = nbytes;
-+				sg->offset = bvec->bv_offset;
- 				nsegs++;
- 			}
- 			bvprv = bvec;
+ /* These macros should be used after a pci_map_sg call has been done
 -- 
 1.5.2.rc1
 
