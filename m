@@ -1,69 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbXEJVAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761593AbXEJVBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761601AbXEJVAy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 17:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759631AbXEJVAl
+	id S1761593AbXEJVBx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 17:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761815AbXEJVBh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 17:00:41 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:56290 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759587AbXEJVAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 17:00:39 -0400
-Date: Thu, 10 May 2007 23:01:34 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: David Miller <davem@davemloft.net>, cw@f00f.org,
-       linux-kernel@vger.kernel.org
+	Thu, 10 May 2007 17:01:37 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53526
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1761787AbXEJVBf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 17:01:35 -0400
+Date: Thu, 10 May 2007 14:01:38 -0700 (PDT)
+Message-Id: <20070510.140138.133012852.davem@davemloft.net>
+To: rmk+lkml@arm.linux.org.uk
+Cc: cw@f00f.org, linux-kernel@vger.kernel.org, sam@ravnborg.org
 Subject: Re: (hacky) [PATCH] silence MODPOST section mismatch warnings
-Message-ID: <20070510210134.GA23149@uranus.ravnborg.org>
-References: <20070510203417.GA23019@tuatara.stupidest.org> <20070510.135147.55726615.davem@davemloft.net> <20070510205427.GF29713@flint.arm.linux.org.uk>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070510204037.GE29713@flint.arm.linux.org.uk>
+References: <20070510203417.GA23019@tuatara.stupidest.org>
+	<20070510204037.GE29713@flint.arm.linux.org.uk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510205427.GF29713@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 09:54:27PM +0100, Russell King wrote:
-> On Thu, May 10, 2007 at 01:51:47PM -0700, David Miller wrote:
-> > From: Chris Wedgwood <cw@f00f.org>
-> > Date: Thu, 10 May 2007 13:34:18 -0700
-> > 
-> > > MODPOST seems to be spewing bogus warnings.  It's not clear how best
-> > > to fix it so perhaps we should silence it for now?
-> > 
-> > Most of them are legitimate, the only one that needs sorting
-> > is the mm/slab.c case and people are working on that.
-> > 
-> > The rest are useful and I've been working to fix things up
-> > on sparc64 and the networking, and in fact I'm very happy
-> > about these notifications.
-> > 
-> > Please don't apply a sledgehammer to this issue, thanks.
-> 
-> I've not had one accurate one on ARM yet.
-You had one patch from me in latest submission to linus that
-was a clear bug.
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Date: Thu, 10 May 2007 21:40:38 +0100
 
+> On Thu, May 10, 2007 at 01:34:18PM -0700, Chris Wedgwood wrote:
+> > MODPOST seems to be spewing bogus warnings.  It's not clear how best
+> > to fix it so perhaps we should silence it for now?
 > 
-> Here's another example:
+> I agree.  Example bogus warning:
 > 
-> WARNING: init/built-in.o - Section mismatch: reference to .init.text:
->  from .text between 'rest_init' (at offset 0x4c) and 'run_init_process'
+> WARNING: arch/arm/mach-iop32x/built-in.o - Section mismatch:
+>  reference to .init.text: from .data between 'iq80321_timer'
+>  (at offset 0x428) and 'iq80321_serial_device'
 > 
-> from init/main.c:
+> c04088fc d iq80321_timer
+> c0408950 d iq80321_serial_device
 > 
-> static void noinline rest_init(void)
->         __releases(kernel_lock)
+> It's completely unclear what is referencing what, what the two named
+> symbols mean, and even what "at offset" relates to.
 > 
-> static void run_init_process(char *init_filename)
-> 
-> Clearly, it just does _not_ work.
-As I have already explained to you this is a binutils issue
-that causes this false positive.
+> What I can say is that iq80321_timer doesn't reference iq80321_serial_device
+> nor vice versa, and iq80321_timer is far smaller than 0x428 bytes.
 
-The plan is to annotate functions that are not __init that
-they intentional reference a function or data in a init section.
-I just not there yet.
+The range of symbols is just provided to handle inaccuracies
+in mid-function and mid-object references, it actually helps.
 
-	Sam
+In this particular case iq80321_timer, which is not init-data,
+is referencing iq80321_timer_init() which is init.text
+
+If this is legitimate (which I believe this case is, the init function
+method can be init but the offset one is not), add an exception case
+like we already have for console drivers et al. to modpost.c and this
+warning will go away.
