@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761012AbXEJMWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbXEJMZJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761012AbXEJMWr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 08:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755791AbXEJMWl
+	id S1760861AbXEJMZJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 08:25:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755024AbXEJMY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 08:22:41 -0400
-Received: from hu-out-0506.google.com ([72.14.214.238]:11184 "EHLO
-	hu-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755024AbXEJMWk (ORCPT
+	Thu, 10 May 2007 08:24:59 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:42383 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757474AbXEJMY6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 08:22:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent:sender;
-        b=N74Jz/B/wHkGsomxvQmQna9j5cp9cCD1V6UckDSyNzKFsB4R9olkkcwt6qgJm2yNs9UtBqT1NnT+UrF2lf8AnpWJzqXfa8GnQOK9zQthQQbwwEVgihUDu4Oe+sSEYaTEn2QTKBU76V13SkQ6UOBP3NTiRFaj/H0EYEj9Hp4JA0c=
-Date: Thu, 10 May 2007 14:21:29 +0200
-From: Frederik Deweerdt <deweerdt@free.fr>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, a.zummo@towertech.it, dtor@mail.ru
-Subject: ixp4xx compile error (was Re: 2.6.21-mm2)
-Message-ID: <20070510122129.GC17402@slug>
-References: <20070509012322.199f292b.akpm@linux-foundation.org>
+	Thu, 10 May 2007 08:24:58 -0400
+X-Originating-Ip: 99.246.112.70
+Date: Thu, 10 May 2007 08:24:04 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Simon Arlott <simon@fire.lp0.eu>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fix misspellings collected by members of KJ list.
+In-Reply-To: <464242B6.9020508@simon.arlott.org.uk>
+Message-ID: <Pine.LNX.4.64.0705100823130.3641@localhost.localdomain>
+References: <200705092102.l49L29Bt026911@hera.kernel.org>
+ <464242B6.9020508@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070509012322.199f292b.akpm@linux-foundation.org>
-User-Agent: mutt-ng/devel-r804 (Linux)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-36.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 09, 2007 at 01:23:22AM -0700, Andrew Morton wrote:
-> 
-> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm2/
-> 
-Hi all,
+On Wed, 9 May 2007, Simon Arlott wrote:
 
-I've got this compile error while building arm ipx4xx:
+> On 09/05/07 22:02, Linux Kernel Mailing List wrote:
+> > Gitweb:
+> > http://git.kernel.org/git/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=beb7dd86a101263bf63a78c7c6d4da3849b35bd6
+> > Commit:     beb7dd86a101263bf63a78c7c6d4da3849b35bd6
+> > Parent:     3dde6ad8fc3939d345a3768464ecff43c91d511a
+> > Author:     Robert P. J. Day <rpjday@mindspring.com>
+> > AuthorDate: Wed May 9 07:14:03 2007 +0200
+> > Committer:  Adrian Bunk <bunk@stusta.de>
+> > CommitDate: Wed May 9 07:14:03 2007 +0200
+> >
+> >     Fix misspellings collected by members of KJ list.
+> >         Fix the misspellings of "propogate", "writting" and (oh, the shame
+> >     :-) "kenrel" in the source tree.
+> >         Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
+> >     Signed-off-by: Adrian Bunk <bunk@stusta.de>
+> > ---
+> > diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+> > index 7710a6a..f6ac1d3 100644
+> > --- a/drivers/char/tty_io.c
+> > +++ b/drivers/char/tty_io.c
+> > @@ -1607,11 +1607,11 @@ void stop_tty(struct tty_struct *tty)
+> >  EXPORT_SYMBOL(stop_tty);
+> >   /**
+> > - *	start_tty	-	propogate flow control
+> > + *	start_tty	-	propagate flow control
+> >   *	@tty: tty to start
+> >   *
+> >   *	Start a tty that has been stopped if at all possible. Perform
+> > - *	any neccessary wakeups and propogate the TIOCPKT status. If this
+> > + *	any neccessary wakeups and propagate the TIOCPKT status. If this
+> >   *	is the tty was previous stopped and is being started then the
+> >   *	driver start method is invoked and the line discipline woken.
+> >   *
+>
+> There's only one c in necessary.
 
-  CC [M]  drivers/input/misc/ixp4xx-beeper.o
-drivers/input/misc/ixp4xx-beeper.c: In function 'ixp4xx_spkr_event':
-drivers/input/misc/ixp4xx-beeper.c:54: error: 'input_dev' undeclared (first use in this function)
-drivers/input/misc/ixp4xx-beeper.c:54: error: (Each undeclared identifier is reported only once
-drivers/input/misc/ixp4xx-beeper.c:54: error: for each function it appears in.)
-make[3]: *** [drivers/input/misc/ixp4xx-beeper.o] Error 1
-make[2]: *** [drivers/input/misc] Error 2
-make[1]: *** [drivers/input] Error 2
-make: *** [drivers] Error 2
+dang.  well, might as well just apply that patch as we've collected a
+few more typoes since then, i'll catch that one on the next pass.
 
-Following patch fixes the problem.
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
 
-Regards,
-Frederik
-
-Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-
---- a/drivers/input/misc/ixp4xx-beeper.c	2007-05-10 08:00:53.000000000 +0200
-+++ b/drivers/input/misc/ixp4xx-beeper.c.ori	2007-05-10 07:59:56.000000000 +0200
-@@ -51,7 +51,7 @@
- 
- static int ixp4xx_spkr_event(struct input_dev *dev, unsigned int type, unsigned int code, int value)
- {
--	unsigned int pin = (unsigned int) input_get_drvdata(dev);
-+	unsigned int pin = (unsigned int) input_get_drvdata(input_dev);
- 	unsigned int count = 0;
- 
- 	if (type != EV_SND)
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
