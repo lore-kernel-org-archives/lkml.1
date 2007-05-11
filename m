@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966188AbXEKToh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966243AbXEKTpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966188AbXEKToh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:44:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763241AbXEKTlq
+	id S966243AbXEKTpE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:45:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762762AbXEKTl6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:41:46 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:45939 "EHLO proxima.lp0.eu"
+	Fri, 11 May 2007 15:41:58 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:45943 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763162AbXEKTln (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:41:43 -0400
-Message-ID: <4644C6F3.1050808@simon.arlott.org.uk>
-Date: Fri, 11 May 2007 20:41:39 +0100
+	id S1762072AbXEKTly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 15:41:54 -0400
+Message-ID: <4644C6FD.6010004@simon.arlott.org.uk>
+Date: Fri, 11 May 2007 20:41:49 +0100
 From: Simon Arlott <simon@fire.lp0.eu>
 User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org
-Subject: [PATCH] spelling fixes: arch/i386/
+       linux-ia64@vger.kernel.org, trivial@kernel.org
+Subject: [PATCH] spelling fixes: arch/ia64/
 X-Enigmail-Version: 0.94.1.2
 OpenPGP: id=89C93563
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -24,684 +24,814 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spelling fixes in arch/i386/.
+Spelling fixes in arch/ia64/.
 
 Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 ---
- arch/i386/boot/compressed/misc.c               |    4 ++--
- arch/i386/kernel/acpi/boot.c                   |    8 ++++----
- arch/i386/kernel/apic.c                        |    4 ++--
- arch/i386/kernel/apm.c                         |    2 +-
- arch/i386/kernel/cpu/amd.c                     |    2 +-
- arch/i386/kernel/cpu/centaur.c                 |    4 ++--
- arch/i386/kernel/cpu/common.c                  |    2 +-
- arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c |    2 +-
- arch/i386/kernel/cpu/cpufreq/gx-suspmod.c      |    8 ++++----
- arch/i386/kernel/cpu/cpufreq/powernow-k8.c     |    2 +-
- arch/i386/kernel/cpu/cpufreq/powernow-k8.h     |    4 ++--
- arch/i386/kernel/cpu/cyrix.c                   |    2 +-
- arch/i386/kernel/cpu/mtrr/cyrix.c              |    4 ++--
- arch/i386/kernel/cpu/mtrr/generic.c            |    2 +-
- arch/i386/kernel/cpu/mtrr/main.c               |    2 +-
- arch/i386/kernel/e820.c                        |    2 +-
- arch/i386/kernel/hpet.c                        |    2 +-
- arch/i386/kernel/i8253.c                       |    2 +-
- arch/i386/kernel/io_apic.c                     |    4 ++--
- arch/i386/kernel/mpparse.c                     |    2 +-
- arch/i386/kernel/ptrace.c                      |    2 +-
- arch/i386/kernel/setup.c                       |    2 +-
- arch/i386/kernel/signal.c                      |    2 +-
- arch/i386/kernel/smp.c                         |    4 ++--
- arch/i386/kernel/smpboot.c                     |    2 +-
- arch/i386/kernel/summit.c                      |    2 +-
- arch/i386/kernel/tsc.c                         |    2 +-
- arch/i386/mach-default/setup.c                 |    2 +-
- arch/i386/mach-generic/default.c               |    2 +-
- arch/i386/mach-generic/probe.c                 |    2 +-
- arch/i386/mach-voyager/voyager_smp.c           |   12 ++++++------
- arch/i386/mach-voyager/voyager_thread.c        |    2 +-
- arch/i386/mm/boot_ioremap.c                    |    2 +-
- arch/i386/mm/discontig.c                       |    2 +-
- arch/i386/mm/fault.c                           |    4 ++--
- arch/i386/oprofile/op_x86_model.h              |    2 +-
- arch/i386/pci/irq.c                            |    4 ++--
- 37 files changed, 57 insertions(+), 57 deletions(-)
+ arch/ia64/kernel/acpi.c             |    2 +-
+ arch/ia64/kernel/crash.c            |    2 +-
+ arch/ia64/kernel/irq.c              |    6 +++---
+ arch/ia64/kernel/irq_lsapic.c       |    2 +-
+ arch/ia64/kernel/kprobes.c          |    6 +++---
+ arch/ia64/kernel/mca_drv.c          |    4 ++--
+ arch/ia64/kernel/module.c           |    2 +-
+ arch/ia64/kernel/perfmon.c          |   18 +++++++++---------
+ arch/ia64/kernel/perfmon_mckinley.h |    2 +-
+ arch/ia64/kernel/sal.c              |    2 +-
+ arch/ia64/kernel/salinfo.c          |    2 +-
+ arch/ia64/kernel/setup.c            |    6 +++---
+ arch/ia64/kernel/smp.c              |   12 ++++++------
+ arch/ia64/kernel/smpboot.c          |    6 +++---
+ arch/ia64/kernel/time.c             |    2 +-
+ arch/ia64/kernel/traps.c            |    2 +-
+ arch/ia64/kernel/unwind.c           |    2 +-
+ arch/ia64/mm/discontig.c            |    2 +-
+ arch/ia64/sn/kernel/bte.c           |   12 ++++++------
+ arch/ia64/sn/kernel/bte_error.c     |    4 ++--
+ arch/ia64/sn/kernel/io_common.c     |    2 +-
+ arch/ia64/sn/kernel/setup.c         |    2 +-
+ arch/ia64/sn/kernel/sn2/sn2_smp.c   |    2 +-
+ arch/ia64/sn/kernel/xpc_channel.c   |    8 ++++----
+ arch/ia64/sn/kernel/xpnet.c         |    2 +-
+ arch/ia64/sn/pci/pci_dma.c          |    8 ++++----
+ arch/ia64/sn/pci/pcibr/pcibr_ate.c  |    6 +++---
+ arch/ia64/sn/pci/pcibr/pcibr_dma.c  |    2 +-
+ arch/ia64/sn/pci/tioca_provider.c   |    6 +++---
+ arch/ia64/sn/pci/tioce_provider.c   |   16 ++++++++--------
+ 30 files changed, 75 insertions(+), 75 deletions(-)
 
-diff --git a/arch/i386/boot/compressed/misc.c b/arch/i386/boot/compressed/misc.c
-index b28505c..1dc1e19 100644
---- a/arch/i386/boot/compressed/misc.c
-+++ b/arch/i386/boot/compressed/misc.c
-@@ -25,7 +25,7 @@
+diff --git a/arch/ia64/kernel/acpi.c b/arch/ia64/kernel/acpi.c
+index 3549c94..c478449 100644
+--- a/arch/ia64/kernel/acpi.c
++++ b/arch/ia64/kernel/acpi.c
+@@ -791,7 +791,7 @@ static __init int setup_additional_cpus(char *s)
+ early_param("additional_cpus", setup_additional_cpus);
  
  /*
-  * Getting to provable safe in place decompression is hard.
-- * Worst case behaviours need to be analized.
-+ * Worst case behaviours need to be analyzed.
-  * Background information:
+- * cpu_possible_map should be static, it cannot change as cpu's
++ * cpu_possible_map should be static, it cannot change as CPUs
+  * are onlined, or offlined. The reason is per-cpu data-structures
+  * are allocated by some modules at init time, and dont expect to
+  * do this dynamically on cpu arrival/departure.
+diff --git a/arch/ia64/kernel/crash.c b/arch/ia64/kernel/crash.c
+index aeb79fb..e80c82c 100644
+--- a/arch/ia64/kernel/crash.c
++++ b/arch/ia64/kernel/crash.c
+@@ -163,7 +163,7 @@ kdump_init_notifier(struct notifier_block *self, unsigned long val, void *data)
+ 		return NOTIFY_DONE;
+ 
+ 	nd = (struct ia64_mca_notify_die *)args->err;
+-	/* Reason code 1 means machine check rendezous*/
++	/* Reason code 1 means machine check rendezvous*/
+ 	if ((val == DIE_INIT_MONARCH_ENTER || val == DIE_INIT_SLAVE_ENTER) &&
+ 		 nd->sos->rv_rc == 1)
+ 		return NOTIFY_DONE;
+diff --git a/arch/ia64/kernel/irq.c b/arch/ia64/kernel/irq.c
+index ce49c85..f88ff7c 100644
+--- a/arch/ia64/kernel/irq.c
++++ b/arch/ia64/kernel/irq.c
+@@ -4,7 +4,7 @@
+  *	Copyright (C) 1992, 1998 Linus Torvalds, Ingo Molnar
   *
-  * The file layout is:
-@@ -94,7 +94,7 @@
-  * Adding 32768 instead of 32767 just makes for round numbers.
-  * Adding the decompressor_size is necessary as it musht live after all
-  * of the data as well.  Last I measured the decompressor is about 14K.
-- * 10K of actuall data and 4K of bss.
-+ * 10K of actual data and 4K of bss.
+  * This file contains the code used by various IRQ handling routines:
+- * asking for different IRQ's should be done through these routines
++ * asking for different IRQs should be done through these routines
+  * instead of just grabbing them. Thus setups with different IRQ numbers
+  * shouldn't result in any weird surprises, and installing new handlers
+  * should be easier.
+@@ -12,7 +12,7 @@
+  * Copyright (C) Ashok Raj<ashok.raj@intel.com>, Intel Corporation 2004
   *
+  * 4/14/2004: Added code to handle cpu migration and do safe irq
+- *			migration without lossing interrupts for iosapic
++ *			migration without losing interrupts for iosapic
+  *			architecture.
   */
  
-diff --git a/arch/i386/kernel/acpi/boot.c b/arch/i386/kernel/acpi/boot.c
-index 280898b..fc2fc6f 100644
---- a/arch/i386/kernel/acpi/boot.c
-+++ b/arch/i386/kernel/acpi/boot.c
-@@ -99,7 +99,7 @@ static u64 acpi_lapic_addr __initdata = APIC_DEFAULT_PHYS_BASE;
- 
- /*
-  * The default interrupt routing model is PIC (8259).  This gets
-- * overriden if IOAPICs are enumerated (below).
-+ * overridden if IOAPICs are enumerated (below).
-  */
- enum acpi_irq_model_id acpi_irq_model = ACPI_IRQ_MODEL_PIC;
- 
-@@ -414,8 +414,8 @@ acpi_parse_nmi_src(struct acpi_subtable_header * header, const unsigned long end
-  *
-  * Port 0x4d0-4d1 are ECLR1 and ECLR2, the Edge/Level Control Registers
-  * for the 8259 PIC.  bit[n] = 1 means irq[n] is Level, otherwise Edge.
-- * ECLR1 is IRQ's 0-7 (IRQ 0, 1, 2 must be 0)
-- * ECLR2 is IRQ's 8-15 (IRQ 8, 13 must be 0)
-+ * ECLR1 is IRQs 0-7 (IRQ 0, 1, 2 must be 0)
-+ * ECLR2 is IRQs 8-15 (IRQ 8, 13 must be 0)
-  */
- 
- void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
-@@ -427,7 +427,7 @@ void __init acpi_pic_sci_set_trigger(unsigned int irq, u16 trigger)
- 	old = inb(0x4d0) | (inb(0x4d1) << 8);
- 
- 	/*
--	 * If we use ACPI to set PCI irq's, then we should clear ELCR
-+	 * If we use ACPI to set PCI IRQs, then we should clear ELCR
- 	 * since we will set it correctly as we enable the PCI irq
- 	 * routing.
- 	 */
-diff --git a/arch/i386/kernel/apic.c b/arch/i386/kernel/apic.c
-index 67824f3..d2896ca 100644
---- a/arch/i386/kernel/apic.c
-+++ b/arch/i386/kernel/apic.c
-@@ -943,7 +943,7 @@ void __devinit setup_local_APIC(void)
- 	 * Set up LVT0, LVT1:
- 	 *
- 	 * set up through-local-APIC on the BP's LINT0. This is not
--	 * strictly necessery in pure symmetric-IO mode, but sometimes
-+	 * strictly necessary in pure symmetric-IO mode, but sometimes
- 	 * we delegate interrupts to the 8259A.
- 	 */
- 	/*
-@@ -994,7 +994,7 @@ void __devinit setup_local_APIC(void)
- 	} else {
- 		if (esr_disable)
- 			/*
--			 * Something untraceble is creating bad interrupts on
-+			 * Something untraceable is creating bad interrupts on
- 			 * secondary quads ... for the moment, just leave the
- 			 * ESR disabled - we can't do anything useful with the
- 			 * errors anyway - mbligh
-diff --git a/arch/i386/kernel/apm.c b/arch/i386/kernel/apm.c
-index 4112afe..6ab37d9 100644
---- a/arch/i386/kernel/apm.c
-+++ b/arch/i386/kernel/apm.c
-@@ -57,7 +57,7 @@
-  *         screen-blanking and gpm (Stephen Rothwell); Linux 1.99.4
-  *    1.2a:Simple change to stop mysterious bug reports with SMP also added
-  *	   levels to the printk calls. APM is not defined for SMP machines.
-- *         The new replacment for it is, but Linux doesn't yet support this.
-+ *         The new replacement for it is, but Linux doesn't yet support this.
-  *         Alan Cox Linux 2.1.55
-  *    1.3: Set up a valid data descriptor 0x40 for buggy BIOS's
-  *    1.4: Upgraded to support APM 1.2. Integrated ThinkPad suspend patch by
-diff --git a/arch/i386/kernel/cpu/amd.c b/arch/i386/kernel/cpu/amd.c
-index 4fec702..cb7f40c 100644
---- a/arch/i386/kernel/cpu/amd.c
-+++ b/arch/i386/kernel/cpu/amd.c
-@@ -255,7 +255,7 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- #ifdef CONFIG_X86_HT
- 	/*
- 	 * On a AMD multi core setup the lower bits of the APIC id
--	 * distingush the cores.
-+	 * distinguish the cores.
- 	 */
- 	if (c->x86_max_cores > 1) {
- 		int cpu = smp_processor_id();
-diff --git a/arch/i386/kernel/cpu/centaur.c b/arch/i386/kernel/cpu/centaur.c
-index 473eac8..9681fa1 100644
---- a/arch/i386/kernel/cpu/centaur.c
-+++ b/arch/i386/kernel/cpu/centaur.c
-@@ -53,7 +53,7 @@ static u32 __cpuinit ramtop(void)		/* 16388 */
- 			continue;
- 		/*
- 		 *	Don't MCR over reserved space. Ignore the ISA hole
--		 *	we frob around that catastrophy already
-+		 *	we frob around that catastrophe already
- 		 */
- 		 			
- 		if (e820.map[i].type == E820_RESERVED)
-@@ -287,7 +287,7 @@ static void __cpuinit init_c3(struct cpuinfo_x86 *c)
- 		c->x86_capability[5] = cpuid_edx(0xC0000001);
+@@ -179,7 +179,7 @@ void fixup_irqs(void)
  	}
  
--	/* Cyrix III family needs CX8 & PGE explicity enabled. */
-+	/* Cyrix III family needs CX8 & PGE explicitly enabled. */
- 	if (c->x86_model >=6 && c->x86_model <= 9) {
- 		rdmsr (MSR_VIA_FCR, lo, hi);
- 		lo |= (1<<1 | 1<<7);
-diff --git a/arch/i386/kernel/cpu/common.c b/arch/i386/kernel/cpu/common.c
-index 794d593..a501fca 100644
---- a/arch/i386/kernel/cpu/common.c
-+++ b/arch/i386/kernel/cpu/common.c
-@@ -207,7 +207,7 @@ static void __cpuinit get_cpu_vendor(struct cpuinfo_x86 *c, int early)
- 
- static int __init x86_fxsr_setup(char * s)
+ 	/*
+-	 * Phase 1: Locate irq's bound to this cpu and
++	 * Phase 1: Locate IRQs bound to this cpu and
+ 	 * relocate them for cpu removal.
+ 	 */
+ 	migrate_irqs();
+diff --git a/arch/ia64/kernel/irq_lsapic.c b/arch/ia64/kernel/irq_lsapic.c
+index c2f07be..e56a7a3 100644
+--- a/arch/ia64/kernel/irq_lsapic.c
++++ b/arch/ia64/kernel/irq_lsapic.c
+@@ -23,7 +23,7 @@ lsapic_noop_startup (unsigned int irq)
+ static void
+ lsapic_noop (unsigned int irq)
  {
--	/* Tell all the other CPU's to not use it... */
-+	/* Tell all the other CPUs to not use it... */
- 	disable_x86_fxsr = 1;
+-	/* nuthing to do... */
++	/* nothing to do... */
+ }
+ 
+ static int lsapic_retrigger(unsigned int irq)
+diff --git a/arch/ia64/kernel/kprobes.c b/arch/ia64/kernel/kprobes.c
+index 4f5fd09..21cd36a 100644
+--- a/arch/ia64/kernel/kprobes.c
++++ b/arch/ia64/kernel/kprobes.c
+@@ -151,12 +151,12 @@ static uint __kprobes is_cmp_ctype_unc_inst(uint template, uint slot,
+ 
+ 	cmp_inst.l = kprobe_inst;
+ 	if ((cmp_inst.f.x2 == 0) || (cmp_inst.f.x2 == 1)) {
+-		/* Integere compare - Register Register (A6 type)*/
++		/* Integer compare - Register Register (A6 type)*/
+ 		if ((cmp_inst.f.tb == 0) && (cmp_inst.f.ta == 0)
+ 				&&(cmp_inst.f.c == 1))
+ 			ctype_unc = 1;
+ 	} else if ((cmp_inst.f.x2 == 2)||(cmp_inst.f.x2 == 3)) {
+-		/* Integere compare - Immediate Register (A8 type)*/
++		/* Integer compare - Immediate Register (A8 type)*/
+ 		if ((cmp_inst.f.ta == 0) &&(cmp_inst.f.c == 1))
+ 			ctype_unc = 1;
+ 	}
+@@ -950,7 +950,7 @@ int __kprobes setjmp_pre_handler(struct kprobe *p, struct pt_regs *regs)
+ 	/*
+ 	 * Callee owns the argument space and could overwrite it, eg
+ 	 * tail call optimization. So to be absolutely safe
+-	 * we save the argument space before transfering the control
++	 * we save the argument space before transferring the control
+ 	 * to instrumented jprobe function which runs in
+ 	 * the process context
+ 	 */
+diff --git a/arch/ia64/kernel/mca_drv.c b/arch/ia64/kernel/mca_drv.c
+index 70b8bdb..aba813c 100644
+--- a/arch/ia64/kernel/mca_drv.c
++++ b/arch/ia64/kernel/mca_drv.c
+@@ -438,7 +438,7 @@ is_mca_global(peidx_table_t *peidx, pal_bus_check_info_t *pbci,
+  * @peidx:	pointer of index of processor error section
+  *
+  * Return value:
+- *	target address on Success / 0 on Failue
++ *	target address on Success / 0 on Failure
+  */
+ static u64
+ get_target_identifier(peidx_table_t *peidx)
+@@ -701,7 +701,7 @@ recover_from_processor_error(int platform, slidx_table_t *slidx,
+ 		return fatal_mca("External bus check fatal status");
  
  	/*
-diff --git a/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c b/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
-index 0d49d73..6f1f3e2 100644
---- a/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
-+++ b/arch/i386/kernel/cpu/cpufreq/cpufreq-nforce2.c
-@@ -260,7 +260,7 @@ static int nforce2_target(struct cpufreq_policy *policy,
- 
- 	freqs.old = nforce2_get(policy->cpu);
- 	freqs.new = target_fsb * fid * 100;
--	freqs.cpu = 0;		/* Only one CPU on nForce2 plattforms */
-+	freqs.cpu = 0;		/* Only one CPU on nForce2 platforms */
- 
- 	if (freqs.old == freqs.new)
- 		return 0;
-diff --git a/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c b/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c
-index 6667e9c..617a3a4 100644
---- a/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c
-+++ b/arch/i386/kernel/cpu/cpufreq/gx-suspmod.c
-@@ -12,12 +12,12 @@
-  *      of any nature resulting due to the use of this software. This
-  *      software is provided AS-IS with no warranties.
-  *
-- * Theoritical note:
-+ * Theoretical note:
-  *
-  *	(see Geode(tm) CS5530 manual (rev.4.1) page.56)
-  *
-  *	CPU frequency control on NatSemi Geode GX1/GXLV processor and CS55x0
-- *	are based on Suspend Moduration.
-+ *	are based on Suspend Modulation.
-  *
-  *	Suspend Modulation works by asserting and de-asserting the SUSP# pin
-  *	to CPU(GX1/GXLV) for configurable durations. When asserting SUSP#
-@@ -101,11 +101,11 @@
- 
- /* SUSCFG bits */
- #define SUSMOD		(1<<0)	/* enable/disable suspend modulation */
--/* the belows support only with cs5530 (after rev.1.2)/cs5530A */
-+/* the below is supported only with cs5530 (after rev.1.2)/cs5530A */
- #define SMISPDUP	(1<<1)	/* select how SMI re-enable suspend modulation: */
- 				/* IRQTC timer or read SMI speedup disable reg.(F1BAR[08-09h]) */
- #define SUSCFG		(1<<2)	/* enable powering down a GXLV processor. "Special 3Volt Suspend" mode */
--/* the belows support only with cs5530A */
-+/* the below is supported only with cs5530A */
- #define PWRSVE_ISA	(1<<3)	/* stop ISA clock  */
- #define PWRSVE		(1<<4)	/* active idle */
- 
-diff --git a/arch/i386/kernel/cpu/cpufreq/powernow-k8.c b/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-index 7cf3d20..8e2deea 100644
---- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-+++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.c
-@@ -165,7 +165,7 @@ static void count_off_irt(struct powernow_k8_data *data)
- 	return;
- }
- 
--/* the voltage stabalization time */
-+/* the voltage stabilization time */
- static void count_off_vst(struct powernow_k8_data *data)
+-	 * This is a local MCA and estimated as a recoverble error.
++	 * This is a local MCA and estimated as a recoverable error.
+ 	 */
+ 	if (platform)
+ 		return recover_from_platform_error(slidx, peidx, pbci, sos);
+diff --git a/arch/ia64/kernel/module.c b/arch/ia64/kernel/module.c
+index 158e3c5..1962879 100644
+--- a/arch/ia64/kernel/module.c
++++ b/arch/ia64/kernel/module.c
+@@ -861,7 +861,7 @@ apply_relocate (Elf64_Shdr *sechdrs, const char *strtab, unsigned int symindex,
+ /*
+  * Modules contain a single unwind table which covers both the core and the init text
+  * sections but since the two are not contiguous, we need to split this table up such that
+- * we can register (and unregister) each "segment" seperately.  Fortunately, this sounds
++ * we can register (and unregister) each "segment" separately.  Fortunately, this sounds
+  * more complicated than it really is.
+  */
+ static void
+diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+index e7191ca..b7133ca 100644
+--- a/arch/ia64/kernel/perfmon.c
++++ b/arch/ia64/kernel/perfmon.c
+@@ -1318,7 +1318,7 @@ pfm_reserve_session(struct task_struct *task, int is_syswide, unsigned int cpu)
  {
- 	udelay(data->vstable * VST_UNITS_20US);
-diff --git a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-index 95be501..72fbdc4 100644
---- a/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-+++ b/arch/i386/kernel/cpu/cpufreq/powernow-k8.h
-@@ -148,10 +148,10 @@ struct powernow_k8_data {
- #define PLL_LOCK_CONVERSION (1000/5) /* ms to ns, then divide by clock period */
+ 	unsigned long flags;
+ 	/*
+-	 * validy checks on cpu_mask have been done upstream
++	 * validity checks on cpu_mask have been done upstream
+ 	 */
+ 	LOCK_PFS(flags);
  
- #define MAXIMUM_VID_STEPS 1  /* Current cpus only allow a single step of 25mV */
--#define VST_UNITS_20US 20   /* Voltage Stabalization Time is in units of 20us */
-+#define VST_UNITS_20US 20   /* Voltage Stabilization Time is in units of 20us */
+@@ -1384,7 +1384,7 @@ pfm_unreserve_session(pfm_context_t *ctx, int is_syswide, unsigned int cpu)
+ {
+ 	unsigned long flags;
+ 	/*
+-	 * validy checks on cpu_mask have been done upstream
++	 * validity checks on cpu_mask have been done upstream
+ 	 */
+ 	LOCK_PFS(flags);
+ 
+@@ -1835,7 +1835,7 @@ pfm_flush(struct file *filp, fl_owner_t id)
+ 	/*
+ 	 * remove our file from the async queue, if we use this mode.
+ 	 * This can be done without the context being protected. We come
+-	 * here when the context has become unreacheable by other tasks.
++	 * here when the context has become unreachable by other tasks.
+ 	 *
+ 	 * We may still have active monitoring at this point and we may
+ 	 * end up in pfm_overflow_handler(). However, fasync_helper()
+@@ -2132,7 +2132,7 @@ doit:
+ 	filp->private_data = NULL;
+ 
+ 	/*
+-	 * if we free on the spot, the context is now completely unreacheable
++	 * if we free on the spot, the context is now completely unreachable
+ 	 * from the callers side. The monitored task side is also cut, so we
+ 	 * can freely cut.
+ 	 *
+@@ -2562,7 +2562,7 @@ pfm_reset_pmu_state(pfm_context_t *ctx)
+ 	ctx->ctx_all_pmcs[0] = pmu_conf->impl_pmcs[0] & ~0x1;
+ 
+ 	/*
+-	 * bitmask of all PMDs that are accesible to this context
++	 * bitmask of all PMDs that are accessible to this context
+ 	 */
+ 	ctx->ctx_all_pmds[0] = pmu_conf->impl_pmds[0];
+ 
+@@ -3395,7 +3395,7 @@ pfm_read_pmds(pfm_context_t *ctx, void *arg, int count, struct pt_regs *regs)
+ 		if (unlikely(!PMD_IS_IMPL(cnum))) goto error;
+ 		/*
+ 		 * we can only read the register that we use. That includes
+-		 * the one we explicitely initialize AND the one we want included
++		 * the one we explicitly initialize AND the one we want included
+ 		 * in the sampling buffer (smpl_regs).
+ 		 *
+ 		 * Having this restriction allows optimization in the ctxsw routine
+@@ -3715,7 +3715,7 @@ pfm_restart(pfm_context_t *ctx, void *arg, int count, struct pt_regs *regs)
+ 	 * if non-blocking, then we ensure that the task will go into
+ 	 * pfm_handle_work() before returning to user mode.
+ 	 *
+-	 * We cannot explicitely reset another task, it MUST always
++	 * We cannot explicitly reset another task, it MUST always
+ 	 * be done by the task itself. This works for system wide because
+ 	 * the tool that is controlling the session is logically doing 
+ 	 * "self-monitoring".
+@@ -4644,7 +4644,7 @@ pfm_exit_thread(struct task_struct *task)
+ 	switch(state) {
+ 		case PFM_CTX_UNLOADED:
+ 			/*
+-	 		 * only comes to thios function if pfm_context is not NULL, i.e., cannot
++	 		 * only comes to this function if pfm_context is not NULL, i.e., cannot
+ 			 * be in unloaded state
+ 	 		 */
+ 			printk(KERN_ERR "perfmon: pfm_exit_thread [%d] ctx unloaded\n", task->pid);
+@@ -5247,7 +5247,7 @@ pfm_end_notify_user(pfm_context_t *ctx)
  
  /*
-- * Most values of interest are enocoded in a single field of the _PSS
-+ * Most values of interest are encoded in a single field of the _PSS
-  * entries: the "control" value.
+  * main overflow processing routine.
+- * it can be called from the interrupt path or explicitely during the context switch code
++ * it can be called from the interrupt path or explicitly during the context switch code
   */
+ static void
+ pfm_overflow_handler(struct task_struct *task, pfm_context_t *ctx, u64 pmc0, struct pt_regs *regs)
+diff --git a/arch/ia64/kernel/perfmon_mckinley.h b/arch/ia64/kernel/perfmon_mckinley.h
+index 9becccd..c4bec7a 100644
+--- a/arch/ia64/kernel/perfmon_mckinley.h
++++ b/arch/ia64/kernel/perfmon_mckinley.h
+@@ -181,7 +181,7 @@ static pmu_config_t pmu_conf_mck={
+ 	.pmc_desc      = pfm_mck_pmc_desc,
+ 	.num_ibrs       = 8,
+ 	.num_dbrs       = 8,
+-	.use_rr_dbregs = 1 /* debug register are use for range retrictions */
++	.use_rr_dbregs = 1 /* debug register are use for range restrictions */
+ };
  
-diff --git a/arch/i386/kernel/cpu/cyrix.c b/arch/i386/kernel/cpu/cyrix.c
-index 0b8411a..f1a52aa 100644
---- a/arch/i386/kernel/cpu/cyrix.c
-+++ b/arch/i386/kernel/cpu/cyrix.c
-@@ -255,7 +255,7 @@ static void __cpuinit init_cyrix(struct cpuinfo_x86 *c)
- 		u32 vendor, device;
- 		/* It isn't really a PCI quirk directly, but the cure is the
- 		   same. The MediaGX has deep magic SMM stuff that handles the
--		   SB emulation. It thows away the fifo on disable_dma() which
-+		   SB emulation. It throws away the fifo on disable_dma() which
- 		   is wrong and ruins the audio. 
  
- 		   Bug2: VSA1 has a wrap bug so that using maximum sized DMA 
-diff --git a/arch/i386/kernel/cpu/mtrr/cyrix.c b/arch/i386/kernel/cpu/mtrr/cyrix.c
-index 0737a59..d01f2cf 100644
---- a/arch/i386/kernel/cpu/mtrr/cyrix.c
-+++ b/arch/i386/kernel/cpu/mtrr/cyrix.c
-@@ -146,10 +146,10 @@ static void prepare_set(void)
- 	write_cr0(cr0);
- 	wbinvd();
- 
--	/* Cyrix ARRs - everything else were excluded at the top */
-+	/* Cyrix ARRs - everything else was excluded at the top */
- 	ccr3 = getCx86(CX86_CCR3);
- 
--	/* Cyrix ARRs - everything else were excluded at the top */
-+	/* Cyrix ARRs - everything else was excluded at the top */
- 	setCx86(CX86_CCR3, (ccr3 & 0x0f) | 0x10);
- 
+diff --git a/arch/ia64/kernel/sal.c b/arch/ia64/kernel/sal.c
+index 37c876f..27c2ef4 100644
+--- a/arch/ia64/kernel/sal.c
++++ b/arch/ia64/kernel/sal.c
+@@ -134,7 +134,7 @@ set_smp_redirect (int flag)
+ 	 * interrupt redirection. The reason is this would require that
+ 	 * All interrupts be stopped and hard bind the irq to a cpu.
+ 	 * Later when the interrupt is fired we need to set the redir hint
+-	 * on again in the vector. This is combersome for something that the
++	 * on again in the vector. This is cumbersome for something that the
+ 	 * user mode irq balancer will solve anyways.
+ 	 */
+ 	no_int_routing=1;
+diff --git a/arch/ia64/kernel/salinfo.c b/arch/ia64/kernel/salinfo.c
+index 89f6b13..25cd75f 100644
+--- a/arch/ia64/kernel/salinfo.c
++++ b/arch/ia64/kernel/salinfo.c
+@@ -162,7 +162,7 @@ static DEFINE_SPINLOCK(data_saved_lock);
+ /** salinfo_platform_oemdata - optional callback to decode oemdata from an error
+  * record.
+  * @sect_header: pointer to the start of the section to decode.
+- * @oemdata: returns vmalloc area containing the decded output.
++ * @oemdata: returns vmalloc area containing the decoded output.
+  * @oemdata_size: returns length of decoded output (strlen).
+  *
+  * Description: If user space asks for oem data to be decoded by the kernel
+diff --git a/arch/ia64/kernel/setup.c b/arch/ia64/kernel/setup.c
+index 9df1efe..eaa6a24 100644
+--- a/arch/ia64/kernel/setup.c
++++ b/arch/ia64/kernel/setup.c
+@@ -576,7 +576,7 @@ setup_arch (char **cmdline_p)
  }
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index 5367e32..2d27b55 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -181,7 +181,7 @@ static inline void k8_enable_fixed_iorrs(void)
+ 
+ /*
+- * Display cpu info for all cpu's.
++ * Display cpu info for all CPUs.
+  */
+ static int
+ show_cpuinfo (struct seq_file *m, void *v)
+@@ -761,7 +761,7 @@ identify_cpu (struct cpuinfo_ia64 *c)
+ 	c->cpu = smp_processor_id();
+ 
+ 	/* below default values will be overwritten  by identify_siblings() 
+-	 * for Multi-Threading/Multi-Core capable cpu's
++	 * for Multi-Threading/Multi-Core capable CPUs
+ 	 */
+ 	c->threads_per_core = c->cores_per_socket = c->num_log = 1;
+ 	c->socket_id = -1;
+@@ -947,7 +947,7 @@ cpu_init (void)
+ 	ia32_cpu_init();
+ #endif
+ 
+-	/* Clear ITC to eliminiate sched_clock() overflows in human time.  */
++	/* Clear ITC to eliminate sched_clock() overflows in human time.  */
+ 	ia64_set_itc(0);
+ 
+ 	/* disable all local interrupt sources: */
+diff --git a/arch/ia64/kernel/smp.c b/arch/ia64/kernel/smp.c
+index 221de38..b3a47f9 100644
+--- a/arch/ia64/kernel/smp.c
++++ b/arch/ia64/kernel/smp.c
+@@ -186,7 +186,7 @@ handle_IPI (int irq, void *dev_id)
+ }
+ 
+ /*
+- * Called with preeemption disabled.
++ * Called with preemption disabled.
+  */
+ static inline void
+ send_IPI_single (int dest_cpu, int op)
+@@ -196,7 +196,7 @@ send_IPI_single (int dest_cpu, int op)
+ }
+ 
+ /*
+- * Called with preeemption disabled.
++ * Called with preemption disabled.
+  */
+ static inline void
+ send_IPI_allbutself (int op)
+@@ -210,7 +210,7 @@ send_IPI_allbutself (int op)
+ }
+ 
+ /*
+- * Called with preeemption disabled.
++ * Called with preemption disabled.
+  */
+ static inline void
+ send_IPI_all (int op)
+@@ -223,7 +223,7 @@ send_IPI_all (int op)
+ }
+ 
+ /*
+- * Called with preeemption disabled.
++ * Called with preemption disabled.
+  */
+ static inline void
+ send_IPI_self (int op)
+@@ -252,7 +252,7 @@ kdump_smp_send_init(void)
+ }
+ #endif
+ /*
+- * Called with preeemption disabled.
++ * Called with preemption disabled.
+  */
+ void
+ smp_send_reschedule (int cpu)
+@@ -261,7 +261,7 @@ smp_send_reschedule (int cpu)
+ }
+ 
+ /*
+- * Called with preeemption disabled.
++ * Called with preemption disabled.
+  */
+ static void
+ smp_send_local_flush_tlb (int cpu)
+diff --git a/arch/ia64/kernel/smpboot.c b/arch/ia64/kernel/smpboot.c
+index a44792d..5429580 100644
+--- a/arch/ia64/kernel/smpboot.c
++++ b/arch/ia64/kernel/smpboot.c
+@@ -694,7 +694,7 @@ int migrate_platform_irqs(unsigned int cpu)
+ 			set_cpei_target_cpu(new_cpei_cpu);
+ 			desc = irq_desc + ia64_cpe_irq;
+ 			/*
+-			 * Switch for now, immediatly, we need to do fake intr
++			 * Switch for now, immediately, we need to do fake intr
+ 			 * as other interrupts, but need to study CPEI behaviour with
+ 			 * polling before making changes.
+ 			 */
+@@ -840,7 +840,7 @@ __cpu_up (unsigned int cpu)
+ }
+ 
+ /*
+- * Assume that CPU's have been discovered by some platform-dependent interface.  For
++ * Assume that CPUs have been discovered by some platform-dependent interface.  For
+  * SoftSDV/Lion, that would be ACPI.
+  *
+  * Setup of the IPI irq handler is done in irq.c:init_IRQ_SMP().
+@@ -854,7 +854,7 @@ init_smp_config(void)
+ 	} *ap_startup;
+ 	long sal_ret;
+ 
+-	/* Tell SAL where to drop the AP's.  */
++	/* Tell SAL where to drop the APs.  */
+ 	ap_startup = (struct fptr *) start_ap;
+ 	sal_ret = ia64_sal_set_vectors(SAL_VECTOR_OS_BOOT_RENDEZ,
+ 				       ia64_tpa(ap_startup->fp), ia64_tpa(ap_startup->gp), 0, 0, 0, 0);
+diff --git a/arch/ia64/kernel/time.c b/arch/ia64/kernel/time.c
+index a06667c..bf7e7b5 100644
+--- a/arch/ia64/kernel/time.c
++++ b/arch/ia64/kernel/time.c
+@@ -216,7 +216,7 @@ ia64_init_itm (void)
+ #ifdef CONFIG_SMP
+ 		/* On IA64 in an SMP configuration ITCs are never accurately synchronized.
+ 		 * Jitter compensation requires a cmpxchg which may limit
+-		 * the scalability of the syscalls for retrieving time.
++		 * the scalibility of the syscalls for retrieving time.
+ 		 * The ITC synchronization is usually successful to within a few
+ 		 * ITC ticks but this is not a sure thing. If you need to improve
+ 		 * timer performance in SMP situations then boot the kernel with the
+diff --git a/arch/ia64/kernel/traps.c b/arch/ia64/kernel/traps.c
+index b8e0d70..15ad85d 100644
+--- a/arch/ia64/kernel/traps.c
++++ b/arch/ia64/kernel/traps.c
+@@ -304,7 +304,7 @@ handle_fpu_swa (int fp_fault, struct pt_regs *regs, unsigned long isr)
+ 			 * Lower 4 bits are used as a count. Upper bits are a sequence
+ 			 * number that is updated when count is reset. The cmpxchg will
+ 			 * fail is seqno has changed. This minimizes mutiple cpus
+-			 * reseting the count.
++			 * resetting the count.
+ 			 */
+ 			if (current_jiffies > last.time)
+ 				(void) cmpxchg_acq(&last.count, count, 16 + (count & ~15));
+diff --git a/arch/ia64/kernel/unwind.c b/arch/ia64/kernel/unwind.c
+index fe14262..7d3dd6c 100644
+--- a/arch/ia64/kernel/unwind.c
++++ b/arch/ia64/kernel/unwind.c
+@@ -2,7 +2,7 @@
+  * Copyright (C) 1999-2004 Hewlett-Packard Co
+  *	David Mosberger-Tang <davidm@hpl.hp.com>
+  * Copyright (C) 2003 Fenghua Yu <fenghua.yu@intel.com>
+- * 	- Change pt_regs_off() to make it less dependant on pt_regs structure.
++ * 	- Change pt_regs_off() to make it less dependent on pt_regs structure.
+  */
+ /*
+  * This file implements call frame unwind support for the Linux
+diff --git a/arch/ia64/mm/discontig.c b/arch/ia64/mm/discontig.c
+index 9484444..9868be4 100644
+--- a/arch/ia64/mm/discontig.c
++++ b/arch/ia64/mm/discontig.c
+@@ -317,7 +317,7 @@ static void __meminit scatter_node_data(void)
+ 	 * node_online_map is not set for hot-added nodes at this time,
+ 	 * because we are halfway through initialization of the new node's
+ 	 * structures.  If for_each_online_node() is used, a new node's
+-	 * pg_data_ptrs will be not initialized. Insted of using it,
++	 * pg_data_ptrs will be not initialized. Instead of using it,
+ 	 * pgdat_list[] is checked.
+ 	 */
+ 	for_each_node(node) {
+diff --git a/arch/ia64/sn/kernel/bte.c b/arch/ia64/sn/kernel/bte.c
+index ff1c556..b362d6d 100644
+--- a/arch/ia64/sn/kernel/bte.c
++++ b/arch/ia64/sn/kernel/bte.c
+@@ -63,7 +63,7 @@ static inline void bte_start_transfer(struct bteinfo_s *bte, u64 len, u64 mode)
+  * Use the block transfer engine to move kernel memory from src to dest
+  * using the assigned mode.
+  *
+- * Paramaters:
++ * Parameters:
+  *   src - physical address of the transfer source.
+  *   dest - physical address of the transfer destination.
+  *   len - number of bytes to transfer from source to dest.
+@@ -247,7 +247,7 @@ EXPORT_SYMBOL(bte_copy);
+  * use the block transfer engine to move kernel
+  * memory from src to dest using the assigned mode.
+  *
+- * Paramaters:
++ * Parameters:
+  *   src - physical address of the transfer source.
+  *   dest - physical address of the transfer destination.
+  *   len - number of bytes to transfer from source to dest.
+@@ -255,7 +255,7 @@ EXPORT_SYMBOL(bte_copy);
+  *          for IBCT0/1 in the SGI documentation.
+  *
+  * NOTE: If the source, dest, and len are all cache line aligned,
+- * then it would be _FAR_ preferrable to use bte_copy instead.
++ * then it would be _FAR_ preferable to use bte_copy instead.
+  */
+ bte_result_t bte_unaligned_copy(u64 src, u64 dest, u64 len, u64 mode)
+ {
+@@ -300,7 +300,7 @@ bte_result_t bte_unaligned_copy(u64 src, u64 dest, u64 len, u64 mode)
+ 	 * a standard bte copy.
+ 	 *
+ 	 * One nasty exception to the above rule is when the
+-	 * source and destination are not symetrically
++	 * source and destination are not symmetrically
+ 	 * mis-aligned.  If the source offset from the first
+ 	 * cache line is different from the destination offset,
+ 	 * we make the first section be the entire transfer
+@@ -337,7 +337,7 @@ bte_result_t bte_unaligned_copy(u64 src, u64 dest, u64 len, u64 mode)
+ 
+ 			if (footBcopyDest == (headBcopyDest + headBcopyLen)) {
+ 				/*
+-				 * We have two contigous bcopy
++				 * We have two contiguous bcopy
+ 				 * blocks.  Merge them.
+ 				 */
+ 				headBcopyLen += footBcopyLen;
+@@ -375,7 +375,7 @@ bte_result_t bte_unaligned_copy(u64 src, u64 dest, u64 len, u64 mode)
+ 	} else {
+ 
+ 		/*
+-		 * The transfer is not symetric, we will
++		 * The transfer is not symmetric, we will
+ 		 * allocate a buffer large enough for all the
+ 		 * data, bte_copy into that buffer and then
+ 		 * bcopy to the destination.
+diff --git a/arch/ia64/sn/kernel/bte_error.c b/arch/ia64/sn/kernel/bte_error.c
+index b6fcf81..27c5936 100644
+--- a/arch/ia64/sn/kernel/bte_error.c
++++ b/arch/ia64/sn/kernel/bte_error.c
+@@ -105,7 +105,7 @@ int shub1_bte_error_handler(unsigned long _nodepda)
+ 	}
+ 
+ 	BTE_PRINTK(("eh:%p:%d Cleaning up\n", err_nodepda, smp_processor_id()));
+-	/* Reenable both bte interfaces */
++	/* Re-enable both bte interfaces */
+ 	imem.ii_imem_regval = REMOTE_HUB_L(nasid, IIO_IMEM);
+ 	imem.ii_imem_fld_s.i_b0_esd = imem.ii_imem_fld_s.i_b1_esd = 1;
+ 	REMOTE_HUB_S(nasid, IIO_IMEM, imem.ii_imem_regval);
+@@ -243,7 +243,7 @@ bte_crb_error_handler(cnodeid_t cnode, int btenum,
+ 
+ 	/*
+ 	 * The caller has already figured out the error type, we save that
+-	 * in the bte handle structure for the thread excercising the
++	 * in the bte handle structure for the thread exercising the
+ 	 * interface to consume.
+ 	 */
+ 	bte->bh_error = ioe->ie_errortype + BTEFAIL_OFFSET;
+diff --git a/arch/ia64/sn/kernel/io_common.c b/arch/ia64/sn/kernel/io_common.c
+index d48bcd8..450caa3 100644
+--- a/arch/ia64/sn/kernel/io_common.c
++++ b/arch/ia64/sn/kernel/io_common.c
+@@ -479,7 +479,7 @@ sn_io_early_init(void)
+ 	}
+ 
+ 	/*
+-	 * prime sn_pci_provider[].  Individial provider init routines will
++	 * prime sn_pci_provider[].  Individual provider init routines will
+ 	 * override their respective default entries.
+ 	 */
+ 
+diff --git a/arch/ia64/sn/kernel/setup.c b/arch/ia64/sn/kernel/setup.c
+index a9bed5c..a574fcd 100644
+--- a/arch/ia64/sn/kernel/setup.c
++++ b/arch/ia64/sn/kernel/setup.c
+@@ -167,7 +167,7 @@ void __init early_sn_setup(void)
+ 	 * IO on SN2 is done via SAL calls, early_printk won't work without this.
+ 	 *
+ 	 * This code duplicates some of the ACPI table parsing that is in efi.c & sal.c.
+-	 * Any changes to those file may have to be made hereas well.
++	 * Any changes to those file may have to be made here as well.
+ 	 */
+ 	efi_systab = (efi_system_table_t *) __va(ia64_boot_param->efi_systab);
+ 	config_tables = __va(efi_systab->tables);
+diff --git a/arch/ia64/sn/kernel/sn2/sn2_smp.c b/arch/ia64/sn/kernel/sn2/sn2_smp.c
+index 5d318b5..033c8a9 100644
+--- a/arch/ia64/sn/kernel/sn2/sn2_smp.c
++++ b/arch/ia64/sn/kernel/sn2/sn2_smp.c
+@@ -104,7 +104,7 @@ static inline unsigned long wait_piowc(void)
+  *
+  * SN2 PIO writes from separate CPUs are not guaranteed to arrive in order.
+  * Context switching user threads which have memory-mapped MMIO may cause
+- * PIOs to issue from seperate CPUs, thus the PIO writes must be drained
++ * PIOs to issue from separate CPUs, thus the PIO writes must be drained
+  * from the previous CPU's Shub before execution resumes on the new CPU.
+  */
+ void sn_migrate(struct task_struct *task)
+diff --git a/arch/ia64/sn/kernel/xpc_channel.c b/arch/ia64/sn/kernel/xpc_channel.c
+index c08db9c..44ccc0d 100644
+--- a/arch/ia64/sn/kernel/xpc_channel.c
++++ b/arch/ia64/sn/kernel/xpc_channel.c
+@@ -293,7 +293,7 @@ xpc_pull_remote_cachelines(struct xpc_partition *part, void *dst,
+ 
+ 
+ /*
+- * Pull the remote per partititon specific variables from the specified
++ * Pull the remote per partition specific variables from the specified
+  * partition.
+  */
+ enum xpc_retval
+@@ -461,7 +461,7 @@ xpc_allocate_local_msgqueue(struct xpc_channel *ch)
+ 	// >>> may want to check for ch->flags & XPC_C_DISCONNECTING between
+ 	// >>> iterations of the for-loop, bail if set?
+ 
+-	// >>> should we impose a minumum #of entries? like 4 or 8?
++	// >>> should we impose a minimum #of entries? like 4 or 8?
+ 	for (nentries = ch->local_nentries; nentries > 0; nentries--) {
+ 
+ 		nbytes = nentries * ch->msg_size;
+@@ -514,7 +514,7 @@ xpc_allocate_remote_msgqueue(struct xpc_channel *ch)
+ 	// >>> may want to check for ch->flags & XPC_C_DISCONNECTING between
+ 	// >>> iterations of the for-loop, bail if set?
+ 
+-	// >>> should we impose a minumum #of entries? like 4 or 8?
++	// >>> should we impose a minimum #of entries? like 4 or 8?
+ 	for (nentries = ch->remote_nentries; nentries > 0; nentries--) {
+ 
+ 		nbytes = nentries * ch->msg_size;
+@@ -1478,7 +1478,7 @@ xpc_teardown_infrastructure(struct xpc_partition *part)
+ 
+ 
+ 	/*
+-	 * Before proceding with the teardown we have to wait until all
++	 * Before proceeding with the teardown we have to wait until all
+ 	 * existing references cease.
+ 	 */
+ 	wait_event(part->teardown_wq, (atomic_read(&part->references) == 0));
+diff --git a/arch/ia64/sn/kernel/xpnet.c b/arch/ia64/sn/kernel/xpnet.c
+index 88fad85..4226bdb 100644
+--- a/arch/ia64/sn/kernel/xpnet.c
++++ b/arch/ia64/sn/kernel/xpnet.c
+@@ -531,7 +531,7 @@ xpnet_dev_hard_start_xmit(struct sk_buff *skb, struct net_device *dev)
+ 	dev_dbg(xpnet, "destination Partitions mask (dp) = 0x%lx\n", dp);
+ 
+ 	/*
+-	 * If we wanted to allow promiscous mode to work like an
++	 * If we wanted to allow promiscuous mode to work like an
+ 	 * unswitched network, this would be a good point to OR in a
+ 	 * mask of partitions which should be receiving all packets.
+ 	 */
+diff --git a/arch/ia64/sn/pci/pci_dma.c b/arch/ia64/sn/pci/pci_dma.c
+index 7a291a2..d79ddac 100644
+--- a/arch/ia64/sn/pci/pci_dma.c
++++ b/arch/ia64/sn/pci/pci_dma.c
+@@ -333,7 +333,7 @@ int sn_pci_legacy_read(struct pci_bus *bus, u16 port, u32 *val, u8 size)
+ 	/*
+ 	 * First, try the SN_SAL_IOIF_PCI_SAFE SAL call which can work
+ 	 * around hw issues at the pci bus level.  SGI proms older than
+-	 * 4.10 don't implment this.
++	 * 4.10 don't implement this.
+ 	 */
+ 
+ 	SAL_CALL(isrv, SN_SAL_IOIF_PCI_SAFE,
+@@ -348,7 +348,7 @@ int sn_pci_legacy_read(struct pci_bus *bus, u16 port, u32 *val, u8 size)
+ 	/*
+ 	 * If the above failed, retry using the SAL_PROBE call which should
+ 	 * be present in all proms (but which cannot work round PCI chipset
+-	 * bugs).  This code is retained for compatability with old
++	 * bugs).  This code is retained for compatibility with old
+ 	 * pre-4.10 proms, and should be removed at some point in the future.
+ 	 */
+ 
+@@ -379,7 +379,7 @@ int sn_pci_legacy_write(struct pci_bus *bus, u16 port, u32 val, u8 size)
+ 	/*
+ 	 * First, try the SN_SAL_IOIF_PCI_SAFE SAL call which can work
+ 	 * around hw issues at the pci bus level.  SGI proms older than
+-	 * 4.10 don't implment this.
++	 * 4.10 don't implement this.
+ 	 */
+ 
+ 	SAL_CALL(isrv, SN_SAL_IOIF_PCI_SAFE,
+@@ -394,7 +394,7 @@ int sn_pci_legacy_write(struct pci_bus *bus, u16 port, u32 val, u8 size)
+ 	/*
+ 	 * If the above failed, retry using the SAL_PROBE call which should
+ 	 * be present in all proms (but which cannot work round PCI chipset
+-	 * bugs).  This code is retained for compatability with old
++	 * bugs).  This code is retained for compatibility with old
+ 	 * pre-4.10 proms, and should be removed at some point in the future.
+ 	 */
+ 
+diff --git a/arch/ia64/sn/pci/pcibr/pcibr_ate.c b/arch/ia64/sn/pci/pcibr/pcibr_ate.c
+index 935029f..239b3ce 100644
+--- a/arch/ia64/sn/pci/pcibr/pcibr_ate.c
++++ b/arch/ia64/sn/pci/pcibr/pcibr_ate.c
+@@ -30,7 +30,7 @@ static void mark_ate(struct ate_resource *ate_resource, int start, int number,
+ 
+ /*
+  * find_free_ate:  Find the first free ate index starting from the given
+- *		   index for the desired consequtive count.
++ *		   index for the desired consecutive count.
+  */
+ static int find_free_ate(struct ate_resource *ate_resource, int start,
+ 			 int count)
+@@ -88,7 +88,7 @@ static inline int alloc_ate_resource(struct ate_resource *ate_resource,
+ 		return -1;
+ 
+ 	/*
+-	 * Find the required number of free consequtive ates.
++	 * Find the required number of free consecutive ates.
+ 	 */
+ 	start_index =
+ 	    find_free_ate(ate_resource, ate_resource->lowest_free_index,
+@@ -105,7 +105,7 @@ static inline int alloc_ate_resource(struct ate_resource *ate_resource,
+ /*
+  * Allocate "count" contiguous Bridge Address Translation Entries
+  * on the specified bridge to be used for PCI to XTALK mappings.
+- * Indices in rm map range from 1..num_entries.  Indicies returned
++ * Indices in rm map range from 1..num_entries.  Indices returned
+  * to caller range from 0..num_entries-1.
+  *
+  * Return the start index on success, -1 on failure.
+diff --git a/arch/ia64/sn/pci/pcibr/pcibr_dma.c b/arch/ia64/sn/pci/pcibr/pcibr_dma.c
+index 95af40c..e626e50 100644
+--- a/arch/ia64/sn/pci/pcibr/pcibr_dma.c
++++ b/arch/ia64/sn/pci/pcibr/pcibr_dma.c
+@@ -201,7 +201,7 @@ pcibr_dmatrans_direct32(struct pcidev_info * info,
+ }
+ 
+ /*
+- * Wrapper routine for free'ing DMA maps
++ * Wrapper routine for freeing DMA maps
+  * DMA mappings for Direct 64 and 32 do not have any DMA maps.
+  */
+ void
+diff --git a/arch/ia64/sn/pci/tioca_provider.c b/arch/ia64/sn/pci/tioca_provider.c
+index 8a2cb4e..b9bedbd 100644
+--- a/arch/ia64/sn/pci/tioca_provider.c
++++ b/arch/ia64/sn/pci/tioca_provider.c
+@@ -223,7 +223,7 @@ tioca_fastwrite_enable(struct tioca_kernel *tioca_kern)
+ 
+ 	/*
+ 	 * Scan all vga controllers on this bus making sure they all
+-	 * suport FW.  If not, return.
++	 * support FW.  If not, return.
+ 	 */
+ 
+ 	list_for_each_entry(pdev, tioca_kern->ca_devices, bus_list) {
+@@ -364,7 +364,7 @@ tioca_dma_d48(struct pci_dev *pdev, u64 paddr)
+  * @req_size: len (bytes) to map
+  *
+  * Map @paddr into CA address space using the GART mechanism.  The mapped
+- * dma_addr_t is guarenteed to be contiguous in CA bus space.
++ * dma_addr_t is guaranteed to be contiguous in CA bus space.
+  */
+ static dma_addr_t
+ tioca_dma_mapped(struct pci_dev *pdev, u64 paddr, size_t req_size)
+@@ -526,7 +526,7 @@ tioca_dma_map(struct pci_dev *pdev, u64 paddr, size_t byte_count, int dma_flags)
+ 		return 0;
+ 
+ 	/*
+-	 * If card is 64 or 48 bit addresable, use a direct mapping.  32
++	 * If card is 64 or 48 bit addressable, use a direct mapping.  32
+ 	 * bit direct is so restrictive w.r.t. where the memory resides that
+ 	 * we don't use it even though CA has some support.
+ 	 */
+diff --git a/arch/ia64/sn/pci/tioce_provider.c b/arch/ia64/sn/pci/tioce_provider.c
+index 35f854f..f4c0b96 100644
+--- a/arch/ia64/sn/pci/tioce_provider.c
++++ b/arch/ia64/sn/pci/tioce_provider.c
+@@ -256,9 +256,9 @@ pcidev_to_tioce(struct pci_dev *pdev, struct tioce __iomem **base,
+  * @ct_addr: the coretalk address to map
+  * @len: number of bytes to map
+  *
+- * Given the addressing type, set up various paramaters that define the
++ * Given the addressing type, set up various parameters that define the
+  * ATE pool to use.  Search for a contiguous block of entries to cover the
+- * length, and if enough resources exist, fill in the ATE's and construct a
++ * length, and if enough resources exist, fill in the ATEs and construct a
+  * tioce_dmamap struct to track the mapping.
+  */
+ static u64
+@@ -581,8 +581,8 @@ tioce_do_dma_map(struct pci_dev *pdev, u64 paddr, size_t byte_count,
+ 	 */
+ 	if (!mapaddr && !barrier && dma_mask >= 0xffffffffffUL) {
+ 		/*
+-		 * We have two options for 40-bit mappings:  16GB "super" ATE's
+-		 * and 64MB "regular" ATE's.  We'll try both if needed for a
++		 * We have two options for 40-bit mappings:  16GB "super" ATEs
++		 * and 64MB "regular" ATEs.  We'll try both if needed for a
+ 		 * given mapping but which one we try first depends on the
+ 		 * size.  For requests >64MB, prefer to use a super page with
+ 		 * regular as the fallback. Otherwise, try in the reverse order.
+@@ -687,8 +687,8 @@ tioce_error_intr_handler(int irq, void *arg)
+ }
  
  /**
-  * Checks and updates an fixed-range MTRR if it differs from the value it
-- * should have. If K8 extenstions are wanted, update the K8 SYSCFG MSR also.
-+ * should have. If K8 extentions are wanted, update the K8 SYSCFG MSR also.
-  * see AMD publication no. 24593, chapter 7.8.1, page 233 for more information
-  * \param msr MSR address of the MTTR which should be checked and updated
-  * \param changed pointer which indicates whether the MTRR needed to be changed
-diff --git a/arch/i386/kernel/cpu/mtrr/main.c b/arch/i386/kernel/cpu/mtrr/main.c
-index 02a2f39..f4f886b 100644
---- a/arch/i386/kernel/cpu/mtrr/main.c
-+++ b/arch/i386/kernel/cpu/mtrr/main.c
-@@ -747,7 +747,7 @@ static int __init mtrr_init_finialize(void)
- 	if (use_intel())
- 		mtrr_state_warn();
- 	else {
--		/* The CPUs haven't MTRR and seemes not support SMP. They have
-+		/* The CPUs haven't MTRR and seem to not support SMP. They have
- 		 * specific drivers, we use a tricky method to support
- 		 * suspend/resume for them.
- 		 * TBD: is there any system with such CPU which supports
-diff --git a/arch/i386/kernel/e820.c b/arch/i386/kernel/e820.c
-index 9645bb5..464bc5c 100644
---- a/arch/i386/kernel/e820.c
-+++ b/arch/i386/kernel/e820.c
-@@ -673,7 +673,7 @@ void __init e820_register_memory(void)
- 	int i;
+- * tioce_reserve_m32 - reserve M32 ate's for the indicated address range
+- * @tioce_kernel: TIOCE context to reserve ate's for
++ * tioce_reserve_m32 - reserve M32 ATEs for the indicated address range
++ * @tioce_kernel: TIOCE context to reserve ATEs for
+  * @base: starting bus address to reserve
+  * @limit: last bus address to reserve
+  *
+@@ -763,7 +763,7 @@ tioce_kern_init(struct tioce_common *tioce_common)
  
  	/*
--	 * Search for the bigest gap in the low 32 bits of the e820
-+	 * Search for the biggest gap in the low 32 bits of the e820
- 	 * memory space.
- 	 */
- 	last = 0x100000000ull;
-diff --git a/arch/i386/kernel/hpet.c b/arch/i386/kernel/hpet.c
-index 17d7345..91712f5 100644
---- a/arch/i386/kernel/hpet.c
-+++ b/arch/i386/kernel/hpet.c
-@@ -277,7 +277,7 @@ int __init hpet_enable(void)
- 	 *
- 	 * hpet period is in femto seconds per cycle
- 	 * so we need to convert this to ns/cyc units
--	 * aproximated by mult/2^shift
-+	 * approximated by mult/2^shift
- 	 *
- 	 *  fsec/cyc * 1nsec/1000000fsec = nsec/cyc = mult/2^shift
- 	 *  fsec/cyc * 1ns/1000000fsec * 2^shift = mult
-diff --git a/arch/i386/kernel/i8253.c b/arch/i386/kernel/i8253.c
-index f8a3c40..9f3cba9 100644
---- a/arch/i386/kernel/i8253.c
-+++ b/arch/i386/kernel/i8253.c
-@@ -87,7 +87,7 @@ static int pit_next_event(unsigned long delta, struct clock_event_device *evt)
-  * On UP the PIT can serve all of the possible timer functions. On SMP systems
-  * it can be solely used for the global tick.
-  *
-- * The profiling and update capabilites are switched off once the local apic is
-+ * The profiling and update capabilities are switched off once the local apic is
-  * registered. This mechanism replaces the previous #ifdef LOCAL_APIC -
-  * !using_apic_timer decisions in do_timer_interrupt_hook()
-  */
-diff --git a/arch/i386/kernel/io_apic.c b/arch/i386/kernel/io_apic.c
-index 7f8b7af..5c72bca 100644
---- a/arch/i386/kernel/io_apic.c
-+++ b/arch/i386/kernel/io_apic.c
-@@ -600,7 +600,7 @@ tryanotherirq:
- 
- 	imbalance = move_this_load;
- 	
--	/* For physical_balance case, we accumlated both load
-+	/* For physical_balance case, we accumulated both load
- 	 * values in the one of the siblings cpu_irq[],
- 	 * to use the same code for physical and logical processors
- 	 * as much as possible. 
-@@ -2491,7 +2491,7 @@ void destroy_irq(unsigned int irq)
- }
- 
- /*
-- * MSI mesage composition
-+ * MSI message composition
-  */
- #ifdef CONFIG_PCI_MSI
- static int msi_compose_msg(struct pci_dev *pdev, unsigned int irq, struct msi_msg *msg)
-diff --git a/arch/i386/kernel/mpparse.c b/arch/i386/kernel/mpparse.c
-index 13abb4e..7a05a7f 100644
---- a/arch/i386/kernel/mpparse.c
-+++ b/arch/i386/kernel/mpparse.c
-@@ -1001,7 +1001,7 @@ void __init mp_config_acpi_legacy_irqs (void)
- 
- 	/* 
- 	 * Use the default configuration for the IRQs 0-15.  Unless
--	 * overriden by (MADT) interrupt source override entries.
-+	 * overridden by (MADT) interrupt source override entries.
- 	 */
- 	for (i = 0; i < 16; i++) {
- 		int idx;
-diff --git a/arch/i386/kernel/ptrace.c b/arch/i386/kernel/ptrace.c
-index 0c0ceec..4f0550f 100644
---- a/arch/i386/kernel/ptrace.c
-+++ b/arch/i386/kernel/ptrace.c
-@@ -642,7 +642,7 @@ void send_sigtrap(struct task_struct *tsk, struct pt_regs *regs, int error_code)
- 	/* User-mode eip? */
- 	info.si_addr = user_mode_vm(regs) ? (void __user *) regs->eip : NULL;
- 
--	/* Send us the fakey SIGTRAP */
-+	/* Send us the fake SIGTRAP */
- 	force_sig_info(SIGTRAP, &info, tsk);
- }
- 
-diff --git a/arch/i386/kernel/setup.c b/arch/i386/kernel/setup.c
-index 698c24f..1b5f3eb 100644
---- a/arch/i386/kernel/setup.c
-+++ b/arch/i386/kernel/setup.c
-@@ -592,7 +592,7 @@ void __init setup_arch(char **cmdline_p)
- 	/*
- 	 * NOTE: before this point _nobody_ is allowed to allocate
- 	 * any memory using the bootmem allocator.  Although the
--	 * alloctor is now initialised only the first 8Mb of the kernel
-+	 * allocator is now initialised only the first 8Mb of the kernel
- 	 * virtual address space has been mapped.  All allocations before
- 	 * paging_init() has completed must use the alloc_bootmem_low_pages()
- 	 * variant (which allocates DMA'able memory) and care must be taken
-diff --git a/arch/i386/kernel/signal.c b/arch/i386/kernel/signal.c
-index d574e38..f6d4763 100644
---- a/arch/i386/kernel/signal.c
-+++ b/arch/i386/kernel/signal.c
-@@ -591,7 +591,7 @@ static void fastcall do_signal(struct pt_regs *regs)
- 
- 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
- 	if (signr > 0) {
--		/* Reenable any watchpoints before delivering the
-+		/* Re-enable any watchpoints before delivering the
- 		 * signal to user space. The processor register will
- 		 * have been cleared if the watchpoint triggered
- 		 * inside the kernel.
-diff --git a/arch/i386/kernel/smp.c b/arch/i386/kernel/smp.c
-index 93f202a..34db9f1 100644
---- a/arch/i386/kernel/smp.c
-+++ b/arch/i386/kernel/smp.c
-@@ -68,7 +68,7 @@
-  *
-  *		B stepping CPUs may hang. There are hardware work arounds
-  *	for this. We warn about it in case your board doesn't have the work
-- *	arounds. Basically thats so I can tell anyone with a B stepping
-+ *	arounds. Basically that's so I can tell anyone with a B stepping
-  *	CPU and SMP problems "tough".
-  *
-  *	Specific items [From Pentium Processor Specification Update]
-@@ -272,7 +272,7 @@ static inline void leave_mm (unsigned long cpu)
-  * 1a1) cpu_clear(cpu, old_mm->cpu_vm_mask);
-  * 	Stop ipi delivery for the old mm. This is not synchronized with
-  * 	the other cpus, but smp_invalidate_interrupt ignore flush ipis
-- * 	for the wrong mm, and in the worst case we perform a superflous
-+ * 	for the wrong mm, and in the worst case we perform a superfluous
-  * 	tlb flush.
-  * 1a2) set cpu_tlbstate to TLBSTATE_OK
-  * 	Now the smp_invalidate_interrupt won't call leave_mm if cpu0
-diff --git a/arch/i386/kernel/smpboot.c b/arch/i386/kernel/smpboot.c
-index b92cc4e..4d2707c 100644
---- a/arch/i386/kernel/smpboot.c
-+++ b/arch/i386/kernel/smpboot.c
-@@ -416,7 +416,7 @@ static void __cpuinit start_secondary(void *unused)
- 	/*
- 	 * We need to hold call_lock, so there is no inconsistency
- 	 * between the time smp_call_function() determines number of
--	 * IPI receipients, and the time when the determination is made
-+	 * IPI recipients, and the time when the determination is made
- 	 * for which cpus receive the IPI. Holding this
- 	 * lock helps us to not include this cpu in a currently in progress
- 	 * smp_call_function().
-diff --git a/arch/i386/kernel/summit.c b/arch/i386/kernel/summit.c
-index d0e01a3..9244a4b 100644
---- a/arch/i386/kernel/summit.c
-+++ b/arch/i386/kernel/summit.c
-@@ -64,7 +64,7 @@ static int __init setup_pci_node_map_for_wpeg(int wpeg_num, int last_bus)
- 
- 	switch (rio_devs[wpeg_num]->type){
- 	case CompatWPEG:
--		/* The Compatability Winnipeg controls the 2 legacy buses,
-+		/* The Compatibility Winnipeg controls the 2 legacy buses,
- 		 * the 66MHz PCI bus [2 slots] and the 2 "extra" buses in case
- 		 * a PCI-PCI bridge card is used in either slot: total 5 buses.
- 		 */
-diff --git a/arch/i386/kernel/tsc.c b/arch/i386/kernel/tsc.c
-index f64b81f..b4ab389 100644
---- a/arch/i386/kernel/tsc.c
-+++ b/arch/i386/kernel/tsc.c
-@@ -62,7 +62,7 @@ static inline int check_tsc_unstable(void)
- 	return tsc_unstable;
- }
- 
--/* Accellerators for sched_clock()
-+/* Accelerators for sched_clock()
-  * convert from cycles(64bits) => nanoseconds (64bits)
-  *  basic equation:
-  *		ns = cycles / (freq / ns_per_sec)
-diff --git a/arch/i386/mach-default/setup.c b/arch/i386/mach-default/setup.c
-index 7f635c7..4463f1e 100644
---- a/arch/i386/mach-default/setup.c
-+++ b/arch/i386/mach-default/setup.c
-@@ -104,7 +104,7 @@ void __init time_init_hook(void)
-  * mca_nmi_hook - hook into MCA specific NMI chain
-  *
-  * Description:
-- *	The MCA (Microchannel Arcitecture) has an NMI chain for NMI sources
-+ *	The MCA (Microchannel Architecture) has an NMI chain for NMI sources
-  *	along the MCA bus.  Use this to hook into that chain if you will need
-  *	it.
-  **/
-diff --git a/arch/i386/mach-generic/default.c b/arch/i386/mach-generic/default.c
-index 8685208..1af0cc7 100644
---- a/arch/i386/mach-generic/default.c
-+++ b/arch/i386/mach-generic/default.c
-@@ -1,5 +1,5 @@
- /* 
-- * Default generic APIC driver. This handles upto 8 CPUs.
-+ * Default generic APIC driver. This handles up to 8 CPUs.
-  */
- #define APIC_DEFINITION 1
- #include <linux/threads.h>
-diff --git a/arch/i386/mach-generic/probe.c b/arch/i386/mach-generic/probe.c
-index 74f3da6..026a621 100644
---- a/arch/i386/mach-generic/probe.c
-+++ b/arch/i386/mach-generic/probe.c
-@@ -56,7 +56,7 @@ void __init generic_bigsmp_probe(void)
- 	/*
- 	 * This routine is used to switch to bigsmp mode when
- 	 * - There is no apic= option specified by the user
--	 * - generic_apic_probe() has choosen apic_default as the sub_arch
-+	 * - generic_apic_probe() has chosen apic_default as the sub_arch
- 	 * - we find more than 8 CPUs in acpi LAPIC listing with xAPIC support
+ 	 * Set PMU pagesize to the largest size available, and zero out
+-	 * the ate's.
++	 * the ATEs.
  	 */
  
-diff --git a/arch/i386/mach-voyager/voyager_smp.c b/arch/i386/mach-voyager/voyager_smp.c
-index 50d9c52..88e2d51 100644
---- a/arch/i386/mach-voyager/voyager_smp.c
-+++ b/arch/i386/mach-voyager/voyager_smp.c
-@@ -390,7 +390,7 @@ find_smp_config(void)
- 
- 	/* The boot CPU must be extended */
- 	voyager_extended_vic_processors = 1<<boot_cpu_id;
--	/* initially, all of the first 8 cpu's can boot */
-+	/* initially, all of the first 8 CPUs can boot */
- 	voyager_allowed_boot_processors = 0xff;
- 	/* set up everything for just this CPU, we can alter
- 	 * this as we start the other CPUs later */
-@@ -1009,7 +1009,7 @@ static struct call_data_struct * call_data;
- 
- /* execute a thread on a new CPU.  The function to be called must be
-  * previously set up.  This is used to schedule a function for
-- * execution on all CPU's - set up the function then broadcast a
-+ * execution on all CPUs - set up the function then broadcast a
-  * function_interrupt CPI to come here on each CPU */
- static void
- smp_call_function_interrupt(void)
-@@ -1132,7 +1132,7 @@ EXPORT_SYMBOL(smp_call_function_single);
-  * CPI here.  We don't use this actually for counting so losing
-  * ticks doesn't matter 
-  *
-- * FIXME: For those CPU's which actually have a local APIC, we could
-+ * FIXME: For those CPUs which actually have a local APIC, we could
-  * try to use it to trigger this interrupt instead of having to
-  * broadcast the timer tick.  Unfortunately, all my pentium DYADs have
-  * no local APIC, so I can't do this
-@@ -1324,7 +1324,7 @@ smp_local_timer_interrupt(void)
- 
- 	/*
- 	 * We take the 'long' return path, and there every subsystem
--	 * grabs the apropriate locks (kernel lock/ irq lock).
-+	 * grabs the appropriate locks (kernel lock/ irq lock).
- 	 *
- 	 * we might want to decouple profiling from the 'long path',
- 	 * and do the profiling totally in assembly.
-@@ -1796,7 +1796,7 @@ set_vic_irq_affinity(unsigned int irq, cpumask_t mask)
- 	real_mask = cpus_addr(mask)[0] & voyager_extended_vic_processors;
- 	
- 	if(cpus_addr(mask)[0] == 0)
--		/* can't have no cpu's to accept the interrupt -- extremely
-+		/* can't have no CPUs to accept the interrupt -- extremely
- 		 * bad things will happen */
- 		return;
- 
-@@ -1828,7 +1828,7 @@ set_vic_irq_affinity(unsigned int irq, cpumask_t mask)
+ 	tioce_mmr = (struct tioce __iomem *)tioce_common->ce_pcibus.bs_base;
+@@ -784,7 +784,7 @@ tioce_kern_init(struct tioce_common *tioce_common)
  	}
- 	/* this is magic, we now have the correct affinity maps, so
- 	 * enable the interrupt.  This will send an enable CPI to
--	 * those cpu's who need to enable it in their local masks,
-+	 * those CPUs who need to enable it in their local masks,
- 	 * causing them to correct for the new affinity . If the
- 	 * interrupt is currently globally disabled, it will simply be
- 	 * disabled again as it comes in (voyager lazy disable).  If
-diff --git a/arch/i386/mach-voyager/voyager_thread.c b/arch/i386/mach-voyager/voyager_thread.c
-index b4b24e0..95a5868 100644
---- a/arch/i386/mach-voyager/voyager_thread.c
-+++ b/arch/i386/mach-voyager/voyager_thread.c
-@@ -64,7 +64,7 @@ check_from_kernel(void)
- {
- 	if(voyager_status.switch_off) {
- 		
--		/* FIXME: This should be configureable via proc */
-+		/* FIXME: This should be configurable via proc */
- 		execute("umask 600; echo 0 > /etc/initrunlvl; kill -HUP 1");
- 	} else if(voyager_status.power_fail) {
- 		VDEBUG(("Voyager daemon detected AC power failure\n"));
-diff --git a/arch/i386/mm/boot_ioremap.c b/arch/i386/mm/boot_ioremap.c
-index 4de95a1..f14da2a 100644
---- a/arch/i386/mm/boot_ioremap.c
-+++ b/arch/i386/mm/boot_ioremap.c
-@@ -10,7 +10,7 @@
- 
- /*
-  * We need to use the 2-level pagetable functions, but CONFIG_X86_PAE
-- * keeps that from happenning.  If anyone has a better way, I'm listening.
-+ * keeps that from happening.  If anyone has a better way, I'm listening.
-  *
-  * boot_pte_t is defined only if this all works correctly
-  */
-diff --git a/arch/i386/mm/discontig.c b/arch/i386/mm/discontig.c
-index aa58720..43d5032 100644
---- a/arch/i386/mm/discontig.c
-+++ b/arch/i386/mm/discontig.c
-@@ -278,7 +278,7 @@ unsigned long __init setup_memory(void)
- 	 * When mapping a NUMA machine we allocate the node_mem_map arrays
- 	 * from node local memory.  They are then mapped directly into KVA
- 	 * between zone normal and vmalloc space.  Calculate the size of
--	 * this space and use it to adjust the boundry between ZONE_NORMAL
-+	 * this space and use it to adjust the boundary between ZONE_NORMAL
- 	 * and ZONE_HIGHMEM.
- 	 */
- 	find_max_pfn();
-diff --git a/arch/i386/mm/fault.c b/arch/i386/mm/fault.c
-index 29d7d61..45683e7 100644
---- a/arch/i386/mm/fault.c
-+++ b/arch/i386/mm/fault.c
-@@ -355,7 +355,7 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
- 
- 	/* When running in the kernel we expect faults to occur only to
- 	 * addresses in user space.  All other faults represent errors in the
--	 * kernel and should generate an OOPS.  Unfortunatly, in the case of an
-+	 * kernel and should generate an OOPS.  Unfortunately, in the case of an
- 	 * erroneous fault occurring in a code path which already holds mmap_sem
- 	 * we will deadlock attempting to validate the fault against the
- 	 * address space.  Luckily the kernel only validly references user
-@@ -363,7 +363,7 @@ fastcall void __kprobes do_page_fault(struct pt_regs *regs,
- 	 * exceptions table.
- 	 *
- 	 * As the vast majority of faults will be valid we will only perform
--	 * the source reference check when there is a possibilty of a deadlock.
-+	 * the source reference check when there is a possibility of a deadlock.
- 	 * Attempt to lock the address space, if we cannot we then validate the
- 	 * source.  If this is invalid we can skip the address space check,
- 	 * thus avoiding the deadlock.
-diff --git a/arch/i386/oprofile/op_x86_model.h b/arch/i386/oprofile/op_x86_model.h
-index abb1aa9..45b605f 100644
---- a/arch/i386/oprofile/op_x86_model.h
-+++ b/arch/i386/oprofile/op_x86_model.h
-@@ -29,7 +29,7 @@ struct op_msrs {
- struct pt_regs;
- 
- /* The model vtable abstracts the differences between
-- * various x86 CPU model's perfctr support.
-+ * various x86 CPU models' perfctr support.
-  */
- struct op_x86_model_spec {
- 	unsigned int const num_counters;
-diff --git a/arch/i386/pci/irq.c b/arch/i386/pci/irq.c
-index f2cb942..92cd18e 100644
---- a/arch/i386/pci/irq.c
-+++ b/arch/i386/pci/irq.c
-@@ -168,7 +168,7 @@ void eisa_set_level_irq(unsigned int irq)
- }
- 
- /*
-- * Common IRQ routing practice: nybbles in config space,
-+ * Common IRQ routing practice: nibbles in config space,
-  * offset by some magic constant.
-  */
- static unsigned int read_config_nybble(struct pci_dev *router, unsigned offset, unsigned nr)
-@@ -563,7 +563,7 @@ static __init int via_router_probe(struct irq_router *r,
- 	/* FIXME: We should move some of the quirk fixup stuff here */
  
  	/*
--	 * work arounds for some buggy BIOSes
-+	 * workarounds for some buggy BIOSes
- 	 */
- 	if (device == PCI_DEVICE_ID_VIA_82C586_0) {
- 		switch(router->device) {
+-	 * Reserve ATE's corresponding to reserved address ranges.  These
++	 * Reserve ATEs corresponding to reserved address ranges.  These
+ 	 * include:
+ 	 *
+ 	 *	Memory space covered by each PPB mem base/limit register
 -- 
 1.5.0.1
 
