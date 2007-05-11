@@ -1,163 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758563AbXEKDGA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759072AbXEKDJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758563AbXEKDGA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 23:06:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbXEKDFx
+	id S1759072AbXEKDJQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 23:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbXEKDI7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 23:05:53 -0400
-Received: from mail.sjtu.org ([202.120.5.34]:46399 "ehlo appsrv1.sjtu.org"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754017AbXEKDFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 23:05:53 -0400
-Subject: [PATCH] v4l: saa7134: support ir-remote for 10moons TM300
-From: Tony Wan <wankai@sjtu.org>
-To: mchehab@infradead.org, michael@mihu.de
-Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Fri, 11 May 2007 11:02:36 +0800
-Message-Id: <1178852562.7216.4.camel@wankai.sjtu.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
-Content-Transfer-Encoding: 7bit
+	Thu, 10 May 2007 23:08:59 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:45467 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755807AbXEKDI6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 23:08:58 -0400
+Date: Fri, 11 May 2007 12:08:54 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: sam@ravnborg.org, Timur Tabi <timur@freescale.com>,
+       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
+       Michael Schmitz <schmitz@debian.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: Kconfig warnings on latest GIT
+Message-ID: <20070511030852.GJ10715@verge.net.au>
+References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au> <46434ED0.6030808@freescale.com> <20070511012529.GC10715@verge.net.au> <Pine.LNX.4.64.0705102046400.10555@gate.crashing.org> <20070511020545.GG10715@verge.net.au> <Pine.LNX.4.64.0705102111570.11348@gate.crashing.org> <20070511022721.GI10715@verge.net.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20070511022721.GI10715@verge.net.au>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Enable the IR-remote of the 10moons TM300 card and add the key-codes for
-it's remote. 
+On Fri, May 11, 2007 at 11:27:22AM +0900, Simon Horman wrote:
+> On Thu, May 10, 2007 at 09:13:34PM -0500, Kumar Gala wrote:
+> > On Fri, 11 May 2007, Simon Horman wrote:
+> > 
+> > > On Thu, May 10, 2007 at 08:47:05PM -0500, Kumar Gala wrote:
+> > > > Try this patch:
+> > >
+> > > That certainly resolves the problem for me.
+> > > I'll see about doing something like that for the similar
+> > > Kconfig problems that I see.
+> > 
+> > I've got a similar fix for SYS_SUPPORTS_APM_EMULATION already.  I'll push
+> > both of these to Paul.  If you can put something in place for the
+> > Atari/68k and send it to Geert that would be good (feeling a little lazy
+> > right now :)
+> > 
+> > I'm still not happy about this fix.  I'd like to get Sam's feeling on if
+> > we can fixup kconfig not to warn if the dependency isn't meet.  I think
+> > the select is valid, and would prefer to fix this properly before we paper
+> > tape over it.
+> 
+> I agree. I had thought a little about a kconfig fix. Though I'm
+> wondering if removing the warning will lead to oodles of dangling
+> symbols and invalid checks over time.
+> 
+> In any case, I'll look into the Atari problem. At least that way
+> there will be some patches to add to the discussion.
 
-It has been tested using lirc. All the key codes are accepted.
+The fix below seems to work for the ATARI problem.
+Do you want me to submit it properly, do you want to
+submit it along with the other patches, or do you think
+we should sit on things for a bit?
 
-Signed-off-by: Tony Wan <wankai@sjtu.org>
----
- drivers/media/common/ir-keymaps.c           |   69
-+++++++++++++++++++++++++++
- drivers/media/video/saa7134/saa7134-cards.c |    1 +
- drivers/media/video/saa7134/saa7134-input.c |    6 ++
- include/media/ir-common.h                   |    1 +
- 4 files changed, 77 insertions(+), 0 deletions(-)
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
-diff --git a/drivers/media/common/ir-keymaps.c
-b/drivers/media/common/ir-keymaps.c
-index cbd1184..5aa293e 100644
---- a/drivers/media/common/ir-keymaps.c
-+++ b/drivers/media/common/ir-keymaps.c
-@@ -1783,3 +1783,72 @@ IR_KEYTAB_TYPE ir_codes_tt_1500[IR_KEYTAB_SIZE] =
-{
- };
+From: Simon Horman <horms@verge.net.au>
+Subject: [PATCH] [IA64] ATARI_KBD_CORE only exists on m68k
+
+ATARI_KBD_CORE doesn't exist on architectures other than m68k,
+which causes the following warnings:
+
+drivers/input/keyboard/Kconfig:170:warning: 'select' used by config symbol 'KEYBOARD_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+drivers/input/mouse/Kconfig:181:warning: 'select' used by config symbol 'MOUSE_ATARI' refers to undefined symbol 'ATARI_KBD_CORE'
+
+By reversing the Kconfig logic, the same results should occur on
+m68k as the current code, but the warnings go away on other platforms.
+
+Cc: Kumar Gala <galak@kernel.crashing.org>
+Signed-off-by: Simon Horman <horms@verge.net.au>
+
+--- 
+ arch/m68k/Kconfig              |    1 +
+ drivers/input/keyboard/Kconfig |    1 -
+ drivers/input/mouse/Kconfig    |    1 -
+ 3 files changed, 1 insertion(+), 2 deletions(-)
+
+Index: linux-2.6/arch/m68k/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/m68k/Kconfig	2007-05-11 11:37:25.000000000 +0900
++++ linux-2.6/arch/m68k/Kconfig	2007-05-11 11:42:48.000000000 +0900
+@@ -410,6 +410,7 @@ config STRAM_PROC
+ 	  Say Y here to report ST-RAM usage statistics in /proc/stram.
  
- EXPORT_SYMBOL_GPL(ir_codes_tt_1500);
-+
-+/* 10MOONS TM300 */
-+IR_KEYTAB_TYPE ir_codes_10moonstm3[IR_KEYTAB_SIZE] = {
-+	[ 0x10 ] = KEY_POWER,           // Power
-+	[ 0x0d ] = KEY_MUTE,            // Mute
-+	[ 0x1e ] = KEY_TUNER,           // Cable
-+	[ 0x00 ] = KEY_VIDEO,           // Composite / S-Video
-+	[ 0x01 ] = KEY_RADIO,           // Music
-+	[ 0x02 ] = KEY_TEXT,            // Photo
-+
-+	[ 0x1f ] = KEY_1,
-+	[ 0x03 ] = KEY_2,
-+	[ 0x04 ] = KEY_3,
-+	[ 0x05 ] = KEY_4,
-+	[ 0x1c ] = KEY_5,
-+	[ 0x06 ] = KEY_6,
-+	[ 0x07 ] = KEY_7,
-+	[ 0x08 ] = KEY_8,
-+	[ 0x1d ] = KEY_9,
-+	[ 0x09 ] = KEY_SELECT,          // 2 digit select (-/--)
-+	[ 0x0a ] = KEY_0,
-+	[ 0x0b ] = KEY_AGAIN,           // Recall
-+
-+	[ 0x14 ] = KEY_F1,              // Begin
-+	[ 0x15 ] = KEY_F2,              // End
-+
-+	[ 0x16 ] = KEY_CHANNELUP,       // CH+
-+	[ 0x12 ] = KEY_CHANNELDOWN,     // CH-
-+	[ 0x0c ] = KEY_VOLUMEUP,        // VOL+
-+	[ 0x17 ] = KEY_VOLUMEDOWN,      // VOL-
-+	[ 0x18 ] = KEY_OK,              // OK
-+
-+	[ 0x0e ] = KEY_EXIT,            // Exit
-+	[ 0x13 ] = KEY_COMPUTER,        // Desktop
-+	[ 0x11 ] = KEY_TAB,             // TAB
-+	[ 0x19 ] = KEY_CYCLEWINDOWS,    // Switch task
-+
-+	[ 0x1a ] = KEY_MENU,            // Menu
-+	[ 0x1b ] = KEY_ZOOM,            // Fullscreen
-+	[ 0x24 ] = KEY_ARCHIVE,         // Time shifting
-+	[ 0x20 ] = KEY_SWITCHVIDEOMODE, // Selcect source
-+
-+	[ 0x3a ] = KEY_RECORD,          // Record
-+	[ 0x22 ] = KEY_PLAY,            // Play/Pause
-+	[ 0x25 ] = KEY_STOP,            // Stop
-+	[ 0x23 ] = KEY_CAMERA,          // Snapshot
-+
-+	[ 0x28 ] = KEY_BACK,            // Backward <<
-+	[ 0x2a ] = KEY_FORWARD,         // Forward >>
-+	[ 0x29 ] = KEY_PREVIOUS,        // Back |<<
-+	[ 0x2b ] = KEY_NEXT,            // End >>|
-+
-+	[ 0x2c ] = KEY_PROGRAM,         // Multi-view
-+	[ 0x2d ] = KEY_AUDIO,           // Audio Tracks
-+	[ 0x2e ] = KEY_SOUND,           // Sound
-+	[ 0x2f ] = KEY_SUBTITLE,        // Subtitles
-+
-+	[ 0x30 ] = KEY_TIME,            // Set timer
-+	[ 0x31 ] = KEY_CHANNEL,         // Stereo
-+	[ 0x32 ] = KEY_LANGUAGE,        // Language
-+	[ 0x33 ] = KEY_TEXT,            // Text
-+
-+	[ 0x39 ] = KEY_RED,             // RED
-+	[ 0x21 ] = KEY_GREEN,           // GREEN
-+	[ 0x27 ] = KEY_YELLOW,          // YELLOW
-+	[ 0x37 ] = KEY_BLUE,            // BLUE
-+};
-+
-+EXPORT_SYMBOL_GPL(ir_codes_10moonstm3);
-diff --git a/drivers/media/video/saa7134/saa7134-cards.c
-b/drivers/media/video/saa7134/saa7134-cards.c
-index 44f2077..5813509 100644
---- a/drivers/media/video/saa7134/saa7134-cards.c
-+++ b/drivers/media/video/saa7134/saa7134-cards.c
-@@ -4368,6 +4368,7 @@ int saa7134_board_init1(struct saa7134_dev *dev)
- 	case SAA7134_BOARD_AVERMEDIA_A16AR:
- 	case SAA7134_BOARD_ENCORE_ENLTV:
- 	case SAA7134_BOARD_ENCORE_ENLTV_FM:
-+	case SAA7134_BOARD_10MOONSTVMASTER3:
- 		dev->has_remote = SAA7134_REMOTE_GPIO;
- 		break;
- 	case SAA7134_BOARD_FLYDVBS_LR300:
-diff --git a/drivers/media/video/saa7134/saa7134-input.c
-b/drivers/media/video/saa7134/saa7134-input.c
-index c0de37e..c87755b 100644
---- a/drivers/media/video/saa7134/saa7134-input.c
-+++ b/drivers/media/video/saa7134/saa7134-input.c
-@@ -333,6 +333,12 @@ int saa7134_input_init1(struct saa7134_dev *dev)
- 		mask_keyup   = 0x040000;
- 		polling      = 50; // ms
- 		break;
-+	case SAA7134_BOARD_10MOONSTVMASTER3:
-+		ir_codes     = ir_codes_10moonstm3;
-+		mask_keycode = 0x4f80000;
-+		mask_keyup   = 0x8000000;
-+		polling      = 50; //ms
-+		break;
- 	}
- 	if (NULL == ir_codes) {
- 		printk("%s: Oops: IR config error [card=%d]\n",
-diff --git a/include/media/ir-common.h b/include/media/ir-common.h
-index 9807a7c..4e4d207 100644
---- a/include/media/ir-common.h
-+++ b/include/media/ir-common.h
-@@ -140,6 +140,7 @@ extern IR_KEYTAB_TYPE
-ir_codes_budget_ci_old[IR_KEYTAB_SIZE];
- extern IR_KEYTAB_TYPE ir_codes_asus_pc39[IR_KEYTAB_SIZE];
- extern IR_KEYTAB_TYPE ir_codes_encore_enltv[IR_KEYTAB_SIZE];
- extern IR_KEYTAB_TYPE ir_codes_tt_1500[IR_KEYTAB_SIZE];
-+extern IR_KEYTAB_TYPE ir_codes_10moonstm3[IR_KEYTAB_SIZE];
+ config ATARI_KBD_CORE
++	default y if KEYBOARD_ATARI || MOUSE_ATARI
+ 	bool
  
- #endif
- 
-
-
+ config HEARTBEAT
+Index: linux-2.6/drivers/input/keyboard/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/input/keyboard/Kconfig	2007-05-11 11:37:25.000000000 +0900
++++ linux-2.6/drivers/input/keyboard/Kconfig	2007-05-11 11:42:53.000000000 +0900
+@@ -167,7 +167,6 @@ config KEYBOARD_AMIGA
+ config KEYBOARD_ATARI
+ 	tristate "Atari keyboard"
+ 	depends on ATARI
+-	select ATARI_KBD_CORE
+ 	help
+ 	  Say Y here if you are running Linux on any Atari and have a keyboard
+ 	  attached.
+Index: linux-2.6/drivers/input/mouse/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/input/mouse/Kconfig	2007-05-11 11:40:32.000000000 +0900
++++ linux-2.6/drivers/input/mouse/Kconfig	2007-05-11 11:42:58.000000000 +0900
+@@ -178,7 +178,6 @@ config MOUSE_AMIGA
+ config MOUSE_ATARI
+ 	tristate "Atari mouse"
+ 	depends on ATARI
+-	select ATARI_KBD_CORE
+ 	help
+ 	  Say Y here if you have an Atari and want its native mouse
+ 	  supported by the kernel.
