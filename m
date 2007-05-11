@@ -1,273 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030894AbXEKTQe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763447AbXEKTQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030894AbXEKTQe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:16:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965915AbXEKTLE
+	id S1763447AbXEKTQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761990AbXEKTLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:11:04 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35322 "EHLO
+	Fri, 11 May 2007 15:11:05 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35320 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763112AbXEKTLB (ORCPT
+	with ESMTP id S965818AbXEKTLB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 11 May 2007 15:11:01 -0400
-Message-Id: <20070511001209.902851000@goop.org>
+Message-Id: <20070511001209.268040000@goop.org>
 References: <20070511000643.025196000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:07:10 -0700
+Date: Thu, 10 May 2007 17:07:09 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Keir Fraser <keir@xensource.com>
-Subject: [patch 27/28]xen: Place vcpu_info structure into per-cpu memory, if possible
-Content-Disposition: inline; filename=xen-place-vcpu.patch
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [patch 26/28]xen: handle external requests for shutdown, reboot and sysrq
+Content-Disposition: inline; filename=xen-management.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-An experimental patch for Xen allows guests to place their vcpu_info
-structs anywhere.  We try to use this to place the vcpu_info into the
-PDA, which allows direct access.
-
-If this works, then switch to using direct access operations for
-irq_enable, disable, save_fl and restore_fl.
+The guest domain can be asked to shutdown or reboot itself, or have a
+sysrq key injected, via xenbus.  This patch adds a watcher for those
+events, and does the appropriate action.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 Cc: Chris Wright <chrisw@sous-sol.org>
-Cc: Keir Fraser <keir@xensource.com>
+
 ---
- arch/i386/xen/enlighten.c    |  121 +++++++++++++++++++++++++++++++++++++++++-
- arch/i386/xen/setup.c        |    8 --
- include/xen/interface/vcpu.h |   13 ++++
- 3 files changed, 133 insertions(+), 9 deletions(-)
+ arch/i386/xen/Makefile |    2 
+ arch/i386/xen/manage.c |  143 ++++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 144 insertions(+), 1 deletion(-)
 
 ===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -61,9 +61,55 @@ struct start_info *xen_start_info;
- struct start_info *xen_start_info;
- EXPORT_SYMBOL_GPL(xen_start_info);
+--- a/arch/i386/xen/Makefile
++++ b/arch/i386/xen/Makefile
+@@ -1,4 +1,4 @@ obj-y		:= enlighten.o setup.o features.o
+ obj-y		:= enlighten.o setup.o features.o multicalls.o mmu.o \
+-			events.o time.o
++			events.o time.o manage.o
  
-+static /* __initdata */ struct shared_info dummy_shared_info;
-+
+ obj-$(CONFIG_SMP)	+= smp.o
+===================================================================
+--- /dev/null
++++ b/arch/i386/xen/manage.c
+@@ -0,0 +1,143 @@
 +/*
-+ * Point at some empty memory to start with. We map the real shared_info
-+ * page as soon as fixmap is up and running.
++ * Handle extern requests for shutdown, reboot and sysrq
 + */
-+struct shared_info *HYPERVISOR_shared_info = (void *)&dummy_shared_info;
++#include <linux/kernel.h>
++#include <linux/err.h>
++#include <linux/reboot.h>
++#include <linux/sysrq.h>
 +
-+/* tristate - -1: not tested, 0: not available, 1: available */
-+static int have_vcpu_info_placement = -1;
++#include <xen/xenbus.h>
 +
- void xen_vcpu_setup(int cpu)
- {
-+	struct vcpu_register_vcpu_info info;
++#define SHUTDOWN_INVALID  -1
++#define SHUTDOWN_POWEROFF  0
++#define SHUTDOWN_SUSPEND   2
++/* Code 3 is SHUTDOWN_CRASH, which we don't use because the domain can only
++ * report a crash, not be instructed to crash!
++ * HALT is the same as POWEROFF, as far as we're concerned.  The tools use
++ * the distinction when we return the reason code to them.
++ */
++#define SHUTDOWN_HALT      4
++
++/* Ignore multiple shutdown requests. */
++static int shutting_down = SHUTDOWN_INVALID;
++
++static void shutdown_handler(struct xenbus_watch *watch,
++			     const char **vec, unsigned int len)
++{
++	char *str;
++	struct xenbus_transaction xbt;
 +	int err;
-+	struct vcpu_info *vcpup;
 +
- 	per_cpu(xen_vcpu, cpu) = &HYPERVISOR_shared_info->vcpu_info[cpu];
++	if (shutting_down != SHUTDOWN_INVALID)
++		return;
 +
-+	if (!have_vcpu_info_placement)
-+		return;		/* already tested, not available */
++ again:
++	err = xenbus_transaction_start(&xbt);
++	if (err)
++		return;
 +
-+	vcpup = &per_cpu(xen_vcpu_info, cpu);
-+
-+	printk("setting up vcpu for %d: xen_vcpu_info=%p\n",
-+	       cpu, vcpup);
-+
-+	info.mfn = virt_to_mfn(vcpup);
-+	info.offset = offset_in_page(vcpup);
-+
-+	printk("trying to map vcpu_info %d at %p, mfn %x, offset %d\n",
-+	       cpu, vcpup, info.mfn, info.offset);
-+
-+	/* Check to see if the hypervisor will put the vcpu_info
-+	   structure where we want it, which allows direct access via
-+	   a percpu-variable. */
-+	err = HYPERVISOR_vcpu_op(VCPUOP_register_vcpu_info, cpu, &info);
-+
-+	BUG_ON(err != 0 && err != -ENOSYS);
-+	BUG_ON(err && have_vcpu_info_placement==1);  /* all or nothing */
-+
-+	have_vcpu_info_placement = 0;
-+
-+	if (err == 0) {
-+		have_vcpu_info_placement = 1;
-+		per_cpu(xen_vcpu, cpu) = vcpup;
-+		printk("cpu %d using vcpu_info at %p\n",
-+		       cpu, vcpup);
-+	}
- }
- 
- static void __init xen_banner(void)
-@@ -123,6 +169,20 @@ static unsigned long xen_save_fl(void)
- 	return (-flags) & X86_EFLAGS_IF;
- }
- 
-+static unsigned long xen_save_fl_direct(void)
-+{
-+	unsigned long flags;
-+
-+	/* flag has opposite sense of mask */
-+	flags = !x86_read_percpu(xen_vcpu_info.evtchn_upcall_mask);
-+
-+	/* convert to IF type flag
-+	   -0 -> 0x00000000
-+	   -1 -> 0xffffffff
-+	*/
-+	return (-flags) & X86_EFLAGS_IF;
-+}
-+
- static void xen_restore_fl(unsigned long flags)
- {
- 	struct vcpu_info *vcpu;
-@@ -149,6 +209,25 @@ static void xen_restore_fl(unsigned long
- 	}
- }
- 
-+static void xen_restore_fl_direct(unsigned long flags)
-+{
-+	/* convert from IF type flag */
-+	flags = !(flags & X86_EFLAGS_IF);
-+
-+	/* This is an atomic update, so no need to worry about
-+	   preemption. */
-+	x86_write_percpu(xen_vcpu_info.evtchn_upcall_mask, flags);
-+
-+	/* If we get preempted here, then any pending event will be
-+	   handled anyway. */
-+
-+	if (flags == 0) {
-+		barrier(); /* unmask then check (avoid races) */
-+		if (unlikely(x86_read_percpu(xen_vcpu_info.evtchn_upcall_pending)))
-+			force_evtchn_callback();
-+	}
-+}
-+
- static void xen_irq_disable(void)
- {
- 	/* There's a one instruction preempt window here.  We need to
-@@ -157,6 +236,12 @@ static void xen_irq_disable(void)
- 	preempt_disable();
- 	x86_read_percpu(xen_vcpu)->evtchn_upcall_mask = 1;
- 	preempt_enable_no_resched();
-+}
-+
-+static void xen_irq_disable_direct(void)
-+{
-+	/* Atomic update, so preemption not a concern. */
-+	x86_write_percpu(xen_vcpu_info.evtchn_upcall_mask, 1);
- }
- 
- static void xen_irq_enable(void)
-@@ -176,6 +261,19 @@ static void xen_irq_enable(void)
- 
- 	barrier(); /* unmask then check (avoid races) */
- 	if (unlikely(vcpu->evtchn_upcall_pending))
-+		force_evtchn_callback();
-+}
-+
-+static void xen_irq_enable_direct(void)
-+{
-+	/* Atomic update, so preemption not a concern. */
-+	x86_write_percpu(xen_vcpu_info.evtchn_upcall_mask, 0);
-+
-+	/* Doesn't matter if we get preempted here, because any
-+	   pending event will get dealt with anyway. */
-+
-+	barrier(); /* unmask then check (avoid races) */
-+	if (unlikely(x86_read_percpu(xen_vcpu_info.evtchn_upcall_pending)))
- 		force_evtchn_callback();
- }
- 
-@@ -538,9 +636,19 @@ static void xen_flush_tlb_others(const c
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
- }
- 
-+static void xen_write_cr2(unsigned long cr2)
-+{
-+	x86_read_percpu(xen_vcpu)->arch.cr2 = cr2;
-+}
-+
- static unsigned long xen_read_cr2(void)
- {
- 	return x86_read_percpu(xen_vcpu)->arch.cr2;
-+}
-+
-+static unsigned long xen_read_cr2_direct(void)
-+{
-+	return x86_read_percpu(xen_vcpu_info.arch.cr2);
- }
- 
- static void xen_write_cr4(unsigned long cr4)
-@@ -775,7 +883,7 @@ static const struct paravirt_ops xen_par
- 	.write_cr0 = native_write_cr0,
- 
- 	.read_cr2 = xen_read_cr2,
--	.write_cr2 = native_write_cr2,
-+	.write_cr2 = xen_write_cr2,
- 
- 	.read_cr3 = xen_read_cr3,
- 	.write_cr3 = xen_write_cr3,
-@@ -963,6 +1071,17 @@ static asmlinkage void __init xen_start_
- 	x86_write_percpu(xen_cr3, __pa(pgd));
- 	xen_vcpu_setup(0);
- 
-+	/* xen_vcpu_setup managed to place the vcpu_info within the
-+	   pda, so make use of it */
-+	BUG_ON(have_vcpu_info_placement == -1);
-+	if (have_vcpu_info_placement) {
-+		paravirt_ops.save_fl = xen_save_fl_direct;
-+		paravirt_ops.restore_fl = xen_restore_fl_direct;
-+		paravirt_ops.irq_disable = xen_irq_disable_direct;
-+		paravirt_ops.irq_enable = xen_irq_enable_direct;
-+		paravirt_ops.read_cr2 = xen_read_cr2_direct;
++	str = (char *)xenbus_read(xbt, "control", "shutdown", NULL);
++	/* Ignore read errors and empty reads. */
++	if (XENBUS_IS_ERR_READ(str)) {
++		xenbus_transaction_end(xbt, 1);
++		return;
 +	}
 +
- 	paravirt_ops.kernel_rpl = 1;
- 	if (xen_feature(XENFEAT_supervisor_mode_kernel))
- 		paravirt_ops.kernel_rpl = 0;
-===================================================================
---- a/arch/i386/xen/setup.c
-+++ b/arch/i386/xen/setup.c
-@@ -22,14 +22,6 @@
- /* These are code, but not functions.  Defined in entry.S */
- extern const char xen_hypervisor_callback[];
- extern const char xen_failsafe_callback[];
--
--static __initdata struct shared_info init_shared;
--
--/*
-- * Point at some empty memory to start with. We map the real shared_info
-- * page as soon as fixmap is up and running.
-- */
--struct shared_info *HYPERVISOR_shared_info = &init_shared;
- 
- unsigned long *phys_to_machine_mapping;
- EXPORT_SYMBOL(phys_to_machine_mapping);
-===================================================================
---- a/include/xen/interface/vcpu.h
-+++ b/include/xen/interface/vcpu.h
-@@ -151,6 +151,19 @@ struct vcpu_set_singleshot_timer {
- #define _VCPU_SSHOTTMR_future (0)
- #define VCPU_SSHOTTMR_future  (1U << _VCPU_SSHOTTMR_future)
- 
-+/*
-+ * Register a memory location in the guest address space for the
-+ * vcpu_info structure.  This allows the guest to place the vcpu_info
-+ * structure in a convenient place, such as in a per-cpu data area.
-+ * The pointer need not be page aligned, but the structure must not
-+ * cross a page boundary.
-+ */
-+#define VCPUOP_register_vcpu_info   10  /* arg == struct vcpu_info */
-+struct vcpu_register_vcpu_info {
-+    uint32_t mfn;               /* mfn of page to place vcpu_info */
-+    uint32_t offset;            /* offset within page */
++	xenbus_write(xbt, "control", "shutdown", "");
++
++	err = xenbus_transaction_end(xbt, 0);
++	if (err == -EAGAIN) {
++		kfree(str);
++		goto again;
++	}
++
++	if (strcmp(str, "poweroff") == 0 ||
++	    strcmp(str, "halt") == 0)
++		orderly_poweroff(false);
++	else if (strcmp(str, "reboot") == 0)
++		ctrl_alt_del();
++	else {
++		printk("Ignoring shutdown request: %s\n", str);
++		shutting_down = SHUTDOWN_INVALID;
++	}
++
++	kfree(str);
++}
++
++static void sysrq_handler(struct xenbus_watch *watch, const char **vec,
++			  unsigned int len)
++{
++	char sysrq_key = '\0';
++	struct xenbus_transaction xbt;
++	int err;
++
++ again:
++	err = xenbus_transaction_start(&xbt);
++	if (err)
++		return;
++	if (!xenbus_scanf(xbt, "control", "sysrq", "%c", &sysrq_key)) {
++		printk(KERN_ERR "Unable to read sysrq code in "
++		       "control/sysrq\n");
++		xenbus_transaction_end(xbt, 1);
++		return;
++	}
++
++	if (sysrq_key != '\0')
++		xenbus_printf(xbt, "control", "sysrq", "%c", '\0');
++
++	err = xenbus_transaction_end(xbt, 0);
++	if (err == -EAGAIN)
++		goto again;
++
++	if (sysrq_key != '\0')
++		handle_sysrq(sysrq_key, NULL);
++}
++
++static struct xenbus_watch shutdown_watch = {
++	.node = "control/shutdown",
++	.callback = shutdown_handler
 +};
 +
- #endif /* __XEN_PUBLIC_VCPU_H__ */
- 
- /*
++static struct xenbus_watch sysrq_watch = {
++	.node = "control/sysrq",
++	.callback = sysrq_handler
++};
++
++static int setup_shutdown_watcher(void)
++{
++	int err;
++
++	err = register_xenbus_watch(&shutdown_watch);
++	if (err) {
++		printk(KERN_ERR "Failed to set shutdown watcher\n");
++		return err;
++	}
++
++	err = register_xenbus_watch(&sysrq_watch);
++	if (err) {
++		printk(KERN_ERR "Failed to set sysrq watcher\n");
++		return err;
++	}
++
++	return 0;
++}
++
++static int shutdown_event(struct notifier_block *notifier,
++			  unsigned long event,
++			  void *data)
++{
++	setup_shutdown_watcher();
++	return NOTIFY_DONE;
++}
++
++static int __init setup_shutdown_event(void)
++{
++	static struct notifier_block xenstore_notifier = {
++		.notifier_call = shutdown_event
++	};
++	register_xenstore_notifier(&xenstore_notifier);
++
++	return 0;
++}
++
++subsys_initcall(setup_shutdown_event);
 
 -- 
 
