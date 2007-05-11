@@ -1,397 +1,388 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031110AbXEKTXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966416AbXEKTXq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031110AbXEKTXV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966206AbXEKTTs
+	id S966416AbXEKTXq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:23:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763078AbXEKTTt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:19:48 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:36779 "EHLO
+	Fri, 11 May 2007 15:19:49 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:36780 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966172AbXEKTTq (ORCPT
+	with ESMTP id S966159AbXEKTTr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:19:46 -0400
-Message-Id: <20070511001202.334528000@goop.org>
+	Fri, 11 May 2007 15:19:47 -0400
+Message-Id: <20070511001210.215993000@goop.org>
 References: <20070511000643.025196000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:06:58 -0700
+Date: Thu, 10 May 2007 17:07:11 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: [patch 15/28]xen: Add support for preemption
-Content-Disposition: inline; filename=xen-preempt.patch
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Keir Fraser <keir@xensource.com>
+Subject: [patch 28/28]xen: Attempt to patch inline versions of common operations
+Content-Disposition: inline; filename=xen-patch-inline.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add Xen support for preemption.  This is mostly a cleanup of existing
-preempt_enable/disable calls, or just comments to explain the current
-usage.
+This patchs adds the mechanism to allow us to patch inline versions of
+common operations.
+
+The implementations of the direct-access versions save_fl, restore_fl,
+irq_enable and irq_disable are now in assembler, and the same code is
+used for both out of line and inline uses.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Acked-by: Chris Wright <chrisw@sous-sol.org>
-
+Cc: Chris Wright <chrisw@sous-sol.org>
+Cc: Keir Fraser <keir@xensource.com>
 ---
- arch/i386/xen/Kconfig      |    2 
- arch/i386/xen/enlighten.c  |  105 +++++++++++++++++++++++++-------------------
- arch/i386/xen/mmu.c        |    4 +
- arch/i386/xen/multicalls.c |   11 ++--
- arch/i386/xen/time.c       |   22 +++++++--
- 5 files changed, 89 insertions(+), 55 deletions(-)
+ arch/i386/kernel/asm-offsets.c |    7 ++
+ arch/i386/xen/Makefile         |    2 
+ arch/i386/xen/enlighten.c      |  108 +++++++++++++++++++------------------
+ arch/i386/xen/xen-asm.S        |  114 ++++++++++++++++++++++++++++++++++++++++
+ arch/i386/xen/xen-ops.h        |   13 ++++
+ 5 files changed, 190 insertions(+), 54 deletions(-)
 
 ===================================================================
---- a/arch/i386/xen/Kconfig
-+++ b/arch/i386/xen/Kconfig
-@@ -4,6 +4,6 @@
+--- a/arch/i386/kernel/asm-offsets.c
++++ b/arch/i386/kernel/asm-offsets.c
+@@ -16,6 +16,7 @@
+ #include <asm/processor.h>
+ #include <asm/thread_info.h>
+ #include <asm/elf.h>
++#include <xen/interface/xen.h>
  
- config XEN
- 	bool "Enable support for Xen hypervisor"
--	depends on PARAVIRT && !PREEMPT
-+	depends on PARAVIRT
- 	help
- 	  This is the Linux Xen port.
+ #ifdef CONFIG_LGUEST_GUEST
+ #include <linux/lguest.h>
+@@ -135,4 +136,10 @@ void foo(void)
+ 	OFFSET(LGUEST_PAGES_regs_errcode, lguest_pages, regs.errcode);
+ 	OFFSET(LGUEST_PAGES_regs, lguest_pages, regs);
+ #endif
++
++#ifdef CONFIG_XEN
++	BLANK();
++	OFFSET(XEN_vcpu_info_mask, vcpu_info, evtchn_upcall_mask);
++	OFFSET(XEN_vcpu_info_pending, vcpu_info, evtchn_upcall_pending);
++#endif
+ }
+===================================================================
+--- a/arch/i386/xen/Makefile
++++ b/arch/i386/xen/Makefile
+@@ -1,4 +1,4 @@ obj-y		:= enlighten.o setup.o features.o
+ obj-y		:= enlighten.o setup.o features.o multicalls.o mmu.o \
+-			events.o time.o manage.o
++			events.o time.o manage.o xen-asm.o
+ 
+ obj-$(CONFIG_SMP)	+= smp.o
 ===================================================================
 --- a/arch/i386/xen/enlighten.c
 +++ b/arch/i386/xen/enlighten.c
-@@ -15,6 +15,7 @@
- #include <linux/init.h>
- #include <linux/smp.h>
- #include <linux/preempt.h>
-+#include <linux/hardirq.h>
- #include <linux/percpu.h>
- #include <linux/delay.h>
- #include <linux/start_kernel.h>
-@@ -108,11 +109,10 @@ static unsigned long xen_save_fl(void)
- 	struct vcpu_info *vcpu;
- 	unsigned long flags;
- 
--	preempt_disable();
- 	vcpu = x86_read_percpu(xen_vcpu);
+@@ -107,9 +107,11 @@ void xen_vcpu_setup(int cpu)
+ 	if (err == 0) {
+ 		have_vcpu_info_placement = 1;
+ 		per_cpu(xen_vcpu, cpu) = vcpup;
 +
- 	/* flag has opposite sense of mask */
- 	flags = !vcpu->evtchn_upcall_mask;
--	preempt_enable();
- 
- 	/* convert to IF type flag
- 	   -0 -> 0x00000000
-@@ -125,51 +125,56 @@ static void xen_restore_fl(unsigned long
- {
- 	struct vcpu_info *vcpu;
- 
--	preempt_disable();
--
- 	/* convert from IF type flag */
- 	flags = !(flags & X86_EFLAGS_IF);
+ 		printk("cpu %d using vcpu_info at %p\n",
+ 		       cpu, vcpup);
+ 	}
 +
-+	/* There's a one instruction preempt window here.  We need to
-+	   make sure we're don't switch CPUs between getting the vcpu
-+	   pointer and updating the mask. */
-+	preempt_disable();
- 	vcpu = x86_read_percpu(xen_vcpu);
- 	vcpu->evtchn_upcall_mask = flags;
-+	preempt_enable_no_resched();
-+
-+	/* Doesn't matter if we get preempted here, because any
-+	   pending event will get dealt with anyway. */
- 
- 	if (flags == 0) {
--		/* Unmask then check (avoid races).  We're only protecting
--		   against updates by this CPU, so there's no need for
--		   anything stronger. */
--		barrier();
--
-+		preempt_check_resched();
-+		barrier(); /* unmask then check (avoid races) */
- 		if (unlikely(vcpu->evtchn_upcall_pending))
- 			force_evtchn_callback();
--		preempt_enable();
--	} else
--		preempt_enable_no_resched();
-+	}
  }
  
+ static void __init xen_banner(void)
+@@ -169,20 +171,6 @@ static unsigned long xen_save_fl(void)
+ 	return (-flags) & X86_EFLAGS_IF;
+ }
+ 
+-static unsigned long xen_save_fl_direct(void)
+-{
+-	unsigned long flags;
+-
+-	/* flag has opposite sense of mask */
+-	flags = !x86_read_percpu(xen_vcpu_info.evtchn_upcall_mask);
+-
+-	/* convert to IF type flag
+-	   -0 -> 0x00000000
+-	   -1 -> 0xffffffff
+-	*/
+-	return (-flags) & X86_EFLAGS_IF;
+-}
+-
+ static void xen_restore_fl(unsigned long flags)
+ {
+ 	struct vcpu_info *vcpu;
+@@ -209,25 +197,6 @@ static void xen_restore_fl(unsigned long
+ 	}
+ }
+ 
+-static void xen_restore_fl_direct(unsigned long flags)
+-{
+-	/* convert from IF type flag */
+-	flags = !(flags & X86_EFLAGS_IF);
+-
+-	/* This is an atomic update, so no need to worry about
+-	   preemption. */
+-	x86_write_percpu(xen_vcpu_info.evtchn_upcall_mask, flags);
+-
+-	/* If we get preempted here, then any pending event will be
+-	   handled anyway. */
+-
+-	if (flags == 0) {
+-		barrier(); /* unmask then check (avoid races) */
+-		if (unlikely(x86_read_percpu(xen_vcpu_info.evtchn_upcall_pending)))
+-			force_evtchn_callback();
+-	}
+-}
+-
  static void xen_irq_disable(void)
  {
-+	/* There's a one instruction preempt window here.  We need to
-+	   make sure we're don't switch CPUs between getting the vcpu
-+	   pointer and updating the mask. */
-+	preempt_disable();
-+	x86_read_percpu(xen_vcpu)->evtchn_upcall_mask = 1;
-+	preempt_enable_no_resched();
-+}
-+
-+static void xen_irq_enable(void)
-+{
- 	struct vcpu_info *vcpu;
--	preempt_disable();
--	vcpu = x86_read_percpu(xen_vcpu);
--	vcpu->evtchn_upcall_mask = 1;
--	preempt_enable_no_resched();
--}
--
--static void xen_irq_enable(void)
--{
--	struct vcpu_info *vcpu;
--
-+
-+	/* There's a one instruction preempt window here.  We need to
-+	   make sure we're don't switch CPUs between getting the vcpu
-+	   pointer and updating the mask. */
+ 	/* There's a one instruction preempt window here.  We need to
+@@ -236,12 +205,6 @@ static void xen_irq_disable(void)
  	preempt_disable();
- 	vcpu = x86_read_percpu(xen_vcpu);
- 	vcpu->evtchn_upcall_mask = 0;
+ 	x86_read_percpu(xen_vcpu)->evtchn_upcall_mask = 1;
+ 	preempt_enable_no_resched();
+-}
 -
--	/* Unmask then check (avoid races).  We're only protecting
--	   against updates by this CPU, so there's no need for
--	   anything stronger. */
--	barrier();
--
-+	preempt_enable_no_resched();
-+
-+	/* Doesn't matter if we get preempted here, because any
-+	   pending event will get dealt with anyway. */
-+
-+	barrier(); /* unmask then check (avoid races) */
+-static void xen_irq_disable_direct(void)
+-{
+-	/* Atomic update, so preemption not a concern. */
+-	x86_write_percpu(xen_vcpu_info.evtchn_upcall_mask, 1);
+ }
+ 
+ static void xen_irq_enable(void)
+@@ -261,19 +224,6 @@ static void xen_irq_enable(void)
+ 
+ 	barrier(); /* unmask then check (avoid races) */
  	if (unlikely(vcpu->evtchn_upcall_pending))
+-		force_evtchn_callback();
+-}
+-
+-static void xen_irq_enable_direct(void)
+-{
+-	/* Atomic update, so preemption not a concern. */
+-	x86_write_percpu(xen_vcpu_info.evtchn_upcall_mask, 0);
+-
+-	/* Doesn't matter if we get preempted here, because any
+-	   pending event will get dealt with anyway. */
+-
+-	barrier(); /* unmask then check (avoid races) */
+-	if (unlikely(x86_read_percpu(xen_vcpu_info.evtchn_upcall_pending)))
  		force_evtchn_callback();
--	preempt_enable();
  }
  
- static void xen_safe_halt(void)
-@@ -189,6 +194,8 @@ static void xen_halt(void)
- 
- static void xen_set_lazy_mode(enum paravirt_lazy_mode mode)
- {
-+	BUG_ON(preemptible());
-+
- 	switch(mode) {
- 	case PARAVIRT_LAZY_NONE:
- 		BUG_ON(x86_read_percpu(xen_lazy_mode) == PARAVIRT_LAZY_NONE);
-@@ -292,12 +299,17 @@ static void xen_write_ldt_entry(struct d
- 	xmaddr_t mach_lp = virt_to_machine(lp);
- 	u64 entry = (u64)high << 32 | low;
- 
-+	preempt_disable();
-+
- 	xen_mc_flush();
- 	if (HYPERVISOR_update_descriptor(mach_lp.maddr, entry))
- 		BUG();
--}
--
--static int cvt_gate_to_trap(int vector, u32 low, u32 high, struct trap_info *info)
-+
-+	preempt_enable();
-+}
-+
-+static int cvt_gate_to_trap(int vector, u32 low, u32 high,
-+			    struct trap_info *info)
- {
- 	u8 type, dpl;
- 
-@@ -325,11 +337,13 @@ static DEFINE_PER_CPU(struct Xgt_desc_st
-    also update Xen. */
- static void xen_write_idt_entry(struct desc_struct *dt, int entrynum, u32 low, u32 high)
- {
--
--	int cpu = smp_processor_id();
- 	unsigned long p = (unsigned long)&dt[entrynum];
--	unsigned long start = per_cpu(idt_desc, cpu).address;
--	unsigned long end = start + per_cpu(idt_desc, cpu).size + 1;
-+	unsigned long start, end;
-+
-+	preempt_disable();
-+
-+	start = __get_cpu_var(idt_desc).address;
-+	end = start + __get_cpu_var(idt_desc).size + 1;
- 
- 	xen_mc_flush();
- 
-@@ -344,6 +358,8 @@ static void xen_write_idt_entry(struct d
- 			if (HYPERVISOR_set_trap_table(info))
- 				BUG();
- 	}
-+
-+	preempt_enable();
+@@ -852,6 +802,57 @@ static __init void xen_pagetable_setup_d
+ 	xen_vcpu_setup(smp_processor_id());
  }
  
- static void xen_convert_trap_info(const struct Xgt_desc_struct *desc,
-@@ -365,11 +381,9 @@ static void xen_convert_trap_info(const 
- 
- void xen_copy_trap_info(struct trap_info *traps)
- {
--	const struct Xgt_desc_struct *desc = &get_cpu_var(idt_desc);
-+	const struct Xgt_desc_struct *desc = &__get_cpu_var(idt_desc);
- 
- 	xen_convert_trap_info(desc, traps);
--
--	put_cpu_var(idt_desc);
- }
- 
- /* Load a new IDT into Xen.  In principle this can be per-CPU, so we
-@@ -379,11 +393,10 @@ static void xen_load_idt(const struct Xg
- {
- 	static DEFINE_SPINLOCK(lock);
- 	static struct trap_info traps[257];
--	int cpu = smp_processor_id();
--
--	per_cpu(idt_desc, cpu) = *desc;
- 
- 	spin_lock(&lock);
++static unsigned xen_patch(u8 type, u16 clobbers, void *insns, unsigned len)
++{
++	char *start, *end, *reloc;
++	unsigned ret;
 +
-+	__get_cpu_var(idt_desc) = *desc;
- 
- 	xen_convert_trap_info(desc, traps);
- 
-@@ -398,6 +411,8 @@ static void xen_load_idt(const struct Xg
-    they're handled differently. */
- static void xen_write_gdt_entry(struct desc_struct *dt, int entry, u32 low, u32 high)
- {
-+	preempt_disable();
++	start = end = reloc = NULL;
 +
- 	switch ((high >> 8) & 0xff) {
- 	case DESCTYPE_LDT:
- 	case DESCTYPE_TSS:
-@@ -414,10 +429,12 @@ static void xen_write_gdt_entry(struct d
- 	}
- 
- 	}
++#define SITE(x)								\
++	case PARAVIRT_PATCH(x):						\
++	if (have_vcpu_info_placement) {					\
++		start = (char *)xen_##x##_direct;			\
++		end = xen_##x##_direct_end;				\
++		reloc = xen_##x##_direct_reloc;				\
++	}								\
++	goto patch_site
 +
-+	preempt_enable();
- }
- 
- static void xen_load_esp0(struct tss_struct *tss,
--				   struct thread_struct *thread)
-+			  struct thread_struct *thread)
- {
- 	struct multicall_space mcs = xen_mc_entry(0);
- 	MULTI_stack_switch(mcs.mc, __KERNEL_DS, thread->esp0);
-@@ -523,6 +540,8 @@ static unsigned long xen_read_cr3(void)
- 
- static void xen_write_cr3(unsigned long cr3)
- {
-+	BUG_ON(preemptible());
++	switch(type) {
++		SITE(irq_enable);
++		SITE(irq_disable);
++		SITE(save_fl);
++		SITE(restore_fl);
++#undef SITE
 +
- 	if (cr3 == x86_read_percpu(xen_cr3)) {
- 		/* just a simple tlb flush */
- 		xen_flush_tlb();
-===================================================================
---- a/arch/i386/xen/mmu.c
-+++ b/arch/i386/xen/mmu.c
-@@ -520,5 +520,7 @@ void xen_exit_mmap(struct mm_struct *mm)
- 
- 	preempt_enable();
- 
-+	spin_lock(&mm->page_table_lock);
- 	xen_pgd_unpin(mm->pgd);
--}
-+	spin_unlock(&mm->page_table_lock);
-+}
-===================================================================
---- a/arch/i386/xen/multicalls.c
-+++ b/arch/i386/xen/multicalls.c
-@@ -20,6 +20,7 @@
-  * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
-  */
- #include <linux/percpu.h>
-+#include <linux/hardirq.h>
- 
- #include <asm/xen/hypercall.h>
- 
-@@ -39,9 +40,11 @@ DEFINE_PER_CPU(unsigned long, xen_mc_irq
- 
- void xen_mc_flush(void)
- {
--	struct mc_buffer *b = &get_cpu_var(mc_buffer);
-+	struct mc_buffer *b = &__get_cpu_var(mc_buffer);
- 	int ret = 0;
- 	unsigned long flags;
++	patch_site:
++		if (start == NULL || (end-start) > len)
++			goto default_patch;
 +
-+	BUG_ON(preemptible());
- 
- 	/* Disable interrupts in case someone comes in and queues
- 	   something in the middle */
-@@ -60,7 +63,6 @@ void xen_mc_flush(void)
- 	} else
- 		BUG_ON(b->argidx != 0);
- 
--	put_cpu_var(mc_buffer);
- 	local_irq_restore(flags);
- 
- 	BUG_ON(ret);
-@@ -68,10 +70,11 @@ void xen_mc_flush(void)
- 
- struct multicall_space __xen_mc_entry(size_t args)
- {
--	struct mc_buffer *b = &get_cpu_var(mc_buffer);
-+	struct mc_buffer *b = &__get_cpu_var(mc_buffer);
- 	struct multicall_space ret;
- 	unsigned argspace = (args + sizeof(u64) - 1) / sizeof(u64);
- 
-+	BUG_ON(preemptible());
- 	BUG_ON(argspace > MC_ARGS);
- 
- 	if (b->mcidx == MC_BATCH ||
-@@ -83,7 +86,5 @@ struct multicall_space __xen_mc_entry(si
- 	ret.args = &b->args[b->argidx];
- 	b->argidx += argspace;
- 
--	put_cpu_var(mc_buffer);
--
- 	return ret;
- }
-===================================================================
---- a/arch/i386/xen/time.c
-+++ b/arch/i386/xen/time.c
-@@ -57,7 +57,7 @@ static void get_runstate_snapshot(struct
- 	u64 state_time;
- 	struct vcpu_runstate_info *state;
- 
--	preempt_disable();
-+	BUG_ON(preemptible());
- 
- 	state = &__get_cpu_var(runstate);
- 
-@@ -72,8 +72,6 @@ static void get_runstate_snapshot(struct
- 		*res = *state;
- 		barrier();
- 	} while(state->state_entry_time != state_time);
--
--	preempt_enable();
- }
- 
- static void setup_runstate_info(void)
-@@ -142,15 +140,29 @@ unsigned long long xen_sched_clock(void)
- unsigned long long xen_sched_clock(void)
- {
- 	struct vcpu_runstate_info state;
--	cycle_t now = xen_clocksource_read();
-+	cycle_t now;
-+	unsigned long long ret;
++		ret = paravirt_patch_insns(insns, len, start, end);
 +
-+	/*
-+	 * Ideally sched_clock should be called on a per-cpu basis
-+	 * anyway, so preempt should already be disabled, but that's
-+	 * not current practice at the moment.
-+	 */
-+	preempt_disable();
++		/* Note: because reloc is assigned from something that
++		   appears to be an array, gcc assumes it's non-null,
++		   but doesn't know its relationship with start and
++		   end. */
++		if (reloc > start && reloc < end) {
++			int reloc_off = reloc - start;
++			long *relocp = (long *)(insns + reloc_off);
++			long delta = start - (char *)insns;
 +
-+	now = xen_clocksource_read();
- 
- 	get_runstate_snapshot(&state);
- 
- 	WARN_ON(state.state != RUNSTATE_running);
- 
--	return state.time[RUNSTATE_blocked] +
-+	ret = state.time[RUNSTATE_blocked] +
- 		state.time[RUNSTATE_running] +
- 		(now - state.state_entry_time);
++			*relocp += delta;
++		}
++		break;
 +
-+	preempt_enable();
++	default_patch:
++	default:
++		ret = paravirt_patch_default(type, clobbers, insns, len);
++		break;
++	}
 +
 +	return ret;
- }
++}
++
+ static const struct paravirt_ops xen_paravirt_ops __initdata = {
+ 	.paravirt_enabled = 1,
+ 	.shared_kernel_pmd = 0,
+@@ -859,7 +860,7 @@ static const struct paravirt_ops xen_par
+ 	.name = "Xen",
+ 	.banner = xen_banner,
  
+-	.patch = paravirt_patch_default,
++	.patch = xen_patch,
  
+ 	.memory_setup = xen_memory_setup,
+ 	.arch_setup = xen_arch_setup,
+@@ -1035,6 +1036,7 @@ static const struct machine_ops __initda
+ 	.crash_shutdown = xen_crash_shutdown,
+ 	.emergency_restart = xen_emergency_restart,
+ };
++
+ 
+ /* First C function to be called on Xen boot */
+ static asmlinkage void __init xen_start_kernel(void)
+===================================================================
+--- /dev/null
++++ b/arch/i386/xen/xen-asm.S
+@@ -0,0 +1,114 @@
++/*
++	Asm versions of Xen pv-ops, suitable for either direct use or inlining.
++	The inline versions are the same as the direct-use versions, with the
++	pre- and post-amble chopped off.
++
++	This code is encoded for size rather than absolute efficiency,
++	with a view to being able to inline as much as possible.
++
++	We only bother with direct forms (ie, vcpu in pda) of the operations
++	here; the indirect forms are better handled in C, since they're
++	generally too large to inline anyway.
++ */
++
++#include <linux/linkage.h>
++#include <asm/asm-offsets.h>
++#include <asm/thread_info.h>
++#include <asm/percpu.h>
++#include <asm/asm-offsets.h>
++#include <asm/processor-flags.h>
++
++#define RELOC(x, v)	.globl x##_reloc; x##_reloc=v
++#define ENDPATCH(x)	.globl x##_end; x##_end=.
++
++/*
++	Enable events.  This clears the event mask and tests the pending
++	event status with one and operation.  If there are pending
++	events, then enter the hypervisor to get them handled.
++ */
++ENTRY(xen_irq_enable_direct)
++	/* Clear mask and test pending */
++	andw $0x00ff, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_pending
++	/* Preempt here doesn't matter because that will deal with
++	   any pending interrupts.  The pending check may end up being
++	   run on the wrong CPU, but that doesn't hurt. */
++	jz 1f
++2:	call check_events
++1:
++ENDPATCH(xen_irq_enable_direct)
++	ret
++	ENDPROC(xen_irq_enable_direct)
++	RELOC(xen_irq_enable_direct, 2b+1)
++
++
++/*
++	Disabling events is simply a matter of making the event mask
++	non-zero.
++ */
++ENTRY(xen_irq_disable_direct)
++	movb $1, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
++ENDPATCH(xen_irq_disable_direct)
++	ret
++	ENDPROC(xen_irq_disable_direct)
++	RELOC(xen_irq_disable_direct, 0)
++
++/*
++	(xen_)save_fl is used to get the current interrupt enable status.
++	Callers expect the status to be in X86_EFLAGS_IF, and other bits
++	may be set in the return value.  We take advantage of this by
++	making sure that X86_EFLAGS_IF has the right value (and other bits
++	in that byte are 0), but other bits in the return value are
++	undefined.  We need to toggle the state of the bit, because
++	Xen and x86 use opposite senses (mask vs enable).
++ */
++ENTRY(xen_save_fl_direct)
++	testb $0xff, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
++	setz %ah
++	addb %ah,%ah
++ENDPATCH(xen_save_fl_direct)
++	ret
++	ENDPROC(xen_save_fl_direct)
++	RELOC(xen_save_fl_direct, 0)
++
++
++/*
++	In principle the caller should be passing us a value return
++	from xen_save_fl_direct, but for robustness sake we test only
++	the X86_EFLAGS_IF flag rather than the whole byte. After
++	setting the interrupt mask state, it checks for unmasked
++	pending events and enters the hypervisor to get them delivered
++	if so.
++ */
++ENTRY(xen_restore_fl_direct)
++	testb $X86_EFLAGS_IF>>8, %ah
++	setz %al
++	movb %al, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_mask
++	/* Preempt here doesn't matter because that will deal with
++	   any pending interrupts.  The pending check may end up being
++	   run on the wrong CPU, but that doesn't hurt. */
++
++	/* check for pending but unmasked */
++	cmpw $0x0001, PER_CPU_VAR(xen_vcpu_info)+XEN_vcpu_info_pending
++	jz 1f
++2:	call check_events
++1:
++ENDPATCH(xen_restore_fl_direct)
++	ret
++	ENDPROC(xen_restore_fl_direct)
++	RELOC(xen_restore_fl_direct, 2b+1)
++
++
++
++/*
++	Force an event check by making a hypercall,
++	but preserve regs before making the call.
++ */
++check_events:
++	push %eax
++	push %ecx
++	push %edx
++	call force_evtchn_callback
++	pop %edx
++	pop %ecx
++	pop %eax
++	ret
+===================================================================
+--- a/arch/i386/xen/xen-ops.h
++++ b/arch/i386/xen/xen-ops.h
+@@ -55,4 +55,17 @@ int xen_smp_call_function_mask(cpumask_t
+ int xen_smp_call_function_mask(cpumask_t mask, void (*func)(void *),
+ 			       void *info, int wait);
+ 
++
++/* Declare an asm function, along with symbols needed to make it
++   inlineable */
++#define DECL_ASM(ret, name, ...)		\
++	ret name(__VA_ARGS__);			\
++	extern char name##_end[];		\
++	extern char name##_reloc[]		\
++
++DECL_ASM(void, xen_irq_enable_direct, void);
++DECL_ASM(void, xen_irq_disable_direct, void);
++DECL_ASM(unsigned long, xen_save_fl_direct, void);
++DECL_ASM(void, xen_restore_fl_direct, unsigned long);
++
+ #endif /* XEN_OPS_H */
 
 -- 
 
