@@ -1,85 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759903AbXEKLn1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760652AbXEKLrQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759903AbXEKLn1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 07:43:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755986AbXEKLnR
+	id S1760652AbXEKLrQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 07:47:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757414AbXEKLrE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 07:43:17 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:44202 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755877AbXEKLnQ (ORCPT
+	Fri, 11 May 2007 07:47:04 -0400
+Received: from hammerhead.shentel.net ([204.111.1.228]:48749 "EHLO
+	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755877AbXEKLrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 07:43:16 -0400
-Subject: Re: Kconfig warnings on latest GIT
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Simon Horman <horms@verge.net.au>
-Cc: Timur Tabi <timur@freescale.com>,
-       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       Ismail =?ISO-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Michael Schmitz <schmitz@debian.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>
-In-Reply-To: <20070511012216.GB10715@verge.net.au>
-References: <200705080004.14570.ismail@pardus.org.tr>
-	 <20070508143127.38fafa3c.kim.phillips@freescale.com>
-	 <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au>
-	 <1178811570.3806.18.camel@johannes.berg>
-	 <20070511012216.GB10715@verge.net.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-PdvKfbZgsucLWOxdr9MV"
-Date: Fri, 11 May 2007 13:45:37 +0200
-Message-Id: <1178883937.8896.11.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Fri, 11 May 2007 07:47:03 -0400
+Date: Fri, 11 May 2007 07:42:38 -0400 (EDT)
+From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Rene Herman <rene.herman@gmail.com>, Rusty Russell <rusty@rustcorp.com.au>,
+       bunk@stusta.de, randy.dunlap@oracle.com, akpm@linux-foundation.org,
+       rpjday@mindspring.com, marcel@holtmann.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] module_author: don't advice putting in an email
+ address
+In-Reply-To: <20070511114605.4c2698ec@the-village.bc.nu>
+Message-ID: <alpine.DEB.0.98.0705110740420.12363@sigma.j-a-k-j.com>
+References: <4643BDF2.9030105@gmail.com>
+ <20070511114605.4c2698ec@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> > The email address is the problem I was trying to fix; with multiple current 
+> > and non-current authors and maintainers who might not even be authors the 
+> > address(es) available from the tag confuse the issue of whom to contact. 
+> > It's moreover also information that easily outdated.
+> > 
+> > A bit more than half of the tags in the tree don't include an email address 
+> > already and I'll submit patches removing more...
+> 
+> Please don't do this
+> 
+> NACK this change.
+> 
+> Whether someone puts their email address into the entry is their own
+> business. We do not need a style police for module author entries.
+> 
+> At most you might want to put
+> 
+> 	"If you include an email address then please use an address that
+> 	 you expect to keep for the long term, and if you change address
+> 	 please remember to update or remove the entry"
+> 
+> > A bit more than half of the tags in the tree don't include an email 
+> > address already and I'll submit patches removing more...
+> 
+> And I'll NAK every one which hasn't been signed off by the email address
+> listed OR the address bounces. In which case removing it is good.
 
---=-PdvKfbZgsucLWOxdr9MV
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2007-05-11 at 10:22 +0900, Simon Horman wrote:
-
-> Actually, it was with ARCH=3Dia64. I have a feeling that you can get
-> it to show up quite easily with anything other than ARCH=3Dpowerpc.
-
-Ick, I didn't know that drivers/macintosh was now included for all
-arches! Hmm. That's a bit of a problem.
-
-I could do
-
-config PMAC_APM_EMU
-        tristate "APM emulation"
-        depends on SYS_SUPPORTS_APM_EMULATION
-        select APM_EMULATION
-        depends on ADB_PMU && PM
-
-and then
-
-config SYS_SUPPORTS_APM_EMULATION
-	bool
-	default y
-	depends on PPC_PMAC
-
-I'll have to run test that.
-
-johannes
-
---=-PdvKfbZgsucLWOxdr9MV
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGRFdh/ETPhpq3jKURAgDVAJ46WmVLjJ59f9KSP65cVxnFFFFnqgCaAkmG
-UbBUeoejP0SBnGF0DhTIwX4=
-=KVJL
------END PGP SIGNATURE-----
-
---=-PdvKfbZgsucLWOxdr9MV--
-
+Can't we just subtitle it somehow? Add tags: " (current maintainer)",
+" (original author, inactive)", " (bug and defect reports)", or whatever 
+you like after the names.
