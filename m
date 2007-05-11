@@ -1,70 +1,322 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761540AbXEKOxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760980AbXEKPDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761540AbXEKOxb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 10:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbXEKOxZ
+	id S1760980AbXEKPDP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 11:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758334AbXEKPDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 10:53:25 -0400
-Received: from mtagate2.de.ibm.com ([195.212.29.151]:29846 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752403AbXEKOxY (ORCPT
+	Fri, 11 May 2007 11:03:00 -0400
+Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:63908
+	"EHLO eggplant.ddo.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757537AbXEKPC7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 10:53:24 -0400
-Subject: Re: [patch 1/6] Guest page hinting: core + volatile page cache.
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Reply-To: schwidefsky@de.ibm.com
-To: Valdis.Kletnieks@vt.edu
-Cc: virtualization@lists.osdl.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Zachary Amsden <zach@vmware.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, Hubertus Franke <frankeh@watson.ibm.com>,
-       Rik van Riel <riel@redhat.com>
-In-Reply-To: <5056.1178894723@turing-police.cc.vt.edu>
-References: <20070511135827.393181482@de.ibm.com>
-	 <20070511135925.513572897@de.ibm.com>
-	 <5056.1178894723@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Organization: IBM Corporation
-Date: Fri, 11 May 2007 16:53:49 +0200
-Message-Id: <1178895229.7695.4.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 11 May 2007 11:02:59 -0400
+Message-ID: <1185.192.168.1.10.1178895776.squirrel@eggplant.ddo.jp>
+Date: Sat, 12 May 2007 00:02:56 +0900 (JST)
+Subject: Re: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
+From: "kogiidena" <kogiidena@eggplant.ddo.jp>
+To: rpurdie@rpsys.net
+Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
+Reply-To: kogiidena@eggplant.ddo.jp
+User-Agent: SquirrelMail/1.4.5
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
+References: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp><1178628407.6061.24.camel@localhost.localdomain><1638.192.168.1.10.1178710979.squirrel@eggplant.ddo.jp><1178712861.6291.5.camel@localhost.localdomain><2329.192.168.1.10.1178718316.squirrel@eggplant.ddo.jp><1178723184.6291.16.camel@localhost.localdomain><1445.192.168.1.10.1178749125.squirrel@eggplant.ddo.jp>
+In-Reply-To: <1445.192.168.1.10.1178749125.squirrel@eggplant.ddo.jp>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-11 at 10:45 -0400, Valdis.Kletnieks@vt.edu wrote:
-> > The guest page hinting patchset introduces code that passes guest
-> > page usage information to the host system that virtualizes the
-> > memory of its guests. There are three different page states:
-> 
-> Possibly hiding in the patchset someplace where I don't see it, but IBM's
-> VM hypervisor supported reflecting page faults back to a multitasking guest,
-> giving a signal that the guest supervisor could use.  The guest would then
-> look up which process owned that virtual page, and could elect to flag that
-> process as in page-wait and schedule another process to run while the hypervisor
-> was doing the I/O to bring the page in.  The guest would then get another
-> interrupt when the page became available, which it could use to flag the
-> suspended process as eligible for scheduling again.
+Richard-san
 
-That features is called pfault and is hidden in arch/s390/mm/fault.c.
-Guest page hinting is different. The idea is that the guest (linux)
-allows the host (z/VM) to remove the page from memory without writing it
-to a paging device. With pfault z/VM has to write the page but tells its
-guest that is has to retrieve the page before the current context can
-continue if the guest accesses the page. So with pfault the host gets
-the page back, with guest page hinting the guest does it.
+Please apply
 
-> Not sure how that would fit into all this though - it looks like the
-> "discard fault" does something similar, but only for pages marked volatile.
-> Would it be useful/helpful to also deliver a similar signal for stable pages?
+>As far as I can tell, the existing timer trigger can do everything the
+>blink trigger can (and more besides). The driver looks like it would be
+>a lot easier to read if it just contained the bitshift trigger. To be
+>accepted, the bitshift trigger needs more documentation, particularly
+>the Kconfig entry. Its not clear for example that the bits are just
+>shifted once and don't repeat. Most people would probably want it to
+>repeat and with a repeat mode, it might be able to replace the heartbeat
+>trigger too?
 
-Pfault delivers a signal for stable pages, yes.
+Add Bitpattern Trigger.
+Bitpattern continuously turns LED on and off according to
+the value directed "bitdata". "bitdata" is composed of
+the character string that consists of the following three
+characters. '0' turn off LED. '1' turn on  LED. 'R' is
+repeated from the head of the "bitdata".
+In addition, the character string of "on", "off", and "blink"
+can be set to "bitdata".
+The transition time of "bitdata" is set by "delay".
 
--- 
-blue skies,
-  Martin.
+Signed-off-by: kogiidena <kogiidena@eggplant.ddo.jp>
+---
+diff -urpN OLD/drivers/leds/Kconfig NEW/drivers/leds/Kconfig
+--- OLD/drivers/leds/Kconfig	2007-04-28 06:49:26.000000000 +0900
++++ NEW/drivers/leds/Kconfig	2007-05-11 21:15:28.000000000 +0900
+@@ -127,5 +133,19 @@ config LEDS_TRIGGER_HEARTBEAT
+ 	  load average.
+ 	  If unsure, say Y.
 
-"Reality continues to ruin my life." - Calvin.
++config LEDS_TRIGGER_BITPAT
++	tristate "LED Bitpattern Trigger"
++	depends on LEDS_TRIGGERS
++	help
++	  Bitpattern continuously turns LED on and off according to
++	  the value directed "bitdata". "bitdata" is composed of
++	  the character string that consists of the following three
++	  characters. '0' turn off LED. '1' turn on  LED. 'R' is
++	  repeated from the head of the "bitdata".
++	  In addition, the character string of "on", "off", and "blink"
++	  can be set to "bitdata".
++	  The transition time of "bitdata" is set by "delay".
++	  If unsure, say Y.
++
+ endmenu
+
+diff -urpN OLD/drivers/leds/Makefile NEW/drivers/leds/Makefile
+--- OLD/drivers/leds/Makefile	2007-05-11 23:44:12.000000000 +0900
++++ NEW/drivers/leds/Makefile	2007-05-11 23:46:47.000000000 +0900
+@@ -22,3 +22,4 @@ obj-$(CONFIG_LEDS_LANDISK)		+= leds-land
+ obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
+ obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
+ obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)	+= ledtrig-heartbeat.o
++obj-$(CONFIG_LEDS_TRIGGER_BITPAT)	+= ledtrig-bitpat.o
+diff -urpN OLD/drivers/leds/ledtrig-bitpat.c NEW/drivers/leds/ledtrig-bitpat.c
+--- OLD/drivers/leds/ledtrig-bitpat.c	1970-01-01 09:00:00.000000000 +0900
++++ NEW/drivers/leds/ledtrig-bitpat.c	2007-05-11 23:16:12.000000000 +0900
+@@ -0,0 +1,229 @@
++/*
++ * LED Bitpattern Trigger
++ *
++ * Copyright (C) 2007 kogiidena
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ */
++#include <linux/module.h>
++#include <linux/jiffies.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/timer.h>
++#include <linux/sched.h>
++#include <linux/leds.h>
++#include <linux/device.h>
++#include <linux/ctype.h>
++#include "leds.h"
++
++#define BITDATA_LEN 17
++
++struct bitpat_trig_data {
++	char bitdata[BITDATA_LEN + 2];
++	int cnt;
++	unsigned long delay;
++	struct timer_list timer;
++};
++
++void __attribute__ ((weak))
++ledtrig_bitpat_default(struct led_classdev *led_cdev,
++		       unsigned long *delay, char *bitdata)
++{
++	/* initial value */
++	*delay     = 250;
++	bitdata[0] = '\0';
++}
++
++static void led_bitpat_function(unsigned long data)
++{
++	struct led_classdev *led_cdev = (struct led_classdev *)data;
++	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
++	unsigned long delay = bitpat_data->delay;
++	char bitpat;
++
++	bitpat = bitpat_data->bitdata[bitpat_data->cnt++];
++
++	if (bitpat == 'R') {
++		bitpat_data->cnt = 0;
++		bitpat = bitpat_data->bitdata[bitpat_data->cnt++];
++	}
++
++	if (bitpat == '0' || bitpat == '1') {
++		led_set_brightness(led_cdev,
++				   (bitpat == '1') ? LED_FULL : LED_OFF);
++
++		mod_timer(&bitpat_data->timer,
++			  jiffies + msecs_to_jiffies(delay));
++	} else {
++		bitpat_data->cnt = 0;
++	}
++}
++
++static ssize_t led_delay_show(struct class_device *dev, char *buf)
++{
++	struct led_classdev *led_cdev = class_get_devdata(dev);
++	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
++
++	sprintf(buf, "%lu\n", bitpat_data->delay);
++
++	return strlen(buf) + 1;
++}
++
++static ssize_t led_delay_store(struct class_device *dev, const char *buf,
++			       size_t size)
++{
++	struct led_classdev *led_cdev = class_get_devdata(dev);
++	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
++	int ret = -EINVAL;
++	char *after;
++	unsigned long state = simple_strtoul(buf, &after, 10);
++	size_t count = after - buf;
++
++	if (*after && isspace(*after))
++		count++;
++
++	if (count == size) {
++		bitpat_data->delay = state;
++		mod_timer(&bitpat_data->timer, jiffies + 1);
++		ret = count;
++	}
++	return ret;
++}
++
++static void led_bitdata_check(char *buf)
++{
++	int i;
++
++	if (!strncmp("on", buf, 2)) {
++		buf[0] = '1';
++	} else if (!strncmp("off", buf, 2)) {
++		buf[0] = '0';
++	} else if (!strncmp("blink", buf, 5)) {
++		strcpy(buf, "01R");
++	}
++
++	for (i = 0; i < BITDATA_LEN; i++) {
++		if ((buf[i] == '0') || (buf[i] == '1')) {
++			continue;
++		} else if ((i != 0) && ((buf[i] == 'R') || (buf[i] == 'r'))) {
++			buf[i] = 'R';
++			i++;
++		}
++		break;
++	}
++	buf[i] = '\0';
++}
++
++static ssize_t led_bitdata_show(struct class_device *dev, char *buf)
++{
++	struct led_classdev *led_cdev = class_get_devdata(dev);
++	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
++
++	sprintf(buf,
++		"bitdata : %s\n"
++		"meaning : 0=OFF, 1=ON, R=Repeat\n",
++		(bitpat_data->bitdata[0]) ? bitpat_data->bitdata : "(null)");
++
++	return strlen(buf) + 1;
++}
++
++static ssize_t led_bitdata_store(struct class_device *dev, const char *buf,
++				 size_t size)
++{
++	struct led_classdev *led_cdev = class_get_devdata(dev);
++	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
++
++	if (size > BITDATA_LEN)
++		return -EINVAL;
++
++	strncpy(bitpat_data->bitdata, buf, size);
++	led_bitdata_check(bitpat_data->bitdata);
++	bitpat_data->cnt = 0;
++
++	mod_timer(&bitpat_data->timer, jiffies + 1);
++
++	return size;
++}
++
++static CLASS_DEVICE_ATTR(delay,   0644, led_delay_show,   led_delay_store);
++static CLASS_DEVICE_ATTR(bitdata, 0644, led_bitdata_show, led_bitdata_store);
++
++static void bitpat_trig_activate(struct led_classdev *led_cdev)
++{
++	struct bitpat_trig_data *bitpat_data;
++	int rc;
++
++	bitpat_data = kzalloc(sizeof(*bitpat_data), GFP_KERNEL);
++	if (!bitpat_data)
++		return;
++
++	led_cdev->trigger_data = bitpat_data;
++
++	ledtrig_bitpat_default(led_cdev,
++			       &bitpat_data->delay, &bitpat_data->bitdata[0]);
++	led_bitdata_check(bitpat_data->bitdata);
++	bitpat_data->cnt = 0;
++
++	rc = class_device_create_file(led_cdev->class_dev,
++				      &class_device_attr_delay);
++	if (rc)
++		goto err_out;
++
++	rc = class_device_create_file(led_cdev->class_dev,
++				      &class_device_attr_bitdata);
++	if (rc)
++		goto err_out_delay;
++
++	setup_timer(&bitpat_data->timer,
++		    led_bitpat_function, (unsigned long)led_cdev);
++	led_bitpat_function(bitpat_data->timer.data);
++
++	return;
++
++err_out_delay:
++	class_device_remove_file(led_cdev->class_dev, &class_device_attr_delay);
++err_out:
++	led_cdev->trigger_data = NULL;
++	kfree(bitpat_data);
++}
++
++static void bitpat_trig_deactivate(struct led_classdev *led_cdev)
++{
++	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
++
++	if (bitpat_data) {
++		class_device_remove_file(led_cdev->class_dev,
++					 &class_device_attr_delay);
++		class_device_remove_file(led_cdev->class_dev,
++					 &class_device_attr_bitdata);
++		del_timer_sync(&bitpat_data->timer);
++		kfree(bitpat_data);
++	}
++}
++
++static struct led_trigger bitpat_led_trigger = {
++	.name = "bitpat",
++	.activate = bitpat_trig_activate,
++	.deactivate = bitpat_trig_deactivate,
++};
++
++static int __init bitpat_trig_init(void)
++{
++	led_trigger_register(&bitpat_led_trigger);
++	return 0;
++}
++
++static void __exit bitpat_trig_exit(void)
++{
++	led_trigger_unregister(&bitpat_led_trigger);
++}
++
++module_init(bitpat_trig_init);
++module_exit(bitpat_trig_exit);
++
++MODULE_AUTHOR("kogiidena <kogiidena@eggplant.ddo.jp>");
++MODULE_DESCRIPTION("Bitpattern LED trigger");
++MODULE_LICENSE("GPL");
+
 
 
