@@ -1,101 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759777AbXEKH3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbXEKHbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759777AbXEKH3z (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 03:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbXEKH3s
+	id S1760196AbXEKHbb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 03:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbXEKHbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 03:29:48 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:40934 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755143AbXEKH3s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 03:29:48 -0400
-Date: Fri, 11 May 2007 08:29:39 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@ucw.cz>
-Subject: Re: [PATCH] UDF: check for allocated memory for inode data
-Message-ID: <20070511072939.GA25727@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Cyrill Gorcunov <gorcunov@gmail.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
-	Jan Kara <jack@ucw.cz>
-References: <20070510140000.GA12399@cvg> <20070510154640.c0299a52.akpm@linux-foundation.org>
+	Fri, 11 May 2007 03:31:25 -0400
+Received: from ozlabs.org ([203.10.76.45]:34401 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754505AbXEKHbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 03:31:24 -0400
+Subject: Re: [PATCH 2/5] lguest guest feedback tidyups
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <20070511065613.GB25182@infradead.org>
+References: <1178846246.23513.21.camel@localhost.localdomain>
+	 <1178846354.23513.23.camel@localhost.localdomain>
+	 <1178846490.23513.27.camel@localhost.localdomain>
+	 <20070511065613.GB25182@infradead.org>
+Content-Type: text/plain
+Date: Fri, 11 May 2007 17:31:06 +1000
+Message-Id: <1178868666.23513.49.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510154640.c0299a52.akpm@linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 03:46:40PM -0700, Andrew Morton wrote:
-> On Thu, 10 May 2007 18:00:00 +0400
-> Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+On Fri, 2007-05-11 at 07:56 +0100, Christoph Hellwig wrote:
+> On Fri, May 11, 2007 at 11:21:30AM +1000, Rusty Russell wrote:
+> > 1) send-dma and bind-dma hypercall wrappers for drivers to use,
+> > 2) formalization of the convention that devices can use the irq
+> >    corresponding to their index on the lguest_bus.
+> > 3) ___force to shut up sparse: guests *can* use ioremap as virtual mem.
 > 
-> > This patch adds cheking for granted memory while
-> > filling up inode data to prevent possible NULL
-> > pointer usage. If there is not enough memory to
-> > fill inode data we just mark it as "bad".
-> > 
-> > Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
-> > 
-> > Please check the patch, maybe just marking inode as
-> > "bad" is not a good solution.
-> > 
-> 
-> yes, make_bad_inode() is appropriate here.
-> 
-> > 
-> > diff --git a/fs/udf/inode.c b/fs/udf/inode.c
-> > index c846155..91cddae 100644
-> > --- a/fs/udf/inode.c
-> > +++ b/fs/udf/inode.c
-> > @@ -1144,6 +1144,13 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
-> >  		UDF_I_EFE(inode) = 1;
-> >  		UDF_I_USE(inode) = 0;
-> >  		UDF_I_DATA(inode) = kmalloc(inode->i_sb->s_blocksize - sizeof(struct extendedFileEntry), GFP_KERNEL);
-> > +		if (!UDF_I_DATA(inode))
-> > +		{
-> > +			printk(KERN_ERR "udf: udf_fill_inode(ino %ld) no free memory\n",
-> > +			       inode->i_ino);
-> > +			make_bad_inode(inode);
-> > +			return;
-> > +		}
-> 
-> But please let's not add three copies of identical code.  Do something like:
-> 
-> static int udf_check_inode(struct inode *inode)
-> {
-> 	if (!UDF_I_DATA(inode)) {
-> 		printk(KERN_ERR "udf: udf_fill_inode(ino %ld) no free memory\n",
-> 			inode->i_ino);
-> 		make_bad_inode(inode);
-> 		return -1;
-> 	}
-> 	return 0;
-> }
-> 
-> 
-> 	if (udf_check_inode(inode))
-> 		return;
-> 
-> In fact you can also do the kmalloc in that helper function too:
-> 
-> static int udf_alloc_i_data(struct inode *inode, size_t size)
-> {
-> 	UDF_I_DATA(inode) = kmalloc(...);
-> 	...
-> }
+> No, they can't.  Even if in your case the underlying address spaces
+> happen to be the same anything returned by ioremap must use the proper
+> accessors.  That's the whole point of having this separation, otherwise
+> you wouldn't need to use ioremap at all.
 
-And please get rid of the UDF_I_* macro for everything you touch, just
-put a
+Hi Christoph!
 
-	struct udf_inode_info *uip = UDF_I(inode);
+	Well, without ioremap, the memory wouldn't normally be mapped.  Is
+there something better to use?
 
-at the beginning of the function and use the fields directly.
+> So instead of sprinkling cast
+> around add lguest_read*/lguest_write* accessors that do the __force cast
+> once and make sure the ioremap return value is always accessed using those.
+
+And that's nothing to do with iremap.  They're required because guest
+"physical" == host virtual, and casting a long to a "__user void *"
+seems to require a __force.
+
+I enjoy a good Hellwigging as much as anyone, but your aim is off.
+
+Cheers,
+Rusty.
+
