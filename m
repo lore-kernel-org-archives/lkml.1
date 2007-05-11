@@ -1,42 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760555AbXEKMjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760874AbXEKMnb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760555AbXEKMjm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 08:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbXEKMjc
+	id S1760874AbXEKMnb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 08:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757284AbXEKMnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 08:39:32 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:48694 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756799AbXEKMjb (ORCPT
+	Fri, 11 May 2007 08:43:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58628 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756055AbXEKMnY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 08:39:31 -0400
-Message-ID: <464463E0.1020602@freescale.com>
-Date: Fri, 11 May 2007 07:38:56 -0500
-From: Timur Tabi <timur@freescale.com>
-User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>, Simon Horman <horms@verge.net.au>,
-       Timur Tabi <timur@freescale.com>,
-       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       =?ISO-8859-1?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>,
-       Michael Schmitz <schmitz@debian.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: Kconfig warnings on latest GIT
-References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au> <46434ED0.6030808@freescale.com> <20070511012529.GC10715@verge.net.au> <Pine.LNX.4.64.0705102046400.10555@gate.crashing.org> <20070511074337.GA3048@flint.arm.linux.org.uk>
-In-Reply-To: <20070511074337.GA3048@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 May 2007 08:43:24 -0400
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+From: David Woodhouse <dwmw2@infradead.org>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>, Anton Vorontsov <cbou@mail.ru>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, Andrew Morton <akpm@osdl.org>
+In-Reply-To: <20070509203335.GA4290@ucw.cz>
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz>
+	 <1178550653.11851.191.camel@pmac.infradead.org>
+	 <20070507194949.GB3981@ucw.cz>
+	 <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com>
+	 <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
+	 <1178646751.2824.48.camel@pmac.infradead.org>
+	 <Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl>
+	 <1178721996.2824.199.camel@pmac.infradead.org>
+	 <20070509203335.GA4290@ucw.cz>
+Content-Type: text/plain
+Date: Fri, 11 May 2007 13:43:22 +0100
+Message-Id: <1178887402.21820.65.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
+On Wed, 2007-05-09 at 20:33 +0000, Pavel Machek wrote:
+> Even with fbdev... you are limited to 512 characters iirc. So.. who
+> has authority to say which subset of utf-8 is ok?
 
-> You might also want to fix the other stupidity with this.  See my message
-> on this very subject ("select is evil: another reason" from May 9th on lkml.)
+The user can load whatever font they want.
 
-I submitted a patch yesterday which includes both fixes.  Apparently, it's already in the -mm tree.
+> (Plus there is still lot of vga consoles out there -- all fedora users
+> afaict?)
+
+No, most Fedora users use X -- and _everything_ in Fedora works fine
+with UTF-8 and has done for years.
+
+> > > And how about serial terminals?
+> > 
+> > It works fine over serial terminals. Why wouldn't it?
+> 
+> He probably means serial terminals... like physical vt100. I used to
+> have one (vt302 compatible or something).  Most emulators still
+> emulate vt100, and yes, vt100 predates utf-8. 
+
+I have a serial terminal which can only do lower case (well, actually
+capitals but it's all mapped to lower case since that's more useful).
+
+When I write code on it, I can't do capital letters. But do I try to
+_force_ you to use only capitals because of my limited terminal?
+
+No. I don't. I can see what you've written just fine, within the
+limitations of my terminal. 
+
+So why are you trying to force me not to spell things correctly?
+
+Go away.
+
+-- 
+dwmw2
+
