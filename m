@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762953AbXEKXKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965606AbXEKXRq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762953AbXEKXKv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 19:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758918AbXEKXKn
+	id S965606AbXEKXRq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 19:17:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755185AbXEKXRi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 19:10:43 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:30320 "EHLO
-	pd2mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbXEKXKl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 19:10:41 -0400
-Date: Fri, 11 May 2007 17:10:36 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [PATCH] libata: add human-readable error value decoding
-In-reply-to: <4644A3AD.7000700@gmail.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Chuck Ebbert <cebbert@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>
-Message-id: <4644F7EC.3080607@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <46428103.3040003@shaw.ca> <4642E92D.5010509@gmail.com>
- <4643AAF6.7080204@shaw.ca> <46449E59.90608@redhat.com>
- <4644A3AD.7000700@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Fri, 11 May 2007 19:17:38 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:32848 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755043AbXEKXRi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 19:17:38 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
+Date: Sat, 12 May 2007 01:22:06 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@tv-sign.ru>, Pavel Machek <pavel@ucw.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <200705110035.32229.rjw@sisk.pl> <200705112240.54304.rjw@sisk.pl> <alpine.LFD.0.98.0705111555090.3986@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705111555090.3986@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705120122.07177.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Chuck Ebbert wrote:
->> Robert Hancock wrote:
->>>>> +          ehc->i.serror & SERR_TRANS_ST_ERROR ? "TransStatTransErr "
->>>>> : "",
->>>>> +          ehc->i.serror & SERR_UNRECOG_FIS ? "UnrecogFIS " : "",
->>>>> +          ehc->i.serror & SERR_DEV_XCHG ? "DevExchanged " : "" );
->>>> I'm not really convinced whether this is necessary.  The human readable
->>>> form is also a bit cryptic and can get quite long.  So, mild NACK from
->>>> me.
->>>>
->>> It certainly seems useful when debugging hotplug issues or random SATA
->>> problems which end up being caused by communication problems. Without
->>> this output, Joe User stands no chance of figuring out what's going on,
->>> and neither does Joe libata Developer unless they really care to dig
->>> through the spec and count bits to figure out what they mean. At least
->>> with this you can see that there was a CRC error, etc. and go from that..
->>>
->> Why not just document the error messages?
->>
->> And the scsi ones too, I can't seem to find what the sense codes mean.
+On Saturday, 12 May 2007 00:56, Linus Torvalds wrote:
 > 
-> They are well documented elsewhere - the standard documents.  For sense
-> codes, t10.org.  For SError bits, t13.org.  You can get drafts free of
-> charge.
+> On Fri, 11 May 2007, Rafael J. Wysocki wrote:
+> > 
+> > For user space processes this condition is always true.
+> > 
+> > For kernel threads:
+> > (1) the change of tsk->mm from NULL to a nonzero value is only made in
+> > fs/aio.c:use_mm() along with the setting of PF_BORROWED_MM under
+> > the task_lock(),
+> > (2) the change of tsk->mm from a nonzero value to NULL is only made in
+> > fs/aio.c:unuse_mm() along with the resetting of PF_BORROWED_MM
+> > under the task_lock().
+> > Therefore, by taking the task_lock() here we make sure that the condition
+> > is alyways false when we check it for kernel threads.
+> 
+> Why *test* it then and return anything?
+> 
+> Why not just doa "task_lock(p); task_unlock(p);" with no return value? 
+> 
+> As it is, it sounds like either the code is buggy, or it's pointless.
 
-The ATA ones are more of a pain in that regard than SCSI though - SCSI 
-has all distinct error codes for different errors, whereas ATA has 
-bitmasks for everything..
+I'm not sure what you mean.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+We use this function (ie. kernel/power/process.c:is_user_space()) to
+distinguish kernel threads from user space processes.  Therefore we make it
+always return true for user space processes and always return false for kernel
+threads.  In the latter case we need to use the task_lock() to ensure that the
+result is as desired (ie. false), because otherwise it might be racing with
+either fs/aio.c:use_mm() or fs/aio.c:unuse_mm().
 
+Rafael
