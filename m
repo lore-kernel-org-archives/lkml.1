@@ -1,293 +1,591 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763169AbXEKTOV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763393AbXEKTOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763169AbXEKTOV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:14:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763150AbXEKTKl
+	id S1763393AbXEKTOn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761845AbXEKTKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:10:41 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35302 "EHLO
+	Fri, 11 May 2007 15:10:47 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:60113 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762018AbXEKTKj (ORCPT
+	with ESMTP id S965650AbXEKTKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:10:39 -0400
-Message-Id: <20070511000025.697184000@goop.org>
-References: <20070510235708.155502000@goop.org>
+	Fri, 11 May 2007 15:10:45 -0400
+Message-Id: <20070511001157.243832000@goop.org>
+References: <20070511000643.025196000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 16:57:09 -0700
+Date: Thu, 10 May 2007 17:06:48 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [patch 1/7] i386: move common parts of smp into their own file
-Content-Disposition: inline; filename=i386-common-smp.patch
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [patch 05/28]xen: Xen virtual mmu
+Content-Disposition: inline; filename=xen-mmu.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Several parts of kernel/smp.c and smpboot.c are generally useful for
-other subarchitectures and paravirt_ops implementations, so make them
-available for reuse.
+Xen pagetable handling, including the machinery to implement direct
+pagetables.  This means that pte update operations are intercepted so
+that pseudo-physical addresses can be converted to machine addresses.
+It also implements late pinning/early unpinning so that pagetables are
+initialized while they're normal read-write memory as much as
+possible, yet pinned to make cr3 reloads as efficient as possible.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Acked-by: Chris Wright <chrisw@sous-sol.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- arch/i386/kernel/Makefile    |    1 
- arch/i386/kernel/smp.c       |   65 +++-------------------------------
- arch/i386/kernel/smpboot.c   |   22 -----------
- arch/i386/kernel/smpcommon.c |   79 ++++++++++++++++++++++++++++++++++++++++++
- include/asm-i386/processor.h |    4 ++
- 5 files changed, 90 insertions(+), 81 deletions(-)
+ arch/i386/xen/Makefile    |    2 
+ arch/i386/xen/enlighten.c |   30 ++-
+ arch/i386/xen/mmu.c       |  419 +++++++++++++++++++++++++++++++++++++++++++++
+ arch/i386/xen/mmu.h       |   47 +++++
+ 4 files changed, 493 insertions(+), 5 deletions(-)
 
 ===================================================================
---- a/arch/i386/kernel/Makefile
-+++ b/arch/i386/kernel/Makefile
-@@ -20,6 +20,7 @@ obj-$(CONFIG_MICROCODE)		+= microcode.o
- obj-$(CONFIG_MICROCODE)		+= microcode.o
- obj-$(CONFIG_APM)		+= apm.o
- obj-$(CONFIG_X86_SMP)		+= smp.o smpboot.o tsc_sync.o
-+obj-$(CONFIG_SMP)		+= smpcommon.o
- obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
- obj-$(CONFIG_X86_MPPARSE)	+= mpparse.o
- obj-$(CONFIG_X86_LOCAL_APIC)	+= apic.o nmi.o
+--- a/arch/i386/xen/Makefile
++++ b/arch/i386/xen/Makefile
+@@ -1,1 +1,1 @@ obj-y		:= enlighten.o setup.o features.o
+-obj-y		:= enlighten.o setup.o features.o multicalls.o
++obj-y		:= enlighten.o setup.o features.o multicalls.o mmu.o
 ===================================================================
---- a/arch/i386/kernel/smp.c
-+++ b/arch/i386/kernel/smp.c
-@@ -468,7 +468,7 @@ void flush_tlb_all(void)
-  * it goes straight through and wastes no time serializing
-  * anything. Worst case is that we lose a reschedule ...
-  */
--void native_smp_send_reschedule(int cpu)
-+static void native_smp_send_reschedule(int cpu)
- {
- 	WARN_ON(cpu_is_offline(cpu));
- 	send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
-@@ -547,9 +547,10 @@ static void __smp_call_function(void (*f
-  * You must not call this function with disabled interrupts or from a
-  * hardware interrupt handler or from a bottom half handler.
-  */
--int native_smp_call_function_mask(cpumask_t mask,
--				  void (*func)(void *), void *info,
--				  int wait)
-+static int
-+native_smp_call_function_mask(cpumask_t mask,
-+			      void (*func)(void *), void *info,
-+			      int wait)
- {
- 	struct call_data_struct data;
- 	cpumask_t allbutself;
-@@ -600,60 +601,6 @@ int native_smp_call_function_mask(cpumas
- 	return 0;
+--- a/arch/i386/xen/enlighten.c
++++ b/arch/i386/xen/enlighten.c
+@@ -39,6 +39,7 @@
+ #include <asm/pgtable.h>
+ 
+ #include "xen-ops.h"
++#include "mmu.h"
+ #include "multicalls.h"
+ 
+ EXPORT_SYMBOL_GPL(hypercall_page);
+@@ -565,11 +566,9 @@ static __init void xen_pagetable_setup_d
+ 		 * Should be set_fixmap(), but shared_info is a machine
+ 		 * address with no corresponding pseudo-phys address.
+ 		 */
+-#if 0
+ 		set_pte_mfn(fix_to_virt(FIX_PARAVIRT_BOOTMAP),
+ 			    PFN_DOWN(xen_start_info->shared_info),
+ 			    PAGE_KERNEL);
+-#endif
+ 
+ 		HYPERVISOR_shared_info =
+ 			(struct shared_info *)fix_to_virt(FIX_PARAVIRT_BOOTMAP);
+@@ -578,9 +577,7 @@ static __init void xen_pagetable_setup_d
+ 		HYPERVISOR_shared_info =
+ 			(struct shared_info *)__va(xen_start_info->shared_info);
+ 
+-#if 0
+ 	xen_pgd_pin(base);
+-#endif
+ 
+ 	xen_vcpu_setup(smp_processor_id());
  }
+@@ -682,6 +679,31 @@ static const struct paravirt_ops xen_par
+ 	.release_pd = xen_release_pd,
+ 	.release_pt = xen_release_pt,
  
--/**
-- * smp_call_function(): Run a function on all other CPUs.
-- * @func: The function to run. This must be fast and non-blocking.
-- * @info: An arbitrary pointer to pass to the function.
-- * @nonatomic: Unused.
-- * @wait: If true, wait (atomically) until function has completed on other CPUs.
-- *
-- * Returns 0 on success, else a negative status code.
-- *
-- * If @wait is true, then returns once @func has returned; otherwise
-- * it returns just before the target cpu calls @func.
-- *
-- * You must not call this function with disabled interrupts or from a
-- * hardware interrupt handler or from a bottom half handler.
-- */
--int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
--		      int wait)
--{
--	return smp_call_function_mask(cpu_online_map, func, info, wait);
--}
--EXPORT_SYMBOL(smp_call_function);
--
--/**
-- * smp_call_function_single - Run a function on another CPU
-- * @cpu: The target CPU.  Cannot be the calling CPU.
-- * @func: The function to run. This must be fast and non-blocking.
-- * @info: An arbitrary pointer to pass to the function.
-- * @nonatomic: Unused.
-- * @wait: If true, wait until function has completed on other CPUs.
-- *
-- * Returns 0 on success, else a negative status code.
-- *
-- * If @wait is true, then returns once @func has returned; otherwise
-- * it returns just before the target cpu calls @func.
-- */
--int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
--			     int nonatomic, int wait)
--{
--	/* prevent preemption and reschedule on another processor */
--	int ret;
--	int me = get_cpu();
--	if (cpu == me) {
--		WARN_ON(1);
--		put_cpu();
--		return -EBUSY;
--	}
--
--	ret = smp_call_function_mask(cpumask_of_cpu(cpu), func, info, wait);
--
--	put_cpu();
--	return ret;
--}
--EXPORT_SYMBOL(smp_call_function_single);
--
- static void stop_this_cpu (void * dummy)
- {
- 	local_irq_disable();
-@@ -671,7 +618,7 @@ static void stop_this_cpu (void * dummy)
-  * this function calls the 'stop' function on all other CPUs in the system.
-  */
++	.set_pte = xen_set_pte,
++	.set_pte_at = xen_set_pte_at,
++	.set_pmd = xen_set_pmd,
++
++	.pte_val = xen_pte_val,
++	.pgd_val = xen_pgd_val,
++
++	.make_pte = xen_make_pte,
++	.make_pgd = xen_make_pgd,
++
++#ifdef CONFIG_X86_PAE
++	.set_pte_atomic = xen_set_pte_atomic,
++	.set_pte_present = xen_set_pte_at,
++	.set_pud = xen_set_pud,
++	.pte_clear = xen_pte_clear,
++	.pmd_clear = xen_pmd_clear,
++
++	.make_pmd = xen_make_pmd,
++	.pmd_val = xen_pmd_val,
++#endif	/* PAE */
++
++	.activate_mm = xen_activate_mm,
++	.dup_mmap = xen_dup_mmap,
++	.exit_mmap = xen_exit_mmap,
++
+ 	.set_lazy_mode = xen_set_lazy_mode,
+ };
  
--void native_smp_send_stop(void)
-+static void native_smp_send_stop(void)
- {
- 	/* Don't deadlock on the call lock in panic */
- 	int nolock = !spin_trylock(&call_lock);
-===================================================================
---- a/arch/i386/kernel/smpboot.c
-+++ b/arch/i386/kernel/smpboot.c
-@@ -99,9 +99,6 @@ EXPORT_SYMBOL(x86_cpu_to_apicid);
- 
- u8 apicid_2_node[MAX_APICID];
- 
--DEFINE_PER_CPU(unsigned long, this_cpu_off);
--EXPORT_PER_CPU_SYMBOL(this_cpu_off);
--
- /*
-  * Trampoline 80x86 program as an array.
-  */
-@@ -766,25 +763,6 @@ static inline struct task_struct * alloc
- #define alloc_idle_task(cpu) fork_idle(cpu)
- #endif
- 
--/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
--   (still using the master per-cpu area), or a CPU doing it for a
--   secondary which will soon come up. */
--static __cpuinit void init_gdt(int cpu)
--{
--	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
--
--	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
--			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
--			__per_cpu_offset[cpu], 0xFFFFF,
--			0x80 | DESCTYPE_S | 0x2, 0x8);
--
--	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
--	per_cpu(cpu_number, cpu) = cpu;
--}
--
--/* Defined in head.S */
--extern struct Xgt_desc_struct early_gdt_descr;
--
- static int __cpuinit do_boot_cpu(int apicid, int cpu)
- /*
-  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
 ===================================================================
 --- /dev/null
-+++ b/arch/i386/kernel/smpcommon.c
-@@ -0,0 +1,79 @@
++++ b/arch/i386/xen/mmu.c
+@@ -0,0 +1,419 @@
 +/*
-+ * SMP stuff which is common to all sub-architectures.
++ * Xen mmu operations
++ *
++ * This file contains the various mmu fetch and update operations.
++ * The most important job they must perform is the mapping between the
++ * domain's pfn and the overall machine mfns.
++ *
++ * Xen allows guests to directly update the pagetable, in a controlled
++ * fashion.  In other words, the guest modifies the same pagetable
++ * that the CPU actually uses, which eliminates the overhead of having
++ * a separate shadow pagetable.
++ *
++ * In order to allow this, it falls on the guest domain to map its
++ * notion of a "physical" pfn - which is just a domain-local linear
++ * address - into a real "machine address" which the CPU's MMU can
++ * use.
++ *
++ * A pgd_t/pmd_t/pte_t will typically contain an mfn, and so can be
++ * inserted directly into the pagetable.  When creating a new
++ * pte/pmd/pgd, it converts the passed pfn into an mfn.  Conversely,
++ * when reading the content back with __(pgd|pmd|pte)_val, it converts
++ * the mfn back into a pfn.
++ *
++ * The other constraint is that all pages which make up a pagetable
++ * must be mapped read-only in the guest.  This prevents uncontrolled
++ * guest updates to the pagetable.  Xen strictly enforces this, and
++ * will disallow any pagetable update which will end up mapping a
++ * pagetable page RW, and will disallow using any writable page as a
++ * pagetable.
++ *
++ * Naively, when loading %cr3 with the base of a new pagetable, Xen
++ * would need to validate the whole pagetable before going on.
++ * Naturally, this is quite slow.  The solution is to "pin" a
++ * pagetable, which enforces all the constraints on the pagetable even
++ * when it is not actively in use.  This menas that Xen can be assured
++ * that it is still valid when you do load it into %cr3, and doesn't
++ * need to revalidate it.
++ *
++ * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
 + */
-+#include <linux/module.h>
-+#include <asm/smp.h>
++#include <asm/bug.h>
 +
-+DEFINE_PER_CPU(unsigned long, this_cpu_off);
-+EXPORT_PER_CPU_SYMBOL(this_cpu_off);
++#include <asm/pgtable.h>
++#include <asm/tlbflush.h>
++#include <asm/mmu_context.h>
 +
-+/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
-+   (still using the master per-cpu area), or a CPU doing it for a
-+   secondary which will soon come up. */
-+__cpuinit void init_gdt(int cpu)
++#include <asm/xen/hypercall.h>
++#include <asm/paravirt.h>
++
++#include <xen/page.h>
++#include <xen/interface/xen.h>
++
++#include "mmu.h"
++
++xmaddr_t arbitrary_virt_to_machine(unsigned long address)
 +{
-+	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
++	pte_t *pte = lookup_address(address);
++	unsigned offset = address & PAGE_MASK;
 +
-+	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
-+			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
-+			__per_cpu_offset[cpu], 0xFFFFF,
-+			0x80 | DESCTYPE_S | 0x2, 0x8);
++	BUG_ON(pte == NULL);
 +
-+	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
-+	per_cpu(cpu_number, cpu) = cpu;
++	return XMADDR((pte_mfn(*pte) << PAGE_SHIFT) + offset);
++}
++
++void make_lowmem_page_readonly(void *vaddr)
++{
++	pte_t *pte, ptev;
++	unsigned long address = (unsigned long)vaddr;
++
++	pte = lookup_address(address);
++	BUG_ON(pte == NULL);
++
++	ptev = pte_wrprotect(*pte);
++
++	if(HYPERVISOR_update_va_mapping(address, ptev, 0))
++		BUG();
++}
++
++void make_lowmem_page_readwrite(void *vaddr)
++{
++	pte_t *pte, ptev;
++	unsigned long address = (unsigned long)vaddr;
++
++	pte = lookup_address(address);
++	BUG_ON(pte == NULL);
++
++	ptev = pte_mkwrite(*pte);
++
++	if(HYPERVISOR_update_va_mapping(address, ptev, 0))
++		BUG();
 +}
 +
 +
-+/**
-+ * smp_call_function(): Run a function on all other CPUs.
-+ * @func: The function to run. This must be fast and non-blocking.
-+ * @info: An arbitrary pointer to pass to the function.
-+ * @nonatomic: Unused.
-+ * @wait: If true, wait (atomically) until function has completed on other CPUs.
-+ *
-+ * Returns 0 on success, else a negative status code.
-+ *
-+ * If @wait is true, then returns once @func has returned; otherwise
-+ * it returns just before the target cpu calls @func.
-+ *
-+ * You must not call this function with disabled interrupts or from a
-+ * hardware interrupt handler or from a bottom half handler.
-+ */
-+int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
-+		      int wait)
++void xen_set_pte(pte_t *ptep, pte_t pte)
 +{
-+	return smp_call_function_mask(cpu_online_map, func, info, wait);
-+}
-+EXPORT_SYMBOL(smp_call_function);
++	struct mmu_update u;
 +
-+/**
-+ * smp_call_function_single - Run a function on another CPU
-+ * @cpu: The target CPU.  Cannot be the calling CPU.
-+ * @func: The function to run. This must be fast and non-blocking.
-+ * @info: An arbitrary pointer to pass to the function.
-+ * @nonatomic: Unused.
-+ * @wait: If true, wait until function has completed on other CPUs.
-+ *
-+ * Returns 0 on success, else a negative status code.
-+ *
-+ * If @wait is true, then returns once @func has returned; otherwise
-+ * it returns just before the target cpu calls @func.
-+ */
-+int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
-+			     int nonatomic, int wait)
++	u.ptr = virt_to_machine(ptep).maddr;
++	u.val = pte_val_ma(pte);
++	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
++		BUG();
++}
++
++void xen_set_pmd(pmd_t *ptr, pmd_t val)
 +{
-+	/* prevent preemption and reschedule on another processor */
-+	int ret;
-+	int me = get_cpu();
-+	if (cpu == me) {
-+		WARN_ON(1);
-+		put_cpu();
-+		return -EBUSY;
++	struct mmu_update u;
++
++	u.ptr = virt_to_machine(ptr).maddr;
++	u.val = pmd_val_ma(val);
++	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
++		BUG();
++}
++
++#ifdef CONFIG_X86_PAE
++void xen_set_pud(pud_t *ptr, pud_t val)
++{
++	struct mmu_update u;
++
++	u.ptr = virt_to_machine(ptr).maddr;
++	u.val = pud_val_ma(val);
++	if (HYPERVISOR_mmu_update(&u, 1, NULL, DOMID_SELF) < 0)
++		BUG();
++}
++#endif
++
++/*
++ * Associate a virtual page frame with a given physical page frame
++ * and protection flags for that frame.
++ */
++void set_pte_mfn(unsigned long vaddr, unsigned long mfn, pgprot_t flags)
++{
++	pgd_t *pgd;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *pte;
++
++	pgd = swapper_pg_dir + pgd_index(vaddr);
++	if (pgd_none(*pgd)) {
++		BUG();
++		return;
++	}
++	pud = pud_offset(pgd, vaddr);
++	if (pud_none(*pud)) {
++		BUG();
++		return;
++	}
++	pmd = pmd_offset(pud, vaddr);
++	if (pmd_none(*pmd)) {
++		BUG();
++		return;
++	}
++	pte = pte_offset_kernel(pmd, vaddr);
++	/* <mfn,flags> stored as-is, to permit clearing entries */
++	xen_set_pte(pte, mfn_pte(mfn, flags));
++
++	/*
++	 * It's enough to flush this one mapping.
++	 * (PGE mappings get flushed as well)
++	 */
++	__flush_tlb_one(vaddr);
++}
++
++void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
++		    pte_t *ptep, pte_t pteval)
++{
++	if ((mm != current->mm && mm != &init_mm) ||
++	    HYPERVISOR_update_va_mapping(addr, pteval, 0) != 0)
++		xen_set_pte(ptep, pteval);
++}
++
++#ifdef CONFIG_X86_PAE
++void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
++{
++	set_64bit((u64 *)ptep, pte_val_ma(pte));
++}
++
++void xen_pte_clear(struct mm_struct *mm, unsigned long addr,pte_t *ptep)
++{
++	ptep->pte_low = 0;
++	smp_wmb();
++	ptep->pte_high = 0;
++}
++
++void xen_pmd_clear(pmd_t *pmdp)
++{
++	xen_set_pmd(pmdp, __pmd(0));
++}
++
++unsigned long long xen_pte_val(pte_t pte)
++{
++	unsigned long long ret = 0;
++
++	if (pte.pte_low) {
++		ret = ((unsigned long long)pte.pte_high << 32) | pte.pte_low;
++		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
 +	}
 +
-+	ret = smp_call_function_mask(cpumask_of_cpu(cpu), func, info, wait);
-+
-+	put_cpu();
 +	return ret;
 +}
-+EXPORT_SYMBOL(smp_call_function_single);
-===================================================================
---- a/include/asm-i386/processor.h
-+++ b/include/asm-i386/processor.h
-@@ -749,9 +749,13 @@ extern void enable_sep_cpu(void);
- extern void enable_sep_cpu(void);
- extern int sysenter_setup(void);
- 
-+/* Defined in head.S */
-+extern struct Xgt_desc_struct early_gdt_descr;
 +
- extern void cpu_set_gdt(int);
- extern void switch_to_new_gdt(void);
- extern void cpu_init(void);
-+extern void init_gdt(int cpu);
- 
- extern int force_mwait;
- 
++unsigned long long xen_pmd_val(pmd_t pmd)
++{
++	unsigned long long ret = pmd.pmd;
++	if (ret)
++		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
++	return ret;
++}
++
++unsigned long long xen_pgd_val(pgd_t pgd)
++{
++	unsigned long long ret = pgd.pgd;
++	if (ret)
++		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
++	return ret;
++}
++
++pte_t xen_make_pte(unsigned long long pte)
++{
++	if (pte & 1)
++		pte = phys_to_machine(XPADDR(pte)).maddr;
++
++	return (pte_t){ pte, pte >> 32 };
++}
++
++pmd_t xen_make_pmd(unsigned long long pmd)
++{
++	if (pmd & 1)
++		pmd = phys_to_machine(XPADDR(pmd)).maddr;
++
++	return (pmd_t){ pmd };
++}
++
++pgd_t xen_make_pgd(unsigned long long pgd)
++{
++	if (pgd & _PAGE_PRESENT)
++		pgd = phys_to_machine(XPADDR(pgd)).maddr;
++
++	return (pgd_t){ pgd };
++}
++#else  /* !PAE */
++unsigned long xen_pte_val(pte_t pte)
++{
++	unsigned long ret = pte.pte_low;
++
++	if (ret & _PAGE_PRESENT)
++		ret = machine_to_phys(XMADDR(ret)).paddr;
++
++	return ret;
++}
++
++unsigned long xen_pmd_val(pmd_t pmd)
++{
++	/* a BUG here is a lot easier to track down than a NULL eip */
++	BUG();
++	return 0;
++}
++
++unsigned long xen_pgd_val(pgd_t pgd)
++{
++	unsigned long ret = pgd.pgd;
++	if (ret)
++		ret = machine_to_phys(XMADDR(ret)).paddr | 1;
++	return ret;
++}
++
++pte_t xen_make_pte(unsigned long pte)
++{
++	if (pte & _PAGE_PRESENT)
++		pte = phys_to_machine(XPADDR(pte)).maddr;
++
++	return (pte_t){ pte };
++}
++
++pmd_t xen_make_pmd(unsigned long pmd)
++{
++	/* a BUG here is a lot easier to track down than a NULL eip */
++	BUG();
++	return __pmd(0);
++}
++
++pgd_t xen_make_pgd(unsigned long pgd)
++{
++	if (pgd & _PAGE_PRESENT)
++		pgd = phys_to_machine(XPADDR(pgd)).maddr;
++
++	return (pgd_t){ pgd };
++}
++#endif	/* CONFIG_X86_PAE */
++
++
++
++static void pgd_walk_set_prot(void *pt, pgprot_t flags)
++{
++	unsigned long pfn = PFN_DOWN(__pa(pt));
++
++	if (HYPERVISOR_update_va_mapping((unsigned long)pt,
++					 pfn_pte(pfn, flags), 0) < 0)
++		BUG();
++}
++
++static void pgd_walk(pgd_t *pgd_base, pgprot_t flags)
++{
++	pgd_t *pgd = pgd_base;
++	pud_t *pud;
++	pmd_t *pmd;
++	pte_t *pte;
++	int    g, u, m;
++
++	if (xen_feature(XENFEAT_auto_translated_physmap))
++		return;
++
++	for (g = 0; g < USER_PTRS_PER_PGD; g++, pgd++) {
++		if (pgd_none(*pgd))
++			continue;
++		pud = pud_offset(pgd, 0);
++
++		if (PTRS_PER_PUD > 1) /* not folded */
++			pgd_walk_set_prot(pud,flags);
++
++		for (u = 0; u < PTRS_PER_PUD; u++, pud++) {
++			if (pud_none(*pud))
++				continue;
++			pmd = pmd_offset(pud, 0);
++
++			if (PTRS_PER_PMD > 1) /* not folded */
++				pgd_walk_set_prot(pmd,flags);
++
++			for (m = 0; m < PTRS_PER_PMD; m++, pmd++) {
++				if (pmd_none(*pmd))
++					continue;
++
++				/* This can get called before mem_map
++				   is set up, so we assume nothing is
++				   highmem at that point. */
++				if (mem_map == NULL ||
++				    !PageHighMem(pmd_page(*pmd))) {
++					pte = pte_offset_kernel(pmd,0);
++					pgd_walk_set_prot(pte,flags);
++				}
++			}
++		}
++	}
++
++	if (HYPERVISOR_update_va_mapping((unsigned long)pgd_base,
++					 pfn_pte(PFN_DOWN(__pa(pgd_base)),
++						 flags),
++					 UVMF_TLB_FLUSH) < 0)
++		BUG();
++}
++
++
++/* This is called just after a mm has been duplicated from its parent,
++   but it has not been used yet.  We need to make sure that its
++   pagetable is all read-only, and can be pinned. */
++void xen_pgd_pin(pgd_t *pgd)
++{
++	struct mmuext_op op;
++
++	pgd_walk(pgd, PAGE_KERNEL_RO);
++
++#if defined(CONFIG_X86_PAE)
++	op.cmd = MMUEXT_PIN_L3_TABLE;
++#else
++	op.cmd = MMUEXT_PIN_L2_TABLE;
++#endif
++	op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
++	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF) < 0)
++		BUG();
++}
++
++/* Release a pagetables pages back as normal RW */
++void xen_pgd_unpin(pgd_t *pgd)
++{
++	struct mmuext_op op;
++
++	op.cmd = MMUEXT_UNPIN_TABLE;
++	op.arg1.mfn = pfn_to_mfn(PFN_DOWN(__pa(pgd)));
++
++	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF) < 0)
++		BUG();
++
++	pgd_walk(pgd, PAGE_KERNEL);
++}
++
++
++void xen_activate_mm(struct mm_struct *prev, struct mm_struct *next)
++{
++	xen_pgd_pin(next->pgd);
++}
++
++void xen_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm)
++{
++	xen_pgd_pin(mm->pgd);
++}
++
++void xen_exit_mmap(struct mm_struct *mm)
++{
++	struct task_struct *tsk = current;
++
++	task_lock(tsk);
++
++	/*
++	 * We aggressively remove defunct pgd from cr3. We execute unmap_vmas()
++	 * *much* faster this way, as no tlb flushes means bigger wrpt batches.
++	 */
++	if (tsk->active_mm == mm) {
++		tsk->active_mm = &init_mm;
++		atomic_inc(&init_mm.mm_count);
++
++		switch_mm(mm, &init_mm, tsk);
++
++		atomic_dec(&mm->mm_count);
++		BUG_ON(atomic_read(&mm->mm_count) == 0);
++	}
++
++	task_unlock(tsk);
++
++	xen_pgd_unpin(mm->pgd);
++}
+===================================================================
+--- /dev/null
++++ b/arch/i386/xen/mmu.h
+@@ -0,0 +1,47 @@
++#ifndef _XEN_MMU_H
++
++#include <linux/linkage.h>
++#include <asm/page.h>
++
++void set_pte_mfn(unsigned long vaddr, unsigned long pfn, pgprot_t flags);
++
++void xen_set_pte(pte_t *ptep, pte_t pteval);
++void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
++		    pte_t *ptep, pte_t pteval);
++void xen_set_pmd(pmd_t *pmdp, pmd_t pmdval);
++
++void xen_activate_mm(struct mm_struct *prev, struct mm_struct *next);
++void xen_dup_mmap(struct mm_struct *oldmm, struct mm_struct *mm);
++void xen_exit_mmap(struct mm_struct *mm);
++
++void xen_pgd_pin(pgd_t *pgd);
++void xen_pgd_unpin(pgd_t *pgd);
++
++#ifdef CONFIG_X86_PAE
++unsigned long long xen_pte_val(pte_t);
++unsigned long long xen_pmd_val(pmd_t);
++unsigned long long xen_pgd_val(pgd_t);
++
++pte_t xen_make_pte(unsigned long long);
++pmd_t xen_make_pmd(unsigned long long);
++pgd_t xen_make_pgd(unsigned long long);
++
++void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
++		    pte_t *ptep, pte_t pteval);
++void xen_set_pte_atomic(pte_t *ptep, pte_t pte);
++void xen_set_pud(pud_t *ptr, pud_t val);
++void xen_pte_clear(struct mm_struct *mm, unsigned long addr,pte_t *ptep);
++void xen_pmd_clear(pmd_t *pmdp);
++
++
++#else
++unsigned long xen_pte_val(pte_t);
++unsigned long xen_pmd_val(pmd_t);
++unsigned long xen_pgd_val(pgd_t);
++
++pte_t xen_make_pte(unsigned long);
++pmd_t xen_make_pmd(unsigned long);
++pgd_t xen_make_pgd(unsigned long);
++#endif
++
++#endif	/* _XEN_MMU_H */
 
 -- 
 
