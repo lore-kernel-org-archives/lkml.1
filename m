@@ -1,78 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031150AbXEKVE0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966098AbXEKVIG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031150AbXEKVE0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 17:04:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762243AbXEKVER
+	id S966098AbXEKVIG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 17:08:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759588AbXEKVH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 17:04:17 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60767 "EHLO ogre.sisk.pl"
+	Fri, 11 May 2007 17:07:56 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:36002 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761033AbXEKVEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 17:04:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-Date: Fri, 11 May 2007 23:09:15 +0200
-User-Agent: KMail/1.9.5
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       linux-acpi@vger.kernel.org
-References: <20070430102837.748238000@linutronix.de> <20070511132846.5ebf4437.akpm@linux-foundation.org> <200705112302.47726.rjw@sisk.pl>
-In-Reply-To: <200705112302.47726.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1759463AbXEKVHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 17:07:55 -0400
+Date: Fri, 11 May 2007 23:08:50 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: [RFC PATCH] kbuild: silence section mismatch warnings
+Message-ID: <20070511210850.GA382@uranus.ravnborg.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705112309.15996.rjw@sisk.pl>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 May 2007 23:02, Rafael J. Wysocki wrote:
-> On Friday, 11 May 2007 22:28, Andrew Morton wrote:
-> > On Fri, 11 May 2007 22:10:24 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > > > Index: linux-2.6.21/drivers/acpi/hardware/hwsleep.c
-> > > > > ===================================================================
-> > > > > --- linux-2.6.21.orig/drivers/acpi/hardware/hwsleep.c
-> > > > > +++ linux-2.6.21/drivers/acpi/hardware/hwsleep.c
-> > > > > @@ -200,10 +200,10 @@ acpi_status acpi_enter_sleep_state_prep(
-> > > > >  		return_ACPI_STATUS(status);
-> > > > >  	}
-> > > > >  
-> > > > > -	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
-> > > > > +	/*status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
-> > > > >  	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-> > > > >  		return_ACPI_STATUS(status);
-> > > > > -	}
-> > > > > +	}*/
-> > > > >  
-> > > > >  	/* Setup the argument to _SST */
-> > > > >  
-> > > > 
-> > > > I tested this against Thomas's original patch (below).  Still hangs, in the
-> > > > same way.
-> > > 
-> > > Well, I'm out of ideas. :-(
-> > > 
-> > > Could you please send me the Vaio's DSDT?
-> > 
-> > Maybe I should send you the Vaio ;)
-> 
-> Well, machines with so much potential of exposing problems are priceless. ;-)
-> 
-> > I have this 1999-era pre-ACPI, pre-everything-else Dual-PIII-based
-> > Supermicro machine and it just *always* works.  Sigh.
-> > 
-> > 
-> > hm, Fedora don't seem to want to give me an RPM which contains acpidump and
-> > all the yum servers are featuring scrogged checksums.  I could build it, I
-> > guess, but there's a principle involved ;)
-> > 
-> > http://userweb.kernel.org/~akpm/dsdt is /proc/acpi/dsdt.  Is that OK?
-> 
-> Yes, thanks.
+----- Forwarded message from Sam Ravnborg <sam@ravnborg.org> -----
 
-Hmm, have you tried to do 'echo shutdown > /sys/power/disk' before the
-hibernation?
+Forgot lkml in first mail...
+
+	Sam
+
+Subject: [RFC PATCH] kbuild: silence section mismatch warnings
+From: Sam Ravnborg <sam@ravnborg.org>
+Date: Fri, 11 May 2007 23:03:46 +0200
+User-Agent: Mutt/1.4.2.1i
+To: Chris Wedgwood <cw@f00f.org>, Andrew Morton <akpm@osdl.org>,
+	"David S. Miller" <davem@redhat.com>,
+	Russell King <rmk@arm.linux.org.uk>,
+	Satyam Sharma <satyam.sharma@gmail.com>
+Cc: sam@ravnborg.org
+
+Following patch allow us in specific places to silence section mismatch warnings.
+There is a few legitime places that modpost does not yet recognize where
+reference from .text to .init.text (likewise for data) are legitime.
+This allow us to spot the few places and annotate them so we do not
+get false warnings that in the end will let real warnings pass.
+
+The annotation is simple to grep for so revieing all uses in a few
+months time are trivial. It is assumed that a few places will
+use this to shut up the warning as replacement for the real fix.
+But these cases are esay to spot and to fix up.
+
+With this and the following two patches I have a section mismatch free
+build.
+The plan is that a section mismatch soon will graduate from a warning to an error.
+This will hurt a few drives but then they have an incentive to fix it up.
+
+Comments welcome.
+
+	Sam
+
+diff --git a/include/linux/init.h b/include/linux/init.h
+index 8bc32bb..3b63be5 100644
+--- a/include/linux/init.h
++++ b/include/linux/init.h
+@@ -45,6 +45,17 @@
+ #define __exitdata	__attribute__ ((__section__(".exit.data")))
+ #define __exit_call	__attribute_used__ __attribute__ ((__section__ (".exitcall.exit")))
+ 
++/* modpost check for references from .text to .init.text and likewise
++ * from .data to .init.data. They are in most cases sign of bugs but
++ * in a few places this is OK. The following can be used to tell
++ * modpost that such a reference is OK.
++ * For references to .exit.text and .exit.data the same annotation
++ * will silence warnings from modpost.
++ */
++#define __init_refok     noinline __attribute__ ((__section__ (".text_initrefok")))
++#define __initdata_refok noinline __attribute__ ((__section__ (".data_initrefok")))
++
++
+ #ifdef MODULE
+ #define __exit		__attribute__ ((__section__(".exit.text")))
+ #else
+diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+index 113dc77..986200b 100644
+--- a/scripts/mod/modpost.c
++++ b/scripts/mod/modpost.c
+@@ -582,6 +582,14 @@ static int strrcmp(const char *s, const char *sub)
+ 
+ /**
+  * Whitelist to allow certain references to pass with no warning.
++ *
++ * Pattern 0:
++ *   Functions tagged with __init_refok => section .text_initrefok
++ *   and data tagged with __initdata_refok => section .data_initrefok
++ *   are marked so to tell modpost that they indeed may reference
++ *   functions/data in the init and exit sections.
++ *   So do not warn in these cases.
++ *
+  * Pattern 1:
+  *   If a module parameter is declared __initdata and permissions=0
+  *   then this is legal despite the warning generated.
+@@ -683,6 +691,10 @@ static int secref_whitelist(const char *modname, const char *tosec,
+ 		"zone_wait_table_init",
+ 		NULL
+ 	};
++	/* Check for pattern 0 */
++	if ((strcmp(fromsec, ".text_initrefok") == 0) ||
++	    (strcmp(fromsec, ".data_initrefok") == 0))
++		return 1;
+ 
+ 	/* Check for pattern 1 */
+ 	if (strcmp(tosec, ".init.data") != 0)
+
+----- End forwarded message -----
