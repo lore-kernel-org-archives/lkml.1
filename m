@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751698AbXEKTAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbXEKTJG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751698AbXEKTAA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762784AbXEKS7f
+	id S1760975AbXEKTJG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:09:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbXEKTIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 14:59:35 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3125 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755653AbXEKS7e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 14:59:34 -0400
-Date: Fri, 11 May 2007 13:21:16 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, Anton Vorontsov <cbou@mail.ru>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-Message-ID: <20070511132116.GH4052@ucw.cz>
-References: <20070507140453.GD3868@ucw.cz> <1178550653.11851.191.camel@pmac.infradead.org> <20070507194949.GB3981@ucw.cz> <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com> <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl> <1178646751.2824.48.camel@pmac.infradead.org> <Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl> <1178721996.2824.199.camel@pmac.infradead.org> <20070509203335.GA4290@ucw.cz> <1178887402.21820.65.camel@shinybook.infradead.org>
+	Fri, 11 May 2007 15:08:55 -0400
+Received: from outmx034.isp.belgacom.be ([195.238.6.171]:42336 "EHLO
+	outmx034.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756542AbXEKTIy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 15:08:54 -0400
+Date: Fri, 11 May 2007 21:10:12 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: [WATCHDOG] iTCO_wdt.c - fix ACPIBASE
+Message-ID: <20070511191012.GA3060@infomag.infomag.iguana.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1178887402.21820.65.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.9i
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Hi Linus,
 
-> > > > And how about serial terminals?
-> > > 
-> > > It works fine over serial terminals. Why wouldn't it?
-> > 
-> > He probably means serial terminals... like physical vt100. I used to
-> > have one (vt302 compatible or something).  Most emulators still
-> > emulate vt100, and yes, vt100 predates utf-8. 
-> 
-> I have a serial terminal which can only do lower case (well, actually
-> capitals but it's all mapped to lower case since that's more useful).
-> 
-> When I write code on it, I can't do capital letters. But do I try to
-> _force_ you to use only capitals because of my limited terminal?
-> 
+Please pull from 'master' branch of
+	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+or if master.kernel.org hasn't synced up yet:
+	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
 
-If I wrote int j, J; in my code, you'd have valid case wanting me to
-fix it. And I simply want you to fix useless uses of utf-8. And evil
-uses utf8, like int voltage; /* ??V */. I do not know what is so hard
-to understand.
+This will update the following files:
 
-You are intentionally making code hard to read. Stop trying to merge
-that crap.
-							Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+ drivers/char/watchdog/iTCO_wdt.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+with these Changes:
+
+Author: Wim Van Sebroeck <wim@iguana.be>
+Date:   Fri May 11 18:59:24 2007 +0000
+
+    [WATCHDOG] iTCO_wdt.c - fix ACPI Base register
+    
+    The ACPI/PM base I/O address which is the base
+    for the TCO registers is defined as bits [15:7]
+    (highest bit is 31, lowest is 0)
+    
+    The code however only reads bits [14:7]. So
+            base_address &= 0x00007f80;
+    needs to be:
+            base_address &= 0x0000ff80;
+    
+    This patch fixes this.
+    
+    Signed-off-by: Ate Wijma <ajwijma@hotmail.com>
+    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+
+The Changes can also be looked at on:
+	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
+
+For completeness, I added the overal diff below.
+
+Greetings,
+Wim.
+
+================================================================================
+diff --git a/drivers/char/watchdog/iTCO_wdt.c b/drivers/char/watchdog/iTCO_wdt.c
+index 3c9684c..eac4f9b 100644
+--- a/drivers/char/watchdog/iTCO_wdt.c
++++ b/drivers/char/watchdog/iTCO_wdt.c
+@@ -571,7 +571,7 @@ static int iTCO_wdt_init(struct pci_dev *pdev, const struct pci_device_id *ent,
+ 	 *      ACPIBASE is bits [15:7] from 0x40-0x43
+ 	 */
+ 	pci_read_config_dword(pdev, 0x40, &base_address);
+-	base_address &= 0x00007f80;
++	base_address &= 0x0000ff80;
+ 	if (base_address == 0x00000000) {
+ 		/* Something's wrong here, ACPIBASE has to be set */
+ 		printk(KERN_ERR PFX "failed to get TCOBASE address\n");
