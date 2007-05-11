@@ -1,169 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760104AbXEKRgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762445AbXEKRiW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760104AbXEKRgs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 13:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758056AbXEKRgl
+	id S1762445AbXEKRiW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 13:38:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbXEKRiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 13:36:41 -0400
-Received: from vena.lwn.net ([206.168.112.25]:45070 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752306AbXEKRgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 13:36:40 -0400
-To: akpm@linux-foundation.org
-Subject: [PATCH] "volatile considered harmful", take 3
-Cc: linux-kernel@vger.kernel.org, Johannes Stezenbach <js@linuxtv.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>,
-       jimmy bahuleyan <knight.camelot@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-From: Jonathan Corbet <corbet@lwn.net>
-Date: Fri, 11 May 2007 11:36:40 -0600
-Message-ID: <12700.1178905000@lwn.net>
+	Fri, 11 May 2007 13:38:15 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:33069 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759194AbXEKRiO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 13:38:14 -0400
+Date: Fri, 11 May 2007 18:38:12 +0100
+To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
+Message-ID: <20070511173811.GA8529@skynet.ie>
+References: <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com> <20070510221607.GA15084@skynet.ie> <Pine.LNX.4.64.0705101522250.13504@schroedinger.engr.sgi.com> <20070510224441.GA15332@skynet.ie> <Pine.LNX.4.64.0705101547020.14064@schroedinger.engr.sgi.com> <20070510230044.GB15332@skynet.ie> <Pine.LNX.4.64.0705101601220.14471@schroedinger.engr.sgi.com> <1178863002.24635.4.camel@rousalka.dyndns.org> <20070511090823.GA29273@skynet.ie> <1178884283.27195.1.camel@rousalka.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1178884283.27195.1.camel@rousalka.dyndns.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's another version of the volatile document.  Once again, I've tried
-to address all of the comments.  There haven't really been any recent
-comments addressing the correctness of the document; people have been
-more concerned with how it's expressed.  I'm glad to see files in
-Documentation/ held to a high standard of writing, but, unless somebody
-has a factual issue this time around I would like to declare Mission
-Accomplished and move on.
+On (11/05/07 13:51), Nicolas Mailhot didst pronounce:
+> Le vendredi 11 mai 2007 à 10:08 +0100, Mel Gorman a écrit :
+> 
+> > > seems to have cured the system so far (need to charge it a bit longer to
+> > > be sure)
+> > > 
+> > 
+> > The longer it runs the better, particularly under load and after
+> > updatedb has run. Thanks a lot for testing
+> 
+> After a few hours of load testing still nothing in the logs, so the
+> revert was probably the right thing to do
 
-Thanks,
+Excellent. I am somewhat suprised by the result so I'd like to look at the
+alternative option with kswapd as well. Could you put that patch back in again
+please and try the following patch instead? The patch causes kswapd to reclaim
+at higher orders if it's requested to.  Christoph, can you look at the patch
+as well and make sure it's doing the right thing with respect to SLUB please?
 
-jon
+Ultimatly, it's probably still a bad plan for atomic allocations to
+depend on high-order allocations being possible but it's interesting to
+see how it behaves.
+
+Thanks
+
+=====
+
+Subject: [RFC] Have kswapd keep a minimum order free other than order-0
+
+kswapd normally reclaims at order 0 unless there is a higher-order allocation
+under way. However, in some cases, it is known that there are a minimum
+order size of general interest such as the SLUB allocator requiring regular
+high-order allocations. This allows a minimum order to be set to that
+min_free_kbytes is kept at higher orders.
+
+With a simple stress test, buddyinfo looks like this at the end with kswapd at ddefault;
+
+Node 0, zone      DMA     10     12     11     10     10     10      6      5      4      1      0 
+Node 0, zone   Normal     87    232    601    490    369    282    197    116     79     39     28 
+
+With kswapd attempting to keep pages free at order-4, it looks like
+
+Node 0, zone      DMA     35     37     29     28     22     18      8      6      0      1      0 
+Node 0, zone   Normal     96    203    361    355    265    203    141     97     57     34     48 
 
 ---
-
-Encourage developers to avoid the volatile type class in kernel code.
-
-Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-
-diff --git a/Documentation/volatile-considered-harmful.txt b/Documentation/volatile-considered-harmful.txt
-new file mode 100644
-index 0000000..955c309
---- /dev/null
-+++ b/Documentation/volatile-considered-harmful.txt
-@@ -0,0 +1,119 @@
-+Why the "volatile" type class should not be used
-+------------------------------------------------
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-clean/include/linux/mmzone.h linux-2.6.21-mm2-kswapd_minorder/include/linux/mmzone.h
+--- linux-2.6.21-mm2-clean/include/linux/mmzone.h	2007-05-09 10:21:28.000000000 +0100
++++ linux-2.6.21-mm2-kswapd_minorder/include/linux/mmzone.h	2007-05-11 11:12:43.000000000 +0100
+@@ -499,6 +499,8 @@ typedef struct pglist_data {
+ void get_zone_counts(unsigned long *active, unsigned long *inactive,
+ 			unsigned long *free);
+ void build_all_zonelists(void);
++int kswapd_order(unsigned int order);
++void set_kswapd_order(unsigned int order);
+ void wakeup_kswapd(struct zone *zone, int order);
+ int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
+ 		int classzone_idx, int alloc_flags);
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-clean/mm/slub.c linux-2.6.21-mm2-kswapd_minorder/mm/slub.c
+--- linux-2.6.21-mm2-clean/mm/slub.c	2007-05-09 10:21:28.000000000 +0100
++++ linux-2.6.21-mm2-kswapd_minorder/mm/slub.c	2007-05-11 11:10:08.000000000 +0100
+@@ -2131,6 +2131,7 @@ static struct kmem_cache *kmalloc_caches
+ static int __init setup_slub_min_order(char *str)
+ {
+ 	get_option (&str, &slub_min_order);
++	set_kswapd_order(slub_min_order);
+ 	user_override = 1;
+ 	return 1;
+ }
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-clean/mm/vmscan.c linux-2.6.21-mm2-kswapd_minorder/mm/vmscan.c
+--- linux-2.6.21-mm2-clean/mm/vmscan.c	2007-05-09 10:21:28.000000000 +0100
++++ linux-2.6.21-mm2-kswapd_minorder/mm/vmscan.c	2007-05-11 11:55:45.000000000 +0100
+@@ -1407,6 +1407,32 @@ out:
+ 	return nr_reclaimed;
+ }
+ 
++static unsigned int kswapd_min_order __read_mostly;
 +
-+C programmers have often taken volatile to mean that the variable could be
-+changed outside of the current thread of execution; as a result, they are
-+sometimes tempted to use it in kernel code when shared data structures are
-+being used.  In other words, they have been known to treat volatile types
-+as a sort of easy atomic variable, which they are not.  The use of volatile in
-+kernel code is almost never correct; this document describes why.
++/**
++ * set_kswapd_order - Set the minimum order that kswapd reclaims at
++ * @order: The new minimum order
++ *
++ * kswapd normally reclaims at order 0 unless there is a higher-order
++ * allocation under way. However, in some cases, it is known that there
++ * are a minimum order size of general interest such as the SLUB allocator
++ * requiring regular high-order allocations. This allows a minimum order
++ * to be set to that min_free_kbytes is kept at higher orders
++ */
++void set_kswapd_order(unsigned int order)
++{
++	if (order >= MAX_ORDER)
++		return;
++	
++	printk(KERN_INFO "kswapd reclaim order set to %d\n", order);
++	kswapd_min_order = order;
++}
++	
++int kswapd_order(unsigned int order)
++{
++	return max(kswapd_min_order, order);
++}
 +
-+The key point to understand with regard to volatile is that its purpose is
-+to suppress optimization, which is almost never what one really wants to
-+do.  In the kernel, one must protect shared data structures against
-+unwanted concurrent access, which is very much a different task.  The
-+process of protecting against unwanted concurrency will also avoid almost
-+all optimization-related problems in a more efficient way.
-+
-+Like volatile, the kernel primitives which make concurrent access to data
-+safe (spinlocks, mutexes, memory barriers, etc.) are designed to prevent
-+unwanted optimization.  If they are being used properly, there will be no
-+need to use volatile as well.  If volatile is still necessary, there is
-+almost certainly a bug in the code somewhere.  In properly-written kernel
-+code, volatile can only serve to slow things down.
-+
-+Consider a typical block of kernel code:
-+
-+    spin_lock(&the_lock);
-+    do_something_on(&shared_data);
-+    do_something_else_with(&shared_data);
-+    spin_unlock(&the_lock);
-+
-+If all the code follows the locking rules, the value of shared_data cannot
-+change unexpectedly while the_lock is held.  Any other code which might
-+want to play with that data will be waiting on the lock.  The spinlock
-+primitives act as memory barriers - they are explicitly written to do so -
-+meaning that data accesses will not be optimized across them.  So the
-+compiler might think it knows what will be in shared_data, but the
-+spin_lock() call, since it acts as a memory barrier, will force it to
-+forget anything it knows.  There will be no optimization problems with
-+accesses to that data.
-+
-+If shared_data were declared volatile, the locking would still be
-+necessary.  But the compiler would also be prevented from optimizing access
-+to shared_data _within_ the critical section, when we know that nobody else
-+can be working with it.  While the lock is held, shared_data is not
-+volatile.  When dealing with shared data, proper locking makes volatile
-+unnecessary - and potentially harmful.
-+
-+The volatile storage class was originally meant for memory-mapped I/O
-+registers.  Within the kernel, register accesses, too, should be protected
-+by locks, but one also does not want the compiler "optimizing" register
-+accesses within a critical section.  But, within the kernel, I/O memory
-+accesses are always done through accessor functions; accessing I/O memory
-+directly through pointers is frowned upon and does not work on all
-+architectures.  Those accessors are written to prevent unwanted
-+optimization, so, once again, volatile is unnecessary.
-+
-+Another situation where one might be tempted to use volatile is
-+when the processor is busy-waiting on the value of a variable.  The right
-+way to perform a busy wait is:
-+
-+    while (my_variable != what_i_want)
-+        cpu_relax();
-+
-+The cpu_relax() call can lower CPU power consumption or yield to a
-+hyperthreaded twin processor; it also happens to serve as a memory barrier,
-+so, once again, volatile is unnecessary.  Of course, busy-waiting is
-+generally an anti-social act to begin with.
-+
-+There are still a few rare situations where volatile makes sense in the
-+kernel:
-+
-+  - The above-mentioned accessor functions might use volatile on
-+    architectures where direct I/O memory access does work.  Essentially,
-+    each accessor call becomes a little critical section on its own and
-+    ensures that the access happens as expected by the programmer.
-+
-+  - Inline assembly code which changes memory, but which has no other
-+    visible side effects, risks being deleted by GCC.  Adding the volatile
-+    keyword to asm statements will prevent this removal.
-+
-+  - The jiffies variable is special in that it can have a different value
-+    every time it is referenced, but it can be read without any special
-+    locking.  So jiffies can be volatile, but the addition of other
-+    variables of this type is strongly frowned upon.  Jiffies is considered
-+    to be a "stupid legacy" issue (Linus's words) in this regard; fixing it
-+    would be more trouble than it is worth.
-+
-+  - Pointers to data structures in coherent memory which might be modified
-+    by I/O devices can, sometimes, legitimately be volatile.  A ring buffer
-+    used by a network adapter, where that adapter changes pointers to
-+    indicate which descriptors have been processed, is an example of this
-+    type of situation.
-+
-+For most code, none of the above justifications for volatile apply.  As a
-+result, the use of volatile is likely to be seen as a bug and will bring
-+additional scrutiny to the code.  Developers who are tempted to use
-+volatile should take a step back and think about what they are truly trying
-+to accomplish.  
-+
-+Patches to remove volatile variables are generally welcome - as long as
-+they come with a justification which shows that the concurrency issues have
-+been properly thought through.
-+
-+
-+NOTES
-+-----
-+
-+[1] http://lwn.net/Articles/233481/
-+[2] http://lwn.net/Articles/233482/
-+
-+CREDITS
-+-------
-+
-+Original impetus and research by Randy Dunlap
-+Written by Jonathan Corbet
-+Improvements via coments from Satyam Sharma, Johannes Stezenbach, Jesper
-+	Juhl, Heikki Orsila, H. Peter Anvin, Philipp Hahn, and Stefan
-+	Richter. 
+ /*
+  * The background pageout daemon, started as a kernel thread
+  * from the init process. 
+@@ -1450,13 +1476,13 @@ static int kswapd(void *p)
+ 	 */
+ 	tsk->flags |= PF_MEMALLOC | PF_SWAPWRITE | PF_KSWAPD;
+ 
+-	order = 0;
++	order = kswapd_order(0);
+ 	for ( ; ; ) {
+ 		unsigned long new_order;
+ 
+ 		prepare_to_wait(&pgdat->kswapd_wait, &wait, TASK_INTERRUPTIBLE);
+-		new_order = pgdat->kswapd_max_order;
+-		pgdat->kswapd_max_order = 0;
++		new_order = kswapd_order(pgdat->kswapd_max_order);
++		pgdat->kswapd_max_order = kswapd_order(0);
+ 		if (order < new_order) {
+ 			/*
+ 			 * Don't sleep if someone wants a larger 'order'
+@@ -1467,7 +1493,7 @@ static int kswapd(void *p)
+ 			if (!freezing(current))
+ 				schedule();
+ 
+-			order = pgdat->kswapd_max_order;
++			order = kswapd_order(pgdat->kswapd_max_order);
+ 		}
+ 		finish_wait(&pgdat->kswapd_wait, &wait);
+ 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
