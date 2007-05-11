@@ -1,127 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763145AbXEKTPE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966246AbXEKTPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763145AbXEKTPE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:15:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965749AbXEKTKw
+	id S966246AbXEKTPj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965661AbXEKTKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:10:52 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35302 "EHLO
+	Fri, 11 May 2007 15:10:54 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35318 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763165AbXEKTKv (ORCPT
+	with ESMTP id S1763180AbXEKTKx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:10:51 -0400
-Message-Id: <20070511001208.832460000@goop.org>
+	Fri, 11 May 2007 15:10:53 -0400
+Message-Id: <20070511001207.097457000@goop.org>
 References: <20070511000643.025196000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:07:08 -0700
+Date: Thu, 10 May 2007 17:07:06 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
        Xen-devel <xen-devel@lists.xensource.com>
-Subject: [patch 25/28]xen: Xen machine operations
-Content-Disposition: inline; filename=xen-machine-ops.patch
+Subject: [patch 23/28]xen: rename xen netif_ structures to xen_netif_
+Content-Disposition: inline; filename=xen-netif-rename.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the appropriate hypercalls to halt and reboot the virtual machine.
+The "netif_" prefix is used in the Linux network stack, so rename the
+Xen structures to xen_netif_ to avoid confusion (and potential
+collision).
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Acked-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- arch/i386/xen/enlighten.c |   43 +++++++++++++++++++++++++++++++++++++++++++
- arch/i386/xen/smp.c       |    4 +---
- 2 files changed, 44 insertions(+), 3 deletions(-)
+ include/xen/interface/io/netif.h |   18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
 ===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -14,6 +14,7 @@
+--- a/include/xen/interface/io/netif.h
++++ b/include/xen/interface/io/netif.h
+@@ -47,7 +47,7 @@
+ #define _NETTXF_extra_info     (3)
+ #define  NETTXF_extra_info     (1U<<_NETTXF_extra_info)
  
- #include <xen/interface/xen.h>
- #include <xen/interface/vcpu.h>
-+#include <xen/interface/sched.h>
- #include <xen/features.h>
- #include <xen/page.h>
+-struct netif_tx_request {
++struct xen_netif_tx_request {
+     grant_ref_t gref;      /* Reference to buffer page */
+     uint16_t offset;       /* Offset within buffer page */
+     uint16_t flags;        /* NETTXF_* */
+@@ -71,7 +71,7 @@ struct netif_tx_request {
+  * This structure needs to fit within both netif_tx_request and
+  * netif_rx_response for compatibility.
+  */
+-struct netif_extra_info {
++struct xen_netif_extra_info {
+     uint8_t type;  /* XEN_NETIF_EXTRA_TYPE_* */
+     uint8_t flags; /* XEN_NETIF_EXTRA_FLAG_* */
  
-@@ -28,6 +29,7 @@
- #include <asm/pgtable.h>
- #include <asm/smp.h>
- #include <asm/tlbflush.h>
-+#include <asm/reboot.h>
- 
- #include "xen-ops.h"
- #include "mmu.h"
-@@ -787,6 +789,45 @@ static const struct smp_ops xen_smp_ops 
+@@ -103,12 +103,12 @@ struct netif_extra_info {
+     } u;
  };
- #endif	/* CONFIG_SMP */
  
-+static void xen_reboot(int reason)
-+{
-+#ifdef CONFIG_SMP
-+	smp_send_stop();
-+#endif
-+
-+	if (HYPERVISOR_sched_op(SCHEDOP_shutdown, reason))
-+		BUG();
-+}
-+
-+static void xen_restart(char *msg)
-+{
-+	xen_reboot(SHUTDOWN_reboot);
-+}
-+
-+static void xen_emergency_restart(void)
-+{
-+	xen_reboot(SHUTDOWN_reboot);
-+}
-+
-+static void xen_machine_halt(void)
-+{
-+	xen_reboot(SHUTDOWN_poweroff);
-+}
-+
-+static void xen_crash_shutdown(struct pt_regs *regs)
-+{
-+	xen_reboot(SHUTDOWN_crash);
-+}
-+
-+static const struct machine_ops __initdata xen_machine_ops = {
-+	.restart = xen_restart,
-+	.halt = xen_machine_halt,
-+	.power_off = xen_machine_halt,
-+	.shutdown = xen_machine_halt,
-+	.crash_shutdown = xen_crash_shutdown,
-+	.emergency_restart = xen_emergency_restart,
-+};
-+
- /* First C function to be called on Xen boot */
- static asmlinkage void __init xen_start_kernel(void)
- {
-@@ -800,6 +841,8 @@ static asmlinkage void __init xen_start_
+-struct netif_tx_response {
++struct xen_netif_tx_response {
+     uint16_t id;
+     int16_t  status;       /* NETIF_RSP_* */
+ };
  
- 	/* Install Xen paravirt ops */
- 	paravirt_ops = xen_paravirt_ops;
-+	machine_ops = xen_machine_ops;
-+
- #ifdef CONFIG_SMP
- 	smp_ops = xen_smp_ops;
- #endif
-===================================================================
---- a/arch/i386/xen/smp.c
-+++ b/arch/i386/xen/smp.c
-@@ -303,9 +303,7 @@ static void stop_self(void *v)
+-struct netif_rx_request {
++struct xen_netif_rx_request {
+     uint16_t    id;        /* Echoed in response message.        */
+     grant_ref_t gref;      /* Reference to incoming granted frame */
+ };
+@@ -129,7 +129,7 @@ struct netif_rx_request {
+ #define _NETRXF_extra_info     (3)
+ #define  NETRXF_extra_info     (1U<<_NETRXF_extra_info)
  
- void xen_smp_send_stop(void)
- {
--	cpumask_t mask = cpu_online_map;
--	cpu_clear(smp_processor_id(), mask);
--	xen_smp_call_function_mask(mask, stop_self, NULL, 0);
-+	smp_call_function(stop_self, NULL, 0, 0);
- }
+-struct netif_rx_response {
++struct xen_netif_rx_response {
+     uint16_t id;
+     uint16_t offset;       /* Offset in page of start of received packet  */
+     uint16_t flags;        /* NETRXF_* */
+@@ -140,8 +140,12 @@ struct netif_rx_response {
+  * Generate netif ring structures and types.
+  */
  
- void xen_smp_send_reschedule(int cpu)
+-DEFINE_RING_TYPES(netif_tx, struct netif_tx_request, struct netif_tx_response);
+-DEFINE_RING_TYPES(netif_rx, struct netif_rx_request, struct netif_rx_response);
++DEFINE_RING_TYPES(xen_netif_tx,
++		  struct xen_netif_tx_request,
++		  struct xen_netif_tx_response);
++DEFINE_RING_TYPES(xen_netif_rx,
++		  struct xen_netif_rx_request,
++		  struct xen_netif_rx_response);
+ 
+ #define NETIF_RSP_DROPPED         -2
+ #define NETIF_RSP_ERROR           -1
 
 -- 
 
