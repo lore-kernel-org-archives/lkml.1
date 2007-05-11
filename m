@@ -1,301 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761815AbXEKN1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761268AbXEKN3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761815AbXEKN1i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 09:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758564AbXEKN0s
+	id S1761268AbXEKN3q (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 09:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758583AbXEKN3j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 09:26:48 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54159 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758334AbXEKN0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 09:26:43 -0400
-Message-Id: <20070511132321.895740140@chello.nl>
-References: <20070511131541.992688403@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Fri, 11 May 2007 15:15:42 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 1/2] scalable rw_mutex
-Content-Disposition: inline; filename=rwmutex.patch
+	Fri, 11 May 2007 09:29:39 -0400
+Received: from wr-out-0506.google.com ([64.233.184.238]:41480 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758458AbXEKN3i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 09:29:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=gWsvrlMj7QsXxMAxJK7xesdf0SduXzBDdJMtJj21gCPvfW9J200wmET3mLd8J3EUZUE0U1aGeRTzaDB3g59+LxI4b4sF8snG3xhjsq2xHoGKUzHVdNp9Ql6vkIRLN4+fC1b7s/+IqFP8N0X91FteJ9qgu92ySVq3Kp1pIDHyeVU=
+Message-ID: <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
+Date: Fri, 11 May 2007 18:59:31 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Jiri Kosina" <jikos@jikos.cz>
+Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context at net/core/sock.c:1523
+Cc: "Marcel Holtmann" <marcel@holtmann.org>, "Greg KH" <gregkh@suse.de>,
+       "Jeremy Fitzhardinge" <jeremy@goop.org>, maxk@qualcomm.com,
+       bluez-devel@lists.sourceforge.net, "Cedric Le Goater" <clg@fr.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <462D1B09.9050005@goop.org>
+	 <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
+	 <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Scalable reader/writer lock.
+Hi Jiri,
 
-Its scalable in that the read count is a percpu counter and the reader fast
-path does not write to a shared cache-line.
+On 4/26/07, Jiri Kosina <jikos@jikos.cz> wrote:
+> On Mon, 23 Apr 2007, Jiri Kosina wrote:
+>
+> > > BUG: sleeping function called from invalid context at net/core/sock.c:1523
+> > > in_atomic():1, irqs_disabled():0
+> > > 1 lock held by khubd/180:
+> > >  #0:  (old_style_rw_init#2){-.-?}, at: [<f88c5816>] hci_sock_dev_event+0x42/0xc5 [bluetooth]
+> [...]
+> > OK, this probably started happening since b40df5743. Before that commit,
+> > hci_sock_dev_event() used bh_lock_sock() to lock the corresponding
+> > struct sock. This was obviously buggy - not deadlock safe against
+> > l2cap_connect_cfm() from softirq context. This however introduced
+> > another problem - hci_sock_dev_event() is now obviously being triggered
+> > (for HCI_DEV_UNREG event, when suspending) in atomic context with
 
-Its not FIFO fair, but starvation proof by alternating readers and writers.
+I saw that hci_sock_dev_event() is _always_ triggered in atomic
+context. It's the callout for hci_notifier which is defined as an
+atomic notifier chain (hence executed in an RCU read section -- and
+sleeping inside that would be illegal).
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/rwmutex.h |  103 +++++++++++++++++++++++++++++++++++++
- kernel/Makefile         |    3 -
- kernel/rwmutex.c        |  132 ++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 237 insertions(+), 1 deletion(-)
+> > preemption disabled. This is what lock_sock_nested() complains about, as
+> > it is allowed to sleep inside __lock_sock(), waiting for the lock owner.
+> [...]
+> Bluetooth: postpone hci_dev unregistration
+>
+> Commit b40df57 substituted bh_lock_sock() in hci_sock_dev_event() for
+> lock_sock() when unregistering HCI device, in order to prevent deadlock
+> against locking in l2cap_connect_cfm() from softirq context.
 
-Index: linux-2.6/include/linux/rwmutex.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/include/linux/rwmutex.h	2007-05-11 14:59:09.000000000 +0200
-@@ -0,0 +1,103 @@
-+/*
-+ * Scalable reader/writer lock.
-+ *
-+ *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-+ *
-+ * This file contains the public data structure and API definitions.
-+ */
-+#ifndef _LINUX_RWMUTEX_H
-+#define _LINUX_RWMUTEX_H
-+
-+#include <linux/preempt.h>
-+#include <linux/wait.h>
-+#include <linux/percpu_counter.h>
-+#include <linux/lockdep.h>
-+#include <linux/mutex.h>
-+#include <asm/atomic.h>
-+
-+struct rw_mutex {
-+	/* Read mostly global */
-+	struct percpu_counter	readers;
-+	unsigned int		status;
-+
-+	/* The following variables are only for the slowpath */
-+	struct mutex		read_mutex;	/* r -> w waiting */
-+	struct mutex		write_mutex;	/* w -> w waiting */
-+	wait_queue_head_t	wait_queue;	/* w -> r waiting */
-+	atomic_t		read_waiters;
-+
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+	struct lockdep_map dep_map;
-+#endif
-+};
-+
-+extern void __rw_mutex_init(struct rw_mutex *rw_mutex, const char * name,
-+		struct lock_class_key *key);
-+extern void rw_mutex_destroy(struct rw_mutex *rw_mutex);
-+
-+#define rw_mutex_init(rw_mutex)					\
-+	do {							\
-+		static struct lock_class_key __key;		\
-+		__rw_mutex_init((rw_mutex), #rw_mutex, &__key);	\
-+	} while (0)
-+
-+extern void __rw_mutex_read_lock(struct rw_mutex *rw_mutex);
-+
-+extern void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass);
-+extern void rw_mutex_write_unlock(struct rw_mutex *rw_mutex);
-+
-+static inline unsigned int __rw_mutex_reader_slow(struct rw_mutex *rw_mutex)
-+{
-+	unsigned int ret;
-+
-+	smp_rmb();
-+	ret = rw_mutex->status;
-+
-+	return ret;
-+}
-+
-+static inline int __rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
-+{
-+	preempt_disable();
-+	if (likely(!__rw_mutex_reader_slow(rw_mutex))) {
-+		percpu_counter_mod(&rw_mutex->readers, 1);
-+		preempt_enable();
-+		return 1;
-+	}
-+	preempt_enable();
-+	return 0;
-+}
-+
-+static inline int rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
-+{
-+	int ret = __rw_mutex_read_trylock(rw_mutex);
-+	if (ret)
-+		rwsem_acquire_read(&rw_mutex->dep_map, 0, 1, _RET_IP_);
-+	return ret;
-+}
-+
-+static inline void rw_mutex_read_lock(struct rw_mutex *rw_mutex)
-+{
-+	int ret;
-+
-+	might_sleep();
-+	rwsem_acquire_read(&rw_mutex->dep_map, 0, 0, _RET_IP_);
-+
-+	ret = __rw_mutex_read_trylock(rw_mutex);
-+	if (!ret)
-+		__rw_mutex_read_lock(rw_mutex);
-+}
-+
-+void rw_mutex_read_unlock(struct rw_mutex *rw_mutex);
-+
-+static inline int rw_mutex_is_locked(struct rw_mutex *rw_mutex)
-+{
-+	return mutex_is_locked(&rw_mutex->write_mutex);
-+}
-+
-+static inline void rw_mutex_write_lock(struct rw_mutex *rw_mutex)
-+{
-+	rw_mutex_write_lock_nested(rw_mutex, 0);
-+}
-+
-+#endif /* _LINUX_RWMUTEX_H */
-Index: linux-2.6/kernel/rwmutex.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/kernel/rwmutex.c	2007-05-11 15:08:39.000000000 +0200
-@@ -0,0 +1,132 @@
-+/*
-+ * Scalable reader/writer lock.
-+ *
-+ *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-+ *
-+ * Its scalable in that the read count is a percpu counter and the reader fast
-+ * path does not write to a shared cache-line.
-+ *
-+ * Its not FIFO fair, but starvation proof by alternating readers and writers.
-+ */
-+#include <linux/sched.h>
-+#include <linux/rwmutex.h>
-+#include <linux/debug_locks.h>
-+#include <linux/module.h>
-+
-+#define RW_MUTEX_READER_FAST 	0
-+#define RW_MUTEX_READER_SLOW	1
-+
-+void __rw_mutex_init(struct rw_mutex *rw_mutex, const char *name,
-+		struct lock_class_key *key)
-+{
-+#ifdef CONFIG_DEBUG_LOCK_ALLOC
-+	debug_check_no_locks_freed((void *)rw_mutex, sizeof(*rw_mutex));
-+	lockdep_init_map(&rw_mutex->dep_map, name, key, 0);
-+#endif
-+
-+	percpu_counter_init(&rw_mutex->readers, 0);
-+	rw_mutex->status = RW_MUTEX_READER_FAST;
-+	mutex_init(&rw_mutex->read_mutex);
-+	mutex_init(&rw_mutex->write_mutex);
-+	init_waitqueue_head(&rw_mutex->wait_queue);
-+}
-+EXPORT_SYMBOL_GPL(__rw_mutex_init);
-+
-+void rw_mutex_destroy(struct rw_mutex *rw_mutex)
-+{
-+	percpu_counter_destroy(&rw_mutex->readers);
-+	mutex_destroy(&rw_mutex->read_mutex);
-+	mutex_destroy(&rw_mutex->write_mutex);
-+}
-+EXPORT_SYMBOL_GPL(rw_mutex_destroy);
-+
-+void __rw_mutex_read_lock(struct rw_mutex *rw_mutex)
-+{
-+	/*
-+	 * read lock slow path;
-+	 * count the number of readers waiting on the read_mutex
-+	 */
-+	atomic_inc(&rw_mutex->read_waiters);
-+	mutex_lock(&rw_mutex->read_mutex);
-+	/*
-+	 * rw_mutex->state is only set while the read_mutex is held
-+	 * so by serialising on this lock, we're sure its free.
-+	 */
-+	BUG_ON(rw_mutex->status);
-+	/*
-+	 * take the read reference, and drop the read_waiters count
-+	 * and nudge all those waiting on the read_waiters count.
-+	 */
-+	percpu_counter_mod(&rw_mutex->readers, 1);
-+	atomic_dec(&rw_mutex->read_waiters);
-+	wake_up_all(&rw_mutex->wait_queue);
-+	mutex_unlock(&rw_mutex->read_mutex);
-+}
-+EXPORT_SYMBOL_GPL(__rw_mutex_read_lock);
-+
-+void rw_mutex_read_unlock(struct rw_mutex *rw_mutex)
-+{
-+	rwsem_release(&rw_mutex->dep_map, 1, _RET_IP_);
-+
-+	percpu_counter_mod(&rw_mutex->readers, -1);
-+	if (unlikely(__rw_mutex_reader_slow(rw_mutex)) &&
-+			percpu_counter_sum(&rw_mutex->readers) == 0)
-+		wake_up_all(&rw_mutex->wait_queue);
-+}
-+EXPORT_SYMBOL_GPL(rw_mutex_read_unlock);
-+
-+static inline
-+void __rw_mutex_status_set(struct rw_mutex *rw_mutex, unsigned int status)
-+{
-+	rw_mutex->status = status;
-+	/*
-+	 * allow new readers to see this change in status
-+	 */
-+	smp_wmb();
-+}
-+
-+void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass)
-+{
-+	might_sleep();
-+	rwsem_acquire(&rw_mutex->dep_map, subclass, 0, _RET_IP_);
-+
-+	mutex_lock_nested(&rw_mutex->write_mutex, subclass);
-+	mutex_lock_nested(&rw_mutex->read_mutex, subclass);
-+
-+	/*
-+	 * block new readers
-+	 */
-+	__rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_SLOW);
-+	/*
-+	 * wait for all readers to go away
-+	 */
-+	wait_event(rw_mutex->wait_queue,
-+			(percpu_counter_sum(&rw_mutex->readers) == 0));
-+}
-+EXPORT_SYMBOL_GPL(rw_mutex_write_lock_nested);
-+
-+void rw_mutex_write_unlock(struct rw_mutex *rw_mutex)
-+{
-+	int waiters;
-+
-+	rwsem_release(&rw_mutex->dep_map, 1, _RET_IP_);
-+
-+	/*
-+	 * let the readers rip
-+	 */
-+	__rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_FAST);
-+	waiters = atomic_read(&rw_mutex->read_waiters);
-+	mutex_unlock(&rw_mutex->read_mutex);
-+	/*
-+	 * wait for at least 1 reader to get through
-+	 */
-+	if (waiters) {
-+		wait_event(rw_mutex->wait_queue,
-+			(atomic_read(&rw_mutex->read_waiters) < waiters));
-+	}
-+	/*
-+	 * before we let the writers rip
-+	 */
-+	mutex_unlock(&rw_mutex->write_mutex);
-+}
-+EXPORT_SYMBOL_GPL(rw_mutex_write_unlock);
-Index: linux-2.6/kernel/Makefile
-===================================================================
---- linux-2.6.orig/kernel/Makefile	2007-05-11 14:58:58.000000000 +0200
-+++ linux-2.6/kernel/Makefile	2007-05-11 14:59:09.000000000 +0200
-@@ -8,7 +8,8 @@ obj-y     = sched.o fork.o exec_domain.o
- 	    signal.o sys.o kmod.o workqueue.o pid.o \
- 	    rcupdate.o extable.o params.o posix-timers.o \
- 	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
--	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o die_notifier.o
-+	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o die_notifier.o \
-+	    rwmutex.o
- 
- obj-$(CONFIG_STACKTRACE) += stacktrace.o
- obj-y += time/
+Isn't this a problem faced by other places in the kernel already
+(where simply using bh_lock_sock() would potentially deadlock with
+another thread? I wonder what's the "recommended" (or one that's
+generally used) way to handle such a case.
 
--- 
+> This however introduces another problem - hci_sock_dev_event() for
+> HCI_DEV_UNREG can also be triggered in atomic context, in which calling
 
+Actually, I remember going over the hci_sock_dev_event() calling
+codepath (in reverse) quite exhaustively, and did not find a
+legitimate reason why anybody would want it to be atomic. hci_notify()
+has six call sites, and all are sleep-capable, IMO. In the case of
+hci_unregister_dev(), for example, what's happening is as follows:
+
+__device_release_driver			(can sleep)
+usb_unbind_interface			(-"-)
+hci_usb_disconnect [hci_usb]		(can sleep *[1])
+hci_unregister_dev [bluetooth]		(-"-)
+hci_notify [bluetooth]			(-"-)
+atomic_notifier_call_chain		(contains RCU read section)
+notifier_call_chain			(therefore, CANNOT SLEEP [2])
+hci_sock_dev_event [bluetooth]		(-"-)
+lock_sock_nested			(MIGHT SLEEP *BUG*)
+__might_sleep
+
+[1] This is the first problem point. However, I didn't find any reason
+why this particular driver's .disconnect() couldn't sleep. In fact, a
+comment in include/linux/usb.h:811 says:
+
+"The probe() and disconnect() methods are called in a context where
+they can sleep, but they should avoid abusing the privilege. Most
+work to connect to a device should be done when the device is opened,
+and undone at the last close. The disconnect code needs to address
+concurrency issues with respect to open() and close() methods, as
+well as forcing all pending I/O requests to complete (by unlinking
+them as necessary, and blocking until the unlinks complete)."
+
+I'm assuming the comment is not obsolete, of course, but although the
+first sentence says .disconnect() shouldn't abuse the privilege to
+sleep, the last sentence makes it quite evident that we are _allowed_
+to do so anyway, and that is how things are (with the hci_usb driver,
+at least, I didn't check the .remove() or .disconnect() functions of other
+USB drivers, however).
+
+[2] This is a bogus (and unnecessary) can-sleep-to-cannot-sleep
+transition point, IMO. I had copied Alan Stern in another thread a few
+days back, and he wasn't sure why hci_notifier was classified as an
+atomic notifier chain (when that classification happened with the new
+notifier chains API). I had submitted a patch that merely changed 4
+lines in net/bluetooth/hci_core.c to convert hci_notifier to a blocking
+notifier chain, but couldn't test as I own no bluetooth hardware myself.
+
+So do we ever really _need_ hci_sock_dev_event() to run in atomic
+context at all?
+
+> lock_sock() is not safe as it could sleep.
+>
+> This patch moves the detaching of sockets from hci_device into workqueue,
+> so that lock_sock() can be used safely. This requires movement of
+
+I did a workqueue conversion myself, but ran into the following problem:
+
+In the scheduled work function we have:
+
+> +       read_lock(&hci_sk_list.lock);
+> +       sk_for_each(sk, node, &hci_sk_list.head) {
+> +               lock_sock(sk);
+
+This would still be illegal, we can't sleep while holding an rwlock
+(hci_sk_list.lock above). Converting hci_sk_list.lock to an rwsem
+is _even_ more problematic, because hci_send_to_sock()
+just *cannot* sleep.
+
+> deallocation of hci_dev - deallocating device just after
+> hci_unregister_dev() would be too soon, as it could happen before the
+> workqueue has been run.
+
+Suggest a better solution for this: just introduce a flush_scheduled_work()
+after hci_unregister_dev() but before hci_free_dev() in all those places.
+Less disruptive that way.
+
+So this is quite an interesting problem indeed, but I can't help wondering
+that this must be faced elsewhere in the kernel (other users of lock_sock)
+too. CC'ing netdev@, for any ideas.
+
+(later)
+
+I Googled a bit to see if this problem was faced elsewhere in the kernel
+too. Saw the following commit by Ingo Molnar
+(9883a13c72dbf8c518814b6091019643cdb34429):
+
+-	lock_sock(sock->sk);
++	local_bh_disable();
++	bh_lock_sock_nested(sock->sk);
+ 	rc = selinux_netlbl_socket_setsid(sock, sksec->sid);
+-	release_sock(sock->sk);
++	bh_unlock_sock(sock->sk);
++	local_bh_enable();
+
+Is it _really_ *this* simple?
+
+Satyam
