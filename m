@@ -1,22 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031603AbXEKTxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031562AbXEKTxn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031603AbXEKTxP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966169AbXEKTog
+	id S1031562AbXEKTxn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:53:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030459AbXEKTor
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:44:36 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:46658 "EHLO proxima.lp0.eu"
+	Fri, 11 May 2007 15:44:47 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:46661 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966139AbXEKToe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:44:34 -0400
-Message-ID: <4644C79D.40803@simon.arlott.org.uk>
-Date: Fri, 11 May 2007 20:44:29 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
+	id S1762296AbXEKToo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 15:44:44 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=exim; d=arlott.org;
+	h=Received:Message-ID:Date:From:User-Agent:MIME-Version:To:Subject:X-Enigmail-Version:OpenPGP:Content-Type:Content-Transfer-Encoding;
+	b=HUR55AjHgihGsOLPnjwcDvaWTf9OlTX/JcSRQiweIv9zoJJL7X+YAqEFneZnRlGvVwgYWMGt2xBKVVmHrdHwqq0l9BOvwfZtzXrSv75AZ7OoFqS91MBu6illFTYkrmFs;
+Message-ID: <4644C7A4.6000008@simon.arlott.org.uk>
+Date: Fri, 11 May 2007 20:44:36 +0100
+From: Simon Arlott <simon@arlott.org>
 User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        trivial@kernel.org
-Subject: [PATCH] spelling fixes: kernel/
+Subject: [PATCH] spelling fixes: mm/
 X-Enigmail-Version: 0.94.1.2
 OpenPGP: id=89C93563
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -24,537 +27,321 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spelling fixes in kernel/.
+Spelling fixes in mm/.
 
 Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 ---
- kernel/acct.c             |    2 +-
- kernel/compat.c           |    2 +-
- kernel/cpuset.c           |    2 +-
- kernel/delayacct.c        |    2 +-
- kernel/fork.c             |    2 +-
- kernel/futex.c            |    2 +-
- kernel/futex_compat.c     |    2 +-
- kernel/irq/chip.c         |    4 ++--
- kernel/irq/handle.c       |    6 +++---
- kernel/irq/manage.c       |    2 +-
- kernel/irq/migration.c    |    2 +-
- kernel/irq/resend.c       |    2 +-
- kernel/kallsyms.c         |    2 +-
- kernel/kexec.c            |   10 +++++-----
- kernel/kfifo.c            |    2 +-
- kernel/kmod.c             |    2 +-
- kernel/kprobes.c          |    2 +-
- kernel/kthread.c          |    2 +-
- kernel/latency.c          |    2 +-
- kernel/module.c           |    2 +-
- kernel/posix-timers.c     |    4 ++--
- kernel/power/snapshot.c   |    2 +-
- kernel/sched.c            |   20 ++++++++++----------
- kernel/softirq.c          |    2 +-
- kernel/taskstats.c        |    2 +-
- kernel/time.c             |    2 +-
- kernel/time/clocksource.c |    2 +-
- kernel/time/jiffies.c     |    2 +-
- 28 files changed, 45 insertions(+), 45 deletions(-)
+ mm/filemap.h        |    2 +-
+ mm/hugetlb.c        |    2 +-
+ mm/memory.c         |    2 +-
+ mm/memory_hotplug.c |    2 +-
+ mm/mempool.c        |    2 +-
+ mm/page-writeback.c |    2 +-
+ mm/page_alloc.c     |    8 ++++----
+ mm/prio_tree.c      |    2 +-
+ mm/readahead.c      |    8 ++++----
+ mm/slab.c           |    6 +++---
+ mm/slub.c           |    2 +-
+ mm/sparse.c         |    4 ++--
+ mm/swap.c           |    2 +-
+ mm/vmalloc.c        |    6 +++---
+ mm/vmscan.c         |    2 +-
+ 15 files changed, 26 insertions(+), 26 deletions(-)
 
-diff --git a/kernel/acct.c b/kernel/acct.c
-index 70d0d88..0b0acb2 100644
---- a/kernel/acct.c
-+++ b/kernel/acct.c
-@@ -25,7 +25,7 @@
-  *  XTerms and EMACS are manifestations of pure evil. 21/10/98, AV.
-  *
-  *  Fixed a nasty interaction with with sys_umount(). If the accointing
-- *  was suspeneded we failed to stop it on umount(). Messy.
-+ *  was suspended we failed to stop it on umount(). Messy.
-  *  Another one: remount to readonly didn't stop accounting.
-  *	Question: what should we do if we have CAP_SYS_ADMIN but not
-  *  CAP_SYS_PACCT? Current code does the following: umount returns -EBUSY
-diff --git a/kernel/compat.c b/kernel/compat.c
-index cebb4c2..c5e0c1a 100644
---- a/kernel/compat.c
-+++ b/kernel/compat.c
-@@ -1,7 +1,7 @@
- /*
-  *  linux/kernel/compat.c
-  *
-- *  Kernel compatibililty routines for e.g. 32 bit syscall support
-+ *  Kernel compatibility routines for e.g. 32 bit syscall support
-  *  on 64 bit kernels.
-  *
-  *  Copyright (C) 2002-2003 Stephen Rothwell, IBM Corporation
-diff --git a/kernel/cpuset.c b/kernel/cpuset.c
-index f57854b..35c8c6f 100644
---- a/kernel/cpuset.c
-+++ b/kernel/cpuset.c
-@@ -855,7 +855,7 @@ static int update_cpumask(struct cpuset *cs, char *buf)
-  *
-  *    Migrate memory region from one set of nodes to another.
-  *
-- *    Temporarilly set tasks mems_allowed to target nodes of migration,
-+ *    Temporarily set tasks mems_allowed to target nodes of migration,
-  *    so that the migration code can allocate pages on these nodes.
-  *
-  *    Call holding manage_mutex, so our current->cpuset won't change
-diff --git a/kernel/delayacct.c b/kernel/delayacct.c
-index c0148ae..1fc6316 100644
---- a/kernel/delayacct.c
-+++ b/kernel/delayacct.c
-@@ -54,7 +54,7 @@ static inline void delayacct_start(struct timespec *start)
+diff --git a/mm/filemap.h b/mm/filemap.h
+index c2bff04..bfa76e1 100644
+--- a/mm/filemap.h
++++ b/mm/filemap.h
+@@ -22,7 +22,7 @@ __filemap_copy_from_user_iovec_inatomic(char *vaddr,
  
  /*
-  * Finish delay accounting for a statistic using
-- * its timestamps (@start, @end), accumalator (@total) and @count
-+ * its timestamps (@start, @end), accumulator (@total) and @count
-  */
+  * Copy as much as we can into the page and return the number of bytes which
+- * were sucessfully copied.  If a fault is encountered then clear the page
++ * were successfully copied.  If a fault is encountered then clear the page
+  * out to (offset+bytes) and return the number of bytes which were copied.
+  *
+  * NOTE: For this to work reliably we really want copy_from_user_inatomic_nocache
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index eb7180d..f74f432 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -743,7 +743,7 @@ static long region_chg(struct list_head *head, long f, long t)
  
- static void delayacct_end(struct timespec *start, struct timespec *end,
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 5dd3979..f9f5ee4 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -712,7 +712,7 @@ static struct files_struct *dup_fd(struct files_struct *oldf, int *errorp)
- 			/*
- 			 * The fd may be claimed in the fd bitmap but not yet
- 			 * instantiated in the files array if a sibling thread
--			 * is partway through open().  So make sure that this
-+			 * is part way through open().  So make sure that this
- 			 * fd is available to the new process.
- 			 */
- 			FD_CLR(open_files - i, new_fdt->open_fds);
-diff --git a/kernel/futex.c b/kernel/futex.c
-index b7ce15c..9c1ba51 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1506,7 +1506,7 @@ static int futex_wait(u32 __user *uaddr, struct rw_semaphore *fshared,
+ 	/* If we are below the current region then a new region is required.
+ 	 * Subtle, allocate a new region at the position but make it zero
+-	 * size such that we can guarentee to record the reservation. */
++	 * size such that we can guarantee to record the reservation. */
+ 	if (&rg->link == head || t < rg->from) {
+ 		nrg = kmalloc(sizeof(*nrg), GFP_KERNEL);
+ 		if (nrg == 0)
+diff --git a/mm/memory.c b/mm/memory.c
+index 1d647ab..eaa3ddb 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2783,7 +2783,7 @@ int access_process_vm(struct task_struct *tsk, unsigned long addr, void *buf, in
+ 		return 0;
  
- 			hrtimer_cancel(&t.timer);
+ 	down_read(&mm->mmap_sem);
+-	/* ignore errors, just check how much was sucessfully transfered */
++	/* ignore errors, just check how much was successfully transferred */
+ 	while (len) {
+ 		int bytes, ret, offset;
+ 		void *maddr;
+diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+index 8427912..bcd9841 100644
+--- a/mm/memory_hotplug.c
++++ b/mm/memory_hotplug.c
+@@ -118,7 +118,7 @@ int __add_pages(struct zone *zone, unsigned long phys_start_pfn,
+ 		err = __add_section(zone, i << PFN_SECTION_SHIFT);
  
--			/* Flag if a timeout occured */
-+			/* Flag if a timeout occurred */
- 			rem = (t.task == NULL);
- 		}
- 	}
-diff --git a/kernel/futex_compat.c b/kernel/futex_compat.c
-index 338a9b4..5625c24 100644
---- a/kernel/futex_compat.c
-+++ b/kernel/futex_compat.c
-@@ -1,7 +1,7 @@
- /*
-  * linux/kernel/futex_compat.c
-  *
-- * Futex compatibililty routines.
-+ * Futex compatibility routines.
-  *
-  * Copyright 2006, Red Hat, Inc., Ingo Molnar
-  */
-diff --git a/kernel/irq/chip.c b/kernel/irq/chip.c
-index 615ce97..32b4a55 100644
---- a/kernel/irq/chip.c
-+++ b/kernel/irq/chip.c
-@@ -431,8 +431,8 @@ out:
-  *	@irq:	the interrupt number
-  *	@desc:	the interrupt description structure for this irq
-  *
-- *	Interrupt occures on the falling and/or rising edge of a hardware
-- *	signal. The occurence is latched into the irq controller hardware
-+ *	Interrupt occurs on the falling and/or rising edge of a hardware
-+ *	signal. The occurrence is latched into the irq controller hardware
-  *	and must be acked in order to be reenabled. After the ack another
-  *	interrupt can happen on the same source even before the first one
-  *	is handled by the assosiacted event handler. If this happens it
-diff --git a/kernel/irq/handle.c b/kernel/irq/handle.c
-index e391cbb..0c684df 100644
---- a/kernel/irq/handle.c
-+++ b/kernel/irq/handle.c
-@@ -23,7 +23,7 @@
-  * @irq:       the interrupt number
-  * @desc:      description of the interrupt
-  *
-- * Handles spurious and unhandled IRQ's. It also prints a debugmessage.
-+ * Handles spurious and unhandled IRQs. It also prints a debug message.
-  */
- void fastcall
- handle_bad_irq(unsigned int irq, struct irq_desc *desc)
-@@ -62,7 +62,7 @@ struct irq_desc irq_desc[NR_IRQS] __cacheline_aligned_in_smp = {
+ 		/*
+-		 * EEXIST is finally dealed with by ioresource collision
++		 * EEXIST is finally dealt with by ioresource collision
+ 		 * check. see add_memory() => register_memory_resource()
+ 		 * Warning will be printed if there is collision.
+ 		 */
+diff --git a/mm/mempool.c b/mm/mempool.c
+index cc1ca86..37570cb 100644
+--- a/mm/mempool.c
++++ b/mm/mempool.c
+@@ -297,7 +297,7 @@ EXPORT_SYMBOL(mempool_free_slab);
  
  /*
-  * What should we do if we get a hw irq event on an illegal vector?
-- * Each architecture has to answer this themself.
-+ * Each architecture has to answer this itself.
+  * A commonly used alloc and free fn that kmalloc/kfrees the amount of memory
+- * specfied by pool_data
++ * specified by pool_data
   */
- static void ack_bad(unsigned int irq)
+ void *mempool_kmalloc(gfp_t gfp_mask, void *pool_data)
  {
-@@ -156,7 +156,7 @@ irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
-  * __do_IRQ - original all in one highlevel IRQ handler
-  * @irq:	the interrupt number
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 63cd888..059d56e 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -790,7 +790,7 @@ int __set_page_dirty_no_writeback(struct page *page)
+  * mapping is pinned by the vma's ->vm_file reference.
   *
-- * __do_IRQ handles all normal device IRQ's (the special
-+ * __do_IRQ handles all normal device IRQs (the special
-  * SMP cross-CPU interrupts have their own specific
-  * handlers).
-  *
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 203a518..d3a665e 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -240,7 +240,7 @@ int can_request_irq(unsigned int irq, unsigned long irqflags)
- void compat_irq_chip_set_default_handler(struct irq_desc *desc)
+  * We take care to handle the case where the page was truncated from the
+- * mapping by re-checking page_mapping() insode tree_lock.
++ * mapping by re-checking page_mapping() inside tree_lock.
+  */
+ int __set_page_dirty_nobuffers(struct page *page)
  {
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index ae96dd8..e3699e8 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -107,7 +107,7 @@ static unsigned long __meminitdata dma_reserve;
+ 
+ #ifdef CONFIG_ARCH_POPULATES_NODE_MAP
+   /*
+-   * MAX_ACTIVE_REGIONS determines the maxmimum number of distinct
++   * MAX_ACTIVE_REGIONS determines the maximum number of distinct
+    * ranges of memory (RAM) that may be registered with add_active_range().
+    * Ranges passed to add_active_range() will be merged if possible
+    * so the number of times add_active_range() can be called is
+@@ -1031,7 +1031,7 @@ int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
+  * skip over zones that are not allowed by the cpuset, or that have
+  * been recently (in last second) found to be nearly full.  See further
+  * comments in mmzone.h.  Reduces cache footprint of zonelist scans
+- * that have to skip over alot of full or unallowed zones.
++ * that have to skip over a lot of full or unallowed zones.
+  *
+  * If the zonelist cache is present in the passed in zonelist, then
+  * returns a pointer to the allowed node mask (either the current
+@@ -1852,7 +1852,7 @@ void __meminit build_all_zonelists(void)
+ 		__build_all_zonelists(NULL);
+ 		cpuset_init_current_mems_allowed();
+ 	} else {
+-		/* we have to stop all cpus to guaranntee there is no user
++		/* we have to stop all cpus to guarantee there is no user
+ 		   of zonelist */
+ 		stop_machine_run(__build_all_zonelists, NULL, NR_CPUS);
+ 		/* cpuset refresh routine should be here */
+@@ -2266,7 +2266,7 @@ static int __meminit first_active_region_index_in_nid(int nid)
+ 
+ /*
+  * Basic iterator support. Return the next active range of PFNs for a node
+- * Note: nid == MAX_NUMNODES returns next region regardles of node
++ * Note: nid == MAX_NUMNODES returns next region regardless of node
+  */
+ static int __meminit next_active_region_index_in_nid(int index, int nid)
+ {
+diff --git a/mm/prio_tree.c b/mm/prio_tree.c
+index b4e76c2..603ae98 100644
+--- a/mm/prio_tree.c
++++ b/mm/prio_tree.c
+@@ -34,7 +34,7 @@
+  * Radix priority search tree for address_space->i_mmap
+  *
+  * For each vma that map a unique set of file pages i.e., unique [radix_index,
+- * heap_index] value, we have a corresponing priority search tree node. If
++ * heap_index] value, we have a corresponding priority search tree node. If
+  * multiple vmas have identical [radix_index, heap_index] value, then one of
+  * them is used as a tree node and others are stored in a vm_set list. The tree
+  * node points to the first vma (head) of the list using vm_set.head.
+diff --git a/mm/readahead.c b/mm/readahead.c
+index 9861e88..974fc90 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -96,7 +96,7 @@ static unsigned long get_init_ra_size(unsigned long size, unsigned long max)
+ 
+ /*
+  * Set the new window size, this is called only when I/O is to be submitted,
+- * not for each call to readahead.  If a cache miss occured, reduce next I/O
++ * not for each call to readahead.  If a cache miss occurred, reduce next I/O
+  * size, else increase depending on how close to max we are.
+  */
+ static inline unsigned long get_next_ra_size(struct file_ra_state *ra)
+@@ -235,7 +235,7 @@ out:
+  *
+  * A `readahead hit' occurs when a read request is made against a page which is
+  * the next sequential page. Ahead window calculations are done only when it
+- * is time to submit a new IO.  The code ramps up the size agressively at first,
++ * is time to submit a new IO.  The code ramps up the size aggressively at first,
+  * but slow down as it approaches max_readhead.
+  *
+  * Any seek/ramdom IO will result in readahead being turned off.  It will resume
+@@ -501,7 +501,7 @@ page_cache_readahead(struct address_space *mapping, struct file_ra_state *ra,
+ 		/*
+ 		 * If the request size is larger than our max readahead, we
+ 		 * at least want to be sure that we get 2 IOs in flight and
+-		 * we know that we will definitly need the new I/O.
++		 * we know that we will definitely need the new I/O.
+ 		 * once we do this, subsequent calls should be able to overlap
+ 		 * IOs,* thus preventing stalls. so issue the ahead window
+ 		 * immediately.
+@@ -526,7 +526,7 @@ page_cache_readahead(struct address_space *mapping, struct file_ra_state *ra,
+ 
  	/*
--	 * If the architecture still has not overriden
-+	 * If the architecture still has not overridden
- 	 * the flow handler then zap the default. This
- 	 * should catch incorrect flow-type setting.
+ 	 * If we get here we are doing sequential IO and this was not the first
+-	 * occurence (ie we have an existing window)
++	 * occurrence (ie we have an existing window)
  	 */
-diff --git a/kernel/irq/migration.c b/kernel/irq/migration.c
-index 77b7acc..20d5fb6 100644
---- a/kernel/irq/migration.c
-+++ b/kernel/irq/migration.c
-@@ -45,7 +45,7 @@ void move_masked_irq(int irq)
- 	 * do the disable, re-program, enable sequence.
- 	 * This is *not* particularly important for level triggered
- 	 * but in a edge trigger case, we might be setting rte
--	 * when an active trigger is comming in. This could
-+	 * when an active trigger is coming in. This could
- 	 * cause some ioapics to mal-function.
- 	 * Being paranoid i guess!
- 	 *
-diff --git a/kernel/irq/resend.c b/kernel/irq/resend.c
-index 5bfeaed..e331ec7 100644
---- a/kernel/irq/resend.c
-+++ b/kernel/irq/resend.c
+ 	if (ra->ahead_start == 0) {	 /* no ahead window yet */
+ 		if (!make_ahead_window(mapping, filp, ra, 0))
+diff --git a/mm/slab.c b/mm/slab.c
+index 944b205..f19adfd 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
 @@ -26,7 +26,7 @@
- static DECLARE_BITMAP(irqs_resend, NR_IRQS);
- 
- /*
-- * Run software resends of IRQ's
-+ * Run software resends of IRQs
-  */
- static void resend_irqs(unsigned long arg)
- {
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index f1bda23..9325657 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -119,7 +119,7 @@ static unsigned int kallsyms_expand_symbol(unsigned int off, char *result)
- }
- 
- /* get symbol type information. This is encoded as a single char at the
-- * begining of the symbol name */
-+ * beginning of the symbol name */
- static char kallsyms_get_symbol_type(unsigned int off)
- {
- 	/* get just the first code, look it up in the token table, and return the
-diff --git a/kernel/kexec.c b/kernel/kexec.c
-index 25db14b..71d2bed 100644
---- a/kernel/kexec.c
-+++ b/kernel/kexec.c
-@@ -144,7 +144,7 @@ static int do_kimage_alloc(struct kimage **rimage, unsigned long entry,
- 	 * just verifies it is an address we can use.
- 	 *
- 	 * Since the kernel does everything in page size chunks ensure
--	 * the destination addreses are page aligned.  Too many
-+	 * the destination addresses are page aligned.  Too many
- 	 * special cases crop of when we don't do this.  The most
- 	 * insidious is getting overlapping destination addresses
- 	 * simply because addresses are changed to page size
-@@ -163,7 +163,7 @@ static int do_kimage_alloc(struct kimage **rimage, unsigned long entry,
- 	}
- 
- 	/* Verify our destination addresses do not overlap.
--	 * If we alloed overlapping destination addresses
-+	 * If we allowed overlapping destination addresses
- 	 * through very weird things can happen with no
- 	 * easy explanation as one segment stops on another.
- 	 */
-@@ -429,7 +429,7 @@ static struct page *kimage_alloc_normal_control_pages(struct kimage *image,
- 	/* Deal with the destination pages I have inadvertently allocated.
- 	 *
- 	 * Ideally I would convert multi-page allocations into single
--	 * page allocations, and add everyting to image->dest_pages.
-+	 * page allocations, and add everything to image->dest_pages.
- 	 *
- 	 * For now it is simpler to just free the pages.
- 	 */
-@@ -447,7 +447,7 @@ static struct page *kimage_alloc_crash_control_pages(struct kimage *image,
- 	 * not conflict with either the destination addresses
- 	 * or memory the kernel is already using.
- 	 *
--	 * Control pages are also the only pags we must allocate
-+	 * Control pages are also the only pages we must allocate
- 	 * when loading a crash kernel.  All of the other pages
- 	 * are specified by the segments and we just memcpy
- 	 * into them directly.
-@@ -719,7 +719,7 @@ static struct page *kimage_alloc_page(struct kimage *image,
- 			break;
- 
- 		/*
--		 * I know that the page is someones destination page.
-+		 * I know that the page is someone's destination page.
- 		 * See if there is already a source page for this
- 		 * destination page.  And if so swap the source pages.
+  * initialized objects.
+  *
+  * This means, that your constructor is used only for newly allocated
+- * slabs and you must pass objects with the same intializations to
++ * slabs and you must pass objects with the same initializations to
+  * kmem_cache_free.
+  *
+  * Each cache can only support one memory type (GFP_DMA, GFP_HIGHMEM,
+@@ -1301,7 +1301,7 @@ static int __cpuinit cpuup_callback(struct notifier_block *nfb,
+ 		 * structure is usually allocated from kmem_cache_create() and
+ 		 * gets destroyed at kmem_cache_destroy().
  		 */
-diff --git a/kernel/kfifo.c b/kernel/kfifo.c
-index cee4191..65e5eaa 100644
---- a/kernel/kfifo.c
-+++ b/kernel/kfifo.c
-@@ -71,7 +71,7 @@ struct kfifo *kfifo_alloc(unsigned int size, gfp_t gfp_mask, spinlock_t *lock)
- 
- 	/*
- 	 * round up to the next power of 2, since our 'let the indices
--	 * wrap' tachnique works only in this case.
-+	 * wrap' technique works only in this case.
- 	 */
- 	if (size & (size - 1)) {
- 		BUG_ON(size > 0x80000000);
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index 4d32eb0..c3810ba 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -49,7 +49,7 @@ char modprobe_path[KMOD_PATH_LEN] = "/sbin/modprobe";
- /**
-  * request_module - try to load a kernel module
-  * @fmt:     printf style format string for the name of the module
-- * @varargs: arguements as specified in the format string
-+ * @varargs: arguments as specified in the format string
-  *
-  * Load a module using the user mode module loader. The function returns
-  * zero on success or a negative errno code on failure. Note that a
-diff --git a/kernel/kprobes.c b/kernel/kprobes.c
-index 9e47d8c..bf2faec 100644
---- a/kernel/kprobes.c
-+++ b/kernel/kprobes.c
-@@ -539,7 +539,7 @@ static int __kprobes __register_kprobe(struct kprobe *p,
- 	if (probed_mod) {
- 		struct module *calling_mod = module_text_address(called_from);
- 		/*
--		 * We must allow modules to probe themself and in this case
-+		 * We must allow modules to probe themselves and in this case
- 		 * avoid incrementing the module refcount, so as to allow
- 		 * unloading of self probing modules.
- 		 */
-diff --git a/kernel/kthread.c b/kernel/kthread.c
-index df8a8e8..cc2d5fd 100644
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -40,7 +40,7 @@ struct kthread_stop_info
- 	struct completion done;
- };
- 
--/* Thread stopping is done by setthing this var: lock serializes
-+/* Thread stopping is done by setting this var: lock serializes
-  * multiple kthread_stop calls. */
- static DEFINE_MUTEX(kthread_stop_lock);
- static struct kthread_stop_info kthread_stop_info;
-diff --git a/kernel/latency.c b/kernel/latency.c
-index e63fcac..132b858 100644
---- a/kernel/latency.c
-+++ b/kernel/latency.c
-@@ -18,7 +18,7 @@
-  * constraint of, say, 150 usec.
-  *
-  * Multiple drivers can each announce their maximum accepted latency,
-- * to keep these appart, a string based identifier is used.
-+ * to keep these apart, a string based identifier is used.
-  *
-  *
-  * (C) Copyright 2006 Intel Corporation
-diff --git a/kernel/module.c b/kernel/module.c
-index 9bd93de..b5b59ba 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2075,7 +2075,7 @@ static const char *get_ksymbol(struct module *mod,
- 	else 
- 		nextval = (unsigned long)mod->module_core+mod->core_text_size;
- 
--	/* Scan for closest preceeding symbol, and next symbol. (ELF
-+	/* Scan for closest preceding symbol, and next symbol. (ELF
-            starts real symbols at 1). */
- 	for (i = 1; i < mod->num_symtab; i++) {
- 		if (mod->symtab[i].st_shndx == SHN_UNDEF)
-diff --git a/kernel/posix-timers.c b/kernel/posix-timers.c
-index 588c99d..9c2f8d7 100644
---- a/kernel/posix-timers.c
-+++ b/kernel/posix-timers.c
-@@ -272,7 +272,7 @@ static void schedule_next_timer(struct k_itimer *timr)
-  * restarted (i.e. we have flagged this in the sys_private entry of the
-  * info block).
-  *
-- * To protect aginst the timer going away while the interrupt is queued,
-+ * To protect against the timer going away while the interrupt is queued,
-  * we require that the it_requeue_pending flag be set.
-  */
- void do_schedule_next_timer(struct siginfo *info)
-@@ -461,7 +461,7 @@ sys_timer_create(const clockid_t which_clock,
- 		goto retry;
- 	else if (error) {
- 		/*
--		 * Wierd looking, but we return EAGAIN if the IDR is
-+		 * Weird looking, but we return EAGAIN if the IDR is
- 		 * full (proper POSIX return value for this)
- 		 */
- 		error = -EAGAIN;
-diff --git a/kernel/power/snapshot.c b/kernel/power/snapshot.c
-index a3b7854..4cdea28 100644
---- a/kernel/power/snapshot.c
-+++ b/kernel/power/snapshot.c
-@@ -1019,7 +1019,7 @@ static unsigned int nr_meta_pages;
- /**
-  *	swsusp_free - free pages allocated for the suspend.
-  *
-- *	Suspend pages are alocated before the atomic copy is made, so we
-+ *	Suspend pages are allocated before the atomic copy is made, so we
-  *	need to release them after the resume.
-  */
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 799d23b..83ccea8 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1414,7 +1414,7 @@ static int wake_idle(int cpu, struct task_struct *p)
- 	 * Siblings must be also busy(in most cases) as they didn't already
- 	 * pickup the extra load from this cpu and hence we need not check
- 	 * sibling runqueue info. This will avoid the checks and cache miss
--	 * penalities associated with that.
-+	 * penalties associated with that.
- 	 */
- 	if (idle_cpu(cpu) || cpu_rq(cpu)->nr_running > 1)
- 		return cpu;
-@@ -4363,7 +4363,7 @@ recheck:
- 	 */
- 	spin_lock_irqsave(&p->pi_lock, flags);
- 	/*
--	 * To be able to change p->policy safely, the apropriate
-+	 * To be able to change p->policy safely, the appropriate
- 	 * runqueue lock must be held.
- 	 */
- 	rq = __task_rq_lock(p);
-@@ -4589,9 +4589,9 @@ asmlinkage long sys_sched_setaffinity(pid_t pid, unsigned int len,
- }
- 
- /*
-- * Represents all cpu's present in the system
-+ * Represents all CPUs present in the system
-  * In systems capable of hotplug, this map could dynamically grow
-- * as new cpu's are detected in the system via any platform specific
-+ * as new CPUs are detected in the system via any platform specific
-  * method, such as ACPI for e.g.
-  */
- 
-@@ -4973,7 +4973,7 @@ void show_state_filter(unsigned long state_filter)
- 	do_each_thread(g, p) {
- 		/*
- 		 * reset the NMI-timeout, listing all files on a slow
--		 * console might take alot of time:
-+		 * console might take a lot of time:
- 		 */
- 		touch_nmi_watchdog();
- 		if (!state_filter || (p->state & state_filter))
-@@ -5039,8 +5039,8 @@ cpumask_t nohz_cpu_mask = CPU_MASK_NONE;
- /*
-  * This is how migration works:
-  *
-- * 1) we queue a struct migration_req structure in the source CPU's
-- *    runqueue and wake up that CPU's migration thread.
-+ * 1) we queue a struct migration_req structure in the source CPUs
-+ *    runqueue and wake up that CPUs migration thread.
-  * 2) we down() the locked semaphore => thread blocks.
-  * 3) migration thread wakes up (implicitly it forces the migrated
-  *    thread off the CPU)
-@@ -5255,7 +5255,7 @@ restart:
-  * While a dead CPU has no uninterruptible tasks queued at this point,
-  * it might still have a nonzero ->nr_uninterruptible counter, because
-  * for performance reasons the counter is not stricly tracking tasks to
-- * their home CPUs. So we just add the counter to another CPU's counter,
-+ * their home CPUs. So we just add the counter to another CPUs counter,
-  * to keep the global sum constant after CPU-down:
-  */
- static void migrate_nr_uninterruptible(struct rq *rq_src)
-@@ -5443,7 +5443,7 @@ migration_call(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 
- 		/* No need to migrate the tasks: it was best-effort if
- 		 * they didn't take sched_hotcpu_mutex.  Just wake up
--		 * the requestors. */
-+		 * the requesters. */
- 		spin_lock_irq(&rq->lock);
- 		while (!list_empty(&rq->migration_queue)) {
- 			struct migration_req *req;
-@@ -7132,7 +7132,7 @@ struct task_struct *curr_task(int cpu)
-  * Description: This function must only be used when non-maskable interrupts
-  * are serviced on a separate stack.  It allows the architecture to switch the
-  * notion of the current task on a cpu in a non-blocking manner.  This function
-- * must be called with all CPU's synchronized, and interrupts disabled, the
-+ * must be called with all CPUs synchronized, and interrupts disabled, the
-  * and caller must save the original value of the current task (see
-  * curr_task() above) and restore that value before reenabling interrupts and
-  * re-starting the system.
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 0b9886a..50a22ed 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -611,7 +611,7 @@ static int __cpuinit cpu_callback(struct notifier_block *nfb,
+-		/* fall thru */
++		/* fall through */
+ #endif
+ 	case CPU_UP_CANCELED:
  	case CPU_UP_CANCELED_FROZEN:
- 		if (!per_cpu(ksoftirqd, hotcpu))
- 			break;
--		/* Unbind so it can run.  Fall thru. */
-+		/* Unbind so it can run.  Fall through. */
- 		kthread_bind(per_cpu(ksoftirqd, hotcpu),
- 			     any_online_cpu(cpu_online_map));
- 	case CPU_DEAD:
-diff --git a/kernel/taskstats.c b/kernel/taskstats.c
-index 906cae7..756342f 100644
---- a/kernel/taskstats.c
-+++ b/kernel/taskstats.c
-@@ -268,7 +268,7 @@ static void fill_tgid_exit(struct task_struct *tsk)
+@@ -3856,7 +3856,7 @@ const char *kmem_cache_name(struct kmem_cache *cachep)
+ EXPORT_SYMBOL_GPL(kmem_cache_name);
  
- 	/*
- 	 * Each accounting subsystem calls its functions here to
--	 * accumalate its per-task stats for tsk, into the per-tgid structure
-+	 * accumulate its per-task stats for tsk, into the per-tgid structure
- 	 *
- 	 *	per-task-foo(tsk->signal->stats, tsk);
- 	 */
-diff --git a/kernel/time.c b/kernel/time.c
-index f04791f..cc52b4c 100644
---- a/kernel/time.c
-+++ b/kernel/time.c
-@@ -573,7 +573,7 @@ EXPORT_SYMBOL(usecs_to_jiffies);
  /*
-  * The TICK_NSEC - 1 rounds up the value to the next resolution.  Note
-  * that a remainder subtract here would not do the right thing as the
-- * resolution values don't fall on second boundries.  I.e. the line:
-+ * resolution values don't fall on second boundaries.  I.e. the line:
-  * nsec -= nsec % TICK_NSEC; is NOT a correct resolution rounding.
-  *
-  * Rather, we just shift the bits off the right.
-diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-index 3db5c3c..c3085c4 100644
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -367,7 +367,7 @@ sysfs_show_current_clocksources(struct sys_device *dev, char *buf)
-  * @count:	length of buffer
-  *
-  * Takes input from sysfs interface for manually overriding the default
-- * clocksource selction.
-+ * clocksource selection.
+- * This initializes kmem_list3 or resizes varioius caches for all nodes.
++ * This initializes kmem_list3 or resizes various caches for all nodes.
   */
- static ssize_t sysfs_override_clocksource(struct sys_device *dev,
- 					  const char *buf, size_t count)
-diff --git a/kernel/time/jiffies.c b/kernel/time/jiffies.c
-index 4c256fd..70d958a 100644
---- a/kernel/time/jiffies.c
-+++ b/kernel/time/jiffies.c
-@@ -30,7 +30,7 @@
-  * the timer interrupt frequency HZ and it suffers
-  * inaccuracies caused by missed or lost timer
-  * interrupts and the inability for the timer
-- * interrupt hardware to accuratly tick at the
-+ * interrupt hardware to accurately tick at the
-  * requested HZ value. It is also not reccomended
-  * for "tick-less" systems.
+ static int alloc_kmemlist(struct kmem_cache *cachep)
+ {
+diff --git a/mm/slub.c b/mm/slub.c
+index b39c8a6..355651b 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -1780,7 +1780,7 @@ static struct kmem_cache_node * __init early_kmem_cache_node_alloc(gfp_t gfpflag
+ 	BUG_ON(kmalloc_caches->size < sizeof(struct kmem_cache_node));
+ 
+ 	page = new_slab(kmalloc_caches, gfpflags | GFP_THISNODE, node);
+-	/* new_slab() disables interupts */
++	/* new_slab() disables interrupts */
+ 	local_irq_enable();
+ 
+ 	BUG_ON(!page);
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 6f3fff9..46c9fa8 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -101,7 +101,7 @@ static inline int sparse_index_init(unsigned long section_nr, int nid)
+ 
+ /*
+  * Although written for the SPARSEMEM_EXTREME case, this happens
+- * to also work for the flat array case becase
++ * to also work for the flat array case because
+  * NR_SECTION_ROOTS==NR_MEM_SECTIONS.
   */
+ int __section_nr(struct mem_section* ms)
+@@ -157,7 +157,7 @@ void __init memory_present(int nid, unsigned long start, unsigned long end)
+ }
+ 
+ /*
+- * Only used by the i386 NUMA architecures, but relatively
++ * Only used by the i386 NUMA architectures, but relatively
+  * generic code.
+  */
+ unsigned long __init node_memmap_size_bytes(int nid, unsigned long start_pfn,
+diff --git a/mm/swap.c b/mm/swap.c
+index d3cb966..0c09a51 100644
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -5,7 +5,7 @@
+  */
+ 
+ /*
+- * This file contains the default values for the opereation of the
++ * This file contains the default values for the operation of the
+  * Linux VM subsystem. Fine-tuning documentation can be found in
+  * Documentation/sysctl/vm.txt.
+  * Started 18.12.91
+diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+index faa2a52..1de2e9e 100644
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -239,7 +239,7 @@ struct vm_struct *__get_vm_area(unsigned long size, unsigned long flags,
+ }
+ 
+ /**
+- *	get_vm_area  -  reserve a contingous kernel virtual area
++ *	get_vm_area  -  reserve a contiguous kernel virtual area
+  *	@size:		size of the area
+  *	@flags:		%VM_IOREMAP for I/O mappings or VM_ALLOC
+  *
+@@ -295,7 +295,7 @@ found:
+ }
+ 
+ /**
+- *	remove_vm_area  -  find and remove a contingous kernel virtual area
++ *	remove_vm_area  -  find and remove a continuous kernel virtual area
+  *	@addr:		base address
+  *
+  *	Search for the kernel VM area starting at @addr, and remove it.
+@@ -356,7 +356,7 @@ void __vunmap(void *addr, int deallocate_pages)
+  *	vfree  -  release memory allocated by vmalloc()
+  *	@addr:		memory base address
+  *
+- *	Free the virtually contiguous memory area starting at @addr, as
++ *	Free the virtually continuous memory area starting at @addr, as
+  *	obtained from vmalloc(), vmalloc_32() or __vmalloc(). If @addr is
+  *	NULL, no operation is performed.
+  *
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 1be5a63..6381692 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -159,7 +159,7 @@ EXPORT_SYMBOL(remove_shrinker);
+  * percentages of the lru and ageable caches.  This should balance the seeks
+  * generated by these structures.
+  *
+- * If the vm encounted mapped pages on the LRU it increase the pressure on
++ * If the vm encountered mapped pages on the LRU it increase the pressure on
+  * slab to avoid swapping.
+  *
+  * We do weird things to avoid (scanned*seeks*entries) overflowing 32 bits.
 -- 
 1.5.0.1
 
