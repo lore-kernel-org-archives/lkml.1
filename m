@@ -1,346 +1,163 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758760AbXEKC5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758563AbXEKDGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758760AbXEKC5g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 22:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757366AbXEKC51
+	id S1758563AbXEKDGA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 23:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754294AbXEKDFx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 22:57:27 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37701 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756354AbXEKC5Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 22:57:25 -0400
-X-Greylist: delayed 60804 seconds by postgrey-1.27 at vger.kernel.org; Thu, 10 May 2007 22:57:24 EDT
-Message-ID: <4643DB5A.7090104@jp.fujitsu.com>
-Date: Fri, 11 May 2007 11:56:26 +0900
-From: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
-MIME-Version: 1.0
-To: "Kok, Auke" <auke-jan.h.kok@intel.com>
-Cc: cramerj@intel.com, john.ronciak@intel.com, jesse.brandeburg@intel.com,
-       jeffrey.t.kirsher@intel.com, gregkh@suse.de, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI legacy I/O port free driver - Making Intel e1000
- driver legacy I/O port free
-References: <4642EDED.7020109@jp.fujitsu.com> <46433090.8050205@intel.com>
-In-Reply-To: <46433090.8050205@intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 10 May 2007 23:05:53 -0400
+Received: from mail.sjtu.org ([202.120.5.34]:46399 "ehlo appsrv1.sjtu.org"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754017AbXEKDFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 23:05:53 -0400
+Subject: [PATCH] v4l: saa7134: support ir-remote for 10moons TM300
+From: Tony Wan <wankai@sjtu.org>
+To: mchehab@infradead.org, michael@mihu.de
+Cc: video4linux-list@redhat.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Date: Fri, 11 May 2007 11:02:36 +0800
+Message-Id: <1178852562.7216.4.camel@wankai.sjtu.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-7.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Auke
+Enable the IR-remote of the 10moons TM300 card and add the key-codes for
+it's remote. 
 
- > I'm ok with the bottom part of the patch, but I do not like
- > the modification of the pci device ID table in this way. As
- > Arjan van der Ven previously commented as well, this makes
- > it hard for future device ID's to be bound to the driver.
+It has been tested using lirc. All the key codes are accepted.
 
-  I googled the previous comment by Arjan. Now I understand
-  that the patch makes it difficult to add PCI ID's to the
-  driver at runtime.
+Signed-off-by: Tony Wan <wankai@sjtu.org>
+---
+ drivers/media/common/ir-keymaps.c           |   69
++++++++++++++++++++++++++++
+ drivers/media/video/saa7134/saa7134-cards.c |    1 +
+ drivers/media/video/saa7134/saa7134-input.c |    6 ++
+ include/media/ir-common.h                   |    1 +
+ 4 files changed, 77 insertions(+), 0 deletions(-)
 
- > On top of that, there is no logical correlation between the
- > mapping and chipsets, so a lot of information is lost in that
- > table. It really does not show which _chipsets_ support this
- > functionality.
-
-  Thanks for pointing out the problem, but I can't quite understand
-  what you are trying to say. What do you mean by the chipset?
-  Are you talking about the chipset of the NIC? or the South bridge?
-  I'd be glad if you can explain it to me.
-
-Tomohiro Kusumi
-
-
-Kok, Auke wrote:
-> Tomohiro Kusumi wrote:
->> Hi
->>
->> As you can see in the "10. pci_enable_device_bars() and Legacy I/O
->> Port space" of the Documentation/pci.txt, the latest kernel has
->> interfaces for PCI device drivers to tell the kernel which resource
->> the driver want to use, ex. I/O port or MMIO.
->>
->> I've made a patch which makes Intel e1000 driver legacy I/O port
->> free by using the PCI core changes I mentioned above. The Intel
->> e1000 driver can handle some of its devices without using I/O port.
->> So this patch changes the driver not to enable/request I/O port
->> region depending on the device id.
->>
->> As a result, the driver can handle its device even when there are
->> huge number of PCI devices being used on the system and no I/O
->> port region assigned to the device.
-> 
-> Tomohiro,
-> 
-> I'm ok with the bottom part of the patch, but I do not like the 
-> modification of the pci device ID table in this way. As Arjan van der 
-> Ven previously commented as well, this makes it hard for future device 
-> ID's to be bound to the driver.
-> 
-> On top of that, there is no logical correlation between the mapping and 
-> chipsets, so a lot of information is lost in that table. It really does 
-> not show which _chipsets_ support this functionality.
-> 
-> I think if we want to work with this, we need some way of mapping the 
-> device ID's back to chipsets, and enable the feature on that basis.
-> 
-> Auke
-> 
->>
->> Tomohiro Kusumi
->>
->> Signed-off-by: Tomohiro Kusumi <kusumi.tomohiro@jp.fujitsu.com>
->>
->> ---
->>  e1000.h      |    6 +-
->>  e1000_main.c |  152 
->> +++++++++++++++++++++++++++++++----------------------------
->>  2 files changed, 86 insertions(+), 72 deletions(-)
->>
->> diff -uprN linux-2.6.21.orig/drivers/net/e1000/e1000.h 
->> linux-2.6.21/drivers/net/e1000/e1000.h
->> --- linux-2.6.21.orig/drivers/net/e1000/e1000.h    2007-05-09 
->> 18:02:26.000000000 +0900
->> +++ linux-2.6.21/drivers/net/e1000/e1000.h    2007-05-09 
->> 18:02:59.000000000 +0900
->> @@ -74,8 +74,9 @@
->>  #define BAR_1        1
->>  #define BAR_5        5
->>
->> -#define INTEL_E1000_ETHERNET_DEVICE(device_id) {\
->> -    PCI_DEVICE(PCI_VENDOR_ID_INTEL, device_id)}
->> +#define E1000_USE_IOPORT       (1 << 0)
->> +#define INTEL_E1000_ETHERNET_DEVICE(device_id, flags) {\
->> +       PCI_DEVICE(PCI_VENDOR_ID_INTEL, device_id), .driver_data = flags}
->>
->>  struct e1000_adapter;
->>
->> @@ -347,6 +348,7 @@ struct e1000_adapter {
->>      boolean_t quad_port_a;
->>      unsigned long flags;
->>      uint32_t eeprom_wol;
->> +    int bars;               /* BARs to be enabled */
->>  };
->>
->>  enum e1000_state_t {
->> diff -uprN linux-2.6.21.orig/drivers/net/e1000/e1000_main.c 
->> linux-2.6.21/drivers/net/e1000/e1000_main.c
->> --- linux-2.6.21.orig/drivers/net/e1000/e1000_main.c    2007-05-09 
->> 18:02:27.000000000 +0900
->> +++ linux-2.6.21/drivers/net/e1000/e1000_main.c    2007-05-09 
->> 18:03:00.000000000 +0900
->> @@ -48,65 +48,65 @@ static char e1000_copyright[] = "Copyrig
->>   *   {PCI_DEVICE(PCI_VENDOR_ID_INTEL, device_id)}
->>   */
->>  static struct pci_device_id e1000_pci_tbl[] = {
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1000),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1001),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1004),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1008),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1009),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x100C),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x100D),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x100E),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x100F),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1010),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1011),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1012),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1013),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1014),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1015),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1016),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1017),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1018),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1019),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x101A),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x101D),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x101E),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1026),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1027),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1028),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1049),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x104A),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x104B),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x104C),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x104D),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x105E),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x105F),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1060),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1075),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1076),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1077),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1078),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1079),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x107A),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x107B),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x107C),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x107D),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x107E),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x107F),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x108A),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x108B),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x108C),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1096),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1098),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x1099),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x109A),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x10A4),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x10B5),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x10B9),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x10BA),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x10BB),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x10BC),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x10C4),
->> -    INTEL_E1000_ETHERNET_DEVICE(0x10C5),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1000, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1001, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1004, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1008, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1009, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x100C, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x100D, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x100E, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x100F, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1010, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1011, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1012, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1013, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1014, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1015, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1016, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1017, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1018, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1019, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x101A, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x101D, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x101E, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1026, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1027, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1028, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1049, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x104A, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x104B, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x104C, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x104D, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x105E, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x105F, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1060, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1075, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1076, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1077, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1078, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1079, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x107A, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x107B, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x107C, E1000_USE_IOPORT),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x107D, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x107E, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x107F, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x108A, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x108B, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x108C, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1096, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1098, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x1099, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x109A, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x10A4, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x10B5, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x10B9, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x10BA, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x10BB, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x10BC, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x10C4, 0),
->> +    INTEL_E1000_ETHERNET_DEVICE(0x10C5, 0),
->>      /* required last entry */
->>      {0,}
->>  };
->> @@ -879,7 +879,14 @@ e1000_probe(struct pci_dev *pdev,
->>      int i, err, pci_using_dac;
->>      uint16_t eeprom_data = 0;
->>      uint16_t eeprom_apme_mask = E1000_EEPROM_APME;
->> -    if ((err = pci_enable_device(pdev)))
->> +    int bars;
->> +
->> +    if (ent->driver_data & E1000_USE_IOPORT)
->> +        bars = pci_select_bars(pdev, IORESOURCE_MEM | IORESOURCE_IO);
->> +    else
->> +        bars = pci_select_bars(pdev, IORESOURCE_MEM);
->> +
->> +    if ((err = pci_enable_device_bars(pdev, bars)))
->>          return err;
->>
->>      if (!(err = pci_set_dma_mask(pdev, DMA_64BIT_MASK)) &&
->> @@ -894,7 +901,8 @@ e1000_probe(struct pci_dev *pdev,
->>          pci_using_dac = 0;
->>      }
->>
->> -    if ((err = pci_request_regions(pdev, e1000_driver_name)))
->> +    err = pci_request_selected_regions(pdev, bars, e1000_driver_name);
->> +    if (err)
->>          goto err_pci_reg;
->>
->>      pci_set_master(pdev);
->> @@ -913,6 +921,7 @@ e1000_probe(struct pci_dev *pdev,
->>      adapter->pdev = pdev;
->>      adapter->hw.back = adapter;
->>      adapter->msg_enable = (1 << debug) - 1;
->> +    adapter->bars = bars;
->>
->>      mmio_start = pci_resource_start(pdev, BAR_0);
->>      mmio_len = pci_resource_len(pdev, BAR_0);
->> @@ -922,12 +931,15 @@ e1000_probe(struct pci_dev *pdev,
->>      if (!adapter->hw.hw_addr)
->>          goto err_ioremap;
->>
->> -    for (i = BAR_1; i <= BAR_5; i++) {
->> -        if (pci_resource_len(pdev, i) == 0)
->> -            continue;
->> -        if (pci_resource_flags(pdev, i) & IORESOURCE_IO) {
->> -            adapter->hw.io_base = pci_resource_start(pdev, i);
->> -            break;
->> +    if (ent->driver_data & E1000_USE_IOPORT) {
->> +        for (i = BAR_1; i <= BAR_5; i++) {
->> +            if (pci_resource_len(pdev, i) == 0)
->> +                continue;
->> +            if (pci_resource_flags(pdev, i) & IORESOURCE_IO) {
->> +                adapter->hw.io_base =
->> +                    pci_resource_start(pdev, i);
->> +                break;
->> +            }
->>          }
->>      }
->>
->> @@ -1190,7 +1202,7 @@ err_sw_init:
->>  err_ioremap:
->>      free_netdev(netdev);
->>  err_alloc_etherdev:
->> -    pci_release_regions(pdev);
->> +    pci_release_selected_regions(pdev, bars);
->>  err_pci_reg:
->>  err_dma:
->>      pci_disable_device(pdev);
->> @@ -1242,7 +1254,7 @@ e1000_remove(struct pci_dev *pdev)
->>      iounmap(adapter->hw.hw_addr);
->>      if (adapter->hw.flash_address)
->>          iounmap(adapter->hw.flash_address);
->> -    pci_release_regions(pdev);
->> +    pci_release_selected_regions(pdev, adapter->bars);
->>
->>      free_netdev(netdev);
->>
->> @@ -5172,7 +5184,7 @@ e1000_resume(struct pci_dev *pdev)
->>
->>      pci_set_power_state(pdev, PCI_D0);
->>      pci_restore_state(pdev);
->> -    if ((err = pci_enable_device(pdev))) {
->> +    if ((err = pci_enable_device_bars(pdev, adapter->bars))) {
->>          printk(KERN_ERR "e1000: Cannot enable PCI device from 
->> suspend\n");
->>          return err;
->>      }
-> 
-> 
+diff --git a/drivers/media/common/ir-keymaps.c
+b/drivers/media/common/ir-keymaps.c
+index cbd1184..5aa293e 100644
+--- a/drivers/media/common/ir-keymaps.c
++++ b/drivers/media/common/ir-keymaps.c
+@@ -1783,3 +1783,72 @@ IR_KEYTAB_TYPE ir_codes_tt_1500[IR_KEYTAB_SIZE] =
+{
+ };
+ 
+ EXPORT_SYMBOL_GPL(ir_codes_tt_1500);
++
++/* 10MOONS TM300 */
++IR_KEYTAB_TYPE ir_codes_10moonstm3[IR_KEYTAB_SIZE] = {
++	[ 0x10 ] = KEY_POWER,           // Power
++	[ 0x0d ] = KEY_MUTE,            // Mute
++	[ 0x1e ] = KEY_TUNER,           // Cable
++	[ 0x00 ] = KEY_VIDEO,           // Composite / S-Video
++	[ 0x01 ] = KEY_RADIO,           // Music
++	[ 0x02 ] = KEY_TEXT,            // Photo
++
++	[ 0x1f ] = KEY_1,
++	[ 0x03 ] = KEY_2,
++	[ 0x04 ] = KEY_3,
++	[ 0x05 ] = KEY_4,
++	[ 0x1c ] = KEY_5,
++	[ 0x06 ] = KEY_6,
++	[ 0x07 ] = KEY_7,
++	[ 0x08 ] = KEY_8,
++	[ 0x1d ] = KEY_9,
++	[ 0x09 ] = KEY_SELECT,          // 2 digit select (-/--)
++	[ 0x0a ] = KEY_0,
++	[ 0x0b ] = KEY_AGAIN,           // Recall
++
++	[ 0x14 ] = KEY_F1,              // Begin
++	[ 0x15 ] = KEY_F2,              // End
++
++	[ 0x16 ] = KEY_CHANNELUP,       // CH+
++	[ 0x12 ] = KEY_CHANNELDOWN,     // CH-
++	[ 0x0c ] = KEY_VOLUMEUP,        // VOL+
++	[ 0x17 ] = KEY_VOLUMEDOWN,      // VOL-
++	[ 0x18 ] = KEY_OK,              // OK
++
++	[ 0x0e ] = KEY_EXIT,            // Exit
++	[ 0x13 ] = KEY_COMPUTER,        // Desktop
++	[ 0x11 ] = KEY_TAB,             // TAB
++	[ 0x19 ] = KEY_CYCLEWINDOWS,    // Switch task
++
++	[ 0x1a ] = KEY_MENU,            // Menu
++	[ 0x1b ] = KEY_ZOOM,            // Fullscreen
++	[ 0x24 ] = KEY_ARCHIVE,         // Time shifting
++	[ 0x20 ] = KEY_SWITCHVIDEOMODE, // Selcect source
++
++	[ 0x3a ] = KEY_RECORD,          // Record
++	[ 0x22 ] = KEY_PLAY,            // Play/Pause
++	[ 0x25 ] = KEY_STOP,            // Stop
++	[ 0x23 ] = KEY_CAMERA,          // Snapshot
++
++	[ 0x28 ] = KEY_BACK,            // Backward <<
++	[ 0x2a ] = KEY_FORWARD,         // Forward >>
++	[ 0x29 ] = KEY_PREVIOUS,        // Back |<<
++	[ 0x2b ] = KEY_NEXT,            // End >>|
++
++	[ 0x2c ] = KEY_PROGRAM,         // Multi-view
++	[ 0x2d ] = KEY_AUDIO,           // Audio Tracks
++	[ 0x2e ] = KEY_SOUND,           // Sound
++	[ 0x2f ] = KEY_SUBTITLE,        // Subtitles
++
++	[ 0x30 ] = KEY_TIME,            // Set timer
++	[ 0x31 ] = KEY_CHANNEL,         // Stereo
++	[ 0x32 ] = KEY_LANGUAGE,        // Language
++	[ 0x33 ] = KEY_TEXT,            // Text
++
++	[ 0x39 ] = KEY_RED,             // RED
++	[ 0x21 ] = KEY_GREEN,           // GREEN
++	[ 0x27 ] = KEY_YELLOW,          // YELLOW
++	[ 0x37 ] = KEY_BLUE,            // BLUE
++};
++
++EXPORT_SYMBOL_GPL(ir_codes_10moonstm3);
+diff --git a/drivers/media/video/saa7134/saa7134-cards.c
+b/drivers/media/video/saa7134/saa7134-cards.c
+index 44f2077..5813509 100644
+--- a/drivers/media/video/saa7134/saa7134-cards.c
++++ b/drivers/media/video/saa7134/saa7134-cards.c
+@@ -4368,6 +4368,7 @@ int saa7134_board_init1(struct saa7134_dev *dev)
+ 	case SAA7134_BOARD_AVERMEDIA_A16AR:
+ 	case SAA7134_BOARD_ENCORE_ENLTV:
+ 	case SAA7134_BOARD_ENCORE_ENLTV_FM:
++	case SAA7134_BOARD_10MOONSTVMASTER3:
+ 		dev->has_remote = SAA7134_REMOTE_GPIO;
+ 		break;
+ 	case SAA7134_BOARD_FLYDVBS_LR300:
+diff --git a/drivers/media/video/saa7134/saa7134-input.c
+b/drivers/media/video/saa7134/saa7134-input.c
+index c0de37e..c87755b 100644
+--- a/drivers/media/video/saa7134/saa7134-input.c
++++ b/drivers/media/video/saa7134/saa7134-input.c
+@@ -333,6 +333,12 @@ int saa7134_input_init1(struct saa7134_dev *dev)
+ 		mask_keyup   = 0x040000;
+ 		polling      = 50; // ms
+ 		break;
++	case SAA7134_BOARD_10MOONSTVMASTER3:
++		ir_codes     = ir_codes_10moonstm3;
++		mask_keycode = 0x4f80000;
++		mask_keyup   = 0x8000000;
++		polling      = 50; //ms
++		break;
+ 	}
+ 	if (NULL == ir_codes) {
+ 		printk("%s: Oops: IR config error [card=%d]\n",
+diff --git a/include/media/ir-common.h b/include/media/ir-common.h
+index 9807a7c..4e4d207 100644
+--- a/include/media/ir-common.h
++++ b/include/media/ir-common.h
+@@ -140,6 +140,7 @@ extern IR_KEYTAB_TYPE
+ir_codes_budget_ci_old[IR_KEYTAB_SIZE];
+ extern IR_KEYTAB_TYPE ir_codes_asus_pc39[IR_KEYTAB_SIZE];
+ extern IR_KEYTAB_TYPE ir_codes_encore_enltv[IR_KEYTAB_SIZE];
+ extern IR_KEYTAB_TYPE ir_codes_tt_1500[IR_KEYTAB_SIZE];
++extern IR_KEYTAB_TYPE ir_codes_10moonstm3[IR_KEYTAB_SIZE];
+ 
+ #endif
+ 
 
 
