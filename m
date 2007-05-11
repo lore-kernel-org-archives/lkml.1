@@ -1,109 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762842AbXEKBYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762966AbXEKBYw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762842AbXEKBYT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 21:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758714AbXEKBYG
+	id S1762966AbXEKBYw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 21:24:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758714AbXEKBYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 21:24:06 -0400
-Received: from ozlabs.org ([203.10.76.45]:43033 "EHLO ozlabs.org"
+	Thu, 10 May 2007 21:24:45 -0400
+Received: from mga03.intel.com ([143.182.124.21]:27334 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754916AbXEKBYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 21:24:05 -0400
-Subject: [PATCH 4/5] lguest block driver feedback tidyups
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-In-Reply-To: <1178846572.23513.29.camel@localhost.localdomain>
-References: <1178846246.23513.21.camel@localhost.localdomain>
-	 <1178846354.23513.23.camel@localhost.localdomain>
-	 <1178846490.23513.27.camel@localhost.localdomain>
-	 <1178846572.23513.29.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 11 May 2007 11:23:52 +1000
-Message-Id: <1178846632.23513.30.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	id S1758671AbXEKBYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 21:24:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,520,1170662400"; 
+   d="scan'208";a="226831247"
+Message-ID: <4643C5D3.3060303@intel.com>
+Date: Thu, 10 May 2007 18:24:35 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+MIME-Version: 1.0
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
+       Doug Chapman <doug.chapman@hp.com>,
+       Jesse Brandeburg <jesse.brandeburg@intel.com>,
+       "e1000-devel@lists.sourceforge.net >> e1000-list" 
+	<e1000-devel@lists.sourceforge.net>
+Subject: Re: 2.6.21-gitX: known regressions
+References: <46430A3D.4030004@googlemail.com> <20070510181044.d0f24e51.akpm@linux-foundation.org>
+In-Reply-To: <20070510181044.d0f24e51.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-1) Use new dma wrapper functions, and handle bind failure (may happen
-   in future)
-2) Use new lgdev_irq() "get me a good interrupt number" function.
-3)  __force the ioremap: guests can use it as normal memory.
+Andrew Morton wrote:
+> On Thu, 10 May 2007 14:04:13 +0200
+> Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+> 
+>> Hi all,
+>>
+>> Here is a list of some known regressions in 2.6.21-gitX.
+>>
+>> Feel free to add new regressions/remove fixed etc.
+>> http://kernelnewbies.org/known_regressions
+>>
+>>
+>> Networking:
+>>
+>> Subject    : panic with e1000 driver on HP Integrity servers
+>> References : http://bugzilla.kernel.org/show_bug.cgi?id=8455
+>> Submitter  : Doug Chapman <doug.chapman@hp.com>
+>> Caused-By  : Auke Kok <auke-jan.h.kok@intel.com>
+>>              commit e0aac5a289b1dacbc94bd9ae8c449bcdf9ab508c
+>> Status     : Unknown
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- drivers/block/lguest_blk.c |   16 ++++++++++------
- 1 file changed, 10 insertions(+), 6 deletions(-)
+We're trying to reproduce this in our labs here but that piece of code has been 
+extensively tested on various platforms and architectures, so I'm a bit 
+surprised about it. I've asked for more info on the bugzilla as well.
 
-===================================================================
---- a/drivers/block/lguest_blk.c
-+++ b/drivers/block/lguest_blk.c
-@@ -123,7 +123,7 @@ static void do_write(struct blockdev *bd
- 	pr_debug("lgb: WRITE sector %li\n", (long)req->sector);
- 	setup_req(bd, 1, req, &send);
- 
--	hcall(LHCALL_SEND_DMA, bd->phys_addr, __pa(&send), 0);
-+	lguest_send_dma(bd->phys_addr, &send);
- }
- 
- static void do_read(struct blockdev *bd, struct request *req)
-@@ -134,7 +134,7 @@ static void do_read(struct blockdev *bd,
- 	setup_req(bd, 0, req, &bd->dma);
- 
- 	empty_dma(&ping);
--	hcall(LHCALL_SEND_DMA, bd->phys_addr, __pa(&ping), 0);
-+	lguest_send_dma(bd->phys_addr, &ping);
- }
- 
- static void do_lgb_request(request_queue_t *q)
-@@ -183,13 +183,13 @@ static int lguestblk_probe(struct lguest
- 		return -ENOMEM;
- 
- 	spin_lock_init(&bd->lock);
--	bd->irq = lgdev->index+1;
-+	bd->irq = lgdev_irq(lgdev);
- 	bd->req = NULL;
- 	bd->dma.used_len = 0;
- 	bd->dma.len[0] = 0;
- 	bd->phys_addr = (lguest_devices[lgdev->index].pfn << PAGE_SHIFT);
- 
--	bd->lb_page = (void *)ioremap(bd->phys_addr, PAGE_SIZE);
-+	bd->lb_page = (__force void *)ioremap(bd->phys_addr, PAGE_SIZE);
- 	if (!bd->lb_page) {
- 		err = -ENOMEM;
- 		goto out_free_bd;
-@@ -225,7 +225,9 @@ static int lguestblk_probe(struct lguest
- 	if (err)
- 		goto out_cleanup_queue;
- 
--	hcall(LHCALL_BIND_DMA, bd->phys_addr, __pa(&bd->dma), (1<<8)+bd->irq);
-+	err = lguest_bind_dma(bd->phys_addr, &bd->dma, 1, bd->irq);
-+	if (err)
-+		goto out_free_irq;
- 
- 	bd->disk->major = bd->major;
- 	bd->disk->first_minor = 0;
-@@ -241,6 +243,8 @@ static int lguestblk_probe(struct lguest
- 	lgdev->private = bd;
- 	return 0;
- 
-+out_free_irq:
-+	free_irq(bd->irq, bd);
- out_cleanup_queue:
- 	blk_cleanup_queue(bd->disk->queue);
- out_put_disk:
-@@ -248,7 +252,7 @@ out_unregister_blkdev:
- out_unregister_blkdev:
- 	unregister_blkdev(bd->major, "lguestblk");
- out_unmap:
--	iounmap(bd->lb_page);
-+	iounmap((__force void *__iomem)bd->lb_page);
- out_free_bd:
- 	kfree(bd);
- 	return err;
+So, this is being worked on actively.
 
+Cheers,
 
+Auke
