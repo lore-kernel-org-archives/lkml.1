@@ -1,64 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761836AbXEKPGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761569AbXEKPJf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761836AbXEKPGM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 11:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758628AbXEKPF7
+	id S1761569AbXEKPJf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 11:09:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758128AbXEKPJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 11:05:59 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:36283 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757968AbXEKPF6 (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 11:05:58 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 07/10] Linux Kernel Markers - Documentation
-In-Reply-To: Your message of "Thu, 10 May 2007 07:58:47 BST."
-             <20070510065847.GE8019@infradead.org>
-From: Valdis.Kletnieks@vt.edu
-References: <20070510015555.973107048@polymtl.ca> <20070510020917.172554217@polymtl.ca>
-            <20070510065847.GE8019@infradead.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1178895937_3561P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
+	Fri, 11 May 2007 11:09:29 -0400
+Received: from gw.goop.org ([64.81.55.164]:33513 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757968AbXEKPJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 11:09:28 -0400
+Message-ID: <46448726.5040706@goop.org>
+Date: Fri, 11 May 2007 08:09:26 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Ken Chen <kenchen@google.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Alexey Dobriyan <adobriyan@sw.ru>
+Subject: Re: 2.6.21-git11: BUG in loop.ko
+References: <46425EC9.5070209@goop.org>	 <20070509170521.ec2c9ae7.akpm@linux-foundation.org> <b040c32a0705102310m5ec647an2b3aa9f74e2ed450@mail.gmail.com>
+In-Reply-To: <b040c32a0705102310m5ec647an2b3aa9f74e2ed450@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Fri, 11 May 2007 11:05:37 -0400
-Message-ID: <5936.1178895937@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1178895937_3561P
-Content-Type: text/plain; charset=us-ascii
+Ken Chen wrote:
+> So loop_probe() mistakenly returned wrong status and leads to future
+> oops on inconsistent module ref count.  The following patch fixes the
+> issue.
+>
+> Signed-off-by: Ken Chen <kenchen@google.com>
 
-On Thu, 10 May 2007 07:58:47 BST, Christoph Hellwig said:
-> On Wed, May 09, 2007 at 09:56:02PM -0400, Mathieu Desnoyers wrote:
-> > Here is some documentation explaining what is/how to use the Linux
-> > Kernel Markers.
-> 
-> Please remove all references to out of tree code from the kernel documentation.
+Yep, works for me.
 
-[/usr/src/linux-2.6.21-mm2/Documentation] find . | xargs grep /sbin | wc -l
-202
+Acked-by: Jeremy Fitzhardinge <jeremy@goop.org>
 
--ENOPATCH?
-
-(The usefulness of a kernel documentation tree that doesn't mention hotplug,
-udev, modprobe, and initrd, all of which are out-of-tree, is more than slightly
-questionable...)
-
-
---==_Exmh_1178895937_3561P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGRIZBcC3lWbTT17ARAtTsAJ9bJbrytfReP+573nLbOeXqIPSYyACgmeeL
-B+HhBqLQDKAhfx8frUfTVLg=
-=lDgl
------END PGP SIGNATURE-----
-
---==_Exmh_1178895937_3561P--
+    J
