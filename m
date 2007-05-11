@@ -1,60 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759545AbXEKAa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbXEKAdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759545AbXEKAa2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 20:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756290AbXEKAaU
+	id S1760005AbXEKAdW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 20:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbXEKAdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 20:30:20 -0400
-Received: from 81-174-11-161.f5.ngi.it ([81.174.11.161]:56051 "EHLO
-	mail.enneenne.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755718AbXEKAaT (ORCPT
+	Thu, 10 May 2007 20:33:16 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46288 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756290AbXEKAdP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 20:30:19 -0400
-Date: Fri, 11 May 2007 02:30:12 +0200
-From: Rodolfo Giometti <giometti@enneenne.com>
-To: David Miller <davem@davemloft.net>
-Cc: linux-kernel@vger.kernel.org
-Message-ID: <20070511003012.GP11009@enneenne.com>
-References: <20070502193314.GA23367@enneenne.com> <20070510002740.c4350813.akpm@linux-foundation.org> <20070510105837.GB979@enneenne.com> <20070510.040152.39159048.davem@davemloft.net>
-MIME-Version: 1.0
+	Thu, 10 May 2007 20:33:15 -0400
+Date: Fri, 11 May 2007 10:32:57 +1000
+From: David Chinner <dgc@sgi.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: David Chinner <dgc@sgi.com>, Chuck Ebbert <cebbert@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
+Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
+Message-ID: <20070511003257.GL86004887@sgi.com>
+References: <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <46439185.5060207@redhat.com> <464392B4.3070009@goop.org> <464393E1.3050705@redhat.com> <46439491.9010604@goop.org> <20070510225834.GF86004887@sgi.com> <4643A5B2.3060906@goop.org> <20070510232729.GH86004887@sgi.com> <4643AF8F.5040705@goop.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070510.040152.39159048.davem@davemloft.net>
-Organization: GNU/Linux Device Drivers, Embedded Systems and Courses
-X-PGP-Key: gpg --keyserver keyserver.linux.it --recv-keys D25A5633
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-SA-Exim-Connect-IP: 192.168.32.1
-X-SA-Exim-Mail-From: giometti@enneenne.com
-Subject: Info about the new netlink layer userland API
-X-SA-Exim-Version: 4.2 (built Thu, 03 Mar 2005 10:44:12 +0100)
-X-SA-Exim-Scanned: Yes (on mail.enneenne.com)
+In-Reply-To: <4643AF8F.5040705@goop.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 04:01:52AM -0700, David Miller wrote:
+On Thu, May 10, 2007 at 04:49:35PM -0700, Jeremy Fitzhardinge wrote:
+> David Chinner wrote:
+> > Ok, this is important to kow becase we merged a mod around that time
+> > that changes the way we handle the updates to the file size i.e. the
+> > fix for the NULL-files-on-crash problem:
+> >
+> > http://git2.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ba87ea699ebd9dd577bf055ebc4a98200e337542
+> >
+> > and that means the size of the file is not updated to the incore
+> > cached inode until after the data write is complete. The symptoms
+> > being seen would match with a inode-not-being-written-after-last-
+> > data-write-bug in this mod....
+> >   
 > 
-> It's not OK, please use the generic netlink interface and as
-> such you will not need to allocate any numbers at all.
-> 
-> Documentation/networking/generic_netlink.txt gives a link
-> to some infomration on this topic.
+> Yes, that does look like a good candidate.  Should I try to
+> before-and-after this change?
 
-Where can I find some infos about userland programming _without_ using
-the libnl library?
+Yes please!
 
-There are something similar to the magic command:
+Cheers,
 
-   ret = socket(PF_NETLINK, SOCK_RAW, NETLINK_PPSAPI);
-
-in this new netlink API?
-
-Thanks for your help,
-
-Rodolfo
-
+Dave.
 -- 
-
-GNU/Linux Solutions                  e-mail:    giometti@enneenne.com
-Linux Device Driver                             giometti@gnudd.com
-Embedded Systems                     		giometti@linux.it
-UNIX programming                     phone:     +39 349 2432127
+Dave Chinner
+Principal Engineer
+SGI Australian Software Group
