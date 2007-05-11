@@ -1,36 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbXEKDfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758546AbXEKD7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759290AbXEKDfZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 23:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbXEKDfP
+	id S1758546AbXEKD7u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 23:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbXEKD7n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 23:35:15 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:42202
+	Thu, 10 May 2007 23:59:43 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45334
 	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbXEKDfO (ORCPT
+	with ESMTP id S1752994AbXEKD7n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 23:35:14 -0400
+	Thu, 10 May 2007 23:59:43 -0400
 From: Rob Landley <rob@landley.net>
 To: linux-kernel@vger.kernel.org
-Subject: 3 years since last 2.2 release, why still on kernel.org main page?
-Date: Thu, 10 May 2007 23:34:43 -0400
+Subject: 2.6.21 broke arm scsi on qemu -M volatilepb
+Date: Thu, 10 May 2007 23:59:10 -0400
 User-Agent: KMail/1.9.1
-Cc: "H. Peter Anvin" <hpa@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705102334.44077.rob@landley.net>
+Message-Id: <200705102359.11315.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Out of curiosity, since 2.2 hasn't had a release in 3 years, and the last 
-prepatch was 2 years ago, why is its' status still on the kernel.org main 
-page?
+Booting a 2.6.20 kernel under qemu works fine and gets me to a shell prompt, 
+but booting a 2.6.21.1 kernel cycles endlessly on scsi, going:
 
-Not exactly something people are checking the status of on a daily basis...
+Loading iSCSI transport class v2.0-724.
+PCI: enabling device 0000:00:0c.0 (0140 -> 0143)
+sym0: <895a> rev 0x0 at pci 0000:00:0c.0 irq 0
+sym0: No NVRAM, ID 7, Fast-40, LVD, parity checking
+sym0: SCSI BUS has been reset.
+scsi0 : sym-2.2.3
+scsi 0:0:0:0: ABORT operation started.
+scsi 0:0:0:0: ABORT operation timed-out.
+scsi 0:0:0:0: DEVICE RESET operation started.
+scsi 0:0:0:0: DEVICE RESET operation timed-out.
+scsi 0:0:0:0: BUS RESET operation started.
+scsi 0:0:0:0: BUS RESET operation timed-out.
+scsi 0:0:0:0: HOST RESET operation started.
+sym0: SCSI BUS has been reset.
+...
+And so on.
 
-Just wondering...
+If you're interested in reproducing this, download the most recent 
+http://landley.net/hg/firmware snapshot (links up top), run "./build.sh 
+armv4l", and when that's done "cd build" and "./run-armv4l.sh".
+
+Is this a known issue?  A quick google for "arm scsi 2.6.21" didn't turn up 
+anything relevant...
 
 Rob
