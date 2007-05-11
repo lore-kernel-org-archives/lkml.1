@@ -1,70 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760042AbXEKHWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759550AbXEKHZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760042AbXEKHWn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 03:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754505AbXEKHWf
+	id S1759550AbXEKHZj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 03:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbXEKHZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 03:22:35 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:53648 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754183AbXEKHWe (ORCPT
+	Fri, 11 May 2007 03:25:33 -0400
+Received: from wx-out-0506.google.com ([66.249.82.224]:3836 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754505AbXEKHZc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 03:22:34 -0400
-Date: Fri, 11 May 2007 09:22:20 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Phillip Susi <psusi@cfl.rr.com>, david@lang.hm,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Adrian Bunk <bunk@stusta.de>, Greg K-H <greg@kroah.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Please revert 5adc55da4a7758021bcc374904b0f8b076508a11
- (PCI_MULTITHREAD_PROBE)
-Message-ID: <20070511092220.7d449001@gondolin.boeblingen.de.ibm.com>
-In-Reply-To: <4643327A.4090906@s5r6.in-berlin.de>
-References: <20070508153713.344cc881@gondolin.boeblingen.de.ibm.com>
-	<20070508141149.GJ4226@stusta.de>
-	<alpine.LFD.0.98.0705080819350.3974@woody.linux-foundation.org>
-	<20070508183846.28a94797@gondolin.boeblingen.de.ibm.com>
-	<alpine.LFD.0.98.0705081123080.3974@woody.
- <46424D44.2040003@s5r6.in-berlin.de>
-	<46432AF8.9050505@cfl.rr.com>
-	<4643327A.4090906@s5r6.in-berlin.de>
-Organization: IBM Deutschland Entwicklung GmbH
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
-X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
- Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
- der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 May 2007 03:25:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:mime-version:content-type:content-disposition:user-agent;
+        b=kJAKKKbDgulhcZs1tz17QgtliSRWVgpZE8FBBJX3omZuwwndAfaDQBnL5OyGHaZelQaq4Q3pINnNAN4FV9cRRlSxDi9pyqplGWE+pfjBQTzqoqoOiNH7mk+OF898bGTCbWQ6KZz4e9W9YQywPFGPYB+duWVhwTrKoeIwjLVzD9U=
+Date: Fri, 11 May 2007 11:25:00 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Ben Fennema <bfennema@falcon.csc.calpoly.edu>
+Subject: [PATCH] UDF: check for allocated memory for inode data v2
+Message-ID: <20070511072500.GA9444@cvg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 16:55:54 +0200,
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+This patch adds checking for granted memory while filling up inode data
+to prevent possible NULL pointer usage. If there is not enough memory
+to fill inode data we just mark it as "bad". Also some whitespace cleanup.
 
-> Phillip Susi wrote:
-> > Stefan Richter wrote:
-> >> The SCSI stack already has infrastructure for multi-threaded discovery
-> >> and probing.
-> > 
-> > So?  It would still benefit from using a generic framework that other 
-> > buses can use as well.
-> 
-> Perhaps, perhaps not.  Many details of the If and How of asynchronous,
-> parallelized probing rest with the low-level drivers.
+Signed-off-by: Cyrill Gorcunov <gorcunov@gmail.com>
 
-A mix of bus/driver parallelism would probably be the most flexible
-approach.
+---
 
-> [BTW, which ever team attempts to design this generic framework please
-> brings in detailed knowledge of a variety of bus architectures.  I for
-> one would like to contribute with what I know about IEEE 1394, but
-> before that I still have to experiment on my own before I have a good
-> understanding of how to parallelize IEEE 1394 scanning and probing, and
-> the IEEE 1394 core is being radically reworked at the moment anyway.]
+Andrew, don't be surprised with coding style - I've tried to keep the
+same style as the whole file has.
 
-I guess I'm too tainted by s390 :/ (which in comparison provides a
-quite unified way at probing), but I'd be happy to contibute my
-experiences as well.
+ fs/udf/inode.c |   51 +++++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 39 insertions(+), 12 deletions(-)
+
+diff --git a/fs/udf/inode.c b/fs/udf/inode.c
+index c846155..696cbcc 100644
+--- a/fs/udf/inode.c
++++ b/fs/udf/inode.c
+@@ -49,6 +49,7 @@ MODULE_LICENSE("GPL");
+ static mode_t udf_convert_permissions(struct fileEntry *);
+ static int udf_update_inode(struct inode *, int);
+ static void udf_fill_inode(struct inode *, struct buffer_head *);
++static int udf_alloc_i_data(struct inode *inode, size_t size);
+ static struct buffer_head *inode_getblk(struct inode *, sector_t, int *,
+ 	long *, int *);
+ static int8_t udf_insert_aext(struct inode *, struct extent_position,
+@@ -721,7 +722,7 @@ static void udf_split_extents(struct inode *inode, int *c, int offset, int newbl
+ 			(*c) ++;
+ 			(*endnum) ++;
+ 		}
+-		
++
+ 		laarr[curr].extLocation.logicalBlockNum = newblocknum;
+ 		if (etype == (EXT_NOT_RECORDED_NOT_ALLOCATED >> 30))
+ 			laarr[curr].extLocation.partitionReferenceNum =
+@@ -823,7 +824,7 @@ static void udf_prealloc_extents(struct inode *inode, int c, int lastblock,
+ 				{
+ 					numalloc -= elen;
+ 					if (*endnum > (i+1))
+-						memmove(&laarr[i], &laarr[i+1], 
++						memmove(&laarr[i], &laarr[i+1],
+ 							sizeof(long_ad) * (*endnum - (i+1)));
+ 					i --;
+ 					(*endnum) --;
+@@ -1011,7 +1012,7 @@ void udf_truncate(struct inode * inode)
+ 	{
+ 		block_truncate_page(inode->i_mapping, inode->i_size, udf_get_block);
+ 		udf_truncate_extents(inode);
+-	}	
++	}
+ 
+ 	inode->i_mtime = inode->i_ctime = current_fs_time(inode->i_sb);
+ 	if (IS_SYNC(inode))
+@@ -1074,10 +1075,10 @@ __udf_read_inode(struct inode *inode)
+ 			{
+ 				kernel_lb_addr loc;
+ 				ie = (struct indirectEntry *)ibh->b_data;
+-	
++
+ 				loc = lelb_to_cpu(ie->indirectICB.extLocation);
+-	
+-				if (ie->indirectICB.extLength && 
++
++				if (ie->indirectICB.extLength &&
+ 					(nbh = udf_read_ptagged(inode->i_sb, loc, 0, &ident)))
+ 				{
+ 					if (ident == TAG_IDENT_FE ||
+@@ -1143,14 +1144,22 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 	{
+ 		UDF_I_EFE(inode) = 1;
+ 		UDF_I_USE(inode) = 0;
+-		UDF_I_DATA(inode) = kmalloc(inode->i_sb->s_blocksize - sizeof(struct extendedFileEntry), GFP_KERNEL);
++		if (udf_alloc_i_data(inode, inode->i_sb->s_blocksize - sizeof(struct extendedFileEntry)))
++		{
++			make_bad_inode(inode);
++			return;
++		}
+ 		memcpy(UDF_I_DATA(inode), bh->b_data + sizeof(struct extendedFileEntry), inode->i_sb->s_blocksize - sizeof(struct extendedFileEntry));
+ 	}
+ 	else if (le16_to_cpu(fe->descTag.tagIdent) == TAG_IDENT_FE)
+ 	{
+ 		UDF_I_EFE(inode) = 0;
+ 		UDF_I_USE(inode) = 0;
+-		UDF_I_DATA(inode) = kmalloc(inode->i_sb->s_blocksize - sizeof(struct fileEntry), GFP_KERNEL);
++		if (udf_alloc_i_data(inode, inode->i_sb->s_blocksize - sizeof(struct fileEntry)))
++		{
++			make_bad_inode(inode);
++			return;
++		}
+ 		memcpy(UDF_I_DATA(inode), bh->b_data + sizeof(struct fileEntry), inode->i_sb->s_blocksize - sizeof(struct fileEntry));
+ 	}
+ 	else if (le16_to_cpu(fe->descTag.tagIdent) == TAG_IDENT_USE)
+@@ -1160,7 +1169,11 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 		UDF_I_LENALLOC(inode) =
+ 			le32_to_cpu(
+ 				((struct unallocSpaceEntry *)bh->b_data)->lengthAllocDescs);
+-		UDF_I_DATA(inode) = kmalloc(inode->i_sb->s_blocksize - sizeof(struct unallocSpaceEntry), GFP_KERNEL);
++		if (udf_alloc_i_data(inode, inode->i_sb->s_blocksize - sizeof(struct unallocSpaceEntry)))
++		{
++			make_bad_inode(inode);
++			return;
++		}
+ 		memcpy(UDF_I_DATA(inode), bh->b_data + sizeof(struct unallocSpaceEntry), inode->i_sb->s_blocksize - sizeof(struct unallocSpaceEntry));
+ 		return;
+ 	}
+@@ -1178,7 +1191,7 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 	inode->i_nlink = le16_to_cpu(fe->fileLinkCount);
+ 	if (!inode->i_nlink)
+ 		inode->i_nlink = 1;
+-	
++
+ 	inode->i_size = le64_to_cpu(fe->informationLength);
+ 	UDF_I_LENEXTENTS(inode) = inode->i_size;
+ 
+@@ -1230,7 +1243,7 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 	}
+ 	else
+ 	{
+-		inode->i_blocks = le64_to_cpu(efe->logicalBlocksRecorded) << 
++		inode->i_blocks = le64_to_cpu(efe->logicalBlocksRecorded) <<
+ 			(inode->i_sb->s_blocksize_bits - 9);
+ 
+ 		if ( udf_stamp_to_time(&convtime, &convtime_usec,
+@@ -1361,6 +1374,20 @@ static void udf_fill_inode(struct inode *inode, struct buffer_head *bh)
+ 	}
+ }
+ 
++static int udf_alloc_i_data(struct inode *inode, size_t size)
++{
++	UDF_I_DATA(inode) = kmalloc(size, GFP_KERNEL);
++
++	if (!UDF_I_DATA(inode))
++	{
++		printk(KERN_ERR "udf:udf_alloc_i_data (ino %ld) no free memory\n",
++		       inode->i_ino);
++		return -ENOMEM;
++	}
++
++	return 0;
++}
++
+ static mode_t
+ udf_convert_permissions(struct fileEntry *fe)
+ {
+@@ -2059,7 +2086,7 @@ int8_t udf_delete_aext(struct inode *inode, struct extent_position epos,
+ 			mark_buffer_dirty_inode(oepos.bh, inode);
+ 		}
+ 	}
+-	
++
+ 	brelse(epos.bh);
+ 	brelse(oepos.bh);
+ 	return (elen >> 30);
