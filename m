@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030297AbXEKUwz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933826AbXEKUxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030297AbXEKUwz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:52:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966092AbXEKUwi
+	id S933826AbXEKUxg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758673AbXEKUx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:52:38 -0400
-Received: from main.gmane.org ([80.91.229.2]:55220 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S966053AbXEKUwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:52:36 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?ISO-8859-15?Q?Ren=E9_Scharfe?= <rene.scharfe@lsrfire.ath.cx>
-Subject: Re: [patch 3/7] add kstrndup
-Date: Fri, 11 May 2007 22:52:09 +0200
-Message-ID: <4644D779.30908@lsrfire.ath.cx>
-References: <20070510235708.155502000@goop.org> <20070511000027.091968000@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@sea.gmane.org
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>,
-       Akinobu Mita <akinobu.mita@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@mandriva.com>,
-       Al Viro <viro@ftp.linux.org.uk>, Panagiotis Issaris <takis@issaris.org>
-X-Gmane-NNTP-Posting-Host: p508e63b7.dip.t-dialin.net
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
-In-Reply-To: <20070511000027.091968000@goop.org>
+	Fri, 11 May 2007 16:53:27 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:43564 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760572AbXEKUxZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 16:53:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=c4DUcJ0RF9p8GopyB2zZ6zVBXUe8vtHX3RecucJdRfu0HtEzzNibvsyMYOywI906nmiXKwLfbIGupVfvmpAqwU3Ktsqdx6Q2vm8Jaq3WXYR6LUJ1AIR8MVoMFZ3O5iUnTbse9Wh1beCtJuNk6qEEBkS365lEAsXEPk2VaVchLTc=
+Message-ID: <4644D72C.9000401@gmail.com>
+Date: Fri, 11 May 2007 22:50:52 +0200
+From: Rene Herman <rene.herman@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+MIME-Version: 1.0
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rusty Russell <rusty@rustcorp.com.au>,
+       bunk@stusta.de, randy.dunlap@oracle.com, akpm@linux-foundation.org,
+       rpjday@mindspring.com, marcel@holtmann.org, hch@infradead.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] module_author: don't advice putting in an email address
+References: <4643BDF2.9030105@gmail.com> <20070511114605.4c2698ec@the-village.bc.nu> <alpine.DEB.0.98.0705110740420.12363@sigma.j-a-k-j.com>
+In-Reply-To: <alpine.DEB.0.98.0705110740420.12363@sigma.j-a-k-j.com>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	len = strlen(s);
-> +	if (len > max)
-> +		len = max;
+On 05/11/2007 01:42 PM, John Anthony Kazos Jr. wrote:
 
-You can avoid to run beyond max and save two lines by using strnlen:
+> Can't we just subtitle it somehow? Add tags: " (current maintainer)", "
+> (original author, inactive)", " (bug and defect reports)", or whatever 
+> you like after the names.
 
-	len = strnlen(s, max);
+Yes, that's close to Rusty's version of the original MODULE_MAINTAINER proposal:
 
-René
+http://lkml.org/lkml/2007/4/23/115
+
+If I have the "ignore those other addresses you see listed here please, this 
+is the contact address" method this would provide, I don't believe more 
+annotations would be needed really.
+
+Rene.
 
