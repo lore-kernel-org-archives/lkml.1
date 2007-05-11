@@ -1,197 +1,476 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763447AbXEKTQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763423AbXEKTR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763447AbXEKTQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761990AbXEKTLF
+	id S1763423AbXEKTR3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761849AbXEKTLI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:11:05 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35320 "EHLO
+	Fri, 11 May 2007 15:11:08 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35323 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965818AbXEKTLB (ORCPT
+	with ESMTP id S1761755AbXEKTLG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:11:01 -0400
-Message-Id: <20070511001209.268040000@goop.org>
+	Fri, 11 May 2007 15:11:06 -0400
+Message-Id: <20070511001158.013752000@goop.org>
 References: <20070511000643.025196000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:07:09 -0700
+Date: Thu, 10 May 2007 17:06:50 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: [patch 26/28]xen: handle external requests for shutdown, reboot and sysrq
-Content-Disposition: inline; filename=xen-management.patch
+       Xen-devel <xen-devel@lists.xensource.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [patch 07/28]xen: xen time implementation
+Content-Disposition: inline; filename=xen-time.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The guest domain can be asked to shutdown or reboot itself, or have a
-sysrq key injected, via xenbus.  This patch adds a watcher for those
-events, and does the appropriate action.
+Time is implemented by using a clocksource which is driven from the
+hypervisor's nanosecond timebase.  Xen implements time by
+extrapolating from known timestamps using the tsc; the hypervisor is
+responsible for making sure that the tsc is constant rate and
+synchronized between vcpus.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 
 ---
- arch/i386/xen/Makefile |    2 
- arch/i386/xen/manage.c |  143 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 144 insertions(+), 1 deletion(-)
+ arch/i386/xen/Makefile    |    2 
+ arch/i386/xen/enlighten.c |    6 
+ arch/i386/xen/time.c      |  402 +++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 409 insertions(+), 1 deletion(-)
 
 ===================================================================
 --- a/arch/i386/xen/Makefile
 +++ b/arch/i386/xen/Makefile
-@@ -1,4 +1,4 @@ obj-y		:= enlighten.o setup.o features.o
+@@ -1,2 +1,2 @@ obj-y		:= enlighten.o setup.o features.o
  obj-y		:= enlighten.o setup.o features.o multicalls.o mmu.o \
--			events.o time.o
-+			events.o time.o manage.o
+-			events.o
++			events.o time.o
+===================================================================
+--- a/arch/i386/xen/enlighten.c
++++ b/arch/i386/xen/enlighten.c
+@@ -595,6 +595,12 @@ static const struct paravirt_ops xen_par
+ 	.arch_setup = xen_arch_setup,
+ 	.init_IRQ = xen_init_IRQ,
  
- obj-$(CONFIG_SMP)	+= smp.o
++	.time_init = xen_time_init,
++	.set_wallclock = xen_set_wallclock,
++	.get_wallclock = xen_get_wallclock,
++	.get_cpu_khz = xen_cpu_khz,
++	.sched_clock = xen_clocksource_read,
++
+ 	.cpuid = xen_cpuid,
+ 
+ 	.set_debugreg = xen_set_debugreg,
 ===================================================================
 --- /dev/null
-+++ b/arch/i386/xen/manage.c
-@@ -0,0 +1,143 @@
++++ b/arch/i386/xen/time.c
+@@ -0,0 +1,402 @@
 +/*
-+ * Handle extern requests for shutdown, reboot and sysrq
++ * Xen time implementation.
++ *
++ * This is implemented in terms of a clocksource driver which uses
++ * the hypervisor clock as a nanosecond timebase, and a clockevent
++ * driver which uses the hypervisor's timer mechanism.
++ *
++ * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
 + */
 +#include <linux/kernel.h>
-+#include <linux/err.h>
-+#include <linux/reboot.h>
-+#include <linux/sysrq.h>
++#include <linux/interrupt.h>
++#include <linux/clocksource.h>
++#include <linux/clockchips.h>
 +
-+#include <xen/xenbus.h>
++#include <asm/xen/hypervisor.h>
++#include <asm/xen/hypercall.h>
 +
-+#define SHUTDOWN_INVALID  -1
-+#define SHUTDOWN_POWEROFF  0
-+#define SHUTDOWN_SUSPEND   2
-+/* Code 3 is SHUTDOWN_CRASH, which we don't use because the domain can only
-+ * report a crash, not be instructed to crash!
-+ * HALT is the same as POWEROFF, as far as we're concerned.  The tools use
-+ * the distinction when we return the reason code to them.
++#include <xen/events.h>
++#include <xen/interface/xen.h>
++#include <xen/interface/vcpu.h>
++
++#include "xen-ops.h"
++
++#define XEN_SHIFT 22
++#define TIMER_SLOP	100000	/* Xen may fire a timer up to this many ns early */
++
++/* These are perodically updated in shared_info, and then copied here. */
++struct shadow_time_info {
++	u64 tsc_timestamp;     /* TSC at last update of time vals.  */
++	u64 system_timestamp;  /* Time, in nanosecs, since boot.    */
++	u32 tsc_to_nsec_mul;
++	int tsc_shift;
++	u32 version;
++};
++
++static DEFINE_PER_CPU(struct shadow_time_info, shadow_time);
++
++unsigned long xen_cpu_khz(void)
++{
++	u64 cpu_khz = 1000000ULL << 32;
++	const struct vcpu_time_info *info =
++		&HYPERVISOR_shared_info->vcpu_info[0].time;
++
++	do_div(cpu_khz, info->tsc_to_system_mul);
++	if (info->tsc_shift < 0)
++		cpu_khz <<= -info->tsc_shift;
++	else
++		cpu_khz >>= info->tsc_shift;
++
++	return cpu_khz;
++}
++
++/*
++ * Reads a consistent set of time-base values from Xen, into a shadow data
++ * area.
 + */
-+#define SHUTDOWN_HALT      4
-+
-+/* Ignore multiple shutdown requests. */
-+static int shutting_down = SHUTDOWN_INVALID;
-+
-+static void shutdown_handler(struct xenbus_watch *watch,
-+			     const char **vec, unsigned int len)
++static void get_time_values_from_xen(void)
 +{
-+	char *str;
-+	struct xenbus_transaction xbt;
-+	int err;
++	struct vcpu_time_info   *src;
++	struct shadow_time_info *dst;
 +
-+	if (shutting_down != SHUTDOWN_INVALID)
-+		return;
++	preempt_disable();
 +
-+ again:
-+	err = xenbus_transaction_start(&xbt);
-+	if (err)
-+		return;
++	src = &__get_cpu_var(xen_vcpu)->time;
++	dst = &__get_cpu_var(shadow_time);
 +
-+	str = (char *)xenbus_read(xbt, "control", "shutdown", NULL);
-+	/* Ignore read errors and empty reads. */
-+	if (XENBUS_IS_ERR_READ(str)) {
-+		xenbus_transaction_end(xbt, 1);
-+		return;
-+	}
++	do {
++		dst->version = src->version;
++		rmb();
++		dst->tsc_timestamp     = src->tsc_timestamp;
++		dst->system_timestamp  = src->system_time;
++		dst->tsc_to_nsec_mul   = src->tsc_to_system_mul;
++		dst->tsc_shift         = src->tsc_shift;
++		rmb();
++	} while ((src->version & 1) | (dst->version ^ src->version));
 +
-+	xenbus_write(xbt, "control", "shutdown", "");
-+
-+	err = xenbus_transaction_end(xbt, 0);
-+	if (err == -EAGAIN) {
-+		kfree(str);
-+		goto again;
-+	}
-+
-+	if (strcmp(str, "poweroff") == 0 ||
-+	    strcmp(str, "halt") == 0)
-+		orderly_poweroff(false);
-+	else if (strcmp(str, "reboot") == 0)
-+		ctrl_alt_del();
-+	else {
-+		printk("Ignoring shutdown request: %s\n", str);
-+		shutting_down = SHUTDOWN_INVALID;
-+	}
-+
-+	kfree(str);
++	preempt_enable();
 +}
 +
-+static void sysrq_handler(struct xenbus_watch *watch, const char **vec,
-+			  unsigned int len)
++/*
++ * Scale a 64-bit delta by scaling and multiplying by a 32-bit fraction,
++ * yielding a 64-bit result.
++ */
++static inline u64 scale_delta(u64 delta, u32 mul_frac, int shift)
 +{
-+	char sysrq_key = '\0';
-+	struct xenbus_transaction xbt;
-+	int err;
++	u64 product;
++#ifdef __i386__
++	u32 tmp1, tmp2;
++#endif
 +
-+ again:
-+	err = xenbus_transaction_start(&xbt);
-+	if (err)
-+		return;
-+	if (!xenbus_scanf(xbt, "control", "sysrq", "%c", &sysrq_key)) {
-+		printk(KERN_ERR "Unable to read sysrq code in "
-+		       "control/sysrq\n");
-+		xenbus_transaction_end(xbt, 1);
-+		return;
-+	}
++	if (shift < 0)
++		delta >>= -shift;
++	else
++		delta <<= shift;
 +
-+	if (sysrq_key != '\0')
-+		xenbus_printf(xbt, "control", "sysrq", "%c", '\0');
++#ifdef __i386__
++	__asm__ (
++		"mul  %5       ; "
++		"mov  %4,%%eax ; "
++		"mov  %%edx,%4 ; "
++		"mul  %5       ; "
++		"xor  %5,%5    ; "
++		"add  %4,%%eax ; "
++		"adc  %5,%%edx ; "
++		: "=A" (product), "=r" (tmp1), "=r" (tmp2)
++		: "a" ((u32)delta), "1" ((u32)(delta >> 32)), "2" (mul_frac) );
++#elif __x86_64__
++	__asm__ (
++		"mul %%rdx ; shrd $32,%%rdx,%%rax"
++		: "=a" (product) : "0" (delta), "d" ((u64)mul_frac) );
++#else
++#error implement me!
++#endif
 +
-+	err = xenbus_transaction_end(xbt, 0);
-+	if (err == -EAGAIN)
-+		goto again;
-+
-+	if (sysrq_key != '\0')
-+		handle_sysrq(sysrq_key, NULL);
++	return product;
 +}
 +
-+static struct xenbus_watch shutdown_watch = {
-+	.node = "control/shutdown",
-+	.callback = shutdown_handler
-+};
-+
-+static struct xenbus_watch sysrq_watch = {
-+	.node = "control/sysrq",
-+	.callback = sysrq_handler
-+};
-+
-+static int setup_shutdown_watcher(void)
++static u64 get_nsec_offset(struct shadow_time_info *shadow)
 +{
-+	int err;
++	u64 now, delta;
++	rdtscll(now);
++	delta = now - shadow->tsc_timestamp;
++	return scale_delta(delta, shadow->tsc_to_nsec_mul, shadow->tsc_shift);
++}
 +
-+	err = register_xenbus_watch(&shutdown_watch);
-+	if (err) {
-+		printk(KERN_ERR "Failed to set shutdown watcher\n");
-+		return err;
-+	}
++cycle_t xen_clocksource_read(void)
++{
++	struct shadow_time_info *shadow = &get_cpu_var(shadow_time);
++	cycle_t ret;
 +
-+	err = register_xenbus_watch(&sysrq_watch);
-+	if (err) {
-+		printk(KERN_ERR "Failed to set sysrq watcher\n");
-+		return err;
++	get_time_values_from_xen();
++
++	ret = shadow->system_timestamp + get_nsec_offset(shadow);
++
++	put_cpu_var(shadow_time);
++
++	return ret;
++}
++
++static void xen_read_wallclock(struct timespec *ts)
++{
++	const struct shared_info *s = HYPERVISOR_shared_info;
++	u32 version;
++	u64 delta;
++	struct timespec now;
++
++	/* get wallclock at system boot */
++	do {
++		version = s->wc_version;
++		rmb();
++		now.tv_sec  = s->wc_sec;
++		now.tv_nsec = s->wc_nsec;
++		rmb();
++	} while ((s->wc_version & 1) | (version ^ s->wc_version));
++
++	delta = xen_clocksource_read();	/* time since system boot */
++	delta += now.tv_sec * (u64)NSEC_PER_SEC + now.tv_nsec;
++
++	now.tv_nsec = do_div(delta, NSEC_PER_SEC);
++	now.tv_sec = delta;
++
++	set_normalized_timespec(ts, now.tv_sec, now.tv_nsec);
++}
++
++unsigned long xen_get_wallclock(void)
++{
++	struct timespec ts;
++
++	xen_read_wallclock(&ts);
++
++	return ts.tv_sec;
++}
++
++int xen_set_wallclock(unsigned long now)
++{
++	/* do nothing for domU */
++	return -1;
++}
++
++static struct clocksource xen_clocksource __read_mostly = {
++	.name = "xen",
++	.rating = 400,
++	.read = xen_clocksource_read,
++	.mask = ~0,
++	.mult = 1<<XEN_SHIFT,		/* time directly in nanoseconds */
++	.shift = XEN_SHIFT,
++	.flags = CLOCK_SOURCE_IS_CONTINUOUS,
++};
++
++/*
++   Xen clockevent implementation
++
++   Xen has two clockevent implementations:
++
++   The old timer_op one works with all released versions of Xen prior
++   to version 3.0.4.  This version of the hypervisor provides a
++   single-shot timer with nanosecond resolution.  However, sharing the
++   same event channel is a 100Hz tick which is delivered while the
++   vcpu is running.  We don't care about or use this tick, but it will
++   cause the core time code to think the timer fired too soon, and
++   will end up resetting it each time.  It could be filtered, but
++   doing so has complications when the ktime clocksource is not yet
++   the xen clocksource (ie, at boot time).
++
++   The new vcpu_op-based timer interface allows the tick timer period
++   to be changed or turned off.  The tick timer is not useful as a
++   periodic timer because events are only delivered to running vcpus.
++   The one-shot timer can report when a timeout is in the past, so
++   set_next_event is capable of returning -ETIME when appropriate.
++   This interface is used when available.
++*/
++
++
++/*
++  Get a hypervisor absolute time.  In theory we could maintain an
++  offset between the kernel's time and the hypervisor's time, and
++  apply that to a kernel's absolute timeout.  Unfortunately the
++  hypervisor and kernel times can drift even if the kernel is using
++  the Xen clocksource, because ntp can warp the kernel's clocksource.
++*/
++static s64 get_abs_timeout(unsigned long delta)
++{
++	return xen_clocksource_read() + delta;
++}
++
++static void xen_timerop_set_mode(enum clock_event_mode mode,
++				 struct clock_event_device *evt)
++{
++	switch(mode) {
++	case CLOCK_EVT_MODE_PERIODIC:
++		/* unsupported */
++		WARN_ON(1);
++		break;
++
++	case CLOCK_EVT_MODE_ONESHOT:
++		break;
++
++	case CLOCK_EVT_MODE_UNUSED:
++	case CLOCK_EVT_MODE_SHUTDOWN:
++		HYPERVISOR_set_timer_op(0);  /* cancel timeout */
++		break;
 +	}
++}
++
++static int xen_timerop_set_next_event(unsigned long delta,
++				      struct clock_event_device *evt)
++{
++	WARN_ON(evt->mode != CLOCK_EVT_MODE_ONESHOT);
++
++	if (HYPERVISOR_set_timer_op(get_abs_timeout(delta)) < 0)
++		BUG();
++
++	/* We may have missed the deadline, but there's no real way of
++	   knowing for sure.  If the event was in the past, then we'll
++	   get an immediate interrupt. */
 +
 +	return 0;
 +}
 +
-+static int shutdown_event(struct notifier_block *notifier,
-+			  unsigned long event,
-+			  void *data)
++static const struct clock_event_device xen_timerop_clockevent = {
++	.name = "xen",
++	.features = CLOCK_EVT_FEAT_ONESHOT,
++
++	.max_delta_ns = 0xffffffff,
++	.min_delta_ns = TIMER_SLOP,
++
++	.mult = 1,
++	.shift = 0,
++	.rating = 500,
++
++	.set_mode = xen_timerop_set_mode,
++	.set_next_event = xen_timerop_set_next_event,
++};
++
++
++
++static void xen_vcpuop_set_mode(enum clock_event_mode mode,
++				struct clock_event_device *evt)
 +{
-+	setup_shutdown_watcher();
-+	return NOTIFY_DONE;
++	int cpu = smp_processor_id();
++
++	switch(mode) {
++	case CLOCK_EVT_MODE_PERIODIC:
++		WARN_ON(1);	/* unsupported */
++		break;
++
++	case CLOCK_EVT_MODE_ONESHOT:
++		if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL))
++			BUG();
++		break;
++
++	case CLOCK_EVT_MODE_UNUSED:
++	case CLOCK_EVT_MODE_SHUTDOWN:
++		if (HYPERVISOR_vcpu_op(VCPUOP_stop_singleshot_timer, cpu, NULL) ||
++		    HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL))
++			BUG();
++		break;
++	}
 +}
 +
-+static int __init setup_shutdown_event(void)
++static int xen_vcpuop_set_next_event(unsigned long delta,
++				     struct clock_event_device *evt)
 +{
-+	static struct notifier_block xenstore_notifier = {
-+		.notifier_call = shutdown_event
-+	};
-+	register_xenstore_notifier(&xenstore_notifier);
++	int cpu = smp_processor_id();
++	struct vcpu_set_singleshot_timer single;
++	int ret;
 +
-+	return 0;
++	WARN_ON(evt->mode != CLOCK_EVT_MODE_ONESHOT);
++
++	single.timeout_abs_ns = get_abs_timeout(delta);
++	single.flags = VCPU_SSHOTTMR_future;
++
++	ret = HYPERVISOR_vcpu_op(VCPUOP_set_singleshot_timer, cpu, &single);
++
++	BUG_ON(ret != 0 && ret != -ETIME);
++
++	return ret;
 +}
 +
-+subsys_initcall(setup_shutdown_event);
++static const struct clock_event_device xen_vcpuop_clockevent = {
++	.name = "xen",
++	.features = CLOCK_EVT_FEAT_ONESHOT,
++
++	.max_delta_ns = 0xffffffff,
++	.min_delta_ns = TIMER_SLOP,
++
++	.mult = 1,
++	.shift = 0,
++	.rating = 500,
++
++	.set_mode = xen_vcpuop_set_mode,
++	.set_next_event = xen_vcpuop_set_next_event,
++};
++
++static const struct clock_event_device *xen_clockevent =
++	&xen_timerop_clockevent;
++static DEFINE_PER_CPU(struct clock_event_device, xen_clock_events);
++
++static irqreturn_t xen_timer_interrupt(int irq, void *dev_id)
++{
++	struct clock_event_device *evt = &__get_cpu_var(xen_clock_events);
++	irqreturn_t ret;
++
++	ret = IRQ_NONE;
++	if (evt->event_handler) {
++		evt->event_handler(evt);
++		ret = IRQ_HANDLED;
++	}
++
++	return ret;
++}
++
++static void xen_setup_timer(int cpu)
++{
++	const char *name;
++	struct clock_event_device *evt;
++	int irq;
++
++	printk("installing Xen timer for CPU %d\n", cpu);
++
++	name = kasprintf(GFP_KERNEL, "timer%d", cpu);
++	if (!name)
++		name = "<timer kasprintf failed>";
++
++	irq = bind_virq_to_irqhandler(VIRQ_TIMER, cpu, xen_timer_interrupt,
++				      IRQF_DISABLED|IRQF_PERCPU|IRQF_NOBALANCING,
++				      name, NULL);
++
++	evt = &get_cpu_var(xen_clock_events);
++	memcpy(evt, xen_clockevent, sizeof(*evt));
++
++	evt->cpumask = cpumask_of_cpu(cpu);
++	evt->irq = irq;
++	clockevents_register_device(evt);
++
++	put_cpu_var(xen_clock_events);
++}
++
++__init void xen_time_init(void)
++{
++	int cpu = smp_processor_id();
++
++	get_time_values_from_xen();
++
++	clocksource_register(&xen_clocksource);
++
++	if (HYPERVISOR_vcpu_op(VCPUOP_stop_periodic_timer, cpu, NULL) == 0) {
++		/* Successfully turned off 100hz tick, so we have the
++		   vcpuop-based timer interface */
++		printk(KERN_DEBUG "Xen: using vcpuop timer interface\n");
++		xen_clockevent = &xen_vcpuop_clockevent;
++	}
++
++	/* Set initial system time with full resolution */
++	xen_read_wallclock(&xtime);
++	set_normalized_timespec(&wall_to_monotonic,
++				-xtime.tv_sec, -xtime.tv_nsec);
++
++	tsc_disable = 0;
++
++	xen_setup_timer(cpu);
++}
 
 -- 
 
