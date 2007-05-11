@@ -1,123 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762558AbXEKVSM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934331AbXEKVSd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762558AbXEKVSM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 17:18:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762243AbXEKVR6
+	id S934331AbXEKVSd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 17:18:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934075AbXEKVSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 17:17:58 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:35628 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760600AbXEKVR6 (ORCPT
+	Fri, 11 May 2007 17:18:23 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:45146 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S934232AbXEKVSW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 17:17:58 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=received:date:from:to:cc:subject:message-id:mime-version:
-	content-type:content-disposition:user-agent;
-	b=phpPxgLpoyKc0q0yJWe+Z94UhpTBukg4cwsRiFRqliI9z8/dK3/jAo6/a5eMSSBfO
-	sUz6JxG1UvJKRhMm23qhw==
-Date: Fri, 11 May 2007 14:17:42 -0700
-From: Aaron Durbin <adurbin@google.com>
-To: linux-kernel@vger.kernel.org
-Cc: ak@suse.de, akpm@osdl.org
-Subject: [PATCH] mmconfig x86_64/i386 : Insert unclaimed MMCONFIG resources.
-Message-ID: <20070511211742.GA16395@google.com>
+	Fri, 11 May 2007 17:18:22 -0400
+Date: Fri, 11 May 2007 23:18:23 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Rene Herman <rene.herman@gmail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, randy.dunlap@oracle.com,
+       akpm@linux-foundation.org, rpjday@mindspring.com, marcel@holtmann.org,
+       hch@infradead.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] module_author: don't advice putting in an email address
+Message-ID: <20070511211823.GG7984@stusta.de>
+References: <4643BDF2.9030105@gmail.com> <20070511114605.4c2698ec@the-village.bc.nu> <alpine.DEB.0.98.0705110740420.12363@sigma.j-a-k-j.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+In-Reply-To: <alpine.DEB.0.98.0705110740420.12363@sigma.j-a-k-j.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Insert the unclaimed MMCONFIG resources into the resource tree without the
-IORESOURCE_BUSY flag during late initialization. This allows the MMCONFIG
-regions to be visible in the iomem resource tree without interfering with other
-system resources that were discovered during PCI initialization.
+On Fri, May 11, 2007 at 07:42:38AM -0400, John Anthony Kazos Jr. wrote:
+> > > The email address is the problem I was trying to fix; with multiple current 
+> > > and non-current authors and maintainers who might not even be authors the 
+> > > address(es) available from the tag confuse the issue of whom to contact. 
+> > > It's moreover also information that easily outdated.
+> > > 
+> > > A bit more than half of the tags in the tree don't include an email address 
+> > > already and I'll submit patches removing more...
+> > 
+> > Please don't do this
+> > 
+> > NACK this change.
+> > 
+> > Whether someone puts their email address into the entry is their own
+> > business. We do not need a style police for module author entries.
+> > 
+> > At most you might want to put
+> > 
+> > 	"If you include an email address then please use an address that
+> > 	 you expect to keep for the long term, and if you change address
+> > 	 please remember to update or remove the entry"
+> > 
+> > > A bit more than half of the tags in the tree don't include an email 
+> > > address already and I'll submit patches removing more...
+> > 
+> > And I'll NAK every one which hasn't been signed off by the email address
+> > listed OR the address bounces. In which case removing it is good.
+> 
+> Can't we just subtitle it somehow? Add tags: " (current maintainer)",
+> " (original author, inactive)", " (bug and defect reports)", or whatever 
+> you like after the names.
 
-Signed-off-by: Aaron Durbin <adurbin@google.com>
----
+This still wouldn't solve the following problems:
+- I doubt it will be kept up to date for all > 2800 modules in the kernel
+- the 3 year old kernel of your distribution would contain 3 year old
+  maintainership information
+- maintainers sometimes disappear
 
-Updated to reflect comments from rientjes@google.com.
+The default for "bug and defect reports" should be for all modules (as 
+well as for non-modular code) from ftp.kernel.org kernels either 
+linux-kernel or the kernel Bugzilla. [1]
 
-diff --git a/arch/i386/pci/mmconfig-shared.c b/arch/i386/pci/mmconfig-shared.c
-index 747d8c6..f5267c7 100644
---- a/arch/i386/pci/mmconfig-shared.c
-+++ b/arch/i386/pci/mmconfig-shared.c
-@@ -24,6 +24,9 @@ #define MMCONFIG_APER_MAX	(256 * 1024*10
- 
- DECLARE_BITMAP(pci_mmcfg_fallback_slots, 32*PCI_MMCFG_MAX_CHECK_BUS);
- 
-+/* Indicate if the mmcfg resources have been placed into the resource table. */
-+static int __initdata pci_mmcfg_resources_inserted;
-+
- /* K8 systems have some devices (typically in the builtin northbridge)
-    that are only accessible using type1
-    Normally this can be expressed in the MCFG by not listing them
-@@ -161,7 +164,7 @@ static int __init pci_mmcfg_check_hostbr
- 	return name != NULL;
- }
- 
--static void __init pci_mmcfg_insert_resources(void)
-+static void __init pci_mmcfg_insert_resources(unsigned long resource_flags)
- {
- #define PCI_MMCFG_RESOURCE_NAME_LEN 19
- 	int i;
-@@ -185,10 +188,13 @@ #define PCI_MMCFG_RESOURCE_NAME_LEN 19
- 			 cfg->pci_segment);
- 		res->start = cfg->address;
- 		res->end = res->start + (num_buses << 20) - 1;
--		res->flags = IORESOURCE_MEM | IORESOURCE_BUSY;
-+		res->flags = IORESOURCE_MEM | resource_flags;
- 		insert_resource(&iomem_resource, res);
- 		names += PCI_MMCFG_RESOURCE_NAME_LEN;
- 	}
-+
-+	/* Mark that the resources have been inserted. */
-+	pci_mmcfg_resources_inserted = 1;
- }
- 
- static void __init pci_mmcfg_reject_broken(int type)
-@@ -258,7 +264,42 @@ void __init pci_mmcfg_init(int type)
- 		if (type == 1)
- 			unreachable_devices();
- 		if (known_bridge)
--			pci_mmcfg_insert_resources();
-+			pci_mmcfg_insert_resources(IORESOURCE_BUSY);
- 		pci_probe = (pci_probe & ~PCI_PROBE_MASK) | PCI_PROBE_MMCONF;
--	}
-+	} else
-+		/*
-+		 * Signal not to attempt to insert mmcfg resources because
-+		 * the architecture mmcfg setup could not initialize.
-+		 */
-+		pci_mmcfg_resources_inserted = 1;
-+}
-+
-+static int __init pci_mmcfg_late_insert_resources(void)
-+{
-+	/*
-+	 * If resources are already inserted or we are not using MMCONFIG,
-+	 * don't insert the resources.
-+	 * */
-+	if ((pci_mmcfg_resources_inserted == 1) ||
-+	    (pci_probe & PCI_PROBE_MMCONF) == 0 ||
-+	    (pci_mmcfg_config_num == 0) ||
-+	    (pci_mmcfg_config == NULL) ||
-+	    (pci_mmcfg_config[0].address == 0))
-+		return 1;
-+
-+	/*
-+	 * Attempt to insert the mmcfg resources but not with the busy flag
-+	 * marked so it won't cause request errors when __request_region is
-+	 * called.
-+	 */
-+	pci_mmcfg_insert_resources(0);
-+
-+	return 0;
- }
-+
-+/*
-+ * Perform MMCONFIG resource insertion after PCI initialization to allow for
-+ * misprogrammed MCFG tables that state larger sizes but actually conflict
-+ * with other system resources.
-+ */
-+late_initcall(pci_mmcfg_late_insert_resources);
+For distribution kernels (which are what most users are using), the
+default for "bug and defect reports" should be the distribution support.
+
+cu
+Adrian
+
+[1] contacting the maintainer directly is often better, but there's no 
+    sane way to put this information into the kernel binary
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
