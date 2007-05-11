@@ -1,88 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760702AbXEKGHy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbXEKGLI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760702AbXEKGHy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 02:07:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbXEKGHq
+	id S1760589AbXEKGLI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 02:11:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758851AbXEKGK5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 02:07:46 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:53640 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754568AbXEKGHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 02:07:44 -0400
-Date: Fri, 11 May 2007 11:39:06 +0530
-From: Suparna Bhattacharya <suparna@in.ibm.com>
-To: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       Andrew Morton <akpm@linux-foundation.org>, jeffschroeder@computer.org,
-       Chris Wright <chrisw@sous-sol.org>,
-       Karl MacMillan <kmacmillan@mentalrootkit.com>,
-       KaiGai Kohei <kaigai@kaigai.gr.jp>
-Subject: Re: [PATCH 2/2] file capabilities: accomodate >32 bit capabilities
-Message-ID: <20070511060906.GA7050@in.ibm.com>
-Reply-To: suparna@in.ibm.com
-References: <20070508191548.GA29913@sergelap.austin.ibm.com> <20070508191704.GC29913@sergelap.austin.ibm.com> <20070508205826.GH6375@schatzie.adilger.int> <20070508214914.GA27582@sergelap.austin.ibm.com> <20070510200127.GH6375@schatzie.adilger.int>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 May 2007 02:10:57 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:35423 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756931AbXEKGK4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 02:10:56 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=received:message-id:date:from:to:subject:cc:in-reply-to:
+	mime-version:content-type:content-transfer-encoding:
+	content-disposition:references;
+	b=C5nohhEP6KhGkI4z0CdWwrK6DvTlYkvnlJXF2L0zoz18Q2Ml1wyj5CmyilAxNJJai
+	UsRFXvitcOTEGu+eAk3wA==
+Message-ID: <b040c32a0705102310m5ec647an2b3aa9f74e2ed450@mail.gmail.com>
+Date: Thu, 10 May 2007 23:10:28 -0700
+From: "Ken Chen" <kenchen@google.com>
+To: "Andrew Morton" <akpm@linux-foundation.org>
+Subject: Re: 2.6.21-git11: BUG in loop.ko
+Cc: "Jeremy Fitzhardinge" <jeremy@goop.org>,
+       "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       "Kay Sievers" <kay.sievers@vrfy.org>,
+       "Alexey Dobriyan" <adobriyan@sw.ru>
+In-Reply-To: <20070509170521.ec2c9ae7.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070510200127.GH6375@schatzie.adilger.int>
-User-Agent: Mutt/1.5.11
+References: <46425EC9.5070209@goop.org>
+	 <20070509170521.ec2c9ae7.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 01:01:27PM -0700, Andreas Dilger wrote:
-> On May 08, 2007  16:49 -0500, Serge E. Hallyn wrote:
-> > Quoting Andreas Dilger (adilger@clusterfs.com):
-> > > One of the important use cases I can see today is the ability to
-> > > split the heavily-overloaded e.g. CAP_SYS_ADMIN into much more fine
-> > > grained attributes.
-> > 
-> > Sounds plausible, though it suffers from both making capabilities far
-> > more cumbersome (i.e. finding the right capability for what you wanted
-> > to do) and backward compatibility.  Perhaps at that point we should
-> > introduce security.capabilityv2 xattrs.  A binary can then carry
-> > security.capability=CAP_SYS_ADMIN=p, and
-> > security.capabilityv2=cap_may_clone_mntns=p.
-> 
-> Well, the overhead of each EA is non-trivial (16 bytes/EA) for storing
-> 12 bytes worth of data, so it is probably just better to keep extending
-> the original capability fields as was in the proposal.
-> 
-> > > What we definitely do NOT want to happen is an application that needs
-> > > priviledged access (e.g. e2fsck, mount) to stop running because the
-> > > new capabilities _would_ have been granted by the new kernel and are
-> > > not by the old kernel and STRICTXATTR is used.
-> > > 
-> > > To me it would seem that having extra capabilities on an old kernel
-> > > is relatively harmless if the old kernel doesn't know what they are.
-> > > It's like having a key to a door that you don't know where it is.
-> > 
-> > If we ditch the STRICTXATTR option do the semantics seem sane to you?
-> 
-> Seems reasonable.
+On 5/9/07, Andrew Morton <akpm@linux-foundation.org> wrote:
+> On Wed, 09 May 2007 16:52:41 -0700
+> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+> > Seems to be getting a 0 refcount.  I don't see anything in the recent
+> > changes which might cause this, but this is relatively new behaviour.
+> > It was working for me in the 2.6.21-pre time period, but I haven't tried
+> > this since 2.6.21 was released.
+> >
+> > The BUG is actually triggered by the __module_get(THIS_MODULE) in
+> > loop_set_fd.
+>
+> A few people have been playing with module refcounting lately.  Did you
+> work out a reproduce-it recipe?
 
-It would simplify the code as well, which is good.
+Ah, it's a mis-understanding on what kobj_probe_t function is suppose
+to return on success.  When we open loop device that has not been
+initialized, we probe it via:
 
-This does mean no sanity checking of fcaps, am not sure if that matters,
-I'm guessing it should be similar to the case for other security attributes.
+do_open
+  get_gendisk
+    kobj_lookup
+      loop_probe
 
-Regards
-Suparna
+Notice that in kobj_lookup(), when p->probe() returns non-zero value
+(I presume it is an -ERRNO), it breaks out of the loop and propagate
+the return value, otherwise, loops back to the beginning of the for
+loop and retry, and in there get_disk() will be called via p->lock()
+to get a ref against the module.
 
-> 
-> Cheers, Andreas
-> --
-> Andreas Dilger
-> Principal Software Engineer
-> Cluster File Systems, Inc.
-> 
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-fsdevel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+kobj_look_up(...) {
+retry:
+        mutex_lock(domain->lock);
+        for (p = domain->probes[MAJOR(dev) % 255]; p; p = p->next) {
+        ...
+        if (kobj)
+                return kobj;
+        goto retry;
+}
 
--- 
-Suparna Bhattacharya (suparna@in.ibm.com)
-Linux Technology Center
-IBM Software Lab, India
+So loop_probe() mistakenly returned wrong status and leads to future
+oops on inconsistent module ref count.  The following patch fixes the
+issue.
 
+Signed-off-by: Ken Chen <kenchen@google.com>
+
+
+diff --git a/drivers/block/loop.c b/drivers/block/loop.c
+index 18cdd8c..40f7bc2 100644
+--- a/drivers/block/loop.c
++++ b/drivers/block/loop.c
+@@ -1460,6 +1460,7 @@ static void loop_del_one(struct loop_device *lo)
+ 	kfree(lo);
+ }
+
++/* return NULL for success, or return non-zero value if there are error */
+ static struct kobject *loop_probe(dev_t dev, int *part, void *data)
+ {
+ 	unsigned int number = dev & MINORMASK;
+@@ -1474,8 +1475,8 @@ static struct kobject *loop_probe
+ 	*part = 0;
+ 	if (IS_ERR(lo))
+ 		return (void *)lo;
+-	else
+-		return &lo->lo_disk->kobj;
++
++	return NULL;
+ }
+
+ static int __init loop_init(void)
