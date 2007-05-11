@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030224AbXEKTrk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031067AbXEKTr7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030224AbXEKTrk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:47:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933506AbXEKTmx
+	id S1031067AbXEKTr7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:47:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933666AbXEKTnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:42:53 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:45963 "EHLO proxima.lp0.eu"
+	Fri, 11 May 2007 15:43:05 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:45967 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761342AbXEKTmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:42:50 -0400
-Message-ID: <4644C734.3000303@simon.arlott.org.uk>
-Date: Fri, 11 May 2007 20:42:44 +0100
+	id S933634AbXEKTnA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 15:43:00 -0400
+Message-ID: <4644C73E.7050501@simon.arlott.org.uk>
+Date: Fri, 11 May 2007 20:42:54 +0100
 From: Simon Arlott <simon@fire.lp0.eu>
 User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        linuxppc-dev@ozlabs.org, trivial@kernel.org
-Subject: [PATCH] spelling fixes: arch/powerpc/
+Subject: [PATCH] spelling fixes: arch/ppc/
 X-Enigmail-Version: 0.94.1.2
 OpenPGP: id=89C93563
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -24,813 +24,91 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spelling fixes in arch/powerpc/.
+Spelling fixes in arch/ppc/.
 
 Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 ---
- arch/powerpc/boot/treeboot-ebony.c              |    2 +-
- arch/powerpc/kernel/irq.c                       |    8 ++++----
- arch/powerpc/kernel/legacy_serial.c             |    2 +-
- arch/powerpc/kernel/nvram_64.c                  |    2 +-
- arch/powerpc/kernel/of_platform.c               |    8 ++++----
- arch/powerpc/kernel/prom.c                      |    6 +++---
- arch/powerpc/kernel/rtas-proc.c                 |    2 +-
- arch/powerpc/kernel/rtas.c                      |    2 +-
- arch/powerpc/kernel/setup_64.c                  |    8 ++++----
- arch/powerpc/kernel/signal_32.c                 |    2 +-
- arch/powerpc/kernel/signal_64.c                 |    2 +-
- arch/powerpc/kernel/traps.c                     |    4 ++--
- arch/powerpc/kernel/udbg_16550.c                |    2 +-
- arch/powerpc/math-emu/op-common.h               |    2 +-
- arch/powerpc/math-emu/sfp-machine.h             |    4 ++--
- arch/powerpc/mm/hugetlbpage.c                   |    2 +-
- arch/powerpc/mm/numa.c                          |    2 +-
- arch/powerpc/oprofile/op_model_7450.c           |    4 ++--
- arch/powerpc/oprofile/op_model_cell.c           |    8 ++++----
- arch/powerpc/oprofile/op_model_fsl_booke.c      |    2 +-
- arch/powerpc/platforms/52xx/mpc52xx_common.c    |    2 +-
- arch/powerpc/platforms/52xx/mpc52xx_pci.c       |    4 ++--
- arch/powerpc/platforms/52xx/mpc52xx_pm.c        |    2 +-
- arch/powerpc/platforms/cell/spider-pic.c        |   12 ++++++------
- arch/powerpc/platforms/cell/spufs/lscsa_alloc.c |    2 +-
- arch/powerpc/platforms/cell/spufs/spu_restore.c |    2 +-
- arch/powerpc/platforms/cell/spufs/switch.c      |    4 ++--
- arch/powerpc/platforms/celleb/pci.c             |    4 ++--
- arch/powerpc/platforms/celleb/scc_epci.c        |    6 +++---
- arch/powerpc/platforms/celleb/scc_uhc.c         |    2 +-
- arch/powerpc/platforms/powermac/feature.c       |    4 ++--
- arch/powerpc/platforms/powermac/pfunc_base.c    |    2 +-
- arch/powerpc/platforms/powermac/setup.c         |    4 ++--
- arch/powerpc/platforms/ps3/interrupt.c          |    2 +-
- arch/powerpc/platforms/ps3/mm.c                 |    6 +++---
- arch/powerpc/platforms/ps3/os-area.c            |    4 ++--
- arch/powerpc/platforms/ps3/platform.h           |    4 ++--
- arch/powerpc/platforms/pseries/eeh.c            |    4 ++--
- arch/powerpc/platforms/pseries/eeh_driver.c     |    2 +-
- arch/powerpc/sysdev/commproc.c                  |    2 +-
- arch/powerpc/sysdev/dart_iommu.c                |    2 +-
- arch/powerpc/sysdev/mpic.c                      |    2 +-
- 42 files changed, 76 insertions(+), 76 deletions(-)
+ arch/ppc/4xx_io/serial_sicc.c        |   10 +++++-----
+ arch/ppc/8xx_io/commproc.c           |    2 +-
+ arch/ppc/8xx_io/fec.c                |    2 +-
+ arch/ppc/boot/lib/vreset.c           |    2 +-
+ arch/ppc/boot/simple/m8xx_tty.c      |    2 +-
+ arch/ppc/boot/simple/misc-embedded.c |    2 +-
+ arch/ppc/boot/simple/mpc52xx_tty.c   |    2 +-
+ arch/ppc/boot/simple/mv64x60_tty.c   |    2 +-
+ arch/ppc/boot/simple/rw4/stb.h       |    2 +-
+ arch/ppc/kernel/traps.c              |    4 ++--
+ arch/ppc/mm/init.c                   |    2 +-
+ arch/ppc/platforms/4xx/bubinga.c     |    2 +-
+ arch/ppc/platforms/4xx/ep405.c       |    2 +-
+ arch/ppc/platforms/4xx/ibmnp405h.h   |    2 +-
+ arch/ppc/platforms/4xx/sycamore.c    |    2 +-
+ arch/ppc/platforms/4xx/walnut.c      |    2 +-
+ arch/ppc/platforms/ev64360.c         |    2 +-
+ arch/ppc/platforms/hdpu.c            |    2 +-
+ arch/ppc/platforms/katana.c          |    2 +-
+ arch/ppc/platforms/mbx.h             |    2 +-
+ arch/ppc/platforms/mvme5100.h        |    2 +-
+ arch/ppc/platforms/pplus.h           |    2 +-
+ arch/ppc/platforms/prep_pci.c        |   22 +++++++++++-----------
+ arch/ppc/platforms/prep_setup.c      |    6 +++---
+ arch/ppc/platforms/prpmc750.h        |    2 +-
+ arch/ppc/platforms/radstone_ppc7d.c  |    2 +-
+ arch/ppc/platforms/sandpoint.c       |    8 ++++----
+ arch/ppc/syslib/harrier.c            |    2 +-
+ arch/ppc/syslib/hawk_common.c        |    4 ++--
+ arch/ppc/syslib/m82xx_pci.c          |    2 +-
+ arch/ppc/syslib/mpc10x_common.c      |    4 ++--
+ arch/ppc/syslib/mpc52xx_setup.c      |    2 +-
+ arch/ppc/syslib/mpc8xx_devices.c     |    2 +-
+ arch/ppc/syslib/mv64x60.c            |   10 +++++-----
+ arch/ppc/syslib/ocp.c                |    2 +-
+ arch/ppc/syslib/ppc403_pic.c         |    2 +-
+ arch/ppc/syslib/ppc405_pci.c         |    2 +-
+ arch/ppc/syslib/ppc4xx_dma.c         |    2 +-
+ arch/ppc/syslib/ppc85xx_rio.c        |    4 ++--
+ arch/ppc/syslib/xilinx_pic.c         |    2 +-
+ 40 files changed, 67 insertions(+), 67 deletions(-)
 
-diff --git a/arch/powerpc/boot/treeboot-ebony.c b/arch/powerpc/boot/treeboot-ebony.c
-index 8436a9c..1e3d24e 100644
---- a/arch/powerpc/boot/treeboot-ebony.c
-+++ b/arch/powerpc/boot/treeboot-ebony.c
+diff --git a/arch/ppc/4xx_io/serial_sicc.c b/arch/ppc/4xx_io/serial_sicc.c
+index e354839..efa0a56 100644
+--- a/arch/ppc/4xx_io/serial_sicc.c
++++ b/arch/ppc/4xx_io/serial_sicc.c
 @@ -3,7 +3,7 @@
   *
-  * Author: David Gibson <david@gibson.dropbear.id.au>
+  *  Based on drivers/char/serial_amba.c, by ARM Ltd.
   *
-- * Copyright 2007 David Gibson, IBM Corporatio.
-+ * Copyright 2007 David Gibson, IBM Corporation.
-  *   Based on cuboot-83xx.c, which is:
-  * Copyright (c) 2007 Freescale Semiconductor, Inc.
-  *
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 9ed4931..861a288 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -15,7 +15,7 @@
-  * 2 of the License, or (at your option) any later version.
-  *
-  * This file contains the code used by various IRQ handling routines:
-- * asking for different IRQ's should be done through these routines
-+ * asking for different IRQs should be done through these routines
-  * instead of just grabbing them. Thus setups with different IRQ numbers
-  * shouldn't result in any weird surprises, and installing new handlers
-  * should be easier.
-@@ -481,7 +481,7 @@ struct irq_host *irq_alloc_host(unsigned int revmap_type,
+- *  Copyright 2001 IBM Crop.
++ *  Copyright 2001 IBM Corp.
+  *  Author: IBM China Research Lab
+  *            Yudong Yang <yangyud@cn.ibm.com>
+  *            Yi Ge       <geyi@cn.ibm.com>
+@@ -155,16 +155,16 @@
  
- 			/* Legacy flags are left to default at this point,
- 			 * one can then use irq_create_mapping() to
--			 * explicitely change them
-+			 * explicitly change them
- 			 */
- 			ops->map(host, i, i);
- 		}
-@@ -599,7 +599,7 @@ unsigned int irq_create_mapping(struct irq_host *host,
+ /* serial port transmit command register */
  
- 	pr_debug("irq: irq_create_mapping(0x%p, 0x%lx)\n", host, hwirq);
+-#define _TxCR_ET_MASK   0x80           /* transmiter enable mask */
++#define _TxCR_ET_MASK   0x80           /* transmitter enable mask */
+ #define _TxCR_DME_MASK  0x60           /* dma mode mask */
+ #define _TxCR_TIE_MASK  0x10           /* empty interrupt enable mask */
+ #define _TxCR_EIE_MASK  0x08           /* error interrupt enable mask */
+ #define _TxCR_SPE_MASK  0x04           /* stop/pause mask */
+ #define _TxCR_TB_MASK   0x02           /* transmit break mask */
  
--	/* Look for default host if nececssary */
-+	/* Look for default host if necessary */
- 	if (host == NULL)
- 		host = irq_default_host;
- 	if (host == NULL) {
-@@ -771,7 +771,7 @@ unsigned int irq_find_mapping(struct irq_host *host,
- 	unsigned int i;
- 	unsigned int hint = hwirq % irq_virq_count;
+-#define _TxCR_ET_ENABLE _TxCR_ET_MASK  /* transmiter enabled */
+-#define _TxCR_DME_DISABLE 0x00         /* transmiter disabled, TBR intr disabled */
+-#define _TxCR_DME_TBR   0x20           /* transmiter disabled, TBR intr enabled */
++#define _TxCR_ET_ENABLE _TxCR_ET_MASK  /* transmitter enabled */
++#define _TxCR_DME_DISABLE 0x00         /* transmitter disabled, TBR intr disabled */
++#define _TxCR_DME_TBR   0x20           /* transmitter disabled, TBR intr enabled */
+ #define _TxCR_DME_CHAN_2 0x40          /* dma enabled, destination chann 2 */
+ #define _TxCR_DME_CHAN_3 0x60          /* dma enabled, destination chann 3 */
  
--	/* Look for default host if nececssary */
-+	/* Look for default host if necessary */
- 	if (host == NULL)
- 		host = irq_default_host;
- 	if (host == NULL)
-diff --git a/arch/powerpc/kernel/legacy_serial.c b/arch/powerpc/kernel/legacy_serial.c
-index cea8045..8653b33 100644
---- a/arch/powerpc/kernel/legacy_serial.c
-+++ b/arch/powerpc/kernel/legacy_serial.c
-@@ -498,7 +498,7 @@ arch_initcall(serial_dev_init);
- 
- /*
-  * This is called very early, as part of console_init() (typically just after
-- * time_init()). This function is respondible for trying to find a good
-+ * time_init()). This function is responsible for trying to find a good
-  * default console on serial ports. It tries to match the open firmware
-  * default output with one of the available serial console drivers, either
-  * one of the platform serial ports that have been probed earlier by
-diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-index f9676f5..dd3de45 100644
---- a/arch/powerpc/kernel/nvram_64.c
-+++ b/arch/powerpc/kernel/nvram_64.c
-@@ -431,7 +431,7 @@ static int nvram_create_os_partition(void)
-  * 4.) Will first try getting a chunk that will satisfy the maximum
-  * error log size (NVRAM_MAX_REQ).
-  * 5.) If the max chunk cannot be allocated then try finding a chunk
-- * that will satisfy the minum needed (NVRAM_MIN_REQ).
-+ * that will satisfy the minimum needed (NVRAM_MIN_REQ).
-  */
- static int nvram_setup_partition(void)
- {
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index 84c34d9..2279a6f 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -259,8 +259,8 @@ EXPORT_SYMBOL(of_platform_device_create);
- 
- /**
-  * of_platform_bus_create - Create an OF device for a bus node and all its
-- * children. Optionally recursively instanciate matching busses.
-- * @bus: device node of the bus to instanciate
-+ * children. Optionally recursively instantiate matching busses.
-+ * @bus: device node of the bus to instantiate
-  * @matches: match table, NULL to use the default, OF_NO_DEEP_PROBE to
-  * disallow recursive creation of child busses
-  */
-@@ -296,7 +296,7 @@ static int of_platform_bus_create(struct device_node *bus,
-  * @matches: match table, NULL to use the default
-  * @parent: parent to hook devices from, NULL for toplevel
-  *
-- * Note that children of the provided root are not instanciated as devices
-+ * Note that children of the provided root are not instantiated as devices
-  * unless the specified root itself matches the bus list and is not NULL.
-  */
- 
-@@ -429,7 +429,7 @@ static int __devinit of_pci_phb_probe(struct of_device *dev,
- 
- 	/* Setup IO space.
- 	 * This will not work properly for ISA IOs, something needs to be done
--	 * about it if we ever generalize that way of probing PCI brigdes
-+	 * about it if we ever generalize that way of probing PCI bridges
- 	 */
- 	pci_setup_phb_io_dynamic(phb, 0);
- 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index caef555..def6585 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -95,7 +95,7 @@ static inline char *find_flat_dt_string(u32 offset)
- 
- /**
-  * This function is used to scan the flattened device-tree, it is
-- * used to extract the memory informations at boot before we can
-+ * used to extract the memory information at boot before we can
-  * unflatten the tree
-  */
- int __init of_scan_flat_dt(int (*it)(unsigned long node,
-@@ -1000,7 +1000,7 @@ void __init early_init_devtree(void *params)
- 	of_scan_flat_dt(early_init_dt_scan_rtas, NULL);
- #endif
- 
--	/* Retrieve various informations from the /chosen node of the
-+	/* Retrieve various information from the /chosen node of the
- 	 * device-tree, including the platform type, initrd location and
- 	 * size, TCE reserve, and more ...
- 	 */
-@@ -1032,7 +1032,7 @@ void __init early_init_devtree(void *params)
- 
- 	DBG("Scanning CPUs ...\n");
- 
--	/* Retreive CPU related informations from the flat tree
-+	/* Retreive CPU related information from the flat tree
- 	 * (altivec support, boot CPU ID, ...)
- 	 */
- 	of_scan_flat_dt(early_init_dt_scan_cpus, NULL);
-diff --git a/arch/powerpc/kernel/rtas-proc.c b/arch/powerpc/kernel/rtas-proc.c
-index 190b7ed..41d0dfe 100644
---- a/arch/powerpc/kernel/rtas-proc.c
-+++ b/arch/powerpc/kernel/rtas-proc.c
-@@ -717,7 +717,7 @@ static void check_location(struct seq_file *m, const char *c)
- /* 
-  * Format: 
-  * ${LETTER}${NUMBER}[[-/]${LETTER}${NUMBER} [ ... ] ]
-- * the '.' may be an abbrevation
-+ * the '.' may be an abbreviation
-  */
- static void check_location_string(struct seq_file *m, const char *c)
- {
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 2147807..54b9e2a 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -819,7 +819,7 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
- 
- /*
-  * Call early during boot, before mem init or bootmem, to retrieve the RTAS
-- * informations from the device-tree and allocate the RMO buffer for userland
-+ * information from the device-tree and allocate the RMO buffer for userland
-  * accesses.
-  */
- void __init rtas_initialize(void)
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 6018178..fce0e0c 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -271,7 +271,7 @@ void smp_release_cpus(void)
-  * Initialize some remaining members of the ppc64_caches and systemcfg
-  * structures
-  * (at least until we get rid of them completely). This is mostly some
-- * cache informations about the CPU that will be used by cache flush
-+ * cache information about the CPU that will be used by cache flush
-  * routines and/or provided to userland
-  */
- static void __init initialize_cache_info(void)
-@@ -293,7 +293,7 @@ static void __init initialize_cache_info(void)
- 			u32 size, lsize;
- 			const char *dc, *ic;
- 
--			/* Then read cache informations */
-+			/* Then read cache information */
- 			if (machine_is(powermac)) {
- 				dc = "d-cache-block-size";
- 				ic = "i-cache-block-size";
-@@ -364,7 +364,7 @@ void __init setup_system(void)
- 	unflatten_device_tree();
- 
- 	/*
--	 * Fill the ppc64_caches & systemcfg structures with informations
-+	 * Fill the ppc64_caches & systemcfg structures with information
-  	 * retrieved from the device-tree.
- 	 */
- 	initialize_cache_info();
-@@ -489,7 +489,7 @@ static void __init emergency_stack_init(void)
- 
- /*
-  * Called into from start_kernel, after lock_kernel has been called.
-- * Initializes bootmem, which is unsed to manage page allocation until
-+ * Initializes bootmem, which is used to manage page allocation until
-  * mem_init is called.
-  */
- void __init setup_arch(char **cmdline_p)
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index dd1dca5..1f05b2e 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1199,7 +1199,7 @@ no_signal:
- 
- #ifdef CONFIG_PPC64
- 	/*
--	 * Reenable the DABR before delivering the signal to
-+	 * Re-enable the DABR before delivering the signal to
- 	 * user space. The DABR will have been cleared if it
- 	 * triggered inside the kernel.
- 	 */
-diff --git a/arch/powerpc/kernel/signal_64.c b/arch/powerpc/kernel/signal_64.c
-index 1ce0ae3..9b0c38f 100644
---- a/arch/powerpc/kernel/signal_64.c
-+++ b/arch/powerpc/kernel/signal_64.c
-@@ -530,7 +530,7 @@ int do_signal(sigset_t *oldset, struct pt_regs *regs)
- 			syscall_restart(regs, &ka);
- 
- 		/*
--		 * Reenable the DABR before delivering the signal to
-+		 * Re-enable the DABR before delivering the signal to
- 		 * user space. The DABR will have been cleared if it
- 		 * triggered inside the kernel.
- 		 */
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index bf6445a..e6e71df 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -794,7 +794,7 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 	 * ESR_DST (!?) or 0.  In the process of chasing this with the
- 	 * hardware people - not sure if it can happen on any illegal
- 	 * instruction or only on FP instructions, whether there is a
--	 * pattern to occurences etc. -dgibson 31/Mar/2003 */
-+	 * pattern to occurrences etc. -dgibson 31/Mar/2003 */
- 	switch (do_mathemu(regs)) {
- 	case 0:
- 		emulate_single_step(regs);
-@@ -1048,7 +1048,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
- 	spefscr = current->thread.spefscr;
- 	fpexc_mode = current->thread.fpexc_mode;
- 
--	/* Hardware does not neccessarily set sticky
-+	/* Hardware does not necessarily set sticky
- 	 * underflow/overflow/invalid flags */
- 	if ((spefscr & SPEFSCR_FOVF) && (fpexc_mode & PR_FP_EXC_OVF)) {
- 		code = FPE_FLTOVF;
-diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
-index 7afab5b..d0bbd95 100644
---- a/arch/powerpc/kernel/udbg_16550.c
-+++ b/arch/powerpc/kernel/udbg_16550.c
-@@ -1,5 +1,5 @@
- /*
-- * udbg for for NS16550 compatable serial ports
-+ * udbg for for NS16550 compatible serial ports
-  *
-  * Copyright (C) 2001-2005 PPC 64 Team, IBM Corp
-  *
-diff --git a/arch/powerpc/math-emu/op-common.h b/arch/powerpc/math-emu/op-common.h
-index afb82b6..ac93fec 100644
---- a/arch/powerpc/math-emu/op-common.h
-+++ b/arch/powerpc/math-emu/op-common.h
-@@ -3,7 +3,7 @@
-   _FP_FRAC_DECL_##wc(X)
- 
- /*
-- * Finish truely unpacking a native fp value by classifying the kind
-+ * Finish truly unpacking a native fp value by classifying the kind
-  * of fp value and normalizing both the exponent and the fraction.
-  */
- 
-diff --git a/arch/powerpc/math-emu/sfp-machine.h b/arch/powerpc/math-emu/sfp-machine.h
-index 4b17d83..fe7bb33 100644
---- a/arch/powerpc/math-emu/sfp-machine.h
-+++ b/arch/powerpc/math-emu/sfp-machine.h
-@@ -290,8 +290,8 @@ extern int  fp_pack_ds(void *, long, unsigned long, unsigned long, long, long);
- 
- /* asm fragments for mul and div */
- 
--/* umul_ppmm(high_prod, low_prod, multipler, multiplicand) multiplies two
-- * UWtype integers MULTIPLER and MULTIPLICAND, and generates a two UWtype
-+/* umul_ppmm(high_prod, low_prod, multiplier, multiplicand) multiplies two
-+ * UWtype integers MULTIPLIER and MULTIPLICAND, and generates a two UWtype
-  * word product in HIGH_PROD and LOW_PROD.
-  */
- #define umul_ppmm(ph, pl, m0, m1)					\
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 92a1b16..98cc17b 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -482,7 +482,7 @@ repeat:
- 		hpte_group = ((hash & htab_hash_mask) *
- 			      HPTES_PER_GROUP) & ~0x7UL;
- 
--		/* clear HPTE slot informations in new PTE */
-+		/* clear HPTE slot information in new PTE */
- 		new_pte = (new_pte & ~_PAGE_HPTEFLAGS) | _PAGE_HASHPTE;
- 
- 		/* Add in WIMG bits */
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index de45aa8..26875e0 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -275,7 +275,7 @@ static int __cpuinit cpu_numa_callback(struct notifier_block *nfb,
-  * Returns the size the region should have to enforce the memory limit.
-  * This will either be the original value of size, a truncated value,
-  * or zero. If the returned value of size is 0 the region should be
-- * discarded as it lies wholy above the memory limit.
-+ * discarded as it lies wholly above the memory limit.
-  */
- static unsigned long __init numa_enforce_memory_limit(unsigned long start,
- 						      unsigned long size)
-diff --git a/arch/powerpc/oprofile/op_model_7450.c b/arch/powerpc/oprofile/op_model_7450.c
-index 5d1bbaf..d75063b 100644
---- a/arch/powerpc/oprofile/op_model_7450.c
-+++ b/arch/powerpc/oprofile/op_model_7450.c
-@@ -93,7 +93,7 @@ static void fsl7450_cpu_setup(struct op_counter_config *ctr)
- 
- #define NUM_CTRS 6
- 
--/* Configures the global settings for the countes on all CPUs. */
-+/* Configures the global settings for the counters on all CPUs. */
- static void fsl7450_reg_setup(struct op_counter_config *ctr,
- 			     struct op_system_config *sys,
- 			     int num_ctrs)
-@@ -191,7 +191,7 @@ static void fsl7450_handle_interrupt(struct pt_regs *regs,
- 	}
- 
- 	/* The freeze bit was set by the interrupt. */
--	/* Clear the freeze bit, and reenable the interrupt.
-+	/* Clear the freeze bit, and re-enable the interrupt.
- 	 * The counters won't actually start until the rfi clears
- 	 * the PMM bit */
- 	pmc_start_ctrs();
-diff --git a/arch/powerpc/oprofile/op_model_cell.c b/arch/powerpc/oprofile/op_model_cell.c
-index c29293b..d94388c 100644
---- a/arch/powerpc/oprofile/op_model_cell.c
-+++ b/arch/powerpc/oprofile/op_model_cell.c
-@@ -112,7 +112,7 @@ static DEFINE_PER_CPU(unsigned long[NR_PHYS_CTRS], pmc_values);
- 
- static struct pmc_cntrl_data pmc_cntrl[NUM_THREADS][NR_PHYS_CTRS];
- 
--/* Interpetation of hdw_thread:
-+/* Interpretation of hdw_thread:
-  * 0 - even virtual cpus 0, 2, 4,...
-  * 1 - odd virtual cpus 1, 3, 5, ...
-  */
-@@ -189,7 +189,7 @@ static void pm_rtas_activate_signals(u32 node, u32 count)
- 	/* There is no debug setup required for the cycles event.
- 	 * Note that only events in the same group can be used.
- 	 * Otherwise, there will be conflicts in correctly routing
--	 * the signals on the debug bus.  It is the responsiblity
-+	 * the signals on the debug bus.  It is the responsibility
- 	 * of the OProfile user tool to check the events are in
- 	 * the same group.
- 	 */
-@@ -705,7 +705,7 @@ cell_handle_interrupt(struct pt_regs *regs, struct op_counter_config *ctr)
- 	 */
- 	spin_lock_irqsave(&virt_cntr_lock, flags);
- 
--	/* Need to disable and reenable the performance counters
-+	/* Need to disable and re-enable the performance counters
- 	 * to get the desired behavior from the hardware.  This
- 	 * is hardware specific.
- 	 */
-@@ -733,7 +733,7 @@ cell_handle_interrupt(struct pt_regs *regs, struct op_counter_config *ctr)
- 		}
- 
- 		/* The counters were frozen by the interrupt.
--		 * Reenable the interrupt and restart the counters.
-+		 * Re-enable the interrupt and restart the counters.
- 		 * If there was a race between the interrupt handler and
- 		 * the virtual counter routine.  The virutal counter
- 		 * routine may have cleared the interrupts.  Hence must
-diff --git a/arch/powerpc/oprofile/op_model_fsl_booke.c b/arch/powerpc/oprofile/op_model_fsl_booke.c
-index 2267eb8..d2e1c39 100644
---- a/arch/powerpc/oprofile/op_model_fsl_booke.c
-+++ b/arch/powerpc/oprofile/op_model_fsl_booke.c
-@@ -351,7 +351,7 @@ static void fsl_booke_handle_interrupt(struct pt_regs *regs,
- 	}
- 
- 	/* The freeze bit was set by the interrupt. */
--	/* Clear the freeze bit, and reenable the interrupt.
-+	/* Clear the freeze bit, and re-enable the interrupt.
- 	 * The counters won't actually start until the rfi clears
- 	 * the PMM bit */
- 	pmc_start_ctrs(1);
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-index 2dd415f..5ba3425 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
-@@ -106,7 +106,7 @@ mpc52xx_setup_cpu(void)
- 	out_be32(&xlb->master_priority, 0x11111111);
- 
- 	/* Disable XLB pipelining */
--	/* (cfr errate 292. We could do this only just before ATA PIO
-+	/* (cfr errata 292. We could do this only just before ATA PIO
- 	    transaction and re-enable it afterwards ...) */
- 	out_be32(&xlb->config, in_be32(&xlb->config) | MPC52xx_XLB_CFG_PLDIS);
- 
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pci.c b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-index 34d34a2..a7eebeb 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pci.c
-@@ -101,7 +101,7 @@ struct mpc52xx_pci {
- 
- 
- /* ======================================================================== */
--/* PCI configuration acess                                                  */
-+/* PCI configuration access                                                 */
- /* ======================================================================== */
- 
- static int
-@@ -311,7 +311,7 @@ mpc52xx_pci_setup(struct pci_controller *hose,
- 
- 	tmp = in_be32(&pci_regs->gscr);
- #if 0
--	/* Reset the exteral bus ( internal PCI controller is NOT resetted ) */
-+	/* Reset the exteral bus ( internal PCI controller is NOT reset ) */
- 	/* Not necessary and can be a bad thing if for example the bootloader
- 	   is displaying a splash screen or ... Just left here for
- 	   documentation purpose if anyone need it */
-diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pm.c b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-index fd40044..f3c5d87 100644
---- a/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-+++ b/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-@@ -160,7 +160,7 @@ int mpc52xx_pm_enter(suspend_state_t state)
- 	/* restart jiffies */
- 	wakeup_decrementer();
- 
--	/* reenable interrupts in PIC */
-+	/* re-enable interrupts in PIC */
- 	out_be32(&intr->main_mask, intr_main_mask);
- 
- 	return 0;
-diff --git a/arch/powerpc/platforms/cell/spider-pic.c b/arch/powerpc/platforms/cell/spider-pic.c
-index 05f4b3d..6365428 100644
---- a/arch/powerpc/platforms/cell/spider-pic.c
-+++ b/arch/powerpc/platforms/cell/spider-pic.c
-@@ -228,13 +228,13 @@ static void spider_irq_cascade(unsigned int irq, struct irq_desc *desc)
- 	desc->chip->eoi(irq);
- }
- 
--/* For hooking up the cascace we have a problem. Our device-tree is
-+/* For hooking up the cascade we have a problem. Our device-tree is
-  * crap and we don't know on which BE iic interrupt we are hooked on at
-  * least not the "standard" way. We can reconstitute it based on two
-- * informations though: which BE node we are connected to and wether
-- * we are connected to IOIF0 or IOIF1. Right now, we really only care
-- * about the IBM cell blade and we know that its firmware gives us an
-- * interrupt-map property which is pretty strange.
-+ * pieces of information though: which BE node we are connected to and 
-+ * whether we are connected to IOIF0 or IOIF1. Right now, we really only 
-+ * care about the IBM cell blade and we know that its firmware gives us 
-+ * an interrupt-map property which is pretty strange.
-  */
- static unsigned int __init spider_find_cascade_and_node(struct spider_pic *pic)
- {
-@@ -283,7 +283,7 @@ static unsigned int __init spider_find_cascade_and_node(struct spider_pic *pic)
- 
- 	/* Ok, now let's get cracking. You may ask me why I just didn't match
- 	 * the iic host from the iic OF node, but that way I'm still compatible
--	 * with really really old old firmwares for which we don't have a node
-+	 * with really really old old firmware for which we don't have a node
- 	 */
- 	/* Manufacture an IIC interrupt number of class 2 */
- 	virq = irq_create_mapping(NULL,
-diff --git a/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c b/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
-index f4b3c05..90963c1 100644
---- a/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
-+++ b/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
-@@ -88,7 +88,7 @@ int spu_alloc_lscsa(struct spu_state *csa)
- 	 */
- 	for (i = 0; i < SPU_LSCSA_NUM_BIG_PAGES; i++) {
- 		/* XXX This is likely to fail, we should use a special pool
--		 *     similiar to what hugetlbfs does.
-+		 *     similar to what hugetlbfs does.
- 		 */
- 		csa->lscsa_pages[i] = alloc_pages(GFP_KERNEL,
- 						  SPU_64K_PAGE_ORDER);
-diff --git a/arch/powerpc/platforms/cell/spufs/spu_restore.c b/arch/powerpc/platforms/cell/spufs/spu_restore.c
-index 0bf723d..c74a7a0 100644
---- a/arch/powerpc/platforms/cell/spufs/spu_restore.c
-+++ b/arch/powerpc/platforms/cell/spufs/spu_restore.c
-@@ -284,7 +284,7 @@ static inline void restore_complete(void)
- 		exit_instrs[3] = BR_INSTR;
- 		break;
- 	default:
--		/* SPU_Status[R]=1. No additonal instructions. */
-+		/* SPU_Status[R]=1. No additional instructions. */
- 		break;
- 	}
- 	spu_sync();
-diff --git a/arch/powerpc/platforms/cell/spufs/switch.c b/arch/powerpc/platforms/cell/spufs/switch.c
-index 71a0b41..ce42a35 100644
---- a/arch/powerpc/platforms/cell/spufs/switch.c
-+++ b/arch/powerpc/platforms/cell/spufs/switch.c
-@@ -8,11 +8,11 @@
-  * Host-side part of SPU context switch sequence outlined in
-  * Synergistic Processor Element, Book IV.
-  *
-- * A fully premptive switch of an SPE is very expensive in terms
-+ * A fully preemptive switch of an SPE is very expensive in terms
-  * of time and system resources.  SPE Book IV indicates that SPE
-  * allocation should follow a "serially reusable device" model,
-  * in which the SPE is assigned a task until it completes.  When
-- * this is not possible, this sequence may be used to premptively
-+ * this is not possible, this sequence may be used to preemptively
-  * save, and then later (optionally) restore the context of a
-  * program executing on an SPE.
-  *
-diff --git a/arch/powerpc/platforms/celleb/pci.c b/arch/powerpc/platforms/celleb/pci.c
-index d1adf34..af6add2 100644
---- a/arch/powerpc/platforms/celleb/pci.c
-+++ b/arch/powerpc/platforms/celleb/pci.c
-@@ -169,7 +169,7 @@ static int celleb_fake_pci_read_config(struct pci_bus *bus,
- 	unsigned int devno = devfn >> 3;
- 	unsigned int fn = devfn & 0x7;
- 
--	/* allignment check */
-+	/* alignment check */
- 	BUG_ON(where % size);
- 
- 	pr_debug("    fake read: bus=0x%x, ", bus->number);
-@@ -200,7 +200,7 @@ static int celleb_fake_pci_write_config(struct pci_bus *bus,
- 	unsigned int devno = devfn >> 3;
- 	unsigned int fn = devfn & 0x7;
- 
--	/* allignment check */
-+	/* alignment check */
- 	BUG_ON(where % size);
- 
- 	node = (struct device_node *)bus->sysdata;
-diff --git a/arch/powerpc/platforms/celleb/scc_epci.c b/arch/powerpc/platforms/celleb/scc_epci.c
-index fb23d53..058adb5 100644
---- a/arch/powerpc/platforms/celleb/scc_epci.c
-+++ b/arch/powerpc/platforms/celleb/scc_epci.c
-@@ -161,7 +161,7 @@ static int celleb_epci_read_config(struct pci_bus *bus,
- 	struct device_node *node;
- 	struct pci_controller *hose;
- 
--	/* allignment check */
-+	/* alignment check */
- 	BUG_ON(where % size);
- 
- 	node = (struct device_node *)bus->sysdata;
-@@ -224,7 +224,7 @@ static int celleb_epci_write_config(struct pci_bus *bus,
- 	struct device_node *node;
- 	struct pci_controller *hose;
- 
--	/* allignment check */
-+	/* alignment check */
- 	BUG_ON(where % size);
- 
- 	node = (struct device_node *)bus->sysdata;
-@@ -378,7 +378,7 @@ static int __devinit celleb_epci_init(struct pci_controller *hose)
- 	val |= SCC_EPCI_CNTOPT_O2PMB;
- 	out_be32(reg, val);
- 
--	/* XXX: temporay: set registers for address conversion setup */
-+	/* XXX: temporary: set registers for address conversion setup */
- 	reg = epci_base + SCC_EPCI_CNF10_REG;
- 	out_be32(reg, 0x80000008);
- 	reg = epci_base + SCC_EPCI_CNF14_REG;
-diff --git a/arch/powerpc/platforms/celleb/scc_uhc.c b/arch/powerpc/platforms/celleb/scc_uhc.c
-index a7c548b..b59c38a 100644
---- a/arch/powerpc/platforms/celleb/scc_uhc.c
-+++ b/arch/powerpc/platforms/celleb/scc_uhc.c
-@@ -36,7 +36,7 @@ static inline int uhc_clkctrl_ready(u32 val)
- }
- 
- /*
-- * UHC(usb host controler) enable function.
-+ * UHC(usb host controller) enable function.
-  * affect to both of OHCI and EHCI core module.
-  */
- static void enable_scc_uhc(struct pci_dev *dev)
-diff --git a/arch/powerpc/platforms/powermac/feature.c b/arch/powerpc/platforms/powermac/feature.c
-index f29705f..183c70e 100644
---- a/arch/powerpc/platforms/powermac/feature.c
-+++ b/arch/powerpc/platforms/powermac/feature.c
-@@ -460,7 +460,7 @@ static long heathrow_sound_enable(struct device_node *node, long param,
- 	unsigned long		flags;
- 
- 	/* B&W G3 and Yikes don't support that properly (the
--	 * sound appear to never come back after beeing shut down).
-+	 * sound appear to never come back after being shut down).
- 	 */
- 	if (pmac_mb.model_id == PMAC_TYPE_YOSEMITE ||
- 	    pmac_mb.model_id == PMAC_TYPE_YIKES)
-@@ -2750,7 +2750,7 @@ set_initial_features(void)
- 	 * but I'm not too sure it was audited for side-effects on other
- 	 * ohare based machines...
- 	 * Since I still have difficulties figuring the right way to
--	 * differenciate them all and since that hack was there for a long
-+	 * differentiate them all and since that hack was there for a long
- 	 * time, I'll keep it around
- 	 */
- 	if (macio_chips[0].type == macio_ohare) {
-diff --git a/arch/powerpc/platforms/powermac/pfunc_base.c b/arch/powerpc/platforms/powermac/pfunc_base.c
-index 45d54b9..1857134 100644
---- a/arch/powerpc/platforms/powermac/pfunc_base.c
-+++ b/arch/powerpc/platforms/powermac/pfunc_base.c
-@@ -280,7 +280,7 @@ static int unin_do_write_reg32(PMF_STD_ARGS, u32 offset, u32 value, u32 mask)
- 
- 	spin_lock_irqsave(&feature_lock, flags);
- 	/* This is fairly bogus in darwin, but it should work for our needs
--	 * implemeted that way:
-+	 * implemented that way:
- 	 */
- 	UN_OUT(offset, (UN_IN(offset) & ~mask) | (value & mask));
- 	spin_unlock_irqrestore(&feature_lock, flags);
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index a410bc7..1d9f13f 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -616,7 +616,7 @@ static int __init pmac_probe(void)
- 	 * On U3, the DART (iommu) must be allocated now since it
- 	 * has an impact on htab_initialize (due to the large page it
- 	 * occupies having to be broken up so the DART itself is not
--	 * part of the cacheable linar mapping
-+	 * part of the cacheable linear mapping
- 	 */
- 	alloc_dart_table();
- 
-@@ -683,7 +683,7 @@ static void pmac_cpu_die(void)
- 
- 	/*
- 	 * during the path that leads here preemption is disabled,
--	 * reenable it now so that when coming up preempt count is
-+	 * re-enable it now so that when coming up preempt count is
- 	 * zero correctly
- 	 */
- 	preempt_enable();
-diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
-index 9da82c2..b4cd3b3 100644
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -315,7 +315,7 @@ int ps3_send_event_locally(unsigned int virq)
-  * @virq: The assigned Linux virq.
-  *
-  * An event irq represents a virtual device interrupt.  The interrupt_id
-- * coresponds to the software interrupt number.
-+ * corresponds to the software interrupt number.
-  */
- 
- int ps3_sb_event_receive_port_setup(enum ps3_cpu_binding cpu,
-diff --git a/arch/powerpc/platforms/ps3/mm.c b/arch/powerpc/platforms/ps3/mm.c
-index f8a3e20..1b97195 100644
---- a/arch/powerpc/platforms/ps3/mm.c
-+++ b/arch/powerpc/platforms/ps3/mm.c
-@@ -360,7 +360,7 @@ static void _dma_dump_region(const struct ps3_dma_region *r, const char* func,
-  * @bus_addr: Starting ioc bus address of the area to map.
-  * @len: Length in bytes of the area to map.
-  * @link: A struct list_head used with struct ps3_dma_region.chunk_list, the
-- * list of all chuncks owned by the region.
-+ * list of all chunks owned by the region.
-  *
-  * This implementation uses a very simple dma page manager
-  * based on the dma_chunk structure.  This scheme assumes
-@@ -655,7 +655,7 @@ int dma_unmap_area(struct ps3_dma_region *r, unsigned long bus_addr,
- }
- 
- /**
-- * dma_region_create_linear - Setup a linear dma maping for a device.
-+ * dma_region_create_linear - Setup a linear dma mapping for a device.
-  * @r: Pointer to a struct ps3_dma_region.
-  *
-  * This routine creates an HV dma region for the device and maps all available
-@@ -725,7 +725,7 @@ static int dma_region_free_linear(struct ps3_dma_region *r)
-  * @bus_addr: A pointer to return the starting ioc bus address of the area to
-  * map.
-  *
-- * This routine just returns the coresponding bus address.  Actual mapping
-+ * This routine just returns the corresponding bus address.  Actual mapping
-  * occurs in dma_region_create_linear().
-  */
- 
-diff --git a/arch/powerpc/platforms/ps3/os-area.c b/arch/powerpc/platforms/ps3/os-area.c
-index 5c3da08..0eb23c1 100644
---- a/arch/powerpc/platforms/ps3/os-area.c
-+++ b/arch/powerpc/platforms/ps3/os-area.c
-@@ -111,9 +111,9 @@ struct os_area_params {
- /**
-  * struct saved_params - Static working copies of data from the 'Other OS' area.
-  *
-- * For the convinience of the guest, the HV makes a copy of the 'Other OS' area
-+ * For the convenience of the guest, the HV makes a copy of the 'Other OS' area
-  * in flash to a high address in the boot memory region and then puts that RAM
-- * address and the byte count into the repository for retreval by the guest.
-+ * address and the byte count into the repository for retrieval by the guest.
-  * We copy the data we want into a static variable and allow the memory setup
-  * by the HV to be claimed by the lmb manager.
-  */
-diff --git a/arch/powerpc/platforms/ps3/platform.h b/arch/powerpc/platforms/ps3/platform.h
-index ca04f03..7d5fb6f 100644
---- a/arch/powerpc/platforms/ps3/platform.h
-+++ b/arch/powerpc/platforms/ps3/platform.h
-@@ -200,8 +200,8 @@ int ps3_repository_read_boot_dat_info(u64 *lpar_addr, unsigned int *size);
- 
- /**
-  * enum spu_resource_type - Type of spu resource.
-- * @spu_resource_type_shared: Logical spu is shared with other partions.
-- * @spu_resource_type_exclusive: Logical spu is not shared with other partions.
-+ * @spu_resource_type_shared: Logical spu is shared with other partitions.
-+ * @spu_resource_type_exclusive: Logical spu is not shared with other partitions.
-  *
-  * Returned by ps3_repository_read_spu_resource_id().
-  */
-diff --git a/arch/powerpc/platforms/pseries/eeh.c b/arch/powerpc/platforms/pseries/eeh.c
-index 093438b..f63eba5 100644
---- a/arch/powerpc/platforms/pseries/eeh.c
-+++ b/arch/powerpc/platforms/pseries/eeh.c
-@@ -60,7 +60,7 @@
-  *  with EEH.
-  *
-  *  Ideally, a PCI device driver, when suspecting that an isolation
-- *  event has occured (e.g. by reading 0xff's), will then ask EEH
-+ *  event has occurred (e.g. by reading 0xff's), will then ask EEH
-  *  whether this is the case, and then take appropriate steps to
-  *  reset the PCI slot, the PCI device, and then resume operations.
-  *  However, until that day,  the checking is done here, with the
-@@ -816,7 +816,7 @@ void eeh_restore_bars(struct pci_dn *pdn)
-  *
-  * Save the values of the device bars. Unlike the restore
-  * routine, this routine is *not* recursive. This is because
-- * PCI devices are added individuallly; but, for the restore,
-+ * PCI devices are added individually; but, for the restore,
-  * an entire slot is reset at a time.
-  */
- static void eeh_save_bars(struct pci_dn *pdn)
-diff --git a/arch/powerpc/platforms/pseries/eeh_driver.c b/arch/powerpc/platforms/pseries/eeh_driver.c
-index f07d849..048fd14 100644
---- a/arch/powerpc/platforms/pseries/eeh_driver.c
-+++ b/arch/powerpc/platforms/pseries/eeh_driver.c
-@@ -242,7 +242,7 @@ static void eeh_report_failure(struct pci_dev *dev, void *userdata)
-  *            to the isolated slot. A non-null value will
-  *            cause all devices under the bus to be removed
-  *            and then re-added.
-- * @pe_dn: pointer to a "Partionable Endpoint" device node.
-+ * @pe_dn: pointer to a "Partitionable Endpoint" device node.
-  *            This is the top-level structure on which pci
-  *            bus resets can be performed.
-  */
-diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
-index 9b4fafd..9fe7678 100644
---- a/arch/powerpc/sysdev/commproc.c
-+++ b/arch/powerpc/sysdev/commproc.c
-@@ -216,7 +216,7 @@ void cpm_reset(void)
+diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
+index e2c6210..7088428 100644
+--- a/arch/ppc/8xx_io/commproc.c
++++ b/arch/ppc/8xx_io/commproc.c
+@@ -144,7 +144,7 @@ m8xx_cpm_reset(void)
  
  	/* Set SDMA Bus Request priority 5.
  	 * On 860T, this also enables FEC priority 6.  I am not sure
@@ -839,32 +117,659 @@ index 9b4fafd..9fe7678 100644
  	 * manual recommends it.
  	 * Bit 25, FAM can also be set to use FEC aggressive mode (860T).
  	 */
-diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
-index a1d2042..885feeb 100644
---- a/arch/powerpc/sysdev/dart_iommu.c
-+++ b/arch/powerpc/sysdev/dart_iommu.c
-@@ -159,7 +159,7 @@ static void dart_build(struct iommu_table *tbl, long index,
+diff --git a/arch/ppc/8xx_io/fec.c b/arch/ppc/8xx_io/fec.c
+index 57a9a61..d38335d 100644
+--- a/arch/ppc/8xx_io/fec.c
++++ b/arch/ppc/8xx_io/fec.c
+@@ -1878,7 +1878,7 @@ fec_restart(struct net_device *dev, int duplex)
+ 	bdp--;
+ 	bdp->cbd_sc |= BD_SC_WRAP;
  
- 	dp = ((unsigned int*)tbl->it_base) + index;
+-	/* ...and the same for transmmit.
++	/* ...and the same for transmit.
+ 	*/
+ 	bdp = fep->tx_bd_base;
+ 	for (i=0; i<TX_RING_SIZE; i++) {
+diff --git a/arch/ppc/boot/lib/vreset.c b/arch/ppc/boot/lib/vreset.c
+index 463ba00..98539e9 100644
+--- a/arch/ppc/boot/lib/vreset.c
++++ b/arch/ppc/boot/lib/vreset.c
+@@ -518,7 +518,7 @@ setTextRegs(struct VgaRegs *svp)
+ 	outb(0x3c6, 0xff);  /* MASK */
  
--	/* On U3, all memory is contigous, so we can move this
-+	/* On U3, all memory is contiguous, so we can move this
- 	 * out of the loop.
+ 	for ( i = 0; i < 0x10; i++)
+-		writeAttr(i, AC[i], 0);  /* pallete */
++		writeAttr(i, AC[i], 0);  /* palette */
+ 	writeAttr(0x10, 0x0c, 0);    /* text mode */
+ 	writeAttr(0x11, 0x00, 0);    /* overscan color (border) */
+ 	writeAttr(0x12, 0x0f, 0);    /* plane enable */
+diff --git a/arch/ppc/boot/simple/m8xx_tty.c b/arch/ppc/boot/simple/m8xx_tty.c
+index cacc40f..ea615d8 100644
+--- a/arch/ppc/boot/simple/m8xx_tty.c
++++ b/arch/ppc/boot/simple/m8xx_tty.c
+@@ -1,7 +1,7 @@
+ /* Minimal serial functions needed to send messages out the serial
+  * port on the MBX console.
+  *
+- * The MBX uxes SMC1 for the serial port.  We reset the port and use
++ * The MBX uses SMC1 for the serial port.  We reset the port and use
+  * only the first BD that EPPC-Bug set up as a character FIFO.
+  *
+  * Later versions (at least 1.4, maybe earlier) of the MBX EPPC-Bug
+diff --git a/arch/ppc/boot/simple/misc-embedded.c b/arch/ppc/boot/simple/misc-embedded.c
+index 10219ee..8a08ad3 100644
+--- a/arch/ppc/boot/simple/misc-embedded.c
++++ b/arch/ppc/boot/simple/misc-embedded.c
+@@ -136,7 +136,7 @@ load_kernel(unsigned long load_addr, int num_words, unsigned long cksum, bd_t *b
+ 
+ 	/*
+ 	 * We link ourself to an arbitrary low address.  When we run, we
+-	 * relocate outself to that address.  __image_being points to
++	 * relocate ourself to that address.  __image_being points to
+ 	 * the part of the image where the zImage is. -- Tom
  	 */
- 	l = npages;
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index 4fd2bec..f4b0a0d 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -2,7 +2,7 @@
-  *  arch/powerpc/kernel/mpic.c
+ 	zimage_start = (char *)(unsigned long)(&__image_begin);
+diff --git a/arch/ppc/boot/simple/mpc52xx_tty.c b/arch/ppc/boot/simple/mpc52xx_tty.c
+index 7b5924c..6955891 100644
+--- a/arch/ppc/boot/simple/mpc52xx_tty.c
++++ b/arch/ppc/boot/simple/mpc52xx_tty.c
+@@ -33,7 +33,7 @@ static struct mpc52xx_psc __iomem *psc =
+  * rtc.  We read the decrementer change during one rtc tick
+  * and multiply by 4 to get the system bus clock frequency. Since a
+  * rtc tick is one seconds, and that's pretty long, we change the rtc
+- * dividers temporarly to set them 64x faster ;)
++ * dividers temporarily to set them 64x faster ;)
+  */
+ static int
+ mpc52xx_ipbfreq(void)
+diff --git a/arch/ppc/boot/simple/mv64x60_tty.c b/arch/ppc/boot/simple/mv64x60_tty.c
+index 781e040..8a73578 100644
+--- a/arch/ppc/boot/simple/mv64x60_tty.c
++++ b/arch/ppc/boot/simple/mv64x60_tty.c
+@@ -338,7 +338,7 @@ serial_tstc(unsigned long com_port)
+ 
+ 	rdp = &rd[com_port][cur_rd[com_port]];
+ 
+-	/* Go thru rcv desc's until empty looking for one with data (no error)*/
++	/* Go through rcv descs until empty looking for one with data (no error)*/
+ 	while (((rdp->cmd_stat & SDMA_DESC_CMDSTAT_O) == 0) &&
+ 		(loop_count++ < RX_NUM_DESC)) {
+ 
+diff --git a/arch/ppc/boot/simple/rw4/stb.h b/arch/ppc/boot/simple/rw4/stb.h
+index fd98ee0..9afa5ab 100644
+--- a/arch/ppc/boot/simple/rw4/stb.h
++++ b/arch/ppc/boot/simple/rw4/stb.h
+@@ -88,7 +88,7 @@
+ /*----------------------------------------------------------------------------+
+ | STB tasks, task stack sizes, and task priorities.  The actual task priority
+ | is 1 more than the specified number since priority 0 is reserved (system
+-| internaly adds 1 to supplied priority number).
++| internally adds 1 to supplied priority number).
+ +----------------------------------------------------------------------------*/
+ #define STB_IDLE_TASK_SS        (5* 1024)
+ #define STB_IDLE_TASK_PRIO      0
+diff --git a/arch/ppc/kernel/traps.c b/arch/ppc/kernel/traps.c
+index 810f7aa..aea100b 100644
+--- a/arch/ppc/kernel/traps.c
++++ b/arch/ppc/kernel/traps.c
+@@ -577,7 +577,7 @@ void program_check_exception(struct pt_regs *regs)
+ 	 * ESR_DST (!?) or 0.  In the process of chasing this with the
+ 	 * hardware people - not sure if it can happen on any illegal
+ 	 * instruction or only on FP instructions, whether there is a
+-	 * pattern to occurences etc. -dgibson 31/Mar/2003 */
++	 * pattern to occurrences etc. -dgibson 31/Mar/2003 */
+ 	if (!(reason & REASON_TRAP) && do_mathemu(regs) == 0) {
+ 		emulate_single_step(regs);
+ 		return;
+@@ -860,7 +860,7 @@ void SPEFloatingPointException(struct pt_regs *regs)
+ 	spefscr = current->thread.spefscr;
+ 	fpexc_mode = current->thread.fpexc_mode;
+ 
+-	/* Hardware does not neccessarily set sticky
++	/* Hardware does not necessarily set sticky
+ 	 * underflow/overflow/invalid flags */
+ 	if ((spefscr & SPEFSCR_FOVF) && (fpexc_mode & PR_FP_EXC_OVF)) {
+ 		code = FPE_FLTOVF;
+diff --git a/arch/ppc/mm/init.c b/arch/ppc/mm/init.c
+index c374e53..390dd19 100644
+--- a/arch/ppc/mm/init.c
++++ b/arch/ppc/mm/init.c
+@@ -48,7 +48,7 @@
+ #include "mmu_decl.h"
+ 
+ #if defined(CONFIG_KERNEL_START_BOOL) || defined(CONFIG_LOWMEM_SIZE_BOOL)
+-/* The ammount of lowmem must be within 0xF0000000 - KERNELBASE. */
++/* The amount of lowmem must be within 0xF0000000 - KERNELBASE. */
+ #if (CONFIG_LOWMEM_SIZE > (0xF0000000 - KERNELBASE))
+ #error "You must adjust CONFIG_LOWMEM_SIZE or CONFIG_START_KERNEL"
+ #endif
+diff --git a/arch/ppc/platforms/4xx/bubinga.c b/arch/ppc/platforms/4xx/bubinga.c
+index 75857b3..1a7f075 100644
+--- a/arch/ppc/platforms/4xx/bubinga.c
++++ b/arch/ppc/platforms/4xx/bubinga.c
+@@ -197,7 +197,7 @@ bios_fixup(struct pci_controller *hose, struct pcil0_regs *pcip)
+ 		    hose->first_busno, PCI_SLOT(hose->first_busno),
+ 		    PCI_FUNC(hose->first_busno), bar, bar_response);
+ 	}
+-	/* end work arround */
++	/* end workaround */
+ 
+ #ifdef DEBUG
+ 	printk("PCI bridge regs after fixup \n");
+diff --git a/arch/ppc/platforms/4xx/ep405.c b/arch/ppc/platforms/4xx/ep405.c
+index e5adf9b..5aa2950 100644
+--- a/arch/ppc/platforms/4xx/ep405.c
++++ b/arch/ppc/platforms/4xx/ep405.c
+@@ -130,7 +130,7 @@ bios_fixup(struct pci_controller *hose, struct pcil0_regs *pcip)
+ 		    hose->first_busno, PCI_SLOT(hose->first_busno),
+ 		    PCI_FUNC(hose->first_busno), bar, bar_response);
+ 	}
+-	/* end work arround */
++	/* end workaround */
+ #endif
+ }
+ 
+diff --git a/arch/ppc/platforms/4xx/ibmnp405h.h b/arch/ppc/platforms/4xx/ibmnp405h.h
+index 4aa8821..08a6a77 100644
+--- a/arch/ppc/platforms/4xx/ibmnp405h.h
++++ b/arch/ppc/platforms/4xx/ibmnp405h.h
+@@ -80,7 +80,7 @@
+ #define DCRN_CPMFR_BASE	0x0B9
+ #define DCRN_CPMER_BASE	0x0B8
+ 
+-/* CPM Clocking & Power Mangement defines */
++/* CPM Clocking & Power Management defines */
+ #define IBM_CPM_PCI		0x40000000	/* PCI */
+ #define IBM_CPM_EMAC2	0x20000000	/* EMAC 2 MII */
+ #define IBM_CPM_EMAC3	0x04000000	/* EMAC 3 MII */
+diff --git a/arch/ppc/platforms/4xx/sycamore.c b/arch/ppc/platforms/4xx/sycamore.c
+index c47493e..8689f3e 100644
+--- a/arch/ppc/platforms/4xx/sycamore.c
++++ b/arch/ppc/platforms/4xx/sycamore.c
+@@ -225,7 +225,7 @@ bios_fixup(struct pci_controller *hose, struct pcil0_regs *pcip)
+ 		    hose->first_busno, PCI_SLOT(hose->first_busno),
+ 		    PCI_FUNC(hose->first_busno), bar, bar_response);
+ 	}
+-	/* end work arround */
++	/* end workaround */
+ 
+ #ifdef DEBUG
+ 	printk("PCI bridge regs after fixup \n");
+diff --git a/arch/ppc/platforms/4xx/walnut.c b/arch/ppc/platforms/4xx/walnut.c
+index f414d2d..2f97723 100644
+--- a/arch/ppc/platforms/4xx/walnut.c
++++ b/arch/ppc/platforms/4xx/walnut.c
+@@ -200,7 +200,7 @@ bios_fixup(struct pci_controller *hose, struct pcil0_regs *pcip)
+ 		    hose->first_busno, PCI_SLOT(hose->first_busno),
+ 		    PCI_FUNC(hose->first_busno), bar, bar_response);
+ 	}
+-	/* end work arround */
++	/* end work around */
+ 
+ #ifdef DEBUG
+ 	printk("PCI bridge regs after fixup \n");
+diff --git a/arch/ppc/platforms/ev64360.c b/arch/ppc/platforms/ev64360.c
+index f87e06f..f8baf05 100644
+--- a/arch/ppc/platforms/ev64360.c
++++ b/arch/ppc/platforms/ev64360.c
+@@ -473,7 +473,7 @@ platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	 * are non-zero, then we should use the board info from the bd_t
+ 	 * structure and the cmdline pointed to by r6 instead of the
+ 	 * information from birecs, if any.  Otherwise, use the information
+-	 * from birecs as discovered by the preceeding call to
++	 * from birecs as discovered by the preceding call to
+ 	 * parse_bootinfo().  This rule should work with both PPCBoot, which
+ 	 * uses a bd_t board info structure, and the kernel boot wrapper,
+ 	 * which uses birecs.
+diff --git a/arch/ppc/platforms/hdpu.c b/arch/ppc/platforms/hdpu.c
+index d809e17..ca5de13 100644
+--- a/arch/ppc/platforms/hdpu.c
++++ b/arch/ppc/platforms/hdpu.c
+@@ -144,7 +144,7 @@ static void __init hdpu_setup_peripherals(void)
+ 
+ 	/* Enable pipelining */
+ 	mv64x60_set_bits(&bh, MV64x60_CPU_CONFIG, (1 << 13));
+-	/* Enable Snoop Pipelineing */
++	/* Enable Snoop Pipelining */
+ 	mv64x60_set_bits(&bh, MV64360_D_UNIT_CONTROL_HIGH, (1 << 24));
+ 
+ 	/*
+diff --git a/arch/ppc/platforms/katana.c b/arch/ppc/platforms/katana.c
+index 720f8b3..c289e9f 100644
+--- a/arch/ppc/platforms/katana.c
++++ b/arch/ppc/platforms/katana.c
+@@ -880,7 +880,7 @@ platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	 * are non-zero, then we should use the board info from the bd_t
+ 	 * structure and the cmdline pointed to by r6 instead of the
+ 	 * information from birecs, if any.  Otherwise, use the information
+-	 * from birecs as discovered by the preceeding call to
++	 * from birecs as discovered by the preceding call to
+ 	 * parse_bootinfo().  This rule should work with both PPCBoot, which
+ 	 * uses a bd_t board info structure, and the kernel boot wrapper,
+ 	 * which uses birecs.
+diff --git a/arch/ppc/platforms/mbx.h b/arch/ppc/platforms/mbx.h
+index fe81ca4..1cf36fa 100644
+--- a/arch/ppc/platforms/mbx.h
++++ b/arch/ppc/platforms/mbx.h
+@@ -37,7 +37,7 @@ typedef struct bd_info {
+ 
+ /* Memory map for the MBX as configured by EPPC-Bug.  We could reprogram
+  * The SIU and PCI bridge, and try to use larger MMU pages, but the
+- * performance gain is not measureable and it certainly complicates the
++ * performance gain is not measurable and it certainly complicates the
+  * generic MMU model.
   *
-  *  Driver for interrupt controllers following the OpenPIC standard, the
-- *  common implementation beeing IBM's MPIC. This driver also can deal
-+ *  common implementation being IBM's MPIC. This driver also can deal
-  *  with various broken implementations of this HW.
+  * In a effort to minimize memory usage for embedded applications, any
+diff --git a/arch/ppc/platforms/mvme5100.h b/arch/ppc/platforms/mvme5100.h
+index 9e2a09e..fbb5495 100644
+--- a/arch/ppc/platforms/mvme5100.h
++++ b/arch/ppc/platforms/mvme5100.h
+@@ -69,7 +69,7 @@
+ 
+ #define STD_COM_FLAGS ASYNC_BOOT_AUTOCONF
+ 
+-/* All UART IRQ's are wire-OR'd to one MPIC IRQ */
++/* All UART IRQs are wire-OR'd to one MPIC IRQ */
+ #define STD_SERIAL_PORT_DFNS \
+         { 0, BASE_BAUD, MVME5100_SERIAL_1, \
+ 		MVME5100_SERIAL_IRQ, \
+diff --git a/arch/ppc/platforms/pplus.h b/arch/ppc/platforms/pplus.h
+index a07cbbd..a4bbaa8 100644
+--- a/arch/ppc/platforms/pplus.h
++++ b/arch/ppc/platforms/pplus.h
+@@ -18,7 +18,7 @@
+ #include <asm/io.h>
+ 
+ /*
+- * Due to limiations imposed by legacy hardware (primaryily IDE controllers),
++ * Due to limitations imposed by legacy hardware (primarily IDE controllers),
+  * the PPLUS boards operate using a PReP address map.
   *
-  *  Copyright (C) 2004 Benjamin Herrenschmidt, IBM Corp.
+  * From Processor (physical) -> PCI:
+diff --git a/arch/ppc/platforms/prep_pci.c b/arch/ppc/platforms/prep_pci.c
+index c627ba4..1df3150 100644
+--- a/arch/ppc/platforms/prep_pci.c
++++ b/arch/ppc/platforms/prep_pci.c
+@@ -589,9 +589,9 @@ static unsigned char prep_pci_intpins[4][4] =
+ 	{ 4, 1, 2, 3},  /* Buses 3, 7, 11 ... */
+ };
+ 
+-/* We have to turn on LEVEL mode for changed IRQ's */
+-/* All PCI IRQ's need to be level mode, so this should be something
+- * other than hard-coded as well... IRQ's are individually mappable
++/* We have to turn on LEVEL mode for changed IRQs */
++/* All PCI IRQs need to be level mode, so this should be something
++ * other than hard-coded as well... IRQs are individually mappable
+  * to either edge or level.
+  */
+ 
+@@ -923,8 +923,8 @@ prep_sandalfoot_setup_pci(char *irq_edge_mask_lo, char *irq_edge_mask_hi)
+ 	Motherboard_map_name = "IBM 6015/7020 (Sandalfoot/Sandalbow)";
+ 	Motherboard_map = ibm6015_pci_IRQ_map;
+ 	Motherboard_routes = ibm6015_pci_IRQ_routes;
+-	*irq_edge_mask_lo = 0x00; /* irq's 0-7 all edge-triggered */
+-	*irq_edge_mask_hi = 0xA0; /* irq's 13, 15 level-triggered */
++	*irq_edge_mask_lo = 0x00; /* IRQs 0-7 all edge-triggered */
++	*irq_edge_mask_hi = 0xA0; /* IRQs 13, 15 level-triggered */
+ }
+ 
+ void __init
+@@ -933,8 +933,8 @@ prep_thinkpad_setup_pci(char *irq_edge_mask_lo, char *irq_edge_mask_hi)
+ 	Motherboard_map_name = "IBM Thinkpad 850/860";
+ 	Motherboard_map = Nobis_pci_IRQ_map;
+ 	Motherboard_routes = Nobis_pci_IRQ_routes;
+-	*irq_edge_mask_lo = 0x00; /* irq's 0-7 all edge-triggered */
+-	*irq_edge_mask_hi = 0xA0; /* irq's 13, 15 level-triggered */
++	*irq_edge_mask_lo = 0x00; /* IRQs 0-7 all edge-triggered */
++	*irq_edge_mask_hi = 0xA0; /* IRQs 13, 15 level-triggered */
+ }
+ 
+ void __init
+@@ -943,8 +943,8 @@ prep_carolina_setup_pci(char *irq_edge_mask_lo, char *irq_edge_mask_hi)
+ 	Motherboard_map_name = "IBM 7248, PowerSeries 830/850 (Carolina)";
+ 	Motherboard_map = ibm8xx_pci_IRQ_map;
+ 	Motherboard_routes = ibm8xx_pci_IRQ_routes;
+-	*irq_edge_mask_lo = 0x00; /* irq's 0-7 all edge-triggered */
+-	*irq_edge_mask_hi = 0xA4; /* irq's 10, 13, 15 level-triggered */
++	*irq_edge_mask_lo = 0x00; /* IRQs 0-7 all edge-triggered */
++	*irq_edge_mask_hi = 0xA4; /* IRQs 10, 13, 15 level-triggered */
+ }
+ 
+ void __init
+@@ -954,8 +954,8 @@ prep_tiger1_setup_pci(char *irq_edge_mask_lo, char *irq_edge_mask_hi)
+ 	Motherboard_map = ibm43p_pci_IRQ_map;
+ 	Motherboard_routes = ibm43p_pci_IRQ_routes;
+ 	Motherboard_non0 = ibm43p_pci_map_non0;
+-	*irq_edge_mask_lo = 0x00; /* irq's 0-7 all edge-triggered */
+-	*irq_edge_mask_hi = 0xA0; /* irq's 13, 15 level-triggered */
++	*irq_edge_mask_lo = 0x00; /* IRQs 0-7 all edge-triggered */
++	*irq_edge_mask_hi = 0xA0; /* IRQs 13, 15 level-triggered */
+ }
+ 
+ void __init
+diff --git a/arch/ppc/platforms/prep_setup.c b/arch/ppc/platforms/prep_setup.c
+index f166299..6f21110 100644
+--- a/arch/ppc/platforms/prep_setup.c
++++ b/arch/ppc/platforms/prep_setup.c
+@@ -593,7 +593,7 @@ static void __init prep_init_sound(void)
+ 	PPC_DEVICE *audiodevice = NULL;
+ 
+ 	/*
+-	 * Get the needed resource informations from residual data.
++	 * Get the needed resource information from residual data.
+ 	 *
+ 	 */
+ 	if (have_residual_data)
+@@ -632,9 +632,9 @@ static void __init prep_init_sound(void)
+ 	}
+ 
+ 	/*
+-	 * Find a way to push these informations to the cs4232 driver
++	 * Find a way to push this information to the cs4232 driver
+ 	 * Give it out with printk, when not in cmd_line?
+-	 * Append it to  cmd_line and boot_command_line?
++	 * Append it to cmd_line and boot_command_line?
+ 	 * Format is cs4232=io,irq,dma,dma2
+ 	 */
+ }
+diff --git a/arch/ppc/platforms/prpmc750.h b/arch/ppc/platforms/prpmc750.h
+index 4c7adcc..c4dcff0 100644
+--- a/arch/ppc/platforms/prpmc750.h
++++ b/arch/ppc/platforms/prpmc750.h
+@@ -16,7 +16,7 @@
+ #define __ASM_PRPMC750_H__
+ 
+ /*
+- * Due to limiations imposed by legacy hardware (primaryily IDE controllers),
++ * Due to limitations imposed by legacy hardware (primarily IDE controllers),
+  * the PrPMC750 carrier board operates using a PReP address map.
+  *
+  * From Processor (physical) -> PCI:
+diff --git a/arch/ppc/platforms/radstone_ppc7d.c b/arch/ppc/platforms/radstone_ppc7d.c
+index 13d70ab..b558607 100644
+--- a/arch/ppc/platforms/radstone_ppc7d.c
++++ b/arch/ppc/platforms/radstone_ppc7d.c
+@@ -1371,7 +1371,7 @@ void __init platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	 * are non-zero, then we should use the board info from the bd_t
+ 	 * structure and the cmdline pointed to by r6 instead of the
+ 	 * information from birecs, if any.  Otherwise, use the information
+-	 * from birecs as discovered by the preceeding call to
++	 * from birecs as discovered by the preceding call to
+ 	 * parse_bootinfo().  This rule should work with both PPCBoot, which
+ 	 * uses a bd_t board info structure, and the kernel boot wrapper,
+ 	 * which uses birecs.
+diff --git a/arch/ppc/platforms/sandpoint.c b/arch/ppc/platforms/sandpoint.c
+index a76002a..3352fae 100644
+--- a/arch/ppc/platforms/sandpoint.c
++++ b/arch/ppc/platforms/sandpoint.c
+@@ -54,7 +54,7 @@
+  *
+  *
+  * Motorola has finally released a version of DINK32 that correctly
+- * (seemingly) initalizes the memory controller correctly, regardless
++ * (seemingly) initializes the memory controller correctly, regardless
+  * of the amount of memory in the system.  Once a method of determining
+  * what version of DINK initializes the system for us, if applicable, is
+  * found, we can hopefully stop hardcoding 32MB of RAM.
+@@ -473,7 +473,7 @@ sandpoint_request_io(void)
+ arch_initcall(sandpoint_request_io);
+ 
+ /*
+- * Interrupt setup and service.  Interrrupts on the Sandpoint come
++ * Interrupt setup and service.  Interrupts on the Sandpoint come
+  * from the four PCI slots plus the 8259 in the Winbond Super I/O (SIO).
+  * The 8259 is cascaded from EPIC IRQ0, IRQ1-4 map to PCI slots 1-4,
+  * IDE is on EPIC 7 and 8.
+@@ -505,7 +505,7 @@ sandpoint_find_end_of_memory(void)
+ 	if (bp->bi_memsize)
+ 		return bp->bi_memsize;
+ 
+-	/* DINK32 13.0 correctly initalizes things, so iff you use
++	/* DINK32 13.0 correctly initializes things, so iff you use
+ 	 * this you _should_ be able to change this instead of a
+ 	 * hardcoded value. */
+ #if 0
+@@ -677,7 +677,7 @@ platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ 	 * are non-zero, then we should use the board info from the bd_t
+ 	 * structure and the cmdline pointed to by r6 instead of the
+ 	 * information from birecs, if any.  Otherwise, use the information
+-	 * from birecs as discovered by the preceeding call to
++	 * from birecs as discovered by the preceding call to
+ 	 * parse_bootinfo().  This rule should work with both PPCBoot, which
+ 	 * uses a bd_t board info structure, and the kernel boot wrapper,
+ 	 * which uses birecs.
+diff --git a/arch/ppc/syslib/harrier.c b/arch/ppc/syslib/harrier.c
+index c1583f4..45b797b 100644
+--- a/arch/ppc/syslib/harrier.c
++++ b/arch/ppc/syslib/harrier.c
+@@ -210,7 +210,7 @@ harrier_init(struct pci_controller *hose,
+  * This assumes that PPCBug has initialized the memory controller (SMC)
+  * on the Harrier correctly (i.e., it does no sanity checking).
+  * It also assumes that the memory base registers are set to configure the
+- * memory as contigous starting with "RAM A BASE", "RAM B BASE", etc.
++ * memory as contiguous starting with "RAM A BASE", "RAM B BASE", etc.
+  * however, RAM base registers can be skipped (e.g. A, B, C are set,
+  * D is skipped but E is set is okay).
+  */
+diff --git a/arch/ppc/syslib/hawk_common.c b/arch/ppc/syslib/hawk_common.c
+index c5bf16b..86821d8 100644
+--- a/arch/ppc/syslib/hawk_common.c
++++ b/arch/ppc/syslib/hawk_common.c
+@@ -165,7 +165,7 @@ hawk_init(struct pci_controller *hose,
+ 				 processor_pci_mem_start + 
+ 				 hose->mem_space.start) | 0x0);
+ 
+-	/* Map MPIC into vitual memory */
++	/* Map MPIC into virtual memory */
+ 	OpenPIC_Addr = ioremap(processor_mpic_base, HAWK_MPIC_SIZE);
+ 
+ 	return 0;
+@@ -176,7 +176,7 @@ hawk_init(struct pci_controller *hose,
+  * This assumes that PPCBug has initialized the memory controller (SMC)
+  * on the Falcon/HAWK correctly (i.e., it does no sanity checking).
+  * It also assumes that the memory base registers are set to configure the
+- * memory as contigous starting with "RAM A BASE", "RAM B BASE", etc.
++ * memory as contiguous starting with "RAM A BASE", "RAM B BASE", etc.
+  * however, RAM base registers can be skipped (e.g. A, B, C are set,
+  * D is skipped but E is set is okay).
+  */
+diff --git a/arch/ppc/syslib/m82xx_pci.c b/arch/ppc/syslib/m82xx_pci.c
+index e3b586b..fe860d5 100644
+--- a/arch/ppc/syslib/m82xx_pci.c
++++ b/arch/ppc/syslib/m82xx_pci.c
+@@ -197,7 +197,7 @@ pq2ads_setup_pci(struct pci_controller *hose)
+ 	   CPM high      	0b0000
+ 	   CPM middle           0b0001
+ 	   CPM low       	0b0010
+-	   PCI reguest          0b0011
++	   PCI request          0b0011
+ 	   Reserved      	0b0100
+ 	   Reserved      	0b0101
+ 	   Internal Core     	0b0110
+diff --git a/arch/ppc/syslib/mpc10x_common.c b/arch/ppc/syslib/mpc10x_common.c
+index 2fc7c41..437a294 100644
+--- a/arch/ppc/syslib/mpc10x_common.c
++++ b/arch/ppc/syslib/mpc10x_common.c
+@@ -432,7 +432,7 @@ mpc10x_bridge_init(struct pci_controller *hose,
+ 			phys_eumb_base);
+ 	}
+ 
+-	/* IRQ's are determined at runtime */
++	/* IRQs are determined at runtime */
+ 	ppc_sys_platform_devices[MPC10X_IIC1].resource[1].start = MPC10X_I2C_IRQ;
+ 	ppc_sys_platform_devices[MPC10X_IIC1].resource[1].end = MPC10X_I2C_IRQ;
+ 	ppc_sys_platform_devices[MPC10X_DMA0].resource[1].start = MPC10X_DMA0_IRQ;
+@@ -646,7 +646,7 @@ void __init mpc10x_set_openpic(void)
+ 	openpic_set_sources(EPIC_IRQ_BASE, 3, OpenPIC_Addr + 0x11020);
+ 	/* Skip reserved space and map Message Unit Interrupt (I2O) */
+ 	openpic_set_sources(EPIC_IRQ_BASE + 3, 1, OpenPIC_Addr + 0x110C0);
+-	/* Skip reserved space and map Serial Interupts */
++	/* Skip reserved space and map Serial Interrupts */
+ 	openpic_set_sources(EPIC_IRQ_BASE + 4, 2, OpenPIC_Addr + 0x11120);
+ 
+ 	openpic_init(NUM_8259_INTERRUPTS);
+diff --git a/arch/ppc/syslib/mpc52xx_setup.c b/arch/ppc/syslib/mpc52xx_setup.c
+index 80c6090..ecfa2c0 100644
+--- a/arch/ppc/syslib/mpc52xx_setup.c
++++ b/arch/ppc/syslib/mpc52xx_setup.c
+@@ -252,7 +252,7 @@ mpc52xx_setup_cpu(void)
+ 	out_be32(&xlb->snoop_window, MPC52xx_PCI_TARGET_MEM | 0x1d);
+ 
+ 	/* Disable XLB pipelining */
+-	/* (cfr errate 292. We could do this only just before ATA PIO
++	/* (cfr errata 292. We could do this only just before ATA PIO
+ 	    transaction and re-enable it after ...) */
+ 	out_be32(&xlb->config, in_be32(&xlb->config) | MPC52xx_XLB_CFG_PLDIS);
+ 
+diff --git a/arch/ppc/syslib/mpc8xx_devices.c b/arch/ppc/syslib/mpc8xx_devices.c
+index 31fb565..c05ac87 100644
+--- a/arch/ppc/syslib/mpc8xx_devices.c
++++ b/arch/ppc/syslib/mpc8xx_devices.c
+@@ -21,7 +21,7 @@
+ #include <asm/irq.h>
+ #include <asm/ppc_sys.h>
+ 
+-/* We use offsets for IORESOURCE_MEM to do not set dependences at compile time.
++/* We use offsets for IORESOURCE_MEM to do not set dependencies at compile time.
+  * They will get fixed up by mach_mpc8xx_fixup
+  */
+ 
+diff --git a/arch/ppc/syslib/mv64x60.c b/arch/ppc/syslib/mv64x60.c
+index a6f8b68..8485a68 100644
+--- a/arch/ppc/syslib/mv64x60.c
++++ b/arch/ppc/syslib/mv64x60.c
+@@ -490,7 +490,7 @@ static struct platform_device *mv64x60_pd_devs[] __initdata = {
+ /*
+  * mv64x60_init()
+  *
+- * Initialze the bridge based on setting passed in via 'si'.  The bridge
++ * Initialize the bridge based on setting passed in via 'si'.  The bridge
+  * handle, 'bh', will be set so that it can be used to make subsequent
+  * calls to routines in this file.
+  */
+@@ -1704,7 +1704,7 @@ gt64260_disable_all_windows(struct mv64x60_handle *bh,
+ /*
+  * gt64260a_chip_specific_init()
+  *
+- * Implement errata work arounds for the GT64260A.
++ * Implement errata workarounds for the GT64260A.
+  */
+ static void __init
+ gt64260a_chip_specific_init(struct mv64x60_handle *bh,
+@@ -1776,7 +1776,7 @@ gt64260a_chip_specific_init(struct mv64x60_handle *bh,
+ /*
+  * gt64260b_chip_specific_init()
+  *
+- * Implement errata work arounds for the GT64260B.
++ * Implement errata workarounds for the GT64260B.
+  */
+ static void __init
+ gt64260b_chip_specific_init(struct mv64x60_handle *bh,
+@@ -2316,7 +2316,7 @@ mv64360_set_mpsc2regs_window(struct mv64x60_handle *bh, u32 base)
+ /*
+  * mv64360_chip_specific_init()
+  *
+- * Implement errata work arounds for the MV64360.
++ * Implement errata workarounds for the MV64360.
+  */
+ static void __init
+ mv64360_chip_specific_init(struct mv64x60_handle *bh,
+@@ -2336,7 +2336,7 @@ mv64360_chip_specific_init(struct mv64x60_handle *bh,
+ /*
+  * mv64460_chip_specific_init()
+  *
+- * Implement errata work arounds for the MV64460.
++ * Implement errata workarounds for the MV64460.
+  */
+ static void __init
+ mv64460_chip_specific_init(struct mv64x60_handle *bh,
+diff --git a/arch/ppc/syslib/ocp.c b/arch/ppc/syslib/ocp.c
+index 50c5562..491fe9a 100644
+--- a/arch/ppc/syslib/ocp.c
++++ b/arch/ppc/syslib/ocp.c
+@@ -27,7 +27,7 @@
+  *  device model.  The devices on the OCP bus are seeded by an
+  *  an initial OCP device array created by the arch-specific
+  *  Device entries can be added/removed/modified through OCP
+- *  helper functions to accomodate system and  board-specific
++ *  helper functions to accommodate system and  board-specific
+  *  parameters commonly found in embedded systems. OCP also
+  *  provides a standard method for devices to describe extended
+  *  attributes about themselves to the system.  A standard access
+diff --git a/arch/ppc/syslib/ppc403_pic.c b/arch/ppc/syslib/ppc403_pic.c
+index 607ebd1..c3b7b8b 100644
+--- a/arch/ppc/syslib/ppc403_pic.c
++++ b/arch/ppc/syslib/ppc403_pic.c
+@@ -112,7 +112,7 @@ ppc4xx_pic_init(void)
+ 
+ 	/*
+ 	 * Disable all external interrupts until they are
+-	 * explicity requested.
++	 * explicitly requested.
+ 	 */
+ 	ppc_cached_irq_mask[0] = 0;
+ 
+diff --git a/arch/ppc/syslib/ppc405_pci.c b/arch/ppc/syslib/ppc405_pci.c
+index d6d838b..9e90356 100644
+--- a/arch/ppc/syslib/ppc405_pci.c
++++ b/arch/ppc/syslib/ppc405_pci.c
+@@ -137,7 +137,7 @@ ppc4xx_find_bridges(void)
+ 	hose_a->pci_mem_offset = 0;
+ 
+ 	/* Setup bridge memory/IO ranges & resources
+-	 * TODO: Handle firmwares setting up a legacy ISA mem base
++	 * TODO: Handle firmware setting up a legacy ISA mem base
+ 	 */
+ 	hose_a->io_space.start = PPC405_PCI_LOWER_IO;
+ 	hose_a->io_space.end = PPC405_PCI_UPPER_IO;
+diff --git a/arch/ppc/syslib/ppc4xx_dma.c b/arch/ppc/syslib/ppc4xx_dma.c
+index 1eef4ff..bd30186 100644
+--- a/arch/ppc/syslib/ppc4xx_dma.c
++++ b/arch/ppc/syslib/ppc4xx_dma.c
+@@ -241,7 +241,7 @@ ppc4xx_set_dma_count(unsigned int dmanr, unsigned int count)
+ }
+ 
+ /*
+- *   Returns the number of bytes left to be transfered.
++ *   Returns the number of bytes left to be transferred.
+  *   After a DMA transfer, this should return zero.
+  *   Reading this while a DMA transfer is still in progress will return
+  *   unpredictable results.
+diff --git a/arch/ppc/syslib/ppc85xx_rio.c b/arch/ppc/syslib/ppc85xx_rio.c
+index 2b09780..af2425e 100644
+--- a/arch/ppc/syslib/ppc85xx_rio.c
++++ b/arch/ppc/syslib/ppc85xx_rio.c
+@@ -349,7 +349,7 @@ EXPORT_SYMBOL_GPL(rio_hw_add_outb_message);
+  * @dev_instance: Pointer to interrupt-specific data
+  *
+  * Handles outbound message interrupts. Executes a register outbound
+- * mailbox event handler and acks the interrupt occurence.
++ * mailbox event handler and acks the interrupt occurrence.
+  */
+ static irqreturn_t
+ mpc85xx_rio_tx_handler(int irq, void *dev_instance)
+@@ -516,7 +516,7 @@ void rio_close_outb_mbox(struct rio_mport *mport, int mbox)
+  * @dev_instance: Pointer to interrupt-specific data
+  *
+  * Handles inbound message interrupts. Executes a registered inbound
+- * mailbox event handler and acks the interrupt occurence.
++ * mailbox event handler and acks the interrupt occurrence.
+  */
+ static irqreturn_t
+ mpc85xx_rio_rx_handler(int irq, void *dev_instance)
+diff --git a/arch/ppc/syslib/xilinx_pic.c b/arch/ppc/syslib/xilinx_pic.c
+index 6fd4cdb..3b82333 100644
+--- a/arch/ppc/syslib/xilinx_pic.c
++++ b/arch/ppc/syslib/xilinx_pic.c
+@@ -130,7 +130,7 @@ ppc4xx_pic_init(void)
+ 
+ 	/*
+ 	 * Disable all external interrupts until they are
+-	 * explicity requested.
++	 * explicitly requested.
+ 	 */
+ 	intc_out_be32(intc + IER, 0);
+ 
 -- 
 1.5.0.1
 
