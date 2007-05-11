@@ -1,43 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758309AbXEKIJa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbXEKIMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758309AbXEKIJa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 04:09:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbXEKIJS
+	id S1758735AbXEKIMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 04:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752652AbXEKIMI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 04:09:18 -0400
-Received: from mx1.suse.de ([195.135.220.2]:43960 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751602AbXEKIJQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 04:09:16 -0400
-Date: Fri, 11 May 2007 11:06:36 +0200
-From: Andi Kleen <ak@suse.de>
-To: Florin Iucha <florin@iucha.net>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Vivek Goyal <vgoyal@in.ibm.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Current git fails to compile on AMD64 for three days in a row
-Message-ID: <20070511090636.GQ2012@bingen.suse.de>
-References: <20070510151642.GH26751@iucha.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070510151642.GH26751@iucha.net>
+	Fri, 11 May 2007 04:12:08 -0400
+Received: from smtp-105-friday.nerim.net ([62.4.16.105]:1379 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751998AbXEKIMG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 04:12:06 -0400
+Date: Fri, 11 May 2007 10:12:31 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] i2c: adds support for i2c bus on 8xx
+Message-ID: <20070511101231.241e3a30@hyperion.delvare>
+In-Reply-To: <20070510143554.16c5df6a@localhost.localdomain>
+References: <20070508063131.19179.47548.stgit@localhost.localdomain>
+	<20070510112835.60fb1c2a@hyperion.delvare>
+	<20070510143554.16c5df6a@localhost.localdomain>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 10:16:43AM -0500, Florin Iucha wrote:
-> I just pulled the current git (de5603748af8bf7deac403e6ba92887f8d18e812)
-> and tried to compile it on my AMD64 box, to test Chuck's RPC fix.  It
-> fails:
-> 
->    arch/x86_64/kernel/head64.c: In function ???x86_64_start_kernel???:
->    arch/x86_64/kernel/head64.c:70: error: size of array ???type name??? is negative
-> 
-> It is failing in the same way since Monday.
+Hi Vitaly,
 
-It's a BUILD_BUG_ON -- your relocatable base address in CONFIG 
-needs to be a multiple of 2MB as documented.
+On Thu, 10 May 2007 14:35:54 +0400, Vitaly Bordug wrote:
+> On Thu, 10 May 2007 11:28:35 +0200 Jean Delvare wrote:
+> > On Tue, 08 May 2007 10:31:31 +0400, Vitaly Bordug wrote:
+> > > Interface has been reworked to of_device as well as other feedback
+> > > addressed. Repeated start ability is missing from the
+> > > implementation.
+> > 
+> > Did you check the hardware documentation? Is it a hardware limitation?
+> > It is likely to cause problems, so it should be investigated, and if
+> > it really cannot be fixed, then this must be clearly documented (in
+> > Kconfig and in the driver) and the advertised functionalities  of the
+> > driver should be reduced accordingly (most SMBus transactions include
+> > a repeated start.)
+>
+> Yes, I've checked RM about I2C controller, and cannot find anything about repeated
+> start. There are a few words about multi-master considerations, that SoC features bus arbitration,
+> but to avoid collisions, "higher-level handshake protocol must be used" (MPC885 RM, p. 32-6).
 
-There is a patch floating around to turn this into an #error which
-might be more clear.
--Andi
+After reading the MPC885 RM datasheet, I think the device supports
+repeated start. I guess that you simply need to _only_ set the
+BD_SC_LAST flag for the last message of the transaction, not all of
+them as the driver does. If I am correct, this should be fairly easy to
+fix. Please try, test and report.
+
+> > > +static int cpm_iic_init(struct i2c_adapter *adap)
+> > > +{
+> > > (...)
+> > > +	/* Initialize Tx/Rx parameters.
+> > > +	 */
+> > > +	if (cpm->reloc == 0) {
+> > > +		cpm8xx_t *cp = cpm->cp;
+> > > +		int res;
+> > > +
+> > > +		u16 v = mk_cr_cmd(CPM_CR_CH_I2C, CPM_CR_INIT_TRX) | CPM_CR_FLG;
+> > > +
+> > > +		out_be16(&cp->cp_cpcr, v);
+> > > +		res = wait_event_timeout(iic_wait,
+> > > +					 !(in_be16(&cp->cp_cpcr) & CPM_CR_FLG),
+> > > +					 HZ * 10);
+> > 
+> > This is a pretty long timeout. Can it realistically take that long?
+>
+> In fact, it can. Especially when CPM is loaded with Ethernet/UART/Etc
+> transactions. If you feel it is overkill and I2C shouldn't do that,
+> I'll trim it down though.
+
+No, if you think it's reasonable, fine with me.
+
+-- 
+Jean Delvare
