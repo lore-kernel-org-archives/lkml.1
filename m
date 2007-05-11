@@ -1,170 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761268AbXEKN3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761192AbXEKNcw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761268AbXEKN3q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 09:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758583AbXEKN3j
+	id S1761192AbXEKNcw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 09:32:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758491AbXEKNco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 09:29:39 -0400
-Received: from wr-out-0506.google.com ([64.233.184.238]:41480 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758458AbXEKN3i (ORCPT
+	Fri, 11 May 2007 09:32:44 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:34779 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756055AbXEKNcn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 09:29:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=gWsvrlMj7QsXxMAxJK7xesdf0SduXzBDdJMtJj21gCPvfW9J200wmET3mLd8J3EUZUE0U1aGeRTzaDB3g59+LxI4b4sF8snG3xhjsq2xHoGKUzHVdNp9Ql6vkIRLN4+fC1b7s/+IqFP8N0X91FteJ9qgu92ySVq3Kp1pIDHyeVU=
-Message-ID: <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
-Date: Fri, 11 May 2007 18:59:31 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Jiri Kosina" <jikos@jikos.cz>
-Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context at net/core/sock.c:1523
-Cc: "Marcel Holtmann" <marcel@holtmann.org>, "Greg KH" <gregkh@suse.de>,
-       "Jeremy Fitzhardinge" <jeremy@goop.org>, maxk@qualcomm.com,
-       bluez-devel@lists.sourceforge.net, "Cedric Le Goater" <clg@fr.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-In-Reply-To: <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
+	Fri, 11 May 2007 09:32:43 -0400
+Date: Fri, 11 May 2007 14:15:03 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] optimise unlock_page
+In-Reply-To: <20070511085424.GA15352@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0705111357120.3350@blonde.wat.veritas.com>
+References: <20070508113709.GA19294@wotan.suse.de> <20070508114003.GB19294@wotan.suse.de>
+ <1178659827.14928.85.camel@localhost.localdomain> <20070508224124.GD20174@wotan.suse.de>
+ <20070508225012.GF20174@wotan.suse.de> <Pine.LNX.4.64.0705091950080.2909@blonde.wat.veritas.com>
+ <20070510033736.GA19196@wotan.suse.de> <Pine.LNX.4.64.0705101935590.18496@blonde.wat.veritas.com>
+ <20070511085424.GA15352@wotan.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <462D1B09.9050005@goop.org>
-	 <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz>
-	 <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 11 May 2007 13:32:41.0609 (UTC) FILETIME=[D9928F90:01C793D0]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AG5waWdnaW5Ac3VzZS5kZQBsaW51eC1hcmNoQHZnZXIua2VybmVsLm9yZwBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnAGxpbnV4LW1tQGt2YWNrLm9yZwA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jiri,
+On Fri, 11 May 2007, Nick Piggin wrote:
+> On Thu, May 10, 2007 at 08:14:52PM +0100, Hugh Dickins wrote:
+> > 
+> > Well, on the x86_64 I have seen a few of your io_schedule_timeout
+> > printks under load; but suspect those are no fault of your changes,
+> 
+> Hmm, I see... well I forgot to remove those from the page I sent,
+> the timeouts will kick things off again if they get stalled, so
+> maybe it just hides a problem? (OTOH, I *think* the logic is pretty
+> sound).
 
-On 4/26/07, Jiri Kosina <jikos@jikos.cz> wrote:
-> On Mon, 23 Apr 2007, Jiri Kosina wrote:
->
-> > > BUG: sleeping function called from invalid context at net/core/sock.c:1523
-> > > in_atomic():1, irqs_disabled():0
-> > > 1 lock held by khubd/180:
-> > >  #0:  (old_style_rw_init#2){-.-?}, at: [<f88c5816>] hci_sock_dev_event+0x42/0xc5 [bluetooth]
-> [...]
-> > OK, this probably started happening since b40df5743. Before that commit,
-> > hci_sock_dev_event() used bh_lock_sock() to lock the corresponding
-> > struct sock. This was obviously buggy - not deadlock safe against
-> > l2cap_connect_cfm() from softirq context. This however introduced
-> > another problem - hci_sock_dev_event() is now obviously being triggered
-> > (for HCI_DEV_UNREG event, when suspending) in atomic context with
+As I said in what you snipped, I believe your debug there is showing
+up an existing problem on my machine, not a problem in your changes.
 
-I saw that hci_sock_dev_event() is _always_ triggered in atomic
-context. It's the callout for hci_notifier which is defined as an
-atomic notifier chain (hence executed in an RCU read section -- and
-sleeping inside that would be illegal).
+> > So here it looks like a good change; but not enough to atone ;)
+> 
+> Don't worry, I'm only just beginning ;) Can we then do something crazy
+> like this?  (working on x86-64 only, so far. It seems to eliminate
+> lat_pagefault and lat_proc regressions here).
 
-> > preemption disabled. This is what lock_sock_nested() complains about, as
-> > it is allowed to sleep inside __lock_sock(), waiting for the lock owner.
-> [...]
-> Bluetooth: postpone hci_dev unregistration
->
-> Commit b40df57 substituted bh_lock_sock() in hci_sock_dev_event() for
-> lock_sock() when unregistering HCI device, in order to prevent deadlock
-> against locking in l2cap_connect_cfm() from softirq context.
+I think Mr __NickPiggin_Lock is squirming ever more desperately.
 
-Isn't this a problem faced by other places in the kernel already
-(where simply using bh_lock_sock() would potentially deadlock with
-another thread? I wonder what's the "recommended" (or one that's
-generally used) way to handle such a case.
+So, in essence, you'd like to expand PG_locked from 1 to 8 bits,
+despite the fact that page flags are known to be in short supply?
+Ah, no, you're keeping it near the static mmzone FLAGS_RESERVED.
 
-> This however introduces another problem - hci_sock_dev_event() for
-> HCI_DEV_UNREG can also be triggered in atomic context, in which calling
+Hmm, well, I think that's fairly horrid, and would it even be
+guaranteed to work on all architectures?  Playing with one char
+of an unsigned long in one way, while playing with the whole of
+the unsigned long in another way (bitops) sounds very dodgy to me.
 
-Actually, I remember going over the hci_sock_dev_event() calling
-codepath (in reverse) quite exhaustively, and did not find a
-legitimate reason why anybody would want it to be atomic. hci_notify()
-has six call sites, and all are sleep-capable, IMO. In the case of
-hci_unregister_dev(), for example, what's happening is as follows:
+I think I'd rather just accept that your changes have slowed some
+microbenchmarks down: it is not always possible to fix a serious
+bug without slowing something down.  That's probably what you're
+trying to push me into saying by this patch ;)
 
-__device_release_driver			(can sleep)
-usb_unbind_interface			(-"-)
-hci_usb_disconnect [hci_usb]		(can sleep *[1])
-hci_unregister_dev [bluetooth]		(-"-)
-hci_notify [bluetooth]			(-"-)
-atomic_notifier_call_chain		(contains RCU read section)
-notifier_call_chain			(therefore, CANNOT SLEEP [2])
-hci_sock_dev_event [bluetooth]		(-"-)
-lock_sock_nested			(MIGHT SLEEP *BUG*)
-__might_sleep
+But again I wonder just what the gain has been, once your double
+unmap_mapping_range is factored in.  When I suggested before that
+perhaps the double (well, treble including the one in truncate.c)
+unmap_mapping_range might solve the problem you set out to solve
+(I've lost sight of that!) without pagelock when faulting, you said:
 
-[1] This is the first problem point. However, I didn't find any reason
-why this particular driver's .disconnect() couldn't sleep. In fact, a
-comment in include/linux/usb.h:811 says:
+> Well aside from being terribly ugly, it means we can still drop
+> the dirty bit where we'd otherwise rather not, so I don't think
+> we can do that.
 
-"The probe() and disconnect() methods are called in a context where
-they can sleep, but they should avoid abusing the privilege. Most
-work to connect to a device should be done when the device is opened,
-and undone at the last close. The disconnect code needs to address
-concurrency issues with respect to open() and close() methods, as
-well as forcing all pending I/O requests to complete (by unlinking
-them as necessary, and blocking until the unlinks complete)."
+but that didn't give me enough information to agree or disagree.
 
-I'm assuming the comment is not obsolete, of course, but although the
-first sentence says .disconnect() shouldn't abuse the privilege to
-sleep, the last sentence makes it quite evident that we are _allowed_
-to do so anyway, and that is how things are (with the hci_usb driver,
-at least, I didn't check the .remove() or .disconnect() functions of other
-USB drivers, however).
+> 
+> What architecture and workloads are you testing with, btw?
 
-[2] This is a bogus (and unnecessary) can-sleep-to-cannot-sleep
-transition point, IMO. I had copied Alan Stern in another thread a few
-days back, and he wasn't sure why hci_notifier was classified as an
-atomic notifier chain (when that classification happened with the new
-notifier chains API). I had submitted a patch that merely changed 4
-lines in net/bluetooth/hci_core.c to convert hci_notifier to a blocking
-notifier chain, but couldn't test as I own no bluetooth hardware myself.
+i386 (2*HT P4 Xeons), x86_64 (2*HT P4 Xeons), PowerPC (G5 Quad).
 
-So do we ever really _need_ hci_sock_dev_event() to run in atomic
-context at all?
+Workloads mostly lmbench and my usual pair of make -j20 kernel builds,
+one to tmpfs and one to ext2 looped on tmpfs, restricted to 512M RAM
+plus swap.  Which is ever so old but still finds enough to keep me busy.
 
-> lock_sock() is not safe as it could sleep.
->
-> This patch moves the detaching of sockets from hci_device into workqueue,
-> so that lock_sock() can be used safely. This requires movement of
+Hugh
 
-I did a workqueue conversion myself, but ran into the following problem:
-
-In the scheduled work function we have:
-
-> +       read_lock(&hci_sk_list.lock);
-> +       sk_for_each(sk, node, &hci_sk_list.head) {
-> +               lock_sock(sk);
-
-This would still be illegal, we can't sleep while holding an rwlock
-(hci_sk_list.lock above). Converting hci_sk_list.lock to an rwsem
-is _even_ more problematic, because hci_send_to_sock()
-just *cannot* sleep.
-
-> deallocation of hci_dev - deallocating device just after
-> hci_unregister_dev() would be too soon, as it could happen before the
-> workqueue has been run.
-
-Suggest a better solution for this: just introduce a flush_scheduled_work()
-after hci_unregister_dev() but before hci_free_dev() in all those places.
-Less disruptive that way.
-
-So this is quite an interesting problem indeed, but I can't help wondering
-that this must be faced elsewhere in the kernel (other users of lock_sock)
-too. CC'ing netdev@, for any ideas.
-
-(later)
-
-I Googled a bit to see if this problem was faced elsewhere in the kernel
-too. Saw the following commit by Ingo Molnar
-(9883a13c72dbf8c518814b6091019643cdb34429):
-
--	lock_sock(sock->sk);
-+	local_bh_disable();
-+	bh_lock_sock_nested(sock->sk);
- 	rc = selinux_netlbl_socket_setsid(sock, sksec->sid);
--	release_sock(sock->sk);
-+	bh_unlock_sock(sock->sk);
-+	local_bh_enable();
-
-Is it _really_ *this* simple?
-
-Satyam
+> --
+> 
+> Put PG_locked in its own byte from other PG_bits, so we can use non-atomic
+> stores to unlock it.
