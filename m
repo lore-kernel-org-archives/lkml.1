@@ -1,52 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759437AbXEKM4R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761384AbXEKM43@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759437AbXEKM4R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 08:56:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbXEKM4K
+	id S1761384AbXEKM43 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 08:56:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760002AbXEKM4U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 08:56:10 -0400
-Received: from rtsoft3.corbina.net ([85.21.88.6]:2210 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755384AbXEKM4J (ORCPT
+	Fri, 11 May 2007 08:56:20 -0400
+Received: from mta11.adelphia.net ([68.168.78.205]:54873 "EHLO
+	mta11.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759487AbXEKM4S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 08:56:09 -0400
-Message-ID: <4644A01F.4080501@ru.mvista.com>
-Date: Fri, 11 May 2007 16:55:59 +0000
-From: Maxim Uvarov <muvarov@ru.mvista.com>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051017)
-X-Accept-Language: en-us, en
+	Fri, 11 May 2007 08:56:18 -0400
+Date: Fri, 11 May 2007 07:56:16 -0500
+From: Corey Minyard <minyard@acm.org>
+To: Linux Kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Cc: Patrick Schoeller <Patrick.Schoeller@hp.com>
+Subject: [PATCH] IPMI: fix SI address space settings
+Message-ID: <20070511125616.GA6422@localdomain>
+Reply-To: minyard@acm.org
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Performance Stats: Kernel patch
-References: <20070510171947.19532.70784.stgit@localhost.localdomain> <p731whofe73.fsf@bingen.suse.de>
-In-Reply-To: <p731whofe73.fsf@bingen.suse.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+From: Corey Minyard <minyard@acm.org>
+Fix a rather obvious error that Patrick found in the setup routines.
+Need to set the proper address space in the ACPI case.
 
->Maxim Uvarov <muvarov@ru.mvista.com> writes:
->  
->
->>This data is useful for detecting hyperactivity
->>patterns between processes.
->>    
->>
->
->You need a lot better rationale to slow down these important
->fast paths. Particularly the syscall path is very hot.
->
->Is this something that is really generally useful? The context
->switch counters might be occasionally useful, but strace can
->you just give the syscall count anyways. Still not sure 
->it really should go into the standard kernel. Perhaps just keep it 
->as a systemtap script?
->
->-Andi
->  
->
-It is difficult to use strace for multi thread applications to
-verify which thread is doing what.
+Signed-off-by: Corey Minyard <minyard@acm.org>
+Cc: Patrick Schoeller <Patrick.Schoeller@hp.com>
+
+Index: linux-2.6.21/drivers/char/ipmi/ipmi_si_intf.c
+===================================================================
+--- linux-2.6.21.orig/drivers/char/ipmi/ipmi_si_intf.c
++++ linux-2.6.21/drivers/char/ipmi/ipmi_si_intf.c
+@@ -1915,10 +1915,10 @@ static __devinit int try_init_acpi(struc
+ 
+ 	if (spmi->addr.space_id == ACPI_ADR_SPACE_SYSTEM_MEMORY) {
+ 		info->io_setup = mem_setup;
+-		info->io.addr_type = IPMI_IO_ADDR_SPACE;
++		info->io.addr_type = IPMI_MEM_ADDR_SPACE;
+ 	} else if (spmi->addr.space_id == ACPI_ADR_SPACE_SYSTEM_IO) {
+ 		info->io_setup = port_setup;
+-		info->io.addr_type = IPMI_MEM_ADDR_SPACE;
++		info->io.addr_type = IPMI_IO_ADDR_SPACE;
+ 	} else {
+ 		kfree(info);
+ 		printk("ipmi_si: Unknown ACPI I/O Address type\n");
