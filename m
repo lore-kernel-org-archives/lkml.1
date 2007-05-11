@@ -1,103 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbXEKB4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760300AbXEKCF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762138AbXEKB4h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 21:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbXEKB4b
+	id S1760300AbXEKCF4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 22:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbXEKCFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 21:56:31 -0400
-Received: from nz-out-0506.google.com ([64.233.162.231]:31124 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755017AbXEKB4a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 21:56:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=pO49nJc0/pXPcIb2ae2hTKyR09o42fW50SsgZPkuwMPveRiCFsOiKnbGLc7ZPtVFmJ895vqx4iZJGuwubA56nzaWYO5O33jP3oh61GxWyGsuOXJdVOg/jhT0bzIpltnGfEaVeSZUjy/1zi2odbORGbKD8J7cZEJYFu9EFwlJfnc=
-Message-ID: <4643CD44.1090903@gmail.com>
-Date: Fri, 11 May 2007 09:56:20 +0800
-From: Li Yu <raise.sail@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+	Thu, 10 May 2007 22:05:48 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:45388 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752274AbXEKCFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 22:05:47 -0400
+Date: Fri, 11 May 2007 11:05:45 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Timur Tabi <timur@freescale.com>,
+       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
+       Michael Schmitz <schmitz@debian.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: Kconfig warnings on latest GIT
+Message-ID: <20070511020545.GG10715@verge.net.au>
+References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au> <46434ED0.6030808@freescale.com> <20070511012529.GC10715@verge.net.au> <Pine.LNX.4.64.0705102046400.10555@gate.crashing.org>
 MIME-Version: 1.0
-To: Steven Rostedt <srostedt@redhat.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Esben Nielsen <nielsen.esben@googlemail.com>
-Subject: Re: Hi, I have one question about rt_mutex.
-References: <4642CCEB.6010908@gmail.com> <4643176C.6050305@redhat.com>
-In-Reply-To: <4643176C.6050305@redhat.com>
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705102046400.10555@gate.crashing.org>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> Li Yu wrote:
->   
->>> Now since mutexes can be defined by user-land applications, we don't
->>>       
->> want a DOS
->>     
->>> type of application that nests large amounts of mutexes to create a large
->>> PI chain, and have the code holding spin locks while looking at a large
->>> amount of data. So to prevent this, the implementation not only implements
->>> a maximum lock depth, but also only holds at most two different locks at a
->>> time, as it walks the PI chain. More about this below.
->>>       
->> After read the implementation of rt_mutex_adjust_prio_chain(), I found
->> the we really require maximin lock depth (1024 default), but I can not
->> see the check for more same locks duplication. Does this doc is
->> inconsistent with code?
->>     
->
-> Nope, the code and the doc are still the same.
->
-> The thing that was most difficult in writing that document, was a way to
-> talk about the user locks (futex - fast user mutex) and the kernel locks
-> (spin_locks) without confusing the two.  The max depth is in reference
-> to the user futex, but the comment about the "at most two different
-> locks" is referencing the kernel's spin_locks.
->
-> I don't remember talking about looking for "lock duplication", which I'm
-> thinking you are referring to circular dead locks. I didn't cover that
-> in the document and I believe I even mentioned that I would not cover
-> the debug aspect of the code which would handle catching circular deadlocks.
->
-> But back to the "no more than two kernel locks held". This is very
-> important. Some PI implementations requires all locks in the PI chain to
-> have their internal locks held (as in spin_locks).  But letting user
-> space determine the number of spin locks held can cause large latencies
-> for the rest of the system.  So we designed a method to only need to
-> hold two internal spin_locks in the PI chain at a time.  The kernel
-> doesn't care if the user application is abusing itself (holding too many
-> of it's own user locks).  But the kernel does care if a user application
-> can affect other non related applications.
->
-> As Esben already mentioned, the PI chain even lets the locking user
-> mutex schedule without holding any kernel locks.  This is very key. It
-> keeps the latency down on setting up a PI chain which can be very expensive.
->
-> Note: Esben helped a lot in the development of the final design of
-> rtmutex.c.
->
-> -- Steve
->   
-First, Thanks for such good explanation from you two guru in time.
+On Thu, May 10, 2007 at 08:47:05PM -0500, Kumar Gala wrote:
+> Try this patch:
 
-Er, I think these two locks which you said are task->pi_lock and
-rt_mutex->wait_lock.
+That certainly resolves the problem for me.
+I'll see about doing something like that for the similar
+Kconfig problems that I see.
 
->The max depth is in reference to the user futex, but the comment
->about the "at most two different locks" is referencing the 
->kernel's spin_locks.
-
-This sentence make the my world clear from now on ;)
-
-However, I found the sys_futex() do not use rt_mutex, so what's mean of the user futex you said?
-Even, I have not found any usage for rt_mutex in kernel code. Or, some beautiful story will happen in future?
-
-Goodluck.
-
-- Li Yu
-
-
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
