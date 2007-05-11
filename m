@@ -1,84 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966745AbXEKUFe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966354AbXEKUGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966745AbXEKUFe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:05:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761398AbXEKUF0
+	id S966354AbXEKUGf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbXEKUG1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:05:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60595 "EHLO ogre.sisk.pl"
+	Fri, 11 May 2007 16:06:27 -0400
+Received: from gw.goop.org ([64.81.55.164]:51240 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760724AbXEKUFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:05:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-Date: Fri, 11 May 2007 22:10:24 +0200
-User-Agent: KMail/1.9.5
-Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       linux-acpi@vger.kernel.org
-References: <20070430102837.748238000@linutronix.de> <200705102212.08046.rjw@sisk.pl> <20070511094750.e91ea55b.akpm@linux-foundation.org>
-In-Reply-To: <20070511094750.e91ea55b.akpm@linux-foundation.org>
+	id S1760038AbXEKUG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 16:06:26 -0400
+Message-ID: <4644CCB9.3040109@goop.org>
+Date: Fri, 11 May 2007 13:06:17 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Roland McGrath <roland@redhat.com>
+CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Andrew Morton <akpm@linux-foundation.com>
+Subject: Re: [patch 2/7] use elfnote.h to generate vsyscall notes.
+References: <20070511194725.E37E51F8512@magilla.localdomain>
+In-Reply-To: <20070511194725.E37E51F8512@magilla.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705112210.25397.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 May 2007 18:47, Andrew Morton wrote:
-> On Thu, 10 May 2007 22:12:07 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Thursday, 10 May 2007 11:27, Thomas Gleixner wrote:
-> > > On Thu, 2007-05-10 at 02:18 -0700, Andrew Morton wrote:
-> > > > > > > If that patch makes the problem go away, then we should have a quite
-> > > > > > > good hint what we need to look at.
-> > > > > > 
-> > > > > > No joy, sorry.  It still hangs at the last statement in acpi_evaluate_object().
-> > > > > 
-> > > > > Can you add "nolapic_timer" to the command line please ?
-> > > > > 
-> > > > 
-> > > > That works.
-> > > 
-> > > Ok, that boils it down to the change, which affects the lapic timer
-> > > resume. It does nothing else, than fiddling in some APIC registers, but
-> > > I don't see how this affects the ACPI stuff. This smells extremly fishy.
-> > 
-> > Hmm, I wonder if it might be related to the execution of the _GTS ACPI control
-> > method in acpi_enter_sleep_state_prep() in violation of the spec.
-> > 
-> > Andrew, could you please try to apply the following change on top of the
-> > previous ones and see if the machine still hangs in the same place without
-> > "nolapic_timer"?
-> > 
-> > ---
-> >  drivers/acpi/hardware/hwsleep.c |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > Index: linux-2.6.21/drivers/acpi/hardware/hwsleep.c
-> > ===================================================================
-> > --- linux-2.6.21.orig/drivers/acpi/hardware/hwsleep.c
-> > +++ linux-2.6.21/drivers/acpi/hardware/hwsleep.c
-> > @@ -200,10 +200,10 @@ acpi_status acpi_enter_sleep_state_prep(
-> >  		return_ACPI_STATUS(status);
-> >  	}
-> >  
-> > -	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
-> > +	/*status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
-> >  	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
-> >  		return_ACPI_STATUS(status);
-> > -	}
-> > +	}*/
-> >  
-> >  	/* Setup the argument to _SST */
-> >  
-> 
-> I tested this against Thomas's original patch (below).  Still hangs, in the
-> same way.
+Roland McGrath wrote:
+> I used .balign because .align has inconsistent meaning on some platforms
+> (matches .p2align instead of .balign).  Using .align in a
+> machine-independent file seems questionable.
+>
+>
+>   
 
-Well, I'm out of ideas. :-(
+Subject: use balign in elfnote.h
 
-Could you please send me the Vaio's DSDT?
+Roland McGrath <roland@redhat.com>:
+> I used .balign because .align has inconsistent meaning on some platforms
+> (matches .p2align instead of .balign).  Using .align in a
+> machine-independent file seems questionable.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: Roland McGrath <roland@redhat.com>
+
+---
+ include/linux/elfnote.h |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+===================================================================
+--- a/include/linux/elfnote.h
++++ b/include/linux/elfnote.h
+@@ -40,16 +40,16 @@
+  */
+ #define ELFNOTE_START(name, type, flags)	\
+ .pushsection .note.name, flags,@note	;	\
+-  .align 4				;	\
++  .balign 4				;	\
+   .long 2f - 1f		/* namesz */	;	\
+   .long 4484f - 3f	/* descsz */	;	\
+   .long type				;	\
+ 1:.asciz #name				;	\
+-2:.align 4				;	\
++2:.balign 4				;	\
+ 3:
+ 
+ #define ELFNOTE_END				\
+-4484:.align 4				;	\
++4484:.balign 4				;	\
+ .popsection				;
+ 
+ #define ELFNOTE(name, type, desc)		\
+
+
+
