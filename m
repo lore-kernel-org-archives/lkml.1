@@ -1,55 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbXEKAdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760015AbXEKAiL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760005AbXEKAdW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 20:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbXEKAdQ
+	id S1760015AbXEKAiL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 20:38:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754275AbXEKAh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 20:33:16 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:46288 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756290AbXEKAdP (ORCPT
+	Thu, 10 May 2007 20:37:56 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:35459 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753023AbXEKAhz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 20:33:15 -0400
-Date: Fri, 11 May 2007 10:32:57 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: David Chinner <dgc@sgi.com>, Chuck Ebbert <cebbert@redhat.com>,
+	Thu, 10 May 2007 20:37:55 -0400
+Message-ID: <4643BA71.7050803@zytor.com>
+Date: Thu, 10 May 2007 17:36:01 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Xavier Bestel <xavier.bestel@free.fr>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Neil Brown <neilb@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-raid@vger.kernel.org,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
-Message-ID: <20070511003257.GL86004887@sgi.com>
-References: <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <46439185.5060207@redhat.com> <464392B4.3070009@goop.org> <464393E1.3050705@redhat.com> <46439491.9010604@goop.org> <20070510225834.GF86004887@sgi.com> <4643A5B2.3060906@goop.org> <20070510232729.GH86004887@sgi.com> <4643AF8F.5040705@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4643AF8F.5040705@goop.org>
-User-Agent: Mutt/1.4.2.1i
+       David Greaves <david@dgreaves.com>, Doug Ledford <dledford@redhat.com>
+Subject: Re: Please revert 5b479c91da90eef605f851508744bfe8269591a0 (md partition
+ rescan)
+References: <17986.26930.952993.510918@notabene.brown>	 <alpine.LFD.0.98.0705091848370.4062@woody.linux-foundation.org>	 <Pine.LNX.4.61.0705101650340.24536@yvahk01.tjqt.qr>	 <1178809197.7699.4.camel@frg-rhel40-em64t-04> <a781481a0705100948x71279953ja4dc1903adda177@mail.gmail.com>
+In-Reply-To: <a781481a0705100948x71279953ja4dc1903adda177@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 04:49:35PM -0700, Jeremy Fitzhardinge wrote:
-> David Chinner wrote:
-> > Ok, this is important to kow becase we merged a mod around that time
-> > that changes the way we handle the updates to the file size i.e. the
-> > fix for the NULL-files-on-crash problem:
-> >
-> > http://git2.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=ba87ea699ebd9dd577bf055ebc4a98200e337542
-> >
-> > and that means the size of the file is not updated to the incore
-> > cached inode until after the data write is complete. The symptoms
-> > being seen would match with a inode-not-being-written-after-last-
-> > data-write-bug in this mod....
-> >   
+Satyam Sharma wrote:
+> On 5/10/07, Xavier Bestel <xavier.bestel@free.fr> wrote:
+>> On Thu, 2007-05-10 at 16:51 +0200, Jan Engelhardt wrote:
+>> > >(But Andrew never saw your email, I suspect: "akpm@suse.de" is
+>> > probably
+>> > >some strange mixup of Andrew Morton and Andi Kleen in your mind ;)
+>> >
+>> > What do the letters kp stand for?
 > 
-> Yes, that does look like a good candidate.  Should I try to
-> before-and-after this change?
+> Heh ... I've always wanted to know that myself. It's funny, no one
+> seems to have asked that on lkml during all these years (at least none
+> that a Google search would throw up).
+> 
+>> "Keep Patching" ?
+> 
+> Unlikely. "akpm" seems to be a pre-Linux-kernel nick.
 
-Yes please!
+http://en.wikipedia.org/wiki/Andrew_Morton_%28computer_programmer%29
 
-Cheers,
+	-hpa
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
