@@ -1,122 +1,256 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966306AbXEKTYE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031123AbXEKTYc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966306AbXEKTYE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:24:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763387AbXEKTTw
+	id S1031123AbXEKTYc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:24:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966267AbXEKTTy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:19:52 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:36797 "EHLO
+	Fri, 11 May 2007 15:19:54 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:36796 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S966196AbXEKTTu (ORCPT
+	with ESMTP id S966249AbXEKTTw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:19:50 -0400
-Message-Id: <20070511001201.487691000@goop.org>
+	Fri, 11 May 2007 15:19:52 -0400
+Message-Id: <20070511001204.173739000@goop.org>
 References: <20070511000643.025196000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:06:56 -0700
+Date: Thu, 10 May 2007 17:07:01 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       john stultz <johnstul@us.ibm.com>
-Subject: [patch 13/28]xen: Implement xen_sched_clock
-Content-Disposition: inline; filename=xen-sched-clock.patch
+       Olof Johansson <olof@lixom.net>
+Subject: [patch 18/28]xen: Use the hvc console infrastructure for Xen console
+Content-Disposition: inline; filename=xen-hvc-console.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Implement xen_sched_clock, which returns the number of ns the current
-vcpu has been actually in an unstolen state (ie, running or blocked,
-vs runnable-but-not-running, or offline) since boot.
+Implement a Xen back-end for hvc console.
 
+From: Gerd Hoffmann <kraxel@suse.de>
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Acked-by: Chris Wright <chrisw@sous-sol.org>
-Cc: john stultz <johnstul@us.ibm.com>
-
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Acked-by: Olof Johansson <olof@lixom.net>
 ---
- arch/i386/xen/enlighten.c |    2 +-
- arch/i386/xen/time.c      |   22 +++++++++++++++++++++-
- arch/i386/xen/xen-ops.h   |    3 +--
- 3 files changed, 23 insertions(+), 4 deletions(-)
+ arch/i386/xen/events.c |    3 -
+ drivers/Makefile       |    3 +
+ drivers/char/Kconfig   |    8 ++
+ drivers/char/Makefile  |    1 
+ drivers/char/hvc_xen.c |  134 ++++++++++++++++++++++++++++++++++++++++++++++++
+ include/xen/events.h   |    1 
+ 6 files changed, 149 insertions(+), 1 deletion(-)
 
 ===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -676,7 +676,7 @@ static const struct paravirt_ops xen_par
- 	.set_wallclock = xen_set_wallclock,
- 	.get_wallclock = xen_get_wallclock,
- 	.get_cpu_khz = xen_cpu_khz,
--	.sched_clock = xen_clocksource_read,
-+	.sched_clock = xen_sched_clock,
- 
- #ifdef CONFIG_X86_LOCAL_APIC
- 	.apic_write = paravirt_nop,
-===================================================================
---- a/arch/i386/xen/time.c
-+++ b/arch/i386/xen/time.c
-@@ -16,6 +16,8 @@
- #define XEN_SHIFT 22
- #define TIMER_SLOP	100000	/* Xen may fire a timer up to this many ns early */
- #define NS_PER_TICK	(1000000000ll / HZ)
-+
-+static cycle_t xen_clocksource_read(void);
- 
- /* These are perodically updated in shared_info, and then copied here. */
- struct shadow_time_info {
-@@ -118,6 +120,24 @@ static void do_stolen_accounting(void)
- 	account_steal_time(idle_task(smp_processor_id()), ticks);
+--- a/arch/i386/xen/events.c
++++ b/arch/i386/xen/events.c
+@@ -244,7 +244,7 @@ static int find_unbound_irq(void)
+ 	return irq;
  }
  
-+/*
-+ * Xen sched_clock implementation.  Returns the number of unstolen
-+ * nanoseconds, which is nanoseconds the VCPU spent in RUNNING+BLOCKED
-+ * states.
-+ */
-+unsigned long long xen_sched_clock(void)
-+{
-+	struct vcpu_runstate_info state;
-+	cycle_t now = xen_clocksource_read();
-+
-+	get_runstate_snapshot(&state);
-+
-+	WARN_ON(state.state != RUNSTATE_running);
-+
-+	return state.time[RUNSTATE_blocked] +
-+		state.time[RUNSTATE_running] +
-+		(now - state.state_entry_time);
-+}
- 
- 
- /* Get the CPU speed from Xen */
-@@ -209,7 +229,7 @@ static u64 get_nsec_offset(struct shadow
- 	return scale_delta(delta, shadow->tsc_to_nsec_mul, shadow->tsc_shift);
- }
- 
--cycle_t xen_clocksource_read(void)
-+static cycle_t xen_clocksource_read(void)
+-static int bind_evtchn_to_irq(unsigned int evtchn)
++int bind_evtchn_to_irq(unsigned int evtchn)
  {
- 	struct shadow_time_info *shadow = &get_cpu_var(shadow_time);
- 	cycle_t ret;
+ 	int irq;
+ 
+@@ -269,6 +269,7 @@ static int bind_evtchn_to_irq(unsigned i
+ 
+ 	return irq;
+ }
++EXPORT_SYMBOL_GPL(bind_evtchn_to_irq);
+ 
+ static int bind_ipi_to_irq(unsigned int ipi, unsigned int cpu)
+ {
 ===================================================================
---- a/arch/i386/xen/xen-ops.h
-+++ b/arch/i386/xen/xen-ops.h
-@@ -2,7 +2,6 @@
- #define XEN_OPS_H
+--- a/drivers/Makefile
++++ b/drivers/Makefile
+@@ -14,6 +14,9 @@ obj-$(CONFIG_ACPI)		+= acpi/
+ # was used and do nothing if so
+ obj-$(CONFIG_PNP)		+= pnp/
+ obj-$(CONFIG_ARM_AMBA)		+= amba/
++
++# Xen is the default console when running as a guest
++obj-$(CONFIG_XEN)		+= xen/
  
- #include <linux/init.h>
--#include <linux/clocksource.h>
+ # char/ comes before serial/ etc so that the VT console is the boot-time
+ # default.
+===================================================================
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -650,6 +650,14 @@ config HVC_BEAT
+ 	help
+ 	  Toshiba's Cell Reference Set Beat Console device driver
  
- DECLARE_PER_CPU(struct vcpu_info *, xen_vcpu);
- DECLARE_PER_CPU(unsigned long, xen_cr3);
-@@ -18,7 +17,7 @@ void __init xen_time_init(void);
- void __init xen_time_init(void);
- unsigned long xen_get_wallclock(void);
- int xen_set_wallclock(unsigned long time);
--cycle_t xen_clocksource_read(void);
-+unsigned long long xen_sched_clock(void);
++config HVC_XEN
++	bool "Xen Hypervisor Console support"
++	depends on XEN
++	select HVC_DRIVER
++	default y
++	help
++	  Xen virtual console device driver
++
+ config HVCS
+ 	tristate "IBM Hypervisor Virtual Console Server support"
+ 	depends on PPC_PSERIES
+===================================================================
+--- a/drivers/char/Makefile
++++ b/drivers/char/Makefile
+@@ -43,6 +43,7 @@ obj-$(CONFIG_SX)		+= sx.o generic_serial
+ obj-$(CONFIG_SX)		+= sx.o generic_serial.o
+ obj-$(CONFIG_RIO)		+= rio/ generic_serial.o
+ obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
++obj-$(CONFIG_HVC_XEN)		+= hvc_xen.o
+ obj-$(CONFIG_HVC_ISERIES)	+= hvc_iseries.o
+ obj-$(CONFIG_HVC_RTAS)		+= hvc_rtas.o
+ obj-$(CONFIG_HVC_BEAT)		+= hvc_beat.o
+===================================================================
+--- /dev/null
++++ b/drivers/char/hvc_xen.c
+@@ -0,0 +1,134 @@
++/*
++ * xen console driver interface to hvc_console.c
++ *
++ * (c) 2007 Gerd Hoffmann <kraxel@suse.de>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
++ */
++
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/err.h>
++#include <linux/init.h>
++#include <linux/types.h>
++
++#include <asm/xen/hypervisor.h>
++#include <xen/page.h>
++#include <xen/events.h>
++#include <xen/interface/io/console.h>
++
++#include "hvc_console.h"
++
++#define HVC_COOKIE   0x58656e /* "Xen" in hex */
++
++static struct hvc_struct *hvc;
++static int xencons_irq;
++
++/* ------------------------------------------------------------------ */
++
++static inline struct xencons_interface *xencons_interface(void)
++{
++	return mfn_to_virt(xen_start_info->console.domU.mfn);
++}
++
++static inline void notify_daemon(void)
++{
++	/* Use evtchn: this is called early, before irq is set up. */
++	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
++}
++
++static int write_console(uint32_t vtermno, const char *data, int len)
++{
++	struct xencons_interface *intf = xencons_interface();
++	XENCONS_RING_IDX cons, prod;
++	int sent = 0;
++
++	cons = intf->out_cons;
++	prod = intf->out_prod;
++	mb();
++	BUG_ON((prod - cons) > sizeof(intf->out));
++
++	while ((sent < len) && ((prod - cons) < sizeof(intf->out)))
++		intf->out[MASK_XENCONS_IDX(prod++, intf->out)] = data[sent++];
++
++	wmb();
++	intf->out_prod = prod;
++
++	notify_daemon();
++	return sent;
++}
++
++static int read_console(uint32_t vtermno, char *buf, int len)
++{
++	struct xencons_interface *intf = xencons_interface();
++	XENCONS_RING_IDX cons, prod;
++	int recv = 0;
++
++	cons = intf->in_cons;
++	prod = intf->in_prod;
++	mb();
++	BUG_ON((prod - cons) > sizeof(intf->in));
++
++	while (cons != prod && recv < len)
++		buf[recv++] = intf->in[MASK_XENCONS_IDX(cons++,intf->in)];
++
++	mb();
++	intf->in_cons = cons;
++
++	notify_daemon();
++	return recv;
++}
++
++static struct hv_ops hvc_ops = {
++	.get_chars = read_console,
++	.put_chars = write_console,
++};
++
++static int __init xen_init(void)
++{
++	struct hvc_struct *hp;
++
++	if (!is_running_on_xen())
++		return 0;
++
++	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
++	if (xencons_irq < 0)
++		xencons_irq = 0 /* NO_IRQ */;
++	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
++	if (IS_ERR(hp))
++		return PTR_ERR(hp);
++
++	hvc = hp;
++	return 0;
++}
++
++static void __exit xen_fini(void)
++{
++	if (hvc)
++		hvc_remove(hvc);
++}
++
++static int xen_cons_init(void)
++{
++	if (!is_running_on_xen())
++		return 0;
++
++	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
++	return 0;
++}
++
++module_init(xen_init);
++module_exit(xen_fini);
++console_initcall(xen_cons_init);
+===================================================================
+--- a/include/xen/events.h
++++ b/include/xen/events.h
+@@ -13,6 +13,7 @@ enum ipi_vector {
+ 	XEN_NR_IPIS,
+ };
  
- void xen_mark_init_mm_pinned(void);
- 
++int bind_evtchn_to_irq(unsigned int evtchn);
+ int bind_evtchn_to_irqhandler(unsigned int evtchn,
+ 			      irq_handler_t handler,
+ 			      unsigned long irqflags, const char *devname,
 
 -- 
 
