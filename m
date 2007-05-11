@@ -1,91 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966650AbXEKUEW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966745AbXEKUFe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966650AbXEKUEW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:04:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758933AbXEKUEM
+	id S966745AbXEKUFe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:05:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761398AbXEKUF0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:04:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60582 "EHLO ogre.sisk.pl"
+	Fri, 11 May 2007 16:05:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60595 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757310AbXEKUEK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:04:10 -0400
+	id S1760724AbXEKUFY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 16:05:24 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] swsusp: Use platform mode by default
-Date: Fri, 11 May 2007 22:08:52 +0200
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+Date: Fri, 11 May 2007 22:10:24 +0200
 User-Agent: KMail/1.9.5
-Cc: Coywolf Qi Hunt <coywolf@gmail.com>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-acpi@vger.kernel.org, Stefan Seyfried <seife@suse.de>
-References: <200611011323.14830.rjw@sisk.pl> <200705111121.51704.rjw@sisk.pl> <alpine.LFD.0.98.0705110912290.3986@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705110912290.3986@woody.linux-foundation.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       linux-acpi@vger.kernel.org
+References: <20070430102837.748238000@linutronix.de> <200705102212.08046.rjw@sisk.pl> <20070511094750.e91ea55b.akpm@linux-foundation.org>
+In-Reply-To: <20070511094750.e91ea55b.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705112208.53971.rjw@sisk.pl>
+Message-Id: <200705112210.25397.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 May 2007 18:30, Linus Torvalds wrote:
+On Friday, 11 May 2007 18:47, Andrew Morton wrote:
+> On Thu, 10 May 2007 22:12:07 +0200 "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> On Fri, 11 May 2007, Rafael J. Wysocki wrote:
+> > On Thursday, 10 May 2007 11:27, Thomas Gleixner wrote:
+> > > On Thu, 2007-05-10 at 02:18 -0700, Andrew Morton wrote:
+> > > > > > > If that patch makes the problem go away, then we should have a quite
+> > > > > > > good hint what we need to look at.
+> > > > > > 
+> > > > > > No joy, sorry.  It still hangs at the last statement in acpi_evaluate_object().
+> > > > > 
+> > > > > Can you add "nolapic_timer" to the command line please ?
+> > > > > 
+> > > > 
+> > > > That works.
+> > > 
+> > > Ok, that boils it down to the change, which affects the lapic timer
+> > > resume. It does nothing else, than fiddling in some APIC registers, but
+> > > I don't see how this affects the ACPI stuff. This smells extremly fishy.
 > > 
-> > We're working on fixing the breakage, but currently it's difficult, because
-> > none of my testboxes has problems with the 'platform' hibernation and I
-> > cannot reproduce the reported issues.
+> > Hmm, I wonder if it might be related to the execution of the _GTS ACPI control
+> > method in acpi_enter_sleep_state_prep() in violation of the spec.
+> > 
+> > Andrew, could you please try to apply the following change on top of the
+> > previous ones and see if the machine still hangs in the same place without
+> > "nolapic_timer"?
+> > 
+> > ---
+> >  drivers/acpi/hardware/hwsleep.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > Index: linux-2.6.21/drivers/acpi/hardware/hwsleep.c
+> > ===================================================================
+> > --- linux-2.6.21.orig/drivers/acpi/hardware/hwsleep.c
+> > +++ linux-2.6.21/drivers/acpi/hardware/hwsleep.c
+> > @@ -200,10 +200,10 @@ acpi_status acpi_enter_sleep_state_prep(
+> >  		return_ACPI_STATUS(status);
+> >  	}
+> >  
+> > -	status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
+> > +	/*status = acpi_evaluate_object(NULL, METHOD_NAME__GTS, &arg_list, NULL);
+> >  	if (ACPI_FAILURE(status) && status != AE_NOT_FOUND) {
+> >  		return_ACPI_STATUS(status);
+> > -	}
+> > +	}*/
+> >  
+> >  	/* Setup the argument to _SST */
+> >  
 > 
-> The rule for anything ACPI-related has been: no regressions.
-> 
-> It doesn't matter if something fixes 10 boxes, if it breaks a single one, 
-> it's going to get reverted.
+> I tested this against Thomas's original patch (below).  Still hangs, in the
+> same way.
 
-[Well, I think I should stop explaining decisions that weren't mine.  Yet, I
-feel responsible for patches that I sign-off.]
+Well, I'm out of ideas. :-(
 
-Just to clarify, the change in question isn't new.  It was introduced by the
-commit 9185cfa92507d07ac787bc73d06c42222eec7239 before 2.6.20, at Seife's
-request and with Pavel's acceptance.
-
-> We had much too much of the "two steps forward, one step back" dance with 
-> ACPI a few years ago, which is the reason that rule got installed (and 
-> which is why it's ACPI-only: in some other subsystems we accept the fact 
-> that sometimes we don't know how to fix some hardware issue, but the new 
-> situation is at least better than the old one).
-> 
-> I agree that it can be aggravating to know that you can fix a problem for 
-> some people, but then being limited by the fact that it breaks for others. 
-> But beign able to *rely* on something that used to work is just too 
-> important, and with ACPI, you can never make a good judgement of which way 
-> works better (since it really just depends on some random firmware issues 
-> that we have zero visibility into).
-> 
-> Also, quite often, it may *seem* like something fixes more boxes than it 
-> breaks, but it's because people report *breakage* only, and then a few 
-> months later it turns out that it's exactly the other way around: now it's 
-> a hundred people who report breakage with the *new* code, and the reason 
-> people thought it fixed more than it broke was that the people for whom 
-> the old code worked fine obviously never reported it!
-> 
-> So this is why "a single regression is considered more important than ten 
-> fixes" - because a single regressionr report tends to actually be just the 
-> first indication of a lot of people who simply haven't tested the new code 
-> yet! People for whom the old code is broken are more likely to test new 
-> things.
-> 
-> So I'd just suggest changing the default back to PM_DISK_SHUTDOWN (but 
-> leave the "pm_ops->enter" testing in place - ie not reverting the other 
-> commits in the series).
-
-The series actually preserves the 2.6.20/21 behavior.  By defaulting back to
-PM_DISK_SHUTDOWN, we'll cause some users for whom 2.6.20 and 2.6.21 work to
-report this change as a regression, so please let me avoid making this decision
-(I'm not the maintainer of the hibernation code after all).
-
-The problem is that we don't know about regressions until somebody reports them
-and if that happens after two affected kernel releases, what should we do?
-
-Rafael
+Could you please send me the Vaio's DSDT?
