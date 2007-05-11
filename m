@@ -1,216 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762296AbXEKQbu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933257AbXEKQck@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762296AbXEKQbu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 12:31:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759877AbXEKQbn
+	id S933257AbXEKQck (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 12:32:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760254AbXEKQcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 12:31:43 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:38202 "EHLO
+	Fri, 11 May 2007 12:32:32 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42702 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759630AbXEKQbn (ORCPT
+	by vger.kernel.org with ESMTP id S1759877AbXEKQcb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 12:31:43 -0400
-Date: Fri, 11 May 2007 09:31:08 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH 1/2] scalable rw_mutex
-Message-Id: <20070511093108.495feb70.akpm@linux-foundation.org>
-In-Reply-To: <20070511132321.895740140@chello.nl>
-References: <20070511131541.992688403@chello.nl>
-	<20070511132321.895740140@chello.nl>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 May 2007 12:32:31 -0400
+Date: Fri, 11 May 2007 09:30:37 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Coywolf Qi Hunt <coywolf@gmail.com>, Len Brown <lenb@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-acpi@vger.kernel.org, Stefan Seyfried <seife@suse.de>
+Subject: Re: [PATCH] swsusp: Use platform mode by default
+In-Reply-To: <200705111121.51704.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.98.0705110912290.3986@woody.linux-foundation.org>
+References: <200611011323.14830.rjw@sisk.pl> <200611012240.13412.len.brown@intel.com>
+ <2cd57c900705110136r11f23797gdf09df36559c6a3b@mail.gmail.com>
+ <200705111121.51704.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 May 2007 15:15:42 +0200 Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-> Scalable reader/writer lock.
+
+On Fri, 11 May 2007, Rafael J. Wysocki wrote:
 > 
-> Its scalable in that the read count is a percpu counter and the reader fast
-> path does not write to a shared cache-line.
-> 
-> Its not FIFO fair, but starvation proof by alternating readers and writers.
+> We're working on fixing the breakage, but currently it's difficult, because
+> none of my testboxes has problems with the 'platform' hibernation and I
+> cannot reproduce the reported issues.
 
-It looks .... surprisingly sane, given the history of these things ;)
+The rule for anything ACPI-related has been: no regressions.
 
+It doesn't matter if something fixes 10 boxes, if it breaks a single one, 
+it's going to get reverted.
 
-> ---
->  include/linux/rwmutex.h |  103 +++++++++++++++++++++++++++++++++++++
->  kernel/Makefile         |    3 -
->  kernel/rwmutex.c        |  132 ++++++++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 237 insertions(+), 1 deletion(-)
-> 
-> Index: linux-2.6/include/linux/rwmutex.h
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6/include/linux/rwmutex.h	2007-05-11 14:59:09.000000000 +0200
-> @@ -0,0 +1,103 @@
-> +/*
-> + * Scalable reader/writer lock.
-> + *
-> + *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
-> + *
-> + * This file contains the public data structure and API definitions.
-> + */
-> +#ifndef _LINUX_RWMUTEX_H
-> +#define _LINUX_RWMUTEX_H
-> +
-> +#include <linux/preempt.h>
-> +#include <linux/wait.h>
-> +#include <linux/percpu_counter.h>
-> +#include <linux/lockdep.h>
-> +#include <linux/mutex.h>
-> +#include <asm/atomic.h>
-> +
-> +struct rw_mutex {
-> +	/* Read mostly global */
-> +	struct percpu_counter	readers;
-> +	unsigned int		status;
-> +
-> +	/* The following variables are only for the slowpath */
-> +	struct mutex		read_mutex;	/* r -> w waiting */
-> +	struct mutex		write_mutex;	/* w -> w waiting */
-> +	wait_queue_head_t	wait_queue;	/* w -> r waiting */
-> +	atomic_t		read_waiters;
-> +
-> +#ifdef CONFIG_DEBUG_LOCK_ALLOC
-> +	struct lockdep_map dep_map;
-> +#endif
-> +};
->
+We had much too much of the "two steps forward, one step back" dance with 
+ACPI a few years ago, which is the reason that rule got installed (and 
+which is why it's ACPI-only: in some other subsystems we accept the fact 
+that sometimes we don't know how to fix some hardware issue, but the new 
+situation is at least better than the old one).
 
-A nice comment describing the overall design and the runtime dynamics and
-the lock's characteristics would be useful.  It should include a prominent
-description of the lock's storage requirements, which are considerable.
+I agree that it can be aggravating to know that you can fix a problem for 
+some people, but then being limited by the fact that it breaks for others. 
+But beign able to *rely* on something that used to work is just too 
+important, and with ACPI, you can never make a good judgement of which way 
+works better (since it really just depends on some random firmware issues 
+that we have zero visibility into).
 
-> +extern void __rw_mutex_init(struct rw_mutex *rw_mutex, const char * name,
-> +		struct lock_class_key *key);
-> +extern void rw_mutex_destroy(struct rw_mutex *rw_mutex);
+Also, quite often, it may *seem* like something fixes more boxes than it 
+breaks, but it's because people report *breakage* only, and then a few 
+months later it turns out that it's exactly the other way around: now it's 
+a hundred people who report breakage with the *new* code, and the reason 
+people thought it fixed more than it broke was that the people for whom 
+the old code worked fine obviously never reported it!
 
-Sometimes you use `extern'.
+So this is why "a single regression is considered more important than ten 
+fixes" - because a single regressionr report tends to actually be just the 
+first indication of a lot of people who simply haven't tested the new code 
+yet! People for whom the old code is broken are more likely to test new 
+things.
 
-> +#define rw_mutex_init(rw_mutex)					\
-> +	do {							\
-> +		static struct lock_class_key __key;		\
-> +		__rw_mutex_init((rw_mutex), #rw_mutex, &__key);	\
-> +	} while (0)
-> +
-> +extern void __rw_mutex_read_lock(struct rw_mutex *rw_mutex);
-> +
-> +extern void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass);
-> +extern void rw_mutex_write_unlock(struct rw_mutex *rw_mutex);
-> +
-> +static inline unsigned int __rw_mutex_reader_slow(struct rw_mutex *rw_mutex)
-> +{
-> +	unsigned int ret;
-> +
-> +	smp_rmb();
-> +	ret = rw_mutex->status;
-> +
-> +	return ret;
-> +}
+So I'd just suggest changing the default back to PM_DISK_SHUTDOWN (but 
+leave the "pm_ops->enter" testing in place - ie not reverting the other 
+commits in the series).
 
-An undocumented barrier!
+The patch would look something like this. Coywolf, does this fix it for 
+you?
 
-> +static inline int __rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
-> +{
-> +	preempt_disable();
-> +	if (likely(!__rw_mutex_reader_slow(rw_mutex))) {
-> +		percpu_counter_mod(&rw_mutex->readers, 1);
-> +		preempt_enable();
-> +		return 1;
-> +	}
-> +	preempt_enable();
-> +	return 0;
-> +}
+			Linus
 
-What does the preempt_disable() do?
+---
+ kernel/power/disk.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-> +static inline int rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
-> +{
-> +	int ret = __rw_mutex_read_trylock(rw_mutex);
-> +	if (ret)
-> +		rwsem_acquire_read(&rw_mutex->dep_map, 0, 1, _RET_IP_);
-> +	return ret;
-> +}
-> +
-> +static inline void rw_mutex_read_lock(struct rw_mutex *rw_mutex)
-> +{
-> +	int ret;
-> +
-> +	might_sleep();
-> +	rwsem_acquire_read(&rw_mutex->dep_map, 0, 0, _RET_IP_);
-> +
-> +	ret = __rw_mutex_read_trylock(rw_mutex);
-> +	if (!ret)
-> +		__rw_mutex_read_lock(rw_mutex);
-> +}
-> +
-> +void rw_mutex_read_unlock(struct rw_mutex *rw_mutex);
-
-and other times you don't use extern.  I think it's pretty pointless
-personally.
-
-> +EXPORT_SYMBOL_GPL(__rw_mutex_init);
-
-down_foo(mmap_sem) was previously accessible to non-gpl modules, so the GPL
-export might be a problem.
-
-> +
-> +void rw_mutex_destroy(struct rw_mutex *rw_mutex)
-> +{
-> +	percpu_counter_destroy(&rw_mutex->readers);
-> +	mutex_destroy(&rw_mutex->read_mutex);
-> +	mutex_destroy(&rw_mutex->write_mutex);
-> +}
-> +EXPORT_SYMBOL_GPL(rw_mutex_destroy);
-> +
-> +void __rw_mutex_read_lock(struct rw_mutex *rw_mutex)
-> +{
-> +	/*
-> +	 * read lock slow path;
-> +	 * count the number of readers waiting on the read_mutex
-> +	 */
-> +	atomic_inc(&rw_mutex->read_waiters);
-> +	mutex_lock(&rw_mutex->read_mutex);
-> +	/*
-> +	 * rw_mutex->state is only set while the read_mutex is held
-> +	 * so by serialising on this lock, we're sure its free.
-> +	 */
-> +	BUG_ON(rw_mutex->status);
-> +	/*
-> +	 * take the read reference, and drop the read_waiters count
-> +	 * and nudge all those waiting on the read_waiters count.
-> +	 */
-> +	percpu_counter_mod(&rw_mutex->readers, 1);
-> +	atomic_dec(&rw_mutex->read_waiters);
-> +	wake_up_all(&rw_mutex->wait_queue);
-> +	mutex_unlock(&rw_mutex->read_mutex);
-> +}
-> +EXPORT_SYMBOL_GPL(__rw_mutex_read_lock);
-
-hm, I'm surprised that any foo_lock() would ever wake anyone up.
-
-> +void rw_mutex_read_unlock(struct rw_mutex *rw_mutex)
-> +{
-> +	rwsem_release(&rw_mutex->dep_map, 1, _RET_IP_);
-> +
-> +	percpu_counter_mod(&rw_mutex->readers, -1);
-
-percpu_counter_dec()?
-
-> +	if (unlikely(__rw_mutex_reader_slow(rw_mutex)) &&
-> +			percpu_counter_sum(&rw_mutex->readers) == 0)
-> +		wake_up_all(&rw_mutex->wait_queue);
-> +}
-> +EXPORT_SYMBOL_GPL(rw_mutex_read_unlock);
-
-yipes.  percpu_counter_sum() is expensive.
-
-
+diff --git a/kernel/power/disk.c b/kernel/power/disk.c
+index b5f0543..f6aa06e 100644
+--- a/kernel/power/disk.c
++++ b/kernel/power/disk.c
+@@ -60,9 +60,9 @@ void hibernation_set_ops(struct hibernation_ops *ops)
+ 	}
+ 	mutex_lock(&pm_mutex);
+ 	hibernation_ops = ops;
+-	if (ops)
+-		hibernation_mode = HIBERNATION_PLATFORM;
+-	else if (hibernation_mode == HIBERNATION_PLATFORM)
++
++	/* Turn off HIBERNATION_PLATFORM if we no longer have any platform ops */
++	if (!ops && hibernation_mode == HIBERNATION_PLATFORM)
+ 		hibernation_mode = HIBERNATION_SHUTDOWN;
+ 
+ 	mutex_unlock(&pm_mutex);
