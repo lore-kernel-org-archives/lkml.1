@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760980AbXEKPDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762053AbXEKPD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760980AbXEKPDP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 11:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758334AbXEKPDA
+	id S1762053AbXEKPD1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 11:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760652AbXEKPDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 11:03:00 -0400
-Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:63908
+	Fri, 11 May 2007 11:03:13 -0400
+Received: from p2020-adsah02tachib-acca.tokyo.ocn.ne.jp ([219.161.11.20]:63928
 	"EHLO eggplant.ddo.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757537AbXEKPC7 (ORCPT
+	with ESMTP id S1759533AbXEKPDL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 11:02:59 -0400
-Message-ID: <1185.192.168.1.10.1178895776.squirrel@eggplant.ddo.jp>
-Date: Sat, 12 May 2007 00:02:56 +0900 (JST)
-Subject: Re: [PATCH 2/2] leds:arch/sh/boards/landisk LEDs supports
+	Fri, 11 May 2007 11:03:11 -0400
+Message-ID: <1185.192.168.1.10.1178895789.squirrel@eggplant.ddo.jp>
+Date: Sat, 12 May 2007 00:03:09 +0900 (JST)
+Subject: Re: [PATCH 1/2] leds:arch/sh/boards/landisk LEDs supports
 From: "kogiidena" <kogiidena@eggplant.ddo.jp>
-To: rpurdie@rpsys.net
+To: cbou@mail.ru, rpurdie@rpsys.net
 Cc: linux-kernel@vger.kernel.org, lethal@linux-sh.org
 Reply-To: kogiidena@eggplant.ddo.jp
 User-Agent: SquirrelMail/1.4.5
@@ -23,300 +23,281 @@ Content-Type: text/plain;charset=iso-2022-jp
 Content-Transfer-Encoding: 8bit
 X-Priority: 3 (Normal)
 Importance: Normal
-References: <1743.192.168.1.10.1178627225.squirrel@eggplant.ddo.jp><1178628407.6061.24.camel@localhost.localdomain><1638.192.168.1.10.1178710979.squirrel@eggplant.ddo.jp><1178712861.6291.5.camel@localhost.localdomain><2329.192.168.1.10.1178718316.squirrel@eggplant.ddo.jp><1178723184.6291.16.camel@localhost.localdomain><1445.192.168.1.10.1178749125.squirrel@eggplant.ddo.jp>
-In-Reply-To: <1445.192.168.1.10.1178749125.squirrel@eggplant.ddo.jp>
+References: <20070509160328.GA13640@zarina><1249.192.168.1.10.1178797933.squirrel@eggplant.ddo.jp><20070510140415.GA19167@linux-sh.org>
+In-Reply-To: <20070510140415.GA19167@linux-sh.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard-san
+To: Paul-san
+The following three points were corrected.
+thank you for you check.
 
-Please apply
+1.
+> DEFINE_SPINLOCK(), please.
 
->As far as I can tell, the existing timer trigger can do everything the
->blink trigger can (and more besides). The driver looks like it would be
->a lot easier to read if it just contained the bitshift trigger. To be
->accepted, the bitshift trigger needs more documentation, particularly
->the Kconfig entry. Its not clear for example that the bits are just
->shifted once and don't repeat. Most people would probably want it to
->repeat and with a repeat mode, it might be able to replace the heartbeat
->trigger too?
+2.
+> If you're going to do this, enums are probably the cleaner way to go.
+> Checking landisk_arch == 0 all over the place is non-obvious without
+> seeing this comment.
 
-Add Bitpattern Trigger.
-Bitpattern continuously turns LED on and off according to
-the value directed "bitdata". "bitdata" is composed of
-the character string that consists of the following three
-characters. '0' turn off LED. '1' turn on  LED. 'R' is
-repeated from the head of the "bitdata".
-In addition, the character string of "on", "off", and "blink"
-can be set to "bitdata".
-The transition time of "bitdata" is set by "delay".
+3.
+> You may also want some sanity checking here, while PA_LED is only 8-bits,
+> your bitmask is not.
+
+To: Richard-san
+Please apply.
+
+LED driver of I-O DATA LANDISK and USL-5P
 
 Signed-off-by: kogiidena <kogiidena@eggplant.ddo.jp>
 ---
 diff -urpN OLD/drivers/leds/Kconfig NEW/drivers/leds/Kconfig
 --- OLD/drivers/leds/Kconfig	2007-04-28 06:49:26.000000000 +0900
 +++ NEW/drivers/leds/Kconfig	2007-05-11 21:15:28.000000000 +0900
-@@ -127,5 +133,19 @@ config LEDS_TRIGGER_HEARTBEAT
- 	  load average.
- 	  If unsure, say Y.
+@@ -94,6 +94,12 @@ config LEDS_COBALT
+ 	help
+ 	  This option enables support for the front LED on Cobalt Server
 
-+config LEDS_TRIGGER_BITPAT
-+	tristate "LED Bitpattern Trigger"
-+	depends on LEDS_TRIGGERS
++config LEDS_LANDISK
++	tristate "LED Support for LANDISK Series"
++	depends on LEDS_CLASS && SH_LANDISK
 +	help
-+	  Bitpattern continuously turns LED on and off according to
-+	  the value directed "bitdata". "bitdata" is composed of
-+	  the character string that consists of the following three
-+	  characters. '0' turn off LED. '1' turn on  LED. 'R' is
-+	  repeated from the head of the "bitdata".
-+	  In addition, the character string of "on", "off", and "blink"
-+	  can be set to "bitdata".
-+	  The transition time of "bitdata" is set by "delay".
-+	  If unsure, say Y.
++	  This option enables support for the LED on LANDISK Series
 +
- endmenu
+ comment "LED Triggers"
 
+ config LEDS_TRIGGERS
 diff -urpN OLD/drivers/leds/Makefile NEW/drivers/leds/Makefile
---- OLD/drivers/leds/Makefile	2007-05-11 23:44:12.000000000 +0900
-+++ NEW/drivers/leds/Makefile	2007-05-11 23:46:47.000000000 +0900
-@@ -22,3 +22,4 @@ obj-$(CONFIG_LEDS_LANDISK)		+= leds-land
+--- OLD/drivers/leds/Makefile	2007-04-28 06:49:26.000000000 +0900
++++ NEW/drivers/leds/Makefile	2007-05-11 23:34:07.000000000 +0900
+@@ -16,6 +16,7 @@ obj-$(CONFIG_LEDS_NET48XX)		+= leds-net4
+ obj-$(CONFIG_LEDS_WRAP)			+= leds-wrap.o
+ obj-$(CONFIG_LEDS_H1940)		+= leds-h1940.o
+ obj-$(CONFIG_LEDS_COBALT)		+= leds-cobalt.o
++obj-$(CONFIG_LEDS_LANDISK)		+= leds-landisk.o
+
+ # LED Triggers
  obj-$(CONFIG_LEDS_TRIGGER_TIMER)	+= ledtrig-timer.o
- obj-$(CONFIG_LEDS_TRIGGER_IDE_DISK)	+= ledtrig-ide-disk.o
- obj-$(CONFIG_LEDS_TRIGGER_HEARTBEAT)	+= ledtrig-heartbeat.o
-+obj-$(CONFIG_LEDS_TRIGGER_BITPAT)	+= ledtrig-bitpat.o
-diff -urpN OLD/drivers/leds/ledtrig-bitpat.c NEW/drivers/leds/ledtrig-bitpat.c
---- OLD/drivers/leds/ledtrig-bitpat.c	1970-01-01 09:00:00.000000000 +0900
-+++ NEW/drivers/leds/ledtrig-bitpat.c	2007-05-11 23:16:12.000000000 +0900
-@@ -0,0 +1,229 @@
+diff -urpN OLD/drivers/leds/leds-landisk.c NEW/drivers/leds/leds-landisk.c
+--- OLD/drivers/leds/leds-landisk.c	1970-01-01 09:00:00.000000000 +0900
++++ NEW/drivers/leds/leds-landisk.c	2007-05-11 23:12:16.000000000 +0900
+@@ -0,0 +1,214 @@
 +/*
-+ * LED Bitpattern Trigger
++ * LEDs driver for I-O DATA DEVICE, INC. "LANDISK Series" support.
 + *
 + * Copyright (C) 2007 kogiidena
++ *
++ * Based on the drivers/leds/leds-ams-delta.c by:
++ * Copyright (C) 2006 Jonathan McDowell <noodles@earth.li>
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License version 2 as
 + * published by the Free Software Foundation.
-+ *
 + */
-+#include <linux/module.h>
-+#include <linux/jiffies.h>
-+#include <linux/kernel.h>
 +#include <linux/init.h>
-+#include <linux/timer.h>
-+#include <linux/sched.h>
++#include <linux/platform_device.h>
++#include <linux/spinlock.h>
 +#include <linux/leds.h>
-+#include <linux/device.h>
-+#include <linux/ctype.h>
-+#include "leds.h"
++#include <asm/io.h>
++#include <asm/landisk/iodata_landisk.h>
 +
-+#define BITDATA_LEN 17
++static enum {
++	LANDISK = 0,
++	USL_5P  = 1,
++} landisk_product;
 +
-+struct bitpat_trig_data {
-+	char bitdata[BITDATA_LEN + 2];
-+	int cnt;
-+	unsigned long delay;
-+	struct timer_list timer;
++static DEFINE_SPINLOCK(landisk_led_lock);
++
++static void landisk_led_set(struct led_classdev *led_cdev,
++			    enum led_brightness value);
++
++static struct led_classdev landisk_leds[] = {
++	[0] = {
++	       .name = "power",
++	       .brightness_set = landisk_led_set,
++	       .default_trigger = "bitpat",
++	       },
++	[1] = {
++	       .name = "status",
++	       .brightness_set = landisk_led_set,
++	       .default_trigger = "bitpat",
++	       },
++	[2] = {
++	       .name = "led1",
++	       .brightness_set = landisk_led_set,
++	       .default_trigger = "bitpat",
++	       },
++	[3] = {
++	       .name = "led2",
++	       .brightness_set = landisk_led_set,
++	       .default_trigger = "bitpat",
++	       },
++	[4] = {
++	       .name = "led3",
++	       .brightness_set = landisk_led_set,
++	       .default_trigger = "bitpat",
++	       },
++	[5] = {
++	       .name = "led4",
++	       .brightness_set = landisk_led_set,
++	       .default_trigger = "bitpat",
++	       },
++	[6] = {
++	       .name = "led5",
++	       .brightness_set = landisk_led_set,
++	       .default_trigger = "bitpat",
++	       },
++	[7] = {
++	       .name = "buzzer",
++	       .brightness_set = landisk_led_set,
++	       .default_trigger = "bitpat",
++	       },
 +};
 +
-+void __attribute__ ((weak))
-+ledtrig_bitpat_default(struct led_classdev *led_cdev,
-+		       unsigned long *delay, char *bitdata)
++void ledtrig_bitpat_default(struct led_classdev *led_cdev,
++			    unsigned long *interval, char *bitdata)
 +{
-+	/* initial value */
-+	*delay     = 250;
++	int led;
++
++	*interval  = 250;
 +	bitdata[0] = '\0';
-+}
 +
-+static void led_bitpat_function(unsigned long data)
-+{
-+	struct led_classdev *led_cdev = (struct led_classdev *)data;
-+	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
-+	unsigned long delay = bitpat_data->delay;
-+	char bitpat;
-+
-+	bitpat = bitpat_data->bitdata[bitpat_data->cnt++];
-+
-+	if (bitpat == 'R') {
-+		bitpat_data->cnt = 0;
-+		bitpat = bitpat_data->bitdata[bitpat_data->cnt++];
-+	}
-+
-+	if (bitpat == '0' || bitpat == '1') {
-+		led_set_brightness(led_cdev,
-+				   (bitpat == '1') ? LED_FULL : LED_OFF);
-+
-+		mod_timer(&bitpat_data->timer,
-+			  jiffies + msecs_to_jiffies(delay));
-+	} else {
-+		bitpat_data->cnt = 0;
++	led = (led_cdev - &landisk_leds[0]);
++	if ((led == 0) || (led == 1)) {
++		strcpy(bitdata, "blink");
 +	}
 +}
 +
-+static ssize_t led_delay_show(struct class_device *dev, char *buf)
++static void landisk_led_set(struct led_classdev *led_cdev,
++			    enum led_brightness value)
 +{
-+	struct led_classdev *led_cdev = class_get_devdata(dev);
-+	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
++	u8 tmp, bitmask;
++	unsigned long flags;
 +
-+	sprintf(buf, "%lu\n", bitpat_data->delay);
++	bitmask = 0x01 << (led_cdev - &landisk_leds[0]);
 +
-+	return strlen(buf) + 1;
++	spin_lock_irqsave(&landisk_led_lock, flags);
++	tmp = ctrl_inb(PA_LED);
++	if (value)
++		tmp |= bitmask;
++	else
++		tmp &= ~bitmask;
++	ctrl_outb(tmp, PA_LED);
++	spin_unlock_irqrestore(&landisk_led_lock, flags);
 +}
 +
-+static ssize_t led_delay_store(struct class_device *dev, const char *buf,
-+			       size_t size)
++static int landisk_led_probe(struct platform_device *pdev)
 +{
-+	struct led_classdev *led_cdev = class_get_devdata(dev);
-+	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
-+	int ret = -EINVAL;
-+	char *after;
-+	unsigned long state = simple_strtoul(buf, &after, 10);
-+	size_t count = after - buf;
++	int i, nr_leds;
++	int ret;
 +
-+	if (*after && isspace(*after))
-+		count++;
++	nr_leds = (landisk_product == LANDISK) ? 2 : 8;
 +
-+	if (count == size) {
-+		bitpat_data->delay = state;
-+		mod_timer(&bitpat_data->timer, jiffies + 1);
-+		ret = count;
++	for (i = ret = 0; ret >= 0 && i < nr_leds; i++) {
++		ret = led_classdev_register(&pdev->dev, &landisk_leds[i]);
++	}
++
++	if (ret < 0 && i > 1) {
++		nr_leds = i - 1;
++		for (i = 0; i < nr_leds; i++)
++			led_classdev_unregister(&landisk_leds[i]);
 +	}
 +	return ret;
 +}
 +
-+static void led_bitdata_check(char *buf)
++static int landisk_led_remove(struct platform_device *pdev)
 +{
-+	int i;
++	int i, nr_leds;
 +
-+	if (!strncmp("on", buf, 2)) {
-+		buf[0] = '1';
-+	} else if (!strncmp("off", buf, 2)) {
-+		buf[0] = '0';
-+	} else if (!strncmp("blink", buf, 5)) {
-+		strcpy(buf, "01R");
++	nr_leds = (landisk_product == LANDISK) ? 2 : 8;
++
++	for (i = 0; i < nr_leds; i++) {
++		led_classdev_unregister(&landisk_leds[i]);
 +	}
-+
-+	for (i = 0; i < BITDATA_LEN; i++) {
-+		if ((buf[i] == '0') || (buf[i] == '1')) {
-+			continue;
-+		} else if ((i != 0) && ((buf[i] == 'R') || (buf[i] == 'r'))) {
-+			buf[i] = 'R';
-+			i++;
-+		}
-+		break;
-+	}
-+	buf[i] = '\0';
-+}
-+
-+static ssize_t led_bitdata_show(struct class_device *dev, char *buf)
-+{
-+	struct led_classdev *led_cdev = class_get_devdata(dev);
-+	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
-+
-+	sprintf(buf,
-+		"bitdata : %s\n"
-+		"meaning : 0=OFF, 1=ON, R=Repeat\n",
-+		(bitpat_data->bitdata[0]) ? bitpat_data->bitdata : "(null)");
-+
-+	return strlen(buf) + 1;
-+}
-+
-+static ssize_t led_bitdata_store(struct class_device *dev, const char *buf,
-+				 size_t size)
-+{
-+	struct led_classdev *led_cdev = class_get_devdata(dev);
-+	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
-+
-+	if (size > BITDATA_LEN)
-+		return -EINVAL;
-+
-+	strncpy(bitpat_data->bitdata, buf, size);
-+	led_bitdata_check(bitpat_data->bitdata);
-+	bitpat_data->cnt = 0;
-+
-+	mod_timer(&bitpat_data->timer, jiffies + 1);
-+
-+	return size;
-+}
-+
-+static CLASS_DEVICE_ATTR(delay,   0644, led_delay_show,   led_delay_store);
-+static CLASS_DEVICE_ATTR(bitdata, 0644, led_bitdata_show, led_bitdata_store);
-+
-+static void bitpat_trig_activate(struct led_classdev *led_cdev)
-+{
-+	struct bitpat_trig_data *bitpat_data;
-+	int rc;
-+
-+	bitpat_data = kzalloc(sizeof(*bitpat_data), GFP_KERNEL);
-+	if (!bitpat_data)
-+		return;
-+
-+	led_cdev->trigger_data = bitpat_data;
-+
-+	ledtrig_bitpat_default(led_cdev,
-+			       &bitpat_data->delay, &bitpat_data->bitdata[0]);
-+	led_bitdata_check(bitpat_data->bitdata);
-+	bitpat_data->cnt = 0;
-+
-+	rc = class_device_create_file(led_cdev->class_dev,
-+				      &class_device_attr_delay);
-+	if (rc)
-+		goto err_out;
-+
-+	rc = class_device_create_file(led_cdev->class_dev,
-+				      &class_device_attr_bitdata);
-+	if (rc)
-+		goto err_out_delay;
-+
-+	setup_timer(&bitpat_data->timer,
-+		    led_bitpat_function, (unsigned long)led_cdev);
-+	led_bitpat_function(bitpat_data->timer.data);
-+
-+	return;
-+
-+err_out_delay:
-+	class_device_remove_file(led_cdev->class_dev, &class_device_attr_delay);
-+err_out:
-+	led_cdev->trigger_data = NULL;
-+	kfree(bitpat_data);
-+}
-+
-+static void bitpat_trig_deactivate(struct led_classdev *led_cdev)
-+{
-+	struct bitpat_trig_data *bitpat_data = led_cdev->trigger_data;
-+
-+	if (bitpat_data) {
-+		class_device_remove_file(led_cdev->class_dev,
-+					 &class_device_attr_delay);
-+		class_device_remove_file(led_cdev->class_dev,
-+					 &class_device_attr_bitdata);
-+		del_timer_sync(&bitpat_data->timer);
-+		kfree(bitpat_data);
-+	}
-+}
-+
-+static struct led_trigger bitpat_led_trigger = {
-+	.name = "bitpat",
-+	.activate = bitpat_trig_activate,
-+	.deactivate = bitpat_trig_deactivate,
-+};
-+
-+static int __init bitpat_trig_init(void)
-+{
-+	led_trigger_register(&bitpat_led_trigger);
 +	return 0;
 +}
 +
-+static void __exit bitpat_trig_exit(void)
++static struct platform_driver landisk_led_driver = {
++	.probe = landisk_led_probe,
++	.remove = landisk_led_remove,
++	.driver = {
++		   .name = "landisk-led",
++		   },
++};
++
++/* HDD-access-LED setting at landisk status LED */
++static void landisk_disk_trig_activate(struct led_classdev *led_cdev)
 +{
-+	led_trigger_unregister(&bitpat_led_trigger);
++	unsigned long flags;
++	spin_lock_irqsave(&landisk_led_lock, flags);
++	ctrl_outb((ctrl_inb(PA_LED) & ~0x0c) | 0x04, PA_LED);
++	spin_unlock_irqrestore(&landisk_led_lock, flags);
 +}
 +
-+module_init(bitpat_trig_init);
-+module_exit(bitpat_trig_exit);
++static void landisk_disk_trig_deactivate(struct led_classdev *led_cdev)
++{
++	unsigned long flags;
++	spin_lock_irqsave(&landisk_led_lock, flags);
++	ctrl_outb((ctrl_inb(PA_LED) & ~0x0c) | 0x0c, PA_LED);
++	spin_unlock_irqrestore(&landisk_led_lock, flags);
++}
++
++static int landisk_disk_trig_is_led_supported(struct led_classdev *led_cdev)
++{
++	int led;
++
++	led = (led_cdev - &landisk_leds[0]);
++	return ((landisk_product == LANDISK) && (led == 1));
++}
++
++static struct led_trigger landisk_disk_led_trigger = {
++	.name = "disk",
++	.activate = landisk_disk_trig_activate,
++	.deactivate = landisk_disk_trig_deactivate,
++	.is_led_supported = landisk_disk_trig_is_led_supported,
++};
++
++static int __init landisk_led_init(void)
++{
++	u8 orig, test;
++	int err = 0;
++
++	orig = ctrl_inb(PA_LED);
++	ctrl_outb(0x40, PA_LED);
++
++	test = ctrl_inb(PA_LED);
++	ctrl_outb(orig, PA_LED);
++
++	if (test != 0x40) {
++		landisk_product = LANDISK;
++		ctrl_outb(orig | 0x07, PA_LED);
++		landisk_leds[1].default_trigger = "disk";
++	} else {
++		landisk_product = USL_5P;
++		ctrl_outb(orig | 0x03, PA_LED);
++	}
++
++	err = led_trigger_register(&landisk_disk_led_trigger);
++	if (err)
++		return err;
++
++	return platform_driver_register(&landisk_led_driver);
++}
++
++static void __exit landisk_led_exit(void)
++{
++	led_trigger_unregister(&landisk_disk_led_trigger);
++	platform_driver_unregister(&landisk_led_driver);
++}
++
++module_init(landisk_led_init);
++module_exit(landisk_led_exit);
 +
 +MODULE_AUTHOR("kogiidena <kogiidena@eggplant.ddo.jp>");
-+MODULE_DESCRIPTION("Bitpattern LED trigger");
++MODULE_DESCRIPTION("landisk LED driver");
 +MODULE_LICENSE("GPL");
+
+
 
 
 
