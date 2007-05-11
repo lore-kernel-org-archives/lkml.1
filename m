@@ -1,75 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761186AbXEKNzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761969AbXEKN4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761186AbXEKNzt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 09:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbXEKNzm
+	id S1761969AbXEKN4W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 09:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbXEKN4P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 09:55:42 -0400
-Received: from smtp5-g19.free.fr ([212.27.42.35]:36342 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754740AbXEKNzm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 09:55:42 -0400
-Message-ID: <1178891741.464475dd1b947@imp.free.fr>
-Date: Fri, 11 May 2007 15:55:41 +0200
-From: Remi Colinet <remi.colinet@free.fr>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Regression in 2.6.21-mm1 (git-input) on Dell D610 laptop
-References: <1178802325.46431895e9469@imp.free.fr> <20070510185021.c3d28048.akpm@linux-foundation.org> <200705110047.04933.dtor@insightbb.com>
-In-Reply-To: <200705110047.04933.dtor@insightbb.com>
+	Fri, 11 May 2007 09:56:15 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:35034 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755477AbXEKN4O (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 09:56:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=fOpeLGzaG5aDpKzl0TI2mRGnqX1jzP3mmSNl+pFqn28KpErl1CzHFDQArU1MeP2XvAJLEONh7dxns9bw6sp6uKtE8WimAzwaEYhVt1G3Li6eygiwn6gDOMxENUbRpP3lnydlSxGsHxRo01cPJ/PlJzzgnf6nMXdWweStO5Gbvv0=
+Message-ID: <464475EB.3000408@gmail.com>
+Date: Fri, 11 May 2007 15:55:55 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.5
-X-Originating-IP: 81.255.27.251
+To: Oleg Nesterov <oleg@tv-sign.ru>
+CC: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+References: <20070503204226.GA212@tv-sign.ru>
+In-Reply-To: <20070503204226.GA212@tv-sign.ru>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Selon Dmitry Torokhov <dtor@insightbb.com>:
+Hello, Oleg.
 
-> Hi Remi,
->
-> On Thursday 10 May 2007 21:50, Andrew Morton wrote:
-> > On Thu, 10 May 2007 15:05:25 +0200
-> > Remi Colinet <remi.colinet@free.fr> wrote:
-> >
-> > > My D610 ALPS Glide Point is unresponsive with 2.6.21-mm1 patch.
-> > > No problem noticed with 2.6.21.
-> > >
-> > > The culprit seems to be git-input. I have applied 2.6.21-mm1 on top of
-> 2.6.21
-> > > and then removed git-input patch. It is ok since then.
->
-> Have you tried any other -mm? Also, does it help if you stick
->
-Tried 2.6.21-mm3. The GlidePoint is still unresponsive.
+Oleg Nesterov wrote:
+> +	/*
+> +	 * Ensure that we get the right work->data if we see the
+> +	 * result of list_add() below, see try_to_grab_pending().
+> +	 */
+> +	smp_wmb();
 
+I don't think we need this
 
-> 	ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_SETSTREAM);
->
-> at the very beginning of psmouse_initialize() in
-> drivers/input/mouse/psmouse-base.c?
->
+> +	if (!list_empty(&work->entry)) {
+> +		/*
+> +		 * This work is queued, but perhaps we locked the wrong cwq.
+> +		 * In that case we must see the new value after rmb(), see
+> +		 * insert_work()->wmb().
+> +		 */
+> +		smp_rmb();
+> +		if (cwq == get_wq_data(work)) {
+> +			list_del_init(&work->entry);
+> +			ret = 1;
+> +		}
 
-Going to try it ...
+and this.  After grabbing cwq lock, compare it to get_wq_data() first,
+if they are the same, both are using the same lock so there's no
+reason for the barriers.  If they are different, it doesn't matter
+anyway.  We need to retry the locking.
 
-In fact, I already added the following line at the begining of each function in
-drivers/input/mouse/alps.c
+  retry:
+	cwq = get_sw_data(work);
+	if (!cwq)
+		return ret;
 
-printk(KERN_ERR "start of function ...\n");
+	spin_lock_irq(&cwq->lock);
+	if (unlikely(cwq != get_wq_data(work))) {
+		/* oops wrong cwq */
+		spin_unlock_irq(&cwq->lock);
+		goto retry;	/* or just return 0; */
+	}
+	if (!list_empty(&work->entry)) {
+		list_del_init(&work->entry);
+		ret = 1;
+	}
+	spin_unlock_irq(&cwq->lock);
 
-But no message is displayed when using the Glide Point. Interrupt are not
-raised. The alps driver is not called by the i8042 handler.
+Although grabbing cwq->lock doesn't mean anything to other cwqs, it
+does guarantee work->wq_data can't be changed to or from it, so the
+cwq equality test is guaranteed to work.
 
-Remi Colinet
+> + * It is possible to use this function if the work re-queues itself. It can
+> + * cancel the work even if it migrates to another workqueue, however in that
+> + * case it only garantees that work->func() has completed on the last queued
+> + * workqueue.
 
-> --
-> Dmitry
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+We first prevent requeueing from happening; then, wait for each cwq to
+finish the work, so I think we're guaranteed that they're finished on
+all cpus.  Otherwise, the 'sync' part isn't too useful as it means all
+rearming tasks might be running on completion of cancel_work_sync().
 
+Thanks a lot for fixing this.
 
+-- 
+tejun
