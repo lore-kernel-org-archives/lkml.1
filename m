@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760831AbXEKBuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbXEKByv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760831AbXEKBuf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 21:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757741AbXEKBu2
+	id S1760005AbXEKByv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 21:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXEKByo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 21:50:28 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:35334 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757343AbXEKBu2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 21:50:28 -0400
-Date: Thu, 10 May 2007 18:50:21 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Remi Colinet <remi.colinet@free.fr>
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: Regression in 2.6.21-mm1 (git-input) on Dell D610 laptop
-Message-Id: <20070510185021.c3d28048.akpm@linux-foundation.org>
-In-Reply-To: <1178802325.46431895e9469@imp.free.fr>
-References: <1178802325.46431895e9469@imp.free.fr>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 May 2007 21:54:44 -0400
+Received: from dvhart.com ([64.146.134.43]:33301 "EHLO dvhart.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751580AbXEKByo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 21:54:44 -0400
+Message-ID: <4643CCDF.7060608@mbligh.org>
+Date: Thu, 10 May 2007 18:54:39 -0700
+From: "Martin J. Bligh" <mbligh@mbligh.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+MIME-Version: 1.0
+To: Bas Westerbaan <bas.westerbaan@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Conveying memory pressure to userspace?
+References: <6880bed30705101756nb5bd0c5s97935b97d07f846a@mail.gmail.com>
+In-Reply-To: <6880bed30705101756nb5bd0c5s97935b97d07f846a@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 15:05:25 +0200
-Remi Colinet <remi.colinet@free.fr> wrote:
+Bas Westerbaan wrote:
+> Hello,
+> 
+> Quite a lot of userspace applications cache.  Firefox caches pages;
+> mySQL caches queries;  libc' free (like practically all other
+> userspace allocators) won't directly return the first byte of memory
+> freed, etc.
+> 
+> These applications are unaware of memory pressure.  While the kernel
+> is trying its best to to free memory by for instance dropping,
+> possibly more valuable caches, userspace is left blissfully unaware.
+> 
+> Obviously this isn't a really big problem, given that we've still got
+> swap to swap out those rarely used caches, except for when the caches
+> aren't _that_ rarely used and of which the backing store (eg.
+> precomputed values) might be faster than the disk to swap back the
+> pages from.
+> 
+> A solution would be to either
+> 
+>  a) let the application make the kernel aware of pages that, when in
+> memory pressure, may be dropped.  This would be tricky to implement
+> for the userspace: it's hard to avoid an application to race into a
+> dropped page.  However, the kernel can directly free a page from
+> userspace, which makes it use full when under real pressure.  This in
+> contrast to
+> b) letting the application register itself with a cache share
+> priority.  The application (and other aware applications) would then
+> be able to query how fair they are at the moment proportional to their
+> cache share priority.  Freeing would still be completely in their own
+> hands.
+> 
+> 
+> The only relevant related matter I could find were madvise and mincore.
+> 
+> With madvise pages can be marked to be unnecessary and these should be
+> swapped out earlier.  With mincore one can determine whether pages are
+> resident (not cached).  This would make an existing alternative to
+> solution a.  However, this doesn't eliminate the writes to the swap
+> and polling everytime before accessing a cache isn't really pretty.
+> 
+> I did consider guessing the memory pressure by looking at
+> /proc/meminfo, but I think it isn't that accurate.
 
-> My D610 ALPS Glide Point is unresponsive with 2.6.21-mm1 patch.
-> No problem noticed with 2.6.21.
+The prev_priority field in the zoneinfo stuff is more useful for
+memory pressure. I'm playing with making a blocking callback that
+can wake someone up when this gets down to a certain priority level
+(prio=12 => everything's rosy, prio=0 => we're in deep shit).
+
+> Before hacking something together (and being uncertain about the
+> thoroughness with which I searched for existing work, sorry), I would
+> like your thoughts on this.
 > 
-> The culprit seems to be git-input. I have applied 2.6.21-mm1 on top of 2.6.21
-> and then removed git-input patch. It is ok since then.
+> Please CC me, I'm not in the list.
 > 
-> >From what i can see, no interrupt is raised from the GlidePoint with git-input
-> applied. IRQ count 12 does not increase. It is when using the touchpad.
-> 
->            CPU0
->   0:        160   IO-APIC-edge      timer
->   1:        935   IO-APIC-edge      i8042
->   7:          0   IO-APIC-edge      parport0
->   8:          1   IO-APIC-edge      rtc
->   9:          2   IO-APIC-fasteoi   acpi
-> => 12:        114   IO-APIC-edge      i8042 <=
->  14:       3223   IO-APIC-edge      libata
->  15:          5   IO-APIC-edge      libata
->  16:          0   IO-APIC-fasteoi   uhci_hcd:usb1, ehci_hcd:usb5, Intel ICH6
->  17:          1   IO-APIC-fasteoi   uhci_hcd:usb2, ipw2200, Intel ICH6 Modem
->  18:          0   IO-APIC-fasteoi   uhci_hcd:usb3
->  19:          1   IO-APIC-fasteoi   uhci_hcd:usb4, yenta
-> NMI:          0
-> LOC:       4051
-> ERR:          0
-> MIS:          0
-> 
-> I have also tried to disable the ALPS driver in the .config file. IRQ 12 are
-> then raised when using the Glide Point. X refuses to start.
+>  Bas
 > 
 
-Are you able to test 2.6.21-mm2?
-
-Thanks.
