@@ -1,110 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759532AbXEKIgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbXEKIj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759532AbXEKIgk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 04:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbXEKIgc
+	id S1758693AbXEKIj1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 04:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXEKIjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 04:36:32 -0400
-Received: from ug-out-1314.google.com ([66.249.92.170]:54104 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754719AbXEKIgb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 04:36:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=aASYb6SwtYgEnTQ/mNYnd5ZSyJ6WoDKHQD4gIDshzrfq9ppaHos3Er4+jGyrS1Zkmx6aUEeLJ0Z1lVdiZbbfucYg9tsINv1RabI3qa2YofRka40OcVPQfPfzHuBIFZeNJZ27L/ck8xR2+TzLp96Jau1D+MmSoCKpj0KCZxk7Vp4=
-Message-ID: <2cd57c900705110136r11f23797gdf09df36559c6a3b@mail.gmail.com>
-Date: Fri, 11 May 2007 16:36:29 +0800
-From: "Coywolf Qi Hunt" <coywolf@gmail.com>
-To: "Len Brown" <lenb@kernel.org>
-Subject: Re: [PATCH] swsusp: Use platform mode by default
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Alexey Starikovskiy" <alexey_y_starikovskiy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, "Pavel Machek" <pavel@ucw.cz>,
-       linux-acpi@vger.kernel.org, "Stefan Seyfried" <seife@suse.de>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>
-In-Reply-To: <200611012240.13412.len.brown@intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 11 May 2007 04:39:12 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:61331 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751749AbXEKIjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 04:39:08 -0400
+Date: Fri, 11 May 2007 10:39:05 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MMC: Flush mmc workqueue late in the boot sequence
+Message-ID: <20070511103905.08530507@dhcp-252-105.norway.atmel.com>
+In-Reply-To: <46437562.9050501@drzeus.cx>
+References: <117879333788-git-send-email-hskinnemoen@atmel.com>
+	<46430A49.9090803@drzeus.cx>
+	<20070510143737.54969394@dhcp-252-105.norway.atmel.com>
+	<46432212.9070008@drzeus.cx>
+	<20070510163348.0a117d92@dhcp-252-105.norway.atmel.com>
+	<46434123.8040801@drzeus.cx>
+	<20070510182749.219351cb@dhcp-252-105.norway.atmel.com>
+	<46437562.9050501@drzeus.cx>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <200611011323.14830.rjw@sisk.pl>
-	 <200611012240.13412.len.brown@intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, 10 May 2007 21:41:22 +0200
+Pierre Ossman <drzeus@drzeus.cx> wrote:
 
-(This patch is merged in 2.6.20 as commit
-9185cfa92507d07ac787bc73d06c42222eec7239)
+> You're assuming two things:
+> 
+> 1. The bus the host controller reside on is synchronous both in adding devices
+> and drivers. This is true for most buses, but not all. As we can see, the MMC
+> bus is an example of one that isn't.
+> 
+> 2. The bus the host controller reside on is scanned before any sync function we add.
+> 
+> The second probably isn't much of a stretch, but the first is more likely to
+> break. E.g. an usb based controller would not satisfy 1 as usb is scanned
+> asynchronously. Platform devices are case by case (e.g. some device might be
+> delayed since it needs time to power up).
 
-With this patch, my desktop no longer powers off after hibernate(8).
-It just reboots.
+You're right about my assumptions. Are there any existing drivers that
+break them? Are there even any usb-based controllers around? I though
+most usb-mmc controllers used the USB Mass Storage class and thus
+don't use the mmc subsystem at all.
 
-This user land fix can restore the old behavior:
-echo shutdown > /sys/power/disk
+> >> Indeed. But it is not by design that they are scheduled before late_initcall().
+> >> Also, flushing the workqueue is also not a by-design way of completing a scan,
+> >> it just happens to be that way right now.
+> > 
+> > So how is it supposed to work "by design"?
+> > 
+> 
+> It isn't. The MMC bus is a pesky bugger in that it is slow and involves a lot of
+> sleeping and asynchronous callbacks. As such, synchronisation needs to be very
+> explicit using for example completions.
 
-The commit causes user land breakage. Is this behavior on purpose?
+I see. The flush_workqueue approach might end up waiting for other
+things than just scanning, is that the problem? Would it be better to
+add a per-host "inital scan complete" completion that we could wait on
+instead?
 
-thanks,
-Qi
+> >>> And I never realized that using a block device as a parameter to the
+> >>> root= parameter could possibly be "unofficial" functionality...?
+> >> Then you've learned something new. ;)
+> > 
+> > Guess so. It seems like the prepare_namespace stuff is getting less
+> > useful every day.
+> > 
+> 
+> Probably. But I'd like to hope we're gaining more than we lose. There are some
+> horror stories from the scsi camp where synchronous scanning means it takes an
+> hour to boot a machine.
 
-On 02/11/06, Len Brown <len.brown@intel.com> wrote:
-> Applied.
->
-> thanks,
-> -Len
->
-> On Wednesday 01 November 2006 07:23, Rafael J. Wysocki wrote:
-> > It has been reported that on some systems the functionality after a resume
-> > from disk is limited if the system is simply powered off during the suspend
-> > instead of using the ACPI S4 suspend (aka platform mode).
-> >
-> > Unfortunately the default is currently to power off the system during the
-> > suspend so the users of these systems experience problems after the resume
-> > if they don't switch to the platform mode explicitly.  This patch makes swsusp
-> > use the platform mode by default to avoid such situations.
-> >
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  kernel/power/disk.c |    8 +++++---
-> >  kernel/power/main.c |    2 +-
-> >  2 files changed, 6 insertions(+), 4 deletions(-)
-> >
-> > Index: linux-2.6.19-rc4-mm1/kernel/power/main.c
-> > ===================================================================
-> > --- linux-2.6.19-rc4-mm1.orig/kernel/power/main.c
-> > +++ linux-2.6.19-rc4-mm1/kernel/power/main.c
-> > @@ -29,7 +29,7 @@
-> >  DECLARE_MUTEX(pm_sem);
-> >
-> >  struct pm_ops *pm_ops;
-> > -suspend_disk_method_t pm_disk_mode = PM_DISK_SHUTDOWN;
-> > +suspend_disk_method_t pm_disk_mode = PM_DISK_PLATFORM;
-> >
-> >  /**
-> >   *   pm_set_ops - Set the global power method table.
-> > Index: linux-2.6.19-rc4-mm1/kernel/power/disk.c
-> > ===================================================================
-> > --- linux-2.6.19-rc4-mm1.orig/kernel/power/disk.c
-> > +++ linux-2.6.19-rc4-mm1/kernel/power/disk.c
-> > @@ -62,9 +62,11 @@ static void power_down(suspend_disk_meth
-> >
-> >       switch(mode) {
-> >       case PM_DISK_PLATFORM:
-> > -             kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
-> > -             error = pm_ops->enter(PM_SUSPEND_DISK);
-> > -             break;
-> > +             if (pm_ops && pm_ops->enter) {
-> > +                     kernel_shutdown_prepare(SYSTEM_SUSPEND_DISK);
-> > +                     error = pm_ops->enter(PM_SUSPEND_DISK);
-> > +                     break;
-> > +             }
-> >       case PM_DISK_SHUTDOWN:
-> >               kernel_power_off();
-> >               break;
-> > -
--- 
-Qi Yong
+Yeah, but I don't understand why we keep breaking it without providing
+any real alternative (apart from distro-specific initrd scripts.)
+
+Also, with scsi you can do the scanning in parallel, but wait for all
+of them to complete before mounting the root filesystem. This is what I
+want the mmc subsystem to do as well.
+
+> >> Only some devices work that way (generally only those with "simple" interfaces).
+> >> And most things are these days behind more advanced buses, more akin to a network.
+> > 
+> > It's funny that NFS root does not have these kinds of problems then...
+> > 
+> 
+> I'm not familiar with that code, but I would guess it has a whole bunch of
+> prerequisite conditions. And the nfs root installations I've seen all use
+> initrd, so I would assume there are some restrictions to letting the kernel
+> handle it.
+
+I've never used initrd with nfs root. I suspect most distributions use
+initrd so that they can build a generic, modular kernel and just load
+the modules they need from initrd.
+
+And nfs root often uses DHCP to obtain an IP address, it has to do
+portmap lookups, etc, so it definitely qualifies as a pesky,
+asynchronous bugger. But it still manages to be synchronous enough to
+be able to mount root without depending on initrd or rootdelay.
+
+> >> Generally, not waiting for a lot of hardware is a good thing as it speeds up
+> >> boot times. In my mind, the proper way is having a script in an initrd that
+> >> waits for just the parts of the hardware that this particular system needs.
+> >> Everything else can be brought up in the background.
+> > 
+> > Yeah, but I suspect most users will rather have a system that actually
+> > boots than a system that would have booted very quickly if it had booted
+> > at all.
+> > 
+> 
+> I think most people can live with having an initrd, so I wouldn't paint quite
+> such a bleak picture.
+
+I'm not sure how many embedded people actually know how to build an
+initrd for a custom board.
+
+> > Btw, how can I wait for the scanning to complete from early userspace?
+> > 
+> 
+> Monitor /proc/partitions or /sys until the device you need for rootfs shows up.
+
+Simple enough, I suppose. But it still adds complexity to the system
+which used to be unnecessary.
+
+> The big problem from my point of view is that I do not want to start promising
+> people a feature we might not be able to support in the future, and perhaps not
+> even now with some hardware.
+
+The problem from _my_ point of view is that this feature already worked
+until 2.6.20, so the promise has already been made.
+
+> Is there some reason you cannot use an initrd or is it just the inconvenience?
+
+Well, it's mostly inconvenience I suppose. But I'm also worried about
+increasing the boot time of systems that used to boot in 4-5 seconds.
+One second extra spent doing decompression, polling files in sysfs,
+etc. could have a huge impact, relatively speaking.
+
+Now, I'm not really opposed to the whole concept of doing filesystem
+mounting from early userspace -- I think that might be a quite elegant
+approach. But a) the prepare_namespace code is still in the kernel, so
+it ought to work, b) klibc has not yet been merged so each user is on
+his own, and c) Repeatedly reading sysfs files to see when the root
+device is available is one thing that I don't think is very elegant.
+
+But if you don't want this issue fixed (i.e. you don't think of it as
+an issue) I guess I have to either start working on yet another initrd
+setup or just apply the patch to our vendor kernel and be done with it.
+The latter certainly is the most tempting, but I suppose the former is
+more like how things are supposed to be done in the future.
+
+Haavard
