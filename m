@@ -1,85 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761447AbXEKBzx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbXEKB4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761447AbXEKBzx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 21:55:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbXEKBzo
+	id S1762138AbXEKB4h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 21:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758473AbXEKB4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 21:55:44 -0400
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:18682 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751580AbXEKBzn (ORCPT
+	Thu, 10 May 2007 21:56:31 -0400
+Received: from nz-out-0506.google.com ([64.233.162.231]:31124 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755017AbXEKB4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 21:55:43 -0400
-In-Reply-To: <20070511012529.GC10715@verge.net.au>
-References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au> <46434ED0.6030808@freescale.com> <20070511012529.GC10715@verge.net.au>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <996E281D-DE15-451A-955D-FB9C0C23DA54@kernel.crashing.org>
-Cc: Timur Tabi <timur@freescale.com>,
-       Kim Phillips <kim.phillips@freescale.com>,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       netdev <netdev@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Sam Ravnborg <sam@ravnborg.org>
+	Thu, 10 May 2007 21:56:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
+        b=pO49nJc0/pXPcIb2ae2hTKyR09o42fW50SsgZPkuwMPveRiCFsOiKnbGLc7ZPtVFmJ895vqx4iZJGuwubA56nzaWYO5O33jP3oh61GxWyGsuOXJdVOg/jhT0bzIpltnGfEaVeSZUjy/1zi2odbORGbKD8J7cZEJYFu9EFwlJfnc=
+Message-ID: <4643CD44.1090903@gmail.com>
+Date: Fri, 11 May 2007 09:56:20 +0800
+From: Li Yu <raise.sail@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070403)
+MIME-Version: 1.0
+To: Steven Rostedt <srostedt@redhat.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Esben Nielsen <nielsen.esben@googlemail.com>
+Subject: Re: Hi, I have one question about rt_mutex.
+References: <4642CCEB.6010908@gmail.com> <4643176C.6050305@redhat.com>
+In-Reply-To: <4643176C.6050305@redhat.com>
+Content-Type: text/plain; charset=GB2312
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Kconfig warnings on latest GIT
-Date: Thu, 10 May 2007 20:41:53 -0500
-To: Simon Horman <horms@verge.net.au>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On May 10, 2007, at 8:25 PM, Simon Horman wrote:
-
-> On Thu, May 10, 2007 at 11:56:48AM -0500, Timur Tabi wrote:
->> Simon Horman wrote:
->>
->>>> So my question is: in which Kconfig do I define "UCC_FAST_TEMP" and
->>>> "UCC_SLOW_TEMP"?  At first I thought, just put it in drivers/ 
->>>> Kconfig, but
->>>> that Kconfig does nothing but including other Kconfigs.  I  
->>>> believe that if I
->>>> submit a patch that adds "UCC_FAST_TEMP" and "UCC_SLOW_TEMP" to
->>>> drivers/Kconfig, it will be rejected.  Either that, or I'll  
->>>> spend six weeks
->>>> trying to persuade everyone that it's a good idea.
->>>>
->>>> Does anyone have any suggestions on how I can fix this?
->>> That does seem like a reasonable suggestion, and one that
->>> would probably work well with the other similar problems
->>> that have been introduced sice 2.6.21.
->>
->> Looks like the fix is simpler than I thought.  Instead of having
->>
->> UCC_GETH
->> 	select UCC_FAST
->>
->> I need to do
->>
->> UCC_FAST
->> 	default y if UCC_GETH
+Steven Rostedt wrote:
+> Li Yu wrote:
+>   
+>>> Now since mutexes can be defined by user-land applications, we don't
+>>>       
+>> want a DOS
+>>     
+>>> type of application that nests large amounts of mutexes to create a large
+>>> PI chain, and have the code holding spin locks while looking at a large
+>>> amount of data. So to prevent this, the implementation not only implements
+>>> a maximum lock depth, but also only holds at most two different locks at a
+>>> time, as it walks the PI chain. More about this below.
+>>>       
+>> After read the implementation of rt_mutex_adjust_prio_chain(), I found
+>> the we really require maximin lock depth (1024 default), but I can not
+>> see the check for more same locks duplication. Does this doc is
+>> inconsistent with code?
+>>     
 >
-> I pondered something like that, but I couldn't get it quite right :(
+> Nope, the code and the doc are still the same.
 >
->> I'll have a patch that fixes this out later today.
->>
->> I chose the first method because I wanted each individual UCC device
->> driver to select UCC_FAST or UCC_SLOW as appropriate, so that I
->> wouldn't have to update arch/powerpc/sysdev/qe_lib/Kconfig every time
->> we add a new UCC driver.  Oh well.
+> The thing that was most difficult in writing that document, was a way to
+> talk about the user locks (futex - fast user mutex) and the kernel locks
+> (spin_locks) without confusing the two.  The max depth is in reference
+> to the user futex, but the comment about the "at most two different
+> locks" is referencing the kernel's spin_locks.
+>
+> I don't remember talking about looking for "lock duplication", which I'm
+> thinking you are referring to circular dead locks. I didn't cover that
+> in the document and I believe I even mentioned that I would not cover
+> the debug aspect of the code which would handle catching circular deadlocks.
+>
+> But back to the "no more than two kernel locks held". This is very
+> important. Some PI implementations requires all locks in the PI chain to
+> have their internal locks held (as in spin_locks).  But letting user
+> space determine the number of spin locks held can cause large latencies
+> for the rest of the system.  So we designed a method to only need to
+> hold two internal spin_locks in the PI chain at a time.  The kernel
+> doesn't care if the user application is abusing itself (holding too many
+> of it's own user locks).  But the kernel does care if a user application
+> can affect other non related applications.
+>
+> As Esben already mentioned, the PI chain even lets the locking user
+> mutex schedule without holding any kernel locks.  This is very key. It
+> keeps the latency down on setting up a PI chain which can be very expensive.
+>
+> Note: Esben helped a lot in the development of the final design of
+> rtmutex.c.
+>
+> -- Steve
+>   
+First, Thanks for such good explanation from you two guru in time.
 
-It really seems like the kconfig shouldn't complain if the depends  
-isnt satisfied.
+Er, I think these two locks which you said are task->pi_lock and
+rt_mutex->wait_lock.
 
-- k
+>The max depth is in reference to the user futex, but the comment
+>about the "at most two different locks" is referencing the 
+>kernel's spin_locks.
+
+This sentence make the my world clear from now on ;)
+
+However, I found the sys_futex() do not use rt_mutex, so what's mean of the user futex you said?
+Even, I have not found any usage for rt_mutex in kernel code. Or, some beautiful story will happen in future?
+
+Goodluck.
+
+- Li Yu
+
+
+
