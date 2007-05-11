@@ -1,64 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759456AbXEKCOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761248AbXEKCPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759456AbXEKCOf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 22:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752976AbXEKCO1
+	id S1761248AbXEKCPg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 22:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbXEKCPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 22:14:27 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33876 "EHLO gate.crashing.org"
+	Thu, 10 May 2007 22:15:30 -0400
+Received: from ns1.suse.de ([195.135.220.2]:53530 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbXEKCO0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 22:14:26 -0400
-Date: Thu, 10 May 2007 21:13:34 -0500 (CDT)
-From: Kumar Gala <galak@kernel.crashing.org>
-X-X-Sender: galak@gate.crashing.org
-To: Simon Horman <horms@verge.net.au>, sam@ravnborg.org
-cc: Timur Tabi <timur@freescale.com>,
-       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
-       Michael Schmitz <schmitz@debian.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: Kconfig warnings on latest GIT
-In-Reply-To: <20070511020545.GG10715@verge.net.au>
-Message-ID: <Pine.LNX.4.64.0705102111570.11348@gate.crashing.org>
-References: <200705080004.14570.ismail@pardus.org.tr>
- <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com>
- <20070510051042.GA16812@verge.net.au> <46434ED0.6030808@freescale.com>
- <20070511012529.GC10715@verge.net.au> <Pine.LNX.4.64.0705102046400.10555@gate.crashing.org>
- <20070511020545.GG10715@verge.net.au>
+	id S1754916AbXEKCP3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 22:15:29 -0400
+From: Neil Brown <neilb@suse.de>
+To: Ulrich Drepper <drepper@redhat.com>
+Date: Fri, 11 May 2007 12:14:45 +1000
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <17987.53653.111396.778502@notabene.brown>
+Cc: Christoph Hellwig <hch@infradead.org>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] utimensat implementation
+In-Reply-To: message from Ulrich Drepper on Thursday May 10
+References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com>
+	<17969.22692.855242.359680@notabene.brown>
+	<46315C61.30001@redhat.com>
+	<464363DC.7060607@redhat.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 May 2007, Simon Horman wrote:
+On Thursday May 10, drepper@redhat.com wrote:
+> Ulrich Drepper wrote:
+> > Neil Brown wrote:
+> >> Does it also specify how to find out what granularity is used by the
+> >> filesystem?  I had a need for this just recently and couldn't see any
+> >> way to extract it.
+> > 
+> > That's still on the table.  We might end up with an fpathconf() solution.
+> 
+> OK, the pathconf()-based solution will most probably be in the next 
+> POSIX spec.
+> 
+> Now, somebody has to provide a way to get to this information.  The 
+> kernel does not export it so far.  Is it finally time to break down and 
+> allow pathconf() and fpathconf() syscalls into the kernel?
 
-> On Thu, May 10, 2007 at 08:47:05PM -0500, Kumar Gala wrote:
-> > Try this patch:
->
-> That certainly resolves the problem for me.
-> I'll see about doing something like that for the similar
-> Kconfig problems that I see.
->
-> --
-> Horms
->   H: http://www.vergenet.net/~horms/
->   W: http://www.valinux.co.jp/en/
->
+Maybe... certainly we want some way to get at this information.
 
-I've got a similar fix for SYS_SUPPORTS_APM_EMULATION already.  I'll push
-both of these to Paul.  If you can put something in place for the
-Atari/68k and send it to Geert that would be good (feeling a little lazy
-right now :)
+It has occurred to me a number of times that there is no easy way to
+export information about filesystems from the kernel.
 
-I'm still not happy about this fix.  I'd like to get Sam's feeling on if
-we can fixup kconfig not to warn if the dependency isn't meet.  I think
-the select is valid, and would prefer to fix this properly before we paper
-tape over it.
+One specific example is request statistics for an NFS filesystem.  We
+can get system-wide statistics, but to get stats for a single
+filesystem isn't possible, and a big reason for this is that there is
+no-where to put that information.
 
-- k
+Filesystems also have a variety of mount options and they are only
+available through "/proc/mounts" and can only be change by "remount"
+which is a bit of a clunky interface.
+
+Just about every other kernel object is, or can be, exposed through
+sysfs.  But filesystems cannot.  This is presumably because there is
+no unique handle for them (what with name spaces and bind mounts and
+so forth).
+Each filesystem still have a unique device number (->s_dev) so that
+could be used. e.g. we could create
+  /sysfs/filesystem/00:03/....
+
+which would contain info about the filesystem with device number 0:3.
+We could then put time-granularity and other fs-specific info in
+there.
+
+I feel that would be more flexible than a specific fpathconfat system
+call.  But would it be enough?
+The pathconf values can apparently be different for different files in
+a filesystem.  Is that important?  If it is, we really would want
+some new syscall rather than just sysfs attributes.
+
+So that makes two questions for anyone with opinions:
+ 1/ Does pathconf have to be per-file, or is per-filesystem OK
+ 2/ Can we have a way to put attributes for filesystems in sysfs?
+
+NeilBrown
