@@ -1,77 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966354AbXEKUGf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763141AbXEKUId@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966354AbXEKUGf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:06:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760122AbXEKUG1
+	id S1763141AbXEKUId (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:08:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759196AbXEKUIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:06:27 -0400
-Received: from gw.goop.org ([64.81.55.164]:51240 "EHLO mail.goop.org"
+	Fri, 11 May 2007 16:08:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44862 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760038AbXEKUG0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:06:26 -0400
-Message-ID: <4644CCB9.3040109@goop.org>
-Date: Fri, 11 May 2007 13:06:17 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	id S1758798AbXEKUIY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 16:08:24 -0400
 MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Andrew Morton <akpm@linux-foundation.com>
-Subject: Re: [patch 2/7] use elfnote.h to generate vsyscall notes.
-References: <20070511194725.E37E51F8512@magilla.localdomain>
-In-Reply-To: <20070511194725.E37E51F8512@magilla.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+X-Fcc: ~/Mail/linus
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       Zachary Amsden <zach@vmware.com>, Ulrich Drepper <drepper@redhat.com>
+Subject: Re: [patch 02/28]xen: Add nosegneg capability to the vsyscall page notes
+In-Reply-To: Jeremy Fitzhardinge's message of  Thursday, 10 May 2007 17:06:45 -0700 <20070511001156.003375000@goop.org>
+X-Shopping-List: (1) Beauteous champions
+   (2) Global cancerous admonishers
+   (3) Mountainous inflammation documents
+Message-Id: <20070511200744.4BC1A1F8512@magilla.localdomain>
+Date: Fri, 11 May 2007 13:07:44 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
-> I used .balign because .align has inconsistent meaning on some platforms
-> (matches .p2align instead of .balign).  Using .align in a
-> machine-independent file seems questionable.
->
->
->   
+> + * It should contain:
+> + *	hwcap 0 nosegneg
+> + * to match the mapping of bit to name that we give here.
 
-Subject: use balign in elfnote.h
-
-Roland McGrath <roland@redhat.com>:
-> I used .balign because .align has inconsistent meaning on some platforms
-> (matches .p2align instead of .balign).  Using .align in a
-> machine-independent file seems questionable.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Cc: Roland McGrath <roland@redhat.com>
-
----
- include/linux/elfnote.h |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
-
-===================================================================
---- a/include/linux/elfnote.h
-+++ b/include/linux/elfnote.h
-@@ -40,16 +40,16 @@
-  */
- #define ELFNOTE_START(name, type, flags)	\
- .pushsection .note.name, flags,@note	;	\
--  .align 4				;	\
-+  .balign 4				;	\
-   .long 2f - 1f		/* namesz */	;	\
-   .long 4484f - 3f	/* descsz */	;	\
-   .long type				;	\
- 1:.asciz #name				;	\
--2:.align 4				;	\
-+2:.balign 4				;	\
- 3:
- 
- #define ELFNOTE_END				\
--4484:.align 4				;	\
-+4484:.balign 4				;	\
- .popsection				;
- 
- #define ELFNOTE(name, type, desc)		\
+This comment still needs s/0/1/ to match the code.  Given that the actual
+bit is now defined in the macro in another file, perhaps the comment should
+say more about it than just a magic 1.
 
 
-
+Thanks,
+Roland
