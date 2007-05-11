@@ -1,48 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761315AbXEKUZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762023AbXEKU0r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761315AbXEKUZT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757217AbXEKUZJ
+	id S1762023AbXEKU0r (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:26:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758519AbXEKU0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:25:09 -0400
-Received: from gw.goop.org ([64.81.55.164]:46355 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756123AbXEKUZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:25:07 -0400
-Message-ID: <4644D11C.2040207@goop.org>
-Date: Fri, 11 May 2007 13:25:00 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
-MIME-Version: 1.0
-To: Roland McGrath <roland@redhat.com>
-CC: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       virtualization@lists.osdl.org, lkml <linux-kernel@vger.kernel.org>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Zachary Amsden <zach@vmware.com>, Ulrich Drepper <drepper@redhat.com>
-Subject: Re: [patch 02/28]xen: Add nosegneg capability to the vsyscall page
- notes
-References: <20070511200744.4BC1A1F8512@magilla.localdomain>
-In-Reply-To: <20070511200744.4BC1A1F8512@magilla.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 11 May 2007 16:26:41 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:57248
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758379AbXEKU0k (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 16:26:40 -0400
+Date: Fri, 11 May 2007 13:26:44 -0700 (PDT)
+Message-Id: <20070511.132644.78708151.davem@davemloft.net>
+To: michael@ellerman.id.au
+CC: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: [PATCH]: Fix assertion failure with MSI on sparc64
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath wrote:
->> + * It should contain:
->> + *	hwcap 0 nosegneg
->> + * to match the mapping of bit to name that we give here.
->>     
->
-> This comment still needs s/0/1/ to match the code.  Given that the actual
-> bit is now defined in the macro in another file, perhaps the comment should
-> say more about it than just a magic 1.
->   
 
-Crap, I thought I had 1) understood it, and 2) fixed it.  I guess I
-skipped 1 and therefore overlooked 2.
+Hi Michael, I'm still working through the various regressions on
+sparc64 added by your MSI changes :-)
 
-    J
+The one I fixed the other day was a missed switch over to
+alloc_pci_dev() in the sparc64 PCI probing code which caused an OOPS
+in pci_enable_msi() because the list head of the pci dev was not
+initialized.  PowerPC's OBP firmware tree based PCI probing code
+was updated, sparc64's wasnt.
+
+Today's find is a triggered assertion in msi_free_irqs() when the
+system doesn't support MSI, in which case arch_setup_msi_irqs() always
+returns an error.
+
+The problem is that when this happens we branch into msi_free_irqs(),
+to which you added the following assertion loop:
+
+	list_for_each_entry(entry, &dev->msi_list, list)
+		BUG_ON(irq_has_action(entry->irq));
+
+Well, if arch_setup_msi_irqs() fails, entry->irq will be zero and
+although that's never assigned to any normal devices we use that IRQ
+number for the timer interrupt on sparc64 so this assertion triggers.
+
+Better to test for zero before doing the irq_has_action() assertion
+thing.
+
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index e6740d1..d9cbd58 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -549,8 +549,10 @@ static int msi_free_irqs(struct pci_dev* dev)
+ {
+ 	struct msi_desc *entry, *tmp;
+ 
+-	list_for_each_entry(entry, &dev->msi_list, list)
+-		BUG_ON(irq_has_action(entry->irq));
++	list_for_each_entry(entry, &dev->msi_list, list) {
++		if (entry->irq)
++			BUG_ON(irq_has_action(entry->irq));
++	}
+ 
+ 	arch_teardown_msi_irqs(dev);
+ 
