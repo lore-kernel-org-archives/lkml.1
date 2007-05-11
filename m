@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761401AbXEKGLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbXEKGNz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761401AbXEKGLp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 02:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755708AbXEKGLi
+	id S1761024AbXEKGNz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 02:13:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931AbXEKGNs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 02:11:38 -0400
-Received: from ns.suse.de ([195.135.220.2]:33128 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756531AbXEKGLh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 02:11:37 -0400
-Date: Fri, 11 May 2007 09:08:53 +0200
-From: Andi Kleen <ak@suse.de>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Andi Kleen <ak@suse.de>, Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: getcpu after sched_setaffinity
-Message-ID: <20070511070853.GD2012@bingen.suse.de>
-References: <46439BBA.2070705@redhat.com> <20070510234446.GC2012@bingen.suse.de> <4643A616.3090202@redhat.com>
+	Fri, 11 May 2007 02:13:48 -0400
+Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:28559 "HELO
+	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755046AbXEKGNr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 02:13:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=kMLGIjNc8qMAGztGlRbgoC29RvU/HMQvRaMovpBxQUaxLhHQ5DQ4X4FEzEjlRN/lWLoWJp4s3f2tl0fd7BMhCfCgj9DyxAhoJnaWHB8WH77cjdraJkniAClMABqK+FS+BRtMqhUDE5UjhBYRAwuAKEVMro6xluFrJ1xIwtIJaro=  ;
+X-YMail-OSG: ywV6tkUVM1liGnnCemPgKlSEuk0gvhZBwOPX5tfqFzAQDJn3j8FQN5n89DLv0ICxNa9T7bYtyQ--
+From: David Brownell <david-b@pacbell.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCHv2] at91: fix enable/disable_irq_wake symmetry in pcmcia driver
+Date: Thu, 10 May 2007 23:01:56 -0700
+User-Agent: KMail/1.9.6
+Cc: Marc Pignat <marc.pignat@hevs.ch>, andrew@sanpeople.com,
+       linux-kernel@vger.kernel.org
+References: <200705101009.36302.marc.pignat@hevs.ch> <20070510152636.4adb3ef1.akpm@linux-foundation.org>
+In-Reply-To: <20070510152636.4adb3ef1.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4643A616.3090202@redhat.com>
+Message-Id: <200705102301.56964.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10, 2007 at 04:09:10PM -0700, Ulrich Drepper wrote:
-> >is only designed for the case where you don't set the affinity explicitely;
-> >otherwise you should already know where you are and don't need it.
-> 
-> That's not true in general.  Yes, because I want to test vgetcpu() I 
-> restrict the set to just one CPU.
-> 
-> But if I have more than 2 "CPUs" and I set the affinity to two CPUs 
-> which currently are not used you cannot make this argument.
+On Thursday 10 May 2007, Andrew Morton wrote:
 
-All the users I talked to never mentioned this as a use case.
-They were only interested in fully unrestricted programs. 
+> "disable_irq_wake call must be symmetric with enable_irq_wake".  hmm, OK,
+> I'll take your word for it.
 
-Anyways you can handle it too, just invalidate or do getcpu with 
-a new cache afterwards.
+In the same way that enable_irq() and disable_irq() must be matched,
+and for the same reasons:  when the IRQ is shared between drivers,
+they can't all treat enable/disable status as boolean.  Those calls
+mask refcountig.
 
-Or just wait the jiffie for the cache to expire.
 
-> 
-> getcpu should always work correctly not only if you cannot determine it 
-> in another way.
+> Does the present code actually fail in some manner, or what?
 
-getcpu by design is approximate. If you don't understand this
-don't bother using it.
+Yes ... runtime warnings flagging various misbehaviors associated
+with refcount mismatches.
 
--Andi
+- Dave
+
 
