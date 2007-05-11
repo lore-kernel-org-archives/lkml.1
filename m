@@ -1,141 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762080AbXEKPuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760202AbXEKQAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762080AbXEKPuf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 11:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757671AbXEKPu1
+	id S1760202AbXEKQAF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 12:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758902AbXEKP7x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 11:50:27 -0400
-Received: from smtp.osdl.org ([65.172.181.24]:52026 "EHLO smtp.osdl.org"
+	Fri, 11 May 2007 11:59:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47952 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757558AbXEKPuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 11:50:25 -0400
-Date: Fri, 11 May 2007 08:50:20 -0700
-From: Stephen Hemminger <shemminger@linux-foundation.org>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [BUG][PATCH] Fix race condition about network device name
- allocation
-Message-ID: <20070511085020.7acf792c@freepuppy>
-In-Reply-To: <1178862045.3979.33.camel@kane-linux>
-References: <1178862045.3979.33.camel@kane-linux>
-Organization: Linux Foundation
-X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+	id S1757562AbXEKP7w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 11:59:52 -0400
+Date: Fri, 11 May 2007 17:56:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
+Message-ID: <20070511155621.GA13150@elte.hu>
+References: <20070511131541.992688403@chello.nl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070511131541.992688403@chello.nl>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 May 2007 14:40:45 +0900
-Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com> wrote:
 
-> Hi,
-> 
-> I encountered the following error when I was hot-plugging network card
-> using pci hotplug driver.
-> 
-> kobject_add failed for eth8 with -EEXIST, don't try to register things with the same name in the same directory.
-> 
-> Call Trace:
->  [<a000000100013940>] show_stack+0x40/0xa0
->                                 sp=e0000000652cfbf0 bsp=e0000000652c9450
->  [<a0000001000139d0>] dump_stack+0x30/0x60
->                                 sp=e0000000652cfdc0 bsp=e0000000652c9438
->  [<a0000001003b5af0>] kobject_shadow_add+0x3b0/0x440
->                                 sp=e0000000652cfdc0 bsp=e0000000652c93f0
->  [<a0000001003b5bb0>] kobject_add+0x30/0x60
->                                 sp=e0000000652cfdc0 bsp=e0000000652c93d0
->  [<a000000100488240>] device_add+0x160/0xf40
->                                 sp=e0000000652cfdc0 bsp=e0000000652c9358
->  [<a00000010061af00>] netdev_register_sysfs+0xc0/0xe0
->                                 sp=e0000000652cfdc0 bsp=e0000000652c9328
->  [<a0000001006006c0>] register_netdevice+0x600/0x7e0
->                                 sp=e0000000652cfdc0 bsp=e0000000652c92e8
->  [<a000000100600910>] register_netdev+0x70/0xc0
->                                 sp=e0000000652cfdd0 bsp=e0000000652c92c0
->  [<a00000020018dd70>] e1000_probe+0x1710/0x1a00 [e1000]
->                                 sp=e0000000652cfdd0 bsp=e0000000652c9258
->  [<a0000001003d56c0>] pci_device_probe+0xc0/0x120
->                                 sp=e0000000652cfde0 bsp=e0000000652c9218
->  [<a00000010048dc60>] really_probe+0x1c0/0x300
->                                 sp=e0000000652cfde0 bsp=e0000000652c91c8
->  [<a00000010048df40>] driver_probe_device+0x1a0/0x1c0
->                                 sp=e0000000652cfde0 bsp=e0000000652c9198
->  [<a00000010048df90>] __device_attach+0x30/0x60
->                                 sp=e0000000652cfde0 bsp=e0000000652c9170
->  [<a00000010048c080>] bus_for_each_drv+0x80/0x120
->                                 sp=e0000000652cfde0 bsp=e0000000652c9138
->  [<a00000010048e0c0>] device_attach+0xa0/0x100
->                                 sp=e0000000652cfe00 bsp=e0000000652c9110
->  [<a00000010048bec0>] bus_attach_device+0x60/0xe0
->                                 sp=e0000000652cfe00 bsp=e0000000652c90e0
->  [<a000000100488a30>] device_add+0x950/0xf40
->                                 sp=e0000000652cfe00 bsp=e0000000652c9068
->  [<a0000001003ca360>] pci_bus_add_device+0x20/0x100
->                                 sp=e0000000652cfe00 bsp=e0000000652c9040
->  [<a0000001003ca490>] pci_bus_add_devices+0x50/0x320
->                                 sp=e0000000652cfe00 bsp=e0000000652c9010
->  [<a000000200081520>] shpchp_configure_device+0x460/0x4a0 [shpchp]
->                                 sp=e0000000652cfe00 bsp=e0000000652c8fc0
->  [<a00000020007e7c0>] board_added+0x720/0x8c0 [shpchp]
->                                 sp=e0000000652cfe00 bsp=e0000000652c8f80
->  [<a00000020007f280>] shpchp_enable_slot+0x920/0xa40 [shpchp]
->                                 sp=e0000000652cfe10 bsp=e0000000652c8f30
->  [<a000000200080a40>] shpchp_sysfs_enable_slot+0x120/0x220 [shpchp]
->                                 sp=e0000000652cfe20 bsp=e0000000652c8ef8
->  [<a00000020007d270>] enable_slot+0x90/0xc0 [shpchp]
->                                 sp=e0000000652cfe20 bsp=e0000000652c8ed0
->  [<a00000020002a760>] power_write_file+0x1e0/0x2a0 [pci_hotplug]
->                                 sp=e0000000652cfe20 bsp=e0000000652c8ea0
->  [<a000000200028100>] hotplug_slot_attr_store+0x60/0xa0 [pci_hotplug]
->                                 sp=e0000000652cfe20 bsp=e0000000652c8e68
->  [<a0000001001cf010>] sysfs_write_file+0x270/0x300
->                                 sp=e0000000652cfe20 bsp=e0000000652c8e18
->  [<a0000001001395b0>] vfs_write+0x1b0/0x300
->                                 sp=e0000000652cfe20 bsp=e0000000652c8dc0
->  [<a00000010013a1b0>] sys_write+0x70/0xe0
->                                 sp=e0000000652cfe20 bsp=e0000000652c8d48
->  [<a00000010000bc20>] ia64_ret_from_syscall+0x0/0x20
->                                 sp=e0000000652cfe30 bsp=e0000000652c8d48
->  [<a000000000010620>] __kernel_syscall_via_break+0x0/0x20
->                                 sp=e0000000652d0000 bsp=e0000000652c8d48
-> 
-> This error is caused by the race condition between dev_alloc_name()
-> and unregistering net device. The dev_alloc_name() function checks
-> dev_base list to find a suitable id. The net device is removed from
-> the dev_base list when net device is unregistered. Those are done with
-> rtnl lock held, so there is no problem. However, removing sysfs entry
-> is delayed until netdev_run_todo() which is outside rtnl lock. Because
-> of this, dev_alloc_name() can create a device name which is duplicated
-> with the existing sysfs entry.
-> 
-> The following patch fixes this by changing dev_alloc_name() function
-> to check not only dev_base list but also todo list and snapshot list
-> to find a suitable id. If some devices exists on the todo list or
-> snapshot list, sysfs entries corresponding to them are not deleted
-> yet.
-> 
-> Thanks,
-> Kenji Kaneshige
-> 
-> ---
-> Fix the race condition between dev_alloc_name() and net device
-> unregistration.
-> 
-> dev_alloc_name checks `dev_base' list to find a suitable ID. On the
-> other hand, net devices are removed from that list on net device
-> unregistration. Both of them are done with holding rtnl lock. However,
-> removing sysfs entry is delayed until netdev_run_todo(), which doesn't
-> acquire rtnl lock. Therefore, on dev_alloc_name(), device name could
-> conflict with the device, which is unregistered, but its sysfs entry
-> still exist.
-> 
-> To fix this bug, change dev_alloc_name to check not only `dev_base'
-> list but also todo list and snapshot list.
-> 
-> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-There should be a better way to fix this by getting rid of the kobjects 
-on deletion rather than the overhead another lock and list scans....
+> I was toying with a scalable rw_mutex and found that it gives ~10% 
+> reduction in system time on ebizzy runs (without the MADV_FREE patch).
+> 
+> 2-way x86_64 pentium D box:
+> 
+> 2.6.21
+> 
+> /usr/bin/time ./ebizzy -m -P
+> 59.49user 137.74system 1:49.22elapsed 180%CPU (0avgtext+0avgdata 0maxresident)k
+> 0inputs+0outputs (0major+33555877minor)pagefaults 0swaps
+> 
+> 2.6.21-rw_mutex
+> 
+> /usr/bin/time ./ebizzy -m -P
+> 57.85user 124.30system 1:42.99elapsed 176%CPU (0avgtext+0avgdata 0maxresident)k
+> 0inputs+0outputs (0major+33555877minor)pagefaults 0swaps
 
+nice! This 6% runtime reduction on a 2-way box will i suspect get 
+exponentially better on systems with more CPUs/cores.
+
+i also like the design, alot: instead of doing a full new lock type 
+(with per-arch changes, extra lockdep support, etc. etc) you layered the 
+new abstraction ontop of mutexes. This makes this hard locking 
+abstraction look really, really simple, while the percpu_counter trick 
+makes it scale _perfectly_ for the reader case. Congratulations!
+
+given how nice this looks already, have you considered completely 
+replacing rwsems with this? I suspect you could test the correctness of 
+that without doing a mass API changeover, by embedding struct rw_mutex 
+in struct rwsem and implementing kernel/rwsem.c's API that way. (the 
+real patch would just flip it all over to rw-mutexes)
+
+	Ingo
