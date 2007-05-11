@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbXEKTVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966363AbXEKTVw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758629AbXEKTVd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763699AbXEKTTC
+	id S966363AbXEKTVw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:21:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759708AbXEKTTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:19:02 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:1224 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763517AbXEKTTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:19:00 -0400
-Date: Fri, 11 May 2007 19:18:25 +0000
-From: Pavel Machek <pavel@ucw.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Peter Williams <pwil3058@bigpond.net.au>,
-       Esben Nielsen <nielsen.esben@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
-       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
-       Mark Lord <lkml@rtr.ca>, Zach Carter <linux@zachcarter.com>,
-       buddabrod <buddabrod@gmail.com>
-Subject: Re: [patch] CFS scheduler, -v8
-Message-ID: <20070511191824.GA7135@ucw.cz>
-References: <46386F2B.9050307@linux.vnet.ibm.com> <20070502111742.GA18132@elte.hu> <Pine.LNX.4.64.0705051016420.12880@frodo.shire> <alpine.LFD.0.98.0705051040420.3819@woody.linux-foundation.org> <20070506082911.GA32644@elte.hu> <alpine.LFD.0.98.0705061037390.25245@woody.linux-foundation.org> <Pine.LNX.4.64.0705071311040.14011@frodo.shire> <463FC5D8.2090502@bigpond.net.au> <20070510130954.GC4052@ucw.cz> <alpine.LFD.0.98.0705110932430.3986@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705110932430.3986@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+	Fri, 11 May 2007 15:19:38 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:36778 "EHLO
+	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S966149AbXEKTTg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 15:19:36 -0400
+Message-Id: <20070511001158.810692000@goop.org>
+References: <20070511000643.025196000@goop.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 10 May 2007 17:06:51 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [patch 08/28]xen: xen configuration
+Content-Disposition: inline; filename=xen-config.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+Put config options for Xen after the core pieces are in place.
 
-> > Also notice that current cpus were not designed to work 300 years.
-> > When we have hw designed for 50 years+, we can start to worry.
-> 
-> Indeed. CPU manufacturers don't seem to talk about it very much, and 
-> searching for it with google on intel.com comes up with
-> 
-> 	The failure rate and Mean Time Between Failure (MTBF) data is not 
-> 	currently available on our website. You may contact Intel? 
-> 	Customer Support for this information.
-> 
-> which seems to be just a fancy way of saying "we don't actually want to 
-> talk about it". Probably not because it's actually all that bad, but 
-> simply because people don't think about it, and there's no reason a CPU 
-> manufacturer would *want* people to think about it.
-> 
-> But if you wondered why server CPU's usually run at a lower frequency, 
-> it's because of MTBF issues. I think a desktop CPU is usually specced to 
-> run for 5 years (and that's expecting that it's turned off or at least 
-> idle much of the time), while a server CPU is expected to last longer and 
-> be active a much bigger percentage of time.
-> 
-> ("Active" == "heat" == "more damage due to atom migration etc". Which is 
-> part of why you're not supposed to overclock stuff: it may well work well 
-> for you, but for all you know it will cut your expected CPU life by 90%).
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 
-Actually, when I talked with AMD, they told me that cpus should last
-10 years *at their max specced temperature*... which is 95Celsius. So
-overclocking is not that evil, according to my info.
+---
+ arch/i386/Kconfig     |    2 ++
+ arch/i386/xen/Kconfig |   11 +++++++++++
+ 2 files changed, 13 insertions(+)
 
-(That would mean way more than 10 years if you use your cpu
-'normally'.)
+===================================================================
+--- a/arch/i386/Kconfig
++++ b/arch/i386/Kconfig
+@@ -217,6 +217,8 @@ config PARAVIRT
+ 	  under a hypervisor, improving performance significantly.
+ 	  However, when run without a hypervisor the kernel is
+ 	  theoretically slower.  If in doubt, say N.
++
++source "arch/i386/xen/Kconfig"
+ 
+ config VMI
+ 	bool "VMI Paravirt-ops support"
+===================================================================
+--- /dev/null
++++ b/arch/i386/xen/Kconfig
+@@ -0,0 +1,11 @@
++#
++# This Kconfig describes xen options
++#
++
++config XEN
++	bool "Enable support for Xen hypervisor"
++	depends on PARAVIRT && !PREEMPT && !SMP
++	help
++	  This is the Linux Xen port.  Enabling this will allow the
++	  kernel to boot in a paravirtualized environment under the
++	  Xen hypervisor.
 
-But I guess capacitors from cpu power supply will hate you running cpu
-at 95C...
-							Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+
