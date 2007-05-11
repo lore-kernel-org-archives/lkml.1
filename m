@@ -1,64 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762441AbXEKN7t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbXEKOAE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762441AbXEKN7t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 09:59:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759303AbXEKN7L
+	id S1759858AbXEKOAE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 10:00:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759354AbXEKN7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 09:59:11 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:22467 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758491AbXEKN7F (ORCPT
+	Fri, 11 May 2007 09:59:13 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:14708 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758763AbXEKN7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 09:59:05 -0400
-Message-Id: <20070511135827.393181482@de.ibm.com>
+	Fri, 11 May 2007 09:59:06 -0400
+Message-Id: <20070511135925.991425443@de.ibm.com>
+References: <20070511135827.393181482@de.ibm.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 11 May 2007 15:58:27 +0200
+Date: Fri, 11 May 2007 15:58:30 +0200
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: virtualization@lists.osdl.org, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org
 Cc: Zachary Amsden <zach@vmware.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Nick Piggin <npiggin@suse.de>, Hubertus Franke <frankeh@watson.ibm.com>,
-       Rik van Riel <riel@redhat.com>
-Subject: [patch 0/6] [rfc] guest page hinting version 5
+       Rik van Riel <riel@redhat.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 3/6] Guest page hinting: mlocked pages.
+Content-Disposition: inline; filename=003-hva-mlock.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After way to many months here is the fifth version of the guest page
-hinting patches. Compared to version four a few improvements have been
-added:
- - Avoid page_host_discards() calls outside of page-states.h
- - The discard list is now implemented via the page_free_discarded
-   hook and architecture specific code.
- - PG_state_change page flag has been replaced with architecture
-   specficic primitives. s390 now uses PG_arch_1 and avoids to waste
-   another page flag (it still uses two additional bits).
- - Add calls to make pages volatile when pages are moved from the
-   active to the inactive list and set max_buffer_heads to zero to
-   force a try_to_release_page call to get more page into volatile
-   state.
- - remap_file_pages now works with guest page hinting, although the
-   discard of a page contained in a non-linear mapping is slow.
- - Simplified the check in the mlock code.
- - In general the code looks a bit nicer now.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+From: Hubertus Franke <frankeh@watson.ibm.com>
+From: Himanshu Raj <rhim@cc.gatech.edu>
 
-I tried to implement batched state transitions to volatile but after
-a few failures I gave up. Basically, most pages are made volatile with
-the unlock_page call after the end of i/o. To postpone a make volatile
-attempt requires to take a page reference. Trouble is you can't release
-a page reference from interrupt context. This has to be done in task
-context, so we can't use a pvec/array for keep the references. There is
-no room in struct page for a list, so it turns out lazy make volatile
-is hard to implement.
+Add code to get mlock() working with guest page hinting. The problem
+with mlock is that locked pages may not be removed from page cache.
+That means they need to be stable. page_make_volatile needs a way to
+check if a page has been locked. To avoid traversing vma lists - which
+would hurt performance a lot - a field is added in the struct
+address_space. This field is set in mlock_fixup if a vma gets mlocked.
+The bit never gets removed - once a file had an mlocked vma all future
+pages added to it will stay stable.
 
-The patches apply on the current git tree.
+The pages of an mlocked area are made present in the linux page table by
+a call to make_pages_present which calls get_user_pages and follow_page.
+The follow_page function is called for each page in the mlocked vma,
+if the VM_LOCKED bit in the vma flags is set the page is made stable.
 
-Many thanks go to Oliver Paukstadt who kept me busy with bug reports
-and uncountable dumps ..
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ include/linux/fs.h |   10 ++++++++++
+ mm/memory.c        |    5 +++--
+ mm/mlock.c         |    2 ++
+ mm/page-states.c   |    5 ++++-
+ mm/rmap.c          |   13 +++++++++++--
+ 5 files changed, 30 insertions(+), 5 deletions(-)
+
+diff -urpN linux-2.6/include/linux/fs.h linux-2.6-patched/include/linux/fs.h
+--- linux-2.6/include/linux/fs.h	2007-05-09 09:32:22.000000000 +0200
++++ linux-2.6-patched/include/linux/fs.h	2007-05-11 15:52:16.000000000 +0200
+@@ -450,6 +450,9 @@ struct address_space {
+ 	spinlock_t		private_lock;	/* for use by the address_space */
+ 	struct list_head	private_list;	/* ditto */
+ 	struct address_space	*assoc_mapping;	/* ditto */
++#ifdef CONFIG_PAGE_STATES
++	unsigned int		mlocked;	/* set if VM_LOCKED vmas present */
++#endif
+ } __attribute__((aligned(sizeof(long))));
+ 	/*
+ 	 * On most architectures that alignment is already the case; but
+@@ -457,6 +460,13 @@ struct address_space {
+ 	 * of struct page's "mapping" pointer be used for PAGE_MAPPING_ANON.
+ 	 */
+ 
++static inline void mapping_set_mlocked(struct address_space *mapping)
++{
++#ifdef CONFIG_PAGE_STATES
++	mapping->mlocked = 1;
++#endif
++}
++
+ struct block_device {
+ 	dev_t			bd_dev;  /* not a kdev_t - it's a search key */
+ 	struct inode *		bd_inode;	/* will die */
+diff -urpN linux-2.6/mm/memory.c linux-2.6-patched/mm/memory.c
+--- linux-2.6/mm/memory.c	2007-05-11 15:52:16.000000000 +0200
++++ linux-2.6-patched/mm/memory.c	2007-05-11 15:52:16.000000000 +0200
+@@ -981,9 +981,10 @@ struct page *follow_page(struct vm_area_
+ 	if (flags & FOLL_GET)
+ 		get_page(page);
+ 
+-	if (flags & FOLL_GET) {
++	if ((flags & FOLL_GET) || (vma->vm_flags & VM_LOCKED)) {
+ 		/*
+-		 * The page is made stable if a reference is acquired.
++		 * The page is made stable if a reference is acquired or
++		 * the vm area is locked.
+ 		 * If the caller does not get a reference it implies that
+ 		 * the caller can deal with page faults in case the page
+ 		 * is swapped out. In this case the caller can deal with
+diff -urpN linux-2.6/mm/mlock.c linux-2.6-patched/mm/mlock.c
+--- linux-2.6/mm/mlock.c	2007-04-02 17:11:20.000000000 +0200
++++ linux-2.6-patched/mm/mlock.c	2007-05-11 15:52:16.000000000 +0200
+@@ -60,6 +60,8 @@ success:
+ 	 */
+ 	pages = (end - start) >> PAGE_SHIFT;
+ 	if (newflags & VM_LOCKED) {
++		if (vma->vm_file && vma->vm_file->f_mapping)
++			mapping_set_mlocked(vma->vm_file->f_mapping);
+ 		pages = -pages;
+ 		if (!(newflags & VM_IO))
+ 			ret = make_pages_present(start, end);
+diff -urpN linux-2.6/mm/page-states.c linux-2.6-patched/mm/page-states.c
+--- linux-2.6/mm/page-states.c	2007-05-11 15:52:16.000000000 +0200
++++ linux-2.6-patched/mm/page-states.c	2007-05-11 15:52:16.000000000 +0200
+@@ -29,6 +29,8 @@
+  */
+ static inline int check_bits(struct page *page)
+ {
++	struct address_space *mapping;
++
+ 	/*
+ 	 * There are several conditions that prevent a page from becoming
+ 	 * volatile. The first check is for the page bits.
+@@ -44,7 +46,8 @@ static inline int check_bits(struct page
+ 	 * it volatile. It will be freed soon. And if the mapping ever
+ 	 * had locked pages all pages of the mapping will stay stable.
+ 	 */
+-	return page_mapping(page) != NULL;
++	mapping = page_mapping(page);
++	return mapping && !mapping->mlocked;
+ }
+ 
+ /*
+diff -urpN linux-2.6/mm/rmap.c linux-2.6-patched/mm/rmap.c
+--- linux-2.6/mm/rmap.c	2007-05-11 15:52:16.000000000 +0200
++++ linux-2.6-patched/mm/rmap.c	2007-05-11 15:52:16.000000000 +0200
+@@ -654,8 +654,17 @@ static int try_to_unmap_one(struct page 
+ 	 */
+ 	if (!migration && ((vma->vm_flags & VM_LOCKED) ||
+ 			(ptep_clear_flush_young(vma, address, pte)))) {
+-		ret = SWAP_FAIL;
+-		goto out_unmap;
++		/*
++		 * Check for discarded pages. This can happen if there have
++		 * been discarded pages before a vma gets mlocked. The code
++		 * in make_pages_present will force all discarded pages out
++		 * and reload them. That happens after the VM_LOCKED bit
++		 * has been set.
++		 */
++		if (likely(!PageDiscarded(page))) {
++			ret = SWAP_FAIL;
++			goto out_unmap;
++		}
+ 	}
+ 
+ 	/* Nuke the page table entry. */
 
 -- 
 blue skies,
-  Martin.
+   Martin.
 
 "Reality continues to ruin my life." - Calvin.
 
