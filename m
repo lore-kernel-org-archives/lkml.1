@@ -1,51 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933213AbXEKUSh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933604AbXEKUVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933213AbXEKUSh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:18:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757235AbXEKUSa
+	id S933604AbXEKUVR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758977AbXEKUVH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:18:30 -0400
-Received: from twin.jikos.cz ([213.151.79.26]:58963 "EHLO twin.jikos.cz"
+	Fri, 11 May 2007 16:21:07 -0400
+Received: from mail.screens.ru ([213.234.233.54]:56746 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754979AbXEKUS3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:18:29 -0400
-Date: Fri, 11 May 2007 22:18:16 +0200 (CEST)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
+	id S1754979AbXEKUVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 16:21:06 -0400
+Date: Sat, 12 May 2007 00:21:02 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Jan Kratochvil <honza@jikos.cz>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][RESEND] PIE randomization
-In-Reply-To: <20070511125629.3df919cf.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705112211440.16923@twin.jikos.cz>
-References: <alpine.LRH.0.98.0705111338230.22353@twin.jikos.cz>
- <20070511125629.3df919cf.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Gautham R Shenoy <ego@in.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
+Message-ID: <20070511202102.GA155@tv-sign.ru>
+References: <200705110035.32229.rjw@sisk.pl> <200705110036.26617.rjw@sisk.pl> <20070511123959.190adfaf.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070511123959.190adfaf.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 May 2007, Andrew Morton wrote:
+On 05/11, Andrew Morton wrote:
+>
+> On Fri, 11 May 2007 00:36:25 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> 
+> >  static inline int is_user_space(struct task_struct *p)
+> >  {
+> > -	return p->mm && !(p->flags & PF_BORROWED_MM);
+> > +	int ret;
+> > +
+> > +	task_lock(p);
+> > +	ret = p->mm && !(p->flags & PF_BORROWED_MM);
+> > +	task_unlock(p);
+> > +	return ret;
+> >  }
+> 
+> The whole function is racy, isn't it?  I mean, the condition which it is
+> testing can go from true->false or false->true at any instant after this
+> function returns its now-wrong value.
+> 
+> iow, callers of this function need to to something to prevent the expression
+> `p->mm && !(p->flags & PF_BORROWED_MM);' from changing value _anyway_.  In
+> which case the new locking is not needed?
 
-> >    I sent this patch 5 days ago, nobody replied. So I am giving it 
-> > second attempt. Andrew, is it possible to test this in -mm branch? 
-> > Original mail follows:
-> >     this is something like reaction to this thread: 
-> > http://lkml.org/lkml/2007/1/6/124. I hope I was able to separate the 
-> > PIE randomization part correctly.
-> I don't know what to do with this.  The changelog doesn't tell me what PIE
-> randomization _is_, nor why the kernel would want to do it. "Randomizing 
-> -pie compiled binaries" sounds fairly undesirable, actually ;)
+freeze_processes() first freezes user-space tasks only, then kernel threads.
 
-I think it's precisely what we want to do in case the randomize_va_space 
-is set to 1, don't we? (I haven't yet gone throught the patch though, so I 
-am not sure whether this is the case).
+Without task_lock() we can miss PF_BORROWED_MM and count the kernel thread
+(which is doing use_mm()) as a user space process. This means it will be
+frozen prematurely.
 
-We already have stack randomization and mmap() base randomization but 
-executable base randomization (which is of course only feasible for -pie 
-executables) and brk() randomization still seem to be missing to make it 
-complete.
+true->false means daemonize() or do_exit(), seems harmless.
 
--- 
-Jiri Kosina
-SUSE Labs
+false->true means exec from kernel space. That is why FREEZER_KERNEL_THREADS
+in fact means all tasks, not only kernel threads.
+
+Oleg.
+
