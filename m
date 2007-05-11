@@ -1,87 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760868AbXEKNiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759858AbXEKNmn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760868AbXEKNiA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 09:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbXEKNhx
+	id S1759858AbXEKNmn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 09:42:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbXEKNmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 09:37:53 -0400
-Received: from smtp5-g19.free.fr ([212.27.42.35]:57993 "EHLO smtp5-g19.free.fr"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750888AbXEKNhw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 09:37:52 -0400
-Message-ID: <1178890671.464471af1bd04@imp.free.fr>
-Date: Fri, 11 May 2007 15:37:51 +0200
-From: Remi Colinet <remi.colinet@free.fr>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@mail.ru>
-Subject: Re: Regression in 2.6.21-mm1 (git-input) on Dell D610 laptop
-References: <1178802325.46431895e9469@imp.free.fr> <20070510185021.c3d28048.akpm@linux-foundation.org>
-In-Reply-To: <20070510185021.c3d28048.akpm@linux-foundation.org>
+	Fri, 11 May 2007 09:42:37 -0400
+Received: from nwd2mail11.analog.com ([137.71.25.57]:44211 "EHLO
+	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbXEKNmg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 09:42:36 -0400
+X-IronPort-AV: i="4.14,523,1170651600"; 
+   d="scan'208"; a="29669039:sNHT23300900"
+From: Robin Getz <rgetz@blackfin.uclinux.org>
+Organization: Blackfin uClinux org
+To: "Chris Smith" <smitty1elkml@gmail.com>
+Subject: Re: [RFC] - LXR on kernel.org ? was: Re: What tools to use?
+Date: Fri, 11 May 2007 09:44:56 -0400
+User-Agent: KMail/1.9.5
+Cc: "Arne Georg Gleditsch" <argggh@dolphinics.no>, devzero@web.de,
+       linux-kernel@vger.kernel.org, jcm@redhat.com
+References: <1783741195@web.de> <873b23ivr2.fsf@pelargir.dolphinics.no> <9b53a56d0705110525o336eb0b8sb963d95608c94b9@mail.gmail.com>
+In-Reply-To: <9b53a56d0705110525o336eb0b8sb963d95608c94b9@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-User-Agent: Internet Messaging Program (IMP) 3.2.5
-X-Originating-IP: 81.255.27.251
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705110944.56699.rgetz@blackfin.uclinux.org>
+X-OriginalArrivalTime: 11 May 2007 13:42:34.0505 (UTC) FILETIME=[3AF74F90:01C793D2]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Selon Andrew Morton <akpm@linux-foundation.org>:
-
-> On Thu, 10 May 2007 15:05:25 +0200
-> Remi Colinet <remi.colinet@free.fr> wrote:
+On Fri 11 May 2007 08:25, Chris Smith pondered:
 >
-> > My D610 ALPS Glide Point is unresponsive with 2.6.21-mm1 patch.
-> > No problem noticed with 2.6.21.
-> >
-> > The culprit seems to be git-input. I have applied 2.6.21-mm1 on top of
-> 2.6.21
-> > and then removed git-input patch. It is ok since then.
-> >
-> > >From what i can see, no interrupt is raised from the GlidePoint with
-> git-input
-> > applied. IRQ count 12 does not increase. It is when using the touchpad.
-> >
-> >            CPU0
-> >   0:        160   IO-APIC-edge      timer
-> >   1:        935   IO-APIC-edge      i8042
-> >   7:          0   IO-APIC-edge      parport0
-> >   8:          1   IO-APIC-edge      rtc
-> >   9:          2   IO-APIC-fasteoi   acpi
-> > => 12:        114   IO-APIC-edge      i8042 <=
-> >  14:       3223   IO-APIC-edge      libata
-> >  15:          5   IO-APIC-edge      libata
-> >  16:          0   IO-APIC-fasteoi   uhci_hcd:usb1, ehci_hcd:usb5, Intel
-> ICH6
-> >  17:          1   IO-APIC-fasteoi   uhci_hcd:usb2, ipw2200, Intel ICH6
-> Modem
-> >  18:          0   IO-APIC-fasteoi   uhci_hcd:usb3
-> >  19:          1   IO-APIC-fasteoi   uhci_hcd:usb4, yenta
-> > NMI:          0
-> > LOC:       4051
-> > ERR:          0
-> > MIS:          0
-> >
-> > I have also tried to disable the ALPS driver in the .config file. IRQ 12
-> are
-> > then raised when using the Glide Point. X refuses to start.
-> >
->
-> Are you able to test 2.6.21-mm2?
->
->
+> Now, if you merged the beauty of LXR with the wiki goodness of
+> kernelnewbies.org, and somehow kept it current <waves hands> that
+> could be cool.
+> --
 
-I have tried with the lastest mm broken-out snapshot, i.e 2.6.21-mm3.
-The GlidePoint is still unresponsive.
+We made a plugin to dokukwiki - that grabs our maintained kernel source from 
+our scm system, and display it in our wiki. It helps to see the text 
+explanation, and the actual up todate code. (no maintenance when code is 
+updated) It also automatically inserts some links to the scm web interface.
 
-2.6.21-git13 works fine with the GlidePoint.
+An example is at here:
+http://docs.blackfin.uclinux.org/doku.php?id=interrupts#interrupt_discovery
 
-So I'am bisecting 2.6.21-mm3. It works just with the origin.patch applied.
+Things to do:
+ - doesn't support git today - but should be a trivial change
+ - links to lxr - again pretty trivial
+ - write a cron that goes through the wiki source daily, poking someone to 
+check the wiki text when the source changes.
 
-Thanks,
-Remi Colinet
-
-
-
-
-
-
+-Robin
