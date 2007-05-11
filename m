@@ -1,44 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762412AbXEKUst@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762199AbXEKUwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762412AbXEKUst (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:48:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758807AbXEKUsn
+	id S1762199AbXEKUwU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758987AbXEKUwN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:48:43 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:42453 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757310AbXEKUsn (ORCPT
+	Fri, 11 May 2007 16:52:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34945
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758807AbXEKUwM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:48:43 -0400
-Date: Fri, 11 May 2007 13:48:52 -0700
-From: Paul Jackson <pj@sgi.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: bas.westerbaan@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Conveying memory pressure to userspace?
-Message-Id: <20070511134852.86b70cd1.pj@sgi.com>
-In-Reply-To: <Pine.LNX.4.64.0705111005200.32716@schroedinger.engr.sgi.com>
-References: <6880bed30705101756nb5bd0c5s97935b97d07f846a@mail.gmail.com>
-	<Pine.LNX.4.64.0705111005200.32716@schroedinger.engr.sgi.com>
-Organization: SGI
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+	Fri, 11 May 2007 16:52:12 -0400
+Date: Fri, 11 May 2007 13:52:16 -0700 (PDT)
+Message-Id: <20070511.135216.18304801.davem@davemloft.net>
+To: simon@fire.lp0.eu
+Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] spelling fixes: arch/sparc/
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <4644C760.8050007@simon.arlott.org.uk>
+References: <4644C760.8050007@simon.arlott.org.uk>
+X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph wrote:
-> cpusets export a notion of memory pressure to user space. See the cpusets 
-> documentation.
+From: Simon Arlott <simon@fire.lp0.eu>
+Date: Fri, 11 May 2007 20:43:28 +0100
 
-If the special cpuset file 'memory_pressure_enabled' is turned on (echo
-'1' to it) in the top cpuset, then the special cpuset file
-'memory_pressure' that is in all cpusets provides a measure of the rate
-of recent page allocation requests by tasks in each cpuset that were
-not easily granted off the free list, requiring more aggressive kernel
-effort to free up some pages to meet the request.
+> Spelling fixes in arch/sparc/.
+> 
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 
--- 
-                  I won't rest till it's the best ...
-                  Programmer, Linux Scalability
-                  Paul Jackson <pj@sgi.com> 1.925.600.0401
+Applied.
