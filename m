@@ -1,49 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762803AbXEKUai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964784AbXEKUcd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762803AbXEKUai (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758914AbXEKUab
+	id S964784AbXEKUcd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:32:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757472AbXEKUc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:30:31 -0400
-Received: from mta11.adelphia.net ([68.168.78.205]:46901 "EHLO
-	mta11.adelphia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758807AbXEKUab (ORCPT
+	Fri, 11 May 2007 16:32:26 -0400
+Received: from outbound-blu.frontbridge.com ([65.55.251.16]:5098 "EHLO
+	outbound2-blu-R.bigfish.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756096AbXEKUc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:30:31 -0400
-Message-ID: <4644D264.3090200@acm.org>
-Date: Fri, 11 May 2007 15:30:28 -0500
-From: Corey Minyard <minyard@acm.org>
-User-Agent: Icedove 1.5.0.10 (X11/20070328)
+	Fri, 11 May 2007 16:32:26 -0400
+X-BigFish: VP
+Message-ID: <4644D2D6.6030508@am.sony.com>
+Date: Fri, 11 May 2007 13:32:22 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Patrick Schoeller <Patrick.Schoeller@hp.com>
-Subject: Re: [PATCH] IPMI: fix SI address space settings
-References: <20070511125616.GA6422@localdomain> <20070511125929.7000f9d8.akpm@linux-foundation.org>
-In-Reply-To: <20070511125929.7000f9d8.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Simon Arlott <simon@fire.lp0.eu>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, trivial@kernel.org
+Subject: Re: [PATCH] spelling fixes: arch/powerpc/
+References: <4644C734.3000303@simon.arlott.org.uk>
+In-Reply-To: <4644C734.3000303@simon.arlott.org.uk>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 11 May 2007 20:32:23.0101 (UTC) FILETIME=[7AE94ED0:01C7940B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Fri, 11 May 2007 07:56:16 -0500
-> Corey Minyard <minyard@acm.org> wrote:
->
->   
->> Fix a rather obvious error that Patrick found in the setup routines.
->> Need to set the proper address space in the ACPI case.
->>     
->
-> I have assumed that both these fixes are desired in 2.6.21.x.
->   
-The ACPI fix can go to 2.6.21.x.
+Simon Arlott wrote:
+> Spelling fixes in arch/powerpc/.
+> 
+> Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 
-The PPC openfirmware one is a fix for a patch that just went in for 
-2.6.22.  So that one doesn't need to be put in 2.6.21.x.
-> In general, it helps if people can think about that and express an
-> explicit opinion when sending fixes, please.
->   
-Will do.  Thanks.
+>  arch/powerpc/platforms/ps3/interrupt.c          |    2 +-
+>  arch/powerpc/platforms/ps3/mm.c                 |    6 +++---
+>  arch/powerpc/platforms/ps3/os-area.c            |    4 ++--
+>  arch/powerpc/platforms/ps3/platform.h           |    4 ++--
 
--corey
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+
