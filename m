@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758340AbXEKIdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757722AbXEKIf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758340AbXEKIdn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 04:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753153AbXEKIde
+	id S1757722AbXEKIf1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 04:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXEKIfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 04:33:34 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52374 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751602AbXEKIdd (ORCPT
+	Fri, 11 May 2007 04:35:20 -0400
+Received: from nz-out-0506.google.com ([64.233.162.237]:14982 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753995AbXEKIfT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 04:33:33 -0400
-Date: Fri, 11 May 2007 01:33:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Frederik Deweerdt <deweerdt@free.fr>
-Cc: linux-kernel@vger.kernel.org, jorge@laser.satlink.net, agulbra@nvg.unit.no,
-       netdev@vger.kernel.org, David Howells <dhowells@redhat.com>
-Subject: Re: [-mm patch] make csum_and_copy_from_user arch independent (was
- Re: 2.6.21-mm2)
-Message-Id: <20070511013317.3c6441f3.akpm@linux-foundation.org>
-In-Reply-To: <20070511082738.GA23560@slug>
-References: <20070509012322.199f292b.akpm@linux-foundation.org>
-	<20070511082738.GA23560@slug>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 11 May 2007 04:35:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Zm0Aa8XoReMjG3pOOWiYUO50JGuJ0aGzf/L7zHWkTzkTuxZFl5xh4etsAcad5eGGPp1Q/28fPtFUOyFeMukCwMf0Y7UD9CG6k+bnktKq0K+dEKYfLGvYFn5E6xJJWOUtQSq5wpHE1a2d6rC4UIpteFjKFNhvv+dPgcaryyUp/NE=
+Message-ID: <9a8748490705110135k14599ac1n46b33817df8ffbcc@mail.gmail.com>
+Date: Fri, 11 May 2007 10:35:18 +0200
+From: "Jesper Juhl" <jesper.juhl@gmail.com>
+To: "devzero@web.de" <devzero@web.de>
+Subject: Re: [RFC] - LXR on kernel.org ? was: Re: What tools to use?
+Cc: linux-kernel@vger.kernel.org, jcm@redhat.com
+In-Reply-To: <1783741195@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1783741195@web.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 May 2007 10:27:38 +0200 Frederik Deweerdt <deweerdt@free.fr> wrote:
+On 11/05/07, devzero@web.de <devzero@web.de> wrote:
+> Hi !
+>
+> I like lxr pretty much.
+> i`m not a programmer, but i often need some information on "what`s the driver version of xyz in latest kernel" or "was this or that feature/patch already being merged" or "i have this line of code in kernel - how does it look in recent kernel , did it change " ?
+>
 
-> On Wed, May 09, 2007 at 01:23:22AM -0700, Andrew Morton wrote:
-> > 
-> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm2/
-> > 
-> 
-> ERROR: "csum_partial_copy_from_user" [net/rxrpc/af-rxrpc.ko] undefined!
-> 
-> Linking on ARM fails because albeit a generic csum_and_copy_from_user()
-> function is provided in the case ! _HAVE_ARCH_COPY_AND_CSUM_FROM_USER, the
-> generic function uses csum_partial_copy_from_user() which is i386 only.
-> 
-> The following patch uses copy_from_user() followed by csum_partial()
-> to make the function platform independent.
-> 
-> Regards,
-> Frederik
-> 
-> Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
-> 
-> diff --git a/include/net/checksum.h b/include/net/checksum.h
-> index 1242461..2eebb95 100644
-> --- a/include/net/checksum.h
-> +++ b/include/net/checksum.h
-> @@ -30,13 +30,16 @@ static inline
->  __wsum csum_and_copy_from_user (const void __user *src, void *dst,
->  				      int len, __wsum sum, int *err_ptr)
->  {
-> -	if (access_ok(VERIFY_READ, src, len))
-> -		return csum_partial_copy_from_user(src, dst, len, sum, err_ptr);
-> +	if (access_ok(VERIFY_READ, src, len)) {
-> +		if (copy_from_user(dst, src, len))
-> +			return -EFAULT;
-> +		return csum_partial(dst, len, sum);
-> +	}
->  
->  	if (len)
->  		*err_ptr = -EFAULT;
->  
-> -	return sum;
-> +	return (__force __wsum)-1; /* invalid checksum */
->  }
->  #endif
->  
+Some of this is often easier to find through git.
+See http://linux.yyz.us/git-howto.html and
+http://git.kernel.org/?p=linux%2Fkernel%2Fgit%2Ftorvalds%2Flinux-2.6.git;a=summary
 
-hm.  Please cc netdev on net patches.
+
+-- 
+Jesper Juhl <jesper.juhl@gmail.com>
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+Plain text mails only, please      http://www.expita.com/nomime.html
