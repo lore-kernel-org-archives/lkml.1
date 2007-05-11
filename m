@@ -1,54 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761024AbXEKGNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbXEKGPK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761024AbXEKGNz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 02:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756931AbXEKGNs
+	id S1761601AbXEKGPK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 02:15:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758333AbXEKGOy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 02:13:48 -0400
-Received: from smtp101.sbc.mail.mud.yahoo.com ([68.142.198.200]:28559 "HELO
-	smtp101.sbc.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755046AbXEKGNr (ORCPT
+	Fri, 11 May 2007 02:14:54 -0400
+Received: from smtp108.mail.mud.yahoo.com ([209.191.85.218]:40402 "HELO
+	smtp108.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755046AbXEKGOx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 02:13:47 -0400
+	Fri, 11 May 2007 02:14:53 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=kMLGIjNc8qMAGztGlRbgoC29RvU/HMQvRaMovpBxQUaxLhHQ5DQ4X4FEzEjlRN/lWLoWJp4s3f2tl0fd7BMhCfCgj9DyxAhoJnaWHB8WH77cjdraJkniAClMABqK+FS+BRtMqhUDE5UjhBYRAwuAKEVMro6xluFrJ1xIwtIJaro=  ;
-X-YMail-OSG: ywV6tkUVM1liGnnCemPgKlSEuk0gvhZBwOPX5tfqFzAQDJn3j8FQN5n89DLv0ICxNa9T7bYtyQ--
-From: David Brownell <david-b@pacbell.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCHv2] at91: fix enable/disable_irq_wake symmetry in pcmcia driver
-Date: Thu, 10 May 2007 23:01:56 -0700
-User-Agent: KMail/1.9.6
-Cc: Marc Pignat <marc.pignat@hevs.ch>, andrew@sanpeople.com,
-       linux-kernel@vger.kernel.org
-References: <200705101009.36302.marc.pignat@hevs.ch> <20070510152636.4adb3ef1.akpm@linux-foundation.org>
-In-Reply-To: <20070510152636.4adb3ef1.akpm@linux-foundation.org>
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:Message-ID:Date:From:User-Agent:X-Accept-Language:MIME-Version:To:CC:Subject:References:In-Reply-To:Content-Type:Content-Transfer-Encoding;
+  b=4ODe0HUh48bTeo99wNT7rHbN0ziqimUsPKM1bC1iJf9lHFNXMtSh+UlRGnaGrSbdvguR/LVhobp253EPquxQnsG1ZE9OmDJplFgoMcVRYNwf5w1Ht7HGU2KybYzKxo5argkgVjgBFHNpMP1++rBuW2kLnCrx8hsb3CGMyHoKdtE=  ;
+X-YMail-OSG: PxR0UxkVM1nA84qAnc4cAbL3ffDid0wbrOx5XCz39h_eVyaazS5sm6FpKMFK7WRQ0QxBlB8Ojg--
+Message-ID: <464409CF.4090203@yahoo.com.au>
+Date: Fri, 11 May 2007 16:14:39 +1000
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.7.12) Gecko/20051007 Debian/1.7.12-1
+X-Accept-Language: en
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: David Howells <dhowells@redhat.com>
+CC: akpm@osdl.org, netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH 3/3] AFS: Implement basic file write support
+References: <46425C55.6050000@yahoo.com.au> <20070508194358.27477.74888.stgit@warthog.cambridge.redhat.com> <20070508194411.27477.7552.stgit@warthog.cambridge.redhat.com> <27482.1178790992@warthog.cambridge.redhat.com>
+In-Reply-To: <27482.1178790992@warthog.cambridge.redhat.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705102301.56964.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 10 May 2007, Andrew Morton wrote:
+David Howells wrote:
+> Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> 
+> 
+>>Why do you call SetPageUptodate when the page is not up to date?
+>>That leaks uninitialised data, AFAIKS.
+> 
+> 
+> It only seems that way.  If afs_prepare_write() is called, but doesn't return
+> an error, then afs_commit_write() will be called, and it seems that the copy
+> in of the data will be guaranteed not to fail by the caller.
 
-> "disable_irq_wake call must be symmetric with enable_irq_wake".  hmm, OK,
-> I'll take your word for it.
-
-In the same way that enable_irq() and disable_irq() must be matched,
-and for the same reasons:  when the IRQ is shared between drivers,
-they can't all treat enable/disable status as boolean.  Those calls
-mask refcountig.
-
-
-> Does the present code actually fail in some manner, or what?
-
-Yes ... runtime warnings flagging various misbehaviors associated
-with refcount mismatches.
-
-- Dave
+Not only does it seem that way, it is that way :) PG_uptodate is being set
+when the page is not uptodate, isn't it?
 
 
+> Furthermore, afs_prepare_page() will have filled in the missing bits.
+> 
+> And whilst all that is going on, the page lock will be help by the caller, so
+> that no-one else can access the partially complete page.
+
+When a page is uptodate in pagecache, the generic read and nopage functions
+do not take the page lock. So how are you excluding those?
+
+-- 
+SUSE Labs, Novell Inc.
