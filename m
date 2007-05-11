@@ -1,101 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760145AbXEKOib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761192AbXEKOl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760145AbXEKOib (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 10:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757585AbXEKOiY
+	id S1761192AbXEKOl5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 10:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757970AbXEKOlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 10:38:24 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35336 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754297AbXEKOiY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 10:38:24 -0400
-Date: Fri, 11 May 2007 15:40:09 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Rusty Russell <rusty@rustcorp.com.au>, bunk@stusta.de,
-       randy.dunlap@oracle.com, akpm@linux-foundation.org,
-       rpjday@mindspring.com, marcel@holtmann.org, hch@infradead.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] module_author: don't advice putting in an email address
-Message-ID: <20070511154009.50c8bae0@the-village.bc.nu>
-In-Reply-To: <46447ABF.3000004@gmail.com>
-References: <4643BDF2.9030105@gmail.com>
-	<20070511114605.4c2698ec@the-village.bc.nu>
-	<46447ABF.3000004@gmail.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Fri, 11 May 2007 10:41:51 -0400
+Received: from mail.screens.ru ([213.234.233.54]:58527 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755906AbXEKOlu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 10:41:50 -0400
+Date: Fri, 11 May 2007 17:47:14 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+Message-ID: <20070511134714.GA191@tv-sign.ru>
+References: <20070503204226.GA212@tv-sign.ru> <464475EB.3000408@gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <464475EB.3000408@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Whether someone puts their email address into the entry is their own
-> > business. We do not need a style police for module author entries.
+On 05/11, Tejun Heo wrote:
 > 
-> This particular patch just deletes the _advice_ to add an address; if you'd 
-> consider it a style issue, you shouldn't be objecting.
-
-We should merely advise that the address be reliable and long term
+> Oleg Nesterov wrote:
+> > +	/*
+> > +	 * Ensure that we get the right work->data if we see the
+> > +	 * result of list_add() below, see try_to_grab_pending().
+> > +	 */
+> > +	smp_wmb();
 > 
-> But it's not a style issue. It's solving a problem. The adresses from this 
-> tag are the only addresses available from the binary and as such are 
-> mistaken for maintainer/general contact addresses which they often are not.
+> I don't think we need this
+> 
+> > +	if (!list_empty(&work->entry)) {
+> > +		/*
+> > +		 * This work is queued, but perhaps we locked the wrong cwq.
+> > +		 * In that case we must see the new value after rmb(), see
+> > +		 * insert_work()->wmb().
+> > +		 */
+> > +		smp_rmb();
+> > +		if (cwq == get_wq_data(work)) {
+> > +			list_del_init(&work->entry);
+> > +			ret = 1;
+> > +		}
+> 
+> and this.  After grabbing cwq lock, compare it to get_wq_data() first,
+> if they are the same, both are using the same lock so there's no
+> reason for the barriers.  If they are different, it doesn't matter
+> anyway.  We need to retry the locking.
 
-Which is why you want MODULE_MAINTAINER()
+I think this is not right. The problem is that work->data (its
+WORK_STRUCT_WQ_DATA_MASK part, cwq) could be changed _without_ holding
+the old cwq->lock.
 
-> contacted for the driver. Giving that MODULE_MAINTAINER was concluded to not 
-> be a good idea
+Suppose that CPU_0 does queue_delayed_work(dwork). We start the timer,
+work->data points to cwq_0. CPU_DEAD comes, the timer migrates to
+CPU_1, but work->data was not changed yet.
 
-Not my fault, not my problem, take it back up with the objectors
+>   retry:
+> 	cwq = get_sw_data(work);
+> 	if (!cwq)
+> 		return ret;
+> 
+> 	spin_lock_irq(&cwq->lock);
+> 	if (unlikely(cwq != get_wq_data(work))) {
+> 		/* oops wrong cwq */
+> 		spin_unlock_irq(&cwq->lock);
+> 		goto retry;	/* or just return 0; */
+> 	}
 
-> Then the next issue is email addresses getting outdated. I've had my share 
-> of bug reports both bounce and not bounce but just not getting any reply and 
-> I can assure you it's the kind of frustrating experience that makes you just 
-> stop trying. From source and/or MAINTAINERS file they can be deleted but 
-> they can't ofcourse from the binary installs on user machines. Even the 
-> person listed can't do that, which is issue 3.
+dwork->timer fires, delayed_work_timer_fn() changes work->data to cwq_1
+and queues this work on cwq_1.
 
-The source tree on the users box has the same problem. The author also
-can't update the kernel rpm packages provided by the distibutor where
-99.99% of the users get their data.
+> 	if (!list_empty(&work->entry)) {
+> 		list_del_init(&work->entry);
 
-> You earlier objected to removing the MODULE_AUTHOR tag outright on legal 
-> grounds but you yourself are one of the people using only a name and not an 
-> address in the tag. In fact, most of the core contributors are, so I assume 
-> you don't have that same objection again.
+Oops! we are holding cwq_0->lock, but modify cwq_1->worklist.
 
-I have no problem with people using name only, or name and email. Its
-not my problem what they use.
+Actually, we have the same problem with a plain queue_work() if _cpu_down()
+comes at "right" time.
 
-> My specific angle is old PC hardware where the drivers have outlived their 
-> authors (various ISA junk, legacy CD-ROM, what have you) where I or some 
-> other newbie might want to take on maintainership of a driver. I can add 
-> myself to MAINTAINERS but not to binary installs, and in fact even on a 
-> source level the addresses from the MODULE_AUTHOR tag confuse the issue of 
-> who's responsibe for the thing.
+However, I agree, this smp_wmb() in insert_work() should die. We can
+introduce "smp_mb__before_spinlock()" (no-op on x86 at least) to kill it.
 
-You can update the current tree in both cases. You can update neither
-source nor binary of an existing release. Your argument is bogus.
+> > + * It is possible to use this function if the work re-queues itself. It can
+> > + * cancel the work even if it migrates to another workqueue, however in that
+> > + * case it only garantees that work->func() has completed on the last queued
+> > + * workqueue.
+> 
+> We first prevent requeueing from happening; then, wait for each cwq to
+> finish the work, so I think we're guaranteed that they're finished on
+> all cpus.  Otherwise, the 'sync' part isn't too useful as it means all
+> rearming tasks might be running on completion of cancel_work_sync().
 
-> This specific problem of mine would be solved by me just deleting the 
-> addresses from the specific drivers I'm interested in and just not bothering 
-> with anything else. This means the problems outlined above would just live 
-> on for everything else though and we happily continue to frustrate bug 
-> reporters and maintainers.
+Yes, sure, you are right. What I meant was:
 
-You can also solve the problem of bugs in drivers by deleting the driver.
-Both are equivalent neither are very smart.
+	struct workqueue_struct *WQ1, *WQ1;
 
-If you find a bogus maintainer entry email then update/remove it. That
-way the housekeeping gets done.
+	void work_func(struct work_struct *self)
+	{
+		// migrate on another workqueue
+		queue_work(WQ2, self);
 
-> Finally, at the very, very least the advice to add more future problems 
-> should be killed and that's the only thing _this_ particular patch does.
+		do_something();
+	}
 
-Adding new drivers causes future problems, lets stop that too ?
+	queue_work(WQ1, work);
 
-Email addresses in modules are often useful as well - they have utility
-just like a new driver does. You don't get one without the other.
+Now, cancel_work_sync() can't guarantee that this work has finished
+its execution on WQ1.
 
-Alan
+Thanks for looking at this!
+
+Oleg.
+
