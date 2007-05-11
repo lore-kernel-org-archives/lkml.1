@@ -1,107 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965816AbXEKTMZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966104AbXEKTMo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965816AbXEKTMZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:12:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759548AbXEKTKH
+	id S966104AbXEKTMo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:12:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763117AbXEKTKP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:10:07 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:60103 "EHLO
+	Fri, 11 May 2007 15:10:15 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:60109 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760122AbXEKTKE (ORCPT
+	with ESMTP id S1761603AbXEKTKN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:10:04 -0400
-Message-Id: <20070511001159.996613000@goop.org>
+	Fri, 11 May 2007 15:10:13 -0400
+Message-Id: <20070511001155.200690000@goop.org>
 References: <20070511000643.025196000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:06:53 -0700
+Date: Thu, 10 May 2007 17:06:44 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       ebiederm@xmission.com ("Eric W. Biederman")
-Subject: [patch 10/28]xen: ignore RW mapping of RO pages in pagetable_init
-Content-Disposition: inline; filename=xen-pagetable_init-ignore-ro-mappings.patch
+       Ian Pratt <ian.pratt@xensource.com>,
+       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
+       "Jan Beulich" <JBeulich@novell.com>, "Andi Kleen" <ak@muc.de>
+Subject: [patch 01/28]xen: Allocate and free vmalloc areas
+Content-Disposition: inline; filename=alloc-vm-area.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When setting up the initial pagetable, which includes mappings of all
-low physical memory, ignore a mapping which tries to set the RW bit on
-an RO pte.  An RO pte indicates a page which is part of the current
-pagetable, and so it cannot be allowed to become RW.
-
-Once xen_pagetable_setup_done is called, set_pte reverts to its normal
-behaviour.
+Allocate/destroy a 'vmalloc' VM area: alloc_vm_area and free_vm_area
+The alloc function ensures that page tables are constructed for the
+region of kernel virtual address space and mapped into init_mm.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Acked-by: Chris Wright <chrisw@sous-sol.org>
-Cc: ebiederm@xmission.com (Eric W. Biederman)
+Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
+Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Cc: "Jan Beulich" <JBeulich@novell.com>
+Cc: "Andi Kleen" <ak@muc.de>
 
 ---
- arch/i386/xen/enlighten.c |   27 +++++++++++++++++++++++++--
- 1 file changed, 25 insertions(+), 2 deletions(-)
+ include/linux/vmalloc.h |    4 +++
+ mm/vmalloc.c            |   53 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 57 insertions(+)
 
 ===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -635,7 +635,7 @@ static void xen_write_cr3(unsigned long 
+--- a/include/linux/vmalloc.h
++++ b/include/linux/vmalloc.h
+@@ -69,6 +69,10 @@ extern int map_vm_area(struct vm_struct 
+ 			struct page ***pages);
+ extern void unmap_vm_area(struct vm_struct *area);
  
- /* Early in boot, while setting up the initial pagetable, assume
-    everything is pinned. */
--static void xen_alloc_pt_init(struct mm_struct *mm, u32 pfn)
-+static __init void xen_alloc_pt_init(struct mm_struct *mm, u32 pfn)
++/* Allocate/destroy a 'vmalloc' VM area. */
++extern struct vm_struct *alloc_vm_area(unsigned long size);
++extern void free_vm_area(struct vm_struct *area);
++
+ /*
+  *	Internals.  Dont't use..
+  */
+===================================================================
+--- a/mm/vmalloc.c
++++ b/mm/vmalloc.c
+@@ -762,3 +762,56 @@ void  __attribute__((weak)) vmalloc_sync
+ void  __attribute__((weak)) vmalloc_sync_all(void)
  {
- 	BUG_ON(mem_map);	/* should only be used early */
- 	make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
-@@ -687,9 +687,31 @@ static void *xen_kmap_atomic_pte(struct 
  }
- #endif
- 
-+static __init pte_t mask_rw_pte(pte_t *ptep, pte_t pte)
-+{
-+	/* If there's an existing pte, then don't allow _PAGE_RW to be set */
-+	if (pte_val_ma(*ptep) & _PAGE_PRESENT)
-+		pte = __pte_ma(((pte_val_ma(*ptep) & _PAGE_RW) | ~_PAGE_RW) &
-+			       pte_val_ma(pte));
 +
-+	return pte;
++
++static int f(pte_t *pte, struct page *pmd_page, unsigned long addr, void *data)
++{
++	/* apply_to_page_range() does all the hard work. */
++	return 0;
 +}
 +
-+/* Init-time set_pte while constructing initial pagetables, which
-+   doesn't allow RO pagetable pages to be remapped RW */
-+static __init void xen_set_pte_init(pte_t *ptep, pte_t pte)
++/**
++ *	alloc_vm_area - allocate a range of kernel address space
++ *	@size:		size of the area
++ *	@returns:	NULL on failure, vm_struct on success
++ *
++ *	This function reserves a range of kernel address space, and
++ *	allocates pagetables to map that range.  No actual mappings
++ *	are created.  If the kernel address space is not shared
++ *	between processes, it syncs the pagetable across all
++ *	processes.
++ */
++struct vm_struct *alloc_vm_area(unsigned long size)
 +{
-+	pte = mask_rw_pte(ptep, pte);
++	struct vm_struct *area;
 +
-+	xen_set_pte(ptep, pte);
++	area = get_vm_area(size, VM_IOREMAP);
++	if (area == NULL)
++		return NULL;
++
++	/*
++	 * This ensures that page tables are constructed for this region
++	 * of kernel virtual address space and mapped into init_mm.
++	 */
++	if (apply_to_page_range(&init_mm, (unsigned long)area->addr,
++				area->size, f, NULL)) {
++		free_vm_area(area);
++		return NULL;
++	}
++
++	/* Make sure the pagetables are constructed in process kernel
++	   mappings */
++	vmalloc_sync_all();
++
++	return area;
 +}
++EXPORT_SYMBOL_GPL(alloc_vm_area);
 +
- static __init void xen_pagetable_setup_start(pgd_t *base)
- {
- 	pgd_t *xen_pgd = (pgd_t *)xen_start_info->pt_base;
-+
-+	/* special set_pte for pagetable initialization */
-+	paravirt_ops.set_pte = xen_set_pte_init;
- 
- 	init_mm.pgd = base;
- 	/*
-@@ -737,6 +759,7 @@ static __init void xen_pagetable_setup_d
- 	/* This will work as long as patching hasn't happened yet
- 	   (which it hasn't) */
- 	paravirt_ops.alloc_pt = xen_alloc_pt;
-+	paravirt_ops.set_pte = xen_set_pte;
- 
- 	if (!xen_feature(XENFEAT_auto_translated_physmap)) {
- 		/*
-@@ -919,7 +942,7 @@ static const struct paravirt_ops xen_par
- 	.dup_mmap = xen_dup_mmap,
- 	.exit_mmap = xen_exit_mmap,
- 
--	.set_pte = xen_set_pte,
-+	.set_pte = NULL,	/* see xen_pagetable_setup_* */
- 	.set_pte_at = xen_set_pte_at,
- 	.set_pmd = xen_set_pmd,
- 
++void free_vm_area(struct vm_struct *area)
++{
++	struct vm_struct *ret;
++	ret = remove_vm_area(area->addr);
++	BUG_ON(ret != area);
++	kfree(area);
++}
++EXPORT_SYMBOL_GPL(free_vm_area);
 
 -- 
 
