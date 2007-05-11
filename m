@@ -1,146 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763011AbXEKUgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbXEKUgf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763011AbXEKUgV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756106AbXEKUgO
+	id S1760704AbXEKUgf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:36:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762657AbXEKUgT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:36:14 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:39516 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756086AbXEKUgN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:36:13 -0400
-Date: Fri, 11 May 2007 21:36:11 +0100
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
-Message-ID: <20070511203610.GA12136@skynet.ie>
-References: <20070510224441.GA15332@skynet.ie> <Pine.LNX.4.64.0705101547020.14064@schroedinger.engr.sgi.com> <20070510230044.GB15332@skynet.ie> <Pine.LNX.4.64.0705101601220.14471@schroedinger.engr.sgi.com> <1178863002.24635.4.camel@rousalka.dyndns.org> <20070511090823.GA29273@skynet.ie> <1178884283.27195.1.camel@rousalka.dyndns.org> <20070511173811.GA8529@skynet.ie> <1178905541.2473.2.camel@rousalka.dyndns.org> <1178908210.4360.21.camel@rousalka.dyndns.org>
+	Fri, 11 May 2007 16:36:19 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60682 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762243AbXEKUgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 16:36:18 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
+Date: Fri, 11 May 2007 22:40:53 +0200
+User-Agent: KMail/1.9.5
+Cc: Gautham R Shenoy <ego@in.ibm.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Pavel Machek <pavel@ucw.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+References: <200705110035.32229.rjw@sisk.pl> <200705110036.26617.rjw@sisk.pl> <20070511123959.190adfaf.akpm@linux-foundation.org>
+In-Reply-To: <20070511123959.190adfaf.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1178908210.4360.21.camel@rousalka.dyndns.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+Message-Id: <200705112240.54304.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (11/05/07 20:30), Nicolas Mailhot didst pronounce:
-> Le vendredi 11 mai 2007 à 19:45 +0200, Nicolas Mailhot a écrit :
-> > Le vendredi 11 mai 2007 à 18:38 +0100, Mel Gorman a écrit :
+On Friday, 11 May 2007 21:39, Andrew Morton wrote:
+> On Fri, 11 May 2007 00:36:25 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> > > so I'd like to look at the
-> > > alternative option with kswapd as well. Could you put that patch back in again
-> > > please and try the following patch instead? 
+> > The reading of PF_BORROWED_MM in is_user_space() without task_lock() is racy. 
+> > Fix it.
 > > 
-> > I'll try this one now (if it applies)
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > Acked-by: Pavel Machek <pavel@ucw.cz>
+> > ---
+> >  kernel/power/process.c |    8 +++++++-
+> >  1 file changed, 7 insertions(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6/kernel/power/process.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/power/process.c	2007-05-10 21:44:23.000000000 +0200
+> > +++ linux-2.6/kernel/power/process.c	2007-05-10 21:44:28.000000000 +0200
+> > @@ -8,6 +8,7 @@
+> >  
+> >  #undef DEBUG
+> >  
+> > +#include <linux/sched.h>
+> >  #include <linux/interrupt.h>
+> >  #include <linux/suspend.h>
+> >  #include <linux/module.h>
+> > @@ -88,7 +89,12 @@ static void cancel_freezing(struct task_
+> >  
+> >  static inline int is_user_space(struct task_struct *p)
+> >  {
+> > -	return p->mm && !(p->flags & PF_BORROWED_MM);
+> > +	int ret;
+> > +
+> > +	task_lock(p);
+> > +	ret = p->mm && !(p->flags & PF_BORROWED_MM);
+> > +	task_unlock(p);
+> > +	return ret;
+> >  }
 > 
-> Well it doesn't seem to apply. Are you sure you have a clean tree?
-> (I have vanilla mm2 + revert of
-> md-improve-partition-detection-in-md-array.patch for another bug)
+> The whole function is racy, isn't it?  I mean, the condition which it is
+> testing can go from true->false or false->true at any instant after this
+> function returns its now-wrong value.
 > 
+> iow, callers of this function need to to something to prevent the expression
+> `p->mm && !(p->flags & PF_BORROWED_MM);' from changing value _anyway_.  In
+> which case the new locking is not needed?
 
-I'm pretty sure I have. I recreated the tree and reverted the same patch as
-you and regenerated the diff below. I sent it to myself and it appeared ok
-and another automated system was able to use it.
+For user space processes this condition is always true.
 
-In case it's a mailer problem, the patch can be downloaded from
-http://www.csn.ul.ie/~mel/kswapd-minorder.patch . Here is a rediff
-against the tree you describe.
+For kernel threads:
+(1) the change of tsk->mm from NULL to a nonzero value is only made in
+fs/aio.c:use_mm() along with the setting of PF_BORROWED_MM under
+the task_lock(),
+(2) the change of tsk->mm from a nonzero value to NULL is only made in
+fs/aio.c:unuse_mm() along with the resetting of PF_BORROWED_MM
+under the task_lock().
+Therefore, by taking the task_lock() here we make sure that the condition
+is alyways false when we check it for kernel threads.
 
-Sorry for the confusion.
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-revertmd/include/linux/mmzone.h linux-2.6.21-mm2-kswapdorder/include/linux/mmzone.h
---- linux-2.6.21-mm2-revertmd/include/linux/mmzone.h	2007-05-11 21:16:56.000000000 +0100
-+++ linux-2.6.21-mm2-kswapdorder/include/linux/mmzone.h	2007-05-11 21:23:00.000000000 +0100
-@@ -499,6 +499,8 @@ typedef struct pglist_data {
- void get_zone_counts(unsigned long *active, unsigned long *inactive,
- 			unsigned long *free);
- void build_all_zonelists(void);
-+int kswapd_order(unsigned int order);
-+void set_kswapd_order(unsigned int order);
- void wakeup_kswapd(struct zone *zone, int order);
- int zone_watermark_ok(struct zone *z, int order, unsigned long mark,
- 		int classzone_idx, int alloc_flags);
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-revertmd/mm/slub.c linux-2.6.21-mm2-kswapdorder/mm/slub.c
---- linux-2.6.21-mm2-revertmd/mm/slub.c	2007-05-11 21:16:57.000000000 +0100
-+++ linux-2.6.21-mm2-kswapdorder/mm/slub.c	2007-05-11 21:23:00.000000000 +0100
-@@ -2131,6 +2131,7 @@ static struct kmem_cache *kmalloc_caches
- static int __init setup_slub_min_order(char *str)
- {
- 	get_option (&str, &slub_min_order);
-+	set_kswapd_order(slub_min_order);
- 	user_override = 1;
- 	return 1;
- }
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-revertmd/mm/vmscan.c linux-2.6.21-mm2-kswapdorder/mm/vmscan.c
---- linux-2.6.21-mm2-revertmd/mm/vmscan.c	2007-05-11 21:16:57.000000000 +0100
-+++ linux-2.6.21-mm2-kswapdorder/mm/vmscan.c	2007-05-11 21:23:00.000000000 +0100
-@@ -1407,6 +1407,32 @@ out:
- 	return nr_reclaimed;
- }
- 
-+static unsigned int kswapd_min_order __read_mostly;
-+
-+/**
-+ * set_kswapd_order - Set the minimum order that kswapd reclaims at
-+ * @order: The new minimum order
-+ *
-+ * kswapd normally reclaims at order 0 unless there is a higher-order
-+ * allocation under way. However, in some cases, it is known that there
-+ * are a minimum order size of general interest such as the SLUB allocator
-+ * requiring regular high-order allocations. This allows a minimum order
-+ * to be set to that min_free_kbytes is kept at higher orders
-+ */
-+void set_kswapd_order(unsigned int order)
-+{
-+	if (order >= MAX_ORDER)
-+		return;
-+	
-+	printk(KERN_INFO "kswapd reclaim order set to %d\n", order);
-+	kswapd_min_order = order;
-+}
-+	
-+int kswapd_order(unsigned int order)
-+{
-+	return max(kswapd_min_order, order);
-+}
-+
- /*
-  * The background pageout daemon, started as a kernel thread
-  * from the init process. 
-@@ -1450,13 +1476,13 @@ static int kswapd(void *p)
- 	 */
- 	tsk->flags |= PF_MEMALLOC | PF_SWAPWRITE | PF_KSWAPD;
- 
--	order = 0;
-+	order = kswapd_order(0);
- 	for ( ; ; ) {
- 		unsigned long new_order;
- 
- 		prepare_to_wait(&pgdat->kswapd_wait, &wait, TASK_INTERRUPTIBLE);
--		new_order = pgdat->kswapd_max_order;
--		pgdat->kswapd_max_order = 0;
-+		new_order = kswapd_order(pgdat->kswapd_max_order);
-+		pgdat->kswapd_max_order = kswapd_order(0);
- 		if (order < new_order) {
- 			/*
- 			 * Don't sleep if someone wants a larger 'order'
-@@ -1467,7 +1493,7 @@ static int kswapd(void *p)
- 			if (!freezing(current))
- 				schedule();
- 
--			order = pgdat->kswapd_max_order;
-+			order = kswapd_order(pgdat->kswapd_max_order);
- 		}
- 		finish_wait(&pgdat->kswapd_wait, &wait);
- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
