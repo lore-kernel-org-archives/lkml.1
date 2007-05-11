@@ -1,69 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762832AbXEKRZv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760104AbXEKRgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762832AbXEKRZv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 13:25:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759482AbXEKRZp
+	id S1760104AbXEKRgs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 13:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758056AbXEKRgl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 13:25:45 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:40907 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758862AbXEKRZn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 13:25:43 -0400
-Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <46449F61.2060004@cosmosbay.com>
-References: <20070511131541.992688403@chello.nl>
-	 <20070511155621.GA13150@elte.hu>  <46449F61.2060004@cosmosbay.com>
-Content-Type: text/plain; charset=utf-8
-Date: Fri, 11 May 2007 19:18:33 +0200
-Message-Id: <1178903913.2781.20.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
-Content-Transfer-Encoding: 8bit
+	Fri, 11 May 2007 13:36:41 -0400
+Received: from vena.lwn.net ([206.168.112.25]:45070 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752306AbXEKRgk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 13:36:40 -0400
+To: akpm@linux-foundation.org
+Subject: [PATCH] "volatile considered harmful", take 3
+Cc: linux-kernel@vger.kernel.org, Johannes Stezenbach <js@linuxtv.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       jimmy bahuleyan <knight.camelot@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Fri, 11 May 2007 11:36:40 -0600
+Message-ID: <12700.1178905000@lwn.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-11 at 18:52 +0200, Eric Dumazet wrote:
-> Ingo Molnar a écrit :
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> >> I was toying with a scalable rw_mutex and found that it gives ~10% 
-> >> reduction in system time on ebizzy runs (without the MADV_FREE patch).
-> >>
-> >> 2-way x86_64 pentium D box:
-> >>
-> >> 2.6.21
-> >>
-> >> /usr/bin/time ./ebizzy -m -P
-> >> 59.49user 137.74system 1:49.22elapsed 180%CPU (0avgtext+0avgdata 0maxresident)k
-> >> 0inputs+0outputs (0major+33555877minor)pagefaults 0swaps
-> >>
-> >> 2.6.21-rw_mutex
-> >>
-> >> /usr/bin/time ./ebizzy -m -P
-> >> 57.85user 124.30system 1:42.99elapsed 176%CPU (0avgtext+0avgdata 0maxresident)k
-> >> 0inputs+0outputs (0major+33555877minor)pagefaults 0swaps
-> > 
-> > nice! This 6% runtime reduction on a 2-way box will i suspect get 
-> > exponentially better on systems with more CPUs/cores.
-> 
-> As long you only have readers, yes.
-> 
-> But I personally find this new rw_mutex not scalable at all if you have some 
-> writers around.
-> 
-> percpu_counter_sum is just a L1 cache eater, and O(NR_CPUS)
+Here's another version of the volatile document.  Once again, I've tried
+to address all of the comments.  There haven't really been any recent
+comments addressing the correctness of the document; people have been
+more concerned with how it's expressed.  I'm glad to see files in
+Documentation/ held to a high standard of writing, but, unless somebody
+has a factual issue this time around I would like to declare Mission
+Accomplished and move on.
 
-Yeah, that is true; there are two occurences, the one in
-rw_mutex_read_unlock() is not strictly needed for correctness.
+Thanks,
 
-Write locks are indeed quite expensive. But given the ratio of
-reader:writer locks on mmap_sem (I'm not all that familiar with other
-rwsem users) this trade-off seems workable.
+jon
 
+---
+
+Encourage developers to avoid the volatile type class in kernel code.
+
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+
+diff --git a/Documentation/volatile-considered-harmful.txt b/Documentation/volatile-considered-harmful.txt
+new file mode 100644
+index 0000000..955c309
+--- /dev/null
++++ b/Documentation/volatile-considered-harmful.txt
+@@ -0,0 +1,119 @@
++Why the "volatile" type class should not be used
++------------------------------------------------
++
++C programmers have often taken volatile to mean that the variable could be
++changed outside of the current thread of execution; as a result, they are
++sometimes tempted to use it in kernel code when shared data structures are
++being used.  In other words, they have been known to treat volatile types
++as a sort of easy atomic variable, which they are not.  The use of volatile in
++kernel code is almost never correct; this document describes why.
++
++The key point to understand with regard to volatile is that its purpose is
++to suppress optimization, which is almost never what one really wants to
++do.  In the kernel, one must protect shared data structures against
++unwanted concurrent access, which is very much a different task.  The
++process of protecting against unwanted concurrency will also avoid almost
++all optimization-related problems in a more efficient way.
++
++Like volatile, the kernel primitives which make concurrent access to data
++safe (spinlocks, mutexes, memory barriers, etc.) are designed to prevent
++unwanted optimization.  If they are being used properly, there will be no
++need to use volatile as well.  If volatile is still necessary, there is
++almost certainly a bug in the code somewhere.  In properly-written kernel
++code, volatile can only serve to slow things down.
++
++Consider a typical block of kernel code:
++
++    spin_lock(&the_lock);
++    do_something_on(&shared_data);
++    do_something_else_with(&shared_data);
++    spin_unlock(&the_lock);
++
++If all the code follows the locking rules, the value of shared_data cannot
++change unexpectedly while the_lock is held.  Any other code which might
++want to play with that data will be waiting on the lock.  The spinlock
++primitives act as memory barriers - they are explicitly written to do so -
++meaning that data accesses will not be optimized across them.  So the
++compiler might think it knows what will be in shared_data, but the
++spin_lock() call, since it acts as a memory barrier, will force it to
++forget anything it knows.  There will be no optimization problems with
++accesses to that data.
++
++If shared_data were declared volatile, the locking would still be
++necessary.  But the compiler would also be prevented from optimizing access
++to shared_data _within_ the critical section, when we know that nobody else
++can be working with it.  While the lock is held, shared_data is not
++volatile.  When dealing with shared data, proper locking makes volatile
++unnecessary - and potentially harmful.
++
++The volatile storage class was originally meant for memory-mapped I/O
++registers.  Within the kernel, register accesses, too, should be protected
++by locks, but one also does not want the compiler "optimizing" register
++accesses within a critical section.  But, within the kernel, I/O memory
++accesses are always done through accessor functions; accessing I/O memory
++directly through pointers is frowned upon and does not work on all
++architectures.  Those accessors are written to prevent unwanted
++optimization, so, once again, volatile is unnecessary.
++
++Another situation where one might be tempted to use volatile is
++when the processor is busy-waiting on the value of a variable.  The right
++way to perform a busy wait is:
++
++    while (my_variable != what_i_want)
++        cpu_relax();
++
++The cpu_relax() call can lower CPU power consumption or yield to a
++hyperthreaded twin processor; it also happens to serve as a memory barrier,
++so, once again, volatile is unnecessary.  Of course, busy-waiting is
++generally an anti-social act to begin with.
++
++There are still a few rare situations where volatile makes sense in the
++kernel:
++
++  - The above-mentioned accessor functions might use volatile on
++    architectures where direct I/O memory access does work.  Essentially,
++    each accessor call becomes a little critical section on its own and
++    ensures that the access happens as expected by the programmer.
++
++  - Inline assembly code which changes memory, but which has no other
++    visible side effects, risks being deleted by GCC.  Adding the volatile
++    keyword to asm statements will prevent this removal.
++
++  - The jiffies variable is special in that it can have a different value
++    every time it is referenced, but it can be read without any special
++    locking.  So jiffies can be volatile, but the addition of other
++    variables of this type is strongly frowned upon.  Jiffies is considered
++    to be a "stupid legacy" issue (Linus's words) in this regard; fixing it
++    would be more trouble than it is worth.
++
++  - Pointers to data structures in coherent memory which might be modified
++    by I/O devices can, sometimes, legitimately be volatile.  A ring buffer
++    used by a network adapter, where that adapter changes pointers to
++    indicate which descriptors have been processed, is an example of this
++    type of situation.
++
++For most code, none of the above justifications for volatile apply.  As a
++result, the use of volatile is likely to be seen as a bug and will bring
++additional scrutiny to the code.  Developers who are tempted to use
++volatile should take a step back and think about what they are truly trying
++to accomplish.  
++
++Patches to remove volatile variables are generally welcome - as long as
++they come with a justification which shows that the concurrency issues have
++been properly thought through.
++
++
++NOTES
++-----
++
++[1] http://lwn.net/Articles/233481/
++[2] http://lwn.net/Articles/233482/
++
++CREDITS
++-------
++
++Original impetus and research by Randy Dunlap
++Written by Jonathan Corbet
++Improvements via coments from Satyam Sharma, Johannes Stezenbach, Jesper
++	Juhl, Heikki Orsila, H. Peter Anvin, Philipp Hahn, and Stefan
++	Richter. 
