@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966107AbXEKTpw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966447AbXEKTqP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966107AbXEKTpw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:45:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763392AbXEKTmF
+	id S966447AbXEKTqP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:46:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763487AbXEKTmN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:42:05 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:45946 "EHLO proxima.lp0.eu"
+	Fri, 11 May 2007 15:42:13 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:45949 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761368AbXEKTmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:42:02 -0400
-Message-ID: <4644C706.4050101@simon.arlott.org.uk>
-Date: Fri, 11 May 2007 20:41:58 +0100
+	id S1763456AbXEKTmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 15:42:10 -0400
+Message-ID: <4644C70E.1010902@simon.arlott.org.uk>
+Date: Fri, 11 May 2007 20:42:06 +0100
 From: Simon Arlott <simon@fire.lp0.eu>
 User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       trivial@kernel.org
-Subject: [PATCH] spelling fixes: arch/m32r/
+       linux-m68k@vger.kernel.org, trivial@kernel.org
+Subject: [PATCH] spelling fixes: arch/m68k/
 X-Enigmail-Version: 0.94.1.2
 OpenPGP: id=89C93563
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -24,172 +24,151 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spelling fixes in arch/m32r/.
+Spelling fixes in arch/m68k/.
 
 Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 ---
- arch/m32r/kernel/irq.c      |    2 +-
- arch/m32r/kernel/signal.c   |    2 +-
- arch/m32r/kernel/smp.c      |   18 +++++++++---------
- arch/m32r/kernel/smpboot.c  |    6 +++---
- arch/m32r/kernel/sys_m32r.c |    2 +-
- 5 files changed, 15 insertions(+), 15 deletions(-)
+ arch/m68k/amiga/pcmcia.c    |    2 +-
+ arch/m68k/mac/config.c      |    4 ++--
+ arch/m68k/mac/iop.c         |    4 ++--
+ arch/m68k/mac/oss.c         |    2 +-
+ arch/m68k/mac/via.c         |    2 +-
+ arch/m68k/math-emu/fp_log.c |    2 +-
+ arch/m68k/q40/q40ints.c     |    4 ++--
+ arch/m68k/sun3/mmu_emu.c    |    2 +-
+ 8 files changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/arch/m32r/kernel/irq.c b/arch/m32r/kernel/irq.c
-index f8d8650..d0c5b0b 100644
---- a/arch/m32r/kernel/irq.c
-+++ b/arch/m32r/kernel/irq.c
-@@ -71,7 +71,7 @@ skip:
- }
+diff --git a/arch/m68k/amiga/pcmcia.c b/arch/m68k/amiga/pcmcia.c
+index fc57c6e..186662c 100644
+--- a/arch/m68k/amiga/pcmcia.c
++++ b/arch/m68k/amiga/pcmcia.c
+@@ -33,7 +33,7 @@ void pcmcia_reset(void)
  
- /*
-- * do_IRQ handles all normal device IRQ's (the special
-+ * do_IRQ handles all normal device IRQs (the special
-  * SMP cross-CPU interrupts have their own specific
-  * handlers).
+ 
+ /* copy a tuple, including tuple header. return nb bytes copied */
+-/* be carefull as this may trigger a GAYLE_IRQ_WR interrupt ! */
++/* be careful as this may trigger a GAYLE_IRQ_WR interrupt ! */
+ 
+ int pcmcia_copy_tuple(unsigned char tuple_id, void *tuple, int max_len)
+ {
+diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
+index 5fd4132..f40eecd 100644
+--- a/arch/m68k/mac/config.c
++++ b/arch/m68k/mac/config.c
+@@ -283,7 +283,7 @@ static struct mac_model mac_data_table[] = {
+ 	},
+ 
+ 	/*
+-	 *	Weirdified MacII hardware - all subtley different. Gee thanks
++	 *	Weirdified MacII hardware - all subtly different. Gee thanks
+ 	 *	Apple. All these boxes seem to have VIA2 in a different place to
+ 	 *	the MacII (+1A000 rather than +4000)
+ 	 * CSA: see http://developer.apple.com/technotes/hw/hw_09.html
+@@ -706,7 +706,7 @@ static struct mac_model mac_data_table[] = {
+ 	 * All of these probably have onboard SONIC in the Dock which
+ 	 * means we'll have to probe for it eventually.
+ 	 *
+-	 * Are these reallly MAC_VIA_IIci? The developer notes for the
++	 * Are these really MAC_VIA_IIci? The developer notes for the
+ 	 * Duos show pretty much the same custom parts as in most of
+ 	 * the other PowerBooks which would imply MAC_VIA_QUADRA.
+ 	 */
+diff --git a/arch/m68k/mac/iop.c b/arch/m68k/mac/iop.c
+index 0cea21f..5b2799e 100644
+--- a/arch/m68k/mac/iop.c
++++ b/arch/m68k/mac/iop.c
+@@ -100,7 +100,7 @@
+  * finished; this function moves the message state to MSG_COMPLETE and signals
+  * the IOP. This two-step process is provided to allow the handler to defer
+  * message processing to a bottom-half handler if the processing will take
+- * a signifigant amount of time (handlers are called at interrupt time so they
++ * a significant amount of time (handlers are called at interrupt time so they
+  * should execute quickly.)
   */
-diff --git a/arch/m32r/kernel/signal.c b/arch/m32r/kernel/signal.c
-index 916faf6..a753d79 100644
---- a/arch/m32r/kernel/signal.c
-+++ b/arch/m32r/kernel/signal.c
-@@ -358,7 +358,7 @@ int do_signal(struct pt_regs *regs, sigset_t *oldset)
  
- 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
- 	if (signr > 0) {
--		/* Reenable any watchpoints before delivering the
-+		/* Re-enable any watchpoints before delivering the
- 		 * signal to user space. The processor register will
- 		 * have been cleared if the watchpoint triggered
- 		 * inside the kernel.
-diff --git a/arch/m32r/kernel/smp.c b/arch/m32r/kernel/smp.c
-index 3601291..c837bc1 100644
---- a/arch/m32r/kernel/smp.c
-+++ b/arch/m32r/kernel/smp.c
-@@ -202,7 +202,7 @@ void smp_flush_cache_all_interrupt(void)
- }
+@@ -120,7 +120,7 @@
  
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
--/* TLB flush request Routins                                                 */
-+/* TLB flush request Routines                                                */
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
+ /*#define DEBUG_IOP*/
  
- /*==========================================================================*
-@@ -378,7 +378,7 @@ void smp_flush_tlb_page(struct vm_area_struct *vma, unsigned long va)
-  * Name:         flush_tlb_others
+-/* Set to nonezero if the IOPs are present. Set by iop_init() */
++/* Set to non-zero if the IOPs are present. Set by iop_init() */
+ 
+ int iop_scc_present,iop_ism_present;
+ 
+diff --git a/arch/m68k/mac/oss.c b/arch/m68k/mac/oss.c
+index d7be169..50603d3 100644
+--- a/arch/m68k/mac/oss.c
++++ b/arch/m68k/mac/oss.c
+@@ -8,7 +8,7 @@
   *
-  * Description:  This routine requests other CPU to execute flush TLB.
-- *               1.Setup parmeters.
-+ *               1.Setup parameters.
-  *               2.Send 'INVALIDATE_TLB_IPI' to other CPU.
-  *                 Request other CPU to execute 'smp_invalidate_interrupt()'.
-  *               3.Wait for other CPUs operation finished.
-@@ -502,7 +502,7 @@ void smp_invalidate_interrupt(void)
- }
- 
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
--/* Stop CPU request Routins                                                 */
-+/* Stop CPU request Routines                                                 */
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
- 
- /*==========================================================================*
-@@ -566,7 +566,7 @@ static void stop_this_cpu(void *dummy)
- }
- 
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
--/* Call function Routins                                                     */
-+/* Call function Routines                                                    */
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
- 
- /*==========================================================================*
-@@ -690,7 +690,7 @@ void smp_call_function_interrupt(void)
- }
- 
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
--/* Timer Routins                                                             */
-+/* Timer Routines                                                            */
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
- 
- /*==========================================================================*
-@@ -802,7 +802,7 @@ void smp_local_timer_interrupt(void)
- }
- 
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
--/* Send IPI Routins                                                          */
-+/* Send IPI Routines                                                         */
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
- 
- /*==========================================================================*
-@@ -814,7 +814,7 @@ void smp_local_timer_interrupt(void)
+  * 990502 (jmt) - Major rewrite for new interrupt architecture as well as some
+  *		  recent insights into OSS operational details.
+- * 990610 (jmt) - Now taking fulll advantage of the OSS. Interrupts are mapped
++ * 990610 (jmt) - Now taking full advantage of the OSS. Interrupts are mapped
+  *		  to mostly match the A/UX interrupt scheme supported on the
+  *		  VIA side. Also added support for enabling the ISM irq again
+  *		  since we now have a functional IOP manager.
+diff --git a/arch/m68k/mac/via.c b/arch/m68k/mac/via.c
+index d5cac72..8df270e 100644
+--- a/arch/m68k/mac/via.c
++++ b/arch/m68k/mac/via.c
+@@ -1,7 +1,7 @@
+ /*
+  *	6522 Versatile Interface Adapter (VIA)
   *
-  * Arguments:    ipi_num - Number of IPI
-  *               try -  0 : Send IPI certainly.
-- *                     !0 : The following IPI is not sended when Target CPU
-+ *                     !0 : The following IPI is not sent when Target CPU
-  *                          has not received the before IPI.
+- *	There are two of these on the Mac II. Some IRQ's are vectored
++ *	There are two of these on the Mac II. Some IRQs are vectored
+  *	via them as are assorted bits and bobs - eg RTC, ADB.
   *
-  * Returns:      void (cannot fail)
-@@ -844,7 +844,7 @@ void send_IPI_allbutself(int ipi_num, int try)
-  * Arguments:    cpu_mask - Bitmap of target CPUs logical ID
-  *               ipi_num - Number of IPI
-  *               try -  0 : Send IPI certainly.
-- *                     !0 : The following IPI is not sended when Target CPU
-+ *                     !0 : The following IPI is not sent when Target CPU
-  *                          has not received the before IPI.
-  *
-  * Returns:      void (cannot fail)
-@@ -885,7 +885,7 @@ static void send_IPI_mask(cpumask_t cpumask, int ipi_num, int try)
-  * Arguments:    cpu_mask - Bitmap of target CPUs physical ID
-  *               ipi_num - Number of IPI
-  *               try -  0 : Send IPI certainly.
-- *                     !0 : The following IPI is not sended when Target CPU
-+ *                     !0 : The following IPI is not sent when Target CPU
-  *                          has not received the before IPI.
-  *
-  * Returns:      IPICRi regster value.
-diff --git a/arch/m32r/kernel/smpboot.c b/arch/m32r/kernel/smpboot.c
-index 3eb3059..236eca3 100644
---- a/arch/m32r/kernel/smpboot.c
-+++ b/arch/m32r/kernel/smpboot.c
-@@ -132,7 +132,7 @@ static void map_cpu_to_physid(int, int);
- static void unmap_cpu_to_physid(int, int);
+  * CSA: Motorola seems to have removed documentation on the 6522 from
+diff --git a/arch/m68k/math-emu/fp_log.c b/arch/m68k/math-emu/fp_log.c
+index 87b4f01..b1033ae 100644
+--- a/arch/m68k/math-emu/fp_log.c
++++ b/arch/m68k/math-emu/fp_log.c
+@@ -65,7 +65,7 @@ fp_fsqrt(struct fp_ext *dest, struct fp_ext *src)
+ 	fp_copy_ext(&src2, dest);
  
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
--/* Boot up APs Routins : BSP                                                 */
-+/* Boot up APs Routines : BSP                                                */
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
- void __devinit smp_prepare_boot_cpu(void)
- {
-@@ -403,7 +403,7 @@ void __init smp_cpus_done(unsigned int max_cpus)
- }
+ 	/*
+-	 * The taylor row arround a for sqrt(x) is:
++	 * The taylor row around a for sqrt(x) is:
+ 	 *	sqrt(x) = sqrt(a) + 1/(2*sqrt(a))*(x-a) + R
+ 	 * With a=1 this gives:
+ 	 *	sqrt(x) = 1 + 1/2*(x-1)
+diff --git a/arch/m68k/q40/q40ints.c b/arch/m68k/q40/q40ints.c
+index 2fb25ae..bbf626e 100644
+--- a/arch/m68k/q40/q40ints.c
++++ b/arch/m68k/q40/q40ints.c
+@@ -184,7 +184,7 @@ static struct IRQ_TABLE eirqs[] = {
+ };
  
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
--/* Activate a secondary processor Routins                                    */
-+/* Activate a secondary processor Routines                                   */
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
+ /* complain only this many times about spurious ints : */
+-static int ccleirq=60;    /* ISA dev IRQ's*/
++static int ccleirq=60;    /* ISA dev IRQs*/
+ /*static int cclirq=60;*/     /* internal */
  
- /*==========================================================================*
-@@ -508,7 +508,7 @@ static void __init smp_online(void)
- }
- 
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
--/* Boot up CPUs common Routins                                               */
-+/* Boot up CPUs common Routines                                              */
- /*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*=*/
- static void __init show_mp_info(int nr_cpu)
- {
-diff --git a/arch/m32r/kernel/sys_m32r.c b/arch/m32r/kernel/sys_m32r.c
-index bda8554..b258004 100644
---- a/arch/m32r/kernel/sys_m32r.c
-+++ b/arch/m32r/kernel/sys_m32r.c
-@@ -213,7 +213,7 @@ asmlinkage int sys_uname(struct old_utsname __user * name)
- 
- asmlinkage int sys_cacheflush(void *addr, int bytes, int cache)
- {
--	/* This should flush more selectivly ...  */
-+	/* This should flush more selectively ...  */
- 	_flush_cache_all();
- 	return 0;
- }
+ /* FIXME: add shared ints,mask,unmask,probing.... */
+@@ -234,7 +234,7 @@ static void q40_irq_handler(unsigned int irq, struct pt_regs *fp)
+  * There is a little mess wrt which IRQ really caused this irq request. The
+  * main problem is that IIRQ_REG and EIRQ_REG reflect the state when they
+  * are read - which is long after the request came in. In theory IRQs should
+- * not just go away but they occassionally do
++ * not just go away but they occasionally do
+  */
+ 				if (irq > 4 && irq <= 15 && mext_disabled) {
+ 					/*aliased_irq++;*/
+diff --git a/arch/m68k/sun3/mmu_emu.c b/arch/m68k/sun3/mmu_emu.c
+index 7a0e3a2..fb0f6a2 100644
+--- a/arch/m68k/sun3/mmu_emu.c
++++ b/arch/m68k/sun3/mmu_emu.c
+@@ -239,7 +239,7 @@ void clear_context(unsigned long context)
+ /* gets an empty context.  if full, kills the next context listed to
+    die first */
+ /* This context invalidation scheme is, well, totally arbitrary, I'm
+-   sure it could be much more intellegent...  but it gets the job done
++   sure it could be much more intelligent...  but it gets the job done
+    for now without much overhead in making it's decision. */
+ /* todo: come up with optimized scheme for flushing contexts */
+ unsigned long get_free_context(struct mm_struct *mm)
 -- 
 1.5.0.1
 
