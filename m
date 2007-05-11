@@ -1,107 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760188AbXEKF5w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbXEKGEy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760188AbXEKF5w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 01:57:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbXEKF5m
+	id S1760118AbXEKGEy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 02:04:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754925AbXEKGEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 01:57:42 -0400
-Received: from mx.laposte.net ([81.255.54.16]:41740 "EHLO mx.laposte.net"
+	Fri, 11 May 2007 02:04:47 -0400
+Received: from colin.muc.de ([193.149.48.1]:4220 "EHLO mail.muc.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757503AbXEKF5l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 01:57:41 -0400
-Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2,
-	mode:0x84020
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Mel Gorman <mel@skynet.skynet.ie>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0705101601220.14471@schroedinger.engr.sgi.com>
-References: <200705102128.l4ALSI2A017437@fire-2.osdl.org>
-	 <20070510144319.48d2841a.akpm@linux-foundation.org>
-	 <Pine.LNX.4.64.0705101447120.12874@schroedinger.engr.sgi.com>
-	 <20070510220657.GA14694@skynet.ie>
-	 <Pine.LNX.4.64.0705101510500.13404@schroedinger.engr.sgi.com>
-	 <20070510221607.GA15084@skynet.ie>
-	 <Pine.LNX.4.64.0705101522250.13504@schroedinger.engr.sgi.com>
-	 <20070510224441.GA15332@skynet.ie>
-	 <Pine.LNX.4.64.0705101547020.14064@schroedinger.engr.sgi.com>
-	 <20070510230044.GB15332@skynet.ie>
-	 <Pine.LNX.4.64.0705101601220.14471@schroedinger.engr.sgi.com>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-MxDrvQ0XLmIeHrHC0B+W"
-Organization: Adresse perso
-Date: Fri, 11 May 2007 07:56:42 +0200
-Message-Id: <1178863002.24635.4.camel@rousalka.dyndns.org>
+	id S1754390AbXEKGEr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 02:04:47 -0400
+Date: 11 May 2007 08:04:44 +0200
+Date: Fri, 11 May 2007 08:04:44 +0200
+From: Andi Kleen <ak@muc.de>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, systemtap@sources.redhat.com,
+       prasanna@in.ibm.com, ananth@in.ibm.com, anil.s.keshavamurthy@intel.com,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       hch@infradead.org
+Subject: Re: [patch 05/10] Linux Kernel Markers - i386 optimized version
+Message-ID: <20070511060444.GA35262@muc.de>
+References: <20070510015555.973107048@polymtl.ca> <20070510020916.508519573@polymtl.ca> <20070510090656.GA57297@muc.de> <20070510155501.GI22424@Krystal> <20070510172843.7aa72237@the-village.bc.nu> <20070510165918.GK22424@Krystal>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.nim) 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070510165918.GK22424@Krystal>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 10, 2007 at 12:59:18PM -0400, Mathieu Desnoyers wrote:
+> * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+> > > * First issue : Impact on the system. If we try to make this system
+> > >   scale, we will create very long irq disable sections. The expected
+> > >   duration is the worse case IPI latency plus the time it takes to CPU A
+> > >   to change the variable. We therefore directly grow the worse case
+> > >   system's interrupt latency.
+> > 
+> > Not a huge problem. It doesn't scale in really horrible ways and the IPI
+> > latency on a PIV or later is actually very good. Also the impact is less
+> > than you might think as on huge huge boxes you want multiple copies of
+> > the kernel text pages to reduce NUMA traffic, so you only have to sync
+> > the group of processors involved 
 
---=-MxDrvQ0XLmIeHrHC0B+W
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+I agree with Alan and disagree with you on the impact on the system.
 
-Le jeudi 10 mai 2007 =C3=A0 16:01 -0700, Christoph Lameter a =C3=A9crit :
-> On Fri, 11 May 2007, Mel Gorman wrote:
->=20
-> > Nicholas, could you backout the patch
-> > dont-group-high-order-atomic-allocations.patch and test again please?
-> > The following patch has the same effect. Thanks
->=20
-> Great! Thanks.
+> > 
+> > > * Second issue : irq disabling does not protect us from NMI and traps.
+> > >   We cannot use this algorithm to mark these code segments.
+> > 
+> > If you synchronize all the other processors and disable local interrupts
+> > then the only traps you have to worry about are those you cause, and the
+> > only person taking the trap will be you so you're ok.
+> > 
+> > NMI is hard but NMI is a special case not worth solving IMHO.
+> > 
+> 
+> Not caring about NMIs may have more impact than one could expect. You
+> have to be aware that (at least) the following code is executed in NMI
+> context. Trying to patch any of these functions could result in a dying
+> CPU :
 
-The proposed patch did not apply
+There is a function to disable the nmi watchdog temporarily now
 
-+ cd /builddir/build/BUILD
-+ rm -rf linux-2.6.21
-+ /usr/bin/bzip2 -dc /builddir/build/SOURCES/linux-2.6.21.tar.bz2
-+ tar -xf -
-+ STATUS=3D0
-+ '[' 0 -ne 0 ']'
-+ cd linux-2.6.21
-++ /usr/bin/id -u
-+ '[' 499 =3D 0 ']'
-++ /usr/bin/id -u
-+ '[' 499 =3D 0 ']'
-+ /bin/chmod -Rf a+rX,u+w,g-w,o-w .
-+ echo 'Patch #2 (2.6.21-mm2.bz2):'
-Patch #2 (2.6.21-mm2.bz2):
-+ /usr/bin/bzip2 -d
-+ patch -p1 -s
-+ STATUS=3D0
-+ '[' 0 -ne 0 ']'
-+ echo 'Patch #3 (md-improve-partition-detection-in-md-array.patch):'
-Patch #3 (md-improve-partition-detection-in-md-array.patch):
-+ patch -p1 -R -s
-+ echo 'Patch #4 (bug-8464.patch):'
-Patch #4 (bug-8464.patch):
-+ patch -p1 -s
-1 out of 1 hunk FAILED -- saving rejects to file
-include/linux/pageblock-flags.h
-.rej
-6 out of 6 hunks FAILED -- saving rejects to file mm/page_alloc.c.rej
 
-Backing out dont-group-high-order-atomic-allocations.patch worked and
-seems to have cured the system so far (need to charge it a bit longer to
-be sure)
+> In entry.S, there is also a call to local_irq_enable(), which falls into
+> lockdep code.
 
---=20
-Nicolas Mailhot
+??
 
---=-MxDrvQ0XLmIeHrHC0B+W
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+> 
+> Tracing those core kernel functions is a fundamental need of crash
+> tracing. So, in my point of view, it is not "just" about tracing NMIs,
+> but it's about tracing code that can be touched by NMIs.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
+You only need to handle the erratas during the modification, not during
+the whole lifetime of the marker. 
 
-iEYEABECAAYFAkZEBZoACgkQI2bVKDsp8g3ulwCdFEp5Vr9gJ0LQ5ZkhYtATZ7Oh
-g84An3vg3usKKJJbaKMz+WXo4edWRhme
-=zGaW
------END PGP SIGNATURE-----
+The only frequent NMIs are watchdog and oprofile which both can
+be stopped. Other NMIs are very infrequent.
 
---=-MxDrvQ0XLmIeHrHC0B+W--
+BTW if you worry about NMI you would need to worry about machine
+check and SMI too.
+
+-Andi
