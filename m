@@ -1,44 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762343AbXEKWx0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933165AbXEKWzF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762343AbXEKWx0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 18:53:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbXEKWxS
+	id S933165AbXEKWzF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 18:55:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbXEKWy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 18:53:18 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:55386 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752988AbXEKWxR (ORCPT
+	Fri, 11 May 2007 18:54:56 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:24698 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755169AbXEKWy4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 18:53:17 -0400
-Date: Fri, 11 May 2007 15:51:38 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Coywolf Qi Hunt <coywolf@gmail.com>, Len Brown <lenb@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       linux-acpi@vger.kernel.org, Stefan Seyfried <seife@suse.de>
-Subject: Re: [PATCH] swsusp: Use platform mode by default
-In-Reply-To: <200705112208.53971.rjw@sisk.pl>
-Message-ID: <alpine.LFD.0.98.0705111550540.3986@woody.linux-foundation.org>
-References: <200611011323.14830.rjw@sisk.pl> <200705111121.51704.rjw@sisk.pl>
- <alpine.LFD.0.98.0705110912290.3986@woody.linux-foundation.org>
- <200705112208.53971.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Fri, 11 May 2007 18:54:56 -0400
+Date: Fri, 11 May 2007 15:57:40 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>
+Subject: Re: [patch 4/7] add argv_split()
+Message-Id: <20070511155740.25d3cc67.randy.dunlap@oracle.com>
+In-Reply-To: <20070511000027.596468000@goop.org>
+References: <20070510235708.155502000@goop.org>
+	<20070511000027.596468000@goop.org>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 10 May 2007 16:57:12 -0700 Jeremy Fitzhardinge wrote:
 
+> --- /dev/null
+> +++ b/lib/argv_split.c
+> @@ -0,0 +1,159 @@
+> +
+> +/**
+> + * argv_free - free an argv
+> + *
 
-On Fri, 11 May 2007, Rafael J. Wysocki wrote:
-> 
-> Just to clarify, the change in question isn't new.  It was introduced by the
-> commit 9185cfa92507d07ac787bc73d06c42222eec7239 before 2.6.20, at Seife's
-> request and with Pavel's acceptance.
+extra "blank" line.
 
-Ok, if it's that old, we migt as leave it in. Clearly there weren't many 
-regressions, and this isn't a case of other monsters lurking behind a lack 
-of testers.
+> + * @argv - the argument vector to be freed
+> + *
+> + * Frees an argv and the strings it points to.
+> + */
+> +void argv_free(char **argv)
+> +{
+> +	char **p;
+> +	for (p = argv; *p; p++)
+> +		kfree(*p);
+> +
+> +	kfree(argv);
+> +}
+> +EXPORT_SYMBOL(argv_free);
 
-		Linus
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
