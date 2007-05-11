@@ -1,57 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760054AbXEKMKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbXEKMSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760054AbXEKMKn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 08:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756055AbXEKMKg
+	id S1760130AbXEKMSo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 08:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbXEKMSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 08:10:36 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:24327 "EHLO kernel.dk"
+	Fri, 11 May 2007 08:18:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:60720 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755114AbXEKMKf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 08:10:35 -0400
-Date: Fri, 11 May 2007 14:09:55 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Rene Herman <rene.herman@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       rusty@rustcorp.com.au, ak@suse.de
-Subject: Re: [patch 8/9] lguest: the block driver
-Message-ID: <20070511120955.GZ4629@kernel.dk>
-References: <200705090951.l499pdsc020409@shell0.pdx.osdl.net> <84144f020705090322jc37884drc31b97879648d09@mail.gmail.com> <46434378.1020900@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46434378.1020900@gmail.com>
+	id S1756082AbXEKMSh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 08:18:37 -0400
+Message-ID: <46445EB9.8040106@redhat.com>
+Date: Fri, 11 May 2007 08:16:57 -0400
+From: Steven Rostedt <srostedt@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061008)
+MIME-Version: 1.0
+To: Li Yu <raise.sail@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Esben Nielsen <nielsen.esben@googlemail.com>
+Subject: Re: Hi, I have one question about rt_mutex.
+References: <4642CCEB.6010908@gmail.com> <4643176C.6050305@redhat.com> <4643CD44.1090903@gmail.com>
+In-Reply-To: <4643CD44.1090903@gmail.com>
+Content-Type: text/plain; charset=GB2312
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 10 2007, Rene Herman wrote:
-> On 05/09/2007 12:22 PM, Pekka Enberg wrote:
+Li Yu wrote:
 > 
-> >>+static void end_entire_request(struct request *req, int uptodate)
-> >>+{
-> >>+       if (end_that_request_first(req, uptodate, req->hard_nr_sectors))
-> >>+               BUG();
-> >>+       add_disk_randomness(req->rq_disk);
-> >>+       blkdev_dequeue_request(req);
-> >>+       end_that_request_last(req, uptodate);
-> >>+}
-> >
-> >Again, I would prefer this went straight into block/ll_rw_blk.c. Rene
-> >and I am using something similar in the new Mitsumi driver although
-> >one of us has a bug already, we're using req->nr_sectors for this...
+> However, I found the sys_futex() do not use rt_mutex, so what's mean of the user futex you said?
+> Even, I have not found any usage for rt_mutex in kernel code. Or, some beautiful story will happen in future?
 > 
-> The req->hard_nr_sectors is specifically marked block layer internal and 
-> since nr_sectors is what we're requesting and reading (we can't deal with 
-> partial transfers anyway since the drive won't tell us where it failed as 
-> far as I've been able to see and we do want to make read requests for as 
-> many sectors as possible at a time for speed) I believe that in our case 
-> the nr_sectors is fine.
 
-Using ->nr_sectors is fine, IFF you don't modify ->nr_sectors in the
-driver. The generic helper will use ->hard_nr_sectors.
+Just need to look a little deeper :-)
 
--- 
-Jens Axboe
+
+sys_futex calls do_futex
+
+do_futex with the option of FUTEX_LOCK_PI will call futex_lock_pi
+
+futex_lock_pi calls rt_mutex_timed_lock or rt_mutex_trylock  both of
+which are part of the rtmutex.c code.
+
+
+So it's there today :-)
+
+-- Steve
 
