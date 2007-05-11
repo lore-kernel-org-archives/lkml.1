@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030686AbXEKTnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763147AbXEKToG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030686AbXEKTnj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762876AbXEKTl0
+	id S1763147AbXEKToG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:44:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762966AbXEKTlf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:41:26 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:45931 "EHLO proxima.lp0.eu"
+	Fri, 11 May 2007 15:41:35 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:45937 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762853AbXEKTlY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:41:24 -0400
-Message-ID: <4644C6E0.60309@simon.arlott.org.uk>
-Date: Fri, 11 May 2007 20:41:20 +0100
+	id S1762953AbXEKTld (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 15:41:33 -0400
+Message-ID: <4644C6E9.4020505@simon.arlott.org.uk>
+Date: Fri, 11 May 2007 20:41:29 +0100
 From: Simon Arlott <simon@fire.lp0.eu>
 User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
 MIME-Version: 1.0
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dhowells@redhat.com, trivial@kernel.org
-Subject: [PATCH] spelling fixes: arch/frv/
+       trivial@kernel.org
+Subject: [PATCH] spelling fixes: arch/h8300/
 X-Enigmail-Version: 0.94.1.2
 OpenPGP: id=89C93563
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -24,55 +24,49 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Spelling fixes in arch/frv/.
+Spelling fixes in arch/h8300/.
 
 Signed-off-by: Simon Arlott <simon@fire.lp0.eu>
 ---
- arch/frv/kernel/irq.c       |    2 +-
- arch/frv/kernel/semaphore.c |    2 +-
- arch/frv/kernel/time.c      |    4 ++--
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/h8300/kernel/ints.c           |    2 +-
+ arch/h8300/kernel/irq.c            |    2 +-
+ arch/h8300/kernel/time.c           |    2 +-
+ arch/h8300/kernel/traps.c          |    2 +-
+ arch/h8300/platform/h8s/ints.c     |    2 +-
+ arch/h8300/platform/h8s/ints_h8s.c |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/arch/frv/kernel/irq.c b/arch/frv/kernel/irq.c
-index c7e59dc..206eba5 100644
---- a/arch/frv/kernel/irq.c
-+++ b/arch/frv/kernel/irq.c
-@@ -134,7 +134,7 @@ static struct irq_chip frv_cpu_pic = {
- };
+diff --git a/arch/h8300/kernel/ints.c b/arch/h8300/kernel/ints.c
+index 3e4f479..24269cd 100644
+--- a/arch/h8300/kernel/ints.c
++++ b/arch/h8300/kernel/ints.c
+@@ -144,7 +144,7 @@ int request_irq(unsigned int irq,
+ 	if (use_kmalloc)
+ 		irq_handle = kmalloc(sizeof(irq_handler_t), GFP_ATOMIC);
+ 	else {
+-		/* use bootmem allocater */
++		/* use bootmem allocator */
+ 		irq_handle = (irq_handler_t *)alloc_bootmem(sizeof(irq_handler_t));
+ 		irq_handle = (irq_handler_t *)((unsigned long)irq_handle | 0x80000000);
+ 	}
+diff --git a/arch/h8300/kernel/irq.c b/arch/h8300/kernel/irq.c
+index 43d21e9..8dec4dd 100644
+--- a/arch/h8300/kernel/irq.c
++++ b/arch/h8300/kernel/irq.c
+@@ -68,7 +68,7 @@ static void h8300_shutdown_irq(unsigned int irq)
+ }
  
  /*
-- * handles all normal device IRQ's
-+ * handles all normal device IRQs
-  * - registers are referred to by the __frame variable (GR28)
-  * - IRQ distribution is complicated in this arch because of the many PICs, the
-  *   way they work and the way they cascade
-diff --git a/arch/frv/kernel/semaphore.c b/arch/frv/kernel/semaphore.c
-index 8e182ce..7ee3a14 100644
---- a/arch/frv/kernel/semaphore.c
-+++ b/arch/frv/kernel/semaphore.c
-@@ -139,7 +139,7 @@ void __up(struct semaphore *sem)
- 	waiter = list_entry(sem->wait_list.next, struct sem_waiter, list);
- 
- 	/* We must be careful not to touch 'waiter' after we set ->task = NULL.
--	 * It is an allocated on the waiter's stack and may become invalid at
-+	 * It is allocated on the waiter's stack and may become invalid at
- 	 * any time after that point (due to a wakeup from another source).
- 	 */
- 	list_del_init(&waiter->list);
-diff --git a/arch/frv/kernel/time.c b/arch/frv/kernel/time.c
-index ed588d7..2923afa 100644
---- a/arch/frv/kernel/time.c
-+++ b/arch/frv/kernel/time.c
-@@ -63,7 +63,7 @@ static irqreturn_t timer_interrupt(int irq, void *dummy)
- 	/*
- 	 * Here we are in the timer irq handler. We just have irqs locally
- 	 * disabled but we don't know if the timer_bh is running on the other
--	 * CPU. We need to avoid to SMP race with it. NOTE: we don' t need
-+	 * CPU. We need to avoid to SMP race with it. NOTE: we don't need
- 	 * the irq version of write_lock because as just said we have irq
- 	 * locally disabled. -arca
- 	 */
-@@ -123,7 +123,7 @@ void time_init(void)
+- * h8300 interrupt controler implementation
++ * h8300 interrupt controller implementation
+  */
+ struct irq_chip h8300irq_chip = {
+ 	.name		= "H8300-INTC",
+diff --git a/arch/h8300/kernel/time.c b/arch/h8300/kernel/time.c
+index 3306382..e37c835 100644
+--- a/arch/h8300/kernel/time.c
++++ b/arch/h8300/kernel/time.c
+@@ -53,7 +53,7 @@ void time_init(void)
  
  	/* FIX by dqg : Set to zero for platforms that don't have tod */
  	/* without this time is undefined and can overflow time_t, causing  */
@@ -81,6 +75,45 @@ index ed588d7..2923afa 100644
  	year = 1980;
  	mon = day = 1;
  	hour = min = sec = 0;
+diff --git a/arch/h8300/kernel/traps.c b/arch/h8300/kernel/traps.c
+index 300e327..ceb7fbe 100644
+--- a/arch/h8300/kernel/traps.c
++++ b/arch/h8300/kernel/traps.c
+@@ -5,7 +5,7 @@
+  * Cloned from Linux/m68k.
+  *
+  * No original Copyright holder listed,
+- * Probabily original (C) Roman Zippel (assigned DJD, 1999)
++ * Probable original (C) Roman Zippel (assigned DJD, 1999)
+  *
+  * Copyright 1999-2000 D. Jeff Dionne, <jeff@rt-control.com>
+  *
+diff --git a/arch/h8300/platform/h8s/ints.c b/arch/h8300/platform/h8s/ints.c
+index a71d6e2..551fd5f 100644
+--- a/arch/h8300/platform/h8s/ints.c
++++ b/arch/h8300/platform/h8s/ints.c
+@@ -179,7 +179,7 @@ int request_irq(unsigned int irq,
+ 	if (use_kmalloc)
+ 		irq_handle = kmalloc(sizeof(irq_handler_t), GFP_ATOMIC);
+ 	else {
+-		/* use bootmem allocater */
++		/* use bootmem allocator */
+ 		irq_handle = (irq_handler_t *)alloc_bootmem(sizeof(irq_handler_t));
+ 		irq_handle = (irq_handler_t *)((unsigned long)irq_handle | 0x80000000);
+ 	}
+diff --git a/arch/h8300/platform/h8s/ints_h8s.c b/arch/h8300/platform/h8s/ints_h8s.c
+index 93395d2..faa8a45 100644
+--- a/arch/h8300/platform/h8s/ints_h8s.c
++++ b/arch/h8300/platform/h8s/ints_h8s.c
+@@ -63,7 +63,7 @@ static const struct irq_pins irq_assign_table1[16]={
+ 	{H8300_GPIO_P2,H8300_GPIO_B6},{H8300_GPIO_P2,H8300_GPIO_B7},
+ };
+ 
+-/* IRQ to GPIO pinno transrate */
++/* IRQ to GPIO pin translation */
+ #define IRQ_GPIO_MAP(irqbit,irq,port,bit)			  \
+ do {								  \
+ 	if (*(volatile unsigned short *)ITSR & irqbit) {	  \
 -- 
 1.5.0.1
 
