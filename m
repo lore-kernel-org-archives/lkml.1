@@ -1,49 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbXEKLSk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759999AbXEKLc7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760255AbXEKLSk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 07:18:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757304AbXEKLSe
+	id S1759999AbXEKLc7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 07:32:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756665AbXEKLcw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 07:18:34 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:41454 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755986AbXEKLSd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 07:18:33 -0400
-Message-ID: <464450CC.7010002@s5r6.in-berlin.de>
-Date: Fri, 11 May 2007 13:17:32 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Fri, 11 May 2007 07:32:52 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:39915 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756499AbXEKLcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 07:32:52 -0400
+Date: Fri, 11 May 2007 13:32:45 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>, Jordi Colomer <jco@ict.es>
+Subject: Re: [PATCH] Fix UCB1x00 driver to use sched_setscheduler
+Message-ID: <20070511113245.GA27358@elf.ucw.cz>
+References: <87ps57ejah.wl%takeuchi_satoru@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Jonathan Corbet <corbet@lwn.net>
-CC: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Satyam Sharma <satyam.sharma@gmail.com>
-Subject: Re: [PATCH] "volatile considered harmful", take 2
-References: <6143.1178828419@lwn.net>
-In-Reply-To: <6143.1178828419@lwn.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87ps57ejah.wl%takeuchi_satoru@jp.fujitsu.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Corbet wrote:
-> +The key point to understand with regard to volatile is that its purpose is
-> +to suppress optimization, which is almost never what one really wants to
-> +do.  In the kernel, one must protect shared data structures against
-> +unwanted concurrent access, which is very much a different task.  As it
-> +happens, once the critical sections are properly implemented, the compiler
-> +optimization issues which volatile was added to prevent will have been
-> +taken care of in a more efficient way.
+Hi!
 
-The "As it happens... efficient way." sentence is hard to read:  It is
-long and nested like in German, combined with several English
-ambiguities (e.g. WRT noun vs. verb vs. adjective).  Maybe just leave
-this sentence out, as it is redundant to later statements like "In
-properly-written kernel code, volatile can only serve to slow things down".
+> Fix Touchscreen driver for UCB1x00-based touchscreens to use
+> sched_setscheduler() instead of setting the fields of task_struct directly.
+> 
+> Signed-off-by: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+
+Looks ok to me.
+								Pavel
+
+> Index: linux-2.6.21-fix-ucb-drivers/drivers/mfd/ucb1x00-ts.c
+> ===================================================================
+> --- linux-2.6.21-fix-ucb-drivers.orig/drivers/mfd/ucb1x00-ts.c	2007-05-11 18:53:36.000000000 +0900
+> +++ linux-2.6.21-fix-ucb-drivers/drivers/mfd/ucb1x00-ts.c	2007-05-11 19:33:20.000000000 +0900
+> @@ -214,8 +214,9 @@ static int ucb1x00_thread(void *_ts)
+>  	 * We could run as a real-time thread.  However, thus far
+>  	 * this doesn't seem to be necessary.
+>  	 */
+> -//	tsk->policy = SCHED_FIFO;
+> -//	tsk->rt_priority = 1;
+> +//	struct sched_param param = { .sched_priority = 1 };
+> +//
+> +//	sched_setscheduler(tsk, SCHED_FIFO, &param);
+>  
+>  	valid = 0;
+>  
+
 -- 
-Stefan Richter
--=====-=-=== -=-= -=-==
-http://arcgraph.de/sr/
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
