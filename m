@@ -1,611 +1,312 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030673AbXEKTSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763696AbXEKTTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030673AbXEKTSl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763238AbXEKTLP
+	id S1763696AbXEKTTA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763204AbXEKTLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:11:15 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35321 "EHLO
+	Fri, 11 May 2007 15:11:17 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:35324 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1763204AbXEKTLJ (ORCPT
+	with ESMTP id S1763201AbXEKTLK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:11:09 -0400
-Message-Id: <20070511001157.553465000@goop.org>
+	Fri, 11 May 2007 15:11:10 -0400
+Message-Id: <20070511001203.395914000@goop.org>
 References: <20070511000643.025196000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:06:49 -0700
+Date: Thu, 10 May 2007 17:07:00 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
-       Xen-devel <xen-devel@lists.xensource.com>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: [patch 06/28]xen: xen event channels
-Content-Disposition: inline; filename=xen-events.patch
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [patch 17/28]xen: deal with negative stolen time
+Content-Disposition: inline; filename=xen-time-cleanups.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Xen implements interrupts in terms of event channels.  This patch maps
-an event through an event channel to an irq, and then feeds it through
-the normal interrupt path, via a Xen irq_chip implementation.
+Stolen time should never be negative; if it ever is, it probably
+indicates some other bug.  However, if it does happen, then its better
+to just clamp it at zero, rather than trying to account for it as a
+huge positive number.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Eric W. Biederman <ebiederm@xmission.com>
+Acked-by: Chris Wright <chrisw@sous-sol.org>
 
 ---
- arch/i386/xen/Makefile    |    3 
- arch/i386/xen/enlighten.c |    1 
- arch/i386/xen/events.c    |  511 +++++++++++++++++++++++++++++++++++++++++++++
- include/xen/events.h      |   28 ++
- 4 files changed, 542 insertions(+), 1 deletion(-)
+ arch/i386/xen/smp.c     |    4 +
+ arch/i386/xen/time.c    |  112 ++++++++++++++++++++++++++++++++---------------
+ arch/i386/xen/xen-ops.h |    3 -
+ 3 files changed, 83 insertions(+), 36 deletions(-)
 
 ===================================================================
---- a/arch/i386/xen/Makefile
-+++ b/arch/i386/xen/Makefile
-@@ -1,1 +1,2 @@ obj-y		:= enlighten.o setup.o features.o
--obj-y		:= enlighten.o setup.o features.o multicalls.o mmu.o
-+obj-y		:= enlighten.o setup.o features.o multicalls.o mmu.o \
-+			events.o
+--- a/arch/i386/xen/smp.c
++++ b/arch/i386/xen/smp.c
+@@ -72,10 +72,11 @@ static __cpuinit void cpu_bringup_and_id
+ 	int cpu = smp_processor_id();
+ 
+ 	cpu_init();
+-	xen_setup_timer();
+ 
+ 	preempt_disable();
+ 	per_cpu(cpu_state, cpu) = CPU_ONLINE;
++
++	xen_setup_cpu_clockevents();
+ 
+ 	/* We can take interrupts now: we're officially "up". */
+ 	local_irq_enable();
+@@ -263,6 +264,7 @@ int __cpuinit xen_cpu_up(unsigned int cp
+ 	per_cpu(current_task, cpu) = idle;
+ 	xen_vcpu_setup(cpu);
+ 	irq_ctx_init(cpu);
++	xen_setup_timer(cpu);
+ 
+ 	/* make sure interrupts start blocked */
+ 	per_cpu(xen_vcpu, cpu)->evtchn_upcall_mask = 1;
 ===================================================================
---- a/arch/i386/xen/enlighten.c
-+++ b/arch/i386/xen/enlighten.c
-@@ -593,6 +593,7 @@ static const struct paravirt_ops xen_par
+--- a/arch/i386/xen/time.c
++++ b/arch/i386/xen/time.c
+@@ -49,6 +49,35 @@ static DEFINE_PER_CPU(u64, residual_stol
+ static DEFINE_PER_CPU(u64, residual_stolen);
+ static DEFINE_PER_CPU(u64, residual_blocked);
  
- 	.memory_setup = xen_memory_setup,
- 	.arch_setup = xen_arch_setup,
-+	.init_IRQ = xen_init_IRQ,
- 
- 	.cpuid = xen_cpuid,
- 
-===================================================================
---- /dev/null
-+++ b/arch/i386/xen/events.c
-@@ -0,0 +1,511 @@
-+/*
-+ * Xen event channels
-+ *
-+ * Xen models interrupts with abstract event channels.  Because each
-+ * domain gets 1024 event channels, but NR_IRQ is not that large, we
-+ * must dynamically map irqs<->event channels.  The event channels
-+ * interface with the rest of the kernel by defining a xen interrupt
-+ * chip.  When an event is recieved, it is mapped to an irq and sent
-+ * through the normal interrupt processing path.
-+ *
-+ * There are four kinds of events which can be mapped to an event
-+ * channel:
-+ *
-+ * 1. Inter-domain notifications.  This includes all the virtual
-+ *    device events, since they're driven by front-ends in another domain
-+ *    (typically dom0).
-+ * 2. VIRQs, typically used for timers.  These are per-cpu events.
-+ * 3. IPIs.
-+ * 4. Hardware interrupts. Not supported at present.
-+ *
-+ * Jeremy Fitzhardinge <jeremy@xensource.com>, XenSource Inc, 2007
-+ */
-+
-+#include <linux/linkage.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+
-+#include <asm/ptrace.h>
-+#include <asm/irq.h>
-+#include <asm/sync_bitops.h>
-+#include <asm/xen/hypercall.h>
-+
-+#include <xen/events.h>
-+#include <xen/interface/xen.h>
-+#include <xen/interface/event_channel.h>
-+
-+#include "xen-ops.h"
-+
-+/*
-+ * This lock protects updates to the following mapping and reference-count
-+ * arrays. The lock does not need to be acquired to read the mapping tables.
-+ */
-+static DEFINE_SPINLOCK(irq_mapping_update_lock);
-+
-+/* IRQ <-> VIRQ mapping. */
-+static DEFINE_PER_CPU(int, virq_to_irq[NR_VIRQS]) = {[0 ... NR_VIRQS-1] = -1};
-+
-+/* Packed IRQ information: binding type, sub-type index, and event channel. */
-+struct packed_irq
++/* return an consistent snapshot of 64-bit time/counter value */
++static u64 get64(const u64 *p)
 +{
-+	unsigned short evtchn;
-+	unsigned char index;
-+	unsigned char type;
-+};
++	u64 ret;
 +
-+static struct packed_irq irq_info[NR_IRQS];
-+
-+/* Binding types. */
-+enum { IRQT_UNBOUND, IRQT_PIRQ, IRQT_VIRQ, IRQT_IPI, IRQT_EVTCHN };
-+
-+/* Convenient shorthand for packed representation of an unbound IRQ. */
-+#define IRQ_UNBOUND	mk_irq_info(IRQT_UNBOUND, 0, 0)
-+
-+static int evtchn_to_irq[NR_EVENT_CHANNELS] = {
-+	[0 ... NR_EVENT_CHANNELS-1] = -1
-+};
-+static unsigned long cpu_evtchn_mask[NR_CPUS][NR_EVENT_CHANNELS/BITS_PER_LONG];
-+static u8 cpu_evtchn[NR_EVENT_CHANNELS];
-+
-+/* Reference counts for bindings to IRQs. */
-+static int irq_bindcount[NR_IRQS];
-+
-+/* Xen will never allocate port zero for any purpose. */
-+#define VALID_EVTCHN(chn)	((chn) != 0)
-+
-+/*
-+ * Force a proper event-channel callback from Xen after clearing the
-+ * callback mask. We do this in a very simple manner, by making a call
-+ * down into Xen. The pending flag will be checked by Xen on return.
-+ */
-+void force_evtchn_callback(void)
-+{
-+	(void)HYPERVISOR_xen_version(0, NULL);
-+}
-+EXPORT_SYMBOL_GPL(force_evtchn_callback);
-+
-+static struct irq_chip xen_dynamic_chip;
-+
-+/* Constructor for packed IRQ information. */
-+static inline struct packed_irq mk_irq_info(u32 type, u32 index, u32 evtchn)
-+{
-+	return (struct packed_irq) { evtchn, index, type };
-+}
-+
-+/*
-+ * Accessors for packed IRQ information.
-+ */
-+static inline unsigned int evtchn_from_irq(int irq)
-+{
-+	return irq_info[irq].evtchn;
-+}
-+
-+static inline unsigned int index_from_irq(int irq)
-+{
-+	return irq_info[irq].index;
-+}
-+
-+static inline unsigned int type_from_irq(int irq)
-+{
-+	return irq_info[irq].type;
-+}
-+
-+static inline unsigned long active_evtchns(unsigned int cpu,
-+					   struct shared_info *sh,
-+					   unsigned int idx)
-+{
-+	return (sh->evtchn_pending[idx] &
-+		cpu_evtchn_mask[cpu][idx] &
-+		~sh->evtchn_mask[idx]);
-+}
-+
-+static void bind_evtchn_to_cpu(unsigned int chn, unsigned int cpu)
-+{
-+	int irq = evtchn_to_irq[chn];
-+
-+	BUG_ON(irq == -1);
-+#ifdef CONFIG_SMP
-+	irq_desc[irq].affinity = cpumask_of_cpu(cpu);
-+#endif
-+
-+	__clear_bit(chn, cpu_evtchn_mask[cpu_evtchn[chn]]);
-+	__set_bit(chn, cpu_evtchn_mask[cpu]);
-+
-+	cpu_evtchn[chn] = cpu;
-+}
-+
-+static void init_evtchn_cpu_bindings(void)
-+{
-+#ifdef CONFIG_SMP
-+	int i;
-+	/* By default all event channels notify CPU#0. */
-+	for (i = 0; i < NR_IRQS; i++)
-+		irq_desc[i].affinity = cpumask_of_cpu(0);
-+#endif
-+
-+	memset(cpu_evtchn, 0, sizeof(cpu_evtchn));
-+	memset(cpu_evtchn_mask[0], ~0, sizeof(cpu_evtchn_mask[0]));
-+}
-+
-+static inline unsigned int cpu_from_evtchn(unsigned int evtchn)
-+{
-+	return cpu_evtchn[evtchn];
-+}
-+
-+static inline void clear_evtchn(int port)
-+{
-+	struct shared_info *s = HYPERVISOR_shared_info;
-+	sync_clear_bit(port, &s->evtchn_pending[0]);
-+}
-+
-+static inline void set_evtchn(int port)
-+{
-+	struct shared_info *s = HYPERVISOR_shared_info;
-+	sync_set_bit(port, &s->evtchn_pending[0]);
-+}
-+
-+
-+/**
-+ * notify_remote_via_irq - send event to remote end of event channel via irq
-+ * @irq: irq of event channel to send event to
-+ *
-+ * Unlike notify_remote_via_evtchn(), this is safe to use across
-+ * save/restore. Notifications on a broken connection are silently
-+ * dropped.
-+ */
-+void notify_remote_via_irq(int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	if (VALID_EVTCHN(evtchn))
-+		notify_remote_via_evtchn(evtchn);
-+}
-+EXPORT_SYMBOL_GPL(notify_remote_via_irq);
-+
-+static void mask_evtchn(int port)
-+{
-+	struct shared_info *s = HYPERVISOR_shared_info;
-+	sync_set_bit(port, &s->evtchn_mask[0]);
-+}
-+
-+static void unmask_evtchn(int port)
-+{
-+	struct shared_info *s = HYPERVISOR_shared_info;
-+	unsigned int cpu = get_cpu();
-+
-+	BUG_ON(!irqs_disabled());
-+
-+	/* Slow path (hypercall) if this is a non-local port. */
-+	if (unlikely(cpu != cpu_from_evtchn(port))) {
-+		struct evtchn_unmask unmask = { .port = port };
-+		(void)HYPERVISOR_event_channel_op(EVTCHNOP_unmask, &unmask);
-+	} else {
-+		struct vcpu_info *vcpu_info = __get_cpu_var(xen_vcpu);
-+
-+		sync_clear_bit(port, &s->evtchn_mask[0]);
++	if (BITS_PER_LONG < 64) {
++		u32 *p32 = (u32 *)p;
++		u32 h, l;
 +
 +		/*
-+		 * The following is basically the equivalent of
-+		 * 'hw_resend_irq'. Just like a real IO-APIC we 'lose
-+		 * the interrupt edge' if the channel is masked.
++		 * Read high then low, and then make sure high is
++		 * still the same; this will only loop if low wraps
++		 * and carries into high.
++		 * XXX some clean way to make this endian-proof?
 +		 */
-+		if (sync_test_bit(port, &s->evtchn_pending[0]) &&
-+		    !sync_test_and_set_bit(port / BITS_PER_LONG,
-+					   &vcpu_info->evtchn_pending_sel))
-+			vcpu_info->evtchn_upcall_pending = 1;
-+	}
++		do {
++			h = p32[1];
++			barrier();
++			l = p32[0];
++			barrier();
++		} while (p32[1] != h);
 +
-+	put_cpu();
-+}
-+
-+static int find_unbound_irq(void)
-+{
-+	int irq;
-+
-+	/* Only allocate from dynirq range */
-+	for (irq = 0; irq < NR_IRQS; irq++)
-+		if (irq_bindcount[irq] == 0)
-+			break;
-+
-+	if (irq == NR_IRQS)
-+		panic("No available IRQ to bind to: increase NR_IRQS!\n");
-+
-+	return irq;
-+}
-+
-+static int bind_evtchn_to_irq(unsigned int evtchn)
-+{
-+	int irq;
-+
-+	spin_lock(&irq_mapping_update_lock);
-+
-+	irq = evtchn_to_irq[evtchn];
-+
-+	if (irq == -1) {
-+		irq = find_unbound_irq();
-+
-+		dynamic_irq_init(irq);
-+		set_irq_chip_and_handler_name(irq, &xen_dynamic_chip,
-+					      handle_level_irq, "event");
-+
-+		evtchn_to_irq[evtchn] = irq;
-+		irq_info[irq] = mk_irq_info(IRQT_EVTCHN, 0, evtchn);
-+	}
-+
-+	irq_bindcount[irq]++;
-+
-+	spin_unlock(&irq_mapping_update_lock);
-+
-+	return irq;
-+}
-+
-+static int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
-+{
-+	struct evtchn_bind_virq bind_virq;
-+	int evtchn, irq;
-+
-+	spin_lock(&irq_mapping_update_lock);
-+
-+	irq = per_cpu(virq_to_irq, cpu)[virq];
-+
-+	if (irq == -1) {
-+		bind_virq.virq = virq;
-+		bind_virq.vcpu = cpu;
-+		if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_virq,
-+						&bind_virq) != 0)
-+			BUG();
-+		evtchn = bind_virq.port;
-+
-+		irq = find_unbound_irq();
-+
-+		dynamic_irq_init(irq);
-+		set_irq_chip_and_handler_name(irq, &xen_dynamic_chip,
-+					      handle_level_irq, "virq");
-+
-+		evtchn_to_irq[evtchn] = irq;
-+		irq_info[irq] = mk_irq_info(IRQT_VIRQ, virq, evtchn);
-+
-+		per_cpu(virq_to_irq, cpu)[virq] = irq;
-+
-+		bind_evtchn_to_cpu(evtchn, cpu);
-+	}
-+
-+	irq_bindcount[irq]++;
-+
-+	spin_unlock(&irq_mapping_update_lock);
-+
-+	return irq;
-+}
-+
-+static void unbind_from_irq(unsigned int irq)
-+{
-+	struct evtchn_close close;
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	spin_lock(&irq_mapping_update_lock);
-+
-+	if (VALID_EVTCHN(evtchn) && (--irq_bindcount[irq] == 0)) {
-+		close.port = evtchn;
-+		if (HYPERVISOR_event_channel_op(EVTCHNOP_close, &close) != 0)
-+			BUG();
-+
-+		switch (type_from_irq(irq)) {
-+		case IRQT_VIRQ:
-+			per_cpu(virq_to_irq, cpu_from_evtchn(evtchn))
-+				[index_from_irq(irq)] = -1;
-+			break;
-+		default:
-+			break;
-+		}
-+
-+		/* Closed ports are implicitly re-bound to VCPU0. */
-+		bind_evtchn_to_cpu(evtchn, 0);
-+
-+		evtchn_to_irq[evtchn] = -1;
-+		irq_info[irq] = IRQ_UNBOUND;
-+
-+		dynamic_irq_init(irq);
-+	}
-+
-+	spin_unlock(&irq_mapping_update_lock);
-+}
-+
-+int bind_evtchn_to_irqhandler(unsigned int evtchn,
-+			      irqreturn_t (*handler)(int, void *),
-+			      unsigned long irqflags,
-+			      const char *devname, void *dev_id)
-+{
-+	unsigned int irq;
-+	int retval;
-+
-+	irq = bind_evtchn_to_irq(evtchn);
-+	retval = request_irq(irq, handler, irqflags, devname, dev_id);
-+	if (retval != 0) {
-+		unbind_from_irq(irq);
-+		return retval;
-+	}
-+
-+	return irq;
-+}
-+EXPORT_SYMBOL_GPL(bind_evtchn_to_irqhandler);
-+
-+int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
-+			    irqreturn_t (*handler)(int, void *),
-+			    unsigned long irqflags, const char *devname, void *dev_id)
-+{
-+	unsigned int irq;
-+	int retval;
-+
-+	irq = bind_virq_to_irq(virq, cpu);
-+	retval = request_irq(irq, handler, irqflags, devname, dev_id);
-+	if (retval != 0) {
-+		unbind_from_irq(irq);
-+		return retval;
-+	}
-+
-+	return irq;
-+}
-+EXPORT_SYMBOL_GPL(bind_virq_to_irqhandler);
-+
-+void unbind_from_irqhandler(unsigned int irq, void *dev_id)
-+{
-+	free_irq(irq, dev_id);
-+	unbind_from_irq(irq);
-+}
-+EXPORT_SYMBOL_GPL(unbind_from_irqhandler);
-+
-+/*
-+ * Search the CPUs pending events bitmasks.  For each one found, map
-+ * the event number to an irq, and feed it into do_IRQ() for
-+ * handling.
-+ *
-+ * Xen uses a two-level bitmap to speed searching.  The first level is
-+ * a bitset of words which contain pending event bits.  The second
-+ * level is a bitset of pending events themselves.
-+ */
-+fastcall void xen_evtchn_do_upcall(struct pt_regs *regs)
-+{
-+	int cpu = get_cpu();
-+	struct shared_info *s = HYPERVISOR_shared_info;
-+	struct vcpu_info *vcpu_info = __get_cpu_var(xen_vcpu);
-+	unsigned long pending_words;
-+
-+	vcpu_info->evtchn_upcall_pending = 0;
-+
-+	/* NB. No need for a barrier here -- XCHG is a barrier on x86. */
-+	pending_words = xchg(&vcpu_info->evtchn_pending_sel, 0);
-+	while (pending_words != 0) {
-+		unsigned long pending_bits;
-+		int word_idx = __ffs(pending_words);
-+		pending_words &= ~(1UL << word_idx);
-+
-+		while ((pending_bits = active_evtchns(cpu, s, word_idx)) != 0) {
-+			int bit_idx = __ffs(pending_bits);
-+			int port = (word_idx * BITS_PER_LONG) + bit_idx;
-+			int irq = evtchn_to_irq[port];
-+
-+			if (irq != -1) {
-+				regs->orig_eax = ~irq;
-+				do_IRQ(regs);
-+			}
-+		}
-+	}
-+
-+	put_cpu();
-+}
-+
-+/* Rebind an evtchn so that it gets delivered to a specific cpu */
-+static void rebind_irq_to_cpu(unsigned irq, unsigned tcpu)
-+{
-+	struct evtchn_bind_vcpu bind_vcpu;
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	if (!VALID_EVTCHN(evtchn))
-+		return;
-+
-+	/* Send future instances of this interrupt to other vcpu. */
-+	bind_vcpu.port = evtchn;
-+	bind_vcpu.vcpu = tcpu;
-+
-+	/*
-+	 * If this fails, it usually just indicates that we're dealing with a
-+	 * virq or IPI channel, which don't actually need to be rebound. Ignore
-+	 * it, but don't do the xenlinux-level rebind in that case.
-+	 */
-+	if (HYPERVISOR_event_channel_op(EVTCHNOP_bind_vcpu, &bind_vcpu) >= 0)
-+		bind_evtchn_to_cpu(evtchn, tcpu);
-+}
-+
-+
-+static void set_affinity_irq(unsigned irq, cpumask_t dest)
-+{
-+	unsigned tcpu = first_cpu(dest);
-+	rebind_irq_to_cpu(irq, tcpu);
-+}
-+
-+static void enable_dynirq(unsigned int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	if (VALID_EVTCHN(evtchn))
-+		unmask_evtchn(evtchn);
-+}
-+
-+static void disable_dynirq(unsigned int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	if (VALID_EVTCHN(evtchn))
-+		mask_evtchn(evtchn);
-+}
-+
-+static void ack_dynirq(unsigned int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+
-+	move_native_irq(irq);
-+
-+	if (VALID_EVTCHN(evtchn))
-+		clear_evtchn(evtchn);
-+}
-+
-+static int retrigger_dynirq(unsigned int irq)
-+{
-+	int evtchn = evtchn_from_irq(irq);
-+	int ret = 0;
-+
-+	if (VALID_EVTCHN(evtchn)) {
-+		set_evtchn(evtchn);
-+		ret = 1;
-+	}
++		ret = (((u64)h) << 32) | l;
++	} else
++		ret = *p;
 +
 +	return ret;
 +}
 +
-+static struct irq_chip xen_dynamic_chip __read_mostly = {
-+	.name		= "xen-dyn",
-+	.mask		= disable_dynirq,
-+	.unmask		= enable_dynirq,
-+	.ack		= ack_dynirq,
-+	.set_affinity	= set_affinity_irq,
-+	.retrigger	= retrigger_dynirq,
-+};
+ /*
+  * Runstate accounting
+  */
+@@ -67,31 +96,29 @@ static void get_runstate_snapshot(struct
+ 	 * stronger than a compiler barrier when fetching it.
+ 	 */
+ 	do {
+-		state_time = state->state_entry_time;
++		state_time = get64(&state->state_entry_time);
+ 		barrier();
+ 		*res = *state;
+ 		barrier();
+-	} while(state->state_entry_time != state_time);
+-}
+-
+-static void setup_runstate_info(void)
++	} while(get64(&state->state_entry_time) != state_time);
++}
 +
-+void __init xen_init_IRQ(void)
++static void setup_runstate_info(int cpu)
+ {
+ 	struct vcpu_register_runstate_memory_area area;
+ 
+-	area.addr.v = &__get_cpu_var(runstate);
++	area.addr.v = &per_cpu(runstate, cpu);
+ 
+ 	if (HYPERVISOR_vcpu_op(VCPUOP_register_runstate_memory_area,
+-			       smp_processor_id(), &area))
++			       cpu, &area))
+ 		BUG();
+-
+-	get_runstate_snapshot(&__get_cpu_var(runstate_snapshot));
+ }
+ 
+ static void do_stolen_accounting(void)
+ {
+ 	struct vcpu_runstate_info state;
+ 	struct vcpu_runstate_info *snap;
+-	u64 blocked, runnable, offline, stolen;
++	s64 blocked, runnable, offline, stolen;
+ 	cputime_t ticks;
+ 
+ 	get_runstate_snapshot(&state);
+@@ -111,6 +138,10 @@ static void do_stolen_accounting(void)
+ 	   including any left-overs from last time.  Passing NULL to
+ 	   account_steal_time accounts the time as stolen. */
+ 	stolen = runnable + offline + __get_cpu_var(residual_stolen);
++
++	if (stolen < 0)
++		stolen = 0;
++
+ 	ticks = 0;
+ 	while(stolen >= NS_PER_TICK) {
+ 		ticks++;
+@@ -123,6 +154,10 @@ static void do_stolen_accounting(void)
+ 	   including any left-overs from last time.  Passing idle to
+ 	   account_steal_time accounts the time as idle/wait. */
+ 	blocked += __get_cpu_var(residual_blocked);
++
++	if (blocked < 0)
++		blocked = 0;
++
+ 	ticks = 0;
+ 	while(blocked >= NS_PER_TICK) {
+ 		ticks++;
+@@ -141,7 +176,8 @@ unsigned long long xen_sched_clock(void)
+ {
+ 	struct vcpu_runstate_info state;
+ 	cycle_t now;
+-	unsigned long long ret;
++	u64 ret;
++	s64 offset;
+ 
+ 	/*
+ 	 * Ideally sched_clock should be called on a per-cpu basis
+@@ -156,9 +192,13 @@ unsigned long long xen_sched_clock(void)
+ 
+ 	WARN_ON(state.state != RUNSTATE_running);
+ 
++	offset = now - state.state_entry_time;
++	if (offset < 0)
++		offset = 0;
++
+ 	ret = state.time[RUNSTATE_blocked] +
+ 		state.time[RUNSTATE_running] +
+-		(now - state.state_entry_time);
++		offset;
+ 
+ 	preempt_enable();
+ 
+@@ -186,12 +226,10 @@ unsigned long xen_cpu_khz(void)
+  * Reads a consistent set of time-base values from Xen, into a shadow data
+  * area.
+  */
+-static void get_time_values_from_xen(void)
++static unsigned get_time_values_from_xen(void)
+ {
+ 	struct vcpu_time_info   *src;
+ 	struct shadow_time_info *dst;
+-
+-	preempt_disable();
+ 
+ 	src = &__get_cpu_var(xen_vcpu)->time;
+ 	dst = &__get_cpu_var(shadow_time);
+@@ -206,7 +244,7 @@ static void get_time_values_from_xen(voi
+ 		rmb();
+ 	} while ((src->version & 1) | (dst->version ^ src->version));
+ 
+-	preempt_enable();
++	return dst->version;
+ }
+ 
+ /*
+@@ -250,7 +288,7 @@ static u64 get_nsec_offset(struct shadow
+ static u64 get_nsec_offset(struct shadow_time_info *shadow)
+ {
+ 	u64 now, delta;
+-	rdtscll(now);
++	now = native_read_tsc();
+ 	delta = now - shadow->tsc_timestamp;
+ 	return scale_delta(delta, shadow->tsc_to_nsec_mul, shadow->tsc_shift);
+ }
+@@ -259,10 +297,14 @@ static cycle_t xen_clocksource_read(void
+ {
+ 	struct shadow_time_info *shadow = &get_cpu_var(shadow_time);
+ 	cycle_t ret;
+-
+-	get_time_values_from_xen();
+-
+-	ret = shadow->system_timestamp + get_nsec_offset(shadow);
++	unsigned version;
++
++	do {
++		version = get_time_values_from_xen();
++		barrier();
++		ret = shadow->system_timestamp + get_nsec_offset(shadow);
++		barrier();
++	} while(version != __get_cpu_var(xen_vcpu)->time.version);
+ 
+ 	put_cpu_var(shadow_time);
+ 
+@@ -484,9 +526,8 @@ static irqreturn_t xen_timer_interrupt(i
+ 	return ret;
+ }
+ 
+-void xen_setup_timer(void)
+-{
+-	int cpu = smp_processor_id();
++void xen_setup_timer(int cpu)
 +{
-+	int i;
+ 	const char *name;
+ 	struct clock_event_device *evt;
+ 	int irq;
+@@ -501,23 +542,25 @@ void xen_setup_timer(void)
+ 				      IRQF_DISABLED|IRQF_PERCPU|IRQF_NOBALANCING,
+ 				      name, NULL);
+ 
+-	evt = &get_cpu_var(xen_clock_events);
++	evt = &per_cpu(xen_clock_events, cpu);
+ 	memcpy(evt, xen_clockevent, sizeof(*evt));
+ 
+ 	evt->cpumask = cpumask_of_cpu(cpu);
+ 	evt->irq = irq;
+-	clockevents_register_device(evt);
+-
+-	setup_runstate_info();
+-
+-	put_cpu_var(xen_clock_events);
 +
-+	init_evtchn_cpu_bindings();
++	setup_runstate_info(cpu);
++}
 +
-+	/* No event channels are 'live' right now. */
-+	for (i = 0; i < NR_EVENT_CHANNELS; i++)
-+		mask_evtchn(i);
++void xen_setup_cpu_clockevents(void)
++{
++	BUG_ON(preemptible());
 +
-+	/* Dynamic IRQ space is currently unbound. Zero the refcnts. */
-+	for (i = 0; i < NR_IRQS; i++)
-+		irq_bindcount[i] = 0;
-+
-+	irq_ctx_init(smp_processor_id());
++	clockevents_register_device(&__get_cpu_var(xen_clock_events));
+ }
+ 
+ __init void xen_time_init(void)
+ {
+ 	int cpu = smp_processor_id();
+-
+-	get_time_values_from_xen();
+ 
+ 	clocksource_register(&xen_clocksource);
+ 
+@@ -535,5 +578,6 @@ __init void xen_time_init(void)
+ 
+ 	tsc_disable = 0;
+ 
+-	xen_setup_timer();
+-}
++	xen_setup_timer(cpu);
++	xen_setup_cpu_clockevents();
 +}
 ===================================================================
---- /dev/null
-+++ b/include/xen/events.h
-@@ -0,0 +1,28 @@
-+#ifndef _XEN_EVENTS_H
-+#define _XEN_EVENTS_H
-+
-+#include <linux/irq.h>
-+
-+int bind_evtchn_to_irqhandler(unsigned int evtchn,
-+			      irqreturn_t (*handler)(int, void *),
-+			      unsigned long irqflags, const char *devname,
-+			      void *dev_id);
-+int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
-+			    irqreturn_t (*handler)(int, void *),
-+			    unsigned long irqflags, const char *devname, void *dev_id);
-+
-+/*
-+ * Common unbind function for all event sources. Takes IRQ to unbind from.
-+ * Automatically closes the underlying event channel (even for bindings
-+ * made with bind_evtchn_to_irqhandler()).
-+ */
-+void unbind_from_irqhandler(unsigned int irq, void *dev_id);
-+
-+static inline void notify_remote_via_evtchn(int port)
-+{
-+	struct evtchn_send send = { .port = port };
-+	(void)HYPERVISOR_event_channel_op(EVTCHNOP_send, &send);
-+}
-+
-+extern void notify_remote_via_irq(int irq);
-+#endif	/* _XEN_EVENTS_H */
+--- a/arch/i386/xen/xen-ops.h
++++ b/arch/i386/xen/xen-ops.h
+@@ -25,7 +25,8 @@ unsigned long xen_get_wallclock(void);
+ unsigned long xen_get_wallclock(void);
+ int xen_set_wallclock(unsigned long time);
+ unsigned long long xen_sched_clock(void);
+-void xen_setup_timer(void);
++void xen_setup_timer(int cpu);
++void xen_setup_cpu_clockevents(void);
+ 
+ void xen_mark_init_mm_pinned(void);
+ 
 
 -- 
 
