@@ -1,59 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761870AbXEKNdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760868AbXEKNiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761870AbXEKNdR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 09:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761538AbXEKNdA
+	id S1760868AbXEKNiA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 09:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbXEKNhx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 09:33:00 -0400
-Received: from ug-out-1314.google.com ([66.249.92.174]:41585 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758583AbXEKNc7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 09:32:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
-        b=EmRUIczJhOTkrCDvvBETI9XL2jO3UEgQ+wDddWf8uL9VtKKVvMLRWJCuvcudyB9FzfrBGnJeThnbS2H+g6svhkT5cMcuQv1yRJt0mZljYpQ6Oi306Sbrz3OYfHUs+AJAHbPj5hBy2RqJu8qUNlvBPOC4N/7B1YOywlVa/1ZuI54=
-Message-ID: <528646bc0705110632p264f7f01g406802e3084fde0@mail.gmail.com>
-Date: Fri, 11 May 2007 07:32:58 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: [PATCH 1/2] Eliminate references to new_client in i2c documentation
-Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20070511100139.7bf65825@hyperion.delvare>
+	Fri, 11 May 2007 09:37:53 -0400
+Received: from smtp5-g19.free.fr ([212.27.42.35]:57993 "EHLO smtp5-g19.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750888AbXEKNhw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 09:37:52 -0400
+Message-ID: <1178890671.464471af1bd04@imp.free.fr>
+Date: Fri, 11 May 2007 15:37:51 +0200
+From: Remi Colinet <remi.colinet@free.fr>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dtor@mail.ru>
+Subject: Re: Regression in 2.6.21-mm1 (git-input) on Dell D610 laptop
+References: <1178802325.46431895e9469@imp.free.fr> <20070510185021.c3d28048.akpm@linux-foundation.org>
+In-Reply-To: <20070510185021.c3d28048.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070510210409.11678.5134.stgit@trillian.secretlab.ca>
-	 <20070511100139.7bf65825@hyperion.delvare>
-X-Google-Sender-Auth: 8021f7d11615a99a
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+User-Agent: Internet Messaging Program (IMP) 3.2.5
+X-Originating-IP: 81.255.27.251
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/11/07, Jean Delvare <khali@linux-fr.org> wrote:
-> Hi Grant,
+Selon Andrew Morton <akpm@linux-foundation.org>:
+
+> On Thu, 10 May 2007 15:05:25 +0200
+> Remi Colinet <remi.colinet@free.fr> wrote:
 >
-> On Thu, 10 May 2007 15:04:16 -0600, Grant Likely wrote:
-> > The use of 'new_client' in i2c device allocation has been refered to as
-> > a 'disease'.  Replace all occurances of 'struct i2c_client *new_client'
-> > in documentation examples with 'struct i2c_client *client'.
+> > My D610 ALPS Glide Point is unresponsive with 2.6.21-mm1 patch.
+> > No problem noticed with 2.6.21.
 > >
-> > Also remove unnecessary zero initializtion of .flags since kzalloc is used.
+> > The culprit seems to be git-input. I have applied 2.6.21-mm1 on top of
+> 2.6.21
+> > and then removed git-input patch. It is ok since then.
 > >
-> > Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> > >From what i can see, no interrupt is raised from the GlidePoint with
+> git-input
+> > applied. IRQ count 12 does not increase. It is when using the touchpad.
+> >
+> >            CPU0
+> >   0:        160   IO-APIC-edge      timer
+> >   1:        935   IO-APIC-edge      i8042
+> >   7:          0   IO-APIC-edge      parport0
+> >   8:          1   IO-APIC-edge      rtc
+> >   9:          2   IO-APIC-fasteoi   acpi
+> > => 12:        114   IO-APIC-edge      i8042 <=
+> >  14:       3223   IO-APIC-edge      libata
+> >  15:          5   IO-APIC-edge      libata
+> >  16:          0   IO-APIC-fasteoi   uhci_hcd:usb1, ehci_hcd:usb5, Intel
+> ICH6
+> >  17:          1   IO-APIC-fasteoi   uhci_hcd:usb2, ipw2200, Intel ICH6
+> Modem
+> >  18:          0   IO-APIC-fasteoi   uhci_hcd:usb3
+> >  19:          1   IO-APIC-fasteoi   uhci_hcd:usb4, yenta
+> > NMI:          0
+> > LOC:       4051
+> > ERR:          0
+> > MIS:          0
+> >
+> > I have also tried to disable the ALPS driver in the .config file. IRQ 12
+> are
+> > then raised when using the Glide Point. X refuses to start.
+> >
 >
-> Thanks for your contribution, however I made a similar documentation
-> cleanup 3 weeks ago:
->   http://lists.lm-sensors.org/pipermail/i2c/2007-April/001075.html
-> It's upstream already.
+> Are you able to test 2.6.21-mm2?
+>
+>
 
-Heh, apparently I don't keep my edge bleeding enough
+I have tried with the lastest mm broken-out snapshot, i.e 2.6.21-mm3.
+The GlidePoint is still unresponsive.
 
-g.
+2.6.21-git13 works fine with the GlidePoint.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+So I'am bisecting 2.6.21-mm3. It works just with the origin.patch applied.
+
+Thanks,
+Remi Colinet
+
+
+
+
+
+
