@@ -1,50 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760956AbXEKGmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760229AbXEKGqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760956AbXEKGmS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 02:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXEKGmL
+	id S1760229AbXEKGqQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 02:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754888AbXEKGqG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 02:42:11 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:39622 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754642AbXEKGmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 02:42:10 -0400
-Date: Fri, 11 May 2007 16:42:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: kjhall@us.ibm.com, tpm@selhorst.net
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] MAINTAINERS: remove invalid list address for TPM
-Message-Id: <20070511164207.24b1437e.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 11 May 2007 02:46:06 -0400
+Received: from pythia.bakeyournoodle.com ([203.82.209.197]:59636 "EHLO
+	pythia.bakeyournoodle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754642AbXEKGqF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 02:46:05 -0400
+Date: Fri, 11 May 2007 16:46:03 +1000
+To: Linux Kernel ML <linux-kernel@vger.kernel.org>
+Cc: Jeff Garzik <jgarzik@pobox.com>, Alan Cox <alan@redhat.com>,
+       linux-ide@vger.kernel.org
+Subject: [PATCH] drivers/ata/pata_hpt37x.c Remove unused static variable.
+Message-ID: <20070511064603.GC15955@bakeyournoodle.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: tony@bakeyournoodle.com (Tony Breeds)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This address bounces with "550 Unknown user".
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Remove unused static variable.
+
+drivers/ata/pata_hpt37x.c: In function 'hpt37x_init_one':
+drivers/ata/pata_hpt37x.c:935: warning: unused variable 'info_hpt372_50'
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
+CC: Jeff Garzik <jgarzik@pobox.com>
+CC: Alan Cox <alan@redhat.com>
+CC: linux-ide@vger.kernel.org
 ---
- MAINTAINERS |    1 -
- 1 files changed, 0 insertions(+), 1 deletions(-)
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+ drivers/ata/pata_hpt37x.c |    9 ---------
+ 1 file changed, 9 deletions(-)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index bd558ac..421740d 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3269,7 +3269,6 @@ W:	http://tpmdd.sourceforge.net
- P:	Marcel Selhorst
- M:	tpm@selhorst.net
- W:	http://www.prosec.rub.de/tpm/
--L:	tpmdd-devel@lists.sourceforge.net
- S:	Maintained
- 
- Telecom Clock Driver for MCPL0010
--- 
-1.5.1.4
+Index: working/drivers/ata/pata_hpt37x.c
+===================================================================
+--- working.orig/drivers/ata/pata_hpt37x.c
++++ working/drivers/ata/pata_hpt37x.c
+@@ -931,15 +931,6 @@ static int hpt37x_init_one(struct pci_de
+ 		.udma_mask = 0x7f,
+ 		.port_ops = &hpt372_port_ops
+ 	};
+-	/* HPT371, 372 and friends - UDMA100 at 50MHz clock */
+-	static struct ata_port_info info_hpt372_50 = {
+-		.sht = &hpt37x_sht,
+-		.flags = ATA_FLAG_SLAVE_POSS|ATA_FLAG_SRST,
+-		.pio_mask = 0x1f,
+-		.mwdma_mask = 0x07,
+-		.udma_mask = 0x3f,
+-		.port_ops = &hpt372_port_ops
+-	};
+ 	/* HPT374 - UDMA133 */
+ 	static struct ata_port_info info_hpt374 = {
+ 		.sht = &hpt37x_sht,
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
 
