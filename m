@@ -1,84 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbXEKByv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761447AbXEKBzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760005AbXEKByv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 21:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbXEKByo
+	id S1761447AbXEKBzx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 21:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755017AbXEKBzo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 21:54:44 -0400
-Received: from dvhart.com ([64.146.134.43]:33301 "EHLO dvhart.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbXEKByo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 21:54:44 -0400
-Message-ID: <4643CCDF.7060608@mbligh.org>
-Date: Thu, 10 May 2007 18:54:39 -0700
-From: "Martin J. Bligh" <mbligh@mbligh.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: Bas Westerbaan <bas.westerbaan@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Conveying memory pressure to userspace?
-References: <6880bed30705101756nb5bd0c5s97935b97d07f846a@mail.gmail.com>
-In-Reply-To: <6880bed30705101756nb5bd0c5s97935b97d07f846a@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 10 May 2007 21:55:44 -0400
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:18682 "EHLO
+	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751580AbXEKBzn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 21:55:43 -0400
+In-Reply-To: <20070511012529.GC10715@verge.net.au>
+References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au> <46434ED0.6030808@freescale.com> <20070511012529.GC10715@verge.net.au>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <996E281D-DE15-451A-955D-FB9C0C23DA54@kernel.crashing.org>
+Cc: Timur Tabi <timur@freescale.com>,
+       Kim Phillips <kim.phillips@freescale.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       netdev <netdev@vger.kernel.org>, Roman Zippel <zippel@linux-m68k.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Sam Ravnborg <sam@ravnborg.org>
 Content-Transfer-Encoding: 7bit
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Kconfig warnings on latest GIT
+Date: Thu, 10 May 2007 20:41:53 -0500
+To: Simon Horman <horms@verge.net.au>
+X-Mailer: Apple Mail (2.752.2)
+X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - kernel.crashing.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bas Westerbaan wrote:
-> Hello,
-> 
-> Quite a lot of userspace applications cache.  Firefox caches pages;
-> mySQL caches queries;  libc' free (like practically all other
-> userspace allocators) won't directly return the first byte of memory
-> freed, etc.
-> 
-> These applications are unaware of memory pressure.  While the kernel
-> is trying its best to to free memory by for instance dropping,
-> possibly more valuable caches, userspace is left blissfully unaware.
-> 
-> Obviously this isn't a really big problem, given that we've still got
-> swap to swap out those rarely used caches, except for when the caches
-> aren't _that_ rarely used and of which the backing store (eg.
-> precomputed values) might be faster than the disk to swap back the
-> pages from.
-> 
-> A solution would be to either
-> 
->  a) let the application make the kernel aware of pages that, when in
-> memory pressure, may be dropped.  This would be tricky to implement
-> for the userspace: it's hard to avoid an application to race into a
-> dropped page.  However, the kernel can directly free a page from
-> userspace, which makes it use full when under real pressure.  This in
-> contrast to
-> b) letting the application register itself with a cache share
-> priority.  The application (and other aware applications) would then
-> be able to query how fair they are at the moment proportional to their
-> cache share priority.  Freeing would still be completely in their own
-> hands.
-> 
-> 
-> The only relevant related matter I could find were madvise and mincore.
-> 
-> With madvise pages can be marked to be unnecessary and these should be
-> swapped out earlier.  With mincore one can determine whether pages are
-> resident (not cached).  This would make an existing alternative to
-> solution a.  However, this doesn't eliminate the writes to the swap
-> and polling everytime before accessing a cache isn't really pretty.
-> 
-> I did consider guessing the memory pressure by looking at
-> /proc/meminfo, but I think it isn't that accurate.
 
-The prev_priority field in the zoneinfo stuff is more useful for
-memory pressure. I'm playing with making a blocking callback that
-can wake someone up when this gets down to a certain priority level
-(prio=12 => everything's rosy, prio=0 => we're in deep shit).
+On May 10, 2007, at 8:25 PM, Simon Horman wrote:
 
-> Before hacking something together (and being uncertain about the
-> thoroughness with which I searched for existing work, sorry), I would
-> like your thoughts on this.
-> 
-> Please CC me, I'm not in the list.
-> 
->  Bas
-> 
+> On Thu, May 10, 2007 at 11:56:48AM -0500, Timur Tabi wrote:
+>> Simon Horman wrote:
+>>
+>>>> So my question is: in which Kconfig do I define "UCC_FAST_TEMP" and
+>>>> "UCC_SLOW_TEMP"?  At first I thought, just put it in drivers/ 
+>>>> Kconfig, but
+>>>> that Kconfig does nothing but including other Kconfigs.  I  
+>>>> believe that if I
+>>>> submit a patch that adds "UCC_FAST_TEMP" and "UCC_SLOW_TEMP" to
+>>>> drivers/Kconfig, it will be rejected.  Either that, or I'll  
+>>>> spend six weeks
+>>>> trying to persuade everyone that it's a good idea.
+>>>>
+>>>> Does anyone have any suggestions on how I can fix this?
+>>> That does seem like a reasonable suggestion, and one that
+>>> would probably work well with the other similar problems
+>>> that have been introduced sice 2.6.21.
+>>
+>> Looks like the fix is simpler than I thought.  Instead of having
+>>
+>> UCC_GETH
+>> 	select UCC_FAST
+>>
+>> I need to do
+>>
+>> UCC_FAST
+>> 	default y if UCC_GETH
+>
+> I pondered something like that, but I couldn't get it quite right :(
+>
+>> I'll have a patch that fixes this out later today.
+>>
+>> I chose the first method because I wanted each individual UCC device
+>> driver to select UCC_FAST or UCC_SLOW as appropriate, so that I
+>> wouldn't have to update arch/powerpc/sysdev/qe_lib/Kconfig every time
+>> we add a new UCC driver.  Oh well.
 
+It really seems like the kconfig shouldn't complain if the depends  
+isnt satisfied.
+
+- k
