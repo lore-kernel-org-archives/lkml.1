@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761995AbXEKXh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762278AbXEKXs0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761995AbXEKXh0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 19:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbXEKXhS
+	id S1762278AbXEKXs0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 19:48:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755449AbXEKXsT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 19:37:18 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:48837 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754072AbXEKXhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 19:37:17 -0400
-Date: Sat, 12 May 2007 01:37:01 +0200
-From: Tomas Janousek <tjanouse@redhat.com>
+	Fri, 11 May 2007 19:48:19 -0400
+Received: from styx.suse.cz ([82.119.242.94]:35071 "EHLO mail.suse.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754923AbXEKXsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 19:48:18 -0400
+Date: Sat, 12 May 2007 01:50:16 +0200 (CEST)
+From: Jiri Kosina <jkosina@suse.cz>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: john stultz <johnstul@us.ibm.com>, linux-kernel@vger.kernel.org,
-       tsmetana@redhat.com, riel@redhat.com
-Subject: Re: [PATCH] Use boot based time for process start time and boot
-	time in /proc
-Message-ID: <20070511233701.GA13437@redhat.com>
-References: <3108b4e2c91097ec9469420b3f0836f0499068a6.1178816485.git.tomi@nomi.cz> <f3c12bbf0772543db18c7a5251ce92f4f4f6758e.1178816485.git.tomi@nomi.cz> <20070510164047.263a9524.akpm@linux-foundation.org> <20070511084531.GA31854@redhat.com> <20070511125132.93a4abdd.akpm@linux-foundation.org>
+Cc: Jan Kratochvil <honza@jikos.cz>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RESEND] PIE randomization
+In-Reply-To: <20070511133651.63f8a14d.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705120048230.11493@jikos.suse.cz>
+References: <alpine.LRH.0.98.0705111338230.22353@twin.jikos.cz>
+ <20070511125629.3df919cf.akpm@linux-foundation.org>
+ <Pine.LNX.4.64.0705112211440.16923@twin.jikos.cz>
+ <20070511133651.63f8a14d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070511125132.93a4abdd.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.14 (2007-02-12)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Fri, 11 May 2007, Andrew Morton wrote:
 
-On Fri, May 11, 2007 at 12:51:32PM -0700, Andrew Morton wrote:
-> On Fri, 11 May 2007 10:45:31 +0200
-> Tomas Janousek <tjanouse@redhat.com> wrote:
-> 
-> > Hello,
-> > 
-> > On Thu, May 10, 2007 at 04:40:47PM -0700, Andrew Morton wrote:
-> > > Tomas Janousek <tjanouse@redhat.com> wrote:
-> > > > @@ -445,12 +445,14 @@ static int show_stat(struct seq_file *p, void *v)
-> > > >  	unsigned long jif;
-> > > >  	cputime64_t user, nice, system, idle, iowait, irq, softirq, steal;
-> > > >  	u64 sum = 0;
-> > > > +	struct timespec boottime;
-> > > >  
-> > > >  	user = nice = system = idle = iowait =
-> > > >  		irq = softirq = steal = cputime64_zero;
-> > > > -	jif = - wall_to_monotonic.tv_sec;
-> > > > -	if (wall_to_monotonic.tv_nsec)
-> > > > -		--jif;
-> > > > +	getboottime(&boottime);
-> > > > +	jif = boottime.tv_sec;
-> > > > +	if (boottime.tv_nsec)
-> > > > +		++jif;
-> > > >
-> > > 
+> I could reverse-engineer that info from the patch, I guess, but I'd 
+> prefer to go in the opposite direction: you tell us what the patch is 
+> trying to do, then we look at it and see if we agree that it is in fact 
+> doing that.
 
-> >  	getboottime(&boottime);
-> >  	jif = boottime.tv_sec;
-> > -	if (boottime.tv_nsec)
-> > -		++jif;
-> >  
+I've just quickly looked at the patch and it seems fine - it's using 
+mmap()'s randomization functionality in such a way that it maps the the 
+main executable of (specially compiled/linked) ET_DYN binaries onto a 
+random address (in cases in which mmap() is allowed to perform a 
+randomization). Which is what we want, I'd guess.
 
-> So we've gone from --jif to ++jif to no change at all.
-> 
-> Are you sure that this net removal of --jif is correct?
+Jan, would you care to update the patch with proper Changelog entry?
 
-Yes.
 
-Let's say wall_to_monotonic = { -10, 500000 }  (which is { -9, -500000 }, and
-the original code would result in - (- 10) - 1 == 9).
-
-The getboottime calls set_normalized_timespec on { - (-10), - (500000) } which
-results to { 10 - 1, - 500000 + 1000000 } = { 9, 500000 }.
-tv_sec == 9  =>  correct.
+However, I seem to get "soft" hang on boot with this patch, approximately 
+at the time the init should be executed. The system is not completely 
+stuck - interrupts are delivered, keyboard is working, alt-sysrq-t dumps 
+proper output, but userspace doesn't seem to get started. This happens on 
+i386, didn't try on other archs.
 
 -- 
-TJ. (Brno, CZ), BaseOS, Red Hat
+Jiri Kosina
