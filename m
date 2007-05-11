@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933490AbXEKSCm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762830AbXEKSEc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933490AbXEKSCm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 14:02:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932290AbXEKSCZ
+	id S1762830AbXEKSEc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 14:04:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761187AbXEKSEZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 14:02:25 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:1893 "EHLO
+	Fri, 11 May 2007 14:04:25 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:1898 "EHLO
 	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762572AbXEKSCX (ORCPT
+	with ESMTP id S1761100AbXEKSEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 14:02:23 -0400
-Date: Fri, 11 May 2007 22:02:50 +0400
+	Fri, 11 May 2007 14:04:25 -0400
+Date: Fri, 11 May 2007 22:04:52 +0400
 From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Richard Henderson <rth@twiddle.net>, Jay Estabrook <jay.estabrook@hp.com>,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] ALPHA: correct low-level I/O routines for sable-lynx
-Message-ID: <20070511220250.B16980@jurassic.park.msu.ru>
+Subject: [PATCH 3/3] ALPHA: misc fixes
+Message-ID: <20070511220452.C16980@jurassic.park.msu.ru>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,122 +24,97 @@ User-Agent: Mutt/1.2.5i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Files:
+Also from Jay:
 
-include/asm-alpha/core_t2.h
+1. arch/alpha/Kconfig
 
-This code corrects the behavior of the t2_readX/t2_writeX routines,
-and t2_ioreadNN/t2_iowriteNN routines.
+   several adjustments:
+      a) additions to the systems list and cleanup of same
+      b) change limits of NR_CPUS and make dep. on platform
 
-The value T2_DENSE_MEM is now subtracted from the "xaddr" argument in
-each of the readX/writeX routines, since those routines may be called
-directly, rather than always through the ioreadNN/iowriteNN routines.
+   Note that MARVEL support is limited to 32 CPUs whan using
+   42-bit KSEG - one needs 48-bit KSEG to handle up to 64, and
+   we've never supported 48-bit KSEG.
 
-Examples of the direct calls, via the __raw_readX/writeX macros, are
-the memcpy_fromio/toio, _memset_c_io, and scr_memcpyw routines.
+2. include/asm-alpha/core_wildfire.h
+
+   fix a typo that undoubtedly prevents WILDFIRE support
+   from working
 
 
-Signed-off-by: Jay Estabrook <jay.estabrook@hp.com>
 Signed-off-by: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 
 
-diff -Naurp a/include/asm-alpha/core_t2.h b/include/asm-alpha/core_t2.h
---- a/include/asm-alpha/core_t2.h	2007-02-04 13:44:54.000000000 -0500
-+++ b/include/asm-alpha/core_t2.h	2007-05-04 14:05:12.000000000 -0400
-@@ -437,9 +437,15 @@ static inline void t2_outl(u32 b, unsign
+diff -Naurp a/arch/alpha/Kconfig b/arch/alpha/Kconfig
+--- a/arch/alpha/Kconfig	2007-05-03 09:07:42.000000000 -0400
++++ b/arch/alpha/Kconfig	2007-05-10 09:21:57.000000000 -0400
+@@ -83,22 +83,20 @@ choice
+ 	  check out the Linux/Alpha FAQ, accessible on the WWW from
+ 	  <http://www.alphalinux.org/>. In summary:
  
- static DEFINE_SPINLOCK(t2_hae_lock);
+-	  Alcor/Alpha-XLT     AS 600
++	  Alcor/Alpha-XLT     AS 600, AS 500, XL-300, XL-366
+ 	  Alpha-XL            XL-233, XL-266
+ 	  AlphaBook1          Alpha laptop
+ 	  Avanti              AS 200, AS 205, AS 250, AS 255, AS 300, AS 400
+ 	  Cabriolet           AlphaPC64, AlphaPCI64
+-	  DP264               DP264
++	  DP264               DP264 / DS20 / ES40 / DS10 / DS10L
+ 	  EB164               EB164 21164 evaluation board
+ 	  EB64+               EB64+ 21064 evaluation board
+ 	  EB66                EB66 21066 evaluation board
+ 	  EB66+               EB66+ 21066 evaluation board
+-	  Jensen              DECpc 150, DEC 2000 model 300,
+-	  DEC 2000 model 500
++	  Jensen              DECpc 150, DEC 2000 models 300, 500
+ 	  LX164               AlphaPC164-LX
+ 	  Lynx                AS 2100A
+-	  Miata               Personal Workstation 433a, 433au, 500a,
+-	  500au, 600a, or 600au
++	  Miata               Personal Workstation 433/500/600 a/au
+ 	  Marvel              AlphaServer ES47 / ES80 / GS1280
+ 	  Mikasa              AS 1000
+ 	  Noname              AXPpci33, UDB (Multia)
+@@ -108,9 +106,9 @@ choice
+ 	  Ruffian             RPX164-2, AlphaPC164-UX, AlphaPC164-BX
+ 	  SX164               AlphaPC164-SX
+ 	  Sable               AS 2000, AS 2100
+-	  Shark		      DS 20L
+-	  Takara              Takara
+-	  Titan               AlphaServer ES45 / DS25
++	  Shark               DS 20L
++	  Takara              Takara (OEM)
++	  Titan               AlphaServer ES45 / DS25 / DS15
+ 	  Wildfire            AlphaServer GS 40/80/160/320
  
-+/*
-+ * NOTE: take T2_DENSE_MEM off in each readX/writeX routine, since
-+ *       they may be called directly, rather than through the
-+ *       ioreadNN/iowriteNN routines.
-+ */
-+
- __EXTERN_INLINE u8 t2_readb(const volatile void __iomem *xaddr)
- {
--	unsigned long addr = (unsigned long) xaddr;
-+	unsigned long addr = (unsigned long) xaddr - T2_DENSE_MEM;
- 	unsigned long result, msb;
- 	unsigned long flags;
- 	spin_lock_irqsave(&t2_hae_lock, flags);
-@@ -453,7 +459,7 @@ __EXTERN_INLINE u8 t2_readb(const volati
+ 	  If you don't know what to do, choose "generic".
+@@ -537,10 +544,14 @@ config HAVE_DEC_LOCK
+ 	default y
  
- __EXTERN_INLINE u16 t2_readw(const volatile void __iomem *xaddr)
- {
--	unsigned long addr = (unsigned long) xaddr;
-+	unsigned long addr = (unsigned long) xaddr - T2_DENSE_MEM;
- 	unsigned long result, msb;
- 	unsigned long flags;
- 	spin_lock_irqsave(&t2_hae_lock, flags);
-@@ -471,7 +477,7 @@ __EXTERN_INLINE u16 t2_readw(const volat
-  */
- __EXTERN_INLINE u32 t2_readl(const volatile void __iomem *xaddr)
- {
--	unsigned long addr = (unsigned long) xaddr;
-+	unsigned long addr = (unsigned long) xaddr - T2_DENSE_MEM;
- 	unsigned long result, msb;
- 	unsigned long flags;
- 	spin_lock_irqsave(&t2_hae_lock, flags);
-@@ -485,7 +491,7 @@ __EXTERN_INLINE u32 t2_readl(const volat
+ config NR_CPUS
+-	int "Maximum number of CPUs (2-64)"
+-	range 2 64
++	int "Maximum number of CPUs (2-32)"
++	range 2 32
+ 	depends on SMP
+-	default "64"
++	default "32" if ALPHA_GENERIC || ALPHA_MARVEL
++	default "4" if !ALPHA_GENERIC && !ALPHA_MARVEL
++	help
++	  MARVEL support can handle a maximum of 32 CPUs, all the others
++          with working support have a maximum of 4 CPUs.
  
- __EXTERN_INLINE u64 t2_readq(const volatile void __iomem *xaddr)
- {
--	unsigned long addr = (unsigned long) xaddr;
-+	unsigned long addr = (unsigned long) xaddr - T2_DENSE_MEM;
- 	unsigned long r0, r1, work, msb;
- 	unsigned long flags;
- 	spin_lock_irqsave(&t2_hae_lock, flags);
-@@ -501,7 +507,7 @@ __EXTERN_INLINE u64 t2_readq(const volat
+ config ARCH_DISCONTIGMEM_ENABLE
+ 	bool "Discontiguous Memory Support (EXPERIMENTAL)"
+diff -Naurp a/include/asm-alpha/core_wildfire.h b/include/asm-alpha/core_wildfire.h
+--- a/include/asm-alpha/core_wildfire.h	2007-02-04 13:44:54.000000000 -0500
++++ b/include/asm-alpha/core_wildfire.h	2007-05-08 15:35:51.000000000 -0400
+@@ -295,7 +295,7 @@ __EXTERN_INLINE int wildfire_is_ioaddr(u
  
- __EXTERN_INLINE void t2_writeb(u8 b, volatile void __iomem *xaddr)
+ __EXTERN_INLINE int wildfire_is_mmio(const volatile void __iomem *xaddr)
  {
--	unsigned long addr = (unsigned long) xaddr;
-+	unsigned long addr = (unsigned long) xaddr - T2_DENSE_MEM;
- 	unsigned long msb, w;
- 	unsigned long flags;
- 	spin_lock_irqsave(&t2_hae_lock, flags);
-@@ -515,7 +521,7 @@ __EXTERN_INLINE void t2_writeb(u8 b, vol
- 
- __EXTERN_INLINE void t2_writew(u16 b, volatile void __iomem *xaddr)
- {
--	unsigned long addr = (unsigned long) xaddr;
-+	unsigned long addr = (unsigned long) xaddr - T2_DENSE_MEM;
- 	unsigned long msb, w;
- 	unsigned long flags;
- 	spin_lock_irqsave(&t2_hae_lock, flags);
-@@ -533,7 +539,7 @@ __EXTERN_INLINE void t2_writew(u16 b, vo
-  */
- __EXTERN_INLINE void t2_writel(u32 b, volatile void __iomem *xaddr)
- {
--	unsigned long addr = (unsigned long) xaddr;
-+	unsigned long addr = (unsigned long) xaddr - T2_DENSE_MEM;
- 	unsigned long msb;
- 	unsigned long flags;
- 	spin_lock_irqsave(&t2_hae_lock, flags);
-@@ -546,7 +552,7 @@ __EXTERN_INLINE void t2_writel(u32 b, vo
- 
- __EXTERN_INLINE void t2_writeq(u64 b, volatile void __iomem *xaddr)
- {
--	unsigned long addr = (unsigned long) xaddr;
-+	unsigned long addr = (unsigned long) xaddr - T2_DENSE_MEM;
- 	unsigned long msb, work;
- 	unsigned long flags;
- 	spin_lock_irqsave(&t2_hae_lock, flags);
-@@ -587,14 +593,14 @@ __EXTERN_INLINE int t2_is_mmio(const vol
- __EXTERN_INLINE unsigned int t2_ioread##NS(void __iomem *xaddr)		\
- {									\
- 	if (t2_is_mmio(xaddr))						\
--		return t2_read##OS(xaddr - T2_DENSE_MEM);		\
-+		return t2_read##OS(xaddr);				\
- 	else								\
- 		return t2_in##OS((unsigned long)xaddr - T2_IO);		\
- }									\
- __EXTERN_INLINE void t2_iowrite##NS(u##NS b, void __iomem *xaddr)	\
- {									\
- 	if (t2_is_mmio(xaddr))						\
--		t2_write##OS(b, xaddr - T2_DENSE_MEM);			\
-+		t2_write##OS(b, xaddr);					\
- 	else								\
- 		t2_out##OS(b, (unsigned long)xaddr - T2_IO);		\
+-	unsigned long addr = (unsigned long)addr;
++	unsigned long addr = (unsigned long)xaddr;
+ 	return (addr & 0x100000000UL) == 0;
  }
+ 
