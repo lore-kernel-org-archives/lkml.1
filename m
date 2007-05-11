@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760445AbXEKBFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761160AbXEKBFz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760445AbXEKBFN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 21:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756362AbXEKBFB
+	id S1761160AbXEKBFz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 21:05:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756705AbXEKBFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 21:05:01 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57686 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756164AbXEKBFA (ORCPT
+	Thu, 10 May 2007 21:05:48 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:37184 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758714AbXEKBFr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 21:05:00 -0400
-Date: Fri, 11 May 2007 10:05:46 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: y-goto@jp.fujitsu.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       akpm@osdl.org, mel@csn.ul.ie
-Subject: Re: [RFC] memory hotremove patch take 2 [05/10] (make basic remove
- code)
-Message-Id: <20070511100546.6464c711.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <Pine.LNX.4.64.0705101108251.10002@schroedinger.engr.sgi.com>
-References: <20070509115506.B904.Y-GOTO@jp.fujitsu.com>
-	<20070509120512.B910.Y-GOTO@jp.fujitsu.com>
-	<Pine.LNX.4.64.0705101108251.10002@schroedinger.engr.sgi.com>
-Organization: Fujitsu
-X-Mailer: Sylpheed version 2.2.0 (GTK+ 2.6.10; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 10 May 2007 21:05:47 -0400
+Message-ID: <4643C071.608@zytor.com>
+Date: Thu, 10 May 2007 18:01:37 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>, Ulrich Drepper <drepper@redhat.com>,
+       Neil Brown <neilb@suse.de>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] utimensat implementation
+References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com> <17969.22692.855242.359680@notabene.brown> <46315C61.30001@redhat.com> <464363DC.7060607@redhat.com> <20070510185226.GA1458@infradead.org>
+In-Reply-To: <20070510185226.GA1458@infradead.org>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 11:09:29 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Wed, 9 May 2007, Yasunori Goto wrote:
+Christoph Hellwig wrote:
 > 
-> > +/*
-> > + * Just an easy implementation.
-> > + */
-> > +static struct page *
-> > +hotremove_migrate_alloc(struct page *page,
-> > +			unsigned long private,
-> > +			int **x)
-> > +{
-> > +	return alloc_page(GFP_HIGH_MOVABLE);
-> > +}
+> I'd be happy to have them.  While it's not the nicest API in the world
+> it's in Posix and we have to support it at the library level, so we
+> should better get it right.
 > 
-> This would need to reflect the zone in which you are performing hot 
-> remove. Or is hot remove only possible in the higest zone?
+> I'd like to avoid having a big swithc statement in every filesystem,
+> though, instead of we should have a table-driven approach instead
+> where each filesystem defines one table (or multiple ones when it
+> supports subtypes with different limits) and just sets a pointer in
+> the superblock to it.
 > 
-No. We'll allow hot remove in any zone-type.
-My old patchest didn't include Mel-san's page grouping and just had
-ZONE_MOVABLE, so I wrote this. Reflecting migration target's zone here
-is reasobanle. 
 
-Anyway, I think we'll need more complicated function here.
+This is starting to sound an awful lot like statfs().  Maybe we could
+create a new statfs call which takes a buffer size input (so that we can
+add new fields as time goes on) and which returns the necessary information?
 
-Thanks,
--Kame
-
+	-hpa
