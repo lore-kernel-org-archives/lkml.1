@@ -1,121 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966001AbXEKTLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965816AbXEKTMZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966001AbXEKTLy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758914AbXEKTKF
+	id S965816AbXEKTMZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:12:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759548AbXEKTKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:10:05 -0400
-Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:60104 "EHLO
+	Fri, 11 May 2007 15:10:07 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:60103 "EHLO
 	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965426AbXEKTKC (ORCPT
+	with ESMTP id S1760122AbXEKTKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:10:02 -0400
-Message-Id: <20070511001156.003375000@goop.org>
+	Fri, 11 May 2007 15:10:04 -0400
+Message-Id: <20070511001159.996613000@goop.org>
 References: <20070511000643.025196000@goop.org>
 User-Agent: quilt/0.46-1
-Date: Thu, 10 May 2007 17:06:45 -0700
+Date: Thu, 10 May 2007 17:06:53 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andi Kleen <ak@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
        lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Ian Pratt <ian.pratt@xensource.com>,
-       Christian Limpach <Christian.Limpach@cl.cam.ac.uk>,
-       Zachary Amsden <zach@vmware.com>, Roland McGrath <roland@redhat.com>,
-       Ulrich Drepper <drepper@redhat.com>
-Subject: [patch 02/28]xen: Add nosegneg capability to the vsyscall page notes
-Content-Disposition: inline; filename=xen-vsyscall-note.patch
+       ebiederm@xmission.com ("Eric W. Biederman")
+Subject: [patch 10/28]xen: ignore RW mapping of RO pages in pagetable_init
+Content-Disposition: inline; filename=xen-pagetable_init-ignore-ro-mappings.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the "nosegneg" fake capabilty to the vsyscall page notes. This is
-used by the runtime linker to select a glibc version which then
-disables negative-offset accesses to the thread-local segment via
-%gs. These accesses require emulation in Xen (because segments are
-truncated to protect the hypervisor address space) and avoiding them
-provides a measurable performance boost.
+When setting up the initial pagetable, which includes mappings of all
+low physical memory, ignore a mapping which tries to set the RW bit on
+an RO pte.  An RO pte indicates a page which is part of the current
+pagetable, and so it cannot be allowed to become RW.
 
-Signed-off-by: Ian Pratt <ian.pratt@xensource.com>
-Signed-off-by: Christian Limpach <Christian.Limpach@cl.cam.ac.uk>
-Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Once xen_pagetable_setup_done is called, set_pte reverts to its normal
+behaviour.
+
 Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-Acked-by: Zachary Amsden <zach@vmware.com>
-Cc: Roland McGrath <roland@redhat.com>
-Cc: Ulrich Drepper <drepper@redhat.com>
+Acked-by: Chris Wright <chrisw@sous-sol.org>
+Cc: ebiederm@xmission.com (Eric W. Biederman)
 
 ---
- arch/i386/kernel/vsyscall-note.S |   23 +++++++++++++++++++++++
- include/asm-i386/elf.h           |   14 ++++++++++----
- 2 files changed, 33 insertions(+), 4 deletions(-)
+ arch/i386/xen/enlighten.c |   27 +++++++++++++++++++++++++--
+ 1 file changed, 25 insertions(+), 2 deletions(-)
 
 ===================================================================
---- a/arch/i386/kernel/vsyscall-note.S
-+++ b/arch/i386/kernel/vsyscall-note.S
-@@ -12,3 +12,26 @@ ELFNOTE_START(Linux, 0, "a")
- ELFNOTE_START(Linux, 0, "a")
- 	.long LINUX_VERSION_CODE
- ELFNOTE_END
-+
-+#ifdef CONFIG_XEN
-+#include <asm/elf.h>
-+
-+/*
-+ * Add a special note telling glibc's dynamic linker a fake hardware
-+ * flavor that it will use to choose the search path for libraries in the
-+ * same way it uses real hardware capabilities like "mmx".
-+ * We supply "nosegneg" as the fake capability, to indicate that we
-+ * do not like negative offsets in instructions using segment overrides,
-+ * since we implement those inefficiently.  This makes it possible to
-+ * install libraries optimized to avoid those access patterns in someplace
-+ * like /lib/i686/tls/nosegneg.  Note that an /etc/ld.so.conf.d/file
-+ * corresponding to the bits here is needed to make ldconfig work right.
-+ * It should contain:
-+ *	hwcap 0 nosegneg
-+ * to match the mapping of bit to name that we give here.
-+ */
-+ELFNOTE_START(GNU, 2, "a")
-+	.long 1, 1<<VDSO_NOTE_NONEGSEG_BIT		/* ncaps, mask */
-+	.byte VDSO_NOTE_NONEGSEG_BIT; .asciz "nosegneg"	/* bit, name */
-+ELFNOTE_END
-+#endif
-===================================================================
---- a/include/asm-i386/elf.h
-+++ b/include/asm-i386/elf.h
-@@ -1,10 +1,12 @@
- #ifndef __ASMi386_ELF_H
- #define __ASMi386_ELF_H
+--- a/arch/i386/xen/enlighten.c
++++ b/arch/i386/xen/enlighten.c
+@@ -635,7 +635,7 @@ static void xen_write_cr3(unsigned long 
  
--/*
-- * ELF register definitions..
-- */
-+/* Bit used for the pseudo-hwcap for non-negative segments.  We use
-+   bit 1 to avoid bugs in some versions of glibc when bit 0 is
-+   used. */
-+#define VDSO_NOTE_NONEGSEG_BIT	1
- 
-+#ifndef __ASSEMBLY__
- #include <asm/ptrace.h>
- #include <asm/user.h>
- #include <asm/auxvec.h>
-@@ -24,6 +26,9 @@
- #define R_386_GOTPC	10
- #define R_386_NUM	11
- 
-+/*
-+ * ELF register definitions..
-+ */
- typedef unsigned long elf_greg_t;
- 
- #define ELF_NGREG (sizeof (struct user_regs_struct) / sizeof(elf_greg_t))
-@@ -160,6 +165,7 @@ do if (vdso_enabled) {							\
- 		NEW_AUX_ENT(AT_SYSINFO_EHDR, VDSO_CURRENT_BASE);	\
- } while (0)
- 
--#endif
-+#endif	/* ARCH_DLINFO */
-+#endif	/* __ASSEMBLY__ */
- 
+ /* Early in boot, while setting up the initial pagetable, assume
+    everything is pinned. */
+-static void xen_alloc_pt_init(struct mm_struct *mm, u32 pfn)
++static __init void xen_alloc_pt_init(struct mm_struct *mm, u32 pfn)
+ {
+ 	BUG_ON(mem_map);	/* should only be used early */
+ 	make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
+@@ -687,9 +687,31 @@ static void *xen_kmap_atomic_pte(struct 
+ }
  #endif
+ 
++static __init pte_t mask_rw_pte(pte_t *ptep, pte_t pte)
++{
++	/* If there's an existing pte, then don't allow _PAGE_RW to be set */
++	if (pte_val_ma(*ptep) & _PAGE_PRESENT)
++		pte = __pte_ma(((pte_val_ma(*ptep) & _PAGE_RW) | ~_PAGE_RW) &
++			       pte_val_ma(pte));
++
++	return pte;
++}
++
++/* Init-time set_pte while constructing initial pagetables, which
++   doesn't allow RO pagetable pages to be remapped RW */
++static __init void xen_set_pte_init(pte_t *ptep, pte_t pte)
++{
++	pte = mask_rw_pte(ptep, pte);
++
++	xen_set_pte(ptep, pte);
++}
++
+ static __init void xen_pagetable_setup_start(pgd_t *base)
+ {
+ 	pgd_t *xen_pgd = (pgd_t *)xen_start_info->pt_base;
++
++	/* special set_pte for pagetable initialization */
++	paravirt_ops.set_pte = xen_set_pte_init;
+ 
+ 	init_mm.pgd = base;
+ 	/*
+@@ -737,6 +759,7 @@ static __init void xen_pagetable_setup_d
+ 	/* This will work as long as patching hasn't happened yet
+ 	   (which it hasn't) */
+ 	paravirt_ops.alloc_pt = xen_alloc_pt;
++	paravirt_ops.set_pte = xen_set_pte;
+ 
+ 	if (!xen_feature(XENFEAT_auto_translated_physmap)) {
+ 		/*
+@@ -919,7 +942,7 @@ static const struct paravirt_ops xen_par
+ 	.dup_mmap = xen_dup_mmap,
+ 	.exit_mmap = xen_exit_mmap,
+ 
+-	.set_pte = xen_set_pte,
++	.set_pte = NULL,	/* see xen_pagetable_setup_* */
+ 	.set_pte_at = xen_set_pte_at,
+ 	.set_pmd = xen_set_pmd,
+ 
 
 -- 
 
