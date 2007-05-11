@@ -1,42 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932398AbXEKWK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933591AbXEKW1R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932398AbXEKWK7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 18:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762426AbXEKWKu
+	id S933591AbXEKW1R (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 18:27:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbXEKW1G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 18:10:50 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:43609 "EHLO mail.dvmed.net"
+	Fri, 11 May 2007 18:27:06 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43744 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762352AbXEKWKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 18:10:49 -0400
-Message-ID: <4644E9E5.3000402@garzik.org>
-Date: Fri, 11 May 2007 18:10:45 -0400
+	id S1754596AbXEKW1F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 18:27:05 -0400
+Message-ID: <4644EDB6.5060108@garzik.org>
+Date: Fri, 11 May 2007 18:27:02 -0400
 From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: William Thompson <wt@electro-mechanical.com>, Mark Lord <liml@rtr.ca>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       albertcc@tw.ibm.com
-Subject: Re: [PATCH] libata: fallback to the other IDENTIFY on device error,
- take#2
-References: <20070427175205.GD7809@electro-mechanical.com> <4635C35D.1020807@gmail.com> <20070430202107.GF5942@electro-mechanical.com> <4636C2C7.8090206@gmail.com> <20070501121703.GH5942@electro-mechanical.com> <46373AEE.6070908@rtr.ca> <20070501131818.GA18521@electro-mechanical.com> <46374354.7040307@gmail.com> <20070501172117.GA20328@electro-mechanical.com> <463F56F2.3010106@gmail.com> <4642627A.4030606@garzik.org> <46446311.3000208@gmail.com>
-In-Reply-To: <46446311.3000208@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: NFS spews warnings on x86-64
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 X-Spam-Score: -4.3 (----)
 X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
 	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> +			if (class == ATA_DEV_ATA)
-> +				class = ATA_DEV_ATAPI;
-> +			else
-> +				class = ATA_DEV_ATA;
+Current git, on Fedora 6/x86-64:
 
-
-the 'else' branch is obviously redundant
-
+fs/nfs/read.c: In function ‘nfs_return_empty_page’:
+fs/nfs/read.c:82: warning: ‘memclear_highpage_flush’ is deprecated 
+(declared at include/linux/highmem.h:115)
+fs/nfs/read.c: In function ‘nfs_readpage_truncate_uninitialised_page’:
+fs/nfs/read.c:106: warning: ‘memclear_highpage_flush’ is deprecated 
+(declared at include/linux/highmem.h:115)
+fs/nfs/read.c:109: warning: ‘memclear_highpage_flush’ is deprecated 
+(declared at include/linux/highmem.h:115)
+fs/nfs/read.c: In function ‘nfs_readpage_async’:
+fs/nfs/read.c:133: warning: ‘memclear_highpage_flush’ is deprecated 
+(declared at include/linux/highmem.h:115)
+fs/nfs/read.c: In function ‘readpage_async_filler’:
+fs/nfs/read.c:535: warning: ‘memclear_highpage_flush’ is deprecated 
+(declared at include/linux/highmem.h:115)
+fs/nfs/write.c: In function ‘nfs_mark_uptodate’:
+fs/nfs/write.c:171: warning: ‘memclear_highpage_flush’ is deprecated 
+(declared at include/linux/highmem.h:115)
+fs/nfs/nfs4xdr.c: In function ‘decode_close’:
+fs/nfs/nfs4xdr.c:2900: warning: format ‘%u’ expects type ‘unsigned int’, 
+but argument 4 has type ‘long unsigned int’
+fs/nfs/nfs4xdr.c: In function ‘decode_lock’:
+fs/nfs/nfs4xdr.c:3189: warning: format ‘%u’ expects type ‘unsigned int’, 
+but argument 4 has type ‘long unsigned int’
+fs/nfs/nfs4xdr.c: In function ‘decode_locku’:
+fs/nfs/nfs4xdr.c:3212: warning: format ‘%u’ expects type ‘unsigned int’, 
+but argument 4 has type ‘long unsigned int’
+fs/nfs/nfs4xdr.c: In function ‘decode_open’:
+fs/nfs/nfs4xdr.c:3278: warning: format ‘%u’ expects type ‘unsigned int’, 
+but argument 4 has type ‘long unsigned int’
+fs/nfs/nfs4xdr.c: In function ‘decode_open_confirm’:
+fs/nfs/nfs4xdr.c:3305: warning: format ‘%u’ expects type ‘unsigned int’, 
+but argument 4 has type ‘long unsigned int’
+fs/nfs/nfs4xdr.c: In function ‘decode_open_downgrade’:
+fs/nfs/nfs4xdr.c:3318: warning: format ‘%u’ expects type ‘unsigned int’, 
+but argument 4 has type ‘long unsigned int’
+fs/nfs/nfs4xdr.c: In function ‘decode_setclientid’:
+fs/nfs/nfs4xdr.c:3593: warning: format ‘%u’ expects type ‘unsigned int’, 
+but argument 4 has type ‘long unsigned int’
