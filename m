@@ -1,101 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760433AbXEKBMc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760433AbXEKBRw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760433AbXEKBMc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 10 May 2007 21:12:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755072AbXEKBMX
+	id S1760433AbXEKBRw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 10 May 2007 21:17:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757012AbXEKBRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 10 May 2007 21:12:23 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:42260 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754560AbXEKBMW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 10 May 2007 21:12:22 -0400
-Date: Thu, 10 May 2007 18:10:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Jeff Garzik <jeff@garzik.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, David Chinner <dgc@sgi.com>,
-       pavel@suse.cz, linux-pm@lists.linux-foundation.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Alexey Dobriyan <adobriyan@sw.ru>,
-       netdev@vger.kernel.org, Auke Kok <auke-jan.h.kok@intel.com>,
-       Doug Chapman <doug.chapman@hp.com>, Jeb Cramer <cramerj@intel.com>,
-       John Ronciak <john.ronciak@intel.com>,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       e1000-devel@lists.sourceforge.net, Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: 2.6.21-gitX: known regressions
-Message-Id: <20070510181044.d0f24e51.akpm@linux-foundation.org>
-In-Reply-To: <46430A3D.4030004@googlemail.com>
-References: <46430A3D.4030004@googlemail.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Thu, 10 May 2007 21:17:45 -0400
+Received: from ozlabs.org ([203.10.76.45]:38750 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756783AbXEKBRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 10 May 2007 21:17:45 -0400
+Subject: [PATCH 0/5] lguest feedback tidyups
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Jeff Garzik <jeff@garzik.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Pekka J Enberg <penberg@cs.helsinki.fi>
+Content-Type: text/plain
+Date: Fri, 11 May 2007 11:17:26 +1000
+Message-Id: <1178846246.23513.21.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 14:04:13 +0200
-Michal Piotrowski <michal.k.k.piotrowski@gmail.com> wrote:
+Hi all,
 
-> Hi all,
-> 
-> Here is a list of some known regressions in 2.6.21-gitX.
-> 
-> Feel free to add new regressions/remove fixed etc.
-> http://kernelnewbies.org/known_regressions
-> 
-> 
-> 
-> Unclassified:
-> 
-> Subject    : 2.6.21-git10/11: files getting truncated on xfs (after suspend/resume?)
-> References : http://lkml.org/lkml/2007/5/9/410
-> Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
-> Handled-By : David Chinner <dgc@sgi.com>
-> Status     : problem is being debugged
-> 
-> Subject    : Current -git kernel kills X
-> References : http://lkml.org/lkml/2007/5/8/667
-> Submitter  : Jeff Garzik <jeff@garzik.org>
-> Status     : Unknown
-> 
-> 
-> 
-> Block devices:
-> 
-> Subject    : BUG in loop.ko
-> References : http://lkml.org/lkml/2007/5/9/510
-> Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
-> Status     : Unknown
-> 
-> 
-> 
-> Networking:
-> 
-> Subject    : panic with e1000 driver on HP Integrity servers
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=8455
-> Submitter  : Doug Chapman <doug.chapman@hp.com>
-> Caused-By  : Auke Kok <auke-jan.h.kok@intel.com>
->              commit e0aac5a289b1dacbc94bd9ae8c449bcdf9ab508c
-> Status     : Unknown
-> 
-> 
-> 
-> Timers/NOHZ:
-> 
-> Subject    : 2.6.21-git4 BUG: soft lockup detected on CPU#1! 
-> References : http://lkml.org/lkml/2007/5/2/511
-> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-> Handled-By : Thomas Gleixner <tglx@linutronix.de>
-> Status     : problem is being debugged
-> 
+	Gratefully-received recent feedback from CC'd was applied to excellent
+effect (and the advice from Matt Mackall about my personal appearance is
+best unrequited).
 
-Please also consider:
+	The patch is split in 5 parts to correspond with the 9 parts Andrew
+sent out before, but here's the summary:
 
-Subject: libata reset-seq merge broke sata_sil on sh
-Subject: [Bugme-new] [Bug 8462] New: applications under wine freezes
+1) Sparse (thanks Christoph Hellwig):
+    - lguest_const can be static now
+    - lguest.c should include "lguest_bus.h" for lguest_devices declaration.
+    - page_tables.c unnecessary initialization
+    - But the cost was high: lots of __force casts 8(
+2) Jeff Garzik
+    - Use netdev_priv instead of dev->priv.
+    - Check for ioremap failure
+    - iounmap on failure.
+    - Wrap SEND_DMA and BIND_DMA calls
+    - Don't set NETIF_F_SG unless we set NETIF_F_NO_CSUM
+    - Use SET_NETDEV_DEV()
+    - Don't set dev->irq, mem_start & mem_end (deprecated)
+3) Sam Ravnborg
+    - lg-objs is deprecated, use lg-y.
 
-But we have many many more regressions which are in 2.6.21.x, only nobody's
-tracking those.  Nobody seems to be fixing them either.  Probably
-everyone's busy on the 2.6.14 regressions.
+Cheers,
+Rusty.
 
