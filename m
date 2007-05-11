@@ -1,60 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbXEKNps@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761867AbXEKNwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761320AbXEKNps (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 09:45:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbXEKNpm
+	id S1761867AbXEKNwg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 09:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761422AbXEKNw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 09:45:42 -0400
-Received: from wr-out-0506.google.com ([64.233.184.229]:49608 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbXEKNpl (ORCPT
+	Fri, 11 May 2007 09:52:28 -0400
+Received: from py-out-1112.google.com ([64.233.166.178]:31534 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbXEKNw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 09:45:41 -0400
+	Fri, 11 May 2007 09:52:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=PCQmsOjwQ+9XH9fUsrOlAkxjwEI593JLaOQZ9AK+V5ODqiBw4hxlYEQjX2OJDWFND6Imcs/x29mgrXqqvZlb07TUGrv+p5fyl/OxHwL4yZFAzj8+s+QpvbGMpnrA/5L7M2YGi+XNT5btXatOuCVqH+KFQp7zo61Nx+N4emPZ5X8=
-Message-ID: <a781481a0705110645xbadcf6bhd86cd7e0345ee61b@mail.gmail.com>
-Date: Fri, 11 May 2007 19:15:40 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-Cc: "Pavel Machek" <pavel@ucw.cz>, "David Woodhouse" <dwmw2@infradead.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       "Anton Vorontsov" <cbou@mail.ru>, "Greg KH" <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
-       "Andrew Morton" <akpm@osdl.org>
-In-Reply-To: <20070511142124.06aa2d2e@the-village.bc.nu>
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:openpgp:content-type:content-transfer-encoding;
+        b=ec9wF4g4e9c7GkQ+qjlNggABadPnr7zsG/1/a354OB4sCHLSKHS+PjXu4kj/2OJ9gJvjLhPkjtB5cea6wqbX7MYFbJPRMqrMrM3FkctdrV5UpncBMiVvwdt8C6K5d2JEviOXs6yMrDEJKVEj1U9yLoqKNPiUIdV38cAng7a+/2E=
+Message-ID: <46447509.7010305@gmail.com>
+Date: Fri, 11 May 2007 19:22:09 +0530
+From: jimmy bahuleyan <knight.camelot@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Johannes Stezenbach <js@linuxtv.org>
+CC: Jonathan Corbet <corbet@lwn.net>, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, Jesper Juhl <jesper.juhl@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Satyam Sharma <satyam.sharma@gmail.com>
+Subject: Re: [PATCH] "volatile considered harmful", take 2
+References: <6143.1178828419@lwn.net> <464382DE.5020206@gmail.com> <20070511122113.GB15972@linuxtv.org>
+In-Reply-To: <20070511122113.GB15972@linuxtv.org>
+X-Enigmail-Version: 0.95.0
+OpenPGP: url=subkeys.pgp.net
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070503213303.GH20067@zarina>
-	 <1178550653.11851.191.camel@pmac.infradead.org>
-	 <20070507194949.GB3981@ucw.cz>
-	 <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com>
-	 <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
-	 <1178646751.2824.48.camel@pmac.infradead.org>
-	 <Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl>
-	 <1178721996.2824.199.camel@pmac.infradead.org>
-	 <20070509203335.GA4290@ucw.cz>
-	 <20070511142124.06aa2d2e@the-village.bc.nu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/11/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > Even with fbdev... you are limited to 512 characters iirc. So.. who
-> > has authority to say which subset of utf-8 is ok?
->
-> This is a bug in fbdev and currently under discussion as there is no sane
-> reason to enforce the 512 symbol limit in the fbdev case (especially on a
-> large modern system)
->
-> > (Plus there is still lot of vga consoles out there -- all fedora users
-> > afaict?)
->
-> Fedora uses X.
+Johannes Stezenbach wrote:
+> On Fri, May 11, 2007 at 02:08:54AM +0530, jimmy bahuleyan wrote:
+>> Jonathan Corbet wrote:
+>> [snip..]
+>>> +
+>>> +  - The jiffies variable is special in that it can have a different value
+>>> +    every time it is referenced, but it can be read without any special
+>>> +    locking.  So jiffies can be volatile, but the addition of other
+>>> +    variables of this type is strongly frowned upon.  Jiffies is considered
+>>> +    to be a "stupid legacy" issue in this regard.
+>> Why is it that you consider jiffies to be a "stupid legacy"? Isn't it
+>> natural to have a externally modified variable which is only /read/ to
+>> be volatile? (or is jiffies supposed to be replaced with something
+>> smarter/better :)
+> 
+> "stupid legacy" were Linus' words. http://lwn.net/Articles/233482/
+> 
+> How about this:
+> 
+> "The jiffies variable is a special case because there are too
+> many places in the kernel which would have to be changed and reviewed
+> if the volatile would be removed from jiffies. However, the
+> use of volatile qualifier for jiffies is just as wrong as
+> it is elsewhere. Don't use jiffies as an excuse to use volatile
+> in your code."
+> 
+> 
+> Johannes
+> 
 
-I run FC5 and even _without_ X (on the tty1 console, for example), UTF-8
-source files turn out just _fine_ indeed. And I checked vim, emacs and
-*even* nano.
+yes this sounds better. at least to a non-kernel expert like me it makes
+the meaning clear - 'that jiffies is a special case, not to be taken as
+an example for other stuff'.
+
+-jb
+
+-- 
+Tact is the art of making a point without making an enemy.
