@@ -1,143 +1,212 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759344AbXEKLBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759410AbXEKLJS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759344AbXEKLBv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 07:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757090AbXEKLBl
+	id S1759410AbXEKLJS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 07:09:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbXEKLJF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 07:01:41 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:60640 "EHLO e1.ny.us.ibm.com"
+	Fri, 11 May 2007 07:09:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33023 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756951AbXEKLBj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 07:01:39 -0400
-Date: Fri, 11 May 2007 16:33:01 +0530
-From: Suparna Bhattacharya <suparna@in.ibm.com>
-To: David Chinner <dgc@sgi.com>
-Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, torvalds@osdl.org,
-       akpm@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org,
-       xfs@oss.sgi.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070511110301.GB28425@in.ibm.com>
-Reply-To: suparna@in.ibm.com
-References: <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com> <20070510005926.GT85884050@sgi.com> <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com>
+	id S1754770AbXEKLJD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 07:09:03 -0400
+Date: Fri, 11 May 2007 13:07:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Kasper Sandberg <lkml@metanurb.dk>
+Cc: Mike Galbraith <efault@gmx.de>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>
+Subject: Re: [patch] CFS scheduler, -v11
+Message-ID: <20070511110754.GA13985@elte.hu>
+References: <20070508150431.GA26977@elte.hu> <1178725597.10077.1.camel@localhost>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070510223950.GD86004887@sgi.com>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <1178725597.10077.1.camel@localhost>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 08:39:50AM +1000, David Chinner wrote:
-> On Thu, May 10, 2007 at 05:26:20PM +0530, Amit K. Arora wrote:
-> > On Thu, May 10, 2007 at 10:59:26AM +1000, David Chinner wrote:
-> > > On Wed, May 09, 2007 at 09:31:02PM +0530, Amit K. Arora wrote:
-> > > > I have the updated patches ready which take care of Andrew's comments.
-> > > > Will run some tests and post them soon.
-> > > > 
-> > > > But, before submitting these patches, I think it will be better to
-> > > > finalize on certain things which might be worth some discussion here:
-> > > > 
-> > > > 1) Should the file size change when preallocation is done beyond EOF ?
-> > > > - Andreas and Chris Wedgwood are in favor of not changing the file size
-> > > > in this case. I also tend to agree with them. Does anyone has an
-> > > > argument in favor of changing the filesize ?  If not, I will remove the
-> > > > code which changes the filesize, before I resubmit the concerned ext4
-> > > > patch.
-> > > 
-> > > I think there needs to be both. If we don't have a mechanism to atomically
-> > > change the file size with the preallocation, then applications that use
-> > > stat() to work out if they need to preallocate more space will end up
-> > > racing.
-> > 
-> > By "both" above, do you mean we should give user the flexibility if it wants
-> > the filesize changed or not ? It can be done by having *two* modes for
-> > preallocation in the system call - say FA_PREALLOCATE and FA_ALLOCATE. If we
-> > use FA_PREALLOCATE mode, fallocate() will allocate blocks, but will not
-> > change the filesize and [cm]time. If FA_ALLOCATE mode is used, fallocate()
-> > will change the filesize if required (i.e.  when allocation is beyond EOF)
-> > and also update [cm]time.  This way, the application can decide what it
-> > wants.
-> 
-> Yes, that's right.
-> 
-> > This will be helpfull for the partial allocation scenario also. Think of the
-> > case when we do not change the filesize in fallocate() and expect
-> > applications/posix_fallocate() to do ftruncate() after fallocate() for this.
-> > Now if fallocate() results in a partial allocation with -ENOSPC error
-> > returned, applications/posix_fallocate() will not know for what length
-> > ftruncate() has to be called.  :(
-> 
-> Well, posix_fallocate() either gets all the space or it fails. If
-> you truncate to extend the file size after an ENOSPC, then that is
-> a buggy implementation.
-> 
-> The same could be said for any application, or even the fallocate()
-> call itself if it changes the filesize without having completely
-> preallocated the space asked....
-> 
-> > Hence it may be a good idea to give user the flexibility if it wants to
-> > atomically change the file size with preallocation or not. But, with more
-> > flexibility there comes inconsistency in behavior, which is worth
-> > considering.
-> 
-> We've got different modes to specify different behaviour. That's
-> what the mode field was put there for in the first place - the
-> interface is *designed* to support different preallocation
-> behaviours....
-> 
-> > > > 2) For FA_UNALLOCATE mode, should the file system allow unallocation of
-> > > > normal (non-preallocated) blocks (blocks allocated via regular
-> > > > write/truncate operations) also (i.e. work as punch()) ?
-> > > 
-> > > Yes. That is the current XFS implementation for XFS_IOC_UNRESVSP, and what
-> > > i did for FA_UNALLOCATE as well.
-> > 
-> > Ok. But, some people may not expect/like this. I think, we can keep it on
-> > the backburner for a while, till other issues are sorted out.
-> 
-> How can it be a "backburner" issue when it defines the
-> implementation?  I've already implemented some thing in XFS that
-> sort of does what I think that the interface is supposed to do, but
-> I need that interface to be nailed down before proceeding any
-> further.
-> 
-> All I'm really interested in right now is that the fallocate
-> _interface_ can be used as a *complete replacement* for the
-> pre-existing XFS-specific ioctls that are already used by
-> applications.  What ext4 can or can't do right now is irrelevant to
-> this discussion - the interface definition needs to take priority
-> over implementation....
 
-Would you like to write up an interface definition description (likely
-man page) and post it for review, possibly with a mention of apps using
-it today ?
+[ remailing this on-list too, with some more explanations, i suspect 
+  others might be affected by this 3D performance problem as well. ]
 
-One reason for introducing the mode parameter was to allow the interface to
-evolve incrementally as more options / semantic questions are proposed, so
-that we don't have to make all the decisions right now. 
-So it would be good to start with a *minimal* definition, even just one mode.
-The rest could follow as subsequent patches, each being reviewed and debated
-separately. Otherwise this discussion can drag on for a long time.
+* Kasper Sandberg <lkml@metanurb.dk> wrote:
 
-Regards
-Suparna
+> [...] but under harder load such as pressing a link in a browser while 
+> 3d(at nice 0), or spamasassin at nice 0 still makes it go stutterish 
+> instead of smooth. But overall it does seem better.
 
-> 
-> Cheers,
-> 
-> Dave,
-> -- 
-> Dave Chinner
-> Principal Engineer
-> SGI Australian Software Group
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ok, i think i have finally managed to track this one down.
 
--- 
-Suparna Bhattacharya (suparna@in.ibm.com)
-Linux Technology Center
-IBM Software Lab, India
+certain 3D drivers grew a subtle performance dependency on a 
+sys_sched_yield() implementation/behavioral bug/misbehavior of the 
+upstream kernel, which implementation SD does too, but CFS fixes it by 
+always yielding efficiently. The result of this bug/dependency is 
+extremely low FPS during any CPU-intense workload.
 
+you are using an Nvidia 6600 card so i dont know for sure whether you 
+are affected by this problem (Radeon cards are affected and i can now 
+reproduce that) - but the symptoms i've reproduced seem to be matching 
+your system's symptoms.
+
+I've added a workaround for this to CFS, do you have some time to try 
+it? I've attached the sched-cfs-v12-rc4.patch (delta patch ontop of a 
+CFS -v11 tree), and once you have booted it you can activate the 
+workaround via:
+
+     echo 1 > /proc/sys/kernel/sched_yield_bug_workaround
+
+does this make any difference to the drastic 3D smoothness problems you 
+are experiencing?
+
+	Ingo
+
+---
+ Makefile                     |    2 +-
+ drivers/char/drm/radeon_cp.c |    5 +++++
+ include/linux/sched.h        |    2 +-
+ kernel/sched_fair.c          |   23 +++++++++++++++++++----
+ kernel/sysctl.c              |   12 ++++++------
+ 5 files changed, 32 insertions(+), 12 deletions(-)
+
+Index: linux/Makefile
+===================================================================
+--- linux.orig/Makefile
++++ linux/Makefile
+@@ -1,7 +1,7 @@
+ VERSION = 2
+ PATCHLEVEL = 6
+ SUBLEVEL = 21
+-EXTRAVERSION = -cfs-v11
++EXTRAVERSION = -cfs-v12
+ NAME = Nocturnal Monster Puppy
+ 
+ # *DOCUMENTATION*
+Index: linux/drivers/char/drm/radeon_cp.c
+===================================================================
+--- linux.orig/drivers/char/drm/radeon_cp.c
++++ linux/drivers/char/drm/radeon_cp.c
+@@ -2210,6 +2210,11 @@ int radeon_driver_load(struct drm_device
+ 
+ 	DRM_DEBUG("%s card detected\n",
+ 		  ((dev_priv->flags & RADEON_IS_AGP) ? "AGP" : (((dev_priv->flags & RADEON_IS_PCIE) ? "PCIE" : "PCI"))));
++	if (sysctl_sched_yield_bug_workaround == -1) {
++		sysctl_sched_yield_bug_workaround = 1;
++		printk(KERN_WARNING "quirk installed: turning on "
++			"sys_sched_yield() workaround for Radeon DRM.\n");
++	}
+ 	return ret;
+ }
+ 
+Index: linux/include/linux/sched.h
+===================================================================
+--- linux.orig/include/linux/sched.h
++++ linux/include/linux/sched.h
+@@ -1253,9 +1253,9 @@ extern char * sched_print_task_state(str
+ 
+ extern unsigned int sysctl_sched_granularity;
+ extern unsigned int sysctl_sched_wakeup_granularity;
+-extern unsigned int sysctl_sched_sleep_history_max;
+ extern unsigned int sysctl_sched_child_runs_first;
+ extern unsigned int sysctl_sched_load_smoothing;
++extern int sysctl_sched_yield_bug_workaround;
+ 
+ #ifdef CONFIG_RT_MUTEXES
+ extern int rt_mutex_getprio(struct task_struct *p);
+Index: linux/kernel/sched_fair.c
+===================================================================
+--- linux.orig/kernel/sched_fair.c
++++ linux/kernel/sched_fair.c
+@@ -18,10 +18,6 @@
+  */
+ unsigned int sysctl_sched_granularity __read_mostly = 2000000;
+ 
+-unsigned int sysctl_sched_sleep_history_max __read_mostly = 2000000000;
+-
+-unsigned int sysctl_sched_load_smoothing = 0 | 0 | 0 | 8;
+-
+ /*
+  * Wake-up granularity.
+  * (default: 1 msec, units: nanoseconds)
+@@ -32,6 +28,19 @@ unsigned int sysctl_sched_load_smoothing
+  */
+ unsigned int sysctl_sched_wakeup_granularity __read_mostly = 0;
+ 
++unsigned int sysctl_sched_load_smoothing __read_mostly = 0 | 0 | 0 | 8;
++
++/*
++ * sys_sched_yield unfairness bug workaround switch.
++ * (default: -1:auto-detect+disabled. Other values: 0:disabled, 1:enabled)
++ *
++ * This option switches the unfair yield implementation of the
++ * old scheduler back on. Needed for good performance of certain
++ * apps like 3D games on Radeon cards.
++ */
++int sysctl_sched_yield_bug_workaround __read_mostly = -1;
++
++EXPORT_SYMBOL_GPL(sysctl_sched_yield_bug_workaround);
+ 
+ extern struct sched_class fair_sched_class;
+ 
+@@ -462,6 +471,12 @@ yield_task_fair(struct rq *rq, struct ta
+ 	u64 now;
+ 
+ 	/*
++	 * Bug workaround for 3D apps running on the radeon 3D driver:
++	 */
++	if (unlikely(sysctl_sched_yield_bug_workaround > 0))
++		return;
++
++	/*
+ 	 * yield-to support: if we are on the same runqueue then
+ 	 * give half of our wait_runtime (if it's positive) to the other task:
+ 	 */
+Index: linux/kernel/sysctl.c
+===================================================================
+--- linux.orig/kernel/sysctl.c
++++ linux/kernel/sysctl.c
+@@ -223,24 +223,24 @@ static ctl_table kern_table[] = {
+ 	},
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+-		.procname	= "sched_sleep_history_max_ns",
+-		.data		= &sysctl_sched_sleep_history_max,
++		.procname	= "sched_child_runs_first",
++		.data		= &sysctl_sched_child_runs_first,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+-		.procname	= "sched_child_runs_first",
+-		.data		= &sysctl_sched_child_runs_first,
++		.procname	= "sched_load_smoothing",
++		.data		= &sysctl_sched_load_smoothing,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
+ 	{
+ 		.ctl_name	= CTL_UNNUMBERED,
+-		.procname	= "sched_load_smoothing",
+-		.data		= &sysctl_sched_load_smoothing,
++		.procname	= "sched_yield_bug_workaround",
++		.data		= &sysctl_sched_yield_bug_workaround,
+ 		.maxlen		= sizeof(unsigned int),
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
