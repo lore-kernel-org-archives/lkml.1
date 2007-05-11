@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbXEKUgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763255AbXEKUhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760704AbXEKUgf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 16:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762657AbXEKUgT
+	id S1763255AbXEKUhb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 16:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759541AbXEKUhX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 16:36:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60682 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762243AbXEKUgS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 16:36:18 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
-Date: Fri, 11 May 2007 22:40:53 +0200
-User-Agent: KMail/1.9.5
-Cc: Gautham R Shenoy <ego@in.ibm.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200705110035.32229.rjw@sisk.pl> <200705110036.26617.rjw@sisk.pl> <20070511123959.190adfaf.akpm@linux-foundation.org>
-In-Reply-To: <20070511123959.190adfaf.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 11 May 2007 16:37:23 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:56942 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759588AbXEKUhW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 16:37:22 -0400
+Date: Fri, 11 May 2007 13:36:51 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: Jan Kratochvil <honza@jikos.cz>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][RESEND] PIE randomization
+Message-Id: <20070511133651.63f8a14d.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0705112211440.16923@twin.jikos.cz>
+References: <alpine.LRH.0.98.0705111338230.22353@twin.jikos.cz>
+	<20070511125629.3df919cf.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705112211440.16923@twin.jikos.cz>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705112240.54304.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday, 11 May 2007 21:39, Andrew Morton wrote:
-> On Fri, 11 May 2007 00:36:25 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > The reading of PF_BORROWED_MM in is_user_space() without task_lock() is racy. 
-> > Fix it.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > Acked-by: Pavel Machek <pavel@ucw.cz>
-> > ---
-> >  kernel/power/process.c |    8 +++++++-
-> >  1 file changed, 7 insertions(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6/kernel/power/process.c
-> > ===================================================================
-> > --- linux-2.6.orig/kernel/power/process.c	2007-05-10 21:44:23.000000000 +0200
-> > +++ linux-2.6/kernel/power/process.c	2007-05-10 21:44:28.000000000 +0200
-> > @@ -8,6 +8,7 @@
-> >  
-> >  #undef DEBUG
-> >  
-> > +#include <linux/sched.h>
-> >  #include <linux/interrupt.h>
-> >  #include <linux/suspend.h>
-> >  #include <linux/module.h>
-> > @@ -88,7 +89,12 @@ static void cancel_freezing(struct task_
-> >  
-> >  static inline int is_user_space(struct task_struct *p)
-> >  {
-> > -	return p->mm && !(p->flags & PF_BORROWED_MM);
-> > +	int ret;
-> > +
-> > +	task_lock(p);
-> > +	ret = p->mm && !(p->flags & PF_BORROWED_MM);
-> > +	task_unlock(p);
-> > +	return ret;
-> >  }
-> 
-> The whole function is racy, isn't it?  I mean, the condition which it is
-> testing can go from true->false or false->true at any instant after this
-> function returns its now-wrong value.
-> 
-> iow, callers of this function need to to something to prevent the expression
-> `p->mm && !(p->flags & PF_BORROWED_MM);' from changing value _anyway_.  In
-> which case the new locking is not needed?
+On Fri, 11 May 2007 22:18:16 +0200 (CEST)
+Jiri Kosina <jkosina@suse.cz> wrote:
 
-For user space processes this condition is always true.
+> On Fri, 11 May 2007, Andrew Morton wrote:
+> 
+> > >    I sent this patch 5 days ago, nobody replied. So I am giving it 
+> > > second attempt. Andrew, is it possible to test this in -mm branch? 
+> > > Original mail follows:
+> > >     this is something like reaction to this thread: 
+> > > http://lkml.org/lkml/2007/1/6/124. I hope I was able to separate the 
+> > > PIE randomization part correctly.
+> > I don't know what to do with this.  The changelog doesn't tell me what PIE
+> > randomization _is_, nor why the kernel would want to do it. "Randomizing 
+> > -pie compiled binaries" sounds fairly undesirable, actually ;)
+> 
+> I think it's precisely what we want to do in case the randomize_va_space 
+> is set to 1, don't we? (I haven't yet gone throught the patch though, so I 
+> am not sure whether this is the case).
 
-For kernel threads:
-(1) the change of tsk->mm from NULL to a nonzero value is only made in
-fs/aio.c:use_mm() along with the setting of PF_BORROWED_MM under
-the task_lock(),
-(2) the change of tsk->mm from a nonzero value to NULL is only made in
-fs/aio.c:unuse_mm() along with the resetting of PF_BORROWED_MM
-under the task_lock().
-Therefore, by taking the task_lock() here we make sure that the condition
-is alyways false when we check it for kernel threads.
+erm, I was being funny.  If you randomize a binary it won't run any more. 
+cp /dev/random /bin/login.  Oh well.
+
+My point is, we're not being told what is being randomized here.  Is it the
+virtual starting address of the main executable mmap?  Of the shared
+libraries also?  Is it the stack location?  What?
+
+I could reverse-engineer that info from the patch, I guess, but I'd prefer
+to go in the opposite direction: you tell us what the patch is trying to
+do, then we look at it and see if we agree that it is in fact doing that.
+
+> We already have stack randomization and mmap() base randomization but 
+> executable base randomization (which is of course only feasible for -pie 
+> executables) and brk() randomization still seem to be missing to make it 
+> complete.
+
 
