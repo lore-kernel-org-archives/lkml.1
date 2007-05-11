@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759584AbXEKIvF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbXEKIv0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759584AbXEKIvF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 04:51:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751749AbXEKIuz
+	id S1760823AbXEKIv0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 04:51:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759918AbXEKIvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 04:50:55 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45454 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754560AbXEKIux (ORCPT
+	Fri, 11 May 2007 04:51:06 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35390 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759410AbXEKIvD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 04:50:53 -0400
-Date: Fri, 11 May 2007 17:49:27 +0900
-Message-ID: <87tzujeodk.wl%takeuchi_satoru@jp.fujitsu.com>
+	Fri, 11 May 2007 04:51:03 -0400
+Date: Fri, 11 May 2007 17:49:20 +0900
+Message-ID: <87veezeodr.wl%takeuchi_satoru@jp.fujitsu.com>
 From: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
 To: Rusty Russell <rusty@rustcorp.com.au>
 Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
@@ -22,7 +22,7 @@ Cc: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>,
        Joel Schopp <jschopp@austin.ibm.com>, Ashok Raj <ashok.raj@intel.com>,
        Heiko Carstens <heiko.carstens@de.ibm.com>,
        Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH 2/2] cpu hotplug: fix ksoftirqd termination on cpu hotplug with naughty realtime process
+Subject: [PATCH 1/2] Fix stop_machine_run problem with naughty real time process
 In-Reply-To: <1178593345.28438.29.camel@localhost.localdomain>
 References: <87bqgxrlky.wl%takeuchi_satoru@jp.fujitsu.com>
 	<1178545373.28438.7.camel@localhost.localdomain>
@@ -36,37 +36,110 @@ Content-Type: text/plain; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix ksoftirqd termination on cpu hotplug with naughty real time process.
+Hi,
 
-Assuming the following case:
+I wrote patches which fixes the problem regarding stop_machine_run() and
+cpu hotplug.
 
- - Try to hot remove CPU2 from CPU1.
- - There is a real time process on CPU2, and that process doesn't sleep at all.
- - That rt process and ksoftirqd/2 is migrated to the CPU0
+stop_machine_run() can't accomplish its work if there is a real time process
+on the CPU on which "kstopmachine" kernel thread is running. For more details,
+please refer to the following thread:
 
-Then ksoftirqd/2 can't stop becasue that rt process runs everlastingly on CPU0,
-and CPU1 waiting the ksoftirqd/2's termination hangs up. To fix this problem, set
-the priority of ksoftirqd/2 to max one before kthread_stop().
+  http://lkml.org/lkml/2007/5/7/41
+
+TEST RESULT:
+
+I did the following test on my ia64 box. It works fine:
+
+-------------------------------------------------------------------------------
+# cat loop.sh
+while true ; do
+	:
+done
+-------------------------------------------------------------------------------
+# cat test_stop_machine_run_with_rt_proc.sh
+#!/bin/sh
+
+taskset 0x2 chrt -f 98 ./loop.sh &
+PID=${!}
+echo 0 >/sys/devices/system/cpu/cpu1/online
+kill ${PID}
+echo 1 >/sys/devices/system/cpu/cpu1/online
+-------------------------------------------------------------------------------
+
+To do the test, just issue the following command.
+
+# ./test_stop_machine_run_with_rt_proc.sh
+# 
+
+TODO list
+=========
+
+Some more works are needed. See the TODO list.
+
+ - If there is a SCHED_FIFO process having max priority, stop_machine_run doesn't
+   work because kstopmachine doesn't be scheduled.
+
+     -> I'm trying to fix this problem, see the followings:
+
+        http://lkml.org/lkml/2007/5/8/620
+
+        I would submit RFC patches in 1 weeks.
+
+ - On CPU hot removal, if that RT process is migrated to the CPU on which
+   stop_machine_run() is running, stop_machine_run can't continue to run.
+
+     -> I'm trying to fix this problem.
+
+ - Other `stop_machine_run() with FIFO` problem might exist.
+
+     -> I've not research other subsystem using stop_machine_run yet.
+
+
+# FYI, I'll be offline for 2 days.
+
+Thanks,
+
+Satoru
+
+---
+Fix stop_machine_run() problem with naughty real time process
+
+stop_machine_run() does its work on "kstopmachine" thread having max priority.
+However that thread get such priority after woken up. Therefore, in the
+following case ...
+
+  - "kstopmachine" try to run on CPU1
+  - There is a real time process which doesn't relinquish CPU time voluntary on CPU1
+
+... "kstopmachine" can't start to run and the CPU on which stop_machine_run() is runing
+hangs up. To fix this problem, call sched_setscheduler() before waking up that thread.
 
 Signed-off-by: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
 
-Index: linux-2.6.21/kernel/softirq.c
+Index: linux-2.6.21/kernel/stop_machine.c
 ===================================================================
---- linux-2.6.21.orig/kernel/softirq.c	2007-05-11 13:45:34.000000000 +0900
-+++ linux-2.6.21/kernel/softirq.c	2007-05-11 17:19:12.000000000 +0900
-@@ -590,6 +590,7 @@ static int __cpuinit cpu_callback(struct
+--- linux-2.6.21.orig/kernel/stop_machine.c	2007-05-11 13:45:34.000000000 +0900
++++ linux-2.6.21/kernel/stop_machine.c	2007-05-11 14:49:17.000000000 +0900
+@@ -89,10 +89,6 @@ static void stopmachine_set_state(enum s
+ static int stop_machine(void)
  {
- 	int hotcpu = (unsigned long)hcpu;
- 	struct task_struct *p;
-+	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+ 	int i, ret = 0;
+-	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
+-
+-	/* One high-prio thread per cpu.  We'll do this one. */
+-	sched_setscheduler(current, SCHED_FIFO, &param);
  
- 	switch (action) {
- 	case CPU_UP_PREPARE:
-@@ -614,6 +615,7 @@ static int __cpuinit cpu_callback(struct
- 	case CPU_DEAD:
- 		p = per_cpu(ksoftirqd, hotcpu);
- 		per_cpu(ksoftirqd, hotcpu) = NULL;
+ 	atomic_set(&stopmachine_thread_ack, 0);
+ 	stopmachine_num_threads = 0;
+@@ -184,6 +180,10 @@ struct task_struct *__stop_machine_run(i
+ 
+ 	p = kthread_create(do_stop, &smdata, "kstopmachine");
+ 	if (!IS_ERR(p)) {
++		struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
++		
++		/* One high-prio thread per cpu.  We'll do this one. */
 +		sched_setscheduler(p, SCHED_FIFO, &param);
- 		kthread_stop(p);
- 		takeover_tasklets(hotcpu);
- 		break;
+ 		kthread_bind(p, cpu);
+ 		wake_up_process(p);
+ 		wait_for_completion(&smdata.done);
