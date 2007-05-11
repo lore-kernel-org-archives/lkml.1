@@ -1,70 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbXEKLKT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759999AbXEKLOo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760472AbXEKLKT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 07:10:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbXEKLKH
+	id S1759999AbXEKLOo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 07:14:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757135AbXEKLOh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 07:10:07 -0400
-Received: from ug-out-1314.google.com ([66.249.92.173]:13175 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754770AbXEKLKF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 07:10:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=q40Ic0+MkYHgaEek537OBPl4OxgxI6fFqLHHLPb96XZy9YW6crPiF2uZ6XQbPFwN9DlztgG+wutdZ3DpcdGeyFi1WH97CxIgWy/3l8Qd0kTtTZ44U4slgEODL+otrNnSknkDZHhQM1C385wR+JqKCRgMEnRKUyFrrrcU64IyCxI=
-Date: Fri, 11 May 2007 15:09:20 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@ucw.cz>
-Subject: Re: [PATCH] UDF: check for allocated memory for inode data
-Message-ID: <20070511110920.GA11898@cvg>
-References: <20070510140000.GA12399@cvg> <20070510154640.c0299a52.akpm@linux-foundation.org> <20070511072939.GA25727@infradead.org> <20070511090127.GD9444@cvg> <20070511103956.GA30896@infradead.org>
+	Fri, 11 May 2007 07:14:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44231 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755738AbXEKLOg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 07:14:36 -0400
+Message-ID: <46444F3F.6010308@redhat.com>
+Date: Fri, 11 May 2007 13:10:55 +0200
+From: Gerd Hoffmann <kraxel@redhat.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070511103956.GA30896@infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <ak@suse.de>,
+       Alan <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: [patch] Refine SCREEN_INFO sanity check for vgacon initialization.
+Content-Type: multipart/mixed;
+ boundary="------------040003000702090201060107"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Christoph Hellwig - Fri, May 11, 2007 at 11:39:56AM +0100]
-| On Fri, May 11, 2007 at 01:01:27PM +0400, Cyrill Gorcunov wrote:
-| > [Christoph Hellwig - Fri, May 11, 2007 at 08:29:39AM +0100]
-| > 
-| > ...
-| > 
-| > | And please get rid of the UDF_I_* macro for everything you touch, just
-| > | put a
-| > | 
-| > | 	struct udf_inode_info *uip = UDF_I(inode);
-| > | 
-| > | at the beginning of the function and use the fields directly.
-| > | 
-| > 
-| > Actually to properly remove UDF_I* and UDF_SB_* macroses in the
-| > whole UDF subsystem - is _lot_ of work. I'm going to make it but
-| > not now (too busy).
-| 
-| Doing it completely is a lot of work, yes.  I was more thinking of
-| converting a piece of code once you do major changes.  But if you
-| want to convert all the code as a separate patch I'm more than happy
-| aswell.
-| 
+This is a multi-part message in MIME format.
+--------------040003000702090201060107
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Christoph, my only argue against getting rid of UDF_I_* macro in
-my patch is UDF coding style, I don't want to damage it. I think
-we may leave it as is (including my patch). So just review the patch
-I sent (second version) and Ack it then so Andrew could include it
-into mm tree. Meantime I'm rewritting the whole UDF subsystem to
-get rid of that macroses (it will be a long way ;)
+   Hi,
 
-		Cyrill
+Checking video mode field only to see whenever SCREEN_INFO is
+initialized is not enougth, in some cases it is zero although
+a vga card is present.  Lets additionally check cols and lines.
 
-P.S.
-But if you still insist on getting rid of UDF_I_ macroses from my patch
-just let me now :)
+Updates f82af20e1a028e16b9bb11da081fa1148d40fa6a, should go
+into 2.6.22.
 
+please apply,
+   Gerd
+
+
+--------------040003000702090201060107
+Content-Type: text/plain;
+ name="vgacon-fixup-check"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="vgacon-fixup-check"
+
+Refine SCREEN_INFO sanity check for vgacon initialization.
+
+Checking video mode field only to see whenever SCREEN_INFO is
+initialized is not enougth, in some cases it is zero although
+a vga card is present.  Lets additionally check cols and lines.
+
+Signed-off-by: Gerd Hoffmann <kraxel@redhat.com>
+Cc: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Andi Kleen <ak@suse.de>
+Cc: Alan <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+---
+ drivers/video/console/vgacon.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+Index: vanilla-2.6.21-git11/drivers/video/console/vgacon.c
+===================================================================
+--- vanilla-2.6.21-git11.orig/drivers/video/console/vgacon.c
++++ vanilla-2.6.21-git11/drivers/video/console/vgacon.c
+@@ -368,9 +368,14 @@ static const char *vgacon_startup(void)
+ #endif
+ 	}
+ 
++	/* SCREEN_INFO initialized? */
++	if ((ORIG_VIDEO_MODE  == 0) &&
++	    (ORIG_VIDEO_LINES == 0) &&
++	    (ORIG_VIDEO_COLS  == 0))
++		goto no_vga;
++
+ 	/* VGA16 modes are not handled by VGACON */
+-	if ((ORIG_VIDEO_MODE == 0x00) ||	/* SCREEN_INFO not initialized */
+-	    (ORIG_VIDEO_MODE == 0x0D) ||	/* 320x200/4 */
++	if ((ORIG_VIDEO_MODE == 0x0D) ||	/* 320x200/4 */
+ 	    (ORIG_VIDEO_MODE == 0x0E) ||	/* 640x200/4 */
+ 	    (ORIG_VIDEO_MODE == 0x10) ||	/* 640x350/4 */
+ 	    (ORIG_VIDEO_MODE == 0x12) ||	/* 640x480/4 */
+
+--------------040003000702090201060107--
