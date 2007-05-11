@@ -1,51 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762352AbXEKS7c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbXEKS7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762352AbXEKS7c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 14:59:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756542AbXEKS7Z
+	id S1763014AbXEKS7o (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 14:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762738AbXEKS7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 14:59:25 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3118 "EHLO spitz.ucw.cz"
+	Fri, 11 May 2007 14:59:34 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:3119 "EHLO spitz.ucw.cz"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751698AbXEKS7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 14:59:25 -0400
-Date: Fri, 11 May 2007 13:14:36 +0000
+	id S1754173AbXEKS7d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 14:59:33 -0400
+Date: Fri, 11 May 2007 18:23:30 +0000
 From: Pavel Machek <pavel@ucw.cz>
-To: Miles Lane <miles.lane@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.21-mm1 -- Hibernation locked up and didn't power down (had to hold power button down for five seconds)
-Message-ID: <20070511131436.GG4052@ucw.cz>
-References: <a44ae5cd0705071637x59d4579bm369b44c7975bea37@mail.gmail.com>
+To: kexec@lists.infradead.org, linux-kernel@vger.kernel.org,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: [Fastboot] restoring x86 BIOS state before reboot
+Message-ID: <20070511182329.GJ4052@ucw.cz>
+References: <20070406154628.GG12005@jukie.net> <m1zm4rd676.fsf@ebiederm.dsl.xmission.com> <20070429094135.GA10948@suse.de>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <a44ae5cd0705071637x59d4579bm369b44c7975bea37@mail.gmail.com>
+In-Reply-To: <20070429094135.GA10948@suse.de>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi!
 
-> This is probably more log info than you need, but I am 
-> including it in
-> case it helps.
+> > It may also be worth investigating if it is possible to bypass
+> > the part of windows that uses BIOS calls.  I really don't have
+> > a clue how a modern windows systems boots.
+> 
+> I think ReactOS has a bootlader that can also boot Windows, or at
+> least they are close to booting the Windows kernel. That bootloader
+> could be then used for booting Windows without BIOS calls.
+> 
+> I also heard that the 100-$-Laptop should now be able to use Windows.
+> As it's using LinuxBIOS, this could also be interesting. However,
+> maybe Microsoft simply modifies a special Windows for this, or they
+> integrate a ClosedSource part in that LinuxBIOS, I don't know ... :-(
 
-It is long, but useless, because it misses the critical parts.
+I do not think OLPC is using linuxBIOS these days. What they have
+certainly looks like Sun's ROM monitor.
 
-> [ 5487.322599] agpgart-intel 0000:00:00.0: LATE freeze
-> [ 5487.322711] swsusp: critical section:
-> [ 5487.365827] swsusp: Need to copy 122651 pages
-> [ 5487.365831] swsusp: Normal pages needed: 114026 + 
-> 1024 + 24,
-> available pages: 122386
-
-(messages concerning powerdown missing, because they are not in usual
-buffers. Capture them somehow. Serial console/digicam/paper and
-pencil.
-
-> At this point, I had to hard power down.
-
-							Pavel
 -- 
 (english) http://www.livejournal.com/~pavelmachek
 (cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
