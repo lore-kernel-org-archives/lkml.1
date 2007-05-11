@@ -1,90 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759381AbXEKMfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760555AbXEKMjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759381AbXEKMfw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 08:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbXEKMfp
+	id S1760555AbXEKMjm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 08:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757114AbXEKMjc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 08:35:45 -0400
-Received: from py-out-1112.google.com ([64.233.166.177]:26320 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756055AbXEKMfo (ORCPT
+	Fri, 11 May 2007 08:39:32 -0400
+Received: from az33egw01.freescale.net ([192.88.158.102]:48694 "EHLO
+	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756799AbXEKMjb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 08:35:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=rieWCtPofdHmr/88hZPpCw1m5PXF+9mKOm1AnCzOr5b8d4RgikKEYhTQPup9H7a9PedkhRZYpC26iLFFKM9bftazW6BPpcsEFI+cypWYemcIR4/g5+MnkQV7Y6buknbVi7tLAFX/CTtH8ougatWMNC6cLlMBXYwvzTEXZlbP9eQ=
-Message-ID: <46446311.3000208@gmail.com>
-Date: Fri, 11 May 2007 14:35:29 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Fri, 11 May 2007 08:39:31 -0400
+Message-ID: <464463E0.1020602@freescale.com>
+Date: Fri, 11 May 2007 07:38:56 -0500
+From: Timur Tabi <timur@freescale.com>
+User-Agent: Mozilla/5.0 (Macintosh; U; PPC Mac OS X Mach-O; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: William Thompson <wt@electro-mechanical.com>, Mark Lord <liml@rtr.ca>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       albertcc@tw.ibm.com
-Subject: [PATCH] libata: fallback to the other IDENTIFY on device error, take#2
-References: <20070427175205.GD7809@electro-mechanical.com> <4635C35D.1020807@gmail.com> <20070430202107.GF5942@electro-mechanical.com> <4636C2C7.8090206@gmail.com> <20070501121703.GH5942@electro-mechanical.com> <46373AEE.6070908@rtr.ca> <20070501131818.GA18521@electro-mechanical.com> <46374354.7040307@gmail.com> <20070501172117.GA20328@electro-mechanical.com> <463F56F2.3010106@gmail.com> <4642627A.4030606@garzik.org>
-In-Reply-To: <4642627A.4030606@garzik.org>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+To: Kumar Gala <galak@kernel.crashing.org>, Simon Horman <horms@verge.net.au>,
+       Timur Tabi <timur@freescale.com>,
+       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       =?ISO-8859-1?Q?Ismail_D=F6nmez?= <ismail@pardus.org.tr>,
+       Michael Schmitz <schmitz@debian.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: Kconfig warnings on latest GIT
+References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au> <46434ED0.6030808@freescale.com> <20070511012529.GC10715@verge.net.au> <Pine.LNX.4.64.0705102046400.10555@gate.crashing.org> <20070511074337.GA3048@flint.arm.linux.org.uk>
+In-Reply-To: <20070511074337.GA3048@flint.arm.linux.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems the world isn't as frank as we thought and some devices lie
-about who they are.  Fallback to the other IDENTIFY if IDENTIFY is
-aborted by the device.  As this is the strategy used by IDE for a long
-time, it shouldn't cause too much problem.
+Russell King wrote:
 
-Signed-off-by: Tejun Heo <htejun@gmail.com>
-Cc: William Thompson <wt@electro-mechanical.com>
----
-Updated to fallback iff IDENTIFY is aborted by the device.
+> You might also want to fix the other stupidity with this.  See my message
+> on this very subject ("select is evil: another reason" from May 9th on lkml.)
 
-diff --git a/drivers/ata/libata-core.c b/drivers/ata/libata-core.c
-index 4595d1f..96a7c6f 100644
---- a/drivers/ata/libata-core.c
-+++ b/drivers/ata/libata-core.c
-@@ -1654,7 +1654,7 @@ int ata_dev_read_id(struct ata_device *d
- 	struct ata_taskfile tf;
- 	unsigned int err_mask = 0;
- 	const char *reason;
--	int tried_spinup = 0;
-+	int may_fallback = 1, tried_spinup = 0;
- 	int rc;
- 
- 	if (ata_msg_ctl(ap))
-@@ -1698,11 +1698,31 @@ int ata_dev_read_id(struct ata_device *d
- 			return -ENOENT;
- 		}
- 
-+		/* Device or controller might have reported the wrong
-+		 * device class.  Give a shot at the other IDENTIFY if
-+		 * the current one is aborted by the device.
-+		 */
-+		if (may_fallback &&
-+		    (err_mask == AC_ERR_DEV) && (tf.feature & ATA_ABORTED)) {
-+			may_fallback = 0;
-+
-+			if (class == ATA_DEV_ATA)
-+				class = ATA_DEV_ATAPI;
-+			else
-+				class = ATA_DEV_ATA;
-+			goto retry;
-+		}
-+
- 		rc = -EIO;
- 		reason = "I/O error";
- 		goto err_out;
- 	}
- 
-+	/* Falling back doesn't make sense if ID data was read
-+	 * successfully at least once.
-+	 */
-+	may_fallback = 0;
-+
- 	swap_buf_le16(id, ATA_ID_WORDS);
- 
- 	/* sanity check */
+I submitted a patch yesterday which includes both fixes.  Apparently, it's already in the -mm tree.
