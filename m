@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbXEKEhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758549AbXEKErS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbXEKEhy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 00:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754247AbXEKEhr
+	id S1758549AbXEKErS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 00:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbXEKErF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 00:37:47 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:49010 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754059AbXEKEhq (ORCPT
+	Fri, 11 May 2007 00:47:05 -0400
+Received: from gateway.insightbb.com ([74.128.0.19]:13511 "EHLO
+	asav10.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752969AbXEKErD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 00:37:46 -0400
-Date: Fri, 11 May 2007 10:07:12 +0530
-From: Vivek Goyal <vgoyal@in.ibm.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@osdl.org>, Matt Domsch <Matt_Domsch@dell.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86 setup rewrite tree ready for flamage^W review
-Message-ID: <20070511043712.GB16944@in.ibm.com>
-Reply-To: vgoyal@in.ibm.com
-References: <464158E9.2000207@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 11 May 2007 00:47:03 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AutRAJmRQ0ZKhRO4W2dsb2JhbACBXI4XHRIRAQ
+From: Dmitry Torokhov <dtor@insightbb.com>
+To: Remi Colinet <remi.colinet@free.fr>
+Subject: Re: Regression in 2.6.21-mm1 (git-input) on Dell D610 laptop
+Date: Fri, 11 May 2007 00:47:04 -0400
+User-Agent: KMail/1.9.3
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+References: <1178802325.46431895e9469@imp.free.fr> <20070510185021.c3d28048.akpm@linux-foundation.org>
+In-Reply-To: <20070510185021.c3d28048.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <464158E9.2000207@zytor.com>
-User-Agent: Mutt/1.5.11
+Message-Id: <200705110047.04933.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 10:15:21PM -0700, H. Peter Anvin wrote:
-> Hello all,
-> 
-> I believe the x86 setup tree is now finished.  I will turn it into a
-> "clean patchset" later this week, but I wanted to get flamed^W feedback
-> on it first.
-> 
-> The git tree is at:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/hpa/linux-2.6-newsetup.git;a=summary
-> git://git.kernel.org/pub/scm/linux/kernel/git/hpa/linux-2.6-newsetup.git
-> ...
-> 
-> ... and a flat patch at ...
-> 
-> http://www.kernel.org/pub/linux/kernel/people/hpa/newsetup-36f021b5.patch
-> 
+Hi Remi,
 
-Wow, reading code in C is so much better than decoding assembly. :-)
+On Thursday 10 May 2007 21:50, Andrew Morton wrote:
+> On Thu, 10 May 2007 15:05:25 +0200
+> Remi Colinet <remi.colinet@free.fr> wrote:
+> 
+> > My D610 ALPS Glide Point is unresponsive with 2.6.21-mm1 patch.
+> > No problem noticed with 2.6.21.
+> > 
+> > The culprit seems to be git-input. I have applied 2.6.21-mm1 on top of 2.6.21
+> > and then removed git-input patch. It is ok since then.
 
-Had a quick look, mainly from relocatable kernel code point of view. Yet
-to dive deeper. 
+Have you tried any other -mm? Also, does it help if you stick
 
-PHYSICAL_ALIGN needs to be 2MB on x86_64 instead of 1MB.
+	ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_SETSTREAM);
 
-Thanks
-Vivek
+at the very beginning of psmouse_initialize() in
+drivers/input/mouse/psmouse-base.c?
+
+-- 
+Dmitry
