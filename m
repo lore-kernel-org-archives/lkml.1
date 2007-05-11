@@ -1,80 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760975AbXEKTJG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762826AbXEKTJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760975AbXEKTJG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 15:09:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757925AbXEKTIz
+	id S1762826AbXEKTJj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 15:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbXEKTJa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 15:08:55 -0400
-Received: from outmx034.isp.belgacom.be ([195.238.6.171]:42336 "EHLO
-	outmx034.isp.belgacom.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756542AbXEKTIy (ORCPT
+	Fri, 11 May 2007 15:09:30 -0400
+Received: from 161.sub-75-209-96.myvzw.com ([75.209.96.161]:60044 "EHLO
+	mail.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758775AbXEKTJ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 15:08:54 -0400
-Date: Fri, 11 May 2007 21:10:12 +0200
-From: Wim Van Sebroeck <wim@iguana.be>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: [WATCHDOG] iTCO_wdt.c - fix ACPIBASE
-Message-ID: <20070511191012.GA3060@infomag.infomag.iguana.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+	Fri, 11 May 2007 15:09:29 -0400
+X-Greylist: delayed 804 seconds by postgrey-1.27 at vger.kernel.org; Fri, 11 May 2007 15:09:29 EDT
+Message-Id: <20070511000643.025196000@goop.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 10 May 2007 17:06:43 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, virtualization@lists.osdl.org,
+       lkml <linux-kernel@vger.kernel.org>, Chris Wright <chrisw@sous-sol.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [patch 00/28]xen: Xen implementation for paravirt_ops
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Hi Andi,
 
-Please pull from 'master' branch of
-	git://git.kernel.org/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
-or if master.kernel.org hasn't synced up yet:
-	master.kernel.org:/pub/scm/linux/kernel/git/wim/linux-2.6-watchdog.git
+This series of patches implements the Xen paravirt-ops interface.  It
+applies to 2.6.21-git13 + patches-2.6.21-git7-070507-1.tar.gz (I think
+"unwinder" is the only patch which doesn't apply to git13, and the
+sched-clock patches are the only ones which this series actually
+needs).
 
-This will update the following files:
+Changes since the last posting:
+ - More netfront review and cleanup
+ - Added ability to cleanly halt/reboot guests from outside the domain.
+ - Folded bugfix patches into their main patch
+ - Lots of little style and other cleanups
 
- drivers/char/watchdog/iTCO_wdt.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+These patches are now moderately well tested, with several successful
+runs through XenSource's regression test suite, and some amount of
+non-me testing.  While I wouldn't go into production with a
+xen/paravirt_ops kernel right now, it does seem pretty functional.
 
-with these Changes:
+This series generally restricts itself to Xen-specific parts of the
+tree, though it does make a few small changes elsewhere.
 
-Author: Wim Van Sebroeck <wim@iguana.be>
-Date:   Fri May 11 18:59:24 2007 +0000
+It includes:
+ - some helper routines for allocating address space and walking pagetables
+ - Xen interface header files
+ - Core Xen implementation (boot, mmu, events, time)
+ - Efficient late-pinning/early-unpinning pagetable handling
+ - Virtualized time, including stolen time
+ - SMP support
+ - Preemption support
+ - Batched pagetable updates
+ - Xen console, based on hvc console
+ - Xenbus
+ - Netfront, the paravirtualized network device
+ - Blockfront, the paravirtualized block device
 
-    [WATCHDOG] iTCO_wdt.c - fix ACPI Base register
-    
-    The ACPI/PM base I/O address which is the base
-    for the TCO registers is defined as bits [15:7]
-    (highest bit is 31, lowest is 0)
-    
-    The code however only reads bits [14:7]. So
-            base_address &= 0x00007f80;
-    needs to be:
-            base_address &= 0x0000ff80;
-    
-    This patch fixes this.
-    
-    Signed-off-by: Ate Wijma <ajwijma@hotmail.com>
-    Signed-off-by: Wim Van Sebroeck <wim@iguana.be>
+Thanks,
+	J
+-- 
 
-The Changes can also be looked at on:
-	http://www.kernel.org/git/?p=linux/kernel/git/wim/linux-2.6-watchdog.git;a=summary
-
-For completeness, I added the overal diff below.
-
-Greetings,
-Wim.
-
-================================================================================
-diff --git a/drivers/char/watchdog/iTCO_wdt.c b/drivers/char/watchdog/iTCO_wdt.c
-index 3c9684c..eac4f9b 100644
---- a/drivers/char/watchdog/iTCO_wdt.c
-+++ b/drivers/char/watchdog/iTCO_wdt.c
-@@ -571,7 +571,7 @@ static int iTCO_wdt_init(struct pci_dev *pdev, const struct pci_device_id *ent,
- 	 *      ACPIBASE is bits [15:7] from 0x40-0x43
- 	 */
- 	pci_read_config_dword(pdev, 0x40, &base_address);
--	base_address &= 0x00007f80;
-+	base_address &= 0x0000ff80;
- 	if (base_address == 0x00000000) {
- 		/* Something's wrong here, ACPIBASE has to be set */
- 		printk(KERN_ERR PFX "failed to get TCOBASE address\n");
