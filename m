@@ -1,51 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761064AbXEKQQM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762096AbXEKQQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761064AbXEKQQM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 12:16:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758288AbXEKQP7
+	id S1762096AbXEKQQp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 12:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759314AbXEKQQh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 12:15:59 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:55526 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757977AbXEKQP7 (ORCPT
+	Fri, 11 May 2007 12:16:37 -0400
+Received: from agminet01.oracle.com ([141.146.126.228]:49823 "EHLO
+	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757977AbXEKQQg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 12:15:59 -0400
-Date: Fri, 11 May 2007 09:15:58 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: William Lee Irwin III <wli@holomorphy.com>
-cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: slub-i386-support.patch
-In-Reply-To: <20070511075410.GT19966@holomorphy.com>
-Message-ID: <Pine.LNX.4.64.0705110914000.19153@schroedinger.engr.sgi.com>
-References: <Pine.LNX.4.64.0705102028550.25681@blonde.wat.veritas.com>
- <20070510203102.GO19966@holomorphy.com> <Pine.LNX.4.64.0705102349150.24200@blonde.wat.veritas.com>
- <20070511082930.GP2012@bingen.suse.de> <20070511004200.6d30152e.akpm@linux-foundation.org>
- <20070511075410.GT19966@holomorphy.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 11 May 2007 12:16:36 -0400
+Date: Fri, 11 May 2007 09:19:32 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: kjhall@us.ibm.com, tpm@selhorst.net, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] MAINTAINERS: remove invalid list address for TPM
+Message-Id: <20070511091932.8a7aa843.randy.dunlap@oracle.com>
+In-Reply-To: <20070511164207.24b1437e.sfr@canb.auug.org.au>
+References: <20070511164207.24b1437e.sfr@canb.auug.org.au>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 May 2007, William Lee Irwin III wrote:
+On Fri, 11 May 2007 16:42:07 +1000 Stephen Rothwell wrote:
 
-> My summary:
-> (1) The patch is safe-as is, though it should move its hook elsewhere.
-> (2) Scribbling on the memory still irks me but is safe.
-> (3) I should redo the i386 pgd updates to suck less.
-> (4) Christoph might let me change quicklists to use struct page pointers.
+> This address bounces with "550 Unknown user".
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  MAINTAINERS |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
 
-I am fine with you working on it. You just need to coordinate with the 7 
-or so arches that are now using quicklists.
+Hm, I get:
 
-> Christoph wants to update the core quicklist code or have me update
-> it according to the cached precomputed value scheme I outlined in a
-> prior post before its initial merge. I'll prepare all the patches for
-> comment regardless.
+Your mail to 'tpmdd-devel' with the subject
+    test only
+Is being held until the list moderator can review it for approval.
+The reason it is being held:
+    Post by non-member to a members-only list
 
-I am fine with you updating the quicklist code since I have currently no 
-plans on doing more there. Just be sure to coordinate with all quicklists 
-users please.
+so what MAINTAINERS usually says in that case is "(subscribers-only)":
+
+L:	linux-atm-general@lists.sourceforge.net (subscribers-only)
+
+
+Also, the archive shows emails there on APR-30.
+
+> -- 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index bd558ac..421740d 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3269,7 +3269,6 @@ W:	http://tpmdd.sourceforge.net
+>  P:	Marcel Selhorst
+>  M:	tpm@selhorst.net
+>  W:	http://www.prosec.rub.de/tpm/
+> -L:	tpmdd-devel@lists.sourceforge.net
+>  S:	Maintained
+>  
+>  Telecom Clock Driver for MCPL0010
+
+
+
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
