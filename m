@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758812AbXELSfF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759539AbXELSgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758812AbXELSfF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 14:35:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756637AbXELSe4
+	id S1759539AbXELSgh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 14:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbXELSgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 14:34:56 -0400
-Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:19949 "EHLO
-	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754989AbXELSez (ORCPT
+	Sat, 12 May 2007 14:36:31 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:41904 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756302AbXELSga (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 14:34:55 -0400
-Date: Sat, 12 May 2007 12:34:48 -0600
-From: Robert Hancock <hancockr@shaw.ca>
-Subject: Re: [2.6.21.1] SATA freeze
-In-reply-to: <fa.9rF0YSLySQV/+6iXNTOmlASflXA@ifi.uio.no>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Gerhard Mack <gmack@innerfire.net>
-Message-id: <464608C8.4050507@shaw.ca>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
-References: <fa.nl0Mcy44vzL27dQ8CsLG/+SfNO0@ifi.uio.no>
- <fa.Odn/BmbDLGQp4kzhwqs6TScgkdE@ifi.uio.no>
- <fa.QtdEc9oISM5NdAmikW4kWhdGDeM@ifi.uio.no>
- <fa.YyeTl86xaR6Y3MLVL7vUm5SgUzc@ifi.uio.no>
- <fa.9rF0YSLySQV/+6iXNTOmlASflXA@ifi.uio.no>
-User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+	Sat, 12 May 2007 14:36:30 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@osdl.org>, Matt Domsch <Matt_Domsch@dell.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPar>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86 setup rewrite tree ready for flamage^W review
+References: <464158E9.2000207@zytor.com>
+	<1178806235.18785.1189115515@webmail.messagingengine.com>
+	<46435F8A.1040203@zytor.com> <20070510220406.GA21110@mailshack.com>
+	<4643A128.30302@zytor.com> <20070512122137.GA25944@mailshack.com>
+	<m1r6pmqg1n.fsf@ebiederm.dsl.xmission.com>
+	<464602DC.4050603@zytor.com>
+Date: Sat, 12 May 2007 12:35:28 -0600
+In-Reply-To: <464602DC.4050603@zytor.com> (H. Peter Anvin's message of "Sat,
+	12 May 2007 11:09:32 -0700")
+Message-ID: <m1mz09ritr.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gerhard Mack wrote:
-> On Wed, 9 May 2007, Robert Hancock wrote:
->> Gerhard Mack wrote:
->>> On Wed, 9 May 2007, Jeff Garzik wrote:
->>>> Gerhard Mack wrote:
->>>>> May  9 14:51:35 mgerhard kernel: ata1.00: exception Emask 0x0 SAct 0x0
->>>>> SErr
->>>>> 0x1800000 action 0x2 frozen
->>>>> May  9 14:51:35 mgerhard kernel: ata1.00: cmd
->>>>> 35/00:00:80:6d:c8/00:04:09:00:00/e0 tag 0 cdb 0x0 data 524288 out
->>>>> May  9 14:51:35 mgerhard kernel:          res
->>>>> 40/00:c8:68:65:c8/84:00:09:00:00/e0 Emask 0x4 (timeout)
->>>>> May  9 14:51:42 mgerhard kernel: ata1: port is slow to respond, please
->>>>> be
->>>>> patient (Status 0xd0)
->>>>>
->>>>> Anything I can do to figgure out what's causing this?
->> You're showing various flags set in the SError register, which suggests you're
->> having SATA communication problems with the drive. A bad SATA cable or power
->> problems would be a strong possibility.
->>
->> It really would be nice if we decoded these things more usefully for the user
->> (same with the regular ATA errors, like drivers/ide does), but in general
->> SError showing up as non-zero is a bad thing:
->>
->> 0x400000 = "Handshake error: When set to one, this bit indicates that one or
->> more R_ERR handshake response was received in response to frame transmission.
->> Such errors may be the result of a CRC error detected by the recipient, a
->> disparity or 10b/8b decoding error, or other error condition leading to a
->> negative handshake on a transmitted frame."
->>
->> 0x1800000 = "Link Sequence Error: When set to one, this bit indicates that one
->> or more Link state machine error conditions was encountered since the last
->> time this bit was cleared. The Link Layer state machine defines the conditions
->> under which the link layer detects an erroneous transition."
->>
->> and
->>
->> "Transport state transition error: When set to one, this bit indicates that an
->> error has occurred in the transition from one state to another within the
->> Transport layer since the last time this bit was cleared."
-> 
-> 
-> Just out of curiosity how often is that bit cleared?
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-I believe that is cleared only on error handling or controller reset, so 
-   it just means that it happened sometime since boot or the last libata 
-error recovery.
+> Eric W. Biederman wrote:
+>> 
+>> HPA is both right and wrong on this.  The safe sequence for entering
+>> protected mode requires a jump immediately after setting PE in %cr0.
+>> To serialize the instruction stream and to be on an execution that
+>> is tested and guaranteed to work in cpus.
+>> 
+>
+> Eric, that's complete nonsense.  What Intel documents and what Intel
+> tests are two very different things.
 
--- 
-Robert Hancock      Saskatoon, SK, Canada
-To email, remove "nospam" from hancockr@nospamshaw.ca
-Home Page: http://www.roberthancock.com/
+Likely.
 
+> Intel appears to be afraid of what they call "the crack", but the
+> semantics of the transition are quite well understood.
+
+Regardless not putting a jump in there violates the principle of
+be conservative in what you send.
+
+> A lot of the Intel manuals are boilerplate written by technical writers.
+>  Once you're used to them you can spot it quite easily because it's
+> carried from generation to generation with little change, even when it's
+> blatantly obsoleted.
+
+Even on 386 and 486 class cpus?
+
+To some extent if the rules don't change it makes sense for them to
+copy the information from one generation to the next of the architecture.
+Even if the current cpus don't really care.
+
+I guess I just don't see the sense in taking chances if we don't have
+to, and I don't see any real advantage of doing a data segment reload
+before the jump.
+
+Eric
