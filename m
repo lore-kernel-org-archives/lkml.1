@@ -1,64 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759246AbXELQmh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760547AbXELQmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759246AbXELQmh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 12:42:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbXELQmb
+	id S1760547AbXELQmv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 12:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760189AbXELQmm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 12:42:31 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36161 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbXELQma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 12:42:30 -0400
-Date: Sat, 12 May 2007 09:35:09 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: David Woodhouse <dwmw2@redhat.com>
-Cc: "Maciej W. Rozycki" <macro-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>,
-       Andrew Morton <akpm-3NddpPZAyC0@public.gmane.org>,
-       kernel-discuss-CN5wO63fgwogsBAKwltoeQ@public.gmane.org,
-       Greg KH <gregkh-l3A5Bk7waGM@public.gmane.org>,
+	Sat, 12 May 2007 12:42:42 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:38912 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760165AbXELQmk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 12:42:40 -0400
+Date: Sat, 12 May 2007 17:42:37 +0100
+To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
        linux-kernel@vger.kernel.org,
-       Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>,
-       Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>,
-       Satyam Sharma 
-	<satyam.sharma-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>,
-       zaitcev@redhat.com
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-Message-Id: <20070512093509.f3d1865f.zaitcev@redhat.com>
-In-Reply-To: <1178646751.2824.48.camel@pmac.infradead.org>
-References: <20070503213303.GH20067@zarina>
-	<20070507140453.GD3868@ucw.cz>
-	<1178550653.11851.191.camel@pmac.infradead.org>
-	<20070507194949.GB3981@ucw.cz>
-	<a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com>
-	<Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
-	<1178646751.2824.48.camel@pmac.infradead.org>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
+Message-ID: <20070512164237.GA2691@skynet.ie>
+References: <20070510230044.GB15332@skynet.ie> <Pine.LNX.4.64.0705101601220.14471@schroedinger.engr.sgi.com> <1178863002.24635.4.camel@rousalka.dyndns.org> <20070511090823.GA29273@skynet.ie> <1178884283.27195.1.camel@rousalka.dyndns.org> <20070511173811.GA8529@skynet.ie> <1178905541.2473.2.camel@rousalka.dyndns.org> <1178908210.4360.21.camel@rousalka.dyndns.org> <20070511203610.GA12136@skynet.ie> <1178957491.4095.2.camel@rousalka.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1178957491.4095.2.camel@rousalka.dyndns.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 08 May 2007 18:52:31 +0100, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org> wrote:
-> On Tue, 2007-05-08 at 18:45 +0100, Maciej W. Rozycki wrote:
-
-> >  Well, my name has an acute above "o" and a dot above "z", but I do not 
-> > have such a high expectation as to have it correctly spelled in comments 
-> > and elsewhere within some code before I am able to get it right in 
-> > official documents issued in English.  And the universe is not going to 
-> > collapse because of the missing accents, so I consider this an issue we 
-> > can think of resolving once we have fixed all the bugs that we have.
+On (12/05/07 10:11), Nicolas Mailhot didst pronounce:
+> Le vendredi 11 mai 2007 à 21:36 +0100, Mel Gorman a écrit :
 > 
-> It's not an issue which needs resolving. We can spell your name just
-> fine; we just need Pavel to quit whining and join us in the 21st
-> century.
+> > I'm pretty sure I have. I recreated the tree and reverted the same patch as
+> > you and regenerated the diff below. I sent it to myself and it appeared ok
+> > and another automated system was able to use it.
+> > 
+> > In case it's a mailer problem, the patch can be downloaded from
+> > http://www.csn.ul.ie/~mel/kswapd-minorder.patch . 
+> 
+> This one applies, but the kernel still has allocation failures (I just
+> found rpm -Va was a good trigger). So so far we have two proposed fixes
+> none of which work
+> 
 
-I hate to agree with Pavel, but the real issue here is you being
-intentionally obtuse. Naked patches are not compatible with UTF-8.
-To assume that UTF-8 is not converted anywhere is tantamount to the
-fallacy of SPF: Everyone on the net must do foo, then nirvana happens.
-If the code is being pulled git to git, UTF-8 is fine. Or send your
-patches in MIME at the very least.
+Sorry about this. What is most preplexing is that the memory was free.
+In your log we see;
 
--- Pete
+> May 12 10:00:47 rousalka kernel: DMA: 6*4kB 4*8kB 9*16kB 3*32kB 6*64kB 7*128kB 5*256kB 0*512kB 1*1024kB 0*2048kB 1*4096kB = 7976kB
+> May 12 10:00:47 rousalka kernel: DMA32: 2619*4kB 27*8kB 6*16kB 0*32kB 0*64kB 2*128kB 0*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 11556kB
+
+and
+
+> May 12 10:00:47 rousalka kernel: DMA: 6*4kB 4*8kB 9*16kB 3*32kB 6*64kB 7*128kB 5*256kB 0*512kB 1*1024kB 0*2048kB 1*4096kB = 7976kB
+> May 12 10:00:47 rousalka kernel: DMA32: 1651*4kB 29*8kB 10*16kB 0*32kB 0*64kB 2*128kB 0*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 7764kB
+
+order-2 (at least 19 pages but more are there) and higher pages were free
+and this was a NORMAL allocation. It should also be above watermarks so
+something screwy is happening
+
+*peers suspiciously*
+
+Can you try the following patch on top of the kswapd patch please? It is
+also available from http://www.csn.ul.ie/~mel/watermarks.patch
+
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-revertmd/mm/page_alloc.c linux-2.6.21-mm2-watermarks/mm/page_alloc.c
+--- linux-2.6.21-mm2-revertmd/mm/page_alloc.c	2007-05-11 21:16:57.000000000 +0100
++++ linux-2.6.21-mm2-watermarks/mm/page_alloc.c	2007-05-12 17:34:10.000000000 +0100
+@@ -1627,7 +1627,7 @@ restart:
+ 	/* This allocation should allow future memory freeing. */
+ 
+ rebalance:
+-	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
++	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE) || !wait))
+ 			&& !in_interrupt()) {
+ 		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
+ nofail_alloc:
+@@ -1636,7 +1636,7 @@ nofail_alloc:
+ 				zonelist, ALLOC_NO_WATERMARKS);
+ 			if (page)
+ 				goto got_pg;
+-			if (gfp_mask & __GFP_NOFAIL) {
++			if (gfp_mask & __GFP_NOFAIL && wait) {
+ 				congestion_wait(WRITE, HZ/50);
+ 				goto nofail_alloc;
+ 			}
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
