@@ -1,37 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763160AbXELAX7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933917AbXELA0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763160AbXELAX7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 20:23:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759910AbXELAXw
+	id S933917AbXELA0m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 20:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759820AbXELA0g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 20:23:52 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:34520 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759820AbXELAXv (ORCPT
+	Fri, 11 May 2007 20:26:36 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48795 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759475AbXELA0g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 20:23:51 -0400
-Message-ID: <46450910.8080503@zytor.com>
-Date: Fri, 11 May 2007 17:23:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Fri, 11 May 2007 20:26:36 -0400
+Date: Fri, 11 May 2007 17:26:35 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Oliver Xymoron <oxymoron@waste.org>
+cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: SLUB under lguest on i386
+In-Reply-To: <20070511213336.GX11166@waste.org>
+Message-ID: <Pine.LNX.4.64.0705111725510.27616@schroedinger.engr.sgi.com>
+References: <20070511213336.GX11166@waste.org>
 MIME-Version: 1.0
-To: Kevin Winchester <kjwinchester@gmail.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86 setup rewrite tree ready for flamage^W review
-References: <464158E9.2000207@zytor.com> <4645032E.1030109@gmail.com>
-In-Reply-To: <4645032E.1030109@gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kevin Winchester wrote:
-> Not sure if you were looking for testing, but I fuzzed it to apply to
-> 2.6.21-git and gave it a spin.  Worked just like a normal boot (which I
-> assume was the point).
+On Fri, 11 May 2007, Oliver Xymoron wrote:
 
-That would be the point, yes :)  Looking for breakage in video mode
-detection, memory detection, and APM are probably the trickiest areas.
+> And no sign of further progress. SLAB worked fine.
 
-	-hpa
+Add slub_debug to the command line. Any changes or any additional 
+diagnostic output?
+
+
