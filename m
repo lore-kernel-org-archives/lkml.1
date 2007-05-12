@@ -1,89 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760059AbXELPD3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbXELPHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760059AbXELPD3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 11:03:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756894AbXELPDJ
+	id S1759499AbXELPHf (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 11:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXELPH1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 11:03:09 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3365 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756252AbXELPDH (ORCPT
+	Sat, 12 May 2007 11:07:27 -0400
+Received: from stinky.trash.net ([213.144.137.162]:56011 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755365AbXELPH0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 11:03:07 -0400
-Date: Sat, 12 May 2007 16:02:51 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: =?iso-8859-1?Q?Kolbj=F8rn?= Barmen <linux-m68k@kolla.no>
-Cc: Finn Thain <fthain@telegraphics.com.au>, Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-m68k@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] spelling fixes: arch/m68knommu/
-Message-ID: <20070512150251.GA21729@flint.arm.linux.org.uk>
-Mail-Followup-To: =?iso-8859-1?Q?Kolbj=F8rn?= Barmen <linux-m68k@kolla.no>,
-	Finn Thain <fthain@telegraphics.com.au>,
-	Simon Arlott <simon@fire.lp0.eu>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-m68k@lists.linux-m68k.org, trivial@kernel.org
-References: <4644C716.1020000@simon.arlott.org.uk> <Pine.LNX.4.64.0705121024480.14127@loopy.telegraphics.com.au> <464575BF.1060105@simon.arlott.org.uk> <Pine.LNX.4.64.0705121951410.16778@loopy.telegraphics.com.au> <alpine.LNX.0.99.0705121554240.30110@halbrend.uninett.no> <Pine.LNX.4.64.0705130000130.16778@loopy.telegraphics.com.au> <alpine.LNX.0.99.0705121625460.30110@halbrend.uninett.no>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.LNX.0.99.0705121625460.30110@halbrend.uninett.no>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 12 May 2007 11:07:26 -0400
+Message-ID: <4645D7CF.20707@trash.net>
+Date: Sat, 12 May 2007 17:05:51 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
+X-Accept-Language: en-us, en
+MIME-Version: 1.0
+To: Gabor Burjan <buga@buvoshetes.hu>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: kernel oops after unloading nf_conntrack_netbios_ns_module
+References: <20070510090603.GA13059@odin.sis.hu> <20070510033411.6cf042ad.akpm@linux-foundation.org> <20070510110117.GE13059@odin.sis.hu>
+In-Reply-To: <20070510110117.GE13059@odin.sis.hu>
+X-Enigmail-Version: 0.93.0.0
+Content-Type: multipart/mixed;
+ boundary="------------090002080406070905080306"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 12, 2007 at 04:26:16PM +0200, Kolbjørn Barmen wrote:
-> On Sun, 13 May 2007, Finn Thain wrote:
-> 
-> > On Sat, 12 May 2007, Kolbjørn Barmen wrote:
-> > 
-> > > On Sat, 12 May 2007, Finn Thain wrote:
-> > > 
-> > > > To answer your question, I find it easier to parse the original idiom, 
-> > > > "'til now". Your corruption, "until now", loses information available to 
-> > > > anyone who can recognise the idiom. Granted, this is not the worst example 
-> > > > of that effect...
-> > > 
-> > > It is either "till now" or "until now". 
-> > > "'til" is just broken english.
-> > 
-> > Seems you are right that "till" is also an accepted abbreviation (I found 
-> > both in the Oxford American Dictionary). I suppose that there's no typo to 
-> > fix here.
-> 
-> Well, both "'till" and "'til" are broken. It is either "till" or "until".
-> The fix was valid.
-> 
-> "until" and "till" are _not_ the same word, "till" is not an abbreviation
-> of "until", it's actually quite the opposite. I suspect this is obivous
-> for most non-english germanic speakers I will guess. "Until" is in
-> norwegian "inntil", meaning "in to", and "till" is just english spelling
-> of our "til" (meaning "to").
-> 
-> The spelling of "until" should ofcourse be "in till".  :)
+This is a multi-part message in MIME format.
+--------------090002080406070905080306
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 
-The etymology of "until" shows that it bases itself in the middle english
-"untill" which is derived from (quote) "un- (see unto) + till" or just
-merely (quote) "till".
+Gabor Burjan wrote:
+> EIP is at destroy_conntrack+0x52/0x127 [nf_conntrack]
+>
+>>>nmblookup <existing_netbios_name>
+>>>cat /proc/net/ip_conntrack
+>>>
+>>>sleep 3
+>>>
+>>>rmmod nf_conntrack_netbios_ns
 
-Looking up "till" gives (quote) "till (til) prep., conj. [OE. til] same
-as UNTIL"
 
-That means that "til" is Old English for "till" which when used as a
-preposition or conjunction is the same as "until".  (Old English stopped
-being used circa 1100AD.)
+Thanks for the report and good testcase, the crash can only happen with
+a sleep of >= 3s after the last nmblookup packet was sent.
 
-However, discussing "til" is merely a distraction.  "til" is not "'til".
-"'til" is a contraction of "until" where the "'" here denotes the missing
-letters ("un").  Just like "he'll" where the "'" denotes the letters "wi"
-(giving "he will") or "'70" meaning "1970".
+Can you try if this patch fixes it please?
 
-So I'd say that "'til" is as correct as "until" which can, in turn, be
-directly replaced by the word "till".  Or at least according to my late
-'70s dictionary.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+--------------090002080406070905080306
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="x"
+
+[NETFILTER]: nf_conntrack: fix use-after-free in helper destroy callback
+
+When the helper module is removed for a master connection that has a
+fulfilled expectation, but has already timed out and got removed from
+the hash tables, nf_conntrack_helper_unregister can't find the master
+connection to unset the helper, causing a use-after-free when the
+expected connection is destroyed and releases the last reference to
+the master.
+
+The helper destroy callback was introduced for the PPtP helper to clean
+up expectations and expected connections when the master connection
+times out, but doing this from the destroy_conntrack only works for
+unfulfilled expectations since expected connections hold a reference
+to the master and it is not destroyed. Move the destroy callback to
+the timeout function, which fixes both problems.
+
+Signed-off-by: Patrick McHardy <kaber@trash.net>
+
+---
+commit 50d2ab6c1353c32b994e6171b231fc771d0a2b73
+tree 9b2cd5659dad0b452e59fff4869f7d9db780fd02
+parent 6b99a1744ab187073bca84a9fd3ccbf091865ca6
+author Patrick McHardy <kaber@trash.net> Sat, 12 May 2007 16:59:07 +0200
+committer Patrick McHardy <kaber@trash.net> Sat, 12 May 2007 17:00:18 +0200
+
+ net/netfilter/nf_conntrack_core.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
+index cb29ba7..0975fee 100644
+--- a/net/netfilter/nf_conntrack_core.c
++++ b/net/netfilter/nf_conntrack_core.c
+@@ -315,7 +315,6 @@ static void
+ destroy_conntrack(struct nf_conntrack *nfct)
+ {
+ 	struct nf_conn *ct = (struct nf_conn *)nfct;
+-	struct nf_conn_help *help = nfct_help(ct);
+ 	struct nf_conntrack_l3proto *l3proto;
+ 	struct nf_conntrack_l4proto *l4proto;
+ 
+@@ -326,9 +325,6 @@ destroy_conntrack(struct nf_conntrack *nfct)
+ 	nf_conntrack_event(IPCT_DESTROY, ct);
+ 	set_bit(IPS_DYING_BIT, &ct->status);
+ 
+-	if (help && help->helper && help->helper->destroy)
+-		help->helper->destroy(ct);
+-
+ 	/* To make sure we don't get any weird locking issues here:
+ 	 * destroy_conntrack() MUST NOT be called with a write lock
+ 	 * to nf_conntrack_lock!!! -HW */
+@@ -369,6 +365,10 @@ destroy_conntrack(struct nf_conntrack *nfct)
+ static void death_by_timeout(unsigned long ul_conntrack)
+ {
+ 	struct nf_conn *ct = (void *)ul_conntrack;
++	struct nf_conn_help *help = nfct_help(ct);
++
++	if (help && help->helper && help->helper->destroy)
++		help->helper->destroy(ct);
+ 
+ 	write_lock_bh(&nf_conntrack_lock);
+ 	/* Inside lock so preempt is disabled on module removal path.
+
+--------------090002080406070905080306--
