@@ -1,46 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758481AbXELLmO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757474AbXELLtR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758481AbXELLmO (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 07:42:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756508AbXELLl7
+	id S1757474AbXELLtR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 07:49:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755828AbXELLtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 07:41:59 -0400
-Received: from main.gmane.org ([80.91.229.2]:48878 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756501AbXELLl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 07:41:58 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Jindrich Makovicka <makovick@gmail.com>
-Subject: Re: [PATCH] Add LZO1X compression support to the kernel
-Date: Sat, 12 May 2007 13:41:44 +0200
-Message-ID: <20070512134144.5bb29544@holly>
-References: <1785450541@web.de>
+	Sat, 12 May 2007 07:49:05 -0400
+Received: from www.osadl.org ([213.239.205.134]:40274 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754323AbXELLtC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 07:49:02 -0400
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <20070512030754.90488f79.akpm@linux-foundation.org>
+References: <20070430102837.748238000@linutronix.de>
+	 <20070511132846.5ebf4437.akpm@linux-foundation.org>
+	 <200705112302.47726.rjw@sisk.pl> <200705112309.15996.rjw@sisk.pl>
+	 <20070511235607.83ad0eb5.akpm@linux-foundation.org>
+	 <1178959563.22481.126.camel@localhost.localdomain>
+	 <20070512020056.a24cf472.akpm@linux-foundation.org>
+	 <1178961489.22481.133.camel@localhost.localdomain>
+	 <20070512030754.90488f79.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Sat, 12 May 2007 13:52:06 +0200
+Message-Id: <1178970726.22481.150.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@sea.gmane.org
-X-Gmane-NNTP-Posting-Host: kmlinux.fjfi.cvut.cz
-X-Newsreader: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 May 2007 12:41:03 +0200
-devzero@web.de wrote:
+On Sat, 2007-05-12 at 03:07 -0700, Andrew Morton wrote:
+> On Sat, 12 May 2007 11:18:09 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
+> 
+> > > It's peculiar that the hang happens when acpi_evaluate_object() hits its
+> > > return statement.  Any theories there?
+> > 
+> > Only stack or memory corruption come into mind, but I have no clue how
+> > this is related to the resume logic changes.
+> 
+> So I had the brilliant idea of turning on some kernel debugging.  It's
+> a shame that CONFIG_SOFTWARE_SUSPEND disables CONFIG_DEBUG_PAGEALLOC.
 
-> oh - and think of linux software suspend.
-> take a notebook with 2 GB of ram - that takes a while to write that
-> to disk and read that back again. using lzo compression for this may
-> probably halve the time for suspend/resume
+...
 
-There were already some attempts on merging of the lzf algorithm:
+> I don't really know what lockdep is complaining about there.  I assume I'm
+> not supposed to, given that whoever wrote that couldn't be bothered
+> documenting any of it.
+> 
+> I _think_ it means that lockdep believes that local irqs are enabled
+> (according to its state tracking), only it turns out that they're not.
 
-http://lkml.org/lkml/2006/6/26/215
+Right. Lockdep checks, whether the tracked interrupt disabled/enabled
+state is the same as the state in the hardware. When the check triggers,
+then we disabled / enabled interrupts somewhere without going through
+lockdeps state tracker. 
 
-Also, ffmpeg/libavcodec contains a much cleaner implementation of LZO
-decompressor, with comparable performance (but no compressor yet I am
-afraid).
+/me suspects ASM code missing the TRACE_IFQS_OFF macro in some place,
+which was recently modified.
 
--- 
-Jindrich Makovicka
+	tglx
+
 
