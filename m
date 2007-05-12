@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbXELTRS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759134AbXELTVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759612AbXELTRS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 15:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbXELTRM
+	id S1759134AbXELTVl (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 15:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXELTVf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 15:17:12 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36787 "EHLO amd.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754920AbXELTRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 15:17:11 -0400
-Date: Sat, 12 May 2007 21:17:09 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+	Sat, 12 May 2007 15:21:35 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:49013 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755779AbXELTVe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 15:21:34 -0400
+Date: Sat, 12 May 2007 21:21:30 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: Andi Kleen <andi@firstfloor.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFD] Freezing of kernel threads
-Message-ID: <20070512191709.GA428@elf.ucw.cz>
-References: <200705122017.32792.rjw@sisk.pl>
-MIME-Version: 1.0
+       Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 1/2] scalable rw_mutex
+Message-ID: <20070512192130.GA8833@one.firstfloor.org>
+References: <20070511131541.992688403@chello.nl> <20070511132321.895740140@chello.nl> <20070511093108.495feb70.akpm@linux-foundation.org> <Pine.LNX.4.64.0705111006470.32716@schroedinger.engr.sgi.com> <20070511110522.ed459635.akpm@linux-foundation.org> <p73odkpeusf.fsf@bingen.suse.de> <20070512181254.GA331@tv-sign.ru>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705122017.32792.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.11+cvs20060126
+In-Reply-To: <20070512181254.GA331@tv-sign.ru>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+> This also allows us to de-uglify workqueue.c a little bit, it uses
+> a home-grown cpu_populated_map.
 
-> Having considered the issue of freezing (or not freezing) kernel threads for a
-> longer while I tend to agree with Linus that we shouldn't be freezing as many
-> kernel threads as we currently freeze, but there's one thing that he doesn't
-> seem to take into account.  Namely, there may be some kernel threads that
-> actually *want* (or need) to be frozen. :-)
-> 
-> For the suspend they may be kernel threads that otherwise would need some
-> special synchronization with some device drivers' .suspend() and .resume()
-> callbacks or fs-related kernel threads.  For the CPU hotplug they might be
-> kernel threads that otherwise would interfere with the removal or addition of
-> CPUs.  Still, in each case there seems to be a limited group of kernel threads
-> that may want to be frozen and the remaining kernel threads that shouldn't be
-> involved in any freezer-related actions at all.  However, we currently require
-> all kernel threads to take part in the freezing mechanism, which doesn't seem to
-> be correct.
+It might be obsolete iff more and more architecture don't use NR_CPUS filled
+possible_map anymore (haven't checked them all to know if it's true or not)
 
-Well.. It is actually a feature.
+If not there are a couple of more optimizations that can be done, e.g.
+in networking by converting more code to hotplug notifier.
 
-These days, you have to either add PF_NOFREEZE explicitly (which
-hopefully means you know what you are doing) or add try_to_freeze() at
-specific place.
-
-If you fail to do that, we'll see freezer failure, quickly, and catch
-the simple bug.
-
-I'm afraid that if we default to "do not freeze by default", someone
-will just port zfs, will know nothing about suspend, and his 
-"write management info somewhere periodically" thread will corrupt
-people's disks.
-
-OTOH... perhaps suspend/resume is common enough operation that people
-_know_ they need to stop their writing? ...no, I do not think we are
-there yet.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-Andi
