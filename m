@@ -1,81 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760436AbXELTYU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759479AbXELT14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760436AbXELTYU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 15:24:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXELTYM
+	id S1759479AbXELT14 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 15:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXELT1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 15:24:12 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:54054 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756616AbXELTYL (ORCPT
+	Sat, 12 May 2007 15:27:46 -0400
+Received: from ns2.mvista.com ([63.81.120.158]:39609 "EHLO
+	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1755684AbXELT1q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 15:24:11 -0400
-Date: Sat, 12 May 2007 20:24:08 +0100
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
-Message-ID: <20070512192408.GA5769@skynet.ie>
-References: <20070511090823.GA29273@skynet.ie> <1178884283.27195.1.camel@rousalka.dyndns.org> <20070511173811.GA8529@skynet.ie> <1178905541.2473.2.camel@rousalka.dyndns.org> <1178908210.4360.21.camel@rousalka.dyndns.org> <20070511203610.GA12136@skynet.ie> <1178957491.4095.2.camel@rousalka.dyndns.org> <20070512164237.GA2691@skynet.ie> <1178993343.6397.1.camel@rousalka.dyndns.org> <1178996310.6397.3.camel@rousalka.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1178996310.6397.3.camel@rousalka.dyndns.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Sat, 12 May 2007 15:27:46 -0400
+Subject: Re: [PATCH 2/2] i386: sched_clock() follows percpu frequency
+	changes
+From: Daniel Walker <dwalker@mvista.com>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       johnstul@us.ibm.com, mingo@elte.hu, Jiri Bohac <jbohac@suse.cz>
+In-Reply-To: <200705122058.35387.ak@suse.de>
+References: <20070512154344.395866578@mvista.com>
+	 <20070512154408.223236808@mvista.com>  <200705122058.35387.ak@suse.de>
+Content-Type: text/plain
+Date: Sat, 12 May 2007 12:25:40 -0700
+Message-Id: <1178997940.27889.16.camel@imap.mvista.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (12/05/07 20:58), Nicolas Mailhot didst pronounce:
-> Le samedi 12 mai 2007 à 20:09 +0200, Nicolas Mailhot a écrit :
-> > Le samedi 12 mai 2007 à 17:42 +0100, Mel Gorman a écrit :
-> > 
-> > > order-2 (at least 19 pages but more are there) and higher pages were free
-> > > and this was a NORMAL allocation. It should also be above watermarks so
-> > > something screwy is happening
-> > > 
-> > > *peers suspiciously*
-> > > 
-> > > Can you try the following patch on top of the kswapd patch please? It is
-> > > also available from http://www.csn.ul.ie/~mel/watermarks.patch
-> > 
-> > Ok, testing now
+On Sat, 2007-05-12 at 20:58 +0200, Andi Kleen wrote:
+> On Saturday 12 May 2007 17:43:46 Daniel Walker wrote:
+> > Considering that Andi has a similar patch, I'm going to assume there
+> > is already justification for this..
 > 
-> And this one failed testing too 
+> I just have a patch for sched_clock, which is somewhat different.
+> 
+> > What it ends up doing is allows the TSC to be used in cases which
+> > we didn't use it before, and hope it's still mostly accurate.
+> 
+> Yes the current code is badly broken in this regard. e.g. i always
+> hated that it always falls back on powernow systems.
+> 
+> Jiri will hopefully repost his true per CPU TSC patch soon, that should
+> make it all obsolete.
 
-And same thing, you have suitable free memory. The last patch was
-wrong because I forgot the !in_interrupt() part which was careless
-and dumb.  Please try the following, again on top of the kswapd patch -
-http://www.csn.ul.ie/~mel/watermarks-v2.patch
+All I could find on LKML from Jiri was an x86_64 specific gettimeofday
+implementation .. Do you have a reference to the first post of the per
+cpu tsc patch?
 
-Thanks for all the testing, it's appreciated.
+Daniel
 
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-revertmd/mm/page_alloc.c linux-2.6.21-mm2-watermarks/mm/page_alloc.c
---- linux-2.6.21-mm2-revertmd/mm/page_alloc.c	2007-05-11 21:16:57.000000000 +0100
-+++ linux-2.6.21-mm2-watermarks/mm/page_alloc.c	2007-05-12 20:20:19.000000000 +0100
-@@ -1645,8 +1645,16 @@ nofail_alloc:
- 	}
- 
- 	/* Atomic allocations - we can't balance anything */
--	if (!wait)
-+	if (!wait) {
-+
-+		/* Attempt to allocate ignoring watermarks */
-+		page = get_page_from_freelist(gfp_mask, order,
-+					zonelist, ALLOC_NO_WATERMARKS);	
-+		if (page)
-+			goto got_pg;
-+
- 		goto nopage;
-+	}
- 
- 	cond_resched();
- 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
