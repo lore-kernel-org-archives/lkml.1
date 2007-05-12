@@ -1,76 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbXELSD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbXELSEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759130AbXELSD2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 14:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbXELSDW
+	id S1759206AbXELSEX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 14:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbXELSER
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 14:03:22 -0400
-Received: from mail.screens.ru ([213.234.233.54]:60697 "EHLO mail.screens.ru"
+	Sat, 12 May 2007 14:04:17 -0400
+Received: from lixom.net ([66.141.50.11]:42242 "EHLO mail.lixom.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752595AbXELSDV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 14:03:21 -0400
-Date: Sat, 12 May 2007 22:03:21 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/2] scalable rw_mutex
-Message-ID: <20070512180321.GA320@tv-sign.ru>
-References: <20070511131541.992688403@chello.nl> <20070511132321.895740140@chello.nl> <20070511230023.GA449@tv-sign.ru> <1178977276.6810.59.camel@twins> <20070512160428.GA173@tv-sign.ru> <1178989068.19461.3.camel@lappy>
-Mime-Version: 1.0
+	id S1752338AbXELSEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 14:04:16 -0400
+Date: Sat, 12 May 2007 13:06:58 -0500
+To: linux-pcmcia@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
+Subject: [PATCH v2] pcmcia: export pcmcia_bus_type
+Message-ID: <20070512180658.GA14291@lixom.net>
+References: <20070512153307.GA13223@lixom.net>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1178989068.19461.3.camel@lappy>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070512153307.GA13223@lixom.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: olof@lixom.net (Olof Johansson)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/12, Peter Zijlstra wrote:
->
-> On Sat, 2007-05-12 at 20:04 +0400, Oleg Nesterov wrote:
-> > 
-> > this code roughly does (the only reader does unlock)
-> > 
-> > 	READER			WRITER
-> > 
-> > 	readers = 0;		state = 1;
-> > 	wmb();			wmb();
-> > 	CHECK(state != 0)	CHECK(readers == 0)
-> > 
-> > We need to ensure that we can't miss both CHECKs. Either reader
-> > should see RW_MUTEX_READER_SLOW, o writer sees "readers == 0"
-> > and does not sleep.
-> > 
-> > In that case both barriers should be converted to smp_mb(). There
-> > was a _long_ discussion about STORE-MB-LOAD behaviour, and experts
-> > seem to believe everething is ok.
-> 
-> Ah, but note that both those CHECK()s have a rmb(), so that ends up
-> being:
-> 
-> 	READER				WRITER
-> 
-> 	readers = 0;			state = 1;
-> 	wmb();				wmb();
-> 
-> 	rmb();				rmb();		
-> 	if (state != 0)			if (readers == 0)
-> 
-> and a wmb+rmb is a full mb, right?
+Export pcmcia_bus_type so module-based drivers can register bus notifiers,
+and add it to what seems to be the main include file.
 
-I used to think the same, but this is wrong: wmb+rmb != mb. wmb+rmb
-doesn't provide LOAD,STORE or STORE,LOAD ordering.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-for example,
+---
 
-	LOAD;
-	rmb(); wmb();
-	STORE;
+Missed the include file in the last patch.
 
-it is still possible that STORE comes before LOAD. At least this
-is my understanding.
 
-Oleg.
-
+Index: 2.6.21/drivers/pcmcia/ds.c
+===================================================================
+--- 2.6.21.orig/drivers/pcmcia/ds.c
++++ 2.6.21/drivers/pcmcia/ds.c
+@@ -1404,6 +1404,7 @@ struct bus_type pcmcia_bus_type = {
+ 	.suspend = pcmcia_dev_suspend,
+ 	.resume = pcmcia_dev_resume,
+ };
++EXPORT_SYMBOL(pcmcia_bus_type);
+ 
+ 
+ static int __init init_pcmcia_bus(void)
+Index: 2.6.21/include/pcmcia/ss.h
+===================================================================
+--- 2.6.21.orig/include/pcmcia/ss.h
++++ 2.6.21/include/pcmcia/ss.h
+@@ -298,6 +298,7 @@ extern int pcmcia_register_socket(struct
+ extern void pcmcia_unregister_socket(struct pcmcia_socket *socket);
+ 
+ extern struct class pcmcia_socket_class;
++extern struct bus_type pcmcia_bus_type;
+ 
+ /* socket drivers are expected to use these callbacks in their .drv struct */
+ extern int pcmcia_socket_dev_suspend(struct device *dev, pm_message_t state);
