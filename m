@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbXELIWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbXELIhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758311AbXELIWb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 04:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755052AbXELIWU
+	id S1757909AbXELIhz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 04:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755978AbXELIhr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 04:22:20 -0400
-Received: from mail03.syd.optusnet.com.au ([211.29.132.184]:48893 "EHLO
-	mail03.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754877AbXELIWT (ORCPT
+	Sat, 12 May 2007 04:37:47 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:36286 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755052AbXELIhr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 04:22:19 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: Paul Jackson <pj@sgi.com>
-Subject: Re: [PATCH] mm: swap prefetch improvements
-Date: Sat, 12 May 2007 18:21:47 +1000
-User-Agent: KMail/1.9.5
+	Sat, 12 May 2007 04:37:47 -0400
+Date: Sat, 12 May 2007 01:37:55 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Con Kolivas <kernel@kolivas.org>
 Cc: nickpiggin@yahoo.com.au, ray-lk@madrabbit.org, mingo@elte.hu,
        ck@vds.kolivas.org, akpm@linux-foundation.org,
        linux-kernel@vger.kernel.org, linux-mm@kvack.org
-References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705121728.34987.kernel@kolivas.org> <20070512011454.50ba68a5.pj@sgi.com>
-In-Reply-To: <20070512011454.50ba68a5.pj@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Subject: Re: [PATCH] mm: swap prefetch improvements
+Message-Id: <20070512013755.603cfcc3.pj@sgi.com>
+In-Reply-To: <200705121821.48515.kernel@kolivas.org>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<200705121728.34987.kernel@kolivas.org>
+	<20070512011454.50ba68a5.pj@sgi.com>
+	<200705121821.48515.kernel@kolivas.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705121821.48515.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 May 2007 18:14, Paul Jackson wrote:
-> > Ummm this is what I've been saying for over a year now but noone has been
-> > listening.
->
-> Well ... if there is a problem using prefetch and cpusets together,
-> it doesn't look like the two of us are going to find it.
->
-> I should probably look at your patch to answer this next question,
-> but being a lazy retard, I'll just ask.  Is there a way, on a running
-> system that has your prefetch patch configured in, to disable prefetch
-> -- perhaps writing to some magic /proc file or something?
+Con wrote:
+> Ok so change the default value for swap_prefetch to 0 when CPUSETS is enabled? 
 
-Indeed:
+I don't see why that special case for cpusets is needed.
 
-/proc/sys/vm/swap_prefetch
+I'm suggesting making no special cases for CPUSETS at all, until and
+unless we find reason to.
 
-> If so, then how about you just remove the lines in the patch that
-> disable prefetch on kernels configured with CPUSETS, and we charge
-> ahead allowing both at the same time?
+In other words, I'm suggesting simply removing the patch lines:
 
-Ok so change the default value for swap_prefetch to 0 when CPUSETS is enabled? 
-Sure, I can do that.
+-	depends on SWAP
++	depends on SWAP && !CPUSETS
 
-> If some day in the future I find something about prefetch that harms
-> the HPC NUMA loads I care about, then I can just dynamically disable
-> prefetch.
->
-> If someone ever uncovers a real problem with prefetch and cpusets,
-> then we will deal with it then.
->
-> As to whether your patch is otherwise (other than cpusets) worthy
-> of further acceptance, that I will have to leave up to those who are
-> competent to make such judgements.
-
-Thank you very much for your comments!
+I see no other mention of cpusets in your patch.  That's fine by me.
 
 -- 
--ck
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
