@@ -1,66 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760062AbXELQb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbXELQg7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760062AbXELQb6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 12:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbXELQbw
+	id S1759543AbXELQg7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 12:36:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbXELQgx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 12:31:52 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3737 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754412AbXELQbv (ORCPT
+	Sat, 12 May 2007 12:36:53 -0400
+Received: from newmail.sw.starentnetworks.com ([12.33.234.78]:44291 "EHLO
+	mail.sw.starentnetworks.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754412AbXELQgx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 12:31:51 -0400
-Date: Sat, 12 May 2007 17:31:41 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       David Woodhouse <dwmw2@infradead.org>,
-       "YOSHIFUJI Hideaki / ?$B5HF#1QL@" <yoshfuji@linux-ipv6.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-2.6.21-gitN - versioning question
-Message-ID: <20070512163141.GC21729@flint.arm.linux.org.uk>
-Mail-Followup-To: Cyrill Gorcunov <gorcunov@gmail.com>,
-	Jan Engelhardt <jengelh@linux01.gwdg.de>,
-	David Woodhouse <dwmw2@infradead.org>,
-	"YOSHIFUJI Hideaki / ?$B5HF#1QL@" <yoshfuji@linux-ipv6.org>,
-	linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.61.0705121316540.9570@yvahk01.tjqt.qr> <20070512.210308.93070730.yoshfuji@linux-ipv6.org> <20070512131906.GF8337@cvg> <1178977496.2802.5.camel@shinybook.infradead.org> <Pine.LNX.4.61.0705121701020.9570@yvahk01.tjqt.qr> <20070512162428.GB8366@cvg>
-Mime-Version: 1.0
+	Sat, 12 May 2007 12:36:53 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070512162428.GB8366@cvg>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 7bit
+Message-ID: <17989.60703.575698.491592@zeus.sw.starentnetworks.com>
+Date: Sat, 12 May 2007 12:36:47 -0400
+From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH] improved locking performance in rt_run_flush()
+X-Mailer: VM 7.17 under 21.4 (patch 17) "Jumbo Shrimp" XEmacs Lucid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 12, 2007 at 08:24:28PM +0400, Cyrill Gorcunov wrote:
-> [Jan Engelhardt - Sat, May 12, 2007 at 05:01:19PM +0200]
-> | 
-> | On May 12 2007 21:44, David Woodhouse wrote:
-> | >On Sat, 2007-05-12 at 17:19 +0400, Cyrill Gorcunov wrote:
-> | >> Actually I think it would be convenient if such tags (like
-> | >> v.2.6.21-git16) were in Linus' git tree too.
-> | >
-> | >Then there would be _lots_ of tags in the master tree -- I'm not sure we
-> | >want that.
-> | >
-> | >I suppose I could put a tree on kernel.org which _does_ have the tags,
-> | >and which precisely matches Linus' tree in every other way... but then
-> | >again, you could do that too by just rsyncing the tags yourself :)
-> | 
-> | Are you saying GIT tags are expensive, compared to, say, SVN tags?
 
-(Sorry, don't have Jan's message.)
+While testing adding/deleting large numbers of interfaces, I found
+rt_run_flush() was the #1 cpu user in a kernel profile by far.
 
-The real issue is not that, but that David doesn't have write access to
-Linus' published tree.  Neither should he because he could contaminate
-Linus' published tree with the MTD tree, or introduce some unreviewed
-patch which gave him backdoor access via the kernel.
+The below patch changes rt_run_flush() to only take each spinlock
+protecting the rt_hash_table once instead of taking a spinlock for
+every hash table bucket (and ending up taking the same small set 
+of locks over and over).
 
-(Of course, David's unlikely to do either, but that's not really the
-point.)
+Deleting 256 interfaces on a 4-way SMP system with 16K buckets reduced
+overall cpu-time more than 50% and reduced wall-time about 33%.  I
+suspect systems with large amounts of memory (and more buckets) will
+see an even greater benefit.
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Note there is a small change in that rt_free() is called while the
+lock is held where before it was called without the lock held.  I
+don't think this should be an issue.
+
+Signed-off-by: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+
+===== net/ipv4/route.c 1.162 vs edited =====
+--- 1.162/net/ipv4/route.c	2007-02-14 11:09:54 -05:00
++++ edited/net/ipv4/route.c	2007-05-04 17:53:33 -04:00
+@@ -237,9 +237,17 @@
+ 		for (i = 0; i < RT_HASH_LOCK_SZ; i++) \
+ 			spin_lock_init(&rt_hash_locks[i]); \
+ 		}
++# define rt_hash_lock_for_each(lockaddr) \
++	for (lockaddr = rt_hash_lock_addr(RT_HASH_LOCK_SZ-1); lockaddr >= rt_hash_locks; lockaddr--)
++# define rt_hash_lock_for_each_item(locknum, slot) \
++	for (slot = locknum-rt_hash_locks; slot <= rt_hash_mask; slot += RT_HASH_LOCK_SZ)
+ #else
+ # define rt_hash_lock_addr(slot) NULL
+ # define rt_hash_lock_init()
++# define rt_hash_lock_for_each(lockaddr) \
++	lockaddr = NULL;
++# define rt_hash_lock_for_each_item(locknum, slot) \
++	for (slot = rt_hash_mask; slot >= 0; slot--)
+ #endif
+ 
+ static struct rt_hash_bucket 	*rt_hash_table;
+@@ -691,23 +699,26 @@
+ static void rt_run_flush(unsigned long dummy)
+ {
+ 	int i;
++	spinlock_t *lockaddr;
+ 	struct rtable *rth, *next;
+ 
+ 	rt_deadline = 0;
+ 
+ 	get_random_bytes(&rt_hash_rnd, 4);
+ 
+-	for (i = rt_hash_mask; i >= 0; i--) {
+-		spin_lock_bh(rt_hash_lock_addr(i));
+-		rth = rt_hash_table[i].chain;
+-		if (rth)
+-			rt_hash_table[i].chain = NULL;
+-		spin_unlock_bh(rt_hash_lock_addr(i));
+-
+-		for (; rth; rth = next) {
+-			next = rth->u.dst.rt_next;
+-			rt_free(rth);
++	rt_hash_lock_for_each(lockaddr) {
++		spin_lock_bh(lockaddr);
++		rt_hash_lock_for_each_item(lockaddr, i) {
++			rth = rt_hash_table[i].chain;
++			if (rth) {
++				rt_hash_table[i].chain = NULL;
++				for (; rth; rth = next) {
++					next = rth->u.dst.rt_next;
++					rt_free(rth);
++				}
++			}
+ 		}
++		spin_unlock_bh(lockaddr);
+ 	}
+ }
+ 
+
