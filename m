@@ -1,55 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbXELOB7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbXELOEd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbXELOB7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 10:01:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbXELOBv
+	id S1759045AbXELOEd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 10:04:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756304AbXELOE1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 10:01:51 -0400
-Received: from ug-out-1314.google.com ([66.249.92.168]:61631 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759234AbXELOBt (ORCPT
+	Sat, 12 May 2007 10:04:27 -0400
+Received: from n6.bullet.re3.yahoo.com ([68.142.237.91]:24911 "HELO
+	n6.bullet.re3.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754398AbXELOE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 10:01:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=Ui2Lc+p2JAi/3vE7916JawOcFG9WnXTl/+usjXnUerr71oxgwXqFvnjWLPFU066frs5NvSTGDSlpbdT7tRPhtEOoYqbYT5whsFBMcdotnDcXdlBaSYtYmb8m9WSyT37P2/ZpWSEFcHFZYL0lDToKx05JppRz46lI+pXFxa2ms3o=
-Date: Sat, 12 May 2007 18:01:16 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       "YOSHIFUJI Hideaki / ?$B5HF#1QL@" <yoshfuji@linux-ipv6.org>,
-       jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org
-Subject: Re: linux-2.6.21-gitN - versioning question
-Message-ID: <20070512140116.GG8337@cvg>
-References: <Pine.LNX.4.61.0705121316540.9570@yvahk01.tjqt.qr> <20070512.210308.93070730.yoshfuji@linux-ipv6.org> <20070512131906.GF8337@cvg> <1178977496.2802.5.camel@shinybook.infradead.org>
+	Sat, 12 May 2007 10:04:26 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 316027.70310.bm@rrr3.mail.re1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=H1ameGxymyMegxZJ71PrWuSQRYgSgd2cC3n9NJqOVpMwKts20VSjO9kO8b6KFyZHhu0jcXJp3ySTeCzeRaphFJVwY+BtEvzLR1G27k2dsRyy8kmOrWnuNXOorUZ8oXtLqzpwSM8QIXrzRt64wuWSgGFkisEa1x03gEaxYdC844E=;
+X-YMail-OSG: RzHJiSEVM1lIfNnAbBn9_mrPe2ZhbRRRoBD2hlwHdeWJA0An73YZ36OeYxvGsTxyWAp9An52ij2hdCsam.AXunzjoJg.5AkEXINAu6mkOdKVKtQ7.VE7bNEsS6XLqeGE
+Date: Sat, 12 May 2007 07:04:25 -0700 (PDT)
+From: Tear <tarrqt@yahoo.com>
+Subject: Dell Optiplex GX240, ACPI and APIC
+To: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178977496.2802.5.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <229533.82694.qm@web63609.mail.re1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[David Woodhouse - Sat, May 12, 2007 at 09:44:56PM +0800]
-| On Sat, 2007-05-12 at 17:19 +0400, Cyrill Gorcunov wrote:
-| > Actually I think it would be convenient if such tags (like
-| > v.2.6.21-git16) were in Linus' git tree too.
-| 
-| Then there would be _lots_ of tags in the master tree -- I'm not sure we
-| want that.
-| 
-| I suppose I could put a tree on kernel.org which _does_ have the tags,
-| and which precisely matches Linus' tree in every other way... but then
-| again, you could do that too by just rsyncing the tags yourself :)
-| 
-| -- 
-| dwmw2
-| 
+Summary: If ACPI is not enabled but APIC is,
+then there is trouble on Dell Optiplex GX240.
+If both are enabled or if both are disabled, then
+everything is fine. The attached patch removes
+Dell Optiplex GX240 from the ACPI blacklist.
 
-Hi David,
+---
 
-thanks for reply. Indeed ;) Leave all as it is.
+Hello,
 
-		Cyrill
+I have a Dell Optiplex GX240 and when I boot Linux, ACPI
+gets set up by only acpi=ht. dmesg shows the following line:
+
+   DELL GX240 detected: force use of acpi=ht
+
+Everything seemed to be fine. However, I discovered that
+everything is not fine. The USB controller works so slowly
+that copying a few (uncached) 1 megabyte large photos from
+a USB-enabled digital camera takes many minutes instead of
+a couple of seconds.
+
+I am using Linux 2.6.21.1 on a Debian 4.0 ("Etch") system.
+
+I thought that this might be related to ACPI. So I tried
+to boot with _only_ "acpi=force" appended to the kernel
+command line. Voila, the USB controller started to work
+at full speed and copying photos from my digital camera
+took only seconds.
+
+I tested the system with "acpi=force" and could not find
+anything which did not work. So, can we please remove
+Dell Optiplex GX240 from the blacklist in
+
+..../arch/i386/kernel/acpi/boot.c
+
+? The attached patch does just that: It removes Dell
+Optiplex GX240 from the ACPI blacklist.
+
+I thought that this might be related to interrupts and
+APIC as well. (Note that this is APIC, not ACPI.) I tried
+booting with _only_ "noapic" and "nolapic" appended to the
+command line. Again, the USB controller started to work
+at full speed.
+
+If removing Dell Optiplex GX240 from the ACPI blacklist
+is not wanted/possible, then is there a way to disable
+APIC and LAPIC (note that this is APIC not ACPI) by
+default on Dell GX240 machines? (I.e. Can one patch
+the kernel so that APIC and LAPIC isn't used on
+these machines? - I know that I can use the noapic
+and nolapic options on the kernel command line.)
+
+Thank you for your attention.
+
+- Tear
+
+Note: Please include me in CC of your replies.
+
+
+--- linux-2.6.21.1.orig/arch/i386/kernel/acpi/boot.c	2007-05-01 17:10:30.000000000 +0300
++++ linux-2.6.21.1/arch/i386/kernel/acpi/boot.c	2007-05-01 20:31:53.000000000 +0300
+@@ -971,14 +971,6 @@
+ 	 },
+ 	{
+ 	 .callback = force_acpi_ht,
+-	 .ident = "DELL GX240",
+-	 .matches = {
+-		     DMI_MATCH(DMI_BOARD_VENDOR, "Dell Computer Corporation"),
+-		     DMI_MATCH(DMI_BOARD_NAME, "OptiPlex GX240"),
+-		     },
+-	 },
+-	{
+-	 .callback = force_acpi_ht,
+ 	 .ident = "HP VISUALIZE NT Workstation",
+ 	 .matches = {
+ 		     DMI_MATCH(DMI_BOARD_VENDOR, "Hewlett-Packard"),
+
+
+
+
+
+       
+____________________________________________________________________________________Get the free Yahoo! toolbar and rest assured with the added security of spyware protection.
+http://new.toolbar.yahoo.com/toolbar/features/norton/index.php
 
