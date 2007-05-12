@@ -1,48 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756655AbXELKBy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbXELKIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756655AbXELKBy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 06:01:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbXELKBr
+	id S1757494AbXELKIb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 06:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbXELKIW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 06:01:47 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:55358 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755327AbXELKBr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 06:01:47 -0400
-Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Esben Nielsen <nielsen.esben@googlemail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <Pine.LNX.4.64.0705121120210.26287@frodo.shire>
-References: <20070511131541.992688403@chello.nl>
-	 <Pine.LNX.4.64.0705121120210.26287@frodo.shire>
-Content-Type: text/plain
-Date: Sat, 12 May 2007 12:01:43 +0200
-Message-Id: <1178964103.6810.55.camel@twins>
+	Sat, 12 May 2007 06:08:22 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:33094 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755466AbXELKIV convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 06:08:21 -0400
+Date: Sat, 12 May 2007 03:07:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: tglx@linutronix.de
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+Message-Id: <20070512030754.90488f79.akpm@linux-foundation.org>
+In-Reply-To: <1178961489.22481.133.camel@localhost.localdomain>
+References: <20070430102837.748238000@linutronix.de>
+	<20070511132846.5ebf4437.akpm@linux-foundation.org>
+	<200705112302.47726.rjw@sisk.pl>
+	<200705112309.15996.rjw@sisk.pl>
+	<20070511235607.83ad0eb5.akpm@linux-foundation.org>
+	<1178959563.22481.126.camel@localhost.localdomain>
+	<20070512020056.a24cf472.akpm@linux-foundation.org>
+	<1178961489.22481.133.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-12 at 11:27 +0200, Esben Nielsen wrote:
-> 
-> On Fri, 11 May 2007, Peter Zijlstra wrote:
-> 
-> >
-> > I was toying with a scalable rw_mutex and found that it gives ~10% reduction in
-> > system time on ebizzy runs (without the MADV_FREE patch).
-> >
-> 
-> You break priority enheritance on user space futexes! :-(
-> The problems is that the futex waiter have to take the mmap_sem. And as 
-> your rw_mutex isn't PI enabled you get priority inversions :-(
+On Sat, 12 May 2007 11:18:09 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Do note that rwsems have no PI either.
-PI is not a concern for mainline - yet, I do have ideas here though.
+> > It's peculiar that the hang happens when acpi_evaluate_object() hits its
+> > return statement.  Any theories there?
+> 
+> Only stack or memory corruption come into mind, but I have no clue how
+> this is related to the resume logic changes.
+
+So I had the brilliant idea of turning on some kernel debugging.  It's
+a shame that CONFIG_SOFTWARE_SUSPEND disables CONFIG_DEBUG_PAGEALLOC.
+
+[   73.533454] swsusp: Basic memory bitmaps created
+[   73.550429] Stopping tasks ... BUG: at kernel/lockdep.c:2414 check_flags()
+[   73.550988]  [<c0104c14>] show_trace_log_lvl+0x1a/0x30
+[   73.551143]  [<c0105769>] show_trace+0x12/0x14
+[   73.551279]  [<c01057c1>] dump_stack+0x15/0x17
+[   73.551412]  [<c0132732>] check_flags+0x93/0x13d
+[   73.551554]  [<c0135558>] lock_acquire+0x28/0x7f
+[   73.551691]  [<c0310e35>] _spin_lock+0x2b/0x38
+[   73.551827]  [<c013dc43>] refrigerator+0x16/0xc7
+[   73.551965]  [<c0125d2e>] get_signal_to_deliver+0x32/0x387
+[   73.552124]  [<c010336d>] do_notify_resume+0x91/0x6a9
+[   73.552271]  [<c0103df1>] work_notifysig+0x13/0x1a
+[   73.552413]  =======================
+[   73.552507] irq event stamp: 3075
+[   73.552595] hardirqs last  enabled at (3075): [<c0103e51>] syscall_exit_work+0x11/0x26
+[   73.552821] hardirqs last disabled at (3074): [<c0103d35>] syscall_exit+0x9/0x1a
+[   73.553046] softirqs last  enabled at (2778): [<c01209f2>] __do_softirq+0x92/0x9a
+[   73.553255] softirqs last disabled at (2693): [<c0120a27>] do_softirq+0x2d/0x46
+[   73.559504] done.
+[   73.559569] Shrinking memory...  -done (0 pages freed)
+[   73.646511] Freed 0 kbytes in 0.08 seconds (0.00 MB/s)
+[   73.649595] platform sonypi: freeze
+[   73.649707] platform bluetooth: freeze
+[   73.649817] usb_endpoint usbdev5.1_ep81: PM: suspend 0->1, parent 5-0:1.0 already 2
+[   73.650023] hub 5-0:1.0: PM: suspend 2-->1
+
+<snippage>
+
+[   73.739499] ipw2200 0000:06:0b.0: freeze
+[   73.743860] eth1: Going into suspend...
+[   73.748444] e100 0000:06:08.0: freeze
+
+at this point I lost netconsole (earlier testing was without netconsole
+btw)
+
+
+The lockdep spew is coming out of here:
+
+static void check_flags(unsigned long flags)
+{
+#if defined(CONFIG_DEBUG_LOCKDEP) && defined(CONFIG_TRACE_IRQFLAGS)
+	if (!debug_locks)
+		return;
+
+	if (irqs_disabled_flags(flags))
+-->		DEBUG_LOCKS_WARN_ON(current->hardirqs_enabled);
+	else
+		DEBUG_LOCKS_WARN_ON(!current->hardirqs_enabled);
+
+and the callsite is:
+
+void refrigerator(void)
+{
+	/* Hmm, should we be allowed to suspend when there are realtime
+	   processes around? */
+	long save;
+
+-->	task_lock(current);
+	if (freezing(current)) {
+		frozen_process();
+		task_unlock(current);
+	} else {
+
+
+I don't really know what lockdep is complaining about there.  I assume I'm
+not supposed to, given that whoever wrote that couldn't be bothered
+documenting any of it.
+
+I _think_ it means that lockdep believes that local irqs are enabled
+(according to its state tracking), only it turns out that they're not.
 
 
