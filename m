@@ -1,297 +1,331 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbXELPpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbXELPpg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759612AbXELPpW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 11:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbXELPpK
+	id S1760203AbXELPpg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 11:45:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756491AbXELPpM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 11:45:10 -0400
-Received: from ns2.mvista.com ([63.81.120.158]:38036 "EHLO
+	Sat, 12 May 2007 11:45:12 -0400
+Received: from ns2.mvista.com ([63.81.120.158]:38029 "EHLO
 	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754887AbXELPpI (ORCPT
+	with ESMTP id S1754464AbXELPpI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 12 May 2007 11:45:08 -0400
-Message-Id: <20070512154344.395866578@mvista.com>
+Message-Id: <20070512154408.223236808@mvista.com>
+References: <20070512154344.395866578@mvista.com>
 User-Agent: quilt/0.46-1
-Date: Sat, 12 May 2007 08:43:45 -0700
+Date: Sat, 12 May 2007 08:43:46 -0700
 From: Daniel Walker <dwalker@mvista.com>
 To: linux-kernel@vger.kernel.org
 Cc: akpm@linux-foundation.org, johnstul@us.ibm.com, mingo@elte.hu, ak@suse.de
-Content-Disposition: inline; filename=mark-tsc-unstable-reasons.patch
-Subject: [PATCH 1/2] non-string based tsc unstable reasons
+Content-Disposition: inline; filename=sched-clock-follows-percpu-frequency.patch
+Subject: [PATCH 2/2] i386: sched_clock() follows percpu frequency changes
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just passing a string to mark_tsc_unstable() doesn't allow real code to change
-based on the reason for the instablility. I changed mark_tsc_unstable()
-to accept a string and a flag which denotes a general reason why the tsc
-is unstable, and can be evaluated in code.
+Considering that Andi has a similar patch, I'm going to assume there
+is already justification for this..
 
-This is based off John Stultz patch to add the string reasons.
+What it ends up doing is allows the TSC to be used in cases which
+we didn't use it before, and hope it's still mostly accurate.
+
+For instance, when the frequency changes due to cpufreq we update
+sched_clock to convert cycles to nanoseconds using the new frequency.
+I also allow tsc usage when the tsc is considered unsynced on an SMP
+system. My understanding is that the scheduler should only be
+comparing one cpus tsc to itself, and not to other cpus tsc. So
+it should handle unsynced tsc.
+
+I ran lat_ctx a few times to see the difference,
+
+Before this patch,
+
+root@happy:~# lat_ctx -s 0 2
+
+"size=0k ovr=1.40
+2 1.06
+root@happy:~# lat_ctx -s 0 2
+
+"size=0k ovr=1.39
+2 0.91
+
+After this patch,
+
+root@happy:~# lat_ctx -s 0 2
+
+"size=0k ovr=1.14
+2 0.64
+root@happy:~# lat_ctx -s 0 2
+
+"size=0k ovr=1.12
+2 0.97
+
+I don't see a great deal of difference here. Considering the wide range
+of values I get from lat_ctx it's all within the margin of error. If anyone
+can better test this, or has thoughts on it I'm all ears.
+
+Comment are certainly welcome ..
 
 Signed-Off-By: Daniel Walker <dwalker@mvista.com>
 
 ---
- arch/i386/kernel/cpu/cyrix.c                |    9 ++++--
- arch/i386/kernel/tsc.c                      |   39 +++++++++++++++++-----------
- arch/x86_64/kernel/time.c                   |    3 +-
- arch/x86_64/kernel/tsc.c                    |   28 +++++++++++++-------
- arch/x86_64/kernel/tsc_sync.c               |    3 +-
- drivers/acpi/processor_idle.c               |    6 ++--
- include/asm-i386/mach-summit/mach_mpparse.h |    5 ++-
- include/asm-i386/tsc.h                      |   13 ++++++++-
- include/asm-x86_64/timex.h                  |    1 
- 9 files changed, 73 insertions(+), 34 deletions(-)
+ arch/i386/kernel/tsc.c      |  130 +++++++++++++++++++++-----------------------
+ include/linux/clocksource.h |   14 +++-
+ 2 files changed, 74 insertions(+), 70 deletions(-)
 
-Index: linux-2.6.21/arch/i386/kernel/cpu/cyrix.c
-===================================================================
---- linux-2.6.21.orig/arch/i386/kernel/cpu/cyrix.c
-+++ linux-2.6.21/arch/i386/kernel/cpu/cyrix.c
-@@ -275,11 +275,14 @@ static void __cpuinit init_cyrix(struct 
- 		device = read_pci_config_16(0, 0, 0x12, PCI_DEVICE_ID);
- 
- 		/*
--		 *  The 5510/5520 companion chips have a funky PIT.
-+		 *  The 5510/5520 companion chips have a funky PIT
-+		 *  and an unstable TSC.
- 		 */  
- 		if (vendor == PCI_VENDOR_ID_CYRIX &&
--	 (device == PCI_DEVICE_ID_CYRIX_5510 || device == PCI_DEVICE_ID_CYRIX_5520))
--			pit_latch_buggy = 1;
-+		    (device == PCI_DEVICE_ID_CYRIX_5510 ||
-+		     device == PCI_DEVICE_ID_CYRIX_5520))
-+			mark_tsc_unstable(CLOCK_TSC_UNSTABLE_FREQUENCY,
-+					  "cyrix 5510/5520 detected");
- 	}
- #endif
- 		c->x86_cache_size=16;	/* Yep 16K integrated cache thats it */
 Index: linux-2.6.21/arch/i386/kernel/tsc.c
 ===================================================================
 --- linux-2.6.21.orig/arch/i386/kernel/tsc.c
 +++ linux-2.6.21/arch/i386/kernel/tsc.c
-@@ -233,7 +233,8 @@ time_cpufreq_notifier(struct notifier_bl
- 				 * TSC based sched_clock turns
- 				 * to junk w/ cpufreq
- 				 */
--				mark_tsc_unstable();
-+				mark_tsc_unstable(CLOCK_TSC_CPUFREQ_ADJUSTED,
-+						  "cpufreq changes");
- 			}
- 		}
- 	}
-@@ -281,25 +282,34 @@ static struct clocksource clocksource_ts
- 				  CLOCK_SOURCE_MUST_VERIFY,
- };
+@@ -18,7 +18,7 @@
  
--void mark_tsc_unstable(void)
-+void mark_tsc_unstable(enum tsc_unstable_flags flag, char *reason)
+ #include "mach_timer.h"
+ 
+-static int tsc_enabled;
++static struct clocksource clocksource_tsc;
+ 
+ /*
+  * On some systems the TSC frequency does not
+@@ -56,46 +56,18 @@ __setup("notsc", tsc_setup);
+  * due to cpufreq or due to unsynced TSCs
+  */
+ static int tsc_unstable;
++static int tsc_sched_clock_unstable;
+ 
+ static inline int check_tsc_unstable(void)
  {
--	if (!tsc_unstable) {
--		tsc_unstable = 1;
--		tsc_enabled = 0;
--		/* Can be called before registration */
--		if (clocksource_tsc.mult)
--			clocksource_change_rating(&clocksource_tsc, 0);
--		else
--			clocksource_tsc.rating = 0;
-+	if (likely(tsc_unstable))
-+		return;
-+
-+	switch (flag) {
-+		case CLOCK_TSC_UNSTABLE_FREQUENCY:
-+		case CLOCK_TSC_HALTS_IN_CSTATES:
-+
-+		case CLOCK_TSC_UNSYNCHRONIZED:
-+		case CLOCK_TSC_CPUFREQ_ADJUSTED:
-+			tsc_unstable = 1;
-+			tsc_enabled = 0;
-+			printk("Marking TSC unstable due to: %s.\n", reason);
-+			/* Can be called before registration */
-+			if (clocksource_tsc.mult)
-+				clocksource_change_rating(&clocksource_tsc, 0);
-+			else
-+				clocksource_tsc.rating = 0;
- 	}
- }
- EXPORT_SYMBOL_GPL(mark_tsc_unstable);
- 
- static int __init dmi_mark_tsc_unstable(struct dmi_system_id *d)
- {
--	printk(KERN_NOTICE "%s detected: marking TSC unstable.\n",
--		       d->ident);
--	tsc_unstable = 1;
-+
-+	mark_tsc_unstable(CLOCK_TSC_UNSTABLE_FREQUENCY, (char*)d->ident);
-+
- 	return 0;
- }
- 
-@@ -331,7 +341,8 @@ __cpuinit int unsynchronized_tsc(void)
- 	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
- 		/* assume multi socket systems are not synchronized: */
- 		if (num_possible_cpus() > 1)
--			tsc_unstable = 1;
-+			mark_tsc_unstable(CLOCK_TSC_UNSYNCHRONIZED,
-+					  "Non-Intel SMP system");
- 	}
  	return tsc_unstable;
  }
-Index: linux-2.6.21/arch/x86_64/kernel/time.c
-===================================================================
---- linux-2.6.21.orig/arch/x86_64/kernel/time.c
-+++ linux-2.6.21/arch/x86_64/kernel/time.c
-@@ -348,7 +348,8 @@ void __init time_init(void)
- 	}
  
- 	if (unsynchronized_tsc())
--		mark_tsc_unstable();
-+		mark_tsc_unstable(CLOCK_TSC_UNSYNCHRONIZED,
-+				  "TSCs unsynchronized");
+-/* Accellerators for sched_clock()
+- * convert from cycles(64bits) => nanoseconds (64bits)
+- *  basic equation:
+- *		ns = cycles / (freq / ns_per_sec)
+- *		ns = cycles * (ns_per_sec / freq)
+- *		ns = cycles * (10^9 / (cpu_khz * 10^3))
+- *		ns = cycles * (10^6 / cpu_khz)
+- *
+- *	Then we use scaling math (suggested by george@mvista.com) to get:
+- *		ns = cycles * (10^6 * SC / cpu_khz) / SC
+- *		ns = cycles * cyc2ns_scale / SC
+- *
+- *	And since SC is a constant power of two, we can convert the div
+- *  into a shift.
+- *
+- *  We can use khz divisor instead of mhz to keep a better percision, since
+- *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
+- *  (mathieu.desnoyers@polymtl.ca)
+- *
+- *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
++/*
++ * Place holder for the percpu mult values used by sched_clock() to
++ * overcome a system which shifts frequencies per cpu.
+  */
+-static unsigned long cyc2ns_scale __read_mostly;
+-
+-#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
+-
+-static inline void set_cyc2ns_scale(unsigned long cpu_khz)
+-{
+-	cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
+-}
+-
+-static inline unsigned long long cycles_2_ns(unsigned long long cyc)
+-{
+-	return (cyc * cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
+-}
++DEFINE_PER_CPU(u32, cpu_khz_mult);
  
- 	if (cpu_has(&boot_cpu_data, X86_FEATURE_RDTSCP))
- 		vgetcpu_mode = VGETCPU_RDTSCP;
-Index: linux-2.6.21/arch/x86_64/kernel/tsc.c
-===================================================================
---- linux-2.6.21.orig/arch/x86_64/kernel/tsc.c
-+++ linux-2.6.21/arch/x86_64/kernel/tsc.c
-@@ -109,7 +109,8 @@ static int time_cpufreq_notifier(struct 
- 
- 		cpu_khz = cpufreq_scale(cpu_khz_ref, ref_freq, freq->new);
- 		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
--			mark_tsc_unstable();
-+			mark_tsc_unstable(CLOCK_TSC_CPUFREQ_ADJUSTED,
-+					  "cpufreq changes");
- 	}
- 
- 	set_cyc2ns_scale(cpu_khz_ref);
-@@ -197,15 +198,24 @@ static struct clocksource clocksource_ts
- 	.vread			= vread_tsc,
- };
- 
--void mark_tsc_unstable(void)
-+void mark_tsc_unstable(enum tsc_unstable_flags flag, char *reason)
+ /*
+  * Scheduler clock - returns current time in nanosec units.
+@@ -103,19 +75,26 @@ static inline unsigned long long cycles_
+ unsigned long long sched_clock(void)
  {
--	if (!tsc_unstable) {
--		tsc_unstable = 1;
--		/* Change only the rating, when not registered */
--		if (clocksource_tsc.mult)
--			clocksource_change_rating(&clocksource_tsc, 0);
--		else
--			clocksource_tsc.rating = 0;
-+	if (likely(tsc_unstable))
-+		return;
+ 	unsigned long long this_offset;
++	u32 this_cpus_mult;
+ 
+ 	/*
+-	 * Fall back to jiffies if there's no TSC available:
++	 * Fall back to jiffies if the TSC is unusable:
+ 	 */
+-	if (unlikely(!tsc_enabled))
++	if (unlikely(tsc_sched_clock_unstable))
+ 		/* No locking but a rare wrong value is not a big deal: */
+-		return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
++		return cyc2ns_sc(clocksource_jiffies.shift,
++				 clocksource_jiffies.mult, jiffies);
 +
-+	switch (flag) {
-+		case CLOCK_TSC_UNSTABLE_FREQUENCY:
-+		case CLOCK_TSC_HALTS_IN_CSTATES:
++	this_cpus_mult = per_cpu(cpu_khz_mult, raw_smp_processor_id());
+ 
+ 	/* read the Time Stamp Counter: */
+ 	get_scheduled_cycles(this_offset);
+ 
+-	/* return the value in ns */
+-	return cycles_2_ns(this_offset);
++	/*
++	 * We take advantage of the clocksource since it uses
++	 * the same math to convert to nanoseconds.
++	 */
++	return cyc2ns_sc(clocksource_tsc.shift, this_cpus_mult, this_offset);
+ }
+ 
+ unsigned long native_calculate_cpu_khz(void)
+@@ -216,27 +195,38 @@ time_cpufreq_notifier(struct notifier_bl
+ 	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
+ 	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
+ 	    (val == CPUFREQ_RESUMECHANGE)) {
+-		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
+-			cpu_data[freq->cpu].loops_per_jiffy =
+-				cpufreq_scale(loops_per_jiffy_ref,
+-						ref_freq, freq->new);
+-
+-		if (cpu_khz) {
+-
+-			if (num_online_cpus() == 1)
+-				cpu_khz = cpufreq_scale(cpu_khz_ref,
+-						ref_freq, freq->new);
+-			if (!(freq->flags & CPUFREQ_CONST_LOOPS)) {
+-				tsc_khz = cpu_khz;
+-				set_cyc2ns_scale(cpu_khz);
+-				/*
+-				 * TSC based sched_clock turns
+-				 * to junk w/ cpufreq
+-				 */
+-				mark_tsc_unstable(CLOCK_TSC_CPUFREQ_ADJUSTED,
+-						  "cpufreq changes");
+-			}
+-		}
 +
-+		case CLOCK_TSC_UNSYNCHRONIZED:
-+		case CLOCK_TSC_CPUFREQ_ADJUSTED:
-+			tsc_unstable = 1;
-+			printk("Marking TSC unstable due to: %s.\n", reason);
-+			/* Can be called before registration */
-+			if (clocksource_tsc.mult)
-+				clocksource_change_rating(&clocksource_tsc, 0);
-+			else
-+				clocksource_tsc.rating = 0;
++		if (likely(cpu_khz) && num_online_cpus() == 1)
++			cpu_khz = cpufreq_scale(cpu_khz_ref, ref_freq,
++						freq->new);
++
++		if ((freq->flags & CPUFREQ_CONST_LOOPS))
++			goto end;
++
++		cpu_data[freq->cpu].loops_per_jiffy =
++			cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
++
++		if (unlikely(!cpu_khz))
++			goto end;
++
++		tsc_khz = cpu_khz;
++
++		/*
++		 * Set the new percpu mult value to be used
++		 * for sched_clock(). We can't use cpu_khz
++		 * since it's only tracking a single cpu.
++		 */
++		per_cpu(cpu_khz_mult, freq->cpu) =
++			clocksource_hz2mult(freq->new,
++					     clocksource_tsc.shift);
++		printk("CPU%d: Updated sched_clock() frequency to %d\n",
++			freq->cpu, freq->new);
++		/*
++		 * TSC based gettimeofday turns
++		 * to junk w/ cpufreq
++		 */
++		mark_tsc_unstable(CLOCK_TSC_CPUFREQ_ADJUSTED,
++				  "cpufreq changes");
  	}
- }
- EXPORT_SYMBOL_GPL(mark_tsc_unstable);
-Index: linux-2.6.21/arch/x86_64/kernel/tsc_sync.c
-===================================================================
---- linux-2.6.21.orig/arch/x86_64/kernel/tsc_sync.c
-+++ linux-2.6.21/arch/x86_64/kernel/tsc_sync.c
-@@ -138,7 +138,8 @@ void __cpuinit check_tsc_sync_source(int
- 		printk("\n");
- 		printk(KERN_WARNING "Measured %Ld cycles TSC warp between CPUs,"
- 				    " turning off TSC clock.\n", max_warp);
--		mark_tsc_unstable();
-+		mark_tsc_unstable(CLOCK_TSC_UNSTABLE_FREQUENCY,
-+				  "check_tsc_sync_source failed");
- 		nr_warps = 0;
- 		max_warp = 0;
- 		last_tsc = 0;
-Index: linux-2.6.21/drivers/acpi/processor_idle.c
-===================================================================
---- linux-2.6.21.orig/drivers/acpi/processor_idle.c
-+++ linux-2.6.21/drivers/acpi/processor_idle.c
-@@ -483,7 +483,8 @@ static void acpi_processor_idle(void)
+ end:
+ 	if (val != CPUFREQ_RESUMECHANGE && val != CPUFREQ_SUSPENDCHANGE)
+@@ -284,17 +274,17 @@ static struct clocksource clocksource_ts
  
- #ifdef CONFIG_GENERIC_TIME
- 		/* TSC halts in C2, so notify users */
--		mark_tsc_unstable();
-+		mark_tsc_unstable(CLOCK_TSC_HALTS_IN_CSTATES,
-+				  "possible TSC halt in C2");
- #endif
- 		/* Re-enable interrupts */
- 		local_irq_enable();
-@@ -525,7 +526,8 @@ static void acpi_processor_idle(void)
+ void mark_tsc_unstable(enum tsc_unstable_flags flag, char *reason)
+ {
+-	if (likely(tsc_unstable))
+-		return;
+-
+ 	switch (flag) {
+ 		case CLOCK_TSC_UNSTABLE_FREQUENCY:
+ 		case CLOCK_TSC_HALTS_IN_CSTATES:
++			tsc_sched_clock_unstable = 1;
  
- #ifdef CONFIG_GENERIC_TIME
- 		/* TSC halts in C3, so notify users */
--		mark_tsc_unstable();
-+		mark_tsc_unstable(CLOCK_TSC_HALTS_IN_CSTATES,
-+				  "TSC halts in C3");
- #endif
- 		/* Re-enable interrupts */
- 		local_irq_enable();
-Index: linux-2.6.21/include/asm-i386/mach-summit/mach_mpparse.h
+ 		case CLOCK_TSC_UNSYNCHRONIZED:
+ 		case CLOCK_TSC_CPUFREQ_ADJUSTED:
++			if (likely(tsc_unstable))
++				return;
++
+ 			tsc_unstable = 1;
+-			tsc_enabled = 0;
+ 			printk("Marking TSC unstable due to: %s.\n", reason);
+ 			/* Can be called before registration */
+ 			if (clocksource_tsc.mult)
+@@ -369,6 +359,8 @@ static inline void check_geode_tsc_relia
+ 
+ void __init tsc_init(void)
+ {
++	int cpu;
++
+ 	if (!cpu_has_tsc || tsc_disable)
+ 		goto out_no_tsc;
+ 
+@@ -382,7 +374,6 @@ void __init tsc_init(void)
+ 				(unsigned long)cpu_khz / 1000,
+ 				(unsigned long)cpu_khz % 1000);
+ 
+-	set_cyc2ns_scale(cpu_khz);
+ 	use_tsc_delay();
+ 
+ 	/* Check and install the TSC clocksource */
+@@ -393,12 +384,17 @@ void __init tsc_init(void)
+ 	current_tsc_khz = tsc_khz;
+ 	clocksource_tsc.mult = clocksource_khz2mult(current_tsc_khz,
+ 							clocksource_tsc.shift);
++	/*
++	 * Initialize the per cpu mult values used in sched_clock()
++	 */
++	for_each_possible_cpu(cpu)
++		per_cpu(cpu_khz_mult, cpu) = clocksource_tsc.mult;
++
+ 	/* lower the rating if we already know its unstable: */
+ 	if (check_tsc_unstable()) {
+ 		clocksource_tsc.rating = 0;
+ 		clocksource_tsc.flags &= ~CLOCK_SOURCE_IS_CONTINUOUS;
+-	} else
+-		tsc_enabled = 1;
++	}
+ 
+ 	clocksource_register(&clocksource_tsc);
+ 
+Index: linux-2.6.21/include/linux/clocksource.h
 ===================================================================
---- linux-2.6.21.orig/include/asm-i386/mach-summit/mach_mpparse.h
-+++ linux-2.6.21/include/asm-i386/mach-summit/mach_mpparse.h
-@@ -30,7 +30,8 @@ static inline int mps_oem_check(struct m
- 			(!strncmp(productid, "VIGIL SMP", 9) 
- 			 || !strncmp(productid, "EXA", 3)
- 			 || !strncmp(productid, "RUTHLESS SMP", 12))){
--		mark_tsc_unstable();
-+		mark_tsc_unstable(CLOCK_TSC_UNSYNCHRONIZED,
-+				  "Summit based system");
- 		use_cyclone = 1; /*enable cyclone-timer*/
- 		setup_summit();
- 		return 1;
-@@ -44,7 +45,7 @@ static inline int acpi_madt_oem_check(ch
- 	if (!strncmp(oem_id, "IBM", 3) &&
- 	    (!strncmp(oem_table_id, "SERVIGIL", 8)
- 	     || !strncmp(oem_table_id, "EXA", 3))){
--		mark_tsc_unstable();
-+		mark_tsc_unstable("Summit based system");
- 		use_cyclone = 1; /*enable cyclone-timer*/
- 		setup_summit();
- 		return 1;
-Index: linux-2.6.21/include/asm-i386/tsc.h
-===================================================================
---- linux-2.6.21.orig/include/asm-i386/tsc.h
-+++ linux-2.6.21/include/asm-i386/tsc.h
-@@ -52,8 +52,19 @@ static __always_inline cycles_t get_cycl
- 	return ret;
- }
+--- linux-2.6.21.orig/include/linux/clocksource.h
++++ linux-2.6.21/include/linux/clocksource.h
+@@ -20,6 +20,12 @@
+ typedef u64 cycle_t;
+ struct clocksource;
  
 +/*
-+ * These are the known reason why a TSC would be flaged
-+ * as unstable.
++ * clocksource_jiffies is the only generic clock. It may
++ * be used for initialization, or generic clock needs.
 + */
-+enum tsc_unstable_flags {
-+	CLOCK_TSC_UNSTABLE_FREQUENCY = 0,
-+	CLOCK_TSC_CPUFREQ_ADJUSTED,
-+	CLOCK_TSC_UNSYNCHRONIZED,
-+	CLOCK_TSC_HALTS_IN_CSTATES,
-+};
-+extern void mark_tsc_unstable(enum tsc_unstable_flags flag, char *reason);
++extern struct clocksource clocksource_jiffies;
 +
- extern void tsc_init(void);
--extern void mark_tsc_unstable(void);
- extern int unsynchronized_tsc(void);
- extern void init_tsc_clocksource(void);
+ /**
+  * struct clocksource - hardware abstraction for a free running counter
+  *	Provides mostly state-free accessors to the underlying hardware.
+@@ -148,6 +154,10 @@ static inline cycle_t clocksource_read(s
+ 	return cs->read();
+ }
  
-Index: linux-2.6.21/include/asm-x86_64/timex.h
-===================================================================
---- linux-2.6.21.orig/include/asm-x86_64/timex.h
-+++ linux-2.6.21/include/asm-x86_64/timex.h
-@@ -27,6 +27,5 @@ extern int read_current_timer(unsigned l
- #define NS_SCALE        10 /* 2^10, carefully chosen */
- #define US_SCALE        32 /* 2^32, arbitralrily chosen */
++static inline s64 cyc2ns_sc(u32 shift, u32 mult, cycle_t cycles)
++{
++	return ((cycles * mult) >> shift);
++}
+ /**
+  * cyc2ns - converts clocksource cycles to nanoseconds
+  * @cs:		Pointer to clocksource
+@@ -159,9 +169,7 @@ static inline cycle_t clocksource_read(s
+  */
+ static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
+ {
+-	u64 ret = (u64)cycles;
+-	ret = (ret * cs->mult) >> cs->shift;
+-	return ret;
++	return cyc2ns_sc(cs->shift, cs->mult, cycles);
+ }
  
--extern void mark_tsc_unstable(void);
- extern void set_cyc2ns_scale(unsigned long khz);
- #endif
+ /**
 
 -- 
