@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbXELICj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758125AbXELIHw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758055AbXELICj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 04:02:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754940AbXELICZ
+	id S1758125AbXELIHw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 04:07:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbXELIHj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 04:02:25 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:33732 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754370AbXELICW (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 04:02:22 -0400
-Date: Sat, 12 May 2007 18:01:57 +1000
-From: David Chinner <dgc@sgi.com>
-To: Suparna Bhattacharya <suparna@in.ibm.com>
-Cc: David Chinner <dgc@sgi.com>, "Amit K. Arora" <aarora@linux.vnet.ibm.com>,
-       torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, cmm@us.ibm.com
-Subject: Re: [PATCH 1/5] fallocate() implementation in i86, x86_64 and powerpc
-Message-ID: <20070512080157.GF85884050@sgi.com>
-References: <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070426180332.GA7209@amitarora.in.ibm.com> <20070509160102.GA30745@amitarora.in.ibm.com> <20070510005926.GT85884050@sgi.com> <20070510115620.GB21400@amitarora.in.ibm.com> <20070510223950.GD86004887@sgi.com> <20070511110301.GB28425@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070511110301.GB28425@in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 12 May 2007 04:07:39 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:50756 "EHLO proxima.lp0.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754809AbXELIHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 04:07:37 -0400
+Message-ID: <464575BF.1060105@simon.arlott.org.uk>
+Date: Sat, 12 May 2007 09:07:27 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+MIME-Version: 1.0
+To: Finn Thain <fthain@telegraphics.com.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-m68k@vger.kernel.org, trival@kernel.org
+Subject: Re: [PATCH] spelling fixes: arch/m68knommu/
+References: <4644C716.1020000@simon.arlott.org.uk> <Pine.LNX.4.64.0705121024480.14127@loopy.telegraphics.com.au>
+In-Reply-To: <Pine.LNX.4.64.0705121024480.14127@loopy.telegraphics.com.au>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 04:33:01PM +0530, Suparna Bhattacharya wrote:
-> On Fri, May 11, 2007 at 08:39:50AM +1000, David Chinner wrote:
-> > All I'm really interested in right now is that the fallocate
-> > _interface_ can be used as a *complete replacement* for the
-> > pre-existing XFS-specific ioctls that are already used by
-> > applications.  What ext4 can or can't do right now is irrelevant to
-> > this discussion - the interface definition needs to take priority
-> > over implementation....
+On 12/05/07 02:03, Finn Thain wrote:
 > 
-> Would you like to write up an interface definition description (likely
-> man page) and post it for review, possibly with a mention of apps using
-> it today ?
+> On Fri, 11 May 2007, Simon Arlott wrote:
+> 
+>> - *	Local routines to interrcept the standard I/O and vector handling
+>> - *	code. Don't include this 'till now - initialization code above needs
+>> + *	Local routines to intercept the standard I/O and vector handling
+>> + *	code. Don't include this until now - initialization code above needs
+>>   *      access to the real code too.
+> 
+> What's wrong with 'til?
+> 
 
-Yeah, I started doing that yesterday as i figured it was the only way
-to cut the discussion short....
+Nothing, but is there anything wrong with correcting 'till to until?
 
-> One reason for introducing the mode parameter was to allow the interface to
-> evolve incrementally as more options / semantic questions are proposed, so
-> that we don't have to make all the decisions right now. 
-> So it would be good to start with a *minimal* definition, even just one mode.
-> The rest could follow as subsequent patches, each being reviewed and debated
-> separately. Otherwise this discussion can drag on for a long time.
+>> - *	Sub-architcture dependant initialization code for the Freescale
+>> + *	Sub-architcture dependent initialization code for the Freescale
+> 
+> ...
+> 
+>> - *	Sub-architcture dependant initialization code for the Freescale
+>> + *	Sub-architcture dependent initialization code for the Freescale
+> 
+> ...
+> 
+>> - *	Sub-architcture dependant initialization code for the Motorola
+>> + *	Sub-architcture dependent initialization code for the Motorola
+> 
+> You want "Sub-architecture".
 
-Minimal definition to replace what applicaitons use on XFS and to
-support poasix_fallocate are the thre that have been mentioned so
-far (FA_ALLOCATE, FA_PREALLOCATE, FA_DEALLOCATE). I'll document them
-all in a man page...
+Bah. I managed to miss that word in the line more than once... and I 
+had it highlighted in red :|
 
-Cheers,
-
-Dave.
 -- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+Simon Arlott
