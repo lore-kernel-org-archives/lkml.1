@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbXELFpx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756836AbXELFvQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757314AbXELFpx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 01:45:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXELFpq
+	id S1756836AbXELFvQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 01:51:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754370AbXELFvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 01:45:46 -0400
-Received: from ik-out-1112.google.com ([66.249.90.183]:12256 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbXELFpp (ORCPT
+	Sat, 12 May 2007 01:51:06 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:59995 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750930AbXELFvD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 01:45:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=lcaK0jxe37ydfWuHqSXuTSwf0h6MEuBoU//2DY1AzcKDPzC0PmSeQQvwcF7XWhCXzBmLs4SXoyUCRaaK2V+dYQlLN4rCDgEe+E5HAAwr5YZY3HxCt60dgQXyhn/qo/tLOqphcHO0kWB/xZr5JW+fWZXZwBuJZR9HEtU3Wupd1zw=
-Message-ID: <a781481a0705112245u356759dcm9a550e432ed178fd@mail.gmail.com>
-Date: Sat, 12 May 2007 11:15:43 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Dmitry Torokhov" <dtor@insightbb.com>
-Subject: Re: 2.6.21-mm2: HDAPS? BUG: at kernel/mutex.c:311
-Cc: "Andrew Morton" <akpm@linux-foundation.org>,
-       "Matt Mackall" <mpm@selenic.com>, rlove@rlove.org,
-       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
-In-Reply-To: <200705120112.52859.dtor@insightbb.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 12 May 2007 01:51:03 -0400
+Date: Fri, 11 May 2007 22:51:11 -0700
+From: Paul Jackson <pj@sgi.com>
+To: Con Kolivas <kernel@kolivas.org>
+Cc: nickpiggin@yahoo.com.au, ray-lk@madrabbit.org, mingo@elte.hu,
+       ck@vds.kolivas.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH] mm: swap prefetch improvements
+Message-Id: <20070511225111.fee05bb9.pj@sgi.com>
+In-Reply-To: <200705121516.00070.kernel@kolivas.org>
+References: <20070430162007.ad46e153.akpm@linux-foundation.org>
+	<200705121446.04191.kernel@kolivas.org>
+	<20070511220314.f7af1d31.pj@sgi.com>
+	<200705121516.00070.kernel@kolivas.org>
+Organization: SGI
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.3; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070512002115.GZ11166@waste.org>
-	 <20070511175335.092aa0af.akpm@linux-foundation.org>
-	 <200705120112.52859.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Dmitry,
+Con wrote:
+> Hmm I'm not really sure what it takes to make it cpuset aware;
+> ...
+> It is numa aware to some degree. It stores the node id and when it starts 
+> prefetching it only prefetches to nodes that are suitable for prefetching to 
+> ...
+> It would be absolutely trivial to add a check for 'number_of_cpusets' <= 1
+> in  the prefetch_enabled() function. Would you like that?
 
-On 5/12/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
-> On Friday 11 May 2007 20:53, Andrew Morton wrote:
-> > Ho hum. I suppose a suitable workaround would be to convert hdaps_mtx back
-> > into a semaphore. ug.
->
-> Actually I was looking for victimes^Wvolunteers to test the patch below.
-> It gets rid of _trylock business.
+Hmmm ... it seems that we shadow boxing here ... trying to pick a solution
+to solve a problem when we aren't even sure we have a problem, much less
+what the problem is.
 
-Ah! You just beat me here, and your patch is definitely better.
+That does not usually lead to the right path.
 
-I was wondering why this driver wanted to use a mutex (previously the
-semaphore) to synchronize between process and interrupt context in the
-first place. Most of the code in here uses synchronous delays so never
-sleeps anyway, but then unfortunately it does a weird
-repeated-waiting-hardware-status-register-check thingy in its .probe()
-which meant a straightforward mutex -> spinlock wasn't possible.
+Could you put some more effort into characterizing what problems
+can arise if one has prefetch and cpusets active at the same time?
 
-So then made a patch pushing off the poll to keventd workqueue, when
-I saw your mail that does exactly the same, but wrapped about in the
-generic input-polldev infrastructure! It's barely 12 days old in mainline --
-no wonder I didn't know about it. Seems to be good-looking code!
+My first wild guess is that the only incompatibility would have been that
+prefetch might mess up NUMA placement (get pages on wrong nodes), which
+it seems you have tried to address in your current patches.  So it would
+not surprise me if there was no problem here.
 
-Thanks,
-Satyam
+We may just have to lean on Nick some more, if he is the only one who
+understands what the problem is, to try again to explain it to us.
+
+-- 
+                  I won't rest till it's the best ...
+                  Programmer, Linux Scalability
+                  Paul Jackson <pj@sgi.com> 1.925.600.0401
