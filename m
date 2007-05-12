@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbXELOS0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759275AbXELOVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758382AbXELOS0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 10:18:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbXELOSU
+	id S1759275AbXELOVs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 10:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXELOVm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 10:18:20 -0400
-Received: from mail.screens.ru ([213.234.233.54]:51445 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752540AbXELOST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 10:18:19 -0400
-Date: Sat, 12 May 2007 18:18:13 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
-Message-ID: <20070512141813.GA98@tv-sign.ru>
-References: <200705110035.32229.rjw@sisk.pl> <alpine.LFD.0.98.0705111812270.3986@woody.linux-foundation.org> <200705121101.40795.rjw@sisk.pl> <200705121245.50715.rjw@sisk.pl>
-Mime-Version: 1.0
+	Sat, 12 May 2007 10:21:42 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:45810 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754398AbXELOVl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 10:21:41 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Alexander van Heukelum <heukelum@mailshack.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Antonino A. Daplas" <adaplas@gmail.com>,
+       Andi Kleen <ak@suse.de>, Andrew Morton <akpm@osdl.org>,
+       Matt Domsch <Matt_Domsch@dell.com>, Vivek Goyal <vgoyal@in.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPar>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86 setup rewrite tree ready for flamage^W review
+References: <464158E9.2000207@zytor.com>
+	<1178806235.18785.1189115515@webmail.messagingengine.com>
+	<46435F8A.1040203@zytor.com> <20070510220406.GA21110@mailshack.com>
+	<4643A128.30302@zytor.com> <20070512122137.GA25944@mailshack.com>
+Date: Sat, 12 May 2007 08:20:52 -0600
+In-Reply-To: <20070512122137.GA25944@mailshack.com> (Alexander van Heukelum's
+	message of "Sat, 12 May 2007 14:21:37 +0200")
+Message-ID: <m1r6pmqg1n.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200705121245.50715.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/12, Rafael J. Wysocki wrote:
+Alexander van Heukelum <heukelum@mailshack.com> writes:
+
+> On Thu, May 10, 2007 at 03:48:08PM -0700, H. Peter Anvin wrote:
+
+> I can confirm that it works for at least one computer over here (a six
+> months old x86_64 machine with ATI ES1000-based on-board graphics). Some
+> non-vesa modes including a nice 100x30 one with 8x16 font are found by
+> the 'scan' option. No 100x60, however, but that is not a regression.
 >
-> ... user space tasks that call deamonize() can also be frozen prematurely.
-> We didn't take this possibility into consideration before, which was obviously
-> wrong.
+>> > I thought the 32-bit jump was required to come before the segment loads.
+>> > Does this code load values from the gdt, or are they just loaded as real
+>> > mode segments? As long as it does not crash it does not matter, because
+>> > head.S reloads them again.
+>> 
+>> Once CR0.PE is set, segments are loaded from the GDT.
+>
+> I believe you :).
 
-No, no, sorry for the confusion. User space tasks never call deamonize().
+HPA is both right and wrong on this.  The safe sequence for entering
+protected mode requires a jump immediately after setting PE in %cr0.
+To serialize the instruction stream and to be on an execution that
+is tested and guaranteed to work in cpus.
 
-Kernel threads call daemonize, because when we are doing kernel_thread()
-on behalf of user-space task, the new kernel thread (child) shares its
-->mm with the caller (parent). So it is considered as "is_user_space()"
-until it does daemonize().
+On a lot of processors you can get away with more then that, but
+Intel at least explicitly states in their "Software Developers Manual
+Volume 3: System Programming" in 9.9.1 "Switching to Protected Mode"
+that you need the jump immediately following enabling PE in cr0.
 
-Definitely, is_user_space() should have another name.
+So while I was debugging and instrumenting code I would happily
+place an instruction before the jump so I could get output.
+However in production grade code I would not place anything
+between the setting of PE in cr0 and the first jump instruction.
 
-When a user space task exits, it does exit_mm() and becomes "a kernel thread"
-from the freezer POV. In its current from, freezer can do nothing with this.
-The exiting task won't call try_to_freeze() after that, so try_to_freeze_tasks()
-will wait until it dissapears (actually, until it calls exit_notify(), note
-the ->exit_state check in freezeable()).
-
-I do not think we can improve things if exit_mm() clears TIF_FREEZING.
-We should clear TIF_FREEZING when we set PF_NOFREEZE, I think. This was
-discussed before iirc, but I forgot the result.
-
-Oleg.
-
+Eric
