@@ -1,42 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759678AbXELOWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759544AbXELOY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759678AbXELOWS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 10:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758761AbXELOWD
+	id S1759544AbXELOY0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 10:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXELOYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 10:22:03 -0400
-Received: from ufisa.uninett.no ([158.38.60.190]:42648 "EHLO ufisa.uninett.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754949AbXELOWB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 10:22:01 -0400
-X-Greylist: delayed 1552 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 May 2007 10:22:00 EDT
-Date: Sat, 12 May 2007 15:55:33 +0200 (CEST)
-From: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>
-X-X-Sender: kolla@halbrend.uninett.no
-To: Finn Thain <fthain@telegraphics.com.au>
-cc: Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-m68k@vger.kernel.org, trival@kernel.org
-Subject: Re: [PATCH] spelling fixes: arch/m68knommu/
-In-Reply-To: <Pine.LNX.4.64.0705121951410.16778@loopy.telegraphics.com.au>
-Message-ID: <alpine.LNX.0.99.0705121554240.30110@halbrend.uninett.no>
-References: <4644C716.1020000@simon.arlott.org.uk>
- <Pine.LNX.4.64.0705121024480.14127@loopy.telegraphics.com.au>
- <464575BF.1060105@simon.arlott.org.uk>
- <Pine.LNX.4.64.0705121951410.16778@loopy.telegraphics.com.au>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=UTF-8
+	Sat, 12 May 2007 10:24:17 -0400
+Received: from imf22aec.mail.bellsouth.net ([205.152.59.70]:33657 "EHLO
+	imf22aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754285AbXELOYQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 10:24:16 -0400
+Date: Sat, 12 May 2007 09:24:13 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Len Brown <lenb@kernel.org>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: APIC error on 32-bit kernel
+Message-ID: <20070512092413.4911f71b@osprey.hogchain.net>
+In-Reply-To: <200705112328.58927.lenb@kernel.org>
+References: <20070323200817.1f3e39b9@osprey.hogchain.net>
+	<20070408133822.3868e6ff@osprey.hogchain.net>
+	<200705112328.58927.lenb@kernel.org>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 May 2007, Finn Thain wrote:
+Thank you very much for looking at this, Len.
 
-> To answer your question, I find it easier to parse the original idiom, 
-> "'til now". Your corruption, "until now", loses information available to 
-> anyone who can recognise the idiom. Granted, this is not the worst example 
-> of that effect...
 
-It is either "till now" or "until now". 
-"'til" is just broken english.
+On Fri, 11 May 2007 23:28:58 -0400
+Len Brown <lenb@kernel.org> wrote:
 
--- kolla
+> > > [   94.754852] APIC error on CPU0: 08(40)
+> > > [   94.806045] APIC error on CPU0: 40(08)
+> 
+>         /* Here is what the APIC error bits mean:
+>            0: Send CS error
+>            1: Receive CS error
+>            2: Send accept error
+>            3: Receive accept error
+>            4: Reserved
+>            5: Send illegal vector
+>            6: Received illegal vector
+>            7: Illegal register address
+>         */
+> 
+> So the 40 means the APIC got an illegal vector.
+> Certainly this is consistent with the fact that
+> the errors start when a specific device is being
+> used.  I assume that device is using MSI?
+
+Yes, the device is using MSI.
+
+> Curious that it is different in 32-bit and 64-bit mode.
+
+Agreed, although I had one user back in March report APIC errors on the
+Asus M2V board while running Debian x86_64.  I personally have never
+encountered the problem under a 64-bit kernel, but I admit that just
+might be random luck.
+
+
+> > > We also do not see this problem on Intel-based motherboards, with
+> > > either 32- or 64-bit kernels.
+> > 
+> > A full raft of documentation -- including acpidump and
+> > linux-firmware-kit output, console capture, kernel config, lspci
+> > -vvxxx (with apic=debug boot option), dmesg, and /proc/interrupts
+> > -- is available at http://www.hogchain.net/m2v/apic-problem/
+> 
+> 
+> [06Dh 109  2]      Boot Architecture Flags : 0003
+> 
+> for what it is worth, the bit in ACPI that is used to
+> disable MSI support is not set -- so as  far as the BIOS
+> is concerned, this system should support MSI.
+> 
+> Is it an add-in card, or lan-on-motherboard?
+
+This is a PCIe LAN-on-motherboard.
+
+My goal is to understand whether this is a problem in the atl1 driver,
+or a problem on the motherboard.  If it's the former, obviously I want
+to fix it.  If it's the latter, then I want to disable MSI in the driver
+when we discover we're running on this motherboard.
+
+Thanks again for taking time to look at this.  Any advice or hints you
+provide will be greatly appreciated.
+
+Jay
