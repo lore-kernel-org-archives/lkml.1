@@ -1,62 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760241AbXELTXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760436AbXELTYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760241AbXELTXn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 15:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757209AbXELTXf
+	id S1760436AbXELTYU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 15:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755932AbXELTYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 15:23:35 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:35685 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755932AbXELTXd (ORCPT
+	Sat, 12 May 2007 15:24:12 -0400
+Received: from calculon.skynet.ie ([193.1.99.88]:54054 "EHLO
+	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756616AbXELTYL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 15:23:33 -0400
-Date: Sat, 12 May 2007 20:27:00 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Pavel Machek <pavel@ucw.cz>, David Woodhouse <dwmw2@infradead.org>,
-       Anton Vorontsov <cbou@mail.ru>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
-       Andrew Morton <akpm@osdl.org>, zaitcev@redhat.com
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-Message-ID: <20070512202700.44afe993@the-village.bc.nu>
-In-Reply-To: <20070512100321.c54f3dbe.zaitcev@redhat.com>
-References: <20070503213303.GH20067@zarina>
-	<20070507140453.GD3868@ucw.cz>
-	<1178550653.11851.191.camel@pmac.infradead.org>
-	<20070507194949.GB3981@ucw.cz>
-	<20070507222311.4589fc8a@the-village.bc.nu>
-	<20070512100321.c54f3dbe.zaitcev@redhat.com>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 12 May 2007 15:24:11 -0400
+Date: Sat, 12 May 2007 20:24:08 +0100
+To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>
+Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
+Message-ID: <20070512192408.GA5769@skynet.ie>
+References: <20070511090823.GA29273@skynet.ie> <1178884283.27195.1.camel@rousalka.dyndns.org> <20070511173811.GA8529@skynet.ie> <1178905541.2473.2.camel@rousalka.dyndns.org> <1178908210.4360.21.camel@rousalka.dyndns.org> <20070511203610.GA12136@skynet.ie> <1178957491.4095.2.camel@rousalka.dyndns.org> <20070512164237.GA2691@skynet.ie> <1178993343.6397.1.camel@rousalka.dyndns.org> <1178996310.6397.3.camel@rousalka.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1178996310.6397.3.camel@rousalka.dyndns.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+From: mel@skynet.ie (Mel Gorman)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have to disagree here. It is using the native alphabet for the name
-> which is very rude, because non-native hackers cannot read it. This is
+On (12/05/07 20:58), Nicolas Mailhot didst pronounce:
+> Le samedi 12 mai 2007 à 20:09 +0200, Nicolas Mailhot a écrit :
+> > Le samedi 12 mai 2007 à 17:42 +0100, Mel Gorman a écrit :
+> > 
+> > > order-2 (at least 19 pages but more are there) and higher pages were free
+> > > and this was a NORMAL allocation. It should also be above watermarks so
+> > > something screwy is happening
+> > > 
+> > > *peers suspiciously*
+> > > 
+> > > Can you try the following patch on top of the kswapd patch please? It is
+> > > also available from http://www.csn.ul.ie/~mel/watermarks.patch
+> > 
+> > Ok, testing now
+> 
+> And this one failed testing too 
 
-I think you mean "non Amercian". The majority of the human race don't
-speak English, and you could probably make a good case that kernel tree
-should be in Chinese, Spanish or Gujerati by your logic.
+And same thing, you have suitable free memory. The last patch was
+wrong because I forgot the !in_interrupt() part which was careless
+and dumb.  Please try the following, again on top of the kswapd patch -
+http://www.csn.ul.ie/~mel/watermarks-v2.patch
 
-> One peculiar thing I have observed is how all this "UTF-8 in names"
-> nonsense is being pushed by western Europeans. Why? That's because
-> their umlauts are grandfathered in, and because English speakers _can_
-> read their names approximately, simply by ignoring all the strokes
-> above the letter (or, in Norwegians and Polaks cases, going through
-> the letter). So do not try to pretend that "correctness" has anything
-> to do with your demands.
+Thanks for all the testing, it's appreciated.
 
-I find your comments racist and insulting. I trust you will be
-apologizing. The most clear example of where it would be polite to
-include names spelt properly are the Asian countries. They may well (and
-most do) choose to include a transliteration.
-
-Western European names you can generally transliterate quite well
-(although conventions are not simple and you don't usually simply omit
-accent marks), in some cases you also completely break the naming
-in the eyes of a native speaker because the pronunciation implied is now
-all wrong.
-
-
+diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-revertmd/mm/page_alloc.c linux-2.6.21-mm2-watermarks/mm/page_alloc.c
+--- linux-2.6.21-mm2-revertmd/mm/page_alloc.c	2007-05-11 21:16:57.000000000 +0100
++++ linux-2.6.21-mm2-watermarks/mm/page_alloc.c	2007-05-12 20:20:19.000000000 +0100
+@@ -1645,8 +1645,16 @@ nofail_alloc:
+ 	}
+ 
+ 	/* Atomic allocations - we can't balance anything */
+-	if (!wait)
++	if (!wait) {
++
++		/* Attempt to allocate ignoring watermarks */
++		page = get_page_from_freelist(gfp_mask, order,
++					zonelist, ALLOC_NO_WATERMARKS);	
++		if (page)
++			goto got_pg;
++
+ 		goto nopage;
++	}
+ 
+ 	cond_resched();
+ 
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
