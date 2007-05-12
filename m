@@ -1,48 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758463AbXELRza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758947AbXELR4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758463AbXELRza (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 13:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755307AbXELRzX
+	id S1758947AbXELR4u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 13:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbXELR4m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 13:55:23 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:60732 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754864AbXELRzX (ORCPT
+	Sat, 12 May 2007 13:56:42 -0400
+Received: from [71.237.232.134] ([71.237.232.134]:43626 "EHLO
+	laptopd505.fenrus.org" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753215AbXELR4l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 13:55:23 -0400
-Date: Sat, 12 May 2007 13:55:10 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-Subject: Re: [GIT PULL] MMC updates
-In-reply-to: <20070512162248.GB21729@flint.arm.linux.org.uk>
-X-X-Sender: nico@xanadu.home
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Pierre Ossman <drzeus-list@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.0.99.0705121349250.24220@xanadu.home>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <46375B18.4080802@drzeus.cx>
- <20070509185636.GB26981@flint.arm.linux.org.uk> <46421BB5.7040504@drzeus.cx>
- <20070509221253.GC26981@flint.arm.linux.org.uk> <4642B122.5070609@drzeus.cx>
- <46432502.4050901@drzeus.cx> <alpine.LFD.0.99.0705101037220.24220@xanadu.home>
- <alpine.LFD.0.99.0705121122440.24220@xanadu.home> <4645E76B.2060704@drzeus.cx>
- <20070512162248.GB21729@flint.arm.linux.org.uk>
+	Sat, 12 May 2007 13:56:41 -0400
+X-Greylist: delayed 669 seconds by postgrey-1.27 at vger.kernel.org; Sat, 12 May 2007 13:56:41 EDT
+Subject: Re: [announce] Intel announces the PowerTOP utility for Linux
+From: Arjan van de Ven <arjan@linux.intel.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.61.0705121256430.9570@yvahk01.tjqt.qr>
+References: <4644F726.1050806@linux.intel.com>
+	 <Pine.LNX.4.61.0705121256430.9570@yvahk01.tjqt.qr>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Sat, 12 May 2007 10:44:11 -0700
+Message-Id: <1178991851.3591.0.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 May 2007, Russell King wrote:
+On Sat, 2007-05-12 at 13:00 +0200, Jan Engelhardt wrote:
+> On May 11 2007 16:07, Arjan van de Ven wrote:
+> >
+> > A typical Linux distribution has many components that wake the processor up
+> > frequently for no good reason. In our testing with PowerTOP, we have seen many
+> > cases where with some simple fixes, the battery life of typical laptops was
+> > increased by one hour or more!
+> >
+> > We are providing fixes for several of the issues we identified, and we
+> > encourage the Linux community to help us in this quest to get the maximum
+> > battery life out of your (hopefully Intel based) laptops. Try the PowerTOP
+> > tool, join the mailing list or the IRC channel and provide feedback, problem
+> > reports or fixes!
+> 
+> Yeah, hal happily wakes up every two seconds. So much for
+> the effectivity of NO_HZ.
 
-> First submitted on 22 November 2004 by Nicolas.  Went through a couple
-> of revisions until 2271/3 which was committed on 27 November 2004.  No
-> indication that the code was done by anyone other than Nicolas, though
-> maybe Nico didn't add appropriate creditation to the real authors.
-> Slap Wrist if we're missing the proper creditation!
 
-Whatever happened, I certainly knew nothing about MMC back then, and I 
-did a less than appropriate job at reviewing the patch.
+The AN patches that Kristen posted a few days ago will fix this part of
+hal for real... assuming you have hardware with AN support that is.
 
-I'm getting far more involved with MMC/SD/SDIO now so this issue will 
-get properly resolved.
+they are in -mm now... should go mainline in like 2.6.23
 
-
-Nicolas
