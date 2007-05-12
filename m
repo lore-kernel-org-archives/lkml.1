@@ -1,79 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757091AbXELF2Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbXELFcr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757091AbXELF2Z (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 01:28:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755293AbXELF2R
+	id S1756638AbXELFcr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 01:32:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXELFck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 01:28:17 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40598 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755131AbXELF2R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 01:28:17 -0400
-Date: Sat, 12 May 2007 10:59:39 +0530
-From: Suparna Bhattacharya <suparna@in.ibm.com>
-To: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Andi Kleen <ak@muc.de>,
-       systemtap@sources.redhat.com, prasanna@in.ibm.com,
-       anil.s.keshavamurthy@intel.com, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, hch@infradead.org,
-       richardj_moore@uk.ibm.com
-Subject: Re: [patch 05/10] Linux Kernel Markers - i386 optimized version
-Message-ID: <20070512052939.GA20085@in.ibm.com>
-Reply-To: suparna@in.ibm.com
-References: <20070510015555.973107048@polymtl.ca> <20070510020916.508519573@polymtl.ca> <20070510090656.GA57297@muc.de> <20070510155501.GI22424@Krystal> <20070510172843.7aa72237@the-village.bc.nu> <20070510165918.GK22424@Krystal> <20070511045729.GA8143@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070511045729.GA8143@in.ibm.com>
-User-Agent: Mutt/1.5.11
+	Sat, 12 May 2007 01:32:40 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:34648 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754614AbXELFcj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 01:32:39 -0400
+Message-ID: <46455168.6080904@zytor.com>
+Date: Fri, 11 May 2007 22:32:24 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: pradeep singh <p.singh.rautela@gmail.com>
+CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, Jonathan Corbet <corbet@lwn.net>,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
+       Satyam Sharma <satyam.sharma@gmail.com>
+Subject: Re: [PATCH] "volatile considered harmful", take 2
+References: <6143.1178828419@lwn.net>	 <Pine.LNX.4.61.0705102326470.6426@yvahk01.tjqt.qr>	 <46439284.6080901@zytor.com>	 <Pine.LNX.4.61.0705112333320.9570@yvahk01.tjqt.qr>	 <4644E469.8000603@zytor.com> <64026d4a0705112157p75d76956g40455c7402b096d6@mail.gmail.com>
+In-Reply-To: <64026d4a0705112157p75d76956g40455c7402b096d6@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 10:27:29AM +0530, Ananth N Mavinakayanahalli wrote:
-> On Thu, May 10, 2007 at 12:59:18PM -0400, Mathieu Desnoyers wrote:
-> > * Alan Cox (alan@lxorguk.ukuu.org.uk) wrote:
+pradeep singh wrote:
 > 
-> ...
-> > > > * Third issue : Scalability. Changing code will stop every CPU on the
-> > > >   system for a while. Compared to this, the int3-based approach will run
-> > > >   through the breakpoint handler "if" one of the CPU happens to execute
-> > > >   this code at the wrong time. The standard case is just an IPI (to
-> > > 
-> > > If I read the errata right then patching in an int3 will itself trigger
-> > > the errata so anything could happen.
-> > > 
-> > > I believe there are other safe sequences for doing code patching - perhaps
-> > > one of the Intel folk can advise ?
+> Sorry, for my misunderstanding but i hope Jonathan actually means
+> volatile harmful only in C and not while using extended asm with gcc? Or
+> does you all consider volatile while using extended asm as harmful too?
+> Incidentally i came to know that using volatile in such cases may be
+> still be optimized by the gcc. And the correct way is to fake a side
+> effect to the gcc, which can be done using "memory" clobbering directive
+> in the correct place and not "m" or "+m".
 > 
-> IIRC, when the first implementation of what exists now as kprobes was
-> done (as part of the dprobes framework), this question did come up. I
-> think the conclusion was that the errata applies only to multi-byte
-> modifications and single-byte changes are guaranteed to be atomic.
-> Given int3 on Intel is just 1-byte, we are safe.
+> Does this means to exclude volatile from extended asm also, while using
+> them in kernel?
 > 
-> > I'll let the Intel guys confirm this, I don't have the reference nearby
-> > (I got this information by talking with the kprobe team members, and
-> > they got this information directly from Intel developers) but the
-> > int3 is the one special case to which the errata does not apply.
-> > Otherwise, kprobes and gdb would have a big, big issue.
-> 
-> Perhaps Richard/Suparna can confirm.
 
-I just tried digging up past discussions on this from Richard, about int3
-being safe
+We were talking about "register", not "volatile".
 
-http://sourceware.org/ml/systemtap/2005-q3/msg00208.html
-http://lkml.org/lkml/2006/9/20/30
-
-Regards
-Suparna
-
-> 
-> Ananth
-
--- 
-Suparna Bhattacharya (suparna@in.ibm.com)
-Linux Technology Center
-IBM Software Lab, India
-
+	-hpa
