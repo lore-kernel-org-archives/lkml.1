@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757639AbXELG2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758090AbXELG3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757639AbXELG2R (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 02:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXELG2I
+	id S1758090AbXELG3b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 02:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755296AbXELG3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 02:28:08 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:60727 "EHLO pasmtpA.tele.dk"
+	Sat, 12 May 2007 02:29:24 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37591 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751696AbXELG2H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 02:28:07 -0400
-Date: Sat, 12 May 2007 08:29:01 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH] kbuild: silence section mismatch warnings
-Message-ID: <20070512062901.GB4073@uranus.ravnborg.org>
-References: <20070511210850.GA382@uranus.ravnborg.org> <8210B049-55BD-409F-8A5E-EC5E1C365604@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8210B049-55BD-409F-8A5E-EC5E1C365604@kernel.crashing.org>
-User-Agent: Mutt/1.4.2.1i
+	id S1751696AbXELG3Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 02:29:24 -0400
+Message-ID: <46455EB4.901@redhat.com>
+Date: Fri, 11 May 2007 23:29:08 -0700
+From: Ulrich Drepper <drepper@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Pierre Peiffer <pierre.peiffer@bull.net>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: FUTEX_CMP_REQUEUE_PI is not quite there
+References: <46455A67.8040203@redhat.com> <20070511231931.52d963ab.akpm@linux-foundation.org>
+In-Reply-To: <20070511231931.52d963ab.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 04:22:28PM -0500, Kumar Gala wrote:
-> 
-> On May 11, 2007, at 4:08 PM, Sam Ravnborg wrote:
-> 
-> >----- Forwarded message from Sam Ravnborg <sam@ravnborg.org> -----
-> >
-> >Forgot lkml in first mail...
-> >
-> >	Sam
-> >
-> >Subject: [RFC PATCH] kbuild: silence section mismatch warnings
-> >From: Sam Ravnborg <sam@ravnborg.org>
-> >Date: Fri, 11 May 2007 23:03:46 +0200
-> >User-Agent: Mutt/1.4.2.1i
-> >To: Chris Wedgwood <cw@f00f.org>, Andrew Morton <akpm@osdl.org>,
-> >	"David S. Miller" <davem@redhat.com>,
-> >	Russell King <rmk@arm.linux.org.uk>,
-> >	Satyam Sharma <satyam.sharma@gmail.com>
-> >Cc: sam@ravnborg.org
-> >
-> >Following patch allow us in specific places to silence section  
-> >mismatch warnings.
-> >There is a few legitime places that modpost does not yet recognize  
-> >where
-> >reference from .text to .init.text (likewise for data) are legitime.
-> >This allow us to spot the few places and annotate them so we do not
-> >get false warnings that in the end will let real warnings pass.
-> >
-> >The annotation is simple to grep for so revieing all uses in a few
-> >months time are trivial. It is assumed that a few places will
-> >use this to shut up the warning as replacement for the real fix.
-> >But these cases are esay to spot and to fix up.
-> 
-> Its unclear if you expect that some things will be tagged  
-> __init_refok/__initdata_refok forever or if we'll find some way to  
-> fix/change the code so the things tagged no longer need it.
+Andrew Morton wrote:
+> Well yup.  We're kind of waiting for someone to reply
+> to http://lkml.org/lkml/2007/5/7/129
 
-A few places will need the __init_refok tag forever.
-But as Satyam points out it will likely be misused.
+Seems to be the same or at least related.
 
-So the __init_refok is introduced to stay.
+On comment about my first mail: this is the correct code of condvars, 
+despite what I wrote before.  I wasn't thinking clear.  The internal 
+futex is a normal futex.  It is the job of the CMP_REQUEUE_PI call to 
+figure this out, select the waiter with the highest priority, and boost 
+the priority if necessary based on the targer futex which always is a PI 
+futex.
 
-akpm pointed out in private mail that I need to update the
-linker scripts too - and running out of time this weekend so that
-will be later.
-
-	Sam
+-- 
+➧ Ulrich Drepper ➧ Red Hat, Inc. ➧ 444 Castro St ➧ Mountain View, CA ❖
