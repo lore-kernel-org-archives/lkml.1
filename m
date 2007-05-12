@@ -1,38 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbXELTPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759612AbXELTRS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759210AbXELTPh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 15:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbXELTPb
+	id S1759612AbXELTRS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 15:17:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756395AbXELTRM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 15:15:31 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54518 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756395AbXELTPa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 15:15:30 -0400
-Date: Sat, 12 May 2007 20:19:42 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mark Glines <mark@glines.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] ip_local_port_range sysctl has annoying default
-Message-ID: <20070512201942.74e85edf@the-village.bc.nu>
-In-Reply-To: <20070512121009.18c8b68a@chirp>
-References: <20070511170135.7c38615f@chirp>
-	<4645227F.3030905@zytor.com>
-	<20070512121009.18c8b68a@chirp>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 12 May 2007 15:17:12 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:36787 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754920AbXELTRL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 15:17:11 -0400
+Date: Sat, 12 May 2007 21:17:09 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFD] Freezing of kernel threads
+Message-ID: <20070512191709.GA428@elf.ucw.cz>
+References: <200705122017.32792.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705122017.32792.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well, in that case, is there anything wrong with just using the
-> range IANA recommends, in all cases?
+Hi!
+
+> Having considered the issue of freezing (or not freezing) kernel threads for a
+> longer while I tend to agree with Linus that we shouldn't be freezing as many
+> kernel threads as we currently freeze, but there's one thing that he doesn't
+> seem to take into account.  Namely, there may be some kernel threads that
+> actually *want* (or need) to be frozen. :-)
 > 
-> Please consider this patch instead of my previous one.
+> For the suspend they may be kernel threads that otherwise would need some
+> special synchronization with some device drivers' .suspend() and .resume()
+> callbacks or fs-related kernel threads.  For the CPU hotplug they might be
+> kernel threads that otherwise would interfere with the removal or addition of
+> CPUs.  Still, in each case there seems to be a limited group of kernel threads
+> that may want to be frozen and the remaining kernel threads that shouldn't be
+> involved in any freezer-related actions at all.  However, we currently require
+> all kernel threads to take part in the freezing mechanism, which doesn't seem to
+> be correct.
 
-Please send this patch to the netdev list and CC the relevant networking
-maintainer.
+Well.. It is actually a feature.
 
-Alan
+These days, you have to either add PF_NOFREEZE explicitly (which
+hopefully means you know what you are doing) or add try_to_freeze() at
+specific place.
+
+If you fail to do that, we'll see freezer failure, quickly, and catch
+the simple bug.
+
+I'm afraid that if we default to "do not freeze by default", someone
+will just port zfs, will know nothing about suspend, and his 
+"write management info somewhere periodically" thread will corrupt
+people's disks.
+
+OTOH... perhaps suspend/resume is common enough operation that people
+_know_ they need to stop their writing? ...no, I do not think we are
+there yet.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
