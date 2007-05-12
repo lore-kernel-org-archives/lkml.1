@@ -1,47 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbXELUUQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758906AbXELUco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758157AbXELUUQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 16:20:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756714AbXELUUF
+	id S1758906AbXELUco (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 16:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbXELUch
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 16:20:05 -0400
-Received: from www.osadl.org ([213.239.205.134]:38875 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756637AbXELUUD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 16:20:03 -0400
-Subject: Re: clockevent questions
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Francis Moreau <francis.moro@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <38b2ab8a0705121313k37be467cy55402b490101ac9c@mail.gmail.com>
-References: <38b2ab8a0705120754l281f54eevd1e91e2f01fff6f2@mail.gmail.com>
-	 <1178982892.22481.183.camel@localhost.localdomain>
-	 <38b2ab8a0705121313k37be467cy55402b490101ac9c@mail.gmail.com>
+	Sat, 12 May 2007 16:32:37 -0400
+Received: from py-out-1112.google.com ([64.233.166.180]:16374 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755009AbXELUcg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 16:32:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:cc:in-reply-to:references:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=umY++1oEq+bkJWF9KZydAEOPsiZZiSEmql7HO1ZXaD2wIH1GGE3lq/hxZprrRnIOA3Dqea5x7KUR7AUzluYo7D5aHRfF95WHt51r4ISP18IXqOCfxXvWy4p5AtBV2TotsOAmZ15p5jepBNv6CSgbEXlnilV039iD5uj8bnfg3h4=
+Subject: Re: undefined "pm3fb_setup()"
+From: "Antonino A. Daplas" <adaplas@gmail.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0705121156300.15308@localhost.localdomain>
+References: <Pine.LNX.4.64.0705120628250.11988@localhost.localdomain>
+	 <1178978268.4773.14.camel@daplas>
+	 <Pine.LNX.4.64.0705121156300.15308@localhost.localdomain>
 Content-Type: text/plain
-Date: Sat, 12 May 2007 22:23:11 +0200
-Message-Id: <1179001391.22481.216.camel@localhost.localdomain>
+Date: Sun, 13 May 2007 04:32:30 +0800
+Message-Id: <1179001950.4773.18.camel@daplas>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+X-Mailer: Evolution 2.8.2 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-12 at 22:13 +0200, Francis Moreau wrote:
-> > Yes, it is correct. The generic timer code requests an event in the
-> > future. It does not care, whether the hardware device can handle that or
-> > not. So the clock event code limits the delta to the maximum delta the
-> > device can handle. The interrupt fires and the generic timer code
-> > reschedules the event with the remaining delta time.
-> >
+On Sat, 2007-05-12 at 11:59 -0400, Robert P. J. Day wrote:
+> On Sat, 12 May 2007, Antonino A. Daplas wrote:
 > 
-> Thanks again for explanations. Could you give me a pointer of this reschedules ?
+> > On Sat, 2007-05-12 at 06:32 -0400, Robert P. J. Day wrote:
 
-Well, it ends up in hrtimer_interrupt() and the code there finds out,
-that the next timer is not due right now, so it simply requests the same
-(absolute) time event again, which is processed by the clock events code
-and eventually limited to the max delta of the device again.
+> ok, so is someone already fixing this?
 
-	tglx
+Already sent Linus and akpm a patch. 
+
+Thanks.
+
+Tony
 
 
