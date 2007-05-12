@@ -1,154 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbXELRtX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758463AbXELRza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221AbXELRtX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 13:49:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbXELRtR
+	id S1758463AbXELRza (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 13:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755307AbXELRzX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 13:49:17 -0400
-Received: from gepetto.dc.ltu.se ([130.240.42.40]:60481 "EHLO
-	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754955AbXELRtQ (ORCPT
+	Sat, 12 May 2007 13:55:23 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:60732 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754864AbXELRzX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 13:49:16 -0400
-Date: Sat, 12 May 2007 19:48:58 +0200 (MEST)
-From: Richard Knutsson <ricknu-0@student.ltu.se>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, Richard Knutsson <ricknu-0@student.ltu.se>
-Message-Id: <20070512175131.17222.76746.sendpatchset@thinktank.campus.ltu.se>
-Subject: [PATCH] arch/i386: Convert to generic boolean
+	Sat, 12 May 2007 13:55:23 -0400
+Date: Sat, 12 May 2007 13:55:10 -0400 (EDT)
+From: Nicolas Pitre <nico@cam.org>
+Subject: Re: [GIT PULL] MMC updates
+In-reply-to: <20070512162248.GB21729@flint.arm.linux.org.uk>
+X-X-Sender: nico@xanadu.home
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Pierre Ossman <drzeus-list@drzeus.cx>, LKML <linux-kernel@vger.kernel.org>
+Message-id: <alpine.LFD.0.99.0705121349250.24220@xanadu.home>
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=us-ascii
+Content-transfer-encoding: 7BIT
+References: <46375B18.4080802@drzeus.cx>
+ <20070509185636.GB26981@flint.arm.linux.org.uk> <46421BB5.7040504@drzeus.cx>
+ <20070509221253.GC26981@flint.arm.linux.org.uk> <4642B122.5070609@drzeus.cx>
+ <46432502.4050901@drzeus.cx> <alpine.LFD.0.99.0705101037220.24220@xanadu.home>
+ <alpine.LFD.0.99.0705121122440.24220@xanadu.home> <4645E76B.2060704@drzeus.cx>
+ <20070512162248.GB21729@flint.arm.linux.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert to generic boolean (+ some minor cleanup).
+On Sat, 12 May 2007, Russell King wrote:
 
-Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
----
-Compile-tested with all(yes|mod|no)config on i386
-Diffed against Linus' git-tree.
+> First submitted on 22 November 2004 by Nicolas.  Went through a couple
+> of revisions until 2271/3 which was committed on 27 November 2004.  No
+> indication that the code was done by anyone other than Nicolas, though
+> maybe Nico didn't add appropriate creditation to the real authors.
+> Slap Wrist if we're missing the proper creditation!
 
- amd.c     |    2 --
- cyrix.c   |    2 +-
- generic.c |   20 +++++++++-----------
- mtrr.h    |    5 -----
- 4 files changed, 10 insertions(+), 19 deletions(-)
+Whatever happened, I certainly knew nothing about MMC back then, and I 
+did a less than appropriate job at reviewing the patch.
+
+I'm getting far more involved with MMC/SD/SDIO now so this issue will 
+get properly resolved.
 
 
-diff --git a/arch/i386/kernel/cpu/mtrr/amd.c b/arch/i386/kernel/cpu/mtrr/amd.c
-index 0949cdb..ee2331b 100644
---- a/arch/i386/kernel/cpu/mtrr/amd.c
-+++ b/arch/i386/kernel/cpu/mtrr/amd.c
-@@ -53,8 +53,6 @@ static void amd_set_mtrr(unsigned int reg, unsigned long base,
-     <base> The base address of the region.
-     <size> The size of the region. If this is 0 the region is disabled.
-     <type> The type of the region.
--    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
--    be done externally.
-     [RETURNS] Nothing.
- */
- {
-diff --git a/arch/i386/kernel/cpu/mtrr/cyrix.c b/arch/i386/kernel/cpu/mtrr/cyrix.c
-index 0737a59..8b1b9fd 100644
---- a/arch/i386/kernel/cpu/mtrr/cyrix.c
-+++ b/arch/i386/kernel/cpu/mtrr/cyrix.c
-@@ -322,7 +322,7 @@ cyrix_arr_init(void)
- 			setCx86(CX86_CCR6, ccr[6]);
- 		}
- 		/* Disable ARR3. This is safe now that we disabled SMM. */
--		/* cyrix_set_arr_up (3, 0, 0, 0, FALSE); */
-+		/* cyrix_set_arr_up (3, 0, 0, 0, false); */
- 	}
- 	/* If we changed CCR1 in memory, change it in the processor, too. */
- 	if (ccrc[1])
-diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
-index 5367e32..fd6ffc5 100644
---- a/arch/i386/kernel/cpu/mtrr/generic.c
-+++ b/arch/i386/kernel/cpu/mtrr/generic.c
-@@ -187,7 +187,7 @@ static inline void k8_enable_fixed_iorrs(void)
-  * \param changed pointer which indicates whether the MTRR needed to be changed
-  * \param msrwords pointer to the MSR values which the MSR should have
-  */
--static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
-+static void set_fixed_range(int msr, bool * changed, unsigned int * msrwords)
- {
- 	unsigned lo, hi;
- 
-@@ -199,7 +199,7 @@ static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
- 		    ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
- 			k8_enable_fixed_iorrs();
- 		mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
--		*changed = TRUE;
-+		*changed = true;
- 	}
- }
- 
-@@ -256,10 +256,10 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
-  * Checks and updates the fixed-range MTRRs if they differ from the saved set
-  * \param frs pointer to fixed-range MTRR values, saved by get_fixed_ranges()
-  */
--static int set_fixed_ranges(mtrr_type * frs)
-+static bool set_fixed_ranges(mtrr_type * frs)
- {
- 	unsigned long long *saved = (unsigned long long *) frs;
--	int changed = FALSE;
-+	bool changed = false;
- 	int block=-1, range;
- 
- 	while (fixed_range_blocks[++block].ranges)
-@@ -270,19 +270,19 @@ static int set_fixed_ranges(mtrr_type * frs)
- 	return changed;
- }
- 
--/*  Set the MSR pair relating to a var range. Returns TRUE if
-+/*  Set the MSR pair relating to a var range. Returns 'true' if
-     changes are made  */
--static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
-+static bool set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
- {
- 	unsigned int lo, hi;
--	int changed = FALSE;
-+	bool changed = false;
- 
- 	rdmsr(MTRRphysBase_MSR(index), lo, hi);
- 	if ((vr->base_lo & 0xfffff0ffUL) != (lo & 0xfffff0ffUL)
- 	    || (vr->base_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
- 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
- 		mtrr_wrmsr(MTRRphysBase_MSR(index), vr->base_lo, vr->base_hi);
--		changed = TRUE;
-+		changed = true;
- 	}
- 
- 	rdmsr(MTRRphysMask_MSR(index), lo, hi);
-@@ -291,7 +291,7 @@ static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
- 	    || (vr->mask_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
- 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
- 		mtrr_wrmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
--		changed = TRUE;
-+		changed = true;
- 	}
- 	return changed;
- }
-@@ -416,8 +416,6 @@ static void generic_set_mtrr(unsigned int reg, unsigned long base,
-     <base> The base address of the region.
-     <size> The size of the region. If this is 0 the region is disabled.
-     <type> The type of the region.
--    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
--    be done externally.
-     [RETURNS] Nothing.
- */
- {
-diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
-index 289dfe6..3aea07c 100644
---- a/arch/i386/kernel/cpu/mtrr/mtrr.h
-+++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
-@@ -2,11 +2,6 @@
-  * local mtrr defines.
-  */
- 
--#ifndef TRUE
--#define TRUE  1
--#define FALSE 0
--#endif
--
- #define MTRRcap_MSR     0x0fe
- #define MTRRdefType_MSR 0x2ff
- 
+Nicolas
