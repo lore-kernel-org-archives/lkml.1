@@ -1,38 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934101AbXELAW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763160AbXELAX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934101AbXELAW1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 20:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759834AbXELAWU
+	id S1763160AbXELAX7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 20:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759910AbXELAXw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 20:22:20 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48695 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755741AbXELAWT (ORCPT
+	Fri, 11 May 2007 20:23:52 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:34520 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759820AbXELAXv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 20:22:19 -0400
-Date: Fri, 11 May 2007 17:22:18 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>
-Subject: Re: [patch 1/2] From: Paul Mundt <lethal@linux-sh.org>
-In-Reply-To: <20070511113915.267bcc66.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705111721250.27616@schroedinger.engr.sgi.com>
-References: <20070511165749.026947116@sgi.com> <20070511165945.913632068@sgi.com>
- <20070511113915.267bcc66.akpm@linux-foundation.org>
+	Fri, 11 May 2007 20:23:51 -0400
+Message-ID: <46450910.8080503@zytor.com>
+Date: Fri, 11 May 2007 17:23:44 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Kevin Winchester <kjwinchester@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86 setup rewrite tree ready for flamage^W review
+References: <464158E9.2000207@zytor.com> <4645032E.1030109@gmail.com>
+In-Reply-To: <4645032E.1030109@gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 May 2007, Andrew Morton wrote:
+Kevin Winchester wrote:
+> Not sure if you were looking for testing, but I fuzzed it to apply to
+> 2.6.21-git and gave it a spin.  Worked just like a normal boot (which I
+> assume was the point).
 
-> However I think we've done enough slab work for 2.6.22 now so I'm inclined
-> to queue these changes for 2.6.23.  That would mean that the slab changes in
-> -mm have a dependency on the sh git tree which I am sure to forget about.
-> If I end up merging these changes before Paul merges his tree, sh will
-> break.  Presumably Paul will notice this ;)
+That would be the point, yes :)  Looking for breakage in video mode
+detection, memory detection, and APM are probably the trickiest areas.
 
-Ok. Only mm is fine for what I have planned. I want to add a 
-kmem_cache_ops structure for 2.6.23. Maybe I can use the now useless dtor 
-field of kmem_cache_create for this?
+	-hpa
