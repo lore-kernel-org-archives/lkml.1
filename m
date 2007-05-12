@@ -1,104 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759814AbXELTbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760175AbXELTcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759814AbXELTbM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 15:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757154AbXELTa4
+	id S1760175AbXELTcR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 15:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXELTcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 15:30:56 -0400
-Received: from squawk.glines.org ([72.36.206.66]:54929 "EHLO squawk.glines.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755932AbXELTaz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 15:30:55 -0400
-Date: Sat, 12 May 2007 12:30:52 -0700
-From: Mark Glines <mark@glines.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] ip_local_port_range sysctl has annoying default
-Message-ID: <20070512123052.4a628fa1@chirp>
-In-Reply-To: <464611A6.3040301@zytor.com>
-References: <20070511170135.7c38615f@chirp>
-	<4645227F.3030905@zytor.com>
-	<20070512121009.18c8b68a@chirp>
-	<464611A6.3040301@zytor.com>
-Organization: Glines.org
-X-Mailer: Claws Mail 2.9.0 (GTK+ 2.10.12; i686-pc-linux-gnu)
-X-Useless-Header: yay!
+	Sat, 12 May 2007 15:32:07 -0400
+Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3187 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752770AbXELTcG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 15:32:06 -0400
+Date: Sat, 12 May 2007 20:31:44 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Pete Zaitcev <zaitcev@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+       David Woodhouse <dwmw2@infradead.org>, Anton Vorontsov <cbou@mail.ru>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+Message-ID: <20070512193144.GA30703@flint.arm.linux.org.uk>
+Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Pete Zaitcev <zaitcev@redhat.com>, Pavel Machek <pavel@ucw.cz>,
+	David Woodhouse <dwmw2@infradead.org>,
+	Anton Vorontsov <cbou@mail.ru>, Greg KH <gregkh@suse.de>,
+	linux-kernel@vger.kernel.org, kernel-discuss@handhelds.org,
+	Andrew Morton <akpm@osdl.org>
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz> <1178550653.11851.191.camel@pmac.infradead.org> <20070507194949.GB3981@ucw.cz> <20070507222311.4589fc8a@the-village.bc.nu> <20070512100321.c54f3dbe.zaitcev@redhat.com> <20070512202700.44afe993@the-village.bc.nu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070512202700.44afe993@the-village.bc.nu>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 May 2007 12:12:38 -0700
-"H. Peter Anvin" <hpa@zytor.com> wrote:
-
-> Mark Glines wrote:
-> > 
-> > Well, in that case, is there anything wrong with just using the
-> > range IANA recommends, in all cases?
-> > 
+On Sat, May 12, 2007 at 08:27:00PM +0100, Alan Cox wrote:
+> > One peculiar thing I have observed is how all this "UTF-8 in names"
+> > nonsense is being pushed by western Europeans. Why? That's because
+> > their umlauts are grandfathered in, and because English speakers _can_
+> > read their names approximately, simply by ignoring all the strokes
+> > above the letter (or, in Norwegians and Polaks cases, going through
+> > the letter). So do not try to pretend that "correctness" has anything
+> > to do with your demands.
 > 
-> I think the IANA range is considered too small in most cases; I
-> suspect there is also a feeling that "there be dragons" near the very
-> top.
+> I find your comments racist and insulting. I trust you will be
+> apologizing. The most clear example of where it would be polite to
+> include names spelt properly are the Asian countries. They may well (and
+> most do) choose to include a transliteration.
 
-Ok, thanks for the explanation.  Sounds like we're using high port
-numbers in the "spirit" of the IANA recommendation, without using
-their actual numbers.
+Given that people can't be bothered to spell names which fall within
+the 7-bit ASCII space correctly, I think all this is very much a
+pipedream.
 
-I still haven't gotten an answer to this: is there a performance
-issue (or memory usage or security or something) with using the same
-port range in all cases, even on memory-constrained systems?  And if
-there is, can't we *still* use big numbers, even if the range isn't
-as wide?
+And yes, at the end of the day, it comes down to lazyness and whether
+people can be bothered to take the care required to get names correctly
+spelt.  Much of my personal experience has been that the majority of
+people DO NOT seem to CARE about correctly spelling names.
 
-If there's no reason not to (security, resource consumption,
-whatever), I think it would be an improvement to use high, out of the
-way port numbering in all cases.  (Especially since the kernel already
-does this on most of my machines, anyway.)
+Or maybe people just like repeatedly insulting me.
 
-There was a comment in there about how 32768-61000 should be used on
-high-use systems; is there a drawback to just using this range
-*everywhere*?  (It's already the default in non-memory-constrained
-cases, because of what tcp_init() was doing.)
+While you can arm people with the tools to allow them to do what you
+desire (to spell peoples names correctly), at the end of the day I
+think you'll find that most people will just not bother.  It's a
+nice idea though.
 
-Thanks,
-
-Signed-off-by: Mark Glines <mark@glines.org>
-
-diff --git a/net/ipv4/inet_connection_sock.c b/net/ipv4/inet_connection_sock.c
-index 43fb160..12d9ddc 100644
---- a/net/ipv4/inet_connection_sock.c
-+++ b/net/ipv4/inet_connection_sock.c
-@@ -29,12 +29,7 @@ const char inet_csk_timer_bug_msg[] = "inet_csk BUG: unknown timer value\n";
- EXPORT_SYMBOL(inet_csk_timer_bug_msg);
- #endif
- 
--/*
-- * This array holds the first and last local port number.
-- * For high-usage systems, use sysctl to change this to
-- * 32768-61000
-- */
--int sysctl_local_port_range[2] = { 1024, 4999 };
-+int sysctl_local_port_range[2] = { 32768, 61000 };
- 
- int inet_csk_bind_conflict(const struct sock *sk,
- 			   const struct inet_bind_bucket *tb)
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index bd4c295..33ef0e7 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2465,13 +2465,10 @@ void __init tcp_init(void)
- 			order++)
- 		;
- 	if (order >= 4) {
--		sysctl_local_port_range[0] = 32768;
--		sysctl_local_port_range[1] = 61000;
- 		tcp_death_row.sysctl_max_tw_buckets = 180000;
- 		sysctl_tcp_max_orphans = 4096 << (order - 4);
- 		sysctl_max_syn_backlog = 1024;
- 	} else if (order < 3) {
--		sysctl_local_port_range[0] = 1024 * (3 - order);
- 		tcp_death_row.sysctl_max_tw_buckets >>= (3 - order);
- 		sysctl_tcp_max_orphans >>= (3 - order);
- 		sysctl_max_syn_backlog = 128;
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
