@@ -1,92 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759544AbXELOY0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbXELO0M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759544AbXELOY0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 10:24:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbXELOYR
+	id S1758893AbXELO0M (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 10:26:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756083AbXELOZ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 10:24:17 -0400
-Received: from imf22aec.mail.bellsouth.net ([205.152.59.70]:33657 "EHLO
-	imf22aec.mail.bellsouth.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754285AbXELOYQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 10:24:16 -0400
-Date: Sat, 12 May 2007 09:24:13 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: Len Brown <lenb@kernel.org>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: APIC error on 32-bit kernel
-Message-ID: <20070512092413.4911f71b@osprey.hogchain.net>
-In-Reply-To: <200705112328.58927.lenb@kernel.org>
-References: <20070323200817.1f3e39b9@osprey.hogchain.net>
-	<20070408133822.3868e6ff@osprey.hogchain.net>
-	<200705112328.58927.lenb@kernel.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
+	Sat, 12 May 2007 10:25:59 -0400
+Received: from mail.screens.ru ([213.234.233.54]:45807 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754949AbXELOZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 10:25:59 -0400
+Date: Sat, 12 May 2007 18:25:58 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: ego@in.ibm.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
+Message-ID: <20070512142558.GB98@tv-sign.ru>
+References: <200705110035.32229.rjw@sisk.pl> <200705120201.42619.rjw@sisk.pl> <20070512081622.GA26265@in.ibm.com> <200705121127.37655.rjw@sisk.pl>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705121127.37655.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thank you very much for looking at this, Len.
+On 05/12, Rafael J. Wysocki wrote:
+>
+> Hmm, I'm not sure if the task can call try_to_freeze() after doing exit().
+> May it happen?
 
+It can, note the do_exit()->ptrace_notify(). But this doesn't matter, I think.
+>From the freezer POV an exiting task has 2 "interesting" events
 
-On Fri, 11 May 2007 23:28:58 -0400
-Len Brown <lenb@kernel.org> wrote:
+	exit_mm()	->mm becomes NULL
 
-> > > [   94.754852] APIC error on CPU0: 08(40)
-> > > [   94.806045] APIC error on CPU0: 40(08)
-> 
->         /* Here is what the APIC error bits mean:
->            0: Send CS error
->            1: Receive CS error
->            2: Send accept error
->            3: Receive accept error
->            4: Reserved
->            5: Send illegal vector
->            6: Received illegal vector
->            7: Illegal register address
->         */
-> 
-> So the 40 means the APIC got an illegal vector.
-> Certainly this is consistent with the fact that
-> the errors start when a specific device is being
-> used.  I assume that device is using MSI?
+	exit_notify()   ->exit_state != 0, and perhaps the task disappears
+	                  from global process list
 
-Yes, the device is using MSI.
+> Or, perhaps, it's better to clear TIF_FREEZE (unconditionally) in exit_mm(),
+> after we've done tsk->mm = NULL?  Oleg, what do you think?
 
-> Curious that it is different in 32-bit and 64-bit mode.
+Please see another message.
 
-Agreed, although I had one user back in March report APIC errors on the
-Asus M2V board while running Debian x86_64.  I personally have never
-encountered the problem under a 64-bit kernel, but I admit that just
-might be random luck.
+Oleg.
 
-
-> > > We also do not see this problem on Intel-based motherboards, with
-> > > either 32- or 64-bit kernels.
-> > 
-> > A full raft of documentation -- including acpidump and
-> > linux-firmware-kit output, console capture, kernel config, lspci
-> > -vvxxx (with apic=debug boot option), dmesg, and /proc/interrupts
-> > -- is available at http://www.hogchain.net/m2v/apic-problem/
-> 
-> 
-> [06Dh 109  2]      Boot Architecture Flags : 0003
-> 
-> for what it is worth, the bit in ACPI that is used to
-> disable MSI support is not set -- so as  far as the BIOS
-> is concerned, this system should support MSI.
-> 
-> Is it an add-in card, or lan-on-motherboard?
-
-This is a PCIe LAN-on-motherboard.
-
-My goal is to understand whether this is a problem in the atl1 driver,
-or a problem on the motherboard.  If it's the former, obviously I want
-to fix it.  If it's the latter, then I want to disable MSI in the driver
-when we discover we're running on this motherboard.
-
-Thanks again for taking time to look at this.  Any advice or hints you
-provide will be greatly appreciated.
-
-Jay
