@@ -1,48 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758744AbXELMOm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758070AbXELMXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758744AbXELMOm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 08:14:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755656AbXELMOd
+	id S1758070AbXELMXX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 08:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756112AbXELMXR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 08:14:33 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:38606 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755829AbXELMOc (ORCPT
+	Sat, 12 May 2007 08:23:17 -0400
+Received: from m-relay.rz.uni-saarland.de ([134.96.7.3]:40794 "EHLO
+	m-relay.rz.uni-saarland.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754285AbXELMXQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 08:14:32 -0400
-Date: Sat, 12 May 2007 13:15:30 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>,
-       Rene Herman <rene.herman@gmail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, randy.dunlap@oracle.com,
-       akpm@linux-foundation.org, rpjday@mindspring.com, marcel@holtmann.org,
-       hch@infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] module_author: don't advice putting in an email address
-Message-ID: <20070512131530.5258d588@the-village.bc.nu>
-In-Reply-To: <20070512071455.GH7984@stusta.de>
-References: <4643BDF2.9030105@gmail.com>
-	<20070511114605.4c2698ec@the-village.bc.nu>
-	<alpine.DEB.0.98.0705110740420.12363@sigma.j-a-k-j.com>
-	<20070511211823.GG7984@stusta.de>
-	<20070511223500.01fe6596@the-village.bc.nu>
-	<20070512071455.GH7984@stusta.de>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Sat, 12 May 2007 08:23:16 -0400
+Date: Sat, 12 May 2007 14:21:37 +0200
+From: Alexander van Heukelum <heukelum@mailshack.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@osdl.org>, Matt Domsch <Matt_Domsch@dell.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPar>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86 setup rewrite tree ready for flamage^W review
+Message-ID: <20070512122137.GA25944@mailshack.com>
+References: <464158E9.2000207@zytor.com> <1178806235.18785.1189115515@webmail.messagingengine.com> <46435F8A.1040203@zytor.com> <20070510220406.GA21110@mailshack.com> <4643A128.30302@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4643A128.30302@zytor.com>
+User-Agent: Mutt/1.5.9i
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.5.1 (m-relay.rz.uni-saarland.de [134.96.7.3]); Sat, 12 May 2007 14:23:05 +0200 (CEST)
+X-AntiVirus: checked by AntiVir Milter (version: 1.1.3-1; AVE: 7.3.1.53; VDF: 6.38.1.19; host: AntiVir1)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I'd prefer not. I get reports from people about drivers that got "lost"
-> > by vendors, regularly. Nor am I pointing fingers at specific vendors here,
-> > last month I sorted out a two year old "lost in Red Hat Bugzilla" kernel
-> > bug for example.
+On Thu, May 10, 2007 at 03:48:08PM -0700, H. Peter Anvin wrote:
+> > It doesn't probe the hardware in dangerous ways. (Search for mode_scan
+> > in video.S) It works by trying to set a mode via the normal
+> > AH=0/AL=mode/int 0x10 method for all possible values of mode. It then
+> > checks if the bios reports the new mode as being set and reads a few
+> > standard vga registers to determine if it is a text mode. It's
+> > completely independent of the CONFIG_VIDEO_SVGA stuff.
 > 
-> How many maintainers want to get bug reports against the kernel 2.6.9 
-> shipped with RHEL 4?
+> It's dangerous, all right (which is why it doesn't do it by default),
+> since you have no guarantee that the BIOS doesn't totally vomit on these
+> calls -- or, like my laptop, take about a minute before giving up
+> finding nothing.
 
-The enterprise kernels which tend to be the ones with the long lag also
-have a userbase with support contracts so tend not to consider l/k as
-their first support stop anyway.
+I see. I think I just have too much trust in the biosses. Anyhow, the
+'scan' option has always taken quite a bit of time, usually between 30
+seconds and a minute.
 
+> Anyway, I re-implemented scanning and pushed it out to the git tree;
+> please try it out as it does absolutely nothing on any of my machines.
+
+I can confirm that it works for at least one computer over here (a six
+months old x86_64 machine with ATI ES1000-based on-board graphics). Some
+non-vesa modes including a nice 100x30 one with 8x16 font are found by
+the 'scan' option. No 100x60, however, but that is not a regression.
+
+> > I thought the 32-bit jump was required to come before the segment loads.
+> > Does this code load values from the gdt, or are they just loaded as real
+> > mode segments? As long as it does not crash it does not matter, because
+> > head.S reloads them again.
+> 
+> Once CR0.PE is set, segments are loaded from the GDT.
+
+I believe you :).
+
+Greetings,
+	Alexander
