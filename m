@@ -1,32 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756468AbXELDST@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755135AbXELDSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756468AbXELDST (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 23:18:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXELDSN
+	id S1755135AbXELDSp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 23:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756274AbXELDSf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 23:18:13 -0400
-Received: from quechua.inka.de ([193.197.184.2]:52621 "EHLO mail.inka.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750930AbXELDSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 23:18:12 -0400
-From: Bernd Eckenfels <ecki@lina.inka.de>
+	Fri, 11 May 2007 23:18:35 -0400
+Received: from wx-out-0506.google.com ([66.249.82.237]:19181 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756323AbXELDSe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 23:18:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:subject:from:to:content-type:date:message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=PcOfNR8IuQyMZ1X/VpTW4YLBkPY1kg8+uEzEJNnyoJT0tfDyfwPCM9QFFuD8s8d6JwCFHBqHNyKLBQuB2KExaF6NqCgk3akfTjTGNnH6eUkKMB2i8TB1iKhj9kYAx+KBn1NkdKzSHJhfHPAhRNrftTbCHGbBjqHxRdT4nKy7ppQ=
+Subject: Is this a preempt issue in drivers/input/evdev.c
+From: "Yin,Fengwei" <yfw.kernel@gmail.com>
 To: linux-kernel@vger.kernel.org
-Subject: Re: [patch] ip_local_port_range sysctl has annoying default
-Organization: Private Site running Debian GNU/Linux
-In-Reply-To: <46452301.4060306@zytor.com>
-X-Newsgroups: ka.lists.linux.kernel
-User-Agent: tin/1.7.8-20050315 ("Scalpay") (UNIX) (Linux/2.6.13.4 (i686))
-Message-Id: <E1Hmi7W-0007Ka-00@calista.eckenfels.net>
-Date: Sat, 12 May 2007 05:18:10 +0200
+Content-Type: text/plain; charset=UTF-8
+Date: Sat, 12 May 2007 11:18:45 +0800
+Message-Id: <1178939925.14713.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <46452301.4060306@zytor.com> you wrote:
-> However, there are a large number of applications which have registered
-> ports in this range.
+Hi,
+When open/close evdev, the code is as following to handle multi-client
+operation:
+static int evdev_release(...)
+{
+	...
+	if (!--evdev->open) {
+		<------------preempted
+		if (evdev->exist)
+			input_close_device(...);
+		else
+			evdev_free(evdev);
+	}
+	return 0;
+}
 
-And some application who request random listening ports actually query the
-/etc/services file to ensure it is a "unnamed" port.
+static int evdev_open(...)
+{
+	...
+	if (!evdev->open++ && evdev->exist)｛
+		errror = input_open_device(...);
+		if (error) {
+			...
+		}
+	}
+	...
+	return 0;
+}
 
-Gruss
-Bernd
+So if the evdev_release() is preempted at the point marked by another
+process which will open the evdev, which will make operation sequence
+like:
+
+   --evdev->open in evdev_release()
+         -----> preempted
+	                            evdev->open++ and input_open_devie()
+	 <----- reschedule 
+	input_close_device()
+
+Should we introduce a mutex here? Or do I miss something? Thanks.
+
+Regards
+Yin, Fengwei
+
+
+	
+
+
+
