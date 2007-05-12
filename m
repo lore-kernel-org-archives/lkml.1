@@ -1,46 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbXELSHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758263AbXELSHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758301AbXELSHk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 14:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXELSHV
+	id S1758263AbXELSHz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 14:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758041AbXELSHf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 14:07:21 -0400
-Received: from smtp105.plus.mail.re2.yahoo.com ([206.190.53.30]:42045 "HELO
-	smtp105.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752314AbXELSHT (ORCPT
+	Sat, 12 May 2007 14:07:35 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:48016 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757902AbXELSHe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 14:07:19 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.de;
-  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
-  b=z31IxTX4pd9gBtyjfDKS3a7sO+9IEGWW6IpwqQcq6ux7ueqt8+n0hUynOPg9F0uQedWjUwb/6xjjYiVWuVCK+NQFkrcBvLMQOCEPuExyktuRKp+gswLz/wX1SxIVcmf5VO1vIV3DE5hfvuN80yQcBK0pop4MUTyC30sq8fGFnDU=  ;
-X-YMail-OSG: ykhxYpIVM1l6LVSj23xjdC_bdklNXQwmoD.MDHSQum.B0AOST0A5MqR38t6qQ6xip5VLyIzaaQ--
-Date: Sat, 12 May 2007 20:07:04 +0200
-From: Borislav Petkov <bbpetkov@yahoo.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: Scheduled removal of SA_xxx interrupt flags
-Message-ID: <20070512180703.GA22918@gollum.tnic>
-Reply-To: bbpetkov@yahoo.de
+	Sat, 12 May 2007 14:07:34 -0400
+Message-ID: <46460223.5090909@zytor.com>
+Date: Sat, 12 May 2007 11:06:27 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: Satyam Sharma <satyam.sharma@gmail.com>, Jonathan Corbet <corbet@lwn.net>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Johannes Stezenbach <js@linuxtv.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
+       jimmy bahuleyan <knight.camelot@gmail.com>
+Subject: Re: [PATCH] "volatile considered harmful", take 3
+References: <12700.1178905000@lwn.net>	 <a781481a0705112021u7b6d32fcxb6318d7e2443c970@mail.gmail.com>	 <464551D5.2050709@zytor.com>	 <a781481a0705112315u5843abaar292859428ec60603@mail.gmail.com>	 <46455CD9.7010205@zytor.com> <a781481a0705120002xb604e7al629ceb1c27109451@mail.gmail.com> <4645691C.5090408@zytor.com> <4645725F.3060809@s5r6.in-berlin.de>
+In-Reply-To: <4645725F.3060809@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Stefan Richter wrote:
+> H. Peter Anvin wrote:
+> [slightly off topic: GCCisms in Linux kernel]
+>> It contains *many* constructs that are not defined in, for
+>> example, C99, and it would in fact be impossible to write the Linux
+>> kernel using only C99-compliant constructs.
+> 
+> True.  On the other hand, it is possible to keep large parts of the
+> kernel independent of compiler implementation details.  And it is not
+> only possible but also beneficial, e.g. because the compiler's
+> implementation changes over time.
 
-   i've been going over the interrupt-handling code and noticed that the SA_xxx
-   interrupt flags are scheduled for removal sometime in 9/2007 with a prior
-   grace period of 6 months for people to fix external stuff. In order to do so,
-   a __deprecated inline function wraps those flags.
-   What puzzles me is that the __deprecated-patches are only in -mm and not in
-   mainline. Is the -mm-testing audience wide enough to cause userspace to fix
-   their apps prior to the SA_xxx removal or am I missing something? I.e,
-   shouldn't tglx's patches hit mainline first?
+It is, but this is not likely to be one of those things.
 
--- 
-Regards/Gruß,
-    Boris.
+Either way, I fully agree with the following (from Jeff):
+
+> jimmy bahuleyan wrote:
+>> i believe, the doc here is pretty unambiguous regarding the fact that
+>> volatile should be avoided. And as Stefan pointed out, anyone who feels
+>> the need to use, must surely _know_ what he is doing & hence is in a
+>> position t make that decision
+> 
+> Honestly, the above quoted paragraph states the situation better than any long, complicated document.
+
+	-hpa
