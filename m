@@ -1,49 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760156AbXELTNG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbXELTPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760156AbXELTNG (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 15:13:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759210AbXELTMy
+	id S1759210AbXELTPh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 15:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbXELTPb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 15:12:54 -0400
-Received: from ns2.mvista.com ([63.81.120.158]:38922 "EHLO
-	gateway-1237.mvista.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
-	with ESMTP id S1757000AbXELTMy (ORCPT
+	Sat, 12 May 2007 15:15:31 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:54518 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756395AbXELTPa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 15:12:54 -0400
-Subject: Re: [PATCH 1/2] non-string based tsc unstable reasons
-From: Daniel Walker <dwalker@mvista.com>
-To: Andi Kleen <ak@suse.de>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       johnstul@us.ibm.com, mingo@elte.hu
-In-Reply-To: <200705122056.42926.ak@suse.de>
-References: <20070512154344.395866578@mvista.com>
-	 <200705122056.42926.ak@suse.de>
-Content-Type: text/plain
-Date: Sat, 12 May 2007 12:10:48 -0700
-Message-Id: <1178997048.27889.13.camel@imap.mvista.com>
+	Sat, 12 May 2007 15:15:30 -0400
+Date: Sat, 12 May 2007 20:19:42 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mark Glines <mark@glines.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] ip_local_port_range sysctl has annoying default
+Message-ID: <20070512201942.74e85edf@the-village.bc.nu>
+In-Reply-To: <20070512121009.18c8b68a@chirp>
+References: <20070511170135.7c38615f@chirp>
+	<4645227F.3030905@zytor.com>
+	<20070512121009.18c8b68a@chirp>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-12 at 20:56 +0200, Andi Kleen wrote:
-> On Saturday 12 May 2007 17:43:45 Daniel Walker wrote:
-> > Just passing a string to mark_tsc_unstable() doesn't allow real code to change
-> > based on the reason for the instablility. I changed mark_tsc_unstable()
-> > to accept a string and a flag which denotes a general reason why the tsc
-> > is unstable, and can be evaluated in code.
-> > 
-> > This is based off John Stultz patch to add the string reasons.
+> Well, in that case, is there anything wrong with just using the
+> range IANA recommends, in all cases?
 > 
-> This seems ugly -- it would be better to just do whatever needs to
-> be doing in the caller instead of passing down a enum and then switch.
-> 
-> And why do you really need it anyways?
+> Please consider this patch instead of my previous one.
 
-Sending the string in mark_tsc_unstable() is already in linus-git
-AFAIK .. The enum is just to allow sched_clock to switch off the TSC in
-some situations, and not all.. 
+Please send this patch to the netdev list and CC the relevant networking
+maintainer.
 
-Daniel
-
+Alan
