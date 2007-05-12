@@ -1,58 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758028AbXELQXL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbXELQZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758028AbXELQXL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 12:23:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754382AbXELQW7
+	id S1759192AbXELQZV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 12:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbXELQZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 12:22:59 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2632 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754352AbXELQW6 (ORCPT
+	Sat, 12 May 2007 12:25:10 -0400
+Received: from ik-out-1112.google.com ([66.249.90.178]:57019 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754375AbXELQZH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 12:22:58 -0400
-Date: Sat, 12 May 2007 17:22:49 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: Nicolas Pitre <nico@cam.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] MMC updates
-Message-ID: <20070512162248.GB21729@flint.arm.linux.org.uk>
-Mail-Followup-To: Pierre Ossman <drzeus-list@drzeus.cx>,
-	Nicolas Pitre <nico@cam.org>, LKML <linux-kernel@vger.kernel.org>
-References: <46375B18.4080802@drzeus.cx> <20070509185636.GB26981@flint.arm.linux.org.uk> <46421BB5.7040504@drzeus.cx> <20070509221253.GC26981@flint.arm.linux.org.uk> <4642B122.5070609@drzeus.cx> <46432502.4050901@drzeus.cx> <alpine.LFD.0.99.0705101037220.24220@xanadu.home> <alpine.LFD.0.99.0705121122440.24220@xanadu.home> <4645E76B.2060704@drzeus.cx>
-Mime-Version: 1.0
+	Sat, 12 May 2007 12:25:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=QA8KSUNWH0VC9vEqe5fToTWxaG3dR8Zm0cZiVfImHV7kclLGnL+nNKdFPaWMLcvXDbKgFqVJSVj1Z/C4CPn4EwI/imDQmQwh//OLlRu6YnCliYxAzZChp1dw1juvjhxi/tzfHpdg9olUKx9JnYkdX2A2z5Tn5qHfqOCBey/BRb0=
+Date: Sat, 12 May 2007 20:24:28 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       "YOSHIFUJI Hideaki / ?$B5HF#1QL@" <yoshfuji@linux-ipv6.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.21-gitN - versioning question
+Message-ID: <20070512162428.GB8366@cvg>
+References: <Pine.LNX.4.61.0705121316540.9570@yvahk01.tjqt.qr> <20070512.210308.93070730.yoshfuji@linux-ipv6.org> <20070512131906.GF8337@cvg> <1178977496.2802.5.camel@shinybook.infradead.org> <Pine.LNX.4.61.0705121701020.9570@yvahk01.tjqt.qr>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4645E76B.2060704@drzeus.cx>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <Pine.LNX.4.61.0705121701020.9570@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 12, 2007 at 06:12:27PM +0200, Pierre Ossman wrote:
-> Nicolas Pitre wrote:
-> > Actually, I'm not the author of this workaround.  And looking at it 
-> > closer, the current workaround is utterly buggy as it completely inhibit 
-> > CRC error reporting for everything but the listed commands when the MSB 
-> > of the response is a zero.
-> >
-> >   
-> 
-> Your name popped up on the commit for this, but as that was during the
-> bk days the information was severely lacking.
+[Jan Engelhardt - Sat, May 12, 2007 at 05:01:19PM +0200]
+| 
+| On May 12 2007 21:44, David Woodhouse wrote:
+| >On Sat, 2007-05-12 at 17:19 +0400, Cyrill Gorcunov wrote:
+| >> Actually I think it would be convenient if such tags (like
+| >> v.2.6.21-git16) were in Linus' git tree too.
+| >
+| >Then there would be _lots_ of tags in the master tree -- I'm not sure we
+| >want that.
+| >
+| >I suppose I could put a tree on kernel.org which _does_ have the tags,
+| >and which precisely matches Linus' tree in every other way... but then
+| >again, you could do that too by just rsyncing the tags yourself :)
+| 
+| Are you saying GIT tags are expensive, compared to, say, SVN tags?
+| 
 
-That's not correct.  Just as today, it's entirely trackable.  We've had
-the sign-off thing for quite a long time, and we've also had the ARM
-patch system for ages.  That's what the "2271/3" number means.
+Anyway, Davind wrote that he could put a special tree with tags on
+kernel.org. And we always have opportunity to make a such tags
+in our own tree copies by hands. But I prefer keep (on my computer)
+pure Linus' git tree clone ;)
 
-http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=2271%2F1
-http://www.arm.linux.org.uk/developer/patches/viewpatch.php?id=2271%2F3
+		Cyrill
 
-First submitted on 22 November 2004 by Nicolas.  Went through a couple
-of revisions until 2271/3 which was committed on 27 November 2004.  No
-indication that the code was done by anyone other than Nicolas, though
-maybe Nico didn't add appropriate creditation to the real authors.
-Slap Wrist if we're missing the proper creditation!
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
