@@ -1,115 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbXELOEd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbXELOKP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759045AbXELOEd (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 10:04:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756304AbXELOE1
+	id S1759152AbXELOKP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 10:10:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbXELOKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 10:04:27 -0400
-Received: from n6.bullet.re3.yahoo.com ([68.142.237.91]:24911 "HELO
-	n6.bullet.re3.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754398AbXELOE0 (ORCPT
+	Sat, 12 May 2007 10:10:01 -0400
+Received: from loopy.telegraphics.com.au ([202.45.126.152]:33572 "EHLO
+	loopy.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754285AbXELOKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 10:04:26 -0400
-X-Yahoo-Newman-Property: ymail-3
-X-Yahoo-Newman-Id: 316027.70310.bm@rrr3.mail.re1.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=H1ameGxymyMegxZJ71PrWuSQRYgSgd2cC3n9NJqOVpMwKts20VSjO9kO8b6KFyZHhu0jcXJp3ySTeCzeRaphFJVwY+BtEvzLR1G27k2dsRyy8kmOrWnuNXOorUZ8oXtLqzpwSM8QIXrzRt64wuWSgGFkisEa1x03gEaxYdC844E=;
-X-YMail-OSG: RzHJiSEVM1lIfNnAbBn9_mrPe2ZhbRRRoBD2hlwHdeWJA0An73YZ36OeYxvGsTxyWAp9An52ij2hdCsam.AXunzjoJg.5AkEXINAu6mkOdKVKtQ7.VE7bNEsS6XLqeGE
-Date: Sat, 12 May 2007 07:04:25 -0700 (PDT)
-From: Tear <tarrqt@yahoo.com>
-Subject: Dell Optiplex GX240, ACPI and APIC
-To: linux-kernel@vger.kernel.org
+	Sat, 12 May 2007 10:10:00 -0400
+Date: Sun, 13 May 2007 00:09:59 +1000 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>
+cc: Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-m68k@vger.kernel.org, trivial@kernel.org
+Subject: Re: [PATCH] spelling fixes: arch/m68knommu/
+In-Reply-To: <alpine.LNX.0.99.0705121554240.30110@halbrend.uninett.no>
+Message-ID: <Pine.LNX.4.64.0705130000130.16778@loopy.telegraphics.com.au>
+References: <4644C716.1020000@simon.arlott.org.uk>
+ <Pine.LNX.4.64.0705121024480.14127@loopy.telegraphics.com.au>
+ <464575BF.1060105@simon.arlott.org.uk> <Pine.LNX.4.64.0705121951410.16778@loopy.telegraphics.com.au>
+ <alpine.LNX.0.99.0705121554240.30110@halbrend.uninett.no>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <229533.82694.qm@web63609.mail.re1.yahoo.com>
+Content-Type: MULTIPART/MIXED; BOUNDARY="768252030-1873923297-1178978530=:16778"
+Content-ID: <Pine.LNX.4.64.0705130002240.16778@loopy.telegraphics.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Summary: If ACPI is not enabled but APIC is,
-then there is trouble on Dell Optiplex GX240.
-If both are enabled or if both are disabled, then
-everything is fine. The attached patch removes
-Dell Optiplex GX240 from the ACPI blacklist.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
----
-
-Hello,
-
-I have a Dell Optiplex GX240 and when I boot Linux, ACPI
-gets set up by only acpi=ht. dmesg shows the following line:
-
-   DELL GX240 detected: force use of acpi=ht
-
-Everything seemed to be fine. However, I discovered that
-everything is not fine. The USB controller works so slowly
-that copying a few (uncached) 1 megabyte large photos from
-a USB-enabled digital camera takes many minutes instead of
-a couple of seconds.
-
-I am using Linux 2.6.21.1 on a Debian 4.0 ("Etch") system.
-
-I thought that this might be related to ACPI. So I tried
-to boot with _only_ "acpi=force" appended to the kernel
-command line. Voila, the USB controller started to work
-at full speed and copying photos from my digital camera
-took only seconds.
-
-I tested the system with "acpi=force" and could not find
-anything which did not work. So, can we please remove
-Dell Optiplex GX240 from the blacklist in
-
-..../arch/i386/kernel/acpi/boot.c
-
-? The attached patch does just that: It removes Dell
-Optiplex GX240 from the ACPI blacklist.
-
-I thought that this might be related to interrupts and
-APIC as well. (Note that this is APIC, not ACPI.) I tried
-booting with _only_ "noapic" and "nolapic" appended to the
-command line. Again, the USB controller started to work
-at full speed.
-
-If removing Dell Optiplex GX240 from the ACPI blacklist
-is not wanted/possible, then is there a way to disable
-APIC and LAPIC (note that this is APIC not ACPI) by
-default on Dell GX240 machines? (I.e. Can one patch
-the kernel so that APIC and LAPIC isn't used on
-these machines? - I know that I can use the noapic
-and nolapic options on the kernel command line.)
-
-Thank you for your attention.
-
-- Tear
-
-Note: Please include me in CC of your replies.
-
-
---- linux-2.6.21.1.orig/arch/i386/kernel/acpi/boot.c	2007-05-01 17:10:30.000000000 +0300
-+++ linux-2.6.21.1/arch/i386/kernel/acpi/boot.c	2007-05-01 20:31:53.000000000 +0300
-@@ -971,14 +971,6 @@
- 	 },
- 	{
- 	 .callback = force_acpi_ht,
--	 .ident = "DELL GX240",
--	 .matches = {
--		     DMI_MATCH(DMI_BOARD_VENDOR, "Dell Computer Corporation"),
--		     DMI_MATCH(DMI_BOARD_NAME, "OptiPlex GX240"),
--		     },
--	 },
--	{
--	 .callback = force_acpi_ht,
- 	 .ident = "HP VISUALIZE NT Workstation",
- 	 .matches = {
- 		     DMI_MATCH(DMI_BOARD_VENDOR, "Hewlett-Packard"),
+--768252030-1873923297-1178978530=:16778
+Content-Type: TEXT/PLAIN; CHARSET=X-UNKNOWN
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-ID: <Pine.LNX.4.64.0705130002241.16778@loopy.telegraphics.com.au>
 
 
 
+On Sat, 12 May 2007, Kolbj=C3=B8rn Barmen wrote:
 
+> On Sat, 12 May 2007, Finn Thain wrote:
+>=20
+> > To answer your question, I find it easier to parse the original idiom,=
+=20
+> > "'til now". Your corruption, "until now", loses information available t=
+o=20
+> > anyone who can recognise the idiom. Granted, this is not the worst exam=
+ple=20
+> > of that effect...
+>=20
+> It is either "till now" or "until now".=20
+> "'til" is just broken english.
 
-       
-____________________________________________________________________________________Get the free Yahoo! toolbar and rest assured with the added security of spyware protection.
-http://new.toolbar.yahoo.com/toolbar/features/norton/index.php
+Seems you are right that "till" is also an accepted abbreviation (I found=
+=20
+both in the Oxford American Dictionary). I suppose that there's no typo to=
+=20
+fix here.
 
+-f
+
+>=20
+> -- kolla
+>=20
+--768252030-1873923297-1178978530=:16778--
