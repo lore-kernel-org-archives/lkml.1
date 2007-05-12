@@ -1,55 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759703AbXELTl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758849AbXELTqQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759703AbXELTl0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 15:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756192AbXELTlT
+	id S1758849AbXELTqQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 15:46:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbXELTqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 15:41:19 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:50332 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755932AbXELTlS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 15:41:18 -0400
-Date: Sat, 12 May 2007 12:40:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Pavel Machek <pavel@ucw.cz>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Gautham R Shenoy <ego@in.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFD] Freezing of kernel threads
-In-Reply-To: <20070512191709.GA428@elf.ucw.cz>
-Message-ID: <alpine.LFD.0.98.0705121239090.3986@woody.linux-foundation.org>
-References: <200705122017.32792.rjw@sisk.pl>
- <20070512191709.GA428@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sat, 12 May 2007 15:46:04 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:23293 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754712AbXELTqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 15:46:03 -0400
+Date: Sat, 12 May 2007 21:45:10 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: linux-kernel@vger.kernel.org, mchehab@infradead.org
+Subject: Re: default y idiocy
+Message-ID: <20070512194510.GR4629@kernel.dk>
+References: <20070512182343.GO4629@kernel.dk> <Pine.LNX.4.61.0705122121340.9570@yvahk01.tjqt.qr> <20070512192726.GQ4629@kernel.dk> <Pine.LNX.4.61.0705122135510.9570@yvahk01.tjqt.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0705122135510.9570@yvahk01.tjqt.qr>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 12 May 2007, Pavel Machek wrote:
+On Sat, May 12 2007, Jan Engelhardt wrote:
 > 
-> If you fail to do that, we'll see freezer failure, quickly, and catch
-> the simple bug.
+> On May 12 2007 21:27, Jens Axboe wrote:
+> >On Sat, May 12 2007, Jan Engelhardt wrote:
+> >> 
+> >> On May 12 2007 20:23, Jens Axboe wrote:
+> >> >Hi,
+> >> >
+> >> >This has bothered me for a long time, and it just seems to be getting
+> >> >worse. Can people please STOP defaulting non-essential stuff to 'y'?
+> >> >Grrr.
+> >> 
+> >> http://lkml.org/lkml/2007/5/8/76
+> >
+> >Sorry, I don't buy that reason at all - it's a short term advantage,
+> >causing long term pain. It's not what we have done in the past, don't
+> >start doing crap like that now.
+> 
+> Right, I shall create some patches to revert that and send them off
+> to Linus ASAP.
 
-"It's a feature to add crap to drivers and subsystems that don't care!"
+Thanks!
 
-That's a novel thing.
+-- 
+Jens Axboe
 
-Maybe we could add other features too. Like a "IM_NOT_AN_IDIOT" flag that 
-every driver has to set in it's "struct device", so that the device 
-manager knows that it wasn't written by an idiot.
-
-> I'm afraid that if we default to "do not freeze by default", someone
-> will just port zfs, will know nothing about suspend, and his 
-> "write management info somewhere periodically" thread will corrupt
-> people's disks.
-
-Right. That's what the IM_NOT_AN_IDIOT thing will do too - it will 
-guarantee that only smart people do the right thing.
-
-Great idea. We'll get a better kernel in no tim!
-
-		Linus
