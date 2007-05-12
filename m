@@ -1,50 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757815AbXELHWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbXELHXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757815AbXELHWe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 03:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbXELHW1
+	id S1758187AbXELHXP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 03:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbXELHW7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 03:22:27 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50541 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756020AbXELHW0 (ORCPT
+	Sat, 12 May 2007 03:22:59 -0400
+Received: from mail26.syd.optusnet.com.au ([211.29.133.167]:36277 "EHLO
+	mail26.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756435AbXELHW6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 03:22:26 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46456B18.9060605@s5r6.in-berlin.de>
-Date: Sat, 12 May 2007 09:22:00 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Sat, 12 May 2007 03:22:58 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: Paul Jackson <pj@sgi.com>
+Subject: Re: [PATCH] mm: swap prefetch improvements
+Date: Sat, 12 May 2007 17:28:34 +1000
+User-Agent: KMail/1.9.5
+Cc: nickpiggin@yahoo.com.au, ray-lk@madrabbit.org, mingo@elte.hu,
+       ck@vds.kolivas.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, linux-mm@kvack.org
+References: <20070430162007.ad46e153.akpm@linux-foundation.org> <200705121516.00070.kernel@kolivas.org> <20070511225111.fee05bb9.pj@sgi.com>
+In-Reply-To: <20070511225111.fee05bb9.pj@sgi.com>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Jonathan Corbet <corbet@lwn.net>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       Johannes Stezenbach <js@linuxtv.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
-       jimmy bahuleyan <knight.camelot@gmail.com>
-Subject: Re: [PATCH] "volatile considered harmful", take 3
-References: <12700.1178905000@lwn.net>	 <a781481a0705112021u7b6d32fcxb6318d7e2443c970@mail.gmail.com>	 <464551D5.2050709@zytor.com>	 <a781481a0705112315u5843abaar292859428ec60603@mail.gmail.com>	 <46455CD9.7010205@zytor.com> <a781481a0705120002xb604e7al629ceb1c27109451@mail.gmail.com>
-In-Reply-To: <a781481a0705120002xb604e7al629ceb1c27109451@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705121728.34987.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> Coming back to the document, we do need to document / find
-> consensus on the "preferred" way to do similar business in the
-> kernel, and my opinion as far as that is concerned is to shun
-> volatile wherever possible (which includes the case originally
-> discussed above).
+On Saturday 12 May 2007 15:51, Paul Jackson wrote:
+> Con wrote:
+> > Hmm I'm not really sure what it takes to make it cpuset aware;
+> > ...
+> > It is numa aware to some degree. It stores the node id and when it starts
+> > prefetching it only prefetches to nodes that are suitable for prefetching
+> > to ...
+> > It would be absolutely trivial to add a check for 'number_of_cpusets' <=
+> > 1 in  the prefetch_enabled() function. Would you like that?
+>
+> Hmmm ... it seems that we shadow boxing here ... trying to pick a solution
+> to solve a problem when we aren't even sure we have a problem, much less
+> what the problem is.
+>
+> That does not usually lead to the right path.
+>
+> Could you put some more effort into characterizing what problems
+> can arise if one has prefetch and cpusets active at the same time?
+>
+> My first wild guess is that the only incompatibility would have been that
+> prefetch might mess up NUMA placement (get pages on wrong nodes), which
+> it seems you have tried to address in your current patches.  So it would
+> not surprise me if there was no problem here.
 
-I too recommend that volatile-considered-harmful.txt is not watered down
-by an ever growing "but if" list.  If anybody knows what he does, he
-still can program in a deviating way --- provided that he leaves a brief
-comment in the code, telling why it is possible and beneficial to use
-the volatile qualifier in this special case.
+Ummm this is what I've been saying for over a year now but noone has been 
+listening.
+
+> We may just have to lean on Nick some more, if he is the only one who
+> understands what the problem is, to try again to explain it to us.
+
 -- 
-Stefan Richter
--=====-=-=== -=-= -==--
-http://arcgraph.de/sr/
+-ck
