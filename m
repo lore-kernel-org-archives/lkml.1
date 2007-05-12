@@ -1,54 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760688AbXELT7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759999AbXELUEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760688AbXELT7a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 15:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759159AbXELT7V
+	id S1759999AbXELUEQ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 16:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbXELUEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 15:59:21 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:1715 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757698AbXELT7U (ORCPT
+	Sat, 12 May 2007 16:04:07 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43511 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754797AbXELUEF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 15:59:20 -0400
-Date: Sat, 12 May 2007 15:59:13 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Soeren Sonnenburg <kernel@nn7.de>
-cc: linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [linux-usb-devel] converting appletouch to usb autosuspend...
-In-Reply-To: <1178995886.4168.10.camel@localhost>
-Message-ID: <Pine.LNX.4.44L0.0705121552230.22494-100000@netrider.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sat, 12 May 2007 16:04:05 -0400
+Date: Sat, 12 May 2007 21:08:30 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Mark Glines <mark@glines.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] ip_local_port_range sysctl has annoying default
+Message-ID: <20070512210830.514c7709@the-village.bc.nu>
+In-Reply-To: <20070512123052.4a628fa1@chirp>
+References: <20070511170135.7c38615f@chirp>
+	<4645227F.3030905@zytor.com>
+	<20070512121009.18c8b68a@chirp>
+	<464611A6.3040301@zytor.com>
+	<20070512123052.4a628fa1@chirp>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 May 2007, Soeren Sonnenburg wrote:
-
-> Dear all,
+> > I think the IANA range is considered too small in most cases; I
+> > suspect there is also a feeling that "there be dragons" near the very
+> > top.
 > 
-> I've realized using the great powertop ( http://www.linuxpowertop.org/ )
-> that loading the appletouch driver (and touching it once) makes consumes
-> about 0.3 W even when not touching the pad. As rmmod'ing appletouch
-> fixes this I wonder why the driver does not do this alone. So my
-> question is what does one have to do to convert a driver (such as
-> appletouch) to make use of usb autosuspend except for
-> 
->  .supports_autosuspend = 1
+> Ok, thanks for the explanation.  Sounds like we're using high port
+> numbers in the "spirit" of the IANA recommendation, without using
+> their actual numbers.
 
-One has to add appropriate calls to usb_autopm_get_interface() and
-usb_autopm_put_interface(), or equally well, to usb_autopm_enable() and
-usb_autopm_disable().  One might also need to set
-intf->needs_remote_wakeup to 1 in the probe routine.
+The top space is reserved when using masquerading and used for the
+masquerading ports normally in that situation. Clipping them off avoids
+differing behaviour with masquerading on/off.
 
-> While we are at it usb related powerhogs on this macbook pro are
-> uhci_hcd (usb keyboard) and usb_hcd_poll_rh_status (rh_timer_func)
-> too...
-
-They would use less power if the UHCI host controller were suspended.  
-But obviously it cannot be suspended while devices attached to it (such as
-the USB keyboard and the appletouch device) remain active.
-
-Alan Stern
-
+Alan
