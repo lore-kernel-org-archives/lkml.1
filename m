@@ -1,53 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758671AbXELPR6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759940AbXELPSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758671AbXELPR6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 11:17:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbXELPRv
+	id S1759940AbXELPSn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 11:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbXELPSh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 11:17:51 -0400
-Received: from 3a.49.1343.static.theplanet.com ([67.19.73.58]:51767 "EHLO
-	pug.o-hand.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbXELPRv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 11:17:51 -0400
-Subject: Re: [PATCH] Add LZO1X compression support to the kernel
-From: Richard Purdie <richard@openedhand.com>
-To: Adrian Bunk <bunk@stusta.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, akpm <akpm@linux-foundation.org>,
-       torvalds@osdl.org, David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <20070512111722.GJ7984@stusta.de>
-References: <1178096183.5860.25.camel@localhost.localdomain>
-	 <20070512111722.GJ7984@stusta.de>
-Content-Type: text/plain
-Date: Sat, 12 May 2007 16:17:35 +0100
-Message-Id: <1178983055.5831.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+	Sat, 12 May 2007 11:18:37 -0400
+Received: from ns1.suse.de ([195.135.220.2]:60458 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751580AbXELPSg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 11:18:36 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Subject: Re: [patch] x86_64: use signalfd and timerfd compat syscalls
+Date: Sat, 12 May 2007 17:18:31 +0200
+User-Agent: KMail/1.9.6
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Davide Libenzi <davidel@xmailserver.org>, linux-kernel@vger.kernel.org
+References: <20070511230406.GE8644@osiris.ibm.com>
+In-Reply-To: <20070511230406.GE8644@osiris.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705121718.31467.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-12 at 13:17 +0200, Adrian Bunk wrote:
-> On Wed, May 02, 2007 at 09:56:23AM +0100, Richard Purdie wrote:
-> >...
-> > I've asked the LZO author about the comments on lzo_copyright function
-> > but the code is GPLv2 licensed so is suitable for inclusion in the
-> > kernel.
+On Saturday 12 May 2007 01:04:06 Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> This sounds as if LZO is GPL incompatible similar to code under
-> the 4 clause BSD licence.
-> 
-> >...
-> > +/* If you use the LZO library in a product, you *must* keep this
-> > + * copyright string in the executable of your product.
-> > + */
+> Looks like these two are wired up in a wrong way.
 
-I've had a reply from the copyright holder/author saying he's going to
-change this wording in the next LZO release and that the code *is* GPLv2
-licensed as per the headers on the files.
+Thanks for spotting. I think it would have been ok for signalfd
+because sigset_t should be the same size, but it's clearly broken
+for timerfd
 
-Regards,
-
-Richard
-
-
-
+-Andi
