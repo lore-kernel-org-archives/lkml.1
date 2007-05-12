@@ -1,51 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762488AbXELAVm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934101AbXELAW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762488AbXELAVm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 20:21:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbXELAVf
+	id S934101AbXELAW1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 20:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759834AbXELAWU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 20:21:35 -0400
-Received: from waste.org ([66.93.16.53]:36878 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755422AbXELAVf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 20:21:35 -0400
-Date: Fri, 11 May 2007 19:21:15 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: akpm@linux-foundation.org, rlove@rlove.org
-Cc: linux-kernel@vger.kernel.org
-Subject: 2.6.21-mm2: HDAPS? BUG: at kernel/mutex.c:311
-Message-ID: <20070512002115.GZ11166@waste.org>
+	Fri, 11 May 2007 20:22:20 -0400
+Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:48695 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755741AbXELAWT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 20:22:19 -0400
+Date: Fri, 11 May 2007 17:22:18 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, Paul Mundt <lethal@linux-sh.org>
+Subject: Re: [patch 1/2] From: Paul Mundt <lethal@linux-sh.org>
+In-Reply-To: <20070511113915.267bcc66.akpm@linux-foundation.org>
+Message-ID: <Pine.LNX.4.64.0705111721250.27616@schroedinger.engr.sgi.com>
+References: <20070511165749.026947116@sgi.com> <20070511165945.913632068@sgi.com>
+ <20070511113915.267bcc66.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This just hit:
+On Fri, 11 May 2007, Andrew Morton wrote:
 
-[    7.856000] usbcore: registered new interface driver usbhid
-[    7.860000] BUG: at kernel/mutex.c:311 __mutex_trylock_slowpath()
-[    7.868000]  [<c0104584>] show_trace_log_lvl+0x1a/0x30
-[    7.872000]  [<c0105196>] show_trace+0x12/0x14
-[    7.876000]  [<c0105222>] dump_stack+0x15/0x17
-[    7.880000]  [<c03cd4c8>] mutex_trylock+0x56/0x15a
-[    7.888000]  [<c03172c5>] hdaps_mousedev_poll+0x10/0xcb
-[    7.892000]  [<c011f8c5>] run_timer_softirq+0x10e/0x16f
-[    7.896000]  [<c011cabc>] __do_softirq+0x5d/0xc0
-[    7.900000]  [<c0105c88>] do_softirq+0x6e/0xf0
-[    7.904000]  [<c011ca22>] irq_exit+0x3e/0x7b
-[    7.912000]  [<c0105da7>] do_IRQ+0x9d/0xb2
-[    7.916000]  [<c01040fa>] common_interrupt+0x2e/0x34
-[    7.920000]  [<c0118e5f>] printk+0x1b/0x1d
-[    7.924000]  [<c02f2f96>] usb_register_driver+0xa0/0xe5
-[    7.928000]  [<c0525018>] hid_init+0x28/0x51
-[    7.932000]  [<c050e6c4>] kernel_init+0xbc/0x23e
-[    7.940000]  [<c010420f>] kernel_thread_helper+0x7/0x10
-[    7.944000]  =======================
-[    7.948000] drivers/hid/usbhid/hid-core.c: v2.6:USB HID core driver
+> However I think we've done enough slab work for 2.6.22 now so I'm inclined
+> to queue these changes for 2.6.23.  That would mean that the slab changes in
+> -mm have a dependency on the sh git tree which I am sure to forget about.
+> If I end up merging these changes before Paul merges his tree, sh will
+> break.  Presumably Paul will notice this ;)
 
-Looks like it's triggered by the HDAPS driver.
-
--- 
-Mathematics is the supreme nostalgia of our time.
+Ok. Only mm is fine for what I have planned. I want to add a 
+kmem_cache_ops structure for 2.6.23. Maybe I can use the now useless dtor 
+field of kmem_cache_create for this?
