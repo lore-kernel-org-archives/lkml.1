@@ -1,120 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755953AbXELDa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755918AbXELDuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755953AbXELDa2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 23:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751010AbXELDaU
+	id S1755918AbXELDuQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 23:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXELDuB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 23:30:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44818 "EHLO hera.kernel.org"
+	Fri, 11 May 2007 23:50:01 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:41994 "EHLO smtp.ocgnet.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1749667AbXELDaS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 23:30:18 -0400
-From: Len Brown <lenb@kernel.org>
-Organization: Intel Open Source Technology Center
-To: Jay Cliburn <jacliburn@bellsouth.net>
-Subject: Re: APIC error on 32-bit kernel
-Date: Fri, 11 May 2007 23:28:58 -0400
-User-Agent: KMail/1.9.5
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20070323200817.1f3e39b9@osprey.hogchain.net> <20070408133822.3868e6ff@osprey.hogchain.net>
-In-Reply-To: <20070408133822.3868e6ff@osprey.hogchain.net>
+	id S1751042AbXELDuA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 23:50:00 -0400
+Date: Sat, 12 May 2007 12:49:28 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Tejun Heo <htejun@gmail.com>
+Cc: jeff@garzik.org, linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       garyhade@us.ibm.com
+Subject: Re: libata reset-seq merge broke sata_sil on sh
+Message-ID: <20070512034928.GB29259@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Tejun Heo <htejun@gmail.com>, jeff@garzik.org,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	garyhade@us.ibm.com
+References: <20070510072005.GA27316@linux-sh.org> <464301D3.5060306@gmail.com> <464307CC.40701@gmail.com> <20070510072005.GA27316@linux-sh.org> <464301D3.5060306@gmail.com> <20070510124645.GA18534@linux-sh.org> <4643196B.7070806@gmail.com> <20070511005217.GA23186@linux-sh.org> <464439C8.7090309@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705112328.58927.lenb@kernel.org>
+In-Reply-To: <464439C8.7090309@gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > We're trying to track down the source of a problem that occurs
-> > whenever the atl1 network driver is activated on a 32-bit 2.6.21-rc4
-> 
-> and -rc5, -rc6, 2.6.20.x, 2.6.19.3, and probably others.
-> 
-> > We can load the driver just fine, but whenever we activate the
-> > network, we see APIC errors (a sample of them are shown here,
-> > captured from a serial console):
+On Fri, May 11, 2007 at 11:39:20AM +0200, Tejun Heo wrote:
+> Paul Mundt wrote:
+> > Bumping the hardreset delay up does indeed fix it, I've had to bump it up
+> > to 1200 before it started working (at 600 it still fails):
 > > 
-> > [root@hawk ~]# echo 8 > /proc/sys/kernel/printk
-> > [root@hawk ~]# [   93.942012] process `sysctl' is using deprecated
-> > sysctl (sysc.
-> > [   94.396609] atl1: eth0 link is up 1000 Mbps full duplex
-> > [   94.498887] APIC error on CPU0: 00(08)
-> > [   94.498534] APIC error on CPU1: 00(08)
-> > [   94.550079] APIC error on CPU0: 08(08)
-> > [   94.549725] APIC error on CPU1: 08(08)
-> > [   94.600915] APIC error on CPU1: 08(08)
-> > [   94.601276] APIC error on CPU0: 08(08)
-> > [   94.652108] APIC error on CPU1: 08(08)
-> > [   94.652470] APIC error on CPU0: 08(08)
-> > [   94.703659] APIC error on CPU0: 08(08)
-> > [   94.703305] APIC error on CPU1: 08(08)
-> > [   94.754852] APIC error on CPU0: 08(40)
-> > [   94.806045] APIC error on CPU0: 40(08)
-
-        /* Here is what the APIC error bits mean:
-           0: Send CS error
-           1: Receive CS error
-           2: Send accept error
-           3: Receive accept error
-           4: Reserved
-           5: Send illegal vector
-           6: Received illegal vector
-           7: Illegal register address
-        */
-
-So the 40 means the APIC got an illegal vector.
-Certainly this is consistent with the fact that
-the errors start when a specific device is being
-used.  I assume that device is using MSI?
-Curious that it is different in 32-bit and 64-bit mode.
-
-
-
-> > [   94.805692] APIC error on CPU1: 08(08)
-> > [   94.857238] APIC error on CPU0: 08(08)
-> > [   94.856884] APIC error on CPU1: 08(08)
-> > [   94.908432] APIC error on CPU0: 08(08)
-> > [   94.908078] APIC error on CPU1: 08(08)
-> > [snip, more of the same]
-> > [   98.901156] APIC error on CPU1: 08(08)
-> > [   98.952702] APIC error on CPU0: 08(08)
-> > [   98.952349] APIC error on CPU1: 08(08)
-> > [   99.003895] APIC error on CPU0: 08(08)
-> > [   99.003542] APIC error on CPU1: 08(08)
+> > [    0.967379] scsi0 : sata_sil
+> > [    0.970425] scsi1 : sata_sil
+> > [    0.973298] ata1: SATA max UDMA/100 cmd 0xfd000280 ctl 0xfd00028a bmdma 0xfd000200 irq 0
+> > [    0.981331] ata2: SATA max UDMA/100 cmd 0xfd0002c0 ctl 0xfd0002ca bmdma 0xfd000208 irq 0
+> > [    1.299353] ata1: device not ready (errno=-19), forcing hardreset
+> > [    2.817893] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+> > [    2.826284] ata1.00: ata_hpa_resize 1: sectors = 39070080, hpa_sectors = 39070080
+> > [    2.831052] ata1.00: ATA-5: HHD424020F7SV00, 00MLA0A5, max UDMA/100
+> > [    2.837548] ata1.00: 39070080 sectors, multi 0: LBA
+> > [    2.842702] ata1.00: applying bridge limits
+> > [    2.854162] ata1.00: ata_hpa_resize 1: sectors = 39070080, hpa_sectors = 39070080
+> > [    2.858938] ata1.00: configured for UDMA/100
+> > [    3.172602] ata2: SATA link down (SStatus 0 SControl 310)
+> > [    3.175736] scsi 0:0:0:0: Direct-Access     ATA      HHD424020F7SV00  00ML PQ: 0 ANSI: 5
 > > 
-> > The machine hangs for about 5-10 seconds, then spontaneously reboots
-> > without further console output.
+> > I'm not sure if it matters or not, but this is an iVDR drive, so that
+> > might also have additional implications.
 > 
-> I can prompt an oops by pinging my router while the apic errors are
-> scrolling by.
+> Don't have the flimsiest idea what an iVDR drive is but I take it that
+> it's some sort of special purpose thing.  :-)
 > 
-> > 
-> > This is an Asus M2V (Via K8T890) motherboard.
-> > 
-> > The problem does not occur on a 32-bit kernel if we boot with
-> > pci=nomsi, and it doesn't occur at all on a 64-bit kernel on the same
-> > motherboard.
+http://www.ivdr.org
 
-pci=nomsi, works, okay...
+The GoVault appears to be a similar device, in that they're both
+removeable cartridges.
 
-
-> > We also do not see this problem on Intel-based motherboards, with
-> > either 32- or 64-bit kernels.
+> Gary, IIRC, the requirement for GoVault was 3secs, right?  Paul, can you
+> try to estimate the minimum required delay?  Please go down by 100ms and
+> report where it breaks.
 > 
-> A full raft of documentation -- including acpidump and
-> linux-firmware-kit output, console capture, kernel config, lspci -vvxxx
-> (with apic=debug boot option), dmesg, and /proc/interrupts -- is
-> available at http://www.hogchain.net/m2v/apic-problem/
-
-
-[06Dh 109  2]      Boot Architecture Flags : 0003
-
-for what it is worth, the bit in ACPI that is used to
-disable MSI support is not set -- so as  far as the BIOS
-is concerned, this system should support MSI.
-
-Is it an add-in card, or lan-on-motherboard?
-
--Len
+800ms was the lowest it would work at, 700ms still breaks.
