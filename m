@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbXELSH1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758301AbXELSHk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757205AbXELSH1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 14:07:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXELSHS
+	id S1758301AbXELSHk (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 14:07:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbXELSHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 14:07:18 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:46614 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750833AbXELSHQ (ORCPT
+	Sat, 12 May 2007 14:07:21 -0400
+Received: from smtp105.plus.mail.re2.yahoo.com ([206.190.53.30]:42045 "HELO
+	smtp105.plus.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752314AbXELSHT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 14:07:16 -0400
-Date: Sat, 12 May 2007 11:06:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH 1/2] scalable rw_mutex
-Message-Id: <20070512110624.9ac3aa44.akpm@linux-foundation.org>
-In-Reply-To: <p73odkpeusf.fsf@bingen.suse.de>
-References: <20070511131541.992688403@chello.nl>
-	<20070511132321.895740140@chello.nl>
-	<20070511093108.495feb70.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705111006470.32716@schroedinger.engr.sgi.com>
-	<20070511110522.ed459635.akpm@linux-foundation.org>
-	<p73odkpeusf.fsf@bingen.suse.de>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 12 May 2007 14:07:19 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.de;
+  h=Received:X-YMail-OSG:Received:Date:From:To:Cc:Subject:Message-ID:Reply-To:MIME-Version:Content-Type:Content-Disposition:Content-Transfer-Encoding:User-Agent;
+  b=z31IxTX4pd9gBtyjfDKS3a7sO+9IEGWW6IpwqQcq6ux7ueqt8+n0hUynOPg9F0uQedWjUwb/6xjjYiVWuVCK+NQFkrcBvLMQOCEPuExyktuRKp+gswLz/wX1SxIVcmf5VO1vIV3DE5hfvuN80yQcBK0pop4MUTyC30sq8fGFnDU=  ;
+X-YMail-OSG: ykhxYpIVM1l6LVSj23xjdC_bdklNXQwmoD.MDHSQum.B0AOST0A5MqR38t6qQ6xip5VLyIzaaQ--
+Date: Sat, 12 May 2007 20:07:04 +0200
+From: Borislav Petkov <bbpetkov@yahoo.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Scheduled removal of SA_xxx interrupt flags
+Message-ID: <20070512180703.GA22918@gollum.tnic>
+Reply-To: bbpetkov@yahoo.de
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 12 May 2007 20:55:28 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+Hi Andrew,
 
-> Andrew Morton <akpm@linux-foundation.org> writes:
-> 
-> > On Fri, 11 May 2007 10:07:17 -0700 (PDT)
-> > Christoph Lameter <clameter@sgi.com> wrote:
-> > 
-> > > On Fri, 11 May 2007, Andrew Morton wrote:
-> > > 
-> > > > yipes.  percpu_counter_sum() is expensive.
-> > > 
-> > > Capable of triggering NMI watchdog on 4096+ processors?
-> > 
-> > Well.  That would be a millisecond per cpu which sounds improbable.  And
-> > we'd need to be calling it under local_irq_save() which we presently don't.
-> > And nobody has reported any problems against the existing callsites.
-> > 
-> > But it's no speed demon, that's for sure.
-> 
-> There is one possible optimization for this I did some time ago. You don't really
-> need to sum all over the possible map, but only all CPUs that were ever 
-> online. But this only helps on systems where the possible map is bigger
-> than online map in the common case. But that shouldn't be the case anymore on x86
-> -- it just used to be. If it's true on some other architectures it might
-> be still worth it.
-> 
+   i've been going over the interrupt-handling code and noticed that the SA_xxx
+   interrupt flags are scheduled for removal sometime in 9/2007 with a prior
+   grace period of 6 months for people to fix external stuff. In order to do so,
+   a __deprecated inline function wraps those flags.
+   What puzzles me is that the __deprecated-patches are only in -mm and not in
+   mainline. Is the -mm-testing audience wide enough to cause userspace to fix
+   their apps prior to the SA_xxx removal or am I missing something? I.e,
+   shouldn't tglx's patches hit mainline first?
 
-hm, yeah.
-
-We could put a cpumask in percpu_counter, initialise it to
-cpu_possible_map.  Then, those callsites which have hotplug notifiers can
-call into new percpu_counter functions which clear and set bits in that
-cpumask and which drain percpu_counter.counts[cpu] into
-percpu_counter.count.
-
-And percpu_counter_sum() gets taught to do for_each_cpu_mask(fbc->cpumask).
+-- 
+Regards/Gruﬂ,
+    Boris.
