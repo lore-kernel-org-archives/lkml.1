@@ -1,85 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762382AbXELBZI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762051AbXELBcW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762382AbXELBZI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 21:25:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755083AbXELBY6
+	id S1762051AbXELBcW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 21:32:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbXELBcQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 21:24:58 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:43948 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755015AbXELBY5 (ORCPT
+	Fri, 11 May 2007 21:32:16 -0400
+Received: from web60012.mail.yahoo.com ([209.73.178.75]:46702 "HELO
+	web60012.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1754789AbXELBcQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 21:24:57 -0400
-Date: Fri, 11 May 2007 18:24:23 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
-In-Reply-To: <20070512004057.GA540@tv-sign.ru>
-Message-ID: <alpine.LFD.0.98.0705111812270.3986@woody.linux-foundation.org>
-References: <200705110035.32229.rjw@sisk.pl> <200705110036.26617.rjw@sisk.pl>
- <20070511123959.190adfaf.akpm@linux-foundation.org> <200705112240.54304.rjw@sisk.pl>
- <alpine.LFD.0.98.0705111555090.3986@woody.linux-foundation.org>
- <20070511232024.GA489@tv-sign.ru> <alpine.LFD.0.98.0705111629390.3986@woody.linux-foundation.org>
- <20070511234819.GA508@tv-sign.ru> <alpine.LFD.0.98.0705111656240.3986@woody.linux-foundation.org>
- <20070512004057.GA540@tv-sign.ru>
+	Fri, 11 May 2007 21:32:16 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=fcZGdkrDxQY5kRvvXW+3OQau0eTPrejQqyjSZGditcr6yuCrbaY/3IT9rNMzxI/jsuF7qlD55RIM7oRr3j5mQITXZvGw76npdrLO51M8x9b5Gty+qcTeFr5Q06dJybIpn8tvMmiVA6ElQ9P4p9ii6BhC+o+6oOXIuLg2PWqglM8=;
+X-YMail-OSG: 7Pog4v8VM1mrdxB8uNV3BFk4ZDM5WVezMNOMoOR0FIC.6RzT21H5NlATnkbk8UKlLwp1eW4iHFyrhfu.ALc_5DszlLsAbnDXnzIBeJrr16.3oKjelyxafczqY5ALjQE-
+Date: Fri, 11 May 2007 18:32:14 -0700 (PDT)
+From: Charles Gagalac <charle97@yahoo.com>
+Reply-To: charle97@yahoo.com
+Subject: Re: [Bugme-new] [Bug 8462] New: applications under wine freezes
+To: Davide Libenzi <davidel@xmailserver.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0705111254010.21112@alien.or.mcafeemobile.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <923133.74668.qm@web60012.mail.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+--- Davide Libenzi wrote:
 
-On Sat, 12 May 2007, Oleg Nesterov wrote:
-> 
-> However, in my opininon THAT PATCH has nothing to do with this problem.
-> It just improves the code that we already have.
+> Charles, would you mind trying the patch below
+> against -git13 on your 
+> machine. I tested it with wine and firefox on a 32
+> bit P4 with HT and it's 
+> working fine.
 
-Sure. 
+i applied the patch against git13.  starcraft,
+pokerstars, and firefox under wine have not frozen. 
+looks good.
 
-However, I think it does it THE WRONG WAY, and doesn't actually fix the 
-much deeper problems with the freezer, as shown by the fact that the lock 
-is *still* broken for other cases.
 
-So, here's a summary:
 
- - we should not take the lock inside the function, because taking it 
-   there is fundamentally wrong, and leaves all the *other* races in 
-   place.
-
- - if you actually want to solve the other races, the lock needs to be 
-   taken by the caller, in which case taking it in the callee is obviously 
-   (again) wrong.
-
- - or then, we accept that the race wasn't fixed AT ALL, and you add other 
-   code to _other_ places to handle the case where you froze the wrong 
-   thread (or didn't freeze the right one).
-
-   And I'm not making that up. Look at most of the other patches in that 
-   series: they are _exactly_ about the scenario I'm outlining.
-
- - the whole "kernel thread vs user thread" thing is the wrong thing to 
-   check in the first place, since we just should never touch kernel 
-   threads in the first place, and anything that wants to freeze user 
-   space should have disabled exec_usermodehelper() at a higher level
-
-That's why I'm so unhappy. The "fix" is going in the wrong direction. Each 
-fix on their own may be an "improvement", but the end result of many of 
-the fixes is a total mess!
-
-We can continue to add bandaids to something broken, until it "works". But 
-the end result, while "working", is not actually any better. Quite the 
-reverse - the end result of something like that is that you add all these 
-magic rules and special cases.
-
-So in the end one ugly design decision leads to broken locking, which in 
-turn leads to other cases where you add more broken code, which just leads 
-to a situation where nobody actually understands what the *design* is, 
-because there simply *isn't* any design - it's just a hodge-podge of "but 
-this fixes a bug" ad-hoc "fixes".
-
-			Linus
+ 
+____________________________________________________________________________________
+Never miss an email again!
+Yahoo! Toolbar alerts you the instant new Mail arrives.
+http://tools.search.yahoo.com/toolbar/features/mail/
