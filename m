@@ -1,43 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763225AbXELAGl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763090AbXELAJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763225AbXELAGl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 20:06:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755568AbXELAGf
+	id S1763090AbXELAJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 20:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbXELAJU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 20:06:35 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:55383
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751555AbXELAGe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 20:06:34 -0400
-Date: Fri, 11 May 2007 17:06:38 -0700 (PDT)
-Message-Id: <20070511.170638.35663266.davem@davemloft.net>
-To: mark@glines.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [patch] ip_local_port_range sysctl has annoying default
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070511170135.7c38615f@chirp>
-References: <20070511170135.7c38615f@chirp>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 11 May 2007 20:09:20 -0400
+Received: from ozlabs.org ([203.10.76.45]:47855 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755771AbXELAJT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 20:09:19 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <17989.1446.330976.16221@cargo.ozlabs.ibm.com>
+Date: Sat, 12 May 2007 10:09:10 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linuxppc-dev@ozlabs.org, trivial@kernel.org
+Subject: Re: [PATCH] spelling fixes: arch/powerpc/
+In-Reply-To: <4644C734.3000303@simon.arlott.org.uk>
+References: <4644C734.3000303@simon.arlott.org.uk>
+X-Mailer: VM 7.19 under Emacs 21.4.1
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mark Glines <mark@glines.org>
-Date: Fri, 11 May 2007 17:01:35 -0700
+Simon Arlott writes:
 
-> Following the principle of least astonishment, I think it seems better
-> to use high, out-of-the-way port numbers regardless of how much RAM the
-> system has.  So, the following patch changes this behavior slightly.
-> The system still picks a dynamic range depending on the bind hash size,
-> but now, all ranges start with 32768.  I suppose another reasonable way
-> to do this would be to end all ranges with 61000, or something like
-> that.
+> Spelling fixes in arch/powerpc/.
 
-All ports above and including 1024 are non-privileged and available to
-anyone.
+> -	/* Retreive CPU related informations from the flat tree
+> +	/* Retreive CPU related information from the flat tree
+	       ^^
+You missed one. :)
 
-Applications which have some requirements in this area need to work
-those things out themselves.
+> -	/* Clear the freeze bit, and reenable the interrupt.
+> +	/* Clear the freeze bit, and re-enable the interrupt.
+
+reenable -> re-enable is a bit marginal, but OK.
+
+>  	/* Ok, now let's get cracking. You may ask me why I just didn't match
+>  	 * the iic host from the iic OF node, but that way I'm still compatible
+> -	 * with really really old old firmwares for which we don't have a node
+> +	 * with really really old old firmware for which we don't have a node
+
+I think "firmwares" here was meaning to imply there were more than one
+instance or release of firmware which had the property described, and
+your change loses that.
+
+> -	 * differenciate them all and since that hack was there for a long
+> +	 * differentiate them all and since that hack was there for a long
+
+I haven't been too strict about the Franglais in the past, but OK. :)
+
+Paul.
