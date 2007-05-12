@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761973AbXELBkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S964810AbXELBl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761973AbXELBkz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 21:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbXELBks
+	id S964810AbXELBl2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 21:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755015AbXELBlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 21:40:48 -0400
-Received: from relay4.ptmail.sapo.pt ([212.55.154.24]:36312 "HELO sapo.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
-	id S1751821AbXELBkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 21:40:47 -0400
-X-AntiVirus: PTMail-AV 0.3-0.90.1
-Date: Sat, 12 May 2007 02:40:52 +0100
-From: Jose Celestino <japc@co.sapo.pt>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-Subject: Re: Re: [announce] Intel announces the PowerTOP utility for Linux
-Message-ID: <20070512014052.GA4082@co.sapo.pt>
-Mail-Followup-To: Matt Mackall <mpm@selenic.com>,
-	Arjan van de Ven <arjan@linux.intel.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-acpi@vger.kernel.org
-References: <4644F726.1050806@linux.intel.com> <20070512001718.GY11166@waste.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070512001718.GY11166@waste.org>
-X-URL: http://xpto.org/~japc
-X-System: Linux morgoth.sl.pt 2.6.21-1.3116.fc7
-X-UP: 02:03:28 up 28 min,  1 user,  load average: 0.28, 0.19, 0.27
-X-By: japc@morgoth.sl.pt
-X-GPG-key-ID: 0x07B1363B
-X-GPG-key-Fingerprint: D3F3 B47B F20C 3B1E 488C B949 1B8B 8141 07B1 363B
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	Fri, 11 May 2007 21:41:22 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42825 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754019AbXELBlV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 21:41:21 -0400
+Date: Fri, 11 May 2007 18:41:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Paul Mundt <lethal@linux-sh.org>
+Cc: clameter@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] From: Paul Mundt <lethal@linux-sh.org>
+Message-Id: <20070511184112.0853c55e.akpm@linux-foundation.org>
+In-Reply-To: <20070512013300.GA27172@linux-sh.org>
+References: <20070511165749.026947116@sgi.com>
+	<20070511165945.913632068@sgi.com>
+	<20070511113915.267bcc66.akpm@linux-foundation.org>
+	<20070512013300.GA27172@linux-sh.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Words by Matt Mackall [Fri, May 11, 2007 at 07:17:19PM -0500]:
-> On Fri, May 11, 2007 at 04:07:18PM -0700, Arjan van de Ven wrote:
+On Sat, 12 May 2007 10:33:00 +0900
+Paul Mundt <lethal@linux-sh.org> wrote:
+
+> On Fri, May 11, 2007 at 11:39:15AM -0700, Andrew Morton wrote:
+> > On Fri, 11 May 2007 09:57:50 -0700
+> > clameter@sgi.com wrote:
 > > 
-> > What's eating the battery life of my laptop? Why isn't it many more 
-> > hours? Which software component causes the most power to be burned? 
-> > These are important questions without a good answer... until now.
+> > > > I'll take a look at tidying up the PMB slab, getting rid of the dtor
+> > > > shouldn't be terribly painful. I simply opted to do the list management
+> > > > there since others were doing it for the PGD slab cache at the time that
+> > > > was written.
+> > > 
+> > > And here's the bit for dropping pmb_cache_dtor(), moving the list
+> > > management up to pmb_alloc() and pmb_free().
+> > > 
+> > > With this applied, we're all set for killing off slab destructors
+> > > from the kernel entirely.
+> > 
+> > hm, this is already in Paul's git tree.
+> > 
+> > If we're going to slam all this into 2.6.22 then I can just tempdrop Paul's
+> > tree.
+> > 
+> > However I think we've done enough slab work for 2.6.22 now so I'm inclined
+> > to queue these changes for 2.6.23.  That would mean that the slab changes in
+> > -mm have a dependency on the sh git tree which I am sure to forget about.
+> > If I end up merging these changes before Paul merges his tree, sh will
+> > break.  Presumably Paul will notice this ;)
 > 
-> I get:
+> I can prune it from my tree if you'd rather just bundle these together, I
+> wasn't sure what the timeline for these changes were, so I opted just to
+> toss the PMB rework in my git tree ahead of time.
 > 
-> No detailed statistics available; please enable the CONFIG_TIMER_STATS
-> kernel option
-> 
+> On the other hand, if Christoph's changes are going to be queued for
+> 2.6.23, the PMB changes will trickle in well before then anyways.
 
-Must run as root (rw to /proc/timer_stats is needed).
-
--- 
-Jose Celestino
-----------------------------------------------------------------
-http://www.msversus.org/     ; http://techp.org/petition/show/1
-http://www.vinc17.org/noswpat.en.html
-----------------------------------------------------------------
-"And on the trillionth day, Man created Gods." -- Thomas D. Pate
+It looks like we'll be going the latter trickle-in way, thanks.
