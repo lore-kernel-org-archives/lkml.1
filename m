@@ -1,122 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759499AbXELPHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbXELPLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759499AbXELPHf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 11:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbXELPH1
+	id S1759622AbXELPLx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 11:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756253AbXELPLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 11:07:27 -0400
-Received: from stinky.trash.net ([213.144.137.162]:56011 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755365AbXELPH0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 11:07:26 -0400
-Message-ID: <4645D7CF.20707@trash.net>
-Date: Sat, 12 May 2007 17:05:51 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Debian Thunderbird 1.0.7 (X11/20051019)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Gabor Burjan <buga@buvoshetes.hu>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: kernel oops after unloading nf_conntrack_netbios_ns_module
-References: <20070510090603.GA13059@odin.sis.hu> <20070510033411.6cf042ad.akpm@linux-foundation.org> <20070510110117.GE13059@odin.sis.hu>
-In-Reply-To: <20070510110117.GE13059@odin.sis.hu>
-X-Enigmail-Version: 0.93.0.0
-Content-Type: multipart/mixed;
- boundary="------------090002080406070905080306"
+	Sat, 12 May 2007 11:11:47 -0400
+Received: from www.osadl.org ([213.239.205.134]:46953 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755749AbXELPLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 11:11:46 -0400
+Subject: Re: clockevent questions
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Francis Moreau <francis.moro@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <38b2ab8a0705120754l281f54eevd1e91e2f01fff6f2@mail.gmail.com>
+References: <38b2ab8a0705120754l281f54eevd1e91e2f01fff6f2@mail.gmail.com>
+Content-Type: text/plain
+Date: Sat, 12 May 2007 17:14:52 +0200
+Message-Id: <1178982892.22481.183.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090002080406070905080306
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Francis,
 
-Gabor Burjan wrote:
-> EIP is at destroy_conntrack+0x52/0x127 [nf_conntrack]
->
->>>nmblookup <existing_netbios_name>
->>>cat /proc/net/ip_conntrack
->>>
->>>sleep 3
->>>
->>>rmmod nf_conntrack_netbios_ns
+On Sat, 2007-05-12 at 16:54 +0200, Francis Moreau wrote:
+> I'm trying to use clocksource and clockevent new subsystem. My
+> platform has a timer that I'd like to use both as a clocksource and a
+> clockevent devices.
+
+See arch/i386/kernel/hpet.c
+
+> This timer is continueous in sense that it can run
+> without any interruption
+
+-ENOPARSE
+
+Has your timer a free running counter and a match register based event
+mechanism ?
+
+> so I assume I can flag the clocksource device
+> with "CLOCK_SOURCE_IS_CONTINUOUS". However I noticed that clockevent
+> device can be stopped by using "set_mode()" method. Are these two
+> behaviours compatible ?
+
+the clock event stop only stops the event mechanism, it does not stop
+the counter.
+
+See arch/i386/kernel/hpet.c
+
+> Another question is that I have another embedded 16 bits timer that I
+> would like to use. Since the timer is only 16 bits, the maximum
+> interval is tiny, My question if a user ask for a clockevent device
+> using an interval is bigger that 2^16, the clockevent system doesn't
+> return an error. Instead it silently reduce the interval to 2^16. Is
+> this correct ? if so why ?
+
+Yes, it is correct. The generic timer code requests an event in the
+future. It does not care, whether the hardware device can handle that or
+not. So the clock event code limits the delta to the maximum delta the
+device can handle. The interrupt fires and the generic timer code
+reschedules the event with the remaining delta time.
+
+	tglx
 
 
-Thanks for the report and good testcase, the crash can only happen with
-a sleep of >= 3s after the last nmblookup packet was sent.
-
-Can you try if this patch fixes it please?
-
-
---------------090002080406070905080306
-Content-Type: text/plain;
- name="x"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="x"
-
-[NETFILTER]: nf_conntrack: fix use-after-free in helper destroy callback
-
-When the helper module is removed for a master connection that has a
-fulfilled expectation, but has already timed out and got removed from
-the hash tables, nf_conntrack_helper_unregister can't find the master
-connection to unset the helper, causing a use-after-free when the
-expected connection is destroyed and releases the last reference to
-the master.
-
-The helper destroy callback was introduced for the PPtP helper to clean
-up expectations and expected connections when the master connection
-times out, but doing this from the destroy_conntrack only works for
-unfulfilled expectations since expected connections hold a reference
-to the master and it is not destroyed. Move the destroy callback to
-the timeout function, which fixes both problems.
-
-Signed-off-by: Patrick McHardy <kaber@trash.net>
-
----
-commit 50d2ab6c1353c32b994e6171b231fc771d0a2b73
-tree 9b2cd5659dad0b452e59fff4869f7d9db780fd02
-parent 6b99a1744ab187073bca84a9fd3ccbf091865ca6
-author Patrick McHardy <kaber@trash.net> Sat, 12 May 2007 16:59:07 +0200
-committer Patrick McHardy <kaber@trash.net> Sat, 12 May 2007 17:00:18 +0200
-
- net/netfilter/nf_conntrack_core.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/net/netfilter/nf_conntrack_core.c b/net/netfilter/nf_conntrack_core.c
-index cb29ba7..0975fee 100644
---- a/net/netfilter/nf_conntrack_core.c
-+++ b/net/netfilter/nf_conntrack_core.c
-@@ -315,7 +315,6 @@ static void
- destroy_conntrack(struct nf_conntrack *nfct)
- {
- 	struct nf_conn *ct = (struct nf_conn *)nfct;
--	struct nf_conn_help *help = nfct_help(ct);
- 	struct nf_conntrack_l3proto *l3proto;
- 	struct nf_conntrack_l4proto *l4proto;
- 
-@@ -326,9 +325,6 @@ destroy_conntrack(struct nf_conntrack *nfct)
- 	nf_conntrack_event(IPCT_DESTROY, ct);
- 	set_bit(IPS_DYING_BIT, &ct->status);
- 
--	if (help && help->helper && help->helper->destroy)
--		help->helper->destroy(ct);
--
- 	/* To make sure we don't get any weird locking issues here:
- 	 * destroy_conntrack() MUST NOT be called with a write lock
- 	 * to nf_conntrack_lock!!! -HW */
-@@ -369,6 +365,10 @@ destroy_conntrack(struct nf_conntrack *nfct)
- static void death_by_timeout(unsigned long ul_conntrack)
- {
- 	struct nf_conn *ct = (void *)ul_conntrack;
-+	struct nf_conn_help *help = nfct_help(ct);
-+
-+	if (help && help->helper && help->helper->destroy)
-+		help->helper->destroy(ct);
- 
- 	write_lock_bh(&nf_conntrack_lock);
- 	/* Inside lock so preempt is disabled on module removal path.
-
---------------090002080406070905080306--
