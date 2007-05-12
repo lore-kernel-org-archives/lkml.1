@@ -1,72 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbXELHCZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757583AbXELHIe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756989AbXELHCZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 03:02:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXELHCS
+	id S1757583AbXELHIe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 03:08:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756220AbXELHI1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 03:02:18 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:25919 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751526AbXELHCR (ORCPT
+	Sat, 12 May 2007 03:08:27 -0400
+Received: from canuck.infradead.org ([209.217.80.40]:51479 "EHLO
+	canuck.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754655AbXELHI1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 03:02:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=MQHowaePxwoNoOuqf8+PWn+G6Fgrp5mwQaXd8031u9bbKxsVKdKt9/tchPEwSQJKYbupgiBe4+ClFIrOvwPyfw6ZfloV/a8O6MS0VOhxsljnUCGzhPu5mWV1JHNkLLaCei5Kpeh1RzScjO1MoEOOhHJCWtBdKBHgxnZdbFvDRmQ=
-Message-ID: <a781481a0705120002xb604e7al629ceb1c27109451@mail.gmail.com>
-Date: Sat, 12 May 2007 12:32:15 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] "volatile considered harmful", take 3
-Cc: "Jonathan Corbet" <corbet@lwn.net>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, "Johannes Stezenbach" <js@linuxtv.org>,
-       "Jesper Juhl" <jesper.juhl@gmail.com>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>,
-       "Heikki Orsila" <shdl@zakalwe.fi>,
-       "jimmy bahuleyan" <knight.camelot@gmail.com>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-In-Reply-To: <46455CD9.7010205@zytor.com>
+	Sat, 12 May 2007 03:08:27 -0400
+Date: Sat, 12 May 2007 00:08:51 -0700
+From: Greg KH <greg@kroah.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Rodolfo Giometti <giometti@enneenne.com>, linux-kernel@vger.kernel.org,
+       linuxpps@ml.enneenne.com
+Subject: Re: [PATCH 1/1] LinuxPPS: Pulse per Second support for Linux
+Message-ID: <20070512070851.GA18752@kroah.com>
+References: <20070321074121.GA13843@enneenne.com> <20070502193314.GA23367@enneenne.com> <20070510002740.c4350813.akpm@linux-foundation.org> <20070512055935.GD979@enneenne.com> <20070511231711.21b8a334.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <12700.1178905000@lwn.net>
-	 <a781481a0705112021u7b6d32fcxb6318d7e2443c970@mail.gmail.com>
-	 <464551D5.2050709@zytor.com>
-	 <a781481a0705112315u5843abaar292859428ec60603@mail.gmail.com>
-	 <46455CD9.7010205@zytor.com>
+In-Reply-To: <20070511231711.21b8a334.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/12/07, H. Peter Anvin <hpa@zytor.com> wrote:
-> Satyam Sharma wrote:
-> >
-> > Because volatile is ill-defined? Or actually, *undefined* (well,
-> > implementation-defined is as good as that)? It's *so* _vague_,
-> > one doesn't _feel_ like using it at all!
-> >
->
-> Sorry, that's just utter crap.  Linux isn't written in some mythical C
-> which only exists in standard document, it is written in a particular
-> subset of GNU C.  "volatile" is well enough defined in that context, it
-> is just frequently misused.
+On Fri, May 11, 2007 at 11:17:11PM -0700, Andrew Morton wrote:
+> On Fri, 11 May 2007 23:55:37 +0200
+> Rodolfo Giometti <giometti@enneenne.com> wrote:
+> 
+> > Hello,
+> > 
+> > here my new patch with a lot of fixes.
+> > 
+> > The only issue not still fixed is the one related with:
+> > 
+> > 	#define NETLINK_PPSAPI          20
+> > 
+> > I need time to resolve it.
+> > 
+> > Follows my comments and then the patch, hope now I can came back into
+> > -mm tree again! :)
+> 
+> Well I suppose I could toss it in there for a bit of review-and-test.  But
+> I'll need to drop it again because we do need to split this patch into the series
+> of patches, please.
+> 
+> You should do this earlier rather than later because it improves reviewability.
+> 
+> > > - This:
+> > > 
+> > > 	static void pps_class_release(struct class_device *cdev)
+> > > 	{
+> > > 		/* Nop??? */
+> > > 	}
+> > > 
+> > >   is a bug and it earns you a nastygram from Greg.  These objects must be
+> > >   dynamically allocated - this is not optional.
+> > 
+> > It could be acceptable defining this function as void?
+> 
+> No, it needs to be a proper release function, like all the other ones
+> around the place.
+> 
+> This comes up again and again and again and I recently asked Greg to direct
+> me to (or to write) suitable documentation, and I think he did, but I lost
+> it.  Greg, can you remind us please?
 
-Of course, volatile _is_ defined (well, _anything_ that is implemented
-_is_ defined, after all) in the context of GNU C, and if you're saying
-that the kernel (and all its subsystems) is and should _continue_ to
-be (the purpose of this document) written within that context, then
-that's your opinion and I would not disagree with you. If you do
-prefer to continue using that dialect, then I wouldn't stop you either.
+I need to put it in some permanent place, but basically the problem is
+that if you need to shut the kernel up by using an empty function for a
+release, then you are not understanding why the kernel was trying to
+warn you in the first place :(
 
-Personally, I'd prefer writing in a slightly more portable / larger
-context (using well-defined and understood APIs), thank you, and
-hope you'd allow me to do so myself.
+You need to free your memory for the class_device in the release
+function, you can not have a static structure, or rely on some other
+reference count to handle the cleanup properly.
 
-Coming back to the document, we do need to document / find
-consensus on the "preferred" way to do similar business in the
-kernel, and my opinion as far as that is concerned is to shun
-volatile wherever possible (which includes the case originally
-discussed above).
+Also note that 'struct class_device' is going away and you should use
+'struct device' instead.  That too needs to be documented better, and is
+on my list of things to do...
 
-Satyam
+thanks,
+
+greg k-h
