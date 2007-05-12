@@ -1,58 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbXELQZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757029AbXELQZp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759192AbXELQZV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 12:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754528AbXELQZK
+	id S1757029AbXELQZp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 12:25:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758229AbXELQZi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 12:25:10 -0400
-Received: from ik-out-1112.google.com ([66.249.90.178]:57019 "EHLO
-	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754375AbXELQZH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 12:25:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=QA8KSUNWH0VC9vEqe5fToTWxaG3dR8Zm0cZiVfImHV7kclLGnL+nNKdFPaWMLcvXDbKgFqVJSVj1Z/C4CPn4EwI/imDQmQwh//OLlRu6YnCliYxAzZChp1dw1juvjhxi/tzfHpdg9olUKx9JnYkdX2A2z5Tn5qHfqOCBey/BRb0=
-Date: Sat, 12 May 2007 20:24:28 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       Cyrill Gorcunov <gorcunov@gmail.com>,
-       "YOSHIFUJI Hideaki / ?$B5HF#1QL@" <yoshfuji@linux-ipv6.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-2.6.21-gitN - versioning question
-Message-ID: <20070512162428.GB8366@cvg>
-References: <Pine.LNX.4.61.0705121316540.9570@yvahk01.tjqt.qr> <20070512.210308.93070730.yoshfuji@linux-ipv6.org> <20070512131906.GF8337@cvg> <1178977496.2802.5.camel@shinybook.infradead.org> <Pine.LNX.4.61.0705121701020.9570@yvahk01.tjqt.qr>
+	Sat, 12 May 2007 12:25:38 -0400
+Received: from mail.suse.de ([195.135.220.2]:36310 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758720AbXELQZh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 12:25:37 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: discuss@x86-64.org
+Subject: Re: [discuss] [PATCH] spelling fixes: arch/x86_64/
+Date: Sat, 12 May 2007 18:25:26 +0200
+User-Agent: KMail/1.9.6
+Cc: Simon Arlott <simon@fire.lp0.eu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org
+References: <4644C783.3090805@simon.arlott.org.uk>
+In-Reply-To: <4644C783.3090805@simon.arlott.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0705121701020.9570@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200705121825.26430.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Jan Engelhardt - Sat, May 12, 2007 at 05:01:19PM +0200]
-| 
-| On May 12 2007 21:44, David Woodhouse wrote:
-| >On Sat, 2007-05-12 at 17:19 +0400, Cyrill Gorcunov wrote:
-| >> Actually I think it would be convenient if such tags (like
-| >> v.2.6.21-git16) were in Linus' git tree too.
-| >
-| >Then there would be _lots_ of tags in the master tree -- I'm not sure we
-| >want that.
-| >
-| >I suppose I could put a tree on kernel.org which _does_ have the tags,
-| >and which precisely matches Linus' tree in every other way... but then
-| >again, you could do that too by just rsyncing the tags yourself :)
-| 
-| Are you saying GIT tags are expensive, compared to, say, SVN tags?
-| 
 
-Anyway, Davind wrote that he could put a special tree with tags on
-kernel.org. And we always have opportunity to make a such tags
-in our own tree copies by hands. But I prefer keep (on my computer)
-pure Linus' git tree clone ;)
+> +++ b/arch/x86_64/kernel/signal.c
+> @@ -411,7 +411,7 @@ static void do_signal(struct pt_regs *regs)
+>  
+>  	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
+>  	if (signr > 0) {
+> -		/* Reenable any watchpoints before delivering the
+> +		/* Re-enable any watchpoints before delivering the
 
-		Cyrill
+reenable gets >140k google hits so it seems to be an really used word.
+Similar with upto.
 
+-Andi
