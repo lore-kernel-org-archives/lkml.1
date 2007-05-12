@@ -1,83 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758157AbXELWEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbXELWFa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758157AbXELWEg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 18:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbXELWE3
+	id S1757420AbXELWFa (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 18:05:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXELWFX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 18:04:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36426 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751998AbXELWE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 18:04:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFD] Freezing of kernel threads
-Date: Sun, 13 May 2007 00:08:59 +0200
-User-Agent: KMail/1.9.5
-Cc: Gautham R Shenoy <ego@in.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200705122017.32792.rjw@sisk.pl> <20070512191709.GA428@elf.ucw.cz>
-In-Reply-To: <20070512191709.GA428@elf.ucw.cz>
+	Sat, 12 May 2007 18:05:23 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51864 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751998AbXELWFX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 18:05:23 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alexander van Heukelum <heukelum@mailshack.com>,
+       "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@osdl.org>, Matt Domsch <Matt_Domsch@dell.com>,
+       Vivek Goyal <vgoyal@in.ibm.com>,
+       James Bottomley <James.Bottomley@HansenPar>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: x86 setup rewrite tree ready for flamage^W review
+References: <464158E9.2000207@zytor.com>
+	<1178806235.18785.1189115515@webmail.messagingengine.com>
+	<46435F8A.1040203@zytor.com> <20070510220406.GA21110@mailshack.com>
+	<4643A128.30302@zytor.com> <20070512122137.GA25944@mailshack.com>
+	<m1r6pmqg1n.fsf@ebiederm.dsl.xmission.com>
+	<464602DC.4050603@zytor.com>
+	<m1mz09ritr.fsf@ebiederm.dsl.xmission.com>
+	<46460E9E.9020308@zytor.com>
+Date: Sat, 12 May 2007 16:04:27 -0600
+In-Reply-To: <46460E9E.9020308@zytor.com> (H. Peter Anvin's message of "Sat,
+	12 May 2007 11:59:42 -0700")
+Message-ID: <m1iraxr95g.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705130009.00439.rjw@sisk.pl>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+"H. Peter Anvin" <hpa@zytor.com> writes:
 
-On Saturday, 12 May 2007 21:17, Pavel Machek wrote:
-> Hi!
-> 
-> > Having considered the issue of freezing (or not freezing) kernel threads for a
-> > longer while I tend to agree with Linus that we shouldn't be freezing as many
-> > kernel threads as we currently freeze, but there's one thing that he doesn't
-> > seem to take into account.  Namely, there may be some kernel threads that
-> > actually *want* (or need) to be frozen. :-)
-> > 
-> > For the suspend they may be kernel threads that otherwise would need some
-> > special synchronization with some device drivers' .suspend() and .resume()
-> > callbacks or fs-related kernel threads.  For the CPU hotplug they might be
-> > kernel threads that otherwise would interfere with the removal or addition of
-> > CPUs.  Still, in each case there seems to be a limited group of kernel threads
-> > that may want to be frozen and the remaining kernel threads that shouldn't be
-> > involved in any freezer-related actions at all.  However, we currently require
-> > all kernel threads to take part in the freezing mechanism, which doesn't seem to
-> > be correct.
-> 
-> Well.. It is actually a feature.
-> 
-> These days, you have to either add PF_NOFREEZE explicitly (which
-> hopefully means you know what you are doing) or add try_to_freeze() at
-> specific place.
-> 
-> If you fail to do that, we'll see freezer failure, quickly, and catch
-> the simple bug.
+> Eric W. Biederman wrote:
+>> 
+>> Even on 386 and 486 class cpus?
+>> 
+>
+> Yes, even on 386 and 486 class CPUs.  I have personally tested this on
+> machines as old as the original "double sigma" 386-16.
 
-Well, not if PF_NOFREEZE is used.
- 
-> I'm afraid that if we default to "do not freeze by default", someone
-> will just port zfs, will know nothing about suspend, and his 
-> "write management info somewhere periodically" thread will corrupt
-> people's disks.
+Ok.  If you have tested on a wide variety of machines then I won't
+worry about it.
 
-We'll have exactly the same result right now if said developer uses
-PF_NOFREEZE.
- 
-> OTOH... perhaps suspend/resume is common enough operation that people
-> _know_ they need to stop their writing? ...no, I do not think we are
-> there yet.
+I guess if a cr0 write has always been synchronizing things should be
+a safe practice.  The practical danger is if you write to cr0 and the
+pipeline is not flushed and the segment loads might execute as 16bit
+mode segment register loads.  I think this is more of a 486 or 586/Pentium
+danger actually then a 386 one.
 
-We never will be there if we don't change the default.
+Hmm. I'm not certain about enabling protected mode but enabling paging
+at least does appear to be documented to require a jump, before the P6
+core.  Which may be why it is recommended for initializing protected
+mode.
 
-Besides, if a kernel thread calls I_want_to_be_frozen_during_suspend() and
-then try_to_freeze(), this seems to be a bit more meaningful than just calling
-try_to_freeze() which (almost) everybody does.
-
-Greetings,
-Rafael
+Eric
