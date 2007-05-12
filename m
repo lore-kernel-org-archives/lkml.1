@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbXELKs3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbXELLAj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758910AbXELKs3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 06:48:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756275AbXELKsV
+	id S1757930AbXELLAj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 07:00:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756119AbXELLAd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 06:48:21 -0400
-Received: from loopy.telegraphics.com.au ([202.45.126.152]:39436 "EHLO
-	loopy.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756112AbXELKsU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 06:48:20 -0400
-Date: Sat, 12 May 2007 20:48:18 +1000 (EST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Simon Arlott <simon@fire.lp0.eu>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-m68k@vger.kernel.org, trival@kernel.org
-Subject: Re: [PATCH] spelling fixes: arch/m68knommu/
-In-Reply-To: <464575BF.1060105@simon.arlott.org.uk>
-Message-ID: <Pine.LNX.4.64.0705121951410.16778@loopy.telegraphics.com.au>
-References: <4644C716.1020000@simon.arlott.org.uk>
- <Pine.LNX.4.64.0705121024480.14127@loopy.telegraphics.com.au>
- <464575BF.1060105@simon.arlott.org.uk>
+	Sat, 12 May 2007 07:00:33 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:49938 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755242AbXELLAc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 07:00:32 -0400
+Date: Sat, 12 May 2007 16:22:47 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
+Message-ID: <20070512105247.GA30887@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <200705110035.32229.rjw@sisk.pl> <200705121127.37655.rjw@sisk.pl> <20070512101317.GB8860@in.ibm.com> <200705121241.55556.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705121241.55556.rjw@sisk.pl>
+User-Agent: Mutt/1.5.12-2006-07-14
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Sat, 12 May 2007, Simon Arlott wrote:
-
-> On 12/05/07 02:03, Finn Thain wrote:
-> > 
-> > On Fri, 11 May 2007, Simon Arlott wrote:
-> > 
-> > > - *	Local routines to interrcept the standard I/O and vector handling
-> > > - *	code. Don't include this 'till now - initialization code above needs
-> > > + *	Local routines to intercept the standard I/O and vector handling
-> > > + *	code. Don't include this until now - initialization code above needs
-> > >   *      access to the real code too.
-> > 
-> > What's wrong with 'til?
-> > 
+On Sat, May 12, 2007 at 12:41:54PM +0200, Rafael J. Wysocki wrote:
 > 
-> Nothing, but is there anything wrong with correcting 'till to until?
+> Still, the following scenario is possible while we're freezing users space
+> tasks:
+> 
+> (1) user space task calls daemonize()
+> (2) freezer checks if this is a user space task and the test returns 'true'
+> (3) task calls exit_mm() and clears its TIF_FREEZE
+> (4) freezer sets TIF_FREEZE for the task
+> (5) task calls try_to_freeze() and freezes itself (bad!)
+> 
+> To prevent this from happening, I think, we should acquire task_lock() around
+> the entire block in which the test is made and TIF_FREEZE is set for the task,
+> so something more sophisticated than
+> freezer-read-pf_borrowed_mm-in-a-nonracy-way.patch is needed.
+>
 
-Correcting? Well, you might correct the grammar, e.g. "This wasn't 
-included until now because..." Non-native English speakers will read this 
-comment and that's a good argument for good grammar, but I don't care too 
-much for fixing this myself.
+Hmmm, turns out Linus was right, after all! The caller needs to acquire
+the task_lock().
 
-It is hard for me to understand other people's terse comments, which would 
-make it hard for me to rewrite them in correct English. Sometimes I first 
-have to figure out the idiom being used. But it is even harder to 
-understand them after nuances are removed.
+> Well, I think we should ask Andrew to drop this patch and try to address the
+> issue in the next series of patches.
 
-To answer your question, I find it easier to parse the original idiom, 
-"'til now". Your corruption, "until now", loses information available to 
-anyone who can recognise the idiom. Granted, this is not the worst example 
-of that effect...
+I think it's a good idea. 
 
--f
+I would want to review the patches again. The more I look at them,
+the better I seem to understand the subtleties in the freezer code.
+
+> 
+> Greetings,
+> Rafael
+
+Thanks and Regards
+gautham.
+-- 
+Gautham R Shenoy
+Linux Technology Center
+IBM India.
+"Freedom comes with a price tag of responsibility, which is still a bargain,
+because Freedom is priceless!"
