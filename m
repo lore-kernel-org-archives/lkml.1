@@ -1,91 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbXELQEa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758784AbXELQNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759192AbXELQEa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 12:04:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755807AbXELQEY
+	id S1758784AbXELQNS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 12:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754450AbXELQNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 12:04:24 -0400
-Received: from mail.screens.ru ([213.234.233.54]:38957 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751750AbXELQEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 12:04:23 -0400
-Date: Sat, 12 May 2007 20:04:28 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
-Subject: Re: [PATCH 1/2] scalable rw_mutex
-Message-ID: <20070512160428.GA173@tv-sign.ru>
-References: <20070511131541.992688403@chello.nl> <20070511132321.895740140@chello.nl> <20070511230023.GA449@tv-sign.ru> <1178977276.6810.59.camel@twins>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178977276.6810.59.camel@twins>
-User-Agent: Mutt/1.5.11
+	Sat, 12 May 2007 12:13:09 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:49956 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753329AbXELQNI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 12:13:08 -0400
+Message-ID: <4645E76B.2060704@drzeus.cx>
+Date: Sat, 12 May 2007 18:12:27 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Nicolas Pitre <nico@cam.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT PULL] MMC updates
+References: <46375B18.4080802@drzeus.cx> <20070509185636.GB26981@flint.arm.linux.org.uk> <46421BB5.7040504@drzeus.cx> <20070509221253.GC26981@flint.arm.linux.org.uk> <4642B122.5070609@drzeus.cx> <46432502.4050901@drzeus.cx> <alpine.LFD.0.99.0705101037220.24220@xanadu.home> <alpine.LFD.0.99.0705121122440.24220@xanadu.home>
+In-Reply-To: <alpine.LFD.0.99.0705121122440.24220@xanadu.home>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/12, Peter Zijlstra wrote:
+Nicolas Pitre wrote:
+> Actually, I'm not the author of this workaround.  And looking at it 
+> closer, the current workaround is utterly buggy as it completely inhibit 
+> CRC error reporting for everything but the listed commands when the MSB 
+> of the response is a zero.
 >
-> +static inline void rw_mutex_readers_dec(struct rw_mutex *rw_mutex)
-> +{
-> +	percpu_counter_dec(&rw_mutex->readers);
-> +	smp_wmb();
-> +}
+>   
+
+Your name popped up on the commit for this, but as that was during the
+bk days the information was severely lacking.
+
+> Please apply the following patch.  It is compile tested only as I don't 
+> have PXA27x hardware with MMC at the moment, but it just cannot be worse 
+> than the current code even when it was compiling.
 >
-> +void rw_mutex_read_unlock(struct rw_mutex *rw_mutex)
-> +{
-> +	rw_mutex_readers_dec(rw_mutex);
-> +	/*
-> +	 * on the slow path;
-> +	 * nudge the writer waiting for the last reader to go away
-> +	 */
-> +	if (unlikely(rw_mutex_reader_slow(rw_mutex)))
-> +		rw_mutex_writer_wake(rw_mutex);
-> +}
->
-> +void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass)
-> +{
-> +	mutex_lock_nested(&rw_mutex->write_mutex, subclass);
-> +
-> +	/*
-> +	 * block new readers
-> +	 */
-> +	mutex_lock_nested(&rw_mutex->read_mutex, subclass);
-> +	rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_SLOW);
-> +	/*
-> +	 * and wait for all current readers to go away
-> +	 */
-> +	rw_mutex_writer_wait(rw_mutex, (rw_mutex_readers(rw_mutex) == 0));
-> +}
+>   
 
-I think this is still not right, but when it comes to barriers we
-need a true expert (Paul cc-ed).
+I would think that it would be better to look at just MMC_RSP_136 and
+MMC_RSP_CRC in case we get future variations.
 
-this code roughly does (the only reader does unlock)
+Rgds
 
-	READER			WRITER
+-- 
+     -- Pierre Ossman
 
-	readers = 0;		state = 1;
-	wmb();			wmb();
-	CHECK(state != 0)	CHECK(readers == 0)
-
-We need to ensure that we can't miss both CHECKs. Either reader
-should see RW_MUTEX_READER_SLOW, o writer sees "readers == 0"
-and does not sleep.
-
-In that case both barriers should be converted to smp_mb(). There
-was a _long_ discussion about STORE-MB-LOAD behaviour, and experts
-seem to believe everething is ok.
-
-Another question. Isn't it possible to kill rw_mutex->status ?
-
-I have a vague feeling you can change the code so that
-
-	rw_mutex_reader_slow() <=> "->waiter != NULL"
-
-, but I am not sure.
-
-Oleg.
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
 
