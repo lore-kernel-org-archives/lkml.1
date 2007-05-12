@@ -1,60 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbXELSEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757205AbXELSH1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759206AbXELSEX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 14:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbXELSER
+	id S1757205AbXELSH1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 14:07:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751208AbXELSHS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 14:04:17 -0400
-Received: from lixom.net ([66.141.50.11]:42242 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752338AbXELSEQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 14:04:16 -0400
-Date: Sat, 12 May 2007 13:06:58 -0500
-To: linux-pcmcia@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org
-Subject: [PATCH v2] pcmcia: export pcmcia_bus_type
-Message-ID: <20070512180658.GA14291@lixom.net>
-References: <20070512153307.GA13223@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070512153307.GA13223@lixom.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: olof@lixom.net (Olof Johansson)
+	Sat, 12 May 2007 14:07:18 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46614 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750833AbXELSHQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 14:07:16 -0400
+Date: Sat, 12 May 2007 11:06:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 1/2] scalable rw_mutex
+Message-Id: <20070512110624.9ac3aa44.akpm@linux-foundation.org>
+In-Reply-To: <p73odkpeusf.fsf@bingen.suse.de>
+References: <20070511131541.992688403@chello.nl>
+	<20070511132321.895740140@chello.nl>
+	<20070511093108.495feb70.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705111006470.32716@schroedinger.engr.sgi.com>
+	<20070511110522.ed459635.akpm@linux-foundation.org>
+	<p73odkpeusf.fsf@bingen.suse.de>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export pcmcia_bus_type so module-based drivers can register bus notifiers,
-and add it to what seems to be the main include file.
+On 12 May 2007 20:55:28 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+> Andrew Morton <akpm@linux-foundation.org> writes:
+> 
+> > On Fri, 11 May 2007 10:07:17 -0700 (PDT)
+> > Christoph Lameter <clameter@sgi.com> wrote:
+> > 
+> > > On Fri, 11 May 2007, Andrew Morton wrote:
+> > > 
+> > > > yipes.  percpu_counter_sum() is expensive.
+> > > 
+> > > Capable of triggering NMI watchdog on 4096+ processors?
+> > 
+> > Well.  That would be a millisecond per cpu which sounds improbable.  And
+> > we'd need to be calling it under local_irq_save() which we presently don't.
+> > And nobody has reported any problems against the existing callsites.
+> > 
+> > But it's no speed demon, that's for sure.
+> 
+> There is one possible optimization for this I did some time ago. You don't really
+> need to sum all over the possible map, but only all CPUs that were ever 
+> online. But this only helps on systems where the possible map is bigger
+> than online map in the common case. But that shouldn't be the case anymore on x86
+> -- it just used to be. If it's true on some other architectures it might
+> be still worth it.
+> 
 
----
+hm, yeah.
 
-Missed the include file in the last patch.
+We could put a cpumask in percpu_counter, initialise it to
+cpu_possible_map.  Then, those callsites which have hotplug notifiers can
+call into new percpu_counter functions which clear and set bits in that
+cpumask and which drain percpu_counter.counts[cpu] into
+percpu_counter.count.
 
-
-Index: 2.6.21/drivers/pcmcia/ds.c
-===================================================================
---- 2.6.21.orig/drivers/pcmcia/ds.c
-+++ 2.6.21/drivers/pcmcia/ds.c
-@@ -1404,6 +1404,7 @@ struct bus_type pcmcia_bus_type = {
- 	.suspend = pcmcia_dev_suspend,
- 	.resume = pcmcia_dev_resume,
- };
-+EXPORT_SYMBOL(pcmcia_bus_type);
- 
- 
- static int __init init_pcmcia_bus(void)
-Index: 2.6.21/include/pcmcia/ss.h
-===================================================================
---- 2.6.21.orig/include/pcmcia/ss.h
-+++ 2.6.21/include/pcmcia/ss.h
-@@ -298,6 +298,7 @@ extern int pcmcia_register_socket(struct
- extern void pcmcia_unregister_socket(struct pcmcia_socket *socket);
- 
- extern struct class pcmcia_socket_class;
-+extern struct bus_type pcmcia_bus_type;
- 
- /* socket drivers are expected to use these callbacks in their .drv struct */
- extern int pcmcia_socket_dev_suspend(struct device *dev, pm_message_t state);
+And percpu_counter_sum() gets taught to do for_each_cpu_mask(fbc->cpumask).
