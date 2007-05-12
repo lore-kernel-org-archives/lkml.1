@@ -1,66 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbXELHeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXELHjs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbXELHeR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 03:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbXELHeJ
+	id S1758008AbXELHjs (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 03:39:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbXELHjl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 03:34:09 -0400
-Received: from py-out-1112.google.com ([64.233.166.182]:56131 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755672AbXELHeH (ORCPT
+	Sat, 12 May 2007 03:39:41 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:20453 "EHLO
+	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755672AbXELHjk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 03:34:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:openpgp:content-type:content-transfer-encoding;
-        b=N9OvliACLFjy0IWdWPhBHRm3PiXY/tYRf98xO+WkPEh1ixzm0c6AUnBySyu44ieqb4im0FKLjiuZqR8GU1E2vTbUZsW18lgg9MxchXSzsystIIBW5xD8l5Idt9WtjqnYK1XXpC72GSj2srBvgT5E1ciZ5Qp2jL9u7LB88GRPUnA=
-Message-ID: <46456DDE.5070006@gmail.com>
-Date: Sat, 12 May 2007 13:03:50 +0530
-From: jimmy bahuleyan <knight.camelot@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Satyam Sharma <satyam.sharma@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Jonathan Corbet <corbet@lwn.net>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Johannes Stezenbach <js@linuxtv.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>
-Subject: Re: [PATCH] "volatile considered harmful", take 3
-References: <12700.1178905000@lwn.net>	 <a781481a0705112021u7b6d32fcxb6318d7e2443c970@mail.gmail.com>	 <464551D5.2050709@zytor.com>	 <a781481a0705112315u5843abaar292859428ec60603@mail.gmail.com>	 <46455CD9.7010205@zytor.com> <a781481a0705120002xb604e7al629ceb1c27109451@mail.gmail.com> <46456B18.9060605@s5r6.in-berlin.de>
-In-Reply-To: <46456B18.9060605@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.0
-OpenPGP: url=subkeys.pgp.net
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 12 May 2007 03:39:40 -0400
+Subject: Re: [PATCH 1/2] scalable rw_mutex
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20070511230023.GA449@tv-sign.ru>
+References: <20070511131541.992688403@chello.nl>
+	 <20070511132321.895740140@chello.nl>  <20070511230023.GA449@tv-sign.ru>
+Content-Type: text/plain
+Date: Sat, 12 May 2007 09:39:34 +0200
+Message-Id: <1178955574.6810.50.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Satyam Sharma wrote:
->> Coming back to the document, we do need to document / find
->> consensus on the "preferred" way to do similar business in the
->> kernel, and my opinion as far as that is concerned is to shun
->> volatile wherever possible (which includes the case originally
->> discussed above).
+On Sat, 2007-05-12 at 03:00 +0400, Oleg Nesterov wrote:
+> On 05/11, Peter Zijlstra wrote:
+> > 
+> > +static inline int __rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
+> > +{
+> > +	preempt_disable();
+> > +	if (likely(!__rw_mutex_reader_slow(rw_mutex))) {
 > 
-> I too recommend that volatile-considered-harmful.txt is not watered down
-> by an ever growing "but if" list.  If anybody knows what he does, he
-> still can program in a deviating way --- provided that he leaves a brief
-> comment in the code, telling why it is possible and beneficial to use
-> the volatile qualifier in this special case.
+> 	--- WINDOW ---
+> 
+> > +		percpu_counter_mod(&rw_mutex->readers, 1);
+> > +		preempt_enable();
+> > +		return 1;
+> > +	}
+> > +	preempt_enable();
+> > +	return 0;
+> > +}
 
-yes, this seems the better option. generally, the more complex rules you
-have, the more people tend to break it (either through not being able t
-comprehend it or cos it's too difficult to follow).
+Yeah, I found that one when Andrew asked me about that preempt_disable()
+thing.
 
-i believe, the doc here is pretty unambiguous regarding the fact that
-volatile should be avoided. And as Stefan pointed out, anyone who feels
-the need to use, must surely _know_ what he is doing & hence is in a
-position t make that decision (followed ofcourse with a doc of why it
-was done).
+How about:
 
-it would be better we didn't grow the list of exceptions - IMHO.
+int __rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
+{
+	percpu_counter_inc(&rw_mutex->readers);
+	if (unlikely(rw_mutex_reader_slow(rw_mutex))) {
+		percpu_counter_dec(&rw_mutex->readers);
+		/*
+		 * possibly wake up a writer waiting for this reference to
+		 * disappear
+		 */
+		wake_up(&rw_mutex->wait_queue);
+		return 0;
+	}
+	return 1;
+}
 
--jb
--- 
-Tact is the art of making a point without making an enemy.
+
+> > [...snip...]
+> >
+> > +void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass)
+> > +{
+> > [...snip...]
+> > +
+> > +	/*
+> > +	 * block new readers
+> > +	 */
+> > +	__rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_SLOW);
+> > +	/*
+> > +	 * wait for all readers to go away
+> > +	 */
+> > +	wait_event(rw_mutex->wait_queue,
+> > +			(percpu_counter_sum(&rw_mutex->readers) == 0));
+> > +}
+> 
+> This look a bit suspicious, can't mutex_write_lock() set RW_MUTEX_READER_SLOW
+> and find percpu_counter_sum() == 0 in that WINDOW above?
+
+Indeed; however with the above having the reverse sequence this has, it
+should be closed no?
+
+> > +void rw_mutex_read_unlock(struct rw_mutex *rw_mutex)
+> > +{
+> > +     rwsem_release(&rw_mutex->dep_map, 1, _RET_IP_);
+> > +
+> > +     percpu_counter_mod(&rw_mutex->readers, -1);
+> > +     if (unlikely(__rw_mutex_reader_slow(rw_mutex)) &&
+> > +                     percpu_counter_sum(&rw_mutex->readers) == 0)
+
+I took out the percpu_counter_sum()
+
+> > +             wake_up_all(&rw_mutex->wait_queue);
+> > +}
+> 
+> The same. __rw_mutex_status_set()->wmb() in rw_mutex_write_lock below
+> is not enough. percpu_counter_mod() doesn't take fbc->lock if < FBC_BATCH,
+> so we don't have a proper serialization.
+> 
+> write_lock() sets RW_MUTEX_READER_SLOW, finds percpu_counter_sum() != 0,
+> and sleeps. rw_mutex_read_unlock() decrements cpu-local var, does not
+> see RW_MUTEX_READER_SLOW and skips wake_up_all().
+
+write lock              read lock               read unlock
+
+a) state = slow         1) readers++            I)  readers--
+b) wait(readers == 0)   2) if (state == slow)   II) if (state == slow)
+
+That looks pretty safe to me; however are you suggesting the
+percpu_counter_inc() needs some sort of barrier in order to be reliably
+picked up by the percpu_counter_sum()?
+
+something like this:
+
+percpu_counter_{inc,dec}
+smp_wmb()
+
+vs
+
+smp_rmb()
+percpu_counter_sum(()
+
+> > +void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass)
+> > +{
+> > +	might_sleep();
+> > +	rwsem_acquire(&rw_mutex->dep_map, subclass, 0, _RET_IP_);
+> > +
+> > +	mutex_lock_nested(&rw_mutex->write_mutex, subclass);
+> > +	mutex_lock_nested(&rw_mutex->read_mutex, subclass);
+> > +
+> > +	/*
+> > +	 * block new readers
+> > +	 */
+> > +	__rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_SLOW);
+> > +	/*
+> > +	 * wait for all readers to go away
+> > +	 */
+> > +	wait_event(rw_mutex->wait_queue,
+> > +			(percpu_counter_sum(&rw_mutex->readers) == 0));
+> > +}
+> > +
+> > +void rw_mutex_write_unlock(struct rw_mutex *rw_mutex)
+> > +{
+> > +	int waiters;
+> > +
+> > +	rwsem_release(&rw_mutex->dep_map, 1, _RET_IP_);
+> > +
+> > +	/*
+> > +	 * let the readers rip
+> > +	 */
+> > +	__rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_FAST);
+> > +	waiters = atomic_read(&rw_mutex->read_waiters);
+> > +	mutex_unlock(&rw_mutex->read_mutex);
+> > +	/*
+> > +	 * wait for at least 1 reader to get through
+> > +	 */
+> > +	if (waiters) {
+> > +		wait_event(rw_mutex->wait_queue,
+> > +			(atomic_read(&rw_mutex->read_waiters) < waiters));
+> > +	}
+> > +	/*
+> > +	 * before we let the writers rip
+> > +	 */
+> > +	mutex_unlock(&rw_mutex->write_mutex);
+> > +}
+> 
+> Looks like we can have only one task on rw_mutex->wait_queue, and it holds
+> ->write_mutex. Can't we use just a "task_struct *write_waiter" instead of
+> ->wait_queue ? This makes rw_mutex smaller.
+
+Good point; I'll try and figure out how to sleep and wake a single task
+without the waitqueue.
+
