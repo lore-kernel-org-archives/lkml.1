@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760403AbXELQ7a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759462AbXELRF0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760403AbXELQ7a (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 12:59:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756997AbXELQ7T
+	id S1759462AbXELRF0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 13:05:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXELRFR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 12:59:19 -0400
-Received: from mail.screens.ru ([213.234.233.54]:56895 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757029AbXELQ7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 12:59:17 -0400
-Date: Sat, 12 May 2007 20:58:57 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
-Message-ID: <20070512165857.GA274@tv-sign.ru>
-References: <200705110035.32229.rjw@sisk.pl> <200705121245.50715.rjw@sisk.pl> <20070512141813.GA98@tv-sign.ru> <200705121835.21333.rjw@sisk.pl>
+	Sat, 12 May 2007 13:05:17 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:26981 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756423AbXELRFQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 13:05:16 -0400
+Subject: Re: [PATCH 1/2] scalable rw_mutex
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20070512160428.GA173@tv-sign.ru>
+References: <20070511131541.992688403@chello.nl>
+	 <20070511132321.895740140@chello.nl> <20070511230023.GA449@tv-sign.ru>
+	 <1178977276.6810.59.camel@twins>  <20070512160428.GA173@tv-sign.ru>
+Content-Type: text/plain
+Date: Sat, 12 May 2007 18:57:47 +0200
+Message-Id: <1178989068.19461.3.camel@lappy>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <200705121835.21333.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/12, Rafael J. Wysocki wrote:
->
-> Ah, I see.  We spawn a kernel thread from a code path that belongs to a
-> user space task and we need to call deamonize() to make it become a
-> 'real' kernel thread.
+On Sat, 2007-05-12 at 20:04 +0400, Oleg Nesterov wrote:
+> On 05/12, Peter Zijlstra wrote:
+> >
+> > +static inline void rw_mutex_readers_dec(struct rw_mutex *rw_mutex)
+> > +{
+> > +	percpu_counter_dec(&rw_mutex->readers);
+> > +	smp_wmb();
+> > +}
+> >
+> > +void rw_mutex_read_unlock(struct rw_mutex *rw_mutex)
+> > +{
+> > +	rw_mutex_readers_dec(rw_mutex);
+> > +	/*
+> > +	 * on the slow path;
+> > +	 * nudge the writer waiting for the last reader to go away
+> > +	 */
+> > +	if (unlikely(rw_mutex_reader_slow(rw_mutex)))
+> > +		rw_mutex_writer_wake(rw_mutex);
+> > +}
+> >
+> > +void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass)
+> > +{
+> > +	mutex_lock_nested(&rw_mutex->write_mutex, subclass);
+> > +
+> > +	/*
+> > +	 * block new readers
+> > +	 */
+> > +	mutex_lock_nested(&rw_mutex->read_mutex, subclass);
+> > +	rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_SLOW);
+> > +	/*
+> > +	 * and wait for all current readers to go away
+> > +	 */
+> > +	rw_mutex_writer_wait(rw_mutex, (rw_mutex_readers(rw_mutex) == 0));
+> > +}
 > 
-> Still, this means that is_user_space() may return 'true' for this thread
-> before it calls daemonize() and then the scenario described by me in the
-> previous message may occur.  It seems.
+> I think this is still not right, but when it comes to barriers we
+> need a true expert (Paul cc-ed).
+> 
+> this code roughly does (the only reader does unlock)
+> 
+> 	READER			WRITER
+> 
+> 	readers = 0;		state = 1;
+> 	wmb();			wmb();
+> 	CHECK(state != 0)	CHECK(readers == 0)
+> 
+> We need to ensure that we can't miss both CHECKs. Either reader
+> should see RW_MUTEX_READER_SLOW, o writer sees "readers == 0"
+> and does not sleep.
+> 
+> In that case both barriers should be converted to smp_mb(). There
+> was a _long_ discussion about STORE-MB-LOAD behaviour, and experts
+> seem to believe everething is ok.
 
-Yes sure. Probably not so bad in practice. Most likely this fresh thread
-is not "important" and could be freezed, I dunno.
+Ah, but note that both those CHECK()s have a rmb(), so that ends up
+being:
 
-> It's in freezer-fix-pf_nofreeze-vs-freezeable-race.patch (appended for
-> convenience, white space may be broken).
->
-> ---
-> --- a/include/linux/freezer.h~freezer-fix-pf_nofreeze-vs-freezeable-race
-> +++ a/include/linux/freezer.h
-> @@ -63,8 +63,10 @@ static inline int thaw_process(struct ta
->   */
->  static inline void frozen_process(struct task_struct *p)
->  {
-> -       p->flags |= PF_FROZEN;
-> -       wmb();
-> +       if (!unlikely(p->flags & PF_NOFREEZE)) {
-> +               p->flags |= PF_FROZEN;
-> +               wmb();
-> +       }
->         clear_tsk_thread_flag(p, TIF_FREEZE);
->  }
+	READER				WRITER
 
-This is OK if a kernel thread does try_to_freeze() eventually.
+	readers = 0;			state = 1;
+	wmb();				wmb();
 
-But what if it does not, because it marks itself as PF_NOFREEZE?
-This means it may run with signal_pending() forever. That is why
-I think we should clear TIF_FREEZE when we set PF_NOFREEZE.
+	rmb();				rmb();		
+	if (state != 0)			if (readers == 0)
 
-Oleg.
+and a wmb+rmb is a full mb, right?
+
+> Another question. Isn't it possible to kill rw_mutex->status ?
+> 
+> I have a vague feeling you can change the code so that
+> 
+> 	rw_mutex_reader_slow() <=> "->waiter != NULL"
+> 
+> , but I am not sure.
+
+If not now, it might be possible to make it so. Thanks for the
+suggestion.
+
+Peter
 
