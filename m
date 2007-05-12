@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759153AbXELWKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759726AbXELWOz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759153AbXELWKY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 18:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751892AbXELWKM
+	id S1759726AbXELWOz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 18:14:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751998AbXELWOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 18:10:12 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:50498 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751998AbXELWKL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 18:10:11 -0400
-Message-ID: <46463AED.5060800@zytor.com>
-Date: Sat, 12 May 2007 15:08:45 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sat, 12 May 2007 18:14:48 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:58455 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751892AbXELWOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 18:14:48 -0400
+Date: Sun, 13 May 2007 00:14:46 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Gautham R Shenoy <ego@in.ibm.com>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFD] Freezing of kernel threads
+Message-ID: <20070512221446.GA761@elf.ucw.cz>
+References: <200705122017.32792.rjw@sisk.pl> <20070512191709.GA428@elf.ucw.cz> <alpine.LFD.0.98.0705121239090.3986@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Alexander van Heukelum <heukelum@mailshack.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@osdl.org>, Matt Domsch <Matt_Domsch@dell.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPar>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86 setup rewrite tree ready for flamage^W review
-References: <464158E9.2000207@zytor.com>	<1178806235.18785.1189115515@webmail.messagingengine.com>	<46435F8A.1040203@zytor.com> <20070510220406.GA21110@mailshack.com>	<4643A128.30302@zytor.com> <20070512122137.GA25944@mailshack.com>	<m1r6pmqg1n.fsf@ebiederm.dsl.xmission.com>	<464602DC.4050603@zytor.com>	<m1mz09ritr.fsf@ebiederm.dsl.xmission.com>	<46460E9E.9020308@zytor.com> <m1iraxr95g.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1iraxr95g.fsf@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.0.98.0705121239090.3986@woody.linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> Ok.  If you have tested on a wide variety of machines then I won't
-> worry about it.
+Hi!
+
+> > If you fail to do that, we'll see freezer failure, quickly, and catch
+> > the simple bug.
 > 
-> I guess if a cr0 write has always been synchronizing things should be
-> a safe practice.  The practical danger is if you write to cr0 and the
-> pipeline is not flushed and the segment loads might execute as 16bit
-> mode segment register loads.  I think this is more of a 486 or 586/Pentium
-> danger actually then a 386 one.
+> "It's a feature to add crap to drivers and subsystems that don't care!"
+> 
+> That's a novel thing.
+> 
+> Maybe we could add other features too. Like a "IM_NOT_AN_IDIOT" flag that 
+> every driver has to set in it's "struct device", so that the device 
+> manager knows that it wasn't written by an idiot.
 
-Writes to CR0 are synchronizing and are documented as such.  This is a
-fairly trivial consequence of it invoking microcode on every x86 ever
-created.
+Well, it was initially SOMEONE_REVIEWIED_THIS flag (and thus pretty
+neccessary for initial merge). Now it still serves as
+SOMEONE_REVIEWIED_THIS flag, but I guess you could call it
+IM_NOT_AN_IDIOT flag, too.
 
-> Hmm. I'm not certain about enabling protected mode but enabling paging
-> at least does appear to be documented to require a jump, before the P6
-> core.  Which may be why it is recommended for initializing protected
-> mode.
-
-Enabling paging is possibly a different matter.  I can't speak on that
-particular subject with any authority.
-
-	-hpa
+Well, we can go the other way around, but that means more careful
+reviewing of incoming code. Yes, we can do it.
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
