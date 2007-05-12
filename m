@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbXELS24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbXELS3b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759255AbXELS24 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 14:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbXELS2u
+	id S1759618AbXELS3b (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 14:29:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbXELS3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 14:28:50 -0400
-Received: from brick.kernel.dk ([80.160.20.94]:20434 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755307AbXELS2t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 14:28:49 -0400
-Date: Sat, 12 May 2007 20:27:57 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Oliver Xymoron <oxymoron@waste.org>
-Cc: Christoph Lameter <clameter@sgi.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: SLUB under lguest on i386
-Message-ID: <20070512182756.GP4629@kernel.dk>
-References: <20070511213336.GX11166@waste.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070511213336.GX11166@waste.org>
+	Sat, 12 May 2007 14:29:23 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:60869 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755307AbXELS3X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 14:29:23 -0400
+Date: Sat, 12 May 2007 20:29:20 +0200 (MEST)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: linux-kernel@vger.kernel.org, Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20070512183154.17375.54599.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] usbusx2yaudio: kfree(NULL) is valid
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11 2007, Oliver Xymoron wrote:
-> Tried to boot using SLUB under lguest with 2.6.21-mm2. Got the
-> following:
-> 
-> ...
-> [    0.388000] NET: Registered protocol family 17
-> [    0.388000] Using IPI Shortcut mode
-> [    0.420000] EXT2-fs warning: mounting unchecked fs, running e2fsck
-> is recommended
-> [    0.420000] VFS: Mounted root (ext2 filesystem).
-> [    0.420000] Freeing unused kernel memory: 188k freed
-> [   17.536000] BUG: spinlock lockup on CPU#0, init/1, c17de0c0
-> [   17.536000]  [<c0104584>] show_trace_log_lvl+0x1a/0x30
-> [   17.536000]  [<c0105196>] show_trace+0x12/0x14
-> [   17.536000]  [<c0105222>] dump_stack+0x15/0x17
-> [   17.536000]  [<c021339f>] _raw_spin_lock+0xbf/0xd8
-> [   17.536000]  [<c03cd41a>] _spin_lock+0x3c/0x42
-> [   17.536000]  [<c0154f0c>] vma_adjust+0x1a9/0x35f
-> [   17.536000]  [<c01554c3>] vma_merge+0x158/0x168
-> [   17.536000]  [<c0155b3b>] mmap_region+0x13b/0x405
-> [   17.536000]  [<c01560ec>] do_mmap_pgoff+0x211/0x269
-> [   17.536000]  [<c0107594>] sys_mmap2+0x64/0xb4
-> [   17.536000]  [<c010763d>] old_mmap+0x59/0x5f
-> [   17.536000]  [<c0103ed0>] syscall_call+0x7/0xb
-> [   17.536000]  =======================
-> 
-> And no sign of further progress. SLAB worked fine.
+if (!x) kfree(x); is not needed since kfree(NULL) is valid.
 
-Exact same thing happens on real hardware here.
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Compile-tested with all(yes|mod|no)config on x86(|_64) & sparc(|64)
+Diffed against Linus' git-tree.
 
--- 
-Jens Axboe
 
+diff --git a/sound/usb/usx2y/usbusx2yaudio.c b/sound/usb/usx2y/usbusx2yaudio.c
+index 0a352e4..48e9aa3 100644
+--- a/sound/usb/usx2y/usbusx2yaudio.c
++++ b/sound/usb/usx2y/usbusx2yaudio.c
+@@ -935,10 +935,9 @@ static struct snd_pcm_ops snd_usX2Y_pcm_ops =
+  */
+ static void usX2Y_audio_stream_free(struct snd_usX2Y_substream **usX2Y_substream)
+ {
+-	if (NULL != usX2Y_substream[SNDRV_PCM_STREAM_PLAYBACK]) {
+-		kfree(usX2Y_substream[SNDRV_PCM_STREAM_PLAYBACK]);
+-		usX2Y_substream[SNDRV_PCM_STREAM_PLAYBACK] = NULL;
+-	}
++	kfree(usX2Y_substream[SNDRV_PCM_STREAM_PLAYBACK]);
++	usX2Y_substream[SNDRV_PCM_STREAM_PLAYBACK] = NULL;
++
+ 	kfree(usX2Y_substream[SNDRV_PCM_STREAM_CAPTURE]);
+ 	usX2Y_substream[SNDRV_PCM_STREAM_CAPTURE] = NULL;
+ }
