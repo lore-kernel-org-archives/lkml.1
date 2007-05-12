@@ -1,89 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759686AbXELVLv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760150AbXELVM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759686AbXELVLv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 17:11:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXELVLo
+	id S1760150AbXELVM4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 17:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754696AbXELVMt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 17:11:44 -0400
-Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32813 "EHLO
-	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754252AbXELVLn (ORCPT
+	Sat, 12 May 2007 17:12:49 -0400
+Received: from smtp.bulldogdsl.com ([212.158.248.8]:1082 "EHLO
+	mcr-smtp-002.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754252AbXELVMt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 17:11:43 -0400
-Date: Sat, 12 May 2007 23:11:44 +0200
-From: Adrian Bunk <bunk@stusta.de>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: David Woodhouse <dwmw2@infradead.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, Anton Vorontsov <cbou@mail.ru>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-Message-ID: <20070512211144.GO7984@stusta.de>
-References: <1178550653.11851.191.camel@pmac.infradead.org> <20070507194949.GB3981@ucw.cz> <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com> <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl> <1178646751.2824.48.camel@pmac.infradead.org> <Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl> <1178721996.2824.199.camel@pmac.infradead.org> <20070509203335.GA4290@ucw.cz> <1178887402.21820.65.camel@shinybook.infradead.org> <20070511132116.GH4052@ucw.cz>
+	Sat, 12 May 2007 17:12:49 -0400
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Subject: Re: [announce] Intel announces the PowerTOP utility for Linux
+Date: Sat, 12 May 2007 22:12:43 +0100
+User-Agent: KMail/1.9.6
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+References: <4644F726.1050806@linux.intel.com>
+In-Reply-To: <4644F726.1050806@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070511132116.GH4052@ucw.cz>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Message-Id: <200705122212.43653.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 01:21:16PM +0000, Pavel Machek wrote:
-> Hi!
-> 
-> > > > > And how about serial terminals?
-> > > > 
-> > > > It works fine over serial terminals. Why wouldn't it?
-> > > 
-> > > He probably means serial terminals... like physical vt100. I used to
-> > > have one (vt302 compatible or something).  Most emulators still
-> > > emulate vt100, and yes, vt100 predates utf-8. 
-> > 
-> > I have a serial terminal which can only do lower case (well, actually
-> > capitals but it's all mapped to lower case since that's more useful).
-> > 
-> > When I write code on it, I can't do capital letters. But do I try to
-> > _force_ you to use only capitals because of my limited terminal?
-> 
-> If I wrote int j, J; in my code, you'd have valid case wanting me to
-> fix it. And I simply want you to fix useless uses of utf-8. And evil
-> uses utf8, like int voltage; /* ??V */. I do not know what is so hard
-> to understand.
-> 
-> You are intentionally making code hard to read. Stop trying to merge
-> that crap.
+On Saturday 12 May 2007 00:07:18 Arjan van de Ven wrote:
+> What's eating the battery life of my laptop? Why isn't it many more
+> hours? Which software component causes the most power to be burned?
+> These are important questions without a good answer... until now.
 
-It was °C, and that's IMHO better readable than some kind of "degrees C".
+This is a really great tool and presents a very intuitive alternative to the 
+timer stats file..
 
-Only using 7bit ASCII might have been a good advice in the last 
-millenium. But in the current millenium, most environments handle UTF-8 
-just fine.
+On a Core 2 Duo Macbook, Linux always gets around 3.2h battery, OS X about 
+4.2h. This tool has identified that uhci_hcd is where 75% of the ticks are 
+going when X is not loaded. Unloading uhci_hcd drops the battery life back to 
+around 4.2h, but I lose the keyboard.
 
-And we are only talking about documentation and comments - IOW, things 
-not visible for someone running a kernel. Code (including printk's) must 
-stay 7bit ASCII.
+Is there any way to find out what USB driver is causing usb_uhci to be this 
+busy?
 
-In the worst case, if you managed to find a not UTF-8 capable 
-environment for viewing the kernel sources, the few characters that are 
-not 7bit ASCII are displayed incorrectly, and you'll have to guess which 
-character someone might place in front of a "C" describing something 
-named wBAT_TEMP (you will likely guess it correctly).
-
-And it's nothing new, comments containing non 7bit ASCII characters are 
-already present in 10 year old kernels (often, but not limited to,
-developer's names).
-
-> 							Pavel
-
-cu
-Adrian
+(BTW, the link to Keith's patch for dhcdbd seems to be broken on your 
+homepage.)
 
 -- 
+Cheers,
+Alistair.
 
-       "Is there not promise of rain?" Ling Tan asked suddenly out
-        of the darkness. There had been need of rain for many days.
-       "Only a promise," Lao Er said.
-                                       Pearl S. Buck - Dragon Seed
-
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
