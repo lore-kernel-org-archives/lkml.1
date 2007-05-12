@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759152AbXELOKP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758382AbXELOS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759152AbXELOKP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 10:10:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755956AbXELOKB
+	id S1758382AbXELOS0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 10:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbXELOSU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 10:10:01 -0400
-Received: from loopy.telegraphics.com.au ([202.45.126.152]:33572 "EHLO
-	loopy.telegraphics.com.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754285AbXELOKA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 10:10:00 -0400
-Date: Sun, 13 May 2007 00:09:59 +1000 (EST)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: =?UTF-8?Q?Kolbj=C3=B8rn_Barmen?= <linux-m68k@kolla.no>
-cc: Simon Arlott <simon@fire.lp0.eu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-m68k@vger.kernel.org, trivial@kernel.org
-Subject: Re: [PATCH] spelling fixes: arch/m68knommu/
-In-Reply-To: <alpine.LNX.0.99.0705121554240.30110@halbrend.uninett.no>
-Message-ID: <Pine.LNX.4.64.0705130000130.16778@loopy.telegraphics.com.au>
-References: <4644C716.1020000@simon.arlott.org.uk>
- <Pine.LNX.4.64.0705121024480.14127@loopy.telegraphics.com.au>
- <464575BF.1060105@simon.arlott.org.uk> <Pine.LNX.4.64.0705121951410.16778@loopy.telegraphics.com.au>
- <alpine.LNX.0.99.0705121554240.30110@halbrend.uninett.no>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="768252030-1873923297-1178978530=:16778"
-Content-ID: <Pine.LNX.4.64.0705130002240.16778@loopy.telegraphics.com.au>
+	Sat, 12 May 2007 10:18:20 -0400
+Received: from mail.screens.ru ([213.234.233.54]:51445 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752540AbXELOST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 10:18:19 -0400
+Date: Sat, 12 May 2007 18:18:13 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
+Message-ID: <20070512141813.GA98@tv-sign.ru>
+References: <200705110035.32229.rjw@sisk.pl> <alpine.LFD.0.98.0705111812270.3986@woody.linux-foundation.org> <200705121101.40795.rjw@sisk.pl> <200705121245.50715.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705121245.50715.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On 05/12, Rafael J. Wysocki wrote:
+>
+> ... user space tasks that call deamonize() can also be frozen prematurely.
+> We didn't take this possibility into consideration before, which was obviously
+> wrong.
 
---768252030-1873923297-1178978530=:16778
-Content-Type: TEXT/PLAIN; CHARSET=X-UNKNOWN
-Content-Transfer-Encoding: QUOTED-PRINTABLE
-Content-ID: <Pine.LNX.4.64.0705130002241.16778@loopy.telegraphics.com.au>
+No, no, sorry for the confusion. User space tasks never call deamonize().
 
+Kernel threads call daemonize, because when we are doing kernel_thread()
+on behalf of user-space task, the new kernel thread (child) shares its
+->mm with the caller (parent). So it is considered as "is_user_space()"
+until it does daemonize().
 
+Definitely, is_user_space() should have another name.
 
-On Sat, 12 May 2007, Kolbj=C3=B8rn Barmen wrote:
+When a user space task exits, it does exit_mm() and becomes "a kernel thread"
+from the freezer POV. In its current from, freezer can do nothing with this.
+The exiting task won't call try_to_freeze() after that, so try_to_freeze_tasks()
+will wait until it dissapears (actually, until it calls exit_notify(), note
+the ->exit_state check in freezeable()).
 
-> On Sat, 12 May 2007, Finn Thain wrote:
->=20
-> > To answer your question, I find it easier to parse the original idiom,=
-=20
-> > "'til now". Your corruption, "until now", loses information available t=
-o=20
-> > anyone who can recognise the idiom. Granted, this is not the worst exam=
-ple=20
-> > of that effect...
->=20
-> It is either "till now" or "until now".=20
-> "'til" is just broken english.
+I do not think we can improve things if exit_mm() clears TIF_FREEZING.
+We should clear TIF_FREEZING when we set PF_NOFREEZE, I think. This was
+discussed before iirc, but I forgot the result.
 
-Seems you are right that "till" is also an accepted abbreviation (I found=
-=20
-both in the Oxford American Dictionary). I suppose that there's no typo to=
-=20
-fix here.
+Oleg.
 
--f
-
->=20
-> -- kolla
->=20
---768252030-1873923297-1178978530=:16778--
