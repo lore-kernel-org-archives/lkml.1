@@ -1,183 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbXELHjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757833AbXELHqR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbXELHjs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 03:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756435AbXELHjl
+	id S1757833AbXELHqR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 03:46:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755547AbXELHqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 03:39:41 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:20453 "EHLO
-	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755672AbXELHjk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 03:39:40 -0400
-Subject: Re: [PATCH 1/2] scalable rw_mutex
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20070511230023.GA449@tv-sign.ru>
-References: <20070511131541.992688403@chello.nl>
-	 <20070511132321.895740140@chello.nl>  <20070511230023.GA449@tv-sign.ru>
-Content-Type: text/plain
-Date: Sat, 12 May 2007 09:39:34 +0200
-Message-Id: <1178955574.6810.50.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Sat, 12 May 2007 03:46:08 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46777 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755528AbXELHqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 03:46:07 -0400
+Message-ID: <464570AC.5030108@garzik.org>
+Date: Sat, 12 May 2007 03:45:48 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: jimmy bahuleyan <knight.camelot@gmail.com>
+CC: Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Satyam Sharma <satyam.sharma@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Jonathan Corbet <corbet@lwn.net>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Johannes Stezenbach <js@linuxtv.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>
+Subject: Re: [PATCH] "volatile considered harmful", take 3
+References: <12700.1178905000@lwn.net>	 <a781481a0705112021u7b6d32fcxb6318d7e2443c970@mail.gmail.com>	 <464551D5.2050709@zytor.com>	 <a781481a0705112315u5843abaar292859428ec60603@mail.gmail.com>	 <46455CD9.7010205@zytor.com> <a781481a0705120002xb604e7al629ceb1c27109451@mail.gmail.com> <46456B18.9060605@s5r6.in-berlin.de> <46456DDE.5070006@gmail.com>
+In-Reply-To: <46456DDE.5070006@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.3 (----)
+X-Spam-Report: SpamAssassin version 3.1.8 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.3 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-12 at 03:00 +0400, Oleg Nesterov wrote:
-> On 05/11, Peter Zijlstra wrote:
-> > 
-> > +static inline int __rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
-> > +{
-> > +	preempt_disable();
-> > +	if (likely(!__rw_mutex_reader_slow(rw_mutex))) {
-> 
-> 	--- WINDOW ---
-> 
-> > +		percpu_counter_mod(&rw_mutex->readers, 1);
-> > +		preempt_enable();
-> > +		return 1;
-> > +	}
-> > +	preempt_enable();
-> > +	return 0;
-> > +}
+jimmy bahuleyan wrote:
+> i believe, the doc here is pretty unambiguous regarding the fact that
+> volatile should be avoided. And as Stefan pointed out, anyone who feels
+> the need to use, must surely _know_ what he is doing & hence is in a
+> position t make that decision
 
-Yeah, I found that one when Andrew asked me about that preempt_disable()
-thing.
+Honestly, the above quoted paragraph states the situation better than 
+any long, complicated document.
 
-How about:
+	Jeff
 
-int __rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
-{
-	percpu_counter_inc(&rw_mutex->readers);
-	if (unlikely(rw_mutex_reader_slow(rw_mutex))) {
-		percpu_counter_dec(&rw_mutex->readers);
-		/*
-		 * possibly wake up a writer waiting for this reference to
-		 * disappear
-		 */
-		wake_up(&rw_mutex->wait_queue);
-		return 0;
-	}
-	return 1;
-}
-
-
-> > [...snip...]
-> >
-> > +void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass)
-> > +{
-> > [...snip...]
-> > +
-> > +	/*
-> > +	 * block new readers
-> > +	 */
-> > +	__rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_SLOW);
-> > +	/*
-> > +	 * wait for all readers to go away
-> > +	 */
-> > +	wait_event(rw_mutex->wait_queue,
-> > +			(percpu_counter_sum(&rw_mutex->readers) == 0));
-> > +}
-> 
-> This look a bit suspicious, can't mutex_write_lock() set RW_MUTEX_READER_SLOW
-> and find percpu_counter_sum() == 0 in that WINDOW above?
-
-Indeed; however with the above having the reverse sequence this has, it
-should be closed no?
-
-> > +void rw_mutex_read_unlock(struct rw_mutex *rw_mutex)
-> > +{
-> > +     rwsem_release(&rw_mutex->dep_map, 1, _RET_IP_);
-> > +
-> > +     percpu_counter_mod(&rw_mutex->readers, -1);
-> > +     if (unlikely(__rw_mutex_reader_slow(rw_mutex)) &&
-> > +                     percpu_counter_sum(&rw_mutex->readers) == 0)
-
-I took out the percpu_counter_sum()
-
-> > +             wake_up_all(&rw_mutex->wait_queue);
-> > +}
-> 
-> The same. __rw_mutex_status_set()->wmb() in rw_mutex_write_lock below
-> is not enough. percpu_counter_mod() doesn't take fbc->lock if < FBC_BATCH,
-> so we don't have a proper serialization.
-> 
-> write_lock() sets RW_MUTEX_READER_SLOW, finds percpu_counter_sum() != 0,
-> and sleeps. rw_mutex_read_unlock() decrements cpu-local var, does not
-> see RW_MUTEX_READER_SLOW and skips wake_up_all().
-
-write lock              read lock               read unlock
-
-a) state = slow         1) readers++            I)  readers--
-b) wait(readers == 0)   2) if (state == slow)   II) if (state == slow)
-
-That looks pretty safe to me; however are you suggesting the
-percpu_counter_inc() needs some sort of barrier in order to be reliably
-picked up by the percpu_counter_sum()?
-
-something like this:
-
-percpu_counter_{inc,dec}
-smp_wmb()
-
-vs
-
-smp_rmb()
-percpu_counter_sum(()
-
-> > +void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass)
-> > +{
-> > +	might_sleep();
-> > +	rwsem_acquire(&rw_mutex->dep_map, subclass, 0, _RET_IP_);
-> > +
-> > +	mutex_lock_nested(&rw_mutex->write_mutex, subclass);
-> > +	mutex_lock_nested(&rw_mutex->read_mutex, subclass);
-> > +
-> > +	/*
-> > +	 * block new readers
-> > +	 */
-> > +	__rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_SLOW);
-> > +	/*
-> > +	 * wait for all readers to go away
-> > +	 */
-> > +	wait_event(rw_mutex->wait_queue,
-> > +			(percpu_counter_sum(&rw_mutex->readers) == 0));
-> > +}
-> > +
-> > +void rw_mutex_write_unlock(struct rw_mutex *rw_mutex)
-> > +{
-> > +	int waiters;
-> > +
-> > +	rwsem_release(&rw_mutex->dep_map, 1, _RET_IP_);
-> > +
-> > +	/*
-> > +	 * let the readers rip
-> > +	 */
-> > +	__rw_mutex_status_set(rw_mutex, RW_MUTEX_READER_FAST);
-> > +	waiters = atomic_read(&rw_mutex->read_waiters);
-> > +	mutex_unlock(&rw_mutex->read_mutex);
-> > +	/*
-> > +	 * wait for at least 1 reader to get through
-> > +	 */
-> > +	if (waiters) {
-> > +		wait_event(rw_mutex->wait_queue,
-> > +			(atomic_read(&rw_mutex->read_waiters) < waiters));
-> > +	}
-> > +	/*
-> > +	 * before we let the writers rip
-> > +	 */
-> > +	mutex_unlock(&rw_mutex->write_mutex);
-> > +}
-> 
-> Looks like we can have only one task on rw_mutex->wait_queue, and it holds
-> ->write_mutex. Can't we use just a "task_struct *write_waiter" instead of
-> ->wait_queue ? This makes rw_mutex smaller.
-
-Good point; I'll try and figure out how to sleep and wake a single task
-without the waitqueue.
 
