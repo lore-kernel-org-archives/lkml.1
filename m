@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757504AbXELNH2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbXELNTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757504AbXELNH2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 09:07:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbXELNHW
+	id S1757742AbXELNTr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 09:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbXELNTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 09:07:22 -0400
-Received: from www.osadl.org ([213.239.205.134]:38968 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756628AbXELNHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 09:07:21 -0400
-Subject: Re: [PATCH] Fix UCB1x00 driver to use sched_setscheduler
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Russell King <rmk@arm.linux.org.uk>, Pavel Machek <pavel@ucw.cz>,
-       Jordi Colomer <jco@ict.es>
-In-Reply-To: <87ps57ejah.wl%takeuchi_satoru@jp.fujitsu.com>
-References: <87ps57ejah.wl%takeuchi_satoru@jp.fujitsu.com>
-Content-Type: text/plain
-Date: Sat, 12 May 2007 15:10:27 +0200
-Message-Id: <1178975427.22481.153.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 12 May 2007 09:19:41 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:28675 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756655AbXELNTk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 09:19:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=UnR9ftopIiX/ykEXgaa+mUszzmnOb7+3klbASfQpQAEiQ14GTXvkkqeYxFHYc0Co3p28O0E9mHg8gbpSSvnsG/ltAzKduE5n4HcHUPt/z+2B+yAThNcPhkdEOv9CX5ktrCpDSPU0ferXRY6J5UKwDas2mNxSdmVIEo82IQrxRe0=
+Date: Sat, 12 May 2007 17:19:06 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "YOSHIFUJI Hideaki / ?$B5HF#1QL@" <yoshfuji@linux-ipv6.org>
+Cc: jengelh@linux01.gwdg.de, linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.21-gitN - versioning question
+Message-ID: <20070512131906.GF8337@cvg>
+References: <Pine.LNX.4.61.0705121316540.9570@yvahk01.tjqt.qr> <20070512.210308.93070730.yoshfuji@linux-ipv6.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070512.210308.93070730.yoshfuji@linux-ipv6.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-11 at 19:39 +0900, Satoru Takeuchi wrote:
-> Fix Touchscreen driver for UCB1x00-based touchscreens to use
-> sched_setscheduler() instead of setting the fields of task_struct directly.
-> 
-> Signed-off-by: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
-> 
-> Index: linux-2.6.21-fix-ucb-drivers/drivers/mfd/ucb1x00-ts.c
-> ===================================================================
-> --- linux-2.6.21-fix-ucb-drivers.orig/drivers/mfd/ucb1x00-ts.c	2007-05-11 18:53:36.000000000 +0900
-> +++ linux-2.6.21-fix-ucb-drivers/drivers/mfd/ucb1x00-ts.c	2007-05-11 19:33:20.000000000 +0900
-> @@ -214,8 +214,9 @@ static int ucb1x00_thread(void *_ts)
->  	 * We could run as a real-time thread.  However, thus far
->  	 * this doesn't seem to be necessary.
->  	 */
-> -//	tsk->policy = SCHED_FIFO;
-> -//	tsk->rt_priority = 1;
-> +//	struct sched_param param = { .sched_priority = 1 };
-> +//
-> +//	sched_setscheduler(tsk, SCHED_FIFO, &param);
+[YOSHIFUJI Hideaki / ?$B5HF#1QL@ - Sat, May 12, 2007 at 09:03:08PM +0900]
+| In article <Pine.LNX.4.61.0705121316540.9570@yvahk01.tjqt.qr> (at Sat, 12 May 2007 13:19:23 +0200 (MEST)), Jan Engelhardt <jengelh@linux01.gwdg.de> says:
+| 
+| > I notice that people refer to certain git snapshots as e.g. -git16; 
+| > kernel.org does so too. Hovering over the link on kernel.org reveals 
+| > http://kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git16.bz2
+| > but where do I actually find -git16 in Linus's git tree? git16 is 
+| > neither a branch nor a tag.
+| 
+| http://kernel.org/pub/linux/kernel/v2.6/snapshots/patch-2.6.21-git16.id
+| tells the commit in his tree.
+| 
+| --yoshfuji
 
-Can we please remove the unused code completely instead of replacing it
-by more commented out code ?
-
-	tglx
+Actually I think it would be convenient if such tags (like v.2.6.21-git16)
+were in Linus' git tree too.
 
 
-
+		Cyrill
 
