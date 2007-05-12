@@ -1,54 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762051AbXELBcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762878AbXELBdk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762051AbXELBcW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 21:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbXELBcQ
+	id S1762878AbXELBdk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 21:33:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbXELBde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 21:32:16 -0400
-Received: from web60012.mail.yahoo.com ([209.73.178.75]:46702 "HELO
-	web60012.mail.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754789AbXELBcQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 21:32:16 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=X-YMail-OSG:Received:Date:From:Reply-To:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
-  b=fcZGdkrDxQY5kRvvXW+3OQau0eTPrejQqyjSZGditcr6yuCrbaY/3IT9rNMzxI/jsuF7qlD55RIM7oRr3j5mQITXZvGw76npdrLO51M8x9b5Gty+qcTeFr5Q06dJybIpn8tvMmiVA6ElQ9P4p9ii6BhC+o+6oOXIuLg2PWqglM8=;
-X-YMail-OSG: 7Pog4v8VM1mrdxB8uNV3BFk4ZDM5WVezMNOMoOR0FIC.6RzT21H5NlATnkbk8UKlLwp1eW4iHFyrhfu.ALc_5DszlLsAbnDXnzIBeJrr16.3oKjelyxafczqY5ALjQE-
-Date: Fri, 11 May 2007 18:32:14 -0700 (PDT)
-From: Charles Gagalac <charle97@yahoo.com>
-Reply-To: charle97@yahoo.com
-Subject: Re: [Bugme-new] [Bug 8462] New: applications under wine freezes
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <Pine.LNX.4.64.0705111254010.21112@alien.or.mcafeemobile.com>
+	Fri, 11 May 2007 21:33:34 -0400
+Received: from smtp.ocgnet.org ([64.20.243.3]:33723 "EHLO smtp.ocgnet.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756370AbXELBdd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 21:33:33 -0400
+Date: Sat, 12 May 2007 10:33:00 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: clameter@sgi.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/2] From: Paul Mundt <lethal@linux-sh.org>
+Message-ID: <20070512013300.GA27172@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Andrew Morton <akpm@linux-foundation.org>, clameter@sgi.com,
+	linux-kernel@vger.kernel.org
+References: <20070511165749.026947116@sgi.com> <20070511165945.913632068@sgi.com> <20070511113915.267bcc66.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-ID: <923133.74668.qm@web60012.mail.yahoo.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070511113915.267bcc66.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 11, 2007 at 11:39:15AM -0700, Andrew Morton wrote:
+> On Fri, 11 May 2007 09:57:50 -0700
+> clameter@sgi.com wrote:
+> 
+> > > I'll take a look at tidying up the PMB slab, getting rid of the dtor
+> > > shouldn't be terribly painful. I simply opted to do the list management
+> > > there since others were doing it for the PGD slab cache at the time that
+> > > was written.
+> > 
+> > And here's the bit for dropping pmb_cache_dtor(), moving the list
+> > management up to pmb_alloc() and pmb_free().
+> > 
+> > With this applied, we're all set for killing off slab destructors
+> > from the kernel entirely.
+> 
+> hm, this is already in Paul's git tree.
+> 
+> If we're going to slam all this into 2.6.22 then I can just tempdrop Paul's
+> tree.
+> 
+> However I think we've done enough slab work for 2.6.22 now so I'm inclined
+> to queue these changes for 2.6.23.  That would mean that the slab changes in
+> -mm have a dependency on the sh git tree which I am sure to forget about.
+> If I end up merging these changes before Paul merges his tree, sh will
+> break.  Presumably Paul will notice this ;)
 
---- Davide Libenzi wrote:
+I can prune it from my tree if you'd rather just bundle these together, I
+wasn't sure what the timeline for these changes were, so I opted just to
+toss the PMB rework in my git tree ahead of time.
 
-> Charles, would you mind trying the patch below
-> against -git13 on your 
-> machine. I tested it with wine and firefox on a 32
-> bit P4 with HT and it's 
-> working fine.
-
-i applied the patch against git13.  starcraft,
-pokerstars, and firefox under wine have not frozen. 
-looks good.
-
-
-
- 
-____________________________________________________________________________________
-Never miss an email again!
-Yahoo! Toolbar alerts you the instant new Mail arrives.
-http://tools.search.yahoo.com/toolbar/features/mail/
+On the other hand, if Christoph's changes are going to be queued for
+2.6.23, the PMB changes will trickle in well before then anyways.
