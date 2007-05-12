@@ -1,71 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759538AbXELSKH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758393AbXELSLp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759538AbXELSKH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 14:10:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbXELSJr
+	id S1758393AbXELSLp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 14:11:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbXELSLi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 14:09:47 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:48028 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756295AbXELSJq (ORCPT
+	Sat, 12 May 2007 14:11:38 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:33194 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751208AbXELSLh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 14:09:46 -0400
-Message-ID: <464602DC.4050603@zytor.com>
-Date: Sat, 12 May 2007 11:09:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: Alexander van Heukelum <heukelum@mailshack.com>,
-       "Antonino A. Daplas" <adaplas@gmail.com>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@osdl.org>, Matt Domsch <Matt_Domsch@dell.com>,
-       Vivek Goyal <vgoyal@in.ibm.com>,
-       James Bottomley <James.Bottomley@HansenPar>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86 setup rewrite tree ready for flamage^W review
-References: <464158E9.2000207@zytor.com>	<1178806235.18785.1189115515@webmail.messagingengine.com>	<46435F8A.1040203@zytor.com> <20070510220406.GA21110@mailshack.com>	<4643A128.30302@zytor.com> <20070512122137.GA25944@mailshack.com> <m1r6pmqg1n.fsf@ebiederm.dsl.xmission.com>
-In-Reply-To: <m1r6pmqg1n.fsf@ebiederm.dsl.xmission.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 12 May 2007 14:11:37 -0400
+Date: Sat, 12 May 2007 11:11:00 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>, Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 1/2] scalable rw_mutex
+Message-Id: <20070512111100.86ae13f6.akpm@linux-foundation.org>
+In-Reply-To: <20070512110624.9ac3aa44.akpm@linux-foundation.org>
+References: <20070511131541.992688403@chello.nl>
+	<20070511132321.895740140@chello.nl>
+	<20070511093108.495feb70.akpm@linux-foundation.org>
+	<Pine.LNX.4.64.0705111006470.32716@schroedinger.engr.sgi.com>
+	<20070511110522.ed459635.akpm@linux-foundation.org>
+	<p73odkpeusf.fsf@bingen.suse.de>
+	<20070512110624.9ac3aa44.akpm@linux-foundation.org>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
+On Sat, 12 May 2007 11:06:24 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> We could put a cpumask in percpu_counter, initialise it to
+> cpu_possible_map.  Then, those callsites which have hotplug notifiers can
+> call into new percpu_counter functions which clear and set bits in that
+> cpumask and which drain percpu_counter.counts[cpu] into
+> percpu_counter.count.
 > 
-> HPA is both right and wrong on this.  The safe sequence for entering
-> protected mode requires a jump immediately after setting PE in %cr0.
-> To serialize the instruction stream and to be on an execution that
-> is tested and guaranteed to work in cpus.
-> 
+> And percpu_counter_sum() gets taught to do for_each_cpu_mask(fbc->cpumask).
 
-Eric, that's complete nonsense.  What Intel documents and what Intel
-tests are two very different things.
+Perhaps we could have a single cpu hotplug notifier in the percpu_counter
+library.  Add register/deregister functions to the percpu_counter API so
+that all percpu_counters in the machine can be linked together.
 
-Intel appears to be afraid of what they call "the crack", but the
-semantics of the transition are quite well understood.
+One _could_ just register and deregister the counters in
+percpu_counter_init() and percpu_counter_destroy(), but perhaps that
+wouldn't suit all callers, dunno.
 
-> On a lot of processors you can get away with more then that, but
-> Intel at least explicitly states in their "Software Developers Manual
-> Volume 3: System Programming" in 9.9.1 "Switching to Protected Mode"
-> that you need the jump immediately following enabling PE in cr0.
-> 
-> So while I was debugging and instrumenting code I would happily
-> place an instruction before the jump so I could get output.
-> However in production grade code I would not place anything
-> between the setting of PE in cr0 and the first jump instruction.
-
-A lot of the Intel manuals are boilerplate written by technical writers.
- Once you're used to them you can spot it quite easily because it's
-carried from generation to generation with little change, even when it's
-blatantly obsoleted.
-
-I can tell you there is tons of production code out there which *never*
-reloads CS after switching into and out of protected mode.  It just
-plain has to work, on every x86 CPU ever made, with the obvious
-semantics.  With Intel's VT, you want to avoid sticking in that mode for
-extended periods of time, for performance reasons, but it will work even
-there (it kicks to interpreter, though.)  Staying long enough to load
-the segment registers is not an issue.
-
-	-hpa
