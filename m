@@ -1,104 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757608AbXELSqe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbXELSt0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757608AbXELSqe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 14:46:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754612AbXELSq0
+	id S1758890AbXELSt0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 14:49:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756304AbXELStS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 14:46:26 -0400
-Received: from www.osadl.org ([213.239.205.134]:38056 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750833AbXELSqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 14:46:25 -0400
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <1178989302.22481.185.camel@localhost.localdomain>
-References: <20070430102837.748238000@linutronix.de>
-	 <20070511132846.5ebf4437.akpm@linux-foundation.org>
-	 <200705112302.47726.rjw@sisk.pl> <200705112309.15996.rjw@sisk.pl>
-	 <20070511235607.83ad0eb5.akpm@linux-foundation.org>
-	 <1178959563.22481.126.camel@localhost.localdomain>
-	 <20070512020056.a24cf472.akpm@linux-foundation.org>
-	 <1178961489.22481.133.camel@localhost.localdomain>
-	 <20070512030754.90488f79.akpm@linux-foundation.org>
-	 <1178970253.22481.143.camel@localhost.localdomain>
-	 <20070512095145.0cf58a57.akpm@linux-foundation.org>
-	 <1178989302.22481.185.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sat, 12 May 2007 20:49:32 +0200
-Message-Id: <1178995772.22481.205.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 12 May 2007 14:49:18 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:40090 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754958AbXELStR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 14:49:17 -0400
+Date: Sat, 12 May 2007 12:48:59 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [2.6.21.1] SATA freeze
+In-reply-to: <fa.zU1kuoSgByTYCYqY+iCQ5rMJy34@ifi.uio.no>
+To: Fred Moyer <fred@redhotpenguin.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Message-id: <46460C1B.6000609@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.zU1kuoSgByTYCYqY+iCQ5rMJy34@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-12 at 19:01 +0200, Thomas Gleixner wrote:
-> On Sat, 2007-05-12 at 09:51 -0700, Andrew Morton wrote:
-> > The locking in clocksource_resume_watchdog looks pretty pointless anyway.
-> > Can't we just delete it?
-> > 
-> > The only thing it can race against is, conceivably,
-> > 
-> >         resumed = watchdog_resumed;
-> >         if (unlikely(resumed))
-> >                 watchdog_resumed = 0;
-> > 
-> > which could be solved by using test_and_clear_bit().
+Fred Moyer wrote:
+> I just joined the list today so apologies if this email breaks any email 
+> client post threading.
 > 
-> True. I'll redo it.
+> I have been seeing similar errors on two different systems.  I applied 
+> Robert's sata_nv patch posted to the list on May 5th, and approved today 
+> by Jeff Garzik.  I've taken several steps to insure that this isn't a 
+> faulty cable or drive issue.  This is running on a hp dl145g2.  Here is 
+> my lspci, dmesg, and relevant kernel config sections:
 
-Here you go.
+(snip)
 
-	tglx
+> ata1.00: exception Emask 0x0 SAct 0x0 SErr 0x0 action 0x2 frozen
+> ata1.00: cmd b0/d2:f1:00:4f:c2/00:00:00:00:00/00 tag 0 cdb 0x0 data 
+> 123392 in
+>          res 50/00:f1:00:4f:c2/00:00:00:00:00/00 Emask 0x202 (HSM 
+> violation)
+> ata1: soft resetting port
+> ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> ata1.00: configured for UDMA/100
+> ata1: EH complete
 
-------------------------------->
-Subject: clocksource fix lock order in the resume path
+This appears to be a different problem. Something is issuing 
+SMART-related commands (smartd or smartctl perhaps) which the drive 
+seems to be reacting strangely to. It apparently completed the command 
+but never raised DRQ to request any data being transferred even though 
+we expected it to. Maybe SMART is disabled on the drive and that's 
+causing it to just toss these commands? CCing linux-ide in case anyone 
+knows what would cause this.
 
-lockdep complains about the lock nesting of clocksource and watchdog
-lock in the resume path.
-
-Change the resume marker to a bit operation and remove the lock from
-this path.
-
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
---- a/kernel/time/clocksource.c
-+++ b/kernel/time/clocksource.c
-@@ -74,7 +74,7 @@ static struct clocksource *watchdog;
- static struct timer_list watchdog_timer;
- static DEFINE_SPINLOCK(watchdog_lock);
- static cycle_t watchdog_last;
--static int watchdog_resumed;
-+static unsigned long watchdog_resumed;
- 
- /*
-  * Interval: 0.5sec Threshold: 0.0625s
-@@ -104,9 +104,7 @@ static void clocksource_watchdog(unsigned long data)
- 
- 	spin_lock(&watchdog_lock);
- 
--	resumed = watchdog_resumed;
--	if (unlikely(resumed))
--		watchdog_resumed = 0;
-+	resumed = test_and_clear_bit(0, &watchdog_resumed);
- 
- 	wdnow = watchdog->read();
- 	wd_nsec = cyc2ns(watchdog, (wdnow - watchdog_last) & watchdog->mask);
-@@ -151,9 +149,7 @@ static void clocksource_watchdog(unsigned long data)
- }
- static void clocksource_resume_watchdog(void)
- {
--	spin_lock(&watchdog_lock);
--	watchdog_resumed = 1;
--	spin_unlock(&watchdog_lock);
-+	set_bit(0, &watchdog_resumed);
- }
- 
- static void clocksource_check_watchdog(struct clocksource *cs)
-
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
