@@ -1,47 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762727AbXELCed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761143AbXELCjW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762727AbXELCed (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 22:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756263AbXELCe1
+	id S1761143AbXELCjW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 22:39:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbXELCjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 22:34:27 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:3210 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755745AbXELCe0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 22:34:26 -0400
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: bhalevy@panasas.com (Benny Halevy)
-Subject: Re: [PATCH 1/12] crypto: don't pollute the global namespace with  sg_next()
-Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
-Organization: Core
-In-Reply-To: <4643FD1C.1040401@panasas.com>
-X-Newsgroups: apana.lists.os.linux.kernel
-User-Agent: tin/1.7.4-20040225 ("Benbecula") (UNIX) (Linux/2.6.17-rc4 (i686))
-Message-Id: <E1HmhQy-0003lu-00@gondolin.me.apana.org.au>
-Date: Sat, 12 May 2007 12:34:12 +1000
+	Fri, 11 May 2007 22:39:14 -0400
+Received: from waste.org ([66.93.16.53]:49291 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753686AbXELCjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 22:39:13 -0400
+Date: Fri, 11 May 2007 21:39:05 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: Re: [announce] Intel announces the PowerTOP utility for Linux
+Message-ID: <20070512023904.GY11115@waste.org>
+References: <4644F726.1050806@linux.intel.com> <20070512001718.GY11166@waste.org> <20070512014052.GA4082@co.sapo.pt>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070512014052.GA4082@co.sapo.pt>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benny Halevy <bhalevy@panasas.com> wrote:
->
-> I was trying to say that the methods should be compatible, otherwise
-> bugs can happen, and that your scheme is better since it can
-> handle sglists with zero length entries that aren't the last.
-> A case that might be valid after dma mapping and merging.
-> If indeed this case is possible, this seems to be the right time
-> to converge to your scheme.
+On Sat, May 12, 2007 at 02:40:52AM +0100, Jose Celestino wrote:
+> Words by Matt Mackall [Fri, May 11, 2007 at 07:17:19PM -0500]:
+> > On Fri, May 11, 2007 at 04:07:18PM -0700, Arjan van de Ven wrote:
+> > > 
+> > > What's eating the battery life of my laptop? Why isn't it many more 
+> > > hours? Which software component causes the most power to be burned? 
+> > > These are important questions without a good answer... until now.
+> > 
+> > I get:
+> > 
+> > No detailed statistics available; please enable the CONFIG_TIMER_STATS
+> > kernel option
+> > 
+> 
+> Must run as root (rw to /proc/timer_stats is needed).
 
-Well right now this isn't possible because the crypto layer is not
-directly hooked to any DMA code since it's (mostly) software only.
+That file doesn't exist, despite CONFIG_TIMER_STATS being in
+/proc/config.gz.
 
-However, I completely agree that it should be converted to this new
-scheme.  The only user of chaining right now is crypto/hmac.c so it
-should be easy to fix.
-
-Cheers,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Mathematics is the supreme nostalgia of our time.
