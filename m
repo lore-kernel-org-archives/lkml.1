@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759999AbXELUEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760287AbXELUFg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759999AbXELUEQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 16:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754998AbXELUEH
+	id S1760287AbXELUFg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 16:05:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbXELUFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 16:04:07 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:43511 "EHLO
+	Sat, 12 May 2007 16:05:30 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:47232 "EHLO
 	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754797AbXELUEF (ORCPT
+	with ESMTP id S1755143AbXELUF3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 16:04:05 -0400
-Date: Sat, 12 May 2007 21:08:30 +0100
+	Sat, 12 May 2007 16:05:29 -0400
+Date: Sat, 12 May 2007 21:09:44 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Mark Glines <mark@glines.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch] ip_local_port_range sysctl has annoying default
-Message-ID: <20070512210830.514c7709@the-village.bc.nu>
-In-Reply-To: <20070512123052.4a628fa1@chirp>
-References: <20070511170135.7c38615f@chirp>
-	<4645227F.3030905@zytor.com>
-	<20070512121009.18c8b68a@chirp>
-	<464611A6.3040301@zytor.com>
-	<20070512123052.4a628fa1@chirp>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-kernel@vger.kernel.org,
+       mchehab@infradead.org
+Subject: Re: default y idiocy
+Message-ID: <20070512210944.52260991@the-village.bc.nu>
+In-Reply-To: <20070512192726.GQ4629@kernel.dk>
+References: <20070512182343.GO4629@kernel.dk>
+	<Pine.LNX.4.61.0705122121340.9570@yvahk01.tjqt.qr>
+	<20070512192726.GQ4629@kernel.dk>
 X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,16 +28,18 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > I think the IANA range is considered too small in most cases; I
-> > suspect there is also a feeling that "there be dragons" near the very
-> > top.
-> 
-> Ok, thanks for the explanation.  Sounds like we're using high port
-> numbers in the "spirit" of the IANA recommendation, without using
-> their actual numbers.
+> Sorry, I don't buy that reason at all - it's a short term advantage,
+> causing long term pain. It's not what we have done in the past, don't
+> start doing crap like that now.
 
-The top space is reserved when using masquerading and used for the
-masquerading ports normally in that situation. Clipping them off avoids
-differing behaviour with masquerading on/off.
+It doesn't really matter what it defaults too
+
+cp .config somewheresafe
+
+Install new kernel
+
+cp it back
+
+make oldconfig
 
 Alan
