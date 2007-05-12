@@ -1,98 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758665AbXELPir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758963AbXELPmw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758665AbXELPir (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 11:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbXELPik
+	id S1758963AbXELPmw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 11:42:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbXELPmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 11:38:40 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:51783 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754698AbXELPik (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 11:38:40 -0400
-Date: Sat, 12 May 2007 11:38:32 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-Subject: Re: [GIT PULL] MMC updates
-In-reply-to: <alpine.LFD.0.99.0705101037220.24220@xanadu.home>
-X-X-Sender: nico@xanadu.home
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.0.99.0705121122440.24220@xanadu.home>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <46375B18.4080802@drzeus.cx>
- <20070509185636.GB26981@flint.arm.linux.org.uk> <46421BB5.7040504@drzeus.cx>
- <20070509221253.GC26981@flint.arm.linux.org.uk> <4642B122.5070609@drzeus.cx>
- <46432502.4050901@drzeus.cx> <alpine.LFD.0.99.0705101037220.24220@xanadu.home>
+	Sat, 12 May 2007 11:42:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:44240 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754887AbXELPmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 11:42:44 -0400
+Date: Sat, 12 May 2007 17:42:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Esben Nielsen <nielsen.esben@googlemail.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
+Message-ID: <20070512154217.GA20228@elte.hu>
+References: <20070511131541.992688403@chello.nl> <Pine.LNX.4.64.0705121120210.26287@frodo.shire> <1178964103.6810.55.camel@twins> <Pine.LNX.4.64.0705121520210.2101@frodo.shire> <20070512143328.GA24803@elte.hu> <Pine.LNX.4.64.0705121721570.2101@frodo.shire>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705121721570.2101@frodo.shire>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007, Nicolas Pitre wrote:
 
-> On Thu, 10 May 2007, Pierre Ossman wrote:
+* Esben Nielsen <nielsen.esben@googlemail.com> wrote:
+
+> Yeah, after sending that mail I realized I accepted this fact way 
+> back... But I disagree in that it is easy to avoid not write-lcling 
+> the mm semaphore: A simple malloc() might lead to a mmap() call 
+> creating trouble. Am I right?
+
+yeah - that's why "hard RT" apps generally either preallocate all memory 
+in advance, or use special, deterministic allocators. And for "soft RT" 
+it's all a matter of degree.
+
+> > But mainline should not be bothered with this.
 > 
-> > You seem to be the source of this workaround, and also the maintainer of
-> > PXA.
-> 
-> Well... I used to.
+> I disagree. You lay a large burdon on the users of PI futexes to avoid 
+> write locking the mm semaphore. PI boosting those writers would be a 
+> good idea even in the mainline.
 
-Actually, I'm not the author of this workaround.  And looking at it 
-closer, the current workaround is utterly buggy as it completely inhibit 
-CRC error reporting for everything but the listed commands when the MSB 
-of the response is a zero.
+only if it can be done without slowing down all the much more important 
+uses of the MM semaphore.
 
-> But the only MMC capable PXA hardware in working conditions I have 
-> access to at the moment is PXA255 based which doesn't suffer from this 
-> erratum.
-> 
-> > Pierre Ossman wrote:
-> > > I've read through the erratum, and to me it seems like the bug affects
-> > > all long replies, not just these codes. So I think the code should be
-> > > fixed to look at the response flag, not the opcode.
+> 1) How much slower would the pi_rw_mutex I suggested really be? As far 
+> as I see there is only an overhead when there is congestion. I can not 
+> see that that overhead is much larger than a non-PI boosting 
+> implementation.
 
-Indeed.
+it could be measured, but it's certainly not going to be zero.
 
-Please apply the following patch.  It is compile tested only as I don't 
-have PXA27x hardware with MMC at the moment, but it just cannot be worse 
-than the current code even when it was compiling.
+> 2) I know that execution time isn't bounded in the main-line - that is 
+> why -rt is needed. But it is _that_ bad? How low can you get your 
+> latencies with preemption on on a really busy machine?
 
------ >8
-Subject: fix PXA27x MMC workaround for bad CRC on R2 response erratum
+on mainline? It can get arbitrarily large (read: seconds) in essence.
 
-... and make it depend on the response flag rather than the command type.
-
-Signed-off-by: Nicolas Pitre <nico@cam.org>
----
-diff --git a/drivers/mmc/host/pxamci.c b/drivers/mmc/host/pxamci.c
-index d97d386..8240609 100644
---- a/drivers/mmc/host/pxamci.c
-+++ b/drivers/mmc/host/pxamci.c
-@@ -232,20 +232,15 @@ static int pxamci_cmd_done(struct pxamci_host *host, unsigned int stat)
- 		/*
- 		 * workaround for erratum #42:
- 		 * Intel PXA27x Family Processor Specification Update Rev 001
-+		 * A bogus CRC error can appear if the msb of a R2 response
-+		 * is a one.
- 		 */
--		if (cmd->opcode == MMC_ALL_SEND_CID ||
--		    cmd->opcode == MMC_SEND_CSD ||
--		    cmd->opcode == MMC_SEND_CID) {
--			/* a bogus CRC error can appear if the msb of
--			   the 15 byte response is a one */
--			if ((cmd->resp[0] & 0x80000000) == 0)
--				cmd->error = MMC_ERR_BADCRC;
--		} else {
--			pr_debug("ignoring CRC from command %d - *risky*\n",cmd->opcode);
--		}
--#else
--		cmd->error = MMC_ERR_BADCRC;
-+		if (RSP_TYPE(mmc_resp_type(cmd)) == RSP_TYPE(MMC_RSP_R2) &&
-+		    (cmd->resp[0] & 0x80000000)) {
-+			pr_debug("ignoring CRC from command %d - *risky*\n", cmd->opcode);
-+		} else
- #endif
-+		cmd->error = MMC_ERR_BADCRC;
- 	}
- 
- 	pxamci_disable_irq(host, END_CMD_RES);
+	Ingo
