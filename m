@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757336AbXELFmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757314AbXELFpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757336AbXELFmR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 01:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXELFmD
+	id S1757314AbXELFpx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 01:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752314AbXELFpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 01:42:03 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:40370 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750930AbXELFmB (ORCPT
+	Sat, 12 May 2007 01:45:46 -0400
+Received: from ik-out-1112.google.com ([66.249.90.183]:12256 "EHLO
+	ik-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750930AbXELFpp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 01:42:01 -0400
-Message-ID: <46455394.6020302@zytor.com>
-Date: Fri, 11 May 2007 22:41:40 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sat, 12 May 2007 01:45:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=lcaK0jxe37ydfWuHqSXuTSwf0h6MEuBoU//2DY1AzcKDPzC0PmSeQQvwcF7XWhCXzBmLs4SXoyUCRaaK2V+dYQlLN4rCDgEe+E5HAAwr5YZY3HxCt60dgQXyhn/qo/tLOqphcHO0kWB/xZr5JW+fWZXZwBuJZR9HEtU3Wupd1zw=
+Message-ID: <a781481a0705112245u356759dcm9a550e432ed178fd@mail.gmail.com>
+Date: Sat, 12 May 2007 11:15:43 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Dmitry Torokhov" <dtor@insightbb.com>
+Subject: Re: 2.6.21-mm2: HDAPS? BUG: at kernel/mutex.c:311
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Mackall" <mpm@selenic.com>, rlove@rlove.org,
+       linux-kernel@vger.kernel.org, "Ingo Molnar" <mingo@elte.hu>
+In-Reply-To: <200705120112.52859.dtor@insightbb.com>
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Jonathan Corbet <corbet@lwn.net>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, Johannes Stezenbach <js@linuxtv.org>,
-       Jesper Juhl <jesper.juhl@gmail.com>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
-       jimmy bahuleyan <knight.camelot@gmail.com>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: [PATCH] "volatile considered harmful", take 3
-References: <12700.1178905000@lwn.net> <a781481a0705112021u7b6d32fcxb6318d7e2443c970@mail.gmail.com> <464551D5.2050709@zytor.com>
-In-Reply-To: <464551D5.2050709@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070512002115.GZ11166@waste.org>
+	 <20070511175335.092aa0af.akpm@linux-foundation.org>
+	 <200705120112.52859.dtor@insightbb.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> 
-> I don't see why Alan's way is necessarily better; it should work but is
-> more heavy-handed as it's disabling *all* optimization such as loop
-> invariants across the barrier.
-> 
+Hi Dmitry,
 
-To expand on this further: the way this probably *should* be handled,
-Linux-style, is with internally-volatile versions of le32_to_cpup() and
-friends.  That obeys the concept that the volatility should be
-associated with an operation, not a data structure, and, being related
-to an I/O device, should have its endianness explicitly declared.
+On 5/12/07, Dmitry Torokhov <dtor@insightbb.com> wrote:
+> On Friday 11 May 2007 20:53, Andrew Morton wrote:
+> > Ho hum. I suppose a suitable workaround would be to convert hdaps_mtx back
+> > into a semaphore. ug.
+>
+> Actually I was looking for victimes^Wvolunteers to test the patch below.
+> It gets rid of _trylock business.
 
-Right now those macros don't exist, however.
+Ah! You just beat me here, and your patch is definitely better.
 
-	-hpa
+I was wondering why this driver wanted to use a mutex (previously the
+semaphore) to synchronize between process and interrupt context in the
+first place. Most of the code in here uses synchronous delays so never
+sleeps anyway, but then unfortunately it does a weird
+repeated-waiting-hardware-status-register-check thingy in its .probe()
+which meant a straightforward mutex -> spinlock wasn't possible.
+
+So then made a patch pushing off the poll to keventd workqueue, when
+I saw your mail that does exactly the same, but wrapped about in the
+generic input-polldev infrastructure! It's barely 12 days old in mainline --
+no wonder I didn't know about it. Seems to be good-looking code!
+
+Thanks,
+Satyam
