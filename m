@@ -1,87 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758912AbXELKkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbXELKq5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758912AbXELKkz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 06:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbXELKkt
+	id S1758483AbXELKq5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 06:46:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbXELKqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 06:40:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34499 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755575AbXELKks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 06:40:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
-Date: Sat, 12 May 2007 12:45:49 +0200
-User-Agent: KMail/1.9.5
-Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-References: <200705110035.32229.rjw@sisk.pl> <alpine.LFD.0.98.0705111812270.3986@woody.linux-foundation.org> <200705121101.40795.rjw@sisk.pl>
-In-Reply-To: <200705121101.40795.rjw@sisk.pl>
+	Sat, 12 May 2007 06:46:50 -0400
+Received: from fmmailgate05.web.de ([217.72.192.243]:58425 "EHLO
+	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754323AbXELKqt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 06:46:49 -0400
+Date: Sat, 12 May 2007 12:41:03 +0200
+Message-Id: <1785450541@web.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705121245.50715.rjw@sisk.pl>
+From: devzero@web.de
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Add LZO1X compression support to the kernel
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+Nxm2/5cstuVewJjIc5UR0VSx/qW4MGIdJYNfW1JD5SNimZ
+ GPCWGZoG9cD/H2cdJGCCr6Rrtz/qNxnzot/KBFkaS0LLb03LY0=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 12 May 2007 11:01, Rafael J. Wysocki wrote:
-> On Saturday, 12 May 2007 03:24, Linus Torvalds wrote:
-> > 
-> > On Sat, 12 May 2007, Oleg Nesterov wrote:
-> > > 
-> > > However, in my opininon THAT PATCH has nothing to do with this problem.
-> > > It just improves the code that we already have.
-> > 
-> > Sure. 
-> > 
-> > However, I think it does it THE WRONG WAY, and doesn't actually fix the 
-> > much deeper problems with the freezer, as shown by the fact that the lock 
-> > is *still* broken for other cases.
-> 
-> The other cases don't lead to the specific issue this patch is meant to
-> prevent.  Namely, that if a kernel thread is identified as a user space task by
-> the freezer it may be frozen prematurely.
-> 
-> And yes, this only is a problem because we freeze kernel threads, which may be
-> avoidable, but we've been doing that for more than two years and it's a big
-> change to stop doing so.  We can't just say overnight that we won't be freezing
-> kernel threads from now on without al least checking if that doesn't lead to
-> user-visible problems.
-> 
-> Thus IMO it's reasonable to fix the potential issue with the current code and
-> think about changing the design *later*.  Still, I'm not so attached to this
-> patch and if you think that it should be dropped (which IMO is wrong), then so
-> be it.
+oh - and think of linux software suspend.
+take a notebook with 2 GB of ram - that takes a while to write that to disk and read that back again.
+using lzo compression for this may probably halve the time for suspend/resume
 
-Sorry, I was wrong, because ...
+using a fast compression scheme 
+> -----Ursprüngliche Nachricht-----
+> Von: devzero@web.de
+> Gesendet: 11.05.07 22:48:15
+> An: akpm@linux-foundation.org
+> CC: nitingupta.mail@gmail.com,linux-kernel@vger.kernel.org
+> Betreff: Re: [PATCH] Add LZO1X compression support to the kernel
 
-> That said:
+
 > 
-> > So, here's a summary:
+> >Why is this needed?  What code plans to use it?
+> 
+> it`s pretty useful because it`s and a damn fast and damn cpu friendly compression alorithm.
+> 
+> afaik, there is already a least one linux kernel-feature (under development) which is using lzo compression: 
+> see compressed caching project at http://linux-mm.org/CompressedCaching & http://linuxcompressed.sourceforge.net/
+> 
+> seems, they have also done porting it to the kernel, so there is probably choice between two implemetations to merge.
+> 
+> >How many buffer overruns are there in it?
+> 
+> i don`t know :) 
+> but, from a user-perspective,  lzo is really portable and seems to be a rock solid compression scheme.
+> i`m sucessfully using it for years (lzop utility) and i know projects which compress gigabytes of data every day with lzop.
+> furthermore, i know of at least 40 software projects using lzo compression, so this should have some level of maturity.
+> 
+> maybe i can add another software integrating lzo compression to the enumeration at http://www.lzop.de ? ;)
+> 
+> regards
+> roland
+> 
+> 
+> List:       linux-kernel
+> Subject:    Re: [PATCH] Add LZO1X compression support to the kernel
+> From:       Andrew Morton <akpm () linux-foundation ! org>
+> Date:       2007-05-10 6:21:29
+> Message-ID: 20070509232129.371f49d5.akpm () linux-foundation ! org
+> [Download message RAW]
+> 
+> On Wed, 02 May 2007 09:56:23 +0100 Richard Purdie <richard@openedhand.com> wrote:
+> 
+> > Current thinking is that lzo should get merged directly followed by the
+> > subsystem parts through their specific trees. It appears this should
+> > make it onto LKML despite the size so here goes.
 > > 
-> >  - we should not take the lock inside the function, because taking it 
-> >    there is fundamentally wrong, and leaves all the *other* races in 
-> >    place.
-> 
-> The other races don't lead to the same (wrong) result.
-> 
-> >  - if you actually want to solve the other races, the lock needs to be 
-> >    taken by the caller, in which case taking it in the callee is obviously 
-> >    (again) wrong.
+> > Please keep in mind I haven't reformatted the LZO code itself as if I do
+> > so, it will make maintenance of it against any changes in LZO itself
+> > near impossible. In its current form, it should be possible to diff
+> > against upstream. All the bad formatting is confined to a handful of
+> > files in lib/lzo/ and the kernel interface should be clean.
 > > 
-> >  - or then, we accept that the race wasn't fixed AT ALL, and you add other 
-> >    code to _other_ places to handle the case where you froze the wrong 
-> >    thread (or didn't freeze the right one).
+> > I realise a maze of ifdefs still remain. I've already spent a lot of
+> > time removing a ton of them and going much further might start to affect
+> > diffability of the code - I hoping whats there is a good compromise.
+> > 
+> > I've asked the LZO author about the comments on lzo_copyright function
+> > but the code is GPLv2 licensed so is suitable for inclusion in the
+> > kernel.
+> > 
+> > 
+> > 
+> > Add LZO1X compression/decompression support to the kernel.
+> > 
+> > This is based on the standard userspace lzo library, particularly
+> > minilzo with the headers much trimmed down and simplified for kernel
+> > use. Its structured so that it should still diff with the userspace
+> > version for ease of future updating.
 > 
-> There are no other cases, AFAICS, in which we can freeze a wrong thead.
+> Well that's attractive-looking code.
+> 
+> Why is this needed?  What code plans to use it?
+> 
+> How many buffer overruns are there in it?
 
-... user space tasks that call deamonize() can also be frozen prematurely.
-We didn't take this possibility into consideration before, which was obviously
-wrong.
 
-Rafael
+_____________________________________________________________________
+Der WEB.DE SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen!
+http://smartsurfer.web.de/?mc=100071&distributionid=000000000066
+
