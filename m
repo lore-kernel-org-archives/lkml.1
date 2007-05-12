@@ -1,35 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757850AbXELGT7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757916AbXELGVq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757850AbXELGT7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 02:19:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751696AbXELGTw
+	id S1757916AbXELGVq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 02:21:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754538AbXELGVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 02:19:52 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:37993 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754538AbXELGTw (ORCPT
+	Sat, 12 May 2007 02:21:39 -0400
+Received: from terminus.zytor.com ([192.83.249.54]:51736 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751696AbXELGVj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 02:19:52 -0400
-Date: Fri, 11 May 2007 23:19:31 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ulrich Drepper <drepper@redhat.com>
-Cc: Pierre Peiffer <pierre.peiffer@bull.net>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Dave Jones <davej@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: FUTEX_CMP_REQUEUE_PI is not quite there
-Message-Id: <20070511231931.52d963ab.akpm@linux-foundation.org>
-In-Reply-To: <46455A67.8040203@redhat.com>
-References: <46455A67.8040203@redhat.com>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 12 May 2007 02:21:39 -0400
+Message-ID: <46455CD9.7010205@zytor.com>
+Date: Fri, 11 May 2007 23:21:13 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: Satyam Sharma <satyam.sharma@gmail.com>
+CC: Jonathan Corbet <corbet@lwn.net>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, Johannes Stezenbach <js@linuxtv.org>,
+       Jesper Juhl <jesper.juhl@gmail.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Heikki Orsila <shdl@zakalwe.fi>,
+       jimmy bahuleyan <knight.camelot@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: [PATCH] "volatile considered harmful", take 3
+References: <12700.1178905000@lwn.net>	 <a781481a0705112021u7b6d32fcxb6318d7e2443c970@mail.gmail.com>	 <464551D5.2050709@zytor.com> <a781481a0705112315u5843abaar292859428ec60603@mail.gmail.com>
+In-Reply-To: <a781481a0705112315u5843abaar292859428ec60603@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 11 May 2007 23:10:47 -0700 Ulrich Drepper <drepper@redhat.com> wrote:
+Satyam Sharma wrote:
+> 
+> Because volatile is ill-defined? Or actually, *undefined* (well,
+> implementation-defined is as good as that)? It's *so* _vague_,
+> one doesn't _feel_ like using it at all!
+> 
 
-> I hooked up FUTEX_CMP_REQUEUE_PI here and got a kernel crash.
+Sorry, that's just utter crap.  Linux isn't written in some mythical C
+which only exists in standard document, it is written in a particular
+subset of GNU C.  "volatile" is well enough defined in that context, it
+is just frequently misused.
 
-Well yup.  We're kind of waiting for someone to reply
-to http://lkml.org/lkml/2007/5/7/129
+> We already have a complete API containing optimization barriers,
+> load/store/full memory barriers. With well-defined and
+> well-understood semantics. Just ... _why_ use volatile?
+
+See below.
+
+> It will _always_ work. In fact you can't really say the same for
+> volatile. We already assume the compiler _actually_ took some
+> pains to stuff meaning into C's (lack of) definition of volatile and
+> implement it -- but in what sense, nobody knows (the C standard
+> doesn't, so what are we).
+
+It will always work within the context of GNU C.
+
+>> more heavy-handed as it's disabling *all* optimization such as loop
+>> invariants across the barrier.
+> 
+> This is a legitimate criticism, I agree.
+
+There you have it.
+
+	-hpa
