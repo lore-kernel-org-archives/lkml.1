@@ -1,331 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760203AbXELPpg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758191AbXELP7F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760203AbXELPpg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 11:45:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756491AbXELPpM
+	id S1758191AbXELP7F (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 11:59:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756039AbXELP6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 11:45:12 -0400
-Received: from ns2.mvista.com ([63.81.120.158]:38029 "EHLO
-	localhost.localdomain" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754464AbXELPpI (ORCPT
+	Sat, 12 May 2007 11:58:55 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:22488 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbXELP6z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 11:45:08 -0400
-Message-Id: <20070512154408.223236808@mvista.com>
-References: <20070512154344.395866578@mvista.com>
-User-Agent: quilt/0.46-1
-Date: Sat, 12 May 2007 08:43:46 -0700
-From: Daniel Walker <dwalker@mvista.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, johnstul@us.ibm.com, mingo@elte.hu, ak@suse.de
-Content-Disposition: inline; filename=sched-clock-follows-percpu-frequency.patch
-Subject: [PATCH 2/2] i386: sched_clock() follows percpu frequency changes
+	Sat, 12 May 2007 11:58:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
+        b=QNCsb354Wvk3ODLmwASwrK+CpxljWm+9NJulh4TVED5GTQPpJmumx0h4Y2yVI6L6vWhHVoGb24Y4+6gxXgjIHnCKTBWRbWXw+sX6wVJ+P/dagl8OANmha7zY7zKGR/Cw20bV6Hr1y7Nxsm5p6z+DKATT88zFPkTqLhParSYBd5k=
+Date: Sat, 12 May 2007 19:58:19 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>,
+       "YOSHIFUJI Hideaki / ?$B5HF#1QL@" <yoshfuji@linux-ipv6.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: linux-2.6.21-gitN - versioning question
+Message-ID: <20070512155819.GA8366@cvg>
+References: <Pine.LNX.4.61.0705121316540.9570@yvahk01.tjqt.qr> <20070512.210308.93070730.yoshfuji@linux-ipv6.org> <20070512131906.GF8337@cvg> <1178977496.2802.5.camel@shinybook.infradead.org> <Pine.LNX.4.61.0705121701020.9570@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0705121701020.9570@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Considering that Andi has a similar patch, I'm going to assume there
-is already justification for this..
+[Jan Engelhardt - Sat, May 12, 2007 at 05:01:19PM +0200]
+| 
+| On May 12 2007 21:44, David Woodhouse wrote:
+| >On Sat, 2007-05-12 at 17:19 +0400, Cyrill Gorcunov wrote:
+| >> Actually I think it would be convenient if such tags (like
+| >> v.2.6.21-git16) were in Linus' git tree too.
+| >
+| >Then there would be _lots_ of tags in the master tree -- I'm not sure we
+			^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+| >want that.
+| >
+| >I suppose I could put a tree on kernel.org which _does_ have the tags,
+| >and which precisely matches Linus' tree in every other way... but then
+| >again, you could do that too by just rsyncing the tags yourself :)
+| 
+| Are you saying GIT tags are expensive, compared to, say, SVN tags?
+| 
+| 
+| 	Jan
+| -- 
+| 
 
-What it ends up doing is allows the TSC to be used in cases which
-we didn't use it before, and hope it's still mostly accurate.
+Hi Jan,
 
-For instance, when the frequency changes due to cpufreq we update
-sched_clock to convert cycles to nanoseconds using the new frequency.
-I also allow tsc usage when the tsc is considered unsynced on an SMP
-system. My understanding is that the scheduler should only be
-comparing one cpus tsc to itself, and not to other cpus tsc. So
-it should handle unsynced tsc.
+you know the current Linus' git tree does contain ~62 tags
+(if I'm right). And of coure that's very small number of files
+compared to the number of blobs in the master tree. So I think the
+reason to don't use a lot of tags - is just... well... a lot of
+tags in the git tree ;)
 
-I ran lat_ctx a few times to see the difference,
+[Don't beat me ;]
 
-Before this patch,
+		Cyrill
 
-root@happy:~# lat_ctx -s 0 2
-
-"size=0k ovr=1.40
-2 1.06
-root@happy:~# lat_ctx -s 0 2
-
-"size=0k ovr=1.39
-2 0.91
-
-After this patch,
-
-root@happy:~# lat_ctx -s 0 2
-
-"size=0k ovr=1.14
-2 0.64
-root@happy:~# lat_ctx -s 0 2
-
-"size=0k ovr=1.12
-2 0.97
-
-I don't see a great deal of difference here. Considering the wide range
-of values I get from lat_ctx it's all within the margin of error. If anyone
-can better test this, or has thoughts on it I'm all ears.
-
-Comment are certainly welcome ..
-
-Signed-Off-By: Daniel Walker <dwalker@mvista.com>
-
----
- arch/i386/kernel/tsc.c      |  130 +++++++++++++++++++++-----------------------
- include/linux/clocksource.h |   14 +++-
- 2 files changed, 74 insertions(+), 70 deletions(-)
-
-Index: linux-2.6.21/arch/i386/kernel/tsc.c
-===================================================================
---- linux-2.6.21.orig/arch/i386/kernel/tsc.c
-+++ linux-2.6.21/arch/i386/kernel/tsc.c
-@@ -18,7 +18,7 @@
- 
- #include "mach_timer.h"
- 
--static int tsc_enabled;
-+static struct clocksource clocksource_tsc;
- 
- /*
-  * On some systems the TSC frequency does not
-@@ -56,46 +56,18 @@ __setup("notsc", tsc_setup);
-  * due to cpufreq or due to unsynced TSCs
-  */
- static int tsc_unstable;
-+static int tsc_sched_clock_unstable;
- 
- static inline int check_tsc_unstable(void)
- {
- 	return tsc_unstable;
- }
- 
--/* Accellerators for sched_clock()
-- * convert from cycles(64bits) => nanoseconds (64bits)
-- *  basic equation:
-- *		ns = cycles / (freq / ns_per_sec)
-- *		ns = cycles * (ns_per_sec / freq)
-- *		ns = cycles * (10^9 / (cpu_khz * 10^3))
-- *		ns = cycles * (10^6 / cpu_khz)
-- *
-- *	Then we use scaling math (suggested by george@mvista.com) to get:
-- *		ns = cycles * (10^6 * SC / cpu_khz) / SC
-- *		ns = cycles * cyc2ns_scale / SC
-- *
-- *	And since SC is a constant power of two, we can convert the div
-- *  into a shift.
-- *
-- *  We can use khz divisor instead of mhz to keep a better percision, since
-- *  cyc2ns_scale is limited to 10^6 * 2^10, which fits in 32 bits.
-- *  (mathieu.desnoyers@polymtl.ca)
-- *
-- *			-johnstul@us.ibm.com "math is hard, lets go shopping!"
-+/*
-+ * Place holder for the percpu mult values used by sched_clock() to
-+ * overcome a system which shifts frequencies per cpu.
-  */
--static unsigned long cyc2ns_scale __read_mostly;
--
--#define CYC2NS_SCALE_FACTOR 10 /* 2^10, carefully chosen */
--
--static inline void set_cyc2ns_scale(unsigned long cpu_khz)
--{
--	cyc2ns_scale = (1000000 << CYC2NS_SCALE_FACTOR)/cpu_khz;
--}
--
--static inline unsigned long long cycles_2_ns(unsigned long long cyc)
--{
--	return (cyc * cyc2ns_scale) >> CYC2NS_SCALE_FACTOR;
--}
-+DEFINE_PER_CPU(u32, cpu_khz_mult);
- 
- /*
-  * Scheduler clock - returns current time in nanosec units.
-@@ -103,19 +75,26 @@ static inline unsigned long long cycles_
- unsigned long long sched_clock(void)
- {
- 	unsigned long long this_offset;
-+	u32 this_cpus_mult;
- 
- 	/*
--	 * Fall back to jiffies if there's no TSC available:
-+	 * Fall back to jiffies if the TSC is unusable:
- 	 */
--	if (unlikely(!tsc_enabled))
-+	if (unlikely(tsc_sched_clock_unstable))
- 		/* No locking but a rare wrong value is not a big deal: */
--		return (jiffies_64 - INITIAL_JIFFIES) * (1000000000 / HZ);
-+		return cyc2ns_sc(clocksource_jiffies.shift,
-+				 clocksource_jiffies.mult, jiffies);
-+
-+	this_cpus_mult = per_cpu(cpu_khz_mult, raw_smp_processor_id());
- 
- 	/* read the Time Stamp Counter: */
- 	get_scheduled_cycles(this_offset);
- 
--	/* return the value in ns */
--	return cycles_2_ns(this_offset);
-+	/*
-+	 * We take advantage of the clocksource since it uses
-+	 * the same math to convert to nanoseconds.
-+	 */
-+	return cyc2ns_sc(clocksource_tsc.shift, this_cpus_mult, this_offset);
- }
- 
- unsigned long native_calculate_cpu_khz(void)
-@@ -216,27 +195,38 @@ time_cpufreq_notifier(struct notifier_bl
- 	if ((val == CPUFREQ_PRECHANGE  && freq->old < freq->new) ||
- 	    (val == CPUFREQ_POSTCHANGE && freq->old > freq->new) ||
- 	    (val == CPUFREQ_RESUMECHANGE)) {
--		if (!(freq->flags & CPUFREQ_CONST_LOOPS))
--			cpu_data[freq->cpu].loops_per_jiffy =
--				cpufreq_scale(loops_per_jiffy_ref,
--						ref_freq, freq->new);
--
--		if (cpu_khz) {
--
--			if (num_online_cpus() == 1)
--				cpu_khz = cpufreq_scale(cpu_khz_ref,
--						ref_freq, freq->new);
--			if (!(freq->flags & CPUFREQ_CONST_LOOPS)) {
--				tsc_khz = cpu_khz;
--				set_cyc2ns_scale(cpu_khz);
--				/*
--				 * TSC based sched_clock turns
--				 * to junk w/ cpufreq
--				 */
--				mark_tsc_unstable(CLOCK_TSC_CPUFREQ_ADJUSTED,
--						  "cpufreq changes");
--			}
--		}
-+
-+		if (likely(cpu_khz) && num_online_cpus() == 1)
-+			cpu_khz = cpufreq_scale(cpu_khz_ref, ref_freq,
-+						freq->new);
-+
-+		if ((freq->flags & CPUFREQ_CONST_LOOPS))
-+			goto end;
-+
-+		cpu_data[freq->cpu].loops_per_jiffy =
-+			cpufreq_scale(loops_per_jiffy_ref, ref_freq, freq->new);
-+
-+		if (unlikely(!cpu_khz))
-+			goto end;
-+
-+		tsc_khz = cpu_khz;
-+
-+		/*
-+		 * Set the new percpu mult value to be used
-+		 * for sched_clock(). We can't use cpu_khz
-+		 * since it's only tracking a single cpu.
-+		 */
-+		per_cpu(cpu_khz_mult, freq->cpu) =
-+			clocksource_hz2mult(freq->new,
-+					     clocksource_tsc.shift);
-+		printk("CPU%d: Updated sched_clock() frequency to %d\n",
-+			freq->cpu, freq->new);
-+		/*
-+		 * TSC based gettimeofday turns
-+		 * to junk w/ cpufreq
-+		 */
-+		mark_tsc_unstable(CLOCK_TSC_CPUFREQ_ADJUSTED,
-+				  "cpufreq changes");
- 	}
- end:
- 	if (val != CPUFREQ_RESUMECHANGE && val != CPUFREQ_SUSPENDCHANGE)
-@@ -284,17 +274,17 @@ static struct clocksource clocksource_ts
- 
- void mark_tsc_unstable(enum tsc_unstable_flags flag, char *reason)
- {
--	if (likely(tsc_unstable))
--		return;
--
- 	switch (flag) {
- 		case CLOCK_TSC_UNSTABLE_FREQUENCY:
- 		case CLOCK_TSC_HALTS_IN_CSTATES:
-+			tsc_sched_clock_unstable = 1;
- 
- 		case CLOCK_TSC_UNSYNCHRONIZED:
- 		case CLOCK_TSC_CPUFREQ_ADJUSTED:
-+			if (likely(tsc_unstable))
-+				return;
-+
- 			tsc_unstable = 1;
--			tsc_enabled = 0;
- 			printk("Marking TSC unstable due to: %s.\n", reason);
- 			/* Can be called before registration */
- 			if (clocksource_tsc.mult)
-@@ -369,6 +359,8 @@ static inline void check_geode_tsc_relia
- 
- void __init tsc_init(void)
- {
-+	int cpu;
-+
- 	if (!cpu_has_tsc || tsc_disable)
- 		goto out_no_tsc;
- 
-@@ -382,7 +374,6 @@ void __init tsc_init(void)
- 				(unsigned long)cpu_khz / 1000,
- 				(unsigned long)cpu_khz % 1000);
- 
--	set_cyc2ns_scale(cpu_khz);
- 	use_tsc_delay();
- 
- 	/* Check and install the TSC clocksource */
-@@ -393,12 +384,17 @@ void __init tsc_init(void)
- 	current_tsc_khz = tsc_khz;
- 	clocksource_tsc.mult = clocksource_khz2mult(current_tsc_khz,
- 							clocksource_tsc.shift);
-+	/*
-+	 * Initialize the per cpu mult values used in sched_clock()
-+	 */
-+	for_each_possible_cpu(cpu)
-+		per_cpu(cpu_khz_mult, cpu) = clocksource_tsc.mult;
-+
- 	/* lower the rating if we already know its unstable: */
- 	if (check_tsc_unstable()) {
- 		clocksource_tsc.rating = 0;
- 		clocksource_tsc.flags &= ~CLOCK_SOURCE_IS_CONTINUOUS;
--	} else
--		tsc_enabled = 1;
-+	}
- 
- 	clocksource_register(&clocksource_tsc);
- 
-Index: linux-2.6.21/include/linux/clocksource.h
-===================================================================
---- linux-2.6.21.orig/include/linux/clocksource.h
-+++ linux-2.6.21/include/linux/clocksource.h
-@@ -20,6 +20,12 @@
- typedef u64 cycle_t;
- struct clocksource;
- 
-+/*
-+ * clocksource_jiffies is the only generic clock. It may
-+ * be used for initialization, or generic clock needs.
-+ */
-+extern struct clocksource clocksource_jiffies;
-+
- /**
-  * struct clocksource - hardware abstraction for a free running counter
-  *	Provides mostly state-free accessors to the underlying hardware.
-@@ -148,6 +154,10 @@ static inline cycle_t clocksource_read(s
- 	return cs->read();
- }
- 
-+static inline s64 cyc2ns_sc(u32 shift, u32 mult, cycle_t cycles)
-+{
-+	return ((cycles * mult) >> shift);
-+}
- /**
-  * cyc2ns - converts clocksource cycles to nanoseconds
-  * @cs:		Pointer to clocksource
-@@ -159,9 +169,7 @@ static inline cycle_t clocksource_read(s
-  */
- static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
- {
--	u64 ret = (u64)cycles;
--	ret = (ret * cs->mult) >> cs->shift;
--	return ret;
-+	return cyc2ns_sc(cs->shift, cs->mult, cycles);
- }
- 
- /**
-
--- 
