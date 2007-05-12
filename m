@@ -1,84 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbXELABw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762813AbXELAFZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762944AbXELABw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 11 May 2007 20:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754892AbXELABq
+	id S1762813AbXELAFZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 11 May 2007 20:05:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbXELAFN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 11 May 2007 20:01:46 -0400
-Received: from squawk.glines.org ([72.36.206.66]:43177 "EHLO squawk.glines.org"
+	Fri, 11 May 2007 20:05:13 -0400
+Received: from mail.screens.ru ([213.234.233.54]:48279 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751555AbXELABp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 11 May 2007 20:01:45 -0400
-Date: Fri, 11 May 2007 17:01:35 -0700
-From: Mark Glines <mark@glines.org>
-To: linux-kernel@vger.kernel.org
-Subject: [patch] ip_local_port_range sysctl has annoying default
-Message-ID: <20070511170135.7c38615f@chirp>
-Organization: Glines.org
-X-Mailer: Claws Mail 2.9.0 (GTK+ 2.10.12; i686-pc-linux-gnu)
-X-Useless-Header: yay!
+	id S1751555AbXELAFL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 11 May 2007 20:05:11 -0400
+Date: Sat, 12 May 2007 04:05:07 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@ucw.cz>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
+Message-ID: <20070512000507.GA519@tv-sign.ru>
+References: <200705110035.32229.rjw@sisk.pl> <200705110036.26617.rjw@sisk.pl> <20070511123959.190adfaf.akpm@linux-foundation.org> <200705112240.54304.rjw@sisk.pl> <alpine.LFD.0.98.0705111555090.3986@woody.linux-foundation.org> <20070511232024.GA489@tv-sign.ru> <alpine.LFD.0.98.0705111629390.3986@woody.linux-foundation.org> <20070511234819.GA508@tv-sign.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070511234819.GA508@tv-sign.ru>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On a powerpc machine (kurobox) I have here with 128M of RAM, the default
-value of /proc/sys/net/ipv4/ip_local_port_range is:
-2048    4999
+I hope Rafael will correct me if I am wrong,
 
-This setting affects the port assigned to an application by default
-when the application doesn't specify a port to use, like, for instance,
-an outgoing connection.  It affects both TCP and UDP.  The default
-values for this sysctl vary depending on the size of the tcp bind hash,
-which in turn, varies depending on the size of the system RAM (I think).
+On 05/12, Oleg Nesterov wrote:
+>
+> On 05/11, Linus Torvalds wrote:
+> >
+> > On Sat, 12 May 2007, Oleg Nesterov wrote:
+> > > 
+> > > without task_lock() we can see "p->mm != NULL" but not PF_BORROWED_MM.
+> > 
+> > Let me explain it one more time:
+> >  - shouldn't the *caller* protect this?
+> >
+> > Afaik, there's two situations:
+> >  - either things don't change (in which case you don't need locking at 
+> >    all, since things are statically one way or the other)
+> >  - or things change (in which case the caller can't rely on the return 
+> >    value anyway, since they might change *after* you release the lock)
+> 
+> things change, ->mm is not stable if the kernel thread does use_mm/unuse_mm.
+> 
+> However, the return value == 0 does not change in that particular case,
+> exactly because is_user_space() takes task_lock().
 
-By a one-in-a-million coincidence, this machine has a default port
-range starting with 2048, and this breaks things for me.  I'm trying to
-run both klive and nfs on this box, but klive starts first (probably
-because of the filename sort order), and claims UDP port 2049 for its
-own purposes, causing the nfs server to fail to start.
+Probably there is some misunderstanding. This patch doesn't claim it solves
+all problems. Before this patch we have
 
-If the bind hash size is over a certain threshold, the range
-32768-61000 is used.  If it is under a certain threshold, a range
-like (1024|2048|3072)-4999 is used, depending on exactly how small it
-is.  Thix box happened to get the 2048-4999 range, which broke nfs.
+	static inline int is_user_space(struct task_struct *p)
+	{
+		return p->mm && !(p->flags & PF_BORROWED_MM);
+	}
 
-A comment just above the code that does this says, "Try to be a bit
-smarter and adjust defaults depending on available memory."  "smarter"?
-Maybe, maybe not.  Either way, it's unexpected.
+and this is clearly racy wrt to use_mm() which sets this PF_BORROWED_MM bit.
+So this is just a little improvement, nothing more.
 
-Following the principle of least astonishment, I think it seems better
-to use high, out-of-the-way port numbers regardless of how much RAM the
-system has.  So, the following patch changes this behavior slightly.
-The system still picks a dynamic range depending on the bind hash size,
-but now, all ranges start with 32768.  I suppose another reasonable way
-to do this would be to end all ranges with 61000, or something like
-that.
+Oleg.
 
-It also seems funny to me that this would be in tcp_init(), when it
-affects both TCP and UDP.  But hey, it is where it is.
-
-Signed-off-by: Mark Glines <mark@glines.org>
-
-diff --git a/net/ipv4/tcp.c b/net/ipv4/tcp.c
-index bd4c295..4431b87 100644
---- a/net/ipv4/tcp.c
-+++ b/net/ipv4/tcp.c
-@@ -2464,14 +2464,14 @@ void __init tcp_init(void)
- 			(tcp_hashinfo.bhash_size * sizeof(struct inet_bind_hashbucket));
- 			order++)
- 		;
-+	sysctl_local_port_range[0] = 32768;
- 	if (order >= 4) {
--		sysctl_local_port_range[0] = 32768;
- 		sysctl_local_port_range[1] = 61000;
- 		tcp_death_row.sysctl_max_tw_buckets = 180000;
- 		sysctl_tcp_max_orphans = 4096 << (order - 4);
- 		sysctl_max_syn_backlog = 1024;
- 	} else if (order < 3) {
--		sysctl_local_port_range[0] = 1024 * (3 - order);
-+		sysctl_local_port_range[1] = 32768 + (1024 * order);
- 		tcp_death_row.sysctl_max_tw_buckets >>= (3 - order);
- 		sysctl_tcp_max_orphans >>= (3 - order);
- 		sysctl_max_syn_backlog = 128;
