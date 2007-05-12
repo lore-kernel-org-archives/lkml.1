@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758812AbXELVKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759686AbXELVLv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758812AbXELVKe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 17:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbXELVK1
+	id S1759686AbXELVLv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 17:11:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbXELVLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 17:10:27 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36361 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752892AbXELVK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 17:10:26 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFD] Freezing of kernel threads
-Date: Sat, 12 May 2007 23:14:56 +0200
-User-Agent: KMail/1.9.5
-Cc: Pavel Machek <pavel@ucw.cz>, Gautham R Shenoy <ego@in.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <200705122017.32792.rjw@sisk.pl> <alpine.LFD.0.98.0705121120280.3986@woody.linux-foundation.org>
-In-Reply-To: <alpine.LFD.0.98.0705121120280.3986@woody.linux-foundation.org>
+	Sat, 12 May 2007 17:11:44 -0400
+Received: from emailhub.stusta.mhn.de ([141.84.69.5]:32813 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754252AbXELVLn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 17:11:43 -0400
+Date: Sat, 12 May 2007 23:11:44 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: David Woodhouse <dwmw2@infradead.org>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>,
+       Satyam Sharma <satyam.sharma@gmail.com>, Anton Vorontsov <cbou@mail.ru>,
+       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
+       kernel-discuss@handhelds.org, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+Message-ID: <20070512211144.GO7984@stusta.de>
+References: <1178550653.11851.191.camel@pmac.infradead.org> <20070507194949.GB3981@ucw.cz> <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com> <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl> <1178646751.2824.48.camel@pmac.infradead.org> <Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl> <1178721996.2824.199.camel@pmac.infradead.org> <20070509203335.GA4290@ucw.cz> <1178887402.21820.65.camel@shinybook.infradead.org> <20070511132116.GH4052@ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200705122314.57458.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070511132116.GH4052@ucw.cz>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday, 12 May 2007 20:25, Linus Torvalds wrote:
+On Fri, May 11, 2007 at 01:21:16PM +0000, Pavel Machek wrote:
+> Hi!
 > 
-> On Sat, 12 May 2007, Rafael J. Wysocki wrote:
+> > > > > And how about serial terminals?
+> > > > 
+> > > > It works fine over serial terminals. Why wouldn't it?
+> > > 
+> > > He probably means serial terminals... like physical vt100. I used to
+> > > have one (vt302 compatible or something).  Most emulators still
+> > > emulate vt100, and yes, vt100 predates utf-8. 
 > > 
-> > Of course, that would also require us to rewrite the freezer itself quite a
-> > bit, but IMO it's worthy of doing.
+> > I have a serial terminal which can only do lower case (well, actually
+> > capitals but it's all mapped to lower case since that's more useful).
 > > 
-> > Thoughts?
+> > When I write code on it, I can't do capital letters. But do I try to
+> > _force_ you to use only capitals because of my limited terminal?
 > 
-> I'd much prefer it. One of the reasons I hate the freezer so much is that 
-> it ends up affecting things it really has no business affecting. Why 
-> should a random kernel thread have to havecode NOT to care? So it makes 
-> much more sense to default to "I don't care about the freezer", and then 
-> people who do care can say so and add their own code.
+> If I wrote int j, J; in my code, you'd have valid case wanting me to
+> fix it. And I simply want you to fix useless uses of utf-8. And evil
+> uses utf8, like int voltage; /* ??V */. I do not know what is so hard
+> to understand.
 > 
-> That said, I also suspect that suspend should depend less on the freezer 
-> in the first place, and depend more on just shutting up specific actions.
+> You are intentionally making code hard to read. Stop trying to merge
+> that crap.
 
-Well, I think that could be the next step.
+It was °C, and that's IMHO better readable than some kind of "degrees C".
 
-> The freezer is kind of a blunt instrument that just stops everything, 
-> without actually understanding *what* it stops. As a result (since it 
-> really doesn't know what it's doing), it ends up having all the issues 
-> with "ok, I don't know what I'm doing, but that guy says I shouldn't do 
-> it, so I won't".
-> 
-> Blunt instruments are often _easier_ (compare with the global kernel lock 
-> in SMP), but they end up being very inflexible and hard to get rid of 
-> later when you want to do something more intelligent. 
+Only using 7bit ASCII might have been a good advice in the last 
+millenium. But in the current millenium, most environments handle UTF-8 
+just fine.
 
-I generally agree, but as far as the hibernation/suspend is concerned, I'm not
-at the point of doing things more intelligently yet.  Someone who's been
-developing the kernel for the last 15 years surely can do this, but not me.
+And we are only talking about documentation and comments - IOW, things 
+not visible for someone running a kernel. Code (including printk's) must 
+stay 7bit ASCII.
 
-OTOH, I think I can change the freezer so that it works as I outlined in the
-previous message and I'd like to be able to make some progress in a direction
-that's more-or-less acceptable to everyone.
+In the worst case, if you managed to find a not UTF-8 capable 
+environment for viewing the kernel sources, the few characters that are 
+not 7bit ASCII are displayed incorrectly, and you'll have to guess which 
+character someone might place in front of a "C" describing something 
+named wBAT_TEMP (you will likely guess it correctly).
 
-Frankly, I don't see much point in developing things that you object to very
-strongly, because that ultimately would lead to a loss of time, mine as well as
-yours.
+And it's nothing new, comments containing non 7bit ASCII characters are 
+already present in 10 year old kernels (often, but not limited to,
+developer's names).
 
-Greetings,
-Rafael
+> 							Pavel
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
+
