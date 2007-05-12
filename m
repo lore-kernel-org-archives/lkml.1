@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760547AbXELQmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbXELQro@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760547AbXELQmv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 12:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760189AbXELQmm
+	id S1759848AbXELQro (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 12:47:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754670AbXELQrh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 12:42:42 -0400
-Received: from calculon.skynet.ie ([193.1.99.88]:38912 "EHLO
-	calculon.skynet.ie" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760165AbXELQmk (ORCPT
+	Sat, 12 May 2007 12:47:37 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:39245 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754612AbXELQrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 12:42:40 -0400
-Date: Sat, 12 May 2007 17:42:37 +0100
-To: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-Subject: Re: [Bug 8464] New: autoreconf: page allocation failure. order:2, mode:0x84020
-Message-ID: <20070512164237.GA2691@skynet.ie>
-References: <20070510230044.GB15332@skynet.ie> <Pine.LNX.4.64.0705101601220.14471@schroedinger.engr.sgi.com> <1178863002.24635.4.camel@rousalka.dyndns.org> <20070511090823.GA29273@skynet.ie> <1178884283.27195.1.camel@rousalka.dyndns.org> <20070511173811.GA8529@skynet.ie> <1178905541.2473.2.camel@rousalka.dyndns.org> <1178908210.4360.21.camel@rousalka.dyndns.org> <20070511203610.GA12136@skynet.ie> <1178957491.4095.2.camel@rousalka.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1178957491.4095.2.camel@rousalka.dyndns.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: mel@skynet.ie (Mel Gorman)
+	Sat, 12 May 2007 12:47:37 -0400
+Date: Sat, 12 May 2007 09:47:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Richard Purdie <richard@openedhand.com>
+Cc: Adrian Bunk <bunk@stusta.de>, LKML <linux-kernel@vger.kernel.org>,
+       torvalds@linux-foundation.org, David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] Add LZO1X compression support to the kernel
+Message-Id: <20070512094710.43ab1b2f.akpm@linux-foundation.org>
+In-Reply-To: <1178983055.5831.3.camel@localhost.localdomain>
+References: <1178096183.5860.25.camel@localhost.localdomain>
+	<20070512111722.GJ7984@stusta.de>
+	<1178983055.5831.3.camel@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On (12/05/07 10:11), Nicolas Mailhot didst pronounce:
-> Le vendredi 11 mai 2007 à 21:36 +0100, Mel Gorman a écrit :
-> 
-> > I'm pretty sure I have. I recreated the tree and reverted the same patch as
-> > you and regenerated the diff below. I sent it to myself and it appeared ok
-> > and another automated system was able to use it.
+On Sat, 12 May 2007 16:17:35 +0100 Richard Purdie <richard@openedhand.com> wrote:
+
+> On Sat, 2007-05-12 at 13:17 +0200, Adrian Bunk wrote:
+> > On Wed, May 02, 2007 at 09:56:23AM +0100, Richard Purdie wrote:
+> > >...
+> > > I've asked the LZO author about the comments on lzo_copyright function
+> > > but the code is GPLv2 licensed so is suitable for inclusion in the
+> > > kernel.
 > > 
-> > In case it's a mailer problem, the patch can be downloaded from
-> > http://www.csn.ul.ie/~mel/kswapd-minorder.patch . 
+> > This sounds as if LZO is GPL incompatible similar to code under
+> > the 4 clause BSD licence.
+> > 
+> > >...
+> > > +/* If you use the LZO library in a product, you *must* keep this
+> > > + * copyright string in the executable of your product.
+> > > + */
 > 
-> This one applies, but the kernel still has allocation failures (I just
-> found rpm -Va was a good trigger). So so far we have two proposed fixes
-> none of which work
+> I've had a reply from the copyright holder/author saying he's going to
+> change this wording in the next LZO release and that the code *is* GPLv2
+> licensed as per the headers on the files.
 > 
 
-Sorry about this. What is most preplexing is that the memory was free.
-In your log we see;
-
-> May 12 10:00:47 rousalka kernel: DMA: 6*4kB 4*8kB 9*16kB 3*32kB 6*64kB 7*128kB 5*256kB 0*512kB 1*1024kB 0*2048kB 1*4096kB = 7976kB
-> May 12 10:00:47 rousalka kernel: DMA32: 2619*4kB 27*8kB 6*16kB 0*32kB 0*64kB 2*128kB 0*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 11556kB
-
-and
-
-> May 12 10:00:47 rousalka kernel: DMA: 6*4kB 4*8kB 9*16kB 3*32kB 6*64kB 7*128kB 5*256kB 0*512kB 1*1024kB 0*2048kB 1*4096kB = 7976kB
-> May 12 10:00:47 rousalka kernel: DMA32: 1651*4kB 29*8kB 10*16kB 0*32kB 0*64kB 2*128kB 0*256kB 1*512kB 0*1024kB 0*2048kB 0*4096kB = 7764kB
-
-order-2 (at least 19 pages but more are there) and higher pages were free
-and this was a NORMAL allocation. It should also be above watermarks so
-something screwy is happening
-
-*peers suspiciously*
-
-Can you try the following patch on top of the kswapd patch please? It is
-also available from http://www.csn.ul.ie/~mel/watermarks.patch
-
-diff -rup -X /usr/src/patchset-0.6/bin//dontdiff linux-2.6.21-mm2-revertmd/mm/page_alloc.c linux-2.6.21-mm2-watermarks/mm/page_alloc.c
---- linux-2.6.21-mm2-revertmd/mm/page_alloc.c	2007-05-11 21:16:57.000000000 +0100
-+++ linux-2.6.21-mm2-watermarks/mm/page_alloc.c	2007-05-12 17:34:10.000000000 +0100
-@@ -1627,7 +1627,7 @@ restart:
- 	/* This allocation should allow future memory freeing. */
- 
- rebalance:
--	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
-+	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE) || !wait))
- 			&& !in_interrupt()) {
- 		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
- nofail_alloc:
-@@ -1636,7 +1636,7 @@ nofail_alloc:
- 				zonelist, ALLOC_NO_WATERMARKS);
- 			if (page)
- 				goto got_pg;
--			if (gfp_mask & __GFP_NOFAIL) {
-+			if (gfp_mask & __GFP_NOFAIL && wait) {
- 				congestion_wait(WRITE, HZ/50);
- 				goto nofail_alloc;
- 			}
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+It would be ideal if the author of that code could send us a
+signed-off-by: as per secton 11 of Documentation/SubmittingPatches.  
