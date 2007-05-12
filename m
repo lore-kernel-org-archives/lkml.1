@@ -1,98 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757820AbXELRoI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbXELRtX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757820AbXELRoI (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 13:44:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbXELRn5
+	id S1758221AbXELRtX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 13:49:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbXELRtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 13:43:57 -0400
-Received: from mail.screens.ru ([213.234.233.54]:56404 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754368AbXELRn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 13:43:57 -0400
-Date: Sat, 12 May 2007 21:43:55 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@ucw.cz>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 1/7] Freezer: Read PF_BORROWED_MM in a nonracy way
-Message-ID: <20070512174355.GA304@tv-sign.ru>
-References: <200705110036.26617.rjw@sisk.pl> <20070511123959.190adfaf.akpm@linux-foundation.org> <200705112240.54304.rjw@sisk.pl> <alpine.LFD.0.98.0705111555090.3986@woody.linux-foundation.org> <20070511232024.GA489@tv-sign.ru> <alpine.LFD.0.98.0705111629390.3986@woody.linux-foundation.org> <20070511234819.GA508@tv-sign.ru> <alpine.LFD.0.98.0705111656240.3986@woody.linux-foundation.org> <20070512004057.GA540@tv-sign.ru> <alpine.LFD.0.98.0705111812270.3986@woody.linux-foundation.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705111812270.3986@woody.linux-foundation.org>
-User-Agent: Mutt/1.5.11
+	Sat, 12 May 2007 13:49:17 -0400
+Received: from gepetto.dc.ltu.se ([130.240.42.40]:60481 "EHLO
+	gepetto.dc.ltu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754955AbXELRtQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 13:49:16 -0400
+Date: Sat, 12 May 2007 19:48:58 +0200 (MEST)
+From: Richard Knutsson <ricknu-0@student.ltu.se>
+To: Andi Kleen <ak@suse.de>
+Cc: linux-kernel@vger.kernel.org, Richard Knutsson <ricknu-0@student.ltu.se>
+Message-Id: <20070512175131.17222.76746.sendpatchset@thinktank.campus.ltu.se>
+Subject: [PATCH] arch/i386: Convert to generic boolean
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I guess I should just shut up and listen to experts... ok, just my
-0.02 roubles.
+Convert to generic boolean (+ some minor cleanup).
 
-Again, I can't comment things like "we just should never touch kernel",
-because I don't even remotely undestand the things which actually use
-freezer. I can only talk about the current implementation of freezer.
+Signed-off-by: Richard Knutsson <ricknu-0@student.ltu.se>
+---
+Compile-tested with all(yes|mod|no)config on i386
+Diffed against Linus' git-tree.
 
-On 05/11, Linus Torvalds wrote:
-> 
-> So, here's a summary:
-> 
->  - we should not take the lock inside the function, because taking it 
->    there is fundamentally wrong, and leaves all the *other* races in 
->    place.
-> 
->  - if you actually want to solve the other races, the lock needs to be 
->    taken by the caller, in which case taking it in the callee is obviously 
->    (again) wrong.
-> 
->  - or then, we accept that the race wasn't fixed AT ALL, and you add other 
->    code to _other_ places to handle the case where you froze the wrong 
->    thread (or didn't freeze the right one).
-> 
->    And I'm not making that up. Look at most of the other patches in that 
->    series: they are _exactly_ about the scenario I'm outlining.
-> 
->  - the whole "kernel thread vs user thread" thing is the wrong thing to 
->    check in the first place, since we just should never touch kernel 
->    threads in the first place, and anything that wants to freeze user 
->    space should have disabled exec_usermodehelper() at a higher level
->
-> That's why I'm so unhappy. The "fix" is going in the wrong direction. Each 
-> fix on their own may be an "improvement", but the end result of many of 
-> the fixes is a total mess!
-> 
-> We can continue to add bandaids to something broken, until it "works". But 
-> the end result, while "working", is not actually any better. Quite the 
-> reverse - the end result of something like that is that you add all these 
-> magic rules and special cases.
-> 
-> So in the end one ugly design decision leads to broken locking, which in 
-> turn leads to other cases where you add more broken code, which just leads 
-> to a situation where nobody actually understands what the *design* is, 
-> because there simply *isn't* any design - it's just a hodge-podge of "but 
-> this fixes a bug" ad-hoc "fixes".
+ amd.c     |    2 --
+ cyrix.c   |    2 +-
+ generic.c |   20 +++++++++-----------
+ mtrr.h    |    5 -----
+ 4 files changed, 10 insertions(+), 19 deletions(-)
 
-Yes, the current design has many limitations. The major problem is that it
-can't solve the dependencies: say T1 is frozen, and T2 can't be freezed
-because it waits for T1. And I don't see how we can solve this problem
-in general. And this is imho the source of most uglifications.
 
-Let's look at the code. try_to_freeze_tasks() which can choose between
-user/kernel threads is static. The exported freeze_processes() freeze
-all of them. So why do we need is_user_space() at all? I am not sure
-I know the right answer, but I think this was done to prevent the case
-when user-space needs some kthread to make a progress and notice the
-signal (TIF_FREEZE).
-
-So yes, this is ugly, and is_user_space() is not reliable, and most
-fixes are "let's fix this particular case", and each fix doesn't make
-the code prettier.
-
-But, on the other hand, the freezer is very simple and not intrusive.
-When I first looked at the code 2 months ago, I thought we should do
-something better. Since then, I have no ideas how to do this.
-
-Oleg.
-
+diff --git a/arch/i386/kernel/cpu/mtrr/amd.c b/arch/i386/kernel/cpu/mtrr/amd.c
+index 0949cdb..ee2331b 100644
+--- a/arch/i386/kernel/cpu/mtrr/amd.c
++++ b/arch/i386/kernel/cpu/mtrr/amd.c
+@@ -53,8 +53,6 @@ static void amd_set_mtrr(unsigned int reg, unsigned long base,
+     <base> The base address of the region.
+     <size> The size of the region. If this is 0 the region is disabled.
+     <type> The type of the region.
+-    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
+-    be done externally.
+     [RETURNS] Nothing.
+ */
+ {
+diff --git a/arch/i386/kernel/cpu/mtrr/cyrix.c b/arch/i386/kernel/cpu/mtrr/cyrix.c
+index 0737a59..8b1b9fd 100644
+--- a/arch/i386/kernel/cpu/mtrr/cyrix.c
++++ b/arch/i386/kernel/cpu/mtrr/cyrix.c
+@@ -322,7 +322,7 @@ cyrix_arr_init(void)
+ 			setCx86(CX86_CCR6, ccr[6]);
+ 		}
+ 		/* Disable ARR3. This is safe now that we disabled SMM. */
+-		/* cyrix_set_arr_up (3, 0, 0, 0, FALSE); */
++		/* cyrix_set_arr_up (3, 0, 0, 0, false); */
+ 	}
+ 	/* If we changed CCR1 in memory, change it in the processor, too. */
+ 	if (ccrc[1])
+diff --git a/arch/i386/kernel/cpu/mtrr/generic.c b/arch/i386/kernel/cpu/mtrr/generic.c
+index 5367e32..fd6ffc5 100644
+--- a/arch/i386/kernel/cpu/mtrr/generic.c
++++ b/arch/i386/kernel/cpu/mtrr/generic.c
+@@ -187,7 +187,7 @@ static inline void k8_enable_fixed_iorrs(void)
+  * \param changed pointer which indicates whether the MTRR needed to be changed
+  * \param msrwords pointer to the MSR values which the MSR should have
+  */
+-static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
++static void set_fixed_range(int msr, bool * changed, unsigned int * msrwords)
+ {
+ 	unsigned lo, hi;
+ 
+@@ -199,7 +199,7 @@ static void set_fixed_range(int msr, int * changed, unsigned int * msrwords)
+ 		    ((msrwords[0] | msrwords[1]) & K8_MTRR_RDMEM_WRMEM_MASK))
+ 			k8_enable_fixed_iorrs();
+ 		mtrr_wrmsr(msr, msrwords[0], msrwords[1]);
+-		*changed = TRUE;
++		*changed = true;
+ 	}
+ }
+ 
+@@ -256,10 +256,10 @@ static void generic_get_mtrr(unsigned int reg, unsigned long *base,
+  * Checks and updates the fixed-range MTRRs if they differ from the saved set
+  * \param frs pointer to fixed-range MTRR values, saved by get_fixed_ranges()
+  */
+-static int set_fixed_ranges(mtrr_type * frs)
++static bool set_fixed_ranges(mtrr_type * frs)
+ {
+ 	unsigned long long *saved = (unsigned long long *) frs;
+-	int changed = FALSE;
++	bool changed = false;
+ 	int block=-1, range;
+ 
+ 	while (fixed_range_blocks[++block].ranges)
+@@ -270,19 +270,19 @@ static int set_fixed_ranges(mtrr_type * frs)
+ 	return changed;
+ }
+ 
+-/*  Set the MSR pair relating to a var range. Returns TRUE if
++/*  Set the MSR pair relating to a var range. Returns 'true' if
+     changes are made  */
+-static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
++static bool set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
+ {
+ 	unsigned int lo, hi;
+-	int changed = FALSE;
++	bool changed = false;
+ 
+ 	rdmsr(MTRRphysBase_MSR(index), lo, hi);
+ 	if ((vr->base_lo & 0xfffff0ffUL) != (lo & 0xfffff0ffUL)
+ 	    || (vr->base_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
+ 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
+ 		mtrr_wrmsr(MTRRphysBase_MSR(index), vr->base_lo, vr->base_hi);
+-		changed = TRUE;
++		changed = true;
+ 	}
+ 
+ 	rdmsr(MTRRphysMask_MSR(index), lo, hi);
+@@ -291,7 +291,7 @@ static int set_mtrr_var_ranges(unsigned int index, struct mtrr_var_range *vr)
+ 	    || (vr->mask_hi & (size_and_mask >> (32 - PAGE_SHIFT))) !=
+ 		(hi & (size_and_mask >> (32 - PAGE_SHIFT)))) {
+ 		mtrr_wrmsr(MTRRphysMask_MSR(index), vr->mask_lo, vr->mask_hi);
+-		changed = TRUE;
++		changed = true;
+ 	}
+ 	return changed;
+ }
+@@ -416,8 +416,6 @@ static void generic_set_mtrr(unsigned int reg, unsigned long base,
+     <base> The base address of the region.
+     <size> The size of the region. If this is 0 the region is disabled.
+     <type> The type of the region.
+-    <do_safe> If TRUE, do the change safely. If FALSE, safety measures should
+-    be done externally.
+     [RETURNS] Nothing.
+ */
+ {
+diff --git a/arch/i386/kernel/cpu/mtrr/mtrr.h b/arch/i386/kernel/cpu/mtrr/mtrr.h
+index 289dfe6..3aea07c 100644
+--- a/arch/i386/kernel/cpu/mtrr/mtrr.h
++++ b/arch/i386/kernel/cpu/mtrr/mtrr.h
+@@ -2,11 +2,6 @@
+  * local mtrr defines.
+  */
+ 
+-#ifndef TRUE
+-#define TRUE  1
+-#define FALSE 0
+-#endif
+-
+ #define MTRRcap_MSR     0x0fe
+ #define MTRRdefType_MSR 0x2ff
+ 
