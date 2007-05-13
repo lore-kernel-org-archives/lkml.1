@@ -1,60 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbXEMVdE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759348AbXEMVe1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760048AbXEMVdE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 17:33:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755554AbXEMVc4
+	id S1759348AbXEMVe1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 17:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754019AbXEMVeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 17:32:56 -0400
-Received: from aun.it.uu.se ([130.238.12.36]:43031 "EHLO aun.it.uu.se"
+	Sun, 13 May 2007 17:34:21 -0400
+Received: from mail.screens.ru ([213.234.233.54]:37827 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755457AbXEMVcz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 17:32:55 -0400
-Date: Sun, 13 May 2007 23:30:56 +0200 (MEST)
-Message-Id: <200705132130.l4DLUu86011130@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: johnstul@us.ibm.com, mikpe@it.uu.se
-Subject: Re: Fw: [BUG 2.6.21-rc7] acpi_pm clocksource loses time on x86-64
-Cc: ak@suse.de, lenb@kernel.org, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de
+	id S1751042AbXEMVeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 17:34:20 -0400
+Date: Mon, 14 May 2007 01:34:24 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
+Subject: Re: 2.6.22-rc1: Broken suspend on SMP with tifm
+Message-ID: <20070513213424.GA3198@tv-sign.ru>
+References: <200705132132.08546.rjw@sisk.pl> <200705132250.26277.rjw@sisk.pl> <20070513205057.GA3171@tv-sign.ru> <200705132322.10032.rjw@sisk.pl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705132322.10032.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 10 May 2007 11:52:33 -0700, john stultz wrote:
-> On Wed, 2007-05-09 at 11:11 +0200, Mikael Pettersson wrote:
-> > On Tue, 8 May 2007 15:14:36 -0400, Len Brown wrote:
-> > > On Friday 04 May 2007 03:42, Mikael Pettersson wrote:
-> > > > On Thu, 03 May 2007 19:38:50 -0700, john stultz wrote:
-> > > > > > 	So that slow acpi_pm on x86_64 seems to be connected w/ the idle loop.
-> > > > > > I'm guessing the chipset halts the ACPI PM in lower C states. Do you
-> > > > > > have any guesses as to what might differ between x86_64 and i386 ACPI
-> > > > > > idle loops? Or might this be something different in what the BIOS
-> > > > > > exports in x86_64 mode or i386 mode?
-> > > > > 
-> > > > > Mikael,
-> > > > > 	Just trying to dig a bit more through the acpi_processor_idle code.
-> > > > > Could you run "cat /proc/acpi/processor/CPU1/power" and reply w/ the
-> > > > > output?
+On 05/13, Rafael J. Wysocki wrote:
+>
+> > > On Sunday, 13 May 2007 22:30, Oleg Nesterov wrote:
+> > > >
+> > > > I think the better fix (at least for now) is
 > > > > 
-> > > > Here's that file with the x86-64 kernel:
+> > > > 	- #define create_freezeable_workqueue(name) __create_workqueue((name), 0, 1)
+> > > > 	+ #define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
 > > > > 
-> > > > active state:            C2
-> > > > max_cstate:              C8
-> > > > bus master activity:     00000000
-> > > > maximum allowed latency: 20000 usec
-> > > > states:
-> > > >     C1:                  type[C1] promotion[C2] demotion[--] latency[000] usage[00107840] duration[00000000000000000000]
-> > > >    *C2:                  type[C2] promotion[--] demotion[C1] latency[010] usage[-1987043693] duration[00000000003044809185]
+> > > > Alex, do you really need a multithreaded wq?
+> > > > 
+> > > > Rafael, what do you think?
 > > > 
-> > > it may be that the problem is C2, not C1 on this box and thus "idle=poll" may be
-> > > overkill to workaround it.
-> > > 
-> > > You can disable C2 with "processor.max_cstate=1"
-> 
-> Hey Mikael, 
-> 	Did booting w/ processor.max_cstate=1 have the same effect as booting
-> w/ idle=poll ?
+> Sure, if a singlethread workqueue is sufficient for Alex, I agree that this
+> would be preferable.
 
-It seems so. `/sbin/hwclock' and `date' are still in sync after 60 minutes,
-where previously `date' would lag behind by about 3 minutes.
+Great. Alex?
 
-/Mikael
+> @@ -819,20 +843,31 @@ static int __devinit workqueue_cpu_callb
+>  
+> +
+> +		case CPU_DEAD_FROZEN:
+> +			if (wq->freezeable) {
+> +				take_over_work(wq, cpu);
+> +				thaw_process(cwq->thread);
+
+Suppose that PF_NOFREEZE task T does flush_workqueue(), and CPU 1 has pending
+works. T does flush_cpu_workqueue(0), CPU_DEAD_FROZEN moves works from CPU 1
+to CPU 0, T does flush_cpu_workqueue(1) and finds nothing.
+
+Oleg.
+
