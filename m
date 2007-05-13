@@ -1,36 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbXENBm7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXENBnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbXENBm7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 21:42:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760845AbXENBm2
+	id S932690AbXENBnV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 21:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762059AbXENBmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 21:42:28 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33048 "EHLO mx2.suse.de"
+	Sun, 13 May 2007 21:42:38 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33059 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760516AbXENBmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 21:42:25 -0400
-Date: Sun, 13 May 2007 02:27:52 -0700
+	id S1762053AbXENBmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 21:42:36 -0400
+Date: Sun, 13 May 2007 02:35:58 -0700
 From: Greg KH <gregkh@suse.de>
-To: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
-Cc: Anton Vorontsov <cbou@mail.ru>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: + git-battery-fix.patch added to -mm tree
-Message-ID: <20070513092752.GE11249@suse.de>
-References: <200705081001.l48A1KUK020833@shell0.pdx.osdl.net> <20070508111924.GA16785@zarina> <20070508121341.GA21072@2ka.mipt.ru>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       linux-s390@vger.kernel.org, akpm@linux-foundation.org
+Subject: Re: [PATCH 6/8] Kconfig: no userspace I/O on s390.
+Message-ID: <20070513093558.GA11317@suse.de>
+References: <20070420113430.GG3738@skybase> <20070503053047.GB7458@kroah.com> <1178181374.32267.17.camel@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070508121341.GA21072@2ka.mipt.ru>
+In-Reply-To: <1178181374.32267.17.camel@localhost>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 04:13:42PM +0400, Evgeniy Polyakov wrote:
-> So, my vote is for exporting generic find_bus in mainline with related
-> to w1 and battery status changes.
+On Thu, May 03, 2007 at 10:36:14AM +0200, Martin Schwidefsky wrote:
+> On Wed, 2007-05-02 at 22:30 -0700, Greg KH wrote:
+> > > Hide the config menu for userspace I/O on s390.
+> > 
+> > Why?  Who says s390 can't have userspace I/O drivers someday?
+> 
+> Theoretically yes, but in practice this is very unlikely to happen. Some
+> reasons why:
+> 1) There are only very few device drivers for s390, the few we need
+> we'll do as kernel space drivers
+> 2) The irq abstraction of uio is awkward. The irq handler uses a 32-bit
+> integer. On s390 each ccw device has it's own irq and ccw devices are
+> identified with a string "x.y.zzzz". Then there are devices that deliver
+> external interrupts where a 16-bit number is used to identify the
+> source. You could invent some mapping logic of a 32 bit integer to all
+> the possible interrupt sources but it doesn't really match.
+> 3) s390 doesn't use memory mapped i/o, you always need to execute a
+> privileged instruction to trigger activity on the device, e.g. ssch for
+> a ccw device, siga for qdio, nqap for crypto, ...
+> 
+> So I have my doubts that we will ever see a uio driver for s390. If we
+> do we can unhide the config menu again.
 
-Ok, I'm convinced, can someone resend that patch to me again?  I seem to
-have lost it in the ether somewhere :(
+Ok, that's find, can you bounce me the patch that made this change
+again?
 
 thanks,
 
