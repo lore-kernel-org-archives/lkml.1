@@ -1,41 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758649AbXEMSiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbXEMSjV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758649AbXEMSiT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 14:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757616AbXEMSiM
+	id S1759618AbXEMSjV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 14:39:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757635AbXEMSjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 14:38:12 -0400
-Received: from NEUROSIS.MIT.EDU ([18.95.3.133]:58969 "EHLO neurosis.jim.sh"
+	Sun, 13 May 2007 14:39:15 -0400
+Received: from hobbit.corpit.ru ([81.13.94.6]:22847 "EHLO hobbit.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757548AbXEMSiM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 14:38:12 -0400
-X-Greylist: delayed 1195 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 May 2007 14:38:12 EDT
-Date: Sun, 13 May 2007 14:18:06 -0400
-From: Jim Paris <jim@jtan.com>
-To: "Robin H. Johnson" <robbat2@gentoo.org>
-Cc: Robert Hancock <hancockr@shaw.ca>, linux-ide@vger.kernel.org,
-       Fred Moyer <fred@redhotpenguin.com>, linux-kernel@vger.kernel.org
-Subject: Re: [2.6.21.1] SATA freeze
-Message-ID: <20070513181806.GA19538@jim.sh>
-References: <fa.zU1kuoSgByTYCYqY+iCQ5rMJy34@ifi.uio.no> <46460C1B.6000609@shaw.ca> <20070513012045.GA15162@curie-int.orbis-terrarum.net>
+	id S1757564AbXEMSjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 14:39:15 -0400
+Message-ID: <46475B4F.2020903@msgid.tls.msk.ru>
+Date: Sun, 13 May 2007 22:39:11 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Icedove 1.5.0.10 (X11/20070307)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070513012045.GA15162@curie-int.orbis-terrarum.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Christoph Hellwig <hch@infradead.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>,
+       Dan Aloni <da-x@monatomic.org>,
+       Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] allow kernel module exclusion on load
+References: <20070513132517.GA14038@localdomain> <20070513092352.18cd80de@freepuppy> <20070513182035.GA10207@infradead.org>
+In-Reply-To: <20070513182035.GA10207@infradead.org>
+X-Enigmail-Version: 0.94.2.0
+OpenPGP: id=4F9CF57E
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  This appears to be a different problem. Something is issuing SMART-related 
-> >  commands (smartd or smartctl perhaps) which the drive seems to be reacting 
-> >  strangely to.
-..
-> Specifically, I could trigger it by running 'smartctl -d ata -S on
-> /dev/sda' OR (s-S/o/).
+Christoph Hellwig wrote:
+> On Sun, May 13, 2007 at 09:23:52AM -0700, Stephen Hemminger wrote:
+[]
+>> There is already the modprobe blacklist ability in user space.
+> 
+> doesn't really help if hotplug loads a broken module before you're getting
+> a login prompt.
 
-This sounds like a known bug in smartmontools:
+modprobe blacklist is designed especially for this very case: to stop
+hotplug loading broken modules. ;)
 
-  http://marc.info/?l=smartmontools-support&m=117203137719518
-  http://www.mail-archive.com/linux-ide@vger.kernel.org/msg03160.html
+But yes, in order to use the blacklist, one have to fill in the list
+itself, for which one has to log in...
 
--jim
+/mjt
