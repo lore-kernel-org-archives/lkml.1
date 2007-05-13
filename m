@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbXEMNpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761539AbXEMNr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761413AbXEMNpM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 09:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761311AbXEMNou
+	id S1761539AbXEMNr4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 09:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761370AbXEMNrg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 09:44:50 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:34493 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761301AbXEMNoq convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 09:44:46 -0400
-Date: Sun, 13 May 2007 14:47:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Cloos <cloos@jhcloos.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, discuss@x86-64.org,
-       Simon Arlott <simon@fire.lp0.eu>, trivial@kernel.org,
-       Andi Kleen <ak@suse.de>
-Subject: Re: [discuss] [PATCH] spelling fixes: arch/x86_64/
-Message-ID: <20070513144725.07487fc7@the-village.bc.nu>
-In-Reply-To: <m3abw9a4w9.fsf@lugabout.jhcloos.org>
-References: <4644C783.3090805@simon.arlott.org.uk>
-	<200705121825.26430.ak@suse.de>
-	<m3abw9a4w9.fsf@lugabout.jhcloos.org>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
+	Sun, 13 May 2007 09:47:36 -0400
+Received: from nat-132.atmel.no ([80.232.32.132]:59981 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761367AbXEMNrd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 09:47:33 -0400
+Date: Sun, 13 May 2007 15:47:22 +0200
+From: Haavard Skinnemoen <hskinnemoen@atmel.com>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] MMC: Flush mmc workqueue late in the boot sequence
+Message-ID: <20070513154722.6399074c@dhcp-252-105.norway.atmel.com>
+In-Reply-To: <464713FB.2060801@drzeus.cx>
+References: <117879333788-git-send-email-hskinnemoen@atmel.com>
+	<46430A49.9090803@drzeus.cx>
+	<20070510143737.54969394@dhcp-252-105.norway.atmel.com>
+	<46432212.9070008@drzeus.cx>
+	<20070510163348.0a117d92@dhcp-252-105.norway.atmel.com>
+	<46434123.8040801@drzeus.cx>
+	<20070510182749.219351cb@dhcp-252-105.norway.atmel.com>
+	<46437562.9050501@drzeus.cx>
+	<20070511103905.08530507@dhcp-252-105.norway.atmel.com>
+	<464713FB.2060801@drzeus.cx>
+Organization: Atmel Norway
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Essentially all commonly used English words which start out with hyphens
-> loose them over time.  It starts out with typos and progresses until the
-> non-hyphenated form becomes the exclusively used form.  It does seem that
-> re-enable → reenable is occurring, based on those search hits.
+On Sun, 13 May 2007 15:34:51 +0200
+Pierre Ossman <drzeus@drzeus.cx> wrote:
 
-Re-enable is definitely "more correct".
-
-> Andi> Similar with upto.
+> > I'm not sure how many embedded people actually know how to build an
+> > initrd for a custom board.
+> >   
 > 
-> I’ve a *much* harder time agreeing with «upto» in place of «up to».
-> That should be treated as a typo in need of fixing.
+> All the ones I have on my desk right now use initrd. ;)
 
-The dictionary agrees.
+Ok, I guess we'll just have to look into that, then.
 
-Alan
+> I had a chat with David Woodhouse and Segher Boessenkool and I think we have
+> another approach. Basically, we move the waiting which would normally go into
+> the initrd and move it into the kernel. So you get something like:
+> 
+> "Waiting for root device /dev/mmcblk0p1..."
+> 
+> The only problem here is if the device never shows up, but if that was the case
+> you would previously get a panic, so it should not be any worse.
+
+Indeed, it will even be pretty obvious what happened, and the user can
+probably just insert a card at that point to get a working system.
+
+> Does that sound like something that would work for you? From my point of view
+> it's a much cleaner solution that has the benefit of not being tied into a
+> certain subsystem (i.e. this would "fix" usb aswell).
+
+Yes, that would definitely work.
+
+Haavard
