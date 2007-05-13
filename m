@@ -1,71 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934098AbXEMOZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934178AbXEMO3g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934098AbXEMOZm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 10:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757975AbXEMOZd
+	id S934178AbXEMO3g (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 10:29:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758681AbXEMO31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 10:25:33 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:49621 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754239AbXEMOZc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 10:25:32 -0400
-Message-ID: <46471FB7.5020308@drzeus.cx>
-Date: Sun, 13 May 2007 16:24:55 +0200
-From: Pierre Ossman <drzeus@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=_hera.drzeus.cx-1052-1179066331-0001-2"
-To: Haavard Skinnemoen <hskinnemoen@atmel.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] MMC: Flush mmc workqueue late in the boot sequence
-References: <117879333788-git-send-email-hskinnemoen@atmel.com>	<46430A49.9090803@drzeus.cx>	<20070510143737.54969394@dhcp-252-105.norway.atmel.com>	<46432212.9070008@drzeus.cx>	<20070510163348.0a117d92@dhcp-252-105.norway.atmel.com>	<46434123.8040801@drzeus.cx>	<20070510182749.219351cb@dhcp-252-105.norway.atmel.com>	<46437562.9050501@drzeus.cx>	<20070511103905.08530507@dhcp-252-105.norway.atmel.com>	<464713FB.2060801@drzeus.cx> <20070513154722.6399074c@dhcp-252-105.norway.atmel.com>
-In-Reply-To: <20070513154722.6399074c@dhcp-252-105.norway.atmel.com>
-X-Enigmail-Version: 0.95.0
+	Sun, 13 May 2007 10:29:27 -0400
+Received: from an-out-0708.google.com ([209.85.132.241]:35220 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758658AbXEMO30 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 10:29:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=ADzAhnsE89g62/mEEaLvR5eJI/PZRfy/nTZIJdnbu76JF9DeFaWIoDTaY2KdbjB9ncINiYFLKWRzlDqf0ZZlJTwglfN/s25Mlf5mEXS1RNusGENAxK3n0eXR8ESRRMlthwRtqbuVM+WlYuxtmo3c+aePnP9PRTjvH0IL6hdoeiI=
+Message-ID: <6bffcb0e0705130729n2c47f0f4h6791ac4b74b9bb62@mail.gmail.com>
+Date: Sun, 13 May 2007 16:29:25 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Vladimir Pouzanov" <farcaller@gmail.com>
+Subject: Re: ACPI Power Down is broken in 2.6.21.1
+Cc: "Len Brown" <lenb@kernel.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <loom.20070508T175303-27@post.gmane.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <loom.20070508T175303-27@post.gmane.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Hi Vladimir,
 
---=_hera.drzeus.cx-1052-1179066331-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+[adding Len and ACPI gurus to CC]
 
-Haavard Skinnemoen wrote:
-> On Sun, 13 May 2007 15:34:51 +0200
-> Pierre Ossman <drzeus@drzeus.cx> wrote:
->=20
->> Does that sound like something that would work for you? From my point =
-of view
->> it's a much cleaner solution that has the benefit of not being tied in=
-to a
->> certain subsystem (i.e. this would "fix" usb aswell).
->=20
-> Yes, that would definitely work.
->=20
+On 08/05/07, Vladimir Pouzanov <farcaller@gmail.com> wrote:
+> Hi all,
+>
+> I have got a problem with Asus F3T notebook and 2.6.21.1 kernel. When I
+> perform powerdown (with user-space app or alt+sysrq+o) I get "Power Down."
+> message, but the notebook doesn't turn off. Everything is ok on 2.6.20.
+>
+> There seem to be no changes in acpi/sleep/poweroff.c so I don't know where
+> should I start looking for a bug.
+>
+> F3T is based on Thrion64 X2 CPU (I'm running it in x86 mode with SMP and
+> PREEMPT).
+>
+> Sincerely,
+> Vladimir "Farcaller" Pouzanov
+> http://hackndev.com
+>
 
-I'll commence the kernel whipping. Will you be available for testing once=
- I have
-something working?
+I added this bug to the list of known regressions.
+(http://kernelnewbies.org/known_regressions)
 
-Rgds
-Pierre
+Regards,
+Michal
 
-
-
---=_hera.drzeus.cx-1052-1179066331-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
-
-iD8DBQFGRx+37b8eESbyJLgRAnVGAKCIF+iuE45xF5muwA6t2G4uRfBWAACgsdjq
-34FO3k6l+YF3NgpA8SxAs2c=
-=xmf3
------END PGP SIGNATURE-----
-
---=_hera.drzeus.cx-1052-1179066331-0001-2--
+-- 
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
