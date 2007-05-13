@@ -1,84 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934700AbXEMQfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934796AbXEMQgS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934700AbXEMQfW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 12:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759095AbXEMQfK
+	id S934796AbXEMQgS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 12:36:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbXEMQgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 12:35:10 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59037 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758519AbXEMQfI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 12:35:08 -0400
-Date: Sun, 13 May 2007 09:33:41 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Gautham R Shenoy <ego@in.ibm.com>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Pavel Machek <pavel@ucw.cz>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
-       Paul E McKenney <paulmck@us.ibm.com>
-Subject: Re: [RFD] Freezing of kernel threads
-In-Reply-To: <20070513083357.GA12985@in.ibm.com>
-Message-ID: <alpine.LFD.0.98.0705130925290.6739@woody.linux-foundation.org>
-References: <200705122017.32792.rjw@sisk.pl> <20070512193609.GA31426@in.ibm.com>
- <alpine.LFD.0.98.0705121241300.3986@woody.linux-foundation.org>
- <20070513083357.GA12985@in.ibm.com>
+	Sun, 13 May 2007 12:36:07 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:33833 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756374AbXEMQgD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 12:36:03 -0400
+Date: Sun, 13 May 2007 18:35:45 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Dave Jones <davej@redhat.com>
+cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: undeprecate raw driver.
+In-Reply-To: <20070513163220.GA31902@redhat.com>
+Message-ID: <Pine.LNX.4.61.0705131835110.9570@yvahk01.tjqt.qr>
+References: <20070513163220.GA31902@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+On May 13 2007 12:32, Dave Jones wrote:
 
-On Sun, 13 May 2007, Gautham R Shenoy wrote:
+>Despite repeated attempts over the last two and half years, this driver
+>seems somewhat persistant.  Remove its deprecated status as it has
+>existing users who may not be in a position to migrate their apps
+>to O_DIRECT.
+>
+>Signed-off-by: Dave Jones <davej@redhat.com>
+>
+>diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+>index 498ff31..5108619 100644
+>--- a/Documentation/feature-removal-schedule.txt
+>+++ b/Documentation/feature-removal-schedule.txt
+>@@ -41,14 +41,6 @@ Who:	Pavel Machek <pavel@suse.cz>
 > 
-> RFC #1: Use get_hot_cpus()- put_hot_cpus() , which follow the
-> well known refcounting model.
+> ---------------------------
+> 
+>-What:	RAW driver (CONFIG_RAW_DRIVER)
+>-When:	December 2005
+>-Why:	declared obsolete since kernel 2.6.3
+>-	O_DIRECT can be used instead
+>-Who:	Adrian Bunk <bunk@stusta.de>
+>-
+>----------------------------
+>-
+> What:	raw1394: requests of type RAW1394_REQ_ISO_SEND, RAW1394_REQ_ISO_LISTEN
+> When:	June 2007
+> Why:	Deprecated in favour of the more efficient and robust rawiso interface.
+>diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+>index abcafac..1e4d688 100644
+>--- a/drivers/char/Kconfig
+>+++ b/drivers/char/Kconfig
+>@@ -993,15 +993,14 @@ config GPIO_VR41XX
+> 	depends on CPU_VR41XX
+> 
+> config RAW_DRIVER
+>-	tristate "RAW driver (/dev/raw/rawN) (OBSOLETE)"
+>+	tristate "RAW driver (/dev/raw/rawN)"
+> 	depends on BLOCK
+> 	help
+>-	  The raw driver permits block devices to be bound to /dev/raw/rawN. 
+>-	  Once bound, I/O against /dev/raw/rawN uses efficient zero-copy I/O. 
+>+	  The raw driver permits block devices to be bound to /dev/raw/rawN.
+>+	  Once bound, I/O against /dev/raw/rawN uses efficient zero-copy I/O.
+> 	  See the raw(8) manpage for more details.
+> 
+>-          The raw driver is deprecated and will be removed soon.
+>-          Applications should simply open the device (eg /dev/hda1)
+>+          Applications should preferably open the device (eg /dev/hda1)
+>           with the O_DIRECT flag.
+> 
+> config MAX_RAW_DEVS
 
-Yes. And usign the "preempt count" as a refcount is fairly natural, no? 
-We do already depend on that in many code-paths.
+At least keep the "it's obsolete" Kconfig description. We
+don't want new users/projects to jump on /dev/raw.
 
-It also has the advantage since it's not a *blocking* lock, it's fairly 
-easy to code around (ie since it nests, it avoids the kinds of nasty 
-deadlocks we had with cpufreq that had totally insane calling semantics 
-and different people all wanted the lock).
 
-Of course, a real nesting lock could be used to the same effect.
 
-> RFC #1 and #2 DO work. But, the discussions in the thread
-> http://lkml.org/lkml/2007/1/26/282 gave me the impression
-> that we would be better off without any code audits to
-> make the code paths cpu-hotplug safe. I would leave it for others
-> to shed more light here.
-
-Well, I hope that _this_ discussion about the freezer has convinced you 
-that there are no more fundamntal problems with #1/#2 than with using the 
-freezer.
-
-The freezer really needs even *more* code auditing, since it's almost 
-impossible to see which thread depends on some other thread. There's a 
-real reason why most kernel threads disable freezing.
-
-At least with locking, the code-paths you require to audit are all 
-actually relevant to cpu hotplug, and you can easily add dynamic 
-_automated_ tests like "if you use online_cpu_map, you'd better hold the 
-preempt lock".
-
-For example, since all users of cpu_online_map should be pure *readers* 
-(apart from a couple of cases that actually bring up a CPU), you can do 
-things like
-
-	#define cpu_online_map check_cpu_online_map()
-
-	static inline cpumask_t check_cpu_online_map(void)
-	{
-		WARN_ON(!preempt_safe()); /* or whatever lock we decide on */
-		return __real_cpu_online_map;
-	}
-
-and it will nicely catch things like that.
-
-		Linus
+	Jan
+-- 
