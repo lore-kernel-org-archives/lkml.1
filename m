@@ -1,44 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760716AbXEMVU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbXEMVYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760716AbXEMVU4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 17:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755327AbXEMVUu
+	id S1760248AbXEMVYb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 17:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbXEMVYY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 17:20:50 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:57602 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755059AbXEMVUt (ORCPT
+	Sun, 13 May 2007 17:24:24 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39094 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755059AbXEMVYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 17:20:49 -0400
-Date: Sun, 13 May 2007 22:20:42 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Olof Johansson <olof@lixom.net>
-Cc: linux-pcmcia@lists.infradead.org, akpm@osdl.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] pcmcia: export pcmcia_bus_type
-Message-ID: <20070513212042.GA14668@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Olof Johansson <olof@lixom.net>, linux-pcmcia@lists.infradead.org,
-	akpm@osdl.org, linux-kernel@vger.kernel.org
-References: <20070512153307.GA13223@lixom.net> <20070512180658.GA14291@lixom.net>
-Mime-Version: 1.0
+	Sun, 13 May 2007 17:24:24 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]x86_64: build and use GDT on copied compressed kernel
+References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
+	<m1ejllqmo8.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705122329y27c6ef92v8cff43d52b99ae69@mail.gmail.com>
+	<m1abw9qkve.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705122355r5f811d5bg2006b0b22ca885e6@mail.gmail.com>
+	<m11whlqk1g.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705130027vce147dma85a07de6489d666@mail.gmail.com>
+	<86802c440705131101r5b32e0b9j28e2248813b25b64@mail.gmail.com>
+	<m1646wpkr5.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705131406u36340ad4tbc4d81c7df2356bf@mail.gmail.com>
+Date: Sun, 13 May 2007 15:23:43 -0600
+In-Reply-To: <86802c440705131406u36340ad4tbc4d81c7df2356bf@mail.gmail.com>
+	(Yinghai Lu's message of "Sun, 13 May 2007 14:06:33 -0700")
+Message-ID: <m1wszco1sw.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070512180658.GA14291@lixom.net>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 12, 2007 at 01:06:58PM -0500, Olof Johansson wrote:
-> Export pcmcia_bus_type so module-based drivers can register bus notifiers,
-> and add it to what seems to be the main include file.
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-This all sounds rather fishy to me.  Care to send the code along that makes
-use of it.
+> On 5/13/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>> We have big boot protocol revision coming up to more clearly document
+>> what is needed to work with the native entry points.  It is a 2.6.23
+>> targeted thing and that is one of the things that we are likely to
+>> look at.
+>
+> Good, where is the thread for that?
 
-And even if we're going to add the export it should be _GPL because it's
-a deeply internal implementation detail.  Then again I'm not exactly
-convinced we should export it yet.
+Look on the virtualization list may lkml was cc'd about getting
+Xen and lguest.  "boot bzImages under paravirt"  I think was
+the subject on one of the pieces.
 
+A lot of this work is held up in part by the need to get 2.6.22
+out, and in part because we have so much in flight work for the
+early phases of boot that we need to let things settle
+before it we can do more.
+
+Eric
