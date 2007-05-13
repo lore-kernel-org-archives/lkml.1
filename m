@@ -1,47 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030346AbXEMQlG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbXEMQnT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030346AbXEMQlG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 12:41:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758130AbXEMQk4
+	id S1759463AbXEMQnT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 12:43:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759104AbXEMQnM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 12:40:56 -0400
-Received: from khc.piap.pl ([195.187.100.11]:39699 "EHLO khc.piap.pl"
+	Sun, 13 May 2007 12:43:12 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58610 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755962AbXEMQkz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 12:40:55 -0400
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Adrian Bunk <bunk@stusta.de>, David Woodhouse <dwmw2@infradead.org>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>,
-       Satyam Sharma <satyam.sharma@gmail.com>, Anton Vorontsov <cbou@mail.ru>,
-       Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       kernel-discuss@handhelds.org, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-References: <20070507194949.GB3981@ucw.cz>
-	<a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com>
-	<Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
-	<1178646751.2824.48.camel@pmac.infradead.org>
-	<Pine.LNX.4.64N.0705091504360.15372@blysk.ds.pg.gda.pl>
-	<1178721996.2824.199.camel@pmac.infradead.org>
-	<20070509203335.GA4290@ucw.cz>
-	<1178887402.21820.65.camel@shinybook.infradead.org>
-	<20070511132116.GH4052@ucw.cz> <20070512211144.GO7984@stusta.de>
-	<20070512232051.GC761@elf.ucw.cz>
-From: Krzysztof Halasa <khc@pm.waw.pl>
-Date: Sun, 13 May 2007 18:40:53 +0200
-In-Reply-To: <20070512232051.GC761@elf.ucw.cz> (Pavel Machek's message of "Sun, 13 May 2007 01:20:51 +0200")
-Message-ID: <m3y7js7k2y.fsf@maximus.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Transfer-Encoding: 8BIT
+	id S1758130AbXEMQnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 12:43:11 -0400
+Date: Sun, 13 May 2007 12:43:03 -0400
+From: Dave Jones <davej@redhat.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: undeprecate raw driver.
+Message-ID: <20070513164303.GF27604@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Jan Engelhardt <jengelh@linux01.gwdg.de>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070513163220.GA31902@redhat.com> <Pine.LNX.4.61.0705131835110.9570@yvahk01.tjqt.qr>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.61.0705131835110.9570@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> writes:
+On Sun, May 13, 2007 at 06:35:45PM +0200, Jan Engelhardt wrote:
 
-> Common denominator should be used. That includes 80 columns.
+ > >-	tristate "RAW driver (/dev/raw/rawN) (OBSOLETE)"
+ > >+	tristate "RAW driver (/dev/raw/rawN)"
+ > > 	depends on BLOCK
+ > > 	help
+ > >-	  The raw driver permits block devices to be bound to /dev/raw/rawN. 
+ > >-	  Once bound, I/O against /dev/raw/rawN uses efficient zero-copy I/O. 
+ > >+	  The raw driver permits block devices to be bound to /dev/raw/rawN.
+ > >+	  Once bound, I/O against /dev/raw/rawN uses efficient zero-copy I/O.
+ > > 	  See the raw(8) manpage for more details.
+ > > 
+ > >-          The raw driver is deprecated and will be removed soon.
+ > >-          Applications should simply open the device (eg /dev/hda1)
+ > >+          Applications should preferably open the device (eg /dev/hda1)
+ > >           with the O_DIRECT flag.
+ > > 
+ > > config MAX_RAW_DEVS
+ > 
+ > At least keep the "it's obsolete" Kconfig description. We
+ > don't want new users/projects to jump on /dev/raw.
 
-Yep, that's really obsolete. Perhaps we should agree on some
-100 columns? And/or 4-characters tabs maybe :-)
+That'll just lead to some janitor sending more "OMG! OBSOLETE!" cleanup
+patches getting it re-added to the feature-removal.txt
+If we undeprecate it, it won't be going away, so new users of it
+aren't any more of a problem than they have been the last two and
+a half years.
+
+	Dave
+
 -- 
-Krzysztof Ha³asa
+http://www.codemonkey.org.uk
