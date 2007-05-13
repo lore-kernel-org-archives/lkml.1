@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934389AbXEMRQR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934501AbXEMRUX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934389AbXEMRQR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 13:16:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757324AbXEMRQJ
+	id S934501AbXEMRUX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 13:20:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbXEMRUN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 13:16:09 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:45421 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754019AbXEMRQI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 13:16:08 -0400
-Date: Sun, 13 May 2007 20:15:55 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Stephen Hemminger <shemminger@linux-foundation.org>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] allow kernel module exclusion on load
-Message-ID: <20070513171555.GA27920@localdomain>
-References: <20070513132517.GA14038@localdomain> <20070513092352.18cd80de@freepuppy>
+	Sun, 13 May 2007 13:20:13 -0400
+Received: from mail.aknet.ru ([82.179.72.26]:52820 "EHLO mail.aknet.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757585AbXEMRUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 13:20:12 -0400
+Message-ID: <46474975.1080204@aknet.ru>
+Date: Sun, 13 May 2007 21:23:01 +0400
+From: Stas Sergeev <stsp@aknet.ru>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070513092352.18cd80de@freepuppy>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: tglx@linutronix.de
+CC: Linux kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [patch] make pit clocksource continuous
+References: <46464B5C.2080302@aknet.ru>	 <1179040612.22481.237.camel@localhost.localdomain>	 <4646D493.9000309@aknet.ru>	 <1179068094.22481.248.camel@localhost.localdomain>	 <46474175.7030205@aknet.ru> <1179075026.22481.273.camel@localhost.localdomain>
+In-Reply-To: <1179075026.22481.273.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 13, 2007 at 09:23:52AM -0700, Stephen Hemminger wrote:
-> On Sun, 13 May 2007 16:25:17 +0300
-> Dan Aloni <da-x@monatomic.org> wrote:
-> 
-> > Kernel developers might find it useful for quickly getting out from some 
-> > rough debugging scenarios.
-> > 
-> > Signed-off-by: Dan Aloni <da-x@monatomic.org>
-> > 
-> 
-> There is already the modprobe blacklist ability in user space.
+Hello.
 
-Yes, however the point here is that you can easily (and temporarily)
-blacklist a module *manually* from the boot loader without needing to 
-actually perform a complete and successful boot. Using modprobe's 
-blacklist requires editing /etc files, and it also doesn't apply 
-for initrd/initramfs or other system/distribution-specific scripts 
-that would do hardcoded sequential insmod invocations (for example
-on embedded systems that require minimal userspace complexity).
+Thomas Gleixner wrote:
+>> Does this mean that on even an older
+>> boards (without acpi at all) the hrtimers
+>> won't work?
+> Not if PIT is the only clocksource available.
+So you mean it can work without both the
+pm_timer and hpet? Sorry for bothering you
+too much, but I am trying to use the hrtimers
+in my driver module, so I'd like to know all
+the corner-cases.
 
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
+How can I test that situation when the hrtimers
+work only with PIT? Apparently disabling the
+pm_timer and hpet in config doesn't help testing
+it at all, since it simply refuses to work then.
+
+Should I use hrtimer_get_res() to see if the
+hrtimers are available, or is there any better way?
+
