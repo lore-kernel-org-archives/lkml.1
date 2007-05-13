@@ -1,70 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757593AbXEMIri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757739AbXEMI5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757593AbXEMIri (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 04:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbXEMIra
+	id S1757739AbXEMI5W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 04:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbXEMI5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 04:47:30 -0400
-Received: from nile.gnat.com ([205.232.38.5]:40830 "EHLO nile.gnat.com"
+	Sun, 13 May 2007 04:57:14 -0400
+Received: from minas.ics.muni.cz ([147.251.4.40]:56966 "EHLO minas.ics.muni.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756441AbXEMIr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 04:47:29 -0400
-X-Greylist: delayed 1850 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 May 2007 04:47:29 EDT
-Message-ID: <4646C8FA.2090602@adacore.com>
-Date: Sun, 13 May 2007 04:14:50 -0400
-From: Robert Dewar <dewar@adacore.com>
-User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
+	id S1756441AbXEMI5M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 04:57:12 -0400
+Date: Sun, 13 May 2007 10:57:18 +0200
+From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Workaround for a PCI restoring bug
+Message-ID: <20070513085718.GD3580@ics.muni.cz>
+References: <20070512201237.GB3569@ics.muni.cz> <20070512234743.0a8a915f.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: James Cloos <cloos@jhcloos.com>
-CC: LKML <linux-kernel@vger.kernel.org>, discuss@x86-64.org,
-       trivial@kernel.org, Andi Kleen <ak@suse.de>,
-       Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: [discuss] [PATCH] spelling fixes: arch/x86_64/
-References: <4644C783.3090805@simon.arlott.org.uk>	<200705121825.26430.ak@suse.de> <m3abw9a4w9.fsf@lugabout.jhcloos.org>
-In-Reply-To: <m3abw9a4w9.fsf@lugabout.jhcloos.org>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=iso-8859-2
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070512234743.0a8a915f.akpm@linux-foundation.org>
+X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-Muni-Spam-TestIP: 81.31.45.161
+X-Muni-Envelope-From: xhejtman@fi.muni.cz
+X-Muni-Envelope-To: linux-kernel@vger.kernel.org
+X-Muni-Virus-Test: Clean
+X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 13 May 2007 10:57:04 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Cloos wrote:
->>>>>> "Andi" == Andi Kleen <ak@suse.de> writes:
-> 
->>> -		/* Reenable any watchpoints before delivering the
->>> +		/* Re-enable any watchpoints before delivering the
-> 
-> Andi> reenable gets >140k google hits so it seems to be an really
-> Andi> used word.
+Hello,
 
-Well you will find extensive "misuse" of all the re-e* words in
-english, but all should be hyphenated. Moreover, there is no
-license in english to just create new such words, you cannot
-re-entertain your guests for example. In practice we do allow
-creation of new re-e* words, as in re-execute, and that's
-probably ok in techno-jargon-speak.
-
-But re-enable is an old and well used word, reenable is not,
-and I see no reason to encourage the latter incorrect use,
-since it is harder to read (double e after r at the start
-of the word is almost always a long e).
-
-Note that in google, you always want to hyphenate. reenable
-will catch only the misuses, re-enable will catch both.
+On Sat, May 12, 2007 at 11:47:43PM -0700, Andrew Morton wrote:
+> This change might indeed be a suitable workaround for some busted hardware,
+> but we'd need to know quite a bit about the problem before we could merge
+> anything like this
 > 
-> Essentially all commonly used English words which start out with hyphens
-> loose them over time.  It starts out with typos and progresses until the
-> non-hyphenated form becomes the exclusively used form.  It does seem that
-> re-enable → reenable is occurring, based on those search hits.
+> So, again, please send a full bug report.  An emailed one would be OK in
+> this case.
 
-Hyphens do sometimes disappear, but not for re-e*, OED version
-2 does not allow a single such instance.
-> 
-> Andi> Similar with upto.
-> 
-> I’ve a *much* harder time agreeing with «upto» in place of «up to».
-> That should be treated as a typo in need of fixing.
+I've reported this some time ago. I have been recommended to use -mm tree
+instead of the mainline.
 
-Indeed .. upto is not a word.
-> 
-> -JimC
+I've also noticed that someone pointed out that for some reason, PCI config
+space is saved twice, the first is OK, the second saves already disabled
+devices. Unfortunately, I'm unable to find this discussion in LKM.
 
+This is not a regression, this problem has been always present in the kernel.
+
+These devices are not saved correctly:
+01:01.0 CardBus bridge: Ricoh Co Ltd RL5c476 II (rev b3)
+01:01.1 FireWire (IEEE 1394): Ricoh Co Ltd R5C552 IEEE 1394 Controller (rev 08)
+01:01.2 Generic system peripheral [0805]: Ricoh Co Ltd R5C822 SD/SDIO/MMC/MS/MSPro Host Adapter (rev 17)
+01:01.3 System peripheral: Ricoh Co Ltd R5C592 Memory Stick Bus Host Adapter (rev 08)
+01:01.4 System peripheral: Ricoh Co Ltd xD-Picture Card Controller (rev 03)
+
+A bit strange, the devices:
+01:00.0 Ethernet controller 
+01:02.0 Network controller 
+seem to be OK. These two devices are behind the same PCI bridge as the devices
+above.
+
+The log contains the following and similar messages for all these devices:
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset f (was 800100, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset e (was d4fc, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset d (was d400, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset c (was 0, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset b (was 0, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset a (was 3bfff000, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 9 (was 0, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 8 (was 0, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 7 (was 0, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 6 (was 40020201, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 5 (was 20000dc, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 4 (was 0, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 3 (was 822000, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 2 (was 60700b3, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 1 (was 2100107, writing ffffffff)
+May 12 22:07:13 anubis kernel: PM: Writing back config space on device
+0000:01:01.0 at offset 0 (was 4761180, writing ffffffff)
+
+
+-- 
+Luk� Hejtm�nek
