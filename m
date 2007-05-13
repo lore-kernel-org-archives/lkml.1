@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbXEMMbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759285AbXEMMcO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758958AbXEMMbb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 08:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbXEMMbY
+	id S1759285AbXEMMcO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 08:32:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757657AbXEMMb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 08:31:24 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:62729 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757508AbXEMMbY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 08:31:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Zb6OfPU3smXuB5oeVS+hkIt2gpH2/WE8vCkLKZc2Uf7tLf9ciZxemJluoBxA11aE73EolLGHcgk1HaVo121lv6kt7xw4wFutEVvR01CQHkqT+iBAIf8p8j/dSHkUe2tLbx4wbVOUt23JguDhJeY/XADP9pVAv78xRtojjZcTK7Q=
-Message-ID: <5a4c581d0705130531v4679efabgd2ffed96af72862d@mail.gmail.com>
-Date: Sun, 13 May 2007 14:31:22 +0200
-From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
-To: "umesh@websurfer.com.np" <umesh@websurfer.com.np>
-Subject: Re: upgrade linux kernel
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <2417.63.219.2.2.1179056431.squirrel@mail.websurfer.com.np>
+	Sun, 13 May 2007 08:31:59 -0400
+Received: from mail.servus.at ([193.170.194.20]:39344 "EHLO mail.servus.at"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757533AbXEMMb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 08:31:58 -0400
+X-Greylist: delayed 1932 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 May 2007 08:31:58 EDT
+Message-ID: <4646FDA9.8070100@oberhumer.com>
+Date: Sun, 13 May 2007 13:59:37 +0200
+From: "Markus F.X.J. Oberhumer" <markus@oberhumer.com>
+Organization: oberhumer.com
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
+To: Richard Purdie <richard@openedhand.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, Adrian Bunk <bunk@stusta.de>,
+       LKML <linux-kernel@vger.kernel.org>, torvalds@linux-foundation.org,
+       David Woodhouse <dwmw2@infradead.org>
+Subject: Re: [PATCH] Add LZO1X compression support to the kernel
+References: <1178096183.5860.25.camel@localhost.localdomain>	 <20070512111722.GJ7984@stusta.de>	 <1178983055.5831.3.camel@localhost.localdomain>	 <20070512094710.43ab1b2f.akpm@linux-foundation.org> <1179003405.5831.18.camel@localhost.localdomain>
+In-Reply-To: <1179003405.5831.18.camel@localhost.localdomain>
+X-no-Archive: yes
+X-Oberhumer-Conspiracy: There is no conspiracy. Trust us.
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <2417.63.219.2.2.1179056431.squirrel@mail.websurfer.com.np>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/13/07, umesh@websurfer.com.np <umesh@websurfer.com.np> wrote:
-> I am upgrading kernel from 2.4.20-8(default in RH9) to 2.6.xx. when I do
-> "make" command it gives some output and finally get error saying that,
->
-> "BFD: Warning: Writing section '.bss' to huge ( ie negative) file offset
-> 0xc0244000. "
->
->  "Objcopy: arch/i386/boot/compressed/vmlinux.bin: file truncated"
->
-> "make[2]:***[ arch/i386/boot/compressed/vmlinux.bin] Error 1"
->
->  "make[1]: ***[ arch/i386/boot/compressed/vmlinux] Error 2"
->
->  "make: *** [bzImage] Error 2"
+Richard Purdie wrote:
+> On Sat, 2007-05-12 at 09:47 -0700, Andrew Morton wrote:
+>> On Sat, 12 May 2007 16:17:35 +0100 Richard Purdie <richard@openedhand.com> wrote:
+>>
+>>> On Sat, 2007-05-12 at 13:17 +0200, Adrian Bunk wrote:
+>>>> On Wed, May 02, 2007 at 09:56:23AM +0100, Richard Purdie wrote:
+>>>>> ...
+>>>>> I've asked the LZO author about the comments on lzo_copyright function
+>>>>> but the code is GPLv2 licensed so is suitable for inclusion in the
+>>>>> kernel.
+>>>> This sounds as if LZO is GPL incompatible similar to code under
+>>>> the 4 clause BSD licence.
+>>>>
+>>>>> ...
+>>>>> +/* If you use the LZO library in a product, you *must* keep this
+>>>>> + * copyright string in the executable of your product.
+>>>>> + */
+>>> I've had a reply from the copyright holder/author saying he's going to
+>>> change this wording in the next LZO release and that the code *is* GPLv2
+>>> licensed as per the headers on the files.
+>>>
+>> It would be ideal if the author of that code could send us a
+>> signed-off-by: as per secton 11 of Documentation/SubmittingPatches.  
+> 
+> Section 11b says I can submit it but I've asked the author about a
+> signed off by line (he's cc'd) for the alleviation of any doubt.
 
-A quick round of googling brings up this
+I agree that the comment does conflict with the GPL. Just to avoid any doubts, 
+LZO _is_ GPL v2, and I will fix that comment for the next version. Please 
+accept my signed-off-by for Richard's kernel patch in the meantime.
 
-http://www.uwsg.iu.edu/hypermail/linux/kernel/0410.3/0205.html
+   Signed-off-by: Markus F.X.J. Oberhumer <markus@oberhumer.com>
 
- where the issue was that binutils were too old to compile the
- newer kernels. More generically, RH9 is now really ancient,
- and you'd probably make your life much easier by upgrading
- to more recent distributions.
+~Markus
 
-If you intend to stay on RH9, please have a look at the
- /usr/src/linux/Documentation/Changes file, it will give you
- a first idea of how much stuff you need to upgrade on RH9.
 
---alessandro
+> 
+> Cheers,
+> 
+> Richard
+> 
+> 
 
- "Did you get married but forgot to get divorced ?"
-
-     (Danny and Dusty, 'The Good Old Days')
+-- 
+Markus Oberhumer, <markus@oberhumer.com>, http://www.oberhumer.com/
