@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760417AbXEMUjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759706AbXEMUpc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760417AbXEMUjT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 16:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754948AbXEMUjK
+	id S1759706AbXEMUpc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 16:45:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757459AbXEMUp0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 16:39:10 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:45964 "EHLO proxima.lp0.eu"
+	Sun, 13 May 2007 16:45:26 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38960 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754370AbXEMUjI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 16:39:08 -0400
-Message-ID: <46477763.5020400@simon.arlott.org.uk>
-Date: Sun, 13 May 2007 21:38:59 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+	id S1755280AbXEMUpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 16:45:25 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: 2.6.22-rc1: Broken suspend on SMP with tifm
+Date: Sun, 13 May 2007 22:50:25 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
+References: <200705132132.08546.rjw@sisk.pl> <20070513200845.GA3078@tv-sign.ru> <20070513203039.GA3143@tv-sign.ru>
+In-Reply-To: <20070513203039.GA3143@tv-sign.ru>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@SteelEye.com>
-CC: Dave Jones <davej@redhat.com>, "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: why does x86 "make defconfig" build a single, lonely module?
-References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>	 <20070513160608.GA29024@redhat.com> <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
-X-Enigmail-Version: 0.94.1.2
-OpenPGP: id=89C93563
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705132250.26277.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13/05/07 17:10, James Bottomley wrote:
-> On Sun, 2007-05-13 at 12:06 -0400, Dave Jones wrote:
->> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
->> index e62d23f..0f6c370 100644
->> --- a/drivers/scsi/Kconfig
->> +++ b/drivers/scsi/Kconfig
->> @@ -244,7 +244,7 @@ config SCSI_SCAN_ASYNC
->>  config SCSI_WAIT_SCAN
->>  	tristate
->>  	default m
->> -	depends on SCSI
->> +	depends on SCSI_SCAN_ASYNC
+On Sunday, 13 May 2007 22:30, Oleg Nesterov wrote:
+> On 05/14, Oleg Nesterov wrote:
+> >
+> > On 05/13, Rafael J. Wysocki wrote:
+> > > 
+> > > The suspend/hibernation is broken on SMP due to:
+> > > 
+> > > commit 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5
+> > > tifm: replace per-adapter kthread with freezeable workqueue
+> > > 
+> > > Well, it looks like freezable worqueues still deadlock with CPU hotplug
+> > > when worker threads are frozen.
+> > 
+> > Ugh. I thought we deprecated create_freezeable_workqueue(), exactly
+> > because suspend was changed to call _cpu_down() after freeze().
+> > 
+> > It is not that "looks like freezable worqueues still deadlock", it
+> > is "of course, freezable worqueues deadlocks" on CPU_DEAD.
+> > 
+> > The ->freezeable is still here just because of incoming "cpu-hotplug
+> > using freezer" rework.
+> > 
+> > No?
+> > 
+> > > --- linux-2.6.22-rc1.orig/kernel/workqueue.c
+> > > +++ linux-2.6.22-rc1/kernel/workqueue.c
+> > > @@ -799,9 +799,7 @@ static int __devinit workqueue_cpu_callb
+> > >  	struct cpu_workqueue_struct *cwq;
+> > >  	struct workqueue_struct *wq;
+> > >  
+> > > -	action &= ~CPU_TASKS_FROZEN;
+> > > -
+> > > -	switch (action) {
+> > > +	switch (action & ~CPU_TASKS_FROZEN) {
+> > 
+> > Confused. How can we see, say CPU_UP_PREPARE_FROZEN, if we cleared
+> > CPU_TASKS_FROZEN bit?
 > 
-> No.  SCSI_SCAN_ASYNC is a bool ... if you depend on it, you'll force the
-> wait scan to be built in, which isn't the idea at all.
+> So, unless I missed something stupid, this patch is not 100% right.
 
-Try it. It doesn't force it to be built in.
+Well, it isn't, but for a different reason (see [*] below).
 
-> Plus SCSI_SCAN_ASYNC only sets the *default* for async scanning.  You
-> can alter this at boot time, so you could need the wait scan module even
-> with it set to N.
+> I think the better fix (at least for now) is
+> 
+> 	- #define create_freezeable_workqueue(name) __create_workqueue((name), 0, 1)
+> 	+ #define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
+> 
+> Alex, do you really need a multithreaded wq?
+> 
+> Rafael, what do you think?
 
-static int __init wait_scan_init(void)
-{
-    scsi_complete_async_scans();
-    return 0;
-}
+That would be misleading if the driver needs the threads to be frozen.
 
-Could that not be built-in to SCSI as a sysfs attribute, rather than using 
-a module to tell the kernel to do something? It looks like someone might 
-want to call scsi_complete_async_scans() more than once too - if they also 
-don't allow modules to be unloaded then they can't.
+I would prefer to revert the commit that caused the problem to appear, but it
+doesn't revert cleanly and I hate to invalidate someone else's work becuase of
+my own mistakes.
 
--- 
-Simon Arlott
+[*] Getting back to the patch, it seems to me that we should do something like
+take_over_work() before thawing the frozen thread, because there may be a queue
+to process and the device is suspended at that point.
+
+Greetings,
+Rafael
