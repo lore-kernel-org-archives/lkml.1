@@ -1,74 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbXEMKpN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbXEMK4M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758178AbXEMKpN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 06:45:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbXEMKpB
+	id S1758181AbXEMK4M (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 06:56:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbXEMKz7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 06:45:01 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:34336 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754173AbXEMKpA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 06:45:00 -0400
-Date: Sun, 13 May 2007 03:44:42 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: undefined reference to `__clear_user' (was: Re: [patch 2/13]
- signal/timer/event fds v10 - signalfd core ...)
-Message-Id: <20070513034442.52f81fff.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705131222410.2271@anakin>
-References: <Pine.LNX.4.64.0704021555430.26489@alien.or.mcafeemobile.com>
-	<Pine.LNX.4.64.0705131222410.2271@anakin>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+	Sun, 13 May 2007 06:55:59 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:46813 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757214AbXEMKz6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 06:55:58 -0400
+Message-ID: <4646EE93.8090307@drzeus.cx>
+Date: Sun, 13 May 2007 12:55:15 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
+To: Tobias Bengtsson <tobbe@tobbe.nu>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: SDHCI issues on Ricoh in 2.6.20, 21 and 21-rc7-mm2
+References: <4639D927.4080406@tobbe.nu>
+In-Reply-To: <4639D927.4080406@tobbe.nu>
+X-Mime-Autoconverted: from 8bit to 7bit by courier 0.53
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 May 2007 12:28:23 +0200 (CEST) Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-
-> 	Hi Davide,
+Tobias Bengtsson wrote:
+> Hi,
 > 
-> On Mon, 2 Apr 2007, Davide Libenzi wrote:
-> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> > +++ linux-2.6.21-rc5.fds/fs/signalfd.c	2007-04-02 15:06:29.000000000 -0700
-> 
-> > +/*
-> > + * Copied from copy_siginfo_to_user() in kernel/signal.c
-> > + */
-> > +static int signalfd_copyinfo(struct signalfd_siginfo __user *uinfo,
-> > +			     siginfo_t const *kinfo)
-> > +{
-> > +	long err;
-> > +
-> > +	BUILD_BUG_ON(sizeof(struct signalfd_siginfo) != 128);
-> > +
-> > +	/*
-> > +	 * Unused memebers should be zero ...
-> > +	 */
-> > +	err = __clear_user(uinfo, sizeof(*uinfo));
->               ^^^^^^^^^^^^
-> 
-> Shouldn't this be `clear_user()'? I don't see any access_ok() calls
-> before this call (I do see them in copy_siginfo_to_user() in
-> kernel/signal.c), but of course I may miss something...
-> 
-> I only noticed because m68k doesn't have __clear_user(), as this routine
-> was never needed by generic code before your change.
+> Inserting a SD card after bootup does not work.
+> Please cc any response to me personally as I'm not on the list.
 > 
 
-The vfs does the access_ok() checking on entry to read, write, readv,
-writev, pread and pwrite.
+Very odd. And unfortunately I do not know what the problem might be.
 
-I _think_ that covers everything, in which case all the code which
-implements reading and writing can use the __ functions.  We have a lot of
-code which doesn't avail itself of that optimisation though: 12 zillion
-sysfs and proc handlers, for a start.
+>From your testing we can conclude two things:
 
-(I think.  I only recently noticed this and might have missed a path).
+- The controller has no problem detecting the device (the difference in the
+"Present" register shows that).
+
+- Interrupts work just fine, as it can properly communicate with the card.
+
+And since the problem is normally one of those two, I have no idea what the hell
+is going on here. Ricoh is also one of the Linux-unfriendly vendors so no hope
+of getting them to cough up some info.
+
+We could do some silly polling hack. It isn't clean, but it might get things
+somewhat working at least.
+
+Rgds
+
+-- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
