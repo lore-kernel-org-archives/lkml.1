@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbXEMGsA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbXEMGto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758590AbXEMGsA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 02:48:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbXEMGry
+	id S1758805AbXEMGto (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 02:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbXEMGth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 02:47:54 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:34719 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755109AbXEMGrx (ORCPT
+	Sun, 13 May 2007 02:49:37 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:36865 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755109AbXEMGth (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 02:47:53 -0400
-Date: Sat, 12 May 2007 23:47:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Workaround for a PCI restoring bug
-Message-Id: <20070512234743.0a8a915f.akpm@linux-foundation.org>
-In-Reply-To: <20070512201237.GB3569@ics.muni.cz>
-References: <20070512201237.GB3569@ics.muni.cz>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 13 May 2007 02:49:37 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]x86_64: build and use GDT on copied compressed kernel
+References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
+	<m1ejllqmo8.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705122329y27c6ef92v8cff43d52b99ae69@mail.gmail.com>
+Date: Sun, 13 May 2007 00:48:53 -0600
+In-Reply-To: <86802c440705122329y27c6ef92v8cff43d52b99ae69@mail.gmail.com>
+	(Yinghai Lu's message of "Sat, 12 May 2007 23:29:23 -0700")
+Message-ID: <m1abw9qkve.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 May 2007 22:12:37 +0200 Lukas Hejtmanek <xhejtman@ics.muni.cz> wrote:
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
-> as of 2.6.21-git16, the bugs related to restoring PCI are still present. The
-> save pci function reads only -1 from the PCI config space and when restoring,
-> it messes up totaly most PCI devices. The attached patch is workaround only
-> until proper fix is found and included. Could it be included into the mainline
-> for now?
-> 
-> -- 
-> Lukáš Hejtmánek
-> 
-> 
-> [pci.patch  text/x-diff (489B)]
-> --- drivers/pci/pci.c.orig	2006-07-15 23:53:08.000000000 +0200
-> +++ drivers/pci/pci.c	2006-07-21 00:51:07.000000000 +0200
-> @@ -477,7 +477,7 @@
->  	 */
->  	for (i = 15; i >= 0; i--) {
->  		pci_read_config_dword(dev, i * 4, &val);
-> -		if (val != dev->saved_config_space[i]) {
-> +		if (val != dev->saved_config_space[i] && dev->saved_config_space[i] != 0xffffffff) {
->  			printk(KERN_DEBUG "PM: Writing back config space on "
->  				"device %s at offset %x (was %x, writing %x)\n",
->  				pci_name(dev), i,
+> On 5/12/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>> Overwriting the GDT should be fine because we don't reload the segments,
+>> after we overwrite it.  GDT entries are only read when we load segments.
+>> Interrupts are disabled so that should not cause a problem.
+>>
+>> Why do you think the current behaviour is a problem?
+>
+> just think if GDT should not be overwriten when we are still under
+> that GDT setting.
+> didn't have chance to test that in HDT or other debug device, when
+> setting breaking point after that GDT is overwriten.
 
-This change might indeed be a suitable workaround for some busted hardware,
-but we'd need to know quite a bit about the problem before we could merge
-anything like this
+It would be interesting to see if you could produce a failure using
+that gdt, I don't think you will be able to, even with a debugger.
 
-So, again, please send a full bug report.  An emailed one would be OK in
-this case.
+For data segments we never use that GDT, it is only for the code
+segment we use the GDT and that only to get us into 64bit mode.
 
-Thanks.
+Eric
