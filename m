@@ -1,63 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbXEMAgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757421AbXEMArW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757309AbXEMAgJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 20:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbXEMAf6
+	id S1757421AbXEMArW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 20:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbXEMArP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 20:35:58 -0400
-Received: from simmts5-qfe0.srvr.bell.ca ([206.47.199.163]:45437 "EHLO
-	simmts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753154AbXEMAf5 (ORCPT
+	Sat, 12 May 2007 20:47:15 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:51943 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753154AbXEMArP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 20:35:57 -0400
-Message-ID: <46465D43.3060200@gmail.com>
-Date: Sat, 12 May 2007 21:35:15 -0300
-From: Kevin Winchester <kjwinchester@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070509)
-MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: x86 setup rewrite tree ready for flamage^W review
-References: <464158E9.2000207@zytor.com> <4645032E.1030109@gmail.com> <46450910.8080503@zytor.com>
-In-Reply-To: <46450910.8080503@zytor.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+	Sat, 12 May 2007 20:47:15 -0400
+Subject: Re: default y idiocy
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Jens Axboe <jens.axboe@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.61.0705122212180.9570@yvahk01.tjqt.qr>
+References: <20070512182343.GO4629@kernel.dk>
+	 <Pine.LNX.4.61.0705122121340.9570@yvahk01.tjqt.qr>
+	 <20070512192726.GQ4629@kernel.dk>
+	 <Pine.LNX.4.61.0705122135510.9570@yvahk01.tjqt.qr>
+	 <20070512194510.GR4629@kernel.dk>
+	 <Pine.LNX.4.61.0705122212180.9570@yvahk01.tjqt.qr>
+Content-Type: text/plain
+Date: Sat, 12 May 2007 21:46:58 -0300
+Message-Id: <1179017218.4022.41.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hi Jan,
 
-H. Peter Anvin wrote:
-> Kevin Winchester wrote:
->> Not sure if you were looking for testing, but I fuzzed it to apply to
->> 2.6.21-git and gave it a spin.  Worked just like a normal boot (which I
->> assume was the point).
-> 
-> That would be the point, yes :)  Looking for breakage in video mode
-> detection, memory detection, and APM are probably the trickiest areas.
-> 
-> 	-hpa
-> 
+All the submenus bellow are dependent of VIDEO_DEV (Video4Linux core).
+If someone wants V4L, it is very likely that he will select a radio or a
+video adapter, since the subsystem is useless without the drivers (*).
 
-Video mode detection (including "scan") seemed to work just the same as before.
- As for memory detection, my 512M x86-64 UP system is probably not what you had
-in mind, and I don't really know what goes on for APM or how to test it.
+(*) Except if you are using an out-of-tree driver.
 
-As well, I've been looking through the actual code, and even with my very
-limited experience with x86 assembler and operating systems, I now at least have
-an idea of what is going on.  So switching to C for as much of the code as
-possible seems like the right idea if you want to make it easier for new people
-to get involved in that area of the kernel.
+> diff --git a/drivers/media/radio/Kconfig b/drivers/media/radio/Kconfig
+> index a6ac82a..0486780 100644
+> --- a/drivers/media/radio/Kconfig
+> +++ b/drivers/media/radio/Kconfig
+> @@ -5,7 +5,6 @@
+>  menuconfig RADIO_ADAPTERS
+>  	bool "Radio Adapters"
+>  	depends on VIDEO_DEV
+> -	default y
+>  	---help---
+>  	  Say Y here to enable selecting AM/FM radio adapters.
+>  
+> diff --git a/drivers/media/video/Kconfig b/drivers/media/video/Kconfig
+> index 5cb3f54..ca33d55 100644
+> --- a/drivers/media/video/Kconfig
+> +++ b/drivers/media/video/Kconfig
+> @@ -5,7 +5,6 @@
+>  menuconfig VIDEO_CAPTURE_DRIVERS
+>  	bool "Video capture adapters"
+>  	depends on VIDEO_DEV
+> -	default y
+>  	---help---
+>  	  Say Y here to enable selecting the video adapters for
+>  	  webcams, analog TV, and hybrid analog/digital TV.
+> @@ -689,7 +688,6 @@ config VIDEO_CAFE_CCIC
+>  menuconfig V4L_USB_DRIVERS
+>  	bool "V4L USB devices"
+>  	depends on USB
+> -	default y
 
-Kevin
+It should be noticed that selecting the "Drivers" Kconfig items won't
+produce any code. No drivers are marked with default.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.4 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Those items are just used to better organize Multimedia menu. The result
+of having 'y' is just to have the submenus open by default. For me, it
+makes sense to keep default y, especially if we consider the arguments
+at:
 
-iD8DBQFGRl1CKPGFQbiQ3tQRAuEcAJ93zlfNzB7YipLHgvkQP3Jrtjh0EwCfSRQ5
-9emaZMVvJsuXMs1ifO4KWkY=
-=G4zx
------END PGP SIGNATURE-----
+http://lkml.org/lkml/2007/5/8/76
+
+This is also the same case for DVB drivers submenu:
+
+menuconfig DVB_CAPTURE_DRIVERS
+        bool "DVB/ATSC adapters"
+        depends on DVB_CORE
+        default y
+        ---help---
+          Say Y to select Digital TV adapters
+
+Just to keep the entire menu coherent, "default y" were added for DAB:
+
+config DAB
+        boolean "DAB adapters"
+        default y
+        ---help---
+          Allow selecting support for for Digital Audio Broadcasting (DAB)
+          Receiver adapters.
+
+if DAB
+config USB_DABUSB
+        tristate "DABUSB driver"
+        depends on USB
+        ---help---
+          A Digital Audio Broadcasting (DAB) Receiver for USB and Linux
+          brought to you by the DAB-Team
+          <http://wwwbode.cs.tum.edu/Par/arch/dab/>.  This driver can be taken
+          as an example for URB-based bulk, control, and isochronous
+          transactions. URB's are explained in
+          <Documentation/usb/URB.txt>.
+
+          To compile this driver as a module, choose M here: the
+          module will be called dabusb.
+endif # DAB
+
+It is fine for me to remove "default y" for DAB, although i would prefer
+to have it marked as 'y' just for coherence.
+ 
+Cheers,
+Mauro
+
