@@ -1,43 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760612AbXEMVki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760660AbXEMVp4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760612AbXEMVki (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 17:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754154AbXEMVkb
+	id S1760660AbXEMVp4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 17:45:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXEMVps
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 17:40:31 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41564 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754019AbXEMVkb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 17:40:31 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <464785C7.2050305@s5r6.in-berlin.de>
-Date: Sun, 13 May 2007 23:40:23 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.2) Gecko/20070513 SeaMonkey/1.1.1
+	Sun, 13 May 2007 17:45:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:39150 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754154AbXEMVps (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 17:45:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: 2.6.22-rc1: Broken suspend on SMP with tifm
+Date: Sun, 13 May 2007 23:50:31 +0200
+User-Agent: KMail/1.9.5
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
+References: <200705132132.08546.rjw@sisk.pl> <200705132322.10032.rjw@sisk.pl> <20070513213424.GA3198@tv-sign.ru>
+In-Reply-To: <20070513213424.GA3198@tv-sign.ru>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Bernd Eckenfels <ecki@lina.inka.de>, linux-kernel@vger.kernel.org
-Subject: Re: undeprecate raw driver.
-References: <E1HnHxK-0004CI-00@calista.eckenfels.net> <Pine.LNX.4.64.0705131347450.1144@localhost.localdomain> <46476FBF.5010803@s5r6.in-berlin.de> <Pine.LNX.4.64.0705131612050.3954@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705131612050.3954@localhost.localdomain>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705132350.32582.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Sun, 13 May 2007, Stefan Richter wrote:
+On Sunday, 13 May 2007 23:34, Oleg Nesterov wrote:
+> On 05/13, Rafael J. Wysocki wrote:
+> >
+> > > > On Sunday, 13 May 2007 22:30, Oleg Nesterov wrote:
+> > > > >
+> > > > > I think the better fix (at least for now) is
+> > > > > 
+> > > > > 	- #define create_freezeable_workqueue(name) __create_workqueue((name), 0, 1)
+> > > > > 	+ #define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
+> > > > > 
+> > > > > Alex, do you really need a multithreaded wq?
+> > > > > 
+> > > > > Rafael, what do you think?
+> > > > 
+> > Sure, if a singlethread workqueue is sufficient for Alex, I agree that this
+> > would be preferable.
 > 
->> Except that the term "obsolete" is already used differently in the
->> context of Linux kernel features; see Documentation/ABI/README.
+> Great. Alex?
 > 
-> no, it isn't.  in fact, it's used in that file *exactly* the way i've
-> been defining it:
+> > @@ -819,20 +843,31 @@ static int __devinit workqueue_cpu_callb
+> >  
+> > +
+> > +		case CPU_DEAD_FROZEN:
+> > +			if (wq->freezeable) {
+> > +				take_over_work(wq, cpu);
+> > +				thaw_process(cwq->thread);
+> 
+> Suppose that PF_NOFREEZE task T does flush_workqueue(), and CPU 1 has pending
+> works. T does flush_cpu_workqueue(0), CPU_DEAD_FROZEN moves works from CPU 1
+> to CPU 0, T does flush_cpu_workqueue(1) and finds nothing.
 
-I meant _differently from the term in the HTML spec_.
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+I don't think this is possible, because we've acquired workqueue_mutex in
+_cpu_down().
+
+Greetings,
+Rafael
