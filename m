@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934267AbXEMQJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934386AbXEMQLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934267AbXEMQJr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 12:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbXEMQJk
+	id S934386AbXEMQLU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 12:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbXEMQLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 12:09:40 -0400
-Received: from www.osadl.org ([213.239.205.134]:51228 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755568AbXEMQJj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 12:09:39 -0400
-Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
-From: Thomas Gleixner <tglx@linutronix.de>
-Reply-To: tglx@linutronix.de
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
-       linux-acpi@vger.kernel.org
-In-Reply-To: <20070512020056.a24cf472.akpm@linux-foundation.org>
-References: <20070430102837.748238000@linutronix.de>
-	 <20070511132846.5ebf4437.akpm@linux-foundation.org>
-	 <200705112302.47726.rjw@sisk.pl> <200705112309.15996.rjw@sisk.pl>
-	 <20070511235607.83ad0eb5.akpm@linux-foundation.org>
-	 <1178959563.22481.126.camel@localhost.localdomain>
-	 <20070512020056.a24cf472.akpm@linux-foundation.org>
+	Sun, 13 May 2007 12:11:09 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:34193 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757572AbXEMQLI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 12:11:08 -0400
+Subject: Re: why does x86 "make defconfig" build a single, lonely module?
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Dave Jones <davej@redhat.com>
+Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <20070513160608.GA29024@redhat.com>
+References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
+	 <20070513160608.GA29024@redhat.com>
 Content-Type: text/plain
-Date: Sun, 13 May 2007 18:12:50 +0200
-Message-Id: <1179072770.22481.265.camel@localhost.localdomain>
+Date: Sun, 13 May 2007 11:10:55 -0500
+Message-Id: <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2007-05-12 at 02:00 -0700, Andrew Morton wrote:
-> Still hangs in the same fashion, sorry.
+On Sun, 2007-05-13 at 12:06 -0400, Dave Jones wrote:
+> On Sun, May 13, 2007 at 11:22:55AM -0400, Robert P. J. Day wrote:
+>  > 
+>  >   not a big deal, but is there a reason that a "make defconfig" on my
+>  > x86 system ends up selecting and building a single module?
+>  > 
+>  >   Building modules, stage 2.
+>  >   MODPOST 1 modules
+>  >   CC      drivers/scsi/scsi_wait_scan.mod.o
+>  >   LD [M]  drivers/scsi/scsi_wait_scan.ko
+>  > 
+>  > is there something special about that module?  just curious.
 > 
-> It's peculiar that the hang happens when acpi_evaluate_object() hits its
-> return statement.  Any theories there?
+> My guess is that someone was paranoid and wanted not to have
+> to answer a zillion "my machine won't boot any more" questions
+> when async scsi scanning was added.
+> This might further clarify..
+> 
+> ---
+> 
+> The scsi_wait_scan module is only really useful if async scanning
+> is enabled.
+> 
+> Signed-off-by: Dave Jones <davej@redhat.com>
+> 
+> diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> index e62d23f..0f6c370 100644
+> --- a/drivers/scsi/Kconfig
+> +++ b/drivers/scsi/Kconfig
+> @@ -244,7 +244,7 @@ config SCSI_SCAN_ASYNC
+>  config SCSI_WAIT_SCAN
+>  	tristate
+>  	default m
+> -	depends on SCSI
+> +	depends on SCSI_SCAN_ASYNC
 
-I assume you have a printk right before the return and one after the
-call to acpi_evaluate_object().
+No.  SCSI_SCAN_ASYNC is a bool ... if you depend on it, you'll force the
+wait scan to be built in, which isn't the idea at all.
 
-Can you dump the stack at the point before the return, so we can see if
-the stack is corrupt there ? A WARN_ON(1) should do the trick.
-
-	tglx
-
-
+James
 
 
