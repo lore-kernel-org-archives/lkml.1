@@ -1,78 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758612AbXEMRvo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbXEMRyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758612AbXEMRvo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 13:51:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbXEMRvf
+	id S1758489AbXEMRyf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 13:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbXEMRy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 13:51:35 -0400
-Received: from py-out-1112.google.com ([64.233.166.180]:39374 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754750AbXEMRve (ORCPT
+	Sun, 13 May 2007 13:54:29 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:46309 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753827AbXEMRy2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 13:51:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=lZdBpgDxAjy31MoG8+cCnYn9a7q5DpM/U79AJE/0ozAyh7zlSZz26Cc4VAyttCKTWaTF1fGPOhR+ehn6n9oLPyzGEtps7uU+bauRgSHBUvI8ebCRGS7jRGT7YSNy7JNRuqi8Qc8ywzKILYJtDR4QEJWBgwH+I+T4U6Me540iQT0=
-Message-ID: <46474FD8.2070100@gmail.com>
-Date: Sun, 13 May 2007 19:50:16 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Sun, 13 May 2007 13:54:28 -0400
+Date: Sun, 13 May 2007 10:53:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Antonino Ingargiola <tritemio@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jean Delvare <khali@linux-fr.org>
+Subject: Re: Linux 2.6.22-rc1
+In-Reply-To: <5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
+Message-ID: <alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+ <5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, Tejun Heo <htejun@gmail.com>,
-       Jeff Garzik <jeff@garzik.org>,
-       William Thompson <wt@electro-mechanical.com>, Mark Lord <liml@rtr.ca>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       albertcc@tw.ibm.com
-Subject: Re: [PATCH] libata: fallback to the other IDENTIFY on device error,
- take#2
-References: <20070501121703.GH5942@electro-mechanical.com> <46373AEE.6070908@rtr.ca> <20070501131818.GA18521@electro-mechanical.com> <46374354.7040307@gmail.com> <20070501172117.GA20328@electro-mechanical.com> <463F56F2.3010106@gmail.com> <4642627A.4030606@garzik.org> <46446311.3000208@gmail.com> <4644E9E5.3000402@garzik.org> <46470B48.7050101@gmail.com> <20070513161353.GB29024@redhat.com>
-In-Reply-To: <20070513161353.GB29024@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> On Sun, May 13, 2007 at 02:57:44PM +0200, Tejun Heo wrote:
->  > Jeff Garzik wrote:
->  > > Tejun Heo wrote:
->  > >> +            if (class == ATA_DEV_ATA)
->  > >> +                class = ATA_DEV_ATAPI;
->  > >> +            else
->  > >> +                class = ATA_DEV_ATA;
->  > > 
->  > > 
->  > > the 'else' branch is obviously redundant
->  > 
->  > Why?  We can also fallback from ATAPI to ATA.
+
+
+On Sun, 13 May 2007, Antonino Ingargiola wrote:
 > 
-> Then did you mean to write..
-> 
-> +            if (class == ATA_DEV_ATA)
-> +                class = ATA_DEV_ATAPI;
-> +            else if (class == ATA_DEV_ATAPI)
-> +                class = ATA_DEV_ATA;
-> 
-> ?
-> 
-> Otherwise, as Jeff mentions, you're doing a redundant assignment
-> in the else branch.
+> On my desktop pc with Debian Etch and 2.6.22-rc1 the gnome panel
+> applet "Sensors Applet" give an error message "No chip detected".
+> Works fine on 2.6.21.1 (it show cpu temperature) with the same config
+> (I've only only done  make oldconfig).
 
-Hmmm... I'm feeling very dense today.  At that point, class is either
-ATA_DEV_ATA or ATA_DEV_ATAPI.  The if-else clause tries to flip between
-the two.
+One thing to check is that "make oldconfig" can actually change the
+configuration if things were moved behind a new top-level configuration 
+parameter or such. I'm not saying that's the case here, but it's possible 
+that things like the i2c changes might have made you inadvertedly changed 
+some config option.
 
-1. if class == ATA_DEV_ATA, the 'if' test succeeds and "class =
-ATA_DEV_ATAPI" runs, so it flips correctly.
+> Is this considered a regression or can be due to userland incompatibilities?
 
-2. if class == ATA_DEV_ATAPI,  the 'if' test fails and "class =
-ATA_DEV_ATA" runs, so it flips correctly.
+It's a regression, although I'd like to know more about your cases. It's 
+just hard to tell what happened: was it a i2c/hwmon driver that got 
+broken, or is it some sysfs file that got buggered, or what..
 
-What am I missing here?  Feel free to scream at me and hammer me into
-senses.  :-)
+For example, "dmesg" output before and after (preferably as a diff between 
+the two), and what modules you had loaded in the working/nonworking case.
 
--- 
-tejun
+			Linus
