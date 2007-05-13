@@ -1,78 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758555AbXEMGLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbXEMGN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758555AbXEMGLV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 02:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758147AbXEMGLG
+	id S1758201AbXEMGN0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 02:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756949AbXEMGNU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 02:11:06 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:54573 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758100AbXEMGLE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 02:11:04 -0400
-Date: Sat, 12 May 2007 23:03:40 -0700
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: "Maciej W. Rozycki" <macro-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>,
-       kernel-discuss-CN5wO63fgwogsBAKwltoeQ@public.gmane.org,
-       linux-kernel@vger.kernel.org,
-       Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>, zaitcev@redhat.com
-Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
-Message-Id: <20070512230340.fef4b791.zaitcev@redhat.com>
-In-Reply-To: <1179034789.2802.61.camel@shinybook.infradead.org>
-References: <20070503213303.GH20067@zarina>
-	<20070507140453.GD3868@ucw.cz>
-	<1178550653.11851.191.camel@pmac.infradead.org>
-	<20070507194949.GB3981@ucw.cz>
-	<a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com>
-	<Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
-	<1178646751.2824.48.camel@pmac.infradead.org>
-	<20070512093509.f3d1865f.zaitcev@redhat.com>
-	<1179034789.2802.61.camel@shinybook.infradead.org>
-Organization: Red Hat, Inc.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Sun, 13 May 2007 02:13:20 -0400
+Received: from nz-out-0506.google.com ([64.233.162.236]:35793 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755384AbXEMGNT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 02:13:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=AUiDtakMUwzlNrsyAPAumtdC1WopUpsVbrt/DqavQ9mSqd628VORzG53+tDIfa+yAppb9ctS0P6L2roWlb/tr+j2b04EGfGcnrDgDAwIS9E8i0z5I/EtcMjK7DvyPjyfDNzaI7UsCHID8srWLZYvquX/vy6SVjke4x5WJSfu/uc=
+Message-ID: <b6a2187b0705122313n1de6dccci4c7f79c835b2be4f@mail.gmail.com>
+Date: Sun, 13 May 2007 14:13:18 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.22-rc1
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0705131359200.26974@boston.corp.fedex.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0705131359200.26974@boston.corp.fedex.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 May 2007 13:39:48 +0800, David Woodhouse <dwmw2@infradead.org> wrote:
+Take that back. It's after patching reiser4-for-2.6.21.patch.gz that
+causes duplicated export symbols.
 
-> Please don't use my work email address unless I _really_ need to be
-> wearing my tinfoil hat when I read it.
+Sorry,
+Jeff.
 
-I'll keep it in mind, sorry.
 
-> But we'd be wrong -- just as you are. SPF is utterly moronic because it
-> suddenly tries to change the rules and assumes that everyone has already
-> changed, or it throws away valid email from unknown senders. In the case
-> of sending patches, yes you _do_ assume that people aren't doing bizarre
-> things to mangle them in transit, but that mangling is actually
-> relatively rare. Not only that, but you only really care about a
-> _single_ transit path, from you to whoever applies the patch. Which is
-> easy enough to debug if it starts to do stupid things like converting to
-> HTML or converting charsets.
-
-I see your point, and it makes sense, but I'm not sure I agree completely.
-Maybe I'm traumatized by myterious rejects which happened to me before.
-Looking at the patch with vi showed absolutely no clue why it failed.
-
-BTW, here's one odd thing Gmane is doing:
-
-> + * Battery driver for One Laptop Per Child ($100 laptop) board.
-> + *
-> + *	Copyright б╘ 2006  David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org>
-
-The above is how I saw the Anton Vorontsov's message. The e-mail would
-be corrupted no matter the charset, so that is bad. But what about the
-copyright character? It's not Gmane's doing. The reason that not working
-is this:
-
-> From: Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>
-> Content-Type: text/plain; charset=koi8-r
-> Content-Transfer-Encoding: quoted-printable
-
-Anton took the UTF-8 text and sent it with wrong encoding. Such mismatch is
-the most common problem in my experience, not conversions to HTML.
-
--- Pete
+On 5/13/07, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
+>
+> Linus,
+>
+> > So give it a good testing. We'll see how the regression tracking ends up
+> > working, but in order to actually track that, we want people actively
+> > testing -rc1 and making good reports!
+>
+> Here's a little patch to fix filemap.c compilation problem ...
+>
+>
+> Thanks,
+> Jeff
+>
+>
+> --- linux/mm/filemap.c.org      2007-05-13 13:54:16 +0800
+> +++ linux/mm/filemap.c  2007-05-13 13:54:25 +0800
+> @@ -782,6 +782,7 @@
+>         read_unlock_irq(&mapping->tree_lock);
+>         return ret;
+>   }
+> +EXPORT_SYMBOL(find_get_pages);
+>   EXPORT_SYMBOL(find_get_pages_tag);
+>
+>   /**
+> @@ -840,8 +841,6 @@
+>
+>         ra->ra_pages /= 4;
+>   }
+> -EXPORT_SYMBOL(find_get_pages);
+> -EXPORT_SYMBOL(find_get_pages_tag);
+>
+>   /**
+>    * do_generic_mapping_read - generic file read routine
+>
+>
