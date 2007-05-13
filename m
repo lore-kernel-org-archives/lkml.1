@@ -1,41 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758088AbXEMERR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757384AbXEMEjf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758088AbXEMERR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 00:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbXEMERL
+	id S1757384AbXEMEjf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 00:39:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754297AbXEMEj1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 00:17:11 -0400
-Received: from argus.EECS.Berkeley.EDU ([128.32.42.200]:46449 "EHLO
-	EECS.Berkeley.EDU" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755998AbXEMERK (ORCPT
+	Sun, 13 May 2007 00:39:27 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:59296 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752403AbXEMEj0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 00:17:10 -0400
-X-Greylist: delayed 1091 seconds by postgrey-1.27 at vger.kernel.org; Sun, 13 May 2007 00:17:09 EDT
-To: Dmitry Torokhov <dtor@insightbb.com>
-cc: Remi Colinet <remi.colinet@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Regression in 2.6.21-mm1 (git-input) on Dell D610 laptop
-X-Mailer: MH-E 8.0.3; nmh 1.1; GNU Emacs 22.0.96
-In-Reply-To: <200705110047.04933.dtor@insightbb.com>
-Date: Sat, 12 May 2007 20:58:50 -0700
-Message-ID: <4010.1179028730@argus.EECS.Berkeley.EDU>
-From: Jason Riedy <ejr@EECS.Berkeley.EDU>
+	Sun, 13 May 2007 00:39:26 -0400
+Date: Sun, 13 May 2007 05:39:03 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Nick Piggin <npiggin@suse.de>
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Subject: Re: [rfc] optimise unlock_page
+In-Reply-To: <20070513033210.GA3667@wotan.suse.de>
+Message-ID: <Pine.LNX.4.64.0705130535410.3015@blonde.wat.veritas.com>
+References: <20070508113709.GA19294@wotan.suse.de> <20070508114003.GB19294@wotan.suse.de>
+ <1178659827.14928.85.camel@localhost.localdomain> <20070508224124.GD20174@wotan.suse.de>
+ <20070508225012.GF20174@wotan.suse.de> <Pine.LNX.4.64.0705091950080.2909@blonde.wat.veritas.com>
+ <20070510033736.GA19196@wotan.suse.de> <Pine.LNX.4.64.0705101935590.18496@blonde.wat.veritas.com>
+ <20070511085424.GA15352@wotan.suse.de> <Pine.LNX.4.64.0705111357120.3350@blonde.wat.veritas.com>
+ <20070513033210.GA3667@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 13 May 2007 04:39:24.0933 (UTC) FILETIME=[AEE4C350:01C79518]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AG5waWdnaW5Ac3VzZS5kZQBsaW51eC1hcmNoQHZnZXIua2VybmVsLm9yZwBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGFrcG1AbGludXgtZm91bmRhdGlvbi5vcmcAYmVuaEBrZXJuZWwuY3Jhc2hpbmcub3JnAGxpbnV4LW1tQGt2YWNrLm9yZwA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-And Dmitry Torokhov writes:
-> Have you tried any other -mm? Also, does it help if you stick
->         ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_SETSTREAM);
-> at the very beginning of psmouse_initialize() in
-> drivers/input/mouse/psmouse-base.c?
+On Sun, 13 May 2007, Nick Piggin wrote:
+> On Fri, May 11, 2007 at 02:15:03PM +0100, Hugh Dickins wrote:
+> 
+> > Hmm, well, I think that's fairly horrid, and would it even be
+> > guaranteed to work on all architectures?  Playing with one char
+> > of an unsigned long in one way, while playing with the whole of
+> > the unsigned long in another way (bitops) sounds very dodgy to me.
+> 
+> Of course not, but they can just use a regular atomic word sized
+> bitop. The problem with i386 is that its atomic ops also imply
+> memory barriers that you obviously don't need on unlock.
 
-Seems to fix it for me on a D620.
+But is it even a valid procedure on i386?
 
-Bisecting on mainline gave commit
-f42649e84831efc69d5f621f1c36a39b4e384a99 (Input: ALPS - handle
-errors from input_register_device()) as the place where the
-trackpoint half stopped working.  I don't necessarily believe it,
-unless the psmouse_reset on failure caused problems without
-logging anything.
-
-Jason
+Hugh
