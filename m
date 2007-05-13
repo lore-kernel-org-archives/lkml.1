@@ -1,62 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbXEMGAk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbXEMGBS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbXEMGAk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 02:00:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755787AbXEMGAd
+	id S1758346AbXEMGBS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 02:01:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbXEMGBF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 02:00:33 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:31906 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755384AbXEMGAc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 02:00:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:x-x-sender:to:cc:subject:message-id:mime-version:content-type;
-        b=knFTURPTELTtZfWNhqsmGimXDwIrUYUSIMkzJ5biY851tvVei8SAl2durlrqLJI6BFHLdwRMGpcueaT2oLBQFKIbyeqhZPzkiJx4PjKLqSfr6ReptDr1XN8F9EvFmPfb8jJ0zKuFpE18N9cGQ4CbpiVv6ZeK+0k+n2Tr54Sx/4A=
-Date: Sun, 13 May 2007 14:00:32 +0800 (SGT)
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-X-X-Sender: root@boston.corp.fedex.com
-To: Linus Torvalds <torvalds@linux-foundation.org>
-cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22-rc1
-Message-ID: <Pine.LNX.4.64.0705131359200.26974@boston.corp.fedex.com>
+	Sun, 13 May 2007 02:01:05 -0400
+Received: from relay4.usu.ru ([194.226.235.39]:39044 "EHLO relay4.usu.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757067AbXEMGBD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 02:01:03 -0400
+Message-ID: <4646A9F8.5080900@ums.usu.ru>
+Date: Sun, 13 May 2007 12:02:32 +0600
+From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
+User-Agent: IceDove 1.5.0.10 (X11/20070329)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: "=?ISO-8859-2?Q?Wojciech_Zabo=B3otny?=" <W.Zabolotny@elka.pw.edu.pl>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: sis900 module causes kernel panic in 2.6.21.1 (fatal exception
+ in   interrupt)
+References: <4645FDA7.4080809@elka.pw.edu.pl>
+In-Reply-To: <4645FDA7.4080809@elka.pw.edu.pl>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Content-Transfer-Encoding: 8bit
+X-AV-Checked: ClamAV using ClamSMTP@relay4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Wojciech Zabo³otny wrote:
+> Hi All,
+> 
+> The kernel 2.6.21.1 hangs with kernel panic on my laptop, whenever I try
+> to use the network more intensively (a few pings do not cause the
+> problem, but an attempt to ssh somewhere does...)
 
-Linus,
+Known bug, here is a fix:
 
-> So give it a good testing. We'll see how the regression tracking ends up
-> working, but in order to actually track that, we want people actively
-> testing -rc1 and making good reports!
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff_plain;h=dc5a144991ba803bc8afded105c9db1dea0e57ab
 
-Here's a little patch to fix filemap.c compilation problem ...
-
-
-Thanks,
-Jeff
-
-
---- linux/mm/filemap.c.org	2007-05-13 13:54:16 +0800
-+++ linux/mm/filemap.c	2007-05-13 13:54:25 +0800
-@@ -782,6 +782,7 @@
-  	read_unlock_irq(&mapping->tree_lock);
-  	return ret;
-  }
-+EXPORT_SYMBOL(find_get_pages);
-  EXPORT_SYMBOL(find_get_pages_tag);
-
-  /**
-@@ -840,8 +841,6 @@
-
-  	ra->ra_pages /= 4;
-  }
--EXPORT_SYMBOL(find_get_pages);
--EXPORT_SYMBOL(find_get_pages_tag);
-
-  /**
-   * do_generic_mapping_read - generic file read routine
-
+-- 
+Alexander E. Patrakov
