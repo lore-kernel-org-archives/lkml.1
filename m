@@ -1,29 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758234AbXEMBDE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbXEMBMV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758234AbXEMBDE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 21:03:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbXEMBCq
+	id S1757574AbXEMBMV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 21:12:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756305AbXEMBMN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 21:02:46 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:43013 "EHLO
+	Sat, 12 May 2007 21:12:13 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:44525 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756907AbXEMBCp (ORCPT
+	by vger.kernel.org with ESMTP id S1755877AbXEMBMM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 21:02:45 -0400
-Date: Sat, 12 May 2007 18:02:40 -0700
+	Sat, 12 May 2007 21:12:12 -0400
+Date: Sat, 12 May 2007 18:11:40 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Lee Garrett <lee-in-berlin@web.de>
-Cc: Truxton Fulton <trux@truxton.com>, linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>
-Subject: Re: [Bugme-new] [Bug 8378] New: Averatec 3156X laptop doesn't 
- reboot with kernels > 2.6.13.5 (responsible commit found)
-Message-Id: <20070512180240.7a8923d5.akpm@linux-foundation.org>
-In-Reply-To: <4646171E.7090609@web.de>
-References: <200704271742.l3RHgPTH019561@fire-2.osdl.org>
-	<20070427144434.970de79f.akpm@linux-foundation.org>
-	<m2k5vx6vce.fsf@truxton.com>
-	<4646171E.7090609@web.de>
+To: tglx@linutronix.de
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, John Stultz <johnstul@us.ibm.com>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [patch 3/3] clockevents: Fix resume logic - updated version
+Message-Id: <20070512181140.50140334.akpm@linux-foundation.org>
+In-Reply-To: <1178999770.22481.211.camel@localhost.localdomain>
+References: <20070430102837.748238000@linutronix.de>
+	<20070511132846.5ebf4437.akpm@linux-foundation.org>
+	<200705112302.47726.rjw@sisk.pl>
+	<200705112309.15996.rjw@sisk.pl>
+	<20070511235607.83ad0eb5.akpm@linux-foundation.org>
+	<1178959563.22481.126.camel@localhost.localdomain>
+	<20070512020056.a24cf472.akpm@linux-foundation.org>
+	<1178961489.22481.133.camel@localhost.localdomain>
+	<20070512030754.90488f79.akpm@linux-foundation.org>
+	<1178970253.22481.143.camel@localhost.localdomain>
+	<20070512095145.0cf58a57.akpm@linux-foundation.org>
+	<1178989302.22481.185.camel@localhost.localdomain>
+	<20070512102350.04126320.akpm@linux-foundation.org>
+	<1178999770.22481.211.camel@localhost.localdomain>
 X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -31,56 +40,18 @@ Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 12 May 2007 21:35:58 +0200 Lee Garrett <lee-in-berlin@web.de> wrote:
+On Sat, 12 May 2007 21:56:10 +0200 Thomas Gleixner <tglx@linutronix.de> wrote:
 
-> Truxton Fulton wrote:
-> > Hi,
-> > 
-> > I verified on my IDEQ210M that performing the old reboot sequence
-> > followed by the new reboot sequence works for me, and I suspect that
-> > it will work for Lee also.  Like this :
-> > 
-> > 	/* old method, works on most machines */
-> >         for (i = 0; i < 100; i++) {
-> >                 kb_wait();
-> >                 udelay(50);
-> >                 outb(0xfe, 0x64);         /* pulse reset low */
-> >                 udelay(50);
-> >         }
-> > 
-> > 	/* new method, sets the "System flag" which when set,
-> > 	   indicates successful completion of the keyboard controller
-> > 	   self-test (Basic Assurance Test, BAT).  This is needed
-> > 	   for some machines with no keyboard plugged in */
-> >         for (i = 0; i < 100; i++) {
-> >                 kb_wait();
-> >                 udelay(50);
-> >                 outb(0x60, 0x64);         /* write Controller Command Byte */
-> >                 udelay(50);
-> >                 kb_wait();
-> >                 udelay(50);
-> >                 outb(0x14, 0x60);         /* set "System flag" */
-> >                 udelay(50);
-> >                 kb_wait();
-> >                 udelay(50);
-> >                 outb(0xfe, 0x64);         /* pulse reset low */
-> >                 udelay(50);
-> >         }
-> > 
-> > Thanks,
-> > 
-> > -Truxton
+> On Sat, 2007-05-12 at 10:23 -0700, Andrew Morton wrote:
+> > The broken-out queue should turn up at
+> > ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/mm/
+> > in a few minutes.
 > 
-> Hello everyone,
-> 
-> I compiled a 2.6.21.1 kernel with Truxton's suggestion mentioned 
-> above. My laptop reboots normally with it. For convenience I've 
-> diffed a patch, which is appended to this mail.
+> Sigh. I can't reproduce your lockdep problem :(
+
+We should write a Vaio emulator.
+
+> Can you send me your .config please ?
 > 
 
-OK, thanks.
-
-So that are we doing here?  We try the pre-Truxton code and if that didn't
-work we try the post-Truxton code?  Hard to see how that could go wrong.
-
-Truxton, can you please test it for us?
+http://userweb.kernel.org/~akpm/config-sony.txt
