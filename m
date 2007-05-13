@@ -1,88 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbXEMFdX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbXEMFkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbXEMFdX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 01:33:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbXEMFdP
+	id S1757655AbXEMFkG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 01:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755662AbXEMFj5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 01:33:15 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:23127 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbXEMFdP (ORCPT
+	Sun, 13 May 2007 01:39:57 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:54335 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752306AbXEMFj4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 01:33:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type;
-        b=lJZP414/3yxdlfdnjPBQPyyXkVRBigpHN3lAczKs+ZxIDPiDyJMrjrhQRXRq3sfEjjIKx5DiFlWuI9lhbHj8jPtoHiKCcDNeqH0TeIYohuCAyWyjN23OmRLesBc9R1m14ZVeZn3kSnMiVD90ZgtI9GPBNlLHOjo6pdX2A7+0WTM=
-Message-ID: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
-Date: Sat, 12 May 2007 22:33:14 -0700
-From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>, "Andi Kleen" <ak@suse.de>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "Vivek Goyal" <vgoyal@in.ibm.com>
-Subject: [PATCH]x86_64: build and use GDT on copied compressed kernel
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       yinghai.lu@sun.com
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_196047_27671147.1179034394061"
+	Sun, 13 May 2007 01:39:56 -0400
+Subject: Re: [PATCH 8/8] One Laptop Per Child power/battery driver
+From: David Woodhouse <dwmw2@infradead.org>
+To: Pete Zaitcev <zaitcev@redhat.com>
+Cc: "Maciej W. Rozycki" <macro-6z/3iImG2C8G8FEW9MqTrA@public.gmane.org>,
+       Andrew Morton <akpm-3NddpPZAyC0@public.gmane.org>,
+       kernel-discuss-CN5wO63fgwogsBAKwltoeQ@public.gmane.org,
+       Greg KH <gregkh-l3A5Bk7waGM@public.gmane.org>,
+       linux-kernel@vger.kernel.org,
+       Anton Vorontsov <cbou-JGs/UdohzUI@public.gmane.org>,
+       Pavel Machek <pavel-+ZI9xUNit7I@public.gmane.org>,
+       Satyam Sharma 
+	<satyam.sharma-Re5JQEeQqe8AvxtiuMwx3w@public.gmane.org>
+In-Reply-To: <20070512093509.f3d1865f.zaitcev@redhat.com>
+References: <20070503213303.GH20067@zarina> <20070507140453.GD3868@ucw.cz>
+	 <1178550653.11851.191.camel@pmac.infradead.org>
+	 <20070507194949.GB3981@ucw.cz>
+	 <a781481a0705071304m7f6d1b7ewa179e291f52689a4@mail.gmail.com>
+	 <Pine.LNX.4.64N.0705081831070.30981@blysk.ds.pg.gda.pl>
+	 <1178646751.2824.48.camel@pmac.infradead.org>
+	 <20070512093509.f3d1865f.zaitcev@redhat.com>
+Content-Type: text/plain
+Date: Sun, 13 May 2007 13:39:48 +0800
+Message-Id: <1179034789.2802.61.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.dwmw2.2) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_196047_27671147.1179034394061
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Please don't use my work email address unless I _really_ need to be
+wearing my tinfoil hat when I read it.
 
-please check the patch.
+On Sat, 2007-05-12 at 09:35 -0700, Pete Zaitcev wrote:
+> On Tue, 08 May 2007 18:52:31 +0100, David Woodhouse <dwmw2-wEGCiKHe2LqWVfeAwA7xHQ@public.gmane.org> wrote:
+> > On Tue, 2007-05-08 at 18:45 +0100, Maciej W. Rozycki wrote:
+> 
+> > >  Well, my name has an acute above "o" and a dot above "z", but I do not 
+> > > have such a high expectation as to have it correctly spelled in comments 
+> > > and elsewhere within some code before I am able to get it right in 
+> > > official documents issued in English.  And the universe is not going to 
+> > > collapse because of the missing accents, so I consider this an issue we 
+> > > can think of resolving once we have fixed all the bugs that we have.
+> > 
+> > It's not an issue which needs resolving. We can spell your name just
+> > fine; we just need Pavel to quit whining and join us in the 21st
+> > century.
+> 
+> I hate to agree with Pavel, but the real issue here is you being
+> intentionally obtuse. Naked patches are not compatible with UTF-8.
 
-YH
+Wrong. Of course they're compatible -- they're just applied as a byte
+stream. Patch and git are agnostic about file _contents_.
 
-------=_Part_196047_27671147.1179034394061
-Content-Type: text/x-patch; name=bzImage_x86_64_head_gdt.patch; 
-	charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f1n2zsiz
-Content-Disposition: attachment; filename="bzImage_x86_64_head_gdt.patch"
+Git's apply-mailbox tool does honour the Content-Type: header in the
+mail, and it converts _comments_ to the correct charset for the
+repository, as well as handling RFC2047-encoding in the From: header.
+But it doesn't touch the patch itself.
 
-W1BBVENIXXg4Nl82NDogYnVpbGQgYW5kIHVzZSBHRFQgb24gY29waWVkIGNvbXByZXNzZWQga2Vy
-bmVsIAoKQnVpbGQgYW5kIHVzZSBHRFQgb24gY29waWVkIGNvbXByZXNzZWQga2VybmVsIHBvc3Rp
-b24sIGluc3RlYWQgb2YgdXNpbmcgR0RUIAppbiBkYXRhIHNlZ21lbnQgb2YgbG9hZGVkIGNvbXBy
-ZXNzZWQga2VybmVsLiBPdGhlcndpc2UgZGVjb21wcmVzc2luZyAKY29tcHJlc3NlZCBrZXJuZWwg
-aW1hZ2UgbGF0ZXIgaW4gNjRiaXQgbG9uZ21vZGUsIHdpbGwgb3ZlcndyaXRlIEdEVC4KIApTaWdu
-ZWQtb2ZmLWJ5OiBZaW5naGFpIEx1IDx5aW5naGFpLmx1QHN1bi5jb20+CgpkaWZmIC0tZ2l0IGEv
-YXJjaC94ODZfNjQvYm9vdC9jb21wcmVzc2VkL2hlYWQuUyBiL2FyY2gveDg2XzY0L2Jvb3QvY29t
-cHJlc3NlZC9oZWFkLlMKaW5kZXggZjlkNTY5Mi4uMWY1YWM3YyAxMDA2NDQKLS0tIGEvYXJjaC94
-ODZfNjQvYm9vdC9jb21wcmVzc2VkL2hlYWQuUworKysgYi9hcmNoL3g4Nl82NC9ib290L2NvbXBy
-ZXNzZWQvaGVhZC5TCkBAIC05NCwxMCArOTQsMjMgQEAgc3RhcnR1cF8zMjoKICAqIFByZXBhcmUg
-Zm9yIGVudGVyaW5nIDY0IGJpdCBtb2RlCiAgKi8KIAorLyoKKyAqIEJ1aWxkIGVhcmx5IEdEVCB0
-YWJsZSBvbiBjb3BpZWQgY29tcHJlc3NlZCBrZXJuZWwgaW1hZ2UgcG9zaXRpb24sIFNvIEdEVAor
-ICogaXMgbm90IGJlIG92ZXJ3cml0ZW4gd2hlbiBkZWNvbXByZXNzaW5nIHRoZSBjb21wcmVzc2Vk
-IGtlcm5lbC4gCisgKi8KKwltb3Z3CSQweDAwMjAsIGdkdCsweDAwKCVlYngpCisJbW92dwkkMHgw
-MDAwLCBnZHQrMHgwNiglZWJ4KQorCW1vdmwJJDB4MDAwMDAwMDAsIGdkdCsweDA4KCVlYngpIC8q
-IE5VTEwgZGVzY3JpcHRvciAqLworCW1vdmwJJDB4MDAwMDAwMDAsIGdkdCsweDBjKCVlYngpCisJ
-bW92bAkkMHgwMDAwZmZmZiwgZ2R0KzB4MTAoJWVieCkgLyogX19LRVJORUxfQ1MgKi8KKwltb3Zs
-CSQweDAwYWY5YTAwLCBnZHQrMHgxNCglZWJ4KQorCW1vdmwJJDB4MDAwMGZmZmYsIGdkdCsweDE4
-KCVlYngpIC8qIF9fS0VSTkVMX0RTICovCisJbW92bAkkMHgwMGNmOTIwMCwgZ2R0KzB4MWMoJWVi
-eCkKKwogCS8qIExvYWQgbmV3IEdEVCB3aXRoIHRoZSA2NGJpdCBzZWdtZW50cyB1c2luZyAzMmJp
-dCBkZXNjcmlwdG9yICovCi0JbGVhbAlnZHQoJWVicCksICVlYXgKLQltb3ZsCSVlYXgsIGdkdCsy
-KCVlYnApCi0JbGdkdAlnZHQoJWVicCkKKwlsZWFsCWdkdCglZWJ4KSwgJWVheAorCW1vdmwJJWVh
-eCwgZ2R0KzIoJWVieCkKKwlsZ2R0CWdkdCglZWJ4KQogCiAJLyogRW5hYmxlIFBBRSBtb2RlICov
-CiAJeG9ybAklZWF4LCAlZWF4CkBAIC0xODIsNyArMTk1LDcgQEAgbm9fbG9uZ21vZGU6CiAJICog
-aXQgbWF5IGNoYW5nZSBpbiB0aGUgZnV0dXJlLgogCSAqLwogCS5jb2RlNjQKLQkub3JnIDB4MjAw
-CisJLm9yZyAweDQwMAogRU5UUlkoc3RhcnR1cF82NCkKIAkvKiBXZSBjb21lIGhlcmUgZWl0aGVy
-IGZyb20gc3RhcnR1cF8zMiBvciBkaXJlY3RseSBmcm9tIGEKIAkgKiA2NGJpdCBib290bG9hZGVy
-LiAgSWYgd2UgY29tZSBoZXJlIGZyb20gYSBib290bG9hZGVyIHdlIGRlcGVuZCBvbgpAQCAtMjg3
-LDE1ICszMDAsNiBAQCByZWxvY2F0ZWQ6CiAgKi8KIAlqbXAJKiVyYnAKIAotCS5kYXRhCi1nZHQ6
-Ci0JLndvcmQJZ2R0X2VuZCAtIGdkdAotCS5sb25nCWdkdAotCS53b3JkCTAKLQkucXVhZAkweDAw
-MDAwMDAwMDAwMDAwMDAJLyogTlVMTCBkZXNjcmlwdG9yICovCi0JLnF1YWQJMHgwMGFmOWEwMDAw
-MDBmZmZmCS8qIF9fS0VSTkVMX0NTICovCi0JLnF1YWQJMHgwMGNmOTIwMDAwMDBmZmZmCS8qIF9f
-S0VSTkVMX0RTICovCi1nZHRfZW5kOgogCS5ic3MKIC8qIFN0YWNrIGZvciB1bmNvbXByZXNzaW9u
-ICovCiAJLmJhbGlnbiA0CmRpZmYgLS1naXQgYS9hcmNoL3g4Nl82NC9ib290L2NvbXByZXNzZWQv
-dm1saW51eC5sZHMgYi9hcmNoL3g4Nl82NC9ib290L2NvbXByZXNzZWQvdm1saW51eC5sZHMKaW5k
-ZXggOTRjMTNlNS4uNmUwNDFlZiAxMDA2NDQKLS0tIGEvYXJjaC94ODZfNjQvYm9vdC9jb21wcmVz
-c2VkL3ZtbGludXgubGRzCisrKyBiL2FyY2gveDg2XzY0L2Jvb3QvY29tcHJlc3NlZC92bWxpbnV4
-LmxkcwpAQCAtMzYsNiArMzYsOCBAQCBTRUNUSU9OUwogCQkqKENPTU1PTikKIAkJLiA9IEFMSUdO
-KDgpOwogCQlfZW5kID0gLiA7CisJCWdkdCA9IC4gOworCQkuID0gLiArIDggKiA0OwogCQkuID0g
-QUxJR04oNDA5Nik7CiAJCXBndGFibGUgPSAuIDsKIAkJLiA9IC4gKyA0MDk2ICogNjsK
-------=_Part_196047_27671147.1179034394061--
+> To assume that UTF-8 is not converted anywhere is tantamount to the
+> fallacy of SPF: Everyone on the net must do foo, then nirvana happens
+> If the code is being pulled git to git, UTF-8 is fine. Or send your
+> patches in MIME at the very least.
+
+Some systems mangle whitespace in transit too, or even convert to HTML.
+I've known people who _have_ to send patches as MIME attachments to
+avoid having their patches converted to HTML. By your logic, we could
+argue that we shouldn't send patches in email at all, because it's also
+"tantamount to the fallacy of SPF".
+
+But we'd be wrong -- just as you are. SPF is utterly moronic because it
+suddenly tries to change the rules and assumes that everyone has already
+changed, or it throws away valid email from unknown senders. In the case
+of sending patches, yes you _do_ assume that people aren't doing bizarre
+things to mangle them in transit, but that mangling is actually
+relatively rare. Not only that, but you only really care about a
+_single_ transit path, from you to whoever applies the patch. Which is
+easy enough to debug if it starts to do stupid things like converting to
+HTML or converting charsets.
+
+-- 
+dwmw2
+
