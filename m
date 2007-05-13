@@ -1,31 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbXEMReQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757760AbXEMRnL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758348AbXEMReQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 13:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXEMReH
+	id S1757760AbXEMRnL (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 13:43:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753995AbXEMRm5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 13:34:07 -0400
-Received: from quechua.inka.de ([193.197.184.2]:56358 "EHLO mail.inka.de"
+	Sun, 13 May 2007 13:42:57 -0400
+Received: from proxima.lp0.eu ([85.158.45.36]:34476 "EHLO proxima.lp0.eu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbXEMReG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 13:34:06 -0400
-From: Bernd Eckenfels <ecki@lina.inka.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: undeprecate raw driver.
-Organization: Private Site running Debian GNU/Linux
-In-Reply-To: <Pine.LNX.4.64.0705131239200.942@localhost.localdomain>
-X-Newsgroups: ka.lists.linux.kernel
-User-Agent: tin/1.7.8-20050315 ("Scalpay") (UNIX) (Linux/2.6.13.4 (i686))
-Message-Id: <E1HnHxK-0004CI-00@calista.eckenfels.net>
-Date: Sun, 13 May 2007 19:34:02 +0200
+	id S1751006AbXEMRm4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 13:42:56 -0400
+Message-ID: <46474E1A.6080904@simon.arlott.org.uk>
+Date: Sun, 13 May 2007 18:42:50 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
+User-Agent: Thunderbird 1.5.0.5 (X11/20060819)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@SteelEye.com>
+CC: "Robert P. J. Day" <rpjday@mindspring.com>, Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: why does x86 "make defconfig" build a single, lonely module?
+References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>	 <20070513160608.GA29024@redhat.com>	 <1179072655.3723.42.camel@mulgrave.il.steeleye.com>	 <Pine.LNX.4.64.0705131216440.27468@localhost.localdomain> <1179073670.3723.48.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1179073670.3723.48.camel@mulgrave.il.steeleye.com>
+X-Enigmail-Version: 0.94.1.2
+OpenPGP: id=89C93563
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <Pine.LNX.4.64.0705131239200.942@localhost.localdomain> you wrote:
-> in short, do *not* remove its "deprecated" status.  rather, remove its
-> "obsolete" status and *make* it deprecated.
+On 13/05/07 17:27, James Bottomley wrote:
+> On Sun, 2007-05-13 at 12:20 -0400, Robert P. J. Day wrote:
+>> since this thread looks like it's going to get away from me in a
+>> hurry :-), my only point in asking was to point out that that lone
+>> module was the only thing preventing the build from being module-free.
+>>
+>> i'm not saying that that's *necessarily* a good thing, but it just
+>> strikes me as odd that, out of all of the possible modules that might
+>> be selected in a default config for x86, this was the *only* one that
+>> was picked.
+>>
+>> i just think it's a bit weird, that's all.
+> 
+> It's designed on the predicate that people who want to be module free
+> will actually set CONFIG_MODULE=n.
+> 
+> If you set CONFIG_MODULE=y and build SCSI we assume you could have a
+> SCSI driver module at some point, which would necessitate the wait scan
+> module.
 
-it is deprecated and obsolete.
+This should be implemented like "Library routines" and only added if such 
+a SCSI driver module is actually selected. Why can't it at least be a 
+visible option in the menu? (Although even then it looks like it's 
+impossible to disable).
 
-Gruss
-Bernd
+Why does ATA select SCSI anyway? Surely PATA doesn't require it?
+
+-- 
+Simon Arlott
