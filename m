@@ -1,59 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbXEMSOn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbXEMSPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759811AbXEMSOn (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 14:14:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759527AbXEMSOa
+	id S1759677AbXEMSPc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 14:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757510AbXEMSPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 14:14:30 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:53253 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759484AbXEMSO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 14:14:28 -0400
-Date: Sun, 13 May 2007 14:13:44 -0400
-From: Dave Jones <davej@redhat.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       William Thompson <wt@electro-mechanical.com>, Mark Lord <liml@rtr.ca>,
-       linux-kernel@vger.kernel.org,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       albertcc@tw.ibm.com
-Subject: Re: [PATCH] libata: fallback to the other IDENTIFY on device error, take#2
-Message-ID: <20070513181344.GG27604@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Tejun Heo <htejun@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-	William Thompson <wt@electro-mechanical.com>,
-	Mark Lord <liml@rtr.ca>, linux-kernel@vger.kernel.org,
-	IDE/ATA development list <linux-ide@vger.kernel.org>,
-	albertcc@tw.ibm.com
-References: <20070501131818.GA18521@electro-mechanical.com> <46374354.7040307@gmail.com> <20070501172117.GA20328@electro-mechanical.com> <463F56F2.3010106@gmail.com> <4642627A.4030606@garzik.org> <46446311.3000208@gmail.com> <4644E9E5.3000402@garzik.org> <46470B48.7050101@gmail.com> <20070513161353.GB29024@redhat.com> <46474FD8.2070100@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46474FD8.2070100@gmail.com>
-User-Agent: Mutt/1.4.2.2i
+	Sun, 13 May 2007 14:15:20 -0400
+Received: from ug-out-1314.google.com ([66.249.92.171]:62965 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756864AbXEMSPQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 14:15:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:user-agent:mime-version:to:subject:x-enigmail-version:content-type:content-transfer-encoding:from;
+        b=ZrWCGiiF6hmLDETJs9NYc0n433XZRbFJR8gp8RIDLLQSRFFoxa0mywe/SdgGarJ9YV4wvz4hkvJFIbikAf0P5I22H2O013nW+BN0mcDCsOghQPViq/liZsMxvupYGFtqsQCBbGXDZ4IG6cTSyQkc/Iso759Tp/fR7a00El2Yodw=
+Message-ID: <46475595.4050105@googlemail.com>
+Date: Sun, 13 May 2007 20:14:45 +0200
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, i2c@lm-sensors.org,
+       Jean Delvare <khali@linux-fr.org>,
+       Antonino Ingargiola <tritemio@gmail.com>, linux-ide@vger.kernel.org,
+       Paul Mundt <lethal@linux-sh.org>, Tejun Heo <htejun@gmail.com>,
+       Jeff Garzik <jeff@garzik.org>, linux-fsdevel@vger.kernel.org,
+       xfs-masters@oss.sgi.com, Jeremy Fitzhardinge <jeremy@goop.org>,
+       David Chinner <dgc@sgi.com>, Charles Gagalac <charle97@yahoo.com>,
+       Davide Libenzi <davidel@xmailserver.org>
+Subject: [1/2] 2.6.22-rc1: known regressions
+X-Enigmail-Version: 0.94.1.1
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 13, 2007 at 07:50:16PM +0200, Tejun Heo wrote:
- > > Otherwise, as Jeff mentions, you're doing a redundant assignment
- > > in the else branch.
- > 
- > Hmmm... I'm feeling very dense today.  At that point, class is either
- > ATA_DEV_ATA or ATA_DEV_ATAPI.  The if-else clause tries to flip between
- > the two.
- > 
- > 1. if class == ATA_DEV_ATA, the 'if' test succeeds and "class =
- > ATA_DEV_ATAPI" runs, so it flips correctly.
- > 
- > 2. if class == ATA_DEV_ATAPI,  the 'if' test fails and "class =
- > ATA_DEV_ATA" runs, so it flips correctly.
- > 
- > What am I missing here?  Feel free to scream at me and hammer me into
- > senses.  :-)
+Hi all,
 
-actually, I think I'm denser today. Ignore that last mail.
+Here is a list of some known regressions in 2.6.22-rc.
 
-	Dave
+Feel free to add new regressions/remove fixed etc.
+http://kernelnewbies.org/known_regressions
+
+(http://bugzilla.kernel.org/ is not available, information are not up-to-date)
+
+I2C
+
+Subject    : "Sensors Applet" give an error message "No chip detected"
+References : http://lkml.org/lkml/2007/5/13/109
+Submitter  : Antonino Ingargiola <tritemio@gmail.com>
+Status     : Unknown
+
+
+
+SATA/PATA
+
+Subject    : libata crash on halt
+References : http://marc.info/?l=linux-ide&m=117899827710565&w=2
+Submitter  : Andrew Morton <akpm@linux-foundation.org>
+Caused-By  : Tejun Heo <htejun@gmail.com>
+             commit 920a4b1038e442700a1cfac77ea7e20bd615a2c3
+Status     : problem is being debugged
+
+Subject    : libata reset-seq merge broke sata_sil on sh
+References : http://lkml.org/lkml/2007/5/10/63
+Submitter  : Paul Mundt <lethal@linux-sh.org>
+Handled-By : Tejun Heo <htejun@gmail.com>
+Caused-By  : commit 4750def52cb2c21732dda9aa1d43a07db37b0186
+Status     : problem is being debugged
+
+
+
+File systems
+
+Subject    : applications under wine freezes
+References : http://bugzilla.kernel.org/show_bug.cgi?id=8462
+Submitter  : Charles Gagalac <charle97@yahoo.com>
+Caused-By  : Davide Libenzi <davidel@xmailserver.org>
+             commit 6192bd536f96c6a0d969081bc71ae24f9319bfdc
+Handled-By : Davide Libenzi <davidel@xmailserver.org>
+Status     : problem is being debugged
+
+Subject    : 2.6.21-git10/11: files getting truncated on xfs
+References : http://lkml.org/lkml/2007/5/9/410
+Submitter  : Jeremy Fitzhardinge <jeremy@goop.org>
+Handled-By : David Chinner <dgc@sgi.com>
+Patch      : http://lkml.org/lkml/2007/5/12/93
+Status     : patch was suggested
+
+
+
+Regards,
+Michal
 
 -- 
-http://www.codemonkey.org.uk
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
