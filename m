@@ -1,46 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761010AbXEMX0D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbXEMX0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761010AbXEMX0D (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 19:26:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756321AbXEMXZz
+	id S1761449AbXEMX0W (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 19:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761237AbXEMX0G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 19:25:55 -0400
-Received: from mail.tmr.com ([64.65.253.246]:35602 "EHLO gaimboi.tmr.com"
+	Sun, 13 May 2007 19:26:06 -0400
+Received: from mx.laposte.net ([81.255.54.16]:49859 "EHLO mx.laposte.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756218AbXEMXZy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 19:25:54 -0400
-Message-ID: <46479E95.6050507@tmr.com>
-Date: Sun, 13 May 2007 19:26:13 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-Organization: TMR Associates Inc, Schenectady NY
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
-MIME-Version: 1.0
-To: Krzysztof Halasa <khc@pm.waw.pl>
-CC: Robert Hancock <hancockr@shaw.ca>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Jonathan Corbet <corbet@lwn.net>
-Subject: Re: [PATCH] "volatile considered harmful" document
-References: <fa.UIDGHS72acFv9jKylmdQQwWcXPA@ifi.uio.no>	<fa.fKNBJtZJWOQthlLjc1TDfY6jCLc@ifi.uio.no> <4646082D.2080502@shaw.ca> <m33b208z5f.fsf@maximus.localdomain>
-In-Reply-To: <m33b208z5f.fsf@maximus.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1761122AbXEMX0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 19:26:05 -0400
+Subject: Re: [Bug 8473] New: Oops: 0010 [1] SMP
+From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20070513154718.bb338ceb.akpm@linux-foundation.org>
+References: <200705132102.l4DL2onF003014@fire-2.osdl.org>
+	 <20070513154718.bb338ceb.akpm@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-aBgjzX0C4JXxyHdccFZK"
+Organization: Adresse perso
+Date: Mon, 14 May 2007 01:25:42 +0200
+Message-Id: <1179098742.7322.5.camel@rousalka.dyndns.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.nim.2) 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Krzysztof Halasa wrote:
-> Robert Hancock <hancockr@shaw.ca> writes:
->
->   
->> You don't need volatile in that case, rmb() can be used.
->>     
->
-> rmb() invalidates all compiler assumptions, it can be much slower.
->   
-Yes, why would you use rmb() when a read of a volatile generates optimal 
-code?
 
--- 
-bill davidsen <davidsen@tmr.com>
-  CTO TMR Associates, Inc
-  Doing interesting things with small computers since 1979
+--=-aBgjzX0C4JXxyHdccFZK
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
+Le dimanche 13 mai 2007 =C3=A0 15:47 -0700, Andrew Morton a =C3=A9crit :
+> On Sun, 13 May 2007 14:02:50 -0700 bugme-daemon@bugzilla.kernel.org wrote=
+:
+>=20
+> > http://bugzilla.kernel.org/show_bug.cgi?id=3D8473
+>=20
+> Please follow up via emailed reply-to-all.
+>=20
+> In fact, please report -mm bugs via email.  bugzilla is more suited to
+> longer-term problems, and -mm bugs are super-short-term, we hope.
+
+Can't attach trace screenshots or long log dumps to mails :(
+
+> May 13 22:59:43 rousalka kernel: Unable to handle kernel NULL pointer
+> dereference at 0000000000000000 RIP:=20
+> May 13 22:59:43 rousalka kernel: [<0000000000000000>]
+
+> Anything you can do to make that wordwrapping go away for ever would be
+> great, thanks.
+
+You have the full kernel log with no wrapping there
+http://bugzilla.kernel.org/attachment.cgi?id=3D11492
+
+> I don't know what would have caused this.  do_ioctl() did a jump-to-zero,
+> but it has code in there to explicitly test for null pointers.
+>=20
+> Perhaps some weird race, although I find it hard to imagine how we could
+> have such a race in any ioctl which bash is likely to be calling.
+>=20
+> Is it repeatable at all?
+
+It happened once so far. The load was moderate (and certainly not
+comparable to what I did for Mel yesterday)
+
+--=20
+Nicolas Mailhot
+
+--=-aBgjzX0C4JXxyHdccFZK
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: Ceci est une partie de message
+	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+
+iEYEABECAAYFAkZHnnAACgkQI2bVKDsp8g0Y0QCgqeqpB/D72jPA0jlhSQW4KtUN
+IX4An05FEJQAOdK4lZW9LWnZcQPqzg9u
+=7fUw
+-----END PGP SIGNATURE-----
+
+--=-aBgjzX0C4JXxyHdccFZK--
