@@ -1,44 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934308AbXEMQAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934299AbXEMQG0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934308AbXEMQAi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 12:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbXEMQAb
+	id S934299AbXEMQG0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 12:06:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758359AbXEMQGR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 12:00:31 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:33871 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755804AbXEMQA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 12:00:29 -0400
-Message-ID: <464735F8.7040305@drzeus.cx>
-Date: Sun, 13 May 2007 17:59:52 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-MIME-Version: 1.0
-To: Nicolas Pitre <nico@cam.org>
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] fix PXA27x MMC workaround for bad CRC with 136 bit response
-References: <46375B18.4080802@drzeus.cx> <20070509185636.GB26981@flint.arm.linux.org.uk> <46421BB5.7040504@drzeus.cx> <20070509221253.GC26981@flint.arm.linux.org.uk> <4642B122.5070609@drzeus.cx> <46432502.4050901@drzeus.cx> <alpine.LFD.0.99.0705101037220.24220@xanadu.home> <alpine.LFD.0.99.0705121122440.24220@xanadu.home> <4645E76B.2060704@drzeus.cx> <alpine.LFD.0.99.0705122307000.24220@xanadu.home>
-In-Reply-To: <alpine.LFD.0.99.0705122307000.24220@xanadu.home>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 13 May 2007 12:06:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:48922 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756260AbXEMQGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 12:06:16 -0400
+Date: Sun, 13 May 2007 12:06:08 -0400
+From: Dave Jones <davej@redhat.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+Subject: Re: why does x86 "make defconfig" build a single, lonely module?
+Message-ID: <20070513160608.GA29024@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"Robert P. J. Day" <rpjday@mindspring.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-scsi@vger.kernel.org
+References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nicolas Pitre wrote:
-> ... and make it depend on the response flag instead of the command type.
->
-> Signed-off-by: Nicolas Pitre <npitre@mvista.com>
-> ---
->   
+On Sun, May 13, 2007 at 11:22:55AM -0400, Robert P. J. Day wrote:
+ > 
+ >   not a big deal, but is there a reason that a "make defconfig" on my
+ > x86 system ends up selecting and building a single module?
+ > 
+ >   Building modules, stage 2.
+ >   MODPOST 1 modules
+ >   CC      drivers/scsi/scsi_wait_scan.mod.o
+ >   LD [M]  drivers/scsi/scsi_wait_scan.ko
+ > 
+ > is there something special about that module?  just curious.
 
-Fantastic. Applied.
+My guess is that someone was paranoid and wanted not to have
+to answer a zillion "my machine won't boot any more" questions
+when async scsi scanning was added.
+This might further clarify..
 
-Rgds
+---
+
+The scsi_wait_scan module is only really useful if async scanning
+is enabled.
+
+Signed-off-by: Dave Jones <davej@redhat.com>
+
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index e62d23f..0f6c370 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -244,7 +244,7 @@ config SCSI_SCAN_ASYNC
+ config SCSI_WAIT_SCAN
+ 	tristate
+ 	default m
+-	depends on SCSI
++	depends on SCSI_SCAN_ASYNC
+ 	depends on MODULES
+ 
+ menu "SCSI Transports"
+
+
 
 -- 
-     -- Pierre Ossman
-
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
-
+http://www.codemonkey.org.uk
