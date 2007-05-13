@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbXEMHOk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbXEMHiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbXEMHOk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 03:14:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757278AbXEMHOe
+	id S1758064AbXEMHiS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 03:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757294AbXEMHiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 03:14:34 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:34428 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755109AbXEMHOd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 03:14:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=BD+WUkiRhoY9VExfj+jWzxvWM71pJlrSfuF0CfX8I7up8iQceOG8Y92tfYPwRCnUEXhLL54fss9dK7j4u/nyzTgM3SXMzhE+FkOZ5y0BGenW37Mzbpu/6EcQ8xsFsU5GHeJy2JPoUHwYqznUONTZp95mvf+sBLT4IoXOgyrQ9ic=
-Date: Sun, 13 May 2007 11:13:57 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       YOSHIFUJI Hideaki / ???????????? <yoshfuji@linux-ipv6.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-2.6.21-gitN - versioning question
-Message-ID: <20070513071357.GB8244@cvg>
-References: <Pine.LNX.4.61.0705121316540.9570@yvahk01.tjqt.qr> <20070512.210308.93070730.yoshfuji@linux-ipv6.org> <20070512131906.GF8337@cvg> <1178977496.2802.5.camel@shinybook.infradead.org> <Pine.LNX.4.61.0705121701020.9570@yvahk01.tjqt.qr> <1179037601.2802.96.camel@shinybook.infradead.org> <20070513064325.GA8244@cvg> <1179039012.2802.117.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179039012.2802.117.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 13 May 2007 03:38:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44677 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757239AbXEMHiJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 03:38:09 -0400
+Date: Sun, 13 May 2007 17:37:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Linus <torvalds@linux-foundation.org>
+Cc: Kylene Hall <kjhall@us.ibm.com>, Marcel Selhorst <tpm@selhorst.net>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Revert "MAINTAINERS: remove invalid list address for TPM"
+Message-Id: <20070513173714.8dfab28d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[David Woodhouse - Sun, May 13, 2007 at 02:50:10PM +0800]
-| On Sun, 2007-05-13 at 10:43 +0400, Cyrill Gorcunov wrote:
-| > Btw David who does release a such snapshots (like git16)? You or
-| > Linus? 
-| 
-| I do. Not that I've actually had much involvement with it for a while --
-| it's mostly done by cron and the script at
-| http://david.woodhou.se/git-snapshot.sh
-| 
-| -- 
-| dwmw2
-| 
+This reverts commit b6d1c9a44744224d83125a5a89c1a6cc4db27361.
 
-Understood. Thanks.
+Others tell me that this address has worked for them, so I can only
+assume that I hit a glitch in the sourceforge mail system.
 
-		Cyrill
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Kylene Hall <kjhall@us.ibm.com>
+Cc: Marcel Selhorst <tpm@selhorst.net>
+---
+ MAINTAINERS |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 68a56ad..975f263 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -3269,6 +3269,7 @@ W:	http://tpmdd.sourceforge.net
+ P:	Marcel Selhorst
+ M:	tpm@selhorst.net
+ W:	http://www.prosec.rub.de/tpm/
++L:	tpmdd-devel@lists.sourceforge.net
+ S:	Maintained
+ 
+ Telecom Clock Driver for MCPL0010
+-- 
+1.5.1.4
 
