@@ -1,94 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759706AbXEMUpc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759786AbXEMUu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759706AbXEMUpc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 16:45:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757459AbXEMUp0
+	id S1759786AbXEMUu3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 16:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757869AbXEMUuW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 16:45:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38960 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755280AbXEMUpZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 16:45:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: 2.6.22-rc1: Broken suspend on SMP with tifm
-Date: Sun, 13 May 2007 22:50:25 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Sun, 13 May 2007 16:50:22 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:54202 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755481AbXEMUuV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 16:50:21 -0400
+Date: Sun, 13 May 2007 13:49:44 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Gautham R Shenoy <ego@in.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
-References: <200705132132.08546.rjw@sisk.pl> <20070513200845.GA3078@tv-sign.ru> <20070513203039.GA3143@tv-sign.ru>
-In-Reply-To: <20070513203039.GA3143@tv-sign.ru>
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Paul E McKenney <paulmck@us.ibm.com>
+Subject: Re: [RFD] Freezing of kernel threads
+In-Reply-To: <200705132208.23254.rjw@sisk.pl>
+Message-ID: <alpine.LFD.0.98.0705131347550.6739@woody.linux-foundation.org>
+References: <200705122017.32792.rjw@sisk.pl> <20070513083357.GA12985@in.ibm.com>
+ <alpine.LFD.0.98.0705130925290.6739@woody.linux-foundation.org>
+ <200705132208.23254.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705132250.26277.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 13 May 2007 22:30, Oleg Nesterov wrote:
-> On 05/14, Oleg Nesterov wrote:
-> >
-> > On 05/13, Rafael J. Wysocki wrote:
-> > > 
-> > > The suspend/hibernation is broken on SMP due to:
-> > > 
-> > > commit 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5
-> > > tifm: replace per-adapter kthread with freezeable workqueue
-> > > 
-> > > Well, it looks like freezable worqueues still deadlock with CPU hotplug
-> > > when worker threads are frozen.
-> > 
-> > Ugh. I thought we deprecated create_freezeable_workqueue(), exactly
-> > because suspend was changed to call _cpu_down() after freeze().
-> > 
-> > It is not that "looks like freezable worqueues still deadlock", it
-> > is "of course, freezable worqueues deadlocks" on CPU_DEAD.
-> > 
-> > The ->freezeable is still here just because of incoming "cpu-hotplug
-> > using freezer" rework.
-> > 
-> > No?
-> > 
-> > > --- linux-2.6.22-rc1.orig/kernel/workqueue.c
-> > > +++ linux-2.6.22-rc1/kernel/workqueue.c
-> > > @@ -799,9 +799,7 @@ static int __devinit workqueue_cpu_callb
-> > >  	struct cpu_workqueue_struct *cwq;
-> > >  	struct workqueue_struct *wq;
-> > >  
-> > > -	action &= ~CPU_TASKS_FROZEN;
-> > > -
-> > > -	switch (action) {
-> > > +	switch (action & ~CPU_TASKS_FROZEN) {
-> > 
-> > Confused. How can we see, say CPU_UP_PREPARE_FROZEN, if we cleared
-> > CPU_TASKS_FROZEN bit?
+
+
+On Sun, 13 May 2007, Rafael J. Wysocki wrote:
 > 
-> So, unless I missed something stupid, this patch is not 100% right.
+> Besides, the problems with interdependencies that we've had recently are
+> related specifically to the CPU hotplug.  To be precise, they are related to the
+> CPU hotplug notifiers that try to stop kernel threads which may be frozen.
+> The other interdependencies don't lead to freezer-related problems.
 
-Well, it isn't, but for a different reason (see [*] below).
+Sure they do. We've always had interdependencies and freezer-related 
+problems. That's why PF_NOFREEZE exists in the first place.
 
-> I think the better fix (at least for now) is
-> 
-> 	- #define create_freezeable_workqueue(name) __create_workqueue((name), 0, 1)
-> 	+ #define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
-> 
-> Alex, do you really need a multithreaded wq?
-> 
-> Rafael, what do you think?
+Claiming this is somehow CPU hotplug-related is disingenious, since the 
+freezer hasn't even been used for that historically, yet clearly we *do* 
+have the NOFREEZE stuff.
 
-That would be misleading if the driver needs the threads to be frozen.
+Those kernel threads tend to exists for a reason. 
 
-I would prefer to revert the commit that caused the problem to appear, but it
-doesn't revert cleanly and I hate to invalidate someone else's work becuase of
-my own mistakes.
-
-[*] Getting back to the patch, it seems to me that we should do something like
-take_over_work() before thawing the frozen thread, because there may be a queue
-to process and the device is suspended at that point.
-
-Greetings,
-Rafael
+			Linus
