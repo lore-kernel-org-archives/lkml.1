@@ -1,71 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760196AbXEMVBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760754AbXEMVCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760196AbXEMVBl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 17:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754857AbXEMVBf
+	id S1760754AbXEMVCk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 17:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbXEMVCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 17:01:35 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:49108 "EHLO
+	Sun, 13 May 2007 17:02:33 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:49116 "EHLO
 	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755481AbXEMVBe (ORCPT
+	with ESMTP id S1755059AbXEMVCc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 17:01:34 -0400
-Date: Sun, 13 May 2007 22:01:26 +0100
+	Sun, 13 May 2007 17:02:32 -0400
+Date: Sun, 13 May 2007 22:02:26 +0100
 From: Christoph Hellwig <hch@infradead.org>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Ben Fennema <bfennema@falcon.csc.calpoly.edu>, Jan Kara <jack@ucw.cz>
-Subject: Re: [PATCH] UDF: check for allocated memory for inode data
-Message-ID: <20070513210126.GB14030@infradead.org>
+To: Ulrich Drepper <drepper@redhat.com>
+Cc: Christoph Hellwig <hch@infradead.org>, Neil Brown <neilb@suse.de>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] utimensat implementation
+Message-ID: <20070513210226.GC14030@infradead.org>
 Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Cyrill Gorcunov <gorcunov@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	LKML <linux-kernel@vger.kernel.org>,
-	Ben Fennema <bfennema@falcon.csc.calpoly.edu>,
-	Jan Kara <jack@ucw.cz>
-References: <20070510140000.GA12399@cvg> <20070510154640.c0299a52.akpm@linux-foundation.org> <20070511072939.GA25727@infradead.org> <20070511090127.GD9444@cvg> <20070511103956.GA30896@infradead.org> <20070511110920.GA11898@cvg>
+	Ulrich Drepper <drepper@redhat.com>, Neil Brown <neilb@suse.de>,
+	akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+References: <200704262249.l3QMn5C2021588@devserv.devel.redhat.com> <17969.22692.855242.359680@notabene.brown> <46315C61.30001@redhat.com> <464363DC.7060607@redhat.com> <20070510185226.GA1458@infradead.org> <46437613.4060407@redhat.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070511110920.GA11898@cvg>
+In-Reply-To: <46437613.4060407@redhat.com>
 User-Agent: Mutt/1.4.2.2i
 X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
 	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 03:09:20PM +0400, Cyrill Gorcunov wrote:
-> | > | And please get rid of the UDF_I_* macro for everything you touch, just
-> | > | put a
-> | > | 
-> | > | 	struct udf_inode_info *uip = UDF_I(inode);
-> | > | 
-> | > | at the beginning of the function and use the fields directly.
-> | > | 
-> | > 
-> | > Actually to properly remove UDF_I* and UDF_SB_* macroses in the
-> | > whole UDF subsystem - is _lot_ of work. I'm going to make it but
-> | > not now (too busy).
-> | 
-> | Doing it completely is a lot of work, yes.  I was more thinking of
-> | converting a piece of code once you do major changes.  But if you
-> | want to convert all the code as a separate patch I'm more than happy
-> | aswell.
-> | 
+On Thu, May 10, 2007 at 12:44:19PM -0700, Ulrich Drepper wrote:
+> Christoph Hellwig wrote:
+> >E.g.
+> >
+> >long foofs_pathconf {
+> >	[_PC_LINK_MAX]		= 16384,
+> >	[_PC_2_SYMLINKS]	= 1,
 > 
-> Christoph, my only argue against getting rid of UDF_I_* macro in
-> my patch is UDF coding style, I don't want to damage it. I think
-> we may leave it as is (including my patch). So just review the patch
-> I sent (second version) and Ack it then so Andrew could include it
-> into mm tree. Meantime I'm rewritting the whole UDF subsystem to
-> get rid of that macroses (it will be a long way ;)
+> In general I agree.  But what do you do for network filesystems?  Maybe 
+> we'll have a network filesystem protocol which allows to query the 
+> remote server about the underlying filesystem.  Then the return value is 
+> dynamic and it's the maximum (coarsest granularity) of the network 
+> filesystem itself and the underlying filesystem.
 
-The UDF style is horrible and very unlike other kernel code.  Given
-that udf has been pretty much unmtained for a while there should be
-nothing in the way of fixing it.
-
-Anyway, the patch is technically correct so you'll get my ACK (not
-that you should need it).
-
+You're right, we'll probably want a method call for it.  The table
+approach might still be a nice helper for the normal case.
