@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757616AbXEMFxF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758235AbXEMFxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757616AbXEMFxF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 01:53:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755384AbXEMFw4
+	id S1758235AbXEMFxX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 01:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757653AbXEMFxF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 01:52:56 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:29570 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752306AbXEMFwz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 01:52:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=HinG4m+tV60H0QV4IydcSa6ZYqKzAjCXpIlVrz4xs32Y59iVaPzB5vZ5M/vllC8wA6A+nO9t6TL3NuNQEdbVV096ORYJfjmBcW51OsQgm8et34Qnz3RWUAW4aXJreSDO3uYei8yj1pFdyVyGlq1BPYaHBsLzrhrP/Ok9o7ZbrOI=
-Message-ID: <38b2ab8a0705122252kc067722s3298db20cfd5552a@mail.gmail.com>
-Date: Sun, 13 May 2007 07:52:54 +0200
-From: "Francis Moreau" <francis.moro@gmail.com>
-To: tglx@linutronix.de
-Subject: Re: clockevent questions
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <1179001391.22481.216.camel@localhost.localdomain>
+	Sun, 13 May 2007 01:53:05 -0400
+Received: from mx2.suse.de ([195.135.220.15]:33653 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757346AbXEMFxD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 01:53:03 -0400
+From: Andi Kleen <ak@suse.de>
+Organization: SUSE Linux Products GmbH, Nuernberg, GF: Markus Rex, HRB 16746 (AG Nuernberg)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Subject: Re: [PATCH]x86_64: build and use GDT on copied compressed kernel
+Date: Sun, 13 May 2007 07:52:55 +0200
+User-Agent: KMail/1.9.6
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       yinghai.lu@sun.com
+References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
+In-Reply-To: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-References: <38b2ab8a0705120754l281f54eevd1e91e2f01fff6f2@mail.gmail.com>
-	 <1178982892.22481.183.camel@localhost.localdomain>
-	 <38b2ab8a0705121313k37be467cy55402b490101ac9c@mail.gmail.com>
-	 <1179001391.22481.216.camel@localhost.localdomain>
+Message-Id: <200705130752.56041.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/12/07, Thomas Gleixner <tglx@linutronix.de> wrote:
-> On Sat, 2007-05-12 at 22:13 +0200, Francis Moreau wrote:
-> > > Yes, it is correct. The generic timer code requests an event in the
-> > > future. It does not care, whether the hardware device can handle that or
-> > > not. So the clock event code limits the delta to the maximum delta the
-> > > device can handle. The interrupt fires and the generic timer code
-> > > reschedules the event with the remaining delta time.
-> > >
-> >
-> > Thanks again for explanations. Could you give me a pointer of this reschedules ?
->
-> Well, it ends up in hrtimer_interrupt() and the code there finds out,
-> that the next timer is not due right now, so it simply requests the same
-> (absolute) time event again, which is processed by the clock events code
-> and eventually limited to the max delta of the device again.
->
+On Sunday 13 May 2007 07:33:14 Yinghai Lu wrote:
+> please check the patch.
 
-OK, I'll give it a deeper look soon.
+Can you please give a little more description on why you think the patch
+is needed? Also we need a Signed-off-by line.
 
-Thanks for your great work !
--- 
-Francis
+Thanks,
+-Andi
