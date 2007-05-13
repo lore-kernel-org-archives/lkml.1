@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758489AbXEMRyf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbXEMR4R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758489AbXEMRyf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 13:54:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbXEMRy3
+	id S1758782AbXEMR4R (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 13:56:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbXEMR4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 13:54:29 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:46309 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753827AbXEMRy2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 13:54:28 -0400
-Date: Sun, 13 May 2007 10:53:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Antonino Ingargiola <tritemio@gmail.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: Re: Linux 2.6.22-rc1
-In-Reply-To: <5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
-Message-ID: <alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
- <5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Sun, 13 May 2007 13:56:07 -0400
+Received: from main.gmane.org ([80.91.229.2]:46292 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753152AbXEMR4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 13:56:05 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Matthieu CASTET <castet.matthieu@free.fr>
+Subject: Re: [patch] make pit clocksource continuous
+Date: Sun, 13 May 2007 17:55:45 +0000 (UTC)
+Message-ID: <pan.2007.05.13.17.55.45@free.fr>
+References: <46464B5C.2080302@aknet.ru>
+	<1179040612.22481.237.camel@localhost.localdomain>
+	<4646D493.9000309@aknet.ru>
+	<1179068094.22481.248.camel@localhost.localdomain>
+	<46474175.7030205@aknet.ru>
+	<1179075026.22481.273.camel@localhost.localdomain>
+	<46474975.1080204@aknet.ru>
+	<1179077772.22481.279.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: cac94-1-81-57-151-96.fbx.proxad.net
+User-Agent: Pan/0.125 (Potzrebie)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
+On Sun, 13 May 2007 19:36:12 +0200, Thomas Gleixner wrote:
 
-On Sun, 13 May 2007, Antonino Ingargiola wrote:
+> On Sun, 2007-05-13 at 21:23 +0400, Stas Sergeev wrote:
+>> Hello.
+>> 
+>> Thomas Gleixner wrote:
+>> >> Does this mean that on even an older
+>> >> boards (without acpi at all) the hrtimers won't work?
+>> > Not if PIT is the only clocksource available.
+>> So you mean it can work without both the pm_timer and hpet? Sorry for
+>> bothering you too much, but I am trying to use the hrtimers in my
+>> driver module, so I'd like to know all the corner-cases.
 > 
-> On my desktop pc with Debian Etch and 2.6.22-rc1 the gnome panel
-> applet "Sensors Applet" give an error message "No chip detected".
-> Works fine on 2.6.21.1 (it show cpu temperature) with the same config
-> (I've only only done  make oldconfig).
+> It does _NOT_ work without pm_timer or hpet for the reasons explained
+> before.
+there something I don't understand : "pm_timer or hpet" aren't 
+clockevent ?
 
-One thing to check is that "make oldconfig" can actually change the
-configuration if things were moved behind a new top-level configuration 
-parameter or such. I'm not saying that's the case here, but it's possible 
-that things like the i2c changes might have made you inadvertedly changed 
-some config option.
+Without acpi there should be still pit and tsc as clocksource ?
 
-> Is this considered a regression or can be due to userland incompatibilities?
+Also while talking about clockevent why rtc couldn't be used for that ?
 
-It's a regression, although I'd like to know more about your cases. It's 
-just hard to tell what happened: was it a i2c/hwmon driver that got 
-broken, or is it some sysfs file that got buggered, or what..
 
-For example, "dmesg" output before and after (preferably as a diff between 
-the two), and what modules you had loaded in the working/nonworking case.
+Thanks
 
-			Linus
+Matthieu
+
