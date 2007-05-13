@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758707AbXEMMVS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758958AbXEMMbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758707AbXEMMVS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 08:21:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757448AbXEMMVH
+	id S1758958AbXEMMbb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 08:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757533AbXEMMbY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 08:21:07 -0400
-Received: from minas.ics.muni.cz ([147.251.4.40]:49949 "EHLO minas.ics.muni.cz"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757188AbXEMMVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 08:21:06 -0400
-Date: Sun, 13 May 2007 14:21:14 +0200
-From: Lukas Hejtmanek <xhejtman@ics.muni.cz>
-To: Andrew Morton <akpm@linux-foundation.org>
+	Sun, 13 May 2007 08:31:24 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:62729 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757508AbXEMMbY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 08:31:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Zb6OfPU3smXuB5oeVS+hkIt2gpH2/WE8vCkLKZc2Uf7tLf9ciZxemJluoBxA11aE73EolLGHcgk1HaVo121lv6kt7xw4wFutEVvR01CQHkqT+iBAIf8p8j/dSHkUe2tLbx4wbVOUt23JguDhJeY/XADP9pVAv78xRtojjZcTK7Q=
+Message-ID: <5a4c581d0705130531v4679efabgd2ffed96af72862d@mail.gmail.com>
+Date: Sun, 13 May 2007 14:31:22 +0200
+From: "Alessandro Suardi" <alessandro.suardi@gmail.com>
+To: "umesh@websurfer.com.np" <umesh@websurfer.com.np>
+Subject: Re: upgrade linux kernel
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Workaround for a PCI restoring bug
-Message-ID: <20070513122113.GA3632@ics.muni.cz>
-References: <20070512201237.GB3569@ics.muni.cz> <20070512234743.0a8a915f.akpm@linux-foundation.org> <20070513085718.GD3580@ics.muni.cz> <20070513021119.c4f14bd3.akpm@linux-foundation.org>
+In-Reply-To: <2417.63.219.2.2.1179056431.squirrel@mail.websurfer.com.np>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070513021119.c4f14bd3.akpm@linux-foundation.org>
-X-echelon: NSA, CIA, CI5, MI5, FBI, KGB, BIS, Plutonium, Bin Laden, bomb
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-Muni-Spam-TestIP: 81.31.45.161
-X-Muni-Envelope-From: xhejtman@fi.muni.cz
-X-Muni-Envelope-To: linux-kernel@vger.kernel.org
-X-Muni-Virus-Test: Clean
-X-Greylist: Sender succeeded SMTP AUTH authentication, not delayed by milter-greylist-3.0 (minas.ics.muni.cz [147.251.4.35]); Sun, 13 May 2007 14:20:58 +0200 (CEST)
+References: <2417.63.219.2.2.1179056431.squirrel@mail.websurfer.com.np>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 13, 2007 at 02:11:19AM -0700, Andrew Morton wrote:
-> > I've also noticed that someone pointed out that for some reason, PCI config
-> > space is saved twice, the first is OK, the second saves already disabled
-> > devices. Unfortunately, I'm unable to find this discussion in LKM.
-> 
-> Yeah, that sounds risky.
-> 
-> Can you put a dump_stack() call into the PCI saving function?  That way
-> we'll see what the two call paths are.
+On 5/13/07, umesh@websurfer.com.np <umesh@websurfer.com.np> wrote:
+> I am upgrading kernel from 2.4.20-8(default in RH9) to 2.6.xx. when I do
+> "make" command it gives some output and finally get error saying that,
+>
+> "BFD: Warning: Writing section '.bss' to huge ( ie negative) file offset
+> 0xc0244000. "
+>
+>  "Objcopy: arch/i386/boot/compressed/vmlinux.bin: file truncated"
+>
+> "make[2]:***[ arch/i386/boot/compressed/vmlinux.bin] Error 1"
+>
+>  "make[1]: ***[ arch/i386/boot/compressed/vmlinux] Error 2"
+>
+>  "make: *** [bzImage] Error 2"
 
-I did it, but it seems to be OK. PCI saves only once each device. So the issue
-was not related to this.
+A quick round of googling brings up this
 
-So what should I try next?
+http://www.uwsg.iu.edu/hypermail/linux/kernel/0410.3/0205.html
 
--- 
-Luká¹ Hejtmánek
+ where the issue was that binutils were too old to compile the
+ newer kernels. More generically, RH9 is now really ancient,
+ and you'd probably make your life much easier by upgrading
+ to more recent distributions.
+
+If you intend to stay on RH9, please have a look at the
+ /usr/src/linux/Documentation/Changes file, it will give you
+ a first idea of how much stuff you need to upgrade on RH9.
+
+--alessandro
+
+ "Did you get married but forgot to get divorced ?"
+
+     (Danny and Dusty, 'The Good Old Days')
