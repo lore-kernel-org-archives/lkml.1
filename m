@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbXEMQnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbXEMQo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759463AbXEMQnT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 12:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759104AbXEMQnM
+	id S1759764AbXEMQo0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 12:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759104AbXEMQoU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 12:43:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:58610 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758130AbXEMQnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 12:43:11 -0400
-Date: Sun, 13 May 2007 12:43:03 -0400
-From: Dave Jones <davej@redhat.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: undeprecate raw driver.
-Message-ID: <20070513164303.GF27604@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Jan Engelhardt <jengelh@linux01.gwdg.de>,
-	Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20070513163220.GA31902@redhat.com> <Pine.LNX.4.61.0705131835110.9570@yvahk01.tjqt.qr>
+	Sun, 13 May 2007 12:44:20 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58564 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757585AbXEMQoT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 12:44:19 -0400
+Date: Sun, 13 May 2007 13:38:47 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-dvb-maintainer@linuxtv.org, video4linux-list@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: [GIT PATCHES] V4L/DVB fixes
+Message-Id: <1179074641.4003.22.camel@localhost>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.61.0705131835110.9570@yvahk01.tjqt.qr>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.10.0-5mdv2007.1 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 13, 2007 at 06:35:45PM +0200, Jan Engelhardt wrote:
+Linus,
 
- > >-	tristate "RAW driver (/dev/raw/rawN) (OBSOLETE)"
- > >+	tristate "RAW driver (/dev/raw/rawN)"
- > > 	depends on BLOCK
- > > 	help
- > >-	  The raw driver permits block devices to be bound to /dev/raw/rawN. 
- > >-	  Once bound, I/O against /dev/raw/rawN uses efficient zero-copy I/O. 
- > >+	  The raw driver permits block devices to be bound to /dev/raw/rawN.
- > >+	  Once bound, I/O against /dev/raw/rawN uses efficient zero-copy I/O.
- > > 	  See the raw(8) manpage for more details.
- > > 
- > >-          The raw driver is deprecated and will be removed soon.
- > >-          Applications should simply open the device (eg /dev/hda1)
- > >+          Applications should preferably open the device (eg /dev/hda1)
- > >           with the O_DIRECT flag.
- > > 
- > > config MAX_RAW_DEVS
- > 
- > At least keep the "it's obsolete" Kconfig description. We
- > don't want new users/projects to jump on /dev/raw.
+Please pull from:
+        ssh://master.kernel.org/pub/scm/linux/kernel/git/mchehab/v4l-dvb.git master
 
-That'll just lead to some janitor sending more "OMG! OBSOLETE!" cleanup
-patches getting it re-added to the feature-removal.txt
-If we undeprecate it, it won't be going away, so new users of it
-aren't any more of a problem than they have been the last two and
-a half years.
+For two Kconfig fixes for non-x86 archs, a sysfs fix on dvb core, and a 
+fix on usage count to allow removing dst driver without forcing.
 
-	Dave
+Cheers,
+Mauro.
 
--- 
-http://www.codemonkey.org.uk
+---
+
+ drivers/media/dvb/bt8xx/dst.c          |    3 ---
+ drivers/media/dvb/dvb-core/dvbdev.c    |   15 +++++++++++----
+ drivers/media/video/em28xx/Kconfig     |    1 -
+ drivers/media/video/ivtv/Kconfig       |    2 +-
+ drivers/media/video/ivtv/ivtv-driver.h |    8 --------
+ 5 files changed, 12 insertions(+), 17 deletions(-)
+
+Manu Abraham (1):
+      V4L/DVB (5639a): Fix dst usage count
+
+Mauro Carvalho Chehab (2):
+      V4L/DVB (5640): Fix: em28xx currently doesn't require VIDEO_BUF
+      V4L/DVB (5639): Fix Kconfig dependencies for ivtv
+
+Simon Arlott (1):
+      V4L/DVB (5630): Dvb-core: Handle failures to create devices
+
+---------------------------------------------------
+V4L/DVB development is hosted at http://linuxtv.org
+
