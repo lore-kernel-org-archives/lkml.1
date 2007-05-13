@@ -1,92 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbXEMRbm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758103AbXEMRdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964AbXEMRbm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 13:31:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753152AbXEMRbf
+	id S1758103AbXEMRdP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 13:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754239AbXEMRdD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 13:31:35 -0400
-Received: from noname.neutralserver.com ([70.84.186.210]:46284 "EHLO
-	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751006AbXEMRbe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 13:31:34 -0400
-Date: Sun, 13 May 2007 20:31:22 +0300
-From: Dan Aloni <da-x@monatomic.org>
-To: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: [PATCH] make sysctl/kernel/core_pattern and fs/exec.c agree on maximum core filename size
-Message-ID: <20070513173122.GA31737@localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - noname.neutralserver.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - monatomic.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+	Sun, 13 May 2007 13:33:03 -0400
+Received: from www.osadl.org ([213.239.205.134]:33341 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751006AbXEMRdA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 13:33:00 -0400
+Subject: Re: [patch] make pit clocksource continuous
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Stas Sergeev <stsp@aknet.ru>
+Cc: Linux kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <46474975.1080204@aknet.ru>
+References: <46464B5C.2080302@aknet.ru>
+	 <1179040612.22481.237.camel@localhost.localdomain>
+	 <4646D493.9000309@aknet.ru>
+	 <1179068094.22481.248.camel@localhost.localdomain>
+	 <46474175.7030205@aknet.ru>
+	 <1179075026.22481.273.camel@localhost.localdomain>
+	 <46474975.1080204@aknet.ru>
+Content-Type: text/plain
+Date: Sun, 13 May 2007 19:36:12 +0200
+Message-Id: <1179077772.22481.279.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.6.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make sysctl/kernel/core_pattern and fs/exec.c agree on maximum 
-core filename size and change it to 128, so that extensive patterns 
-such as '/local/cores/%e-%h-%s-%t-%p.core' won't result in 
-truncated filename generation.
+On Sun, 2007-05-13 at 21:23 +0400, Stas Sergeev wrote:
+> Hello.
+> 
+> Thomas Gleixner wrote:
+> >> Does this mean that on even an older
+> >> boards (without acpi at all) the hrtimers
+> >> won't work?
+> > Not if PIT is the only clocksource available.
+> So you mean it can work without both the
+> pm_timer and hpet? Sorry for bothering you
+> too much, but I am trying to use the hrtimers
+> in my driver module, so I'd like to know all
+> the corner-cases.
+
+It does _NOT_ work without pm_timer or hpet for the reasons explained
+before. 
+
+When PIT is the only clocksource in the system, i.e. no HPET and no
+PM_TIMER is available, then highres and dynticks are disabled.
+
+> How can I test that situation when the hrtimers
+> work only with PIT? Apparently disabling the
+> pm_timer and hpet in config doesn't help testing
+> it at all, since it simply refuses to work then.
+
+It is supposed to refuse to switch to highres / dyntick when you
+disabled pm_timer and hpet.
+
+> Should I use hrtimer_get_res() to see if the
+> hrtimers are available, or is there any better way?
+
+hrtimer_get_res() works, but I have no idea why you need hrtimers in
+your driver at all.
+
+	tglx
 
 
-diff --git a/fs/exec.c b/fs/exec.c
-index 70fa365..0b68588 100644
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -60,7 +60,7 @@
- #endif
- 
- int core_uses_pid;
--char core_pattern[128] = "core";
-+char core_pattern[CORENAME_MAX_SIZE] = "core";
- int suid_dumpable = 0;
- 
- EXPORT_SYMBOL(suid_dumpable);
-@@ -1264,8 +1264,6 @@ int set_binfmt(struct linux_binfmt *new)
- 
- EXPORT_SYMBOL(set_binfmt);
- 
--#define CORENAME_MAX_SIZE 64
--
- /* format_corename will inspect the pattern parameter, and output a
-  * name into corename, which must have space for at least
-  * CORENAME_MAX_SIZE bytes plus one byte for the zero terminator.
-diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
-index 2d956cd..e1a7083 100644
---- a/include/linux/binfmts.h
-+++ b/include/linux/binfmts.h
-@@ -17,6 +17,8 @@ struct pt_regs;
- 
- #ifdef __KERNEL__
- 
-+#define CORENAME_MAX_SIZE 128
-+
- /*
-  * This structure is used to hold the arguments that are used when loading binaries.
-  */
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 4073353..30ee462 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -227,7 +227,7 @@ static ctl_table kern_table[] = {
- 		.ctl_name	= KERN_CORE_PATTERN,
- 		.procname	= "core_pattern",
- 		.data		= core_pattern,
--		.maxlen		= 128,
-+		.maxlen		= CORENAME_MAX_SIZE,
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dostring,
- 		.strategy	= &sysctl_string,
-
-
--- 
-Dan Aloni
-XIV LTD, http://www.xivstorage.com
-da-x (at) monatomic.org, dan (at) xiv.co.il
