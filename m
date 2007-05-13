@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761249AbXEMXaW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbXEMXcR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761249AbXEMXaW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 19:30:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbXEMXaL
+	id S1761344AbXEMXcR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 19:32:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758267AbXEMXcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 19:30:11 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36829 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758131AbXEMXaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 19:30:09 -0400
-Date: Sun, 13 May 2007 19:29:53 -0400
-From: Dave Jones <davej@redhat.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Riley@Williams.Name
-Subject: Re: MAINTAINERS update.
-Message-ID: <20070513232953.GJ27604@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Linux Kernel <linux-kernel@vger.kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>, Riley@Williams.Name
-References: <20070513230746.GA3607@redhat.com> <46479AFC.7020404@zytor.com>
-Mime-Version: 1.0
+	Sun, 13 May 2007 19:32:05 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:52321 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758131AbXEMXcE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 19:32:04 -0400
+X-IronPort-AV: i="4.14,527,1170662400"; 
+   d="scan'208"; a="148413773:sNHT41233347"
+To: David Miller <davem@davemloft.net>
+Cc: tilman@imap.cc, linux-kernel@vger.kernel.org
+Subject: Re: Linux 2.6.22-rc1
+X-Message-Flag: Warning: May contain useful information
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+	<4647569D.7010709@imap.cc>
+	<20070513.162059.78710763.davem@davemloft.net>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sun, 13 May 2007 16:32:00 -0700
+In-Reply-To: <20070513.162059.78710763.davem@davemloft.net> (David Miller's message of "Sun, 13 May 2007 16:20:59 -0700 (PDT)")
+Message-ID: <ada3b20xpu7.fsf@cisco.com>
+User-Agent: Gnus/5.1007 (Gnus v5.10.7) XEmacs/21.4.19 (linux)
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <46479AFC.7020404@zytor.com>
-User-Agent: Mutt/1.4.2.2i
+X-OriginalArrivalTime: 13 May 2007 23:32:01.0231 (UTC) FILETIME=[E800EDF0:01C795B6]
+Authentication-Results: sj-dkim-3; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim3002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 13, 2007 at 04:10:52PM -0700, H. Peter Anvin wrote:
- > Dave Jones wrote:
- > > I've not really 'maintained' this code for years, and others
- > > are doing a much more thorough job these days.
- > > Removing myself might stem some of the crazier emails I get.
+ > > Would it be asking too much to have help texts on the following
+ > > new (wrt 2.6.21) configuration options?
  > > 
- > > Signed-off-by: Dave Jones <davej@redhat.com>
- > > 
- > > diff --git a/MAINTAINERS b/MAINTAINERS
- > > index 68a56ad..21f3fff 100644
- > > --- a/MAINTAINERS
- > > +++ b/MAINTAINERS
- > > @@ -1712,8 +1712,6 @@ L:	Linux-Kernel@vger.kernel.org
- > >  S:	Maintained
- > >  
- > >  i386 SETUP CODE / CPU ERRATA WORKAROUNDS
- > > -P:	Dave Jones
- > > -M:	davej@codemonkey.org.uk
- > >  P:	H. Peter Anvin
- > >  M:	hpa@zytor.com
- > >  S:	Maintained
+ > > ESP Scsi Driver Core (SCSI_ESP_CORE) [N/m] (NEW)
  > 
- > To the extent needed...
+ > This one is a case where the option makes no sense by itself,
+ > it provides the core common code for other front-end drivers.
  > 
- > Acked-by: H. Peter Anvin <hpa@zytor.com>
+ > The documentation exists in those front end drivers, which
+ > in turn auto-matically select and enable this config option.
+ > 
+ > It would be nice if there was a Kconfig way to not provide
+ > this thing at all unless one of the front-ends got selected
+ > but on the otherhand I like how anyone can select it and thus
+ > test the build of it :-)
 
-That previous entry of MAINTAINERS raised an eyebrow too.
-You, Eric, Andi, and Zach seem to have done more work on 'i386 BOOT CODE'
-in the last few months than I recall Riley doing, well.. since ages.
-Not to belittle whatever work he did, but perhaps his entry belongs
-more in CREDITS than MAINTAINERS.  It felt a little cheeky to be
-messing with someone elses entry though.  Riley?
+If this is just an internal option that people shouldn't have to deal
+with, why have a prompt at all?  AFAIK the following (untested) patch
+should do exactly what you want.
 
-Perhaps those two entries should just be merged together to become
-"i386 Architecture" too ?
+FWIW:
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
 
-	Dave
-
--- 
-http://www.codemonkey.org.uk
+diff --git a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+index e62d23f..5366913 100644
+--- a/drivers/scsi/Kconfig
++++ b/drivers/scsi/Kconfig
+@@ -1754,7 +1754,7 @@ config SUN3X_ESP
+ 	  machines.  Say Y here to compile in support for it.
+ 
+ config SCSI_ESP_CORE
+-	tristate "ESP Scsi Driver Core"
++	tristate
+ 	depends on SCSI
+ 	select SCSI_SPI_ATTRS
+ 
