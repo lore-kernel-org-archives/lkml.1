@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbXEMVYb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760787AbXEMVZ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760248AbXEMVYb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 17:24:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755457AbXEMVYY
+	id S1760787AbXEMVZ6 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 17:25:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755059AbXEMVZv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 17:24:24 -0400
-Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:39094 "EHLO
-	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755059AbXEMVYY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 17:24:24 -0400
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: "Yinghai Lu" <yhlu.kernel@gmail.com>
-Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
-       "Vivek Goyal" <vgoyal@in.ibm.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]x86_64: build and use GDT on copied compressed kernel
-References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
-	<m1ejllqmo8.fsf@ebiederm.dsl.xmission.com>
-	<86802c440705122329y27c6ef92v8cff43d52b99ae69@mail.gmail.com>
-	<m1abw9qkve.fsf@ebiederm.dsl.xmission.com>
-	<86802c440705122355r5f811d5bg2006b0b22ca885e6@mail.gmail.com>
-	<m11whlqk1g.fsf@ebiederm.dsl.xmission.com>
-	<86802c440705130027vce147dma85a07de6489d666@mail.gmail.com>
-	<86802c440705131101r5b32e0b9j28e2248813b25b64@mail.gmail.com>
-	<m1646wpkr5.fsf@ebiederm.dsl.xmission.com>
-	<86802c440705131406u36340ad4tbc4d81c7df2356bf@mail.gmail.com>
-Date: Sun, 13 May 2007 15:23:43 -0600
-In-Reply-To: <86802c440705131406u36340ad4tbc4d81c7df2356bf@mail.gmail.com>
-	(Yinghai Lu's message of "Sun, 13 May 2007 14:06:33 -0700")
-Message-ID: <m1wszco1sw.fsf@ebiederm.dsl.xmission.com>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
-MIME-Version: 1.0
+	Sun, 13 May 2007 17:25:51 -0400
+Received: from mail.screens.ru ([213.234.233.54]:42527 "EHLO mail.screens.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754571AbXEMVZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 17:25:51 -0400
+Date: Mon, 14 May 2007 01:25:48 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+Message-ID: <20070513212548.GA3185@tv-sign.ru>
+References: <20070503204226.GA212@tv-sign.ru> <464475EB.3000408@gmail.com> <20070511134714.GA191@tv-sign.ru> <46448965.7070500@gmail.com> <20070511145345.GA240@tv-sign.ru> <4645559D.4050602@gmail.com> <20070513192753.GA3014@tv-sign.ru> <46477239.9030007@gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46477239.9030007@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
+Hi Tejun,
 
-> On 5/13/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
->> We have big boot protocol revision coming up to more clearly document
->> what is needed to work with the native entry points.  It is a 2.6.23
->> targeted thing and that is one of the things that we are likely to
->> look at.
->
-> Good, where is the thread for that?
+Sorry, I can't give a "complete" reply today (will do tomorrow),
+just one note right now...
 
-Look on the virtualization list may lkml was cc'd about getting
-Xen and lguest.  "boot bzImages under paravirt"  I think was
-the subject on one of the pieces.
+On 05/13, Tejun Heo wrote:
+> 
+> Oleg Nesterov wrote:
+> >> * try_to_grab_pending() checks VALID && pointers equal after grabbing
+> >> cwq->lock.
+> > 
+> > We don't even need to check the pointers. VALID bit is always changed
+> > under cwq->lock. So, if we see VALID under cwq->lock, we have a right
+> > pointer.
+> 
+> But there are multiple cwq->lock's.  VALID can be set with one of other
+> cwq->lock's locked.
 
-A lot of this work is held up in part by the need to get 2.6.22
-out, and in part because we have so much in flight work for the
-early phases of boot that we need to let things settle
-before it we can do more.
+Oops. Thanks for correcting me. _This_ was a reson for a stupid barrier!
 
-Eric
+Oleg.
+
