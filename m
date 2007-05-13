@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760248AbXEMVwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760999AbXEMVwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760248AbXEMVwD (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 17:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756155AbXEMVvy
+	id S1760999AbXEMVwb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 17:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbXEMVwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 17:51:54 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:55341 "EHLO pasmtpA.tele.dk"
+	Sun, 13 May 2007 17:52:23 -0400
+Received: from mail.screens.ru ([213.234.233.54]:41660 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755793AbXEMVvx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 17:51:53 -0400
-Date: Sun, 13 May 2007 23:52:49 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: linux-arch@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] consolidate .text section definition in asm-generic
-Message-ID: <20070513215249.GB4967@uranus.ravnborg.org>
-References: <20070512223133.GA9813@uranus.ravnborg.org>
+	id S1755904AbXEMVwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 17:52:22 -0400
+Date: Mon, 14 May 2007 01:52:26 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
+Subject: [PATCH] for 2.6.22, make freezeable workqueues singlethread
+Message-ID: <20070513215226.GB3198@tv-sign.ru>
+References: <200705132132.08546.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070512223133.GA9813@uranus.ravnborg.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <200705132132.08546.rjw@sisk.pl>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +++ b/arch/alpha/kernel/vmlinux.lds.S
-> @@ -15,7 +15,7 @@ SECTIONS
->  
->    _text = .;					/* Text and read-only data */
->    .text : { 
-> -	*(.text) 
-> +	TEXT_TEXT
->  	SCHED_TEXT
->  	LOCK_TEXT
->  	*(.fixup)
+It is a known fact that freezeable multithreaded workqueues doesn't like
+CPU_DEAD. We keep them only for the incoming CPU-hotplug rework.
 
-It was in private mail suggested to improve naming a bit.
-Originally I thought of CODE_TEXT but ended up with TEXT_TEXT.
+Sadly, we can't just kill create_freezeable_workqueue() right now, make
+them singlethread.
 
-Any better ideas?
+Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
 
-As time permits I will try to do a bit more consolidation
-of the lds files. But nothing earthshaking.
+--- OLD/include/linux/workqueue.h~	2007-05-01 21:52:47.000000000 +0400
++++ OLD/include/linux/workqueue.h	2007-05-14 00:41:58.000000000 +0400
+@@ -122,7 +122,7 @@ extern struct workqueue_struct *__create
+ 						    int singlethread,
+ 						    int freezeable);
+ #define create_workqueue(name) __create_workqueue((name), 0, 0)
+-#define create_freezeable_workqueue(name) __create_workqueue((name), 0, 1)
++#define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
+ #define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0)
+ 
+ extern void destroy_workqueue(struct workqueue_struct *wq);
 
-	Sam
