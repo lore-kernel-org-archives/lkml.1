@@ -1,33 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934465AbXEMQYA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934446AbXEMQ2Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934465AbXEMQYA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 12:24:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757751AbXEMQXy
+	id S934446AbXEMQ2Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 12:28:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758567AbXEMQ2B
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 12:23:54 -0400
-Received: from clem.clem-digital.net ([68.16.168.10]:33607 "EHLO
-	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754709AbXEMQXx (ORCPT
+	Sun, 13 May 2007 12:28:01 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:34248 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757862AbXEMQ2A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 12:23:53 -0400
-From: Pete Clements <clem@clem.clem-digital.net>
-Message-Id: <200705131623.l4DGNqta003015@clem.clem-digital.net>
-Subject: 2.6.22-rc1 lost snd_4236 device
-To: linux-kernel@vger.kernel.org (linux-kernel)
-Date: Sun, 13 May 2007 12:23:52 -0400 (EDT)
-X-Mailer: ELM [version 2.5 PL7]
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 13 May 2007 12:28:00 -0400
+Subject: Re: why does x86 "make defconfig" build a single, lonely module?
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0705131216440.27468@localhost.localdomain>
+References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
+	 <20070513160608.GA29024@redhat.com>
+	 <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
+	 <Pine.LNX.4.64.0705131216440.27468@localhost.localdomain>
+Content-Type: text/plain
+Date: Sun, 13 May 2007 11:27:50 -0500
+Message-Id: <1179073670.3723.48.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fyi:
-With 2.6.22-rc1 get following when loading sound device module. Introduced
-with 2.6.21-git16.
+On Sun, 2007-05-13 at 12:20 -0400, Robert P. J. Day wrote:
+> since this thread looks like it's going to get away from me in a
+> hurry :-), my only point in asking was to point out that that lone
+> module was the only thing preventing the build from being module-free.
+> 
+> i'm not saying that that's *necessarily* a good thing, but it just
+> strikes me as odd that, out of all of the possible modules that might
+> be selected in a default config for x86, this was the *only* one that
+> was picked.
+> 
+> i just think it's a bit weird, that's all.
 
-FATAL: Error inserting snd_cs4236 (/lib/modules/2.6.22-rc1/kernel/sound/isa/cs423x/snd-cs4236.ko): No such device
-FATAL: Error running install command for snd_cs4236
+It's designed on the predicate that people who want to be module free
+will actually set CONFIG_MODULE=n.
 
--- 
-Pete Clements 
+If you set CONFIG_MODULE=y and build SCSI we assume you could have a
+SCSI driver module at some point, which would necessitate the wait scan
+module.
+
+James
+
+
