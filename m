@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbXEMTmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759491AbXEMTt5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760048AbXEMTmP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 15:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757725AbXEMTmD
+	id S1759491AbXEMTt5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 15:49:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757431AbXEMTtu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 15:42:03 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3164 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756294AbXEMTmB (ORCPT
+	Sun, 13 May 2007 15:49:50 -0400
+Received: from ebiederm.dsl.xmission.com ([166.70.28.69]:51247 "EHLO
+	ebiederm.dsl.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756276AbXEMTtt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 15:42:01 -0400
-X-AuthUser: davidel@xmailserver.org
-From: Davide Libenzi <davidel@xmailserver.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Date: Sun, 13 May 2007 12:42:00 -0700
-Subject: [patch 1/1] epoll move kfree inside ep_free ...
+	Sun, 13 May 2007 15:49:49 -0400
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: "Yinghai Lu" <yhlu.kernel@gmail.com>
+Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]x86_64: build and use GDT on copied compressed kernel
+References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
+	<m1ejllqmo8.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705122329y27c6ef92v8cff43d52b99ae69@mail.gmail.com>
+	<m1abw9qkve.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705122355r5f811d5bg2006b0b22ca885e6@mail.gmail.com>
+	<m11whlqk1g.fsf@ebiederm.dsl.xmission.com>
+	<86802c440705130027vce147dma85a07de6489d666@mail.gmail.com>
+	<86802c440705131101r5b32e0b9j28e2248813b25b64@mail.gmail.com>
+Date: Sun, 13 May 2007 13:49:02 -0600
+In-Reply-To: <86802c440705131101r5b32e0b9j28e2248813b25b64@mail.gmail.com>
+	(Yinghai Lu's message of "Sun, 13 May 2007 11:01:33 -0700")
+Message-ID: <m1646wpkr5.fsf@ebiederm.dsl.xmission.com>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Message-ID: <send-serie.davidel@xmailserver.org.4954.1179085320.1>
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Move the kfree() call inside the ep_free() function.
+"Yinghai Lu" <yhlu.kernel@gmail.com> writes:
 
+> Eric,
+>
+> I got one question about kexec and bzImage on 64bit kernel.
+>
+> The bzImage for 64bit kernel must be loaded under 4G?
+> but vmlinux for 64bit kernel could be loaded above 4G.
+>
+> So is there any plan to use 64bit entry point (startup_64) in
+> arch/x86_64/boot/compressed/vmlinux in bzImage? so you may
+> load bzImage above 4G too.
 
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+We have big boot protocol revision coming up to more clearly document
+what is needed to work with the native entry points.  It is a 2.6.23
+targeted thing and that is one of the things that we are likely to
+look at.
 
-
-- Davide
-
-
-
-Index: linux-2.6.21-git17.epmod/fs/eventpoll.c
-===================================================================
---- linux-2.6.21-git17.epmod.orig/fs/eventpoll.c	2007-05-13 12:39:09.000000000 -0700
-+++ linux-2.6.21-git17.epmod/fs/eventpoll.c	2007-05-13 12:40:04.000000000 -0700
-@@ -469,18 +469,16 @@
- 	}
- 
- 	mutex_unlock(&epmutex);
--
- 	mutex_destroy(&ep->mtx);
-+	kfree(ep);
- }
- 
- static int ep_eventpoll_release(struct inode *inode, struct file *file)
- {
- 	struct eventpoll *ep = file->private_data;
- 
--	if (ep) {
-+	if (ep)
- 		ep_free(ep);
--		kfree(ep);
--	}
- 
- 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: close() ep=%p\n", current, ep));
- 	return 0;
-@@ -1107,7 +1105,6 @@
- 
- error_free:
- 	ep_free(ep);
--	kfree(ep);
- error_return:
- 	DNPRINTK(3, (KERN_INFO "[%p] eventpoll: sys_epoll_create(%d) = %d\n",
- 		     current, size, error));
-
+Eric
