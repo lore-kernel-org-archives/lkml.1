@@ -1,93 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758482AbXEMLpb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758293AbXEMMJ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758482AbXEMLpb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 07:45:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757466AbXEMLpY
+	id S1758293AbXEMMJ5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 08:09:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757337AbXEMMJu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 07:45:24 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:43346 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756086AbXEMLpX (ORCPT
+	Sun, 13 May 2007 08:09:50 -0400
+Received: from qb-out-0506.google.com ([72.14.204.228]:33931 "EHLO
+	qb-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757188AbXEMMJt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 07:45:23 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4646F9F6.3040308@s5r6.in-berlin.de>
-Date: Sun, 13 May 2007 13:43:50 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
-MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
-       Ismail D?nmez <ismail@pardus.org.tr>, Adrian Bunk <bunk@stusta.de>,
-       Thomas Meyer <thomas@m3y3r.de>, Tobias Diedrich <ranma@tdiedrich.de>
-Subject: Re: [PATCH 2.6.21-rc4] ieee1394: fix oops on "modprobe -r ohci1394"
- after network class_device conversion
-References: <200703140642.28390.ismail@pardus.org.tr> <200703150051.29945.ismail@pardus.org.tr> <45F88E8B.90403@s5r6.in-berlin.de> <200703150249.04169.ismail@pardus.org.tr> <tkrat.5965dca5154c0fa2@s5r6.in-berlin.de> <20070320233432.GA20228@kroah.com> <tkrat.f2e7e842cff5a275@s5r6.in-berlin.de>
-In-Reply-To: <tkrat.f2e7e842cff5a275@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8bit
+	Sun, 13 May 2007 08:09:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:date:from:to:cc:subject:message-id:x-mailer:mime-version:content-type:content-transfer-encoding;
+        b=SliHGKf1xWXIFS5X1gFX8DxCL2yYU4Tg7jgua4Yv6D8LQ39OjmDTIcBsfELa9STV5rGNljmOJz5T4iF8OP0Bxq2nCI+tbg7EU6m5f78VVw3DBw3fStE2KFeen7Dnp156LmYIdxGJRp+Nd3LKdCN6pUhir7xZTqIRdxolQOlAo7g=
+Date: Sun, 13 May 2007 22:09:41 +1000
+From: Andrew Hendry <andrew.hendry@gmail.com>
+To: James.Bottomley@steeleye.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] mca: mca_pentium_flag no longer used
+Message-Id: <20070513220941.8ff811ae.andrew.hendry@gmail.com>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote on 2007-03-21:
-> On 20 Mar, Greg KH wrote:
->> On Tue, Mar 20, 2007 at 10:43:22PM +0100, Stefan Richter wrote:
->>> @@ -586,7 +586,10 @@ static void ether1394_add_host (struct h
->>>          }
->>>  
->>>  	SET_MODULE_OWNER(dev);
->>> +#if 0
->>> +	/* FIXME - Is this the correct parent device anyway? */
->>>  	SET_NETDEV_DEV(dev, &host->device);
->>> +#endif
->> That's interesting.  What does 'tree /sys/class/net/' look like with
->> this patch applied?  Does the eth1394 device now live off in
->> /sys/device/virtual?
-> 
-> Yes.
-> 
-> lrwxrwxrwx  1 root root 0 Mär 21 01:02 eth0 -> ../../devices/pci0000:00/0000:00:0b.0/eth0/
-> lrwxrwxrwx  1 root root 0 Mär 21 01:02 eth1 -> ../../devices/virtual/net/eth1/
-> lrwxrwxrwx  1 root root 0 Mär 21 01:02 lo -> ../../devices/virtual/net/lo/
-> 
-> (eth1 is IP over 1394 alias eth1394. eth0 is an actual ethernet
-> interface.)
-> 
-> And eth1/device (ex -> ../../../devices/pci*___*/fw-host*) is now gone.
-> Would anybody miss it?
-> 
->> If so, I guess this is ok for now as we can wait for the rewrite of the
->> ieee1394 subsystem to get the linking done correctly :)
-> 
-> That's my hope too.
+Thanks James, hopefully have the mailer fixed now. 
 
-Alas there is some userspace breakage:
-https://bugs.gentoo.org/show_bug.cgi?id=177199
 
-| Ethernet over firewire devices (driver: eth1394) have - starting with
-kernel
-| 2.6.21 - no longer a proper parent-device/subsystem in sysfs.
-|
-| The code change resulting in this is:
-[...]
-| This missing parent-device breaks persistence-net, as that adds
-DRIVERS=="?*"
-| to the generated rules, but the driver-attribute resides in the
-parent-device
-| that no longer is available now.
-|
-| This leads to not matching the existing rule, but at every boot
-running into
-| the code to get a new number for the interface, and thus enlarging the
-ruleset
-| with one line at every boot.
+The check for mca_pentium_flag was removed long ago.
+This cleans up the flag and documentation.
 
-I didn't notice this problem on my own Gentoo box here.  But then I
-rarely reboot and don't automatically load eth1394 anymore since I
-applied a post-2.6.21 patch which uncouples ieee1394 from eth1394.  I
-still load it manually for frequent testing though.
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+Signed-off-by: Andrew Hendry <andrew.hendry@gmail.com>
+
+diff -uprN -X dontdiff linux-2.6.21-vanilla/arch/i386/kernel/setup.c linux-2.6.21/arch/i386/kernel/setup.c
+--- linux-2.6.21-vanilla/arch/i386/kernel/setup.c	2007-05-06 10:27:39.000000000 +1000
++++ linux-2.6.21/arch/i386/kernel/setup.c	2007-05-06 11:35:03.000000000 +1000
+@@ -91,7 +91,6 @@ EXPORT_SYMBOL(machine_id);
+ #endif
+ unsigned int machine_submodel_id;
+ unsigned int BIOS_revision;
+-unsigned int mca_pentium_flag;
+ 
+ /* Boot loader ID as an integer, for the benefit of proc_dointvec */
+ int bootloader_type;
+diff -uprN -X dontdiff linux-2.6.21-vanilla/Documentation/kernel-parameters.txt linux-2.6.21/Documentation/kernel-parameters.txt
+--- linux-2.6.21-vanilla/Documentation/kernel-parameters.txt	2007-05-06 10:27:37.000000000 +1000
++++ linux-2.6.21/Documentation/kernel-parameters.txt	2007-05-06 11:39:27.000000000 +1000
+@@ -894,8 +894,6 @@ and is between 256 and 4096 characters. 
+ 			[SCSI] Maximum number of LUNs received.
+ 			Should be between 1 and 16384.
+ 
+-	mca-pentium	[BUGS=IA-32]
+-
+ 	mcatest=	[IA-64]
+ 
+ 	mcd=		[HW,CD]
+diff -uprN -X dontdiff linux-2.6.21-vanilla/include/asm-i386/bugs.h linux-2.6.21/include/asm-i386/bugs.h
+--- linux-2.6.21-vanilla/include/asm-i386/bugs.h	2007-05-06 10:31:04.000000000 +1000
++++ linux-2.6.21/include/asm-i386/bugs.h	2007-05-06 11:35:39.000000000 +1000
+@@ -31,14 +31,6 @@ static int __init no_halt(char *s)
+ 
+ __setup("no-hlt", no_halt);
+ 
+-static int __init mca_pentium(char *s)
+-{
+-	mca_pentium_flag = 1;
+-	return 1;
+-}
+-
+-__setup("mca-pentium", mca_pentium);
+-
+ static int __init no_387(char *s)
+ {
+ 	boot_cpu_data.hard_math = 0;
+diff -uprN -X dontdiff linux-2.6.21-vanilla/include/asm-i386/processor.h linux-2.6.21/include/asm-i386/processor.h
+--- linux-2.6.21-vanilla/include/asm-i386/processor.h	2007-05-06 10:31:05.000000000 +1000
++++ linux-2.6.21/include/asm-i386/processor.h	2007-05-06 11:35:19.000000000 +1000
+@@ -264,7 +264,6 @@ others may find it useful. */
+ extern unsigned int machine_id;
+ extern unsigned int machine_submodel_id;
+ extern unsigned int BIOS_revision;
+-extern unsigned int mca_pentium_flag;
+ 
+ /* Boot loader type from the setup header */
+ extern int bootloader_type;
