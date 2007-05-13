@@ -1,93 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759377AbXEMR4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758988AbXEMSBn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759377AbXEMR4o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 13:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757318AbXEMR4g
+	id S1758988AbXEMSBn (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 14:01:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbXEMSBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 13:56:36 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:54246 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757694AbXEMR4f (ORCPT
+	Sun, 13 May 2007 14:01:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:22120 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751042AbXEMSBf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 13:56:35 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Sun, 13 May 2007 13:56:00 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Bernd Eckenfels <ecki@lina.inka.de>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: undeprecate raw driver.
-In-Reply-To: <E1HnHxK-0004CI-00@calista.eckenfels.net>
-Message-ID: <Pine.LNX.4.64.0705131347450.1144@localhost.localdomain>
-References: <E1HnHxK-0004CI-00@calista.eckenfels.net>
+	Sun, 13 May 2007 14:01:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=b+wC35vbLhMeaAMVNMLLHZu4h/QWWTA35hu0lpK+YI2jxPgcGt7a0vkrvI9SSPYZJieZmRgwP4KbPbkwG9wTqyaoV4F9OCg9q0OU268aeFrXYpiOawmFbLkCEabGrBsMbSWMSLMtnqrWMIc/85VT5M/3cDJ6EeQy2N6MIM8/3mY=
+Message-ID: <86802c440705131101r5b32e0b9j28e2248813b25b64@mail.gmail.com>
+Date: Sun, 13 May 2007 11:01:33 -0700
+From: "Yinghai Lu" <yhlu.kernel@gmail.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH]x86_64: build and use GDT on copied compressed kernel
+Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+       "Vivek Goyal" <vgoyal@in.ibm.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <86802c440705130027vce147dma85a07de6489d666@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
+	 <m1ejllqmo8.fsf@ebiederm.dsl.xmission.com>
+	 <86802c440705122329y27c6ef92v8cff43d52b99ae69@mail.gmail.com>
+	 <m1abw9qkve.fsf@ebiederm.dsl.xmission.com>
+	 <86802c440705122355r5f811d5bg2006b0b22ca885e6@mail.gmail.com>
+	 <m11whlqk1g.fsf@ebiederm.dsl.xmission.com>
+	 <86802c440705130027vce147dma85a07de6489d666@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 May 2007, Bernd Eckenfels wrote:
+Eric,
 
-> In article <Pine.LNX.4.64.0705131239200.942@localhost.localdomain> you wrote:
-> > in short, do *not* remove its "deprecated" status.  rather, remove its
-> > "obsolete" status and *make* it deprecated.
->
-> it is deprecated and obsolete.
+I got one question about kexec and bzImage on 64bit kernel.
 
-no, it's not.  and, trust me, no one on this list wants me to have to
-explain all that again.  :-)
+The bzImage for 64bit kernel must be loaded under 4G?
+but vmlinux for 64bit kernel could be loaded above 4G.
 
-rday
+So is there any plan to use 64bit entry point (startup_64) in
+arch/x86_64/boot/compressed/vmlinux in bzImage? so you may
+load bzImage above 4G too.
 
-p.s.  before we get into this again where everyone thinks they know
-what they're talking about, i suggest consulting the official
-definitions of those two terms as defined at
-http://www.w3.org/TR/html4/conform.html:
-
-Deprecated:
-----------
-
-"A deprecated element or attribute is one that has been outdated by
-newer constructs. Deprecated elements are defined in the reference
-manual in appropriate locations, but are clearly marked as deprecated.
-Deprecated elements may become obsolete in future versions of HTML.
-
-"User agents should continue to support deprecated elements for
-reasons of backward compatibility.
-
-"Definitions of elements and attributes clearly indicate which are
-deprecated."
-
-  got that?  deprecated means that it's been "outdated," but it's
-still defined, it's still supported, it's marked as "deprecated", and
-it ***may become*** obsolete in future versions.  if there's a better
-description of raw drivers, i don't know where you'd find it.
-
-Obsolete:
---------
-
-"An obsolete element or attribute is one for which there is no
-guarantee of support by a user agent."
-
-  there.  see the difference?  why is this so difficult to grok?  you
-can be deprecated, or you can be obsolete.  you *can't* be both.  so
-please stop making that argument.
-
-p.p.s.  using those definitions, deprecated features are *not*
-possible candidates for removal, but obsolete features *are*.  that's
-why raw drivers are deprecated, not obsolete.
-
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+YH
