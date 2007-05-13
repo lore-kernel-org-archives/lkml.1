@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758499AbXEMGoQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759137AbXEMGof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758499AbXEMGoQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 02:44:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755112AbXEMGoG
+	id S1759137AbXEMGof (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 02:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758186AbXEMGo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 02:44:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:13952 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755109AbXEMGoE (ORCPT
+	Sun, 13 May 2007 02:44:26 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:48148 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757122AbXEMGoZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 02:44:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=H9J9yboW9Egv9IofbpwxXjP+SN0FuKkpKRz74Uqx3LCjdW2XC6tOrOFigIKgHRMFDtzNKTQnWqRWxsS5Z+gc2eLsxLkQP3mq/d8cdYMPGEA4SNTL2c1OH/+KqCL+p2EagISB4ap3vdgwN+ZXyeXRWXxlPtPpAGToH+tpLwQKYII=
-Date: Sun, 13 May 2007 10:43:25 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       "YOSHIFUJI Hideaki / ?$B5HF#1QL@" <yoshfuji@linux-ipv6.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: linux-2.6.21-gitN - versioning question
-Message-ID: <20070513064325.GA8244@cvg>
-References: <Pine.LNX.4.61.0705121316540.9570@yvahk01.tjqt.qr> <20070512.210308.93070730.yoshfuji@linux-ipv6.org> <20070512131906.GF8337@cvg> <1178977496.2802.5.camel@shinybook.infradead.org> <Pine.LNX.4.61.0705121701020.9570@yvahk01.tjqt.qr> <1179037601.2802.96.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179037601.2802.96.camel@shinybook.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Sun, 13 May 2007 02:44:25 -0400
+Date: Sat, 12 May 2007 23:44:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Lukas Hejtmanek <xhejtman@ics.muni.cz>
+Cc: linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org
+Subject: Re: Reboot PATCH (ACPI related)
+Message-Id: <20070512234413.54fc6afa.akpm@linux-foundation.org>
+In-Reply-To: <20070512201006.GA3569@ics.muni.cz>
+References: <20070512201006.GA3569@ics.muni.cz>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[David Woodhouse - Sun, May 13, 2007 at 02:26:40PM +0800]
-| On Sat, 2007-05-12 at 17:01 +0200, Jan Engelhardt wrote:
-| > On May 12 2007 21:44, David Woodhouse wrote:
-| > >On Sat, 2007-05-12 at 17:19 +0400, Cyrill Gorcunov wrote:
-| > >> Actually I think it would be convenient if such tags (like
-| > >> v.2.6.21-git16) were in Linus' git tree too.
-| > >
-| > >Then there would be _lots_ of tags in the master tree -- I'm not sure we
-| > >want that.
-| > >
-| > >I suppose I could put a tree on kernel.org which _does_ have the tags,
-| > >and which precisely matches Linus' tree in every other way... but then
-| > >again, you could do that too by just rsyncing the tags yourself :)
-| > 
-| > Are you saying GIT tags are expensive, compared to, say, SVN tags?
-| 
-| I wasn't saying that -- I've no idea how expensive SVN tags are. But I
-| was of the opinion that GIT tags aren't free -- I thought I'd seen
-| git-pull explicitly checking (with one round-trip latency) that it has
-| the corresponding commit for every tag it knows about.
-| 
-| -- 
-| dwmw2
-| 
+On Sat, 12 May 2007 22:10:07 +0200 Lukas Hejtmanek <xhejtman@ics.muni.cz> wrote:
 
-Btw David who does release a such snapshots (like git16)? You or Linus?
+> why the attached patch is still not included in mainline kernel? It fixes boot
+> problems after suspend to RAM.
+> 
+> -- 
+> Lukáš Hejtmánek
+> 
+> 
+> [reboot.patch  text/x-diff (564B)]
+> --- arch/i386/kernel/reboot.c.old	2006-06-18 03:49:35.000000000 +0200
+> +++ arch/i386/kernel/reboot.c	2006-07-01 17:29:23.000000000 +0200
+> @@ -31,6 +31,12 @@
+>  #ifdef CONFIG_SMP
+>  static int reboot_cpu = -1;
+>  #endif
+> +#ifdef CONFIG_ACPI
+> +extern u32 acpi_disable(void);
+> +#else
+> +static u32 acpi_disable(void){};
+> +#endif
+> +
+>  static int __init reboot_setup(char *str)
+>  {
+>  	while(1) {
+> @@ -322,6 +328,7 @@
+>  
+>  void machine_emergency_restart(void)
+>  {
+> +	acpi_disable();
+>  	if (!reboot_thru_bios) {
+>  		if (efi_enabled) {
+>  			efi.reset_system(EFI_RESET_COLD, EFI_SUCCESS, 0, NULL);
 
-		Cyrill
+We'd prefer to fix the problem, whatever it is, rather than just turning
+APCI off.
 
+Please ensure that a full bug report has been entered at bugzilla.kernel.org,
+thanks.
