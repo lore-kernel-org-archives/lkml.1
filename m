@@ -1,47 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbXEMG3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758113AbXEMGlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758505AbXEMG3b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 02:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbXEMG3Z
+	id S1758113AbXEMGlS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 02:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756978AbXEMGlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 02:29:25 -0400
-Received: from nz-out-0506.google.com ([64.233.162.226]:41068 "EHLO
+	Sun, 13 May 2007 02:41:08 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:45018 "EHLO
 	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755109AbXEMG3Y (ORCPT
+	with ESMTP id S1755109AbXEMGlH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 02:29:24 -0400
+	Sun, 13 May 2007 02:41:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
         h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=ZOC8ePOSE3crDitU4gnHIhltt8iZberDKHxoqpEEifNxpdcAlJY0YC9EqyeSpnoqyRnQKp6Y87up31NROa1FDYaCJ1JOSFzAandWwvWiOU7ghA8qmOGX8UVCAMeJPpyxYpGObjYoUIp48HNwb4co75EP/FxuZdRxPoQrJuCGqb4=
-Message-ID: <86802c440705122329y27c6ef92v8cff43d52b99ae69@mail.gmail.com>
-Date: Sat, 12 May 2007 23:29:23 -0700
+        b=GCIe0c9hMGJqBDmlux+pmmxjp7BV12HxM3Z4LHglO4VmC9po/j75UM1tCgZ2wFCeXVosjDN7CI+H9c8fnIDOkCeQ9XxG8upZNaCjz6/4CEocFTN1dboEqHXX0llFmew1YXsObAcAz7nOV0XAzH6acv5o+qBu+2h20A5fw8/GmXs=
+Message-ID: <86802c440705122341q3f565d10qec5fb60373cc6824@mail.gmail.com>
+Date: Sat, 12 May 2007 23:41:06 -0700
 From: "Yinghai Lu" <yhlu.kernel@gmail.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "Andi Kleen" <ak@suse.de>
 Subject: Re: [PATCH]x86_64: build and use GDT on copied compressed kernel
-Cc: "Andi Kleen" <ak@suse.de>, "Andrew Morton" <akpm@linux-foundation.org>,
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       "Andrew Morton" <akpm@linux-foundation.org>,
        "Vivek Goyal" <vgoyal@in.ibm.com>,
        "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <m1ejllqmo8.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <200705130752.56041.ak@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
-	 <m1ejllqmo8.fsf@ebiederm.dsl.xmission.com>
+	 <200705130752.56041.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/12/07, Eric W. Biederman <ebiederm@xmission.com> wrote:
-> Overwriting the GDT should be fine because we don't reload the segments,
-> after we overwrite it.  GDT entries are only read when we load segments.
-> Interrupts are disabled so that should not cause a problem.
+On 5/12/07, Andi Kleen <ak@suse.de> wrote:
+> On Sunday 13 May 2007 07:33:14 Yinghai Lu wrote:
 >
-> Why do you think the current behaviour is a problem?
+> Can you please give a little more description on why you think the patch
+> is needed? Also we need a Signed-off-by line.
 
-just think if GDT should not be overwriten when we are still under
-that GDT setting.
-didn't have chance to test that in HDT or other debug device, when
-setting breaking point after that GDT is overwriten.
+in the arch/x86_64/boot/compressed/head.S.
+it switch to 64 bit mode and then copy compressed image to higher
+address. and jump the copied image, then decompressed the compressed
+image to final uncompressed kernel and it may overlapped with original
+loaded compressed kernel image.
 
-YH
+before jump to 64 bit mode, it will create new page table in some
+place higher in copied compressed kernel image. but still use the GDT
+in place of original loaded compressed image.  So the GDT will be
+overwriten in the middle of decompressing.
+
+So we could change to build the GDT like page table together with
+copied compressed kernel.
+
+Signed-off-by: Yinghai Lu <yhlu.kernel@gmail.com>
+
+http://lkml.org/lkml/2007/5/13/8
