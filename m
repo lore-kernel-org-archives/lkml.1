@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757427AbXEMBBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757752AbXEMBCu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757427AbXEMBBU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 21:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756451AbXEMBBO
+	id S1757752AbXEMBCu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 21:02:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756643AbXEMBCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 21:01:14 -0400
-Received: from ozlabs.org ([203.10.76.45]:35746 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755569AbXEMBBN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 21:01:13 -0400
-Subject: Re: [PATCH 2/5] lguest guest feedback tidyups
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <20070511074050.GB25727@infradead.org>
-References: <1178846246.23513.21.camel@localhost.localdomain>
-	 <1178846354.23513.23.camel@localhost.localdomain>
-	 <1178846490.23513.27.camel@localhost.localdomain>
-	 <20070511065613.GB25182@infradead.org>
-	 <1178868666.23513.49.camel@localhost.localdomain>
-	 <20070511074050.GB25727@infradead.org>
-Content-Type: text/plain
-Date: Sun, 13 May 2007 11:00:51 +1000
-Message-Id: <1179018051.23513.81.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 12 May 2007 21:02:42 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:38859 "EHLO
+	pd2mo2so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756451AbXEMBCl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 21:02:41 -0400
+Date: Sat, 12 May 2007 19:02:38 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [2.6.21.1] SATA freeze
+In-reply-to: <464610F7.6030202@redhotpenguin.com>
+To: Fred Moyer <fred@redhotpenguin.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Message-id: <464663AE.6040409@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.zU1kuoSgByTYCYqY+iCQ5rMJy34@ifi.uio.no>
+ <46460C1B.6000609@shaw.ca> <464610F7.6030202@redhotpenguin.com>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2007-05-11 at 08:40 +0100, Christoph Hellwig wrote:
-> On Fri, May 11, 2007 at 05:31:06PM +1000, Rusty Russell wrote:
-> > Hi Christoph!
+Fred Moyer wrote:
+>> This appears to be a different problem. Something is issuing 
+>> SMART-related commands (smartd or smartctl perhaps) which the drive 
+>> seems to be reacting strangely to. It apparently completed the command 
+>> but never raised DRQ to request any data being transferred even though 
+>> we expected it to. Maybe SMART is disabled on the drive and that's 
+>> causing it to just toss these commands? CCing linux-ide in case anyone 
+>> knows what would cause this.
 > 
-> > I enjoy a good Hellwigging as much as anyone, but your aim is off.
+> Here's smartctl -a for this drive - same output for both sda and sdb. 
+> Smartd is currently running.  Any advice appreciated.
 > 
-> Please stop this crap.  I know who I am, so there's no need to waste
-> mail estate with saying Hi.  Also please stop being a total fuckass
-> and abusing my lastname just because you didn't get what was in the
-> mail.
+> Previously on 2.6.15 I was seeing sdb remount as readonly under heavy 
+> i/o.  I have not seen that issue yet with 2.6.21 (with Robert's patch 
+> from May 5th for sata_nv), but that occurrence of remounts read-only was 
+> infrequently, so that issue may be solved.
+> 
+> app2 ~ # smartctl -a /dev/sda
+> smartctl version 5.36 [x86_64-pc-linux-gnu] Copyright (C) 2002-6 Bruce 
+> Allen
+> Home page is http://smartmontools.sourceforge.net/
+> 
+> Device: ATA      ST3808110AS      Version: n/a
+> Serial number:             5LR8895K
+> Device type: disk
+> Local Time is: Sat May 12 12:05:58 2007 PDT
+> Device does not support SMART
+> 
+> Error Counter logging not supported
+> 
+> [GLTSD (Global Logging Target Save Disable) set. Enable Save with '-S on']
+> Device does not support Self Test logging
+> 
 
-On the contrary, I was honestly trying to being polite.  Perhaps I
-failed.
+Sounds like SMART is likely disabled on that drive. You can try doing 
+"smartctl -s on /dev/sda" and see if that will turn it on.
 
-You made a mistake.  None of us like to be corrected, so I did it as
-gently as I could.  But you were right about one thing: describing your
-previous mail as "a good Hellwigging" was inappropriate.
-
-This latest mail... *that's* good Hellwigging!
-Rusty.
+-- 
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
