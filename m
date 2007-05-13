@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934726AbXEMQti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759550AbXEMRKQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934726AbXEMQti (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 12:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759296AbXEMQta
+	id S1759550AbXEMRKQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 13:10:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755962AbXEMRKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 12:49:30 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:2564 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759287AbXEMQt3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 12:49:29 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Sun, 13 May 2007 09:49:28 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: undefined reference to `__clear_user' (was: Re: [patch 2/13]
- signal/timer/event fds v10 - signalfd core ...)
-In-Reply-To: <Pine.LNX.4.64.0705131222410.2271@anakin>
-Message-ID: <Pine.LNX.4.64.0705130945410.2979@alien.or.mcafeemobile.com>
-References: <Pine.LNX.4.64.0704021555430.26489@alien.or.mcafeemobile.com>
- <Pine.LNX.4.64.0705131222410.2271@anakin>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 13 May 2007 13:10:06 -0400
+Received: from main.gmane.org ([80.91.229.2]:51087 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751349AbXEMRKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 13:10:04 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Nikita V. Youshchenko" <yoush@debian.org>
+Subject: Re: [PATCH] allow kernel module exclusion on load
+Date: Sun, 13 May 2007 21:05:34 +0400
+Message-ID: <1216096.ezegMODXOY@yoush.homelinux.org>
+References: <20070513132517.GA14038@localdomain> <20070513092352.18cd80de@freepuppy>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: ppp20-232.pppoe.mtu-net.ru
+User-Agent: KNode/0.10.4
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 May 2007, Geert Uytterhoeven wrote:
-
-> I only noticed because m68k doesn't have __clear_user(), as this routine
-> was never needed by generic code before your change.
-
-As I told to Al, I could use clear_user in there, but IMO it'd be better 
-to align m68k to the standard Linux user access rule (double-underscore 
-and not double-underscore version).
 
 
-- Davide
+> On Sun, 13 May 2007 16:25:17 +0300
+> Dan Aloni <da-x@monatomic.org> wrote:
+> 
+>> Kernel developers might find it useful for quickly getting out from some
+>> rough debugging scenarios.
+>> 
+>> Signed-off-by: Dan Aloni <da-x@monatomic.org>
+>> 
+> 
+> There is already the modprobe blacklist ability in user space.
 
+I guess the patch being discussed could still save some time for people who
+try or debug a new kernel and find that certain module crashes it. Yes it
+is possible to boot to old kernel, then blacklist something, then
+regenerate initramfs, etc etc, and then undo all that.
+
+Compared to that, adding a boot arg to kernel being debugged is *much* more
+convinient.
+
+Just my 2c.
 
