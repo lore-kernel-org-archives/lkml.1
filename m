@@ -1,51 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934024AbXEMPXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934086AbXEMPkO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934024AbXEMPXf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 11:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758744AbXEMPX0
+	id S934086AbXEMPkO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 11:40:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758771AbXEMPkC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 11:23:26 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:43162 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758740AbXEMPXZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 11:23:25 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Sun, 13 May 2007 11:22:55 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: why does x86 "make defconfig" build a single, lonely module?
-Message-ID: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+	Sun, 13 May 2007 11:40:02 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59396 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758480AbXEMPkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 11:40:00 -0400
+Date: Sun, 13 May 2007 17:38:53 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Con Kolivas <kernel@kolivas.org>, Nick Piggin <npiggin@suse.de>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Williams <pwil3058@bigpond.net.au>,
+       Thomas Gleixner <tglx@linutronix.de>, caglar@pardus.org.tr,
+       Willy Tarreau <w@1wt.eu>, Gene Heskett <gene.heskett@gmail.com>,
+       Mark Lord <lkml@rtr.ca>
+Subject: [patch] CFS scheduler, -v12
+Message-ID: <20070513153853.GA19846@elte.hu>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.1.7
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  not a big deal, but is there a reason that a "make defconfig" on my
-x86 system ends up selecting and building a single module?
+i'm pleased to announce release -v12 of the CFS scheduler patchset.
 
-  Building modules, stage 2.
-  MODPOST 1 modules
-  CC      drivers/scsi/scsi_wait_scan.mod.o
-  LD [M]  drivers/scsi/scsi_wait_scan.ko
+The CFS patch against v2.6.22-rc1, v2.6.21.1 or v2.6.20.10 can be 
+downloaded from the usual place:
+  
+    http://people.redhat.com/mingo/cfs-scheduler/
 
-is there something special about that module?  just curious.
+-v12 fixes the '3D bug' that caused trivial latencies in 3D games: it 
+turns out that the problem was not resulting out of any core quality of 
+CFS, it was caused by 3D userspace growing dependent on the current 
+inefficiency of the vanilla scheduler's sys_sched_yield() 
+implementation, and CFS's "make yield work well" changes broke it.
 
-rday
--- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+Even a simple 3D app like glxgears does a sys_sched_yield() for every 
+frame it generates (!) on certain 3D cards, which in essence punishes 
+any scheduler that implements sys_sched_yield() in a sane manner. This 
+interaction of CFS's yield implementation with this user-space bug could 
+be the main reason why some testers reported SD to be handling 3D games 
+better than CFS. (SD uses a yield implementation similar to the vanilla 
+scheduler.)
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
+So i've added a yield workaround to -v12, which makes it work similar to 
+how the vanilla scheduler and SD does it. (Xorg has been notified and 
+this bug should be fixed there too. This took some time to debug because 
+the 3D driver i'm using for testing does not use sys_sched_yield().) The 
+workaround is activated by default so -v12 should work 'out of the box'.
+
+Mike Galbraith has fixed a bug related to nice levels - the fix should 
+make negative nice levels more potent again.
+
+Changes since -v10:
+
+ - nice level calculation fixes (Mike Galbraith)
+
+ - load-balancing improvements (this should fix the SMP performance 
+   problem reported by Michael Gerdau)
+
+ - remove the sched_sleep_history_max tunable.
+
+ - more debugging fields.
+
+ - various cleanups, fixlets and code reorganization
+
+As usual, any sort of feedback, bugreport, fix and suggestion is more 
+than welcome,
+
+	Ingo
