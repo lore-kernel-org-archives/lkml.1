@@ -1,192 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbXEMT5p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759415AbXEMUDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758782AbXEMT5p (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 15:57:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756276AbXEMT5h
+	id S1759415AbXEMUDi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 16:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755627AbXEMUDb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 15:57:37 -0400
-Received: from cavan.codon.org.uk ([217.147.92.49]:33415 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755627AbXEMT5g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 15:57:36 -0400
-Date: Sun, 13 May 2007 20:57:25 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Soeren Sonnenburg <kernel@nn7.de>, linux-input@atrey.karlin.mff.cuni.cz,
-       nicolas@boichat.ch, linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Message-ID: <20070513195724.GA28493@srcf.ucam.org>
-References: <1178995886.4168.10.camel@localhost> <20070513172052.GA26712@srcf.ucam.org> <20070513114626.d943999a.zaitcev@redhat.com>
+	Sun, 13 May 2007 16:03:31 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38811 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754629AbXEMUDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 16:03:31 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [RFD] Freezing of kernel threads
+Date: Sun, 13 May 2007 22:08:22 +0200
+User-Agent: KMail/1.9.5
+Cc: Gautham R Shenoy <ego@in.ibm.com>, Pavel Machek <pavel@ucw.cz>,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>,
+       Paul E McKenney <paulmck@us.ibm.com>
+References: <200705122017.32792.rjw@sisk.pl> <20070513083357.GA12985@in.ibm.com> <alpine.LFD.0.98.0705130925290.6739@woody.linux-foundation.org>
+In-Reply-To: <alpine.LFD.0.98.0705130925290.6739@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070513114626.d943999a.zaitcev@redhat.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-Subject: Re: [PATCH] Make appletouch shut up when it has nothing to say
-X-SA-Exim-Version: 4.2.1 (built Tue, 20 Jun 2006 01:35:45 +0000)
-X-SA-Exim-Scanned: Yes (on vavatch.codon.org.uk)
+Message-Id: <200705132208.23254.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, I've tidied this up a little. I've separated the actual mode init 
-code into a separate function in order to avoid code duplication, and no 
-longer creating a new workqueue. The only other change is something that 
-I /think/ is actually a bug in the driver to begin with, but I'd like 
-some more feedback on that first - the first packet sent after the mode 
-change has 0x20 in the final byte. This seems to be interpreted as a 
-left mouse button press. As a result, moving the touchpad sends a false 
-press after every reinitialisation, or (approximately) every time the 
-pointer is moved. As far as I can tell this also happens with the 
-existing code, but is probably not noticable there because it won't 
-appear again after the first touch on the pad. Just skipping that case 
-seems to work fine.
+On Sunday, 13 May 2007 18:33, Linus Torvalds wrote:
+> 
+> On Sun, 13 May 2007, Gautham R Shenoy wrote:
+> > 
+> > RFC #1: Use get_hot_cpus()- put_hot_cpus() , which follow the
+> > well known refcounting model.
+> 
+> Yes. And usign the "preempt count" as a refcount is fairly natural, no? 
+> We do already depend on that in many code-paths.
+> 
+> It also has the advantage since it's not a *blocking* lock, it's fairly 
+> easy to code around (ie since it nests, it avoids the kinds of nasty 
+> deadlocks we had with cpufreq that had totally insane calling semantics 
+> and different people all wanted the lock).
+> 
+> Of course, a real nesting lock could be used to the same effect.
+> 
+> > RFC #1 and #2 DO work. But, the discussions in the thread
+> > http://lkml.org/lkml/2007/1/26/282 gave me the impression
+> > that we would be better off without any code audits to
+> > make the code paths cpu-hotplug safe. I would leave it for others
+> > to shed more light here.
+> 
+> Well, I hope that _this_ discussion about the freezer has convinced you 
+> that there are no more fundamntal problems with #1/#2 than with using the 
+> freezer.
+> 
+> The freezer really needs even *more* code auditing, since it's almost 
+> impossible to see which thread depends on some other thread. There's a 
+> real reason why most kernel threads disable freezing.
 
-diff --git a/drivers/input/mouse/appletouch.c b/drivers/input/mouse/appletouch.c
-index e321526..f126de8 100644
---- a/drivers/input/mouse/appletouch.c
-+++ b/drivers/input/mouse/appletouch.c
-@@ -155,6 +155,8 @@ struct atp {
- 	int			xy_acc[ATP_XSENSORS + ATP_YSENSORS];
- 	int			overflowwarn;	/* overflow warning printed? */
- 	int			datalen;	/* size of an USB urb transfer */
-+	int                     idlecount;      /* number of empty packets */
-+	struct work_struct      work;
- };
- 
- #define dbg_dump(msg, tab) \
-@@ -208,6 +210,51 @@ static inline int atp_is_geyser_3(struct atp *dev)
- 		(productId == GEYSER4_JIS_PRODUCT_ID);
- }
- 
-+static int atp_geyser3_init(struct usb_device *udev)
-+{
-+	char data[8];
-+	int size;
-+
-+	size = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
-+			       ATP_GEYSER3_MODE_READ_REQUEST_ID,
-+			       USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
-+			       ATP_GEYSER3_MODE_REQUEST_VALUE,
-+			       ATP_GEYSER3_MODE_REQUEST_INDEX, &data, 8, 5000);
-+  
-+	if (size != 8) {
-+		err("Could not do mode read request from device"
-+		    " (Geyser 3 mode)");
-+		return -EIO;
-+	}
-+
-+	/* Apply the mode switch */
-+	data[0] = ATP_GEYSER3_MODE_VENDOR_VALUE;
-+  
-+	size = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
-+			       ATP_GEYSER3_MODE_WRITE_REQUEST_ID,
-+			       USB_DIR_OUT | USB_TYPE_CLASS | 
-+			       USB_RECIP_INTERFACE,
-+			       ATP_GEYSER3_MODE_REQUEST_VALUE,
-+			       ATP_GEYSER3_MODE_REQUEST_INDEX, &data, 8, 5000);
-+	
-+	if (size != 8) {
-+		err("Could not do mode write request to device"
-+		    " (Geyser 3 mode)");
-+		return -EIO;
-+	}
-+	return 0;
-+}
-+
-+/* Reinitialise the device if it's a geyser 3 */
-+static void atp_reinit(struct work_struct *work)
-+{
-+	struct atp *dev = container_of(work, struct atp, work);
-+	struct usb_device *udev = dev->udev;
-+
-+	dev->idlecount = 0;
-+	atp_geyser3_init(udev);
-+}
-+
- static int atp_calculate_abs(int *xy_sensors, int nb_sensors, int fact,
- 			     int *z, int *fingers)
- {
-@@ -441,7 +488,6 @@ static void atp_complete(struct urb* urb)
- 		dev->y_old = y;
- 	}
- 	else if (!x && !y) {
--
- 		dev->x_old = dev->y_old = -1;
- 		input_report_key(dev->input, BTN_TOUCH, 0);
- 		input_report_abs(dev->input, ABS_PRESSURE, 0);
-@@ -449,10 +495,21 @@ static void atp_complete(struct urb* urb)
- 
- 		/* reset the accumulator on release */
- 		memset(dev->xy_acc, 0, sizeof(dev->xy_acc));
-+
-+		/* Geyser 3 will continue to send packets continually after
-+		   the first touch unless reinitialised. Do so if it's been
-+		   idle for a while in order to avoid waking the kernel up
-+		   several hundred times a second */
-+		if (atp_is_geyser_3(dev)) {
-+			dev->idlecount++;
-+			if (dev->idlecount == 10)
-+				schedule_work (&dev->work);
-+		}
- 	}
- 
--	input_report_key(dev->input, BTN_LEFT,
--			 !!dev->data[dev->datalen - 1]);
-+	if (dev->data[dev->datalen-1] != 20) 
-+		input_report_key(dev->input, BTN_LEFT,
-+				 !!dev->data[dev->datalen - 1]);
- 
- 	input_sync(dev->input);
- 
-@@ -533,35 +590,9 @@ static int atp_probe(struct usb_interface *iface, const struct usb_device_id *id
- 		 * packets (Report ID 2). This code changes device mode, so it
- 		 * sends raw sensor reports (Report ID 5).
- 		 */
--		char data[8];
--		int size;
--
--		size = usb_control_msg(udev, usb_rcvctrlpipe(udev, 0),
--			ATP_GEYSER3_MODE_READ_REQUEST_ID,
--			USB_DIR_IN | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
--			ATP_GEYSER3_MODE_REQUEST_VALUE,
--			ATP_GEYSER3_MODE_REQUEST_INDEX, &data, 8, 5000);
--
--		if (size != 8) {
--			err("Could not do mode read request from device"
--							" (Geyser 3 mode)");
-+		if (atp_geyser3_init(udev))
- 			goto err_free_devs;
--		}
- 
--		/* Apply the mode switch */
--		data[0] = ATP_GEYSER3_MODE_VENDOR_VALUE;
--
--		size = usb_control_msg(udev, usb_sndctrlpipe(udev, 0),
--			ATP_GEYSER3_MODE_WRITE_REQUEST_ID,
--			USB_DIR_OUT | USB_TYPE_CLASS | USB_RECIP_INTERFACE,
--			ATP_GEYSER3_MODE_REQUEST_VALUE,
--			ATP_GEYSER3_MODE_REQUEST_INDEX, &data, 8, 5000);
--
--		if (size != 8) {
--			err("Could not do mode write request to device"
--							" (Geyser 3 mode)");
--			goto err_free_devs;
--		}
- 		printk("appletouch Geyser 3 inited.\n");
- 	}
- 
-@@ -636,6 +667,8 @@ static int atp_probe(struct usb_interface *iface, const struct usb_device_id *id
- 	/* save our data pointer in this interface device */
- 	usb_set_intfdata(iface, dev);
- 
-+        INIT_WORK(&dev->work, atp_reinit);
-+
- 	return 0;
- 
-  err_free_buffer:
+Well, for the current -git we have:
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+rafael@albercik:~/src/linux-2.6> grep -r -I -l try_to_freeze * \
+	| grep -v signal.c | grep -v freezer.h | grep -v process.c | wc
+     45      45    1186
+
+Most of these are calls from kernel threads.
+
+At the same time we have:
+
+rafael@albercik:~/src/linux-2.6> grep -r -I -l PF_NOFREEZE * \
+	| grep -v sched.h | grep -v process.c | grep -v freezer.h | wc
+     23      23     559
+
+I wouldn't call that a majority.  Moreover:
+
+rafael@albercik:~/src/linux-2.6> grep -r -I -l PF_NOFREEZE drivers/* | wc
+      9       9     238
+rafael@albercik:~/src/linux-2.6> grep -r -I -l try_to_freeze drivers/* | wc
+     27      27     790
+
+That, BTW, is why I was (and I still am) afraid to stop freezing kernel threads
+just like that.
+
+Of course it's possible to look at these 45 files and see if the kernel threads
+in there really need to be freezable and I'm going to do this, but this is a
+different thing.
+
+Besides, the problems with interdependencies that we've had recently are
+related specifically to the CPU hotplug.  To be precise, they are related to the
+CPU hotplug notifiers that try to stop kernel threads which may be frozen.
+The other interdependencies don't lead to freezer-related problems.
+
+Greetings,
+Rafael
