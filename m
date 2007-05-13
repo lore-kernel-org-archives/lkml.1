@@ -1,157 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758530AbXEMK5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758796AbXEMK5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758530AbXEMK5H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 06:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757358AbXEMK44
+	id S1758796AbXEMK5o (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 06:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757421AbXEMK5g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 06:56:56 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:4183 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757214AbXEMK4z (ORCPT
+	Sun, 13 May 2007 06:57:36 -0400
+Received: from n10.bullet.re3.yahoo.com ([68.142.237.123]:39494 "HELO
+	n10.bullet.re3.yahoo.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757358AbXEMK5f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 06:56:55 -0400
-Date: Sun, 13 May 2007 11:56:44 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel List <linux-kernel@vger.kernel.org>,
-       Prarit Bhargava <prarit@redhat.com>,
-       Andi Kleen <andi@basil.nowhere.org>
-Subject: Re: Please revert 86c0baf123e474b6eb404798926ecf62b426bf3a
-Message-ID: <20070513105643.GA18344@flint.arm.linux.org.uk>
-Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel List <linux-kernel@vger.kernel.org>,
-	Prarit Bhargava <prarit@redhat.com>,
-	Andi Kleen <andi@basil.nowhere.org>
-References: <20070508134928.GA13212@flint.arm.linux.org.uk>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="cWoXeonUoKmBZSoM"
-Content-Disposition: inline
-In-Reply-To: <20070508134928.GA13212@flint.arm.linux.org.uk>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 13 May 2007 06:57:35 -0400
+X-Yahoo-Newman-Property: ymail-3
+X-Yahoo-Newman-Id: 971288.70721.bm@rrr4.mail.re1.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=X-YMail-OSG:Received:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Message-ID;
+  b=bgeWFqoN2wZ8BLAgmRe8ElV3unTqhu+atonLOZ+6CeFNErLU9ODH2tawNhBUk/UasLdvGdjFj1En3mm83/kUBRljC76s6QlJQ6lR8VltSP5y9TU0j4Oh4GKKb/WtiNf1+1487S5dKfKS9pHWzOrpgb332DHmtStMdSRcv2qxGm4=;
+X-YMail-OSG: YPjmoHUVM1mU5kYy2ueDbOzJ.cAIFrwSiBwAqyUihPLs2NPGutomd_XL8hNPhb6KEEA7K0QQ4fFwu4y9j4rHVke.7A--
+Date: Sun, 13 May 2007 03:57:34 -0700 (PDT)
+From: Tear <tarrqt@yahoo.com>
+Subject: Re: Dell Optiplex GX240, ACPI and APIC
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070512103441.a21194fc.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Message-ID: <897169.90621.qm@web63615.mail.re1.yahoo.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---cWoXeonUoKmBZSoM
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--- Andrew Morton <akpm@linux-foundation.org> wrote:
 
-On Tue, May 08, 2007 at 02:49:28PM +0100, Russell King wrote:
-> The change:
+> On Sat, 12 May 2007 07:04:25 -0700 (PDT) Tear <tarrqt@yahoo.com> wrote:
 > 
-> +#ifdef CONFIG_HOTPLUG_CPU
-> +#define __INIT		.section	".text","ax"
-> +#define __INITDATA	.section	".data","aw"
-> +#else
->  #define __INIT		.section	".init.text","ax"
-> -#define __FINIT		.previous
->  #define __INITDATA	.section	".init.data","aw"
-> +#endif
-> +#define __FINIT		.previous
+> > Summary: If ACPI is not enabled but APIC is,
+> > then there is trouble on Dell Optiplex GX240.
+> > If both are enabled or if both are disabled, then
+> > everything is fine. The attached patch removes
+> > Dell Optiplex GX240 from the ACPI blacklist.
+> > 
+> > ---
+> > 
+> > Hello,
+> > 
+> > I have a Dell Optiplex GX240 and when I boot Linux, ACPI
+> > gets set up by only acpi=ht. dmesg shows the following line:
+> > 
+> >    DELL GX240 detected: force use of acpi=ht
+> > 
+> > Everything seemed to be fine. However, I discovered that
+> > everything is not fine. The USB controller works so slowly
+> > that copying a few (uncached) 1 megabyte large photos from
+> > a USB-enabled digital camera takes many minutes instead of
+> > a couple of seconds.
+> > 
+> > I am using Linux 2.6.21.1 on a Debian 4.0 ("Etch") system.
+> > 
+> > I thought that this might be related to ACPI. So I tried
+> > to boot with _only_ "acpi=force" appended to the kernel
+> > command line. Voila, the USB controller started to work
+> > at full speed and copying photos from my digital camera
+> > took only seconds.
+> > 
+> > I tested the system with "acpi=force" and could not find
+> > anything which did not work. So, can we please remove
+> > Dell Optiplex GX240 from the blacklist in
+> > 
+> > ..../arch/i386/kernel/acpi/boot.c
+> > 
+> > ? The attached patch does just that: It removes Dell
+> > Optiplex GX240 from the ACPI blacklist.
+> > 
+> > I thought that this might be related to interrupts and
+> > APIC as well. (Note that this is APIC, not ACPI.) I tried
+> > booting with _only_ "noapic" and "nolapic" appended to the
+> > command line. Again, the USB controller started to work
+> > at full speed.
+> > 
+> > If removing Dell Optiplex GX240 from the ACPI blacklist
+> > is not wanted/possible, then is there a way to disable
+> > APIC and LAPIC (note that this is APIC not ACPI) by
+> > default on Dell GX240 machines? (I.e. Can one patch
+> > the kernel so that APIC and LAPIC isn't used on
+> > these machines? - I know that I can use the noapic
+> > and nolapic options on the kernel command line.)
+> > 
+> > Thank you for your attention.
+> > 
+> > - Tear
+> > 
+> > Note: Please include me in CC of your replies.
+> > 
+> > 
+> > --- linux-2.6.21.1.orig/arch/i386/kernel/acpi/boot.c	2007-05-01 17:10:30.000000000 +0300
+> > +++ linux-2.6.21.1/arch/i386/kernel/acpi/boot.c	2007-05-01 20:31:53.000000000 +0300
+> > @@ -971,14 +971,6 @@
+> >  	 },
+> >  	{
+> >  	 .callback = force_acpi_ht,
+> > -	 .ident = "DELL GX240",
+> > -	 .matches = {
+> > -		     DMI_MATCH(DMI_BOARD_VENDOR, "Dell Computer Corporation"),
+> > -		     DMI_MATCH(DMI_BOARD_NAME, "OptiPlex GX240"),
+> > -		     },
+> > -	 },
+> > -	{
+> > -	 .callback = force_acpi_ht,
+> >  	 .ident = "HP VISUALIZE NT Workstation",
+> >  	 .matches = {
+> >  		     DMI_MATCH(DMI_BOARD_VENDOR, "Hewlett-Packard"),
+> > 
 > 
-> breaks ARM, since the ARM startup code moves from the start of the image
-> to somewhere in the middle of the kernel image.  (That's trivially fixable.)
+> Thanks.  Let's cc the acpi list.
+> 
+> The origin of that blacklist entry appears to be lost in the mists of time.
+> git-blame got tripped up by an intervening Lindent run and my gittiness
+> is insufficient for tracking changes before that.
+> 
 
-Although I've worked around this, I still would like this fixed.
-Prarit's produced a patch (mail attached) which should fix it,
-can we get it merged please?
+Mr. Morton,
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+I have already sent a very similar e-mail to the linux-acpi
+mailing list. Please see the following for that:
 
---cWoXeonUoKmBZSoM
-Content-Type: message/rfc822
-Content-Disposition: inline
+http://marc.info/?l=linux-acpi&m=117856470816834&w=2
 
-Return-path: <linux-kernel-owner+rmk=2Blkml=40arm.linux.org.uk-S1758184AbXEIRZq@vger.kernel.org>
-Envelope-to: rmk+lkml@arm.linux.org.uk
-Delivery-date: Wed, 09 May 2007 18:25:59 +0100
-Received: from caramon.arm.linux.org.uk ([2002:d993:5cf9:1:a00:2bff:fe95:1d7b])
-	by flint.arm.linux.org.uk with esmtpa (Exim 4.62)
-	(envelope-from <linux-kernel-owner+rmk=2Blkml=40arm.linux.org.uk-S1758184AbXEIRZq@vger.kernel.org>)
-	id 1HlpvK-0003lH-IX
-	for rmk+lkml@arm.linux.org.uk; Wed, 09 May 2007 18:25:58 +0100
-Received: from vger.kernel.org ([209.132.176.167])
-	by caramon.arm.linux.org.uk with esmtp (Exim 4.62)
-	(envelope-from <linux-kernel-owner+rmk=2Blkml=40arm.linux.org.uk-S1758184AbXEIRZq@vger.kernel.org>)
-	id 1HlpvH-0000Yy-K4
-	for rmk+lkml@arm.linux.org.uk; Wed, 09 May 2007 18:25:56 +0100
-Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758184AbXEIRZq (ORCPT <rfc822;rmk+lkml@arm.linux.org.uk>);
-	Wed, 9 May 2007 13:25:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbXEIRZg
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 9 May 2007 13:25:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57201 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755978AbXEIRZf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 9 May 2007 13:25:35 -0400
-Received: from int-mx1.corp.redhat.com (int-mx1.corp.redhat.com [172.16.52.254])
-	by mx1.redhat.com (8.13.1/8.13.1) with ESMTP id l49HPYhO018011
-	for <linux-kernel@vger.kernel.org>; Wed, 9 May 2007 13:25:34 -0400
-Received: from mail.boston.redhat.com (mail.boston.redhat.com [172.16.76.12])
-	by int-mx1.corp.redhat.com (8.13.1/8.13.1) with ESMTP id l49HPXfJ000978
-	for <linux-kernel@vger.kernel.org>; Wed, 9 May 2007 13:25:33 -0400
-Received: from prarit.boston.redhat.com (prarit.boston.redhat.com [172.16.80.158])
-	by mail.boston.redhat.com (8.12.11.20060308/8.12.11) with ESMTP id l49HPWZ9017225;
-	Wed, 9 May 2007 13:25:32 -0400
-Date: Wed, 9 May 2007 13:25:32 -0400
-From: Prarit Bhargava <prarit@redhat.com>
-To: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-	rmk+lkml@arm.linux.org.uk, dzickus@redhat.com
-Cc: Prarit Bhargava <prarit@redhat.com>
-Message-Id: <20070509172532.16700.33405.sendpatchset@prarit.boston.redhat.com>
-Subject: [PATCH] Remove cpu hotplug defines for __INIT & __INITDATA
-Sender: linux-kernel-owner@vger.kernel.org
-Precedence: bulk
-X-Mailing-List: linux-kernel@vger.kernel.org
+I haven't received a reply and that is why sent this e-mail
+to the linux-kernel mailing list.
 
-Russell and Andrew,
+I would be very pleased to see the removal of Dell Optiplex
+GX240 from the ACPI blacklist.
 
-After examining what was checked in and the code base I discovered that most
-of 86c0baf123e474b6eb404798926ecf62b426bf3a wasn't necessary anymore....
+Is there a blacklist for APIC? (Note that this is APIC,
+not ACPI.)
 
-So here's a patch that reverts the last part of that changeset:
+Thank you.
+
+Tear
 
 
 
+       
+____________________________________________________________________________________Boardwalk for $500? In 2007? Ha! Play Monopoly Here and Now (it's updated for today's economy) at Yahoo! Games.
+http://get.games.yahoo.com/proddesc?gamekey=monopolyherenow  
 
-Revert part of 86c0baf123e474b6eb404798926ecf62b426bf3a.
-
-The kernel has moved forward to a state where the original change is not
-necessary.  After porting forward, this final version of the patch was
-applied and broke non-x86 architectures.
-
-Signed-off-by: Prarit Bhargava <prarit@redhat.com>
-
-diff --git a/include/linux/init.h b/include/linux/init.h
-index 8bc32bb..e007ae4 100644
---- a/include/linux/init.h
-+++ b/include/linux/init.h
-@@ -52,14 +52,9 @@
- #endif
- 
- /* For assembly routines */
--#ifdef CONFIG_HOTPLUG_CPU
--#define __INIT		.section	".text","ax"
--#define __INITDATA	.section	".data","aw"
--#else
- #define __INIT		.section	".init.text","ax"
--#define __INITDATA	.section	".init.data","aw"
--#endif
- #define __FINIT		.previous
-+#define __INITDATA	.section	".init.data","aw"
- 
- #ifndef __ASSEMBLY__
- /*
--
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
-
---cWoXeonUoKmBZSoM--
