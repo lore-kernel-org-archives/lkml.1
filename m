@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760999AbXEMVwb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760901AbXEMVyX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760999AbXEMVwb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 17:52:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757542AbXEMVwX
+	id S1760901AbXEMVyX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 17:54:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756186AbXEMVyR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 17:52:23 -0400
-Received: from mail.screens.ru ([213.234.233.54]:41660 "EHLO mail.screens.ru"
+	Sun, 13 May 2007 17:54:17 -0400
+Received: from mail.screens.ru ([213.234.233.54]:55068 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755904AbXEMVwW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 17:52:22 -0400
-Date: Mon, 14 May 2007 01:52:26 +0400
+	id S1756117AbXEMVyQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 17:54:16 -0400
+Date: Mon, 14 May 2007 01:54:25 +0400
 From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
        Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
        Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
-Subject: [PATCH] for 2.6.22, make freezeable workqueues singlethread
-Message-ID: <20070513215226.GB3198@tv-sign.ru>
-References: <200705132132.08546.rjw@sisk.pl>
+Subject: Re: 2.6.22-rc1: Broken suspend on SMP with tifm
+Message-ID: <20070513215425.GA3240@tv-sign.ru>
+References: <200705132132.08546.rjw@sisk.pl> <200705132322.10032.rjw@sisk.pl> <20070513213424.GA3198@tv-sign.ru> <200705132350.32582.rjw@sisk.pl>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705132132.08546.rjw@sisk.pl>
+In-Reply-To: <200705132350.32582.rjw@sisk.pl>
 User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is a known fact that freezeable multithreaded workqueues doesn't like
-CPU_DEAD. We keep them only for the incoming CPU-hotplug rework.
+On 05/13, Rafael J. Wysocki wrote:
+>
+> On Sunday, 13 May 2007 23:34, Oleg Nesterov wrote:
+> > On 05/13, Rafael J. Wysocki wrote:
+> > >
+> > > @@ -819,20 +843,31 @@ static int __devinit workqueue_cpu_callb
+> > >  
+> > > +
+> > > +		case CPU_DEAD_FROZEN:
+> > > +			if (wq->freezeable) {
+> > > +				take_over_work(wq, cpu);
+> > > +				thaw_process(cwq->thread);
+> > 
+> > Suppose that PF_NOFREEZE task T does flush_workqueue(), and CPU 1 has pending
+> > works. T does flush_cpu_workqueue(0), CPU_DEAD_FROZEN moves works from CPU 1
+> > to CPU 0, T does flush_cpu_workqueue(1) and finds nothing.
+> 
+> I don't think this is possible, because we've acquired workqueue_mutex in
+> _cpu_down().
 
-Sadly, we can't just kill create_freezeable_workqueue() right now, make
-them singlethread.
+Yes, we did... but flush_workqueue() doesn't take it?
 
-Signed-off-by: Oleg Nesterov <oleg@tv-sign.ru>
-
---- OLD/include/linux/workqueue.h~	2007-05-01 21:52:47.000000000 +0400
-+++ OLD/include/linux/workqueue.h	2007-05-14 00:41:58.000000000 +0400
-@@ -122,7 +122,7 @@ extern struct workqueue_struct *__create
- 						    int singlethread,
- 						    int freezeable);
- #define create_workqueue(name) __create_workqueue((name), 0, 0)
--#define create_freezeable_workqueue(name) __create_workqueue((name), 0, 1)
-+#define create_freezeable_workqueue(name) __create_workqueue((name), 1, 1)
- #define create_singlethread_workqueue(name) __create_workqueue((name), 1, 0)
- 
- extern void destroy_workqueue(struct workqueue_struct *wq);
+Oleg.
 
