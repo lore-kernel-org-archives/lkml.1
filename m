@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbXEMX0W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761249AbXEMXaW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761449AbXEMX0W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 19:26:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761237AbXEMX0G
+	id S1761249AbXEMXaW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 19:30:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbXEMXaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 19:26:06 -0400
-Received: from mx.laposte.net ([81.255.54.16]:49859 "EHLO mx.laposte.net"
+	Sun, 13 May 2007 19:30:11 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:36829 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761122AbXEMX0F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 19:26:05 -0400
-Subject: Re: [Bug 8473] New: Oops: 0010 [1] SMP
-From: Nicolas Mailhot <nicolas.mailhot@laposte.net>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070513154718.bb338ceb.akpm@linux-foundation.org>
-References: <200705132102.l4DL2onF003014@fire-2.osdl.org>
-	 <20070513154718.bb338ceb.akpm@linux-foundation.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-aBgjzX0C4JXxyHdccFZK"
-Organization: Adresse perso
-Date: Mon, 14 May 2007 01:25:42 +0200
-Message-Id: <1179098742.7322.5.camel@rousalka.dyndns.org>
+	id S1758131AbXEMXaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 19:30:09 -0400
+Date: Sun, 13 May 2007 19:29:53 -0400
+From: Dave Jones <davej@redhat.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Riley@Williams.Name
+Subject: Re: MAINTAINERS update.
+Message-ID: <20070513232953.GJ27604@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Linux Kernel <linux-kernel@vger.kernel.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Riley@Williams.Name
+References: <20070513230746.GA3607@redhat.com> <46479AFC.7020404@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 (2.10.1-4.fc7.nim.2) 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46479AFC.7020404@zytor.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, May 13, 2007 at 04:10:52PM -0700, H. Peter Anvin wrote:
+ > Dave Jones wrote:
+ > > I've not really 'maintained' this code for years, and others
+ > > are doing a much more thorough job these days.
+ > > Removing myself might stem some of the crazier emails I get.
+ > > 
+ > > Signed-off-by: Dave Jones <davej@redhat.com>
+ > > 
+ > > diff --git a/MAINTAINERS b/MAINTAINERS
+ > > index 68a56ad..21f3fff 100644
+ > > --- a/MAINTAINERS
+ > > +++ b/MAINTAINERS
+ > > @@ -1712,8 +1712,6 @@ L:	Linux-Kernel@vger.kernel.org
+ > >  S:	Maintained
+ > >  
+ > >  i386 SETUP CODE / CPU ERRATA WORKAROUNDS
+ > > -P:	Dave Jones
+ > > -M:	davej@codemonkey.org.uk
+ > >  P:	H. Peter Anvin
+ > >  M:	hpa@zytor.com
+ > >  S:	Maintained
+ > 
+ > To the extent needed...
+ > 
+ > Acked-by: H. Peter Anvin <hpa@zytor.com>
 
---=-aBgjzX0C4JXxyHdccFZK
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+That previous entry of MAINTAINERS raised an eyebrow too.
+You, Eric, Andi, and Zach seem to have done more work on 'i386 BOOT CODE'
+in the last few months than I recall Riley doing, well.. since ages.
+Not to belittle whatever work he did, but perhaps his entry belongs
+more in CREDITS than MAINTAINERS.  It felt a little cheeky to be
+messing with someone elses entry though.  Riley?
 
-Le dimanche 13 mai 2007 =C3=A0 15:47 -0700, Andrew Morton a =C3=A9crit :
-> On Sun, 13 May 2007 14:02:50 -0700 bugme-daemon@bugzilla.kernel.org wrote=
-:
->=20
-> > http://bugzilla.kernel.org/show_bug.cgi?id=3D8473
->=20
-> Please follow up via emailed reply-to-all.
->=20
-> In fact, please report -mm bugs via email.  bugzilla is more suited to
-> longer-term problems, and -mm bugs are super-short-term, we hope.
+Perhaps those two entries should just be merged together to become
+"i386 Architecture" too ?
 
-Can't attach trace screenshots or long log dumps to mails :(
+	Dave
 
-> May 13 22:59:43 rousalka kernel: Unable to handle kernel NULL pointer
-> dereference at 0000000000000000 RIP:=20
-> May 13 22:59:43 rousalka kernel: [<0000000000000000>]
-
-> Anything you can do to make that wordwrapping go away for ever would be
-> great, thanks.
-
-You have the full kernel log with no wrapping there
-http://bugzilla.kernel.org/attachment.cgi?id=3D11492
-
-> I don't know what would have caused this.  do_ioctl() did a jump-to-zero,
-> but it has code in there to explicitly test for null pointers.
->=20
-> Perhaps some weird race, although I find it hard to imagine how we could
-> have such a race in any ioctl which bash is likely to be calling.
->=20
-> Is it repeatable at all?
-
-It happened once so far. The load was moderate (and certainly not
-comparable to what I did for Mel yesterday)
-
---=20
-Nicolas Mailhot
-
---=-aBgjzX0C4JXxyHdccFZK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: Ceci est une partie de message
-	=?ISO-8859-1?Q?num=E9riquement?= =?ISO-8859-1?Q?_sign=E9e?=
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iEYEABECAAYFAkZHnnAACgkQI2bVKDsp8g0Y0QCgqeqpB/D72jPA0jlhSQW4KtUN
-IX4An05FEJQAOdK4lZW9LWnZcQPqzg9u
-=7fUw
------END PGP SIGNATURE-----
-
---=-aBgjzX0C4JXxyHdccFZK--
+-- 
+http://www.codemonkey.org.uk
