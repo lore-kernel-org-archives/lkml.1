@@ -1,80 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbXEMDNr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757569AbXEMDVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757376AbXEMDNr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 23:13:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756720AbXEMDNk
+	id S1757569AbXEMDVS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 23:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756912AbXEMDVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 23:13:40 -0400
-Received: from relais.videotron.ca ([24.201.245.36]:52051 "EHLO
-	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756661AbXEMDNk (ORCPT
+	Sat, 12 May 2007 23:21:09 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:55274 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755037AbXEMDVJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 23:13:40 -0400
-Date: Sat, 12 May 2007 23:13:30 -0400 (EDT)
-From: Nicolas Pitre <nico@cam.org>
-Subject: [PATCH] fix PXA27x MMC workaround for bad CRC with 136 bit response
-In-reply-to: <4645E76B.2060704@drzeus.cx>
-X-X-Sender: nico@xanadu.home
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Message-id: <alpine.LFD.0.99.0705122307000.24220@xanadu.home>
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=us-ascii
-Content-transfer-encoding: 7BIT
-References: <46375B18.4080802@drzeus.cx>
- <20070509185636.GB26981@flint.arm.linux.org.uk> <46421BB5.7040504@drzeus.cx>
- <20070509221253.GC26981@flint.arm.linux.org.uk> <4642B122.5070609@drzeus.cx>
- <46432502.4050901@drzeus.cx> <alpine.LFD.0.99.0705101037220.24220@xanadu.home>
- <alpine.LFD.0.99.0705121122440.24220@xanadu.home> <4645E76B.2060704@drzeus.cx>
+	Sat, 12 May 2007 23:21:09 -0400
+Date: Sat, 12 May 2007 20:20:35 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.22-rc1
+Message-ID: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-... and make it depend on the response flag instead of the command type.
 
-Signed-off-by: Nicolas Pitre <npitre@mvista.com>
----
+Ok, the merge window has closed, and 2.6.22-rc1 is out there.
 
-On Sat, 12 May 2007, Pierre Ossman wrote:
-> Nicolas Pitre wrote:
-> > Please apply the following patch.  It is compile tested only as I don't 
-> > have PXA27x hardware with MMC at the moment, but it just cannot be worse 
-> > than the current code even when it was compiling.
-> >
-> >   
-> 
-> I would think that it would be better to look at just MMC_RSP_136 and
-> MMC_RSP_CRC in case we get future variations.
+The diffstat and shortlogs are way too big to fit under the kernel mailing 
+list limits, and the changes are all over the place. Almost seven thousand 
+files changed, and that's not double-counting the files that got moved 
+around.
 
-Makes sense.
+Architecture updates, drivers, filesystems, networking, security, build 
+scripts, reorganizations, cleanups.. You name it, it's there.
 
-diff --git a/drivers/mmc/host/pxamci.c b/drivers/mmc/host/pxamci.c
-index d97d386..f8985c5 100644
---- a/drivers/mmc/host/pxamci.c
-+++ b/drivers/mmc/host/pxamci.c
-@@ -232,20 +232,14 @@ static int pxamci_cmd_done(struct pxamci_host *host, unsigned int stat)
- 		/*
- 		 * workaround for erratum #42:
- 		 * Intel PXA27x Family Processor Specification Update Rev 001
-+		 * A bogus CRC error can appear if the msb of a 136 bit
-+		 * response is a one.
- 		 */
--		if (cmd->opcode == MMC_ALL_SEND_CID ||
--		    cmd->opcode == MMC_SEND_CSD ||
--		    cmd->opcode == MMC_SEND_CID) {
--			/* a bogus CRC error can appear if the msb of
--			   the 15 byte response is a one */
--			if ((cmd->resp[0] & 0x80000000) == 0)
--				cmd->error = MMC_ERR_BADCRC;
--		} else {
--			pr_debug("ignoring CRC from command %d - *risky*\n",cmd->opcode);
--		}
--#else
--		cmd->error = MMC_ERR_BADCRC;
-+		if (cmd->flags & MMC_RSP_136 && cmd->resp[0] & 0x80000000) {
-+			pr_debug("ignoring CRC from command %d - *risky*\n", cmd->opcode);
-+		} else
- #endif
-+		cmd->error = MMC_ERR_BADCRC;
- 	}
- 
- 	pxamci_disable_irq(host, END_CMD_RES);
+You want a new firewire stack? We've got it. New wireless networking 
+infrastructure? Check. New infiniband drivers? Digital video drivers? A 
+totally new CPU architecture (blackfin)? Check, check, check.
+
+That said, I think (and certainly hope) that this will not be nearly as 
+painful as the big fundamental timer changes for 2.6.21, and while there 
+are some pretty core changes there (like the new SLUB allocator, which 
+hopefully will end up replacing both SLAB and SLOB), it feels pretty 
+solid, and not as scary as ripping the carpet from under the timer 
+infrastructure.
+
+So give it a good testing. We'll see how the regression tracking ends up 
+working, but in order to actually track that, we want people actively 
+testing -rc1 and making good reports!
+
+		Linus
