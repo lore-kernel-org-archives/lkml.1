@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934253AbXEMP7R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934308AbXEMQAi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934253AbXEMP7R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 11:59:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758352AbXEMP7J
+	id S934308AbXEMQAi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 12:00:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757745AbXEMQAb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 11:59:09 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:36984 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756374AbXEMP7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 11:59:08 -0400
-Date: Sun, 13 May 2007 17:58:48 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: why does x86 "make defconfig" build a single, lonely module?
-In-Reply-To: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
-Message-ID: <Pine.LNX.4.61.0705131757320.9570@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
+	Sun, 13 May 2007 12:00:31 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:33871 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755804AbXEMQA3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 12:00:29 -0400
+Message-ID: <464735F8.7040305@drzeus.cx>
+Date: Sun, 13 May 2007 17:59:52 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+To: Nicolas Pitre <nico@cam.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] fix PXA27x MMC workaround for bad CRC with 136 bit response
+References: <46375B18.4080802@drzeus.cx> <20070509185636.GB26981@flint.arm.linux.org.uk> <46421BB5.7040504@drzeus.cx> <20070509221253.GC26981@flint.arm.linux.org.uk> <4642B122.5070609@drzeus.cx> <46432502.4050901@drzeus.cx> <alpine.LFD.0.99.0705101037220.24220@xanadu.home> <alpine.LFD.0.99.0705121122440.24220@xanadu.home> <4645E76B.2060704@drzeus.cx> <alpine.LFD.0.99.0705122307000.24220@xanadu.home>
+In-Reply-To: <alpine.LFD.0.99.0705122307000.24220@xanadu.home>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On May 13 2007 11:22, Robert P. J. Day wrote:
+Nicolas Pitre wrote:
+> ... and make it depend on the response flag instead of the command type.
 >
->  not a big deal, but is there a reason that a "make defconfig" on my
->x86 system ends up selecting and building a single module?
->
->  Building modules, stage 2.
->  MODPOST 1 modules
->  CC      drivers/scsi/scsi_wait_scan.mod.o
->  LD [M]  drivers/scsi/scsi_wait_scan.ko
->
->is there something special about that module?  just curious.
+> Signed-off-by: Nicolas Pitre <npitre@mvista.com>
+> ---
+>   
 
-$ make defconfig;
-$ grep =m .config;
-CONFIG_SCSI_WAIT_SCAN=m
-$ grep -A2 SCSI_WAIT_SCAN drivers/scsi/Kconfig;
-config SCSI_WAIT_SCAN
-        tristate
-        default m
-$ grep SCSI_WAIT_SCAN arch/i386/Kconfig || echo "no result";
-no result
+Fantastic. Applied.
 
+Rgds
 
-
-	Jan
 -- 
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
