@@ -1,51 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934646AbXEMQaj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934587AbXEMQc3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934646AbXEMQaj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 12:30:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759154AbXEMQa2
+	id S934587AbXEMQc3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 12:32:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758519AbXEMQcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 12:30:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:55130 "EHLO mx1.redhat.com"
+	Sun, 13 May 2007 12:32:22 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:55707 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758939AbXEMQa0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 12:30:26 -0400
-Date: Sun, 13 May 2007 12:30:23 -0400
+	id S1754709AbXEMQcV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 12:32:21 -0400
+Date: Sun, 13 May 2007 12:32:20 -0400
 From: Dave Jones <davej@redhat.com>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-Cc: "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: why does x86 "make defconfig" build a single, lonely module?
-Message-ID: <20070513163023.GE27604@redhat.com>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: undeprecate raw driver.
+Message-ID: <20070513163220.GA31902@redhat.com>
 Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	James Bottomley <James.Bottomley@SteelEye.com>,
-	"Robert P. J. Day" <rpjday@mindspring.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-scsi@vger.kernel.org
-References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain> <20070513160608.GA29024@redhat.com> <1179072655.3723.42.camel@mulgrave.il.steeleye.com> <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
+	Linux Kernel <linux-kernel@vger.kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
 User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 13, 2007 at 11:18:35AM -0500, James Bottomley wrote:
- > On Sun, 2007-05-13 at 11:10 -0500, James Bottomley wrote:
- > > > -	depends on SCSI
- > > > +	depends on SCSI_SCAN_ASYNC
- > > 
- > > No.  SCSI_SCAN_ASYNC is a bool ... if you depend on it, you'll force the
- > > wait scan to be built in, which isn't the idea at all.
- > 
- > Plus SCSI_SCAN_ASYNC only sets the *default* for async scanning.  You
- > can alter this at boot time, so you could need the wait scan module even
- > with it set to N.
+Despite repeated attempts over the last two and half years, this driver
+seems somewhat persistant.  Remove its deprecated status as it has
+existing users who may not be in a position to migrate their apps
+to O_DIRECT.
 
-Ah, good point.
+Signed-off-by: Dave Jones <davej@redhat.com>
 
-	Dave
+diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+index 498ff31..5108619 100644
+--- a/Documentation/feature-removal-schedule.txt
++++ b/Documentation/feature-removal-schedule.txt
+@@ -41,14 +41,6 @@ Who:	Pavel Machek <pavel@suse.cz>
+ 
+ ---------------------------
+ 
+-What:	RAW driver (CONFIG_RAW_DRIVER)
+-When:	December 2005
+-Why:	declared obsolete since kernel 2.6.3
+-	O_DIRECT can be used instead
+-Who:	Adrian Bunk <bunk@stusta.de>
+-
+----------------------------
+-
+ What:	raw1394: requests of type RAW1394_REQ_ISO_SEND, RAW1394_REQ_ISO_LISTEN
+ When:	June 2007
+ Why:	Deprecated in favour of the more efficient and robust rawiso interface.
+diff --git a/drivers/char/Kconfig b/drivers/char/Kconfig
+index abcafac..1e4d688 100644
+--- a/drivers/char/Kconfig
++++ b/drivers/char/Kconfig
+@@ -993,15 +993,14 @@ config GPIO_VR41XX
+ 	depends on CPU_VR41XX
+ 
+ config RAW_DRIVER
+-	tristate "RAW driver (/dev/raw/rawN) (OBSOLETE)"
++	tristate "RAW driver (/dev/raw/rawN)"
+ 	depends on BLOCK
+ 	help
+-	  The raw driver permits block devices to be bound to /dev/raw/rawN. 
+-	  Once bound, I/O against /dev/raw/rawN uses efficient zero-copy I/O. 
++	  The raw driver permits block devices to be bound to /dev/raw/rawN.
++	  Once bound, I/O against /dev/raw/rawN uses efficient zero-copy I/O.
+ 	  See the raw(8) manpage for more details.
+ 
+-          The raw driver is deprecated and will be removed soon.
+-          Applications should simply open the device (eg /dev/hda1)
++          Applications should preferably open the device (eg /dev/hda1)
+           with the O_DIRECT flag.
+ 
+ config MAX_RAW_DEVS
 
 -- 
 http://www.codemonkey.org.uk
