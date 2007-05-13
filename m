@@ -1,102 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbXEMDcj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbXEMDtS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757507AbXEMDcj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 12 May 2007 23:32:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756392AbXEMDca
+	id S1757376AbXEMDtS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 12 May 2007 23:49:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756009AbXEMDtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 12 May 2007 23:32:30 -0400
-Received: from mx2.suse.de ([195.135.220.15]:56205 "EHLO mx2.suse.de"
+	Sat, 12 May 2007 23:49:08 -0400
+Received: from ozlabs.org ([203.10.76.45]:55596 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755998AbXEMDc3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 12 May 2007 23:32:29 -0400
-Date: Sun, 13 May 2007 05:32:10 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       linux-arch@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Subject: Re: [rfc] optimise unlock_page
-Message-ID: <20070513033210.GA3667@wotan.suse.de>
-References: <20070508113709.GA19294@wotan.suse.de> <20070508114003.GB19294@wotan.suse.de> <1178659827.14928.85.camel@localhost.localdomain> <20070508224124.GD20174@wotan.suse.de> <20070508225012.GF20174@wotan.suse.de> <Pine.LNX.4.64.0705091950080.2909@blonde.wat.veritas.com> <20070510033736.GA19196@wotan.suse.de> <Pine.LNX.4.64.0705101935590.18496@blonde.wat.veritas.com> <20070511085424.GA15352@wotan.suse.de> <Pine.LNX.4.64.0705111357120.3350@blonde.wat.veritas.com>
+	id S1755998AbXEMDtG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 12 May 2007 23:49:06 -0400
+Subject: Re: [PATCH 2/5] lguest guest feedback tidyups
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <20070511065613.GB25182@infradead.org>
+References: <1178846246.23513.21.camel@localhost.localdomain>
+	 <1178846354.23513.23.camel@localhost.localdomain>
+	 <1178846490.23513.27.camel@localhost.localdomain>
+	 <20070511065613.GB25182@infradead.org>
+Content-Type: text/plain
+Date: Sun, 13 May 2007 13:48:47 +1000
+Message-Id: <1179028128.23513.110.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0705111357120.3350@blonde.wat.veritas.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 02:15:03PM +0100, Hugh Dickins wrote:
-> On Fri, 11 May 2007, Nick Piggin wrote:
-> > 
-> > Don't worry, I'm only just beginning ;) Can we then do something crazy
-> > like this?  (working on x86-64 only, so far. It seems to eliminate
-> > lat_pagefault and lat_proc regressions here).
+On Fri, 2007-05-11 at 07:56 +0100, Christoph Hellwig wrote:
+> On Fri, May 11, 2007 at 11:21:30AM +1000, Rusty Russell wrote:
+> > 1) send-dma and bind-dma hypercall wrappers for drivers to use,
+> > 2) formalization of the convention that devices can use the irq
+> >    corresponding to their index on the lguest_bus.
+> > 3) ___force to shut up sparse: guests *can* use ioremap as virtual mem.
 > 
-> I think Mr __NickPiggin_Lock is squirming ever more desperately.
+> No, they can't.
 
-Really? I thought it was pretty cool to be able to shave several
-hundreds of cycles off our page lock :)
+OK, here's the updated patch (lguest_map/lguest_unmap).
+
+==
+Jeff Garzik argued forcefully that __pa() should not appear in
+drivers, and that struct netdevice's irq field should not be used.
+Christoph Hellwig suggested that I run sparse, and provide an
+lguest-specific wrapper for mapping/unmapping virtual device memory.
+
+Results:
+1) send-dma and bind-dma hypercall wrappers for drivers to use,
+2) formalization of the convention that devices can use the irq
+   corresponding to their index on the lguest_bus.
+3) Helper to map and unmap virtual device memory (not classic __iomem).
+4) lguest.c should include "lguest_bus.h" for lguest_devices declaration.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ drivers/lguest/lguest.c     |   33 +++++++++++++++++++++++++++++++++
+ drivers/lguest/lguest_bus.c |    2 +-
+ include/linux/lguest_bus.h  |   17 ++++++++++++++++-
+ 3 files changed, 50 insertions(+), 2 deletions(-)
+
+===================================================================
+--- a/drivers/lguest/lguest.c
++++ b/drivers/lguest/lguest.c
+@@ -27,6 +27,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/lguest.h>
+ #include <linux/lguest_launcher.h>
++#include <linux/lguest_bus.h>
+ #include <asm/paravirt.h>
+ #include <asm/param.h>
+ #include <asm/page.h>
+@@ -35,6 +36,7 @@
+ #include <asm/setup.h>
+ #include <asm/e820.h>
+ #include <asm/mce.h>
++#include <asm/io.h>
+ 
+ /* Declarations for definitions in lguest_guest.S */
+ extern char lguest_noirq_start[], lguest_noirq_end[];
+@@ -99,6 +101,37 @@ void async_hcall(unsigned long call,
+ 			next_call = 0;
+ 	}
+ 	local_irq_restore(flags);
++}
++
++void lguest_send_dma(unsigned long key, struct lguest_dma *dma)
++{
++	dma->used_len = 0;
++	hcall(LHCALL_SEND_DMA, key, __pa(dma), 0);
++}
++
++int lguest_bind_dma(unsigned long key, struct lguest_dma *dmas,
++		    unsigned int num, u8 irq)
++{
++	if (!hcall(LHCALL_BIND_DMA, key, __pa(dmas), (num << 8) | irq))
++		return -ENOMEM;
++	return 0;
++}
++
++void lguest_unbind_dma(unsigned long key, struct lguest_dma *dmas)
++{
++	hcall(LHCALL_BIND_DMA, key, __pa(dmas), 0);
++}
++
++/* For guests, device memory can be used as normal memory, so we cast away the
++ * __iomem to quieten sparse. */
++void *lguest_map(unsigned long phys_addr, unsigned long pages)
++{
++	return (__force void *)ioremap(phys_addr, PAGE_SIZE*pages);
++}
++
++void lguest_unmap(void *addr)
++{
++	iounmap((__force void __iomem *)addr);
+ }
+ 
+ static unsigned long save_fl(void)
+===================================================================
+--- a/drivers/lguest/lguest_bus.c
++++ b/drivers/lguest/lguest_bus.c
+@@ -136,7 +136,7 @@ static int __init lguest_bus_init(void)
+ 		return 0;
+ 
+ 	/* Devices are in page above top of "normal" mem. */
+-	lguest_devices = ioremap(max_pfn << PAGE_SHIFT, PAGE_SIZE);
++	lguest_devices = lguest_map(max_pfn<<PAGE_SHIFT, 1);
+ 
+ 	if (bus_register(&lguest_bus.bus) != 0
+ 	    || device_register(&lguest_bus.dev) != 0)
+===================================================================
+--- a/include/linux/lguest_bus.h
++++ b/include/linux/lguest_bus.h
+@@ -7,7 +7,6 @@
+ 
+ struct lguest_device {
+ 	/* Unique busid, and index into lguest_page->devices[] */
+-	/* By convention, each device can use irq index+1 if it wants to. */
+ 	unsigned int index;
+ 
+ 	struct device dev;
+@@ -15,6 +14,22 @@ struct lguest_device {
+ 	/* Driver can hang data off here. */
+ 	void *private;
+ };
++
++/* By convention, each device can use irq index+1 if it wants to. */
++static inline int lgdev_irq(const struct lguest_device *dev)
++{
++	return dev->index + 1;
++}
++
++/* dma args must not be vmalloced! */
++void lguest_send_dma(unsigned long key, struct lguest_dma *dma);
++int lguest_bind_dma(unsigned long key, struct lguest_dma *dmas,
++		    unsigned int num, u8 irq);
++void lguest_unbind_dma(unsigned long key, struct lguest_dma *dmas);
++
++/* Map the virtual device space */
++void *lguest_map(unsigned long phys_addr, unsigned long pages);
++void lguest_unmap(void *);
+ 
+ struct lguest_driver {
+ 	const char *name;
 
 
-> So, in essence, you'd like to expand PG_locked from 1 to 8 bits,
-> despite the fact that page flags are known to be in short supply?
-> Ah, no, you're keeping it near the static mmzone FLAGS_RESERVED.
-
-Yep, no flags bloating at all.
-
-
-> Hmm, well, I think that's fairly horrid, and would it even be
-> guaranteed to work on all architectures?  Playing with one char
-> of an unsigned long in one way, while playing with the whole of
-> the unsigned long in another way (bitops) sounds very dodgy to me.
-
-Of course not, but they can just use a regular atomic word sized
-bitop. The problem with i386 is that its atomic ops also imply
-memory barriers that you obviously don't need on unlock. So I think
-getting rid of them is pretty good. A grep of mm/ and fs/ for
-lock_page tells me we want this to be as fast as possible even
-if it isn't being used in the nopage fastpath.
-
-
-> I think I'd rather just accept that your changes have slowed some
-> microbenchmarks down: it is not always possible to fix a serious
-> bug without slowing something down.  That's probably what you're
-> trying to push me into saying by this patch ;)
-
-Well I was resigned to that few % regression in the page fault path
-until the G5 numbers showed that we needed to improve things. But
-now it looks like (at least on my 2*HT P4 Xeon) that we don't have to
-have any regression there.
-
-
-> But again I wonder just what the gain has been, once your double
-> unmap_mapping_range is factored in.  When I suggested before that
-> perhaps the double (well, treble including the one in truncate.c)
-> unmap_mapping_range might solve the problem you set out to solve
-> (I've lost sight of that!) without pagelock when faulting, you said:
-> 
-> > Well aside from being terribly ugly, it means we can still drop
-> > the dirty bit where we'd otherwise rather not, so I don't think
-> > we can do that.
-> 
-> but that didn't give me enough information to agree or disagree.
-
-Oh, well invalidate wants to be able to skip dirty pages or have the
-filesystem do something special with them first. Once you have taken
-the page out of the pagecache but still mapped shared, then blowing
-it away doesn't actually solve the data loss problem... only makes
-the window of VM inconsistency smaller.
-
-
-> > What architecture and workloads are you testing with, btw?
-> 
-> i386 (2*HT P4 Xeons), x86_64 (2*HT P4 Xeons), PowerPC (G5 Quad).
-> 
-> Workloads mostly lmbench and my usual pair of make -j20 kernel builds,
-> one to tmpfs and one to ext2 looped on tmpfs, restricted to 512M RAM
-> plus swap.  Which is ever so old but still finds enough to keep me busy.
-
-Thanks,
-Nick
