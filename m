@@ -1,48 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761709AbXENBmd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762161AbXENBmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761709AbXENBmd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 21:42:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758531AbXENBmX
+	id S1762161AbXENBmp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 21:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760686AbXENBm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 21:42:23 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33035 "EHLO mx2.suse.de"
+	Sun, 13 May 2007 21:42:26 -0400
+Received: from ns2.suse.de ([195.135.220.15]:33042 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755746AbXENBmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 21:42:23 -0400
-Date: Sun, 13 May 2007 02:27:01 -0700
+	id S1759687AbXENBmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 21:42:24 -0400
+Date: Sun, 13 May 2007 02:20:52 -0700
 From: Greg KH <gregkh@suse.de>
-To: Mark Lord <lkml@rtr.ca>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
-       marcel@holtmann.org
-Subject: Re: [BUG] usb/core/hub.c loops forever on resume from ram due to
-	bluetooth
-Message-ID: <20070513092701.GD11249@suse.de>
-References: <4637CD25.5070104@rtr.ca> <464080C1.6010105@rtr.ca>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Jiri Kosina <jikos@jikos.cz>, Marcel Holtmann <marcel@holtmann.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, maxk@qualcomm.com,
+       bluez-devel@lists.sourceforge.net, Cedric Le Goater <clg@fr.ibm.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org
+Subject: Re: 2.6.21-rc7: BUG: sleeping function called from invalid context
+	at net/core/sock.c:1523
+Message-ID: <20070513092052.GA11249@suse.de>
+References: <462D1B09.9050005@goop.org> <Pine.LNX.4.64.0704232257090.20657@twin.jikos.cz> <Pine.LNX.4.64.0704261625410.20657@twin.jikos.cz> <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <464080C1.6010105@rtr.ca>
+In-Reply-To: <a781481a0705110629n7c7130c1x3a89fa958b271f20@mail.gmail.com>
 User-Agent: Mutt/1.5.15 (2007-04-06)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 08, 2007 at 09:53:05AM -0400, Mark Lord wrote:
->  Greg ?
+On Fri, May 11, 2007 at 06:59:31PM +0530, Satyam Sharma wrote:
+>  [1] This is the first problem point. However, I didn't find any reason
+>  why this particular driver's .disconnect() couldn't sleep. In fact, a
+>  comment in include/linux/usb.h:811 says:
 > 
->  The oddball thing here is that on a UP machine with a UP kernel,
->  this (below) was never an issue.
+>  "The probe() and disconnect() methods are called in a context where
+>  they can sleep, but they should avoid abusing the privilege. Most
+>  work to connect to a device should be done when the device is opened,
+>  and undone at the last close. The disconnect code needs to address
+>  concurrency issues with respect to open() and close() methods, as
+>  well as forcing all pending I/O requests to complete (by unlinking
+>  them as necessary, and blocking until the unlinks complete)."
 > 
->  After moving the drive to a dual-core machine and rebuilding
->  the kernel with SMP=y, the problem becomes a killer here.
->  The two machines are nearly identical, apart from the CPUs.
-> 
->  The failing machine is a Dell Inspiron 9400,
->  and mine isn't the only unit that has this issue.
+>  I'm assuming the comment is not obsolete, of course, but although the
+>  first sentence says .disconnect() shouldn't abuse the privilege to
+>  sleep, the last sentence makes it quite evident that we are _allowed_
+>  to do so anyway, and that is how things are (with the hci_usb driver,
+>  at least, I didn't check the .remove() or .disconnect() functions of other
+>  USB drivers, however).
 
-Ok, I'll take a patch to keep the loop from going forever, but the main
-issue here is that there is probably a hardware failure somewhere.
-
-Care to resend the patch with proper formatting?
+Yes, this is true, you are running in thread context for .disconnect of
+usb drivers, so you can sleep if you need to, but you will block all
+other device's disconnect and probe functions while you do.  So, it's
+good to try to not abuse this if possible.
 
 thanks,
 
