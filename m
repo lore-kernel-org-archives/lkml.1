@@ -1,115 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760219AbXEMUIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760601AbXEMUJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760219AbXEMUIw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 16:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbXEMUIp
+	id S1760601AbXEMUJO (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 16:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757349AbXEMUI6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 16:08:45 -0400
-Received: from mail.screens.ru ([213.234.233.54]:59854 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756071AbXEMUIo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 16:08:44 -0400
-Date: Mon, 14 May 2007 00:08:45 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
-Subject: Re: 2.6.22-rc1: Broken suspend on SMP with tifm
-Message-ID: <20070513200845.GA3078@tv-sign.ru>
-References: <200705132132.08546.rjw@sisk.pl>
-Mime-Version: 1.0
+	Sun, 13 May 2007 16:08:58 -0400
+Received: from noname.neutralserver.com ([70.84.186.210]:58212 "EHLO
+	noname.neutralserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757969AbXEMUI5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 16:08:57 -0400
+Date: Sun, 13 May 2007 23:08:41 +0300
+From: Dan Aloni <da-x@monatomic.org>
+To: Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] make sysctl/kernel/core_pattern and fs/exec.c agree on maximum core filename size
+Message-ID: <20070513200841.GA31736@localdomain>
+References: <20070513173122.GA31737@localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200705132132.08546.rjw@sisk.pl>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20070513173122.GA31737@localdomain>
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - noname.neutralserver.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
+X-AntiAbuse: Sender Address Domain - monatomic.org
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/13, Rafael J. Wysocki wrote:
-> 
-> The suspend/hibernation is broken on SMP due to:
-> 
-> commit 3540af8ffddcdbc7573451ac0b5cd57a2eaf8af5
-> tifm: replace per-adapter kthread with freezeable workqueue
-> 
-> Well, it looks like freezable worqueues still deadlock with CPU hotplug
-> when worker threads are frozen.
+Make sysctl/kernel/core_pattern and fs/exec.c agree on maximum 
+core filename size and change it to 128, so that extensive patterns 
+such as '/local/cores/%e-%h-%s-%t-%p.core' won't result in 
+truncated filename generation.
 
-Ugh. I thought we deprecated create_freezeable_workqueue(), exactly
-because suspend was changed to call _cpu_down() after freeze().
+Signed-off-by: Dan Aloni <da-x@monatomic.org>
 
-It is not that "looks like freezable worqueues still deadlock", it
-is "of course, freezable worqueues deadlocks" on CPU_DEAD.
+diff --git a/fs/exec.c b/fs/exec.c
+index 70fa365..0b68588 100644
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -60,7 +60,7 @@
+ #endif
+ 
+ int core_uses_pid;
+-char core_pattern[128] = "core";
++char core_pattern[CORENAME_MAX_SIZE] = "core";
+ int suid_dumpable = 0;
+ 
+ EXPORT_SYMBOL(suid_dumpable);
+@@ -1264,8 +1264,6 @@ int set_binfmt(struct linux_binfmt *new)
+ 
+ EXPORT_SYMBOL(set_binfmt);
+ 
+-#define CORENAME_MAX_SIZE 64
+-
+ /* format_corename will inspect the pattern parameter, and output a
+  * name into corename, which must have space for at least
+  * CORENAME_MAX_SIZE bytes plus one byte for the zero terminator.
+diff --git a/include/linux/binfmts.h b/include/linux/binfmts.h
+index 2d956cd..e1a7083 100644
+--- a/include/linux/binfmts.h
++++ b/include/linux/binfmts.h
+@@ -17,6 +17,8 @@ struct pt_regs;
+ 
+ #ifdef __KERNEL__
+ 
++#define CORENAME_MAX_SIZE 128
++
+ /*
+  * This structure is used to hold the arguments that are used when loading binaries.
+  */
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 4073353..30ee462 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -227,7 +227,7 @@ static ctl_table kern_table[] = {
+ 		.ctl_name	= KERN_CORE_PATTERN,
+ 		.procname	= "core_pattern",
+ 		.data		= core_pattern,
+-		.maxlen		= 128,
++		.maxlen		= CORENAME_MAX_SIZE,
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dostring,
+ 		.strategy	= &sysctl_string,
 
-The ->freezeable is still here just because of incoming "cpu-hotplug
-using freezer" rework.
-
-No?
-
-> --- linux-2.6.22-rc1.orig/kernel/workqueue.c
-> +++ linux-2.6.22-rc1/kernel/workqueue.c
-> @@ -799,9 +799,7 @@ static int __devinit workqueue_cpu_callb
->  	struct cpu_workqueue_struct *cwq;
->  	struct workqueue_struct *wq;
->  
-> -	action &= ~CPU_TASKS_FROZEN;
-> -
-> -	switch (action) {
-> +	switch (action & ~CPU_TASKS_FROZEN) {
-
-Confused. How can we see, say CPU_UP_PREPARE_FROZEN, if we cleared
-CPU_TASKS_FROZEN bit?
-
->  	case CPU_LOCK_ACQUIRE:
->  		mutex_lock(&workqueue_mutex);
->  		return NOTIFY_OK;
-> @@ -819,20 +817,29 @@ static int __devinit workqueue_cpu_callb
->  
->  		switch (action) {
->  		case CPU_UP_PREPARE:
-> +		case CPU_UP_PREPARE_FROZEN:
->  			if (!create_workqueue_thread(cwq, cpu))
->  				break;
->  			printk(KERN_ERR "workqueue for %i failed\n", cpu);
->  			return NOTIFY_BAD;
->  
->  		case CPU_ONLINE:
-> +		case CPU_ONLINE_FROZEN:
->  			start_workqueue_thread(cwq, cpu);
->  			break;
->  
->  		case CPU_UP_CANCELED:
-> +		case CPU_UP_CANCELED_FROZEN:
->  			start_workqueue_thread(cwq, -1);
->  		case CPU_DEAD:
->  			cleanup_workqueue_thread(cwq, cpu);
->  			break;
-> +
-> +		case CPU_DEAD_FROZEN:
-> +			if (wq->freezeable)
-> +				thaw_process(cwq->thread);
-> +			cleanup_workqueue_thread(cwq, cpu);
-> +			break;
->  		}
->  	}
-
-Minor, but can't we do
-
-		...
-		case CPU_UP_CANCELED:
-		case CPU_UP_CANCELED_FROZEN:
-			start_workqueue_thread(cwq, -1);
-		case CPU_DEAD_FROZEN:
-			if (wq->freezeable)
-				// we can't see PF_FROZEN if it was CPU_UP_CANCELED
-				thaw_process(cwq->thread);
-		case CPU_DEAD:
-			cleanup_workqueue_thread(cwq, cpu);
-			break;
-
-?
-
-Oleg.
-
+-- 
+Dan Aloni
+XIV LTD, http://www.xivstorage.com
+da-x (at) monatomic.org, dan (at) xiv.co.il
