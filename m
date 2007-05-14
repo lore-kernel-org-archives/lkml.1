@@ -1,147 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbXENLir@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762898AbXENLjH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762775AbXENLir (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:38:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030476AbXENLdJ
+	id S1762898AbXENLjH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:39:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762422AbXENLcv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:33:09 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27931 "EHLO
+	Mon, 14 May 2007 07:32:51 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27936 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759236AbXENLcf (ORCPT
+	with ESMTP id S1758616AbXENLca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:35 -0400
-Message-Id: <20070514110611.003462684@suse.de>
+	Mon, 14 May 2007 07:32:30 -0400
+Message-Id: <20070514110620.237075017@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:16 -0700
+Date: Mon, 14 May 2007 04:06:42 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 09/45] Add a struct vfsmount parameter to vfs_symlink()
-Content-Disposition: inline; filename=vfs-symlink.diff
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: [AppArmor 35/45] Allow permission functions to tell between parent and leaf checks
+Content-Disposition: inline; filename=parent-permission.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vfsmount will be passed down to the LSM hook so that LSMs can compute
-pathnames.
+Set the LOOKUP_CONTINUE flag when checking parent permissions. This allows
+permission functions to tell between parent and leaf checks.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/ecryptfs/inode.c |    4 +++-
- fs/namei.c          |    6 ++++--
- fs/nfsd/vfs.c       |   12 ++++++++----
- include/linux/fs.h  |    2 +-
- 4 files changed, 16 insertions(+), 8 deletions(-)
+ fs/namei.c |    6 ++++++
+ 1 file changed, 6 insertions(+)
 
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -470,6 +470,7 @@ static int ecryptfs_symlink(struct inode
- {
- 	int rc;
- 	struct dentry *lower_dentry;
-+	struct vfsmount *lower_mnt;
- 	struct dentry *lower_dir_dentry;
- 	umode_t mode;
- 	char *encoded_symname;
-@@ -478,6 +479,7 @@ static int ecryptfs_symlink(struct inode
- 
- 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
- 	dget(lower_dentry);
-+	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
- 	lower_dir_dentry = lock_parent(lower_dentry);
- 	mode = S_IALLUGO;
- 	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
-@@ -487,7 +489,7 @@ static int ecryptfs_symlink(struct inode
- 		rc = encoded_symlen;
- 		goto out_lock;
- 	}
--	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry,
-+	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry, lower_mnt,
- 			 encoded_symname, mode);
- 	kfree(encoded_symname);
- 	if (rc || !lower_dentry->d_inode)
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2203,7 +2203,8 @@ asmlinkage long sys_unlink(const char __
- 	return do_unlinkat(AT_FDCWD, pathname);
+@@ -1409,6 +1409,10 @@ static int may_delete(struct inode *dir,
+ 	BUG_ON(victim->d_parent->d_inode != dir);
+ 	audit_inode_child(victim->d_name.name, victim->d_inode, dir);
+ 
++#if 0
++	if (nd)
++		nd->flags |= LOOKUP_CONTINUE;
++#endif
+ 	error = permission(dir,MAY_WRITE | MAY_EXEC, NULL);
+ 	if (error)
+ 		return error;
+@@ -1446,6 +1450,8 @@ static inline int may_create(struct inod
+ 		return -EEXIST;
+ 	if (IS_DEADDIR(dir))
+ 		return -ENOENT;
++	if (nd)
++		nd->flags |= LOOKUP_CONTINUE;
+ 	return permission(dir,MAY_WRITE | MAY_EXEC, nd);
  }
  
--int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
-+int vfs_symlink(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt,
-+		const char *oldname, int mode)
- {
- 	int error = may_create(dir, dentry, NULL);
- 
-@@ -2249,7 +2250,8 @@ asmlinkage long sys_symlinkat(const char
- 	if (IS_ERR(dentry))
- 		goto out_unlock;
- 
--	error = vfs_symlink(nd.dentry->d_inode, dentry, from, S_IALLUGO);
-+	error = vfs_symlink(nd.dentry->d_inode, dentry, nd.mnt, from,
-+			    S_IALLUGO);
- 	dput(dentry);
- out_unlock:
- 	mutex_unlock(&nd.dentry->d_inode->i_mutex);
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1436,6 +1436,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 				struct iattr *iap)
- {
- 	struct dentry	*dentry, *dnew;
-+	struct svc_export *exp;
- 	__be32		err, cerr;
- 	int		host_err;
- 	umode_t		mode;
-@@ -1462,6 +1463,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 	if (iap && (iap->ia_valid & ATTR_MODE))
- 		mode = iap->ia_mode & S_IALLUGO;
- 
-+	exp = fhp->fh_export;
- 	if (unlikely(path[plen] != 0)) {
- 		char *path_alloced = kmalloc(plen+1, GFP_KERNEL);
- 		if (path_alloced == NULL)
-@@ -1469,20 +1471,22 @@ nfsd_symlink(struct svc_rqst *rqstp, str
- 		else {
- 			strncpy(path_alloced, path, plen);
- 			path_alloced[plen] = 0;
--			host_err = vfs_symlink(dentry->d_inode, dnew, path_alloced, mode);
-+			host_err = vfs_symlink(dentry->d_inode, dnew,
-+					       exp->ex_mnt, path_alloced, mode);
- 			kfree(path_alloced);
- 		}
- 	} else
--		host_err = vfs_symlink(dentry->d_inode, dnew, path, mode);
-+		host_err = vfs_symlink(dentry->d_inode, dnew, exp->ex_mnt, path,
-+				       mode);
- 
- 	if (!host_err) {
--		if (EX_ISSYNC(fhp->fh_export))
-+		if (EX_ISSYNC(exp))
- 			host_err = nfsd_sync_dir(dentry);
- 	}
- 	err = nfserrno(host_err);
- 	fh_unlock(fhp);
- 
--	cerr = fh_compose(resfhp, fhp->fh_export, dnew, fhp);
-+	cerr = fh_compose(resfhp, exp, dnew, fhp);
- 	dput(dnew);
- 	if (err==0) err = cerr;
- out:
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -994,7 +994,7 @@ extern int vfs_permission(struct nameida
- extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
- extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
- extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
--extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
-+extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
- extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
- extern int vfs_rmdir(struct inode *, struct dentry *);
- extern int vfs_unlink(struct inode *, struct dentry *);
 
 -- 
