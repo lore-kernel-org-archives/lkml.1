@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758690AbXENXjR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759396AbXENXl5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758690AbXENXjR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 19:39:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754385AbXENXjG
+	id S1759396AbXENXl5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 19:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754478AbXENXls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 19:39:06 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:64888 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754333AbXENXjF (ORCPT
+	Mon, 14 May 2007 19:41:48 -0400
+Received: from e34.co.us.ibm.com ([32.97.110.152]:41618 "EHLO
+	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754462AbXENXlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 19:39:05 -0400
-Date: Mon, 14 May 2007 16:43:16 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-parport@lists.infradead.org
-Subject: Re: [QUESTION] parallel console configuration
-Message-Id: <20070514164316.eb9bb0f9.randy.dunlap@oracle.com>
-In-Reply-To: <6bffcb0e0702161123n7139afb5sd10431a160b60976@mail.gmail.com>
-References: <6bffcb0e0702161123n7139afb5sd10431a160b60976@mail.gmail.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Mon, 14 May 2007 19:41:47 -0400
+Date: Mon, 14 May 2007 18:41:41 -0500
+To: Jeff Garzik <jgarzik@pobox.com>
+Cc: linux-pci@atrey.karlin.mff.cuni.cz, netdev@vger.kernel.org,
+       James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
+       Ramkrishna Vepa <Ramkrishna.Vepa@neterion.com>,
+       Raghavendra Koushik <raghavendra.koushik@neterion.com>,
+       Wen Xiong <wenxiong@us.ibm.com>
+Subject: Re: [PATCH 2/2] s2io: add PCI error recovery support
+Message-ID: <20070514234141.GB4511@austin.ibm.com>
+References: <20070514233730.GA4511@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070514233730.GA4511@austin.ibm.com>
+User-Agent: Mutt/1.5.11
+From: linas@austin.ibm.com (Linas Vepstas)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 16 Feb 2007 20:23:00 +0100 Michal Piotrowski wrote:
 
-> Hi,
-> 
-> I'm trying to setup a parallel console.
-> 
-> CONFIG_PARPORT=y
-> CONFIG_PARPORT_PC=y
-> CONFIG_PRINTER=y
-> CONFIG_LP_CONSOLE=y
-> 
-> kernel params
-> console=lp0 console=tty0
-> 
-> System stuck on
-> lp0: using parport0 (interrupt-driven).
-> 
-> http://www.stardust.webpages.pl/files/tbf/euridica/2.6.20/00001.jpg
-> 
-> What am I doing wrong?
+s2io cleanup suggestions, per discussion on mailing lists.
 
-Hi Michal,
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-LP_CONSOLE didn't work for me for awhile, but it does work for me
-in 2.6.22-rc1.  Have you tested it lately?
+----
+ drivers/net/s2io.c |    2 --
+ drivers/net/s2io.h |    1 -
+ 2 files changed, 3 deletions(-)
 
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Index: linux-2.6.22-rc1/drivers/net/s2io.c
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/net/s2io.c	2007-05-14 17:23:45.000000000 -0500
++++ linux-2.6.22-rc1/drivers/net/s2io.c	2007-05-14 17:24:03.000000000 -0500
+@@ -3980,7 +3980,6 @@ static int s2io_close(struct net_device 
+ 	/* Reset card, kill tasklet and free Tx and Rx buffers. */
+ 	s2io_card_down(sp);
+ 
+-	sp->device_close_flag = TRUE;	/* Device is shut down. */
+ 	return 0;
+ }
+ 
+@@ -8063,7 +8062,6 @@ static pci_ers_result_t s2io_io_error_de
+ 	if (netif_running(netdev)) {
+ 		/* Bring down the card, while avoiding PCI I/O */
+ 		do_s2io_card_down(sp, 0);
+-		sp->device_close_flag = TRUE;	/* Device is shut down. */
+ 	}
+ 	pci_disable_device(pdev);
+ 
+Index: linux-2.6.22-rc1/drivers/net/s2io.h
+===================================================================
+--- linux-2.6.22-rc1.orig/drivers/net/s2io.h	2007-05-14 17:23:45.000000000 -0500
++++ linux-2.6.22-rc1/drivers/net/s2io.h	2007-05-14 17:24:03.000000000 -0500
+@@ -794,7 +794,6 @@ struct s2io_nic {
+ 
+ 	struct net_device_stats stats;
+ 	int high_dma_flag;
+-	int device_close_flag;
+ 	int device_enabled_once;
+ 
+ 	char name[60];
