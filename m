@@ -1,129 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761547AbXENBI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761693AbXENBNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761547AbXENBI3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 21:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbXENBIW
+	id S1761693AbXENBNU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 21:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbXENBNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 21:08:22 -0400
-Received: from wr-out-0506.google.com ([64.233.184.228]:33527 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753329AbXENBIW (ORCPT
+	Sun, 13 May 2007 21:13:14 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:42877 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751747AbXENBNN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 21:08:22 -0400
+	Sun, 13 May 2007 21:13:13 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=brDveGJcOgVclFpAhOoM7SBw47Dn8eIGUtfJlTTGYFoH9w/vbet6PUOEPj6U2FfO72bBnH2iKTK7VzLmkDvbG4I2hQyRtfULhqZRISjFLqd7oU/MOkU6NZfjyXtjZUIdqUzfIe47wdVIua/A7ATWxBMsG6w28e2fiTfGeO0VXvI=
-Message-ID: <d45a3acc0705131808g65a74250t6791ce96a4cb1324@mail.gmail.com>
-Date: Mon, 14 May 2007 11:08:20 +1000
-From: "andrew hendry" <andrew.hendry@gmail.com>
-To: "Linus Torvalds" <torvalds@linux-foundation.org>
-Subject: Re: Linux 2.6.22-rc1
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+        h=received:message-id:date:from:to:subject:mime-version:content-type;
+        b=jfwDEnLp2yOMC0q5eUYU+0DOw3k7iJDHGxES+itz5ZefzcYFmcN2/QmDwLuMK0TbKlkgzJHYBlwzOssV425J9c//qEdsZ3qG03DXuplEn7p8vFytZS+PwGD05wLWm4p8HfPkSiYJjDtyHm8mErLdGqsFlUSgYS6lqa4LdTD3h9c=
+Message-ID: <b6a2187b0705131813m28063a30la043c59cd463ec32@mail.gmail.com>
+Date: Mon, 14 May 2007 09:13:12 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: patch for cisco client for Linux-2.6.22-rc1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_112125_32656832.1179105192510"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sorry, forgot to CC mailing list last time.
+------=_Part_112125_32656832.1179105192510
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-build errors from make randconfig
+Attached is my patch for vpnclient-linux-x86_64-4.8.00.0490-k9 to make
+it run on Linux-2.6.22-rc1.
 
-# CONFIG_SMP is not set
-CONFIG_X86_VOYAGER=y
-CONFIG_X86_MSR=y
-CONFIG_X86_CPUID=y
+Thanks,
+Jeff.
 
-arch/i386/kernel/built-in.o: In function `vic_sys_interrupt':
-(.text+0x2770): undefined reference to `smp_vic_sys_interrupt'
-arch/i386/kernel/built-in.o: In function `vic_cmn_interrupt':
-(.text+0x27a8): undefined reference to `smp_vic_cmn_interrupt'
-arch/i386/kernel/built-in.o: In function `vic_cpi_interrupt':
-(.text+0x27e0): undefined reference to `smp_vic_cpi_interrupt'
-arch/i386/kernel/built-in.o: In function `qic_timer_interrupt':
-(.text+0x2818): undefined reference to `smp_qic_timer_interrupt'
-arch/i386/kernel/built-in.o: In function `qic_invalidate_interrupt':
-(.text+0x2850): undefined reference to `smp_qic_invalidate_interrupt'
-arch/i386/kernel/built-in.o: In function `qic_reschedule_interrupt':
-(.text+0x2888): undefined reference to `smp_qic_reschedule_interrupt'
-arch/i386/kernel/built-in.o: In function `qic_enable_irq_interrupt':
-(.text+0x28c0): undefined reference to `smp_qic_enable_irq_interrupt'
-arch/i386/kernel/built-in.o: In function `qic_call_function_interrupt':
-(.text+0x28f8): undefined reference to `smp_qic_call_function_interrupt'
-arch/i386/kernel/built-in.o: In function `setup_bootmem_allocator':
-(.init.text+0x58a): undefined reference to `find_smp_config'
-arch/i386/mach-voyager/built-in.o: In function `voyager_power_off':
-(.text+0x18f): undefined reference to `voyager_cat_power_off'
-arch/i386/mach-voyager/built-in.o: In function `thread':
-voyager_thread.c:(.text+0x3b8): undefined reference to `voyager_status'
-voyager_thread.c:(.text+0x405): undefined reference to `voyager_status'
-voyager_thread.c:(.text+0x418): undefined reference to `voyager_cat_psi'
-voyager_thread.c:(.text+0x452): undefined reference to `voyager_status'
-voyager_thread.c:(.text+0x46c): undefined reference to `voyager_status'
+------=_Part_112125_32656832.1179105192510
+Content-Type: application/octet-stream; name=patch-2.6.22-vpn
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f1o8q3o6
+Content-Disposition: attachment; filename="patch-2.6.22-vpn"
 
-CONFIG_SMP=y
-CONFIG_X86_VOYAGER=y
-CONFIG_X86_MSR=y
-CONFIG_X86_CPUID=y
-
-arch/i386/kernel/built-in.o: In function `msr_read':
-msr.c:(.text+0xa614): undefined reference to `smp_call_function_single'
-arch/i386/kernel/built-in.o: In function `msr_write':
-msr.c:(.text+0xa710): undefined reference to `smp_call_function_single'
-arch/i386/kernel/built-in.o: In function `cpuid_read':
-cpuid.c:(.text+0xa8d0): undefined reference to `smp_call_function_single'
-arch/i386/lib/built-in.o: In function `wrmsr_on_cpu':
-(.text+0x63): undefined reference to `smp_call_function_single'
-arch/i386/lib/built-in.o: In function `rdmsr_on_cpu':
-(.text+0xb6): undefined reference to `smp_call_function_single'
-make: *** [.tmp_vmlinux1] Error 1
-
-CONFIG_SMP=y
-CONFIG_X86_VOYAGER=y
-# CONFIG_X86_MSR is not set
-# CONFIG_X86_CPUID is not set
-
-arch/i386/lib/built-in.o: In function `wrmsr_on_cpu':
-(.text+0x63): undefined reference to `smp_call_function_single'
-arch/i386/lib/built-in.o: In function `rdmsr_on_cpu':
-(.text+0xb6): undefined reference to `smp_call_function_single'
-
-
-On 5/13/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
->
-> Ok, the merge window has closed, and 2.6.22-rc1 is out there.
->
-> The diffstat and shortlogs are way too big to fit under the kernel mailing
-> list limits, and the changes are all over the place. Almost seven thousand
-> files changed, and that's not double-counting the files that got moved
-> around.
->
-> Architecture updates, drivers, filesystems, networking, security, build
-> scripts, reorganizations, cleanups.. You name it, it's there.
->
-> You want a new firewire stack? We've got it. New wireless networking
-> infrastructure? Check. New infiniband drivers? Digital video drivers? A
-> totally new CPU architecture (blackfin)? Check, check, check.
->
-> That said, I think (and certainly hope) that this will not be nearly as
-> painful as the big fundamental timer changes for 2.6.21, and while there
-> are some pretty core changes there (like the new SLUB allocator, which
-> hopefully will end up replacing both SLAB and SLOB), it feels pretty
-> solid, and not as scary as ripping the carpet from under the timer
-> infrastructure.
->
-> So give it a good testing. We'll see how the regression tracking ends up
-> working, but in order to actually track that, we want people actively
-> testing -rc1 and making good reports!
->
->                 Linus
-> -
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+LS0tIHZwbi9saW51eGNuaWFwaS5jLm9yZwkyMDA3LTA1LTEzIDIxOjAzOjA5ICswODAwCisrKyB2
+cG4vbGludXhjbmlhcGkuYwkyMDA3LTA1LTEzIDIyOjQzOjM5ICswODAwCkBAIC0yOTEsMTMgKzI5
+MSw5IEBACiAgICAgLyogbW92ZSB0aGUgZGF0YSBpbnRvIHRoZSBwYWNrZXQgKi8KICNpZiBMSU5V
+WF9WRVJTSU9OX0NPREUgPj0gS0VSTkVMX1ZFUlNJT04oMiw2LDE0KQogICAgIHsKLSAgICAgICAg
+c3RydWN0IHRpbWV2YWwgdGltZXN0YW1wOwotCi0gICAgICAgIF9fbmV0X3RpbWVzdGFtcChza2Ip
+OwotICAgICAgICBza2Jfc2V0X3RpbWVzdGFtcChza2IsJnRpbWVzdGFtcCk7CisgICAgICAgIHNr
+Yi0+dHN0YW1wLnR2NjQgPSAwOwogICAgIH0KICNlbHNlCi0gICAgX19uZXRfdGltZXN0YW1wKHNr
+Yik7CiAjZW5kaWYKIAogICAgIHBJUCA9IHNrYl9wdXQoc2tiLCBscFBhY2tldERlc2NyaXB0b3It
+PnVpUGFja2V0U2l6ZSk7CkBAIC0zMjgsOCArMzI0LDggQEAKIAogICAgIHNrYi0+aXBfc3VtbWVk
+ID0gQ0hFQ0tTVU1fVU5ORUNFU1NBUlk7CiAKLSAgICBza2ItPm5oLmlwaCA9IChzdHJ1Y3QgaXBo
+ZHIgKikgc2tiLT5kYXRhOwotICAgIHNrYi0+bWFjLnJhdyA9IHBNYWM7CisgICAgc2tiX3Jlc2V0
+X25ldHdvcmtfaGVhZGVyKHNrYik7CisgICAgc2tiX3Jlc2V0X21hY19oZWFkZXIoc2tiKTsKIAog
+ICAgIHBCaW5kaW5nLT5yZWN2X3N0YXQuY2FsbGVkID0gVFJVRTsKIApAQCAtNDQwLDIyICs0MzYs
+MTggQEAKICAgICAvKiBwdXQgdGhlIG1hYyBoZWFkZXIgb24gKi8KICNpZiBMSU5VWF9WRVJTSU9O
+X0NPREUgPj0gS0VSTkVMX1ZFUlNJT04oMiw2LDE0KQogICAgIHsKLSAgICAgICAgc3RydWN0IHRp
+bWV2YWwgdGltZXN0YW1wOwotCi0gICAgICAgIF9fbmV0X3RpbWVzdGFtcChza2IpOwotICAgICAg
+ICBza2Jfc2V0X3RpbWVzdGFtcChza2IsJnRpbWVzdGFtcCk7CisgICAgICAgIHNrYi0+dHN0YW1w
+LnR2NjQgPSAwOwogICAgIH0KICNlbHNlCi0gICAgX19uZXRfdGltZXN0YW1wKHNrYik7CiAjZW5k
+aWYKIAogICAgIHNrYi0+ZGV2ID0gcEJpbmRpbmctPnBEZXZpY2U7CiAKLSAgICBza2ItPm1hYy5y
+YXcgPSBwTWFjOwotICAgIHNrYi0+bmgucmF3ID0gcElQOworICAgIHNrYl9yZXNldF9tYWNfaGVh
+ZGVyKHNrYik7CisgICAgc2tiX3Jlc2V0X25ldHdvcmtfaGVhZGVyKHNrYik7CiAKICAgICAvKmlw
+IGhlYWRlciBsZW5ndGggaXMgaW4gMzJiaXQgd29yZHMgKi8KLSAgICBza2ItPmgucmF3ID0gcElQ
+ICsgKHNrYi0+bmguaXBoLT5paGwgKiA0KTsKKyAgICBza2ItPnRyYW5zcG9ydF9oZWFkZXIgPSBz
+a2ItPm5ldHdvcmtfaGVhZGVyICsgKGlwX2hkcihza2IpLT5paGwgKiA0KTsKICAgICBza2ItPnBy
+b3RvY29sID0gaHRvbnMoRVRIX1BfSVApOwogCiAgICAgLyogc2VuZCB0aGlzIHBhY2tldCB1cCB0
+aGUgTklDIGRyaXZlciAqLwotLS0gdnBuL2ZyYWcuYy5vcmcJMjAwNy0wNS0xMyAyMToyNDo1MCAr
+MDgwMAorKysgdnBuL2ZyYWcuYwkyMDA3LTA1LTEzIDIxOjI0OjE0ICswODAwCkBAIC0zNywxMyAr
+MzcsMTAgQEAKICAgICBpbnQgcmV0PUZBTFNFOwogICAgIHN0cnVjdCBmcmFnX3F1ZXVlX2VudHJ5
+ICpjdXI9TlVMTCwqbj1OVUxMLCpwcmV2PU5VTEw7CiAKLSAgICBpZCA9IG50b2hzKHNrYi0+bmgu
+aXBoLT5pZCk7CisgICAgY29uc3Qgc3RydWN0IGlwaGRyICppaCA9IGlwX2hkcihza2IpOworICAg
+IGlkID0gbnRvaHMoaWgtPmlkKTsKKwogICAgIC8qIGxvb2sgZm9yIGFuIGVudHJ5IHdpdGggdGhl
+IHNhbWUgaWQgYXMgdGhpcyBwYWNrZXQqLwotICAgIGlmIChmcmFnX3F1ZXVlX2hlYWQgJiYgaWQg
+IT0gbnRvaHMoZnJhZ19xdWV1ZV9oZWFkLT5za2ItPm5oLmlwaC0+aWQpKQotICAgIHsKLSAgICAg
+ICAgcHJpbnRrKEtFUk5fSU5GTyAiJXM6IGluY29tcGxldGUgZnJhZ21lbnQgc2V0IGRlc3Ryb3ll
+ZCIsX19GVU5DVElPTl9fKTsKLSAgICAgICAgY2xlYW51cF9mcmFnX3F1ZXVlKCk7Ci0gICAgfSAg
+CiAgICAgLyphbGxvY2F0ZSBhIG5ldyBlbnRyeSovCiAgICAgbiA9IGttYWxsb2Moc2l6ZW9mKHN0
+cnVjdCBmcmFnX3F1ZXVlX2VudHJ5KSxHRlBfQVRPTUlDKTsKICAgICBpZiAoIW4pCkBAIC01Nywx
+MCArNTQsMTAgQEAKICAgICBjdXIgPSBmcmFnX3F1ZXVlX2hlYWQ7CiAKICAgICBwcmV2ID0gTlVM
+TDsKLSAgICBza2Jfb2Zmc2V0ID0gbnRvaHMoc2tiLT5uaC5pcGgtPmZyYWdfb2ZmKSAmIElQX09G
+RlNFVDsKKyAgICBza2Jfb2Zmc2V0ID0gbnRvaHMoaXBfaGRyKHNrYiktPmZyYWdfb2ZmKSAmIElQ
+X09GRlNFVDsKICAgICB3aGlsZSAoY3VyKQogICAgIHsKLSAgICAgICAgY3VyX29mZnNldCA9IG50
+b2hzKGN1ci0+c2tiLT5uaC5pcGgtPmZyYWdfb2ZmKSAmIElQX09GRlNFVDsKKyAgICAgICAgY3Vy
+X29mZnNldCA9IG50b2hzKGlwX2hkcihjdXItPnNrYiktPmZyYWdfb2ZmKSAmIElQX09GRlNFVDsK
+ICAgICAgICAgLypzYW5pdHkgY2hlY2sqLwogICAgICAgICBpZiAoY3VyX29mZnNldCA8IHByZXZf
+b2Zmc2V0KQogICAgICAgICB7CkBAIC0xMTMsNyArMTEwLDcgQEAKICAgICB9CiAgICAgY3VyID0g
+ZnJhZ19xdWV1ZV9oZWFkOwogICAgIC8qZmlyc3QgaW4gcXVldWUgbXVzdCBiZSBmaXJzdCBmcmFn
+LiovCi0gICAgaWYgKChudG9ocyhjdXItPnNrYi0+bmguaXBoLT5mcmFnX29mZikgJiBJUF9PRkZT
+RVQpICE9IDApCisgICAgaWYgKChudG9ocyhpcF9oZHIoY3VyLT5za2IpLT5mcmFnX29mZikgJiBJ
+UF9PRkZTRVQpICE9IDApCiAgICAgewogICAgICAgICBnb3RvIGRvbmVfd2l0aF90ZXN0czsKICAg
+ICB9CkBAIC0xMjEsMTkgKzExOCwxOSBAQAogICAgICAgIGJ5IGNvbXBhcmluZyBhZGphY2VudCBv
+ZmZzZXQgdmFsdWVzIGFuZCBwYWNrZXQgbGVuZ3RocyovCiAgICAgd2hpbGUgKGN1cikKICAgICB7
+Ci0gICAgICAgIGN1cl9vZmZzZXQgPSAobnRvaHMoY3VyLT5za2ItPm5oLmlwaC0+ZnJhZ19vZmYp
+ICYgSVBfT0ZGU0VUKSo4OworICAgICAgICBjdXJfb2Zmc2V0ID0gKG50b2hzKGlwX2hkcihjdXIt
+PnNrYiktPmZyYWdfb2ZmKSAmIElQX09GRlNFVCkqODsKICAgICAgICAgaWYgKGN1cl9vZmZzZXQg
+IT0gcHJldl9lbmRfb2Zmc2V0KQogICAgICAgICB7IAogICAgICAgICAgICAgZ290byBkb25lX3dp
+dGhfdGVzdHM7CiAgICAgICAgIH0KICAgICAgICAgcHJldiA9IGN1cjsKICAgICAgICAgcHJldl9v
+ZmZzZXQgPSBjdXJfb2Zmc2V0OwotICAgICAgICBwcmV2X2VuZF9vZmZzZXQgPSBwcmV2X29mZnNl
+dCArIG50b2hzKHByZXYtPnNrYi0+bmguaXBoLT50b3RfbGVuKQotICAgICAgICAgICAgICAgICAg
+ICAgICAgICAtIChwcmV2LT5za2ItPm5oLmlwaC0+aWhsKjQpOworICAgICAgICBwcmV2X2VuZF9v
+ZmZzZXQgPSBwcmV2X29mZnNldCArIG50b2hzKGlwX2hkcihwcmV2LT5za2IpLT50b3RfbGVuKQor
+ICAgICAgICAgICAgICAgICAgICAgICAgICAtIChpcF9oZHIocHJldi0+c2tiKS0+aWhsKjQpOwog
+ICAgICAgICBjdXIgPSBjdXItPm5leHQ7CiAgICAgfSAKICAgICAvKmxhc3QgaW4gcXVldWUgbXVz
+dCBub3QgaGF2ZSBtb3JlIGZyYWdzIHNldCovCi0gICAgaWYgKG50b2hzKHByZXYtPnNrYi0+bmgu
+aXBoLT5mcmFnX29mZikgJiBJUF9NRikKKyAgICBpZiAobnRvaHMoaXBfaGRyKHByZXYtPnNrYikt
+PmZyYWdfb2ZmKSAmIElQX01GKQogICAgIHsKICAgICAgICAgZ290byBkb25lX3dpdGhfdGVzdHM7
+CiAgICAgfQpAQCAtMTg1LDcgKzE4Miw3IEBACiAgICAgICAgIC8qbm90IGFuIElQIHBhY2tldCov
+CiAgICAgICAgIGdvdG8gZG9uZV93aXRoX3Rlc3RzOwogICAgIH0KLSAgICBpcGggPSBza2ItPm5o
+LmlwaDsKKyAgICBpcGggPSBpcF9oZHIoc2tiKTsKICAgICBpZiAoIWlwaCkKICAgICB7CiAgICAg
+ICAgIHByaW50ayhLRVJOX0RFQlVHICIlczogc2tiLT5uaCBpcyBOVUxMLiIsIF9fRlVOQ1RJT05f
+Xyk7Ci0tLSB2cG4vaW50ZXJjZXB0b3IuYy5vcmcJMjAwNy0wNS0xMyAyMTo0MjoxMSArMDgwMAor
+KysgdnBuL2ludGVyY2VwdG9yLmMJMjAwNy0wNS0xMyAyMTo0MDoyMiArMDgwMApAQCAtMzM5LDcg
+KzMzOSw3IEBACiAKICAgICBkcCA9IE5VTEw7CiAgICAgbnVtX3RhcmdldF9kZXZpY2VzID0gMDsK
+LSAgICBmb3IgKGRwID0gZGV2X2Jhc2U7IGRwICE9IE5VTEw7IGRwID0gZHAtPm5leHQpCisgICAg
+Zm9yX2VhY2hfbmV0ZGV2KGRwKQogICAgIHsKICAgICAgICAgaWYgKGFkZF9uZXRkZXYoZHApID09
+IDApCiAgICAgICAgIHsKQEAgLTU2OSw5ICs1NjksOSBAQAogICAgIH0KIAogICAgIHJlc2V0X2lu
+amVjdF9zdGF0dXMoJnBCaW5kaW5nLT5yZWN2X3N0YXQpOwotICAgIGlmIChza2ItPm1hYy5yYXcp
+CisgICAgaWYgKHNrYl9tYWNfaGVhZGVyKHNrYikpCiAgICAgewotICAgICAgICBoYXJkX2hlYWRl
+cl9sZW4gPSBza2ItPmRhdGEgLSBza2ItPm1hYy5yYXc7CisgICAgICAgIGhhcmRfaGVhZGVyX2xl
+biA9IHNrYi0+ZGF0YSAtIHNrYl9tYWNfaGVhZGVyKHNrYik7CiAgICAgICAgIGlmICgoaGFyZF9o
+ZWFkZXJfbGVuIDwgMCkgfHwgKGhhcmRfaGVhZGVyX2xlbiA+IHNrYl9oZWFkcm9vbShza2IpKSkK
+ICAgICAgICAgewogICAgICAgICAgICAgcHJpbnRrKEtFUk5fREVCVUcgImJhZCBoaCBsZW4gJWRc
+biIsIGhhcmRfaGVhZGVyX2xlbik7CkBAIC01ODgsNyArNTg4LDcgQEAKICAgICBzd2l0Y2ggKGhh
+cmRfaGVhZGVyX2xlbikKICAgICB7CiAgICAgY2FzZSBFVEhfSExFTjoKLSAgICAgICAgQ25pTmV3
+RnJhZ21lbnQoRVRIX0hMRU4sIHNrYi0+bWFjLnJhdywgJk1hY0hkciwgQ05JX1VTRV9CVUZGRVIp
+OworICAgICAgICBDbmlOZXdGcmFnbWVudChFVEhfSExFTiwgc2tiX21hY19oZWFkZXIoc2tiKSwg
+Jk1hY0hkciwgQ05JX1VTRV9CVUZGRVIpOwogICAgICAgICBicmVhazsKICAgICBjYXNlIElQUFBf
+TUFYX0hFQURFUjoKICAgICBjYXNlIDA6CkBAIC02OTIsNyArNjkyLDcgQEAKICAgICB9CiAjZW5k
+aWYgLy9MSU5VWF9WRVJTSU9OX0NPREUgPj0gS0VSTkVMX1ZFUlNJT04oMiw0LDApCiAgICAgcmVz
+ZXRfaW5qZWN0X3N0YXR1cygmcEJpbmRpbmctPnNlbmRfc3RhdCk7Ci0gICAgaGFyZF9oZWFkZXJf
+bGVuID0gc2tiLT5uaC5yYXcgLSBza2ItPmRhdGE7CisgICAgaGFyZF9oZWFkZXJfbGVuID0gc2ti
+X25ldHdvcmtfaGVhZGVyKHNrYikgLSBza2ItPmRhdGE7CiAgICAgcEJpbmRpbmctPnNlbmRfcmVh
+bF9oaF9sZW4gPSBoYXJkX2hlYWRlcl9sZW47CiAgICAgc3dpdGNoIChoYXJkX2hlYWRlcl9sZW4p
+CiAgICAgewo=
+------=_Part_112125_32656832.1179105192510--
