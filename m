@@ -1,59 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030684AbXENLEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1030812AbXENLFr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030684AbXENLEg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965915AbXENLE0
+	id S1030812AbXENLFr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:05:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXENLFl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:04:26 -0400
-Received: from holomorphy.com ([66.93.40.71]:48808 "EHLO holomorphy.com"
+	Mon, 14 May 2007 07:05:41 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:51891 "EHLO pasmtpA.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965795AbXENLEY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:04:24 -0400
-Date: Mon, 14 May 2007 04:05:00 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, efault@gmx.de, tingy@cs.umass.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: fair clock use in CFS
-Message-ID: <20070514110500.GV19966@holomorphy.com>
-References: <20070514083358.GA29775@in.ibm.com> <20070514102929.GL31925@holomorphy.com> <20070514103120.GA23766@elte.hu>
-MIME-Version: 1.0
+	id S1756490AbXENLFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 07:05:40 -0400
+Date: Mon, 14 May 2007 13:06:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Li Yang <leoli@freescale.com>
+Cc: Linus <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for powerpc
+Message-ID: <20070514110636.GB10143@uranus.ravnborg.org>
+References: <46483FAC.60503@freescale.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070514103120.GA23766@elte.hu>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <46483FAC.60503@freescale.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 02:03:58PM +0530, Srivatsa Vaddagiri wrote:
->>> 	I have been brooding over how fair clock is computed/used in
->>> CFS and thought I would ask the experts to avoid wrong guesses!
->>> As I understand, fair_clock is a monotonously increasing clock which
->>> advances at a pace inversely proportional to the load on the runqueue.
->>> If load = 1 (task), it will advance at same pace as wall clock, as 
->>> load increases it advances slower than wall clock.
->>> In addition, following calculations depend on fair clock: task's wait
->>> time on runqueue and sleep time outside the runqueue (both reflected in
->>> p->wait_run_time).
-
-* William Lee Irwin III <wli@holomorphy.com> wrote:
->> It's not hard to see that that's a mistake. [...]
-
-On Mon, May 14, 2007 at 12:31:20PM +0200, Ingo Molnar wrote:
-> please clarify - exactly what is a mistake? Thanks,
-
-The variability in ->fair_clock advancement rate was the mistake, at
-least according to my way of thinking. The queue's virtual time clock
-effectively stops under sufficiently high load, possibly literally in
-the event of fixpoint underflow. The waiting time is impossible to
-scale properly in the presence of a variable time rate (at least under
-the memory allocation constraints of a scheduler), and the deadlines
-computed as offsets from ->fair_clock come out clustered.
-
-Basically it needs to move closer to EEVDF in these respects.
-
-This detail sailed right past me when it went in; sorry about that.
-
-
--- wli
+On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
+> This patch fixes the following "Section mismatch" warnings when
+> build powerpc platforms.
+> 
+> -------------
+> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to 
+> .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at 
+> offset 0xc68) and 'pte_alloc_one'
+> WARNING: mm/built-in.o - Section mismatch: reference to 
+> .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 
+> 0x20300) and 'cache_reap'
+> -------------
+> 
+> Massive warnings represented by:
+> -------------
+> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to 
+> .init.data:.got2 from prom_entry (offset 0x0)
+> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to 
+> .init.text:mpc8313_rdb_probe from .machine.desc after 'mach_mpc8313_rdb' 
+> (at offset 0x4)
+> -------------
+> 
+> Signed-off-by: Li Yang <leoli@freescale.com>
+Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> ---
+> scripts/mod/modpost.c |   16 ++++++++++++----
+> 1 files changed, 12 insertions(+), 4 deletions(-)
+> 
+> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
+> index c89cb71..aa3a881 100644
+> --- a/scripts/mod/modpost.c
+> +++ b/scripts/mod/modpost.c
+> @@ -649,9 +649,10 @@ static int strrcmp(const char *s, const char *sub)
+>  *  tosec    = .init.text
+>  *
+>  * Pattern 10:
+> - *  ia64 has machvec table for each platform. It is mixture of function
+> - *  pointer of .init.text and .text.
+> - *  fromsec  = .machvec
+> + *  ia64 has machvec table and powerpc has machine desc table for each
+> + *  platform. It is mixture of function pointer of .init.text and .text.
+> + *  fromsec  = .machvec | .machine.desc
+> + *
+>  **/
+> static int secref_whitelist(const char *modname, const char *tosec,
+> 			    const char *fromsec, const char *atsym,
+> @@ -681,6 +682,8 @@ static int secref_whitelist(const char *modname, const 
+> char *tosec,
+> 	const char *pat4sym[] = {
+> 		"sparse_index_alloc",
+> 		"zone_wait_table_init",
+> +		"pte_alloc_one_kernel",
+> +		"kmem_cache_create",
+> 		NULL
+> 	};
+> 
+> @@ -750,7 +753,8 @@ static int secref_whitelist(const char *modname, const 
+> char *tosec,
+> 				return 1;
+> 
+> 	/* Check for pattern 10 */
+> -	if (strcmp(fromsec, ".machvec") == 0)
+> +	if ((strcmp(fromsec, ".machvec") == 0) ||
+> +	    (strcmp(fromsec, ".machine.desc") == 0))
+> 		return 1;
+> 
+> 	return 0;
+> @@ -883,6 +887,10 @@ static void warn_sec_mismatch(const char *modname, 
+> const char *fromsec,
+> 	    secref_whitelist(modname, secname, fromsec,
+> 			     elf->strtab + before->st_name, refsymname))
+> 		return;
+> +	/* fromsec whitelist - without a valid 'before' */
+> +	/* powerpc has a GOT table in .got2 section */
+> +	if (strcmp(fromsec, ".got2") == 0)
+> +		return;
+> 
+> 	if (before && after) {
+> 		warn("%s - Section mismatch: reference to %s:%s from %s "
+> 
