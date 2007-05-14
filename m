@@ -1,130 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031123AbXENLft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031166AbXENLge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031123AbXENLft (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966092AbXENLcs
+	id S1031166AbXENLge (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762440AbXENLcx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:32:48 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27934 "EHLO
+	Mon, 14 May 2007 07:32:53 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27935 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758508AbXENLca (ORCPT
+	with ESMTP id S1758433AbXENLc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:30 -0400
-Message-Id: <20070514110609.140106900@suse.de>
-References: <20070514110607.549397248@suse.de>
+	Mon, 14 May 2007 07:32:29 -0400
+Message-Id: <20070514110652.276911867@suse.de>
+References: <20070514110650.866217377@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:11 -0700
+Date: Mon, 14 May 2007 04:06:54 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 04/45] Pass struct vfsmount to the inode_setattr LSM hook
-Content-Disposition: inline; filename=security-setattr.diff
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: [RFD Patch 4/4] Pass nameidata2 to permission() from nfsd_permission()
+Content-Disposition: inline; filename=nfsd_permission-nameidata.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+Construct a nameidata object and pass it down to permission(), so
+that we can do the proper mount flag checks there.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
+Note that confining nfsd with AppArmor makes no sense, and so this
+patch is not necessary for AppArmor alone.
+
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/attr.c                |    4 ++--
- include/linux/security.h |    8 ++++++--
- security/dummy.c         |    3 ++-
- security/selinux/hooks.c |    5 +++--
- 4 files changed, 13 insertions(+), 7 deletions(-)
+ fs/nfsd/vfs.c |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
---- a/fs/attr.c
-+++ b/fs/attr.c
-@@ -144,13 +144,13 @@ int notify_change(struct dentry *dentry,
- 		down_write(&dentry->d_inode->i_alloc_sem);
- 
- 	if (inode->i_op && inode->i_op->setattr) {
--		error = security_inode_setattr(dentry, attr);
-+		error = security_inode_setattr(dentry, mnt, attr);
- 		if (!error)
- 			error = inode->i_op->setattr(dentry, attr);
- 	} else {
- 		error = inode_change_ok(inode, attr);
- 		if (!error)
--			error = security_inode_setattr(dentry, attr);
-+			error = security_inode_setattr(dentry, mnt, attr);
- 		if (!error) {
- 			if ((ia_valid & ATTR_UID && attr->ia_uid != inode->i_uid) ||
- 			    (ia_valid & ATTR_GID && attr->ia_gid != inode->i_gid))
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -358,6 +358,7 @@ struct request_sock;
-  *	file attributes change (such as when a file is truncated, chown/chmod
-  *	operations, transferring disk quotas, etc).
-  *	@dentry contains the dentry structure for the file.
-+ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
-  *	@attr is the iattr structure containing the new file attributes.
-  *	Return 0 if permission is granted.
-  * @inode_getattr:
-@@ -1221,7 +1222,8 @@ struct security_operations {
- 	int (*inode_readlink) (struct dentry *dentry);
- 	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
- 	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
--	int (*inode_setattr)	(struct dentry *dentry, struct iattr *attr);
-+	int (*inode_setattr) (struct dentry *dentry, struct vfsmount *mnt,
-+			      struct iattr *attr);
- 	int (*inode_getattr) (struct vfsmount *mnt, struct dentry *dentry);
-         void (*inode_delete) (struct inode *inode);
- 	int (*inode_setxattr) (struct dentry *dentry, char *name, void *value,
-@@ -1708,11 +1710,12 @@ static inline int security_inode_permiss
- }
- 
- static inline int security_inode_setattr (struct dentry *dentry,
-+					  struct vfsmount *mnt,
- 					  struct iattr *attr)
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1804,6 +1804,7 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
+ __be32
+ nfsd_permission(struct svc_export *exp, struct dentry *dentry, int acc)
  {
- 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
++	struct nameidata2 nd;
+ 	struct inode	*inode = dentry->d_inode;
+ 	int		err;
+ 
+@@ -1869,12 +1870,16 @@ nfsd_permission(struct svc_export *exp, 
+ 	    inode->i_uid == current->fsuid)
  		return 0;
--	return security_ops->inode_setattr (dentry, attr);
-+	return security_ops->inode_setattr (dentry, mnt, attr);
+ 
+-	err = permission(inode, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), NULL);
++	nd.dentry = dentry;
++	nd.mnt = exp->ex_mnt;
++	nd.flags = LOOKUP_ACCESS;
++
++	err = permission(inode, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), &nd);
+ 
+ 	/* Allow read access to binaries even when mode 111 */
+ 	if (err == -EACCES && S_ISREG(inode->i_mode) &&
+ 	    acc == (MAY_READ | MAY_OWNER_OVERRIDE))
+-		err = permission(inode, MAY_EXEC, NULL);
++		err = permission(inode, MAY_EXEC, &nd);
+ 
+ 	return err? nfserrno(err) : 0;
  }
- 
- static inline int security_inode_getattr (struct vfsmount *mnt,
-@@ -2412,6 +2415,7 @@ static inline int security_inode_permiss
- }
- 
- static inline int security_inode_setattr (struct dentry *dentry,
-+					  struct vfsmount *mnt,
- 					  struct iattr *attr)
- {
- 	return 0;
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -328,7 +328,8 @@ static int dummy_inode_permission (struc
- 	return 0;
- }
- 
--static int dummy_inode_setattr (struct dentry *dentry, struct iattr *iattr)
-+static int dummy_inode_setattr (struct dentry *dentry, struct vfsmount *mnt,
-+				struct iattr *iattr)
- {
- 	return 0;
- }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2267,11 +2267,12 @@ static int selinux_inode_permission(stru
- 			       file_mask_to_av(inode->i_mode, mask), NULL);
- }
- 
--static int selinux_inode_setattr(struct dentry *dentry, struct iattr *iattr)
-+static int selinux_inode_setattr(struct dentry *dentry, struct vfsmount *mnt,
-+				 struct iattr *iattr)
- {
- 	int rc;
- 
--	rc = secondary_ops->inode_setattr(dentry, iattr);
-+	rc = secondary_ops->inode_setattr(dentry, mnt, iattr);
- 	if (rc)
- 		return rc;
- 
 
 -- 
