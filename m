@@ -1,117 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761926AbXENBSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbXENBax@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761926AbXENBSS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 21:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXENBSJ
+	id S1761541AbXENBax (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 21:30:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758435AbXENBaq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 21:18:09 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:44712 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756205AbXENBSI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 21:18:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type;
-        b=j37CyJxFFwDS0STTRjVYweUsAmdoMHBBxVjgh+2reHeON5DTZjaiqA/ioTX+gAoPCfh6iVbn1nS4lXPuKr5L8u9W9p51Hf61vc+pMF2fjVYuJl++7ysKfLxMBvg/W5ViRxD8xhIYmUcRuSOrA6ilRhyE2KCuv1O0rSz39kQENgc=
-Message-ID: <b6a2187b0705131818x556eb57me42d1811e0db7a04@mail.gmail.com>
-Date: Mon, 14 May 2007 09:18:06 +0800
-From: "Jeff Chua" <jeff.chua.linux@gmail.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: patch for vmware for Linux-2.6.21
-MIME-Version: 1.0
-Content-Type: multipart/mixed; 
-	boundary="----=_Part_112165_19493951.1179105486175"
+	Sun, 13 May 2007 21:30:46 -0400
+Received: from ozlabs.org ([203.10.76.45]:53074 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757878AbXENBap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 21:30:45 -0400
+Subject: Re: [PATCH 1/5] lguest host feedback tidyups
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       hch <hch@infradead.org>
+In-Reply-To: <20070513184750.GA4095@ftp.linux.org.uk>
+References: <1178846246.23513.21.camel@localhost.localdomain>
+	 <1178846354.23513.23.camel@localhost.localdomain>
+	 <1179029245.23513.121.camel@localhost.localdomain>
+	 <20070513184750.GA4095@ftp.linux.org.uk>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 11:30:30 +1000
+Message-Id: <1179106230.23513.136.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-------=_Part_112165_19493951.1179105486175
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+On Sun, 2007-05-13 at 19:47 +0100, Al Viro wrote:
+> On Sun, May 13, 2007 at 02:07:25PM +1000, Rusty Russell wrote:
+> > Most importantly, I now realize that Christoph's incorrect ranting
+> > about lgread_u32 et al was in fact a subtle ploy to make me diagnose
+> > the real issue: sparse 0.3 complains about casting a __user pointer
+> > to/from u32, but not an "unsigned long".  They are (currently)
+> > equivalent for lguest, but this is a much better solution than __force.
+> 
+> The real fix would be to declare it with u32 __user * as argument and deal
+> with callers.
 
-Attached are patches for vmware-5.5.3 to make the vmmon and vmnet
-modules compile under Linux-2.6.22-rc1.
+Hi Al.
 
-Thanks,
-Jeff.
+	Arguments come in from the guest in registers.  I could use a funky
+union in the structure definition, but I don't think we're winning
+anything at that point.
 
-------=_Part_112165_19493951.1179105486175
-Content-Type: text/plain; name=patch-compat_kernel.h; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f1o8x53w
-Content-Disposition: attachment; filename="patch-compat_kernel.h"
+Hope that clarifies,
+Rusty.
 
-LS0tIHZtd2FyZS92bW1vbi1vbmx5L2luY2x1ZGUvY29tcGF0X2tlcm5lbC5oLm9yZwkyMDA2LTEy
-LTI2IDE2OjQ3OjI1ICswODAwCisrKyB2bXdhcmUvdm1tb24tb25seS9pbmNsdWRlL2NvbXBhdF9r
-ZXJuZWwuaAkyMDA2LTEyLTI2IDE2OjQ4OjAwICswODAwCkBAIC0xOCw3ICsxOCw5IEBACiAgKiBw
-cm92aWRlZCBieSB4ODYtNjQsIGFybSBhbmQgb3RoZXIgKGJ1dCBub3QgYnkgaTM4NikuCiAgKi8K
-ICNkZWZpbmUgX19OUl9jb21wYXRfZXhpdCBfX05SX2V4aXQKKyNpZiBMSU5VWF9WRVJTSU9OX0NP
-REUgPCBLRVJORUxfVkVSU0lPTigyLDYsMTkpCiBzdGF0aWMgaW5saW5lIF9zeXNjYWxsMShpbnQs
-IGNvbXBhdF9leGl0LCBpbnQsIGV4aXRfY29kZSk7CisjZW5kaWYKIAogCiAvKgo=
-------=_Part_112165_19493951.1179105486175
-Content-Type: text/plain; name=patch-driver_config.h; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f1o8xij0
-Content-Disposition: attachment; filename="patch-driver_config.h"
-
-LS0tIHZtd2FyZS92bW1vbi1vbmx5L2luY2x1ZGUvZHJpdmVyLWNvbmZpZy5oLm9yZwkyMDA3LTAx
-LTI2IDEwOjQ2OjAxICswODAwCisrKyB2bXdhcmUvdm1tb24tb25seS9pbmNsdWRlL2RyaXZlci1j
-b25maWcuaAkyMDA2LTExLTE0IDA1OjA2OjE4ICswODAwCkBAIC0xOSw3ICsxOSw4IEBACiAjaW5j
-bHVkZSAiaW5jbHVkZUNoZWNrLmgiCiAKICNpbmNsdWRlIDxsaW51eC9hdXRvY29uZi5oPgorI3Vu
-ZGVmIENPTkZJR19QQVJBVklSVAogI2luY2x1ZGUgImNvbXBhdF92ZXJzaW9uLmgiCiAKIC8qIFdl
-IHJlbHkgb24gS2VybmVsIE1vZHVsZSBzdXBwb3J0LiAgQ2hlY2sgaGVyZS4gKi8K
-------=_Part_112165_19493951.1179105486175
-Content-Type: application/octet-stream; name=patch-vmnet-2.6.22
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f1o8xszp
-Content-Disposition: attachment; filename="patch-vmnet-2.6.22"
-
-LS0tIHZtd2FyZS92bW5ldC1vbmx5L3VzZXJpZi5jLm9yZwkyMDA3LTA1LTEzIDE5OjA4OjA2ICsw
-ODAwCisrKyB2bXdhcmUvdm1uZXQtb25seS91c2VyaWYuYwkyMDA3LTA1LTEzIDE5OjIwOjMzICsw
-ODAwCkBAIC02MjcsMTMgKzYyNywxNCBAQAogICAgICovCiAgICBpZiAoc2tiLT5wa3RfdHlwZSA9
-PSBQQUNLRVRfT1VUR09JTkcgJiYgCS8qIFBhY2tldCBtdXN0IGJlIG91dGdvaW5nICovCiAgICAg
-ICAgc2tiLT5pcF9zdW1tZWQgPT0gVk1fQ0hFQ0tTVU1fUEFSVElBTCAmJgkvKiBXaXRob3V0IGNo
-ZWNrc3VtICovCi0gICAgICAgc2tiLT5oLnJhdyAhPSBza2ItPm5oLnJhdyAmJgkJLyogV2UgbXVz
-dCBrbm93IHdoZXJlIGhlYWRlciBpcyAqLworICAgICAgIHNrYi0+dHJhbnNwb3J0X2hlYWRlciAh
-PSBza2ItPm5ldHdvcmtfaGVhZGVyICYmCiAgICAgICAgc2tiLT5sZW4gPT0gY291bnQpIHsJCQkv
-KiBObyB0cnVuY2F0aW9uIG1heSBvY2N1ciAqLwogICAgICAgc2l6ZV90IHNrbDsKICAgICAgIGlu
-dCBjc3VtOwogICAgICAgdV9pbnQxNl90IGNzdW0xNjsKICAgICAgIAotICAgICAgc2tsID0gc2ti
-LT5oLnJhdyAtIHNrYi0+ZGF0YTsKKyAgICAgIHNrbCA9IHNrYl90cmFuc3BvcnRfb2Zmc2V0KHNr
-Yik7CisKICAgICAgIGlmIChWTmV0Q29weURhdGFncmFtKHNrYiwgYnVmLCBza2wpKSB7CiAJIHJl
-dHVybiAtRUZBVUxUOwogICAgICAgfQotLS0gdm13YXJlL3ZtbmV0LW9ubHkvdm5ldEludC5oLm9y
-ZwkyMDA3LTA1LTEzIDE5OjM3OjIwICswODAwCisrKyB2bXdhcmUvdm1uZXQtb25seS92bmV0SW50
-LmgJMjAwNy0wNS0xMyAxOToyODowMyArMDgwMApAQCAtMjUsOCArMjUsOCBAQAogI2RlZmluZSBE
-RVZfUVVFVUVfWE1JVChza2IsIGRldiwgcHJpKQkoICAgICAgICAgICAgICAgICBcCiAgICAgKHNr
-YiktPmRldiA9IChkZXYpLCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXAogICAg
-IChza2IpLT5wcmlvcml0eSA9IChwcmkpLCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwK
-LSAgICAoc2tiKS0+bWFjLnJhdyA9IChza2IpLT5kYXRhLCAgICAgICAgICAgICAgICAgICAgICAg
-ICBcCi0gICAgKHNrYiktPm5oLnJhdyA9IChza2IpLT5kYXRhICsgc2l6ZW9mIChzdHJ1Y3QgZXRo
-aGRyKSwgXAorICAgIHNrYl9yZXNldF9tYWNfaGVhZGVyKHNrYiksCQkJCVwKKyAgICAoc2tiKS0+
-bmV0d29ya19oZWFkZXIgPSBza2ItPm1hY19oZWFkZXIgKyBzaXplb2Yoc3RydWN0IGV0aGhkciks
-CVwKICAgICBkZXZfcXVldWVfeG1pdChza2IpICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICBcCiAgICkKICNpZmRlZiBLRVJORUxfMl8zXzE1Ci0tLSB2bXdhcmUvdm1uZXQtb25seS9i
-cmlkZ2UuYy5vcmcJMjAwNy0wNS0xMyAxOTo0MDoyOSArMDgwMAorKysgdm13YXJlL3ZtbmV0LW9u
-bHkvYnJpZGdlLmMJMjAwNy0wNS0xMyAxOTo0MDowMiArMDgwMApAQCAtMTA3MCwxMiArMTA3MCwx
-MyBAQAogVk5ldEJyaWRnZUNvbXB1dGVIZWFkZXJQb3Moc3RydWN0IHNrX2J1ZmYgKnNrYikgLy8g
-SU46IGJ1ZmZlciB0byBleGFtaW5lCiB7CiAgICAvKiBNYXliZSBzb21lIGtlcm5lbCBnZXRzIGl0
-IHJpZ2h0Li4uICovCi0gICBpZiAoc2tiLT5oLnJhdyAhPSBza2ItPm5oLnJhdykgeworICAgaWYo
-c2tiLT50cmFuc3BvcnRfaGVhZGVyICE9IHNrYi0+bmV0d29ya19oZWFkZXIpIHsKICAgICAgIHJl
-dHVybjsKICAgIH0KICAgIHN3aXRjaCAoYmUxNl90b19jcHUoc2tiLT5wcm90b2NvbCkpIHsKICAg
-ICAgIGNhc2UgRVRIX1BfSVA6Ci0gICAgICAgICBza2ItPmgucmF3ID0gc2tiLT5uaC5yYXcgKyAo
-c2tiLT5uaC5yYXdbMF0gJiAweDBGKSAqIDQ7CisJIHNrYi0+dHJhbnNwb3J0X2hlYWRlciA9IHNr
-Yi0+bmV0d29ya19oZWFkZXIKKwkJCQkrIChza2JfbmV0d29ya19oZWFkZXIoc2tiKVswXSAmIDB4
-MEYpICo0OwogCSByZXR1cm47CiAgICAgICBkZWZhdWx0OgogICAgICAgICAgTE9HKDMsIChLRVJO
-X0RFQlVHICJVbmtub3duIEVJSSBwcm90b2NvbCAlMDRYOiBjc3VtIGF0ICVkXG4iLCAKQEAgLTEx
-NjEsNyArMTE2Miw3IEBACiAjICBlbmRpZgogCiAgICBpZiAoYnJpZGdlLT5zbWFjKSB7Ci0gICAg
-ICBpZiAoVk5ldENhbGxTTUFDRnVuYyhicmlkZ2UtPnNtYWMsICZza2IsIHNrYi0+bWFjLnJhdywg
-CisgICAgICBpZiAoVk5ldENhbGxTTUFDRnVuYyhicmlkZ2UtPnNtYWMsICZza2IsIHNrYl9tYWNf
-aGVhZGVyKHNrYiksIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgU01BQ19DaGVja1BhY2tl
-dEZyb21Ib3N0KSAhPSAKICAgICAgICAgICBQYWNrZXRTdGF0dXNGb3J3YXJkUGFja2V0KSB7CiAg
-ICAgICAgICBMT0coNCwgKEtFUk5fTk9USUNFICJicmlkZ2UtJXM6IHBhY2tldCBkcm9wcGVkIC5c
-biIsCkBAIC0xMTg1LDcgKzExODYsNyBAQAogI2VuZGlmCiAjZW5kaWYKICAgIAotICAgc2tiX3B1
-c2goc2tiLCBza2ItPmRhdGEgLSBza2ItPm1hYy5yYXcpOworICAgc2tiX3B1c2goc2tiLCBza2It
-PmRhdGEgLSBza2JfbWFjX2hlYWRlcihza2IpKTsKICAgIExPRygzLCAoS0VSTl9ERUJVRyAiYnJp
-ZGdlLSVzOiByZWNlaXZlICVkXG4iLAogCSAgIGJyaWRnZS0+bmFtZSwgKGludCkgc2tiLT5sZW4p
-KTsKIAo=
-------=_Part_112165_19493951.1179105486175--
