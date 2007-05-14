@@ -1,55 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760632AbXENUXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760666AbXENUYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760632AbXENUXd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbXENUX0
+	id S1760666AbXENUYh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757507AbXENUY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:23:26 -0400
-Received: from turing-police.cc.vt.edu ([128.173.14.107]:43101 "EHLO
-	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754760AbXENUXZ (ORCPT
-	<RFC822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:23:25 -0400
-X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
-To: Dan Aloni <da-x@monatomic.org>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] allow kernel module exclusion on load
-In-Reply-To: Your message of "Sun, 13 May 2007 16:25:17 +0300."
-             <20070513132517.GA14038@localdomain>
-From: Valdis.Kletnieks@vt.edu
-References: <20070513132517.GA14038@localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="==_Exmh_1179174201_4398P";
-	 micalg=pgp-sha1; protocol="application/pgp-signature"
-Content-Transfer-Encoding: 7bit
-Date: Mon, 14 May 2007 16:23:21 -0400
-Message-ID: <11088.1179174201@turing-police.cc.vt.edu>
+	Mon, 14 May 2007 16:24:29 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:46678 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756412AbXENUY2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:24:28 -0400
+Date: Mon, 14 May 2007 22:22:50 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+cc: Arjan van de Ven <arjan@linux.intel.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [announce] Intel announces the PowerTOP utility for Linux
+In-Reply-To: <200705122212.43653.s0348365@sms.ed.ac.uk>
+Message-ID: <Pine.LNX.4.61.0705142221440.9570@yvahk01.tjqt.qr>
+References: <4644F726.1050806@linux.intel.com> <200705122212.43653.s0348365@sms.ed.ac.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---==_Exmh_1179174201_4398P
-Content-Type: text/plain; charset=us-ascii
 
-On Sun, 13 May 2007 16:25:17 +0300, Dan Aloni said:
-> Kernel developers might find it useful for quickly getting out from some 
-> rough debugging scenarios.
-> 
-> Signed-off-by: Dan Aloni <da-x@monatomic.org>
+On May 12 2007 22:12, Alistair John Strachan wrote:
+>On Saturday 12 May 2007 00:07:18 Arjan van de Ven wrote:
+>> What's eating the battery life of my laptop? Why isn't it many more
+>> hours? Which software component causes the most power to be burned?
+>> These are important questions without a good answer... until now.
+>
+>This is a really great tool and presents a very intuitive alternative to the 
+>timer stats file..
+>
+>On a Core 2 Duo Macbook, Linux always gets around 3.2h battery, OS X about 
+>4.2h. This tool has identified that uhci_hcd is where 75% of the ticks are 
+>going when X is not loaded. Unloading uhci_hcd drops the battery life back to 
+>around 4.2h, but I lose the keyboard.
+>
+>Is there any way to find out what USB driver is causing usb_uhci to be this 
+>busy?
 
-I think I (and everybody else who tests kernels with 3rd-party binary or
-out-of-tree modules) owe you a beer-equivalent. ;)
+At its worst, it _is_ the USB chip that draws the power when it is active
+(when uhci_hcd is loaded); does not need to be usbhid or so.
 
 
---==_Exmh_1179174201_4398P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-Comment: Exmh version 2.5 07/13/2001
-
-iD8DBQFGSMU5cC3lWbTT17ARAnt5AJ9a8d2hVnY8KuwT4DYhomGvi4tpYwCgshPQ
-7tssTOdBnkelEGuCMITGwbE=
-=DYNw
------END PGP SIGNATURE-----
-
---==_Exmh_1179174201_4398P--
+	Jan
+-- 
