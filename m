@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbXENN6J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbXENOD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755699AbXENN6J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 09:58:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752992AbXENN56
+	id S1755162AbXENOD2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 10:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXENODW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 09:57:58 -0400
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:63267 "EHLO
+	Mon, 14 May 2007 10:03:22 -0400
+Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:63403 "EHLO
 	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751906AbXENN55 (ORCPT
+	by vger.kernel.org with ESMTP id S1752992AbXENODV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 09:57:57 -0400
-In-Reply-To: <20070514110636.GB10143@uranus.ravnborg.org>
-References: <46483FAC.60503@freescale.com> <20070514110636.GB10143@uranus.ravnborg.org>
+	Mon, 14 May 2007 10:03:21 -0400
+In-Reply-To: <46484110.5020607@freescale.com>
+References: <46484110.5020607@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
-Cc: Li Yang <leoli@freescale.com>, Linus <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Message-Id: <F67CA64A-2474-4239-8BC1-17EC4AAA2D92@kernel.crashing.org>
+Cc: Paul <paulus@samba.org>, linuxppc-dev@ozlabs.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
 Content-Transfer-Encoding: 7bit
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for powerpc
-Date: Mon, 14 May 2007 08:56:52 -0500
-To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 2/2] powerpc: Fix Section mismatch warnings
+Date: Mon, 14 May 2007 09:02:26 -0500
+To: Li Yang <leoli@freescale.com>
 X-Mailer: Apple Mail (2.752.2)
 X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
 X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
@@ -37,104 +36,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On May 14, 2007, at 6:06 AM, Sam Ravnborg wrote:
+On May 14, 2007, at 5:59 AM, Li Yang wrote:
 
-> On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
->> This patch fixes the following "Section mismatch" warnings when
->> build powerpc platforms.
->>
->> -------------
->> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to
->> .init.text:early_get_page from .text between  
->> 'pte_alloc_one_kernel' (at
->> offset 0xc68) and 'pte_alloc_one'
->> WARNING: mm/built-in.o - Section mismatch: reference to
->> .init.text:set_up_list3s from .text between  
->> 'kmem_cache_create' (at offset
->> 0x20300) and 'cache_reap'
->> -------------
+> This patch fix the following Section mismatch warnings
+> in powerpc code.
+>
+> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
+> reference to .init.data:mv643xx_eth_pd_devs from .text between  
+> 'mv643xx_eth_add_pds' (at offset 0x9ed2) and 'gg2_read_config'
+> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
+> reference to .init.data:mv643xx_eth_pd_devs from .text between  
+> 'mv643xx_eth_add_pds' (at offset 0x9ed6) and 'gg2_read_config'
+> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
+> reference to .init.text:note_scsi_host from __ksymtab between  
+> '__ksymtab_note_scsi_host' (at offset 0x8) and '__ksymtab_sys_ctrler'
+>
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +-
+> arch/powerpc/platforms/powermac/setup.c   |    2 +-
+> 2 files changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/ 
+> powerpc/platforms/chrp/pegasos_eth.c
+> index 7104567..5c9f135 100644
+> --- a/arch/powerpc/platforms/chrp/pegasos_eth.c
+> +++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
+> @@ -169,7 +169,7 @@ static int Enable_SRAM(void)
+> /***********/
+> /***********/
+> -int mv643xx_eth_add_pds(void)
+> +int __init mv643xx_eth_add_pds(void)
 
-This warnings should be handled by __init_refok instead.
+it should probably be static as well.
 
-- k
-
->> Massive warnings represented by:
->> -------------
->> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch:  
->> reference to
->> .init.data:.got2 from prom_entry (offset 0x0)
->> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
->> reference to
->> .init.text:mpc8313_rdb_probe from .machine.desc after  
->> 'mach_mpc8313_rdb'
->> (at offset 0x4)
->> -------------
->>
->> Signed-off-by: Li Yang <leoli@freescale.com>
-> Acked-by: Sam Ravnborg <sam@ravnborg.org>
->> ---
->> scripts/mod/modpost.c |   16 ++++++++++++----
->> 1 files changed, 12 insertions(+), 4 deletions(-)
->>
->> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
->> index c89cb71..aa3a881 100644
->> --- a/scripts/mod/modpost.c
->> +++ b/scripts/mod/modpost.c
->> @@ -649,9 +649,10 @@ static int strrcmp(const char *s, const char  
->> *sub)
->>  *  tosec    = .init.text
->>  *
->>  * Pattern 10:
->> - *  ia64 has machvec table for each platform. It is mixture of  
->> function
->> - *  pointer of .init.text and .text.
->> - *  fromsec  = .machvec
->> + *  ia64 has machvec table and powerpc has machine desc table for  
->> each
->> + *  platform. It is mixture of function pointer of .init.text  
->> and .text.
->> + *  fromsec  = .machvec | .machine.desc
->> + *
->>  **/
->> static int secref_whitelist(const char *modname, const char *tosec,
->> 			    const char *fromsec, const char *atsym,
->> @@ -681,6 +682,8 @@ static int secref_whitelist(const char  
->> *modname, const
->> char *tosec,
->> 	const char *pat4sym[] = {
->> 		"sparse_index_alloc",
->> 		"zone_wait_table_init",
->> +		"pte_alloc_one_kernel",
->> +		"kmem_cache_create",
->> 		NULL
->> 	};
->>
->> @@ -750,7 +753,8 @@ static int secref_whitelist(const char  
->> *modname, const
->> char *tosec,
->> 				return 1;
->>
->> 	/* Check for pattern 10 */
->> -	if (strcmp(fromsec, ".machvec") == 0)
->> +	if ((strcmp(fromsec, ".machvec") == 0) ||
->> +	    (strcmp(fromsec, ".machine.desc") == 0))
->> 		return 1;
->>
->> 	return 0;
->> @@ -883,6 +887,10 @@ static void warn_sec_mismatch(const char  
->> *modname,
->> const char *fromsec,
->> 	    secref_whitelist(modname, secname, fromsec,
->> 			     elf->strtab + before->st_name, refsymname))
->> 		return;
->> +	/* fromsec whitelist - without a valid 'before' */
->> +	/* powerpc has a GOT table in .got2 section */
->> +	if (strcmp(fromsec, ".got2") == 0)
->> +		return;
->>
->> 	if (before && after) {
->> 		warn("%s - Section mismatch: reference to %s:%s from %s "
->>
+> {
+> 	int ret = 0;
+> 	static struct pci_device_id pci_marvell_mv64360[] = {
+> diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/ 
+> platforms/powermac/setup.c
+> index a410bc7..07b1c4e 100644
+> --- a/arch/powerpc/platforms/powermac/setup.c
+> +++ b/arch/powerpc/platforms/powermac/setup.c
+> @@ -384,7 +384,7 @@ int boot_part;
+> static dev_t boot_dev;
+> #ifdef CONFIG_SCSI
+> -void __init note_scsi_host(struct device_node *node, void *host)
+> +void note_scsi_host(struct device_node *node, void *host)
+> {
+> 	int l;
+> 	char *p;
+>
+>
 > -
 > To unsubscribe from this list: send the line "unsubscribe linux- 
 > kernel" in
