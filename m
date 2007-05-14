@@ -1,95 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbXENMU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbXENMX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbXENMU1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 08:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXENMUO
+	id S1754812AbXENMX7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 08:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbXENMXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 08:20:14 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:58358 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751943AbXENMUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 08:20:12 -0400
-Message-ID: <464853D9.70904@drzeus.cx>
-Date: Mon, 14 May 2007 14:19:37 +0200
-From: Pierre Ossman <drzeus-list@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=_hera.drzeus.cx-19630-1179145210-0001-2"
-To: LKML <linux-kernel@vger.kernel.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: [RFC][PATCH] Make prepare_namespace() wait for devices
+	Mon, 14 May 2007 08:23:50 -0400
+Received: from wr-out-0506.google.com ([64.233.184.235]:35421 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbXENMXs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 08:23:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=TIbvVlSNvGBPphB1GFbUUKLit+1FiMJS3IjuzcDmOygPiglpWWFvTVRXgmrf6qT1Ga54pxLfX2Un/xr8aqIVz8lg9b0ymuumYk0h6/ceW1VED+9blcjmb/cNYP+JAoHYv0n06z7kVJKmJCy9DZSoiP7aI4HoUeXl7EEkpJj2EZA=
+Message-ID: <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
+Date: Mon, 14 May 2007 17:53:46 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "James Bottomley" <James.Bottomley@steeleye.com>
+Subject: Re: why does x86 "make defconfig" build a single, lonely module?
+Cc: "Dave Jones" <davej@redhat.com>,
+       "Robert P. J. Day" <rpjday@mindspring.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
+	 <20070513160608.GA29024@redhat.com>
+	 <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
+	 <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
+	 <a781481a0705140235h6a96563cw63ed2c7a85a4f736@mail.gmail.com>
+	 <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com>
+	 <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+> Hello,
+>
+> > > [...]
+> > >  config SCSI_WAIT_SCAN
+> > >         tristate
+> > > -       default m
+> > > -       depends on SCSI
+> > > -       depends on MODULES
+> > > +       default m if SCSI=m
+> > > +       default n
+> >
+> > Note that this also means SCSI_WAIT_SCAN=n (will not get compiled
+> > and built even as a module) if SCSI=y. But this is perfectly fine, because
+> > I see:
+> >
+> > #ifndef MODULE
+> > late_initcall(scsi_complete_async_scans);
+> > #endif
+> >
+> > in drivers/scsi/scsi_scan.c anyway, so the async scans will be waited
+> > upon and get complete even when SCSI=y and scsi_scan_type=async,
+> > i.e. you don't really need the scsi_wait_scan module in that case anyway.
+>
+> It seems there is a:
+>
+> late_initcall(wait_scan_init);
+>
+> in drivers/scsi/scsi_wait_scan.c too. So we can get rid of the redundant:
+>
+> #ifndef MODULE
+> late_initcal(scsi_complete_async_scans);
+> #endif
+>
+> in drivers/scsi/scsi_scan.c by enforcing SCSI_WAIT_SCAN=y when
+> SCSI=y (and =m when SCSI=m).
+>
+> I guess this is probably the behaviour that James wanted originally?
+>
+> Anyway, attached patch (subsumes previous one) cleans up all this.
+> Now, scsi_wait_scan is the only guy who controls waiting upon async
+> scans to complete:
+>
+> If SCSI=n, SCSI_WAIT_SCAN=n, obviously.
+>
+> If SCSI=y, SCSI_WAIT_SCAN=y, so it gets built-in and is run at
+> late_initcall.
+>
+> If SCSI=m, SCSI_WAIT_SCAN=m too and would hopefully be run
+> by the initrd/initramfs scripts to wait for async SCSI bus scans to
+> finish before allowing the boot to proceed.
+>
+> [ Attached patch does _not_ expose SCSI_WAIT_SCAN to the
+> user at kernel configuration time, so if somebody wants it to be
+> built as a module even when SCSI=y (why would anybody
+> want that, doesn't make much sense to me to modprobe
+> scsi_wait_scan _after_ boot-up), it would not be possible to
+> do so. But if someone really wants that, let me know, we can
+> add a depends, tristate "..." and help in this Kconfig option to
+> accomplish that too. ]
 
---=_hera.drzeus.cx-19630-1179145210-0001-2
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+This has sadly become a one-person thread, but Robert informs
+me in private mail that we can further clean/simplify the patch:
 
-Testing and/or comments welcome.
+[subsumes both previous patches]
 
--- 
-     -- Pierre Ossman
+Signed-off-by: Satyam Sharma <satyam.sharma@gmail.com>
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+---
 
---=_hera.drzeus.cx-19630-1179145210-0001-2
-Content-Type: text/x-patch; name="initwait.patch"; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="initwait.patch"
+ drivers/scsi/Kconfig     |    3 +--
+ drivers/scsi/scsi_scan.c |    5 +----
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-commit 7c542a5a027caa95bb00f8a8223c7e4aef88c931
-Author: Pierre Ossman <drzeus@drzeus.cx>
-Date:   Mon May 14 14:15:46 2007 +0200
+---
 
-    init: wait for asynchronously scanned block devices
-    
-    Some buses (e.g. USB and MMC) do their scanning of devices in the
-    background, causing a race between them and prepare_namespace().
-    In order to be able to use these buses without an initrd, we now
-    wait for the device specified in root= to actually show up.
-    
-    If the device never shows up than we will hang in an infinite loop.
-    Previously we panic:ed instead, so this behaviour should be no
-    worse.
-    
-    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+diff -ruNp a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+--- a/drivers/scsi/Kconfig	2007-05-10 23:19:32.000000000 +0530
++++ b/drivers/scsi/Kconfig	2007-05-14 17:59:51.000000000 +0530
+@@ -243,9 +243,8 @@ config SCSI_SCAN_ASYNC
 
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 46fe407..192b2d6 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -438,11 +438,24 @@ void __init prepare_namespace(void)
- 			root_device_name += 5;
- 	}
- 
--	is_floppy = MAJOR(ROOT_DEV) == FLOPPY_MAJOR;
--
- 	if (initrd_load())
- 		goto out;
- 
-+	/* wait for any asynchronous scanning to complete */
-+	if (ROOT_DEV == 0) {
-+		printk("Waiting for root device %s...\n", saved_root_name);
-+		do {
-+			while (driver_probe_done() != 0)
-+				msleep(100);
-+			ROOT_DEV = name_to_dev_t(saved_root_name);
-+			if (ROOT_DEV == 0)
-+				msleep(100);
-+		} while (ROOT_DEV == 0);
-+	}
-+
-+	is_floppy = MAJOR(ROOT_DEV) == FLOPPY_MAJOR;
-+
-+
- 	if (is_floppy && rd_doload && rd_load_disk(0))
- 		ROOT_DEV = Root_RAM0;
- 
+ config SCSI_WAIT_SCAN
+ 	tristate
+-	default m
+ 	depends on SCSI
+-	depends on MODULES
++	default SCSI
 
---=_hera.drzeus.cx-19630-1179145210-0001-2--
+ menu "SCSI Transports"
+ 	depends on SCSI
+diff -ruNp a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+--- a/drivers/scsi/scsi_scan.c	2007-05-14 16:06:43.000000000 +0530
++++ b/drivers/scsi/scsi_scan.c	2007-05-14 16:10:34.000000000 +0530
+@@ -184,14 +184,11 @@ int scsi_complete_async_scans(void)
+ /* Only exported for the benefit of scsi_wait_scan */
+ EXPORT_SYMBOL_GPL(scsi_complete_async_scans);
+
+-#ifndef MODULE
+ /*
+  * For async scanning we need to wait for all the scans to complete before
+  * trying to mount the root fs.  Otherwise non-modular drivers may not be ready
+- * yet.
++ * yet.  This is done by scsi_wait_scan.
+  */
+-late_initcall(scsi_complete_async_scans);
+-#endif
+
+ /**
+  * scsi_unlock_floptical - unlock device via a special MODE SENSE command
