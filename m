@@ -1,50 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbXENPz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757136AbXENPzs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756713AbXENPz1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 11:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbXENPzR
+	id S1757136AbXENPzs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 11:55:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbXENPzk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 11:55:17 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:49510 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752141AbXENPzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 11:55:16 -0400
-Message-ID: <4648865E.5030706@redhat.com>
-Date: Mon, 14 May 2007 11:55:10 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 1.5.0.7 (X11/20061004)
-MIME-Version: 1.0
-To: linux@horizon.com
-CC: learninglinux4@gmail.com, linux-kernel@vger.kernel.org,
-       linux-newbie@vger.kernel.org
-Subject: Re: Why can't we sleep in an ISR?
-References: <20070514152218.19773.qmail@science.horizon.com>
-In-Reply-To: <20070514152218.19773.qmail@science.horizon.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 14 May 2007 11:55:40 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:34590 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754499AbXENPzk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 11:55:40 -0400
+X-Sasl-enc: XG6CXgxeGIung+hA07zD2B7jUTvBBGXjc+Rn54flHAYu 1179158139
+Subject: Re: Read-only bind mount patches
+From: Ian Kent <raven@themaw.net>
+To: Dave Hansen <hansendc@us.ibm.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, haveblue@us.ibm.com,
+       linux-kernel@vger.kernel.org,
+       Trond Myklebust <Trond.Myklebust@netapp.com>
+In-Reply-To: <1179155458.28670.22.camel@localhost.localdomain>
+References: <1179148960.3811.33.camel@raven.themaw.net>
+	 <1179155458.28670.22.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 23:55:31 +0800
+Message-Id: <1179158131.3811.59.camel@raven.themaw.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux@horizon.com wrote:
-> Sleeping in an ISR is not fundamentally impossible - I could design
-> a multitasker that permitted it - but has significant problems, and
-> most multitaskers, including Linux, forbid it.
+On Mon, 2007-05-14 at 08:10 -0700, Dave Hansen wrote:
+> On Mon, 2007-05-14 at 21:22 +0800, Ian Kent wrote:
+> > I've sent mail to Dave but he must be to busy, on leave or not keen on
+> > getting these patches included any more as I've not had a response.
+> 
+> I'm just now catching up on email.  I was out for a couple of weeks.
+> 
+> I'm planning on refreshing the patches and giving them another run at
+> mainline in the next month or so.
 
-You could design a system in which most ISRs can sleep,
-but even then you'll probably need to make exceptions.
+Anything I can do to help?
+If so maybe we could reduce the time to posting a bit.
 
-For example, the timer interrupt tends to drive the
-scheduler.  This means the timer interrupt cannot go
-to sleep and expect the scheduler to wake it up at
-some point in the future - since there will be no new
-timer interrupts to drive the scheduler.
+Ian
 
-This precludes the timer interrupt from taking certain
-sleeping locks, even on a system where interrupts can
-sleep (not Linux).
 
-Interrupts will always have some limitations, under
-any OS design.
-
--- 
-All Rights Reversed
