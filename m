@@ -1,122 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbXENOb7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbXENOkV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756186AbXENOb7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 10:31:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbXENObu
+	id S1755439AbXENOkV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 10:40:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbXENOkK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 10:31:50 -0400
-Received: from hancock.steeleye.com ([71.30.118.248]:38750 "EHLO
-	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754532AbXENObt (ORCPT
+	Mon, 14 May 2007 10:40:10 -0400
+Received: from moutng.kundenserver.de ([212.227.126.174]:63890 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754558AbXENOkI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 10:31:49 -0400
-Subject: Re: why does x86 "make defconfig" build a single, lonely module?
-From: James Bottomley <James.Bottomley@SteelEye.com>
-To: Satyam Sharma <satyam.sharma@gmail.com>
-Cc: Dave Jones <davej@redhat.com>, "Robert P. J. Day" <rpjday@mindspring.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
-References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
-	 <20070513160608.GA29024@redhat.com>
-	 <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
-	 <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
-	 <a781481a0705140235h6a96563cw63ed2c7a85a4f736@mail.gmail.com>
-	 <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com>
-	 <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com>
-	 <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 09:31:36 -0500
-Message-Id: <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 May 2007 10:40:08 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [patch 4/4] powerpc 2.6.21-rt1: reduce scheduling latency by changing tlb flush size
+Date: Mon, 14 May 2007 16:40:02 +0200
+User-Agent: KMail/1.9.6
+Cc: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>,
+       Thomas Gleixner <tglx@linutronix.de>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org
+References: <yyi3b1zapqa.wl@toshiba.co.jp> <1179125506.22481.297.camel@localhost.localdomain> <yyitzuf9857.wl@toshiba.co.jp>
+In-Reply-To: <yyitzuf9857.wl@toshiba.co.jp>
+X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
+ =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
+ =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
+ =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200705141640.02561.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18JXwV/dZrp+7gNJaDSG6WqQlzNvnUpvd6Tb8/
+ C3TcoOs1bm9C2Sf0M0aTfMl1A8o+1Cy0ON+9ydbymiz0rHGjq2
+ 17R3Z46Fq+nZu9VtbSo9g==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 17:53 +0530, Satyam Sharma wrote:
-> > I guess this is probably the behaviour that James wanted originally?
+On Monday 14 May 2007, Tsutomu OWA wrote:
+> --- linux-2.6.21-rt1/include/asm-powerpc/tlbflush.h     2007-04-26 12:08:32.000000000 +0900
+> +++ rt/include/asm-powerpc/tlbflush.h   2007-05-14 16:12:47.000000000 +0900
+> @@ -25,7 +25,12 @@ struct mm_struct;
+>  #include <linux/percpu.h>
+>  #include <asm/page.h>
+>  
+> +#if defined(CONFIG_PPC_CELLEB) && defined(CONFIG_PREEMPT_RT)
+> +/* Since tlb flush takes long time on Celleb, reduce it to 1 when Celleb && RT */
+> +#define PPC64_TLB_BATCH_NR 1
+> +#else
+>  #define PPC64_TLB_BATCH_NR 192
+> +#endif /* defined(CONFIG_PPC_CELLEB) && defined(CONFIG_PREEMPT_RT) */
 
-No ... you're still not reading the explanation in the thread:
+With this code, you get silent side-effects of enabling PPC_CELLEB
+along with another platform.
 
-The wait scan module is designed to wait for scans of driver modules.
-Whether SCSI=y or m has no effect on this ... you can still have modular
-drivers with built in SCSI.
+Maybe instead you should change the hpte_need_flush() to always flush
+when running on the celleb platform and PREEMPT_RT is enabled.
 
-> > Anyway, attached patch (subsumes previous one) cleans up all this.
-> > Now, scsi_wait_scan is the only guy who controls waiting upon async
-> > scans to complete:
-> >
-> > If SCSI=n, SCSI_WAIT_SCAN=n, obviously.
-> >
-> > If SCSI=y, SCSI_WAIT_SCAN=y, so it gets built-in and is run at
-> > late_initcall.
-> >
-> > If SCSI=m, SCSI_WAIT_SCAN=m too and would hopefully be run
-> > by the initrd/initramfs scripts to wait for async SCSI bus scans to
-> > finish before allowing the boot to proceed.
-> >
-> > [ Attached patch does _not_ expose SCSI_WAIT_SCAN to the
-> > user at kernel configuration time, so if somebody wants it to be
-> > built as a module even when SCSI=y (why would anybody
-> > want that, doesn't make much sense to me to modprobe
-> > scsi_wait_scan _after_ boot-up), it would not be possible to
-> > do so. But if someone really wants that, let me know, we can
-> > add a depends, tristate "..." and help in this Kconfig option to
-> > accomplish that too. ]
-> 
-> This has sadly become a one-person thread, but Robert informs
-> me in private mail that we can further clean/simplify the patch:
-> 
-> [subsumes both previous patches]
-> 
-> Signed-off-by: Satyam Sharma <satyam.sharma@gmail.com>
-> 
-> ---
-> 
->  drivers/scsi/Kconfig     |    3 +--
->  drivers/scsi/scsi_scan.c |    5 +----
->  2 files changed, 2 insertions(+), 6 deletions(-)
-> 
-> ---
-> 
-> diff -ruNp a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-> --- a/drivers/scsi/Kconfig	2007-05-10 23:19:32.000000000 +0530
-> +++ b/drivers/scsi/Kconfig	2007-05-14 17:59:51.000000000 +0530
-> @@ -243,9 +243,8 @@ config SCSI_SCAN_ASYNC
-> 
->  config SCSI_WAIT_SCAN
->  	tristate
-> -	default m
->  	depends on SCSI
-> -	depends on MODULES
-> +	default SCSI
-> 
->  menu "SCSI Transports"
->  	depends on SCSI
-> diff -ruNp a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-> --- a/drivers/scsi/scsi_scan.c	2007-05-14 16:06:43.000000000 +0530
-> +++ b/drivers/scsi/scsi_scan.c	2007-05-14 16:10:34.000000000 +0530
-> @@ -184,14 +184,11 @@ int scsi_complete_async_scans(void)
->  /* Only exported for the benefit of scsi_wait_scan */
->  EXPORT_SYMBOL_GPL(scsi_complete_async_scans);
-> 
-> -#ifndef MODULE
->  /*
->   * For async scanning we need to wait for all the scans to complete before
->   * trying to mount the root fs.  Otherwise non-modular drivers may not be ready
-> - * yet.
-> + * yet.  This is done by scsi_wait_scan.
->   */
-> -late_initcall(scsi_complete_async_scans);
-> -#endif
-
-This is actually not in mainline.  It's an incorrect patch in -mm.  The
-problem with late_initcall is that they queue in link order ... so any
-SCSI module (and there a few) linked after this won't benefit from it.
-The obvious hack is to have a separate file with this in the final link.
-However, Matthew Wilcox thinks he can do better.
-
-James
-
-
+	Arnd <><
