@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbXENSK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbXENSNS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757918AbXENSK2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 14:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756183AbXENSKW
+	id S1758768AbXENSNS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 14:13:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbXENSNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 14:10:22 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:2264 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755707AbXENSKV (ORCPT
+	Mon, 14 May 2007 14:13:08 -0400
+Received: from argus.EECS.Berkeley.EDU ([128.32.42.200]:47418 "EHLO
+	EECS.Berkeley.EDU" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756629AbXENSNI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 14:10:21 -0400
-Date: Mon, 14 May 2007 19:10:08 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       bjorn.helgaas@hp.com, Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] serial: set RTS and DTR if flow is 'r'  --- resend
-Message-ID: <20070514181007.GA29682@flint.arm.linux.org.uk>
-Mail-Followup-To: Yinghai Lu <Yinghai.Lu@Sun.COM>,
-	Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-	bjorn.helgaas@hp.com, Randy Dunlap <randy.dunlap@oracle.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com> <m1ejllqmo8.fsf@ebiederm.dsl.xmission.com> <46489BC2.6040403@sun.com> <4648A310.1050908@sun.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4648A310.1050908@sun.com>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 14 May 2007 14:13:08 -0400
+From: Jason Riedy <ejr@cs.berkeley.edu>
+To: Dmitry Torokhov <dtor@insightbb.com>
+cc: Remi Colinet <remi.colinet@free.fr>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: Regression in 2.6.21-mm1 (git-input) on Dell D610 laptop 
+In-reply-to: <200705132334.38386.dtor@insightbb.com> 
+X-Mailer: MH-E 8.0.3; nmh 1.1; GNU Emacs 22.0.96
+Date: Mon, 14 May 2007 11:12:44 -0700
+Message-ID: <26856.1179166364@argus.EECS.Berkeley.EDU>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 10:57:36AM -0700, Yinghai Lu wrote:
-> [PATCH] serial: set RTS and DTR if flow is 'r'
-> 
-> if the serial console flow is set to 'r', We need to set RTS and DTR.
-> Some UARTs on other side need these bit set, otherwise will not send 
-> char to or
-> receive char from the host that kernel is runing esp for kernel boot stage.
+And Dmitry Torokhov writes:
+> I don't think so. Could you please try the patch below? Thanks!
 
-Patch is still broken.  Patch is completely wrong as well - we do _not_
-want to set the RTS and DTR bits here, and is in fact undoing a fix I
-put in over the 2.4 drivers.
+The appended patch on top of yours fixes the too-early access of
+psmouse->private.  I don't know the expected lifetime of
+psmouse->private, so I chickened out of simply assigning priv
+earlier.
 
-If CRTSCTS is enabled via userspace, and the port is not being used
-as a console, we do not want to raise RTS _until_ we are ready to
-receive characters.  Your patch breaks this.
+BTW, why do you pass psmouse down through the initializations
+rather than ps2dev and private?
 
-Moreover, I question the reasoning.  RTS is normally raised to allow
-the remote end to send characters.  Since the kernel console is
-output _only_, until userspace opens it, there's little point in
-raising RTS.  RTS will be raised when userspace opens it.
+Jason, using git's index, dammit...
 
-There may be some sense, however, in allowing DTR to be permanently
-raised for serial consoles.  However, I would err on caution since
-DTR is used to reliably instruct modems to drop the line, so making
-such a change would be undesirable for those folk.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+diff --git a/drivers/input/mouse/alps.c b/drivers/input/mouse/alps.c
+index 2aeb299..990d2a5 100644
+--- a/drivers/input/mouse/alps.c
++++ b/drivers/input/mouse/alps.c
+@@ -384,10 +384,9 @@ static int alps_poll(struct psmouse *psmouse)
+ 	return 0;
+ }
+ 
+-static int alps_hw_init(struct psmouse *psmouse, int *version)
++static int alps_hw_init(struct psmouse *psmouse, struct alps_data *priv,
++			int *version)
+ {
+-	struct alps_data *priv = psmouse->private;
+-
+ 	priv->i = alps_get_model(psmouse, version);
+ 	if (!priv->i)
+ 		return -1;
+@@ -421,7 +420,7 @@ static int alps_reconnect(struct psmouse *psmouse)
+ {
+ 	psmouse_reset(psmouse);
+ 
+-	if (alps_hw_init(psmouse, NULL))
++	if (alps_hw_init(psmouse, (struct alps_data *)psmouse->private, NULL))
+ 		return -1;
+ 
+ 	return 0;
+@@ -449,7 +448,7 @@ int alps_init(struct psmouse *psmouse)
+ 
+ 	priv->dev2 = dev2;
+ 
+-	if (alps_hw_init(psmouse, &version))
++	if (alps_hw_init(psmouse, priv, &version))
+ 		goto init_fail;
+ 
+ 	dev1->evbit[LONG(EV_KEY)] |= BIT(EV_KEY);
