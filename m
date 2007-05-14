@@ -1,84 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757228AbXENP42@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbXENP7S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757228AbXENP42 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 11:56:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754873AbXENP4R
+	id S1756907AbXENP7S (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 11:59:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754833AbXENP7D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 11:56:17 -0400
-Received: from an-out-0708.google.com ([209.85.132.245]:48169 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754241AbXENP4Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 11:56:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m5FDkkso06lbMfDuMsmJdkKx4BatCm6HZeEjYYQNV8tRgZNAYkDX7atQ6Da0UbabNGqbzjG5zneW07aejWflAJ7fGzsFo1V9/BrPHheqVKhbM36hZe9Yp5hfKhXwyG+D4B7XabpdYqhrMIJ9vf6hgknWJMPLSW7lYWU15ypExhw=
-Message-ID: <a2ebde260705140856m3917d761xe1067c76fa000b18@mail.gmail.com>
-Date: Mon, 14 May 2007 23:56:15 +0800
-From: "Dong Feng" <middle.fengdong@gmail.com>
-To: "Bahadir Balban" <bahadir.balban@gmail.com>
-Subject: Re: Why can't we sleep in an ISR?
-Cc: "Learning Linux" <learninglinux4@gmail.com>,
-       "pradeep singh" <2500.pradeep@gmail.com>, kernelnewbies@nl.linux.org,
-       linux-newbie@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <7ac1e90c0705140824i54e1c43ela3ab3d89827c0339@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 14 May 2007 11:59:03 -0400
+Received: from smtp.linux-foundation.org ([207.189.120.12]:58099 "EHLO
+	smtp.osdl.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754286AbXENP7A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 11:59:00 -0400
+Date: Mon, 14 May 2007 08:58:40 -0700
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       "David S. Miller" <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Fix race condition about network device name allocation
+Message-ID: <20070514085840.17a343f7@freepuppy>
+In-Reply-To: <1179130660.3881.23.camel@kane-linux>
+References: <1178862045.3979.33.camel@kane-linux>
+	<20070511092519.1f34ab34@freepuppy>
+	<1179130660.3881.23.camel@kane-linux>
+Organization: Linux Foundation
+X-Mailer: Sylpheed-Claws 2.6.0 (GTK+ 2.10.11; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9f1dc2cf0705132337k13aa3ccesc575d4550492a24e@mail.gmail.com>
-	 <366312910705140010m78b215a2t1753445e81120288@mail.gmail.com>
-	 <9f1dc2cf0705140016w6d8f44f9wec7586e7879af873@mail.gmail.com>
-	 <7ac1e90c0705140824i54e1c43ela3ab3d89827c0339@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I agree that the reason an interrupt can not sleep is because an
-interrupt is not associated with any context. But I do not agree that
-it is specifically because the scheduler can not *resume* the context.
+Kenji Kaneshige found this race between device removal and
+registration.  On unregister it is possible for the old device to
+exist, because sysfs file is still open.  A new device with 'eth%d'
+will select the same name, but sysfs kobject register will fial.
 
-In early version, the ISR always borrow the stack of the currently
-running process, so if the kernel design had allowed ISR sleep, it
-would automatically be able to implement the context switch naturally.
-But ISR sleep has been forbidden from the very beginning.
+The following changes the shutdown order slightly. It hold a removes the sysfs
+entries earlier (on unregister_netdevice), but holds a kobject reference.
+Then when todo runs the actual last put free happens.
 
-The reason why kernel design does not allow ISR sleep is because a
-process should not be forced to wait for a event that irrelative to
-itself. When an exception handler sleep, the event it sleeps on is
-always in some sense related to the process incurring that exception.
-But if an ISR was allowed to sleep, the event it sleeps on would have
-nothing to do with the process being interrupted.
+Signed-off-by: Stephen Hemminger <shemminger@linux-foundation.org>
 
-So my understanding is, the forbidden of ISR sleep is not because of
-the difficulty to resume context, but because a process should not
-wait for irrelative event.
+---
+ net/core/dev.c       |   10 ++++++----
+ net/core/net-sysfs.c |    8 +++++++-
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
-
-2007/5/14, Bahadir Balban <bahadir.balban@gmail.com>:
-> On 5/14/07, Learning Linux <learninglinux4@gmail.com> wrote:
-> > Ok, but how about an ISR, that does not take any locks? Why can't we
-> > sleep in SUCH an ISR?
-> > LL
-> > -
->
-> The killer reason why you can't sleep in an interrupt is because an
-> interrupt is not associated with any context in the first place. What
-> is a context, then? It is the state information for a process. This
-> includes the kernel and userspace stack pointers, the register set,
-> and the page tables for that process. The scheduler has access to all
-> this information, to preempt one process and run another. Contrary to
-> this, an interrupt, depending on the version of your kernel and arch,
-> uses a separate irq stack or the kernel stack of the interrupted
-> process. An irq is not a context but merely a temporary execution to
-> be concluded asap.
->
-> Hope this helps,
-> Bahadir
->
-> --
-> To unsubscribe from this list: send an email with
-> "unsubscribe kernelnewbies" to ecartis@nl.linux.org
-> Please read the FAQ at http://kernelnewbies.org/FAQ
->
->
+--- 2.6.21-rc1.orig/net/core/dev.c	2007-05-11 11:02:55.000000000 -0700
++++ 2.6.21-rc1/net/core/dev.c	2007-05-14 08:44:52.000000000 -0700
+@@ -3245,7 +3245,6 @@ void netdev_run_todo(void)
+ 			continue;
+ 		}
+ 
+-		netdev_unregister_sysfs(dev);
+ 		dev->reg_state = NETREG_UNREGISTERED;
+ 
+ 		netdev_wait_allrefs(dev);
+@@ -3256,11 +3255,11 @@ void netdev_run_todo(void)
+ 		BUG_TRAP(!dev->ip6_ptr);
+ 		BUG_TRAP(!dev->dn_ptr);
+ 
+-		/* It must be the very last action,
+-		 * after this 'dev' may point to freed up memory.
+-		 */
+ 		if (dev->destructor)
+ 			dev->destructor(dev);
++
++		/* Free network device */
++		kobject_put(&dev->dev.kobj);
+ 	}
+ 
+ out:
+@@ -3411,6 +3410,9 @@ void unregister_netdevice(struct net_dev
+ 	/* Notifier chain MUST detach us from master device. */
+ 	BUG_TRAP(!dev->master);
+ 
++	/* Remove entries from sysfs */
++	netdev_unregister_sysfs(dev);
++
+ 	/* Finish processing unregister after unlock */
+ 	net_set_todo(dev);
+ 
+--- 2.6.21-rc1.orig/net/core/net-sysfs.c	2007-05-11 11:02:55.000000000 -0700
++++ 2.6.21-rc1/net/core/net-sysfs.c	2007-05-14 08:44:52.000000000 -0700
+@@ -456,9 +456,15 @@ static struct class net_class = {
+ #endif
+ };
+ 
++/* Delete sysfs entries but hold kobject reference until after all
++ * netdev references are gone.
++ */
+ void netdev_unregister_sysfs(struct net_device * net)
+ {
+-	device_del(&(net->dev));
++	struct device *dev = &(net->dev);
++
++	kobject_get(&dev->kobj);
++	device_del(dev);
+ }
+ 
+ /* Create sysfs entries for network device. */
