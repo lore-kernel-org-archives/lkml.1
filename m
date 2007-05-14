@@ -1,115 +1,173 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758759AbXENWeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759219AbXENWk2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758759AbXENWeX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 18:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755004AbXENWeQ
+	id S1759219AbXENWk2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 18:40:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756205AbXENWkQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 18:34:16 -0400
-Received: from out1.smtp.messagingengine.com ([66.111.4.25]:35619 "EHLO
-	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754775AbXENWeP (ORCPT
+	Mon, 14 May 2007 18:40:16 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:53504 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754775AbXENWkO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 18:34:15 -0400
-X-Sasl-enc: LaJ6teOk+enXfGU49q1ai4uGPLCddkEio5ZQs7+ZSaUU 1179182055
-Message-ID: <4648E4A4.60309@imap.cc>
-Date: Tue, 15 May 2007 00:37:24 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-Organization: me - organized??
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: "Lars K.W. Gohlke" <lkwg82@gmx.de>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: How to access correctly serial port inside module?
-References: <46485D84.1010902@gmx.de>
-In-Reply-To: <46485D84.1010902@gmx.de>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig97950D41FD2E1DC1B2B5D8DF"
+	Mon, 14 May 2007 18:40:14 -0400
+Subject: Re: [RFC][PATCH  5/14] Introduce union stack
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: bharata@linux.vnet.ibm.com
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Jan Blunck <j.blunck@tu-harburg.de>
+In-Reply-To: <20070514094047.GG4139@in.ibm.com>
+References: <20070514093722.GB4139@in.ibm.com>
+	 <20070514094047.GG4139@in.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Date: Mon, 14 May 2007 15:40:57 -0700
+Message-Id: <1179182457.2836.92.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig97950D41FD2E1DC1B2B5D8DF
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2007-05-14 at 15:10 +0530, Bharata B Rao wrote:
+> From: Jan Blunck <j.blunck@tu-harburg.de>
+> Subject: Introduce union stack.
+> 
+> Adds union stack infrastructure to the dentry structure and provides
+> locking routines to walk the union stack.
+...
 
-Am 14.05.2007 15:00 schrieb Lars K.W. Gohlke:
-> after searching the mailing list and searching the web, I still don't
-> know how to access correctly the serial port (in user space known as
-> /dev/ttyS01)
+> --- /dev/null
+> +++ b/include/linux/dcache_union.h
+> @@ -0,0 +1,248 @@
+> +/*
+> + * VFS based union mount for Linux
+> + *
+> + * Copyright © 2004-2007 IBM Corporation
+> + *   Author(s): Jan Blunck (j.blunck@tu-harburg.de)
+> + *
+> + * This program is free software; you can redistribute it and/or modify it
+> + * under the terms of the GNU General Public License as published by the Free
+> + * Software Foundation; either version 2 of the License, or (at your option)
+> + * any later version.
+> + *
+> + */
+> +#ifndef __LINUX_DCACHE_UNION_H
+> +#define __LINUX_DCACHE_UNION_H
+> +#ifdef __KERNEL__
+> +
+> +#include <linux/union_debug.h>
+> +#include <linux/fs_struct.h>
+> +#include <asm/atomic.h>
+> +#include <asm/semaphore.h>
+> +
+> +#ifdef CONFIG_UNION_MOUNT
+> +
+> +/*
+> + * This is the union info object, that describes general information about this
+> + * union directory
+> + *
+> + * u_mutex protects the union stack against modification. You can reach it
+> + * through the d_union field in struct dentry. Hold it when you are walking
+> + * or modifing the union stack !
+> + */
+> +struct union_info {
+> +	atomic_t u_count;
+> +	struct mutex u_mutex;
+> +};
+> +
+> +/* allocate/de-allocate */
+> +extern struct union_info *union_alloc(void);
+> +extern struct union_info *union_get(struct union_info *);
+> +extern void union_put(struct union_info *);
+> +
+> +/*
+> + * These are the functions for locking a dentry's union. When one
+> + * want to acquire a denties union lock, use:
+> + *
+> + * - union_lock() when you can sleep,
+> + * - union_lock_spinlock() when you are holding a spinlock (that
+> + *   you CAN savely give up and reacquire again)
+> + * - union_lock_readlock() when you are holding a readlock (that
+> + *   you CAN savely give up and reacquire again)
+> + *
+> + * Otherwise get the union lock early before you enter your
+> + * "no sleeping here" code.
+> + *
+> + * NOTES: union_info structure is reference counted using u_count member.
+> + * union_get() and union_put() which get and put references on union_info
+> + * should be done under union_info's u_mutex. Since the last union_put() frees
+> + * the union_info structure itself it can't obviously be done under u_mutex.
+> + * union_release() should be used in such cases (Eg. dput(), umount()) where
+> + * union_info is disassociated from the dentries, and it becomes safe
+> + * to free the union_info.
+> + */
+> +static inline void __union_lock(struct union_info *uinfo)
+> +{
+> +	BUG_ON(!atomic_read(&uinfo->u_count));
+> +	mutex_lock(&uinfo->u_mutex);
+> +}
+> +
+> +static inline void union_lock(struct dentry *dentry)
+> +{
+> +	if (unlikely(dentry && dentry->d_union)) {
+> +		struct union_info *ui = dentry->d_union;
+> +
+> +		UM_DEBUG_LOCK("\"%s\" locking %p (count=%d)\n",
+> +			      dentry->d_name.name, ui,
+> +			      atomic_read(&ui->u_count));
+> +		__union_lock(dentry->d_union);
+> +	}
+> +}
+> +
+> +static inline void __union_unlock(struct union_info *uinfo)
+> +{
+> +	BUG_ON(!atomic_read(&uinfo->u_count));
+> +	mutex_unlock(&uinfo->u_mutex);
+> +}
+> +
+> +static inline void union_unlock(struct dentry *dentry)
+> +{
+> +	if (unlikely(dentry && dentry->d_union)) {
+> +		struct union_info *ui = dentry->d_union;
+> +
+> +		UM_DEBUG_LOCK("\"%s\" unlocking %p (count=%d)\n",
+> +			      dentry->d_name.name, ui,
+> +			      atomic_read(&ui->u_count));
+> +		__union_unlock(dentry->d_union);
+> +	}
+> +}
+> +
+> +static inline void union_alloc_dentry(struct dentry *dentry)
+> +{
+> +	spin_lock(&dentry->d_lock);
+> +	if (!dentry->d_union) {
+> +		dentry->d_union = union_alloc();
+> +		spin_unlock(&dentry->d_lock);
+> +	} else {
+> +		spin_unlock(&dentry->d_lock);
+> +		union_lock(dentry);
+> +	}
+> +}
+> +
+> +static inline struct union_info *union_lock_and_get(struct dentry *dentry)
+> +{
+> +	union_lock(dentry);
+> +	return union_get(dentry->d_union);
+> +}
+> +
+> +/* Shouldn't be called with last reference to union_info */
+> +static inline void union_put_and_unlock(struct union_info *uinfo)
+> +{
+> +	union_put(uinfo);
+> +	__union_unlock(&uinfo->u_mutex);
+	               ^^^^^^^^^^^^^^^^^^^
 
-I can only tell you how I did it in the special case of the
-ser_gigaset driver which drives an ISDN device attached to
-a serial port: I implemented it as a line discipline which
-is associated to the appropriate serial port by a userspace
-daemon.
+It should be
+	
+	__union_unlock(uinfo);
 
-Reading material:
-
-Documentation/tty.txt
-	documentation on the line discipline interface
-include/linux/tty.h
-include/linux/tty_ldisc.h
-	definitions for same
-drivers/isdn/gigaset/ser-gigaset.c
-	my code - a simple example of abusing the line
-	discipline interface for your own ends :-)
-
-> would somebody be so kind to give me an example:
-
-I hope the following will help you some. If not, feel free to
-ask again.
-
-> with this behaviour:
->=20
-> 1. read from port
-
-That's not how things work in the kernel. There is no system
-call for reading some data that has arrived on that port or
-blocking if there is none, like a userspace program would do.
-Instead, when you register your line discipline you provide
-a callback function (receive_buf) for the serial driver to
-call when data has been received. That function can be called
-at any time and has to deal with the data as it gets it.
-
-> 2. output via printk()
-
-You can of course put a printk() in your receive_buf function.
-But ultimately you'll want to do more than that with the data,
-I'm sure.
-
-> 3. write to port
-
-That's easy. :-) No, it isn't. The serial driver *does*
-provide a function (aptly called "write") for sending data
-to the serial port, but you can't just call it any time you
-like. You have to synchronize with the driver by waiting for
-it to call your "write_wakeup" callback before you can call
-its write function again.
-
-HTH
-T.
-
---=20
-Tilman Schmidt                          E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+Thanks,
+Badari
 
 
---------------enig97950D41FD2E1DC1B2B5D8DF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3rc1 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFGSOSlMdB4Whm86/kRAjkNAJ4njMaWzazw1qk1xk4I8NdGw1BK0wCfcOWJ
-OtI/5CCNq+jnzNTKr4qm4wU=
-=nJ8j
------END PGP SIGNATURE-----
-
---------------enig97950D41FD2E1DC1B2B5D8DF--
