@@ -1,92 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965824AbXENLeM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762553AbXENLey@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965824AbXENLeM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:34:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966043AbXENLco
+	id S1762553AbXENLey (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:34:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965953AbXENLcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:32:44 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27932 "EHLO
+	Mon, 14 May 2007 07:32:42 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27930 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757172AbXENLc3 (ORCPT
+	with ESMTP id S1756765AbXENLc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:29 -0400
-Message-Id: <20070514110651.929217256@suse.de>
-References: <20070514110650.866217377@suse.de>
+	Mon, 14 May 2007 07:32:26 -0400
+Message-Id: <20070514110622.746784766@suse.de>
+References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:53 -0700
+Date: Mon, 14 May 2007 04:06:49 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>
-Subject: [RFD Patch 3/4] Dont use a NULL nameidata in xattr_permission()
-Content-Disposition: inline; filename=xattr_permission.diff
+       John Johansen <jjohansen@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [AppArmor 42/45] AppArmor: add lock subtyping so lockdep does not report false dependencies
+Content-Disposition: inline; filename=apparmor-lockdep.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create nameidata2 struct xattr_permission so that it does not pass NULL
-to permission.
+AppArmor uses lock subtyping to avoid false positives from lockdep.  The
+profile lock is often taken nested, but it is guaranteed to be in a lock
+safe order and not the same lock when done, so it is safe.
 
+A third lock type (aa_lock_task_release) is given to the profile lock
+when it is taken in soft irq context during task release (aa_release).
+This is to avoid a false positive between the task lock and the profile
+lock.  In task context the profile lock wraps the task lock with irqs
+off, but the kernel takes the task lock with irqs enabled.  This won't
+ever result in a deadlock because aa_release doesn't need to take the
+task lock of the dead task that is released.
+
+Signed-off-by: John Johansen <jjohansen@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>
 
 ---
- fs/xattr.c |   18 +++++++++++++-----
- 1 file changed, 13 insertions(+), 5 deletions(-)
+ security/apparmor/apparmor.h  |    7 +++++++
+ security/apparmor/inline.h    |   25 ++++++++++++++++++-------
+ security/apparmor/locking.txt |   21 +++++++++++++++------
+ security/apparmor/main.c      |    6 +++---
+ 4 files changed, 43 insertions(+), 16 deletions(-)
 
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -25,8 +25,16 @@
-  * because different namespaces have very different rules.
-  */
- static int
--xattr_permission(struct inode *inode, const char *name, int mask)
-+xattr_permission(struct dentry *dentry, struct vfsmount *mnt, const char *name,
-+		 int mask)
- {
-+	struct inode *inode = dentry->d_inode;
-+	struct nameidata2 nd;
-+
-+	nd.dentry = dentry;
-+	nd.mnt = mnt;
-+	nd.flags = 0;
-+
- 	/*
- 	 * We can never set or remove an extended attribute on a read-only
- 	 * filesystem  or on an immutable / append-only inode.
-@@ -65,7 +73,7 @@ xattr_permission(struct inode *inode, co
- 			return -EPERM;
- 	}
+--- a/security/apparmor/apparmor.h
++++ b/security/apparmor/apparmor.h
+@@ -185,6 +185,13 @@ struct aa_audit {
+ #define AA_CHECK_DIR	2  /* file type is directory */
+ #define AA_CHECK_MANGLE	4  /* leave extra room for name mangling */
  
--	return permission(inode, mask, NULL);
-+	return permission(inode, mask, &nd);
++/* lock subtypes so lockdep does not raise false dependencies */
++enum aa_lock_class {
++	aa_lock_normal,
++	aa_lock_nested,
++	aa_lock_task_release
++};
++
+ /* main.c */
+ extern int alloc_null_complain_profile(void);
+ extern void free_null_complain_profile(void);
+--- a/security/apparmor/inline.h
++++ b/security/apparmor/inline.h
+@@ -99,7 +99,8 @@ static inline void aa_free_task_context(
+  * While the profile is locked, local interrupts are disabled. This also
+  * gives us RCU reader safety.
+  */
+-static inline void lock_profile(struct aa_profile *profile)
++static inline void lock_profile_nested(struct aa_profile *profile,
++				       enum aa_lock_class lock_class)
+ {
+ 	/* We always lock top-level profiles instead of children. */
+ 	if (profile)
+@@ -112,7 +113,13 @@ static inline void lock_profile(struct a
+ 	 * the task_free_security hook, which may run in RCU context.
+ 	 */
+ 	if (profile)
+-		spin_lock_irqsave(&profile->lock, profile->int_flags);
++		spin_lock_irqsave_nested(&profile->lock, profile->int_flags,
++					 lock_class);
++}
++
++static inline void lock_profile(struct aa_profile *profile)
++{
++	lock_profile_nested(profile, aa_lock_normal);
  }
  
- int
-@@ -75,7 +83,7 @@ vfs_setxattr(struct dentry *dentry, stru
- 	struct inode *inode = dentry->d_inode;
- 	int error;
+ /**
+@@ -161,17 +168,21 @@ static inline void lock_both_profiles(st
+ 	 */
+ 	if (!profile1 || profile1 == profile2) {
+ 		if (profile2)
+-			spin_lock_irqsave(&profile2->lock, profile2->int_flags);
++			spin_lock_irqsave_nested(&profile2->lock,
++						 profile2->int_flags,
++						 aa_lock_normal);
+ 	} else if (profile1 > profile2) {
+ 		/* profile1 cannot be NULL here. */
+-		spin_lock_irqsave(&profile1->lock, profile1->int_flags);
++		spin_lock_irqsave_nested(&profile1->lock, profile1->int_flags,
++					 aa_lock_normal);
+ 		if (profile2)
+-			spin_lock(&profile2->lock);
++			spin_lock_nested(&profile2->lock, aa_lock_nested);
  
--	error = xattr_permission(inode, name, MAY_WRITE);
-+	error = xattr_permission(dentry, mnt, name, MAY_WRITE);
- 	if (error)
- 		return error;
+ 	} else {
+ 		/* profile2 cannot be NULL here. */
+-		spin_lock_irqsave(&profile2->lock, profile2->int_flags);
+-		spin_lock(&profile1->lock);
++		spin_lock_irqsave_nested(&profile2->lock, profile2->int_flags,
++					 aa_lock_normal);
++		spin_lock_nested(&profile1->lock, aa_lock_nested);
+ 	}
+ }
  
-@@ -112,7 +120,7 @@ vfs_getxattr(struct dentry *dentry, stru
- 	struct inode *inode = dentry->d_inode;
- 	int error;
+--- a/security/apparmor/locking.txt
++++ b/security/apparmor/locking.txt
+@@ -51,9 +51,18 @@ list, and can sleep. This ensures that p
+ won't race with itself. We release the profile_list_lock as soon as
+ possible to avoid stalling exec during profile loading/replacement/removal.
  
--	error = xattr_permission(inode, name, MAY_READ);
-+	error = xattr_permission(dentry, mnt, name, MAY_READ);
- 	if (error)
- 		return error;
- 
-@@ -174,7 +182,7 @@ vfs_removexattr(struct dentry *dentry, s
- 	if (!inode->i_op->removexattr)
- 		return -EOPNOTSUPP;
- 
--	error = xattr_permission(inode, name, MAY_WRITE);
-+	error = xattr_permission(dentry, mnt, name, MAY_WRITE);
- 	if (error)
- 		return error;
- 
+-lock_dep reports a false 'possible irq lock inversion dependency detected'
+-when the profile lock is taken in aa_release.  This is due to that the
+-task_lock is often taken inside the profile lock but other kernel code
+-takes the task_lock with interrupts enabled.  A deadlock will not actually
+-occur because apparmor does not take the task_lock in hard_irq or soft_irq
+-context.
++AppArmor uses lock subtyping to avoid false positives from lockdep.  The
++profile lock is often taken nested, but it is guaranteed to be in a lock
++safe order and not the same lock when done, so it is safe.
++
++A third lock type (aa_lock_task_release) is given to the profile lock
++when it is taken in soft irq context during task release (aa_release).
++This is to avoid a false positive between the task lock and the profile
++lock.  In task context the profile lock wraps the task lock with irqs
++off, but the kernel takes the task lock with irqs enabled.  This won't
++result in a deadlock because for a deadlock to occur the kernel must
++take dead task A's lock (irqs on), the rcu callback hook freeing
++dead task A must be run and AppArmor must be changing the profile on
++dead task A.  The kernel should not be taking a dead task's task_lock
++at the same time the task is being freed by task rcu cleanup other wise
++the task would not be out of its quiescent period.
+--- a/security/apparmor/main.c
++++ b/security/apparmor/main.c
+@@ -1081,8 +1081,8 @@ void aa_release(struct task_struct *task
+ 	 * sufficient to prevent the replacement race so we do not lock
+ 	 * the task.
+ 	 *
+-	 * lock_dep reports a false 'possible irq lock inversion dependency'
+-	 * between the profile lock and the task_lock.
++	 * Use lock subtyping to avoid lockdep reporting a false irq
++	 * possible inversion between the task_lock and profile_lock
+ 	 *
+ 	 * We also avoid taking the task_lock here because lock_dep
+ 	 * would report another false {softirq-on-W} potential irq_lock
+@@ -1095,7 +1095,7 @@ void aa_release(struct task_struct *task
+ repeat:
+ 	profile = aa_get_profile(task);
+ 	if (profile) {
+-		lock_profile(profile);
++		lock_profile_nested(profile, aa_lock_task_release);
+ 		cxt = aa_task_context(task);
+ 		if (unlikely(!cxt || cxt->profile != profile)) {
+ 			unlock_profile(profile);
 
 -- 
