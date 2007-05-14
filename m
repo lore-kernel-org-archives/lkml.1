@@ -1,123 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbXENTo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbXENTpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbXENTo7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbXENTox
+	id S1757853AbXENTpa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbXENTpQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:44:53 -0400
-Received: from lug-owl.de ([195.71.106.12]:54706 "EHLO lug-owl.de"
+	Mon, 14 May 2007 15:45:16 -0400
+Received: from mail.screens.ru ([213.234.233.54]:46352 "EHLO mail.screens.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754339AbXENTow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:44:52 -0400
-Date: Mon, 14 May 2007 21:44:51 +0200
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: devzero@web.de
-Cc: linux-kernel@vger.kernel.org, jcm@redhat.com
-Subject: Re: [RFC] - LXR on kernel.org ? was: Re: What tools to use?
-Message-ID: <20070514194451.GN27871@lug-owl.de>
-Mail-Followup-To: devzero@web.de, linux-kernel@vger.kernel.org,
-	jcm@redhat.com
-References: <1783741195@web.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Rzq/nSLlHy1djmXS"
+	id S1754682AbXENTpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 15:45:14 -0400
+Date: Mon, 14 May 2007 23:44:46 +0400
+From: Oleg Nesterov <oleg@tv-sign.ru>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, David Chinner <dgc@sgi.com>,
+       David Howells <dhowells@redhat.com>, Gautham Shenoy <ego@in.ibm.com>,
+       Jarek Poplawski <jarkao2@o2.pl>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+Message-ID: <20070514194446.GA159@tv-sign.ru>
+References: <20070503204226.GA212@tv-sign.ru> <464475EB.3000408@gmail.com> <20070511134714.GA191@tv-sign.ru> <46448965.7070500@gmail.com> <20070511145345.GA240@tv-sign.ru> <4645559D.4050602@gmail.com> <20070513192753.GA3014@tv-sign.ru> <46477239.9030007@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1783741195@web.de>
-X-Operating-System: Linux mail 2.6.18-4-686 
-X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
-X-gpg-key: wwwkeys.de.pgp.net
-X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <46477239.9030007@gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 05/13, Tejun Heo wrote:
+> 
+> Oleg Nesterov wrote:
+> > Heh. I thought about another bit-in-pointer too. I can't explain this,
+> > but I personally hate these bits even more than barriers.
+> 
+> I'm the other way around but it's like saying "I like donkey poo better
+> than horse poo".  Let's accept that we have different tastes in poos.
 
---Rzq/nSLlHy1djmXS
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes sure :)
 
-On Fri, 2007-05-11 10:06:17 +0200, devzero@web.de <devzero@web.de> wrote:
-> Jesper Juhl <jesper.juhl () gmail ! com> wrote:
-> > On 10/05/07, Shahbaz Khan <shaz.linux@gmail.com> wrote:
-> > > All the experts on this list plz let me know of any good cross
-> > > referencing tool for source code navigation. I have tried LXR but its
-> > > not easy to configure for a rookie like me. Anyother as good as LXR?
-> > >
-> > lxr is pretty good (glimpse on its own as well can be useful). If you
-> > don't want to set it up yourself, then you could consider to use the
-> > online version at http://lxr.linux.no/
+> >> * run_workqueue() clears the cwq pointer and VALID bit while holding
+> >> lock before executing the work.
+> > 
+> > We should not clear cwq. I guess you meant "does list_del() and clears
+> > VALID bit".
+> 
+> Yeap, I've used the term 'clearing' as more of a logical term - making
+> the pointer invalid, but is there any reason why we can't clear the
+> pointer itself?
 
-One "problem" with lxr.linux.no is that it's only updated from time to
-time.  Maximilian Wilhelm and I added some preliminary GIT support to
-LXR, and we're working on a patch to present the list of versions as
-drop-down boxes (instead of a long link list.)
+Because this breaks cancel_work_sync(work), it needs get_wq_data(work) for
+wait_on_work(work).
 
-This should allow to index all and any tagged versions of the Linux
-kernel and present them.  However, I don't have a box that's equipped
-properly (HDD, CPU as well as network connectivity) to offer such a
-setup, but I'd help in setting it up if somebody provides the machine!
+> >> * try_to_grab_pending() checks VALID && pointers equal after grabbing
+> >> cwq->lock.
+> > 
+> > We don't even need to check the pointers. VALID bit is always changed
+> > under cwq->lock. So, if we see VALID under cwq->lock, we have a right
+> > pointer.
+> 
+> But there are multiple cwq->lock's.  VALID can be set with one of other
+> cwq->lock's locked.
 
-> > Another good thing is "make ctags" in the kernel source dir - this
-> > will  let you quickly jump to declarations etc and back with a few
-> > simple keystrokes in editors like vim.
-> > http://www.faqs.org/docs/ldev/0130091154_64.htm
-> > http://applications.linux.com/article.pl?sid=3D07/01/22/167212&tid=3D13=
-&tid=3D47
-> > http://cscope.sourceforge.net/cscope_vim_tutorial.html
-> >=20
-> > "make cscope" is another good option. It'll generate an index usable
-> > by the cscope tool (http://cscope.sourceforge.net/).
->=20
-> I like lxr pretty much.
-> i`m not a programmer, but i often need some information on "what`s
-> the driver version of xyz in latest kernel" or "was this or that
-> feature/patch already being merged" or "i have this line of code
-> in kernel - how does it look in recent kernel , did it change " ?
+Yes, you are right, thanks.
 
-You can easily get this information from http://git.kernel.org/git .
+So, try_to_grab_pending() should check "VALID && pointers equal" atomically.
+We can't do "if (VALID && cwq == get_wq_data(work))". We should do something
+like this
 
-> why not adding a link to every kernel an kernel.org kernel,
-> pointing to recent lxr`ed kernel source - or - even better -
-> make lxr`ed kernel source part of kernel.org (so we
-> have "B V VI 	C Changelog LXR" ) ?=20
+	(((long)cwq) | VALID | PENDING) == atomic_long_read(&work->data)
 
-I'd support the idea, but somebody needs to offer a machine or two and
-enough bandwidth. (Though I hope that it's used rarely enough so that
-only one machine is needed.)
+Yes? I need to think more about this.
 
-> sure, i know kernel.org itself is very busy, but maybe this can
-> be done via dedicated lxr machine/webserver someone is willing
-> to donate !?
+> I didn't really get the smp_mb__before_spinlock() thing.  How are you
+> planning to use it?  spinlock() is already a read barrier.  What do you
+> gain by making it also a write barrier?
 
-There's *no* way to add this to the current kernel.org machines.
-There's quite some DB access during indexing, and making up the
-sources on request takes some CPU cycles, too.
+As I said, we can shift set_wq_data() from insert_work() to __queue_work(),
 
-> for myself, i would happily donate some bucks for this.
+	static void insert_work(struct cpu_workqueue_struct *cwq,
+					struct work_struct *work, int tail)
+	{
+		if (tail)
+			list_add_tail(&work->entry, &cwq->worklist);
+		else
+			list_add(&work->entry, &cwq->worklist);
+		wake_up(&cwq->more_work);
+	}
 
-As I said: If you manage to prepare the box, I'll offer to do the LXR
-setup and automate the indexing.
+	static void __queue_work(struct cpu_workqueue_struct *cwq,
+				 struct work_struct *work)
+	{
+		unsigned long flags;
 
-MfG, JBG
+		set_wq_data(work, cwq);
 
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
- Signature of:                      http://perl.plover.com/Questions.html
- the second  :
+		smp_mb_before_spinlock();
+		spin_lock_irqsave(&cwq->lock, flags);
+		insert_work(cwq, work, 1);
+		spin_unlock_irqrestore(&cwq->lock, flags);
+	}
 
---Rzq/nSLlHy1djmXS
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+this needs very minor changes.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+BTW, in _theory_, spinlock() is not a read barrier, yes?
+>From Documentation/memory-barriers.txt
 
-iD8DBQFGSLwzHb1edYOZ4bsRAjC1AJ4gMtFUDqW0YjkJeYglGOixsfqfkgCgik5D
-bBogUVOjwylcwAbWRpZ0xgw=
-=cdrr
------END PGP SIGNATURE-----
+     Memory operations that occur before a LOCK operation may appear to happen
+     after it completes.
 
---Rzq/nSLlHy1djmXS--
+Oleg.
+
