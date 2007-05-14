@@ -1,52 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760897AbXENU22@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbXENU2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760897AbXENU22 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:28:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757262AbXENU2V
+	id S1761190AbXENU2w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758888AbXENU2n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:28:21 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:48310 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755925AbXENU2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:28:19 -0400
-Date: Mon, 14 May 2007 22:27:24 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22-rc1
-In-Reply-To: <46489D48.2040405@s5r6.in-berlin.de>
-Message-ID: <Pine.LNX.4.61.0705142226270.9570@yvahk01.tjqt.qr>
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
- <4647569D.7010709@imap.cc> <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr>
- <46489D48.2040405@s5r6.in-berlin.de>
+	Mon, 14 May 2007 16:28:43 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:49175
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756515AbXENU2m (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:28:42 -0400
+From: Rob Landley <rob@landley.net>
+To: Dave Jones <davej@redhat.com>
+Subject: Re: tracking down disk spinups.
+Date: Mon, 14 May 2007 16:28:35 -0400
+User-Agent: KMail/1.9.1
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070514185734.GM27604@redhat.com>
+In-Reply-To: <20070514185734.GM27604@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705141628.35617.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Monday 14 May 2007 2:57 pm, Dave Jones wrote:
+> Why did the kernel ignore what I told it to do ?
+> I'm sure it thinks it knows better than me for a reason, but
+> I'd like to know what it is.
 
-On May 14 2007 19:32, Stefan Richter wrote:
->> 
->> As for NETDEV_1000 and _10000, I really wonder if we need anymore
->> help text than the option. I do not know what the minimum level
->> of user knowledge is that kconfig help texts need to support,
->> but maybe you can tell?
->
->The text "Ethernet (10000 Mbit)" _doesn't_ tell me that this option
->"does not affect the kernel build, it only lets [me] choose drivers".
->
->The "patches welcome" is quite appropriate.  On the other hand, visible
->Kconfig options without help text should almost never be allowed to go
->in in the first place, IMO.
+Remount doesn't switch filesystem drivers, it tells the existing filesystem 
+driver to accept new flags and/or a new option string.
 
-Well, it was a conversion from "menu" to "menuconfig". Since
-menus cannot(?) have a kconfig text, I did not transform one.
+To switch drivers you have to umount the old sucker and mount the new one.  
+(The idea of handing off consistent cache data from one mounted filesystem 
+driver to another...  Ouch.)
 
-For the "config" to "menuconfig" conversions, the help text
-was preserved, since there was something to preserve.
+Most filesystem drivers aren't compatible with each other anyway.  Sounds like 
+what you really want to do is put the ext3 driver into "ext2 mode", and stop 
+journaling.  Many people have wanted this over the years, but alas our dream 
+of "one darn driver for the ext# family" got squashed years ago because 
+people wanted two different codebases for the same filesystem that could 
+diverge, require the same bugs to be fixed twice, become incompatible...
 
-
-	Jan
--- 
+Rob
