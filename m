@@ -1,54 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761283AbXENA1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760943AbXENAhS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761283AbXENA1P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 20:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757330AbXENA1A
+	id S1760943AbXENAhS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 20:37:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755181AbXENAhG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 20:27:00 -0400
-Received: from terminus.zytor.com ([192.83.249.54]:60817 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755016AbXENA1A (ORCPT
+	Sun, 13 May 2007 20:37:06 -0400
+Received: from eagle.jhcloos.com ([207.210.242.212]:1248 "EHLO
+	eagle.jhcloos.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443AbXENAhF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 20:27:00 -0400
-Message-ID: <4647ACA5.7040901@zytor.com>
-Date: Sun, 13 May 2007 17:26:13 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+	Sun, 13 May 2007 20:37:05 -0400
+From: James Cloos <cloos@jhcloos.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, discuss@x86-64.org,
+       Simon Arlott <simon@fire.lp0.eu>, trivial@kernel.org,
+       Andi Kleen <ak@suse.de>
+Subject: Re: [discuss] [PATCH] spelling fixes: arch/x86_64/
+In-Reply-To: <20070513144725.07487fc7@the-village.bc.nu> (Alan Cox's message
+	of "Sun\, 13 May 2007 14\:47\:25 +0100")
+References: <4644C783.3090805@simon.arlott.org.uk>
+	<200705121825.26430.ak@suse.de> <m3abw9a4w9.fsf@lugabout.jhcloos.org>
+	<20070513144725.07487fc7@the-village.bc.nu>
+User-Agent: Gnus/5.110007 (No Gnus v0.7) Emacs/23.0.0 (gnu/linux)
+Face: iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAMnRFWHRUaXRsZQAvbWF4dG9y
+ L2Nsb29zL2luY29taW5nLzIwMDQvMDIvUFdHL0pIQzE2LnBuZyJMlEwAAAAadEVYdFNvZnR3YXJl
+ AEdOT01FIEljb24gRWRpdG9ynioKbAAAAHFJREFUeJzFk8EKwCAMQ1/ED9cvzw6iuM0N9WIvDTWE
+ 1KjAxmKnLBEBjLcEIBCeI2nccy5YKrjxwbbvAvZ37zlo4GB9iRMC/cq/AppItwmMyJ5I98wd9G7P
+ xxgrSKlYS2lMrOcV13o95aVSKA7E5ndGXG+IIzcl4BNfAAAAAElFTkSuQmCC
+Copyright: Copyright 2007 James Cloos
+OpenPGP: ED7DAEA6; url=http://jhcloos.com/public_key/0xED7DAEA6.asc
+OpenPGP-Fingerprint: E9E9 F828 61A4 6EA9 0F2B  63E7 997A 9F17 ED7D AEA6
+X-Hashcash: 1:23:070514:alan@lxorguk.ukuu.org.uk::pXbbIkXssTms4wVd:00000000000000000000000000000000000000pCB
+X-Hashcash: 1:23:070514:simon@fire.lp0.eu::iLEfUo5XFonM5bWj:0000000000000000000000000000000000000000000061Ti
+X-Hashcash: 1:23:070514:ak@suse.de::kp1A8fJexr/zN/Tj:00000006Xxz
+X-Hashcash: 1:23:070514:trivial@kernel.org::bIHH0owD/s5svakI:0000000000000000000000000000000000000000000Nped
+X-Hashcash: 1:23:070514:discuss@x86-64.org::fGNVSkMKHzDrMAKQ:0000000000000000000000000000000000000000000e0TD
+X-Hashcash: 1:23:070514:linux-kernel@vger.kernel.org::iIn2re1qYjlDMC9l:000000000000000000000000000000000hQNz
+Date: Sun, 13 May 2007 20:36:06 -0400
+Message-ID: <m38xbs2qcy.fsf@lugabout.jhcloos.org>
 MIME-Version: 1.0
-To: Dave Jones <davej@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Riley@Williams.Name
-Subject: Re: MAINTAINERS update.
-References: <20070513230746.GA3607@redhat.com> <46479AFC.7020404@zytor.com> <20070513232953.GJ27604@redhat.com>
-In-Reply-To: <20070513232953.GJ27604@redhat.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave Jones wrote:
-> 
-> That previous entry of MAINTAINERS raised an eyebrow too.
-> You, Eric, Andi, and Zach seem to have done more work on 'i386 BOOT CODE'
-> in the last few months than I recall Riley doing, well.. since ages.
-> Not to belittle whatever work he did, but perhaps his entry belongs
-> more in CREDITS than MAINTAINERS.  It felt a little cheeky to be
-> messing with someone elses entry though.  Riley?
-> 
+>>>>> "Alan" == Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-Riley passed away about a month ago (traffic accident.)
+Alan> Re-enable is definitely "more correct".
 
-Anyway I have a patch to take over maintainership of that as part of my
-rewrite of said code:
+I don't disagree.  Had I been more awake I expect I'd've :^)
+made that more clear.
 
-http://git.kernel.org/?p=linux/kernel/git/hpa/linux-2.6-newsetup.git;a=summary
-
-> Perhaps those two entries should just be merged together to become
-> "i386 Architecture" too ?
-
-That would not be a bad idea; overall, though, I think a lot more code
-should be unified across the entire x86 architecture.
-
-	-hpa
+-JimC
+-- 
+James Cloos <cloos@jhcloos.com>         OpenPGP: 1024D/ED7DAEA6
