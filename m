@@ -1,72 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbXENSNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757871AbXENSXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbXENSNS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 14:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756645AbXENSNI
+	id S1757871AbXENSXk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 14:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756422AbXENSXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 14:13:08 -0400
-Received: from argus.EECS.Berkeley.EDU ([128.32.42.200]:47418 "EHLO
-	EECS.Berkeley.EDU" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756629AbXENSNI (ORCPT
+	Mon, 14 May 2007 14:23:33 -0400
+Received: from smtp-101-monday.nerim.net ([62.4.16.101]:1480 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756134AbXENSXc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 14:13:08 -0400
-From: Jason Riedy <ejr@cs.berkeley.edu>
-To: Dmitry Torokhov <dtor@insightbb.com>
-cc: Remi Colinet <remi.colinet@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: Regression in 2.6.21-mm1 (git-input) on Dell D610 laptop 
-In-reply-to: <200705132334.38386.dtor@insightbb.com> 
-X-Mailer: MH-E 8.0.3; nmh 1.1; GNU Emacs 22.0.96
-Date: Mon, 14 May 2007 11:12:44 -0700
-Message-ID: <26856.1179166364@argus.EECS.Berkeley.EDU>
+	Mon, 14 May 2007 14:23:32 -0400
+Date: Mon, 14 May 2007 20:24:19 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Antonino Ingargiola <tritemio@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc1
+Message-ID: <20070514202419.33a90f57@hyperion.delvare>
+In-Reply-To: <alpine.LFD.0.98.0705140914410.6739@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+	<5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
+	<alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
+	<5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
+	<20070514081022.7fcee97f@hyperion.delvare>
+	<5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
+	<20070514141437.631fcfd1@hyperion.delvare>
+	<5486cca80705140628w5ff43ebdqf6a5413203226d5@mail.gmail.com>
+	<20070514172138.1c870793@hyperion.delvare>
+	<alpine.LFD.0.98.0705140914410.6739@woody.linux-foundation.org>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-And Dmitry Torokhov writes:
-> I don't think so. Could you please try the patch below? Thanks!
+Hello Linus,
 
-The appended patch on top of yours fixes the too-early access of
-psmouse->private.  I don't know the expected lifetime of
-psmouse->private, so I chickened out of simply assigning priv
-earlier.
+On Mon, 14 May 2007 09:30:19 -0700 (PDT), Linus Torvalds wrote:
+> On Mon, 14 May 2007, Jean Delvare wrote:
+> > 
+> > This is a side effect of an i2c-core cleanup. This is already fixed in
+> > lm_sensors 2.10.3 (libsensors.so.3.1.3).
+> 
+> So apparently that fixed it, but in general we do not allow these kinds of 
+> "need to have new xyz with new kernel".
 
-BTW, why do you pass psmouse down through the initializations
-rather than ps2dev and private?
+Sure, we don't allow that. Except for xfsprogs in 2.6.1, procps in
+2.6.4, oprofile in 2.6.13 and udev in 2.6.19, of course.
 
-Jason, using git's index, dammit...
+> Kernels are supposed to be backwards compatible. Jean, what was it that 
+> changed, and why can't we just make them appear the same?
+> 
+> It may be that something like a sensors package isn't important enough to 
+> worry about (the machine still *works*, and everything else won't notice), 
+> but if it's a simple matter of adding some random file to /sysfs, we 
+> should just do it.
 
-diff --git a/drivers/input/mouse/alps.c b/drivers/input/mouse/alps.c
-index 2aeb299..990d2a5 100644
---- a/drivers/input/mouse/alps.c
-+++ b/drivers/input/mouse/alps.c
-@@ -384,10 +384,9 @@ static int alps_poll(struct psmouse *psmouse)
- 	return 0;
- }
- 
--static int alps_hw_init(struct psmouse *psmouse, int *version)
-+static int alps_hw_init(struct psmouse *psmouse, struct alps_data *priv,
-+			int *version)
- {
--	struct alps_data *priv = psmouse->private;
--
- 	priv->i = alps_get_model(psmouse, version);
- 	if (!priv->i)
- 		return -1;
-@@ -421,7 +420,7 @@ static int alps_reconnect(struct psmouse *psmouse)
- {
- 	psmouse_reset(psmouse);
- 
--	if (alps_hw_init(psmouse, NULL))
-+	if (alps_hw_init(psmouse, (struct alps_data *)psmouse->private, NULL))
- 		return -1;
- 
- 	return 0;
-@@ -449,7 +448,7 @@ int alps_init(struct psmouse *psmouse)
- 
- 	priv->dev2 = dev2;
- 
--	if (alps_hw_init(psmouse, &version))
-+	if (alps_hw_init(psmouse, priv, &version))
- 		goto init_fail;
- 
- 	dev1->evbit[LONG(EV_KEY)] |= BIT(EV_KEY);
+We already have CONFIG_SYSFS_DEPRECATED for that.
+
+-- 
+Jean Delvare
