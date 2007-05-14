@@ -1,49 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbXENMHu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbXENMOF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754483AbXENMHu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 08:07:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751581AbXENMHn
+	id S1754585AbXENMOF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 08:14:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXENMNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 08:07:43 -0400
-Received: from mail.suse.de ([195.135.220.2]:43957 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751149AbXENMHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 08:07:43 -0400
-Date: Mon, 14 May 2007 14:07:37 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
-Message-ID: <20070514120737.GE31234@wotan.suse.de>
-References: <20070511131541.992688403@chello.nl> <20070511155621.GA13150@elte.hu> <46449F61.2060004@cosmosbay.com> <1178903913.2781.20.camel@lappy>
+	Mon, 14 May 2007 08:13:55 -0400
+Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:4986 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752004AbXENMNy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 08:13:54 -0400
+Date: Mon, 14 May 2007 14:14:37 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Antonino Ingargiola" <tritemio@gmail.com>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc1
+Message-ID: <20070514141437.631fcfd1@hyperion.delvare>
+In-Reply-To: <5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+	<5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
+	<alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
+	<5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
+	<20070514081022.7fcee97f@hyperion.delvare>
+	<5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178903913.2781.20.camel@lappy>
-User-Agent: Mutt/1.5.9i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 07:18:33PM +0200, Peter Zijlstra wrote:
-> On Fri, 2007-05-11 at 18:52 +0200, Eric Dumazet wrote:
-> > 
-> > But I personally find this new rw_mutex not scalable at all if you have some 
-> > writers around.
-> > 
-> > percpu_counter_sum is just a L1 cache eater, and O(NR_CPUS)
-> 
-> Yeah, that is true; there are two occurences, the one in
-> rw_mutex_read_unlock() is not strictly needed for correctness.
-> 
-> Write locks are indeed quite expensive. But given the ratio of
-> reader:writer locks on mmap_sem (I'm not all that familiar with other
-> rwsem users) this trade-off seems workable.
+Hi Antonino,
 
-I guess the problem with that logic is assuming the mmap_sem read side
-always needs to be scalable. Given the ratio of threaded:unthreaded
-apps, maybe the trade-off swings away from favour?
+On Mon, 14 May 2007 10:34:08 +0200, Antonino Ingargiola wrote:
+> 2007/5/14, Jean Delvare <khali@linux-fr.org>:
+> [cut]
+> > I am not familiar with the gnome sensors applet. Does it say where it
+> > is getting the data (driver name, device name...)?
+> 
+> The applet settings show a list of sensors under the libsensors name.
+> Those are the sensors that work on 2.6.21.1.
+> 
+> However the acpi and i2c section of the two config are
+> > > identical. I report the only selected options:
+> > >
+> > > Power management options (ACPI, APM)  --->
+> > >   [*] Power Management support
+> > >   [*]   Software Suspend (Hibernation)
+> > >   ACPI (Advanced Configuration and Power Interface) Support  --->
+> > >     [*] ACPI Support
+> > >     [*]   Sleep States
+> > >     <M>   Button
+> > >     <M>   Video
+> > >     <M>   Fan
+> > >     <M>   Processor
+> > >     <M>     Thermal Zone
+> > >     (0)   Disable ACPI for systems before Jan 1st this year
+> > >
+> > > Device Drivers  --->
+> > >   I2C support  --->
+> > >     <M>   I2C device interface
+> > >     I2C Hardware Bus support  --->
+> > >       <M> VIA VT82C596/82C686/82xx and CX700
+> >
+> > You forgot to list the Hardware Monitoring support options.
+> 
+> Sorry. Here it is (they are identical in the two config):
+> 
+> Hardware Monitoring support  --->
+>   <*> Hardware Monitoring support
+>   <*> Abit uGuru
+>   <M> VIA686A
+>   <*> IBM Hard Drive Active Protection System (hdaps)
+> 
+> But I'm quite sure that the only module used is VIA686A (I'm
+> rebuilding to confirm).
 
+This is a rather bad idea to build the abituguru and hdaps drivers into
+your kernel if you don't have these devices. Especially abituguru, as
+it does arbitrary port probing.
+
+> > > The first column of lsmod list the same modules in both kernels. The
+> > > diff-ed dmesg is attached.
+> >
+> > Please provide the output of lsmod.
+> >
+> > If you are using one of the following drivers: lm78, smsc47b397,
+> > smsc47m1, w83627hf or w83781d, you need lm_sensors >= 2.10.1
+> > (libsensors.so.3.1.1 or later).
+> 
+> I've attached the lsmod for 2.6.22-rc.
+
+You didn't.
+
+> I'm not using any of the listed drivers.
+
+How strange, why are they loaded then?
+
+> However the lm-sensors package is version 2.10.1-3 and
+> libsensors.so.3.1.1 is on my system too (package libsensors3).
+
+Can you please share the output of "sensors" under both kernels 2.6.21.1
+and 2.6.22-rc1.
+
+I would also be interested in a diff of /proc/ioports between 2.6.21.1
+and 2.6.22-rc1.
+
+-- 
+Jean Delvare
