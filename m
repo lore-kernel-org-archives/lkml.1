@@ -1,53 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759459AbXENUGT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbXENUGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759459AbXENUGT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:06:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbXENUGF
+	id S1759206AbXENUGn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756382AbXENUGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:06:05 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41038 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754130AbXENUGD (ORCPT
+	Mon, 14 May 2007 16:06:34 -0400
+Received: from nwk-ea-fw-1.sun.com ([192.18.42.249]:48175 "EHLO
+	nwk-ea-fw-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754259AbXENUGd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:06:03 -0400
-Date: Mon, 14 May 2007 13:06:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <1179172994.2942.49.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0705141303570.12167@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl> 
- <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com> 
- <20070514161224.GC11115@waste.org>  <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-  <1179164453.2942.26.camel@lappy>  <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-  <1179170912.2942.37.camel@lappy>  <Pine.LNX.4.64.0705141253130.12045@schroedinger.engr.sgi.com>
- <1179172994.2942.49.camel@lappy>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 14 May 2007 16:06:33 -0400
+Date: Mon, 14 May 2007 13:04:28 -0700
+From: Yinghai Lu <Yinghai.Lu@Sun.COM>
+Subject: Re: [PATCH] serial: set RTS and DTR if flow is 'r'  --- resend
+In-reply-to: <20070514195046.GF29682@flint.arm.linux.org.uk>
+To: Yinghai Lu <Yinghai.Lu@Sun.COM>, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <ak@suse.de>, bjorn.helgaas@hp.com,
+       Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-to: Yinghai.Lu@Sun.COM
+Message-id: <4648C0CC.6020402@sun.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=us-ascii
+Content-transfer-encoding: 7BIT
+References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
+ <m1ejllqmo8.fsf@ebiederm.dsl.xmission.com> <46489BC2.6040403@sun.com>
+ <4648A310.1050908@sun.com> <20070514181007.GA29682@flint.arm.linux.org.uk>
+ <4648B2CC.2020403@sun.com> <20070514191905.GE29682@flint.arm.linux.org.uk>
+ <4648BC93.8080909@sun.com> <20070514195046.GF29682@flint.arm.linux.org.uk>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007, Peter Zijlstra wrote:
+Russell King wrote:
+> On Mon, May 14, 2007 at 12:46:27PM -0700, Yinghai Lu wrote:
+>   
+>> I don't want to put that there. the problem is serial8250_set_mctrl 
+>> called by will clear DTR bit.
+>>     
+>
+> We're at a stalemate then.
+>
+>   
 
-> > Hmmm.. Maybe we could do that.... But what I had in mind was simply to 
-> > set a page flag (DebugSlab()) if you know in alloc_slab that the slab 
-> > should be only used for emergency allocation. If DebugSlab is set then the
-> > fastpath will not be called. You can trap all allocation attempts and 
-> > insert whatever fancy logic you want in the debug path since its not 
-> > performance critical.
-> 
-> I might have missed some detail when I looked at SLUB, but I did not see
-> how setting SlabDebug would trap subsequent allocations to that slab.
+How about put that line into
+serial8250_console_setup
+or
+serial8250_isa_init_ports
 
-Ok its not evident in slab_alloc. But if SlabDebug is set then 
-page->lockless_list is always NULL and we always fall back to 
-__slab_alloc. There we check for SlabDebug and go to the debug: label. 
-There you can insert any fancy processing you want.
+YH
 
