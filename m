@@ -1,76 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759160AbXENUFt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759459AbXENUGT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759160AbXENUFt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:05:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbXENUFm
+	id S1759459AbXENUGT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:06:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbXENUGF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:05:42 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:40871 "EHLO
-	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754130AbXENUFl (ORCPT
+	Mon, 14 May 2007 16:06:05 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:41038 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754130AbXENUGD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:05:41 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Matt Mackall <mpm@selenic.com>, Christoph Lameter <clameter@sgi.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+	Mon, 14 May 2007 16:06:03 -0400
+Date: Mon, 14 May 2007 13:06:02 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Daniel Phillips <phillips@google.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <20070514124451.c868c4c0.akpm@linux-foundation.org>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
-	 <20070514161224.GC11115@waste.org>
-	 <20070514124451.c868c4c0.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 22:05:29 +0200
-Message-Id: <1179173129.2942.52.camel@lappy>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 0/5] make slab gfp fair
+In-Reply-To: <1179172994.2942.49.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0705141303570.12167@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl> 
+ <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com> 
+ <20070514161224.GC11115@waste.org>  <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
+  <1179164453.2942.26.camel@lappy>  <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
+  <1179170912.2942.37.camel@lappy>  <Pine.LNX.4.64.0705141253130.12045@schroedinger.engr.sgi.com>
+ <1179172994.2942.49.camel@lappy>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 12:44 -0700, Andrew Morton wrote:
-> On Mon, 14 May 2007 11:12:24 -0500
-> Matt Mackall <mpm@selenic.com> wrote:
+On Mon, 14 May 2007, Peter Zijlstra wrote:
+
+> > Hmmm.. Maybe we could do that.... But what I had in mind was simply to 
+> > set a page flag (DebugSlab()) if you know in alloc_slab that the slab 
+> > should be only used for emergency allocation. If DebugSlab is set then the
+> > fastpath will not be called. You can trap all allocation attempts and 
+> > insert whatever fancy logic you want in the debug path since its not 
+> > performance critical.
 > 
-> > If I understand this correctly:
-> > 
-> > privileged thread                      unprivileged greedy process
-> > kmem_cache_alloc(...)
-> >    adds new slab page from lowmem pool
-> > do_io()
-> >                                        kmem_cache_alloc(...)
-> >                                        kmem_cache_alloc(...)
-> >                                        kmem_cache_alloc(...)
-> >                                        kmem_cache_alloc(...)
-> >                                        kmem_cache_alloc(...)
-> >                                        ...
-> >                                           eats it all
-> > kmem_cache_alloc(...) -> ENOMEM
-> >    who ate my donuts?!
-> 
-> Yes, that's my understanding also.
-> 
-> I can see why it's a problem in theory, but I don't think Peter has yet
-> revealed to us why it's a problem in practice.  I got all excited when
-> Christoph asked "I am not sure what the point of all of this is.", but
-> Peter cunningly avoided answering that ;)
-> 
-> What observed problem is being fixed here?
+> I might have missed some detail when I looked at SLUB, but I did not see
+> how setting SlabDebug would trap subsequent allocations to that slab.
 
-I'm moving towards swapping over networked storage. Admittedly a new
-feature.
-
-Like with pretty much all other swap solutions; there is the fundamental
-vm deadlock: freeing memory requires memory. Current block devices get
-around that by using mempools. This works well.
-
-However with network traffic mempools are not easily usable; the network
-stack uses kmalloc. By using reserve based allocation we can keep
-operating in a similar matter.
-
-
+Ok its not evident in slab_alloc. But if SlabDebug is set then 
+page->lockless_list is always NULL and we always fall back to 
+__slab_alloc. There we check for SlabDebug and go to the debug: label. 
+There you can insert any fancy processing you want.
 
