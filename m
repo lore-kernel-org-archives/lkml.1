@@ -1,292 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966762AbXENLq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031806AbXENLr2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966762AbXENLq5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030358AbXENLeA
+	id S1031806AbXENLr2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:47:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030456AbXENLeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:34:00 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27942 "EHLO
+	Mon, 14 May 2007 07:34:03 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27939 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965824AbXENLcp (ORCPT
+	with ESMTP id S1762340AbXENLcp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 14 May 2007 07:32:45 -0400
-Message-Id: <20070514110618.200102124@suse.de>
+Message-Id: <20070514110617.150681976@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:36 -0700
+Date: Mon, 14 May 2007 04:06:33 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [AppArmor 29/45] Fix __d_path() for lazy unmounts and make it unambiguous
-Content-Disposition: inline; filename=unambiguous-__d_path.diff
+       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 26/45] Pass struct vfsmount to the inode_listxattr LSM hook
+Content-Disposition: inline; filename=security-listxattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-First, when __d_path() hits a lazily unmounted mount point, it tries to prepend
-the name of the lazily unmounted dentry to the path name.  It gets this wrong,
-and also overwrites the slash that separates the name from the following
-pathname component. This patch fixes that; if a process was in directory
-/foo/bar and /foo got lazily unmounted, the old result was ``foobar'' (note the
-missing slash), while the new result with this patch is ``foo/bar''.
+This is needed for computing pathnames in the AppArmor LSM.
 
-Second, it isn't always possible to tell from the __d_path() result whether the
-specified root and rootmnt (i.e., the chroot) was reached.  We need an
-unambiguous result for AppArmor at least though, so we make sure that paths
-will only start with a slash if the path leads all the way up to the root.
-
-We also add a @fail_deleted argument, which allows to get rid of some of the
-mess in sys_getcwd().
-
-This patch leaves getcwd() and d_path() as they were before for everything
-except for bind-mounted directories; for them, it reports ``/foo/bar'' instead
-of ``foobar'' in the example described above.
-
+Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Acked-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/dcache.c |  169 ++++++++++++++++++++++++++++++++++--------------------------
- 1 file changed, 98 insertions(+), 71 deletions(-)
+ fs/xattr.c               |    2 +-
+ include/linux/security.h |   12 +++++++-----
+ security/dummy.c         |    2 +-
+ security/selinux/hooks.c |    2 +-
+ 4 files changed, 10 insertions(+), 8 deletions(-)
 
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1761,52 +1761,51 @@ shouldnt_be_hashed:
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -149,7 +149,7 @@ vfs_listxattr(struct dentry *dentry, str
+ 	struct inode *inode = dentry->d_inode;
+ 	ssize_t error;
+ 
+-	error = security_inode_listxattr(dentry);
++	error = security_inode_listxattr(dentry, mnt);
+ 	if (error)
+ 		return error;
+ 	error = -EOPNOTSUPP;
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -395,7 +395,7 @@ struct request_sock;
+  * 	Return 0 if permission is granted.
+  * @inode_listxattr:
+  * 	Check permission before obtaining the list of extended attribute 
+- * 	names for @dentry.
++ * 	names for @dentry and @mnt.
+  * 	Return 0 if permission is granted.
+  * @inode_removexattr:
+  * 	Check permission before removing the extended attribute
+@@ -1250,7 +1250,7 @@ struct security_operations {
+ 				     size_t size, int flags);
+ 	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
+ 			       char *name);
+-	int (*inode_listxattr) (struct dentry *dentry);
++	int (*inode_listxattr) (struct dentry *dentry, struct vfsmount *mnt);
+ 	int (*inode_removexattr) (struct dentry *dentry, char *name);
+ 	const char *(*inode_xattr_getsuffix) (void);
+   	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
+@@ -1791,11 +1791,12 @@ static inline int security_inode_getxatt
+ 	return security_ops->inode_getxattr (dentry, mnt, name);
  }
  
- /**
-- * d_path - return the path of a dentry
-+ * __d_path - return the path of a dentry
-  * @dentry: dentry to report
-  * @vfsmnt: vfsmnt to which the dentry belongs
-  * @root: root dentry
-  * @rootmnt: vfsmnt to which the root dentry belongs
-  * @buffer: buffer to return value in
-  * @buflen: buffer length
-+ * @fail_deleted: what to return for deleted files
-  *
-- * Convert a dentry into an ASCII path name. If the entry has been deleted
-+ * Convert a dentry into an ASCII path name. If the entry has been deleted,
-+ * then if @fail_deleted is true, ERR_PTR(-ENOENT) is returned. Otherwise,
-  * the string " (deleted)" is appended. Note that this is ambiguous.
-  *
-- * Returns the buffer or an error code if the path was too long.
-+ * If @dentry is not connected to @root, the path returned will be relative
-+ * (i.e., it will not start with a slash).
-  *
-- * "buflen" should be positive. Caller holds the dcache_lock.
-+ * Returns the buffer or an error code.
-  */
--static char * __d_path( struct dentry *dentry, struct vfsmount *vfsmnt,
--			struct dentry *root, struct vfsmount *rootmnt,
--			char *buffer, int buflen)
--{
--	char * end = buffer+buflen;
--	char * retval;
--	int namelen;
-+static char *__d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
-+		      struct dentry *root, struct vfsmount *rootmnt,
-+		      char *buffer, int buflen, int fail_deleted)
-+{
-+	int namelen, is_slash;
-+
-+	if (buflen < 2)
-+		return ERR_PTR(-ENAMETOOLONG);
-+	buffer += --buflen;
-+	*buffer = '\0';
- 
--	*--end = '\0';
--	buflen--;
-+	spin_lock(&dcache_lock);
- 	if (!IS_ROOT(dentry) && d_unhashed(dentry)) {
--		buflen -= 10;
--		end -= 10;
--		if (buflen < 0)
-+		if (fail_deleted) {
-+			buffer = ERR_PTR(-ENOENT);
-+			goto out;
-+		}
-+		if (buflen < 10)
- 			goto Elong;
--		memcpy(end, " (deleted)", 10);
-+		buflen -= 10;
-+		buffer -= 10;
-+		memcpy(buffer, " (deleted)", 10);
- 	}
--
--	if (buflen < 1)
--		goto Elong;
--	/* Get '/' right */
--	retval = end-1;
--	*retval = '/';
--
--	for (;;) {
-+	while (dentry != root || vfsmnt != rootmnt) {
- 		struct dentry * parent;
- 
--		if (dentry == root && vfsmnt == rootmnt)
--			break;
- 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
--			/* Global root? */
- 			spin_lock(&vfsmount_lock);
- 			if (vfsmnt->mnt_parent == vfsmnt) {
- 				spin_unlock(&vfsmount_lock);
-@@ -1820,33 +1819,72 @@ static char * __d_path( struct dentry *d
- 		parent = dentry->d_parent;
- 		prefetch(parent);
- 		namelen = dentry->d_name.len;
--		buflen -= namelen + 1;
--		if (buflen < 0)
-+		if (buflen < namelen + 1)
- 			goto Elong;
--		end -= namelen;
--		memcpy(end, dentry->d_name.name, namelen);
--		*--end = '/';
--		retval = end;
-+		buflen -= namelen + 1;
-+		buffer -= namelen;
-+		memcpy(buffer, dentry->d_name.name, namelen);
-+		*--buffer = '/';
- 		dentry = parent;
- 	}
-+	/* Get '/' right. */
-+	if (*buffer != '/')
-+		*--buffer = '/';
- 
--	return retval;
-+out:
-+	spin_unlock(&dcache_lock);
-+	return buffer;
- 
- global_root:
-+	/*
-+	 * We went past the (vfsmount, dentry) we were looking for and have
-+	 * either hit a root dentry, a lazily unmounted dentry, an
-+	 * unconnected dentry, or the file is on a pseudo filesystem.
-+	 */
- 	namelen = dentry->d_name.len;
--	buflen -= namelen;
--	if (buflen < 0)
-+	is_slash = (namelen == 1 && *dentry->d_name.name == '/');
-+	if (is_slash || (dentry->d_sb->s_flags & MS_NOUSER)) {
-+		/*
-+		 * Make sure we won't return a pathname starting with '/'.
-+		 *
-+		 * Historically, we also glue together the root dentry and
-+		 * remaining name for pseudo filesystems like pipefs, which
-+		 * have the MS_NOUSER flag set. This results in pathnames
-+		 * like "pipe:[439336]".
-+		 */
-+		if (*buffer == '/') {
-+			buffer++;
-+			buflen++;
-+		}
-+		if (is_slash)
-+			goto out;
-+	}
-+	if (buflen < namelen)
- 		goto Elong;
--	retval -= namelen-1;	/* hit the slash */
--	memcpy(retval, dentry->d_name.name, namelen);
--	return retval;
-+	buffer -= namelen;
-+	memcpy(buffer, dentry->d_name.name, namelen);
-+	goto out;
-+
- Elong:
--	return ERR_PTR(-ENAMETOOLONG);
-+	buffer = ERR_PTR(-ENAMETOOLONG);
-+	goto out;
-+}
-+
-+static char *__connect_d_path(char *path, char *buffer)
-+{
-+	if (!IS_ERR(path) && *path != '/') {
-+		/* Pretend that disconnected paths are hanging off the root. */
-+		if (path == buffer)
-+			path = ERR_PTR(-ENAMETOOLONG);
-+		else
-+			*--path = '/';
-+	}
-+	return path;
+-static inline int security_inode_listxattr (struct dentry *dentry)
++static inline int security_inode_listxattr (struct dentry *dentry,
++					    struct vfsmount *mnt)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_listxattr (dentry);
++	return security_ops->inode_listxattr (dentry, mnt);
  }
  
- /* write full pathname into buffer and return start of pathname */
--char * d_path(struct dentry *dentry, struct vfsmount *vfsmnt,
--				char *buf, int buflen)
-+char *d_path(struct dentry *dentry, struct vfsmount *vfsmnt, char *buf,
-+	     int buflen)
+ static inline int security_inode_removexattr (struct dentry *dentry, char *name)
+@@ -2495,7 +2496,8 @@ static inline int security_inode_getxatt
+ 	return 0;
+ }
+ 
+-static inline int security_inode_listxattr (struct dentry *dentry)
++static inline int security_inode_listxattr (struct dentry *dentry,
++					    struct vfsmount *mnt)
  {
- 	char *res;
- 	struct vfsmount *rootmnt;
-@@ -1866,9 +1904,8 @@ char * d_path(struct dentry *dentry, str
- 	rootmnt = mntget(current->fs->rootmnt);
- 	root = dget(current->fs->root);
- 	read_unlock(&current->fs->lock);
--	spin_lock(&dcache_lock);
--	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen);
--	spin_unlock(&dcache_lock);
-+	res = __d_path(dentry, vfsmnt, root, rootmnt, buf, buflen, 0);
-+	res = __connect_d_path(res, buf);
- 	dput(root);
- 	mntput(rootmnt);
- 	return res;
-@@ -1915,10 +1952,10 @@ char *dynamic_dname(struct dentry *dentr
-  */
- asmlinkage long sys_getcwd(char __user *buf, unsigned long size)
+ 	return 0;
+ }
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -374,7 +374,7 @@ static int dummy_inode_getxattr (struct 
+ 	return 0;
+ }
+ 
+-static int dummy_inode_listxattr (struct dentry *dentry)
++static int dummy_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
  {
--	int error;
-+	int error, len;
- 	struct vfsmount *pwdmnt, *rootmnt;
- 	struct dentry *pwd, *root;
--	char *page = (char *) __get_free_page(GFP_USER);
-+	char *page = (char *) __get_free_page(GFP_USER), *cwd;
+ 	return 0;
+ }
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2399,7 +2399,7 @@ static int selinux_inode_getxattr (struc
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
  
- 	if (!page)
- 		return -ENOMEM;
-@@ -1930,29 +1967,19 @@ asmlinkage long sys_getcwd(char __user *
- 	root = dget(current->fs->root);
- 	read_unlock(&current->fs->lock);
- 
--	error = -ENOENT;
--	/* Has the current directory has been unlinked? */
--	spin_lock(&dcache_lock);
--	if (pwd->d_parent == pwd || !d_unhashed(pwd)) {
--		unsigned long len;
--		char * cwd;
--
--		cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE);
--		spin_unlock(&dcache_lock);
--
--		error = PTR_ERR(cwd);
--		if (IS_ERR(cwd))
--			goto out;
--
--		error = -ERANGE;
--		len = PAGE_SIZE + page - cwd;
--		if (len <= size) {
--			error = len;
--			if (copy_to_user(buf, cwd, len))
--				error = -EFAULT;
--		}
--	} else
--		spin_unlock(&dcache_lock);
-+	cwd = __d_path(pwd, pwdmnt, root, rootmnt, page, PAGE_SIZE, 1);
-+	cwd = __connect_d_path(cwd, page);
-+	error = PTR_ERR(cwd);
-+	if (IS_ERR(cwd))
-+		goto out;
-+
-+	error = -ERANGE;
-+	len = PAGE_SIZE + page - cwd;
-+	if (len <= size) {
-+		error = len;
-+		if (copy_to_user(buf, cwd, len))
-+			error = -EFAULT;
-+	}
- 
- out:
- 	dput(pwd);
+-static int selinux_inode_listxattr (struct dentry *dentry)
++static int selinux_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
 
 -- 
