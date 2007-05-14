@@ -1,88 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbXENMzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbXENM41@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754649AbXENMzW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 08:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXENMzO
+	id S1755111AbXENM41 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 08:56:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbXENM4V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 08:55:14 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:40192 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751722AbXENMzM (ORCPT
+	Mon, 14 May 2007 08:56:21 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:44320 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753965AbXENM4U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 08:55:12 -0400
-Subject: Re: Kconfig warnings on latest GIT
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Simon Horman <horms@verge.net.au>
-Cc: Timur Tabi <timur@freescale.com>,
-       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       Ismail =?ISO-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
-       Kumar Gala <galak@kernel.crashing.org>,
-       Michael Schmitz <schmitz@debian.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>
-In-Reply-To: <20070514013230.GJ3588@verge.net.au>
-References: <200705080004.14570.ismail@pardus.org.tr>
-	 <20070508143127.38fafa3c.kim.phillips@freescale.com>
-	 <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au>
-	 <1178811570.3806.18.camel@johannes.berg>
-	 <20070511012216.GB10715@verge.net.au>
-	 <1178883937.8896.11.camel@johannes.berg>
-	 <20070514013230.GJ3588@verge.net.au>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5P+EYyVURQ7J7npE4dYy"
-Date: Mon, 14 May 2007 14:55:11 +0200
-Message-Id: <1179147311.2647.47.camel@johannes.berg>
+	Mon, 14 May 2007 08:56:20 -0400
+Date: Mon, 14 May 2007 18:34:12 +0530
+From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: efault@gmx.de, tingy@cs.umass.edu, wli@holomorphy.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: fair clock use in CFS
+Message-ID: <20070514130412.GA6103@in.ibm.com>
+Reply-To: vatsa@in.ibm.com
+References: <20070514083358.GA29775@in.ibm.com> <20070514111051.GB23766@elte.hu>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070514111051.GB23766@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 14, 2007 at 01:10:51PM +0200, Ingo Molnar wrote:
+> but let me give you some more CFS design background:
 
---=-5P+EYyVURQ7J7npE4dYy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Thanks for this excellent explanation. Things are much clearer now to
+me. I just want to clarify one thing below:
 
-Simon,
+> > 2. Preemption granularity - sysctl_sched_granularity
 
-> I don't think that this is quite right, or at least it isn't quite the
-> same as before.
+[snip]
 
-Yeah, I think you're right.
+> This granularity value does not depend on the number of tasks running. 
 
->  I think that was is below will toggle
-> SYS_SUPPORTS_APM_EMULATION when PMAC_APM_EMU is selected,
-> which I think is what you want. Is it also neccessary to
-> add a dependancy on PPC_PMAC to PMAC_APM_EMU ?
+Hmm ..so does sysctl_sched_granularity represents granularity in
+real/wall-clock time scale then? AFAICS that doesnt seem to be the case.
 
-No, it depends on ADB_PMU which depends on PPC_PMAC.
+__check_preempt_curr_fair() compares for the distance between the two
+task's (current and next-to-be-run task) fair_key values for deciding
+preemption point.
 
-> config PMAC_APM_EMU
-> 	tristate "APM emulation"
-> 	select APM_EMULATION
-> 	depends on ADB_PMU && PM
->=20
-> config SYS_SUPPORTS_APM_EMULATION
-> 	bool
-> 	default y if PMAC_APM_EMU
+Let's say that to begin with, at real time t0, both current task Tc and next 
+task Tn's fair_key values are same, at value K. Tc will keep running until its 
+fair_key value reaches atleast K + 2000000. The *real/wall-clock* time taken 
+for Tc's fair_key value to reach K + 2000000 - is surely dependent on N,
+the number of tasks on the queue (more the load, more slowly the fair
+clock advances)?
 
-I still have to try it, I haven't been yet seen Kumar's fix that he said
-he'd done.
+This is what I meant by my earlier remark: "If there a million cpu hungry tasks,
+then the (real/wall-clock) time taken to switch between two tasks is more 
+compared to the case where just two cpu hungry tasks are running".
 
-johannes
-
---=-5P+EYyVURQ7J7npE4dYy
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGSFwv/ETPhpq3jKURAqXLAJ98DinaxgHifKcKt2xKl2yvicMmAACggf/Q
-CrKZ4jnkCezTufQlGoUQ49E=
-=BdyT
------END PGP SIGNATURE-----
-
---=-5P+EYyVURQ7J7npE4dYy--
-
+-- 
+Regards,
+vatsa
