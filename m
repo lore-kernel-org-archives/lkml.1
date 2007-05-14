@@ -1,65 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756335AbXENNjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754896AbXENNuQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756335AbXENNjP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 09:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754776AbXENNi5
+	id S1754896AbXENNuQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 09:50:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752893AbXENNuF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 09:38:57 -0400
-Received: from mail.tmr.com ([64.65.253.246]:36106 "EHLO gaimboi.tmr.com"
+	Mon, 14 May 2007 09:50:05 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51757 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754434AbXENNi4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 09:38:56 -0400
-Message-ID: <46486685.4000606@tmr.com>
-Date: Mon, 14 May 2007 09:39:17 -0400
-From: Bill Davidsen <davidsen@tmr.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
+	id S1751060AbXENNuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 09:50:01 -0400
+Date: Mon, 14 May 2007 06:50:16 -0700
+From: John Johansen <jjohansen@suse.de>
+To: jjohansen@suse.de
+Cc: linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [AppArmor 00/45] AppArmor security module overview
+Message-ID: <20070514135016.GB5877@suse.de>
+References: <20070514110607.549397248@suse.de>
 MIME-Version: 1.0
-To: "Robert P. J. Day" <rpjday@mindspring.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, Dave Jones <davej@redhat.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: undeprecate raw driver.
-References: <20070513163220.GA31902@redhat.com> <Pine.LNX.4.61.0705131835110.9570@yvahk01.tjqt.qr> <Pine.LNX.4.64.0705131239200.942@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0705131239200.942@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="/NkBOFFp2J2Af1nK"
+Content-Disposition: inline
+In-Reply-To: <20070514110607.549397248@suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Robert P. J. Day wrote:
-> On Sun, 13 May 2007, Jan Engelhardt wrote:
-> 
->> On May 13 2007 12:32, Dave Jones wrote:
->>
->>> Despite repeated attempts over the last two and half years, this
->>> driver seems somewhat persistant.  Remove its deprecated status as
->>> it has existing users who may not be in a position to migrate their
->>> apps
->> At least keep the "it's obsolete" Kconfig description. We don't want
->> new users/projects to jump on /dev/raw.
-> 
-> i just *know* this is a mistake, but i'm going to take one more shot
-> at distinguishing between deprecated and obsolete.
-> 
-> as i understand it, the raw driver is *deprecated*.  that is, it's
-> still there, it's still supported, people are still using it but its
-> use is *seriously* discouraged and everyone should be trying to move
-> off of it at their earliest possible convenience.
-> 
-> that is *not* the same as "obsolete" which should mean that that
-> feature is dead, dead, DEAD and *no one* should be using it anymore.
-> 
-> yes, i realize it sounds like splitting hairs, but it's this malleable
-> definition of "deprecated" that's causing all of this trouble in the
-> first place -- the fact that the raw driver is currently listed as
-> "obsolete" when it is, in fact, only deprecated.
-> 
-> in short, do *not* remove its "deprecated" status.  rather, remove its
-> "obsolete" status and *make* it deprecated.
-> 
-Correct. Like the weird lady next door who fancies you, it's old, it's 
-ugly, but it's not likely to go away any time soon.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+--/NkBOFFp2J2Af1nK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+and with the actual introductory text this time
+
+This post contains patches to include the AppArmor application security
+framework, with request for inclusion.  It contains fixes for almost
+all of the feedback received from the previous post.  A second follow
+up posting will address passing NULL nameidata.
+
+Changes since previous post:
+
+ - Refactor d_path() patches: Separate changes to d_path(), getcwd(),
+   and /proc/mounts from __d_path() cleanups.
+
+ - Switch from file_permission() to vfs_permission() in do_path_lookup()
+   and sys_fchdir(): this avoids calling permission() with a NULL nameidata
+   there.
+
+ - Fix file_permission() to not use NULL nameidata for its remaining users:
+   it makes little sense to replace file_permission() with vfs_permission()
+   everywhere.
+
+ - Remove special casing for access to /proc/self/attr/current by adding
+   rules to policy user side.
+
+ - Remove redundant fn's in lsm.c by calling cap functions directly from
+   the security operations vector.
+
+ - Disallow ptracing process with different namespace.
+
+ - Use beX_to_cpu instead on ntoX in dfa unpack code.
+
+ - Fix potential overflow in unpack bounds checking.
+
+ - Limit profile recursion depth to 1 level.
+
+ - Factor out sysctl pathname code from selinux to add generic
+   sysctl_pathname() function in kernel/sysctl.c. Replace special casing of
+   sysctl write with finer grained mediation using sysctl_pathname() functi=
+on
+   to provide pathname for sysctl mediation.
+
+ - Escape special characters in pathnames when used in audit messages.
+
+ - Remove use of task->comm from audit messages.  The use of task->comm was
+   incorrect and only used as a human readable hint.
+
+ - Some structural cleanups on apparmors audit code paths.
+
+ - Set LOOKUP_CONTINUE flag when checking parent permissions.  This allows
+   permission functions to tell between parent and leaf checks. Check for
+   (LOOKUP_PARENT | LOOKUP_CONTINUE) in the inode_permission apparmor hook.
+
+ - Drop rejection of CLONE_NEWNS since the kernel already requires
+   CAP_SYS_ADMIN.
+
+ - Add a missing dput() in apparmorfs_detry_refcount().
+
+ - remove kernel doc style comment header from comments that are not
+   in kernel doc format
+
+ - use lock subtyping to address lockdep reporint  possible irq lock
+   inversion
+
+
+The patch series consists of five areas:
+
+ (1) Pass struct vfsmount through to LSM hooks.
+
+ (2) Fixes and improvements to __d_path():
+
+     (a) make it unambiguous and exclude unreachable paths from
+         /proc/mounts,
+
+     (b) make its result consistent in the face of remounts,
+
+     (c) introduce d_namespace_path(), a variant of d_path that goes up
+         to the namespace root instead of the chroot.
+
+     (d) the behavior of d_path() and getcwd() remain unchanged, and
+     there is no hidding of unreachable paths in /proc/mounts.  The
+     patches addressing these have been seperated from the AppArmor
+     submission and will be introduced at a later date.
+=20
+     Part (a) has been in the -mm tree for a while; this series includes
+     an updated copy of the -mm patch. Parts (b) and (c) shouldn't be too
+     controversial.
+
+ (3) Be able to distinguish file descriptor access from access by name
+     in LSM hooks.
+
+     Applications expect different behavior from file descriptor
+     accesses and accesses by name in some cases. We need to pass this
+     information down the LSM hooks to allow AppArmor to tell which is
+     which.
+
+ (4) Convert the selinux sysctl pathname computation code into a standalone
+     function.
+
+ (5) The AppArmor LSM itself.
+
+     (See below.)
+
+A tarball of the kernel patches, base user-space utilities, example
+profiles, and technical documentation (including a walk-through) are
+available at:
+
+  http://forgeftp.novell.com//apparmor/LKML_Submission-May_07/
+
+Explaining the AppArmor design in detail would take by far too much
+space here, so let me refer you to the technical documentation for that.
+Included is a low-level walk-through of the system and basic tools, and
+some examples.  The manual pages included in the apparmor-parser package
+are worth a read as well.
+
+--/NkBOFFp2J2Af1nK
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFGSGkYi/GH5xuqKCcRAuprAJ9AU4YP7jI729CMAem7vNs9DXcZAwCgoMIM
+lawLtXpQIenDaPrNhApk2xQ=
+=2b3Z
+-----END PGP SIGNATURE-----
+
+--/NkBOFFp2J2Af1nK--
