@@ -1,73 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758730AbXENTHK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756180AbXENTHg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758730AbXENTHK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:07:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbXENTG4
+	id S1756180AbXENTHg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:07:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758709AbXENTHJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:06:56 -0400
-Received: from nwk-ea-fw-1.sun.com ([192.18.42.249]:45249 "EHLO
-	nwk-ea-fw-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755311AbXENTGz (ORCPT
+	Mon, 14 May 2007 15:07:09 -0400
+Received: from ccerelbas02.cce.hp.com ([161.114.21.105]:50672 "EHLO
+	ccerelbas02.cce.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757398AbXENTHH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:06:55 -0400
-Date: Mon, 14 May 2007 12:04:44 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: Re: [PATCH] serial: set RTS and DTR if flow is 'r'  --- resend
-In-reply-to: <20070514181007.GA29682@flint.arm.linux.org.uk>
-To: rmk@arm.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <ak@suse.de>, bjorn.helgaas@hp.com,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-to: Yinghai.Lu@Sun.COM
-Message-id: <4648B2CC.2020403@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; format=flowed; charset=ISO-8859-1
-Content-transfer-encoding: 7BIT
-References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
- <m1ejllqmo8.fsf@ebiederm.dsl.xmission.com> <46489BC2.6040403@sun.com>
- <4648A310.1050908@sun.com> <20070514181007.GA29682@flint.arm.linux.org.uk>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Mon, 14 May 2007 15:07:07 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH] cciss: Fix pci_driver.shutdown while device is still active
+Date: Mon, 14 May 2007 19:06:45 -0000
+Message-ID: <226E1C65E4F6164E8EA5FD3CC913AE8C011FF0D8@G3W0639.americas.hpqcorp.net>
+In-Reply-To: <20070514175301.GA19871@zante.sekrit.org>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] cciss: Fix pci_driver.shutdown while device is still active
+thread-index: AceWULzqS1XWR6NhQyyKrK2jiWXSzAACidIg
+References: <20070514175301.GA19871@zante.sekrit.org>
+From: "Miller, Mike (OS Dev)" <Mike.Miller@hp.com>
+To: "Gerald Britton" <gbritton@alum.mit.edu>, <torvalds@linux-foundation.org>,
+       <akpm@linux-foundation.org>, "ISS StorageDev" <iss_storagedev@hp.com>,
+       <linux-scsi@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 14 May 2007 19:06:46.0929 (UTC) FILETIME=[04C0E810:01C7965B]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King wrote:
-> There may be some sense, however, in allowing DTR to be permanently
-> raised for serial consoles.  However, I would err on caution since
-> DTR is used to reliably instruct modems to drop the line, so making
-> such a change would be undesirable for those folk.
->   
-please check following is OK.
+ 
 
-YH
+> -----Original Message-----
+> From: Gerald Britton [mailto:gbritton@alum.mit.edu] 
+> Sent: Monday, May 14, 2007 12:53 PM
+> To: torvalds@linux-foundation.org; akpm@linux-foundation.org; 
+> Miller, Mike (OS Dev); ISS StorageDev; 
+> linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org
+> Subject: [PATCH] cciss: Fix pci_driver.shutdown while device 
+> is still active
+> 
+> Fix an Oops in the cciss driver caused by system shutdown 
+> while a filesystem on a cciss device is still active.  The 
+> cciss_remove_one function only properly removes the device if 
+> the device has been cleanly released by its users, which is 
+> not the case when the pci_driver.shutdown method is called.
 
-[PATCH] serial: set DTR in uart for kernel serial console
+Please send the Oops output.
 
-Some UARTs on other side need host uart DTR is set, otherwise will not 
-receive char from the host that kernel is runing during kernel boot stage.
+mikem
 
-BTW:
-earlyprintk and early_uart are hard coded to set DTR/RTS.
-
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-
-*diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c*
-index 48e259a..29c051c 100644
-*--- a/drivers/serial/8250.c*
-*+++ b/drivers/serial/8250.c*
-@@ -2154,6 +2154,12 @@ serial8250_set_termios(struct uart_port *port, struct ktermios *termios,
- 		}
- 		serial_outp(up, UART_FCR, fcr);		/* set fcr */
- 	}
-+
-+	/* some uarts on other side don't support no flow control. So we set
-+	 * DTR in host uart to make them happy
-+	 */
-+	up->port.mctrl |= TIOCM_DTR;
-+
- 	serial8250_set_mctrl(&up->port, up->port.mctrl);
- 	spin_unlock_irqrestore(&up->port.lock, flags);
- }
-
+> 
+> This patch adds a new cciss_shutdown function to better match 
+> the pattern used by various SCSI drivers: deactivate device 
+> interrupts and flush caches.
+> It also alters the cciss_remove_one function to match and 
+> readds the __devexit annotation that was removed when 
+> cciss_remove_one was serving as the pci_driver.shutdown method.
+> 
+> Signed-off-by: Gerald Britton <gbritton@alum.mit.edu>
+> ---
+> diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c 
+> index 370dfe1..5acc6c4 100644
+> --- a/drivers/block/cciss.c
+> +++ b/drivers/block/cciss.c
+> @@ -3469,13 +3469,39 @@ static int __devinit 
+> cciss_init_one(struct pci_dev *pdev,
+>  	return -1;
+>  }
+>  
+> -static void cciss_remove_one(struct pci_dev *pdev)
+> +static void cciss_shutdown(struct pci_dev *pdev)
+>  {
+>  	ctlr_info_t *tmp_ptr;
+> -	int i, j;
+> +	int i;
+>  	char flush_buf[4];
+>  	int return_code;
+>  
+> +	tmp_ptr = pci_get_drvdata(pdev);
+> +	if (tmp_ptr == NULL)
+> +		return;
+> +	i = tmp_ptr->ctlr;
+> +	if (hba[i] == NULL)
+> +		return;
+> +
+> +	/* Turn board interrupts off  and send the flush cache 
+> command */
+> +	/* sendcmd will turn off interrupt, and send the flush...
+> +	 * To write all data in the battery backed cache to disks */
+> +	memset(flush_buf, 0, 4);
+> +	return_code = sendcmd(CCISS_CACHE_FLUSH, i, flush_buf, 
+> 4, 0, 0, 0, NULL,
+> +			      TYPE_CMD);
+> +	if (return_code == IO_OK) {
+> +		printk(KERN_INFO "Completed flushing cache on 
+> controller %d\n", i);
+> +	} else {
+> +		printk(KERN_WARNING "Error flushing cache on 
+> controller %d\n", i);
+> +	}
+> +	free_irq(hba[i]->intr[2], hba[i]);
+> +}
+> +
+> +static void __devexit cciss_remove_one(struct pci_dev *pdev) {
+> +	ctlr_info_t *tmp_ptr;
+> +	int i, j;
+> +
+>  	if (pci_get_drvdata(pdev) == NULL) {
+>  		printk(KERN_ERR "cciss: Unable to remove device \n");
+>  		return;
+> @@ -3506,18 +3532,7 @@ static void cciss_remove_one(struct 
+> pci_dev *pdev)
+>  
+>  	cciss_unregister_scsi(i);	/* unhook from SCSI subsystem */
+>  
+> -	/* Turn board interrupts off  and send the flush cache 
+> command */
+> -	/* sendcmd will turn off interrupt, and send the flush...
+> -	 * To write all data in the battery backed cache to disks */
+> -	memset(flush_buf, 0, 4);
+> -	return_code = sendcmd(CCISS_CACHE_FLUSH, i, flush_buf, 
+> 4, 0, 0, 0, NULL,
+> -			      TYPE_CMD);
+> -	if (return_code == IO_OK) {
+> -		printk(KERN_INFO "Completed flushing cache on 
+> controller %d\n", i);
+> -	} else {
+> -		printk(KERN_WARNING "Error flushing cache on 
+> controller %d\n", i);
+> -	}
+> -	free_irq(hba[i]->intr[2], hba[i]);
+> +	cciss_shutdown(pdev);
+>  
+>  #ifdef CONFIG_PCI_MSI
+>  	if (hba[i]->msix_vector)
+> @@ -3550,7 +3565,7 @@ static struct pci_driver cciss_pci_driver = {
+>  	.probe = cciss_init_one,
+>  	.remove = __devexit_p(cciss_remove_one),
+>  	.id_table = cciss_pci_device_id,	/* id_table */
+> -	.shutdown = cciss_remove_one,
+> +	.shutdown = cciss_shutdown,
+>  };
+>  
+>  /*
+> 
