@@ -1,63 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755003AbXENNEx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754684AbXENNQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755003AbXENNEx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 09:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbXENNEq
+	id S1754684AbXENNQL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 09:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751652AbXENNQE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 09:04:46 -0400
-Received: from relay4.usu.ru ([194.226.235.39]:51872 "EHLO relay4.usu.ru"
+	Mon, 14 May 2007 09:16:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51248 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753043AbXENNEp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 09:04:45 -0400
-Message-ID: <46485EC7.8040006@ums.usu.ru>
-Date: Mon, 14 May 2007 19:06:15 +0600
-From: "Alexander E. Patrakov" <patrakov@ums.usu.ru>
-User-Agent: IceDove 1.5.0.10 (X11/20070329)
-MIME-Version: 1.0
-To: Christian Hesse <mail@earthworm.de>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: dm(-crypt) and /dev/disk/by-label/
-References: <200705141348.48099.mail@earthworm.de>
-In-Reply-To: <200705141348.48099.mail@earthworm.de>
-Content-Type: text/plain; charset=windows-1251; format=flowed
-Content-Transfer-Encoding: 7bit
-X-AV-Checked: ClamAV using ClamSMTP@relay4
+	id S1751602AbXENNQC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 09:16:02 -0400
+Date: Mon, 14 May 2007 15:15:52 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: efault@gmx.de, tingy@cs.umass.edu, wli@holomorphy.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: fair clock use in CFS
+Message-ID: <20070514131552.GA13928@elte.hu>
+References: <20070514083358.GA29775@in.ibm.com> <20070514111051.GB23766@elte.hu> <20070514130412.GA6103@in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070514130412.GA6103@in.ibm.com>
+User-Agent: Mutt/1.4.2.2i
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -2.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-2.0 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.0.3
+	-2.0 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Hesse wrote:
-> Hello everybody,
+
+* Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
+
+> On Mon, May 14, 2007 at 01:10:51PM +0200, Ingo Molnar wrote:
+> > but let me give you some more CFS design background:
 > 
-> If this is the wrong place to ask, please tell me where to ask instead.
+> Thanks for this excellent explanation. Things are much clearer now to
+> me. I just want to clarify one thing below:
+> 
+> > > 2. Preemption granularity - sysctl_sched_granularity
+> 
+> [snip]
+> 
+> > This granularity value does not depend on the number of tasks running. 
+> 
+> Hmm ..so does sysctl_sched_granularity represents granularity in 
+> real/wall-clock time scale then? AFAICS that doesnt seem to be the 
+> case.
 
-linux-hotplug-devel, but they will tell you to ask your distro vendor.
+there's only this small detail i mentioned:
 
-> I have ext3 filesystems with labels on devicemapper crypted devices. These do 
-> not show up in /dev/disk/by-label/, in contrast to filesystems of my "real" 
-> partitions. Is this the expected behaviour or what could go wrong?
+> > ( small detail: the granularity value is currently dependent on the
+> >   nice level, making it easier for higher-prio tasks to preempt 
+> >   lower-prio tasks. )
 
-Some distributions intentionally tell udev to ignore device-mapper devices 
-completely, for the following reasons:
+> __check_preempt_curr_fair() compares for the distance between the two 
+> task's (current and next-to-be-run task) fair_key values for deciding 
+> preemption point.
+> 
+> Let's say that to begin with, at real time t0, both current task Tc 
+> and next task Tn's fair_key values are same, at value K. Tc will keep 
+> running until its fair_key value reaches atleast K + 2000000. The 
+> *real/wall-clock* time taken for Tc's fair_key value to reach K + 
+> 2000000 - is surely dependent on N, the number of tasks on the queue 
+> (more the load, more slowly the fair clock advances)?
 
-1) without this prohibition, udev creates /dev/dm-* devices, and LILO breaks 
-completely if they are present instead of the correct /dev/mapper/* nodes 
-created by dmsetup and similar tools
+well, it's somewhere in the [ granularity .. granularity*2 ] wall-clock 
+scale. Basically the slowest way it can reach it is 'half speed' (two 
+tasks running), the slowest way is 'near full speed' (lots of tasks 
+running).
 
-2) without this prohibition, udev tries to open snapshot devices managed by 
-dm-snapshot. The problem is that LVM2 sometimes creates such snapshots with 
-the intention just to see whether it can be done. Udev keeps the temporary 
-device open and thus prevents LVM2 from removing the temporary snapshot cleanly.
+> This is what I meant by my earlier remark: "If there a million cpu 
+> hungry tasks, then the (real/wall-clock) time taken to switch between 
+> two tasks is more compared to the case where just two cpu hungry tasks 
+> are running".
 
-More details can be found at:
+the current task is recalculated at scheduler tick time and put into the 
+tree at its new position. At a million tasks the fair-clock will advance 
+little (or not at all - which at these load levels is our smallest 
+problem anyway) so during a scheduling tick in kernel/sched_fair.c 
+update_curr() we will have a 'delta_mine' and 'delta_fair' of near zero 
+and a 'delta_exec' of ~1 million, so curr->wait_runtime will be 
+decreased at 'full speed': delta_exec-delta_mine, by almost a full tick. 
+So preemption will occur every sched_granularity (rounded up to the next 
+tick) points in time, in wall-clock time.
 
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=401393
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=392623
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=343671
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=344040
+with 2 tasks running delta_exec-delta_mine is 0.5 million, so preemption 
+will occur in 2*sched_granularity (rounded up to the next timer tick) 
+wall-clock time.
 
-Since the only known way to solve the above problems at that time was to 
-prevent udev from looking at device-mapper, crypted devices don't show up in 
-/dev/disk/by-label/ on your system.
-
--- 
-Alexander E. Patrakov
+	Ingo
