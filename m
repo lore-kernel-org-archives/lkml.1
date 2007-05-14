@@ -1,51 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbXENQas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756979AbXENQfe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbXENQas (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 12:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755321AbXENQal
+	id S1756979AbXENQfe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 12:35:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbXENQf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 12:30:41 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:49040 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755657AbXENQak (ORCPT
+	Mon, 14 May 2007 12:35:27 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56781 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754519AbXENQf0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 12:30:40 -0400
-Date: Mon, 14 May 2007 09:30:19 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Jean Delvare <khali@linux-fr.org>
-cc: Antonino Ingargiola <tritemio@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22-rc1
-In-Reply-To: <20070514172138.1c870793@hyperion.delvare>
-Message-ID: <alpine.LFD.0.98.0705140914410.6739@woody.linux-foundation.org>
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
- <5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
- <alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
- <5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
- <20070514081022.7fcee97f@hyperion.delvare> <5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
- <20070514141437.631fcfd1@hyperion.delvare> <5486cca80705140628w5ff43ebdqf6a5413203226d5@mail.gmail.com>
- <20070514172138.1c870793@hyperion.delvare>
+	Mon, 14 May 2007 12:35:26 -0400
+Date: Mon, 14 May 2007 09:35:25 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 3/5] mm: slub allocation fairness
+In-Reply-To: <1179159285.2942.20.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0705140929200.10801@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl>  <20070514133212.581041171@chello.nl>
+  <Pine.LNX.4.64.0705140847330.10442@schroedinger.engr.sgi.com>
+ <1179159285.2942.20.camel@lappy>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 14 May 2007, Peter Zijlstra wrote:
 
-
-On Mon, 14 May 2007, Jean Delvare wrote:
+> On Mon, 2007-05-14 at 08:49 -0700, Christoph Lameter wrote:
+> > On Mon, 14 May 2007, Peter Zijlstra wrote:
+> > 
+> > > Index: linux-2.6-git/include/linux/slub_def.h
+> > > ===================================================================
+> > > --- linux-2.6-git.orig/include/linux/slub_def.h
+> > > +++ linux-2.6-git/include/linux/slub_def.h
+> > > @@ -52,6 +52,7 @@ struct kmem_cache {
+> > >  	struct kmem_cache_node *node[MAX_NUMNODES];
+> > >  #endif
+> > >  	struct page *cpu_slab[NR_CPUS];
+> > > +	int rank;
+> > >  };
+> > 
+> > Ranks as part of the kmem_cache structure? I thought this is a temporary 
+> > thing?
 > 
-> This is a side effect of an i2c-core cleanup. This is already fixed in
-> lm_sensors 2.10.3 (libsensors.so.3.1.3).
+> No it needs to store the current state to verity subsequent allocations
+> their gfp flags against.
 
-So apparently that fixed it, but in general we do not allow these kinds of 
-"need to have new xyz with new kernel". 
+What state? This is a global state? The kmem_cache struct is rarely
+written to after setting up the slab. Any writes could create a serious 
+performance problem on large scale systems.
 
-Kernels are supposed to be backwards compatible. Jean, what was it that 
-changed, and why can't we just make them appear the same?
+ 
+> > >   * Lock order:
+> > > @@ -961,6 +962,8 @@ static struct page *allocate_slab(struct
+> > >  	if (!page)
+> > >  		return NULL;
+> > >  
+> > > +	s->rank = page->index;
+> > > +
+> > 
+> > Argh.... Setting a cache structure field from a page struct field? What 
+> > about concurrency?
+> 
+> Oh, right; allocate_slab is not serialized itself.
 
-It may be that something like a sensors package isn't important enough to 
-worry about (the machine still *works*, and everything else won't notice), 
-but if it's a simple matter of adding some random file to /sysfs, we 
-should just do it.
+Nor should you ever write to the kmem_cache structure concurrently at all.
 
-		Linus
+> > >  
+> > > -	else {
+> > > +	} else {
+> > >  		object = page->lockless_freelist;
+> > >  		page->lockless_freelist = object[page->offset];
+> > >  	}
+> > 
+> > This is the hot path. No modifications please.
+> 
+> Yes it is, but sorry, I have to. I really need to validate each slab
+> alloc its GFP flags. Thats what the whole thing is about, I thought you
+> understood that.
+
+You are accessing a kmem_cache structure field in the hot path. That 
+cacheline is never used in the hot path. Sorry this is way to intrusive 
+for the problem you are trying to solve.
