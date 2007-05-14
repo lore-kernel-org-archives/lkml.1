@@ -1,81 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755785AbXENOIo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755887AbXENOKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755785AbXENOIo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 10:08:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXENOIi
+	id S1755887AbXENOKd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 10:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXENOK1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 10:08:38 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:58422 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754333AbXENOIh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 10:08:37 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Mon, 14 May 2007 10:07:57 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Bob Johnston <haloman@gmail.com>
-cc: linux-kernel@vger.kernel.org
-Subject: Re: undeprecate raw driver.
-In-Reply-To: <loom.20070514T153159-406@post.gmane.org>
-Message-ID: <Pine.LNX.4.64.0705140957370.12444@localhost.localdomain>
-References: <E1HnHxK-0004CI-00@calista.eckenfels.net>
- <Pine.LNX.4.64.0705131347450.1144@localhost.localdomain>
- <464770A0.4070809@s5r6.in-berlin.de> <loom.20070514T005958-424@post.gmane.org>
- <20070514124210.71d94d58@the-village.bc.nu> <loom.20070514T153159-406@post.gmane.org>
+	Mon, 14 May 2007 10:10:27 -0400
+Received: from mail.tmr.com ([64.65.253.246]:36131 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753729AbXENOK1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 10:10:27 -0400
+Message-ID: <46486DEC.1080506@tmr.com>
+Date: Mon, 14 May 2007 10:10:52 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+Organization: TMR Associates Inc, Schenectady NY
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+To: Jeff Garzik <jeff@garzik.org>
+CC: Krzysztof Halasa <khc@pm.waw.pl>, Robert Hancock <hancockr@shaw.ca>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Jonathan Corbet <corbet@lwn.net>
+Subject: Re: [PATCH] "volatile considered harmful" document
+References: <fa.UIDGHS72acFv9jKylmdQQwWcXPA@ifi.uio.no> <fa.fKNBJtZJWOQthlLjc1TDfY6jCLc@ifi.uio.no> <4646082D.2080502@shaw.ca> <m33b208z5f.fsf@maximus.localdomain> <46479E95.6050507@tmr.com> <20070513235341.GA4270@havoc.gtf.org>
+In-Reply-To: <20070513235341.GA4270@havoc.gtf.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007, Bob Johnston wrote:
-
-> Alan Cox <alan <at> lxorguk.ukuu.org.uk> writes:
+Jeff Garzik wrote:
+> On Sun, May 13, 2007 at 07:26:13PM -0400, Bill Davidsen wrote:
+>   
+>> Krzysztof Halasa wrote:
+>>     
+>>> Robert Hancock <hancockr@shaw.ca> writes:
+>>>       
+>>>> You don't need volatile in that case, rmb() can be used.
+>>>>         
 >
-> > > Why not just use the terms:
-> > > * outdated - as a replacement for "deprecated".
-> >
-> > Because they don't actually mean the same thing ?
+>   
+>>> rmb() invalidates all compiler assumptions, it can be much slower.
+>>>       
 >
-> "superseded" would probably be a better word, perhaps lacking the
-> negative connotations of "deprecated"
+> It does not invalidate /all/ assumptions.
+>
+>
+>   
+>> Yes, why would you use rmb() when a read of a volatile generates optimal 
+>> code?
+>>     
+>
+> Read of a volatile is guaranteed to generate the least optimal code.
+> That's what volatile does, guarantee no optimization of that particular
+> access.
+>   
+By optimal you seem to mean "generate fewer CPU cycles by risking use of 
+an obsolete value," while by the same term I mean read the correct and 
+current value from the memory location without the overhead of locks. If 
+your logic doesn't require the correct value, why read it at all? And if 
+it does, how fewer cycles and cache impact can anything have than a 
+single register load from memory?
 
-except that you *want* the negative connotation associated with the
-word "deprecated."  you don't just want to say something's been
-superseded.  rather, you want to say that it's not only been
-superseded but that you really want people to *stop using it* and move
-up to the newer version; otherwise, there is no motivation to upgrade.
-
-i'm just baffled by the resistance to the word "deprecated" since it
-represents *exactly* the idea you want to get across here.  its use
-in software projects is well-established.  why are some people so put
-off by it?
-
-> I'm just trying to propose an alternative because it seems that
-> deprecated/obsolete causes some confusion.
-
-no, it does *not* cause confusion.  by now, everyone who's been
-following this thread knows *exactly* what those two words are being
-proposed to represent.  what's happening is that they don't *like*
-that proposed usage.
-
-quite simply, there is no confusion here, there is simply annoying
-obstinacy.  there's a difference.
-
-rday
+Locks are useful when the value will be changed by a thread, or when the 
+value must not be changed briefly. That's not always the case.
 
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
+bill davidsen <davidsen@tmr.com>
+  CTO TMR Associates, Inc
+  Doing interesting things with small computers since 1979
 
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
