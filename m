@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbXENVyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759773AbXENVyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759230AbXENVyR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 17:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754672AbXENVyK
+	id S1759773AbXENVyi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 17:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756929AbXENVy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 17:54:10 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:3660 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753656AbXENVyJ (ORCPT
+	Mon, 14 May 2007 17:54:29 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:43897 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754672AbXENVy3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 17:54:09 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Mon, 14 May 2007 14:54:07 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@alien.or.mcafeemobile.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Christoph Hellwig <hch@infradead.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@qumranet.com>
-Subject: Re: [patch 1/1] export eventfd symbols ...
-In-Reply-To: <20070514145137.30e6d019.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705141453200.19682@alien.or.mcafeemobile.com>
-References: <send-serie.davidel@xmailserver.org.25077.1179178493.1>
- <20070514214201.GA24107@infradead.org> <Pine.LNX.4.64.0705141443440.19682@alien.or.mcafeemobile.com>
- <20070514145137.30e6d019.akpm@linux-foundation.org>
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Mon, 14 May 2007 17:54:29 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <4648DA8A.6070702@s5r6.in-berlin.de>
+Date: Mon, 14 May 2007 23:54:18 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+CC: Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc1
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org> <4647569D.7010709@imap.cc> <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr> <4648A3DF.7040004@imap.cc> <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>
+X-Enigmail-Version: 0.94.1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007, Andrew Morton wrote:
-
-> On Mon, 14 May 2007 14:45:26 -0700 (PDT)
-> Davide Libenzi <davidel@xmailserver.org> wrote:
+Jan Engelhardt wrote:
+> menuconfig NETDEV_10000
+> 	bool "Ethernet (10GbE)"
+> 	---help--
+> 	Say Y here to actually be able to go into this menu
+> 	and select some drivers that we think belong to the
+> 	"10 Gigabit Ethernet" family.
 > 
-> > On Mon, 14 May 2007, Christoph Hellwig wrote:
-> > 
-> > > On Mon, May 14, 2007 at 02:34:53PM -0700, Davide Libenzi wrote:
-> > > > Export eventfd kernel functions to modules.
-> > > 
-> > > Why?
-> > 
-> > KVM developers asked for it. It seem they'll be using eventfd to signal 
-> > events to userspace.
-> > 
+> 	If unsure, it is unwise to say N!
 > 
-> yeah, there's no really easy way of doing this.  Probably it's best if
-> these exports get merged via the KVM git tree, once the proposed KVM
-> changes have been suitably reviewed.
+> See, this looks so fundamentally basic to me that I find it
+> almost funny. YMMV, hence I asked for suggestions from
+> other people.
 
-That sounds reasonable.
+One problem is, nobody can see easily whether saying Y is merely the
+ticket to get into the menu, or whether it on its own will cause
+something to be built.
 
-
-
-- Davide
-
-
+PS:  I still believe that Kconfigs shouldn't by overly burdened with
+presentation.  Presentation should mostly be left to the UIs.  And the
+UIs shouldn't be created by kernel hackers...  ;-)
+-- 
+Stefan Richter
+-=====-=-=== -=-= -===-
+http://arcgraph.de/sr/
