@@ -1,63 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbXENXth@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759702AbXENX4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760481AbXENXth (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 19:49:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbXENXta
+	id S1759702AbXENX4B (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 19:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755557AbXENXzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 19:49:30 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:63743 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754462AbXENXta (ORCPT
+	Mon, 14 May 2007 19:55:52 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:41242 "EHLO
+	pd3mo1so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755288AbXENXzv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 19:49:30 -0400
-Date: Mon, 14 May 2007 16:53:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>
-Subject: [PATCH] parport: mailing list is subscribers-only
-Message-Id: <20070514165322.dca64dd1.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Brightmail-Tracker: AAAAAQAAAAI=
-X-Whitelist: TRUE
-X-Whitelist: TRUE
+	Mon, 14 May 2007 19:55:51 -0400
+Date: Mon, 14 May 2007 17:54:31 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: [PATCH] libata: add human-readable error value decoding (v2)
+To: linux-kernel <linux-kernel@vger.kernel.org>, linux-ide@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>
+Message-id: <4648F6B7.6090209@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+This adds human-readable decoding of the ATA status and error registers (similar
+to what drivers/ide does) as well as the SATA Serror register to libata error
+handling output. This prevents the need to pore through standards documents
+to figure out the meaning of the bits in these registers when looking at error
+reports. Some bits that drivers/ide decoded are not decoded here, since the bits
+are either command-dependent or obsolete, and properly parsing them would add
+too much complexity.
 
-linux-parport is subscribers-only:
+This version reduces the length of the SError parsed output strings relative to the
+previous version of this patch.
 
-Your mail to 'Linux-parport' with the subject
-    Re: [QUESTION] parallel console configuration
-Is being held until the list moderator can review it for approval.
-The reason it is being held:
-    Post by non-member to a members-only list
+Signed-off-by: Robert Hancock <hancockr@shaw.ca>
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- MAINTAINERS |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- linux-2.6.22-rc1.orig/MAINTAINERS
-+++ linux-2.6.22-rc1/MAINTAINERS
-@@ -2691,13 +2691,13 @@ L:	i2c@lm-sensors.org
- S:	Maintained
+--- linux-2.6.21.1/drivers/ata/libata-eh.c	2007-04-27 15:49:26.000000000 -0600
++++ linux-2.6.21.1edit/drivers/ata/libata-eh.c	2007-05-14 17:38:35.000000000 -0600
+@@ -1523,6 +1523,27 @@ static void ata_eh_report(struct ata_por
+ 			ata_port_printk(ap, KERN_ERR, "(%s)\n", desc);
+ 	}
  
- PARALLEL PORT SUPPORT
--L:	linux-parport@lists.infradead.org
-+L:	linux-parport@lists.infradead.org (subscribers-only)
- S:	Orphan
++	if (ehc->i.serror)
++		ata_port_printk(ap, KERN_ERR,
++		  "SError: {%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s%s}\n",
++		  ehc->i.serror & SERR_DATA_RECOVERED ? "RecovData " : "",
++		  ehc->i.serror & SERR_COMM_RECOVERED ? "RecovComm " : "",
++		  ehc->i.serror & SERR_DATA ? "UnrecovData " : "",
++		  ehc->i.serror & SERR_PERSISTENT ? "Persist " : "",
++		  ehc->i.serror & SERR_PROTOCOL ? "Proto " : "",
++		  ehc->i.serror & SERR_INTERNAL ? "HostInt " : "",
++		  ehc->i.serror & SERR_PHYRDY_CHG ? "PHYRdyChg " : "",
++		  ehc->i.serror & SERR_PHY_INT_ERR ? "PHYInt " : "",
++		  ehc->i.serror & SERR_COMM_WAKE ? "CommWake " : "",
++		  ehc->i.serror & SERR_10B_8B_ERR ? "10B8B " : "",
++		  ehc->i.serror & SERR_DISPARITY ? "Dispar " : "",
++		  ehc->i.serror & SERR_CRC ? "BadCRC " : "",
++		  ehc->i.serror & SERR_HANDSHAKE ? "Handshk " : "",
++		  ehc->i.serror & SERR_LINK_SEQ_ERR ? "LinkSeq " : "",
++		  ehc->i.serror & SERR_TRANS_ST_ERROR ? "TrStaTrns " : "",
++		  ehc->i.serror & SERR_UNRECOG_FIS ? "UnrecFIS " : "",
++		  ehc->i.serror & SERR_DEV_XCHG ? "DevExch " : "" );
++
+ 	for (tag = 0; tag < ATA_MAX_QUEUE; tag++) {
+ 		static const char *dma_str[] = {
+ 			[DMA_BIDIRECTIONAL]	= "bidi",
+@@ -1552,6 +1573,29 @@ static void ata_eh_report(struct ata_por
+ 			res->hob_feature, res->hob_nsect,
+ 			res->hob_lbal, res->hob_lbam, res->hob_lbah,
+ 			res->device, qc->err_mask, ata_err_string(qc->err_mask));
++		
++		if (res->command & (ATA_BUSY | ATA_DRDY | ATA_DF | ATA_DRQ |
++		                    ATA_ERR) ) {
++			if (res->command & ATA_BUSY)
++				ata_dev_printk(qc->dev, KERN_ERR,
++				  "status: {Busy}\n" );
++			else
++				ata_dev_printk(qc->dev, KERN_ERR,
++				  "status: {%s%s%s%s}\n",
++				  res->command & ATA_DRDY ? "DRDY " : "",
++				  res->command & ATA_DF ? "DF " : "",
++				  res->command & ATA_DRQ ? "DRQ " : "",
++				  res->command & ATA_ERR ? "ERR " : "" );
++		}
++		
++		if (cmd->command != ATA_CMD_PACKET &&
++		    (res->feature & (ATA_ICRC | ATA_UNC | ATA_IDNF | ATA_ABORTED)))
++			ata_dev_printk(qc->dev, KERN_ERR,
++			  "error: {%s%s%s%s}\n",
++			  res->feature & ATA_ICRC ? "ICRC " : "",
++			  res->feature & ATA_UNC ? "UNC " : "",
++			  res->feature & ATA_IDNF ? "IDNF " : "",
++			  res->feature & ATA_ABORTED ? "ABRT " : "" );
+ 	}
+ }
  
- PARIDE DRIVERS FOR PARALLEL PORT IDE DEVICES
- P:	Tim Waugh
- M:	tim@cyberelk.net
--L:	linux-parport@lists.infradead.org
-+L:	linux-parport@lists.infradead.org (subscribers-only)
- W:	http://www.torque.net/linux-pp.html
- S:	Maintained
+--- linux-2.6.21.1/include/linux/ata.h	2007-04-27 15:49:26.000000000 -0600
++++ linux-2.6.21.1edit/include/linux/ata.h	2007-05-09 19:25:54.000000000 -0600
+@@ -223,6 +223,15 @@ enum {
+ 	SERR_PROTOCOL		= (1 << 10), /* protocol violation */
+ 	SERR_INTERNAL		= (1 << 11), /* host internal error */
+ 	SERR_PHYRDY_CHG		= (1 << 16), /* PHY RDY changed */
++	SERR_PHY_INT_ERR	= (1 << 17), /* PHY internal error */
++	SERR_COMM_WAKE		= (1 << 18), /* Comm wake */
++	SERR_10B_8B_ERR		= (1 << 19), /* 10b to 8b decode error */
++	SERR_DISPARITY		= (1 << 20), /* Disparity */
++	SERR_CRC		= (1 << 21), /* CRC error */
++	SERR_HANDSHAKE		= (1 << 22), /* Handshake error */
++	SERR_LINK_SEQ_ERR	= (1 << 23), /* Link sequence error */
++	SERR_TRANS_ST_ERROR	= (1 << 24), /* Transport state transition error */
++	SERR_UNRECOG_FIS	= (1 << 25), /* Unrecognized FIS */
+ 	SERR_DEV_XCHG		= (1 << 26), /* device exchanged */
  
+ 	/* struct ata_taskfile flags */
+
