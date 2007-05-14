@@ -1,98 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbXENRlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbXENRmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758695AbXENRlx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 13:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXENRlp
+	id S1758858AbXENRmP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 13:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758702AbXENRly
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 13:41:45 -0400
-Received: from rgminet01.oracle.com ([148.87.113.118]:48879 "EHLO
-	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756592AbXENRlo (ORCPT
+	Mon, 14 May 2007 13:41:54 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:57123
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758681AbXENRlx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 13:41:44 -0400
-Date: Mon, 14 May 2007 10:45:46 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: Mattia Dongili <malattia@linux.it>, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Fwd: Re: Linux 2.6.22-rc1
-Message-Id: <20070514104546.10a4368f.randy.dunlap@oracle.com>
-In-Reply-To: <Pine.LNX.4.61.0705140742350.9570@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0705131123280.9570@yvahk01.tjqt.qr>
-	<20070514015541.GB4800@inferi.kami.home>
-	<Pine.LNX.4.61.0705140742350.9570@yvahk01.tjqt.qr>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 14 May 2007 13:41:53 -0400
+From: Rob Landley <rob@landley.net>
+To: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: 3 years since last 2.2 release, why still on kernel.org main page?
+Date: Mon, 14 May 2007 13:41:48 -0400
+User-Agent: KMail/1.9.1
+Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+References: <200705102334.44077.rob@landley.net> <4647A5DB.2070205@tmr.com>
+In-Reply-To: <4647A5DB.2070205@tmr.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+Message-Id: <200705141341.48827.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007 07:49:31 +0200 (MEST) Jan Engelhardt wrote:
+On Sunday 13 May 2007 7:57 pm, Bill Davidsen wrote:
+> Rob Landley wrote:
+> > Out of curiosity, since 2.2 hasn't had a release in 3 years, and the last 
+> > prepatch was 2 years ago, why is its' status still on the kernel.org main 
+> > page?
+> > 
+> > Not exactly something people are checking the status of on a daily 
+basis...
+> > 
+> > Just wondering...
+> > 
+> I assume because it's a handy place to the the current 2.2 kernel, which 
+> some people run for reasons which are valid to them.
 
-> 
-> On May 14 2007 10:55, Mattia Dongili wrote:
-> >On Sun, May 13, 2007 at 11:27:31AM +0200, Jan Engelhardt wrote:
-> >> On May 12 2007 20:20, Linus Torvalds wrote:
-> >> >
-> >> >Ok, the merge window has closed, and 2.6.22-rc1 is out there.
-> >> 
-> >> I have hit a randconfig compile failure. .config attached.
-> >> 
-> >>   LD      .tmp_vmlinux1
-> >> drivers/built-in.o: In function `acpi_bus_generate_event':
-> >> (.text+0x233f7): undefined reference to `event_is_open'
-> >> drivers/built-in.o: In function `acpi_bus_get_power':
-> >> (.text+0x236ad): undefined reference to `acpi_power_get_inferred_state'
-> >> drivers/built-in.o: In function `acpi_bus_set_power':
-> >> (.text+0x237c3): undefined reference to `acpi_power_transition'
-> >> drivers/built-in.o: In function `acpi_bus_set_power':
-> >> (.text+0x23835): undefined reference to `acpi_power_transition'
-> >> drivers/built-in.o: In function `sony_pic_fanspeed_store':
-> >> sony-laptop.c:(.text+0x91930): undefined reference to `ec_write'
-> >> drivers/built-in.o: In function `sony_pic_fanspeed_show':
-> >> sony-laptop.c:(.text+0x9195d): undefined reference to `ec_read'
-> >> make: *** [.tmp_vmlinux1] Error 1
-> >
-> >I actually can't reproduce it with your .config.
-> 
-> But I can. Did you try it on x86_64? From 2.6.22-rc1 [
-> commit 39403865d2e4590802553370a56c9ab93131e4ee in /linux-2.6.git] ?
-> 
-> 	bzip2 -cd randconfig-1.bz2 >.config
-> 	make -j8
+*shrug*  I understand that people still run it, and I'm not saying they 
+shouldn't.
 
-Yes, build easily fails for me also.
+My question was more along the lines of "is there anybody who's still running 
+it who doesn't know where to find it?", and "why have a status tracker on the 
+main page for something that hasn't changed in years?"
 
->   HOSTLD  scripts/kconfig/conf
-> scripts/kconfig/conf -s arch/x86_64/Kconfig
-> drivers/macintosh/Kconfig:116:warning: 'select' used by config symbol '
-> drivers/net/Kconfig:2283:warning: 'select' used by config symbol 'UCC_G
-> drivers/input/keyboard/Kconfig:170:warning: 'select' used by config sym
-> drivers/input/mouse/Kconfig:181:warning: 'select' used by config symbol
->   CHK     include/linux/version.h
->   UPD     include/linux/version.h
->   CHK     include/linux/utsrelease.h
->   UPD     include/linux/utsrelease.h
->   SYMLINK include/asm -> include/asm-x86_64
-> 
-> 
-> >>From a clean tree, running make fires up the oldconfig which fixes the
-> >many missing/garbled dependencies. In any case SONY_LAPTOP depends on
-> >ACPI which always build EC statically if selected.
-> 
-> I really presume it is something on x86_64, because doing
-> 
-> 	gzip -cd /proc/config.gz
-> 	make
-> 
-> on i386 seemed to compile fine - including the sony modules.
-
-
----
-~Randy
-*** Remember to use Documentation/SubmitChecklist when testing your code ***
+Rob
