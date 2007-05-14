@@ -1,50 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbXENLTk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760669AbXENLZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761572AbXENLTk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:19:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758358AbXENLTe
+	id S1760669AbXENLZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXENLZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:19:34 -0400
-Received: from holomorphy.com ([66.93.40.71]:50455 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756806AbXENLTd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:19:33 -0400
-Date: Mon, 14 May 2007 04:20:16 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, efault@gmx.de, tingy@cs.umass.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: fair clock use in CFS
-Message-ID: <20070514112016.GW19966@holomorphy.com>
-References: <20070514083358.GA29775@in.ibm.com> <20070514102929.GL31925@holomorphy.com> <20070514103120.GA23766@elte.hu> <20070514110500.GV19966@holomorphy.com> <20070514112259.GC28348@in.ibm.com>
+	Mon, 14 May 2007 07:25:22 -0400
+Received: from pne-smtpout2-sn2.hy.skanova.net ([81.228.8.164]:38732 "EHLO
+	pne-smtpout2-sn2.hy.skanova.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756022AbXENLZV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 07:25:21 -0400
+Message-ID: <46484716.9080802@tobbe.nu>
+Date: Mon, 14 May 2007 13:25:10 +0200
+From: Tobias Bengtsson <tobbe@tobbe.nu>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514112259.GC28348@in.ibm.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Philip Langdale <philipl@overt.org>
+CC: Pierre Ossman <drzeus-list@drzeus.cx>, linux-kernel@vger.kernel.org
+Subject: Re: SDHCI issues on Ricoh in 2.6.20, 21 and 21-rc7-mm2
+References: <4639D927.4080406@tobbe.nu> <4646EE93.8090307@drzeus.cx> <464776C0.5020007@overt.org>
+In-Reply-To: <464776C0.5020007@overt.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 04:05:00AM -0700, William Lee Irwin III wrote:
->> The variability in ->fair_clock advancement rate was the mistake, at
->> least according to my way of thinking. The queue's virtual time clock
->> effectively stops under sufficiently high load, possibly literally in
->> the event of fixpoint underflow. 
+Philip,
 
-On Mon, May 14, 2007 at 04:52:59PM +0530, Srivatsa Vaddagiri wrote:
-> [snip]
+Philip Langdale wrote:
+> Pierre has asked me to take a look implementing this. My first question is whether
+> all card events are getting dropped on the floor, or just insertion ones. That is
+> to say, if you have the card inserted when you load the module (which you say
+> makes the card usable), does it correctly detect that the card is ejected when
+> you eject it?
+>   
+Yes, the first time.
+Reloading modules with card inserted again, and then remove it does not 
+give me anything.
 
-On Mon, May 14, 2007 at 04:05:00AM -0700, William Lee Irwin III wrote:
->> Basically it needs to move closer to EEVDF in these respects.
+Thanks for your swift response!
 
-On Mon, May 14, 2007 at 04:52:59PM +0530, Srivatsa Vaddagiri wrote:
-> Doesn't EEVDF have the same issue? From the paper:
-> 	V(t) = 1/(w1 + w2 + ...wn)
-
-Who knows what I was smoking, then. I misremembered the scale factor
-as being on the other side of comparisons with the queue's clock. I'm
-suspicious of EEVDF's timekeeping now as well.
-
-
--- wli
+regards, Tobias
