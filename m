@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758454AbXENRwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbXENR47@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758454AbXENRwU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 13:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756581AbXENRwJ
+	id S1757943AbXENR47 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 13:56:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbXENR4x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 13:52:09 -0400
-Received: from mail.lysator.liu.se ([130.236.254.3]:42208 "EHLO
-	mail.lysator.liu.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756384AbXENRwI (ORCPT
+	Mon, 14 May 2007 13:56:53 -0400
+Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:1050 "EHLO
+	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756091AbXENR4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 13:52:08 -0400
-X-Greylist: delayed 1881 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 May 2007 13:52:07 EDT
-To: linux-kernel@vger.kernel.org
-Subject: Linux 2.6.21.1 early putstr() fails on ARM
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-From: =?iso-8859-1?Q?Mattias_R=F6nnblom?= <hofors@lysator.liu.se>
-Date: 14 May 2007 19:14:56 +0200
-Message-ID: <87d51372en.fsf@isengard.friendlyfire.se>
-User-Agent: Gnus/5.09 (Gnus v5.9.0) Emacs/21.4
+	Mon, 14 May 2007 13:56:52 -0400
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Oliver Neukum <oliver@neukum.org>
+Subject: Re: converting appletouch to usb autosuspend...
+Date: Mon, 14 May 2007 18:56:37 +0100
+User-Agent: KMail/1.9.6
+Cc: Soeren Sonnenburg <kernel@nn7.de>, linux-usb-devel@lists.sourceforge.net,
+       Linux Kernel <linux-kernel@vger.kernel.org>, maxk@qualcomm.com
+References: <1178995886.4168.10.camel@localhost> <200705140153.03084.s0348365@sms.ed.ac.uk> <200705140750.40458.oliver@neukum.org>
+In-Reply-To: <200705140750.40458.oliver@neukum.org>
 MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705141856.37923.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all.
+On Monday 14 May 2007 06:50:39 Oliver Neukum wrote:
+> Am Montag, 14. Mai 2007 02:53 schrieb Alistair John Strachan:
+> > > What did you use instead of hci_usb then ? usbkbd ? This won't give you
+> > > the special keys etc...
+> >
+> > Sorry, I wasn't clear. hci_usb is actually part of the BlueZ stack, it's
+> > got nothing to do with the keyboard. I unloaded both appletouch AND
+> > hci_usb.
+>
+> If you want large power savings from USB autosuspend, all
+> loaded drivers must support autosuspend. The HCD can suspend
+> only if all connected devices are suspended.
+> Are you willing to test patches for HID & the new last_busy based
+> usb core infrastructure?
 
-I just tried updating Linux 2.6.16 to 2.6.21.1 on our IXP420-based
-board, but I've run into some trouble. Except for some modifications
-to the PCI setup code, the tree is unmodified. GCC is 3.4.3 and
-Binutils 2.15.94.
+Of course.
 
-During the decompression stage, the kernel "Uncompressing Linux..."
-printout is garbled. When digging into this I found that the string
-passed to putstr() is not "Uncompressing Linux...", but rather
-something much longer containing a lot of unprintable characters.
-putc() as such works fine, and putting "putc('A');" into the
-decompress_kernel function (arch/arm/boot/compressed/misc.c), for
-example, prints a nice "A" on the console.
+-- 
+Cheers,
+Alistair.
 
->From what limited experience I have of these sorts of things I came to
-the conclusion that maybe the linking wasn't done correctly. But
-replacing the previously mentioned toolchain with CodeSourcery's
-pre-built GCC 4.2.0 and Binutils 2.17 didn't make any difference.
-
-Besides our old (and working, on 2.6.16) .config, I've been trying all
-kinds of configs (including ixp4xx_defconfig) without success.
-
-What might I be doing wrong? Any help is appreciated.
-
-Regards,
-        Mattias
-
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
