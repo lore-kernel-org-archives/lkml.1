@@ -1,73 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759805AbXENUeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760606AbXENUe3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759805AbXENUeQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757255AbXENUeD
+	id S1760606AbXENUe3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:34:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758153AbXENUeF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:34:03 -0400
-Received: from tim.rpsys.net ([194.106.48.114]:34760 "EHLO tim.rpsys.net"
+	Mon, 14 May 2007 16:34:05 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:50781 "EHLO mailer.gwdg.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756721AbXENUeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:34:00 -0400
-Subject: Re: [PATCH 1/2] leds:arch/sh/boards/landisk LEDs supports
-From: Richard Purdie <rpurdie@rpsys.net>
-To: cbou@mail.ru
-Cc: kogiidena@eggplant.ddo.jp, linux-kernel@vger.kernel.org,
-       lethal@linux-sh.org
-In-Reply-To: <20070514201256.GB26554@zarina>
-References: <1743.192.168.1.10.1178627210.squirrel@eggplant.ddo.jp>
-	 <1178628889.6061.33.camel@localhost.localdomain>
-	 <2490.192.168.1.10.1178720780.squirrel@eggplant.ddo.jp>
-	 <1178723594.6291.21.camel@localhost.localdomain>
-	 <20070509160328.GA13640@zarina>
-	 <1179098182.5883.31.camel@localhost.localdomain>
-	 <20070514201256.GB26554@zarina>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 21:33:36 +0100
-Message-Id: <1179174816.5877.60.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.6.1 
-Content-Transfer-Encoding: 7bit
+	id S1757310AbXENUeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:34:02 -0400
+Date: Mon, 14 May 2007 22:33:44 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Tilman Schmidt <tilman@imap.cc>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc1
+In-Reply-To: <4648A3DF.7040004@imap.cc>
+Message-ID: <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+ <4647569D.7010709@imap.cc> <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr>
+ <4648A3DF.7040004@imap.cc>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-15 at 00:12 +0400, Anton Vorontsov wrote:
-> This change needed for two purposes:
-> 
-> 1. When somebody sets trigger, and that trigger would setup
->    brightness in its activate() function, and led driver would check
->    if that trigger supported (used by hwtimer trigger and drivers
->    supporting hw blinking LEDs, not in mainline yet).
 
-Why does led_cdev->trigger need to be set to do this? Any well written
-LED drivers shouldn't need to look at it as the LED drivers shouldn't
-have or need any knowledge about specific triggers. If they need this,
-you hw blinking abstraction isn't generic.
+On May 14 2007 20:01, Tilman Schmidt wrote:
+>> 
+>> "Patches welcome" ;-)
+>
+>Sure. Just tell me exactly what those options are intended to do
+>and I'll happily write up a patch adding help texts trying to
+>express that in bad English. :-)
 
-I had reservations about the hw blinking support last time we discussed
-it but I can't remember the specifics of that discussion now without
-looking it up. I'm going to hold this patch until we're about the merge
-something that needs it, if it really needs it.
+They are just a menu that can be switched on or off.
+It is for those people that start with an arbitrary .config and
+work their way through menuconfig to disable all the parts they
+do not want. So, point no. 1:
 
-> 2. If trigger would access itself through led_cdev in its activate()
->    function.
+  * Disabling this menu disables all the fluff inside it,
+    without needing to enter the menu and disable each
+    option one by one (as was the case previously)
 
-I can't see why you'd need to do this...
+Then of course, one can also turn these menuconfig on (apparently!)
+to be able to descend into them and select some drivers they like.
+Point no. 2:
 
-> Pros of that patch:
-> 
-> 1. Just sane to do;
-> 2. Trivial;
-> 3. Can't break anything;
-> 4. No new code, just one line movement.
-> 
-> Cons of applying that patch:
-> 
-> 1. No mainline kernel user, but offshores.
+  * Since Jens Axboe's stance ["default y idiocy"] is to have
+    these menus disabled by default, people should most likely
+    enable them first before they will be able to enter them.
 
-2. Encourages bad code ;-). 
+    (I would have wanted them to be always 'y' - it does not affect
+    the build, just opens all menus by default)
 
+>Seriously, it might be a tad more efficient if the help texts were
+>written by those who invented the options in the first place.
+
+menuconfig NETDEV_10000
+	bool "Ethernet (10GbE)"
+	---help--
+	Say Y here to actually be able to go into this menu
+	and select some drivers that we think belong to the
+	"10 Gigabit Ethernet" family.
+
+	If unsure, it is unwise to say N!
+
+See, this looks so fundamentally basic to me that I find it
+almost funny. YMMV, hence I asked for suggestions from
+other people.
+
+>> As for NETDEV_1000 and _10000, I really wonder if we need anymore
+>> help text than the option. I do not know what the minimum level
+>> of user knowledge is that kconfig help texts need to support,
+>> but maybe you can tell?
+>
+>For a start, it shouldn't require users to grep through Kconfigs
+>and Makefiles in order to find out what effects an option has.
+
+menuconfigs are some special kind in that they combine an option
+with a menu. Perhaps now that some ->menuconfig patches have gone
+in, more people will get to know these constructs.
+
+
+	Jan
 -- 
-Richard
-
-
