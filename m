@@ -1,126 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbXENOsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756297AbXENOt6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbXENOsh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 10:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754546AbXENOs2
+	id S1756297AbXENOt6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 10:49:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbXENOtw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 10:48:28 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:45569 "EHLO e4.ny.us.ibm.com"
+	Mon, 14 May 2007 10:49:52 -0400
+Received: from smtp2.it.da.ut.ee ([193.40.5.67]:34093 "EHLO smtp2.it.da.ut.ee"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754450AbXENOs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 10:48:26 -0400
-Date: Mon, 14 May 2007 20:18:34 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: [PATCH 2/5][TAKE2] fallocate() on s390
-Message-ID: <20070514144833.GB31748@amitarora.in.ibm.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070514132926.GA30768@amitarora.in.ibm.com> <20070514142820.GA31468@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514142820.GA31468@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	id S1754546AbXENOtv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 10:49:51 -0400
+X-Greylist: delayed 1769 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 May 2007 10:49:51 EDT
+Date: Mon, 14 May 2007 17:20:20 +0300 (EEST)
+From: Meelis Roos <mroos@linux.ee>
+To: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: ppc modprost warnings in 2.6.22-rc1
+Message-ID: <Pine.SOC.4.64.0705141717110.23895@math>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the patch suggested by Martin Schwidefsky. Here are the comments
-and patch from him.
+Trying to compile 2.6.22-rc1 for ppc (prep) arch. While section 
+mismatches are an old thing, what are these COMMON symbols?
 
--------------
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+  MODPOST vmlinux
+WARNING: "fee_restarts" [arch/ppc/kernel/built-in] is COMMON symbol
+WARNING: "ee_restarts" [arch/ppc/kernel/built-in] is COMMON symbol
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x18) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x3c) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x114) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x138) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x15c) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x180) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x1a4) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x1c8) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x1ec) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x210) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x234) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x258) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x27c) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x2a0) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x2c4) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x2e8) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x30c) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x330) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x354) and 'Mesquite_pci_IRQ_map'
+WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x378) and 'Mesquite_pci_IRQ_map'
+WARNING: "primary_pteg_full" [arch/ppc/mm/built-in] is COMMON symbol
+WARNING: "next_slot" [arch/ppc/mm/built-in] is COMMON symbol
+WARNING: "htab_hash_searches" [arch/ppc/mm/built-in] is COMMON symbol
+WARNING: arch/ppc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0x1168) and 'hash_page'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 0x24208) and 'kmem_cache_shrink'
+WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 0x24350) and 'kmem_cache_shrink'
+WARNING: lib/built-in: '__div64_32' exported twice. Previous export was in arch/ppc/kernel/built-in.ko
 
-This patch implements support of fallocate system call on s390(x)
-platform. A wrapper is added to address the issue which s390 ABI has
-with the arguments of this system call.
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
-
- arch/s390/kernel/compat_wrapper.S |   10 ++++++++++
- arch/s390/kernel/sys_s390.c       |   29 +++++++++++++++++++++++++++++
- arch/s390/kernel/syscalls.S       |    1 +
- include/asm-s390/unistd.h         |    3 ++-
- 4 files changed, 42 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.21/arch/s390/kernel/compat_wrapper.S
-===================================================================
---- linux-2.6.21.orig/arch/s390/kernel/compat_wrapper.S
-+++ linux-2.6.21/arch/s390/kernel/compat_wrapper.S
-@@ -1682,3 +1682,13 @@ compat_sys_utimes_wrapper:
- 	llgtr	%r2,%r2			# char *
- 	llgtr	%r3,%r3			# struct compat_timeval *
- 	jg	compat_sys_utimes
-+
-+	.globl  sys_fallocate_wrapper
-+sys_fallocate_wrapper:
-+	lgfr	%r2,%r2			# int
-+	lgfr	%r3,%r3			# int
-+	sllg    %r4,%r4,32		# get high word of 64bit loff_t
-+	lr      %r4,%r5			# get low word of 64bit loff_t
-+	sllg    %r5,%r6,32		# get high word of 64bit loff_t
-+	l	%r5,164(%r15)		# get low word of 64bit loff_t
-+	jg	sys_fallocate
-Index: linux-2.6.21/arch/s390/kernel/syscalls.S
-===================================================================
---- linux-2.6.21.orig/arch/s390/kernel/syscalls.S
-+++ linux-2.6.21/arch/s390/kernel/syscalls.S
-@@ -322,3 +322,4 @@ NI_SYSCALL							/* 310 sys_move_pages *
- SYSCALL(sys_getcpu,sys_getcpu,sys_getcpu_wrapper)
- SYSCALL(sys_epoll_pwait,sys_epoll_pwait,compat_sys_epoll_pwait_wrapper)
- SYSCALL(sys_utimes,sys_utimes,compat_sys_utimes_wrapper)
-+SYSCALL(s390_fallocate,sys_fallocate,sys_fallocate_wrapper)
-Index: linux-2.6.21/arch/s390/kernel/sys_s390.c
-===================================================================
---- linux-2.6.21.orig/arch/s390/kernel/sys_s390.c
-+++ linux-2.6.21/arch/s390/kernel/sys_s390.c
-@@ -286,3 +286,32 @@ int kernel_execve(const char *filename, 
- 		  "d" (__arg3) : "memory");
- 	return __svcres;
- }
-+
-+#ifndef CONFIG_64BIT
-+/*
-+ * This is a wrapper to call sys_fallocate(). For 31 bit s390 the last
-+ * 64 bit argument "len" is split into the upper and lower 32 bits. The
-+ * system call wrapper in the user space loads the value to %r6/%r7.
-+ * The code in entry.S keeps the values in %r2 - %r6 where they are and
-+ * stores %r7 to 96(%r15). But the standard C linkage requires that
-+ * the whole 64 bit value for len is stored on the stack and doesn't
-+ * use %r6 at all. So s390_fallocate has to convert the arguments from
-+ *   %r2: fd, %r3: mode, %r4/%r5: offset, %r6/96(%r15)-99(%r15): len
-+ * to
-+ *   %r2: fd, %r3: mode, %r4/%r5: offset, 96(%r15)-103(%r15): len
-+ */
-+asmlinkage long s390_fallocate(int fd, int mode, loff_t offset,
-+			       u32 len_high, u32 len_low)
-+{
-+	union {
-+		u64 len;
-+		struct {
-+			u32 high;
-+			u32 low;
-+		};
-+	} cv;
-+	cv.high = len_high;
-+	cv.low = len_low;
-+	return sys_fallocate(fd, mode, offset, cv.len);
-+}
-+#endif
-Index: linux-2.6.21/include/asm-s390/unistd.h
-===================================================================
---- linux-2.6.21.orig/include/asm-s390/unistd.h
-+++ linux-2.6.21/include/asm-s390/unistd.h
-@@ -251,8 +251,9 @@
- #define __NR_getcpu		311
- #define __NR_epoll_pwait	312
- #define __NR_utimes		313
-+#define __NR_fallocate		314
- 
--#define NR_syscalls 314
-+#define NR_syscalls 315
- 
- /* 
-  * There are some system calls that are not present on 64 bit, some
+-- 
+Meelis Roos (mroos@linux.ee)
