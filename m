@@ -1,54 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759916AbXENKET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759878AbXENKXG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759916AbXENKET (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 06:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756054AbXENKEJ
+	id S1759878AbXENKXG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 06:23:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755910AbXENKW4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 06:04:09 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41955
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1755952AbXENKEH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 06:04:07 -0400
-Date: Mon, 14 May 2007 03:04:12 -0700 (PDT)
-Message-Id: <20070514.030412.104035740.davem@davemloft.net>
-To: djohnson+linux-kernel@sw.starentnetworks.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH] improved locking performance in rt_run_flush()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <17989.60703.575698.491592@zeus.sw.starentnetworks.com>
-References: <17989.60703.575698.491592@zeus.sw.starentnetworks.com>
-X-Mailer: Mew version 5.1.52 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Mon, 14 May 2007 06:22:56 -0400
+Received: from www.osadl.org ([213.239.205.134]:33671 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755683AbXENKW4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 06:22:56 -0400
+Subject: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v1
+From: Thomas Gleixner <tglx@linutronix.de>
+Reply-To: tglx@linutronix.de
+To: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200705140217.11515.s0348365@sms.ed.ac.uk>
+References: <1178485128.31213.98.camel@localhost.localdomain>
+	 <200705140217.11515.s0348365@sms.ed.ac.uk>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 12:26:08 +0200
+Message-Id: <1179138368.22481.334.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.6.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
-Date: Sat, 12 May 2007 12:36:47 -0400
+I'm pleased to announce an updated version of the x86_64 highres/dyntick
+support patches against 2.6.22-rc1:
 
-> 
-> While testing adding/deleting large numbers of interfaces, I found
-> rt_run_flush() was the #1 cpu user in a kernel profile by far.
-> 
-> The below patch changes rt_run_flush() to only take each spinlock
-> protecting the rt_hash_table once instead of taking a spinlock for
-> every hash table bucket (and ending up taking the same small set 
-> of locks over and over).
-> 
-> Deleting 256 interfaces on a 4-way SMP system with 16K buckets reduced
-> overall cpu-time more than 50% and reduced wall-time about 33%.  I
-> suspect systems with large amounts of memory (and more buckets) will
-> see an even greater benefit.
-> 
-> Note there is a small change in that rt_free() is called while the
-> lock is held where before it was called without the lock held.  I
-> don't think this should be an issue.
-> 
-> Signed-off-by: Dave Johnson <djohnson+linux-kernel@sw.starentnetworks.com>
+To build a highres / dyntick enabled kernel for x86_64:
 
-Thanks for this patch.
+http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.21.tar.bz2
+http://www.kernel.org/pub/linux/kernel/v2.6/testing/patch-2.6.22-rc1.bz2
+http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-highres-v1.patch
 
-I'm not ignoring it I'm just trying to brainstorm whether there
-is a better way to resolve this inefficiency. :-)
+Broken out version is available here:
+http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-highres-v1.patches.tar.bz2
+
+Changes since the last version:
+
+- Various fixups from Chris Wright
+- TSC calibration fix (pointed out by Alistair John Strachan)
+
+Comments, bugreports, patches are welcome as ususal
+
+Thanks,
+
+        tglx
+
+
