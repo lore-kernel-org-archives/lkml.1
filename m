@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966169AbXENJgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762422AbXENJgp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966169AbXENJgS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 05:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762235AbXENJfc
+	id S1762422AbXENJgp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 05:36:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966142AbXENJgH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 05:35:32 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:59206 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S965828AbXENJfY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 05:35:24 -0400
-Date: Mon, 14 May 2007 15:12:49 +0530
+	Mon, 14 May 2007 05:36:07 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:57815 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S966123AbXENJgD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 05:36:03 -0400
+Date: Mon, 14 May 2007 15:13:29 +0530
 From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-fsdevel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
-Subject: [RFC][PATCH  9/14] Union-mount readdir
-Message-ID: <20070514094249.GK4139@in.ibm.com>
+Subject: [RFC][PATCH 10/14] In-kernel file copy between union mounted filesystems
+Message-ID: <20070514094329.GL4139@in.ibm.com>
 Reply-To: bharata@linux.vnet.ibm.com
 References: <20070514093722.GB4139@in.ibm.com>
 Mime-Version: 1.0
@@ -25,643 +26,604 @@ User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Subject: Union mount readdir
+From: Jan Blunck <j.blunck@tu-harburg.de>
+Subject: In-kernel file copy between union mounted filesystems
 
-This modifies the readdir()/getdents() routines to read directory
-entries from toplevel and the lower directories of a union and present
-a merged view.
+This patch introduces in-kernel file copy between union mounted
+filesystems. When a file is opened for writing but resides on a lower (thus
+read-only) layer of the union stack it is copied to the topmost union layer
+first.
 
-The directory entries are read starting from the top layer and they
-are maintained in a cache. Subsequently when the entries from the bottom layers
-of the union stack are read they are checked for duplicates (in the cache)
-before being passed out to the user space. There can be multiple calls
-to readdir/getdents routines for reading the entries of a single directory.
-And union directory cache is maitained across these calls.
+This patch uses the do_splice_direct() for doing the in-kernel file copy.
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Signed-off-by: Jan Blunck <jblunck@suse.de>
+Signed-off-by: Bharata B Rao <bharata@in.ibm.com>
+Signed-off-by: Jan Blunck <j.blunck@tu-harburg.de>
 ---
- fs/aio.c                     |    8 
- fs/file_table.c              |   14 -
- fs/read_write.c              |    7 
- fs/readdir.c                 |    2 
- fs/union.c                   |  404 +++++++++++++++++++++++++++++++++++++++++++
- include/linux/dcache_union.h |   27 ++
- include/linux/union.h        |   22 ++
- 7 files changed, 475 insertions(+), 9 deletions(-)
+ fs/namei.c            |   46 +++++
+ fs/union.c            |  415 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/namei.h |    2 
+ include/linux/union.h |   14 +
+ 4 files changed, 476 insertions(+), 1 deletion(-)
 
---- a/fs/aio.c
-+++ b/fs/aio.c
-@@ -21,6 +21,7 @@
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -830,8 +830,17 @@ done:
+ 	path->mnt = mnt;
+ 	path->dentry = dentry;
  
- #include <linux/sched.h>
- #include <linux/fs.h>
-+#include <linux/mount.h>
- #include <linux/file.h>
- #include <linux/mm.h>
- #include <linux/mman.h>
-@@ -486,6 +487,13 @@ static void aio_fput_routine(struct work
- 		/* Complete the fput */
- 		__fput(req->ki_filp);
- 
-+		/*
-+		 * __fput no longer releases the dentry and vfsmnt, thanks to
-+		 * to union mount. Hence do this manually.
-+		 */
-+		dput(req->ki_filp->f_path.dentry);
-+		mntput(req->ki_filp->f_path.mnt);
-+
- 		/* Link the iocb into the context's free list */
- 		spin_lock_irq(&ctx->ctx_lock);
- 		really_put_req(ctx, req);
---- a/fs/file_table.c
-+++ b/fs/file_table.c
-@@ -141,8 +141,14 @@ EXPORT_SYMBOL(get_empty_filp);
- 
- void fastcall fput(struct file *file)
- {
--	if (atomic_dec_and_test(&file->f_count))
-+	struct dentry *dentry = file->f_path.dentry;
-+	struct vfsmount *mnt = file->f_path.mnt;
-+
-+	if (atomic_dec_and_test(&file->f_count)) {
- 		__fput(file);
-+		dput(dentry);
-+		mntput(mnt);
+-	if (nd->dentry->d_sb != dentry->d_sb)
++	/*
++	 * This should be checked after the following of unions.
++	 * Otherwise we might run into trouble creating directories
++	 * on mountpoints. :(
++	 * But maybe we shouldn't set the LAST_LOWLEVEL flag here
++	 * at all ... */
++	if (nd->dentry->d_sb != dentry->d_sb) {
+ 		path->mnt = find_mnt(dentry);
++		UM_DEBUG_UID("Setting LAST_LOWLEVEL for %s\n", name->name);
++		nd->um_flags |= LAST_LOWLEVEL;
 +	}
- }
  
- EXPORT_SYMBOL(fput);
-@@ -152,9 +158,7 @@ EXPORT_SYMBOL(fput);
-  */
- void fastcall __fput(struct file *file)
- {
--	struct dentry *dentry = file->f_path.dentry;
--	struct vfsmount *mnt = file->f_path.mnt;
--	struct inode *inode = dentry->d_inode;
-+	struct inode *inode = file->f_path.dentry->d_inode;
+ 	__follow_mount(path);
+ 	follow_union_mount(&path->mnt, &path->dentry);
+@@ -950,6 +959,14 @@ static fastcall int __link_path_walk(con
+ 		if (err)
+ 			break;
  
- 	might_sleep();
- 
-@@ -180,8 +184,6 @@ void fastcall __fput(struct file *file)
- 	file->f_path.dentry = NULL;
- 	file->f_path.mnt = NULL;
- 	file_free(file);
--	dput(dentry);
--	mntput(mnt);
- }
- 
- struct file fastcall *fget(unsigned int fd)
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -15,6 +15,7 @@
- #include <linux/module.h>
- #include <linux/syscalls.h>
- #include <linux/pagemap.h>
-+#include <linux/union.h>
- #include "read_write.h"
- 
- #include <asm/uaccess.h>
-@@ -123,6 +124,12 @@ loff_t vfs_llseek(struct file *file, lof
- 		if (file->f_op && file->f_op->llseek)
- 			fn = file->f_op->llseek;
- 	}
++		if ((nd->flags & LOOKUP_TOPMOST) &&
++		    (nd->um_flags & LAST_LOWLEVEL)) {
++			err = union_create_topdir(nd,&next.dentry,&next.mnt);
++			if (err)
++				goto out_dput;
++			nd->um_flags &= ~LAST_LOWLEVEL;
++		}
 +
-+#ifdef CONFIG_UNION_MOUNT
-+	if (S_ISDIR(file->f_path.dentry->d_inode->i_mode) &&
-+			unlikely(file->f_path.dentry->d_overlaid))
-+		return union_dir_llseek(file, offset, origin);
-+#endif
- 	return fn(file, offset, origin);
- }
- EXPORT_SYMBOL(vfs_llseek);
---- a/fs/readdir.c
-+++ b/fs/readdir.c
-@@ -33,7 +33,7 @@ int vfs_readdir(struct file *file, filld
- 	mutex_lock(&inode->i_mutex);
- 	res = -ENOENT;
- 	if (!IS_DEADDIR(inode)) {
--		res = file->f_op->readdir(file, buf, filler);
-+		res = do_readdir(file, buf, filler);
- 		file_accessed(file);
+ 		err = -ENOENT;
+ 		inode = next.dentry->d_inode;
+ 		if (!inode)
+@@ -1005,6 +1022,15 @@ last_component:
+ 		err = do_lookup(nd, &this, &next);
+ 		if (err)
+ 			break;
++
++		if ((nd->flags & LOOKUP_TOPMOST) &&
++		    (nd->um_flags & LAST_LOWLEVEL)) {
++			err = union_create_topdir(nd,&next.dentry,&next.mnt);
++			if (err)
++				goto out_dput;
++			nd->um_flags &= ~LAST_LOWLEVEL;
++		}
++
+ 		inode = next.dentry->d_inode;
+ 		if ((lookup_flags & LOOKUP_FOLLOW)
+ 		    && inode && inode->i_op && inode->i_op->follow_link) {
+@@ -1177,6 +1203,7 @@ static int fastcall do_path_lookup(int d
+ 
+ 	nd->last_type = LAST_ROOT; /* if there are only slashes... */
+ 	nd->flags = flags;
++	nd->um_flags = 0;
+ 	nd->depth = 0;
+ 
+ 	if (*name=='/') {
+@@ -1756,9 +1783,18 @@ int open_namei(int dfd, const char *path
+ 					 nd, flag);
+ 		if (error)
+ 			return error;
++		/* test for WRONLY and RDWR - flag's special lower bits */
++		if (flag & 0x2) {
++			UM_DEBUG_UID("\"%s\" opened for writing\n", pathname);
++			error = union_copyup(nd, flag);
++			if (error)
++				return error;
++		}
+ 		goto ok;
  	}
- 	mutex_unlock(&inode->i_mutex);
+ 
++	UM_DEBUG_UID("open called with O_CREATE\n");
++
+ 	/*
+ 	 * Create - we need to know the parent.
+ 	 */
+@@ -1775,6 +1811,8 @@ int open_namei(int dfd, const char *path
+ 	if (nd->last_type != LAST_NORM || nd->last.name[nd->last.len])
+ 		goto exit;
+ 
++	UM_DEBUG_UID("do_last now\n");
++
+ 	dir = nd->dentry;
+ 	nd->flags &= ~LOOKUP_PARENT;
+ 	mutex_lock(&dir->d_inode->i_mutex);
+@@ -1828,6 +1866,12 @@ do_last:
+ 	error = -EISDIR;
+ 	if (path.dentry->d_inode && S_ISDIR(path.dentry->d_inode->i_mode))
+ 		goto exit;
++
++	if (flag & 0x2) {
++		error = union_copyup(nd, flag);
++		if (error)
++			goto exit;
++	}
+ ok:
+ 	error = may_open(nd, acc_mode, flag);
+ 	if (error)
 --- a/fs/union.c
 +++ b/fs/union.c
-@@ -14,6 +14,7 @@
- #include <linux/namei.h>
+@@ -15,6 +15,11 @@
  #include <linux/module.h>
  #include <linux/mount.h>
-+#include <linux/file.h>
+ #include <linux/file.h>
++#include <linux/mm.h>
++#include <linux/quotaops.h>
++#include <linux/dnotify.h>
++#include <linux/security.h>
++#include <linux/pipe_fs_i.h>
  
  struct union_info * union_alloc(void)
  {
-@@ -26,6 +27,8 @@ struct union_info * union_alloc(void)
- 	mutex_init(&info->u_mutex);
- 	mutex_lock(&info->u_mutex);
- 	atomic_set(&info->u_count, 1);
-+	INIT_LIST_HEAD(&info->u_rdcache);
-+	info->u_cookie = 0;
- 	UM_DEBUG_LOCK("allocate union %p\n", info);
- 	return info;
- }
-@@ -40,6 +43,7 @@ struct union_info * union_get(struct uni
- 	return info;
+@@ -305,6 +310,53 @@ void __dput_union(struct dentry *dentry)
+ 	return;
  }
  
-+static void release_rdstates(struct union_info *info);
- void union_put(struct union_info *info)
- {
- 	BUG_ON(!info);
-@@ -49,6 +53,7 @@ void union_put(struct union_info *info)
- 
- 	if (!atomic_read(&info->u_count)) {
- 		UM_DEBUG_LOCK("free union %p\n", info);
-+		release_rdstates(info);
- 		kfree(info);
- 	}
- 
-@@ -968,3 +973,402 @@ int follow_union_mount(struct vfsmount *
- 
- 	return res;
- }
-+
 +/*
-+ * Union mounts support for readdir.
++ * union_relookup_topmost - lookup and create the topmost path to dentry
++ * @nd: pointer to nameidata
++ * @flags: lookup flags
 + */
-+
-+/* This is a copy from fs/readdir.c */
-+struct getdents_callback {
-+	struct linux_dirent __user *current_dir;
-+	struct linux_dirent __user *previous;
-+	int count;
-+	int error;
-+};
-+
-+/*
-+ * The readdir union cache object
-+ */
-+struct union_cache_entry {
-+	struct list_head list;
-+	struct qstr name;
-+};
-+
-+struct union_cache_callback {
-+	struct getdents_callback *buf;	/* original getdents_callback */
-+	filldir_t filldir;		/* the filldir() we should call */
-+	int error;			/* stores filldir error */
-+	struct rdstate *rdstate;	/* readdir state */
-+};
-+
-+static int union_cache_add_entry(struct list_head *list,
-+				 const char *name, int namelen)
++int union_relookup_topmost(struct nameidata *nd, int flags)
 +{
-+	struct union_cache_entry *this;
-+	char *tmp_name;
++	int err;
++	char *kbuf, *name;
++	struct nameidata this;
 +
-+	this = kmalloc(sizeof(*this), GFP_KERNEL);
-+	if (!this) {
-+		printk(KERN_CRIT
-+		       "union_cache_add_entry(): out of kernel memory\n");
++	UM_DEBUG_UID("relookup the topmost dir for %s\n",
++		     nd->dentry->d_name.name);
++
++	kbuf = (char *)__get_free_page(GFP_KERNEL);
++	if (!kbuf)
 +		return -ENOMEM;
++
++	name = d_path(nd->dentry, nd->mnt, kbuf, PAGE_SIZE);
++	err = PTR_ERR(name);
++	if (IS_ERR(name))
++		goto free_page;
++
++	err = path_lookup(name, flags|LOOKUP_CREATE|LOOKUP_TOPMOST, &this);
++	if (err)
++		goto free_page;
++
++	path_release(nd);
++	nd->dentry = this.dentry;
++	nd->mnt = this.mnt;
++
++	/* If we are looking up the parent, copy the child details also */
++	if (flags & LOOKUP_PARENT) {
++		nd->last = this.last;
++		nd->last_type = this.last_type;
 +	}
 +
-+	tmp_name = kmalloc(namelen + 1, GFP_KERNEL);
-+	if (!tmp_name) {
-+		printk(KERN_CRIT
-+		       "union_cache_add_entry(): out of kernel memory\n");
-+		kfree(this);
-+		return -ENOMEM;
-+	}
-+
-+	this->name.name = tmp_name;
-+	this->name.len = namelen;
-+	this->name.hash = 0;
-+	memcpy(tmp_name, name, namelen);
-+	tmp_name[namelen] = 0;
-+	INIT_LIST_HEAD(&this->list);
-+	list_add(&this->list, list);
-+	return 0;
++	/*
++	 * the nd->flags should be unchanged
++	 */
++	BUG_ON(this.um_flags & LAST_LOWLEVEL);
++	nd->um_flags &= ~LAST_LOWLEVEL;
++ free_page:
++	free_page((unsigned long)kbuf);
++	return err;
 +}
 +
-+static void union_cache_free(struct list_head *list)
+ void attach_mnt_union(struct vfsmount *mnt, struct nameidata *nd)
+ {
+ 	struct dentry *tmp;
+@@ -975,6 +1027,37 @@ int follow_union_mount(struct vfsmount *
+ }
+ 
+ /*
++ * @stack is a already existing union stack, @new is a dentry or a union stack
++ * which is overlaid by @stack. So the topmost dentry is in @stack.
++ */
++static void append_to_stack(struct dentry *stack, struct dentry *new)
 +{
-+	struct list_head *p;
-+	struct list_head *ptmp;
-+	int count = 0;
++	struct dentry *topmost;
++	struct dentry *prev = stack;
++	struct dentry *next = new;
 +
-+	list_for_each_safe(p, ptmp, list) {
-+		struct union_cache_entry *this;
++	BUG_ON(!stack);
++	BUG_ON(!new);
 +
-+		this = list_entry(p, struct union_cache_entry, list);
-+		list_del_init(&this->list);
-+		kfree(this->name.name);
-+		kfree(this);
-+		count++;
++	while (prev->d_overlaid)
++		prev = prev->d_overlaid;
++
++	if (prev->d_topmost)
++		topmost = prev->d_topmost;
++	else
++		topmost = stack;
++
++	while (next) {
++		next->d_topmost = topmost;
++		prev->d_overlaid = next;
++		prev = next;
++		next = next->d_overlaid;
 +	}
-+	UM_DEBUG_READDIR("freed %d entries\n", count);
++
 +	return;
 +}
 +
-+static int union_cache_find_entry(struct list_head *uc_list,
-+				  const char *name, int namelen)
-+{
-+	struct union_cache_entry *p;
-+	int ret = 0;
++/*
+  * Union mounts support for readdir.
+  */
+ 
+@@ -1372,3 +1455,335 @@ loff_t union_dir_llseek(struct file *fil
+ 	}
+ 	return -EINVAL;
+ }
 +
-+	list_for_each_entry(p, uc_list, list) {
-+		if (p->name.len != namelen)
-+			continue;
-+		if (strncmp(p->name.name, name, namelen) == 0) {
-+			ret = 1;
-+			break;
-+		}
++/*
++ * Union mount copyup support
++ */
++
++/*
++ * Just do what vfs_create() would do, but the union mount way
++ */
++static struct dentry * union_create(struct dentry *parent, struct dentry *old,
++				    struct nameidata *nd)
++{
++	struct dentry *dentry;
++	int err, mode;
++
++	dentry = __lookup_hash_single(&old->d_name, parent, NULL);
++	if (IS_ERR(dentry))
++		goto exit;
++
++	err = -EEXIST;
++	if (dentry->d_inode) {
++		dput(dentry);
++		goto error;
 +	}
++
++	err = -ENOENT;
++	if (IS_DEADDIR(parent->d_inode))
++		goto error;
++	err = -EACCES;	/* shouldn't it be ENOSYS? */
++	if (!parent->d_inode->i_op || !parent->d_inode->i_op->create)
++		goto error;
++
++	mode = old->d_inode->i_mode & S_IALLUGO;
++	mode |= S_IFREG;
++
++	err = security_inode_create(parent->d_inode, dentry, mode);
++	if (err)
++		goto error;
++
++	DQUOT_INIT(parent->d_inode);
++	err = parent->d_inode->i_op->create(parent->d_inode, dentry, mode, nd);
++	if (err)
++		goto error;
++
++	dentry->d_inode->i_uid = old->d_inode->i_uid;
++	dentry->d_inode->i_gid = old->d_inode->i_gid;
++	mark_inode_dirty(dentry->d_inode);
++exit:
++	return dentry;
++error:
++	return ERR_PTR(err);
++}
++
++/*
++ * Just do what vfs_mkdir() would do, but the union mount way
++ */
++static struct dentry * union_mkdir(struct dentry *parent, struct dentry *dir)
++{
++	struct dentry *dentry;
++	int err, mode;
++
++	dentry = __lookup_hash_single(&dir->d_name, parent, NULL);
++	if (IS_ERR(dentry))
++		goto exit;
++
++	err = -EEXIST;
++	if (dentry->d_inode) {
++		dput(dentry);
++		goto error;
++	}
++
++	err = -ENOENT;
++	if (IS_DEADDIR(parent->d_inode))
++		goto error;
++	err = -EPERM;
++	if (!parent->d_inode->i_op || !parent->d_inode->i_op->mkdir)
++		goto error;
++
++	mode = dir->d_inode->i_mode & (S_IRWXUGO|S_ISVTX);
++
++	err = security_inode_mkdir(parent->d_inode, dentry, mode);
++	if (err)
++		goto error;
++
++	DQUOT_INIT(parent->d_inode);
++	err = parent->d_inode->i_op->mkdir(parent->d_inode, dentry, mode);
++	if (err)
++		goto error;
++
++	dentry->d_inode->i_uid = dir->d_inode->i_uid;
++	dentry->d_inode->i_gid = dir->d_inode->i_gid;
++	mark_inode_dirty(dentry->d_inode);
++exit:
++	return dentry;
++error:
++	return ERR_PTR(err);
++}
++
++static void __update_fs_pwd(struct dentry *old, struct dentry *new)
++{
++	struct dentry *old_pwd = NULL;
++	struct vfsmount *old_pwdmnt = NULL;
++	struct vfsmount *new_pwdmnt = find_mnt(new);
++
++	write_lock(&current->fs->lock);
++	if (current->fs->pwd == old) {
++		old_pwd = current->fs->pwd;
++		old_pwdmnt = current->fs->pwdmnt;
++		current->fs->pwdmnt = mntget(new_pwdmnt);
++		current->fs->pwd = __dget(new);
++		UM_DEBUG_UID("replacing fs->pwd\n");
++		UM_DEBUG_UID("oldpwd: name=\"%s\", inode=%p, devname=%s\n",
++			     old_pwd->d_name.name, old_pwd->d_inode,
++			     old_pwdmnt->mnt_devname);
++		UM_DEBUG_UID("newpwd: name=\"%s\", inode=%p, devname=%s\n",
++			     new->d_name.name, new->d_inode,
++			     new_pwdmnt->mnt_devname);
++	}
++	write_unlock(&current->fs->lock);
++
++	if (old_pwd) {
++		__dput(old_pwd);
++		mntput(old_pwdmnt);
++	}
++
++	mntput(new_pwdmnt);
++
++	return;
++}
++
++struct dentry * union_create_topmost(struct nameidata *nd, struct dentry *old)
++{
++	struct dentry *dentry;
++	struct dentry *parent = nd->dentry;
++
++	UM_DEBUG_UID("dentry=%s\n", old->d_name.name);
++
++	BUG_ON(parent->d_sb == old->d_sb);
++	if (!S_ISREG(old->d_inode->i_mode)) {
++		UM_DEBUG("This filetype isn't supported!\n");
++		dentry = ERR_PTR(-EINVAL);
++		goto exit;
++	}
++
++	/*
++	 * Create the topmost regular file here.
++	 */
++	mutex_lock(&parent->d_inode->i_mutex);
++	dentry = union_create(parent, old, nd);
++	mutex_unlock(&parent->d_inode->i_mutex);
++	if (IS_ERR(dentry)) {
++		UM_DEBUG("some error occurred\n");
++		goto exit;
++	}
++
++exit:
++	return dentry;
++}
++
++int union_create_topdir(struct nameidata *nd,
++			struct dentry **dentry, struct vfsmount **mnt)
++{
++	struct dentry *topdir;
++	struct dentry *parent = nd->dentry;
++
++	UM_DEBUG_UID("dentry=%s\n", (*dentry)->d_name.name);
++
++	if (parent->d_sb == (*dentry)->d_sb)
++		return 0;
++
++	if (!S_ISDIR((*dentry)->d_inode->i_mode)) {
++		UM_DEBUG("Unsupported filetype!\n");
++		BUG();
++	}
++
++	/*
++	 * Create the topmost directory here.
++	 */
++	spin_lock(&(*dentry)->d_lock);
++	if (!(*dentry)->d_union) {
++		UM_DEBUG_LOCK("Allocate lock for \"%s\"\n",
++			      (*dentry)->d_name.name);
++		(*dentry)->d_union = union_alloc();
++		spin_unlock(&(*dentry)->d_lock);
++	} else {
++		spin_unlock(&(*dentry)->d_lock);
++		union_lock(*dentry);
++	}
++	mutex_lock(&parent->d_inode->i_mutex);
++	topdir = union_mkdir(parent, *dentry);
++	if (IS_ERR(topdir)) {
++		UM_DEBUG("some error occurred\n");
++		mutex_unlock(&parent->d_inode->i_mutex);
++		union_unlock(*dentry);
++		return PTR_ERR(topdir);
++	}
++
++	spin_lock(&topdir->d_lock);
++	if (topdir->d_union) {
++		UM_DEBUG("Aaargh! topdir \"%s\" already has a lock?!\n",
++			 topdir->d_name.name);
++		dump_stack();
++	}
++	topdir->d_union = union_get((*dentry)->d_union);
++	spin_unlock(&topdir->d_lock);
++	append_to_stack(topdir, *dentry);
++	__update_fs_pwd(*dentry, topdir);
++	*dentry = topdir;
++	mutex_unlock(&parent->d_inode->i_mutex);
++	union_unlock(*dentry);
++
++	if (nd->mnt != *mnt) {
++		mntput(*mnt);
++		*mnt = mntget(nd->mnt);
++	}
++
++	return 0;
++}
++
++int union_copy_file(struct dentry *old_dentry, struct vfsmount *old_mnt,
++		    struct dentry *new_dentry, struct vfsmount *new_mnt)
++{
++	int ret;
++	size_t size;
++	loff_t offset;
++	struct file *old_file, *new_file;
++
++	dget(old_dentry);
++	mntget(old_mnt);
++	old_file = dentry_open(old_dentry, old_mnt, O_RDONLY);
++	if (IS_ERR(old_file))
++		return PTR_ERR(old_file);
++
++	dget(new_dentry);
++	mntget(new_mnt);
++	new_file = dentry_open(new_dentry, new_mnt, O_WRONLY);
++	ret = PTR_ERR(new_file);
++	if (IS_ERR(new_file))
++		goto fput_old;
++
++	size = i_size_read(old_file->f_path.dentry->d_inode);
++	if (((size_t)size != size) || ((ssize_t)size != size)) {
++		ret = -EFBIG;
++		goto fput_new;
++	}
++
++	offset = 0;
++	ret = do_splice_direct(old_file, &offset, new_file, size,
++			       SPLICE_F_MOVE);
++	if (ret >= 0)
++		ret = 0;
++ fput_new:
++	fput(new_file);
++ fput_old:
++	fput(old_file);
 +	return ret;
 +}
 +
-+static void fastcall fput_union(struct file *file)
-+{
-+	struct dentry *dentry = file->f_dentry;
-+	struct vfsmount *mnt = file->f_vfsmnt;
-+
-+	if (atomic_dec_and_test(&file->f_count)) {
-+		__fput(file);
-+		__dput(dentry);
-+		mntput(mnt);
-+	}
-+}
-+
-+/*
-+ * This is same as __dentry_read(). But since this is called with
-+ * union lock held, the corresponding release involves doing fput_union()
-+ * rather than usual fput().
++/**
++ * union_copyup - copy a file to the topmost layer of the union stack
++ * @nd: nameidata pointer to the file
++ * @flags: flags given to open_namei
 + */
-+static struct file * __dentry_open_read(struct dentry *dentry,
-+					struct vfsmount *mnt, int flags)
++int union_copyup(struct nameidata *nd, int flags)
 +{
-+	struct file *f;
-+	struct inode *inode;
-+	int error;
-+
-+	error = -ENFILE;
-+	f = get_empty_filp();
-+	if (!f)
-+		goto out;
-+	f->f_flags = flags;
-+	f->f_mode = ((flags+1) & O_ACCMODE) | FMODE_LSEEK |
-+		FMODE_PREAD | FMODE_PWRITE;
-+	inode = dentry->d_inode;
-+	BUG_ON(f->f_mode & FMODE_WRITE);
-+	f->f_mapping = inode->i_mapping;
-+	f->f_dentry = dentry;
-+	f->f_vfsmnt = mnt;
-+	f->f_pos = 0;
-+	f->f_op = fops_get(inode->i_fop);
-+	file_move(f, &inode->i_sb->s_files);
-+
-+	if (f->f_op && f->f_op->open) {
-+		error = f->f_op->open(inode,f);
-+		if (error)
-+			goto cleanup;
-+	}
-+	f->f_flags &= ~(O_CREAT | O_EXCL | O_NOCTTY | O_TRUNC);
-+
-+	file_ra_state_init(&f->f_ra, f->f_mapping->host->i_mapping);
-+
-+	/* NB: we're sure to have correct a_ops only after f_op->open */
-+	if (f->f_flags & O_DIRECT) {
-+		if (!f->f_mapping->a_ops || !f->f_mapping->a_ops->direct_IO) {
-+			fput_union(f);
-+			f = ERR_PTR(-EINVAL);
-+		}
-+	}
-+
-+	return f;
-+
-+cleanup:
-+	fops_put(f->f_op);
-+	file_kill(f);
-+	f->f_path.dentry = NULL;
-+	f->f_path.mnt = NULL;
-+	put_filp(f);
-+out:
-+	return ERR_PTR(error);
-+}
-+
-+/*
-+ * filldir routine for union mounted directories.
-+ * Handles duplicate elimination by building a readdir cache.
-+ */
-+static int filldir_union(void *buf, const char *name, int namlen,
-+			   loff_t offset, u64 ino, unsigned int d_type)
-+{
-+	struct union_cache_callback *cb = buf;
++	struct dentry *dir;
++	struct dentry *dentry;
 +	int err;
 +
-+	switch (namlen) {
-+	case 2:
-+		if (name[1] != '.')
-+			break;
-+	case 1:
-+		if (name[0] != '.')
-+			break;
++	if (!union_is_member(nd->dentry, nd->mnt))
 +		return 0;
-+	}
-+
-+	if (union_cache_find_entry(&cb->rdstate->dirent_cache, name, namlen))
++	if (!S_ISREG(nd->dentry->d_inode->i_mode))
 +		return 0;
 +
-+	err =  cb->filldir(cb->buf, name, namlen, offset, ino, d_type);
-+	if (err >= 0)
-+		union_cache_add_entry(&cb->rdstate->dirent_cache, name, namlen);
-+	cb->error = err;
-+	return err;
-+}
++	err = union_relookup_topmost(nd, nd->flags|LOOKUP_PARENT);
++	if (err)
++		return err;
 +
-+/* rdstate - readdir state */
-+#define DIREOF		0xffffff
-+#define RDOFFBITS	20
-+#define MAXRDCOOKIE	0xfff
-+
-+static inline off_t rdstate2offset(struct rdstate *r)
-+{
-+	return ((r->cookie & MAXRDCOOKIE) << RDOFFBITS) | (r->off & DIREOF);
-+}
-+
-+static void put_rdstate(struct rdstate *rdstate)
-+{
-+	union_cache_free(&rdstate->dirent_cache);
-+	list_del(&rdstate->list);
-+	kfree(rdstate);
-+}
-+
-+static void release_rdstates(struct union_info *info)
-+{
-+	struct list_head *pos, *tmp;
-+
-+	list_for_each_safe(pos, tmp, &info->u_rdcache) {
-+		struct rdstate *r = list_entry(pos, struct rdstate, list);
-+		put_rdstate(r);
-+	}
-+}
-+
-+static struct rdstate *get_rdstate(struct file *file)
-+{
-+	struct dentry *dentry = file->f_path.dentry;
-+	struct list_head *pos;
-+	struct rdstate *r;
-+
-+	/*
-+	 * Do we already have a rdstate for this file at this
-+	 * corresponding offset ?
-+	 */
-+	list_for_each(pos, &dentry->d_union->u_rdcache) {
-+		r = list_entry(pos, struct rdstate, list);
-+		if (file->f_pos == rdstate2offset(r))
-+			return r;
-+	}
-+
-+	/*
-+	 * We have read the dirents from this earlier but now
-+	 * don't have a corresponding rdstate. AFAICS this can't
-+	 * happen.
-+	 */
-+	if (file->f_pos)
-+		return ERR_PTR(-ESTALE);
-+
-+	/*
-+	 * Create a new instance of rdstate for this request.
-+	 */
-+	r = kmalloc(sizeof(struct rdstate), GFP_KERNEL);
-+	if (!r)
-+		return ERR_PTR(-ENOMEM);
-+	r->dentry = dentry;
-+	r->off = 0;
-+	if (dentry->d_union->u_cookie >= (MAXRDCOOKIE - 1))
-+		dentry->d_union->u_cookie = 1;
-+	else
-+		dentry->d_union->u_cookie++;
-+	r->cookie = dentry->d_union->u_cookie;
-+	INIT_LIST_HEAD(&r->dirent_cache);
-+	list_add(&r->list, &dentry->d_union->u_rdcache);
-+	return r;
-+}
-+
-+/**
-+ * readdir_union - A wrapper around ->readdir()
-+ *
-+ * This is a wrapper around the filesystems readdir(), which is walking
-+ * the union stack and calls ->readdir() for every directory in the stack.
-+ * The directory entries are read into the union readdir cache to
-+ * support whiteout's and duplicate removal.
-+ */
-+int readdir_union(struct file *file, void *buf, filldir_t filldir)
-+{
-+	struct dentry *topmost = file->f_path.dentry;
-+	struct rdstate *rdstate;
-+	struct dentry *dentry;
-+	loff_t offset = 0;
-+	struct union_cache_callback cb;
-+	int err = 0;
-+
-+	BUG_ON(!topmost->d_union);
-+
-+	if (file->f_pos == DIREOF)
-+		goto out;
-+
-+	rdstate = get_rdstate(file);
-+	if (IS_ERR(rdstate)) {
-+		err = PTR_ERR(rdstate);
++	dir = nd->dentry;
++	nd->flags &= ~LOOKUP_PARENT;
++	union_lock(nd->dentry);
++	mutex_lock(&dir->d_inode->i_mutex);
++	dentry = __lookup_hash_kern_union(&nd->last, nd->dentry, nd);
++	err = PTR_ERR(dentry);
++	if (IS_ERR(dentry)) {
++		mutex_unlock(&dir->d_inode->i_mutex);
++		union_unlock(nd->dentry);
 +		return err;
 +	}
 +
-+	cb.buf = buf;
-+	cb.filldir = filldir;
-+	cb.rdstate = rdstate;
++	mutex_unlock(&dir->d_inode->i_mutex);
++	union_unlock(nd->dentry);
 +
-+	dentry = rdstate->dentry;
-+	offset = rdstate->off;
++	err = -ENOENT;
++	if (!dentry->d_inode)
++		goto exit_dput;
 +
-+	/* Read from the topmost directory */
-+	if (dentry == topmost) {
-+		file->f_pos = offset;
-+		err = file->f_op->readdir(file, &cb, filldir_union);
-+		rdstate->off = file->f_pos;
-+		file->f_pos = rdstate2offset(rdstate);
-+		if (err < 0 || cb.error < 0)
-+			goto out;
++	follow_mount(&nd->mnt, &dentry);
 +
-+		/*
-+		 * Reading from topmost dir complete, start reading the lower
-+		 * dir from the beginning.
-+		 */
-+		offset = 0;
-+	} else
-+		goto read_lower;
++	err = -ENOENT;
++	if (!dentry->d_inode)
++		goto exit_dput;
 +
-+	dentry = dentry->d_overlaid;
-+	BUG_ON(dentry->d_topmost != topmost);
++	if (dentry->d_parent != dir) {
++		struct dentry *tmp;
++		struct vfsmount *old_mnt;
 +
-+read_lower:
-+	/* Read from the underlying directories */
-+	while (dentry) {
-+		struct vfsmount *mnt;
-+		struct file *ftmp;
++		UM_DEBUG_UID("already exists -> copy file\n");
++		tmp = union_create_topmost(nd, dentry);
++		if (IS_ERR(tmp))
++			goto exit_dput;
 +
-+		mnt = find_mnt(dentry);
-+		__dget(dentry);
-+		ftmp = __dentry_open_read(dentry, mnt, file->f_flags);
-+		if (IS_ERR(ftmp)) {
-+			__dput(dentry);
-+			mntput(mnt);
-+			err = PTR_ERR(ftmp);
-+			goto out;
++		old_mnt = find_mnt(dentry);
++		err = union_copy_file(dentry, old_mnt, tmp, nd->mnt);
++		if (err) {
++			int ret = vfs_unlink(tmp->d_inode, tmp);
++			BUG_ON(ret);
++			/* FIXME: not sure if there are return value
++			 * we should not BUG() on */
 +		}
-+
-+		mutex_lock(&dentry->d_inode->i_mutex);
-+		ftmp->f_pos = offset;
-+
-+		err = ftmp->f_op->readdir(ftmp, &cb, filldir_union);
-+		file_accessed(ftmp);
-+		mutex_unlock(&dentry->d_inode->i_mutex);
-+		rdstate->off = ftmp->f_pos;
-+		rdstate->dentry = dentry;
-+		file->f_pos = rdstate2offset(rdstate);
-+		fput_union(ftmp);
-+		if (err < 0 || cb.error < 0)
-+			goto out;
-+
-+		/*
-+		 * Reading from a lower dir complete, start reading the
-+		 * next lower dir from the beginning.
-+		 */
-+		offset = 0;
-+		dentry = dentry->d_overlaid;
++		dput(dentry);
++		dentry = tmp;
++		mntput(old_mnt);
 +	}
 +
-+	/*
-+	 * We reached the end of lowermost directory of the union,
-+	 * we can now release this rdstate.
-+	 */
-+	put_rdstate(rdstate);
-+	file->f_pos = DIREOF;
++	dput(nd->dentry);
++	nd->dentry = dentry;
 +	return 0;
-+out:
++
++exit_dput:
++	dput(dentry);
 +	return err;
 +}
-+
-+/*
-+ * lseek operations on a union directory is restricted. We allow only to
-+ * seek to the beginning of the file and to the current position.
-+ *
-+ * Since union mount gives a new meaning to file->f_pos(for only
-+ * union mounted directories) it doesn't make much sense to allow all
-+ * seek operations afterall.
-+ */
-+loff_t union_dir_llseek(struct file *file, loff_t offset, int origin)
-+{
-+	struct dentry *topmost;
-+	struct rdstate *rdstate;
-+
-+	if (offset)
-+		return -EINVAL;
-+
-+	switch (origin) {
-+	case SEEK_SET:
-+		topmost = file->f_path.dentry;
-+		union_lock(topmost);
-+		BUG_ON(!topmost->d_union);
-+		/* Flush the readdir cache if one exists */
-+		rdstate = get_rdstate(file);
-+		put_rdstate(rdstate);
-+		union_unlock(topmost);
-+		return 0;
-+	case SEEK_CUR:
-+		return file->f_pos;
-+	case SEEK_END:
-+		return -EINVAL;
-+	}
-+	return -EINVAL;
-+}
---- a/include/linux/dcache_union.h
-+++ b/include/linux/dcache_union.h
-@@ -21,6 +21,27 @@
- 
- #ifdef CONFIG_UNION_MOUNT
- 
-+struct rdstate {
-+	/* readdir read the entries last time from this directory */
-+	struct dentry *dentry;
-+
-+	/* and stopped reading at this offset */
-+	loff_t off;
-+
-+	/* different rdstates are linked thro' this */
-+	struct list_head list;
-+
-+	/* cache of directory entries. As of now, cache is just a linked list */
-+	struct list_head dirent_cache;
-+
-+	/*
-+	 * there can be multiple readdir()/getdents() routines reading a
-+	 * directory at a time. And this indicates whose state is this
-+	 * rdstate holding.
-+	 */
-+	unsigned int cookie;
-+};
-+
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -59,6 +59,8 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LA
+ #define LOOKUP_PARENT		16
+ #define LOOKUP_NOALT		32
+ #define LOOKUP_REVAL		64
++#define LOOKUP_TOPMOST	       128
++#define LOOKUP_WHT	       256
  /*
-  * This is the union info object, that describes general information about this
-  * union directory
-@@ -30,8 +51,10 @@
-  * or modifing the union stack !
+  * Intent data
   */
- struct union_info {
--	atomic_t u_count;
--	struct mutex u_mutex;
-+	atomic_t u_count; /* number of users of this union */
-+	struct mutex u_mutex; /* mutex guarding this union stack */
-+	unsigned int u_cookie; /* new rdstates get cookies from here */
-+	struct list_head u_rdcache; /* list of rdstates for this union */
- };
- 
- /* allocate/de-allocate */
 --- a/include/linux/union.h
 +++ b/include/linux/union.h
-@@ -30,6 +30,11 @@ extern struct dentry * real_lookup_union
- extern struct dentry * __lookup_hash_kern_union(struct qstr *, struct dentry *,
- 					   struct nameidata *);
+@@ -35,11 +35,25 @@ extern int readdir_union(struct file *, 
  
-+/* readdir */
-+extern int readdir_union(struct file *, void *, filldir_t);
-+
-+extern loff_t union_dir_llseek(struct file *, loff_t, int);
+ extern loff_t union_dir_llseek(struct file *, loff_t, int);
+ 
++/* copy-up support */
++extern struct dentry * union_create_topmost(struct nameidata *, struct dentry *);
++extern int union_create_topdir(struct nameidata *, struct dentry **, struct vfsmount **);
++extern int union_is_member(struct dentry *, struct vfsmount *);
++extern int union_copy_file(struct dentry *, struct vfsmount *, struct dentry *, struct vfsmount *);
++extern int union_copyup(struct nameidata *, int);
++extern int union_relookup_topmost(struct nameidata *, int);
 +
  #else	/* CONFIG_UNION_MOUNT */
  
  #define attach_mnt_union(mnt,nd) do { /* empty */ } while (0)
-@@ -78,5 +83,22 @@ static inline struct dentry * __lookup_h
- out:
- 	return dentry;
- }
-+
-+static inline int do_readdir(struct file *file, void *buf, filldir_t filler)
-+{
-+	int res;
-+
-+#ifdef CONFIG_UNION_MOUNT
-+	if (file->f_path.dentry->d_overlaid) {
-+		union_lock(file->f_path.dentry);
-+		res = readdir_union(file, buf, filler);
-+		union_unlock(file->f_path.dentry);
-+	} else
-+#endif
-+		res = file->f_op->readdir(file, buf, filler);
-+
-+	return res;
-+}
-+
- #endif	/* __KERNEL __ */
- #endif	/* __LINUX_UNION_H */
+ #define detach_mnt_union(mnt,nd) do { /* empty */ } while (0)
+ #define follow_union_mount(x,y) do { /* empty */ } while (0)
++#define union_create_topmost(x,y) ({ BUG(); ERR_PTR(-EINVAL); })
++#define union_create_topdir(x,y,z) ({ (0); })
++#define union_is_member(x,y) ({ (0); })
++#define union_copy_file(dentry1,mnt1,dentry2,mnt2) ({ (0); })
++#define union_copyup(x,y) ({ (0); })
++#define union_relookup_topmost(x,y) ({ (0); })
+ 
+ #endif	/* CONFIG_UNION_MOUNT */
+ 
