@@ -1,81 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762098AbXENK3M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbXENKai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762098AbXENK3M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 06:29:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759847AbXENK2z
+	id S1761601AbXENKai (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 06:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756026AbXENKaa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 06:28:55 -0400
-Received: from holomorphy.com ([66.93.40.71]:52453 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760639AbXENK2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 06:28:53 -0400
-Date: Mon, 14 May 2007 03:29:29 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, efault@gmx.de, tingy@cs.umass.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: fair clock use in CFS
-Message-ID: <20070514102929.GL31925@holomorphy.com>
-References: <20070514083358.GA29775@in.ibm.com>
+	Mon, 14 May 2007 06:30:30 -0400
+Received: from mail19.syd.optusnet.com.au ([211.29.132.200]:32851 "EHLO
+	mail19.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755583AbXENKaa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 06:30:30 -0400
+From: Con Kolivas <kernel@kolivas.org>
+To: linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       ck list <ck@vds.kolivas.org>
+Subject: 2.6.21-ck2
+Date: Mon, 14 May 2007 20:30:12 +1000
+User-Agent: KMail/1.9.5
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514083358.GA29775@in.ibm.com>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: multipart/signed;
+  boundary="nextPart1454632.YC0KupIJNQ";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705142030.14638.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 02:03:58PM +0530, Srivatsa Vaddagiri wrote:
-> 	I have been brooding over how fair clock is computed/used in
-> CFS and thought I would ask the experts to avoid wrong guesses!
-> As I understand, fair_clock is a monotonously increasing clock which
-> advances at a pace inversely proportional to the load on the runqueue.
-> If load = 1 (task), it will advance at same pace as wall clock, as 
-> load increases it advances slower than wall clock.
-> In addition, following calculations depend on fair clock: task's wait
-> time on runqueue and sleep time outside the runqueue (both reflected in
-> p->wait_run_time).
+--nextPart1454632.YC0KupIJNQ
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-It's not hard to see that that's a mistake. The great thing about virtual
-deadline schedulers, though, is that all it takes to completely rewrite
-the policy is changing the numbers calculated for these things.
+This patchset is designed to improve system responsiveness and interactivit=
+y.=20
+It is configurable to any workload but the default -ck patch is aimed at th=
+e=20
+desktop and -cks is available with more emphasis on serverspace.
 
 
-On Mon, May 14, 2007 at 02:03:58PM +0530, Srivatsa Vaddagiri wrote:
-> Few questions that come up are:
-> 1. Why can't fair clock be same as wall clock at all times? i.e fair
->    clock progresses at same pace as wall clock independent of the load on
->    the runqueue.
->    It would still give the ability to measure time spent waiting on runqueue 
->    or sleeping and use that calculated time to give latency/bandwidth
->    credit? 
->    In case of EEVDF, the use of virtual clock seems more
->    understandable, if we consider the fact that each client gets 'wi' real
->    time units in 1 virtual time unit. That doesnt seem to be the case in
->    CFS as Ting Yang explained +/- lags here 
->    http://lkml.org/lkml/2007/5/2/612 ..
+Apply to 2.6.21
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.21/2.6.21-=
+ck2/patch-2.6.21-ck2.bz2
 
-It's not just more understandable, it doesn't break down with
-increasing numbers of tasks.
+or server version
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/2.6/2.6.21/2.6.21-=
+ck2/patch-2.6.21-cks2.bz2
 
+web:
+http://kernel.kolivas.org
 
-On Mon, May 14, 2007 at 02:03:58PM +0530, Srivatsa Vaddagiri wrote:
-> 2. Preemption granularity - sysctl_sched_granularity
-> 	This seems to be measured in the fair clock scale rather than
-> 	wall clock scale. As a consequence of this, the time taken
-> 	for a task to relinquish to competetion is dependent on number N
-> 	of tasks? For ex: if there a million cpu hungry tasks, then the
-> 	time taken to switch between two tasks is more compared to the
-> 	case where just two cpu hungry tasks are running. Is there
-> 	any advantage of using fair clock scale to detect preemtion points?
+wiki:
+http://ck.wikia.com
 
-I'm not convinced this is a great way to mitigate context switch
-overhead. I'd recommend heuristically adjusting the latency parameters
-(l_i) to try to mitigate context switch overhead or otherwise express
-the tradeoff between latency and throughput instead of introducing an
-arbitrary delay like sched_granularity_ns. I suspect it'll have to
-restart from a point much closer to EEVDF for that to be effective.
+all patches:
+http://www.kernel.org/pub/linux/kernel/people/ck/patches/
 
 
--- wli
+This release focuses on the fixes for swap prefetch. Thus if you do not pla=
+n=20
+to use swap prefetch there is no benefit to upgrading. For those that are=20
+using swap prefetch this update is highly recommended
+
+
+Changes since 2.6.21-ck1:
+ -sched-add-above-background-load-function.patch
+ +sched-ck-add-above-background-load-function.patch
+Update the above_background_load function to work properly with SD cpu=20
+scheduler as used in -ck
+
+ +mm-swap-prefetch-35-38.patch
+Numerous updates to fix and improve swap prefetch
+
+ -ck1-version.patch
+ +ck2-version.patch
+Version update
+
+
+=E6=A5=BD=E3=81=97=E3=81=BF=E3=81=AA=E3=81=95=E3=81=84
+Enjoy
+
+=2D-=20
+=2Dck
+
+--nextPart1454632.YC0KupIJNQ
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQBGSDo2ZUg7+tp6mRURAoH/AJ9cej+vFWd4sEX5aLw2GRKGiconsQCeIvrn
+fTqsVlvjHPBEG2tlCbeorq0=
+=uR3V
+-----END PGP SIGNATURE-----
+
+--nextPart1454632.YC0KupIJNQ--
