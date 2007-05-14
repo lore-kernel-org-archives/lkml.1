@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbXENTDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758351AbXENTET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757902AbXENTDv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXENTDo
+	id S1758351AbXENTET (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXENTEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:03:44 -0400
-Received: from gw.goop.org ([64.81.55.164]:42624 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752354AbXENTDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:03:43 -0400
-Message-ID: <4648B28A.5000800@goop.org>
-Date: Mon, 14 May 2007 12:03:38 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 14 May 2007 15:04:04 -0400
+Received: from ug-out-1314.google.com ([66.249.92.172]:33746 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbXENTEB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 15:04:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
+        b=L1xwUEgs3ikaC9FGRX0I0w2wXolbDu49eme6+2Ux69IDZT7xQ+vWmPlbnq8xC0N1uENaOFR8hLcC6hO2l70v8A/oHV92HJKgmPA9F0c9W7kaLRN7sp/kXG3KJcA8hUVlYCzj9GwNGgog/pG7eoljIiPVNUkXW/OVD2DEzZhl26U=
+Message-ID: <4648B29A.6080406@gmail.com>
+Date: Mon, 14 May 2007 23:03:54 +0400
+From: Manu Abraham <abraham.manu@gmail.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [VOYAGER] fix build broken by shift to smp_ops
-References: <1179158912.3703.47.camel@mulgrave.il.steeleye.com>	 <46489818.4000408@goop.org> <1179163348.3703.57.camel@mulgrave.il.steeleye.com>
-In-Reply-To: <1179163348.3703.57.camel@mulgrave.il.steeleye.com>
-Content-Type: text/plain; charset=ISO-8859-15
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Subject: pci probe
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> No, I'm proposing this for 2.6.22-rc1 ... Andi has already said he won't
-> push the smp consolidation patch for 2.6.22.
->
-> Without this patch, voyager won't even build, since the smp_ops broke
-> it, so it needs to be fixed *now*.
->   
+Hi,
 
-Sure, I suppose.  But given that the patch which fixes this is a simple
-no-functional-changes code-motion patch, it seems odd to not use it in
-favour of putting in a big chunk of duplicated code.
+I do have a device that's a multifunction device. Eventhough a MFD, it
+just has one Interrupt which is shared by by a Configuration space for
+each function. ie, INTA is shared between them functions.
 
-    J
+In such a case, i am wondering, (since pci_probe returns a pointer to
+one PCI function alone and i need to use both the functions in one
+module alone rather than using a module for each function and that the
+functions are quite similar for them to be used in different modules,
+such that a separate probe/ISR etc is used) whether using pci_get_device
+would be a better alternative to do manual searching for the functions
+in such a case.
 
+
+Thanks,
+Manu
