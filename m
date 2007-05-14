@@ -1,111 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754585AbXENMOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbXENMU1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754585AbXENMOF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 08:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751943AbXENMNz
+	id S1754700AbXENMU1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 08:20:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752203AbXENMUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 08:13:55 -0400
-Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:4986 "EHLO
-	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752004AbXENMNy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 08:13:54 -0400
-Date: Mon, 14 May 2007 14:14:37 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: "Antonino Ingargiola" <tritemio@gmail.com>
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22-rc1
-Message-ID: <20070514141437.631fcfd1@hyperion.delvare>
-In-Reply-To: <5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
-	<5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
-	<alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
-	<5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
-	<20070514081022.7fcee97f@hyperion.delvare>
-	<5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
-X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+	Mon, 14 May 2007 08:20:14 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:58358 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751943AbXENMUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 08:20:12 -0400
+Message-ID: <464853D9.70904@drzeus.cx>
+Date: Mon, 14 May 2007 14:19:37 +0200
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="=_hera.drzeus.cx-19630-1179145210-0001-2"
+To: LKML <linux-kernel@vger.kernel.org>,
+       Haavard Skinnemoen <hskinnemoen@atmel.com>
+Subject: [RFC][PATCH] Make prepare_namespace() wait for devices
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Antonino,
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-On Mon, 14 May 2007 10:34:08 +0200, Antonino Ingargiola wrote:
-> 2007/5/14, Jean Delvare <khali@linux-fr.org>:
-> [cut]
-> > I am not familiar with the gnome sensors applet. Does it say where it
-> > is getting the data (driver name, device name...)?
-> 
-> The applet settings show a list of sensors under the libsensors name.
-> Those are the sensors that work on 2.6.21.1.
-> 
-> However the acpi and i2c section of the two config are
-> > > identical. I report the only selected options:
-> > >
-> > > Power management options (ACPI, APM)  --->
-> > >   [*] Power Management support
-> > >   [*]   Software Suspend (Hibernation)
-> > >   ACPI (Advanced Configuration and Power Interface) Support  --->
-> > >     [*] ACPI Support
-> > >     [*]   Sleep States
-> > >     <M>   Button
-> > >     <M>   Video
-> > >     <M>   Fan
-> > >     <M>   Processor
-> > >     <M>     Thermal Zone
-> > >     (0)   Disable ACPI for systems before Jan 1st this year
-> > >
-> > > Device Drivers  --->
-> > >   I2C support  --->
-> > >     <M>   I2C device interface
-> > >     I2C Hardware Bus support  --->
-> > >       <M> VIA VT82C596/82C686/82xx and CX700
-> >
-> > You forgot to list the Hardware Monitoring support options.
-> 
-> Sorry. Here it is (they are identical in the two config):
-> 
-> Hardware Monitoring support  --->
->   <*> Hardware Monitoring support
->   <*> Abit uGuru
->   <M> VIA686A
->   <*> IBM Hard Drive Active Protection System (hdaps)
-> 
-> But I'm quite sure that the only module used is VIA686A (I'm
-> rebuilding to confirm).
+--=_hera.drzeus.cx-19630-1179145210-0001-2
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
 
-This is a rather bad idea to build the abituguru and hdaps drivers into
-your kernel if you don't have these devices. Especially abituguru, as
-it does arbitrary port probing.
-
-> > > The first column of lsmod list the same modules in both kernels. The
-> > > diff-ed dmesg is attached.
-> >
-> > Please provide the output of lsmod.
-> >
-> > If you are using one of the following drivers: lm78, smsc47b397,
-> > smsc47m1, w83627hf or w83781d, you need lm_sensors >= 2.10.1
-> > (libsensors.so.3.1.1 or later).
-> 
-> I've attached the lsmod for 2.6.22-rc.
-
-You didn't.
-
-> I'm not using any of the listed drivers.
-
-How strange, why are they loaded then?
-
-> However the lm-sensors package is version 2.10.1-3 and
-> libsensors.so.3.1.1 is on my system too (package libsensors3).
-
-Can you please share the output of "sensors" under both kernels 2.6.21.1
-and 2.6.22-rc1.
-
-I would also be interested in a diff of /proc/ioports between 2.6.21.1
-and 2.6.22-rc1.
+Testing and/or comments welcome.
 
 -- 
-Jean Delvare
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+--=_hera.drzeus.cx-19630-1179145210-0001-2
+Content-Type: text/x-patch; name="initwait.patch"; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="initwait.patch"
+
+commit 7c542a5a027caa95bb00f8a8223c7e4aef88c931
+Author: Pierre Ossman <drzeus@drzeus.cx>
+Date:   Mon May 14 14:15:46 2007 +0200
+
+    init: wait for asynchronously scanned block devices
+    
+    Some buses (e.g. USB and MMC) do their scanning of devices in the
+    background, causing a race between them and prepare_namespace().
+    In order to be able to use these buses without an initrd, we now
+    wait for the device specified in root= to actually show up.
+    
+    If the device never shows up than we will hang in an infinite loop.
+    Previously we panic:ed instead, so this behaviour should be no
+    worse.
+    
+    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+
+diff --git a/init/do_mounts.c b/init/do_mounts.c
+index 46fe407..192b2d6 100644
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -438,11 +438,24 @@ void __init prepare_namespace(void)
+ 			root_device_name += 5;
+ 	}
+ 
+-	is_floppy = MAJOR(ROOT_DEV) == FLOPPY_MAJOR;
+-
+ 	if (initrd_load())
+ 		goto out;
+ 
++	/* wait for any asynchronous scanning to complete */
++	if (ROOT_DEV == 0) {
++		printk("Waiting for root device %s...\n", saved_root_name);
++		do {
++			while (driver_probe_done() != 0)
++				msleep(100);
++			ROOT_DEV = name_to_dev_t(saved_root_name);
++			if (ROOT_DEV == 0)
++				msleep(100);
++		} while (ROOT_DEV == 0);
++	}
++
++	is_floppy = MAJOR(ROOT_DEV) == FLOPPY_MAJOR;
++
++
+ 	if (is_floppy && rd_doload && rd_load_disk(0))
+ 		ROOT_DEV = Root_RAM0;
+ 
+
+--=_hera.drzeus.cx-19630-1179145210-0001-2--
