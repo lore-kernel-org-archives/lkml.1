@@ -1,62 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755111AbXENM41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbXENM5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755111AbXENM41 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 08:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753959AbXENM4V
+	id S1755224AbXENM5j (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 08:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbXENM5d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 08:56:21 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:44320 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753965AbXENM4U (ORCPT
+	Mon, 14 May 2007 08:57:33 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:45054 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751793AbXENM5c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 08:56:20 -0400
-Date: Mon, 14 May 2007 18:34:12 +0530
-From: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: efault@gmx.de, tingy@cs.umass.edu, wli@holomorphy.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: fair clock use in CFS
-Message-ID: <20070514130412.GA6103@in.ibm.com>
-Reply-To: vatsa@in.ibm.com
-References: <20070514083358.GA29775@in.ibm.com> <20070514111051.GB23766@elte.hu>
+	Mon, 14 May 2007 08:57:32 -0400
+Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070514120737.GE31234@wotan.suse.de>
+References: <20070511131541.992688403@chello.nl>
+	 <20070511155621.GA13150@elte.hu> <46449F61.2060004@cosmosbay.com>
+	 <1178903913.2781.20.camel@lappy>  <20070514120737.GE31234@wotan.suse.de>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 14:57:28 +0200
+Message-Id: <1179147448.6810.79.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514111051.GB23766@elte.hu>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 01:10:51PM +0200, Ingo Molnar wrote:
-> but let me give you some more CFS design background:
+On Mon, 2007-05-14 at 14:07 +0200, Nick Piggin wrote:
+> On Fri, May 11, 2007 at 07:18:33PM +0200, Peter Zijlstra wrote:
+> > On Fri, 2007-05-11 at 18:52 +0200, Eric Dumazet wrote:
+> > > 
+> > > But I personally find this new rw_mutex not scalable at all if you have some 
+> > > writers around.
+> > > 
+> > > percpu_counter_sum is just a L1 cache eater, and O(NR_CPUS)
+> > 
+> > Yeah, that is true; there are two occurences, the one in
+> > rw_mutex_read_unlock() is not strictly needed for correctness.
+> > 
+> > Write locks are indeed quite expensive. But given the ratio of
+> > reader:writer locks on mmap_sem (I'm not all that familiar with other
+> > rwsem users) this trade-off seems workable.
+> 
+> I guess the problem with that logic is assuming the mmap_sem read side
+> always needs to be scalable. Given the ratio of threaded:unthreaded
+> apps, maybe the trade-off swings away from favour?
 
-Thanks for this excellent explanation. Things are much clearer now to
-me. I just want to clarify one thing below:
+Could be; I've been bashing my head against the wall trying to find a
+scalable write side solution. But so far only got a massive dent in my
+brain from the effort.
 
-> > 2. Preemption granularity - sysctl_sched_granularity
+Perhaps I can do a similar optimistic locking for my rcu-btree as I did
+for the radix tree. That way most of the trouble would be endowed upon
+the vmas instead of the mm itself. And then it would be up to user-space
+to ensure it has in the order of nr_cpu_ids arenas to work in.
 
-[snip]
+Also, as Hugh pointed out in an earlier thread; mmap_sem's write side
+also protects the page tables, so we'd need to fix that up too;
+assumedly the write side equivalent of the vma lock would then protect
+all underlying page tables....
 
-> This granularity value does not depend on the number of tasks running. 
+/me drifting away, rambling incoherently,..
 
-Hmm ..so does sysctl_sched_granularity represents granularity in
-real/wall-clock time scale then? AFAICS that doesnt seem to be the case.
-
-__check_preempt_curr_fair() compares for the distance between the two
-task's (current and next-to-be-run task) fair_key values for deciding
-preemption point.
-
-Let's say that to begin with, at real time t0, both current task Tc and next 
-task Tn's fair_key values are same, at value K. Tc will keep running until its 
-fair_key value reaches atleast K + 2000000. The *real/wall-clock* time taken 
-for Tc's fair_key value to reach K + 2000000 - is surely dependent on N,
-the number of tasks on the queue (more the load, more slowly the fair
-clock advances)?
-
-This is what I meant by my earlier remark: "If there a million cpu hungry tasks,
-then the (real/wall-clock) time taken to switch between two tasks is more 
-compared to the case where just two cpu hungry tasks are running".
-
--- 
-Regards,
-vatsa
