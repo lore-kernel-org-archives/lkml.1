@@ -1,87 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758888AbXENTTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbXENTVH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758888AbXENTTd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbXENTTX
+	id S1756741AbXENTVH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:21:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbXENTUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:19:23 -0400
-Received: from caramon.arm.linux.org.uk ([217.147.92.249]:3970 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754576AbXENTTW (ORCPT
+	Mon, 14 May 2007 15:20:55 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:12227 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754566AbXENTUy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:19:22 -0400
-Date: Mon, 14 May 2007 20:19:05 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       bjorn.helgaas@hp.com, Randy Dunlap <randy.dunlap@oracle.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] serial: set RTS and DTR if flow is 'r'  --- resend
-Message-ID: <20070514191905.GE29682@flint.arm.linux.org.uk>
-Mail-Followup-To: Yinghai Lu <Yinghai.Lu@Sun.COM>,
-	Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-	bjorn.helgaas@hp.com, Randy Dunlap <randy.dunlap@oracle.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com> <m1ejllqmo8.fsf@ebiederm.dsl.xmission.com> <46489BC2.6040403@sun.com> <4648A310.1050908@sun.com> <20070514181007.GA29682@flint.arm.linux.org.uk> <4648B2CC.2020403@sun.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 14 May 2007 15:20:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=EP+aKnNpGC5mi0EtPqVECy+v3ZKoCwbxqFB2NoWJ4i7/g1WCtMxfPrCPvoWSlhG6v7JlaAth1BBEcO/YxF9skuX5QeYZMm0YeS9ZZkn82nfHbyoBImZVMX4cUdEErXpn/AhQv/7WdVbqlc4YbvUZp/da7lXJYXfROtW6LTxf4j4=
+Message-ID: <4de7f8a60705141220j2764f326u69545490cdd23c08@mail.gmail.com>
+Date: Mon, 14 May 2007 21:20:53 +0200
+From: "Jan Blunck" <jblunck@suse.de>
+To: "Hugh Dickins" <hugh@veritas.com>
+Subject: Re: [RFC][PATCH 14/14] tmpfs whiteout support
+Cc: "Bharata B Rao" <bharata@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, "Jan Blunck" <j.blunck@tu-harburg.de>
+In-Reply-To: <Pine.LNX.4.64.0705141710280.29949@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4648B2CC.2020403@sun.com>
-User-Agent: Mutt/1.4.2.1i
+References: <20070514093722.GB4139@in.ibm.com>
+	 <20070514094519.GP4139@in.ibm.com>
+	 <Pine.LNX.4.64.0705141710280.29949@blonde.wat.veritas.com>
+X-Google-Sender-Auth: 0cabe7ddf2834cf0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 12:04:44PM -0700, Yinghai Lu wrote:
-> Russell King wrote:
-> >There may be some sense, however, in allowing DTR to be permanently
-> >raised for serial consoles.  However, I would err on caution since
-> >DTR is used to reliably instruct modems to drop the line, so making
-> >such a change would be undesirable for those folk.
-> >  
-> please check following is OK.
+On 5/14/07, Hugh Dickins <hugh@veritas.com> wrote:
+> On Mon, 14 May 2007, Bharata B Rao wrote:
+> > From: Jan Blunck <j.blunck@tu-harburg.de>
+> > Subject: tmpfs whiteout support
+> >
+> > Introduce whiteout support to tmpfs.
+> >
+> > Signed-off-by: Jan Blunck <j.blunck@tu-harburg.de>
+> > Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > ---
+> >  mm/shmem.c |    9 ++++++++-
+> >  1 files changed, 8 insertions(+), 1 deletion(-)
+> >
+> > --- a/mm/shmem.c
+> > +++ b/mm/shmem.c
+> > @@ -74,7 +74,7 @@
+> >  #define LATENCY_LIMIT         64
+> >
+> >  /* Pretend that each entry is of this size in directory's i_size */
+> > -#define BOGO_DIRENT_SIZE 20
+> > +#define BOGO_DIRENT_SIZE 1
+>
+> Why would that change be needed for whiteout support?
+>
 
-Still wrong, and unfortunately you haven't understood what I was saying
-at all because this is worse. ;(
+Good question. It seems that this a survivor of the changes necessary
+for union readdir. This isn't necessary for white-outs.
 
-Do not put the code in serial8250_set_termios.  It is the wrong place.
+BTW: Why do we claim this to be 20??? Is there any meaning behind this?
 
-> 
-> YH
-> 
-> [PATCH] serial: set DTR in uart for kernel serial console
-> 
-> Some UARTs on other side need host uart DTR is set, otherwise will not 
-> receive char from the host that kernel is runing during kernel boot stage.
-> 
-> BTW:
-> earlyprintk and early_uart are hard coded to set DTR/RTS.
-> 
-> Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-> Cc: Russell King <rmk@arm.linux.org.uk>
-> Cc: Andi Kleen <ak@suse.de>
-> Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> 
-> *diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c*
-> index 48e259a..29c051c 100644
-> *--- a/drivers/serial/8250.c*
-> *+++ b/drivers/serial/8250.c*
-> @@ -2154,6 +2154,12 @@ serial8250_set_termios(struct uart_port *port, 
-> struct ktermios *termios,
-> 		}
-> 		serial_outp(up, UART_FCR, fcr);		/* set fcr */
-> 	}
-> +
-> +	/* some uarts on other side don't support no flow control. So we set
-> +	 * DTR in host uart to make them happy
-> +	 */
-> +	up->port.mctrl |= TIOCM_DTR;
-> +
-> 	serial8250_set_mctrl(&up->port, up->port.mctrl);
-> 	spin_unlock_irqrestore(&up->port.lock, flags);
-> }
-> 
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Cheers,
+Jan
