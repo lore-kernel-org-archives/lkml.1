@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbXENHnJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755631AbXENHwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbXENHnJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 03:43:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbXENHm6
+	id S1755631AbXENHwQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 03:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752326AbXENHwB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 03:42:58 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:54556 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbXENHm5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 03:42:57 -0400
-Date: Mon, 14 May 2007 13:11:54 +0530
-From: Dipankar Sarma <dipankar@in.ibm.com>
-To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Gautham R Shenoy <ego@in.ibm.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Pavel Machek <pavel@ucw.cz>, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Paul E McKenney <paulmck@us.ibm.com>
-Subject: Re: [RFD] Freezing of kernel threads
-Message-ID: <20070514074154.GA28827@in.ibm.com>
-Reply-To: dipankar@in.ibm.com
-References: <200705122017.32792.rjw@sisk.pl> <20070512193609.GA31426@in.ibm.com> <alpine.LFD.0.98.0705121241300.3986@woody.linux-foundation.org> <20070513083357.GA12985@in.ibm.com> <alpine.LFD.0.98.0705130925290.6739@woody.linux-foundation.org> <20070514061846.GA30625@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 14 May 2007 03:52:01 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:49567 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbXENHwA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 03:52:00 -0400
+Date: Mon, 14 May 2007 09:50:45 +0200
+From: Stefan Seyfried <seife@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Coywolf Qi Hunt <coywolf@gmail.com>,
+       Len Brown <lenb@kernel.org>, Andrew Morton <akpm@linux-foundation.org>,
+       Alexey Starikovskiy <alexey_y_starikovskiy@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH] swsusp: Use platform mode by default
+Message-ID: <20070514075045.GA10238@suse.de>
+References: <200611011323.14830.rjw@sisk.pl> <200705111121.51704.rjw@sisk.pl> <alpine.LFD.0.98.0705110912290.3986@woody.linux-foundation.org> <200705112208.53971.rjw@sisk.pl> <alpine.LFD.0.98.0705111550540.3986@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20070514061846.GA30625@in.ibm.com>
-User-Agent: Mutt/1.5.11
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <alpine.LFD.0.98.0705111550540.3986@woody.linux-foundation.org>
+X-Operating-System: openSUSE 10.3 (i586) Alpha4, Kernel 2.6.21-3-default
+User-Agent: mutt-ng/devel-r804 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 11:48:46AM +0530, Srivatsa Vaddagiri wrote:
-> On Sun, May 13, 2007 at 09:33:41AM -0700, Linus Torvalds wrote:
-> > On Sun, 13 May 2007, Gautham R Shenoy wrote:
-> > > RFC #1: Use get_hot_cpus()- put_hot_cpus() , which follow the
-> > > well known refcounting model.
+On Fri, May 11, 2007 at 03:51:38PM -0700, Linus Torvalds wrote:
+> 
+> 
+> On Fri, 11 May 2007, Rafael J. Wysocki wrote:
 > > 
-> > Yes. And usign the "preempt count" as a refcount is fairly natural, no? 
-> > We do already depend on that in many code-paths.
+> > Just to clarify, the change in question isn't new.  It was introduced by the
+> > commit 9185cfa92507d07ac787bc73d06c42222eec7239 before 2.6.20, at Seife's
+> > request and with Pavel's acceptance.
 > 
-> 
-> Tackling that requires some state bit in task_struct to educate
-> read_lock to be a no-op if write lock is already held by the thread.
-> 
-> In summary, get/put_hot_cpu() will need to be (slightly) more complex than
-> something like get/put_cpu(). Perhaps this complexity was what put off
-> Andrew when he suggested the use of freezer (http://lkml.org/lkml/2006/11/1/400)
+> Ok, if it's that old, we migt as leave it in. Clearly there weren't many 
+> regressions, and this isn't a case of other monsters lurking behind a lack 
+> of testers.
 
-Atleast with get_hot_cpu()/put_hot_cpu(), complexity is limited
-to the implementation of those interfaces and not all over the
-kernel. Having worked on CPU hotplug in the past, I have no doubt
-that this is the most simple *locking model* for cpu
-hotplug events.
+I pushed for this since on ACPI machines, "platform" is the right thing to do,
+and i still think it will only break on machines that have a broken ACPI BIOS.
+(Are there machines with broken ACPI BIOS around? ;-)
 
+Your additional "fall back to shutdown if !(ops)"-fix looks very sane,
+however, and is definitely a good idea.
+-- 
+Stefan Seyfried
+QA / R&D Team Mobile Devices        |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg  | "Well, surrounding them's out." 
 
-> > For example, since all users of cpu_online_map should be pure *readers* 
-> > (apart from a couple of cases that actually bring up a CPU), you can do 
-> > things like
-> > 
-> > 	#define cpu_online_map check_cpu_online_map()
-> > 
-> > 	static inline cpumask_t check_cpu_online_map(void)
-> > 	{
-> > 		WARN_ON(!preempt_safe()); /* or whatever lock we decide on */
-> > 		return __real_cpu_online_map;
-> > 	}
-> 
-> I remember Rusty had a similar function to check for unsafe references
-> to cpu_online_map way back when cpu hotplug was being developed. It will
-> be a good idea to reintroduce that back.
-
-One possibility is to have a generation counter for all cpu events
-and save it in cpumask_t (or some debug version of it) every
-time we snapshot the online cpu mask. We can then
-put checks in places where we access them whether the generation
-counter matches the current generation or not. If it doesn't
-it would indicate that saved cpumask not being "updated" during
-cpu hotplug events. In the cpu hotplug event handlers, we can
-force all saved online cpumasks to be "updated". Such debug
-code may help detect the locking violators.
-
-Thanks
-Dipankar
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
