@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755945AbXENS73@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbXENTAl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755945AbXENS73 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 14:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752354AbXENS7X
+	id S1756498AbXENTAl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:00:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753645AbXENTAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 14:59:23 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:52044 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752318AbXENS7W (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 14:59:22 -0400
-Date: Mon, 14 May 2007 11:58:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: tglx@linutronix.de
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] timekeeping fix mismerge
-Message-Id: <20070514115835.19be36d0.akpm@linux-foundation.org>
-In-Reply-To: <1179133802.22481.327.camel@localhost.localdomain>
-References: <1179133802.22481.327.camel@localhost.localdomain>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 14 May 2007 15:00:35 -0400
+Received: from www.osadl.org ([213.239.205.134]:48434 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752205AbXENTAe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 15:00:34 -0400
+Subject: Re: [PATCH][RFC] Remove final vestiges of interrupt-related "SA_"
+	flags.
+From: Thomas Gleixner <tglx@linutronix.de>
+To: "Robert P. J. Day" <rpjday@mindspring.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <Pine.LNX.4.64.0705141433490.14658@localhost.localdomain>
+References: <Pine.LNX.4.64.0705141433490.14658@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 21:03:54 +0200
+Message-Id: <1179169434.7074.9.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007 11:10:02 +0200
-Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> The time keeping code move to kernel/time/timekeeping.c broke the
-> clocksource resume logic patch. Fix it up and move the
-> clocksource_resume() call to the appropriate place.
+On Mon, 2007-05-14 at 14:38 -0400, Robert P. J. Day wrote:
+> diff --git a/Documentation/feature-removal-schedule.txt b/Documentation/feature-removal-schedule.txt
+> index 498ff31..c5d7775 100644
+> --- a/Documentation/feature-removal-schedule.txt
+> +++ b/Documentation/feature-removal-schedule.txt
+> @@ -160,15 +160,6 @@ Who:	Greg Kroah-Hartman <gregkh@suse.de>
 > 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+>  ---------------------------
 > 
-> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
-> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> index f9217bf..3d1042f 100644
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -273,6 +273,8 @@ static int timekeeping_resume(struct sys_device *dev)
->  	unsigned long flags;
->  	unsigned long now = read_persistent_clock();
->  
-> +	clocksource_resume();
-> +
->  	write_seqlock_irqsave(&xtime_lock, flags);
->  
->  	if (now && (now > timekeeping_suspend_time)) {
-> diff --git a/kernel/timer.c b/kernel/timer.c
-> index a6c580a..5ec5490 100644
-> --- a/kernel/timer.c
-> +++ b/kernel/timer.c
-> @@ -1499,8 +1499,6 @@ unregister_time_interpolator(struct time_interpolator *ti)
->  		prev = &curr->next;
->  	}
->  
-> -	clocksource_resume();
+> -What:	Interrupt only SA_* flags
+> -When:	September 2007
+> -Why:	The interrupt related SA_* flags are replaced by IRQF_* to move them
+> -	out of the signal namespace.
 > -
->  	write_seqlock_irqsave(&xtime_lock, flags);
->  	if (ti == time_interpolator) {
->  		/* we lost the best time-interpolator: */
-> 
+> -Who:	Thomas Gleixner <tglx@linutronix.de>
+> -
 
-Urgh, that was probably me trying to manage the maelstrom from a million
-monkeys mucking in the same code for multiple months, sigh.
+NAK, the removal date is September 2007 so out of tree folks have some
+time to fix their crap.
 
-So what do "broke" and "fix" mean in this context?  What are the
-consequences of this bug, and of its fix?  Is the above appropriate for
-2.6.21.x and if so why?
+	tglx
 
-Thanks.
+
