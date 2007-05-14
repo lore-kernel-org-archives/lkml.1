@@ -1,187 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbXENFwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759309AbXENGJv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759595AbXENFwj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 01:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbXENFwd
+	id S1759309AbXENGJv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 02:09:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757941AbXENGJn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 01:52:33 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40433 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753607AbXENFwc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 01:52:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Oleg Nesterov <oleg@tv-sign.ru>
-Subject: Re: 2.6.22-rc1: Broken suspend on SMP with tifm
-Date: Mon, 14 May 2007 07:57:32 +0200
-User-Agent: KMail/1.9.5
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Alex Dubov <oakad@yahoo.com>, Pierre Ossman <drzeus@drzeus.cx>
-References: <200705132132.08546.rjw@sisk.pl> <200705132322.10032.rjw@sisk.pl> <20070513213424.GA3198@tv-sign.ru>
-In-Reply-To: <20070513213424.GA3198@tv-sign.ru>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 14 May 2007 02:09:43 -0400
+Received: from smtp-101-monday.nerim.net ([62.4.16.101]:3450 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757722AbXENGJn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 02:09:43 -0400
+Date: Mon, 14 May 2007 08:10:22 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Antonino Ingargiola" <tritemio@gmail.com>
+Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc1
+Message-ID: <20070514081022.7fcee97f@hyperion.delvare>
+In-Reply-To: <5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+	<5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
+	<alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
+	<5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705140757.33746.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday, 13 May 2007 23:34, Oleg Nesterov wrote:
-> On 05/13, Rafael J. Wysocki wrote:
+Hi Antonino, hi Linus,
+
+On Sun, 13 May 2007 20:50:54 +0200, Antonino Ingargiola wrote:
+> 2007/5/13, Linus Torvalds <torvalds@linux-foundation.org>:
+> > On Sun, 13 May 2007, Antonino Ingargiola wrote:
+> > >
+> > > On my desktop pc with Debian Etch and 2.6.22-rc1 the gnome panel
+> > > applet "Sensors Applet" give an error message "No chip detected".
+> > > Works fine on 2.6.21.1 (it show cpu temperature) with the same config
+> > > (I've only only done  make oldconfig).
+
+I am not familiar with the gnome sensors applet. Does it say where it
+is getting the data (driver name, device name...)?
+
+> > One thing to check is that "make oldconfig" can actually change the
+> > configuration if things were moved behind a new top-level configuration
+> > parameter or such. I'm not saying that's the case here, but it's possible
+> > that things like the i2c changes might have made you inadvertedly changed
+> > some config option.
+> 
+> I suspected so. However the acpi and i2c section of the two config are
+> identical. I report the only selected options:
+> 
+> Power management options (ACPI, APM)  --->
+>   [*] Power Management support
+>   [*]   Software Suspend (Hibernation)
+>   ACPI (Advanced Configuration and Power Interface) Support  --->
+>     [*] ACPI Support
+>     [*]   Sleep States
+>     <M>   Button
+>     <M>   Video
+>     <M>   Fan
+>     <M>   Processor
+>     <M>     Thermal Zone
+>     (0)   Disable ACPI for systems before Jan 1st this year
+> 
+> Device Drivers  --->
+>   I2C support  --->
+>     <M>   I2C device interface
+>     I2C Hardware Bus support  --->
+>       <M> VIA VT82C596/82C686/82xx and CX700
+
+You forgot to list the Hardware Monitoring support options.
+
+> > > Is this considered a regression or can be due to userland incompatibilities?
 > >
-[--snip--]
+> > It's a regression, although I'd like to know more about your cases. It's
+> > just hard to tell what happened: was it a i2c/hwmon driver that got
+> > broken, or is it some sysfs file that got buggered, or what..
+> >
+> > For example, "dmesg" output before and after (preferably as a diff between
+> > the two), and what modules you had loaded in the working/nonworking case.
 > 
-> > @@ -819,20 +843,31 @@ static int __devinit workqueue_cpu_callb
-> >  
-> > +
-> > +		case CPU_DEAD_FROZEN:
-> > +			if (wq->freezeable) {
-> > +				take_over_work(wq, cpu);
-> > +				thaw_process(cwq->thread);
-> 
-> Suppose that PF_NOFREEZE task T does flush_workqueue(), and CPU 1 has pending
-> works. T does flush_cpu_workqueue(0), CPU_DEAD_FROZEN moves works from CPU 1
-> to CPU 0, T does flush_cpu_workqueue(1) and finds nothing.
+> The first column of lsmod list the same modules in both kernels. The
+> diff-ed dmesg is attached.
 
-I think I have solved this particular problem without any locking:
+Please provide the output of lsmod.
 
-Define an atomic field in workqueue_struct (let's call it 'switch'), initially
-equal to 0.  Whenever work is taken from an offlined CPU, take_over_work()
-increases 'switch' by 1.  In turn, flush_workqueue() reads 'switch' before
-looping over CPUs and saves its value in a local variable.  On exit, it
-compares the current value of 'switch' with the saved one and if they differ,
-it repeats the loop over CPUs.
+If you are using one of the following drivers: lm78, smsc47b397,
+smsc47m1, w83627hf or w83781d, you need lm_sensors >= 2.10.1
+(libsensors.so.3.1.1 or later).
 
-Updated patch follows.
-
-Rafael
-
----
- kernel/workqueue.c |   58 ++++++++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 55 insertions(+), 3 deletions(-)
-
-Index: linux-2.6.22-rc1/kernel/workqueue.c
-===================================================================
---- linux-2.6.22-rc1.orig/kernel/workqueue.c
-+++ linux-2.6.22-rc1/kernel/workqueue.c
-@@ -62,6 +62,9 @@ struct workqueue_struct {
- 	const char *name;
- 	int singlethread;
- 	int freezeable;		/* Freeze threads during suspend */
-+	atomic_t work_sw;	/* Used to indicate that some work has been
-+				 * moved from one CPU to another
-+				 */
- };
- 
- /* All the per-cpu workqueues on the system, for hotplug cpu to add/remove
-@@ -381,10 +384,15 @@ void fastcall flush_workqueue(struct wor
- {
- 	const cpumask_t *cpu_map = wq_cpu_map(wq);
- 	int cpu;
-+	int val;
- 
- 	might_sleep();
-+ start:
-+	val = atomic_read(&wq->work_sw);
- 	for_each_cpu_mask(cpu, *cpu_map)
- 		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
-+	if (unlikely(val != atomic_read(&wq->work_sw)))
-+		goto start;
- }
- EXPORT_SYMBOL_GPL(flush_workqueue);
- 
-@@ -710,6 +718,7 @@ struct workqueue_struct *__create_workqu
- 	wq->name = name;
- 	wq->singlethread = singlethread;
- 	wq->freezeable = freezeable;
-+	atomic_set(&wq->work_sw, 0);
- 	INIT_LIST_HEAD(&wq->list);
- 
- 	if (singlethread) {
-@@ -791,6 +800,40 @@ void destroy_workqueue(struct workqueue_
- }
- EXPORT_SYMBOL_GPL(destroy_workqueue);
- 
-+/**
-+ * take_over_work - if the workqueue is freezable and CPUs are being taken down
-+ * due to a hibernation/suspend, we need to take the work out of their worker
-+ * threads, because they might need to use some devices to do the work and
-+ * the devices are suspended at this point.
-+ * @wq: target workqueue
-+ * @cpu: CPU being offlined
-+ */
-+static void take_over_work(struct workqueue_struct *wq, unsigned int cpu)
-+{
-+	struct cpu_workqueue_struct *cwq = per_cpu_ptr(wq->cpu_wq, cpu);
-+	struct list_head list;
-+	struct work_struct *work;
-+
-+	spin_lock_irq(&cwq->lock);
-+	list_replace_init(&cwq->worklist, &list);
-+
-+	if (!list_empty(&list)) {
-+		/*
-+		 * Tell flush_workqueue() that it should repeat the loop over
-+		 * CPUs
-+		 */
-+		atomic_inc(&wq->work_sw);
-+		while (!list_empty(&list)) {
-+			printk("Taking work for %s\n", wq->name);
-+			work = list_entry(list.next, struct work_struct, entry);
-+			list_del(&work->entry);
-+			__queue_work(per_cpu_ptr(wq->cpu_wq,
-+					smp_processor_id()), work);
-+		}
-+	}
-+	spin_unlock_irq(&cwq->lock);
-+}
-+
- static int __devinit workqueue_cpu_callback(struct notifier_block *nfb,
- 						unsigned long action,
- 						void *hcpu)
-@@ -799,9 +842,7 @@ static int __devinit workqueue_cpu_callb
- 	struct cpu_workqueue_struct *cwq;
- 	struct workqueue_struct *wq;
- 
--	action &= ~CPU_TASKS_FROZEN;
--
--	switch (action) {
-+	switch (action & ~CPU_TASKS_FROZEN) {
- 	case CPU_LOCK_ACQUIRE:
- 		mutex_lock(&workqueue_mutex);
- 		return NOTIFY_OK;
-@@ -819,20 +860,31 @@ static int __devinit workqueue_cpu_callb
- 
- 		switch (action) {
- 		case CPU_UP_PREPARE:
-+		case CPU_UP_PREPARE_FROZEN:
- 			if (!create_workqueue_thread(cwq, cpu))
- 				break;
- 			printk(KERN_ERR "workqueue for %i failed\n", cpu);
- 			return NOTIFY_BAD;
- 
- 		case CPU_ONLINE:
-+		case CPU_ONLINE_FROZEN:
- 			start_workqueue_thread(cwq, cpu);
- 			break;
- 
- 		case CPU_UP_CANCELED:
-+		case CPU_UP_CANCELED_FROZEN:
- 			start_workqueue_thread(cwq, -1);
- 		case CPU_DEAD:
- 			cleanup_workqueue_thread(cwq, cpu);
- 			break;
-+
-+		case CPU_DEAD_FROZEN:
-+			if (wq->freezeable) {
-+				take_over_work(wq, cpu);
-+				thaw_process(cwq->thread);
-+			}
-+			cleanup_workqueue_thread(cwq, cpu);
-+			break;
- 		}
- 	}
- 
+-- 
+Jean Delvare
