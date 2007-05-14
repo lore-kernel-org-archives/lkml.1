@@ -1,173 +1,591 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759219AbXENWk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760759AbXENWkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759219AbXENWk2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 18:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756205AbXENWkQ
+	id S1760759AbXENWkn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 18:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759915AbXENWke
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 18:40:16 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:53504 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754775AbXENWkO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 18:40:14 -0400
-Subject: Re: [RFC][PATCH  5/14] Introduce union stack
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: bharata@linux.vnet.ibm.com
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Jan Blunck <j.blunck@tu-harburg.de>
-In-Reply-To: <20070514094047.GG4139@in.ibm.com>
-References: <20070514093722.GB4139@in.ibm.com>
-	 <20070514094047.GG4139@in.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Date: Mon, 14 May 2007 15:40:57 -0700
-Message-Id: <1179182457.2836.92.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 8bit
+	Mon, 14 May 2007 18:40:34 -0400
+Received: from gw.goop.org ([64.81.55.164]:33861 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756205AbXENWkd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 18:40:33 -0400
+Message-ID: <4648E55A.1090000@goop.org>
+Date: Mon, 14 May 2007 15:40:26 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Andi Kleen <ak@suse.de>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [VOYAGER] fix build broken by shift to smp_ops
+References: <1179158912.3703.47.camel@mulgrave.il.steeleye.com>	<20070514140530.8e0491cf.akpm@linux-foundation.org>	<4648D03F.4090407@goop.org>	<200705142358.09529.ak@suse.de> <20070514152905.3604fa20.akpm@linux-foundation.org>
+In-Reply-To: <20070514152905.3604fa20.akpm@linux-foundation.org>
+Content-Type: multipart/mixed;
+ boundary="------------050805050001050902050808"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 15:10 +0530, Bharata B Rao wrote:
-> From: Jan Blunck <j.blunck@tu-harburg.de>
-> Subject: Introduce union stack.
-> 
-> Adds union stack infrastructure to the dentry structure and provides
-> locking routines to walk the union stack.
-...
+This is a multi-part message in MIME format.
+--------------050805050001050902050808
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-> --- /dev/null
-> +++ b/include/linux/dcache_union.h
-> @@ -0,0 +1,248 @@
-> +/*
-> + * VFS based union mount for Linux
-> + *
-> + * Copyright © 2004-2007 IBM Corporation
-> + *   Author(s): Jan Blunck (j.blunck@tu-harburg.de)
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published by the Free
-> + * Software Foundation; either version 2 of the License, or (at your option)
-> + * any later version.
-> + *
-> + */
-> +#ifndef __LINUX_DCACHE_UNION_H
-> +#define __LINUX_DCACHE_UNION_H
-> +#ifdef __KERNEL__
-> +
-> +#include <linux/union_debug.h>
-> +#include <linux/fs_struct.h>
-> +#include <asm/atomic.h>
-> +#include <asm/semaphore.h>
-> +
-> +#ifdef CONFIG_UNION_MOUNT
-> +
-> +/*
-> + * This is the union info object, that describes general information about this
-> + * union directory
-> + *
-> + * u_mutex protects the union stack against modification. You can reach it
-> + * through the d_union field in struct dentry. Hold it when you are walking
-> + * or modifing the union stack !
-> + */
-> +struct union_info {
-> +	atomic_t u_count;
-> +	struct mutex u_mutex;
-> +};
-> +
-> +/* allocate/de-allocate */
-> +extern struct union_info *union_alloc(void);
-> +extern struct union_info *union_get(struct union_info *);
-> +extern void union_put(struct union_info *);
-> +
-> +/*
-> + * These are the functions for locking a dentry's union. When one
-> + * want to acquire a denties union lock, use:
-> + *
-> + * - union_lock() when you can sleep,
-> + * - union_lock_spinlock() when you are holding a spinlock (that
-> + *   you CAN savely give up and reacquire again)
-> + * - union_lock_readlock() when you are holding a readlock (that
-> + *   you CAN savely give up and reacquire again)
-> + *
-> + * Otherwise get the union lock early before you enter your
-> + * "no sleeping here" code.
-> + *
-> + * NOTES: union_info structure is reference counted using u_count member.
-> + * union_get() and union_put() which get and put references on union_info
-> + * should be done under union_info's u_mutex. Since the last union_put() frees
-> + * the union_info structure itself it can't obviously be done under u_mutex.
-> + * union_release() should be used in such cases (Eg. dput(), umount()) where
-> + * union_info is disassociated from the dentries, and it becomes safe
-> + * to free the union_info.
-> + */
-> +static inline void __union_lock(struct union_info *uinfo)
-> +{
-> +	BUG_ON(!atomic_read(&uinfo->u_count));
-> +	mutex_lock(&uinfo->u_mutex);
-> +}
-> +
-> +static inline void union_lock(struct dentry *dentry)
-> +{
-> +	if (unlikely(dentry && dentry->d_union)) {
-> +		struct union_info *ui = dentry->d_union;
-> +
-> +		UM_DEBUG_LOCK("\"%s\" locking %p (count=%d)\n",
-> +			      dentry->d_name.name, ui,
-> +			      atomic_read(&ui->u_count));
-> +		__union_lock(dentry->d_union);
-> +	}
-> +}
-> +
-> +static inline void __union_unlock(struct union_info *uinfo)
-> +{
-> +	BUG_ON(!atomic_read(&uinfo->u_count));
-> +	mutex_unlock(&uinfo->u_mutex);
-> +}
-> +
-> +static inline void union_unlock(struct dentry *dentry)
-> +{
-> +	if (unlikely(dentry && dentry->d_union)) {
-> +		struct union_info *ui = dentry->d_union;
-> +
-> +		UM_DEBUG_LOCK("\"%s\" unlocking %p (count=%d)\n",
-> +			      dentry->d_name.name, ui,
-> +			      atomic_read(&ui->u_count));
-> +		__union_unlock(dentry->d_union);
-> +	}
-> +}
-> +
-> +static inline void union_alloc_dentry(struct dentry *dentry)
-> +{
-> +	spin_lock(&dentry->d_lock);
-> +	if (!dentry->d_union) {
-> +		dentry->d_union = union_alloc();
-> +		spin_unlock(&dentry->d_lock);
-> +	} else {
-> +		spin_unlock(&dentry->d_lock);
-> +		union_lock(dentry);
-> +	}
-> +}
-> +
-> +static inline struct union_info *union_lock_and_get(struct dentry *dentry)
-> +{
-> +	union_lock(dentry);
-> +	return union_get(dentry->d_union);
-> +}
-> +
-> +/* Shouldn't be called with last reference to union_info */
-> +static inline void union_put_and_unlock(struct union_info *uinfo)
-> +{
-> +	union_put(uinfo);
-> +	__union_unlock(&uinfo->u_mutex);
-	               ^^^^^^^^^^^^^^^^^^^
+Andrew Morton wrote:
+> This is getting comical.
+>
+> According to my records, the patch
+> voyager-fix-build-broken-by-shift-to-smp_ops.patch _is_ Jeremy's patch. 
+> James forwarded it.
+>
+> I take it from your statement that we should merge some Jeremy-patch other
+> than this Jeremy-patch?
+>
+> If "yes", than could Jeremy please resend the other patch(es) (I believe there
+> are multiple patches involved) and then can James please test them?
+>
+> If "no" then I think I'll just go shopping.
+>   
 
-It should be
-	
-	__union_unlock(uinfo);
+Maybe we should just refer to all patches by their SHA1 hashes.
 
-Thanks,
-Badari
+I'm attaching the two I have, which build for me, and I think James has
+tested as working.
 
+(21583c0234c7cc1cd6c4f312ce7a2456086e2323  and
+e8862935d0e773f12d73a9502f4bc7de06a6cedd, BTW.)
 
+    J
 
+--------------050805050001050902050808
+Content-Type: text/x-patch;
+ name="i386-common-smp.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="i386-common-smp.patch"
+
+Subject: i386: move common parts of smp into their own file
+
+Several parts of kernel/smp.c and smpboot.c are generally useful for
+other subarchitectures and paravirt_ops implementations, so make them
+available for reuse.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Acked-by: Chris Wright <chrisw@sous-sol.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+
+---
+ arch/i386/kernel/Makefile    |    1 
+ arch/i386/kernel/smp.c       |   65 +++-------------------------------
+ arch/i386/kernel/smpboot.c   |   22 -----------
+ arch/i386/kernel/smpcommon.c |   79 ++++++++++++++++++++++++++++++++++++++++++
+ include/asm-i386/processor.h |    4 ++
+ 5 files changed, 90 insertions(+), 81 deletions(-)
+
+===================================================================
+--- a/arch/i386/kernel/Makefile
++++ b/arch/i386/kernel/Makefile
+@@ -20,6 +20,7 @@ obj-$(CONFIG_MICROCODE)		+= microcode.o
+ obj-$(CONFIG_MICROCODE)		+= microcode.o
+ obj-$(CONFIG_APM)		+= apm.o
+ obj-$(CONFIG_X86_SMP)		+= smp.o smpboot.o tsc_sync.o
++obj-$(CONFIG_SMP)		+= smpcommon.o
+ obj-$(CONFIG_X86_TRAMPOLINE)	+= trampoline.o
+ obj-$(CONFIG_X86_MPPARSE)	+= mpparse.o
+ obj-$(CONFIG_X86_LOCAL_APIC)	+= apic.o nmi.o
+===================================================================
+--- a/arch/i386/kernel/smp.c
++++ b/arch/i386/kernel/smp.c
+@@ -468,7 +468,7 @@ void flush_tlb_all(void)
+  * it goes straight through and wastes no time serializing
+  * anything. Worst case is that we lose a reschedule ...
+  */
+-void native_smp_send_reschedule(int cpu)
++static void native_smp_send_reschedule(int cpu)
+ {
+ 	WARN_ON(cpu_is_offline(cpu));
+ 	send_IPI_mask(cpumask_of_cpu(cpu), RESCHEDULE_VECTOR);
+@@ -547,9 +547,10 @@ static void __smp_call_function(void (*f
+  * You must not call this function with disabled interrupts or from a
+  * hardware interrupt handler or from a bottom half handler.
+  */
+-int native_smp_call_function_mask(cpumask_t mask,
+-				  void (*func)(void *), void *info,
+-				  int wait)
++static int
++native_smp_call_function_mask(cpumask_t mask,
++			      void (*func)(void *), void *info,
++			      int wait)
+ {
+ 	struct call_data_struct data;
+ 	cpumask_t allbutself;
+@@ -600,60 +601,6 @@ int native_smp_call_function_mask(cpumas
+ 	return 0;
+ }
+ 
+-/**
+- * smp_call_function(): Run a function on all other CPUs.
+- * @func: The function to run. This must be fast and non-blocking.
+- * @info: An arbitrary pointer to pass to the function.
+- * @nonatomic: Unused.
+- * @wait: If true, wait (atomically) until function has completed on other CPUs.
+- *
+- * Returns 0 on success, else a negative status code.
+- *
+- * If @wait is true, then returns once @func has returned; otherwise
+- * it returns just before the target cpu calls @func.
+- *
+- * You must not call this function with disabled interrupts or from a
+- * hardware interrupt handler or from a bottom half handler.
+- */
+-int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
+-		      int wait)
+-{
+-	return smp_call_function_mask(cpu_online_map, func, info, wait);
+-}
+-EXPORT_SYMBOL(smp_call_function);
+-
+-/**
+- * smp_call_function_single - Run a function on another CPU
+- * @cpu: The target CPU.  Cannot be the calling CPU.
+- * @func: The function to run. This must be fast and non-blocking.
+- * @info: An arbitrary pointer to pass to the function.
+- * @nonatomic: Unused.
+- * @wait: If true, wait until function has completed on other CPUs.
+- *
+- * Returns 0 on success, else a negative status code.
+- *
+- * If @wait is true, then returns once @func has returned; otherwise
+- * it returns just before the target cpu calls @func.
+- */
+-int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+-			     int nonatomic, int wait)
+-{
+-	/* prevent preemption and reschedule on another processor */
+-	int ret;
+-	int me = get_cpu();
+-	if (cpu == me) {
+-		WARN_ON(1);
+-		put_cpu();
+-		return -EBUSY;
+-	}
+-
+-	ret = smp_call_function_mask(cpumask_of_cpu(cpu), func, info, wait);
+-
+-	put_cpu();
+-	return ret;
+-}
+-EXPORT_SYMBOL(smp_call_function_single);
+-
+ static void stop_this_cpu (void * dummy)
+ {
+ 	local_irq_disable();
+@@ -671,7 +618,7 @@ static void stop_this_cpu (void * dummy)
+  * this function calls the 'stop' function on all other CPUs in the system.
+  */
+ 
+-void native_smp_send_stop(void)
++static void native_smp_send_stop(void)
+ {
+ 	/* Don't deadlock on the call lock in panic */
+ 	int nolock = !spin_trylock(&call_lock);
+===================================================================
+--- a/arch/i386/kernel/smpboot.c
++++ b/arch/i386/kernel/smpboot.c
+@@ -99,9 +99,6 @@ EXPORT_SYMBOL(x86_cpu_to_apicid);
+ 
+ u8 apicid_2_node[MAX_APICID];
+ 
+-DEFINE_PER_CPU(unsigned long, this_cpu_off);
+-EXPORT_PER_CPU_SYMBOL(this_cpu_off);
+-
+ /*
+  * Trampoline 80x86 program as an array.
+  */
+@@ -766,25 +763,6 @@ static inline struct task_struct * alloc
+ #define alloc_idle_task(cpu) fork_idle(cpu)
+ #endif
+ 
+-/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
+-   (still using the master per-cpu area), or a CPU doing it for a
+-   secondary which will soon come up. */
+-static __cpuinit void init_gdt(int cpu)
+-{
+-	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
+-
+-	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
+-			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
+-			__per_cpu_offset[cpu], 0xFFFFF,
+-			0x80 | DESCTYPE_S | 0x2, 0x8);
+-
+-	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
+-	per_cpu(cpu_number, cpu) = cpu;
+-}
+-
+-/* Defined in head.S */
+-extern struct Xgt_desc_struct early_gdt_descr;
+-
+ static int __cpuinit do_boot_cpu(int apicid, int cpu)
+ /*
+  * NOTE - on most systems this is a PHYSICAL apic ID, but on multiquad
+===================================================================
+--- /dev/null
++++ b/arch/i386/kernel/smpcommon.c
+@@ -0,0 +1,79 @@
++/*
++ * SMP stuff which is common to all sub-architectures.
++ */
++#include <linux/module.h>
++#include <asm/smp.h>
++
++DEFINE_PER_CPU(unsigned long, this_cpu_off);
++EXPORT_PER_CPU_SYMBOL(this_cpu_off);
++
++/* Initialize the CPU's GDT.  This is either the boot CPU doing itself
++   (still using the master per-cpu area), or a CPU doing it for a
++   secondary which will soon come up. */
++__cpuinit void init_gdt(int cpu)
++{
++	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
++
++	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
++			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
++			__per_cpu_offset[cpu], 0xFFFFF,
++			0x80 | DESCTYPE_S | 0x2, 0x8);
++
++	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
++	per_cpu(cpu_number, cpu) = cpu;
++}
++
++
++/**
++ * smp_call_function(): Run a function on all other CPUs.
++ * @func: The function to run. This must be fast and non-blocking.
++ * @info: An arbitrary pointer to pass to the function.
++ * @nonatomic: Unused.
++ * @wait: If true, wait (atomically) until function has completed on other CPUs.
++ *
++ * Returns 0 on success, else a negative status code.
++ *
++ * If @wait is true, then returns once @func has returned; otherwise
++ * it returns just before the target cpu calls @func.
++ *
++ * You must not call this function with disabled interrupts or from a
++ * hardware interrupt handler or from a bottom half handler.
++ */
++int smp_call_function(void (*func) (void *info), void *info, int nonatomic,
++		      int wait)
++{
++	return smp_call_function_mask(cpu_online_map, func, info, wait);
++}
++EXPORT_SYMBOL(smp_call_function);
++
++/**
++ * smp_call_function_single - Run a function on another CPU
++ * @cpu: The target CPU.  Cannot be the calling CPU.
++ * @func: The function to run. This must be fast and non-blocking.
++ * @info: An arbitrary pointer to pass to the function.
++ * @nonatomic: Unused.
++ * @wait: If true, wait until function has completed on other CPUs.
++ *
++ * Returns 0 on success, else a negative status code.
++ *
++ * If @wait is true, then returns once @func has returned; otherwise
++ * it returns just before the target cpu calls @func.
++ */
++int smp_call_function_single(int cpu, void (*func) (void *info), void *info,
++			     int nonatomic, int wait)
++{
++	/* prevent preemption and reschedule on another processor */
++	int ret;
++	int me = get_cpu();
++	if (cpu == me) {
++		WARN_ON(1);
++		put_cpu();
++		return -EBUSY;
++	}
++
++	ret = smp_call_function_mask(cpumask_of_cpu(cpu), func, info, wait);
++
++	put_cpu();
++	return ret;
++}
++EXPORT_SYMBOL(smp_call_function_single);
+===================================================================
+--- a/include/asm-i386/processor.h
++++ b/include/asm-i386/processor.h
+@@ -749,9 +749,13 @@ extern void enable_sep_cpu(void);
+ extern void enable_sep_cpu(void);
+ extern int sysenter_setup(void);
+ 
++/* Defined in head.S */
++extern struct Xgt_desc_struct early_gdt_descr;
++
+ extern void cpu_set_gdt(int);
+ extern void switch_to_new_gdt(void);
+ extern void cpu_init(void);
++extern void init_gdt(int cpu);
+ 
+ extern int force_mwait;
+ 
+
+--------------050805050001050902050808
+Content-Type: text/x-patch;
+ name="i386-fix-voyager-build.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="i386-fix-voyager-build.patch"
+
+Subject: i386: fix voyager build
+
+This adds an smp_ops for voyager, and hooks things up appropriately.
+This is the first baby-step to making subarch runtime switchable.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+
+---
+ arch/i386/mach-voyager/voyager_smp.c |  110 +++++++++++++---------------------
+ 1 file changed, 43 insertions(+), 67 deletions(-)
+
+===================================================================
+--- a/arch/i386/mach-voyager/voyager_smp.c
++++ b/arch/i386/mach-voyager/voyager_smp.c
+@@ -28,7 +28,6 @@
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
+ #include <asm/arch_hooks.h>
+-#include <asm/pda.h>
+ 
+ /* TLB state -- visible externally, indexed physically */
+ DEFINE_PER_CPU(struct tlb_state, cpu_tlbstate) ____cacheline_aligned = { &init_mm, 0 };
+@@ -423,7 +422,7 @@ find_smp_config(void)
+ 	     VOYAGER_SUS_IN_CONTROL_PORT);
+ 
+ 	current_thread_info()->cpu = boot_cpu_id;
+-	write_pda(cpu_number, boot_cpu_id);
++	x86_write_percpu(cpu_number, boot_cpu_id);
+ }
+ 
+ /*
+@@ -436,7 +435,7 @@ smp_store_cpu_info(int id)
+ 
+ 	*c = boot_cpu_data;
+ 
+-	identify_cpu(c);
++	identify_secondary_cpu(c);
+ }
+ 
+ /* set up the trampoline and return the physical address of the code */
+@@ -460,7 +459,7 @@ start_secondary(void *unused)
+ 	/* external functions not defined in the headers */
+ 	extern void calibrate_delay(void);
+ 
+-	secondary_cpu_init();
++	cpu_init();
+ 
+ 	/* OK, we're in the routine */
+ 	ack_CPI(VIC_CPU_BOOT_CPI);
+@@ -573,7 +572,9 @@ do_boot_cpu(__u8 cpu)
+ 	/* init_tasks (in sched.c) is indexed logically */
+ 	stack_start.esp = (void *) idle->thread.esp;
+ 
+-	init_gdt(cpu, idle);
++	init_gdt(cpu);
++ 	per_cpu(current_task, cpu) = idle;
++	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
+ 	irq_ctx_init(cpu);
+ 
+ 	/* Note: Don't modify initial ss override */
+@@ -860,8 +861,8 @@ smp_invalidate_interrupt(void)
+ 
+ /* This routine is called with a physical cpu mask */
+ static void
+-flush_tlb_others (unsigned long cpumask, struct mm_struct *mm,
+-						unsigned long va)
++voyager_flush_tlb_others (unsigned long cpumask, struct mm_struct *mm,
++			  unsigned long va)
+ {
+ 	int stuck = 50000;
+ 
+@@ -913,7 +914,7 @@ flush_tlb_current_task(void)
+ 	cpu_mask = cpus_addr(mm->cpu_vm_mask)[0] & ~(1 << smp_processor_id());
+ 	local_flush_tlb();
+ 	if (cpu_mask)
+-		flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
++		voyager_flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
+ 
+ 	preempt_enable();
+ }
+@@ -935,7 +936,7 @@ flush_tlb_mm (struct mm_struct * mm)
+ 			leave_mm(smp_processor_id());
+ 	}
+ 	if (cpu_mask)
+-		flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
++		voyager_flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
+ 
+ 	preempt_enable();
+ }
+@@ -956,7 +957,7 @@ void flush_tlb_page(struct vm_area_struc
+ 	}
+ 
+ 	if (cpu_mask)
+-		flush_tlb_others(cpu_mask, mm, va);
++		voyager_flush_tlb_others(cpu_mask, mm, va);
+ 
+ 	preempt_enable();
+ }
+@@ -1045,10 +1046,12 @@ smp_call_function_interrupt(void)
+ }
+ 
+ static int
+-__smp_call_function_mask (void (*func) (void *info), void *info, int retry,
+-			  int wait, __u32 mask)
++voyager_smp_call_function_mask (cpumask_t cpumask,
++				void (*func) (void *info), void *info,
++				int wait)
+ {
+ 	struct call_data_struct data;
++	u32 mask = cpus_addr(cpumask)[0];
+ 
+ 	mask &= ~(1<<smp_processor_id());
+ 
+@@ -1083,47 +1086,6 @@ __smp_call_function_mask (void (*func) (
+ 
+ 	return 0;
+ }
+-
+-/* Call this function on all CPUs using the function_interrupt above
+-    <func> The function to run. This must be fast and non-blocking.
+-    <info> An arbitrary pointer to pass to the function.
+-    <retry> If true, keep retrying until ready.
+-    <wait> If true, wait until function has completed on other CPUs.
+-    [RETURNS] 0 on success, else a negative status code. Does not return until
+-    remote CPUs are nearly ready to execute <<func>> or are or have executed.
+-*/
+-int
+-smp_call_function(void (*func) (void *info), void *info, int retry,
+-		   int wait)
+-{
+-	__u32 mask = cpus_addr(cpu_online_map)[0];
+-
+-	return __smp_call_function_mask(func, info, retry, wait, mask);
+-}
+-EXPORT_SYMBOL(smp_call_function);
+-
+-/*
+- * smp_call_function_single - Run a function on another CPU
+- * @func: The function to run. This must be fast and non-blocking.
+- * @info: An arbitrary pointer to pass to the function.
+- * @nonatomic: Currently unused.
+- * @wait: If true, wait until function has completed on other CPUs.
+- *
+- * Retrurns 0 on success, else a negative status code.
+- *
+- * Does not return until the remote CPU is nearly ready to execute <func>
+- * or is or has executed.
+- */
+-
+-int
+-smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+-			 int nonatomic, int wait)
+-{
+-	__u32 mask = 1 << cpu;
+-
+-	return __smp_call_function_mask(func, info, nonatomic, wait, mask);
+-}
+-EXPORT_SYMBOL(smp_call_function_single);
+ 
+ /* Sorry about the name.  In an APIC based system, the APICs
+  * themselves are programmed to send a timer interrupt.  This is used
+@@ -1238,8 +1200,8 @@ smp_alloc_memory(void)
+ }
+ 
+ /* send a reschedule CPI to one CPU by physical CPU number*/
+-void
+-smp_send_reschedule(int cpu)
++static void
++voyager_smp_send_reschedule(int cpu)
+ {
+ 	send_one_CPI(cpu, VIC_RESCHEDULE_CPI);
+ }
+@@ -1268,8 +1230,8 @@ safe_smp_processor_id(void)
+ }
+ 
+ /* broadcast a halt to all other CPUs */
+-void
+-smp_send_stop(void)
++static void
++voyager_smp_send_stop(void)
+ {
+ 	smp_call_function(smp_stop_cpu_function, NULL, 1, 1);
+ }
+@@ -1931,23 +1893,26 @@ smp_voyager_power_off(void *dummy)
+ 		smp_stop_cpu_function(NULL);
+ }
+ 
+-void __init
+-smp_prepare_cpus(unsigned int max_cpus)
++static void __init
++voyager_smp_prepare_cpus(unsigned int max_cpus)
+ {
+ 	/* FIXME: ignore max_cpus for now */
+ 	smp_boot_cpus();
+ }
+ 
+-void __devinit smp_prepare_boot_cpu(void)
+-{
++static void __devinit voyager_smp_prepare_boot_cpu(void)
++{
++	init_gdt(smp_processor_id());
++	switch_to_new_gdt();
++
+ 	cpu_set(smp_processor_id(), cpu_online_map);
+ 	cpu_set(smp_processor_id(), cpu_callout_map);
+ 	cpu_set(smp_processor_id(), cpu_possible_map);
+ 	cpu_set(smp_processor_id(), cpu_present_map);
+ }
+ 
+-int __devinit
+-__cpu_up(unsigned int cpu)
++static int __devinit
++voyager_cpu_up(unsigned int cpu)
+ {
+ 	/* This only works at boot for x86.  See "rewrite" above. */
+ 	if (cpu_isset(cpu, smp_commenced_mask))
+@@ -1963,8 +1928,8 @@ __cpu_up(unsigned int cpu)
+ 	return 0;
+ }
+ 
+-void __init 
+-smp_cpus_done(unsigned int max_cpus)
++static void __init
++voyager_smp_cpus_done(unsigned int max_cpus)
+ {
+ 	zap_low_mappings();
+ }
+@@ -1973,5 +1938,16 @@ smp_setup_processor_id(void)
+ smp_setup_processor_id(void)
+ {
+ 	current_thread_info()->cpu = hard_smp_processor_id();
+-	write_pda(cpu_number, hard_smp_processor_id());
+-}
++	x86_write_percpu(cpu_number, hard_smp_processor_id());
++}
++
++struct smp_ops smp_ops = {
++	.smp_prepare_boot_cpu = voyager_smp_prepare_boot_cpu,
++	.smp_prepare_cpus = voyager_smp_prepare_cpus,
++	.cpu_up = voyager_cpu_up,
++	.smp_cpus_done = voyager_smp_cpus_done,
++
++	.smp_send_stop = voyager_smp_send_stop,
++	.smp_send_reschedule = voyager_smp_send_reschedule,
++	.smp_call_function_mask = voyager_smp_call_function_mask,
++};
+
+--------------050805050001050902050808--
