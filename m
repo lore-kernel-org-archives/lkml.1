@@ -1,134 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031206AbXENLrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032070AbXENLsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031206AbXENLrt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030934AbXENLeH
+	id S1032070AbXENLsQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030943AbXENLeI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:34:07 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27946 "EHLO
+	Mon, 14 May 2007 07:34:08 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27952 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760532AbXENLch (ORCPT
+	with ESMTP id S965679AbXENLcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:37 -0400
-Message-Id: <20070514110619.881061986@suse.de>
-References: <20070514110607.549397248@suse.de>
+	Mon, 14 May 2007 07:32:47 -0400
+Message-Id: <20070514110651.615950104@suse.de>
+References: <20070514110650.866217377@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:41 -0700
+Date: Mon, 14 May 2007 04:06:52 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 34/45] Factor out sysctl pathname code
-Content-Disposition: inline; filename=sysctl-pathname.diff
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: [RFD Patch 2/4] Never pass a NULL nameidata to vfs_create()
+Content-Disposition: inline; filename=vfs_create-nameidata.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Convert the selinux sysctl pathname computation code into a standalone
-function.
+Create a nameidata2 struct in nfsd and mqueue so that vfs_create does
+need to conditionally pass the vfsmnt.
 
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- include/linux/sysctl.h   |    2 ++
- kernel/sysctl.c          |   27 +++++++++++++++++++++++++++
- security/selinux/hooks.c |   35 +++++------------------------------
- 3 files changed, 34 insertions(+), 30 deletions(-)
+ fs/namei.c    |    2 +-
+ fs/nfsd/vfs.c |   42 +++++++++++++++++++++++++-----------------
+ ipc/mqueue.c  |    7 ++++++-
+ 3 files changed, 32 insertions(+), 19 deletions(-)
 
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -963,6 +963,8 @@ extern int proc_doulongvec_minmax(ctl_ta
- extern int proc_doulongvec_ms_jiffies_minmax(ctl_table *table, int,
- 				      struct file *, void __user *, size_t *, loff_t *);
- 
-+extern char *sysctl_pathname(ctl_table *, char *, int);
-+
- extern int do_sysctl (int __user *name, int nlen,
- 		      void __user *oldval, size_t __user *oldlenp,
- 		      void __user *newval, size_t newlen);
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1110,6 +1110,33 @@ struct ctl_table_header *sysctl_head_nex
- 	return NULL;
- }
- 
-+char *sysctl_pathname(ctl_table *table, char *buffer, int buflen)
-+{
-+	if (buflen < 1)
-+		return NULL;
-+	buffer += --buflen;
-+	*buffer = '\0';
-+
-+	while (table) {
-+		int namelen = strlen(table->procname);
-+
-+		if (buflen < namelen + 1)
-+			return NULL;
-+		buflen -= namelen + 1;
-+		buffer -= namelen;
-+		memcpy(buffer, table->procname, namelen);
-+		*--buffer = '/';
-+		table = table->parent;
-+	}
-+	if (buflen < 4)
-+		return NULL;
-+	buffer -= 4;
-+	memcpy(buffer, "/sys", 4);
-+
-+	return buffer;
-+}
-+EXPORT_SYMBOL(sysctl_pathname);
-+
- #ifdef CONFIG_SYSCTL_SYSCALL
- int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
- 	       void __user *newval, size_t newlen)
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -1427,40 +1427,15 @@ static int selinux_capable(struct task_s
- 
- static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1532,7 +1532,7 @@ int vfs_create(struct inode *dir, struct
+ 		return -EACCES;	/* shouldn't it be ENOSYS? */
+ 	mode &= S_IALLUGO;
+ 	mode |= S_IFREG;
+-	error = security_inode_create(dir, dentry, nd ? nd->mnt : NULL, mode);
++	error = security_inode_create(dir, dentry, nd->mnt, mode);
+ 	if (error)
+ 		return error;
+ 	DQUOT_INIT(dir);
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1121,7 +1121,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		char *fname, int flen, struct iattr *iap,
+ 		int type, dev_t rdev, struct svc_fh *resfhp)
  {
--	int buflen, rc;
--	char *buffer, *path, *end;
-+	char *buffer, *path;
-+	int rc = -ENOMEM;
- 
--	rc = -ENOMEM;
- 	buffer = (char*)__get_free_page(GFP_KERNEL);
- 	if (!buffer)
+-	struct dentry	*dentry, *dchild = NULL;
++	struct nameidata2 nd;
++	struct dentry	*dchild = NULL;
+ 	struct svc_export *exp;
+ 	struct inode	*dirp;
+ 	__be32		err;
+@@ -1138,9 +1139,11 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 	if (err)
  		goto out;
--
--	buflen = PAGE_SIZE;
--	end = buffer+buflen;
--	*--end = '\0';
--	buflen--;
--	path = end-1;
--	*path = '/';
--	while (table) {
--		const char *name = table->procname;
--		size_t namelen = strlen(name);
--		buflen -= namelen + 1;
--		if (buflen < 0)
--			goto out_free;
--		end -= namelen;
--		memcpy(end, name, namelen);
--		*--end = '/';
--		path = end;
--		table = table->parent;
--	}
--	buflen -= 4;
--	if (buflen < 0)
--		goto out_free;
--	end -= 4;
--	memcpy(end, "/sys", 4);
--	path = end;
--	rc = security_genfs_sid("proc", path, tclass, sid);
--out_free:
-+	path = sysctl_pathname(table, buffer, PAGE_SIZE);
-+	if (path)
-+		rc = security_genfs_sid("proc", path, tclass, sid);
- 	free_page((unsigned long)buffer);
- out:
- 	return rc;
+ 
+-	dentry = fhp->fh_dentry;
++	nd.dentry = fhp->fh_dentry;
+ 	exp = fhp->fh_export;
+-	dirp = dentry->d_inode;
++	nd.mnt = exp->ex_mnt;
++	nd.flags = 0;
++	dirp = nd.dentry->d_inode;
+ 
+ 	err = nfserr_notdir;
+ 	if(!dirp->i_op || !dirp->i_op->lookup)
+@@ -1152,7 +1155,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 	if (!resfhp->fh_dentry) {
+ 		/* called from nfsd_proc_mkdir, or possibly nfsd3_proc_create */
+ 		fh_lock_nested(fhp, I_MUTEX_PARENT);
+-		dchild = lookup_one_len(fname, dentry, flen);
++		dchild = lookup_one_len(fname, nd.dentry, flen);
+ 		host_err = PTR_ERR(dchild);
+ 		if (IS_ERR(dchild))
+ 			goto out_nfserr;
+@@ -1166,8 +1169,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 			/* not actually possible */
+ 			printk(KERN_ERR
+ 				"nfsd_create: parent %s/%s not locked!\n",
+-				dentry->d_parent->d_name.name,
+-				dentry->d_name.name);
++				nd.dentry->d_parent->d_name.name,
++				nd.dentry->d_name.name);
+ 			err = nfserr_io;
+ 			goto out;
+ 		}
+@@ -1178,7 +1181,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 	err = nfserr_exist;
+ 	if (dchild->d_inode) {
+ 		dprintk("nfsd_create: dentry %s/%s not negative!\n",
+-			dentry->d_name.name, dchild->d_name.name);
++			nd.dentry->d_name.name, dchild->d_name.name);
+ 		goto out; 
+ 	}
+ 
+@@ -1192,7 +1195,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 	err = 0;
+ 	switch (type) {
+ 	case S_IFREG:
+-		host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
++		host_err = vfs_create(nd.dentry->d_inode, dchild, iap->ia_mode, &nd);
+ 		break;
+ 	case S_IFDIR:
+ 		host_err = vfs_mkdir(dirp, dchild, exp->ex_mnt, iap->ia_mode);
+@@ -1212,7 +1215,7 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 		goto out_nfserr;
+ 
+ 	if (EX_ISSYNC(exp)) {
+-		err = nfserrno(nfsd_sync_dir(dentry));
++		err = nfserrno(nfsd_sync_dir(nd.dentry));
+ 		write_inode_now(dchild->d_inode, 1);
+ 	}
+ 
+@@ -1252,7 +1255,9 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+ 		struct svc_fh *resfhp, int createmode, u32 *verifier,
+ 	        int *truncp, int *created)
+ {
+-	struct dentry	*dentry, *dchild = NULL;
++	struct nameidata2 nd;
++	struct dentry	*dchild = NULL;
++	struct svc_export *exp;
+ 	struct inode	*dirp;
+ 	__be32		err;
+ 	int		host_err;
+@@ -1270,8 +1275,11 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+ 	if (err)
+ 		goto out;
+ 
+-	dentry = fhp->fh_dentry;
+-	dirp = dentry->d_inode;
++	nd.dentry = fhp->fh_dentry;
++	exp = fhp->fh_export;
++	nd.mnt = exp->ex_mnt;
++	nd.flags = 0;
++	dirp = nd.dentry->d_inode;
+ 
+ 	/* Get all the sanity checks out of the way before
+ 	 * we lock the parent. */
+@@ -1283,12 +1291,12 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+ 	/*
+ 	 * Compose the response file handle.
+ 	 */
+-	dchild = lookup_one_len(fname, dentry, flen);
++	dchild = lookup_one_len(fname, nd.dentry, flen);
+ 	host_err = PTR_ERR(dchild);
+ 	if (IS_ERR(dchild))
+ 		goto out_nfserr;
+ 
+-	err = fh_compose(resfhp, fhp->fh_export, dchild, fhp);
++	err = fh_compose(resfhp, exp, dchild, fhp);
+ 	if (err)
+ 		goto out;
+ 
+@@ -1334,14 +1342,14 @@ nfsd_create_v3(struct svc_rqst *rqstp, s
+ 		goto out;
+ 	}
+ 
+-	host_err = vfs_create(dirp, dchild, iap->ia_mode, NULL);
++	host_err = vfs_create(nd.dentry->d_inode, dchild, iap->ia_mode, &nd);
+ 	if (host_err < 0)
+ 		goto out_nfserr;
+ 	if (created)
+ 		*created = 1;
+ 
+-	if (EX_ISSYNC(fhp->fh_export)) {
+-		err = nfserrno(nfsd_sync_dir(dentry));
++	if (EX_ISSYNC(exp)) {
++		err = nfserrno(nfsd_sync_dir(nd.dentry));
+ 		/* setattr will sync the child (or not) */
+ 	}
+ 
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -603,9 +603,14 @@ static int mq_attr_ok(struct mq_attr *at
+ static struct file *do_create(struct dentry *dir, struct dentry *dentry,
+ 			int oflag, mode_t mode, struct mq_attr __user *u_attr)
+ {
++	struct nameidata2 nd;
+ 	struct mq_attr attr;
+ 	int ret;
+ 
++	nd.dentry = dir;
++	nd.mnt = NULL;  /* Not a mounted filesystem */
++	nd.flags = 0;
++
+ 	if (u_attr) {
+ 		ret = -EFAULT;
+ 		if (copy_from_user(&attr, u_attr, sizeof(attr)))
+@@ -618,7 +623,7 @@ static struct file *do_create(struct den
+ 	}
+ 
+ 	mode &= ~current->fs->umask;
+-	ret = vfs_create(dir->d_inode, dentry, mode, NULL);
++	ret = vfs_create(dir->d_inode, dentry, mode, &nd);
+ 	dentry->d_fsdata = NULL;
+ 	if (ret)
+ 		goto out;
 
 -- 
