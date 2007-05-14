@@ -1,25 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762862AbXENLpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966550AbXENLpn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762862AbXENLpT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966117AbXENLds
+	id S966550AbXENLpn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:45:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030894AbXENLdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:33:48 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27944 "EHLO
+	Mon, 14 May 2007 07:33:40 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27945 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762264AbXENLcl (ORCPT
+	with ESMTP id S965397AbXENLcn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:41 -0400
-Message-Id: <20070514110607.549397248@suse.de>
+	Mon, 14 May 2007 07:32:43 -0400
+Message-Id: <20070514110614.433121818@suse.de>
+References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:07 -0700
+Date: Mon, 14 May 2007 04:06:25 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
-Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: [AppArmor 00/45] AppArmor security module overview
+Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 18/45] Pass struct vfsmount to the inode_unlink LSM hook
+Content-Disposition: inline; filename=security-unlink.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-lkml-explanatory.txt
+This is needed for computing pathnames in the AppArmor LSM.
+
+Signed-off-by: Tony Jones <tonyj@suse.de>
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
+
+---
+ fs/namei.c               |    2 +-
+ include/linux/security.h |   12 ++++++++----
+ security/dummy.c         |    3 ++-
+ security/selinux/hooks.c |    5 +++--
+ 4 files changed, 14 insertions(+), 8 deletions(-)
+
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2121,7 +2121,7 @@ int vfs_unlink(struct inode *dir, struct
+ 	if (d_mountpoint(dentry))
+ 		error = -EBUSY;
+ 	else {
+-		error = security_inode_unlink(dir, dentry);
++		error = security_inode_unlink(dir, dentry, mnt);
+ 		if (!error)
+ 			error = dir->i_op->unlink(dir, dentry);
+ 	}
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -298,6 +298,7 @@ struct request_sock;
+  *	Check the permission to remove a hard link to a file. 
+  *	@dir contains the inode structure of parent directory of the file.
+  *	@dentry contains the dentry structure for file to be unlinked.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	Return 0 if permission is granted.
+  * @inode_symlink:
+  *	Check the permission to create a symbolic link to a file.
+@@ -1218,7 +1219,8 @@ struct security_operations {
+ 	int (*inode_link) (struct dentry *old_dentry, struct vfsmount *old_mnt,
+ 	                   struct inode *dir, struct dentry *new_dentry,
+ 			   struct vfsmount *new_mnt);
+-	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
++	int (*inode_unlink) (struct inode *dir, struct dentry *dentry,
++			     struct vfsmount *mnt);
+ 	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
+ 			      struct vfsmount *mnt, const char *old_name);
+ 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
+@@ -1645,11 +1647,12 @@ static inline int security_inode_link (s
+ }
+ 
+ static inline int security_inode_unlink (struct inode *dir,
+-					 struct dentry *dentry)
++					 struct dentry *dentry,
++					 struct vfsmount *mnt)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_unlink (dir, dentry);
++	return security_ops->inode_unlink (dir, dentry, mnt);
+ }
+ 
+ static inline int security_inode_symlink (struct inode *dir,
+@@ -2377,7 +2380,8 @@ static inline int security_inode_link (s
+ }
+ 
+ static inline int security_inode_unlink (struct inode *dir,
+-					 struct dentry *dentry)
++					 struct dentry *dentry,
++					 struct vfsmount *mnt)
+ {
+ 	return 0;
+ }
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -278,7 +278,8 @@ static int dummy_inode_link (struct dent
+ 	return 0;
+ }
+ 
+-static int dummy_inode_unlink (struct inode *inode, struct dentry *dentry)
++static int dummy_inode_unlink (struct inode *inode, struct dentry *dentry,
++			       struct vfsmount *mnt)
+ {
+ 	return 0;
+ }
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2197,11 +2197,12 @@ static int selinux_inode_link(struct den
+ 	return may_link(dir, old_dentry, MAY_LINK);
+ }
+ 
+-static int selinux_inode_unlink(struct inode *dir, struct dentry *dentry)
++static int selinux_inode_unlink(struct inode *dir, struct dentry *dentry,
++			        struct vfsmount *mnt)
+ {
+ 	int rc;
+ 
+-	rc = secondary_ops->inode_unlink(dir, dentry);
++	rc = secondary_ops->inode_unlink(dir, dentry, mnt);
+ 	if (rc)
+ 		return rc;
+ 	return may_link(dir, dentry, MAY_UNLINK);
 
 -- 
