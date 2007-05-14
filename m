@@ -1,133 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760728AbXENJTP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbXENJVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760728AbXENJTP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 05:19:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbXENJTC
+	id S1761329AbXENJVV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 05:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756044AbXENJVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 05:19:02 -0400
-Received: from static-141-230-6-89.ipcom.comunitel.net ([89.6.230.141]:37836
-	"EHLO traven.no-ip.org" rhost-flags-OK-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755198AbXENJTB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 05:19:01 -0400
-Date: Mon, 14 May 2007 11:21:36 +0200
-From: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
-To: dwmw2@infradead.org, linux-mtd@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: [PATCH 5/5] Use mutex instead of semaphore in the MTD DataFlash driver
-Message-ID: <20070514092136.GK29206@traven>
-Mail-Followup-To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>,
-	dwmw2@infradead.org, linux-mtd@lists.infradead.org,
-	linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-References: <20070514090256.GF29206@traven>
+	Mon, 14 May 2007 05:21:14 -0400
+Received: from gprs189-60.eurotel.cz ([160.218.189.60]:46340 "EHLO amd.ucw.cz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755617AbXENJVN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 05:21:13 -0400
+Date: Mon, 14 May 2007 11:21:09 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Satoru Takeuchi <takeuchi_satoru@jp.fujitsu.com>
+Cc: tglx@linutronix.de, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [PATCH] Fix UCB1x00 driver to use sched_setscheduler
+Message-ID: <20070514092109.GJ11735@elf.ucw.cz>
+References: <87ps57ejah.wl%takeuchi_satoru@jp.fujitsu.com> <1178975427.22481.153.camel@localhost.localdomain> <87mz08e0qx.wl%takeuchi_satoru@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070514090256.GF29206@traven>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <87mz08e0qx.wl%takeuchi_satoru@jp.fujitsu.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.11+cvs20060126
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The MTD DataFlash driver uses a semaphore as mutex. Use the mutex API
-instead
-of the (binary) semaphore.
+Hi!
 
-Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+> > > Index: linux-2.6.21-fix-ucb-drivers/drivers/mfd/ucb1x00-ts.c
+> > > ===================================================================
+> > > --- linux-2.6.21-fix-ucb-drivers.orig/drivers/mfd/ucb1x00-ts.c	2007-05-11 18:53:36.000000000 +0900
+> > > +++ linux-2.6.21-fix-ucb-drivers/drivers/mfd/ucb1x00-ts.c	2007-05-11 19:33:20.000000000 +0900
+> > > @@ -214,8 +214,9 @@ static int ucb1x00_thread(void *_ts)
+> > >  	 * We could run as a real-time thread.  However, thus far
+> > >  	 * this doesn't seem to be necessary.
+> > >  	 */
+> > > -//	tsk->policy = SCHED_FIFO;
+> > > -//	tsk->rt_priority = 1;
+> > > +//	struct sched_param param = { .sched_priority = 1 };
+> > > +//
+> > > +//	sched_setscheduler(tsk, SCHED_FIFO, &param);
+> > 
+> > Can we please remove the unused code completely instead of replacing it
+> > by more commented out code ?
+> 
+> It's OK to me, but I'm not the driver writer and doesn't know how important
+> are those comments. If removing them is better for driver writers too, here
+> is the patch.
 
---
-diff --git a/drivers/mtd/devices/mtd_dataflash.c b/drivers/mtd/devices/mtd_dataflash.c
-index a987e91..a5ed6d2 100644
---- a/drivers/mtd/devices/mtd_dataflash.c
-+++ b/drivers/mtd/devices/mtd_dataflash.c
-@@ -14,6 +14,7 @@
- #include <linux/slab.h>
- #include <linux/delay.h>
- #include <linux/device.h>
-+#include <linux/mutex.h>
- #include <linux/spi/spi.h>
- #include <linux/spi/flash.h>
- 
-@@ -89,7 +90,7 @@ struct dataflash {
- 	unsigned short		page_offset;	/* offset in flash address */
- 	unsigned int		page_size;	/* of bytes per page */
- 
--	struct semaphore	lock;
-+	struct mutex		lock;
- 	struct spi_device	*spi;
- 
- 	struct mtd_info		mtd;
-@@ -167,7 +168,7 @@ static int dataflash_erase(struct mtd_info *mtd, struct erase_info *instr)
- 	x.len = 4;
- 	spi_message_add_tail(&x, &msg);
- 
--	down(&priv->lock);
-+	mutex_lock(&priv->lock);
- 	while (instr->len > 0) {
- 		unsigned int	pageaddr;
- 		int		status;
-@@ -210,7 +211,7 @@ static int dataflash_erase(struct mtd_info *mtd, struct erase_info *instr)
- 			instr->len -= priv->page_size;
- 		}
- 	}
--	up(&priv->lock);
-+	mutex_unlock(&priv->lock);
- 
- 	/* Inform MTD subsystem that erase is complete */
- 	instr->state = MTD_ERASE_DONE;
-@@ -266,7 +267,7 @@ static int dataflash_read(struct mtd_info *mtd, loff_t from, size_t len,
- 	x[1].len = len;
- 	spi_message_add_tail(&x[1], &msg);
- 
--	down(&priv->lock);
-+	mutex_lock(&priv->lock);
- 
- 	/* Continuous read, max clock = f(car) which may be less than
- 	 * the peak rate available.  Some chips support commands with
-@@ -279,7 +280,7 @@ static int dataflash_read(struct mtd_info *mtd, loff_t from, size_t len,
- 	/* plus 4 "don't care" bytes */
- 
- 	status = spi_sync(priv->spi, &msg);
--	up(&priv->lock);
-+	mutex_unlock(&priv->lock);
- 
- 	if (status >= 0) {
- 		*retlen = msg.actual_length - 8;
-@@ -336,7 +337,7 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
- 	else
- 		writelen = len;
- 
--	down(&priv->lock);
-+	mutex_lock(&priv->lock);
- 	while (remaining > 0) {
- 		DEBUG(MTD_DEBUG_LEVEL3, "write @ %i:%i len=%i\n",
- 			pageaddr, offset, writelen);
-@@ -441,7 +442,7 @@ static int dataflash_write(struct mtd_info *mtd, loff_t to, size_t len,
- 		else
- 			writelen = remaining;
- 	}
--	up(&priv->lock);
-+	mutex_unlock(&priv->lock);
- 
- 	return status;
- }
-@@ -463,7 +464,7 @@ add_dataflash(struct spi_device *spi, char *name,
- 	if (!priv)
- 		return -ENOMEM;
- 
--	init_MUTEX(&priv->lock);
-+	mutex_init(&priv->lock);
- 	priv->spi = spi;
- 	priv->page_size = pagesize;
- 	priv->page_offset = pageoffset;
+I doubt anyone cares either way. Feel free to add my ACK to either
+"remove" or "fix" version.
+								Pavel
 
 -- 
-Matthias Kaehlcke
-Linux Application Developer
-Barcelona
-
-            Nothing is more despicable than respect based on fear
-                              (Albert Camus)
-                                                                 .''`.
-    using free software / Debian GNU/Linux | http://debian.org  : :'  :
-                                                                `. `'`
-gpg --keyserver pgp.mit.edu --recv-keys 47D8E5D4                  `-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
