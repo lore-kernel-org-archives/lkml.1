@@ -1,146 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbXENTja@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbXENTo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbXENTja (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:39:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbXENTjX
+	id S1756924AbXENTo7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754682AbXENTox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:39:23 -0400
-Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:54113 "EHLO
-	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752277AbXENTjW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:39:22 -0400
-Message-ID: <4648BAC9.5020405@drzeus.cx>
-Date: Mon, 14 May 2007 21:38:49 +0200
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="=_hera.drzeus.cx-25460-1179171560-0001-2"
-To: LKML <linux-kernel@vger.kernel.org>
-CC: Nicolas FERRE <nicolas.ferre@rfo.atmel.com>,
-       Andrew Victor <andrew@sanpeople.com>,
-       Ralf Baechle <ralf@linux-mips.org>,
-       Manuel Lauss <mano@roarinelk.homelinux.net>,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Pavel Pisa <pisa@cmp.felk.cvut.cz>,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Tony Lindgren <tony@atomide.com>, David Brownell <david-b@pacbell.net>,
-       "=?ISO-8859-1?Q?Juha_Yrj=F6l=E4?=" <juha.yrjola@solidboot.com>,
-       Carlos Aguiar <carlos.aguiar@indt.org.br>,
-       "Briglia >> \"Anderson F. Briglia\"" <anderson.briglia@indt.org.br>,
-       Kyungmin Park <kmpark@infradead.org>, "Khasim, Syed" <x0khasim@ti.com>
-Subject: [RFC] Orphaning MMC host drivers
+	Mon, 14 May 2007 15:44:53 -0400
+Received: from lug-owl.de ([195.71.106.12]:54706 "EHLO lug-owl.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754339AbXENTow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 15:44:52 -0400
+Date: Mon, 14 May 2007 21:44:51 +0200
+From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
+To: devzero@web.de
+Cc: linux-kernel@vger.kernel.org, jcm@redhat.com
+Subject: Re: [RFC] - LXR on kernel.org ? was: Re: What tools to use?
+Message-ID: <20070514194451.GN27871@lug-owl.de>
+Mail-Followup-To: devzero@web.de, linux-kernel@vger.kernel.org,
+	jcm@redhat.com
+References: <1783741195@web.de>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="Rzq/nSLlHy1djmXS"
+Content-Disposition: inline
+In-Reply-To: <1783741195@web.de>
+X-Operating-System: Linux mail 2.6.18-4-686 
+X-gpg-fingerprint: 250D 3BCF 7127 0D8C A444  A961 1DBD 5E75 8399 E1BB
+X-gpg-key: wwwkeys.de.pgp.net
+X-Echelon-Enable: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+X-TKUeV: howto poison arsenous mail psychological biological nuclear warfare test the bombastical terror of flooding the spy listeners explosion sex drugs and rock'n'roll
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
 
---=_hera.drzeus.cx-25460-1179171560-0001-2
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
+--Rzq/nSLlHy1djmXS
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I've reached the point where I've grown tired of trying to figure out who has
-hardware for what. I intend to commit the following in a few days so if you care
-about the quality of the drivers it's time to step up to the plate.
+On Fri, 2007-05-11 10:06:17 +0200, devzero@web.de <devzero@web.de> wrote:
+> Jesper Juhl <jesper.juhl () gmail ! com> wrote:
+> > On 10/05/07, Shahbaz Khan <shaz.linux@gmail.com> wrote:
+> > > All the experts on this list plz let me know of any good cross
+> > > referencing tool for source code navigation. I have tried LXR but its
+> > > not easy to configure for a rookie like me. Anyother as good as LXR?
+> > >
+> > lxr is pretty good (glimpse on its own as well can be useful). If you
+> > don't want to set it up yourself, then you could consider to use the
+> > online version at http://lxr.linux.no/
 
-There's a rather long list of cc here, but I've included everyone that has been
-involved in the drivers in one way or another in case one or two maintainers can
-actually be found.
+One "problem" with lxr.linux.no is that it's only updated from time to
+time.  Maximilian Wilhelm and I added some preliminary GIT support to
+LXR, and we're working on a patch to present the list of versions as
+drop-down boxes (instead of a long link list.)
 
-Even if you don't feel like maintaining this, feel free to suggest mailing lists
-that should be added to the entries.
+This should allow to index all and any tagged versions of the Linux
+kernel and present them.  However, I don't have a box that's equipped
+properly (HDD, CPU as well as network connectivity) to offer such a
+setup, but I'd help in setting it up if somebody provides the machine!
 
-Rgds
+> > Another good thing is "make ctags" in the kernel source dir - this
+> > will  let you quickly jump to declarations etc and back with a few
+> > simple keystrokes in editors like vim.
+> > http://www.faqs.org/docs/ldev/0130091154_64.htm
+> > http://applications.linux.com/article.pl?sid=3D07/01/22/167212&tid=3D13=
+&tid=3D47
+> > http://cscope.sourceforge.net/cscope_vim_tutorial.html
+> >=20
+> > "make cscope" is another good option. It'll generate an index usable
+> > by the cscope tool (http://cscope.sourceforge.net/).
+>=20
+> I like lxr pretty much.
+> i`m not a programmer, but i often need some information on "what`s
+> the driver version of xyz in latest kernel" or "was this or that
+> feature/patch already being merged" or "i have this line of code
+> in kernel - how does it look in recent kernel , did it change " ?
 
--- 
-     -- Pierre Ossman
+You can easily get this information from http://git.kernel.org/git .
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  PulseAudio, core developer          http://pulseaudio.org
-  rdesktop, core developer          http://www.rdesktop.org
+> why not adding a link to every kernel an kernel.org kernel,
+> pointing to recent lxr`ed kernel source - or - even better -
+> make lxr`ed kernel source part of kernel.org (so we
+> have "B V VI 	C Changelog LXR" ) ?=20
 
---=_hera.drzeus.cx-25460-1179171560-0001-2
-Content-Type: text/x-patch; name="maint.patch"; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="maint.patch"
+I'd support the idea, but somebody needs to offer a machine or two and
+enough bandwidth. (Though I hope that it's used rarely enough so that
+only one machine is needed.)
 
-commit 11c3d5e4b871fc69d72f67811d4eb6bfd7084c43
-Author: Pierre Ossman <drzeus@drzeus.cx>
-Date:   Mon May 14 21:25:26 2007 +0200
+> sure, i know kernel.org itself is very busy, but maybe this can
+> be done via dedicated lxr machine/webserver someone is willing
+> to donate !?
 
-    mmc: mark unmaintained drivers
-    
-    Most of the host controller drivers in the MMC layer lacks an
-    official maintainer. Make sure this is mentioned in MAINTAINERS
-    in case someone wants to pick up the ball.
-    
-    Signed-off-by: Pierre Ossman <drzeus@drzeus.cx>
+There's *no* way to add this to the current kernel.org machines.
+There's quite some DB access during indexing, and making up the
+sources on request takes some CPU cycles, too.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 68a56ad..8f1b60c 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -346,6 +346,9 @@ P:	Ivan Kokshaysky
- M:	ink@jurassic.park.msu.ru
- S:	Maintained for 2.4; PCI support for 2.6.
- 
-+AMD AU1XX0 MMC DRIVER
-+S:	Orphan
-+
- AMD GEODE PROCESSOR/CHIPSET SUPPORT
- P:	Jordan Crouse
- M:	info-linux@geode.amd.com
-@@ -418,6 +421,9 @@ P:	Ian Molton
- M:	spyro@f2s.com
- S:	Maintained
- 
-+ARM PRIMECELL MMCI PL180/1 DRIVER
-+S:	Orphan
-+
- ARM/ADI ROADRUNNER MACHINE SUPPORT
- P:	Lennert Buytenhek
- M:	kernel@wantstofly.org
-@@ -649,6 +655,9 @@ L:	linux-atm-general@lists.sourceforge.net (subscribers-only)
- W:	http://linux-atm.sourceforge.net
- S:	Maintained
- 
-+ATMEL AT91 MCI DRIVER
-+S:	Orphan
-+
- ATMEL MACB ETHERNET DRIVER
- P:	Haavard Skinnemoen
- M:	hskinnemoen@atmel.com
-@@ -2382,6 +2391,9 @@ M:	stelian@popies.net
- W:	http://popies.net/meye/
- S:	Maintained
- 
-+MOTOROLA I.MX MMCI DRIVER
-+S:	Orphan
-+
- MOUSE AND MISC DEVICES [GENERAL]
- P:	Alessandro Rubini
- M:	rubini@ipvvis.unipv.it
-@@ -2902,6 +2914,9 @@ M:	nico@cam.org
- L:	linux-arm-kernel@lists.arm.linux.org.uk	(subscribers-only)
- S:	Maintained
- 
-+PXA MMCI DRIVER
-+S:	Orphan
-+
- QLOGIC QLA2XXX FC-SCSI DRIVER
- P:	Andrew Vasquez
- M:	linux-driver@qlogic.com
-@@ -3417,6 +3432,9 @@ P:      Alex Dubov
- M:      oakad@yahoo.com
- S:      Maintained
- 
-+TI OMAP MMC INTERFACE DRIVER
-+S:	Orphan
-+
- TI OMAP RANDOM NUMBER GENERATOR SUPPORT
- P:	Deepak Saxena
- M:	dsaxena@plexity.net
+> for myself, i would happily donate some bucks for this.
 
---=_hera.drzeus.cx-25460-1179171560-0001-2--
+As I said: If you manage to prepare the box, I'll offer to do the LXR
+setup and automate the indexing.
+
+MfG, JBG
+
+--=20
+      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
+ Signature of:                      http://perl.plover.com/Questions.html
+ the second  :
+
+--Rzq/nSLlHy1djmXS
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGSLwzHb1edYOZ4bsRAjC1AJ4gMtFUDqW0YjkJeYglGOixsfqfkgCgik5D
+bBogUVOjwylcwAbWRpZ0xgw=
+=cdrr
+-----END PGP SIGNATURE-----
+
+--Rzq/nSLlHy1djmXS--
