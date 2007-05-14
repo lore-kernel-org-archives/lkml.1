@@ -1,42 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756755AbXENP2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755706AbXENPdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756755AbXENP2l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 11:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754657AbXENP2d
+	id S1755706AbXENPdn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 11:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbXENPde
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 11:28:33 -0400
-Received: from hammerhead.shentel.net ([204.111.1.228]:33453 "EHLO
-	hammerhead.shentel.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754636AbXENP2d (ORCPT
+	Mon, 14 May 2007 11:33:34 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:54370 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754207AbXENPdc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 11:28:33 -0400
-Date: Mon, 14 May 2007 11:28:12 -0400 (EDT)
-From: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-cc: mgarski@post.pl, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Convert files to UTF-8 and some cleanups
-In-Reply-To: <46486EAE.3060009@s5r6.in-berlin.de>
-Message-ID: <alpine.DEB.0.98.0705141126550.19220@sigma.j-a-k-j.com>
-References: <4647A52A.8000709@post.pl> <4647A868.4070201@post.pl>
- <46486EAE.3060009@s5r6.in-berlin.de>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 14 May 2007 11:33:32 -0400
+Date: Mon, 14 May 2007 21:03:30 +0530
+From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+To: torvalds@osdl.org, akpm@linux-foundation.org
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 2/5][TAKE2] fallocate() on s390 - glibc wrapper
+Message-ID: <20070514153330.GA25249@amitarora.in.ibm.com>
+References: <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070514132926.GA30768@amitarora.in.ibm.com> <20070514142820.GA31468@amitarora.in.ibm.com> <20070514144833.GB31748@amitarora.in.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070514144833.GB31748@amitarora.in.ibm.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Marcin Garski wrote:
-> > Content-Type: application/octet-stream;
-> >  name="linux-2.6.22-rc1-utf-8-strings.patch.bz2"
-> > Content-Transfer-Encoding: base64
-> > Content-Disposition: attachment;
-> >  filename="linux-2.6.22-rc1-utf-8-strings.patch.bz2"
-> > 
-> > QlpoOTFBWSZTWSc/F00Ahxp/v///itd///////////////8QQO6yN0QYAABArrIlRGBofng9
-> > APLeS9999e3t9HBeePnl0PJwG73R777qguxoH3sAPfYaKB0BwABdbe4C9nRevqU6lwXTg8De
-> 
-> It's customary to post in plain text.  Best is inline plain text. Thanks,
+On Mon, May 14, 2007 at 08:18:34PM +0530, Amit K. Arora wrote:
+> This is the patch suggested by Martin Schwidefsky. Here are the comments
+> and patch from him.
 
-You can't post a patch to UTF-8 in plain text, because it isn't plain 
-text. MTAs and MUAs mangle the hell out of them. Look back in the archives 
-for my postings. Once you've got something in UTF-8, -*THEN*- you can post 
-in plain inline text.
+Martin also suggested a wrapper in glibc to handle this system call on
+s390. Posting it here so that we get feedback for this too.
+Here it is:
+
+.globl __fallocate
+ENTRY(__fallocate)
+	stm	%r6,%r7,28(%r15)	/* save %r6/%r7 on stack */
+	cfi_offset (%r7, -68)
+	cfi_offset (%r6, -72)
+	lm	%r6,%r7,96(%r15)	/* load loff_t len from stack */
+	svc	SYS_ify(fallocate)
+	lm	%r6,%r7,28(%r15)	/* restore %r6/%r7 from stack */
+	br	%r14
+PSEUDO_END(__fallocate)
+
+--
+Regards,
+Amit Arora
+ 
+> -------------
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> This patch implements support of fallocate system call on s390(x)
+> platform. A wrapper is added to address the issue which s390 ABI has
+> with the arguments of this system call.
+> 
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> ---
+> 
+>  arch/s390/kernel/compat_wrapper.S |   10 ++++++++++
+>  arch/s390/kernel/sys_s390.c       |   29 +++++++++++++++++++++++++++++
+>  arch/s390/kernel/syscalls.S       |    1 +
+>  include/asm-s390/unistd.h         |    3 ++-
+>  4 files changed, 42 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.21/arch/s390/kernel/compat_wrapper.S
+> ===================================================================
+> --- linux-2.6.21.orig/arch/s390/kernel/compat_wrapper.S
+> +++ linux-2.6.21/arch/s390/kernel/compat_wrapper.S
+> @@ -1682,3 +1682,13 @@ compat_sys_utimes_wrapper:
+>  	llgtr	%r2,%r2			# char *
+>  	llgtr	%r3,%r3			# struct compat_timeval *
+>  	jg	compat_sys_utimes
+> +
+> +	.globl  sys_fallocate_wrapper
+> +sys_fallocate_wrapper:
+> +	lgfr	%r2,%r2			# int
+> +	lgfr	%r3,%r3			# int
+> +	sllg    %r4,%r4,32		# get high word of 64bit loff_t
+> +	lr      %r4,%r5			# get low word of 64bit loff_t
+> +	sllg    %r5,%r6,32		# get high word of 64bit loff_t
+> +	l	%r5,164(%r15)		# get low word of 64bit loff_t
+> +	jg	sys_fallocate
+> Index: linux-2.6.21/arch/s390/kernel/syscalls.S
+> ===================================================================
+> --- linux-2.6.21.orig/arch/s390/kernel/syscalls.S
+> +++ linux-2.6.21/arch/s390/kernel/syscalls.S
+> @@ -322,3 +322,4 @@ NI_SYSCALL							/* 310 sys_move_pages *
+>  SYSCALL(sys_getcpu,sys_getcpu,sys_getcpu_wrapper)
+>  SYSCALL(sys_epoll_pwait,sys_epoll_pwait,compat_sys_epoll_pwait_wrapper)
+>  SYSCALL(sys_utimes,sys_utimes,compat_sys_utimes_wrapper)
+> +SYSCALL(s390_fallocate,sys_fallocate,sys_fallocate_wrapper)
+> Index: linux-2.6.21/arch/s390/kernel/sys_s390.c
+> ===================================================================
+> --- linux-2.6.21.orig/arch/s390/kernel/sys_s390.c
+> +++ linux-2.6.21/arch/s390/kernel/sys_s390.c
+> @@ -286,3 +286,32 @@ int kernel_execve(const char *filename, 
+>  		  "d" (__arg3) : "memory");
+>  	return __svcres;
+>  }
+> +
+> +#ifndef CONFIG_64BIT
+> +/*
+> + * This is a wrapper to call sys_fallocate(). For 31 bit s390 the last
+> + * 64 bit argument "len" is split into the upper and lower 32 bits. The
+> + * system call wrapper in the user space loads the value to %r6/%r7.
+> + * The code in entry.S keeps the values in %r2 - %r6 where they are and
+> + * stores %r7 to 96(%r15). But the standard C linkage requires that
+> + * the whole 64 bit value for len is stored on the stack and doesn't
+> + * use %r6 at all. So s390_fallocate has to convert the arguments from
+> + *   %r2: fd, %r3: mode, %r4/%r5: offset, %r6/96(%r15)-99(%r15): len
+> + * to
+> + *   %r2: fd, %r3: mode, %r4/%r5: offset, 96(%r15)-103(%r15): len
+> + */
+> +asmlinkage long s390_fallocate(int fd, int mode, loff_t offset,
+> +			       u32 len_high, u32 len_low)
+> +{
+> +	union {
+> +		u64 len;
+> +		struct {
+> +			u32 high;
+> +			u32 low;
+> +		};
+> +	} cv;
+> +	cv.high = len_high;
+> +	cv.low = len_low;
+> +	return sys_fallocate(fd, mode, offset, cv.len);
+> +}
+> +#endif
+> Index: linux-2.6.21/include/asm-s390/unistd.h
+> ===================================================================
+> --- linux-2.6.21.orig/include/asm-s390/unistd.h
+> +++ linux-2.6.21/include/asm-s390/unistd.h
+> @@ -251,8 +251,9 @@
+>  #define __NR_getcpu		311
+>  #define __NR_epoll_pwait	312
+>  #define __NR_utimes		313
+> +#define __NR_fallocate		314
+> 
+> -#define NR_syscalls 314
+> +#define NR_syscalls 315
+> 
+>  /* 
+>   * There are some system calls that are not present on 64 bit, some
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
