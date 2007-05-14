@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755263AbXENNhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756170AbXENNhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755263AbXENNhb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 09:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755482AbXENNg4
+	id S1756170AbXENNhu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 09:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754355AbXENNg5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 09:36:56 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:3368 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754355AbXENNgy (ORCPT
+	Mon, 14 May 2007 09:36:57 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:63489 "EHLO
+	viefep15-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754757AbXENNgz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 09:36:54 -0400
-Message-Id: <20070514133212.067446502@chello.nl>
+	Mon, 14 May 2007 09:36:55 -0400
+Message-Id: <20070514133212.581041171@chello.nl>
 References: <20070514131904.440041502@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Mon, 14 May 2007 15:19:05 +0200
+Date: Mon, 14 May 2007 15:19:07 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Thomas Graf <tgraf@suug.ch>,
@@ -22,241 +22,165 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Thomas Graf <tgraf@suug.ch>,
        Daniel Phillips <phillips@google.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@selenic.com>
-Subject: [PATCH 1/5] mm: page allocation rank
-Content-Disposition: inline; filename=mm-page_alloc-rank.patch
+Subject: [PATCH 3/5] mm: slub allocation fairness
+Content-Disposition: inline; filename=mm-slub-ranking.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Introduce page allocation rank.
+The slub allocator has some unfairness wrt gfp flags; when the slub cache is
+grown the gfp flags are used to allocate more memory, however when there is 
+slub cache available (in partial or free slabs) gfp flags are ignored.
 
-This allocation rank is an measure of the 'hardness' of the page allocation.
-Where hardness refers to how deep we have to reach (and thereby if reclaim 
-was activated) to obtain the page.
+Thus it is possible for less critical slub allocations to succeed and gobble
+up precious memory when under memory pressure.
 
-It basically is a mapping from the ALLOC_/gfp flags into a scalar quantity,
-which allows for comparisons of the kind: 
-  'would this allocation have succeeded using these gfp flags'.
+This patch solves that by using the newly introduced page allocation rank.
 
-For the gfp -> alloc_flags mapping we use the 'hardest' possible, those
-used by __alloc_pages() right before going into direct reclaim.
+Page allocation rank is a scalar quantity connecting ALLOC_ and gfp flags which
+represents how deep we had to reach into our reserves when allocating a page. 
+Rank 0 is the deepest we can reach (ALLOC_NO_WATERMARK) and 16 is the most 
+shallow allocation possible (ALLOC_WMARK_HIGH).
 
-The alloc_flags -> rank mapping is given by: 2*2^wmark - harder - 2*high
-where wmark = { min = 1, low, high } and harder, high are booleans.
-This gives:
-  0 is the hardest possible allocation - ALLOC_NO_WATERMARK,
-  1 is ALLOC_WMARK_MIN|ALLOC_HARDER|ALLOC_HIGH,
-  ...
-  15 is ALLOC_WMARK_HIGH|ALLOC_HARDER,
-  16 is the softest allocation - ALLOC_WMARK_HIGH.
+When the slub space is grown the rank of the page allocation is stored. For
+each slub allocation we test the given gfp flags against this rank. Thereby
+asking the question: would these flags have allowed the slub to grow.
 
-Rank <= 4 will have woke up kswapd and when also > 0 might have ran into
-direct reclaim.
+If not so, we need to test the current situation. This is done by forcing the
+growth of the slub space. (Just testing the free page limits will not work due
+to direct reclaim) Failing this we need to fail the slub allocation.
 
-Rank > 8 rarely happens and means lots of memory free (due to parallel oom kill).
+Thus if we grew the slub under great duress while PF_MEMALLOC was set and we 
+really did access the memalloc reserve the rank would be set to 0. If the next
+allocation to that slub would be GFP_NOFS|__GFP_NOMEMALLOC (which ordinarily
+maps to rank 4 and always > 0) we'd want to make sure that memory pressure has
+decreased enough to allow an allocation with the given gfp flags.
 
-The allocation rank is stored in page->index for successful allocations.
+So in this case we try to force grow the slub cache and on failure we fail the
+slub allocation. Thus preserving the available slub cache for more pressing
+allocations.
 
-'offline' testing of the rank is made impossible by direct reclaim and
-fragmentation issues. That is, it is impossible to tell if a given allocation
-will succeed without actually doing it.
+[netperf results]
 
-The purpose of this measure is to introduce some fairness into the slab
-allocator.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Pekka Enberg <penberg@cs.helsinki.fi>
 Cc: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>
 ---
- mm/internal.h   |   70 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- mm/page_alloc.c |   58 +++++++++++++---------------------------------
- 2 files changed, 87 insertions(+), 41 deletions(-)
+ include/linux/slub_def.h |    1 +
+ mm/Kconfig               |    2 +-
+ mm/slub.c                |   24 +++++++++++++++++++++---
+ 3 files changed, 23 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-git/mm/internal.h
+Index: linux-2.6-git/include/linux/slub_def.h
 ===================================================================
---- linux-2.6-git.orig/mm/internal.h	2007-02-22 13:56:00.000000000 +0100
-+++ linux-2.6-git/mm/internal.h	2007-02-22 14:08:41.000000000 +0100
-@@ -12,6 +12,7 @@
- #define __MM_INTERNAL_H
- 
- #include <linux/mm.h>
-+#include <linux/hardirq.h>
- 
- static inline void set_page_count(struct page *page, int v)
- {
-@@ -37,4 +38,73 @@ static inline void __put_page(struct pag
- extern void fastcall __init __free_pages_bootmem(struct page *page,
- 						unsigned int order);
- 
-+#define ALLOC_HARDER		0x01 /* try to alloc harder */
-+#define ALLOC_HIGH		0x02 /* __GFP_HIGH set */
-+#define ALLOC_WMARK_MIN		0x04 /* use pages_min watermark */
-+#define ALLOC_WMARK_LOW		0x08 /* use pages_low watermark */
-+#define ALLOC_WMARK_HIGH	0x10 /* use pages_high watermark */
-+#define ALLOC_NO_WATERMARKS	0x20 /* don't check watermarks at all */
-+#define ALLOC_CPUSET		0x40 /* check for correct cpuset */
-+
-+/*
-+ * get the deepest reaching allocation flags for the given gfp_mask
-+ */
-+static int inline gfp_to_alloc_flags(gfp_t gfp_mask)
-+{
-+	struct task_struct *p = current;
-+	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
-+	const gfp_t wait = gfp_mask & __GFP_WAIT;
-+
-+	/*
-+	 * The caller may dip into page reserves a bit more if the caller
-+	 * cannot run direct reclaim, or if the caller has realtime scheduling
-+	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
-+	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
-+	 */
-+	if (gfp_mask & __GFP_HIGH)
-+		alloc_flags |= ALLOC_HIGH;
-+
-+	if (!wait) {
-+		alloc_flags |= ALLOC_HARDER;
-+		/*
-+		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
-+		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
-+		 */
-+		alloc_flags &= ~ALLOC_CPUSET;
-+	} else if (unlikely(rt_task(p)) && !in_interrupt())
-+		alloc_flags |= ALLOC_HARDER;
-+
-+	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
-+		if (!in_interrupt() &&
-+		    ((p->flags & PF_MEMALLOC) ||
-+		     unlikely(test_thread_flag(TIF_MEMDIE))))
-+			alloc_flags |= ALLOC_NO_WATERMARKS;
-+	}
-+
-+	return alloc_flags;
-+}
-+
-+#define MAX_ALLOC_RANK	16
-+
-+/*
-+ * classify the allocation: 0 is hardest, 16 is easiest.
-+ */
-+static inline int alloc_flags_to_rank(int alloc_flags)
-+{
-+	int rank;
-+
-+	if (alloc_flags & ALLOC_NO_WATERMARKS)
-+		return 0;
-+
-+	rank = alloc_flags & (ALLOC_WMARK_MIN|ALLOC_WMARK_LOW|ALLOC_WMARK_HIGH);
-+	rank -= alloc_flags & (ALLOC_HARDER|ALLOC_HIGH);
-+
-+	return rank;
-+}
-+
-+static inline int gfp_to_rank(gfp_t gfp_mask)
-+{
-+	return alloc_flags_to_rank(gfp_to_alloc_flags(gfp_mask));
-+}
-+
+--- linux-2.6-git.orig/include/linux/slub_def.h
++++ linux-2.6-git/include/linux/slub_def.h
+@@ -52,6 +52,7 @@ struct kmem_cache {
+ 	struct kmem_cache_node *node[MAX_NUMNODES];
  #endif
-Index: linux-2.6-git/mm/page_alloc.c
+ 	struct page *cpu_slab[NR_CPUS];
++	int rank;
+ };
+ 
+ /*
+Index: linux-2.6-git/mm/slub.c
 ===================================================================
---- linux-2.6-git.orig/mm/page_alloc.c	2007-02-22 13:56:00.000000000 +0100
-+++ linux-2.6-git/mm/page_alloc.c	2007-02-22 14:08:41.000000000 +0100
-@@ -892,14 +892,6 @@ failed:
- 	return NULL;
+--- linux-2.6-git.orig/mm/slub.c
++++ linux-2.6-git/mm/slub.c
+@@ -20,6 +20,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/ctype.h>
+ #include <linux/kallsyms.h>
++#include "internal.h"
+ 
+ /*
+  * Lock order:
+@@ -961,6 +962,8 @@ static struct page *allocate_slab(struct
+ 	if (!page)
+ 		return NULL;
+ 
++	s->rank = page->index;
++
+ 	mod_zone_page_state(page_zone(page),
+ 		(s->flags & SLAB_RECLAIM_ACCOUNT) ?
+ 		NR_SLAB_RECLAIMABLE : NR_SLAB_UNRECLAIMABLE,
+@@ -1350,6 +1353,8 @@ static void flush_all(struct kmem_cache 
+ #endif
  }
  
--#define ALLOC_NO_WATERMARKS	0x01 /* don't check watermarks at all */
--#define ALLOC_WMARK_MIN		0x02 /* use pages_min watermark */
--#define ALLOC_WMARK_LOW		0x04 /* use pages_low watermark */
--#define ALLOC_WMARK_HIGH	0x08 /* use pages_high watermark */
--#define ALLOC_HARDER		0x10 /* try to alloc harder */
--#define ALLOC_HIGH		0x20 /* __GFP_HIGH set */
--#define ALLOC_CPUSET		0x40 /* check for correct cpuset */
--
- #ifdef CONFIG_FAIL_PAGE_ALLOC
- 
- static struct fail_page_alloc_attr {
-@@ -1190,6 +1182,7 @@ zonelist_scan:
- 
- 		page = buffered_rmqueue(zonelist, zone, order, gfp_mask);
- 		if (page)
-+			page->index = alloc_flags_to_rank(alloc_flags);
- 			break;
- this_zone_full:
- 		if (NUMA_BUILD)
-@@ -1263,48 +1256,27 @@ restart:
- 	 * OK, we're below the kswapd watermark and have kicked background
- 	 * reclaim. Now things get more complex, so set up alloc_flags according
- 	 * to how we want to proceed.
--	 *
--	 * The caller may dip into page reserves a bit more if the caller
--	 * cannot run direct reclaim, or if the caller has realtime scheduling
--	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
--	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
- 	 */
--	alloc_flags = ALLOC_WMARK_MIN;
--	if ((unlikely(rt_task(p)) && !in_interrupt()) || !wait)
--		alloc_flags |= ALLOC_HARDER;
--	if (gfp_mask & __GFP_HIGH)
--		alloc_flags |= ALLOC_HIGH;
--	if (wait)
--		alloc_flags |= ALLOC_CPUSET;
-+	alloc_flags = gfp_to_alloc_flags(gfp_mask);
- 
--	/*
--	 * Go through the zonelist again. Let __GFP_HIGH and allocations
--	 * coming from realtime tasks go deeper into reserves.
--	 *
--	 * This is the last chance, in general, before the goto nopage.
--	 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
--	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
--	 */
--	page = get_page_from_freelist(gfp_mask, order, zonelist, alloc_flags);
-+	/* This is the last chance, in general, before the goto nopage. */
-+	page = get_page_from_freelist(gfp_mask, order, zonelist,
-+			alloc_flags & ~ALLOC_NO_WATERMARKS);
- 	if (page)
- 		goto got_pg;
- 
- 	/* This allocation should allow future memory freeing. */
--
- rebalance:
--	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
--			&& !in_interrupt()) {
--		if (!(gfp_mask & __GFP_NOMEMALLOC)) {
-+	if (alloc_flags & ALLOC_NO_WATERMARKS) {
- nofail_alloc:
--			/* go through the zonelist yet again, ignoring mins */
--			page = get_page_from_freelist(gfp_mask, order,
-+		/* go through the zonelist yet again, ignoring mins */
-+		page = get_page_from_freelist(gfp_mask, order,
- 				zonelist, ALLOC_NO_WATERMARKS);
--			if (page)
--				goto got_pg;
--			if (gfp_mask & __GFP_NOFAIL) {
--				congestion_wait(WRITE, HZ/50);
--				goto nofail_alloc;
--			}
-+		if (page)
-+			goto got_pg;
-+		if (wait && (gfp_mask & __GFP_NOFAIL)) {
-+			congestion_wait(WRITE, HZ/50);
-+			goto nofail_alloc;
- 		}
- 		goto nopage;
- 	}
-@@ -1313,6 +1285,10 @@ nofail_alloc:
- 	if (!wait)
- 		goto nopage;
- 
-+	/* Avoid recursion of direct reclaim */
-+	if (p->flags & PF_MEMALLOC)
-+		goto nopage;
++#define FORCE_PAGE	((void *)~0UL)
 +
- 	cond_resched();
+ /*
+  * Slow path. The lockless freelist is empty or we need to perform
+  * debugging duties.
+@@ -1371,8 +1376,12 @@ static void *__slab_alloc(struct kmem_ca
+ 		gfp_t gfpflags, int node, void *addr, struct page *page)
+ {
+ 	void **object;
+-	int cpu = smp_processor_id();
++	int cpu;
++
++	if (page == FORCE_PAGE)
++		goto force_new;
  
- 	/* We now go into synchronous reclaim */
++	cpu = smp_processor_id();
+ 	if (!page)
+ 		goto new_slab;
+ 
+@@ -1405,6 +1414,7 @@ have_slab:
+ 		goto load_freelist;
+ 	}
+ 
++force_new:
+ 	page = new_slab(s, gfpflags, node);
+ 	if (page) {
+ 		cpu = smp_processor_id();
+@@ -1465,15 +1475,22 @@ static void __always_inline *slab_alloc(
+ 	struct page *page;
+ 	void **object;
+ 	unsigned long flags;
++	int rank = slab_alloc_rank(gfpflags);
+ 
+ 	local_irq_save(flags);
++	if (slab_insufficient_rank(s, rank)) {
++		page = FORCE_PAGE;
++		goto force_alloc;
++	}
++
+ 	page = s->cpu_slab[smp_processor_id()];
+ 	if (unlikely(!page || !page->lockless_freelist ||
+-			(node != -1 && page_to_nid(page) != node)))
++			(node != -1 && page_to_nid(page) != node))) {
+ 
++force_alloc:
+ 		object = __slab_alloc(s, gfpflags, node, addr, page);
+ 
+-	else {
++	} else {
+ 		object = page->lockless_freelist;
+ 		page->lockless_freelist = object[page->offset];
+ 	}
+@@ -1993,6 +2010,7 @@ static int kmem_cache_open(struct kmem_c
+ 	s->flags = flags;
+ 	s->align = align;
+ 	kmem_cache_open_debug_check(s);
++	s->rank = MAX_ALLOC_RANK;
+ 
+ 	if (!calculate_sizes(s))
+ 		goto error;
+Index: linux-2.6-git/mm/Kconfig
+===================================================================
+--- linux-2.6-git.orig/mm/Kconfig
++++ linux-2.6-git/mm/Kconfig
+@@ -165,7 +165,7 @@ config ZONE_DMA_FLAG
+ 
+ config SLAB_FAIR
+ 	def_bool n
+-	depends on SLAB
++	depends on SLAB || SLUB
+ 
+ config NR_QUICK
+ 	int
 
 --
 
