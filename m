@@ -1,68 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758405AbXENRlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbXENRlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758405AbXENRlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 13:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXENRlI
+	id S1758695AbXENRlx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 13:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXENRlp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 13:41:08 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:39517 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755930AbXENRlH (ORCPT
+	Mon, 14 May 2007 13:41:45 -0400
+Received: from rgminet01.oracle.com ([148.87.113.118]:48879 "EHLO
+	rgminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756592AbXENRlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 13:41:07 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
-	 <20070514161224.GC11115@waste.org>
-	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 19:40:52 +0200
-Message-Id: <1179164453.2942.26.camel@lappy>
+	Mon, 14 May 2007 13:41:44 -0400
+Date: Mon, 14 May 2007 10:45:46 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Mattia Dongili <malattia@linux.it>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Fwd: Re: Linux 2.6.22-rc1
+Message-Id: <20070514104546.10a4368f.randy.dunlap@oracle.com>
+In-Reply-To: <Pine.LNX.4.61.0705140742350.9570@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705131123280.9570@yvahk01.tjqt.qr>
+	<20070514015541.GB4800@inferi.kami.home>
+	<Pine.LNX.4.61.0705140742350.9570@yvahk01.tjqt.qr>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Whitelist: TRUE
+X-Whitelist: TRUE
+X-Brightmail-Tracker: AAAAAQAAAAI=
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 09:29 -0700, Christoph Lameter wrote:
-> On Mon, 14 May 2007, Matt Mackall wrote:
+On Mon, 14 May 2007 07:49:31 +0200 (MEST) Jan Engelhardt wrote:
+
 > 
-> > privileged thread                      unprivileged greedy process
-> > kmem_cache_alloc(...)
-> >    adds new slab page from lowmem pool
+> On May 14 2007 10:55, Mattia Dongili wrote:
+> >On Sun, May 13, 2007 at 11:27:31AM +0200, Jan Engelhardt wrote:
+> >> On May 12 2007 20:20, Linus Torvalds wrote:
+> >> >
+> >> >Ok, the merge window has closed, and 2.6.22-rc1 is out there.
+> >> 
+> >> I have hit a randconfig compile failure. .config attached.
+> >> 
+> >>   LD      .tmp_vmlinux1
+> >> drivers/built-in.o: In function `acpi_bus_generate_event':
+> >> (.text+0x233f7): undefined reference to `event_is_open'
+> >> drivers/built-in.o: In function `acpi_bus_get_power':
+> >> (.text+0x236ad): undefined reference to `acpi_power_get_inferred_state'
+> >> drivers/built-in.o: In function `acpi_bus_set_power':
+> >> (.text+0x237c3): undefined reference to `acpi_power_transition'
+> >> drivers/built-in.o: In function `acpi_bus_set_power':
+> >> (.text+0x23835): undefined reference to `acpi_power_transition'
+> >> drivers/built-in.o: In function `sony_pic_fanspeed_store':
+> >> sony-laptop.c:(.text+0x91930): undefined reference to `ec_write'
+> >> drivers/built-in.o: In function `sony_pic_fanspeed_show':
+> >> sony-laptop.c:(.text+0x9195d): undefined reference to `ec_read'
+> >> make: *** [.tmp_vmlinux1] Error 1
+> >
+> >I actually can't reproduce it with your .config.
 > 
-> Yes but it returns an object for the privileged thread. Is that not 
-> enough?
+> But I can. Did you try it on x86_64? From 2.6.22-rc1 [
+> commit 39403865d2e4590802553370a56c9ab93131e4ee in /linux-2.6.git] ?
+> 
+> 	bzip2 -cd randconfig-1.bz2 >.config
+> 	make -j8
 
-No, because we reserved memory for n objects, and like matt illustrates
-most of those that will be eaten by the greedy process.
+Yes, build easily fails for me also.
 
-We could reserve 1 page per object but that rather bloats the reserve.
+>   HOSTLD  scripts/kconfig/conf
+> scripts/kconfig/conf -s arch/x86_64/Kconfig
+> drivers/macintosh/Kconfig:116:warning: 'select' used by config symbol '
+> drivers/net/Kconfig:2283:warning: 'select' used by config symbol 'UCC_G
+> drivers/input/keyboard/Kconfig:170:warning: 'select' used by config sym
+> drivers/input/mouse/Kconfig:181:warning: 'select' used by config symbol
+>   CHK     include/linux/version.h
+>   UPD     include/linux/version.h
+>   CHK     include/linux/utsrelease.h
+>   UPD     include/linux/utsrelease.h
+>   SYMLINK include/asm -> include/asm-x86_64
+> 
+> 
+> >>From a clean tree, running make fires up the oldconfig which fixes the
+> >many missing/garbled dependencies. In any case SONY_LAPTOP depends on
+> >ACPI which always build EC statically if selected.
+> 
+> I really presume it is something on x86_64, because doing
+> 
+> 	gzip -cd /proc/config.gz
+> 	make
+> 
+> on i386 seemed to compile fine - including the sony modules.
 
-> > do_io()
-> >                                        kmem_cache_alloc(...)
-> >                                        kmem_cache_alloc(...)
-> >                                        kmem_cache_alloc(...)
-> >                                        kmem_cache_alloc(...)
-> >                                        kmem_cache_alloc(...)
-> >                                        ...
-> >                                           eats it all
-> > kmem_cache_alloc(...) -> ENOMEM
-> >    who ate my donuts?!
-> > 
-> > But I think this solution is somehow overkill. If we only care about
-> > this issue in the OOM avoidance case, then our rank reduces to a
-> > boolean.
 
-I tried to slim it down to a two state affair; but last time I tried
-performance runs that actually slowed it down some.
-
+---
+~Randy
+*** Remember to use Documentation/SubmitChecklist when testing your code ***
