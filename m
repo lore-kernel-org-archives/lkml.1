@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbXENQKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756582AbXENQNl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407AbXENQKo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 12:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756805AbXENQKf
+	id S1756582AbXENQNl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 12:13:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753827AbXENQNd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 12:10:35 -0400
-Received: from nz-out-0506.google.com ([64.233.162.238]:55476 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757122AbXENQKe (ORCPT
+	Mon, 14 May 2007 12:13:33 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:58698 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752277AbXENQNc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 12:10:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=H7q/nIYODsTGUF+oGFEWp4w3IqVesswDJcOfQ2JIyMJ8DoNyFjrs8Tw79tgppU78MD0+17mBc3qwlmL6CX9EODIvJNgZpfsAHix6FOrdcuBWoOdpYYw17Uuv/3UjM3aaPUWniwNrkxIihF/ONjK3VoTbb1nxbc2nZGz3PsXWbrU=
-Message-ID: <35fbaa3e0705140910s19feac4bnd71a80f25dc4753c@mail.gmail.com>
-Date: Mon, 14 May 2007 19:10:33 +0300
-From: "Vitaliy Ivanov" <vitalivanov@gmail.com>
-To: linux-kernel@vger.kernel.org
-Subject: USB adutux device number
+	Mon, 14 May 2007 12:13:32 -0400
+Date: Mon, 14 May 2007 17:13:11 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH 14/14] tmpfs whiteout support
+In-Reply-To: <20070514094519.GP4139@in.ibm.com>
+Message-ID: <Pine.LNX.4.64.0705141710280.29949@blonde.wat.veritas.com>
+References: <20070514093722.GB4139@in.ibm.com> <20070514094519.GP4139@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 14 May 2007 16:13:31.0699 (UTC) FILETIME=[D0B6B030:01C79642]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbGludXgtZnNkZXZlbEB2Z2VyLmtlcm5lbC5vcmcAai5ibHVuY2tAdHUtaGFyYnVyZy5kZQBiaGFyYXRhQGxpbnV4LnZuZXQuaWJtLmNvbQA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Mon, 14 May 2007, Bharata B Rao wrote:
+> From: Jan Blunck <j.blunck@tu-harburg.de>
+> Subject: tmpfs whiteout support
+> 
+> Introduce whiteout support to tmpfs.
+> 
+> Signed-off-by: Jan Blunck <j.blunck@tu-harburg.de>
+> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> ---
+>  mm/shmem.c |    9 ++++++++-
+>  1 files changed, 8 insertions(+), 1 deletion(-)
+> 
+> --- a/mm/shmem.c
+> +++ b/mm/shmem.c
+> @@ -74,7 +74,7 @@
+>  #define LATENCY_LIMIT	 64
+>  
+>  /* Pretend that each entry is of this size in directory's i_size */
+> -#define BOGO_DIRENT_SIZE 20
+> +#define BOGO_DIRENT_SIZE 1
 
-I'm not sure if it's correct place to deal with the issue.
+Why would that change be needed for whiteout support?
 
-In Documentation/devices.txt there is no info about adutux driver that
-is included in the kernel:
-...
-		 65 = /dev/usb/usblcd	USBLCD Interface (info@usblcd.de)
-		 66 = /dev/usb/cpad0	Synaptics cPad (mouse/LCD)
-		 96 = /dev/usb/hiddev0	1st USB HID device
-		    ...
-...
-
-The driver itself includes the following (drivers/usb/misc/adutux.c):
-
-#ifdef CONFIG_USB_DYNAMIC_MINORS
-#define ADU_MINOR_BASE	0
-#else
-#define ADU_MINOR_BASE	67
-#endif
-
-We need to update Documentation/devices.txt with this information. The
-number of devices is 16.
-
-I found an old mail tread for this:
-http://www.uwsg.iu.edu/hypermail/linux/kernel/0609.3/2173.html
-But I don't see anything related to adu devices in devices.txt at all.
-
-Please let me know what is the reason of this. If needed I will create
-a patch for this.
-
--- V
+Hugh
