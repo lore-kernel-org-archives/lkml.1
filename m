@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761036AbXENGa4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbXENGbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761036AbXENGa4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 02:30:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755513AbXENGau
+	id S1758256AbXENGbU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 02:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758794AbXENGbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 02:30:50 -0400
-Received: from imx9.toshiba.co.jp ([202.33.96.51]:56984 "EHLO
-	imx9.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752342AbXENGat (ORCPT
+	Mon, 14 May 2007 02:31:04 -0400
+Received: from imx12.toshiba.co.jp ([61.202.160.132]:52938 "EHLO
+	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759224AbXENGbD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 02:30:49 -0400
-Date: Mon, 14 May 2007 15:26:25 +0900
-Message-ID: <yyi1whjapke.wl@toshiba.co.jp>
+	Mon, 14 May 2007 02:31:03 -0400
+Date: Mon, 14 May 2007 15:30:45 +0900
+Message-ID: <yyiwszb9asq.wl@toshiba.co.jp>
 From: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [patch 1/4] powerpc 2.6.21-rt1: fix a build breakage by adding __raw_*_relax() macros
+Subject: Re: [patch 0/4] powerpc 2.6.21-rt1: reduce scheduling latency by changing tlb flush size
 In-Reply-To: <yyi3b1zapqa.wl@toshiba.co.jp>
 References: <yyi3b1zapqa.wl@toshiba.co.jp>
 User-Agent: Wanderlust/2.8.1 (Something) Emacs/20.7 Mule/4.0 (HANANOEN)
@@ -26,22 +26,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Add missing macros to fix a build breakage for PREEMPT_DESKTOP.
+To reduce scheduling latecy by changing tlb flush size to 1.
+Since tlb flush on Celleb is done by calling (an) expensive hypervisor call(s), 
+it takes a long time to flush tlbs and causes scheduing latency.
+
+As I don't know how long it takes on other platforms, it would be better to 
+enclose it within #ifdef CONFIG_PPC_CELLEB.
 
 Signed-off-by: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 -- owa
 
-diff -rup linux-2.6.21-rt1/include/asm-powerpc/spinlock.h rt/include/asm-powerpc/spinlock.h
---- linux-2.6.21-rt1/include/asm-powerpc/spinlock.h	2007-05-07 14:08:12.000000000 +0900
-+++ rt/include/asm-powerpc/spinlock.h	2007-05-07 16:56:41.000000000 +0900
-@@ -289,5 +289,9 @@ static __inline__ void __raw_write_unloc
- #define _raw_read_relax(lock)	__rw_yield(lock)
- #define _raw_write_relax(lock)	__rw_yield(lock)
+diff -rup linux-2.6.21-rt1/include/asm-powerpc/tlbflush.h rt/include/asm-powerpc/tlbflush.h
+--- linux-2.6.21-rt1/include/asm-powerpc/tlbflush.h	2007-04-26 12:08:32.000000000 +0900
++++ rt/include/asm-powerpc/tlbflush.h	2007-05-07 14:23:50.000000000 +0900
+@@ -25,7 +25,11 @@ struct mm_struct;
+ #include <linux/percpu.h>
+ #include <asm/page.h>
  
-+#define __raw_spin_relax(lock)  cpu_relax()
-+#define __raw_read_relax(lock)  cpu_relax()
-+#define __raw_write_relax(lock) cpu_relax()
-+
- #endif /* __KERNEL__ */
- #endif /* __ASM_SPINLOCK_H */
++#ifdef CONFIG_PREEMPT_RT
++#define PPC64_TLB_BATCH_NR 1 /* Since tlb flush takes long time, reduce it to 1 when RT */
++#else
+ #define PPC64_TLB_BATCH_NR 192
++#endif /* CONFIG_PREEMPT_RT */
+ 
+ struct ppc64_tlb_batch {
+ 	unsigned long index;
 
