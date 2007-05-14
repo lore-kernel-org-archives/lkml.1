@@ -1,96 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbXENKwD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965692AbXENK5z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761580AbXENKwD (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 06:52:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756806AbXENKvy
+	id S965692AbXENK5z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 06:57:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758273AbXENK5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 06:51:54 -0400
-Received: from de01egw02.freescale.net ([192.88.165.103]:49779 "EHLO
+	Mon, 14 May 2007 06:57:48 -0400
+Received: from de01egw02.freescale.net ([192.88.165.103]:50471 "EHLO
 	de01egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756583AbXENKvx (ORCPT
+	with ESMTP id S1756806AbXENK5r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 06:51:53 -0400
-Message-ID: <46483FAC.60503@freescale.com>
-Date: Mon, 14 May 2007 18:53:32 +0800
+	Mon, 14 May 2007 06:57:47 -0400
+Message-ID: <46484110.5020607@freescale.com>
+Date: Mon, 14 May 2007 18:59:28 +0800
 From: Li Yang <leoli@freescale.com>
 User-Agent: Thunderbird 1.5.0.4 (Windows/20060516)
 MIME-Version: 1.0
-To: Linus <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-CC: linuxppc-dev@ozlabs.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for
- powerpc
+To: Paul <paulus@samba.org>
+CC: linuxppc-dev@ozlabs.org, Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/2] powerpc: Fix Section mismatch warnings
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 14 May 2007 10:51:47.0016 (UTC) FILETIME=[DE39D480:01C79615]
+X-OriginalArrivalTime: 14 May 2007 10:57:42.0509 (UTC) FILETIME=[B21DC1D0:01C79616]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes the following "Section mismatch" warnings when
-build powerpc platforms.
+This patch fix the following Section mismatch warnings
+in powerpc code.
 
--------------
-WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at offset 0xc68) and 'pte_alloc_one'
-WARNING: mm/built-in.o - Section mismatch: reference to .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 0x20300) and 'cache_reap'
--------------
-
-Massive warnings represented by:
--------------
-WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to .init.data:.got2 from prom_entry (offset 0x0)
-WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.text:mpc8313_rdb_probe from .machine.desc after 'mach_mpc8313_rdb' (at offset 0x4)
--------------
+WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.data:mv643xx_eth_pd_devs from .text between 'mv643xx_eth_add_pds' (at offset 0x9ed2) and 'gg2_read_config'
+WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.data:mv643xx_eth_pd_devs from .text between 'mv643xx_eth_add_pds' (at offset 0x9ed6) and 'gg2_read_config'
+WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to .init.text:note_scsi_host from __ksymtab between '__ksymtab_note_scsi_host' (at offset 0x8) and '__ksymtab_sys_ctrler'
 
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- scripts/mod/modpost.c |   16 ++++++++++++----
- 1 files changed, 12 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +-
+ arch/powerpc/platforms/powermac/setup.c   |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index c89cb71..aa3a881 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -649,9 +649,10 @@ static int strrcmp(const char *s, const char *sub)
-  *  tosec    = .init.text
-  *
-  * Pattern 10:
-- *  ia64 has machvec table for each platform. It is mixture of function
-- *  pointer of .init.text and .text.
-- *  fromsec  = .machvec
-+ *  ia64 has machvec table and powerpc has machine desc table for each
-+ *  platform. It is mixture of function pointer of .init.text and .text.
-+ *  fromsec  = .machvec | .machine.desc
-+ *
-  **/
- static int secref_whitelist(const char *modname, const char *tosec,
- 			    const char *fromsec, const char *atsym,
-@@ -681,6 +682,8 @@ static int secref_whitelist(const char *modname, const char *tosec,
- 	const char *pat4sym[] = {
- 		"sparse_index_alloc",
- 		"zone_wait_table_init",
-+		"pte_alloc_one_kernel",
-+		"kmem_cache_create",
- 		NULL
- 	};
+diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/powerpc/platforms/chrp/pegasos_eth.c
+index 7104567..5c9f135 100644
+--- a/arch/powerpc/platforms/chrp/pegasos_eth.c
++++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
+@@ -169,7 +169,7 @@ static int Enable_SRAM(void)
  
-@@ -750,7 +753,8 @@ static int secref_whitelist(const char *modname, const char *tosec,
- 				return 1;
+ /***********/
+ /***********/
+-int mv643xx_eth_add_pds(void)
++int __init mv643xx_eth_add_pds(void)
+ {
+ 	int ret = 0;
+ 	static struct pci_device_id pci_marvell_mv64360[] = {
+diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
+index a410bc7..07b1c4e 100644
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -384,7 +384,7 @@ int boot_part;
+ static dev_t boot_dev;
  
- 	/* Check for pattern 10 */
--	if (strcmp(fromsec, ".machvec") == 0)
-+	if ((strcmp(fromsec, ".machvec") == 0) ||
-+	    (strcmp(fromsec, ".machine.desc") == 0))
- 		return 1;
- 
- 	return 0;
-@@ -883,6 +887,10 @@ static void warn_sec_mismatch(const char *modname, const char *fromsec,
- 	    secref_whitelist(modname, secname, fromsec,
- 			     elf->strtab + before->st_name, refsymname))
- 		return;
-+	/* fromsec whitelist - without a valid 'before' */
-+	/* powerpc has a GOT table in .got2 section */
-+	if (strcmp(fromsec, ".got2") == 0)
-+		return;
- 
- 	if (before && after) {
- 		warn("%s - Section mismatch: reference to %s:%s from %s "
+ #ifdef CONFIG_SCSI
+-void __init note_scsi_host(struct device_node *node, void *host)
++void note_scsi_host(struct device_node *node, void *host)
+ {
+ 	int l;
+ 	char *p;
+
 
