@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755863AbXENNiE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbXENNi2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755863AbXENNiE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 09:38:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755525AbXENNg6
+	id S1756589AbXENNi2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 09:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755552AbXENNg7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 09:36:58 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:8629 "EHLO
-	viefep34-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755479AbXENNg4 (ORCPT
+	Mon, 14 May 2007 09:36:59 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:65068 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755507AbXENNg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 09:36:56 -0400
-Message-Id: <20070514133213.055112007@chello.nl>
+	Mon, 14 May 2007 09:36:58 -0400
+Message-Id: <20070514133212.804544498@chello.nl>
 References: <20070514131904.440041502@chello.nl>
 User-Agent: quilt/0.45-1
-Date: Mon, 14 May 2007 15:19:09 +0200
+Date: Mon, 14 May 2007 15:19:08 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-kernel@vger.kernel.org, linux-mm@kvack.org
 Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Thomas Graf <tgraf@suug.ch>,
@@ -22,56 +22,141 @@ Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Thomas Graf <tgraf@suug.ch>,
        Daniel Phillips <phillips@google.com>,
        Pekka Enberg <penberg@cs.helsinki.fi>,
        Christoph Lameter <clameter@sgi.com>, Matt Mackall <mpm@selenic.com>
-Subject: [PATCH 5/5] mm: allow mempool to fall back to memalloc reserves
-Content-Disposition: inline; filename=mm-mempool_fixup.patch
+Subject: [PATCH 4/5] mm: slob allocation fairness
+Content-Disposition: inline; filename=mm-slob-ranking.patch
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow the mempool to use the memalloc reserves when all else fails and
-the allocation context would otherwise allow it.
+The slob allocator has some unfairness wrt gfp flags; when the slob space is
+grown the gfp flags are used to allocate more memory, however when there is 
+slob space available gfp flags are ignored.
+
+Thus it is possible for less critical slob allocations to succeed and gobble
+up precious memory when under memory pressure.
+
+This patch solves that by using the newly introduced page allocation rank.
+
+Page allocation rank is a scalar quantity connecting ALLOC_ and gfp flags which
+represents how deep we had to reach into our reserves when allocating a page. 
+Rank 0 is the deepest we can reach (ALLOC_NO_WATERMARK) and 16 is the most 
+shallow allocation possible (ALLOC_WMARK_HIGH).
+
+When the slob space is grown the rank of the page allocation is stored. For
+each slob allocation we test the given gfp flags against this rank. Thereby
+asking the question: would these flags have allowed the slob to grow.
+
+If not so, we need to test the current situation. This is done by forcing the
+growth of the slob space. (Just testing the free page limits will not work due
+to direct reclaim) Failing this we need to fail the slob allocation.
+
+Thus if we grew the slob under great duress while PF_MEMALLOC was set and we 
+really did access the memalloc reserve the rank would be set to 0. If the next
+allocation to that slob would be GFP_NOFS|__GFP_NOMEMALLOC (which ordinarily
+maps to rank 4 and always > 0) we'd want to make sure that memory pressure has
+decreased enough to allow an allocation with the given gfp flags.
+
+So in this case we try to force grow the slob space and on failure we fail the
+slob allocation. Thus preserving the available slob space for more pressing
+allocations.
+
+[netperf results]
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Matt Mackall <mpm@selenic.com>
 ---
- mm/mempool.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ mm/Kconfig |    1 -
+ mm/slob.c  |   25 ++++++++++++++++++++++---
+ 2 files changed, 22 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-git/mm/mempool.c
+Index: linux-2.6-git/mm/slob.c
 ===================================================================
---- linux-2.6-git.orig/mm/mempool.c
-+++ linux-2.6-git/mm/mempool.c
-@@ -14,6 +14,7 @@
- #include <linux/mempool.h>
- #include <linux/blkdev.h>
- #include <linux/writeback.h>
+--- linux-2.6-git.orig/mm/slob.c
++++ linux-2.6-git/mm/slob.c
+@@ -35,6 +35,7 @@
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/timer.h>
 +#include "internal.h"
  
- static void add_element(mempool_t *pool, void *element)
+ struct slob_block {
+ 	int units;
+@@ -53,6 +54,7 @@ struct bigblock {
+ };
+ typedef struct bigblock bigblock_t;
+ 
++static struct { int rank; } slobrank = { .rank = MAX_ALLOC_RANK };
+ static slob_t arena = { .next = &arena, .units = 1 };
+ static slob_t *slobfree = &arena;
+ static bigblock_t *bigblocks;
+@@ -62,12 +64,29 @@ static DEFINE_SPINLOCK(block_lock);
+ static void slob_free(void *b, int size);
+ static void slob_timer_cbk(void);
+ 
++static unsigned long slob_get_free_pages(gfp_t flags, int order)
++{
++	struct page *page = alloc_pages(gfp, order);
++	if (!page)
++		return 0;
++	slobrank.rank = page->index;
++	return (unsigned long)page_address(page);
++}
+ 
+ static void *slob_alloc(size_t size, gfp_t gfp, int align)
  {
-@@ -205,7 +206,7 @@ void * mempool_alloc(mempool_t *pool, gf
- 	void *element;
+ 	slob_t *prev, *cur, *aligned = 0;
+ 	int delta = 0, units = SLOB_UNITS(size);
  	unsigned long flags;
- 	wait_queue_t wait;
--	gfp_t gfp_temp;
-+	gfp_t gfp_temp, gfp_orig = gfp_mask;
- 
- 	might_sleep_if(gfp_mask & __GFP_WAIT);
- 
-@@ -229,6 +230,15 @@ repeat_alloc:
- 	}
- 	spin_unlock_irqrestore(&pool->lock, flags);
- 
-+	/* if we really had right to the emergency reserves try those */
-+	if (gfp_to_alloc_flags(gfp_orig) & ALLOC_NO_WATERMARKS) {
-+		if (gfp_temp & __GFP_NOMEMALLOC) {
-+			gfp_temp &= ~(__GFP_NOMEMALLOC|__GFP_NOWARN);
-+			goto repeat_alloc;
-+		} else
-+			gfp_temp |= __GFP_NOMEMALLOC|__GFP_NOWARN;
-+	}
++	int rank = slab_alloc_rank(gfp);
 +
- 	/* We must not sleep in the GFP_ATOMIC case */
- 	if (!(gfp_mask & __GFP_WAIT))
- 		return NULL;
++	if (slab_insufficient_rank(&slobrank, rank)) {
++		struct page *page = alloc_page(gfp);
++		if (!page)
++			return NULL;
++		slobrank.rank = page->index;
++		__free_page(page);
++	}
+ 
+ 	spin_lock_irqsave(&slob_lock, flags);
+ 	prev = slobfree;
+@@ -105,7 +124,7 @@ static void *slob_alloc(size_t size, gfp
+ 			if (size == PAGE_SIZE) /* trying to shrink arena? */
+ 				return 0;
+ 
+-			cur = (slob_t *)__get_free_page(gfp);
++			cur = (slob_t *)slob_get_free_pages(gfp, 0);
+ 			if (!cur)
+ 				return 0;
+ 
+@@ -166,7 +185,7 @@ void *__kmalloc(size_t size, gfp_t gfp)
+ 		return 0;
+ 
+ 	bb->order = get_order(size);
+-	bb->pages = (void *)__get_free_pages(gfp, bb->order);
++	bb->pages = (void *)slob_get_free_pages(gfp, bb->order);
+ 
+ 	if (bb->pages) {
+ 		spin_lock_irqsave(&block_lock, flags);
+@@ -309,7 +328,7 @@ void *kmem_cache_alloc(struct kmem_cache
+ 	if (c->size < PAGE_SIZE)
+ 		b = slob_alloc(c->size, flags, c->align);
+ 	else
+-		b = (void *)__get_free_pages(flags, get_order(c->size));
++		b = (void *)slob_get_free_pages(flags, get_order(c->size));
+ 
+ 	if (c->ctor)
+ 		c->ctor(b, c, SLAB_CTOR_CONSTRUCTOR);
+Index: linux-2.6-git/mm/Kconfig
+===================================================================
+--- linux-2.6-git.orig/mm/Kconfig
++++ linux-2.6-git/mm/Kconfig
+@@ -165,7 +165,6 @@ config ZONE_DMA_FLAG
+ 
+ config SLAB_FAIR
+ 	def_bool n
+-	depends on SLAB || SLUB
+ 
+ config NR_QUICK
+ 	int
 
 --
 
