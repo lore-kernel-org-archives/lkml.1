@@ -1,79 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966643AbXENLyu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032327AbXENLzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966643AbXENLyu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:54:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966019AbXENLex
+	id S1032327AbXENLzZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030956AbXENLez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:34:53 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27949 "EHLO
+	Mon, 14 May 2007 07:34:55 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27943 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S964810AbXENLcn (ORCPT
+	with ESMTP id S1762188AbXENLcj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:43 -0400
-Message-Id: <20070514110620.570242846@suse.de>
+	Mon, 14 May 2007 07:32:39 -0400
+Message-Id: <20070514110610.645459725@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:43 -0700
+Date: Mon, 14 May 2007 04:06:15 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 36/45] Export audit subsystem for use by modules
-Content-Disposition: inline; filename=apparmor-audit.diff
+       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 08/45] Pass struct vfsmount to the inode_mknod LSM hook
+Content-Disposition: inline; filename=security-mknod.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Adds necessary export symbols for audit subsystem routines.
-Changes audit_log_vformat to be externally visible (analagous to vprintf)
-Patch is not in mainline -- pending AppArmor code submission to lkml
+This is needed for computing pathnames in the AppArmor LSM.
 
+Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- include/linux/audit.h |    5 +++++
- kernel/audit.c        |    6 ++++--
- 2 files changed, 9 insertions(+), 2 deletions(-)
+ fs/namei.c               |    2 +-
+ include/linux/security.h |    7 +++++--
+ security/dummy.c         |    2 +-
+ security/selinux/hooks.c |    5 +++--
+ 4 files changed, 10 insertions(+), 6 deletions(-)
 
---- a/include/linux/audit.h
-+++ b/include/linux/audit.h
-@@ -114,6 +114,8 @@
- #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
- #define AUDIT_ANOM_ABEND            1701 /* Process ended abnormally */
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1869,7 +1869,7 @@ int vfs_mknod(struct inode *dir, struct 
+ 	if (!dir->i_op || !dir->i_op->mknod)
+ 		return -EPERM;
  
-+#define AUDIT_APPARMOR		1500	/* AppArmor audit */
-+
- #define AUDIT_KERNEL		2000	/* Asynchronous audit record. NOT A REQUEST. */
+-	error = security_inode_mknod(dir, dentry, mode, dev);
++	error = security_inode_mknod(dir, dentry, mnt, mode, dev);
+ 	if (error)
+ 		return error;
  
- /* Rule flags */
-@@ -499,6 +501,9 @@ extern void		    audit_log(struct audit_
- 				      __attribute__((format(printf,4,5)));
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -323,6 +323,7 @@ struct request_sock;
+  *	and not this hook.
+  *	@dir contains the inode structure of parent of the new file.
+  *	@dentry contains the dentry structure of the new file.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	@mode contains the mode of the new file.
+  *	@dev contains the device number.
+  *	Return 0 if permission is granted.
+@@ -1218,7 +1219,7 @@ struct security_operations {
+ 			    struct vfsmount *mnt, int mode);
+ 	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
+ 	int (*inode_mknod) (struct inode *dir, struct dentry *dentry,
+-	                    int mode, dev_t dev);
++			    struct vfsmount *mnt, int mode, dev_t dev);
+ 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
+ 	                     struct inode *new_dir, struct dentry *new_dentry);
+ 	int (*inode_readlink) (struct dentry *dentry);
+@@ -1670,11 +1671,12 @@ static inline int security_inode_rmdir (
  
- extern struct audit_buffer *audit_log_start(struct audit_context *ctx, gfp_t gfp_mask, int type);
-+extern void		    audit_log_vformat(struct audit_buffer *ab,
-+					      const char *fmt, va_list args)
-+			    __attribute__((format(printf,2,0)));
- extern void		    audit_log_format(struct audit_buffer *ab,
- 					     const char *fmt, ...)
- 			    __attribute__((format(printf,2,3)));
---- a/kernel/audit.c
-+++ b/kernel/audit.c
-@@ -1054,8 +1054,7 @@ static inline int audit_expand(struct au
-  * will be called a second time.  Currently, we assume that a printk
-  * can't format message larger than 1024 bytes, so we don't either.
-  */
--static void audit_log_vformat(struct audit_buffer *ab, const char *fmt,
--			      va_list args)
-+void audit_log_vformat(struct audit_buffer *ab, const char *fmt, va_list args)
+ static inline int security_inode_mknod (struct inode *dir,
+ 					struct dentry *dentry,
++					struct vfsmount *mnt,
+ 					int mode, dev_t dev)
  {
- 	int len, avail;
- 	struct sk_buff *skb;
-@@ -1311,3 +1310,6 @@ EXPORT_SYMBOL(audit_log_start);
- EXPORT_SYMBOL(audit_log_end);
- EXPORT_SYMBOL(audit_log_format);
- EXPORT_SYMBOL(audit_log);
-+EXPORT_SYMBOL_GPL(audit_log_vformat);
-+EXPORT_SYMBOL_GPL(audit_log_untrustedstring);
-+EXPORT_SYMBOL_GPL(audit_log_d_path);
+ 	if (unlikely (IS_PRIVATE (dir)))
+ 		return 0;
+-	return security_ops->inode_mknod (dir, dentry, mode, dev);
++	return security_ops->inode_mknod (dir, dentry, mnt, mode, dev);
+ }
+ 
+ static inline int security_inode_rename (struct inode *old_dir,
+@@ -2388,6 +2390,7 @@ static inline int security_inode_rmdir (
+ 
+ static inline int security_inode_mknod (struct inode *dir,
+ 					struct dentry *dentry,
++					struct vfsmount *mnt,
+ 					int mode, dev_t dev)
+ {
+ 	return 0;
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -299,7 +299,7 @@ static int dummy_inode_rmdir (struct ino
+ }
+ 
+ static int dummy_inode_mknod (struct inode *inode, struct dentry *dentry,
+-			      int mode, dev_t dev)
++			      struct vfsmount *mnt, int mode, dev_t dev)
+ {
+ 	return 0;
+ }
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2218,11 +2218,12 @@ static int selinux_inode_rmdir(struct in
+ 	return may_link(dir, dentry, MAY_RMDIR);
+ }
+ 
+-static int selinux_inode_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
++static int selinux_inode_mknod(struct inode *dir, struct dentry *dentry,
++			       struct vfsmount *mnt, int mode, dev_t dev)
+ {
+ 	int rc;
+ 
+-	rc = secondary_ops->inode_mknod(dir, dentry, mode, dev);
++	rc = secondary_ops->inode_mknod(dir, dentry, mnt, mode, dev);
+ 	if (rc)
+ 		return rc;
+ 
 
 -- 
