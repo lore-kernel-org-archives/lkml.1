@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761075AbXENUqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757633AbXENUrN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761075AbXENUqk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbXENUqb
+	id S1757633AbXENUrN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:47:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756962AbXENUq5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:46:31 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:43237 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756673AbXENUqa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:46:30 -0400
-Date: Mon, 14 May 2007 13:46:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Fengguang Wu <fengguang.wu@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH] resolve duplicate flag no for PG_lazyfree
-Message-Id: <20070514134606.695f087a.akpm@linux-foundation.org>
-In-Reply-To: <20070514180618.GB9399@thunk.org>
-References: <379110250.28666@ustc.edu.cn>
-	<20070513224630.3cd0cb54.akpm@linux-foundation.org>
-	<20070514180618.GB9399@thunk.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Mon, 14 May 2007 16:46:57 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:54713 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756807AbXENUq4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:46:56 -0400
+Date: Mon, 14 May 2007 16:46:52 -0400
+From: Dave Jones <davej@redhat.com>
+To: Rob Landley <rob@landley.net>
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Re: tracking down disk spinups.
+Message-ID: <20070514204651.GA7242@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Rob Landley <rob@landley.net>,
+	Linux Kernel <linux-kernel@vger.kernel.org>
+References: <20070514185734.GM27604@redhat.com> <200705141628.35617.rob@landley.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200705141628.35617.rob@landley.net>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007 14:06:19 -0400
-Theodore Tso <tytso@mit.edu> wrote:
+On Mon, May 14, 2007 at 04:28:35PM -0400, Rob Landley wrote:
+ > On Monday 14 May 2007 2:57 pm, Dave Jones wrote:
+ > > Why did the kernel ignore what I told it to do ?
+ > > I'm sure it thinks it knows better than me for a reason, but
+ > > I'd like to know what it is.
+ > 
+ > Remount doesn't switch filesystem drivers, it tells the existing filesystem 
+ > driver to accept new flags and/or a new option string.
 
-> On Sun, May 13, 2007 at 10:46:30PM -0700, Andrew Morton wrote:
-> > otoh, the intersection between pages which are PageBooked() and pages which
-> > are PageLazyFree() should be zreo, so it'd be good to actually formalise
-> > this reuse within the ext4 patches.
-> > 
-> > otoh2, PageLazyFree() could have reused PG_owner_priv_1.
-> > 
-> > Rik, Ted: any thoughts?  We do need to scrimp on page flags: when we
-> > finally run out, we're screwed.
-> 
-> It makes sense to me.  PG_lazyfree is currently only in -mm, right?
+yes, I had misinterpreted what 'remount' did. I thought behind the scenes
+it actually did a umount/mount.
 
-Ah, yes, I got confused, sorry.
+ > To switch drivers you have to umount the old sucker and mount the new one.  
+ > (The idea of handing off consistent cache data from one mounted filesystem 
+ > driver to another...  Ouch.)
 
->  I
-> don't see it in my git tree.  It would probably would be a good idea
-> to make sure that we check to add some sanity checking code if it
-> isn't there already that PG_lazyfree isn't already set when try to set
-> PG_lazyfree (just in case there is a bug in the future which causes
-> the should-never-happen case of trying lazy free a PageBooked page).
-> 
+a umount would purge the cache, but that's irrelevant given it doesn't
+work that way.
 
-Actually, I think the current status of
-lazy-freeing-of-memory-through-madv_free.patch is "might not be needed".  I
-_think_ we've determined that 0a27a14a62921b438bb6f33772690d345a089be6
-sufficiently fixed the perfomance problems we had in there?
+Anyways, I rebooted after s/ext3/ext2/ on my fstab, and found things
+hadn't really got any more obvious what was going on.
+Instead of 'kjournald' writing stuff out, now it's 'pdflush'.
+
+*has sudden brainwave*
+
+Ahh, it's doing atime updates. Duh.
+
+	Dave
+
+-- 
+http://www.codemonkey.org.uk
