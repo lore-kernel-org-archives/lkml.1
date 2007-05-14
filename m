@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031592AbXENLjr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762748AbXENLkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031592AbXENLjr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:39:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761232AbXENLcg
+	id S1762748AbXENLkX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030510AbXENLdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:32:36 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27927 "EHLO
+	Mon, 14 May 2007 07:33:13 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27934 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756054AbXENLc0 (ORCPT
+	with ESMTP id S1759381AbXENLch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:26 -0400
-Message-Id: <20070514110615.445397666@suse.de>
+	Mon, 14 May 2007 07:32:37 -0400
+Message-Id: <20070514110614.767095900@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:28 -0700
+Date: Mon, 14 May 2007 04:06:26 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
        John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 21/45] Add a struct vfsmount parameter to vfs_setxattr()
-Content-Disposition: inline; filename=vfs-setxattr.diff
+Subject: [AppArmor 19/45] Add struct vfsmount parameters to vfs_rename()
+Content-Disposition: inline; filename=vfs-rename.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -32,146 +32,119 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/nfsd/vfs.c         |   16 +++++++++++-----
- fs/xattr.c            |   16 ++++++++--------
- include/linux/xattr.h |    3 ++-
- 3 files changed, 21 insertions(+), 14 deletions(-)
+ fs/ecryptfs/inode.c |    7 ++++++-
+ fs/namei.c          |   19 ++++++++++++-------
+ fs/nfsd/vfs.c       |    3 ++-
+ include/linux/fs.h  |    2 +-
+ 4 files changed, 21 insertions(+), 10 deletions(-)
 
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -598,19 +598,24 @@ ecryptfs_rename(struct inode *old_dir, s
+ {
+ 	int rc;
+ 	struct dentry *lower_old_dentry;
++	struct vfsmount *lower_old_mnt;
+ 	struct dentry *lower_new_dentry;
++	struct vfsmount *lower_new_mnt;
+ 	struct dentry *lower_old_dir_dentry;
+ 	struct dentry *lower_new_dir_dentry;
+ 
+ 	lower_old_dentry = ecryptfs_dentry_to_lower(old_dentry);
++	lower_old_mnt = ecryptfs_dentry_to_lower_mnt(old_dentry);
+ 	lower_new_dentry = ecryptfs_dentry_to_lower(new_dentry);
++	lower_new_mnt = ecryptfs_dentry_to_lower_mnt(new_dentry);
+ 	dget(lower_old_dentry);
+ 	dget(lower_new_dentry);
+ 	lower_old_dir_dentry = dget_parent(lower_old_dentry);
+ 	lower_new_dir_dentry = dget_parent(lower_new_dentry);
+ 	lock_rename(lower_old_dir_dentry, lower_new_dir_dentry);
+ 	rc = vfs_rename(lower_old_dir_dentry->d_inode, lower_old_dentry,
+-			lower_new_dir_dentry->d_inode, lower_new_dentry);
++			lower_old_mnt, lower_new_dir_dentry->d_inode,
++			lower_new_dentry, lower_new_mnt);
+ 	if (rc)
+ 		goto out_lock;
+ 	fsstack_copy_attr_all(new_dir, lower_new_dir_dentry->d_inode, NULL);
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2401,7 +2401,8 @@ asmlinkage long sys_link(const char __us
+  *	   locking].
+  */
+ static int vfs_rename_dir(struct inode *old_dir, struct dentry *old_dentry,
+-			  struct inode *new_dir, struct dentry *new_dentry)
++			  struct vfsmount *old_mnt, struct inode *new_dir,
++			  struct dentry *new_dentry, struct vfsmount *new_mnt)
+ {
+ 	int error = 0;
+ 	struct inode *target;
+@@ -2444,7 +2445,8 @@ static int vfs_rename_dir(struct inode *
+ }
+ 
+ static int vfs_rename_other(struct inode *old_dir, struct dentry *old_dentry,
+-			    struct inode *new_dir, struct dentry *new_dentry)
++			    struct vfsmount *old_mnt, struct inode *new_dir,
++			    struct dentry *new_dentry, struct vfsmount *new_mnt)
+ {
+ 	struct inode *target;
+ 	int error;
+@@ -2472,7 +2474,8 @@ static int vfs_rename_other(struct inode
+ }
+ 
+ int vfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+-	       struct inode *new_dir, struct dentry *new_dentry)
++	        struct vfsmount *old_mnt, struct inode *new_dir,
++	        struct dentry *new_dentry, struct vfsmount *new_mnt)
+ {
+ 	int error;
+ 	int is_dir = S_ISDIR(old_dentry->d_inode->i_mode);
+@@ -2501,9 +2504,11 @@ int vfs_rename(struct inode *old_dir, st
+ 	old_name = fsnotify_oldname_init(old_dentry->d_name.name);
+ 
+ 	if (is_dir)
+-		error = vfs_rename_dir(old_dir,old_dentry,new_dir,new_dentry);
++		error = vfs_rename_dir(old_dir, old_dentry, old_mnt,
++				       new_dir, new_dentry, new_mnt);
+ 	else
+-		error = vfs_rename_other(old_dir,old_dentry,new_dir,new_dentry);
++		error = vfs_rename_other(old_dir, old_dentry, old_mnt,
++					 new_dir, new_dentry, new_mnt);
+ 	if (!error) {
+ 		const char *new_name = old_dentry->d_name.name;
+ 		fsnotify_move(old_dir, new_dir, old_name, new_name, is_dir,
+@@ -2575,8 +2580,8 @@ static int do_rename(int olddfd, const c
+ 	if (new_dentry == trap)
+ 		goto exit5;
+ 
+-	error = vfs_rename(old_dir->d_inode, old_dentry,
+-				   new_dir->d_inode, new_dentry);
++	error = vfs_rename(old_dir->d_inode, old_dentry, oldnd.mnt,
++			   new_dir->d_inode, new_dentry, newnd.mnt);
+ exit5:
+ 	dput(new_dentry);
+ exit4:
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -396,7 +396,8 @@ static ssize_t nfsd_getxattr(struct dent
+@@ -1630,7 +1630,8 @@ nfsd_rename(struct svc_rqst *rqstp, stru
+ 			host_err = -EPERM;
+ 	} else
+ #endif
+-	host_err = vfs_rename(fdir, odentry, tdir, ndentry);
++	host_err = vfs_rename(fdir, odentry, ffhp->fh_export->ex_mnt,
++			      tdir, ndentry, tfhp->fh_export->ex_mnt);
+ 	if (!host_err && EX_ISSYNC(tfhp->fh_export)) {
+ 		host_err = nfsd_sync_dir(tdentry);
+ 		if (!host_err)
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -998,7 +998,7 @@ extern int vfs_symlink(struct inode *, s
+ extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
+ extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
+ extern int vfs_unlink(struct inode *, struct dentry *, struct vfsmount *);
+-extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
++extern int vfs_rename(struct inode *, struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
  
- #if defined(CONFIG_NFSD_V4)
- static int
--set_nfsv4_acl_one(struct dentry *dentry, struct posix_acl *pacl, char *key)
-+set_nfsv4_acl_one(struct dentry *dentry, struct vfsmount *mnt,
-+		  struct posix_acl *pacl, char *key)
- {
- 	int len;
- 	size_t buflen;
-@@ -415,7 +416,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
- 		goto out;
- 	}
- 
--	error = vfs_setxattr(dentry, key, buf, len, 0);
-+	error = vfs_setxattr(dentry, mnt, key, buf, len, 0);
- out:
- 	kfree(buf);
- 	return error;
-@@ -428,6 +429,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
- 	__be32 error;
- 	int host_error;
- 	struct dentry *dentry;
-+	struct vfsmount *mnt;
- 	struct inode *inode;
- 	struct posix_acl *pacl = NULL, *dpacl = NULL;
- 	unsigned int flags = 0;
-@@ -438,6 +440,7 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
- 		goto out;
- 
- 	dentry = fhp->fh_dentry;
-+	mnt = fhp->fh_export->ex_mnt;
- 	inode = dentry->d_inode;
- 	if (S_ISDIR(inode->i_mode))
- 		flags = NFS4_ACL_DIR;
-@@ -449,12 +452,14 @@ nfsd4_set_nfs4_acl(struct svc_rqst *rqst
- 	} else if (host_error < 0)
- 		goto out_nfserr;
- 
--	host_error = set_nfsv4_acl_one(dentry, pacl, POSIX_ACL_XATTR_ACCESS);
-+	host_error = set_nfsv4_acl_one(dentry, mnt, pacl,
-+				       POSIX_ACL_XATTR_ACCESS);
- 	if (host_error < 0)
- 		goto out_nfserr;
- 
- 	if (S_ISDIR(inode->i_mode)) {
--		host_error = set_nfsv4_acl_one(dentry, dpacl, POSIX_ACL_XATTR_DEFAULT);
-+		host_error = set_nfsv4_acl_one(dentry, mnt, dpacl,
-+					       POSIX_ACL_XATTR_DEFAULT);
- 		if (host_error < 0)
- 			goto out_nfserr;
- 	}
-@@ -1982,7 +1987,8 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
- 		size = 0;
- 
- 	if (size)
--		error = vfs_setxattr(fhp->fh_dentry, name, value, size, 0);
-+		error = vfs_setxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt,
-+				     name, value, size,0);
- 	else {
- 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
- 			error = 0;
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -69,8 +69,8 @@ xattr_permission(struct inode *inode, co
- }
- 
- int
--vfs_setxattr(struct dentry *dentry, char *name, void *value,
--		size_t size, int flags)
-+vfs_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
-+	     void *value, size_t size, int flags)
- {
- 	struct inode *inode = dentry->d_inode;
- 	int error;
-@@ -193,8 +193,8 @@ EXPORT_SYMBOL_GPL(vfs_removexattr);
-  * Extended attribute SET operations
-  */
- static long
--setxattr(struct dentry *d, char __user *name, void __user *value,
--	 size_t size, int flags)
-+setxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
-+	 void __user *value, size_t size, int flags)
- {
- 	int error;
- 	void *kvalue = NULL;
-@@ -221,7 +221,7 @@ setxattr(struct dentry *d, char __user *
- 		}
- 	}
- 
--	error = vfs_setxattr(d, kname, kvalue, size, flags);
-+	error = vfs_setxattr(dentry, mnt, kname, kvalue, size, flags);
- 	kfree(kvalue);
- 	return error;
- }
-@@ -236,7 +236,7 @@ sys_setxattr(char __user *path, char __u
- 	error = user_path_walk(path, &nd);
- 	if (error)
- 		return error;
--	error = setxattr(nd.dentry, name, value, size, flags);
-+	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags);
- 	path_release(&nd);
- 	return error;
- }
-@@ -251,7 +251,7 @@ sys_lsetxattr(char __user *path, char __
- 	error = user_path_walk_link(path, &nd);
- 	if (error)
- 		return error;
--	error = setxattr(nd.dentry, name, value, size, flags);
-+	error = setxattr(nd.dentry, nd.mnt, name, value, size, flags);
- 	path_release(&nd);
- 	return error;
- }
-@@ -269,7 +269,7 @@ sys_fsetxattr(int fd, char __user *name,
- 		return error;
- 	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry->d_inode);
--	error = setxattr(dentry, name, value, size, flags);
-+	error = setxattr(dentry, f->f_vfsmnt, name, value, size, flags);
- 	fput(f);
- 	return error;
- }
---- a/include/linux/xattr.h
-+++ b/include/linux/xattr.h
-@@ -48,7 +48,8 @@ struct xattr_handler {
- 
- ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
- ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
--int vfs_setxattr(struct dentry *, char *, void *, size_t, int);
-+int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
-+		 int);
- int vfs_removexattr(struct dentry *, char *);
- 
- ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+ /*
+  * VFS dentry helper functions.
 
 -- 
