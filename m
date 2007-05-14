@@ -1,105 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbXENAyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761497AbXENBCy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761596AbXENAyr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 20:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbXENAyk
+	id S1761497AbXENBCy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 21:02:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756561AbXENBCs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 20:54:40 -0400
-Received: from mail36.syd.optusnet.com.au ([211.29.133.76]:35894 "EHLO
-	mail36.syd.optusnet.com.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756561AbXENAyj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 20:54:39 -0400
-From: Con Kolivas <kernel@kolivas.org>
-To: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>, ck@vds.kolivas.org
-Subject: [PATCH] mm: swap prefetch more improvements
-Date: Mon, 14 May 2007 10:50:54 +1000
-User-Agent: KMail/1.9.5
+	Sun, 13 May 2007 21:02:48 -0400
+Received: from mail.tmr.com ([64.65.253.246]:35789 "EHLO gaimboi.tmr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754970AbXENBCr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 21:02:47 -0400
+Message-ID: <4647B54C.6080806@tmr.com>
+Date: Sun, 13 May 2007 21:03:08 -0400
+From: Bill Davidsen <davidsen@tmr.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061105 SeaMonkey/1.0.6
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: umesh@websurfer.com.np
+CC: linux-kernel@vger.kernel.org
+Subject: Re: upgrade linux kernel
+References: <2417.63.219.2.2.1179056431.squirrel@mail.websurfer.com.np>
+In-Reply-To: <2417.63.219.2.2.1179056431.squirrel@mail.websurfer.com.np>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705141050.55038.kernel@kolivas.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-akpm, please queue on top of "mm: swap prefetch improvements"
+umesh@websurfer.com.np wrote:
+> I am upgrading kernel from 2.4.20-8(default in RH9) to 2.6.xx. when I do
+> "make" command it gives some output and finally get error saying that,
+> 
+> "BFD: Warning: Writing section '.bss' to huge ( ie negative) file offset
+> 0xc0244000. "
+> 
+>  "Objcopy: arch/i386/boot/compressed/vmlinux.bin: file truncated"
+> 
+> "make[2]:***[ arch/i386/boot/compressed/vmlinux.bin] Error 1"
+> 
+>  "make[1]: ***[ arch/i386/boot/compressed/vmlinux] Error 2"
+> 
+>  "make: *** [bzImage] Error 2"
+> 
+You can upgrade a bunch of system utilities, but I'm not sure it's worth 
+doing. The system I'm on is RH8.0 patched to run later kernels when my 
+development machine went down. I got 2.5.52 to boot, last stable was 
+2.5.47-ac6 and I gave up.
 
----
-Failed radix_tree_insert wasn't being handled leaving stale kmem.
-
-The list should be iterated over in the reverse order when prefetching.
-
-Make the yield within kprefetchd stronger through the use of cond_resched.
-
-Check that the pos entry hasn't been removed while unlocked.
-
-Signed-off-by: Con Kolivas <kernel@kolivas.org>
-
----
- mm/swap_prefetch.c |   19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
-
-Index: linux-2.6.21-ck1/mm/swap_prefetch.c
-===================================================================
---- linux-2.6.21-ck1.orig/mm/swap_prefetch.c	2007-05-14 09:39:37.000000000 +1000
-+++ linux-2.6.21-ck1/mm/swap_prefetch.c	2007-05-14 10:21:47.000000000 +1000
-@@ -117,7 +117,8 @@ void add_to_swapped_list(struct page *pa
- 	if (likely(!radix_tree_insert(&swapped.swap_tree, index, entry))) {
- 		list_add(&entry->swapped_list, &swapped.list);
- 		swapped.count++;
--	}
-+	} else
-+		kmem_cache_free(swapped.cache, entry);
- 
- out_locked:
- 	spin_unlock_irqrestore(&swapped.lock, flags);
-@@ -427,7 +428,7 @@ out:
- static enum trickle_return trickle_swap(void)
- {
- 	enum trickle_return ret = TRICKLE_DELAY;
--	struct list_head *p, *next;
-+	struct swapped_entry *pos, *n;
- 	unsigned long flags;
- 
- 	if (!prefetch_enabled())
-@@ -440,19 +441,19 @@ static enum trickle_return trickle_swap(
- 		return TRICKLE_FAILED;
- 
- 	spin_lock_irqsave(&swapped.lock, flags);
--	list_for_each_safe(p, next, &swapped.list) {
--		struct swapped_entry *entry;
-+	list_for_each_entry_safe_reverse(pos, n, &swapped.list, swapped_list) {
- 		swp_entry_t swp_entry;
- 		int node;
- 
- 		spin_unlock_irqrestore(&swapped.lock, flags);
--		might_sleep();
--		if (!prefetch_suitable())
-+		/* Yield to anything else running */
-+		if (cond_resched() || !prefetch_suitable())
- 			goto out_unlocked;
- 
- 		spin_lock_irqsave(&swapped.lock, flags);
--		entry = list_entry(p, struct swapped_entry, swapped_list);
--		node = get_swap_entry_node(entry);
-+		if (unlikely(!pos))
-+			continue;
-+		node = get_swap_entry_node(pos);
- 		if (!node_isset(node, sp_stat.prefetch_nodes)) {
- 			/*
- 			 * We found an entry that belongs to a node that is
-@@ -460,7 +461,7 @@ static enum trickle_return trickle_swap(
- 			 */
- 			continue;
- 		}
--		swp_entry = entry->swp_entry;
-+		swp_entry = pos->swp_entry;
- 		spin_unlock_irqrestore(&swapped.lock, flags);
- 
- 		if (trickle_swap_cache_async(swp_entry, node) == TRICKLE_DELAY)
+Unless you have some major need to upgrade the kernel without the 
+distribution, grab the latest RH kernel, or use the latest 2.4 kernel 
+available.
 
 -- 
--ck
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
