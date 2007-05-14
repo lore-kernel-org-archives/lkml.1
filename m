@@ -1,37 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755116AbXENMeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbXENMiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755116AbXENMeq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 08:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754680AbXENMei
+	id S1754923AbXENMiQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 08:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXENMiI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 08:34:38 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:55727 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751581AbXENMeh (ORCPT
+	Mon, 14 May 2007 08:38:08 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:27601 "EHLO
+	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752055AbXENMiH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 08:34:37 -0400
-Date: Mon, 14 May 2007 13:34:36 +0100
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Haavard Skinnemoen <hskinnemoen@atmel.com>
-Subject: Re: [RFC][PATCH] Make prepare_namespace() wait for devices
-Message-ID: <20070514123436.GB4095@ftp.linux.org.uk>
-References: <464853D9.70904@drzeus.cx>
+	Mon, 14 May 2007 08:38:07 -0400
+Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <20070514115830.GD31234@wotan.suse.de>
+References: <20070511131541.992688403@chello.nl>
+	 <20070511155621.GA13150@elte.hu>  <20070514115830.GD31234@wotan.suse.de>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 14:38:01 +0200
+Message-Id: <1179146281.6810.65.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <464853D9.70904@drzeus.cx>
-User-Agent: Mutt/1.4.1i
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 02:19:37PM +0200, Pierre Ossman wrote:
+On Mon, 2007-05-14 at 13:58 +0200, Nick Piggin wrote:
+> On Fri, May 11, 2007 at 05:56:21PM +0200, Ingo Molnar wrote:
+> > 
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > I was toying with a scalable rw_mutex and found that it gives ~10% 
+> > > reduction in system time on ebizzy runs (without the MADV_FREE patch).
+> > > 
+> > > 2-way x86_64 pentium D box:
+> > > 
+> > > 2.6.21
+> > > 
+> > > /usr/bin/time ./ebizzy -m -P
+> > > 59.49user 137.74system 1:49.22elapsed 180%CPU (0avgtext+0avgdata 0maxresident)k
+> > > 0inputs+0outputs (0major+33555877minor)pagefaults 0swaps
+> > > 
+> > > 2.6.21-rw_mutex
+> > > 
+> > > /usr/bin/time ./ebizzy -m -P
+> > > 57.85user 124.30system 1:42.99elapsed 176%CPU (0avgtext+0avgdata 0maxresident)k
+> > > 0inputs+0outputs (0major+33555877minor)pagefaults 0swaps
+> > 
+> > nice! This 6% runtime reduction on a 2-way box will i suspect get 
+> > exponentially better on systems with more CPUs/cores.
+> 
+> Is this with the MADV_DONTNEED kernel and glibc work?
 
-First of all, please do not put patches in attachments.
+No, just the old stuff.
 
-As for the patch, an infinite loop is *much* worse than a panic.
-When one is installing a new kernel on remote box, having it
-booted with reboot on panic and loader falling back to old
-kernel on the next boot is a bloody good idea - gives you extra
-safety.  With your patch it will get the box stuck.
+> 
+> > i also like the design, alot: instead of doing a full new lock type 
+> > (with per-arch changes, extra lockdep support, etc. etc) you layered the 
+> > new abstraction ontop of mutexes. This makes this hard locking 
+> > abstraction look really, really simple, while the percpu_counter trick 
+> > makes it scale _perfectly_ for the reader case. Congratulations!
+> > 
+> > given how nice this looks already, have you considered completely 
+> > replacing rwsems with this? I suspect you could test the correctness of 
+> 
+> Not to take anything away from this lock type (because it can have its
+> uses), but have you considered the size of this lock and its write side
+> performance? 
+
+Yeah, I did, I was initially just toying about with the concept, to see
+if it was doable at all. I only posted because I got these fairly good
+numbers.
+
