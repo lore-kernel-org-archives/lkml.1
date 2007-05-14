@@ -1,60 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbXENULu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbXENUM4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759979AbXENULu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:11:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759742AbXENULd
+	id S1759547AbXENUM4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:12:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXENUMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:11:33 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:41733 "EHLO mailer.gwdg.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759647AbXENULb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:11:31 -0400
-Date: Mon, 14 May 2007 22:06:04 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: why does x86 "make defconfig" build a single, lonely module?
-In-Reply-To: <20070514194614.4f00655d@the-village.bc.nu>
-Message-ID: <Pine.LNX.4.61.0705142204020.9570@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
- <20070513160608.GA29024@redhat.com> <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
- <Pine.LNX.4.64.0705131216440.27468@localhost.localdomain>
- <1179073670.3723.48.camel@mulgrave.il.steeleye.com> <46474E1A.6080904@simon.arlott.org.uk>
- <1179078537.3723.53.camel@mulgrave.il.steeleye.com>
- <Pine.LNX.4.61.0705141928230.9570@yvahk01.tjqt.qr> <20070514194614.4f00655d@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	Mon, 14 May 2007 16:12:48 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:30229 "EHLO
+	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756768AbXENUMr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:12:47 -0400
+Subject: Re: [PATCH 0/5] make slab gfp fair
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Christoph Lameter <clameter@sgi.com>
+Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <Pine.LNX.4.64.0705141303570.12167@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl>
+	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
+	 <20070514161224.GC11115@waste.org>
+	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
+	 <1179164453.2942.26.camel@lappy>
+	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
+	 <1179170912.2942.37.camel@lappy>
+	 <Pine.LNX.4.64.0705141253130.12045@schroedinger.engr.sgi.com>
+	 <1179172994.2942.49.camel@lappy>
+	 <Pine.LNX.4.64.0705141303570.12167@schroedinger.engr.sgi.com>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 22:12:36 +0200
+Message-Id: <1179173556.2942.54.camel@lappy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2007-05-14 at 13:06 -0700, Christoph Lameter wrote:
+> On Mon, 14 May 2007, Peter Zijlstra wrote:
+> 
+> > > Hmmm.. Maybe we could do that.... But what I had in mind was simply to 
+> > > set a page flag (DebugSlab()) if you know in alloc_slab that the slab 
+> > > should be only used for emergency allocation. If DebugSlab is set then the
+> > > fastpath will not be called. You can trap all allocation attempts and 
+> > > insert whatever fancy logic you want in the debug path since its not 
+> > > performance critical.
+> > 
+> > I might have missed some detail when I looked at SLUB, but I did not see
+> > how setting SlabDebug would trap subsequent allocations to that slab.
+> 
+> Ok its not evident in slab_alloc. But if SlabDebug is set then 
+> page->lockless_list is always NULL and we always fall back to 
+> __slab_alloc.
 
-On May 14 2007 19:46, Alan Cox wrote:
->> On May 13 2007 12:48, James Bottomley wrote:
->> >
->> >> Why does ATA select SCSI anyway? Surely PATA doesn't require it?
->> >That's a bit offtopic and to the wrong list.
->> >libata-pata does require SCSI ...
->> 
->> And in the long run, that SCSI parts which are actually used by ATA
->> should be factored out so that SCSI really is SCSI again, and not
->> "Common layer for SCSI, SATA and PATA" or so.
->
->The common layer for the queueing is one thing, but the ATAPI devices
->(CD-ROM etc) are SCSI commands over an ATA bus. A subset of SCSI commands
->badly over an ATA bus but SCSI commands nevertheless - so they have the
->same basic dependancies as USB storage does.
+Ah, indeed, that is the detail I missed. Yes that would work out.
 
-Hm yes of course, but harddisks themselves do not normally need ATAPI;
-so it would be cool to be capable of throwing it out for PATA-and-no-CDROM
-boxes.
+>  There we check for SlabDebug and go to the debug: label. 
+> There you can insert any fancy processing you want.
 
 
-	Jan
--- 
