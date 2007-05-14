@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbXENUqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761075AbXENUqk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756638AbXENUqW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbXENUqO
+	id S1761075AbXENUqk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:46:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756882AbXENUqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:46:14 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:49844 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755507AbXENUqN (ORCPT
+	Mon, 14 May 2007 16:46:31 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:43237 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756673AbXENUqa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:46:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=o8oqrWq+cb+8r6cDAw5D6S7Ku32/+7LMTvYvs2ZZsHX7NSWCyWaPO73Zl+lr9e+ToRlh+de34tj9kbSb50BWR6nFMzsaFO4AaTXS7TY/DYOB3y5lYiiFIhGDlT5CqQTzpu4HxzkrgtUIXQRzReOy8kD9Mrim0apG93TkXayW21U=
-Message-ID: <e5ab0f710705141346o45ac8721jacbcb753f9d45406@mail.gmail.com>
-Date: Mon, 14 May 2007 22:46:11 +0200
-From: "Francesco Pretto" <ceztko@gmail.com>
-To: "Tejun Heo" <htejun@gmail.com>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-Cc: "Phillip Susi" <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <46489D3B.8050805@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 14 May 2007 16:46:30 -0400
+Date: Mon, 14 May 2007 13:46:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Fengguang Wu <fengguang.wu@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Rik van Riel <riel@redhat.com>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>
+Subject: Re: [PATCH] resolve duplicate flag no for PG_lazyfree
+Message-Id: <20070514134606.695f087a.akpm@linux-foundation.org>
+In-Reply-To: <20070514180618.GB9399@thunk.org>
+References: <379110250.28666@ustc.edu.cn>
+	<20070513224630.3cd0cb54.akpm@linux-foundation.org>
+	<20070514180618.GB9399@thunk.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>
-	 <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca>
-	 <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com>
-	 <463B858E.6060002@cfl.rr.com> <463B99EE.2090001@gmail.com>
-	 <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com>
-	 <46489D3B.8050805@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/14, Tejun Heo <htejun@gmail.com>
->
-> Okay, the patch made upstream and webpage posted.
->
->  http://linux-ata.org/shutdown.html
->
-> --
-> tejun
->
+On Mon, 14 May 2007 14:06:19 -0400
+Theodore Tso <tytso@mit.edu> wrote:
 
-Ubuntu [1] ang Gentoo [2] bugs opened. Sent a mail to Miquel van
-Smoorenburg, dev  of sysvinit.
+> On Sun, May 13, 2007 at 10:46:30PM -0700, Andrew Morton wrote:
+> > otoh, the intersection between pages which are PageBooked() and pages which
+> > are PageLazyFree() should be zreo, so it'd be good to actually formalise
+> > this reuse within the ext4 patches.
+> > 
+> > otoh2, PageLazyFree() could have reused PG_owner_priv_1.
+> > 
+> > Rik, Ted: any thoughts?  We do need to scrimp on page flags: when we
+> > finally run out, we're screwed.
+> 
+> It makes sense to me.  PG_lazyfree is currently only in -mm, right?
 
-[1] https://bugs.launchpad.net/upstart/+bug/114683
-[2] http://bugs.gentoo.org/show_bug.cgi?id=178559
+Ah, yes, I got confused, sorry.
+
+>  I
+> don't see it in my git tree.  It would probably would be a good idea
+> to make sure that we check to add some sanity checking code if it
+> isn't there already that PG_lazyfree isn't already set when try to set
+> PG_lazyfree (just in case there is a bug in the future which causes
+> the should-never-happen case of trying lazy free a PageBooked page).
+> 
+
+Actually, I think the current status of
+lazy-freeing-of-memory-through-madv_free.patch is "might not be needed".  I
+_think_ we've determined that 0a27a14a62921b438bb6f33772690d345a089be6
+sufficiently fixed the perfomance problems we had in there?
