@@ -1,172 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032132AbXENLsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031538AbXENLs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032132AbXENLsh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030917AbXENLeF
+	id S1031538AbXENLs7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030954AbXENLeL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:34:05 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27938 "EHLO
+	Mon, 14 May 2007 07:34:11 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27953 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760545AbXENLcp (ORCPT
+	with ESMTP id S965749AbXENLcr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:45 -0400
-Message-Id: <20070514110608.381283863@suse.de>
+	Mon, 14 May 2007 07:32:47 -0400
+Message-Id: <20070514110616.161274517@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:09 -0700
+Date: Mon, 14 May 2007 04:06:30 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
        John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 02/45] Pass struct path down to remove_suid and children
-Content-Disposition: inline; filename=remove_suid.diff
+Subject: [AppArmor 23/45] Add a struct vfsmount parameter to vfs_getxattr()
+Content-Disposition: inline; filename=vfs-getxattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Required by a later patch that adds a struct vfsmount parameter to
-notify_change().
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/ntfs/file.c             |    2 +-
- fs/reiserfs/file.c         |    2 +-
- fs/splice.c                |    4 ++--
- fs/xfs/linux-2.6/xfs_lrw.c |    2 +-
- include/linux/fs.h         |    4 ++--
- mm/filemap.c               |   12 ++++++------
- mm/filemap_xip.c           |    2 +-
- mm/shmem.c                 |    2 +-
- 8 files changed, 15 insertions(+), 15 deletions(-)
+ fs/nfsd/nfs4xdr.c         |    2 +-
+ fs/nfsd/vfs.c             |   21 ++++++++++++---------
+ fs/xattr.c                |   14 ++++++++------
+ include/linux/nfsd/nfsd.h |    3 ++-
+ include/linux/xattr.h     |    3 ++-
+ 5 files changed, 25 insertions(+), 18 deletions(-)
 
---- a/fs/ntfs/file.c
-+++ b/fs/ntfs/file.c
-@@ -2121,7 +2121,7 @@ static ssize_t ntfs_file_aio_write_noloc
- 		goto out;
- 	if (!count)
- 		goto out;
--	err = remove_suid(file->f_path.dentry);
-+	err = remove_suid(&file->f_path);
- 	if (err)
- 		goto out;
- 	file_update_time(file);
---- a/fs/reiserfs/file.c
-+++ b/fs/reiserfs/file.c
-@@ -1335,7 +1335,7 @@ static ssize_t reiserfs_file_write(struc
- 	if (count == 0)
- 		goto out;
- 
--	res = remove_suid(file->f_path.dentry);
-+	res = remove_suid(&file->f_path);
- 	if (res)
- 		goto out;
- 
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -796,7 +796,7 @@ generic_file_splice_write_nolock(struct 
- 	ssize_t ret;
- 	int err;
- 
--	err = remove_suid(out->f_path.dentry);
-+	err = remove_suid(&out->f_path);
- 	if (unlikely(err))
- 		return err;
- 
-@@ -845,7 +845,7 @@ generic_file_splice_write(struct pipe_in
- 	err = should_remove_suid(out->f_path.dentry);
- 	if (unlikely(err)) {
- 		mutex_lock(&inode->i_mutex);
--		err = __remove_suid(out->f_path.dentry, err);
-+		err = __remove_suid(&out->f_path, err);
- 		mutex_unlock(&inode->i_mutex);
- 		if (err)
- 			return err;
---- a/fs/xfs/linux-2.6/xfs_lrw.c
-+++ b/fs/xfs/linux-2.6/xfs_lrw.c
-@@ -798,7 +798,7 @@ start:
- 	     !capable(CAP_FSETID)) {
- 		error = xfs_write_clear_setuid(xip);
- 		if (likely(!error))
--			error = -remove_suid(file->f_path.dentry);
-+			error = -remove_suid(&file->f_path);
- 		if (unlikely(error)) {
- 			goto out_unlock_internal;
- 		}
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1697,9 +1697,9 @@ extern void __iget(struct inode * inode)
- extern void clear_inode(struct inode *);
- extern void destroy_inode(struct inode *);
- extern struct inode *new_inode(struct super_block *);
--extern int __remove_suid(struct dentry *, int);
-+extern int __remove_suid(struct path *, int);
- extern int should_remove_suid(struct dentry *);
--extern int remove_suid(struct dentry *);
-+extern int remove_suid(struct path *);
- 
- extern void __insert_inode_hash(struct inode *, unsigned long hashval);
- extern void remove_inode_hash(struct inode *);
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1905,20 +1905,20 @@ int should_remove_suid(struct dentry *de
- }
- EXPORT_SYMBOL(should_remove_suid);
- 
--int __remove_suid(struct dentry *dentry, int kill)
-+int __remove_suid(struct path *path, int kill)
+--- a/fs/nfsd/nfs4xdr.c
++++ b/fs/nfsd/nfs4xdr.c
+@@ -1469,7 +1469,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
+ 	}
+ 	if (bmval0 & (FATTR4_WORD0_ACL | FATTR4_WORD0_ACLSUPPORT
+ 			| FATTR4_WORD0_SUPPORTED_ATTRS)) {
+-		err = nfsd4_get_nfs4_acl(rqstp, dentry, &acl);
++		err = nfsd4_get_nfs4_acl(rqstp, dentry, exp->ex_mnt, &acl);
+ 		aclsupport = (err == 0);
+ 		if (bmval0 & FATTR4_WORD0_ACL) {
+ 			if (err == -EOPNOTSUPP)
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -378,11 +378,12 @@ out_nfserr:
+ #if defined(CONFIG_NFSD_V2_ACL) || \
+     defined(CONFIG_NFSD_V3_ACL) || \
+     defined(CONFIG_NFSD_V4)
+-static ssize_t nfsd_getxattr(struct dentry *dentry, char *key, void **buf)
++static ssize_t nfsd_getxattr(struct dentry *dentry, struct vfsmount *mnt,
++			     char *key, void **buf)
  {
- 	struct iattr newattrs;
+ 	ssize_t buflen;
  
- 	newattrs.ia_valid = ATTR_FORCE | kill;
--	return notify_change(dentry, &newattrs);
-+	return notify_change(path->dentry, &newattrs);
+-	buflen = vfs_getxattr(dentry, key, NULL, 0);
++	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0);
+ 	if (buflen <= 0)
+ 		return buflen;
+ 
+@@ -390,7 +391,7 @@ static ssize_t nfsd_getxattr(struct dent
+ 	if (!*buf)
+ 		return -ENOMEM;
+ 
+-	return vfs_getxattr(dentry, key, *buf, buflen);
++	return vfs_getxattr(dentry, mnt, key, *buf, buflen);
+ }
+ #endif
+ 
+@@ -479,13 +480,13 @@ out_nfserr:
  }
  
--int remove_suid(struct dentry *dentry)
-+int remove_suid(struct path *path)
+ static struct posix_acl *
+-_get_posix_acl(struct dentry *dentry, char *key)
++_get_posix_acl(struct dentry *dentry, struct vfsmount *mnt, char *key)
  {
--	int kill = should_remove_suid(dentry);
-+	int kill = should_remove_suid(path->dentry);
+ 	void *buf = NULL;
+ 	struct posix_acl *pacl = NULL;
+ 	int buflen;
  
- 	if (unlikely(kill))
--		return __remove_suid(dentry, kill);
-+		return __remove_suid(path, kill);
- 
- 	return 0;
+-	buflen = nfsd_getxattr(dentry, key, &buf);
++	buflen = nfsd_getxattr(dentry, mnt, key, &buf);
+ 	if (!buflen)
+ 		buflen = -ENODATA;
+ 	if (buflen <= 0)
+@@ -497,14 +498,15 @@ _get_posix_acl(struct dentry *dentry, ch
  }
-@@ -2269,7 +2269,7 @@ __generic_file_aio_write_nolock(struct k
- 	if (count == 0)
- 		goto out;
  
--	err = remove_suid(file->f_path.dentry);
-+	err = remove_suid(&file->f_path);
- 	if (err)
- 		goto out;
+ int
+-nfsd4_get_nfs4_acl(struct svc_rqst *rqstp, struct dentry *dentry, struct nfs4_acl **acl)
++nfsd4_get_nfs4_acl(struct svc_rqst *rqstp, struct dentry *dentry,
++		   struct vfsmount *mnt, struct nfs4_acl **acl)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error = 0;
+ 	struct posix_acl *pacl = NULL, *dpacl = NULL;
+ 	unsigned int flags = 0;
  
---- a/mm/filemap_xip.c
-+++ b/mm/filemap_xip.c
-@@ -405,7 +405,7 @@ xip_file_write(struct file *filp, const 
- 	if (count == 0)
- 		goto out_backing;
+-	pacl = _get_posix_acl(dentry, POSIX_ACL_XATTR_ACCESS);
++	pacl = _get_posix_acl(dentry, mnt, POSIX_ACL_XATTR_ACCESS);
+ 	if (IS_ERR(pacl) && PTR_ERR(pacl) == -ENODATA)
+ 		pacl = posix_acl_from_mode(inode->i_mode, GFP_KERNEL);
+ 	if (IS_ERR(pacl)) {
+@@ -514,7 +516,7 @@ nfsd4_get_nfs4_acl(struct svc_rqst *rqst
+ 	}
  
--	ret = remove_suid(filp->f_path.dentry);
-+	ret = remove_suid(&filp->f_path);
- 	if (ret)
- 		goto out_backing;
+ 	if (S_ISDIR(inode->i_mode)) {
+-		dpacl = _get_posix_acl(dentry, POSIX_ACL_XATTR_DEFAULT);
++		dpacl = _get_posix_acl(dentry, mnt, POSIX_ACL_XATTR_DEFAULT);
+ 		if (IS_ERR(dpacl) && PTR_ERR(dpacl) == -ENODATA)
+ 			dpacl = NULL;
+ 		else if (IS_ERR(dpacl)) {
+@@ -1942,7 +1944,8 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
+ 		return ERR_PTR(-EOPNOTSUPP);
+ 	}
  
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -1516,7 +1516,7 @@ shmem_file_write(struct file *file, cons
- 	if (err || !count)
- 		goto out;
+-	size = nfsd_getxattr(fhp->fh_dentry, name, &value);
++	size = nfsd_getxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt, name,
++			     &value);
+ 	if (size < 0)
+ 		return ERR_PTR(size);
  
--	err = remove_suid(file->f_path.dentry);
-+	err = remove_suid(&file->f_path);
- 	if (err)
- 		goto out;
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -106,7 +106,8 @@ out:
+ EXPORT_SYMBOL_GPL(vfs_setxattr);
  
+ ssize_t
+-vfs_getxattr(struct dentry *dentry, char *name, void *value, size_t size)
++vfs_getxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
++	     void *value, size_t size)
+ {
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -278,7 +279,8 @@ sys_fsetxattr(int fd, char __user *name,
+  * Extended attribute GET operations
+  */
+ static ssize_t
+-getxattr(struct dentry *d, char __user *name, void __user *value, size_t size)
++getxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
++	 void __user *value, size_t size)
+ {
+ 	ssize_t error;
+ 	void *kvalue = NULL;
+@@ -298,7 +300,7 @@ getxattr(struct dentry *d, char __user *
+ 			return -ENOMEM;
+ 	}
+ 
+-	error = vfs_getxattr(d, kname, kvalue, size);
++	error = vfs_getxattr(dentry, mnt, kname, kvalue, size);
+ 	if (error > 0) {
+ 		if (size && copy_to_user(value, kvalue, error))
+ 			error = -EFAULT;
+@@ -321,7 +323,7 @@ sys_getxattr(char __user *path, char __u
+ 	error = user_path_walk(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = getxattr(nd.dentry, name, value, size);
++	error = getxattr(nd.dentry, nd.mnt, name, value, size);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -336,7 +338,7 @@ sys_lgetxattr(char __user *path, char __
+ 	error = user_path_walk_link(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = getxattr(nd.dentry, name, value, size);
++	error = getxattr(nd.dentry, nd.mnt, name, value, size);
+ 	path_release(&nd);
+ 	return error;
+ }
+@@ -351,7 +353,7 @@ sys_fgetxattr(int fd, char __user *name,
+ 	if (!f)
+ 		return error;
+ 	audit_inode(NULL, f->f_path.dentry->d_inode);
+-	error = getxattr(f->f_path.dentry, name, value, size);
++	error = getxattr(f->f_path.dentry, f->f_path.mnt, name, value, size);
+ 	fput(f);
+ 	return error;
+ }
+--- a/include/linux/nfsd/nfsd.h
++++ b/include/linux/nfsd/nfsd.h
+@@ -77,7 +77,8 @@ __be32		nfsd_setattr(struct svc_rqst *, 
+ #ifdef CONFIG_NFSD_V4
+ __be32          nfsd4_set_nfs4_acl(struct svc_rqst *, struct svc_fh *,
+                     struct nfs4_acl *);
+-int             nfsd4_get_nfs4_acl(struct svc_rqst *, struct dentry *, struct nfs4_acl **);
++int             nfsd4_get_nfs4_acl(struct svc_rqst *, struct dentry *,
++				struct vfsmount *mnt, struct nfs4_acl **);
+ #endif /* CONFIG_NFSD_V4 */
+ __be32		nfsd_create(struct svc_rqst *, struct svc_fh *,
+ 				char *name, int len, struct iattr *attrs,
+--- a/include/linux/xattr.h
++++ b/include/linux/xattr.h
+@@ -46,7 +46,8 @@ struct xattr_handler {
+ 		   size_t size, int flags);
+ };
+ 
+-ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
++ssize_t vfs_getxattr(struct dentry *, struct vfsmount *, char *, void *,
++		     size_t);
+ ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
+ int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
+ 		 int);
 
 -- 
