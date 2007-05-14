@@ -1,123 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966467AbXENLw4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966507AbXENLx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966467AbXENLw4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:52:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965397AbXENLel
+	id S966507AbXENLx3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966180AbXENLen
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:34:41 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27935 "EHLO
+	Mon, 14 May 2007 07:34:43 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27936 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759270AbXENLce (ORCPT
+	with ESMTP id S1759350AbXENLce (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 14 May 2007 07:32:34 -0400
-Message-Id: <20070514110614.119939036@suse.de>
+Message-Id: <20070514110623.402888903@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:24 -0700
+Date: Mon, 14 May 2007 04:06:51 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 17/45] Add a struct vfsmount parameter to vfs_unlink()
-Content-Disposition: inline; filename=vfs-unlink.diff
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: [AppArmor 44/45] Switch to vfs_permission() in sys_fchdir()
+Content-Disposition: inline; filename=sys_fchdir-nameidata.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vfsmount will be passed down to the LSM hook so that LSMs can compute
-pathnames.
+Switch from file_permission() to vfs_permission() in sys_fchdir(): this
+avoids calling permission() with a NULL nameidata here.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/ecryptfs/inode.c   |    3 ++-
- fs/namei.c            |    4 ++--
- fs/nfsd/nfs4recover.c |    2 +-
- fs/nfsd/vfs.c         |    2 +-
- include/linux/fs.h    |    2 +-
- ipc/mqueue.c          |    2 +-
- 6 files changed, 8 insertions(+), 7 deletions(-)
+ fs/open.c |   16 +++++++---------
+ 1 file changed, 7 insertions(+), 9 deletions(-)
 
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -453,10 +453,11 @@ static int ecryptfs_unlink(struct inode 
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -440,10 +440,8 @@ out:
+ 
+ asmlinkage long sys_fchdir(unsigned int fd)
  {
- 	int rc = 0;
- 	struct dentry *lower_dentry = ecryptfs_dentry_to_lower(dentry);
-+	struct vfsmount *lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
- 	struct inode *lower_dir_inode = ecryptfs_inode_to_lower(dir);
++	struct nameidata nd;
+ 	struct file *file;
+-	struct dentry *dentry;
+-	struct inode *inode;
+-	struct vfsmount *mnt;
+ 	int error;
  
- 	lock_parent(lower_dentry);
--	rc = vfs_unlink(lower_dir_inode, lower_dentry);
-+	rc = vfs_unlink(lower_dir_inode, lower_dentry, lower_mnt);
- 	if (rc) {
- 		printk(KERN_ERR "Error in vfs_unlink; rc = [%d]\n", rc);
- 		goto out_unlock;
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2105,7 +2105,7 @@ asmlinkage long sys_rmdir(const char __u
- 	return do_rmdir(AT_FDCWD, pathname);
- }
+ 	error = -EBADF;
+@@ -451,17 +449,17 @@ asmlinkage long sys_fchdir(unsigned int 
+ 	if (!file)
+ 		goto out;
  
--int vfs_unlink(struct inode *dir, struct dentry *dentry)
-+int vfs_unlink(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt)
- {
- 	int error = may_delete(dir, dentry, 0);
+-	dentry = file->f_path.dentry;
+-	mnt = file->f_path.mnt;
+-	inode = dentry->d_inode;
++	nd.dentry = file->f_path.dentry;
++	nd.mnt = file->f_path.mnt;
++	nd.flags = 0;
  
-@@ -2169,7 +2169,7 @@ static long do_unlinkat(int dfd, const c
- 		inode = dentry->d_inode;
- 		if (inode)
- 			atomic_inc(&inode->i_count);
--		error = vfs_unlink(nd.dentry->d_inode, dentry);
-+		error = vfs_unlink(nd.dentry->d_inode, dentry, nd.mnt);
- 	exit2:
- 		dput(dentry);
- 	}
---- a/fs/nfsd/nfs4recover.c
-+++ b/fs/nfsd/nfs4recover.c
-@@ -261,7 +261,7 @@ nfsd4_remove_clid_file(struct dentry *di
- 		return -EINVAL;
- 	}
- 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_PARENT);
--	status = vfs_unlink(dir->d_inode, dentry);
-+	status = vfs_unlink(dir->d_inode, dentry, rec_dir.mnt);
- 	mutex_unlock(&dir->d_inode->i_mutex);
- 	return status;
- }
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1704,7 +1704,7 @@ nfsd_unlink(struct svc_rqst *rqstp, stru
- 			host_err = -EPERM;
- 		} else
- #endif
--		host_err = vfs_unlink(dirp, rdentry);
-+		host_err = vfs_unlink(dirp, rdentry, exp->ex_mnt);
- 	} else { /* It's RMDIR */
- 		host_err = vfs_rmdir(dirp, rdentry, exp->ex_mnt);
- 	}
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -997,7 +997,7 @@ extern int vfs_mknod(struct inode *, str
- extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
- extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
- extern int vfs_rmdir(struct inode *, struct dentry *, struct vfsmount *);
--extern int vfs_unlink(struct inode *, struct dentry *);
-+extern int vfs_unlink(struct inode *, struct dentry *, struct vfsmount *);
- extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
+ 	error = -ENOTDIR;
+-	if (!S_ISDIR(inode->i_mode))
++	if (!S_ISDIR(nd.dentry->d_inode->i_mode))
+ 		goto out_putf;
  
- /*
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -749,7 +749,7 @@ asmlinkage long sys_mq_unlink(const char
- 	if (inode)
- 		atomic_inc(&inode->i_count);
- 
--	err = vfs_unlink(dentry->d_parent->d_inode, dentry);
-+	err = vfs_unlink(dentry->d_parent->d_inode, dentry, mqueue_mnt);
- out_err:
- 	dput(dentry);
- 
+-	error = file_permission(file, MAY_EXEC);
++	error = vfs_permission(&nd, MAY_EXEC);
+ 	if (!error)
+-		set_fs_pwd(current->fs, mnt, dentry);
++		set_fs_pwd(current->fs, nd.mnt, nd.dentry);
+ out_putf:
+ 	fput(file);
+ out:
 
 -- 
