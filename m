@@ -1,56 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760380AbXENUPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760153AbXENUQa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760380AbXENUPl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759345AbXENUPZ
+	id S1760153AbXENUQa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:16:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbXENUQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:15:25 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:58210 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758583AbXENUPY (ORCPT
+	Mon, 14 May 2007 16:16:21 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:52423 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755639AbXENUQT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:15:24 -0400
-Date: Mon, 14 May 2007 21:15:16 +0100
-From: Christoph Hellwig <hch@infradead.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jean Delvare <khali@linux-fr.org>,
-       Antonino Ingargiola <tritemio@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22-rc1
-Message-ID: <20070514201516.GA20783@infradead.org>
-Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Jean Delvare <khali@linux-fr.org>,
-	Antonino Ingargiola <tritemio@gmail.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org> <5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com> <20070514081022.7fcee97f@hyperion.delvare> <5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com> <20070514141437.631fcfd1@hyperion.delvare> <5486cca80705140628w5ff43ebdqf6a5413203226d5@mail.gmail.com> <20070514172138.1c870793@hyperion.delvare> <alpine.LFD.0.98.0705140914410.6739@woody.linux-foundation.org> <20070514202419.33a90f57@hyperion.delvare> <alpine.LFD.0.98.0705141139560.6739@woody.linux-foundation.org>
+	Mon, 14 May 2007 16:16:19 -0400
+Subject: Re: [RFC][PATCH 13/14] ext3 whiteout support
+From: Badari Pulavarty <pbadari@us.ibm.com>
+To: bharata@linux.vnet.ibm.com
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Jan Blunck <j.blunck@tu-harburg.de>
+In-Reply-To: <20070514094450.GO4139@in.ibm.com>
+References: <20070514093722.GB4139@in.ibm.com>
+	 <20070514094450.GO4139@in.ibm.com>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 13:16:57 -0700
+Message-Id: <1179173817.2836.69.camel@dyn9047017100.beaverton.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.0.98.0705141139560.6739@woody.linux-foundation.org>
-User-Agent: Mutt/1.4.2.2i
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.0.4 (2.0.4-4) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 11:43:45AM -0700, Linus Torvalds wrote:
+On Mon, 2007-05-14 at 15:14 +0530, Bharata B Rao wrote:
+> From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Subject: ext3 whiteout support
 > 
+> Introduce whiteout support for ext3.
 > 
-> On Mon, 14 May 2007, Jean Delvare wrote:
-> > 
-> > Sure, we don't allow that. Except for xfsprogs in 2.6.1, procps in
-> > 2.6.4, oprofile in 2.6.13 and udev in 2.6.19, of course.
+> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Signed-off-by: Jan Blunck <jblunck@suse.de>
+> ---
+>  fs/ext3/dir.c           |    2 -
+>  fs/ext3/namei.c         |   62 ++++++++++++++++++++++++++++++++++++++++++++----
+>  fs/ext3/super.c         |   11 +++++++-
+>  include/linux/ext3_fs.h |    5 +++
+>  4 files changed, 72 insertions(+), 8 deletions(-)
 > 
-> And we really complained about it! The oprofile thing should be fixed, 
-> btw, and yeah,if udev breaks any more, I'll have to stop taking patches 
-> from Greg. That thing has been a disaster, and everybody involved should 
-> be ashamed and now hopefully *very* aware of the fact that we don't break 
-> user-level interfaces.
+> --- a/fs/ext3/dir.c
+> +++ b/fs/ext3/dir.c
+> @@ -29,7 +29,7 @@
+>  #include <linux/rbtree.h>
+>  
+>  static unsigned char ext3_filetype_table[] = {
+> -	DT_UNKNOWN, DT_REG, DT_DIR, DT_CHR, DT_BLK, DT_FIFO, DT_SOCK, DT_LNK
+> +	DT_UNKNOWN, DT_REG, DT_DIR, DT_CHR, DT_BLK, DT_FIFO, DT_SOCK, DT_LNK, DT_WHT
+>  };
+>  
+>  static int ext3_readdir(struct file *, void *, filldir_t);
+> --- a/fs/ext3/namei.c
+> +++ b/fs/ext3/namei.c
+> @@ -1071,6 +1071,7 @@ static unsigned char ext3_type_by_mode[S
+>  	[S_IFIFO >> S_SHIFT]	= EXT3_FT_FIFO,
+>  	[S_IFSOCK >> S_SHIFT]	= EXT3_FT_SOCK,
+>  	[S_IFLNK >> S_SHIFT]	= EXT3_FT_SYMLINK,
+> +	[S_IFWHT >> S_SHIFT]	= EXT3_FT_WHT,
+>  };
+>  
+>  static inline void ext3_set_de_type(struct super_block *sb,
+> @@ -1786,7 +1787,7 @@ out_stop:
+>  /*
+>   * routine to check that the specified directory is empty (for rmdir)
+>   */
+> -static int empty_dir (struct inode * inode)
+> +static int empty_dir (handle_t *handle, struct inode * inode)
 
-sysfs is an even bigger desaster.  Even if people know they can't break
-userspace apis sysfs can force it on them.  As long as we tightly couple
-kernel data structures and a userspace ABI that's unavoidable.  Unfortunately
-sorting that mess out properly would be such a massive amount of work
-that it'd alsmost require a 2.7 series.
+Is there a reason for passing the handle ? Why couldn't you get it from
+journal_current_handle() if needed to do the delete the whiteout ?
+
+>  {
+>  	unsigned long offset;
+>  	struct buffer_head * bh;
+> @@ -1848,8 +1849,28 @@ static int empty_dir (struct inode * ino
+>  			continue;
+>  		}
+>  		if (le32_to_cpu(de->inode)) {
+> -			brelse (bh);
+> -			return 0;
+> +			/* If this is a whiteout, remove it */
+> +			if (de->file_type == EXT3_FT_WHT) {
+> +				unsigned long ino = le32_to_cpu(de->inode);
+> +				struct inode *tmp_inode = iget(inode->i_sb, ino);
+> +				if (!tmp_inode) {
+> +					brelse (bh);
+> +					return 0;
+> +				}
+> +
+> +				if (ext3_delete_entry(handle, inode, de, bh)) {
+> +					iput(tmp_inode);
+> +					brelse (bh);
+> +					return 0;
+> +				}
+> +
+> +				tmp_inode->i_ctime = inode->i_ctime;
+> +				tmp_inode->i_nlink--;
+> +				iput(tmp_inode);
+> +			} else {
+> +				brelse (bh);
+> +				return 0;
+> +			}
+>  		}
+>  		offset += le16_to_cpu(de->rec_len);
+>  		de = (struct ext3_dir_entry_2 *)
+> @@ -2031,7 +2052,7 @@ static int ext3_rmdir (struct inode * di
+>  		goto end_rmdir;
+>  
+>  	retval = -ENOTEMPTY;
+> -	if (!empty_dir (inode))
+> +	if (!empty_dir (handle, inode))
+>  		goto end_rmdir;
+>  
+>  	retval = ext3_delete_entry(handle, dir, de, bh);
+> @@ -2060,6 +2081,36 @@ end_rmdir:
+>  	return retval;
+>  }
+>  
+> +static int ext3_whiteout(struct inode *dir, struct dentry *dentry)
+> +{
+> +	struct inode * inode;
+> +	int err, retries = 0;
+> +	handle_t *handle;
+> +
+> +retry:
+> +	handle = ext3_journal_start(dir, EXT3_DATA_TRANS_BLOCKS(dir->i_sb) +
+> +					EXT3_INDEX_EXTRA_TRANS_BLOCKS + 3 +
+> +					2*EXT3_QUOTA_INIT_BLOCKS(dir->i_sb));
+> +	if (IS_ERR(handle))
+> +		return PTR_ERR(handle);
+> +
+> +	if (IS_DIRSYNC(dir))
+> +		handle->h_sync = 1;
+> +
+> +	inode = ext3_new_inode (handle, dir, S_IFWHT | S_IRUGO);
+> +	err = PTR_ERR(inode);
+> +	if (IS_ERR(inode))
+> +		goto out_stop;
+
+Don't you need to call init_special_inode() here ?
+Or this is handled somewhere else ?
+
+> +
+> +	err = ext3_add_nondir(handle, dentry, inode);
+> +
+> +out_stop:
+> +	ext3_journal_stop(handle);
+> +	if (err == -ENOSPC && ext3_should_retry_alloc(dir->i_sb, &retries))
+> +		goto retry;
+> +	return err;
+> +}
+> +
+
+Thanks,
+Badari
 
