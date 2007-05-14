@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758351AbXENTET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbXENTEr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758351AbXENTET (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbXENTEE
+	id S1758630AbXENTEr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:04:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755032AbXENTEg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:04:04 -0400
-Received: from ug-out-1314.google.com ([66.249.92.172]:33746 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752864AbXENTEB (ORCPT
+	Mon, 14 May 2007 15:04:36 -0400
+Received: from smtp-101-monday.noc.nerim.net ([62.4.17.101]:2924 "EHLO
+	mallaury.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755038AbXENTEf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:04:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:subject:content-type:content-transfer-encoding;
-        b=L1xwUEgs3ikaC9FGRX0I0w2wXolbDu49eme6+2Ux69IDZT7xQ+vWmPlbnq8xC0N1uENaOFR8hLcC6hO2l70v8A/oHV92HJKgmPA9F0c9W7kaLRN7sp/kXG3KJcA8hUVlYCzj9GwNGgog/pG7eoljIiPVNUkXW/OVD2DEzZhl26U=
-Message-ID: <4648B29A.6080406@gmail.com>
-Date: Mon, 14 May 2007 23:03:54 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
-MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Subject: pci probe
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 14 May 2007 15:04:35 -0400
+Date: Mon, 14 May 2007 21:05:22 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: i2c@lm-sensors.org, linux-kernel@vger.kernel.org,
+       "Alessandro Zummo" <alessandro.zummo@towertech.it>
+Subject: Re: [PATCH] Add driver for Dallas DS1682 elapsed time recorder
+Message-ID: <20070514210522.6b1ae8bc@hyperion.delvare>
+In-Reply-To: <528646bc0705141029w397b11cejec17c770d64d7ce5@mail.gmail.com>
+References: <20070513073906.24149.1292.stgit@trillian.secretlab.ca>
+	<20070514105600.5095d38e@hyperion.delvare>
+	<528646bc0705141029w397b11cejec17c770d64d7ce5@mail.gmail.com>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, 14 May 2007 11:29:04 -0600, Grant Likely wrote:
+> BTW, I've just left the driver in drivers/i2c/chips.  It seems
+> sufficiently different from an rtc (and the interface is totally
+> difference) that putting it in drivers/rtc seems wrong.  If you
+> disagree, I can change this.
 
-I do have a device that's a multifunction device. Eventhough a MFD, it
-just has one Interrupt which is shared by by a Configuration space for
-each function. ie, INTA is shared between them functions.
+That's fine with me, I have no strong opinion on this.
 
-In such a case, i am wondering, (since pci_probe returns a pointer to
-one PCI function alone and i need to use both the functions in one
-module alone rather than using a module for each function and that the
-functions are quite similar for them to be used in different modules,
-such that a separate probe/ISR etc is used) whether using pci_get_device
-would be a better alternative to do manual searching for the functions
-in such a case.
+> Thanks for the comments,
+> g.
 
+You're welcome.
 
-Thanks,
-Manu
+-- 
+Jean Delvare
