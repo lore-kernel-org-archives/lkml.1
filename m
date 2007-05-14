@@ -1,88 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbXENV2R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756828AbXENVfB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758606AbXENV2R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 17:28:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbXENV2E
+	id S1756828AbXENVfB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 17:35:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754358AbXENVez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 17:28:04 -0400
-Received: from uhweb15152.united-hoster.com ([85.88.15.152]:47212 "EHLO
-	uhweb15152.united-hoster.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754252AbXENV2D (ORCPT
+	Mon, 14 May 2007 17:34:55 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:1421 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754331AbXENVey (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 17:28:03 -0400
-From: Frank Seidel <frank@kernalert.de>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: [PATCH] drivers/net/skfp/drvfbi.c: trivial cleanup
-User-Agent: KMail/1.9.5
+	Mon, 14 May 2007 17:34:54 -0400
+X-AuthUser: davidel@xmailserver.org
+From: Davide Libenzi <davidel@xmailserver.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Date: Mon, 14 May 2007 14:34:53 -0700
+Subject: [patch 1/1] export eventfd symbols ...
 MIME-Version: 1.0
-Content-Disposition: inline
-Cc: linux@syskonnect.de
-Date: Mon, 14 May 2007 23:27:52 +0200
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200705142327.52458.frank@kernalert.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Message-ID: <send-serie.davidel@xmailserver.org.25077.1179178493.1>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch (for 2.6.21-mm2) contains a trivial cleanup:
-- removes unused exist_board() variation
-- removed part is depecrated and doesn't compile anymore
+Export eventfd kernel functions to modules.
 
-Signed-off-by: Frank Seidel <frank@kernalert.de>
 
----
- drivers/net/skfp/drvfbi.c |   40 ----------------------------------------
- 1 file changed, 40 deletions(-)
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
 
-Index: b/drivers/net/skfp/drvfbi.c
+
+- Davide
+
+
+Index: linux-2.6.21-git17.epmod/fs/eventfd.c
 ===================================================================
---- a/drivers/net/skfp/drvfbi.c
-+++ b/drivers/net/skfp/drvfbi.c
-@@ -1224,46 +1224,6 @@ int get_board_para(struct s_smc *smc, in
- }
- #endif	/* ISA */
+--- linux-2.6.21-git17.epmod.orig/fs/eventfd.c	2007-05-14 14:27:29.000000000 -0700
++++ linux-2.6.21-git17.epmod/fs/eventfd.c	2007-05-14 14:28:16.000000000 -0700
+@@ -55,6 +55,7 @@
  
--#ifdef PCI
--#ifdef USE_BIOS_FUN
--int exist_board(struct s_smc *smc, int slot)
--{
--	u_short dev_id ;
--	u_short ven_id ;
--	int found ; 
--	int i ;
--
--	found = FALSE ;		/* make sure we returned with adatper not found*/
--				/* if an empty oemids.h was included */
--
--#ifdef MULT_OEM
--        smc->hw.oem_id = (struct s_oem_ids *) &oem_ids[0] ;
--	for (; smc->hw.oem_id->oi_status != OI_STAT_LAST; smc->hw.oem_id++) {
--		if (smc->hw.oem_id->oi_status < smc->hw.oem_min_status)
--			continue ;
--#endif
--		ven_id = OEMID(smc,0) + (OEMID(smc,1) << 8) ; 
--		dev_id = OEMID(smc,2) + (OEMID(smc,3) << 8) ; 
--		for (i = 0; i < slot; i++) {
--			if (pci_find_device(i,&smc->hw.pci_handle,
--				dev_id,ven_id) != 0) {
--
--				found = FALSE ;
--			} else {
--				found = TRUE ;
--			}
--		}
--		if (found) {
--			return(1) ;	/* adapter was found */
--		}
--#ifdef MULT_OEM
--	}
--#endif
--	return(0) ;	/* adapter was not found */
--}
--#endif	/* PCI */
--#endif	/* USE_BIOS_FUNC */
--
- void driver_get_bia(struct s_smc *smc, struct fddi_addr *bia_addr)
+ 	return n;
+ }
++EXPORT_SYMBOL_GPL(eventfd_signal);
+ 
+ static int eventfd_release(struct inode *inode, struct file *file)
  {
- 	int i ;
+@@ -197,6 +198,7 @@
+ 
+ 	return file;
+ }
++EXPORT_SYMBOL_GPL(eventfd_fget);
+ 
+ asmlinkage long sys_eventfd(unsigned int count)
+ {
+
