@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760853AbXENUmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759055AbXENUpw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760853AbXENUmi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758956AbXENUmY
+	id S1759055AbXENUpw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:45:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755507AbXENUpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:42:24 -0400
-Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:4517 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758409AbXENUmW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:42:22 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Subject: Re: [announce] Intel announces the PowerTOP utility for Linux
-Date: Mon, 14 May 2007 21:42:07 +0100
-User-Agent: KMail/1.9.6
-Cc: Arjan van de Ven <arjan@linux.intel.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-acpi@vger.kernel.org
-References: <4644F726.1050806@linux.intel.com> <200705122212.43653.s0348365@sms.ed.ac.uk> <Pine.LNX.4.61.0705142221440.9570@yvahk01.tjqt.qr>
-In-Reply-To: <Pine.LNX.4.61.0705142221440.9570@yvahk01.tjqt.qr>
+	Mon, 14 May 2007 16:45:43 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:55777 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754581AbXENUpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:45:42 -0400
+Date: Mon, 14 May 2007 22:38:46 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH  2/14] Add a new mount flag (MNT_UNION) for union
+ mount
+In-Reply-To: <20070514093902.GD4139@in.ibm.com>
+Message-ID: <Pine.LNX.4.61.0705142237270.9570@yvahk01.tjqt.qr>
+References: <20070514093722.GB4139@in.ibm.com> <20070514093902.GD4139@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705142142.07983.s0348365@sms.ed.ac.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 May 2007 21:22:50 Jan Engelhardt wrote:
-> On May 12 2007 22:12, Alistair John Strachan wrote:
-> >On Saturday 12 May 2007 00:07:18 Arjan van de Ven wrote:
-> >> What's eating the battery life of my laptop? Why isn't it many more
-> >> hours? Which software component causes the most power to be burned?
-> >> These are important questions without a good answer... until now.
-> >
-> >This is a really great tool and presents a very intuitive alternative to
-> > the timer stats file..
-> >
-> >On a Core 2 Duo Macbook, Linux always gets around 3.2h battery, OS X about
-> >4.2h. This tool has identified that uhci_hcd is where 75% of the ticks are
-> >going when X is not loaded. Unloading uhci_hcd drops the battery life back
-> > to around 4.2h, but I lose the keyboard.
-> >
-> >Is there any way to find out what USB driver is causing usb_uhci to be
-> > this busy?
+
+On May 14 2007 15:09, Bharata B Rao wrote:
 >
-> At its worst, it _is_ the USB chip that draws the power when it is active
-> (when uhci_hcd is loaded); does not need to be usbhid or so.
+>Introduce MNT_UNION, MS_UNION and FS_WHT flags. There are the necessary flags
+>for doing
+>
+>    mount /dev/hda3 /mnt -o union
+>
+>You need additional patches for util-linux for that to work.
+>
+>Signed-off-by: Jan Blunck <j.blunck@tu-harburg.de>
+>Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+>---
+> 
+>+	/* Unions couldn't be writable if the filesystem
+>+	 * doesn't know about whiteouts */
+>+	err = -ENOTSUPP;
+>+	if ((mnt_flags & MNT_UNION) &&
+>+	    !(newmnt->mnt_sb->s_flags & MS_RDONLY) &&
+>+	    !(newmnt->mnt_sb->s_type->fs_flags & FS_WHT))
+>+		goto unlock;
+>+
 
-This is certainly true, and to a significant extent it _was_ the uhci_hcd, but 
-it turns out the main contributor to HZ here were the appletouch and hci_usb 
-drivers. Disabling both drops the ticks down from about 850 to 150.
+Maybe I am too biased towards unionfs/aufs, but if I have an {rw,rw} union
+with whiteouts disabled (delete=all in unionfs speak), then FS_WHT
+does not need to be supported. Your patches do not seem to do
+delete=all semantics, do they?
 
+	Jan
 -- 
-Cheers,
-Alistair.
-
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
