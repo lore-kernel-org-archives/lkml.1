@@ -1,66 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031977AbXENLnj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031066AbXENLoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031977AbXENLnj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:43:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030308AbXENLdg
+	id S1031066AbXENLoA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964974AbXENLci
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:33:36 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27940 "EHLO
+	Mon, 14 May 2007 07:32:38 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27928 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965287AbXENLcn (ORCPT
+	with ESMTP id S1756445AbXENLc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:43 -0400
-Message-Id: <20070514110622.445501044@suse.de>
+	Mon, 14 May 2007 07:32:26 -0400
+Message-Id: <20070514110611.443075604@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:48 -0700
+Date: Mon, 14 May 2007 04:06:17 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       John Johansen <jjohansen@suse.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: [AppArmor 41/45] Add AppArmor LSM to security/Makefile
-Content-Disposition: inline; filename=apparmor-intree.diff
+       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 10/45] Pass struct vfsmount to the inode_symlink LSM hook
+Content-Disposition: inline; filename=security-symlink.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: John Johansen <jjohansen@suse.de>
+This is needed for computing pathnames in the AppArmor LSM.
+
+Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- security/Kconfig          |    1 +
- security/Makefile         |    1 +
- security/apparmor/Kconfig |    3 ++-
- 3 files changed, 4 insertions(+), 1 deletion(-)
+ fs/namei.c               |    2 +-
+ include/linux/security.h |    9 ++++++---
+ security/dummy.c         |    2 +-
+ security/selinux/hooks.c |    3 ++-
+ 4 files changed, 10 insertions(+), 6 deletions(-)
 
---- a/security/Kconfig
-+++ b/security/Kconfig
-@@ -94,6 +94,7 @@ config SECURITY_ROOTPLUG
- 	  If you are unsure how to answer this question, answer N.
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -2214,7 +2214,7 @@ int vfs_symlink(struct inode *dir, struc
+ 	if (!dir->i_op || !dir->i_op->symlink)
+ 		return -EPERM;
  
- source security/selinux/Kconfig
-+source security/apparmor/Kconfig
+-	error = security_inode_symlink(dir, dentry, oldname);
++	error = security_inode_symlink(dir, dentry, mnt, oldname);
+ 	if (error)
+ 		return error;
  
- endmenu
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -301,6 +301,7 @@ struct request_sock;
+  *	Check the permission to create a symbolic link to a file.
+  *	@dir contains the inode structure of parent directory of the symbolic link.
+  *	@dentry contains the dentry structure of the symbolic link.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	@old_name contains the pathname of file.
+  *	Return 0 if permission is granted.
+  * @inode_mkdir:
+@@ -1213,8 +1214,8 @@ struct security_operations {
+ 	int (*inode_link) (struct dentry *old_dentry,
+ 	                   struct inode *dir, struct dentry *new_dentry);
+ 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
+-	int (*inode_symlink) (struct inode *dir,
+-	                      struct dentry *dentry, const char *old_name);
++	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
++			      struct vfsmount *mnt, const char *old_name);
+ 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
+ 			    struct vfsmount *mnt, int mode);
+ 	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
+@@ -1644,11 +1645,12 @@ static inline int security_inode_unlink 
  
---- a/security/Makefile
-+++ b/security/Makefile
-@@ -14,5 +14,6 @@ endif
- obj-$(CONFIG_SECURITY)			+= security.o dummy.o inode.o
- # Must precede capability.o in order to stack properly.
- obj-$(CONFIG_SECURITY_SELINUX)		+= selinux/built-in.o
-+obj-$(CONFIG_SECURITY_APPARMOR)		+= commoncap.o apparmor/
- obj-$(CONFIG_SECURITY_CAPABILITIES)	+= commoncap.o capability.o
- obj-$(CONFIG_SECURITY_ROOTPLUG)		+= commoncap.o root_plug.o
---- a/security/apparmor/Kconfig
-+++ b/security/apparmor/Kconfig
-@@ -1,6 +1,7 @@
- config SECURITY_APPARMOR
- 	tristate "AppArmor support"
--	depends on SECURITY!=n
-+	depends on SECURITY
-+	select AUDIT
- 	help
- 	  This enables the AppArmor security module.
- 	  Required userspace tools (if they are not included in your
+ static inline int security_inode_symlink (struct inode *dir,
+ 					  struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  const char *old_name)
+ {
+ 	if (unlikely (IS_PRIVATE (dir)))
+ 		return 0;
+-	return security_ops->inode_symlink (dir, dentry, old_name);
++	return security_ops->inode_symlink (dir, dentry, mnt, old_name);
+ }
+ 
+ static inline int security_inode_mkdir (struct inode *dir,
+@@ -2369,6 +2371,7 @@ static inline int security_inode_unlink 
+ 
+ static inline int security_inode_symlink (struct inode *dir,
+ 					  struct dentry *dentry,
++					  struct vfsmount *mnt,
+ 					  const char *old_name)
+ {
+ 	return 0;
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -282,7 +282,7 @@ static int dummy_inode_unlink (struct in
+ }
+ 
+ static int dummy_inode_symlink (struct inode *inode, struct dentry *dentry,
+-				const char *name)
++				struct vfsmount *mnt, const char *name)
+ {
+ 	return 0;
+ }
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2202,7 +2202,8 @@ static int selinux_inode_unlink(struct i
+ 	return may_link(dir, dentry, MAY_UNLINK);
+ }
+ 
+-static int selinux_inode_symlink(struct inode *dir, struct dentry *dentry, const char *name)
++static int selinux_inode_symlink(struct inode *dir, struct dentry *dentry,
++				 struct vfsmount *mnt, const char *name)
+ {
+ 	return may_create(dir, dentry, SECCLASS_LNK_FILE);
+ }
 
 -- 
