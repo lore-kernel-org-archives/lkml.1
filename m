@@ -1,68 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762584AbXENLlL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbXENLlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762584AbXENLlL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:41:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030684AbXENLdT
+	id S1762944AbXENLlk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760647AbXENLdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:33:19 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27936 "EHLO
+	Mon, 14 May 2007 07:33:22 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27931 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762223AbXENLcl (ORCPT
+	with ESMTP id S1762247AbXENLcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:41 -0400
-Message-Id: <20070514110613.785404825@suse.de>
+	Mon, 14 May 2007 07:32:42 -0400
+Message-Id: <20070514110618.530920481@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:23 -0700
+Date: Mon, 14 May 2007 04:06:37 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       John Johansen <jjohansen@suse.de>, Andreas Gruenbacher <agruen@suse.de>
-Subject: [AppArmor 16/45] Call lsm hook before unhashing dentry in vfs_rmdir()
-Content-Disposition: inline; filename=fix-vfs_rmdir.diff
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: [AppArmor 30/45] Make d_path() consistent across mount operations
+Content-Disposition: inline; filename=mount-consistent-__d_path.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If we unhash the dentry before calling the security_inode_rmdir hook,
-we cannot compute the file's pathname in the hook anymore. AppArmor
-needs to know the filename in order to decide whether a file may be
-deleted, though.
+The path that __d_path() computes can become slightly inconsistent when it
+races with mount operations: it grabs the vfsmount_lock when traversing mount
+points but immediately drops it again, only to re-grab it when it reaches the
+next mount point.  The result is that the filename computed is not always
+consisent, and the file may never have had that name. (This is unlikely, but
+still possible.)
 
-Signed-off-by: John Johansen <jjohansen@suse.de>
+Fix this by grabbing the vfsmount_lock when the first mount point is reached,
+and holding onto it until the d_cache lookup is completed.
+
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 
 ---
- fs/namei.c |   13 +++++++------
- 1 file changed, 7 insertions(+), 6 deletions(-)
+ fs/dcache.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2034,6 +2034,10 @@ int vfs_rmdir(struct inode *dir, struct 
- 	if (!dir->i_op || !dir->i_op->rmdir)
- 		return -EPERM;
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1783,7 +1783,7 @@ static char *__d_path(struct dentry *den
+ 		      struct dentry *root, struct vfsmount *rootmnt,
+ 		      char *buffer, int buflen, int fail_deleted)
+ {
+-	int namelen, is_slash;
++	int namelen, is_slash, vfsmount_locked = 0;
  
-+	error = security_inode_rmdir(dir, dentry, mnt);
-+	if (error)
-+		return error;
-+
- 	DQUOT_INIT(dir);
+ 	if (buflen < 2)
+ 		return ERR_PTR(-ENAMETOOLONG);
+@@ -1806,14 +1806,14 @@ static char *__d_path(struct dentry *den
+ 		struct dentry * parent;
  
- 	mutex_lock(&dentry->d_inode->i_mutex);
-@@ -2041,12 +2045,9 @@ int vfs_rmdir(struct inode *dir, struct 
- 	if (d_mountpoint(dentry))
- 		error = -EBUSY;
- 	else {
--		error = security_inode_rmdir(dir, dentry, mnt);
--		if (!error) {
--			error = dir->i_op->rmdir(dir, dentry);
--			if (!error)
--				dentry->d_inode->i_flags |= S_DEAD;
--		}
-+		error = dir->i_op->rmdir(dir, dentry);
-+		if (!error)
-+			dentry->d_inode->i_flags |= S_DEAD;
- 	}
- 	mutex_unlock(&dentry->d_inode->i_mutex);
- 	if (!error) {
+ 		if (dentry == vfsmnt->mnt_root || IS_ROOT(dentry)) {
+-			spin_lock(&vfsmount_lock);
+-			if (vfsmnt->mnt_parent == vfsmnt) {
+-				spin_unlock(&vfsmount_lock);
+-				goto global_root;
++			if (!vfsmount_locked) {
++				spin_lock(&vfsmount_lock);
++				vfsmount_locked = 1;
+ 			}
++			if (vfsmnt->mnt_parent == vfsmnt)
++				goto global_root;
+ 			dentry = vfsmnt->mnt_mountpoint;
+ 			vfsmnt = vfsmnt->mnt_parent;
+-			spin_unlock(&vfsmount_lock);
+ 			continue;
+ 		}
+ 		parent = dentry->d_parent;
+@@ -1832,6 +1832,8 @@ static char *__d_path(struct dentry *den
+ 		*--buffer = '/';
+ 
+ out:
++	if (vfsmount_locked)
++		spin_unlock(&vfsmount_lock);
+ 	spin_unlock(&dcache_lock);
+ 	return buffer;
+ 
 
 -- 
