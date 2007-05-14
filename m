@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756622AbXENPx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756713AbXENPz1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756622AbXENPx3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 11:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbXENPxW
+	id S1756713AbXENPz1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 11:55:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753072AbXENPzR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 11:53:22 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:54227 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754462AbXENPxW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 11:53:22 -0400
-Date: Mon, 14 May 2007 08:53:21 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Thomas Graf <tgraf@suug.ch>, David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <20070514131904.440041502@chello.nl>
-Message-ID: <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
+	Mon, 14 May 2007 11:55:17 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:49510 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752141AbXENPzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 11:55:16 -0400
+Message-ID: <4648865E.5030706@redhat.com>
+Date: Mon, 14 May 2007 11:55:10 -0400
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Thunderbird 1.5.0.7 (X11/20061004)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: linux@horizon.com
+CC: learninglinux4@gmail.com, linux-kernel@vger.kernel.org,
+       linux-newbie@vger.kernel.org
+Subject: Re: Why can't we sleep in an ISR?
+References: <20070514152218.19773.qmail@science.horizon.com>
+In-Reply-To: <20070514152218.19773.qmail@science.horizon.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007, Peter Zijlstra wrote:
+linux@horizon.com wrote:
+> Sleeping in an ISR is not fundamentally impossible - I could design
+> a multitasker that permitted it - but has significant problems, and
+> most multitaskers, including Linux, forbid it.
 
-> In the interest of creating a reserve based allocator; we need to make the slab
-> allocator (*sigh*, all three) fair with respect to GFP flags.
+You could design a system in which most ISRs can sleep,
+but even then you'll probably need to make exceptions.
 
-I am not sure what the point of all of this is. 
+For example, the timer interrupt tends to drive the
+scheduler.  This means the timer interrupt cannot go
+to sleep and expect the scheduler to wake it up at
+some point in the future - since there will be no new
+timer interrupts to drive the scheduler.
 
-> That is, we need to protect memory from being used by easier gfp flags than it
-> was allocated with. If our reserve is placed below GFP_ATOMIC, we do not want a
-> GFP_KERNEL allocation to walk away with it - a scenario that is perfectly
-> possible with the current allocators.
+This precludes the timer interrupt from taking certain
+sleeping locks, even on a system where interrupts can
+sleep (not Linux).
 
-Why does this have to handled by the slab allocators at all? If you have 
-free pages in the page allocator then the slab allocators will be able to 
-use that reserve.
+Interrupts will always have some limitations, under
+any OS design.
 
+-- 
+All Rights Reversed
