@@ -1,118 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031066AbXENLoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966362AbXENLo0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031066AbXENLoA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S964974AbXENLci
+	id S966362AbXENLo0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:44:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966054AbXENLcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:32:38 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27928 "EHLO
+	Mon, 14 May 2007 07:32:46 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27938 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756445AbXENLc0 (ORCPT
+	with ESMTP id S1758694AbXENLca (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:26 -0400
-Message-Id: <20070514110611.443075604@suse.de>
+	Mon, 14 May 2007 07:32:30 -0400
+Message-Id: <20070514110619.218431008@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:17 -0700
+Date: Mon, 14 May 2007 04:06:39 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 10/45] Pass struct vfsmount to the inode_symlink LSM hook
-Content-Disposition: inline; filename=security-symlink.diff
+       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>,
+       Miklos Szeredi <mszeredi@suse.cz>
+Subject: [AppArmor 32/45] Enable LSM hooks to distinguish operations on file descriptors from operations on pathnames
+Content-Disposition: inline; filename=file-handle-ops.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+Struct iattr already contains ia_file since commit cc4e69de from 
+Miklos (which is related to commit befc649c). Use this to pass
+struct file down the setattr hooks. This allows LSMs to distinguish
+operations on file descriptors from operations on paths.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
+Cc: Miklos Szeredi <mszeredi@suse.cz>
 
 ---
- fs/namei.c               |    2 +-
- include/linux/security.h |    9 ++++++---
- security/dummy.c         |    2 +-
- security/selinux/hooks.c |    3 ++-
- 4 files changed, 10 insertions(+), 6 deletions(-)
+ fs/nfsd/vfs.c      |   12 +++++++-----
+ fs/open.c          |   16 +++++++++++-----
+ include/linux/fs.h |    3 +++
+ 3 files changed, 21 insertions(+), 10 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2214,7 +2214,7 @@ int vfs_symlink(struct inode *dir, struc
- 	if (!dir->i_op || !dir->i_op->symlink)
- 		return -EPERM;
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -383,7 +383,7 @@ static ssize_t nfsd_getxattr(struct dent
+ {
+ 	ssize_t buflen;
  
--	error = security_inode_symlink(dir, dentry, oldname);
-+	error = security_inode_symlink(dir, dentry, mnt, oldname);
+-	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0);
++	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0, NULL);
+ 	if (buflen <= 0)
+ 		return buflen;
+ 
+@@ -391,7 +391,7 @@ static ssize_t nfsd_getxattr(struct dent
+ 	if (!*buf)
+ 		return -ENOMEM;
+ 
+-	return vfs_getxattr(dentry, mnt, key, *buf, buflen);
++	return vfs_getxattr(dentry, mnt, key, *buf, buflen, NULL);
+ }
+ #endif
+ 
+@@ -417,7 +417,7 @@ set_nfsv4_acl_one(struct dentry *dentry,
+ 		goto out;
+ 	}
+ 
+-	error = vfs_setxattr(dentry, mnt, key, buf, len, 0);
++	error = vfs_setxattr(dentry, mnt, key, buf, len, 0, NULL);
+ out:
+ 	kfree(buf);
+ 	return error;
+@@ -1992,12 +1992,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+ 
+ 	mnt = fhp->fh_export->ex_mnt;
+ 	if (size)
+-		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size,0);
++		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size, 0,
++				     NULL);
+ 	else {
+ 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
+ 			error = 0;
+ 		else {
+-			error = vfs_removexattr(fhp->fh_dentry, mnt, name);
++			error = vfs_removexattr(fhp->fh_dentry, mnt, name,
++						NULL);
+ 			if (error == -ENODATA)
+ 				error = 0;
+ 		}
+--- a/fs/open.c
++++ b/fs/open.c
+@@ -522,6 +522,8 @@ asmlinkage long sys_fchmod(unsigned int 
+ 		mode = inode->i_mode;
+ 	newattrs.ia_mode = (mode & S_IALLUGO) | (inode->i_mode & ~S_IALLUGO);
+ 	newattrs.ia_valid = ATTR_MODE | ATTR_CTIME;
++	newattrs.ia_valid |= ATTR_FILE;
++	newattrs.ia_file = file;
+ 	err = notify_change(dentry, file->f_path.mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+ 
+@@ -572,7 +574,7 @@ asmlinkage long sys_chmod(const char __u
+ }
+ 
+ static int chown_common(struct dentry * dentry, struct vfsmount *mnt,
+-			uid_t user, gid_t group)
++			uid_t user, gid_t group, struct file *file)
+ {
+ 	struct inode * inode;
+ 	int error;
+@@ -600,6 +602,10 @@ static int chown_common(struct dentry * 
+ 	}
+ 	if (!S_ISDIR(inode->i_mode))
+ 		newattrs.ia_valid |= ATTR_KILL_SUID|ATTR_KILL_SGID;
++	if (file) {
++		newattrs.ia_file = file;
++		newattrs.ia_valid |= ATTR_FILE;
++	}
+ 	mutex_lock(&inode->i_mutex);
+ 	error = notify_change(dentry, mnt, &newattrs);
+ 	mutex_unlock(&inode->i_mutex);
+@@ -615,7 +621,7 @@ asmlinkage long sys_chown(const char __u
+ 	error = user_path_walk(filename, &nd);
  	if (error)
- 		return error;
+ 		goto out;
+-	error = chown_common(nd.dentry, nd.mnt, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -635,7 +641,7 @@ asmlinkage long sys_fchownat(int dfd, co
+ 	error = __user_walk_fd(dfd, filename, follow, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, nd.mnt, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -649,7 +655,7 @@ asmlinkage long sys_lchown(const char __
+ 	error = user_path_walk_link(filename, &nd);
+ 	if (error)
+ 		goto out;
+-	error = chown_common(nd.dentry, nd.mnt, user, group);
++	error = chown_common(nd.dentry, nd.mnt, user, group, NULL);
+ 	path_release(&nd);
+ out:
+ 	return error;
+@@ -668,7 +674,7 @@ asmlinkage long sys_fchown(unsigned int 
  
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -301,6 +301,7 @@ struct request_sock;
-  *	Check the permission to create a symbolic link to a file.
-  *	@dir contains the inode structure of parent directory of the symbolic link.
-  *	@dentry contains the dentry structure of the symbolic link.
-+ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
-  *	@old_name contains the pathname of file.
-  *	Return 0 if permission is granted.
-  * @inode_mkdir:
-@@ -1213,8 +1214,8 @@ struct security_operations {
- 	int (*inode_link) (struct dentry *old_dentry,
- 	                   struct inode *dir, struct dentry *new_dentry);
- 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
--	int (*inode_symlink) (struct inode *dir,
--	                      struct dentry *dentry, const char *old_name);
-+	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
-+			      struct vfsmount *mnt, const char *old_name);
- 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
- 			    struct vfsmount *mnt, int mode);
- 	int (*inode_rmdir) (struct inode *dir, struct dentry *dentry);
-@@ -1644,11 +1645,12 @@ static inline int security_inode_unlink 
- 
- static inline int security_inode_symlink (struct inode *dir,
- 					  struct dentry *dentry,
-+					  struct vfsmount *mnt,
- 					  const char *old_name)
- {
- 	if (unlikely (IS_PRIVATE (dir)))
- 		return 0;
--	return security_ops->inode_symlink (dir, dentry, old_name);
-+	return security_ops->inode_symlink (dir, dentry, mnt, old_name);
- }
- 
- static inline int security_inode_mkdir (struct inode *dir,
-@@ -2369,6 +2371,7 @@ static inline int security_inode_unlink 
- 
- static inline int security_inode_symlink (struct inode *dir,
- 					  struct dentry *dentry,
-+					  struct vfsmount *mnt,
- 					  const char *old_name)
- {
- 	return 0;
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -282,7 +282,7 @@ static int dummy_inode_unlink (struct in
- }
- 
- static int dummy_inode_symlink (struct inode *inode, struct dentry *dentry,
--				const char *name)
-+				struct vfsmount *mnt, const char *name)
- {
- 	return 0;
- }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2202,7 +2202,8 @@ static int selinux_inode_unlink(struct i
- 	return may_link(dir, dentry, MAY_UNLINK);
- }
- 
--static int selinux_inode_symlink(struct inode *dir, struct dentry *dentry, const char *name)
-+static int selinux_inode_symlink(struct inode *dir, struct dentry *dentry,
-+				 struct vfsmount *mnt, const char *name)
- {
- 	return may_create(dir, dentry, SECCLASS_LNK_FILE);
- }
+ 	dentry = file->f_path.dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = chown_common(dentry, file->f_path.mnt, user, group);
++	error = chown_common(dentry, file->f_path.mnt, user, group, file);
+ 	fput(file);
+ out:
+ 	return error;
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -351,6 +351,9 @@ struct iattr {
+ 	 * Not an attribute, but an auxilary info for filesystems wanting to
+ 	 * implement an ftruncate() like method.  NOTE: filesystem should
+ 	 * check for (ia_valid & ATTR_FILE), and not for (ia_file != NULL).
++	 *
++	 * The LSM hooks also use this to distinguish operations on a file
++	 * descriptors from operations on pathnames.
+ 	 */
+ 	struct file	*ia_file;
+ };
 
 -- 
