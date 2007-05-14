@@ -1,267 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbXENXnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbXENXoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758316AbXENXnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 19:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754537AbXENXnF
+	id S1759995AbXENXoy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 19:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbXENXop
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 19:43:05 -0400
-Received: from e34.co.us.ibm.com ([32.97.110.152]:43599 "EHLO
-	e34.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754478AbXENXnB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 19:43:01 -0400
-Date: Mon, 14 May 2007 18:42:58 -0500
-To: Jeff Garzik <jgarzik@pobox.com>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz, netdev@vger.kernel.org,
-       James.Bottomley@SteelEye.com, linux-kernel@vger.kernel.org,
-       Ramkrishna Vepa <Ramkrishna.Vepa@neterion.com>,
-       Raghavendra Koushik <raghavendra.koushik@neterion.com>,
-       Wen Xiong <wenxiong@us.ibm.com>
-Subject: Re: [PATCH 1/2] s2io: add PCI error recovery support
-Message-ID: <20070514234258.GC4511@austin.ibm.com>
-References: <20070514233730.GA4511@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514233730.GA4511@austin.ibm.com>
-User-Agent: Mutt/1.5.11
-From: linas@austin.ibm.com (Linas Vepstas)
+	Mon, 14 May 2007 19:44:45 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:47625 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754419AbXENXon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 19:44:43 -0400
+Date: Tue, 15 May 2007 09:44:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
+       cmm@us.ibm.com
+Subject: Re: [PATCH 1/5][TAKE2] fallocate() implementation on i86, x86_64
+ and powerpc
+Message-Id: <20070515094436.d441098f.sfr@canb.auug.org.au>
+In-Reply-To: <20070514144524.GA31748@amitarora.in.ibm.com>
+References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
+	<20070330071417.GI355@devserv.devel.redhat.com>
+	<20070417125514.GA7574@amitarora.in.ibm.com>
+	<20070418130600.GW5967@schatzie.adilger.int>
+	<20070420135146.GA21352@amitarora.in.ibm.com>
+	<20070420145918.GY355@devserv.devel.redhat.com>
+	<20070424121632.GA10136@amitarora.in.ibm.com>
+	<20070426175056.GA25321@amitarora.in.ibm.com>
+	<20070514132926.GA30768@amitarora.in.ibm.com>
+	<20070514142820.GA31468@amitarora.in.ibm.com>
+	<20070514144524.GA31748@amitarora.in.ibm.com>
+X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__15_May_2007_09_44_36_+1000_FmQQEkgMAA8ZAwtk"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__15_May_2007_09_44_36_+1000_FmQQEkgMAA8ZAwtk
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-I failed to cc some of the people on the cc list ... so am resending.
---linas
+On Mon, 14 May 2007 20:15:24 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
+>
+> This patch implements sys_fallocate() and adds support on i386, x86_64
+> and powerpc platforms.
 
-On Mon, May 14, 2007 at 06:37:30PM -0500, Linas Vepstas wrote:
-> 
-> This patch adds PCI error recovery support to the 
-> s2io 10-Gigabit ethernet device driver. Third revision,
-> blocks interrupts and the watchdog.
-> 
-> Tested, seems to work well.
-> 
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-> Acked-by: Ramkrishna Vepa <Ramkrishna.Vepa@neterion.com>
-> Cc: Raghavendra Koushik <raghavendra.koushik@neterion.com>
-> Cc: Wen Xiong <wenxiong@us.ibm.com>
-> 
-> ----
-> 
-> Jeff, please apply for 2.6.22
-> 
-> --linas
-> 
-> 
->  drivers/net/s2io.c |  116 ++++++++++++++++++++++++++++++++++++++++++++++++++---
->  drivers/net/s2io.h |    5 ++
->  2 files changed, 116 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6.22-rc1/drivers/net/s2io.c
-> ===================================================================
-> --- linux-2.6.22-rc1.orig/drivers/net/s2io.c	2007-05-14 17:05:03.000000000 -0500
-> +++ linux-2.6.22-rc1/drivers/net/s2io.c	2007-05-14 17:23:45.000000000 -0500
-> @@ -480,11 +480,18 @@ static struct pci_device_id s2io_tbl[] _
->  
->  MODULE_DEVICE_TABLE(pci, s2io_tbl);
->  
-> +static struct pci_error_handlers s2io_err_handler = {
-> +	.error_detected = s2io_io_error_detected,
-> +	.slot_reset = s2io_io_slot_reset,
-> +	.resume = s2io_io_resume,
-> +};
-> +
->  static struct pci_driver s2io_driver = {
->        .name = "S2IO",
->        .id_table = s2io_tbl,
->        .probe = s2io_init_nic,
->        .remove = __devexit_p(s2io_rem_nic),
-> +      .err_handler = &s2io_err_handler,
->  };
->  
->  /* A simplifier macro used both by init and free shared_mem Fns(). */
-> @@ -2700,6 +2707,9 @@ static void s2io_netpoll(struct net_devi
->  	u64 val64 = 0xFFFFFFFFFFFFFFFFULL;
->  	int i;
->  
-> +	if (pci_channel_offline(nic->pdev))
-> +		return;
-> +
->  	disable_irq(dev->irq);
->  
->  	atomic_inc(&nic->isr_cnt);
-> @@ -3225,6 +3235,8 @@ static void alarm_intr_handler(struct s2
->  	int i;
->  	if (atomic_read(&nic->card_state) == CARD_DOWN)
->  		return;
-> +	if (pci_channel_offline(nic->pdev))
-> +		return;
->  	nic->mac_control.stats_info->sw_stat.ring_full_cnt = 0;
->  	/* Handling the XPAK counters update */
->  	if(nic->mac_control.stats_info->xpak_stat.xpak_timer_count < 72000) {
-> @@ -4324,6 +4336,10 @@ static irqreturn_t s2io_isr(int irq, voi
->  	struct mac_info *mac_control;
->  	struct config_param *config;
->  
-> +	/* Pretend we handled any irq's from a disconnected card */
-> +	if (pci_channel_offline(sp->pdev))
-> +		return IRQ_NONE;
-> +
->  	atomic_inc(&sp->isr_cnt);
->  	mac_control = &sp->mac_control;
->  	config = &sp->config;
-> @@ -6579,7 +6595,7 @@ static void s2io_rem_isr(struct s2io_nic
->  	} while(cnt < 5);
->  }
->  
-> -static void s2io_card_down(struct s2io_nic * sp)
-> +static void do_s2io_card_down(struct s2io_nic * sp, int do_io)
->  {
->  	int cnt = 0;
->  	struct XENA_dev_config __iomem *bar0 = sp->bar0;
-> @@ -6594,7 +6610,8 @@ static void s2io_card_down(struct s2io_n
->  	atomic_set(&sp->card_state, CARD_DOWN);
->  
->  	/* disable Tx and Rx traffic on the NIC */
-> -	stop_nic(sp);
-> +	if (do_io)
-> +		stop_nic(sp);
->  
->  	s2io_rem_isr(sp);
->  
-> @@ -6602,7 +6619,7 @@ static void s2io_card_down(struct s2io_n
->  	tasklet_kill(&sp->task);
->  
->  	/* Check if the device is Quiescent and then Reset the NIC */
-> -	do {
-> +	while(do_io) {
->  		/* As per the HW requirement we need to replenish the
->  		 * receive buffer to avoid the ring bump. Since there is
->  		 * no intention of processing the Rx frame at this pointwe are
-> @@ -6627,8 +6644,9 @@ static void s2io_card_down(struct s2io_n
->  				  (unsigned long long) val64);
->  			break;
->  		}
-> -	} while (1);
-> -	s2io_reset(sp);
-> +	}
-> +	if (do_io)
-> +		s2io_reset(sp);
->  
->  	spin_lock_irqsave(&sp->tx_lock, flags);
->  	/* Free all Tx buffers */
-> @@ -6643,6 +6661,11 @@ static void s2io_card_down(struct s2io_n
->  	clear_bit(0, &(sp->link_state));
->  }
->  
-> +static void s2io_card_down(struct s2io_nic * sp)
-> +{
-> +	do_s2io_card_down(sp, 1);
-> +}
-> +
->  static int s2io_card_up(struct s2io_nic * sp)
->  {
->  	int i, ret = 0;
-> @@ -8020,3 +8043,86 @@ static void lro_append_pkt(struct s2io_n
->  	sp->mac_control.stats_info->sw_stat.clubbed_frms_cnt++;
->  	return;
->  }
-> +
-> +/**
-> + * s2io_io_error_detected - called when PCI error is detected
-> + * @pdev: Pointer to PCI device
-> + * @state: The current pci conneection state
-> + *
-> + * This function is called after a PCI bus error affecting
-> + * this device has been detected.
-> + */
-> +static pci_ers_result_t s2io_io_error_detected(struct pci_dev *pdev,
-> +                                               pci_channel_state_t state)
-> +{
-> +	struct net_device *netdev = pci_get_drvdata(pdev);
-> +	struct s2io_nic *sp = netdev->priv;
-> +
-> +	netif_device_detach(netdev);
-> +
-> +	if (netif_running(netdev)) {
-> +		/* Bring down the card, while avoiding PCI I/O */
-> +		do_s2io_card_down(sp, 0);
-> +		sp->device_close_flag = TRUE;	/* Device is shut down. */
-> +	}
-> +	pci_disable_device(pdev);
-> +
-> +	return PCI_ERS_RESULT_NEED_RESET;
-> +}
-> +
-> +/**
-> + * s2io_io_slot_reset - called after the pci bus has been reset.
-> + * @pdev: Pointer to PCI device
-> + *
-> + * Restart the card from scratch, as if from a cold-boot.
-> + * At this point, the card has exprienced a hard reset,
-> + * followed by fixups by BIOS, and has its config space
-> + * set up identically to what it was at cold boot.
-> + */
-> +static pci_ers_result_t s2io_io_slot_reset(struct pci_dev *pdev)
-> +{
-> +	struct net_device *netdev = pci_get_drvdata(pdev);
-> +	struct s2io_nic *sp = netdev->priv;
-> +
-> +	if (pci_enable_device(pdev)) {
-> +		printk(KERN_ERR "s2io: "
-> +		       "Cannot re-enable PCI device after reset.\n");
-> +		return PCI_ERS_RESULT_DISCONNECT;
-> +	}
-> +
-> +	pci_set_master(pdev);
-> +	s2io_reset(sp);
-> +
-> +	return PCI_ERS_RESULT_RECOVERED;
-> +}
-> +
-> +/**
-> + * s2io_io_resume - called when traffic can start flowing again.
-> + * @pdev: Pointer to PCI device
-> + *
-> + * This callback is called when the error recovery driver tells
-> + * us that its OK to resume normal operation.
-> + */
-> +static void s2io_io_resume(struct pci_dev *pdev)
-> +{
-> +	struct net_device *netdev = pci_get_drvdata(pdev);
-> +	struct s2io_nic *sp = netdev->priv;
-> +
-> +	if (netif_running(netdev)) {
-> +		if (s2io_card_up(sp)) {
-> +			printk(KERN_ERR "s2io: "
-> +			       "Can't bring device back up after reset.\n");
-> +			return;
-> +		}
-> +
-> +		if (s2io_set_mac_addr(netdev, netdev->dev_addr) == FAILURE) {
-> +			s2io_card_down(sp);
-> +			printk(KERN_ERR "s2io: "
-> +			       "Can't resetore mac addr after reset.\n");
-> +			return;
-> +		}
-> +	}
-> +
-> +	netif_device_attach(netdev);
-> +	netif_wake_queue(netdev);
-> +}
-> Index: linux-2.6.22-rc1/drivers/net/s2io.h
-> ===================================================================
-> --- linux-2.6.22-rc1.orig/drivers/net/s2io.h	2007-05-14 17:05:03.000000000 -0500
-> +++ linux-2.6.22-rc1/drivers/net/s2io.h	2007-05-14 17:23:45.000000000 -0500
-> @@ -1052,6 +1052,11 @@ static void lro_append_pkt(struct s2io_n
->  			   struct sk_buff *skb, u32 tcp_len);
->  static int rts_ds_steer(struct s2io_nic *nic, u8 ds_codepoint, u8 ring);
->  
-> +static pci_ers_result_t s2io_io_error_detected(struct pci_dev *pdev,
-> +			                      pci_channel_state_t state);
-> +static pci_ers_result_t s2io_io_slot_reset(struct pci_dev *pdev);
-> +static void s2io_io_resume(struct pci_dev *pdev);
-> +
->  #define s2io_tcp_mss(skb) skb_shinfo(skb)->gso_size
->  #define s2io_udp_mss(skb) skb_shinfo(skb)->gso_size
->  #define s2io_offload_type(skb) skb_shinfo(skb)->gso_type
+This patch no longer applies to Linus' tree - for a start there is no file
+arch/x86_64/kernel/functionlist any more.
+
+Can you rebase it, please?
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__15_May_2007_09_44_36_+1000_FmQQEkgMAA8ZAwtk
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGSPRpFdBgD/zoJvwRAuHCAJsEB8TyYfKxqEtWnHM7smTPNqRiPwCfYj2B
+kUd5qmBLOd+TYg003bKAuVw=
+=ap96
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__15_May_2007_09_44_36_+1000_FmQQEkgMAA8ZAwtk--
