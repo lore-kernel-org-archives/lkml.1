@@ -1,100 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761682AbXENBR3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761926AbXENBSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761682AbXENBR3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 21:17:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758681AbXENBRW
+	id S1761926AbXENBSS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 21:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751747AbXENBSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 21:17:22 -0400
-Received: from smtp.bulldogdsl.com ([212.158.248.7]:4775 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751747AbXENBRW (ORCPT
+	Sun, 13 May 2007 21:18:09 -0400
+Received: from nz-out-0506.google.com ([64.233.162.238]:44712 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756205AbXENBSI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 21:17:22 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: tglx@linutronix.de
-Subject: Re: [PATCH] x86-64 highres/dyntick support
-Date: Mon, 14 May 2007 02:17:11 +0100
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1178485128.31213.98.camel@localhost.localdomain>
-In-Reply-To: <1178485128.31213.98.camel@localhost.localdomain>
+	Sun, 13 May 2007 21:18:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type;
+        b=j37CyJxFFwDS0STTRjVYweUsAmdoMHBBxVjgh+2reHeON5DTZjaiqA/ioTX+gAoPCfh6iVbn1nS4lXPuKr5L8u9W9p51Hf61vc+pMF2fjVYuJl++7ysKfLxMBvg/W5ViRxD8xhIYmUcRuSOrA6ilRhyE2KCuv1O0rSz39kQENgc=
+Message-ID: <b6a2187b0705131818x556eb57me42d1811e0db7a04@mail.gmail.com>
+Date: Mon, 14 May 2007 09:18:06 +0800
+From: "Jeff Chua" <jeff.chua.linux@gmail.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: patch for vmware for Linux-2.6.21
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705140217.11515.s0348365@sms.ed.ac.uk>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_112165_19493951.1179105486175"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 06 May 2007 21:58:47 Thomas Gleixner wrote:
-> I'm pleased to announce the first cut of the final x86_64
-> highres/dyntick support, which I did based on Chris Wright's patch set,
-> which is again based on Arjan van de Ven's initial work:
+------=_Part_112165_19493951.1179105486175
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I've noticed a few problems with this patch series, which I manually (without 
-difficulty) ported to 2.6.22-rc1.
+Attached are patches for vmware-5.5.3 to make the vmmon and vmnet
+modules compile under Linux-2.6.22-rc1.
 
-Firstly, the output of /proc/interrupts looks a bit strange. NO_HZ isn't 
-enabled, just high resolution timers. HZ was set to 1000.
+Thanks,
+Jeff.
 
-alistair@damocles:~$ cat /proc/interrupts
-           CPU0       CPU1
-  0:        195          0   IO-APIC-edge      timer
-  1:         21      13698   IO-APIC-edge      i8042
-  8:          0          0   IO-APIC-edge      rtc
-  9:          0          0   IO-APIC-fasteoi   acpi
- 14:        117      51178   IO-APIC-edge      libata
- 15:          0          0   IO-APIC-edge      libata
- 18:        455     449373   IO-APIC-fasteoi   lan-sky, EMU10K1
- 19:          0          3   IO-APIC-fasteoi   yenta, ohci1394
- 20:        220      86188   IO-APIC-fasteoi   ohci_hcd:usb2
- 21:          0         26   IO-APIC-fasteoi   ehci_hcd:usb1
- 22:          0        273   IO-APIC-fasteoi   sata_nv
- 23:        928     507781   IO-APIC-fasteoi   sata_nv, lan
-NMI:          0          0
-LOC:    4723272    4797930
-ERR:          0
+------=_Part_112165_19493951.1179105486175
+Content-Type: text/plain; name=patch-compat_kernel.h; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f1o8x53w
+Content-Disposition: attachment; filename="patch-compat_kernel.h"
 
-Only 195 timer interrupts? I only see this on an AMD Opteron, it doesn't occur 
-on an Intel Core 2 Duo. Mainline reports this counter regularly increasing 
-with or without the acpi_pm clocksource loaded.
+LS0tIHZtd2FyZS92bW1vbi1vbmx5L2luY2x1ZGUvY29tcGF0X2tlcm5lbC5oLm9yZwkyMDA2LTEy
+LTI2IDE2OjQ3OjI1ICswODAwCisrKyB2bXdhcmUvdm1tb24tb25seS9pbmNsdWRlL2NvbXBhdF9r
+ZXJuZWwuaAkyMDA2LTEyLTI2IDE2OjQ4OjAwICswODAwCkBAIC0xOCw3ICsxOCw5IEBACiAgKiBw
+cm92aWRlZCBieSB4ODYtNjQsIGFybSBhbmQgb3RoZXIgKGJ1dCBub3QgYnkgaTM4NikuCiAgKi8K
+ICNkZWZpbmUgX19OUl9jb21wYXRfZXhpdCBfX05SX2V4aXQKKyNpZiBMSU5VWF9WRVJTSU9OX0NP
+REUgPCBLRVJORUxfVkVSU0lPTigyLDYsMTkpCiBzdGF0aWMgaW5saW5lIF9zeXNjYWxsMShpbnQs
+IGNvbXBhdF9leGl0LCBpbnQsIGV4aXRfY29kZSk7CisjZW5kaWYKIAogCiAvKgo=
+------=_Part_112165_19493951.1179105486175
+Content-Type: text/plain; name=patch-driver_config.h; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f1o8xij0
+Content-Disposition: attachment; filename="patch-driver_config.h"
 
-Secondly, /proc/cpuinfo seems to be broken:
+LS0tIHZtd2FyZS92bW1vbi1vbmx5L2luY2x1ZGUvZHJpdmVyLWNvbmZpZy5oLm9yZwkyMDA3LTAx
+LTI2IDEwOjQ2OjAxICswODAwCisrKyB2bXdhcmUvdm1tb24tb25seS9pbmNsdWRlL2RyaXZlci1j
+b25maWcuaAkyMDA2LTExLTE0IDA1OjA2OjE4ICswODAwCkBAIC0xOSw3ICsxOSw4IEBACiAjaW5j
+bHVkZSAiaW5jbHVkZUNoZWNrLmgiCiAKICNpbmNsdWRlIDxsaW51eC9hdXRvY29uZi5oPgorI3Vu
+ZGVmIENPTkZJR19QQVJBVklSVAogI2luY2x1ZGUgImNvbXBhdF92ZXJzaW9uLmgiCiAKIC8qIFdl
+IHJlbHkgb24gS2VybmVsIE1vZHVsZSBzdXBwb3J0LiAgQ2hlY2sgaGVyZS4gKi8K
+------=_Part_112165_19493951.1179105486175
+Content-Type: application/octet-stream; name=patch-vmnet-2.6.22
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f1o8xszp
+Content-Disposition: attachment; filename="patch-vmnet-2.6.22"
 
-alistair@damocles:~$ cat /proc/cpuinfo | grep MHz
-cpu MHz         : 210779.550
-cpu MHz         : 210779.550
-
-Unless my CPU is just under 80 times faster than it used to be, these numbers 
-are incorrect. I expect 2700.50, or something similar. cpufreq isn't compiled 
-in.
-
-Finally, and possibly related, the dmesg timestamps seem to be totally broken. 
-Apparently my machine booted in less than 1 second, with the last messages 
-as:
-
-[    0.607862] bridge: topology change detected, propagating
-[    0.607862] bridge: port 2(lan-sky) entering forwarding state
-[    0.830472] Linux agpgart interface v0.102 (c) Dave Jones
-
-Of course, all of these problems might be PEBKAC, but I'm sceptical.
-
-Find the kernel config, updated patch (for 2.6.22-rc1), dmesg, contents 
-of /proc/interrupts and /proc/cpuinfo here:
-
-http://devzero.co.uk/~alistair/2.6.22-rc1-hrt/
-
--- 
-Cheers,
-Alistair.
-
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+LS0tIHZtd2FyZS92bW5ldC1vbmx5L3VzZXJpZi5jLm9yZwkyMDA3LTA1LTEzIDE5OjA4OjA2ICsw
+ODAwCisrKyB2bXdhcmUvdm1uZXQtb25seS91c2VyaWYuYwkyMDA3LTA1LTEzIDE5OjIwOjMzICsw
+ODAwCkBAIC02MjcsMTMgKzYyNywxNCBAQAogICAgICovCiAgICBpZiAoc2tiLT5wa3RfdHlwZSA9
+PSBQQUNLRVRfT1VUR09JTkcgJiYgCS8qIFBhY2tldCBtdXN0IGJlIG91dGdvaW5nICovCiAgICAg
+ICAgc2tiLT5pcF9zdW1tZWQgPT0gVk1fQ0hFQ0tTVU1fUEFSVElBTCAmJgkvKiBXaXRob3V0IGNo
+ZWNrc3VtICovCi0gICAgICAgc2tiLT5oLnJhdyAhPSBza2ItPm5oLnJhdyAmJgkJLyogV2UgbXVz
+dCBrbm93IHdoZXJlIGhlYWRlciBpcyAqLworICAgICAgIHNrYi0+dHJhbnNwb3J0X2hlYWRlciAh
+PSBza2ItPm5ldHdvcmtfaGVhZGVyICYmCiAgICAgICAgc2tiLT5sZW4gPT0gY291bnQpIHsJCQkv
+KiBObyB0cnVuY2F0aW9uIG1heSBvY2N1ciAqLwogICAgICAgc2l6ZV90IHNrbDsKICAgICAgIGlu
+dCBjc3VtOwogICAgICAgdV9pbnQxNl90IGNzdW0xNjsKICAgICAgIAotICAgICAgc2tsID0gc2ti
+LT5oLnJhdyAtIHNrYi0+ZGF0YTsKKyAgICAgIHNrbCA9IHNrYl90cmFuc3BvcnRfb2Zmc2V0KHNr
+Yik7CisKICAgICAgIGlmIChWTmV0Q29weURhdGFncmFtKHNrYiwgYnVmLCBza2wpKSB7CiAJIHJl
+dHVybiAtRUZBVUxUOwogICAgICAgfQotLS0gdm13YXJlL3ZtbmV0LW9ubHkvdm5ldEludC5oLm9y
+ZwkyMDA3LTA1LTEzIDE5OjM3OjIwICswODAwCisrKyB2bXdhcmUvdm1uZXQtb25seS92bmV0SW50
+LmgJMjAwNy0wNS0xMyAxOToyODowMyArMDgwMApAQCAtMjUsOCArMjUsOCBAQAogI2RlZmluZSBE
+RVZfUVVFVUVfWE1JVChza2IsIGRldiwgcHJpKQkoICAgICAgICAgICAgICAgICBcCiAgICAgKHNr
+YiktPmRldiA9IChkZXYpLCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgXAogICAg
+IChza2IpLT5wcmlvcml0eSA9IChwcmkpLCAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIFwK
+LSAgICAoc2tiKS0+bWFjLnJhdyA9IChza2IpLT5kYXRhLCAgICAgICAgICAgICAgICAgICAgICAg
+ICBcCi0gICAgKHNrYiktPm5oLnJhdyA9IChza2IpLT5kYXRhICsgc2l6ZW9mIChzdHJ1Y3QgZXRo
+aGRyKSwgXAorICAgIHNrYl9yZXNldF9tYWNfaGVhZGVyKHNrYiksCQkJCVwKKyAgICAoc2tiKS0+
+bmV0d29ya19oZWFkZXIgPSBza2ItPm1hY19oZWFkZXIgKyBzaXplb2Yoc3RydWN0IGV0aGhkciks
+CVwKICAgICBkZXZfcXVldWVfeG1pdChza2IpICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICBcCiAgICkKICNpZmRlZiBLRVJORUxfMl8zXzE1Ci0tLSB2bXdhcmUvdm1uZXQtb25seS9i
+cmlkZ2UuYy5vcmcJMjAwNy0wNS0xMyAxOTo0MDoyOSArMDgwMAorKysgdm13YXJlL3ZtbmV0LW9u
+bHkvYnJpZGdlLmMJMjAwNy0wNS0xMyAxOTo0MDowMiArMDgwMApAQCAtMTA3MCwxMiArMTA3MCwx
+MyBAQAogVk5ldEJyaWRnZUNvbXB1dGVIZWFkZXJQb3Moc3RydWN0IHNrX2J1ZmYgKnNrYikgLy8g
+SU46IGJ1ZmZlciB0byBleGFtaW5lCiB7CiAgICAvKiBNYXliZSBzb21lIGtlcm5lbCBnZXRzIGl0
+IHJpZ2h0Li4uICovCi0gICBpZiAoc2tiLT5oLnJhdyAhPSBza2ItPm5oLnJhdykgeworICAgaWYo
+c2tiLT50cmFuc3BvcnRfaGVhZGVyICE9IHNrYi0+bmV0d29ya19oZWFkZXIpIHsKICAgICAgIHJl
+dHVybjsKICAgIH0KICAgIHN3aXRjaCAoYmUxNl90b19jcHUoc2tiLT5wcm90b2NvbCkpIHsKICAg
+ICAgIGNhc2UgRVRIX1BfSVA6Ci0gICAgICAgICBza2ItPmgucmF3ID0gc2tiLT5uaC5yYXcgKyAo
+c2tiLT5uaC5yYXdbMF0gJiAweDBGKSAqIDQ7CisJIHNrYi0+dHJhbnNwb3J0X2hlYWRlciA9IHNr
+Yi0+bmV0d29ya19oZWFkZXIKKwkJCQkrIChza2JfbmV0d29ya19oZWFkZXIoc2tiKVswXSAmIDB4
+MEYpICo0OwogCSByZXR1cm47CiAgICAgICBkZWZhdWx0OgogICAgICAgICAgTE9HKDMsIChLRVJO
+X0RFQlVHICJVbmtub3duIEVJSSBwcm90b2NvbCAlMDRYOiBjc3VtIGF0ICVkXG4iLCAKQEAgLTEx
+NjEsNyArMTE2Miw3IEBACiAjICBlbmRpZgogCiAgICBpZiAoYnJpZGdlLT5zbWFjKSB7Ci0gICAg
+ICBpZiAoVk5ldENhbGxTTUFDRnVuYyhicmlkZ2UtPnNtYWMsICZza2IsIHNrYi0+bWFjLnJhdywg
+CisgICAgICBpZiAoVk5ldENhbGxTTUFDRnVuYyhicmlkZ2UtPnNtYWMsICZza2IsIHNrYl9tYWNf
+aGVhZGVyKHNrYiksIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgU01BQ19DaGVja1BhY2tl
+dEZyb21Ib3N0KSAhPSAKICAgICAgICAgICBQYWNrZXRTdGF0dXNGb3J3YXJkUGFja2V0KSB7CiAg
+ICAgICAgICBMT0coNCwgKEtFUk5fTk9USUNFICJicmlkZ2UtJXM6IHBhY2tldCBkcm9wcGVkIC5c
+biIsCkBAIC0xMTg1LDcgKzExODYsNyBAQAogI2VuZGlmCiAjZW5kaWYKICAgIAotICAgc2tiX3B1
+c2goc2tiLCBza2ItPmRhdGEgLSBza2ItPm1hYy5yYXcpOworICAgc2tiX3B1c2goc2tiLCBza2It
+PmRhdGEgLSBza2JfbWFjX2hlYWRlcihza2IpKTsKICAgIExPRygzLCAoS0VSTl9ERUJVRyAiYnJp
+ZGdlLSVzOiByZWNlaXZlICVkXG4iLAogCSAgIGJyaWRnZS0+bmFtZSwgKGludCkgc2tiLT5sZW4p
+KTsKIAo=
+------=_Part_112165_19493951.1179105486175--
