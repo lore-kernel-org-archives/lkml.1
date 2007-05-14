@@ -1,71 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbXENQ0N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757466AbXENQ02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbXENQ0N (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 12:26:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755039AbXENQZ5
+	id S1757466AbXENQ02 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 12:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757122AbXENQ0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 12:25:57 -0400
-Received: from crystal.sipsolutions.net ([195.210.38.204]:60845 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754308AbXENQZ4 (ORCPT
+	Mon, 14 May 2007 12:26:20 -0400
+Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:53273 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755150AbXENQ0T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 12:25:56 -0400
-Subject: Re: Kconfig warnings on latest GIT
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Simon Horman <horms@verge.net.au>, Timur Tabi <timur@freescale.com>,
-       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org,
-       Ismail =?ISO-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
-       Michael Schmitz <schmitz@debian.org>,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>
-In-Reply-To: <Pine.LNX.4.64.0705140923470.24559@gate.crashing.org>
-References: <200705080004.14570.ismail@pardus.org.tr>
-	 <20070508143127.38fafa3c.kim.phillips@freescale.com>
-	 <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au>
-	 <1178811570.3806.18.camel@johannes.berg>
-	 <20070511012216.GB10715@verge.net.au>
-	 <1178883937.8896.11.camel@johannes.berg>
-	 <20070514013230.GJ3588@verge.net.au>
-	 <1179147311.2647.47.camel@johannes.berg>
-	 <Pine.LNX.4.64.0705140923470.24559@gate.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-nqe95cB3a/6AyUcVdvCa"
-Date: Mon, 14 May 2007 18:25:51 +0200
-Message-Id: <1179159951.2647.49.camel@johannes.berg>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+	Mon, 14 May 2007 12:26:19 -0400
+Message-ID: <46488D6A.3030608@s5r6.in-berlin.de>
+Date: Mon, 14 May 2007 18:25:14 +0200
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+MIME-Version: 1.0
+To: "John Anthony Kazos Jr." <jakj@j-a-k-j.com>
+CC: mgarski@post.pl, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Convert files to UTF-8 and some cleanups
+References: <4647A52A.8000709@post.pl> <4647A868.4070201@post.pl> <46486EAE.3060009@s5r6.in-berlin.de> <alpine.DEB.0.98.0705141126550.19220@sigma.j-a-k-j.com>
+In-Reply-To: <alpine.DEB.0.98.0705141126550.19220@sigma.j-a-k-j.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+John Anthony Kazos Jr. wrote:
+> You can't post a patch to UTF-8 in plain text, because it isn't plain 
+> text.
 
---=-nqe95cB3a/6AyUcVdvCa
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Of course it is, you said so...
 
-On Mon, 2007-05-14 at 09:24 -0500, Kumar Gala wrote:
+> MTAs and MUAs mangle the hell out of them. Look back in the archives 
+> for my postings. Once you've got something in UTF-8, -*THEN*- you can post 
+> in plain inline text.
 
-> this was my fix which looks pretty much the same.
+...yourself.  Just send as
 
-[...]
+	Content-type: text/plain; charset="utf-8"
 
-Great, thanks.
-
-johannes
-
---=-nqe95cB3a/6AyUcVdvCa
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGSI2P/ETPhpq3jKURAgujAJ44eq+k2hYonjsWcA8I5Y/TCPyNBQCfax9w
-SSH37O29Kojlb8+kMnoM3UI=
-=SXsI
------END PGP SIGNATURE-----
-
---=-nqe95cB3a/6AyUcVdvCa--
-
+Of course a patch like that will usually contain several character sets,
+but that's no problem as long as the byte codes are preserved and we can
+easily see how the end result looks like.  The important thing is that
+the submitter's and committer's MUAs do it right and reviewers' MUAs do
+it sort of right.  Also, nobody cares if there is still some pre-WWI
+7bit-only MTA operated in some lone desert town.  And if some web
+archive of LKML isn't compatible to internet mail, then that's tough luck.
+-- 
+Stefan Richter
+-=====-=-=== -=-= -===-
+http://arcgraph.de/sr/
