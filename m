@@ -1,54 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757943AbXENR47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758677AbXENR5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757943AbXENR47 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 13:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756576AbXENR4x
+	id S1758677AbXENR5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 13:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757748AbXENR5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 13:56:53 -0400
-Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:1050 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756091AbXENR4w (ORCPT
+	Mon, 14 May 2007 13:57:15 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:32910 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757514AbXENR5O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 13:56:52 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Oliver Neukum <oliver@neukum.org>
-Subject: Re: converting appletouch to usb autosuspend...
-Date: Mon, 14 May 2007 18:56:37 +0100
-User-Agent: KMail/1.9.6
-Cc: Soeren Sonnenburg <kernel@nn7.de>, linux-usb-devel@lists.sourceforge.net,
-       Linux Kernel <linux-kernel@vger.kernel.org>, maxk@qualcomm.com
-References: <1178995886.4168.10.camel@localhost> <200705140153.03084.s0348365@sms.ed.ac.uk> <200705140750.40458.oliver@neukum.org>
-In-Reply-To: <200705140750.40458.oliver@neukum.org>
+	Mon, 14 May 2007 13:57:14 -0400
+Date: Mon, 14 May 2007 10:57:11 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 0/5] make slab gfp fair
+In-Reply-To: <1179164453.2942.26.camel@lappy>
+Message-ID: <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
+References: <20070514131904.440041502@chello.nl> 
+ <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com> 
+ <20070514161224.GC11115@waste.org>  <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
+ <1179164453.2942.26.camel@lappy>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705141856.37923.s0348365@sms.ed.ac.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 May 2007 06:50:39 Oliver Neukum wrote:
-> Am Montag, 14. Mai 2007 02:53 schrieb Alistair John Strachan:
-> > > What did you use instead of hci_usb then ? usbkbd ? This won't give you
-> > > the special keys etc...
-> >
-> > Sorry, I wasn't clear. hci_usb is actually part of the BlueZ stack, it's
-> > got nothing to do with the keyboard. I unloaded both appletouch AND
-> > hci_usb.
->
-> If you want large power savings from USB autosuspend, all
-> loaded drivers must support autosuspend. The HCD can suspend
-> only if all connected devices are suspended.
-> Are you willing to test patches for HID & the new last_busy based
-> usb core infrastructure?
+On Mon, 14 May 2007, Peter Zijlstra wrote:
 
-Of course.
+> On Mon, 2007-05-14 at 09:29 -0700, Christoph Lameter wrote:
+> > On Mon, 14 May 2007, Matt Mackall wrote:
+> > 
+> > > privileged thread                      unprivileged greedy process
+> > > kmem_cache_alloc(...)
+> > >    adds new slab page from lowmem pool
+> > 
+> > Yes but it returns an object for the privileged thread. Is that not 
+> > enough?
+> 
+> No, because we reserved memory for n objects, and like matt illustrates
+> most of those that will be eaten by the greedy process.
+> We could reserve 1 page per object but that rather bloats the reserve.
 
--- 
-Cheers,
-Alistair.
+1 slab per object not one page. But yes thats some bloat.
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
+You can pull the big switch (only on a SLUB slab I fear) to switch 
+off the fast path. Do SetSlabDebug() when allocating a precious 
+allocation that should not be gobbled up by lower level processes. 
+Then you can do whatever you want in the __slab_alloc debug section and we 
+wont care because its not the hot path.
+
+SLAB is a bit different. There we already have issues with the fast path 
+due to the attempt to handle numa policies at the object level. SLUB fixes 
+that issue (if we can avoid you hot path patch). It intentionally does 
+defer all special object handling to the slab level to increase NUMA 
+performance. If you do the same to SLAB then you will get the NUMA 
+troubles propagated to the SMP and UP level.
+
+
+
+
