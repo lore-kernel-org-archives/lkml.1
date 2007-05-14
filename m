@@ -1,52 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbXENUUG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760461AbXENUUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759427AbXENUUG (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:20:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbXENUT4
+	id S1760461AbXENUUb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758995AbXENUUA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:19:56 -0400
-Received: from www.osadl.org ([213.239.205.134]:51332 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756335AbXENUTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:19:55 -0400
-Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v1
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Valdis.Kletnieks@vt.edu
-Cc: Alistair John Strachan <s0348365@sms.ed.ac.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <10373.1179173440@turing-police.cc.vt.edu>
-References: <1178485128.31213.98.camel@localhost.localdomain>
-	 <200705140217.11515.s0348365@sms.ed.ac.uk>
-	 <1179138368.22481.334.camel@localhost.localdomain>
-	 <10373.1179173440@turing-police.cc.vt.edu>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 22:23:15 +0200
-Message-Id: <1179174195.7074.18.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 May 2007 16:20:00 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:45032 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758939AbXENUT7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:19:59 -0400
+Date: Mon, 14 May 2007 22:16:00 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Matt Mackall <mpm@selenic.com>
+cc: Jeremy Fitzhardinge <jeremy@goop.org>, David Chinner <dgc@sgi.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       xfs@oss.sgi.com, michal.k.k.piotrowski@gmail.com
+Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an
+ nlink problem?
+In-Reply-To: <20070512124641.GZ11115@waste.org>
+Message-ID: <Pine.LNX.4.61.0705142215130.9570@yvahk01.tjqt.qr>
+References: <20070509231643.GM85884050@sgi.com> <4642598E.3000607@goop.org>
+ <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org>
+ <20070510004918.GS85884050@sgi.com> <46426D31.8070000@goop.org>
+ <20070510012609.GU85884050@sgi.com> <46433049.4020003@goop.org>
+ <20070510153832.GQ11115@waste.org> <Pine.LNX.4.61.0705121320240.9570@yvahk01.tjqt.qr>
+ <20070512124641.GZ11115@waste.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 16:10 -0400, Valdis.Kletnieks@vt.edu wrote:
-> On Mon, 14 May 2007 12:26:08 +0200, Thomas Gleixner said:
-> 
-> > Broken out version is available here:
-> > http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-highres-v1.patches.tar.bz2
-> 
-> How unhappy am I likely to be if I try to apply this to a 21-mm2 kernel? It
-> doesn't *look* like any of the patches are in -mm2 (at least not under the
-> same name).
 
-There are probably some conflicts, but the wreckage should be not that
-big.
+On May 12 2007 07:46, Matt Mackall wrote:
+>> 
+>> You should not assume alphabetical order. Filesystems may be free to
+>> reorder things and return them (1) randomly like in a hash (2) by
+>> creation time during readdir().
+>
+>There is no assumption. Mercurial explicitly visits files in
+>alphabetical order for the above commands.
 
-	tglx
+But who says that
 
+  for i in {a..z}; do  ## {..} is a bash3 extension
+    touch $i;
+  done;
 
+actually makes readdir() return them in the same order?
+
+	Jan
+-- 
