@@ -1,69 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbXENTZn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757342AbXENT12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135AbXENTZn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:25:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbXENTZf
+	id S1757342AbXENT12 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754333AbXENT1V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:25:35 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:40687 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752055AbXENTZe (ORCPT
+	Mon, 14 May 2007 15:27:21 -0400
+Received: from smtp-101-monday.nerim.net ([62.4.16.101]:1604 "EHLO
+	kraid.nerim.net" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753729AbXENT1U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:25:34 -0400
-Date: Mon, 14 May 2007 12:25:02 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, john stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH] timekeeping fix mismerge
-In-Reply-To: <1179133802.22481.327.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.0.98.0705141218390.6739@woody.linux-foundation.org>
-References: <1179133802.22481.327.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+	Mon, 14 May 2007 15:27:20 -0400
+Date: Mon, 14 May 2007 21:28:07 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Antonino Ingargiola <tritemio@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc1
+Message-ID: <20070514212807.246c0281@hyperion.delvare>
+In-Reply-To: <alpine.LFD.0.98.0705141139560.6739@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+	<5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
+	<alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
+	<5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
+	<20070514081022.7fcee97f@hyperion.delvare>
+	<5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
+	<20070514141437.631fcfd1@hyperion.delvare>
+	<5486cca80705140628w5ff43ebdqf6a5413203226d5@mail.gmail.com>
+	<20070514172138.1c870793@hyperion.delvare>
+	<alpine.LFD.0.98.0705140914410.6739@woody.linux-foundation.org>
+	<20070514202419.33a90f57@hyperion.delvare>
+	<alpine.LFD.0.98.0705141139560.6739@woody.linux-foundation.org>
+X-Mailer: Sylpheed-Claws 2.5.5 (GTK+ 2.10.6; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 14 May 2007 11:43:45 -0700 (PDT), Linus Torvalds wrote:
+> 
+> On Mon, 14 May 2007, Jean Delvare wrote:
+> > 
+> > Sure, we don't allow that. Except for xfsprogs in 2.6.1, procps in
+> > 2.6.4, oprofile in 2.6.13 and udev in 2.6.19, of course.
+> 
+> And we really complained about it! The oprofile thing should be fixed, 
+> btw, and yeah,if udev breaks any more, I'll have to stop taking patches 
+> from Greg. That thing has been a disaster, and everybody involved should 
+> be ashamed and now hopefully *very* aware of the fact that we don't break 
+> user-level interfaces.
+> 
+> (Right now, I suspect we may have a loop setup regression. Not sure)
 
+While I'm all for keeping things relatively stable and not asking the
+user to constantly upgrade user-space, I believe that we just can't
+promise to never break user-level interfaces while keeping the
+development pace we have right now. We can promise to grant people
+significant delay before we drop compatibility options, but "forever"
+doesn't scale.
 
-On Mon, 14 May 2007, Thomas Gleixner wrote:
->
-> The time keeping code move to kernel/time/timekeeping.c broke the
-> clocksource resume logic patch. Fix it up and move the
-> clocksource_resume() call to the appropriate place.
+If you really want to enforce the "never" rule, be prepared to either
+see development slow down and finally come to a stop, or see the code
+become unmaintainable and insecure and nobody is longer willing to work
+on it.
 
-Yeah, looks obvious enough. It had just enough context in the *wrong* 
-place, that the patch would continue to apply if you used the default 
-(insane) GNU patch semantics, because GNU patch defaults to --fuzz=2, and 
-is thus ok if it can find even just a single line around the patch that is 
-valid.
+> > We already have CONFIG_SYSFS_DEPRECATED for that.
+> 
+> ..and that should have been made more clear. I certainly didn't react to 
+> it immediately.
 
-So it looks like Andrew's patch-application scripts happily added the 
-"clocksource_resume()" to an insane place, because the one-line context 
-was
+You seem to assume that I remembered myself about this option when I
+first replied. I wish it were true :(
 
->  
-> +	clocksource_resume();
-> +
->  	write_seqlock_irqsave(&xtime_lock, flags);
-
-ie an empty line and a single write_seqlock_irqsave(). And those two lines 
-could be found elsewhere in the wrong file.
-
-There's a real reason I consider GNU patch defaults to be totally insane.
-
-I personally use much stricter rules, but what happens is that Andrew's 
-scripts will apply the patch to the wrong place, and then the diff gets 
-*re-generated*, so by the time I see it, I see a nice diff that applies 
-with no fuzz at all.
-
-I don't think re-generating the diff is wrong, and in fact I think you 
-have to do it, but I think Andrew should use "--fuzz=0" or at least 
-"--fuzz=1" instead of the default 2. Yeah, it obviously causes more patch 
-application failures, and it can be very irritating if *most* of those 
-patches would have applied cleanly and correctly with --fuzz=2, but 
---fuzz=2 really is very dangerous. It literally just needed two lines to 
-match in the wrong place (and as mentioned, those two lines can be 
-trivial, like in the example - totally empty, even!)
-
-		Linus
+-- 
+Jean Delvare
