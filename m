@@ -1,91 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755963AbXENQER@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbXENQIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755963AbXENQER (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 12:04:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755150AbXENQED
+	id S1756223AbXENQIo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 12:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXENQIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 12:04:03 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:56217 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755105AbXENQEB (ORCPT
+	Mon, 14 May 2007 12:08:38 -0400
+Received: from accolon.hansenpartnership.com ([64.109.89.108]:47742 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751709AbXENQIh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 12:04:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=m9h3i2aUFPTYZd79n4bwIiku1XFBlnjfyGlK/z0VZjxtsJQojJ3Q5Xz5cCCQLPEPb1skZtKZuLxaNmyzi89HUMq+07D+QQH2PPY7LO6k2YF8LGvk3M2Nhns7XFj9QzQR44vjyeDj7CNOb2Mb5FNfrqvKLFhhpaxKGbiUP8pXRgw=
-Message-ID: <5486cca80705140904p307138bdx511bf2f186a07221@mail.gmail.com>
-Date: Mon, 14 May 2007 18:04:00 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: Linux 2.6.22-rc1
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070514172138.1c870793@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 14 May 2007 12:08:37 -0400
+Subject: [VOYAGER] fix build broken by shift to smp_ops
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 11:08:32 -0500
+Message-Id: <1179158912.3703.47.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
-	 <5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
-	 <alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
-	 <5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
-	 <20070514081022.7fcee97f@hyperion.delvare>
-	 <5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
-	 <20070514141437.631fcfd1@hyperion.delvare>
-	 <5486cca80705140628w5ff43ebdqf6a5413203226d5@mail.gmail.com>
-	 <20070514172138.1c870793@hyperion.delvare>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jean!
+From: Jeremy Fitzhardinge <jeremy@xensource.com>
+Subject: [VOYAGER] fix build broken by shift to smp_ops
 
-2007/5/14, Jean Delvare <khali@linux-fr.org>:
+This adds an smp_ops for voyager, and hooks things up appropriately.
+This is the first baby-step to making subarch runtime switchable.
 
-> > Sure. On 2.6.21.1:
-> >
-> > via686a-isa-6000
-> > Adapter: ISA adapter
-> > CPU core:  +1.63 V  (min =  +0.06 V, max =  +3.10 V)
-> > +2.5V:     +2.45 V  (min =  +0.06 V, max =  +3.10 V)
-> > I/O:       +3.52 V  (min =  +3.12 V, max =  +3.45 V)   ALARM
-> > +5V:       +5.05 V  (min =  +4.73 V, max =  +5.20 V)
-> > +12V:     +12.30 V  (min = +11.35 V, max = +12.48 V)
-> > CPU Fan:     0 RPM  (min = 42187 RPM, div = 2)
-> > P/S Fan:  2657 RPM  (min = 42187 RPM, div = 2)          ALARM
->
-> Hint: increase the fan clock dividers to 4.
->
+Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
 
-I've not found an obvious way to set it in sensors.conf. Could you
-point me to some doumentation, thanks.
+Rediffed to work in the absence of the smp consolidation patch
 
-> > while on 2.6.22-rc1:
-> >
-> > via686a-i2c-9191-6000
-> >  ERROR: Can't get adapter or algorithm?!?
->
-> Ah, interesting. Could it be that the gnome applet quits because it
-> fails to get the adapter name? That wouldn't be very smart, but that's
-> possible.
+Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Eric W. Biederman <ebiederm@xmission.com>
+Cc: Andi Kleen <ak@suse.de>
 
-Just for the record. Does not quit. It displays on the panel "Chip not found.".
+---
 
-> This is a side effect of an i2c-core cleanup. This is already fixed in
-> lm_sensors 2.10.3 (libsensors.so.3.1.3). Care to give it a try and
-> confirm it fixes the problem? Note that it might be a bit tricky to get
-> the gnome applet to use your own libsensors rather than the system one.
-> You might need to set the LD_LIBRARY_PATH environment variable before
-> the applet starts, or something similar.
+Following conversations with Andi, we've agreed that the best way to fix
+the currently broken voyager port is to do a local fix converting it to
+SMP operations, and then fix the invalid conversions in generic x86 by
+re abstracting the operations so they (and several other functions) can
+be shared between x86.
 
-Luckily the 2.10.3 lm-sensors version is on unstable. The backport to
-Debian Etch was straightforward. Now the applet works again! And the
-P/S fan indicator (you may have noted that showed 0 in the 2.6.22-rc1
-case) works too. Many thanks ;-).
+With this, voyager builds and boots on 2.6.22-rc1.
 
-Is this new version required only for the via686 chip or should be a
-general advise for Debian Etch users to upgrade to lm-sensors >=
-2.10.3 for kernels >= 2.6.22?
+James
+
+---
+
+ voyager_smp.c |   99 ++++++++++++++++++++++++++++++++++++++++------------------
+ 1 file changed, 69 insertions(+), 30 deletions(-)
+
+Index: BUILD-voyager/arch/i386/mach-voyager/voyager_smp.c
+===================================================================
+--- BUILD-voyager.orig/arch/i386/mach-voyager/voyager_smp.c	2007-05-14 10:05:33.000000000 -0500
++++ BUILD-voyager/arch/i386/mach-voyager/voyager_smp.c	2007-05-14 10:46:35.000000000 -0500
+@@ -27,7 +27,6 @@
+ #include <asm/pgalloc.h>
+ #include <asm/tlbflush.h>
+ #include <asm/arch_hooks.h>
+-#include <asm/pda.h>
+ 
+ /* TLB state -- visible externally, indexed physically */
+ DEFINE_PER_CPU(struct tlb_state, cpu_tlbstate) ____cacheline_aligned = { &init_mm, 0 };
+@@ -40,6 +39,9 @@ static unsigned long cpu_irq_affinity[NR
+ struct cpuinfo_x86 cpu_data[NR_CPUS] __cacheline_aligned;
+ EXPORT_SYMBOL(cpu_data);
+ 
++DEFINE_PER_CPU(unsigned long, this_cpu_off);
++EXPORT_PER_CPU_SYMBOL(this_cpu_off);
++
+ /* physical ID of the CPU used to boot the system */
+ unsigned char boot_cpu_id;
+ 
+@@ -202,6 +204,28 @@ ack_CPI(__u8 cpi)
+ 
+ /* local variables */
+ 
++/* FIXME: this is a local copy of this function cut and paste from
++ * ../kernel/smpboot.c ... these need to be consolidated properly.
++ *
++ * Initialize the CPU's GDT.  This is either the boot CPU doing itself
++ * (still using the master per-cpu area), or a CPU doing it for a
++ * secondary which will soon come up. */
++static __devinit void init_gdt(int cpu)
++{
++	struct desc_struct *gdt = get_cpu_gdt_table(cpu);
++
++	pack_descriptor((u32 *)&gdt[GDT_ENTRY_PERCPU].a,
++			(u32 *)&gdt[GDT_ENTRY_PERCPU].b,
++			__per_cpu_offset[cpu], 0xFFFFF,
++			0x80 | DESCTYPE_S | 0x2, 0x8);
++
++	per_cpu(this_cpu_off, cpu) = __per_cpu_offset[cpu];
++	per_cpu(cpu_number, cpu) = cpu;
++}
++/* Defined in head.S */
++extern struct Xgt_desc_struct early_gdt_descr;
++/* end of FIXME */
++
+ /* The VIC IRQ descriptors -- these look almost identical to the
+  * 8259 IRQs except that masks and things must be kept per processor
+  */
+@@ -422,7 +446,7 @@ find_smp_config(void)
+ 	     VOYAGER_SUS_IN_CONTROL_PORT);
+ 
+ 	current_thread_info()->cpu = boot_cpu_id;
+-	write_pda(cpu_number, boot_cpu_id);
++	x86_write_percpu(cpu_number, boot_cpu_id);
+ }
+ 
+ /*
+@@ -435,7 +459,7 @@ smp_store_cpu_info(int id)
+ 
+ 	*c = boot_cpu_data;
+ 
+-	identify_cpu(c);
++	identify_secondary_cpu(c);
+ }
+ 
+ /* set up the trampoline and return the physical address of the code */
+@@ -459,7 +483,7 @@ start_secondary(void *unused)
+ 	/* external functions not defined in the headers */
+ 	extern void calibrate_delay(void);
+ 
+-	secondary_cpu_init();
++	cpu_init();
+ 
+ 	/* OK, we're in the routine */
+ 	ack_CPI(VIC_CPU_BOOT_CPI);
+@@ -572,7 +596,9 @@ do_boot_cpu(__u8 cpu)
+ 	/* init_tasks (in sched.c) is indexed logically */
+ 	stack_start.esp = (void *) idle->thread.esp;
+ 
+-	init_gdt(cpu, idle);
++	init_gdt(cpu);
++ 	per_cpu(current_task, cpu) = idle;
++	early_gdt_descr.address = (unsigned long)get_cpu_gdt_table(cpu);
+ 	irq_ctx_init(cpu);
+ 
+ 	/* Note: Don't modify initial ss override */
+@@ -859,8 +885,8 @@ smp_invalidate_interrupt(void)
+ 
+ /* This routine is called with a physical cpu mask */
+ static void
+-flush_tlb_others (unsigned long cpumask, struct mm_struct *mm,
+-						unsigned long va)
++voyager_flush_tlb_others (unsigned long cpumask, struct mm_struct *mm,
++			  unsigned long va)
+ {
+ 	int stuck = 50000;
+ 
+@@ -912,7 +938,7 @@ flush_tlb_current_task(void)
+ 	cpu_mask = cpus_addr(mm->cpu_vm_mask)[0] & ~(1 << smp_processor_id());
+ 	local_flush_tlb();
+ 	if (cpu_mask)
+-		flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
++		voyager_flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
+ 
+ 	preempt_enable();
+ }
+@@ -934,7 +960,7 @@ flush_tlb_mm (struct mm_struct * mm)
+ 			leave_mm(smp_processor_id());
+ 	}
+ 	if (cpu_mask)
+-		flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
++		voyager_flush_tlb_others(cpu_mask, mm, FLUSH_ALL);
+ 
+ 	preempt_enable();
+ }
+@@ -955,7 +981,7 @@ void flush_tlb_page(struct vm_area_struc
+ 	}
+ 
+ 	if (cpu_mask)
+-		flush_tlb_others(cpu_mask, mm, va);
++		voyager_flush_tlb_others(cpu_mask, mm, va);
+ 
+ 	preempt_enable();
+ }
+@@ -1044,11 +1070,12 @@ smp_call_function_interrupt(void)
+ }
+ 
+ static int
+-__smp_call_function_mask (void (*func) (void *info), void *info, int retry,
+-			  int wait, __u32 mask)
++voyager_smp_call_function_mask (cpumask_t cpumask, void (*func) (void *info),
++				void *info, int wait)
+ {
+ 	struct call_data_struct data;
+ 
++	u32 mask = cpus_addr(cpumask)[0];
+ 	mask &= ~(1<<smp_processor_id());
+ 
+ 	if (!mask)
+@@ -1095,9 +1122,7 @@ int
+ smp_call_function(void (*func) (void *info), void *info, int retry,
+ 		   int wait)
+ {
+-	__u32 mask = cpus_addr(cpu_online_map)[0];
+-
+-	return __smp_call_function_mask(func, info, retry, wait, mask);
++	return smp_call_function_mask(cpu_online_map, func, info, wait);
+ }
+ EXPORT_SYMBOL(smp_call_function);
+ 
+@@ -1118,9 +1143,9 @@ int
+ smp_call_function_single(int cpu, void (*func) (void *info), void *info,
+ 			 int nonatomic, int wait)
+ {
+-	__u32 mask = 1 << cpu;
++	cpumask_t mask = cpumask_of_cpu(cpu);
+ 
+-	return __smp_call_function_mask(func, info, nonatomic, wait, mask);
++	return smp_call_function_mask(mask, func, info, wait);
+ }
+ EXPORT_SYMBOL(smp_call_function_single);
+ 
+@@ -1138,7 +1163,7 @@ EXPORT_SYMBOL(smp_call_function_single);
+  * no local APIC, so I can't do this
+  *
+  * This function is currently a placeholder and is unused in the code */
+-fastcall void 
++fastcall void
+ smp_apic_timer_interrupt(struct pt_regs *regs)
+ {
+ 	struct pt_regs *old_regs = set_irq_regs(regs);
+@@ -1237,8 +1262,8 @@ smp_alloc_memory(void)
+ }
+ 
+ /* send a reschedule CPI to one CPU by physical CPU number*/
+-void
+-smp_send_reschedule(int cpu)
++static void
++voyager_smp_send_reschedule(int cpu)
+ {
+ 	send_one_CPI(cpu, VIC_RESCHEDULE_CPI);
+ }
+@@ -1267,8 +1292,8 @@ safe_smp_processor_id(void)
+ }
+ 
+ /* broadcast a halt to all other CPUs */
+-void
+-smp_send_stop(void)
++static void
++voyager_smp_send_stop(void)
+ {
+ 	smp_call_function(smp_stop_cpu_function, NULL, 1, 1);
+ }
+@@ -1930,23 +1955,26 @@ smp_voyager_power_off(void *dummy)
+ 		smp_stop_cpu_function(NULL);
+ }
+ 
+-void __init
+-smp_prepare_cpus(unsigned int max_cpus)
++static void __init
++voyager_smp_prepare_cpus(unsigned int max_cpus)
+ {
+ 	/* FIXME: ignore max_cpus for now */
+ 	smp_boot_cpus();
+ }
+ 
+-void __devinit smp_prepare_boot_cpu(void)
++static void __devinit voyager_smp_prepare_boot_cpu(void)
+ {
++	init_gdt(smp_processor_id());
++	switch_to_new_gdt();
++
+ 	cpu_set(smp_processor_id(), cpu_online_map);
+ 	cpu_set(smp_processor_id(), cpu_callout_map);
+ 	cpu_set(smp_processor_id(), cpu_possible_map);
+ 	cpu_set(smp_processor_id(), cpu_present_map);
+ }
+ 
+-int __devinit
+-__cpu_up(unsigned int cpu)
++static int __devinit
++voyager_cpu_up(unsigned int cpu)
+ {
+ 	/* This only works at boot for x86.  See "rewrite" above. */
+ 	if (cpu_isset(cpu, smp_commenced_mask))
+@@ -1962,8 +1990,8 @@ __cpu_up(unsigned int cpu)
+ 	return 0;
+ }
+ 
+-void __init 
+-smp_cpus_done(unsigned int max_cpus)
++static void __init
++voyager_smp_cpus_done(unsigned int max_cpus)
+ {
+ 	zap_low_mappings();
+ }
+@@ -1972,5 +2000,16 @@ void __init
+ smp_setup_processor_id(void)
+ {
+ 	current_thread_info()->cpu = hard_smp_processor_id();
+-	write_pda(cpu_number, hard_smp_processor_id());
++	x86_write_percpu(cpu_number, hard_smp_processor_id());
+ }
++
++struct smp_ops smp_ops = {
++	.smp_prepare_boot_cpu = voyager_smp_prepare_boot_cpu,
++	.smp_prepare_cpus = voyager_smp_prepare_cpus,
++	.cpu_up = voyager_cpu_up,
++	.smp_cpus_done = voyager_smp_cpus_done,
++
++	.smp_send_stop = voyager_smp_send_stop,
++	.smp_send_reschedule = voyager_smp_send_reschedule,
++	.smp_call_function_mask = voyager_smp_call_function_mask,
++};
 
 
-    ~ Antonio
