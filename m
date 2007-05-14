@@ -1,99 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759270AbXENIeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756884AbXENIu6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759270AbXENIeR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 04:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754118AbXENIeL
+	id S1756884AbXENIu6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 04:50:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbXENIuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 04:34:11 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:60422 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbXENIeK (ORCPT
+	Mon, 14 May 2007 04:50:51 -0400
+Received: from ug-out-1314.google.com ([66.249.92.174]:63140 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754075AbXENIuu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 04:34:10 -0400
+	Mon, 14 May 2007 04:50:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=KvnTS/9EaQWZWrjRrjooIRhd7NEvoT6DNjmP0hsSXuRcREEcnPDDMlYpt7OA7KFdQuhF7ga55bF2OQC/nCUzLXoqf+jqayUUv7vTYCo3M2KpFeKMokT6H5h9pU/dX8Fc+grXnOusEvslwKnvJpfHMnvKj//ScWwcmHEQJKzjgqI=
-Message-ID: <5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
-Date: Mon, 14 May 2007 10:34:08 +0200
-From: "Antonino Ingargiola" <tritemio@gmail.com>
-To: "Jean Delvare" <khali@linux-fr.org>
-Subject: Re: Linux 2.6.22-rc1
-Cc: "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070514081022.7fcee97f@hyperion.delvare>
+        d=googlemail.com; s=beta;
+        h=received:date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:references:mime-version:content-type;
+        b=VJMtYalXQ3mluCN9B/gJDSbjoQRyxwcp74yWv8UKg8uO3VXvSxDEhj0AakBlB9Mcw+F7cqknW6MX0JykYOCD93VqIOlUfWbnQGomqTTUra7FC6gdjJgMyT4YMOtOAGrsAK6mx/XYMhe8cG9g9fP31nhTjjoikOBXbnRFckOAgG4=
+Date: Mon, 14 May 2007 10:50:45 +0200 (CEST)
+From: Esben Nielsen <nielsen.esben@googlemail.com>
+X-X-Sender: simlo@frodo.shire
+To: Eric Dumazet <dada1@cosmosbay.com>
+cc: Esben Nielsen <nielsen.esben@googlemail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
+In-Reply-To: <4645DCA2.80408@cosmosbay.com>
+Message-ID: <Pine.LNX.4.64.0705141040050.20796@frodo.shire>
+References: <20070511131541.992688403@chello.nl>  <Pine.LNX.4.64.0705121120210.26287@frodo.shire>
+ <1178964103.6810.55.camel@twins> <Pine.LNX.4.64.0705121520210.2101@frodo.shire>
+ <4645DCA2.80408@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
-	 <5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
-	 <alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
-	 <5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
-	 <20070514081022.7fcee97f@hyperion.delvare>
+Content-Type: MULTIPART/MIXED; BOUNDARY="-22478338-1517368955-1179132645=:20796"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/14, Jean Delvare <khali@linux-fr.org>:
-[cut]
-> I am not familiar with the gnome sensors applet. Does it say where it
-> is getting the data (driver name, device name...)?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-The applet settings show a list of sensors under the libsensors name.
-Those are the sensors that work on 2.6.21.1.
+---22478338-1517368955-1179132645=:20796
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-However the acpi and i2c section of the two config are
-> > identical. I report the only selected options:
-> >
-> > Power management options (ACPI, APM)  --->
-> >   [*] Power Management support
-> >   [*]   Software Suspend (Hibernation)
-> >   ACPI (Advanced Configuration and Power Interface) Support  --->
-> >     [*] ACPI Support
-> >     [*]   Sleep States
-> >     <M>   Button
-> >     <M>   Video
-> >     <M>   Fan
-> >     <M>   Processor
-> >     <M>     Thermal Zone
-> >     (0)   Disable ACPI for systems before Jan 1st this year
-> >
-> > Device Drivers  --->
-> >   I2C support  --->
-> >     <M>   I2C device interface
-> >     I2C Hardware Bus support  --->
-> >       <M> VIA VT82C596/82C686/82xx and CX700
+
+
+On Sat, 12 May 2007, Eric Dumazet wrote:
+
+> Esben Nielsen a =E9crit :
+>>
+>>
+>>  On Sat, 12 May 2007, Peter Zijlstra wrote:
+>>=20
+>> >  On Sat, 2007-05-12 at 11:27 +0200, Esben Nielsen wrote:
+>> > >=20
+>> > >  On Fri, 11 May 2007, Peter Zijlstra wrote:
+>> > >=20
+>> > > >=20
+>> > > >  I was toying with a scalable rw_mutex and found that it gives ~10=
+%=20
+>> > > >  reduction in
+>> > > >  system time on ebizzy runs (without the MADV_FREE patch).
+>> > > >=20
+>> > >=20
+>> > >  You break priority enheritance on user space futexes! :-(
+>> > >  The problems is that the futex waiter have to take the mmap_sem. An=
+d=20
+>> > >  as
+>> > >  your rw_mutex isn't PI enabled you get priority inversions :-(
+>> >=20
+>> >  Do note that rwsems have no PI either.
+>> >  PI is not a concern for mainline - yet, I do have ideas here though.
+>> >=20
+>> >
+>>  If PI wasn't a concern for mainline, why is PI futexes merged into the
+>>  mainline?
 >
-> You forgot to list the Hardware Monitoring support options.
-
-Sorry. Here it is (they are identical in the two config):
-
-Hardware Monitoring support  --->
-  <*> Hardware Monitoring support
-  <*> Abit uGuru
-  <M> VIA686A
-  <*> IBM Hard Drive Active Protection System (hdaps)
-
-But I'm quite sure that the only module used is VIA686A (I'm
-rebuilding to confirm).
-
-> > The first column of lsmod list the same modules in both kernels. The
-> > diff-ed dmesg is attached.
->
-> Please provide the output of lsmod.
->
-> If you are using one of the following drivers: lm78, smsc47b397,
-> smsc47m1, w83627hf or w83781d, you need lm_sensors >= 2.10.1
-> (libsensors.so.3.1.1 or later).
+> If you really care about futexes and mmap_sem, just use private futexes,=
+=20
+> since they dont use mmap_sem at all.
 >
 
-I've attached the lsmod for 2.6.22-rc. I'm not using any of the listed
-drivers. However the lm-sensors package is version 2.10.1-3 and
-libsensors.so.3.1.1 is on my system too (package libsensors3).
+futex_wait_pi() takes mmap_sem. So does futex_fd(). I can't see a code=20
+path into the PI futexes which doesn't use mmap_sem.
 
-Thanks.
+There is another way to avoid problems with mmap_sem:
+Use shared memory for data you need to share with high priority tasks and
+normal low priority tasks there. The high priority task(s) run(s) in=20
+an isolated high priority process having its own mmap_sem. This high=20
+priority process is mlock'ed and doesn't do any operations write locking=20
+mmap_sem.
 
-> --
-> Jean Delvare
+But it would be nice if you can avoid such a cumbersome workaround...
 
-    ~ Antonio
+Esben
+---22478338-1517368955-1179132645=:20796--
