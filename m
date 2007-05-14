@@ -1,69 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755224AbXENM5j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbXENNAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755224AbXENM5j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 08:57:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbXENM5d
+	id S1754892AbXENNAr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 09:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbXENNAl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 08:57:33 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:45054 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751793AbXENM5c (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 08:57:32 -0400
-Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070514120737.GE31234@wotan.suse.de>
-References: <20070511131541.992688403@chello.nl>
-	 <20070511155621.GA13150@elte.hu> <46449F61.2060004@cosmosbay.com>
-	 <1178903913.2781.20.camel@lappy>  <20070514120737.GE31234@wotan.suse.de>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 14:57:28 +0200
-Message-Id: <1179147448.6810.79.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 May 2007 09:00:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:51938 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751793AbXENNAl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 09:00:41 -0400
+X-Authenticated: #14603182
+X-Provags-ID: V01U2FsdGVkX19uv9EITeRuH2VlY+dGCWXCZo6H67Xc3mgrdgrnz/
+	C1XTpSb4tfRk1Q
+Message-ID: <46485D84.1010902@gmx.de>
+Date: Mon, 14 May 2007 15:00:52 +0200
+From: "Lars K.W. Gohlke" <lkwg82@gmx.de>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: How to access correctly serial port inside module?
+Content-Type: multipart/mixed;
+ boundary="------------030404010708050502000302"
+X-PGP-KeyID: 9D6D68DF
+X-Request-PGP: 
+X-OpenPGP-Key-ID: 000A26609D6D68DF
+X-OpenPGP-Key-Fprint: DA26 DACC EDFB 8E2A 21EC BF11 000A 2660 9D6D 68DF 
+X-OpenPGP-Key-URL: 
+X-Signed-With-GnuPG: GPGrelay Version 0.959 (Win32)
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 14:07 +0200, Nick Piggin wrote:
-> On Fri, May 11, 2007 at 07:18:33PM +0200, Peter Zijlstra wrote:
-> > On Fri, 2007-05-11 at 18:52 +0200, Eric Dumazet wrote:
-> > > 
-> > > But I personally find this new rw_mutex not scalable at all if you have some 
-> > > writers around.
-> > > 
-> > > percpu_counter_sum is just a L1 cache eater, and O(NR_CPUS)
-> > 
-> > Yeah, that is true; there are two occurences, the one in
-> > rw_mutex_read_unlock() is not strictly needed for correctness.
-> > 
-> > Write locks are indeed quite expensive. But given the ratio of
-> > reader:writer locks on mmap_sem (I'm not all that familiar with other
-> > rwsem users) this trade-off seems workable.
-> 
-> I guess the problem with that logic is assuming the mmap_sem read side
-> always needs to be scalable. Given the ratio of threaded:unthreaded
-> apps, maybe the trade-off swings away from favour?
 
-Could be; I've been bashing my head against the wall trying to find a
-scalable write side solution. But so far only got a massive dent in my
-brain from the effort.
+--------------030404010708050502000302
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Perhaps I can do a similar optimistic locking for my rcu-btree as I did
-for the radix tree. That way most of the trouble would be endowed upon
-the vmas instead of the mm itself. And then it would be up to user-space
-to ensure it has in the order of nr_cpu_ids arenas to work in.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Also, as Hugh pointed out in an earlier thread; mmap_sem's write side
-also protects the page tables, so we'd need to fix that up too;
-assumedly the write side equivalent of the vma lock would then protect
-all underlying page tables....
+hallo,
 
-/me drifting away, rambling incoherently,..
+after searching the mailing list and searching the web, I still don't
+know how to access correctly the serial port (in user space known as
+/dev/ttyS01)
+
+This thread ends before the answer was given and the site redirecting
+too is restructured: http://marc.info/?l=kernelnewbies&m=98314502419089&w=2
+
+would somebody be so kind to give me an example:
+
+with this behaviour:
+
+1. read from port
+2. output via printk()
+3. write to port
+
+I'm learning how to write modules:
+
+I've created already my own char-dev and used it in user-space.
+However I don't know really how to get information from kernel-code to
+solve this.
+
+thx in advance
+
+14.05.2007 14:46
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (MingW32) - GPGrelay v0.959
+
+iD8DBQFGSF2FAAomYJ1taN8RAnPfAKCdpnT+Uxa8a1Mc85TCyDzNwsvuQQCgzHIx
+f7V/XEWtWCa2IWtYjk7W7dg=
+=y/NM
+-----END PGP SIGNATURE-----
+
+--------------030404010708050502000302
+Content-Type: text/x-vcard; charset=utf-8;
+ name="lkwg82.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="lkwg82.vcf"
+
+begin:vcard
+fn:Lars K.W. Gohlke
+n:Gohlke;Lars K.W.
+email;internet:lkwg82@gmx.de
+x-mozilla-html:FALSE
+version:2.1
+end:vcard
+
+
+--------------030404010708050502000302--
 
