@@ -1,115 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758799AbXENS0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbXENS2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758799AbXENS0Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 14:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753395AbXENS0M
+	id S1758885AbXENS2z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 14:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757342AbXENS2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 14:26:12 -0400
-Received: from eldorado.sekrit.org ([72.5.28.212]:57341 "EHLO
-	eldorado.sekrit.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753201AbXENS0K (ORCPT
+	Mon, 14 May 2007 14:28:40 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57277 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1757316AbXENS2i convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 14:26:10 -0400
-X-Greylist: delayed 1981 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 May 2007 14:26:10 EDT
-Date: Mon, 14 May 2007 13:53:01 -0400
-From: Gerald Britton <gbritton@alum.mit.edu>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       mike.miller@hp.com, iss_storagedev@hp.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] cciss: Fix pci_driver.shutdown while device is still active
-Message-ID: <20070514175301.GA19871@zante.sekrit.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 14 May 2007 14:28:38 -0400
+X-Authenticated: #36390367
+X-Provags-ID: V01U2FsdGVkX19+IO0cQ0V+4ObyaAvMafXNMe+2qw1GekaHQNosbt
+	INdNjXtNT1gqZx
+From: Markus =?iso-8859-1?q?Ko=DFmann?= <mkossmann_ml1@gmx.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: parallel port problems with 2.6.21_rc5 and 2.6.21_rc6_git3-20070410174235
+Date: Mon, 14 May 2007 20:28:32 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-kernel@vger.kernel.org
+References: <200704112040.23505.mkossmann_ml1@gmx.de> <200705051658.22817.mkossmann_ml1@gmx.de> <20070513151201.f2b38720.randy.dunlap@oracle.com>
+In-Reply-To: <20070513151201.f2b38720.randy.dunlap@oracle.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200705142028.32838.mkossmann_ml1@gmx.de>
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix an Oops in the cciss driver caused by system shutdown while a filesystem
-on a cciss device is still active.  The cciss_remove_one function only
-properly removes the device if the device has been cleanly released by its
-users, which is not the case when the pci_driver.shutdown method is called.
-
-This patch adds a new cciss_shutdown function to better match the pattern
-used by various SCSI drivers: deactivate device interrupts and flush caches.
-It also alters the cciss_remove_one function to match and readds the
-__devexit annotation that was removed when cciss_remove_one was serving as
-the pci_driver.shutdown method.
-
-Signed-off-by: Gerald Britton <gbritton@alum.mit.edu>
----
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 370dfe1..5acc6c4 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -3469,13 +3469,39 @@ static int __devinit cciss_init_one(struct pci_dev *pdev,
- 	return -1;
- }
- 
--static void cciss_remove_one(struct pci_dev *pdev)
-+static void cciss_shutdown(struct pci_dev *pdev)
- {
- 	ctlr_info_t *tmp_ptr;
--	int i, j;
-+	int i;
- 	char flush_buf[4];
- 	int return_code;
- 
-+	tmp_ptr = pci_get_drvdata(pdev);
-+	if (tmp_ptr == NULL)
-+		return;
-+	i = tmp_ptr->ctlr;
-+	if (hba[i] == NULL)
-+		return;
-+
-+	/* Turn board interrupts off  and send the flush cache command */
-+	/* sendcmd will turn off interrupt, and send the flush...
-+	 * To write all data in the battery backed cache to disks */
-+	memset(flush_buf, 0, 4);
-+	return_code = sendcmd(CCISS_CACHE_FLUSH, i, flush_buf, 4, 0, 0, 0, NULL,
-+			      TYPE_CMD);
-+	if (return_code == IO_OK) {
-+		printk(KERN_INFO "Completed flushing cache on controller %d\n", i);
-+	} else {
-+		printk(KERN_WARNING "Error flushing cache on controller %d\n", i);
-+	}
-+	free_irq(hba[i]->intr[2], hba[i]);
-+}
-+
-+static void __devexit cciss_remove_one(struct pci_dev *pdev)
-+{
-+	ctlr_info_t *tmp_ptr;
-+	int i, j;
-+
- 	if (pci_get_drvdata(pdev) == NULL) {
- 		printk(KERN_ERR "cciss: Unable to remove device \n");
- 		return;
-@@ -3506,18 +3532,7 @@ static void cciss_remove_one(struct pci_dev *pdev)
- 
- 	cciss_unregister_scsi(i);	/* unhook from SCSI subsystem */
- 
--	/* Turn board interrupts off  and send the flush cache command */
--	/* sendcmd will turn off interrupt, and send the flush...
--	 * To write all data in the battery backed cache to disks */
--	memset(flush_buf, 0, 4);
--	return_code = sendcmd(CCISS_CACHE_FLUSH, i, flush_buf, 4, 0, 0, 0, NULL,
--			      TYPE_CMD);
--	if (return_code == IO_OK) {
--		printk(KERN_INFO "Completed flushing cache on controller %d\n", i);
--	} else {
--		printk(KERN_WARNING "Error flushing cache on controller %d\n", i);
--	}
--	free_irq(hba[i]->intr[2], hba[i]);
-+	cciss_shutdown(pdev);
- 
- #ifdef CONFIG_PCI_MSI
- 	if (hba[i]->msix_vector)
-@@ -3550,7 +3565,7 @@ static struct pci_driver cciss_pci_driver = {
- 	.probe = cciss_init_one,
- 	.remove = __devexit_p(cciss_remove_one),
- 	.id_table = cciss_pci_device_id,	/* id_table */
--	.shutdown = cciss_remove_one,
-+	.shutdown = cciss_shutdown,
- };
- 
- /*
+Am Montag, 14. Mai 2007 schrieb Randy Dunlap:
+> On Sat, 5 May 2007 16:58:22 +0200 Markus Koßmann wrote:
+> > Am Donnerstag, 3. Mai 2007 schrieb Randy Dunlap:
+> > > On Wed, 11 Apr 2007 20:40:23 +0200 Markus Koßmann wrote:
+> > > > When using either the unpatched  2.6.21_rc5   or SUSEs patched
+> > > > 2.6.21_rc6_git3-20070410174235 on a SUSE-10.2 x86_64 system the
+> > > > parallel port doesn't work right. If I "cat some_asciifile >/dev/lp0"
+> > > >  the output on my Epson Stylus Color 880 is unreadable.  "cat
+> > > > /dev/zero >/dev/lp0" creates random characters on the paper. Printing
+> > > > using cups also doesn't work any more.
+> > > > Switching back to SUSEs  2.6.18.8-0.1 kernel fixes the problem.
+> > > > Any Ideas, what might be broken here ?
+> > >
+> > > Nope, but I have the same problem.
+> > > I'll dig into it some day, but it's not very high priority for me.
+> > >
+> > > I haven't tested it lately.  Do you still see this problem?
+> >
+> > Yes, it still exists with SUSEs  2.6.21-20070502152652 kernel. Didn't
+> > check with vanilla 2.6.21 yet.
+>
+> Hi Markus,
+>
+> I just retested this on 2.6.21-git12 and didn't have a problem
+> with printing.  Can you test on 2.6.22-rc1?
+>
+Seems to be fixed in  2.6.22-rc1 but vanilla 2.6.21 was also bad. 
