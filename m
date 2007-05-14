@@ -1,119 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031806AbXENLr2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1031206AbXENLrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031806AbXENLr2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:47:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030456AbXENLeD
+	id S1031206AbXENLrt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030934AbXENLeH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:34:03 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27939 "EHLO
+	Mon, 14 May 2007 07:34:07 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27946 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762340AbXENLcp (ORCPT
+	with ESMTP id S1760532AbXENLch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:45 -0400
-Message-Id: <20070514110617.150681976@suse.de>
+	Mon, 14 May 2007 07:32:37 -0400
+Message-Id: <20070514110619.881061986@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:33 -0700
+Date: Mon, 14 May 2007 04:06:41 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 26/45] Pass struct vfsmount to the inode_listxattr LSM hook
-Content-Disposition: inline; filename=security-listxattr.diff
+       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 34/45] Factor out sysctl pathname code
+Content-Disposition: inline; filename=sysctl-pathname.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+Convert the selinux sysctl pathname computation code into a standalone
+function.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/xattr.c               |    2 +-
- include/linux/security.h |   12 +++++++-----
- security/dummy.c         |    2 +-
- security/selinux/hooks.c |    2 +-
- 4 files changed, 10 insertions(+), 8 deletions(-)
+ include/linux/sysctl.h   |    2 ++
+ kernel/sysctl.c          |   27 +++++++++++++++++++++++++++
+ security/selinux/hooks.c |   35 +++++------------------------------
+ 3 files changed, 34 insertions(+), 30 deletions(-)
 
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -149,7 +149,7 @@ vfs_listxattr(struct dentry *dentry, str
- 	struct inode *inode = dentry->d_inode;
- 	ssize_t error;
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -963,6 +963,8 @@ extern int proc_doulongvec_minmax(ctl_ta
+ extern int proc_doulongvec_ms_jiffies_minmax(ctl_table *table, int,
+ 				      struct file *, void __user *, size_t *, loff_t *);
  
--	error = security_inode_listxattr(dentry);
-+	error = security_inode_listxattr(dentry, mnt);
- 	if (error)
- 		return error;
- 	error = -EOPNOTSUPP;
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -395,7 +395,7 @@ struct request_sock;
-  * 	Return 0 if permission is granted.
-  * @inode_listxattr:
-  * 	Check permission before obtaining the list of extended attribute 
-- * 	names for @dentry.
-+ * 	names for @dentry and @mnt.
-  * 	Return 0 if permission is granted.
-  * @inode_removexattr:
-  * 	Check permission before removing the extended attribute
-@@ -1250,7 +1250,7 @@ struct security_operations {
- 				     size_t size, int flags);
- 	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
- 			       char *name);
--	int (*inode_listxattr) (struct dentry *dentry);
-+	int (*inode_listxattr) (struct dentry *dentry, struct vfsmount *mnt);
- 	int (*inode_removexattr) (struct dentry *dentry, char *name);
- 	const char *(*inode_xattr_getsuffix) (void);
-   	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
-@@ -1791,11 +1791,12 @@ static inline int security_inode_getxatt
- 	return security_ops->inode_getxattr (dentry, mnt, name);
++extern char *sysctl_pathname(ctl_table *, char *, int);
++
+ extern int do_sysctl (int __user *name, int nlen,
+ 		      void __user *oldval, size_t __user *oldlenp,
+ 		      void __user *newval, size_t newlen);
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1110,6 +1110,33 @@ struct ctl_table_header *sysctl_head_nex
+ 	return NULL;
  }
  
--static inline int security_inode_listxattr (struct dentry *dentry)
-+static inline int security_inode_listxattr (struct dentry *dentry,
-+					    struct vfsmount *mnt)
- {
- 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_listxattr (dentry);
-+	return security_ops->inode_listxattr (dentry, mnt);
- }
- 
- static inline int security_inode_removexattr (struct dentry *dentry, char *name)
-@@ -2495,7 +2496,8 @@ static inline int security_inode_getxatt
- 	return 0;
- }
- 
--static inline int security_inode_listxattr (struct dentry *dentry)
-+static inline int security_inode_listxattr (struct dentry *dentry,
-+					    struct vfsmount *mnt)
- {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -374,7 +374,7 @@ static int dummy_inode_getxattr (struct 
- 	return 0;
- }
- 
--static int dummy_inode_listxattr (struct dentry *dentry)
-+static int dummy_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
- {
- 	return 0;
- }
++char *sysctl_pathname(ctl_table *table, char *buffer, int buflen)
++{
++	if (buflen < 1)
++		return NULL;
++	buffer += --buflen;
++	*buffer = '\0';
++
++	while (table) {
++		int namelen = strlen(table->procname);
++
++		if (buflen < namelen + 1)
++			return NULL;
++		buflen -= namelen + 1;
++		buffer -= namelen;
++		memcpy(buffer, table->procname, namelen);
++		*--buffer = '/';
++		table = table->parent;
++	}
++	if (buflen < 4)
++		return NULL;
++	buffer -= 4;
++	memcpy(buffer, "/sys", 4);
++
++	return buffer;
++}
++EXPORT_SYMBOL(sysctl_pathname);
++
+ #ifdef CONFIG_SYSCTL_SYSCALL
+ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
+ 	       void __user *newval, size_t newlen)
 --- a/security/selinux/hooks.c
 +++ b/security/selinux/hooks.c
-@@ -2399,7 +2399,7 @@ static int selinux_inode_getxattr (struc
- 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
- }
+@@ -1427,40 +1427,15 @@ static int selinux_capable(struct task_s
  
--static int selinux_inode_listxattr (struct dentry *dentry)
-+static int selinux_inode_listxattr (struct dentry *dentry, struct vfsmount *mnt)
+ static int selinux_sysctl_get_sid(ctl_table *table, u16 tclass, u32 *sid)
  {
- 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
- }
+-	int buflen, rc;
+-	char *buffer, *path, *end;
++	char *buffer, *path;
++	int rc = -ENOMEM;
+ 
+-	rc = -ENOMEM;
+ 	buffer = (char*)__get_free_page(GFP_KERNEL);
+ 	if (!buffer)
+ 		goto out;
+-
+-	buflen = PAGE_SIZE;
+-	end = buffer+buflen;
+-	*--end = '\0';
+-	buflen--;
+-	path = end-1;
+-	*path = '/';
+-	while (table) {
+-		const char *name = table->procname;
+-		size_t namelen = strlen(name);
+-		buflen -= namelen + 1;
+-		if (buflen < 0)
+-			goto out_free;
+-		end -= namelen;
+-		memcpy(end, name, namelen);
+-		*--end = '/';
+-		path = end;
+-		table = table->parent;
+-	}
+-	buflen -= 4;
+-	if (buflen < 0)
+-		goto out_free;
+-	end -= 4;
+-	memcpy(end, "/sys", 4);
+-	path = end;
+-	rc = security_genfs_sid("proc", path, tclass, sid);
+-out_free:
++	path = sysctl_pathname(table, buffer, PAGE_SIZE);
++	if (path)
++		rc = security_genfs_sid("proc", path, tclass, sid);
+ 	free_page((unsigned long)buffer);
+ out:
+ 	return rc;
 
 -- 
