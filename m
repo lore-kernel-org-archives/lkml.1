@@ -1,68 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031166AbXENLge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966296AbXENLgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031166AbXENLge (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762440AbXENLcx
+	id S966296AbXENLgw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030258AbXENLc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:32:53 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27935 "EHLO
+	Mon, 14 May 2007 07:32:59 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27931 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758433AbXENLc3 (ORCPT
+	with ESMTP id S1758170AbXENLc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 14 May 2007 07:32:29 -0400
-Message-Id: <20070514110652.276911867@suse.de>
-References: <20070514110650.866217377@suse.de>
+Message-Id: <20070514110611.851603964@suse.de>
+References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:54 -0700
+Date: Mon, 14 May 2007 04:06:18 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Andreas Gruenbacher <agruen@suse.de>
-Subject: [RFD Patch 4/4] Pass nameidata2 to permission() from nfsd_permission()
-Content-Disposition: inline; filename=nfsd_permission-nameidata.diff
+       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
+       John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 11/45] Pass struct vfsmount to the inode_readlink LSM hook
+Content-Disposition: inline; filename=security-readlink.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Construct a nameidata object and pass it down to permission(), so
-that we can do the proper mount flag checks there.
+This is needed for computing pathnames in the AppArmor LSM.
 
-Note that confining nfsd with AppArmor makes no sense, and so this
-patch is not necessary for AppArmor alone.
-
+Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/nfsd/vfs.c |    9 +++++++--
- 1 file changed, 7 insertions(+), 2 deletions(-)
+ fs/stat.c                |    2 +-
+ include/linux/security.h |   11 +++++++----
+ security/dummy.c         |    2 +-
+ security/selinux/hooks.c |    2 +-
+ 4 files changed, 10 insertions(+), 7 deletions(-)
 
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -1804,6 +1804,7 @@ nfsd_statfs(struct svc_rqst *rqstp, stru
- __be32
- nfsd_permission(struct svc_export *exp, struct dentry *dentry, int acc)
+--- a/fs/stat.c
++++ b/fs/stat.c
+@@ -306,7 +306,7 @@ asmlinkage long sys_readlinkat(int dfd, 
+ 
+ 		error = -EINVAL;
+ 		if (inode->i_op && inode->i_op->readlink) {
+-			error = security_inode_readlink(nd.dentry);
++			error = security_inode_readlink(nd.dentry, nd.mnt);
+ 			if (!error) {
+ 				touch_atime(nd.mnt, nd.dentry);
+ 				error = inode->i_op->readlink(nd.dentry, buf, bufsiz);
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -338,6 +338,7 @@ struct request_sock;
+  * @inode_readlink:
+  *	Check the permission to read the symbolic link.
+  *	@dentry contains the dentry structure for the file link.
++ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
+  *	Return 0 if permission is granted.
+  * @inode_follow_link:
+  *	Check permission to follow a symbolic link when looking up a pathname.
+@@ -1223,7 +1224,7 @@ struct security_operations {
+ 			    struct vfsmount *mnt, int mode, dev_t dev);
+ 	int (*inode_rename) (struct inode *old_dir, struct dentry *old_dentry,
+ 	                     struct inode *new_dir, struct dentry *new_dentry);
+-	int (*inode_readlink) (struct dentry *dentry);
++	int (*inode_readlink) (struct dentry *dentry, struct vfsmount *mnt);
+ 	int (*inode_follow_link) (struct dentry *dentry, struct nameidata *nd);
+ 	int (*inode_permission) (struct inode *inode, int mask, struct nameidata *nd);
+ 	int (*inode_setattr) (struct dentry *dentry, struct vfsmount *mnt,
+@@ -1693,11 +1694,12 @@ static inline int security_inode_rename 
+ 					   new_dir, new_dentry);
+ }
+ 
+-static inline int security_inode_readlink (struct dentry *dentry)
++static inline int security_inode_readlink (struct dentry *dentry,
++					   struct vfsmount *mnt)
  {
-+	struct nameidata2 nd;
- 	struct inode	*inode = dentry->d_inode;
- 	int		err;
- 
-@@ -1869,12 +1870,16 @@ nfsd_permission(struct svc_export *exp, 
- 	    inode->i_uid == current->fsuid)
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
  		return 0;
+-	return security_ops->inode_readlink (dentry);
++	return security_ops->inode_readlink (dentry, mnt);
+ }
  
--	err = permission(inode, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), NULL);
-+	nd.dentry = dentry;
-+	nd.mnt = exp->ex_mnt;
-+	nd.flags = LOOKUP_ACCESS;
-+
-+	err = permission(inode, acc & (MAY_READ|MAY_WRITE|MAY_EXEC), &nd);
+ static inline int security_inode_follow_link (struct dentry *dentry,
+@@ -2407,7 +2409,8 @@ static inline int security_inode_rename 
+ 	return 0;
+ }
  
- 	/* Allow read access to binaries even when mode 111 */
- 	if (err == -EACCES && S_ISREG(inode->i_mode) &&
- 	    acc == (MAY_READ | MAY_OWNER_OVERRIDE))
--		err = permission(inode, MAY_EXEC, NULL);
-+		err = permission(inode, MAY_EXEC, &nd);
+-static inline int security_inode_readlink (struct dentry *dentry)
++static inline int security_inode_readlink (struct dentry *dentry,
++					   struct vfsmount *mnt)
+ {
+ 	return 0;
+ }
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -312,7 +312,7 @@ static int dummy_inode_rename (struct in
+ 	return 0;
+ }
  
- 	return err? nfserrno(err) : 0;
+-static int dummy_inode_readlink (struct dentry *dentry)
++static int dummy_inode_readlink (struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	return 0;
+ }
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2237,7 +2237,7 @@ static int selinux_inode_rename(struct i
+ 	return may_rename(old_inode, old_dentry, new_inode, new_dentry);
+ }
+ 
+-static int selinux_inode_readlink(struct dentry *dentry)
++static int selinux_inode_readlink(struct dentry *dentry, struct vfsmount *mnt)
+ {
+ 	return dentry_has_perm(current, NULL, dentry, FILE__READ);
  }
 
 -- 
