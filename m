@@ -1,64 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbXENW1x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760391AbXENW3W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760642AbXENW1x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 18:27:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbXENW1q
+	id S1760391AbXENW3W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 18:29:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbXENW3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 18:27:46 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:42892 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755756AbXENW1p (ORCPT
+	Mon, 14 May 2007 18:29:15 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:48797 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755155AbXENW3P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 18:27:45 -0400
-Subject: Re: [VOYAGER] fix build broken by shift to smp_ops
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Mon, 14 May 2007 18:29:15 -0400
+Date: Mon, 14 May 2007 15:29:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <ak@suse.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
        "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <4648DBE4.9000903@goop.org>
+Subject: Re: [VOYAGER] fix build broken by shift to smp_ops
+Message-Id: <20070514152905.3604fa20.akpm@linux-foundation.org>
+In-Reply-To: <200705142358.09529.ak@suse.de>
 References: <1179158912.3703.47.camel@mulgrave.il.steeleye.com>
-	 <46489818.4000408@goop.org>
-	 <20070514125946.0f74221c.akpm@linux-foundation.org>
-	 <4648C062.5090704@goop.org>
-	 <20070514133745.5bfc34ac.akpm@linux-foundation.org>
-	 <1179176058.3703.85.camel@mulgrave.il.steeleye.com>
-	 <20070514140530.8e0491cf.akpm@linux-foundation.org>
-	 <4648D03F.4090407@goop.org>
-	 <20070514145158.ca5f6174.akpm@linux-foundation.org>
-	 <4648DBE4.9000903@goop.org>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 17:27:39 -0500
-Message-Id: <1179181659.3703.99.camel@mulgrave.il.steeleye.com>
+	<20070514140530.8e0491cf.akpm@linux-foundation.org>
+	<4648D03F.4090407@goop.org>
+	<200705142358.09529.ak@suse.de>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 15:00 -0700, Jeremy Fitzhardinge wrote:
-> Andrew Morton wrote:
-> > Well, let's get the build fix in place first and then we can feed
-> > the cleanup in later on, in a more leisurely fashion?
-> >   
+On Mon, 14 May 2007 23:58:09 +0200
+Andi Kleen <ak@suse.de> wrote:
+
 > 
-> If you like.  Are all the Voyager users standing outside your office
-> with pitchforks, demanding satisfaction?
+> > OK, but only if you don't want to put "i386: move common parts of smp
+> > into their own file" in front of it, and remove the duplicated code.  I
+> > could send you a third copy if you like.
+> 
+> Using Jeremy's patch is better than James'
+> 
 
-That could be arranged ...  The Xensource offices are just up the road
-from Google, you know if I wanted to kill two birds with one stone.
+This is getting comical.
 
-Seriously, though, although I tolerate voyager breakage through the
-merge window, I actively try to clean it up and have a working voyager
-for the next release.  There's no real excuse for not fixing build
-breakage.  How it's done, I don't really care.  The only blocker for the
-two patch smp consolidation + voyager fix was Andi ... if he's relaxing
-that, then we can go that route.
+According to my records, the patch
+voyager-fix-build-broken-by-shift-to-smp_ops.patch _is_ Jeremy's patch. 
+James forwarded it.
 
-Until this is fixed, there are going to be -rc testers firing off build
-failure reports, which I think we'd all like to 
+I take it from your statement that we should merge some Jeremy-patch other
+than this Jeremy-patch?
 
-James
+If "yes", than could Jeremy please resend the other patch(es) (I believe there
+are multiple patches involved) and then can James please test them?
 
+If "no" then I think I'll just go shopping.
 
