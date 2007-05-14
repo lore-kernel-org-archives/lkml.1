@@ -1,51 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760050AbXENWyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbXENWzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760050AbXENWyh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 18:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755715AbXENWyb
+	id S1760645AbXENWzZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 18:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756597AbXENWzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 18:54:31 -0400
-Received: from lixom.net ([66.141.50.11]:39742 "EHLO mail.lixom.net"
+	Mon, 14 May 2007 18:55:12 -0400
+Received: from gw.goop.org ([64.81.55.164]:52401 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755222AbXENWya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 18:54:30 -0400
-Date: Mon, 14 May 2007 17:57:31 -0500
-To: Christoph Hellwig <hch@lst.de>
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org,
-       Dominik Brodowski <linux@brodo.de>
-Subject: Re: [PATCH] pcmcia: ppc64 needs 64-bit ioaddr_t
-Message-ID: <20070514225731.GA4191@lixom.net>
-References: <20070512143105.GA12890@lixom.net> <20070513214608.GA26187@lst.de>
+	id S1755715AbXENWzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 18:55:10 -0400
+Message-ID: <4648E8CB.2070308@goop.org>
+Date: Mon, 14 May 2007 15:55:07 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070513214608.GA26187@lst.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: olof@lixom.net (Olof Johansson)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [VOYAGER] fix build broken by shift to smp_ops
+References: <1179158912.3703.47.camel@mulgrave.il.steeleye.com>	 <46489818.4000408@goop.org>	 <20070514125946.0f74221c.akpm@linux-foundation.org>	 <4648C062.5090704@goop.org>	 <20070514133745.5bfc34ac.akpm@linux-foundation.org>	 <1179176058.3703.85.camel@mulgrave.il.steeleye.com>	 <20070514140530.8e0491cf.akpm@linux-foundation.org>	 <4648D03F.4090407@goop.org>	 <20070514145158.ca5f6174.akpm@linux-foundation.org>	 <4648DBE4.9000903@goop.org> <1179181659.3703.99.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1179181659.3703.99.camel@mulgrave.il.steeleye.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 13, 2007 at 11:46:08PM +0200, Christoph Hellwig wrote:
-> On Sat, May 12, 2007 at 09:31:05AM -0500, Olof Johansson wrote:
-> > ppc64 really needs ioaddr_t to be 64-bit, since I/O addresses really
-> > are MMIO addresses, and remapped to a high range.
-> > 
-> > While the type is exported to userspace, there hasn't been any platforms
-> > with PCMCIA on 64-bit powerpc until now, so changing it won't regress
-> > any existing users.
-> 
-> In fact the only use of the type should be in the obsolete ioctl-based user
-> interface.  So instead of changing the size of the type you should
-> 
->  a) make sure you're not using cardmgr
->  b) fix up those places that still use ioaddr_t where they shouldn't
->     and switch the to kio_addr_t (why not just unsigned long like all
->     other busses?) 
+James Bottomley wrote:
+> Seriously, though, although I tolerate voyager breakage through the
+> merge window, I actively try to clean it up and have a working voyager
+> for the next release.  There's no real excuse for not fixing build
+> breakage.  How it's done, I don't really care.  The only blocker for the
+> two patch smp consolidation + voyager fix was Andi ... if he's relaxing
+> that, then we can go that route.
+>
+> Until this is fixed, there are going to be -rc testers firing off build
+> failure reports, which I think we'd all like to 
 
-I just noticed that feature-removal-schedule.txt says November 2005 for
-the removal of the pcmcia ioctl's, but they're still there. I'm missing
-the history here, any reason they weren't removed yet?
+Sure.  I'm just surprised this is causing so much fuss, since I thought
+we'd resolved it all last month.
 
-
--Olof
+    J
