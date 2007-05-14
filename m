@@ -1,123 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761457AbXENLdZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965824AbXENLeM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761457AbXENLdZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:33:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759936AbXENLcd
+	id S965824AbXENLeM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:34:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966043AbXENLco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:32:33 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27926 "EHLO
+	Mon, 14 May 2007 07:32:44 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27932 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756022AbXENLc0 (ORCPT
+	with ESMTP id S1757172AbXENLc3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:26 -0400
-X-Greylist: delayed 1592 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 May 2007 07:32:25 EDT
-Message-Id: <20070514110616.523396736@suse.de>
-References: <20070514110607.549397248@suse.de>
+	Mon, 14 May 2007 07:32:29 -0400
+Message-Id: <20070514110651.929217256@suse.de>
+References: <20070514110650.866217377@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:31 -0700
+Date: Mon, 14 May 2007 04:06:53 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 24/45] Pass struct vfsmount to the inode_getxattr LSM hook
-Content-Disposition: inline; filename=security-getxattr.diff
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: [RFD Patch 3/4] Dont use a NULL nameidata in xattr_permission()
+Content-Disposition: inline; filename=xattr_permission.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+Create nameidata2 struct xattr_permission so that it does not pass NULL
+to permission.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/xattr.c               |    2 +-
- include/linux/security.h |   13 ++++++++-----
- security/dummy.c         |    3 ++-
- security/selinux/hooks.c |    3 ++-
- 4 files changed, 13 insertions(+), 8 deletions(-)
+ fs/xattr.c |   18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -116,7 +116,7 @@ vfs_getxattr(struct dentry *dentry, stru
+@@ -25,8 +25,16 @@
+  * because different namespaces have very different rules.
+  */
+ static int
+-xattr_permission(struct inode *inode, const char *name, int mask)
++xattr_permission(struct dentry *dentry, struct vfsmount *mnt, const char *name,
++		 int mask)
+ {
++	struct inode *inode = dentry->d_inode;
++	struct nameidata2 nd;
++
++	nd.dentry = dentry;
++	nd.mnt = mnt;
++	nd.flags = 0;
++
+ 	/*
+ 	 * We can never set or remove an extended attribute on a read-only
+ 	 * filesystem  or on an immutable / append-only inode.
+@@ -65,7 +73,7 @@ xattr_permission(struct inode *inode, co
+ 			return -EPERM;
+ 	}
+ 
+-	return permission(inode, mask, NULL);
++	return permission(inode, mask, &nd);
+ }
+ 
+ int
+@@ -75,7 +83,7 @@ vfs_setxattr(struct dentry *dentry, stru
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 
+-	error = xattr_permission(inode, name, MAY_WRITE);
++	error = xattr_permission(dentry, mnt, name, MAY_WRITE);
  	if (error)
  		return error;
  
--	error = security_inode_getxattr(dentry, name);
-+	error = security_inode_getxattr(dentry, mnt, name);
+@@ -112,7 +120,7 @@ vfs_getxattr(struct dentry *dentry, stru
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+ 
+-	error = xattr_permission(inode, name, MAY_READ);
++	error = xattr_permission(dentry, mnt, name, MAY_READ);
  	if (error)
  		return error;
  
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -391,7 +391,7 @@ struct request_sock;
-  * 	@value identified by @name for @dentry and @mnt.
-  * @inode_getxattr:
-  * 	Check permission before obtaining the extended attributes
-- * 	identified by @name for @dentry.
-+ * 	identified by @name for @dentry and @mnt.
-  * 	Return 0 if permission is granted.
-  * @inode_listxattr:
-  * 	Check permission before obtaining the list of extended attribute 
-@@ -1248,7 +1248,8 @@ struct security_operations {
- 				     struct vfsmount *mnt,
- 				     char *name, void *value,
- 				     size_t size, int flags);
--	int (*inode_getxattr) (struct dentry *dentry, char *name);
-+	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
-+			       char *name);
- 	int (*inode_listxattr) (struct dentry *dentry);
- 	int (*inode_removexattr) (struct dentry *dentry, char *name);
- 	const char *(*inode_xattr_getsuffix) (void);
-@@ -1782,11 +1783,12 @@ static inline void security_inode_post_s
- 	security_ops->inode_post_setxattr (dentry, mnt, name, value, size, flags);
- }
+@@ -174,7 +182,7 @@ vfs_removexattr(struct dentry *dentry, s
+ 	if (!inode->i_op->removexattr)
+ 		return -EOPNOTSUPP;
  
--static inline int security_inode_getxattr (struct dentry *dentry, char *name)
-+static inline int security_inode_getxattr (struct dentry *dentry,
-+					    struct vfsmount *mnt, char *name)
- {
- 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_getxattr (dentry, name);
-+	return security_ops->inode_getxattr (dentry, mnt, name);
- }
+-	error = xattr_permission(inode, name, MAY_WRITE);
++	error = xattr_permission(dentry, mnt, name, MAY_WRITE);
+ 	if (error)
+ 		return error;
  
- static inline int security_inode_listxattr (struct dentry *dentry)
-@@ -2487,7 +2489,8 @@ static inline void security_inode_post_s
- 						 int flags)
- { }
- 
--static inline int security_inode_getxattr (struct dentry *dentry, char *name)
-+static inline int security_inode_getxattr (struct dentry *dentry,
-+					    struct vfsmount *mnt, char *name)
- {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -368,7 +368,8 @@ static void dummy_inode_post_setxattr (s
- {
- }
- 
--static int dummy_inode_getxattr (struct dentry *dentry, char *name)
-+static int dummy_inode_getxattr (struct dentry *dentry,
-+			          struct vfsmount *mnt, char *name)
- {
- 	return 0;
- }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2393,7 +2393,8 @@ static void selinux_inode_post_setxattr(
- 	return;
- }
- 
--static int selinux_inode_getxattr (struct dentry *dentry, char *name)
-+static int selinux_inode_getxattr (struct dentry *dentry, struct vfsmount *mnt,
-+				   char *name)
- {
- 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
- }
 
 -- 
