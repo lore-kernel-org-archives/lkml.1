@@ -1,78 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754923AbXENMiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754649AbXENMzW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754923AbXENMiQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 08:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752277AbXENMiI
+	id S1754649AbXENMzW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 08:55:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752141AbXENMzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 08:38:08 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:27601 "EHLO
-	viefep17-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752055AbXENMiH (ORCPT
+	Mon, 14 May 2007 08:55:14 -0400
+Received: from crystal.sipsolutions.net ([195.210.38.204]:40192 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751722AbXENMzM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 08:38:07 -0400
-Subject: Re: [PATCH 0/2] convert mmap_sem to a scalable rw_mutex
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@tv-sign.ru>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <20070514115830.GD31234@wotan.suse.de>
-References: <20070511131541.992688403@chello.nl>
-	 <20070511155621.GA13150@elte.hu>  <20070514115830.GD31234@wotan.suse.de>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 14:38:01 +0200
-Message-Id: <1179146281.6810.65.camel@twins>
+	Mon, 14 May 2007 08:55:12 -0400
+Subject: Re: Kconfig warnings on latest GIT
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Simon Horman <horms@verge.net.au>
+Cc: Timur Tabi <timur@freescale.com>,
+       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       Ismail =?ISO-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Michael Schmitz <schmitz@debian.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>
+In-Reply-To: <20070514013230.GJ3588@verge.net.au>
+References: <200705080004.14570.ismail@pardus.org.tr>
+	 <20070508143127.38fafa3c.kim.phillips@freescale.com>
+	 <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au>
+	 <1178811570.3806.18.camel@johannes.berg>
+	 <20070511012216.GB10715@verge.net.au>
+	 <1178883937.8896.11.camel@johannes.berg>
+	 <20070514013230.GJ3588@verge.net.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-5P+EYyVURQ7J7npE4dYy"
+Date: Mon, 14 May 2007 14:55:11 +0200
+Message-Id: <1179147311.2647.47.camel@johannes.berg>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 13:58 +0200, Nick Piggin wrote:
-> On Fri, May 11, 2007 at 05:56:21PM +0200, Ingo Molnar wrote:
-> > 
-> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
-> > 
-> > > I was toying with a scalable rw_mutex and found that it gives ~10% 
-> > > reduction in system time on ebizzy runs (without the MADV_FREE patch).
-> > > 
-> > > 2-way x86_64 pentium D box:
-> > > 
-> > > 2.6.21
-> > > 
-> > > /usr/bin/time ./ebizzy -m -P
-> > > 59.49user 137.74system 1:49.22elapsed 180%CPU (0avgtext+0avgdata 0maxresident)k
-> > > 0inputs+0outputs (0major+33555877minor)pagefaults 0swaps
-> > > 
-> > > 2.6.21-rw_mutex
-> > > 
-> > > /usr/bin/time ./ebizzy -m -P
-> > > 57.85user 124.30system 1:42.99elapsed 176%CPU (0avgtext+0avgdata 0maxresident)k
-> > > 0inputs+0outputs (0major+33555877minor)pagefaults 0swaps
-> > 
-> > nice! This 6% runtime reduction on a 2-way box will i suspect get 
-> > exponentially better on systems with more CPUs/cores.
-> 
-> Is this with the MADV_DONTNEED kernel and glibc work?
 
-No, just the old stuff.
+--=-5P+EYyVURQ7J7npE4dYy
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> > i also like the design, alot: instead of doing a full new lock type 
-> > (with per-arch changes, extra lockdep support, etc. etc) you layered the 
-> > new abstraction ontop of mutexes. This makes this hard locking 
-> > abstraction look really, really simple, while the percpu_counter trick 
-> > makes it scale _perfectly_ for the reader case. Congratulations!
-> > 
-> > given how nice this looks already, have you considered completely 
-> > replacing rwsems with this? I suspect you could test the correctness of 
-> 
-> Not to take anything away from this lock type (because it can have its
-> uses), but have you considered the size of this lock and its write side
-> performance? 
+Simon,
 
-Yeah, I did, I was initially just toying about with the concept, to see
-if it was doable at all. I only posted because I got these fairly good
-numbers.
+> I don't think that this is quite right, or at least it isn't quite the
+> same as before.
+
+Yeah, I think you're right.
+
+>  I think that was is below will toggle
+> SYS_SUPPORTS_APM_EMULATION when PMAC_APM_EMU is selected,
+> which I think is what you want. Is it also neccessary to
+> add a dependancy on PPC_PMAC to PMAC_APM_EMU ?
+
+No, it depends on ADB_PMU which depends on PPC_PMAC.
+
+> config PMAC_APM_EMU
+> 	tristate "APM emulation"
+> 	select APM_EMULATION
+> 	depends on ADB_PMU && PM
+>=20
+> config SYS_SUPPORTS_APM_EMULATION
+> 	bool
+> 	default y if PMAC_APM_EMU
+
+I still have to try it, I haven't been yet seen Kumar's fix that he said
+he'd done.
+
+johannes
+
+--=-5P+EYyVURQ7J7npE4dYy
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGSFwv/ETPhpq3jKURAqXLAJ98DinaxgHifKcKt2xKl2yvicMmAACggf/Q
+CrKZ4jnkCezTufQlGoUQ49E=
+=BdyT
+-----END PGP SIGNATURE-----
+
+--=-5P+EYyVURQ7J7npE4dYy--
 
