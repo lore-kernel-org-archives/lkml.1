@@ -1,144 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1032268AbXENLz5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032089AbXENL40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1032268AbXENLz5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:55:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030926AbXENLe7
+	id S1032089AbXENL40 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762624AbXENLe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:34:59 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27938 "EHLO
+	Mon, 14 May 2007 07:34:57 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27946 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759324AbXENLch (ORCPT
+	with ESMTP id S1762324AbXENLco (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:37 -0400
-Message-Id: <20070514110612.675291170@suse.de>
+	Mon, 14 May 2007 07:32:44 -0400
+Message-Id: <20070514110623.061824777@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:20 -0700
+Date: Mon, 14 May 2007 04:06:50 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
-       John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 13/45] Pass the struct vfsmounts to the inode_link LSM hook
-Content-Disposition: inline; filename=security-link.diff
+       Andreas Gruenbacher <agruen@suse.de>
+Subject: [AppArmor 43/45] Switch to vfs_permission() in do_path_lookup()
+Content-Disposition: inline; filename=do_path_lookup-nameidata.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+Switch from file_permission() to vfs_permission() in do_path_lookup():
+this avoids calling permission() with a NULL nameidata here.
 
-Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
-Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/namei.c               |    3 ++-
- include/linux/security.h |   18 +++++++++++++-----
- security/dummy.c         |    6 ++++--
- security/selinux/hooks.c |    9 +++++++--
- 4 files changed, 26 insertions(+), 10 deletions(-)
+ fs/namei.c |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2293,7 +2293,8 @@ int vfs_link(struct dentry *old_dentry, 
- 	if (S_ISDIR(old_dentry->d_inode->i_mode))
- 		return -EPERM;
+@@ -1130,25 +1130,24 @@ static int fastcall do_path_lookup(int d
+ 		nd->dentry = dget(fs->pwd);
+ 		read_unlock(&fs->lock);
+ 	} else {
+-		struct dentry *dentry;
+-
+ 		file = fget_light(dfd, &fput_needed);
+ 		retval = -EBADF;
+ 		if (!file)
+ 			goto out_fail;
  
--	error = security_inode_link(old_dentry, dir, new_dentry);
-+	error = security_inode_link(old_dentry, old_mnt, dir, new_dentry,
-+				    new_mnt);
- 	if (error)
- 		return error;
+-		dentry = file->f_path.dentry;
++		nd->dentry = file->f_path.dentry;
++		nd->mnt = file->f_path.mnt;
  
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -289,8 +289,10 @@ struct request_sock;
-  * @inode_link:
-  *	Check permission before creating a new hard link to a file.
-  *	@old_dentry contains the dentry structure for an existing link to the file.
-+ *	@old_mnt is the vfsmount corresponding to @old_dentry (may be NULL).
-  *	@dir contains the inode structure of the parent directory of the new link.
-  *	@new_dentry contains the dentry structure for the new link.
-+ *	@new_mnt is the vfsmount corresponding to @new_dentry (may be NULL).
-  *	Return 0 if permission is granted.
-  * @inode_unlink:
-  *	Check the permission to remove a hard link to a file. 
-@@ -1212,8 +1214,9 @@ struct security_operations {
- 				    char **name, void **value, size_t *len);
- 	int (*inode_create) (struct inode *dir, struct dentry *dentry,
- 			     struct vfsmount *mnt, int mode);
--	int (*inode_link) (struct dentry *old_dentry,
--	                   struct inode *dir, struct dentry *new_dentry);
-+	int (*inode_link) (struct dentry *old_dentry, struct vfsmount *old_mnt,
-+	                   struct inode *dir, struct dentry *new_dentry,
-+			   struct vfsmount *new_mnt);
- 	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
- 	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
- 			      struct vfsmount *mnt, const char *old_name);
-@@ -1628,12 +1631,15 @@ static inline int security_inode_create 
- }
+ 		retval = -ENOTDIR;
+-		if (!S_ISDIR(dentry->d_inode->i_mode))
++		if (!S_ISDIR(nd->dentry->d_inode->i_mode))
+ 			goto fput_fail;
  
- static inline int security_inode_link (struct dentry *old_dentry,
-+				       struct vfsmount *old_mnt,
- 				       struct inode *dir,
--				       struct dentry *new_dentry)
-+				       struct dentry *new_dentry,
-+				       struct vfsmount *new_mnt)
- {
- 	if (unlikely (IS_PRIVATE (old_dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_link (old_dentry, dir, new_dentry);
-+	return security_ops->inode_link (old_dentry, old_mnt, dir,
-+					 new_dentry, new_mnt);
- }
+-		retval = file_permission(file, MAY_EXEC);
++		retval = vfs_permission(nd, MAY_EXEC);
+ 		if (retval)
+ 			goto fput_fail;
  
- static inline int security_inode_unlink (struct inode *dir,
-@@ -2359,8 +2365,10 @@ static inline int security_inode_create 
- }
+-		nd->mnt = mntget(file->f_path.mnt);
+-		nd->dentry = dget(dentry);
++		mntget(nd->mnt);
++		dget(nd->dentry);
  
- static inline int security_inode_link (struct dentry *old_dentry,
-+				       struct vfsmount *old_mnt,
- 				       struct inode *dir,
--				       struct dentry *new_dentry)
-+				       struct dentry *new_dentry,
-+				       struct vfsmount *new_mnt)
- {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -270,8 +270,10 @@ static int dummy_inode_create (struct in
- 	return 0;
- }
- 
--static int dummy_inode_link (struct dentry *old_dentry, struct inode *inode,
--			     struct dentry *new_dentry)
-+static int dummy_inode_link (struct dentry *old_dentry,
-+			     struct vfsmount *old_mnt, struct inode *inode,
-+			     struct dentry *new_dentry,
-+			     struct vfsmount *new_mnt)
- {
- 	return 0;
- }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2182,11 +2182,16 @@ static int selinux_inode_create(struct i
- 	return may_create(dir, dentry, SECCLASS_FILE);
- }
- 
--static int selinux_inode_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
-+static int selinux_inode_link(struct dentry *old_dentry,
-+			      struct vfsmount *old_mnt,
-+			      struct inode *dir,
-+			      struct dentry *new_dentry,
-+			      struct vfsmount *new_mnt)
- {
- 	int rc;
- 
--	rc = secondary_ops->inode_link(old_dentry,dir,new_dentry);
-+	rc = secondary_ops->inode_link(old_dentry, old_mnt, dir, new_dentry,
-+				       new_mnt);
- 	if (rc)
- 		return rc;
- 	return may_link(dir, old_dentry, MAY_LINK);
+ 		fput_light(file, fput_needed);
+ 	}
 
 -- 
