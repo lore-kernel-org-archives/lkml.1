@@ -1,54 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758845AbXENTIj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbXENTMY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758845AbXENTIj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:08:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755263AbXENTIc
+	id S1758135AbXENTMY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:12:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754398AbXENTMR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:08:32 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52879 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754339AbXENTIb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:08:31 -0400
-Date: Mon, 14 May 2007 15:08:25 -0400
-From: Dave Jones <davej@redhat.com>
-To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Barry Scott <barry.scott@onelan.co.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Opss: 2.6.21-1.3116.ONELAN Kernel last sysfs file: /class/vc/vcsa7/dev
-Message-ID: <20070514190825.GD29024@redhat.com>
-Mail-Followup-To: Dave Jones <davej@redhat.com>,
-	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-	Barry Scott <barry.scott@onelan.co.uk>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <46483868.5040106@onelan.co.uk> <6bffcb0e0705140340m228e8e62n5053db88deadf5fd@mail.gmail.com>
+	Mon, 14 May 2007 15:12:17 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:42695 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751052AbXENTMQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 15:12:16 -0400
+Date: Mon, 14 May 2007 12:11:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       randy.dunlap@oracle.com, paulus@samba.org, benh@kernel.crashing.org,
+       David Miller <davem@davemloft.net>, Andi Kleen <ak@suse.de>
+Subject: Re: [patch] Let smp_call_function_single return -EBUSY.
+Message-Id: <20070514121137.ddcc3f5a.akpm@linux-foundation.org>
+In-Reply-To: <20070514092317.GB8968@osiris.boeblingen.de.ibm.com>
+References: <20070514092317.GB8968@osiris.boeblingen.de.ibm.com>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6bffcb0e0705140340m228e8e62n5053db88deadf5fd@mail.gmail.com>
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 12:40:48PM +0200, Michal Piotrowski wrote:
- > Hi Barry,
- > 
- > On 14/05/07, Barry Scott <barry.scott@onelan.co.uk> wrote:
- > > I'm testing the robustness of Xorg 1.3 server with intel 2.0 driver
- > > by restarting the X and a set of apps every 30 seconds. After
- > > about an hour this happened.
- > >
- > > 2.6.21-1.3116.ONELAN is the same as 2.6.21-1.3116 from FC7
- > > but with the spec file change so that we can run the kernel on an FC4
- > > system.
- > 
- > Ok, it's Fedora 7 kernel, so please visit
- > https://bugzilla.redhat.com/bugzilla/index.cgi
+On Mon, 14 May 2007 11:23:17 +0200
+Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
 
-For all intents and purposes here, that may as well be a vanilla 2.6.21.1
-Reporting it there isn't going to get much more than a "*shrug* ask upstream"
-from me.
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> All architectures that have an implementation of smp_call_function_single
+> let it return -EBUSY if it is asked to execute func on the current cpu.
+> Therefore the UP version must always return -EBUSY.
+> 
 
-	Dave
+smp_call_function_single() is a mess.
 
--- 
-http://www.codemonkey.org.uk
+- it's unclear to me why smp_call_function_single(cpu, ...) doesn't just
+  call the darn function if cpu==smp_processor_id().
+
+- it's unclear to me why smp_call_function_single(cpu, ...) doesn't just
+  call the darn function if CONFIG_SMP=n.
+
+- it's unclear to me why smp_call_function_single(cpu, ...) isn't called
+  smp_call_function_on(cpu, ...)
+
+- the x86_64 version doesn't return -EBUSY: it returns zero.  Despite its
+  claim "Retrurns 0 on success, else a negative status code.".
+
+- i386 _does_ return -EBUSY.
+
+> This of course raises another question: it is not clear in which context
+> the smp_call_function* functions are supposed to be called. Should it be
+> with preemption disabled or is preemption enabled allowed as well?
+> If calling with preemption enabled is allowed then the powerpc implementation
+> is broken, since smp_processor_id() as well as num_online_cpus() may change
+> while they are accessed.
+
+These are all excellent questions.  And important ones.   I would suggest:
+
+- May be called with preemption enabled.  The implementation must take
+  care of that.
+
+- May not be called under local_irq_disable() for the usual reasons.
+
+- Will run the callback function under local_irq_disable() (this is
+  unimportant at present, but if we decide to later change it to run the
+  callback even on !SMP builds, we'll need to take care of that like we did
+  in on_each_cpu())
+
+
+
+>  include/linux/smp.h |    6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/include/linux/smp.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/smp.h
+> +++ linux-2.6/include/linux/smp.h
+> @@ -99,11 +99,9 @@ static inline void smp_send_reschedule(i
+>  #define num_booting_cpus()			1
+>  #define smp_prepare_boot_cpu()			do {} while (0)
+>  static inline int smp_call_function_single(int cpuid, void (*func) (void *info),
+> -				void *info, int retry, int wait)
+> +					   void *info, int retry, int wait)
+>  {
+> -	/* Disable interrupts here? */
+> -	func(info);
+> -	return 0;
+> +	return -EBUSY;
+>  }
+>  
+>  #endif /* !SMP */
+
+Your patch seems appropriate given the present and proposed peculiar
+semantics, but I think we need more work in there.  x86_64 needs its return
+value fixing asap, surely.
+
+
