@@ -1,126 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966550AbXENLpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966559AbXENLqH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966550AbXENLpn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030894AbXENLdk
+	id S966559AbXENLqH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:46:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966124AbXENLdw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:33:40 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27945 "EHLO
+	Mon, 14 May 2007 07:33:52 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27941 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965397AbXENLcn (ORCPT
+	with ESMTP id S1762283AbXENLcm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:43 -0400
-Message-Id: <20070514110614.433121818@suse.de>
+	Mon, 14 May 2007 07:32:42 -0400
+Message-Id: <20070514110617.496093604@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:25 -0700
+Date: Mon, 14 May 2007 04:06:34 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
        John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 18/45] Pass struct vfsmount to the inode_unlink LSM hook
-Content-Disposition: inline; filename=security-unlink.diff
+Subject: [AppArmor 27/45] Add a struct vfsmount parameter to vfs_removexattr()
+Content-Disposition: inline; filename=vfs-removexattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is needed for computing pathnames in the AppArmor LSM.
+The vfsmount will be passed down to the LSM hook so that LSMs can compute
+pathnames.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/namei.c               |    2 +-
- include/linux/security.h |   12 ++++++++----
- security/dummy.c         |    3 ++-
- security/selinux/hooks.c |    5 +++--
- 4 files changed, 14 insertions(+), 8 deletions(-)
+ fs/nfsd/vfs.c         |    7 ++++---
+ fs/xattr.c            |   12 ++++++------
+ include/linux/xattr.h |    2 +-
+ 3 files changed, 11 insertions(+), 10 deletions(-)
 
---- a/fs/namei.c
-+++ b/fs/namei.c
-@@ -2121,7 +2121,7 @@ int vfs_unlink(struct inode *dir, struct
- 	if (d_mountpoint(dentry))
- 		error = -EBUSY;
+--- a/fs/nfsd/vfs.c
++++ b/fs/nfsd/vfs.c
+@@ -1957,6 +1957,7 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
+ int
+ nfsd_set_posix_acl(struct svc_fh *fhp, int type, struct posix_acl *acl)
+ {
++	struct vfsmount *mnt;
+ 	struct inode *inode = fhp->fh_dentry->d_inode;
+ 	char *name;
+ 	void *value = NULL;
+@@ -1989,14 +1990,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
+ 	} else
+ 		size = 0;
+ 
++	mnt = fhp->fh_export->ex_mnt;
+ 	if (size)
+-		error = vfs_setxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt,
+-				     name, value, size,0);
++		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size,0);
  	else {
--		error = security_inode_unlink(dir, dentry);
-+		error = security_inode_unlink(dir, dentry, mnt);
- 		if (!error)
- 			error = dir->i_op->unlink(dir, dentry);
- 	}
---- a/include/linux/security.h
-+++ b/include/linux/security.h
-@@ -298,6 +298,7 @@ struct request_sock;
-  *	Check the permission to remove a hard link to a file. 
-  *	@dir contains the inode structure of parent directory of the file.
-  *	@dentry contains the dentry structure for file to be unlinked.
-+ *	@mnt is the vfsmount corresponding to @dentry (may be NULL).
-  *	Return 0 if permission is granted.
-  * @inode_symlink:
-  *	Check the permission to create a symbolic link to a file.
-@@ -1218,7 +1219,8 @@ struct security_operations {
- 	int (*inode_link) (struct dentry *old_dentry, struct vfsmount *old_mnt,
- 	                   struct inode *dir, struct dentry *new_dentry,
- 			   struct vfsmount *new_mnt);
--	int (*inode_unlink) (struct inode *dir, struct dentry *dentry);
-+	int (*inode_unlink) (struct inode *dir, struct dentry *dentry,
-+			     struct vfsmount *mnt);
- 	int (*inode_symlink) (struct inode *dir, struct dentry *dentry,
- 			      struct vfsmount *mnt, const char *old_name);
- 	int (*inode_mkdir) (struct inode *dir, struct dentry *dentry,
-@@ -1645,11 +1647,12 @@ static inline int security_inode_link (s
- }
+ 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
+ 			error = 0;
+ 		else {
+-			error = vfs_removexattr(fhp->fh_dentry, name);
++			error = vfs_removexattr(fhp->fh_dentry, mnt, name);
+ 			if (error == -ENODATA)
+ 				error = 0;
+ 		}
+--- a/fs/xattr.c
++++ b/fs/xattr.c
+@@ -165,7 +165,7 @@ vfs_listxattr(struct dentry *dentry, str
+ EXPORT_SYMBOL_GPL(vfs_listxattr);
  
- static inline int security_inode_unlink (struct inode *dir,
--					 struct dentry *dentry)
-+					 struct dentry *dentry,
-+					 struct vfsmount *mnt)
+ int
+-vfs_removexattr(struct dentry *dentry, char *name)
++vfs_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name)
  {
- 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
- 		return 0;
--	return security_ops->inode_unlink (dir, dentry);
-+	return security_ops->inode_unlink (dir, dentry, mnt);
- }
- 
- static inline int security_inode_symlink (struct inode *dir,
-@@ -2377,7 +2380,8 @@ static inline int security_inode_link (s
- }
- 
- static inline int security_inode_unlink (struct inode *dir,
--					 struct dentry *dentry)
-+					 struct dentry *dentry,
-+					 struct vfsmount *mnt)
+ 	struct inode *inode = dentry->d_inode;
+ 	int error;
+@@ -438,7 +438,7 @@ sys_flistxattr(int fd, char __user *list
+  * Extended attribute REMOVE operations
+  */
+ static long
+-removexattr(struct dentry *d, char __user *name)
++removexattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name)
  {
- 	return 0;
- }
---- a/security/dummy.c
-+++ b/security/dummy.c
-@@ -278,7 +278,8 @@ static int dummy_inode_link (struct dent
- 	return 0;
+ 	int error;
+ 	char kname[XATTR_NAME_MAX + 1];
+@@ -449,7 +449,7 @@ removexattr(struct dentry *d, char __use
+ 	if (error < 0)
+ 		return error;
+ 
+-	return vfs_removexattr(d, kname);
++	return vfs_removexattr(dentry, mnt, kname);
  }
  
--static int dummy_inode_unlink (struct inode *inode, struct dentry *dentry)
-+static int dummy_inode_unlink (struct inode *inode, struct dentry *dentry,
-+			       struct vfsmount *mnt)
- {
- 	return 0;
+ asmlinkage long
+@@ -461,7 +461,7 @@ sys_removexattr(char __user *path, char 
+ 	error = user_path_walk(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = removexattr(nd.dentry, name);
++	error = removexattr(nd.dentry, nd.mnt, name);
+ 	path_release(&nd);
+ 	return error;
  }
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -2197,11 +2197,12 @@ static int selinux_inode_link(struct den
- 	return may_link(dir, old_dentry, MAY_LINK);
+@@ -475,7 +475,7 @@ sys_lremovexattr(char __user *path, char
+ 	error = user_path_walk_link(path, &nd);
+ 	if (error)
+ 		return error;
+-	error = removexattr(nd.dentry, name);
++	error = removexattr(nd.dentry, nd.mnt, name);
+ 	path_release(&nd);
+ 	return error;
  }
+@@ -492,7 +492,7 @@ sys_fremovexattr(int fd, char __user *na
+ 		return error;
+ 	dentry = f->f_path.dentry;
+ 	audit_inode(NULL, dentry->d_inode);
+-	error = removexattr(dentry, name);
++	error = removexattr(dentry, f->f_path.mnt, name);
+ 	fput(f);
+ 	return error;
+ }
+--- a/include/linux/xattr.h
++++ b/include/linux/xattr.h
+@@ -52,7 +52,7 @@ ssize_t vfs_listxattr(struct dentry *d, 
+ 		      size_t size);
+ int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
+ 		 int);
+-int vfs_removexattr(struct dentry *, char *);
++int vfs_removexattr(struct dentry *, struct vfsmount *, char *);
  
--static int selinux_inode_unlink(struct inode *dir, struct dentry *dentry)
-+static int selinux_inode_unlink(struct inode *dir, struct dentry *dentry,
-+			        struct vfsmount *mnt)
- {
- 	int rc;
- 
--	rc = secondary_ops->inode_unlink(dir, dentry);
-+	rc = secondary_ops->inode_unlink(dir, dentry, mnt);
- 	if (rc)
- 		return rc;
- 	return may_link(dir, dentry, MAY_UNLINK);
+ ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
+ ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
 
 -- 
