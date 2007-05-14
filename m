@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbXENIUX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759846AbXENIXn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760109AbXENIUX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 04:20:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbXENIUF
+	id S1759846AbXENIXn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 04:23:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752257AbXENIXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 04:20:05 -0400
-Received: from imx12.toshiba.co.jp ([61.202.160.132]:35811 "EHLO
+	Mon, 14 May 2007 04:23:37 -0400
+Received: from imx12.toshiba.co.jp ([61.202.160.132]:36307 "EHLO
 	imx12.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752257AbXENIUB (ORCPT
+	with ESMTP id S1751975AbXENIXg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 04:20:01 -0400
-Date: Mon, 14 May 2007 17:19:36 +0900
-Message-ID: <yyimz0795rb.wl@toshiba.co.jp>
+	Mon, 14 May 2007 04:23:36 -0400
+Date: Mon, 14 May 2007 17:23:17 +0900
+Message-ID: <yyilkfr95l6.wl@toshiba.co.jp>
 From: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [patch 4/5] powerpc 2.6.21-rt1: rename mcount variable in xmon to xmon_mcount
+Subject: Re: [patch 5/5] powerpc 2.6.21-rt1] fix clocksource_timebase.shift value
 In-Reply-To: <yyisl9z97hg.wl@toshiba.co.jp>
 References: <yyisl9z97hg.wl@toshiba.co.jp>
 User-Agent: Wanderlust/2.8.1 (Something) Emacs/20.7 Mule/4.0 (HANANOEN)
@@ -26,47 +26,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Rename variable name "mcount" in xmon to xmon_mcount, since it conflicts 
-with mcount() function used by latency trace function.
+Calculate clocksource_timebase.shift from tb_ticks_per_jiffy to get an
+accurate translation, though I don't understand why current version of 
+clocksource_timebase.shift could be constant...
 
 Signed-off-by: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 -- owa
 
-diff -rup linux-2.6.21-rt1/arch/powerpc/xmon/xmon.c rt/arch/powerpc/xmon/xmon.c
---- linux-2.6.21-rt1/arch/powerpc/xmon/xmon.c	2007-05-07 14:08:12.000000000 +0900
-+++ rt/arch/powerpc/xmon/xmon.c	2007-05-07 14:05:30.000000000 +0900
-@@ -2129,7 +2129,7 @@ print_address(unsigned long addr)
- static unsigned long mdest;		/* destination address */
- static unsigned long msrc;		/* source address */
- static unsigned long mval;		/* byte value to set memory to */
--static unsigned long mcount;		/* # bytes to affect */
-+static unsigned long xmon_mcount;	/* # bytes to affect */
- static unsigned long mdiffs;		/* max # differences to print */
+--- linux-2.6.21-rt1/arch/powerpc/kernel/time.c	2007-05-09 18:05:57.000000000 +0900
++++ rt/arch/powerpc/kernel/time.c	2007-05-09 18:06:24.000000000 +0900
+@@ -945,6 +945,9 @@ static int __init init_timebase_clocksou
+ 	if (__USE_RTC())
+ 		return -ENODEV;
  
- void
-@@ -2141,19 +2141,20 @@ memops(int cmd)
- 	scanhex((void *)(cmd == 's'? &mval: &msrc));
- 	if( termch != '\n' )
- 		termch = 0;
--	scanhex((void *)&mcount);
-+	scanhex((void *)&xmon_mcount);
- 	switch( cmd ){
- 	case 'm':
--		memmove((void *)mdest, (void *)msrc, mcount);
-+		memmove((void *)mdest, (void *)msrc, xmon_mcount);
- 		break;
- 	case 's':
--		memset((void *)mdest, mval, mcount);
-+		memset((void *)mdest, mval, xmon_mcount);
- 		break;
- 	case 'd':
- 		if( termch != '\n' )
- 			termch = 0;
- 		scanhex((void *)&mdiffs);
--		memdiffs((unsigned char *)mdest, (unsigned char *)msrc, mcount, mdiffs);
-+		memdiffs((unsigned char *)mdest, (unsigned char *)msrc,
-+			 xmon_mcount, mdiffs);
- 		break;
- 	}
- }
++#ifdef CONFIG_PPC64
++	clocksource_timebase.shift = tb_ticks_per_jiffy / 1000000;
++#endif
+ 	clocksource_timebase.mult = clocksource_hz2mult(tb_ticks_per_sec,
+ 					clocksource_timebase.shift);
+ 	return clocksource_register(&clocksource_timebase);
 
