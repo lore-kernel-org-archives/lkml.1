@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759547AbXENUM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbXENUNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759547AbXENUM4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbXENUMs
+	id S1760048AbXENUNR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbXENUMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:12:48 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:30229 "EHLO
-	viefep33-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756768AbXENUMr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:12:47 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0705141303570.12167@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
-	 <20070514161224.GC11115@waste.org>
-	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-	 <1179164453.2942.26.camel@lappy>
-	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-	 <1179170912.2942.37.camel@lappy>
-	 <Pine.LNX.4.64.0705141253130.12045@schroedinger.engr.sgi.com>
-	 <1179172994.2942.49.camel@lappy>
-	 <Pine.LNX.4.64.0705141303570.12167@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 22:12:36 +0200
-Message-Id: <1179173556.2942.54.camel@lappy>
+	Mon, 14 May 2007 16:12:51 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:34072 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757703AbXENUMu (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:12:50 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: tglx@linutronix.de
+Cc: Alistair John Strachan <s0348365@sms.ed.ac.uk>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v1
+In-Reply-To: Your message of "Mon, 14 May 2007 12:26:08 +0200."
+             <1179138368.22481.334.camel@localhost.localdomain>
+From: Valdis.Kletnieks@vt.edu
+References: <1178485128.31213.98.camel@localhost.localdomain> <200705140217.11515.s0348365@sms.ed.ac.uk>
+            <1179138368.22481.334.camel@localhost.localdomain>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: multipart/signed; boundary="==_Exmh_1179173440_4398P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
 Content-Transfer-Encoding: 7bit
+Date: Mon, 14 May 2007 16:10:40 -0400
+Message-ID: <10373.1179173440@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 13:06 -0700, Christoph Lameter wrote:
-> On Mon, 14 May 2007, Peter Zijlstra wrote:
-> 
-> > > Hmmm.. Maybe we could do that.... But what I had in mind was simply to 
-> > > set a page flag (DebugSlab()) if you know in alloc_slab that the slab 
-> > > should be only used for emergency allocation. If DebugSlab is set then the
-> > > fastpath will not be called. You can trap all allocation attempts and 
-> > > insert whatever fancy logic you want in the debug path since its not 
-> > > performance critical.
-> > 
-> > I might have missed some detail when I looked at SLUB, but I did not see
-> > how setting SlabDebug would trap subsequent allocations to that slab.
-> 
-> Ok its not evident in slab_alloc. But if SlabDebug is set then 
-> page->lockless_list is always NULL and we always fall back to 
-> __slab_alloc.
+--==_Exmh_1179173440_4398P
+Content-Type: text/plain; charset=us-ascii
 
-Ah, indeed, that is the detail I missed. Yes that would work out.
+On Mon, 14 May 2007 12:26:08 +0200, Thomas Gleixner said:
 
->  There we check for SlabDebug and go to the debug: label. 
-> There you can insert any fancy processing you want.
+> Broken out version is available here:
+> http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-highres-v1.patches.tar.bz2
 
+How unhappy am I likely to be if I try to apply this to a 21-mm2 kernel? It
+doesn't *look* like any of the patches are in -mm2 (at least not under the
+same name).
 
+--==_Exmh_1179173440_4398P
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
+
+iD8DBQFGSMJAcC3lWbTT17ARAjieAJ48EyLHWSVG+MTVMNwooY59/IcDMwCcCa0y
+EOROqDnDM8ss3IEs45vgmD8=
+=LKhP
+-----END PGP SIGNATURE-----
+
+--==_Exmh_1179173440_4398P--
