@@ -1,73 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbXENXoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760009AbXENXq0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759995AbXENXoy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 19:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbXENXop
+	id S1760009AbXENXq0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 19:46:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbXENXqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 19:44:45 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:47625 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754419AbXENXon (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 19:44:43 -0400
-Date: Tue, 15 May 2007 09:44:36 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: Re: [PATCH 1/5][TAKE2] fallocate() implementation on i86, x86_64
- and powerpc
-Message-Id: <20070515094436.d441098f.sfr@canb.auug.org.au>
-In-Reply-To: <20070514144524.GA31748@amitarora.in.ibm.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
-	<20070330071417.GI355@devserv.devel.redhat.com>
-	<20070417125514.GA7574@amitarora.in.ibm.com>
-	<20070418130600.GW5967@schatzie.adilger.int>
-	<20070420135146.GA21352@amitarora.in.ibm.com>
-	<20070420145918.GY355@devserv.devel.redhat.com>
-	<20070424121632.GA10136@amitarora.in.ibm.com>
-	<20070426175056.GA25321@amitarora.in.ibm.com>
-	<20070514132926.GA30768@amitarora.in.ibm.com>
-	<20070514142820.GA31468@amitarora.in.ibm.com>
-	<20070514144524.GA31748@amitarora.in.ibm.com>
-X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__15_May_2007_09_44_36_+1000_FmQQEkgMAA8ZAwtk"
+	Mon, 14 May 2007 19:46:19 -0400
+Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:52072 "EHLO
+	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754611AbXENXqS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 19:46:18 -0400
+Date: Mon, 14 May 2007 16:46:17 -0700 (PDT)
+From: Christoph Lameter <clameter@sgi.com>
+X-X-Sender: clameter@schroedinger.engr.sgi.com
+To: akpm@linux-foundation.org
+cc: mroos@linux.ee, David Miller <davem@davemloft.net>,
+       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: slab hang on boot
+In-Reply-To: <20070514.151148.45744375.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.64.0705141642350.13606@schroedinger.engr.sgi.com>
+References: <Pine.SOC.4.64.0705142133190.17204@math>
+ <20070514.151148.45744375.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__15_May_2007_09_44_36_+1000_FmQQEkgMAA8ZAwtk
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Mon, 14 May 2007, David Miller wrote:
 
-On Mon, 14 May 2007 20:15:24 +0530 "Amit K. Arora" <aarora@linux.vnet.ibm.com> wrote:
->
-> This patch implements sys_fallocate() and adds support on i386, x86_64
-> and powerpc platforms.
+> From: Meelis Roos <mroos@linux.ee>
+> Date: Mon, 14 May 2007 21:36:42 +0300 (EEST)
+> 
+> > Sorry, I could not test the parport patch yet - I did git upgrade as of 
+> > yesterday and the kernel hangs on boot. boot -p reveals the following 
+> > slab panic:
+> 
+> Please enable SLUB to work around this for now, SLAB wants
+> LARGE_ALLOCS enabled when it really shouldn't require that
+> for a 512K or 1MB SLAB when PAGE_SIZE==8192 :-(
 
-This patch no longer applies to Linus' tree - for a start there is no file
-arch/x86_64/kernel/functionlist any more.
+Ok.
 
-Can you rebase it, please?
+> > kmem_cache_create: Early error in slab tsb_512KB
+> > kernel BUG at mm/slab.c:2165!
+> 
+> Christoph, this is why I had to have LARGE_ALLOCS enabled on sparc64
+> all this time, for that MAX_OBJ_ORDER logic in mm/slab.c in order
+> to get 512K and 1MB slab caches usable.
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Hmmm... The #ifdef crap there has worried me for a long time. Lets try to 
+clear that mess up too.
+ 
+> This inconsistency is painful for platforms.  If I enable LARGE_ALLOCS
+> on sparc64 then SLAB works but it's a total waste for SLUB.
+> 
+> Right now if I enable LARGE_ALLOCS, SLUB will break again due to
+> that KMALLOC_SHIFT_HIGH bug we fixed the other week, Christophe
+> can you at least push that fix to Linus if you haven't already?
 
---Signature=_Tue__15_May_2007_09_44_36_+1000_FmQQEkgMAA8ZAwtk
-Content-Type: application/pgp-signature
+No I thought you had it under control so I held it in my tree.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Andrew please push this patch upstream.
 
-iD8DBQFGSPRpFdBgD/zoJvwRAuHCAJsEB8TyYfKxqEtWnHM7smTPNqRiPwCfYj2B
-kUd5qmBLOd+TYg003bKAuVw=
-=ap96
------END PGP SIGNATURE-----
 
---Signature=_Tue__15_May_2007_09_44_36_+1000_FmQQEkgMAA8ZAwtk--
+
+SLUB: CONFIG_LARGE_ALLOCS must consider MAX_ORDER limit
+
+Take MAX_ORDER into consideration when determing KMALLOC_SHIFT_HIGH.
+Otherwise we may run into a situation where we attempt to create
+general slabs larger than MAX_ORDER.
+
+Signed-off-by: Christoph Lameter <clameter@sgi.com>
+
+---
+ include/linux/slub_def.h |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
+
+Index: slub/include/linux/slub_def.h
+===================================================================
+--- slub.orig/include/linux/slub_def.h	2007-05-10 15:19:39.000000000 -0700
++++ slub/include/linux/slub_def.h	2007-05-10 16:06:15.000000000 -0700
+@@ -59,7 +59,8 @@ struct kmem_cache {
+ #define KMALLOC_SHIFT_LOW 3
+ 
+ #ifdef CONFIG_LARGE_ALLOCS
+-#define KMALLOC_SHIFT_HIGH 25
++#define KMALLOC_SHIFT_HIGH ((MAX_ORDER + PAGE_SHIFT) =< 25 ? \
++				MAX_ORDER + PAGE_SHIFT - 1 : 25)
+ #else
+ #if !defined(CONFIG_MMU) || NR_CPUS > 512 || MAX_NUMNODES > 256
+ #define KMALLOC_SHIFT_HIGH 20
+@@ -86,6 +87,9 @@ static inline int kmalloc_index(int size
+ 	 */
+ 	WARN_ON_ONCE(size == 0);
+ 
++	if (size >= (1UL << KMALLOC_SHIFT_HIGH))
++		return -1;
++
+ 	if (size > 64 && size <= 96)
+ 		return 1;
+ 	if (size > 128 && size <= 192)
+
+
