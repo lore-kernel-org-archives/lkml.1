@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760973AbXENKk4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S965153AbXENKl3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760973AbXENKk4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 06:40:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756834AbXENKku
+	id S965153AbXENKl3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 06:41:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756601AbXENKlW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 06:40:50 -0400
-Received: from an-out-0708.google.com ([209.85.132.249]:40437 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756335AbXENKkt (ORCPT
+	Mon, 14 May 2007 06:41:22 -0400
+Received: from mailgw4.ericsson.se ([193.180.251.62]:37513 "EHLO
+	mailgw4.ericsson.se" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756540AbXENKlV convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 06:40:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=siPV9YSdP0NulTq63nGr4etNj8CcdO9rSX9hvSldCBMBQ1Jebi5Me295JOZJOQGZ7fl7AJDMq7nQ4DBh/t+FxEFX/XgH1x/h5vF35FkAU6vN+iW+85lmSEjntmJPmo249bVYbyulmaH/Z/QuMLwNde7Ffb4lu6X0bvJoxRJsWj0=
-Message-ID: <6bffcb0e0705140340m228e8e62n5053db88deadf5fd@mail.gmail.com>
-Date: Mon, 14 May 2007 12:40:48 +0200
-From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
-To: "Barry Scott" <barry.scott@onelan.co.uk>
-Subject: Re: Opss: 2.6.21-1.3116.ONELAN Kernel last sysfs file: /class/vc/vcsa7/dev
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-In-Reply-To: <46483868.5040106@onelan.co.uk>
+	Mon, 14 May 2007 06:41:21 -0400
+X-Greylist: delayed 1257 seconds by postgrey-1.27 at vger.kernel.org; Mon, 14 May 2007 06:41:21 EDT
+X-AuditID: c1b4fb3e-af9eebb0000061ca-88-464837e7d0fe 
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <46483868.5040106@onelan.co.uk>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] ppc: MCC2 missing in MPC8260 device_list
+Date: Mon, 14 May 2007 12:20:21 +0200
+Message-ID: <3220661B84B5454898BC4296D6BEADCB42AC35@esealmw104.eemea.ericsson.se>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] ppc: MCC2 missing in MPC8260 device_list
+Thread-Index: AceWEXpnqGNkfITpSOO1Tjm47rZL+A==
+From: "Morten Banzon \(HA/ETO\)" <morten.banzon@ericsson.com>
+To: <galak@kernel.crashing.org>
+Cc: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 14 May 2007 10:20:22.0918 (UTC) FILETIME=[7B374A60:01C79611]
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Barry,
+from: Morten Banzon <morten.banzon@ericsson.com>
 
-On 14/05/07, Barry Scott <barry.scott@onelan.co.uk> wrote:
-> I'm testing the robustness of Xorg 1.3 server with intel 2.0 driver
-> by restarting the X and a set of apps every 30 seconds. After
-> about an hour this happened.
->
-> 2.6.21-1.3116.ONELAN is the same as 2.6.21-1.3116 from FC7
-> but with the spec file change so that we can run the kernel on an FC4
-> system.
+Adds the MCC2 device to the 8260 device_list.
 
-Ok, it's Fedora 7 kernel, so please visit
-https://bugzilla.redhat.com/bugzilla/index.cgi
+signed-off-by: Morten Banzon <morten.banzon@ericsson.com>
 
-Regards,
-Michal
+---
 
--- 
-Michal K. K. Piotrowski
-Kernel Monkeys
-(http://kernel.wikidot.com/start)
+diff -uprN linux-2.6.21.1.orig/arch/ppc/syslib/pq2_sys.c
+linux-2.6.21.1/arch/ppc/syslib/pq2_sys.c
+--- linux-2.6.21.1.orig/arch/ppc/syslib/pq2_sys.c	2007-04-27
+23:49:26.000000000 +0200
++++ linux-2.6.21.1/arch/ppc/syslib/pq2_sys.c	2007-05-14
+10:49:20.000000000 +0200
+@@ -52,8 +52,9 @@ struct ppc_sys_spec ppc_sys_specs[] = {
+ 		{
+ 			MPC82xx_CPM_FCC1, MPC82xx_CPM_FCC2,
+MPC82xx_CPM_FCC3,
+ 			MPC82xx_CPM_SCC1, MPC82xx_CPM_SCC2,
+MPC82xx_CPM_SCC3,
+-			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1,
+MPC82xx_CPM_SMC1,
+-			MPC82xx_CPM_SMC2, MPC82xx_CPM_SPI,
+MPC82xx_CPM_I2C,
++			MPC82xx_CPM_SCC4, MPC82xx_CPM_MCC1,
+MPC82xx_CPM_MCC2,
++			MPC82xx_CPM_SMC1, MPC82xx_CPM_SMC2,
+MPC82xx_CPM_SPI,
++			MPC82xx_CPM_I2C,
+ 		}
+ 	},
+ 	{
