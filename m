@@ -1,46 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbXENTDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757902AbXENTDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbXENTDS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbXENTDL
+	id S1757902AbXENTDv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbXENTDo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:03:11 -0400
-Received: from smtp21.orange.fr ([80.12.242.47]:4082 "EHLO smtp21.orange.fr"
+	Mon, 14 May 2007 15:03:44 -0400
+Received: from gw.goop.org ([64.81.55.164]:42624 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752625AbXENTDK convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:03:10 -0400
-X-ME-UUID: 20070514190307929.E301E1C000A3@mwinf2107.orange.fr
-Subject: Re: tracking down disk spinups.
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Dave Jones <davej@redhat.com>
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-In-Reply-To: <20070514185734.GM27604@redhat.com>
-References: <20070514185734.GM27604@redhat.com>
+	id S1752354AbXENTDn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 15:03:43 -0400
+Message-ID: <4648B28A.5000800@goop.org>
+Date: Mon, 14 May 2007 12:03:38 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+MIME-Version: 1.0
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [VOYAGER] fix build broken by shift to smp_ops
+References: <1179158912.3703.47.camel@mulgrave.il.steeleye.com>	 <46489818.4000408@goop.org> <1179163348.3703.57.camel@mulgrave.il.steeleye.com>
+In-Reply-To: <1179163348.3703.57.camel@mulgrave.il.steeleye.com>
 Content-Type: text/plain; charset=ISO-8859-15
-Date: Mon, 14 May 2007 21:03:05 +0200
-Message-Id: <1179169385.2397.2.camel@bip.parateam.prv>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le lundi 14 mai 2007 à 14:57 -0400, Dave Jones a écrit :
+James Bottomley wrote:
+> No, I'm proposing this for 2.6.22-rc1 ... Andi has already said he won't
+> push the smp consolidation patch for 2.6.22.
+>
+> Without this patch, voyager won't even build, since the smp_ops broke
+> it, so it needs to be fixed *now*.
+>   
 
-> (14:49:52:root@firewall:~)# mount
-> /dev/mapper/VolGroup00-LogVol00 on / type ext3 (rw)
-> (14:49:56:root@firewall:~)# mount /dev/mapper/VolGroup00-LogVol00 / -t ext2 -o remount,rw
-> (14:50:37:root@firewall:~)# mount
-> /dev/mapper/VolGroup00-LogVol00 on / type ext3 (rw)
-> 
-> Why did the kernel ignore what I told it to do ?
-> I'm sure it thinks it knows better than me for a reason, but
-> I'd like to know what it is.
+Sure, I suppose.  But given that the patch which fixes this is a simple
+no-functional-changes code-motion patch, it seems odd to not use it in
+favour of putting in a big chunk of duplicated code.
 
-Are you sure it's the kernel, and not just mount ?
-Did you try cat /proc/mounts ?
-
-	Xav
-
+    J
 
