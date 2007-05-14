@@ -1,55 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756706AbXENPWa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756090AbXENPYl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756706AbXENPWa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 11:22:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755401AbXENPWW
+	id S1756090AbXENPYl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 11:24:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbXENPYc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 11:22:22 -0400
-Received: from science.horizon.com ([192.35.100.1]:16317 "HELO
-	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1755412AbXENPWV (ORCPT
+	Mon, 14 May 2007 11:24:32 -0400
+Received: from py-out-1112.google.com ([64.233.166.177]:25380 "EHLO
+	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751690AbXENPYb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 11:22:21 -0400
-Date: 14 May 2007 11:22:18 -0400
-Message-ID: <20070514152218.19773.qmail@science.horizon.com>
-From: linux@horizon.com
-To: learninglinux4@gmail.com
+	Mon, 14 May 2007 11:24:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=VMi06xrpBbJf6a9b/c8o7wMPBnBFJ66xHsWRg4J8pbk+DHb5IMidTU9YD/0/uiBALCAEF526sdGG+YsBfzGq07LhOgFN8jE0bFEyBNDbsmdFeTNCdFrYfOT/4WOf1ggMV37tRrWUbZuKsJF/upbNtMlUCo+1k+AVfekeTVhWr2I=
+Message-ID: <7ac1e90c0705140824i54e1c43ela3ab3d89827c0339@mail.gmail.com>
+Date: Mon, 14 May 2007 16:24:29 +0100
+From: "Bahadir Balban" <bahadir.balban@gmail.com>
+To: "Learning Linux" <learninglinux4@gmail.com>
 Subject: Re: Why can't we sleep in an ISR?
-Cc: linux-kernel@vger.kernel.org, linux-newbie@vger.kernel.org
+Cc: "pradeep singh" <2500.pradeep@gmail.com>, kernelnewbies@nl.linux.org,
+       linux-newbie@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <9f1dc2cf0705140016w6d8f44f9wec7586e7879af873@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <9f1dc2cf0705132337k13aa3ccesc575d4550492a24e@mail.gmail.com>
+	 <366312910705140010m78b215a2t1753445e81120288@mail.gmail.com>
+	 <9f1dc2cf0705140016w6d8f44f9wec7586e7879af873@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sleeping in an ISR is not fundamentally impossible - I could design
-a multitasker that permitted it - but has significant problems, and
-most multitaskers, including Linux, forbid it.
+On 5/14/07, Learning Linux <learninglinux4@gmail.com> wrote:
+> Ok, but how about an ISR, that does not take any locks? Why can't we
+> sleep in SUCH an ISR?
+> LL
+> -
 
-The first problem is the scheduler.  "Sleeping" is actually a call
-into the scheduler to choose another process to run.  There are times -
-so-called critical sections - when the scheduler can't be called.
+The killer reason why you can't sleep in an interrupt is because an
+interrupt is not associated with any context in the first place. What
+is a context, then? It is the state information for a process. This
+includes the kernel and userspace stack pointers, the register set,
+and the page tables for that process. The scheduler has access to all
+this information, to preempt one process and run another. Contrary to
+this, an interrupt, depending on the version of your kernel and arch,
+uses a separate irq stack or the kernel stack of the interrupted
+process. An irq is not a context but merely a temporary execution to
+be concluded asap.
 
-If an interrupt can call the scheduler, then every criticial section
-has to disable interrupts.  Otherwise, an interrupt might arrive and
-end up calling the scheduler.  This increases interrupt latency.
-
-If interrupts are forbidden to sleep, then there's no need to
-disable interrupts in critical sections, so interrupts can be responded
-to faster.  Most multitaskers find this worth the price.
-
-The second problem is shared interrupts.  You want to sleep until something
-happens.  The processor hears about that event via an interrupt.  Inside
-an ISR, interrupts are disabled.
-
-You have to somehow enable the interrupt that will wake up the sleeping
-ISR without enabling the interrupt that the ISR is in the middle of handling
-(or the handler will start a second time and make a mess).
-
-This is complicated and prone to error.  And, in the case of shared interrupts
-(as allowed by PCI), it's possible that the the interrupt you need
-to wait for is exactly the same interrupt as what you're in the middle
-of handling.  So it might be impossible!
-
-The third problem is that you're obviously increasing the latency of the
-interrupt whose handler you're sleeping in.
-
-Finally, if you're even *thinking* of wanting to sleep in an ISR,
-you probably have a deadlock waiting to happen.
+Hope this helps,
+Bahadir
