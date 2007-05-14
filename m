@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbXENIRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761059AbXENISO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755333AbXENIRH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 04:17:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755214AbXENIQ4
+	id S1761059AbXENISO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 04:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755045AbXENISA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 04:16:56 -0400
-Received: from inet-tsb5.toshiba.co.jp ([202.33.96.24]:47361 "EHLO
+	Mon, 14 May 2007 04:18:00 -0400
+Received: from inet-tsb5.toshiba.co.jp ([202.33.96.24]:47518 "EHLO
 	inet-tsb5.toshiba.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755045AbXENIQz (ORCPT
+	with ESMTP id S1754895AbXENIR7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 04:16:55 -0400
-Date: Mon, 14 May 2007 17:16:37 +0900
-Message-ID: <yyips5395wa.wl@toshiba.co.jp>
+	Mon, 14 May 2007 04:17:59 -0400
+Date: Mon, 14 May 2007 17:17:43 +0900
+Message-ID: <yyiodkn95ug.wl@toshiba.co.jp>
 From: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tglx@linutronix.de
-Subject: Re: [patch 2/5] powerpc 2.6.21-rt1: dummy functions and export _mcount to compile
+Subject: Re: [patch 3/5] powerpc 2.6.21-rt1: mark raw_local_irq_restore() and timebase_read() as notrace 
 In-Reply-To: <yyisl9z97hg.wl@toshiba.co.jp>
 References: <yyisl9z97hg.wl@toshiba.co.jp>
 User-Agent: Wanderlust/2.8.1 (Something) Emacs/20.7 Mule/4.0 (HANANOEN)
@@ -26,36 +26,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-add dummy functions save_stack_trace(), early_printk() for now and
-export _mcount to compile.
+mark raw_local_irq_restore() and timebase_read() as notrace since
+these are called from __trace().
 
 Signed-off-by: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
 -- owa
 
-diff -rup linux-2.6.21-rt1/arch/powerpc/kernel/setup_64.c rt/arch/powerpc/kernel/setup_64.c
---- linux-2.6.21-rt1/arch/powerpc/kernel/setup_64.c	2007-04-26 12:08:32.000000000 +0900
-+++ rt/arch/powerpc/kernel/setup_64.c	2007-05-08 18:50:46.000000000 +0900
-@@ -606,3 +606,22 @@ struct ppc_pci_io ppc_pci_io;
- EXPORT_SYMBOL(ppc_pci_io);
- #endif /* CONFIG_PPC_INDIRECT_IO */
+diff -rup linux-2.6.21-rt1/arch/powerpc/kernel/irq.c rt/arch/powerpc/kernel/irq.c
+--- linux-2.6.21-rt1/arch/powerpc/kernel/irq.c	2007-05-07 14:08:12.000000000 +0900
++++ rt/arch/powerpc/kernel/irq.c	2007-05-07 14:05:30.000000000 +0900
+@@ -111,7 +111,7 @@ static inline void set_soft_enabled(unsi
+ 	: : "r" (enable), "i" (offsetof(struct paca_struct, soft_enabled)));
+ }
  
-+#ifdef CONFIG_STACKTRACE
-+#include <linux/stacktrace.h>
-+void notrace save_stack_trace(struct stack_trace *trace,
-+		      struct task_struct *task)
-+{
-+}
-+#endif /* CONFIG_STACKTRACE */
-+
-+#ifdef CONFIG_EARLY_PRINTK
-+void notrace early_printk(const char *fmt, ...)
-+{
-+	BUG();
-+}
-+#endif /* CONFIG_EARLY_PRINTK */
-+
-+#ifdef CONFIG_MCOUNT
-+extern void _mcount(void);
-+EXPORT_SYMBOL(_mcount);
-+#endif /* CONFIG_MCOUNT */
+-void raw_local_irq_restore(unsigned long en)
++void notrace raw_local_irq_restore(unsigned long en)
+ {
+ 	/*
+ 	 * get_paca()->soft_enabled = en;
+--- linux-2.6.21-rt1/arch/powerpc/kernel/time.c	2007-05-09 17:52:05.000000000 +0900
++++ rt/arch/powerpc/kernel/time.c	2007-05-09 18:03:39.000000000 +0900
+@@ -923,7 +923,7 @@ void div128_by_32(u64 dividend_high, u64
+ 
+ #include <linux/clocksource.h>
+ 
+-static cycle_t timebase_read(void)
++static cycle_t notrace timebase_read(void)
+ {
+ 	return (cycle_t)get_tb();
+ }
 
