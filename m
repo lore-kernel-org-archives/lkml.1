@@ -1,61 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbXENSmi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756608AbXENSoT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758025AbXENSmi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 14:42:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755126AbXENSm3
+	id S1756608AbXENSoT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 14:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbXENSoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 14:42:29 -0400
-Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:49894 "EHLO
-	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753152AbXENSm2 (ORCPT
+	Mon, 14 May 2007 14:44:13 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:35382 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751602AbXENSoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 14:42:28 -0400
-Date: Mon, 14 May 2007 19:46:14 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Cc: James Bottomley <James.Bottomley@SteelEye.com>,
-       Simon Arlott <simon@fire.lp0.eu>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       Dave Jones <davej@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-Subject: Re: why does x86 "make defconfig" build a single, lonely module?
-Message-ID: <20070514194614.4f00655d@the-village.bc.nu>
-In-Reply-To: <Pine.LNX.4.61.0705141928230.9570@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
-	<20070513160608.GA29024@redhat.com>
-	<1179072655.3723.42.camel@mulgrave.il.steeleye.com>
-	<Pine.LNX.4.64.0705131216440.27468@localhost.localdomain>
-	<1179073670.3723.48.camel@mulgrave.il.steeleye.com>
-	<46474E1A.6080904@simon.arlott.org.uk>
-	<1179078537.3723.53.camel@mulgrave.il.steeleye.com>
-	<Pine.LNX.4.61.0705141928230.9570@yvahk01.tjqt.qr>
-X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 May 2007 14:44:12 -0400
+Date: Mon, 14 May 2007 11:43:45 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Jean Delvare <khali@linux-fr.org>
+cc: Antonino Ingargiola <tritemio@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc1
+In-Reply-To: <20070514202419.33a90f57@hyperion.delvare>
+Message-ID: <alpine.LFD.0.98.0705141139560.6739@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+ <5486cca80705131010h2011487dnc948a3c57ce6decc@mail.gmail.com>
+ <alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org>
+ <5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com>
+ <20070514081022.7fcee97f@hyperion.delvare> <5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com>
+ <20070514141437.631fcfd1@hyperion.delvare> <5486cca80705140628w5ff43ebdqf6a5413203226d5@mail.gmail.com>
+ <20070514172138.1c870793@hyperion.delvare>
+ <alpine.LFD.0.98.0705140914410.6739@woody.linux-foundation.org>
+ <20070514202419.33a90f57@hyperion.delvare>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007 19:29:12 +0200 (MEST)
-Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
 
+
+On Mon, 14 May 2007, Jean Delvare wrote:
 > 
-> On May 13 2007 12:48, James Bottomley wrote:
-> >
-> >> Why does ATA select SCSI anyway? Surely PATA doesn't require it?
-> >
-> >That's a bit offtopic and to the wrong list.
-> >
-> >libata-pata does require SCSI ...
-> 
-> And in the long run, that SCSI parts which are actually used by ATA
-> should be factored out so that SCSI really is SCSI again, and not
-> "Common layer for SCSI, SATA and PATA" or so.
+> Sure, we don't allow that. Except for xfsprogs in 2.6.1, procps in
+> 2.6.4, oprofile in 2.6.13 and udev in 2.6.19, of course.
 
-The common layer for the queueing is one thing, but the ATAPI devices
-(CD-ROM etc) are SCSI commands over an ATA bus. A subset of SCSI commands
-badly over an ATA bus but SCSI commands nevertheless - so they have the
-same basic dependancies as USB storage does.
+And we really complained about it! The oprofile thing should be fixed, 
+btw, and yeah,if udev breaks any more, I'll have to stop taking patches 
+from Greg. That thing has been a disaster, and everybody involved should 
+be ashamed and now hopefully *very* aware of the fact that we don't break 
+user-level interfaces.
 
-Alan
+(Right now, I suspect we may have a loop setup regression. Not sure)
+
+> We already have CONFIG_SYSFS_DEPRECATED for that.
+
+..and that should have been made more clear. I certainly didn't react to 
+it immediately.
+
+			Linus
