@@ -1,72 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756099AbXENICf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbXENIGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756099AbXENICf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 04:02:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbXENICX
+	id S1756695AbXENIGV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 04:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbXENIGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 04:02:23 -0400
-Received: from wx-out-0506.google.com ([66.249.82.235]:32731 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753575AbXENICU (ORCPT
+	Mon, 14 May 2007 04:06:11 -0400
+Received: from mtagate6.uk.ibm.com ([195.212.29.139]:46344 "EHLO
+	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751661AbXENIGK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 04:02:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=LrSWP0NFcM1cSs1g6PF9/Jd/Q+3nsmCrwd4xZt/QZHsuFun7FQ5K0WtZcQVQRNsWbb23XfaYCUd/U7CoOSxBq6nJdFwN9aeKpyQ6bxxWpcyUttKD2ieWUIu5KqDrOSprrjf3rdxe/nvr6ipzcLswROgAhDvNmvWyXsxqD62Tv98=
-Message-ID: <a781481a0705140102k77803124ofdc12209b3ce301e@mail.gmail.com>
-Date: Mon, 14 May 2007 13:32:19 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Add __vunmap prototype
-Cc: "Andrew Morton" <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <1179129407.32247.77.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 14 May 2007 04:06:10 -0400
+Date: Mon, 14 May 2007 10:06:07 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: bbpetkov@yahoo.de
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Greg KH <gregkh@suse.de>
+Subject: Re: [PATCH] driver core: fix warning of temporarily unused
+ multithreaded probing function (was: Re: Linux 2.6.22-rc1)
+Message-ID: <20070514100607.5ed91646@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <20070513094752.GA5232@gollum.tnic>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+	<20070513094752.GA5232@gollum.tnic>
+Organization: IBM Deutschland Entwicklung GmbH
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.12; i486-pc-linux-gnu)
+X-Legal: IBM Deutschland Entwicklung GmbH Vorsitzender des Aufsichtsrats:
+ Johann Weihen =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Herbert Kircher Sitz
+ der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <20070514070732.B3796DDE44@ozlabs.org>
-	 <20070514001632.60421680.akpm@linux-foundation.org>
-	 <1179129407.32247.77.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/14/07, Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> On Mon, 2007-05-14 at 00:16 -0700, Andrew Morton wrote:
-> > On Mon, 14 May 2007 17:07:03 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > > __vunmap is not static but I couldn't find a prototype for it, so this
-> > > adds it. I need to use it in some powerpc patch to come.
-> > >
-> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > >
-> > >  include/linux/vmalloc.h |    1 +
-> > >  1 file changed, 1 insertion(+)
-> > >
-> > > Index: linux-cell/include/linux/vmalloc.h
-> > > ===================================================================
-> > > --- linux-cell.orig/include/linux/vmalloc.h 2007-05-14 16:03:42.000000000 +1000
-> > > +++ linux-cell/include/linux/vmalloc.h      2007-05-14 16:03:47.000000000 +1000
-> > > @@ -50,6 +50,7 @@ extern void vfree(void *addr);
-> > >  extern void *vmap(struct page **pages, unsigned int count,
-> > >                     unsigned long flags, pgprot_t prot);
-> > >  extern void vunmap(void *addr);
-> > > +extern void __vunmap(void *addr, int deallocate_pages);
-> > >
-> > >  extern int remap_vmalloc_range(struct vm_area_struct *vma, void *addr,
-> > >                                                     unsigned long pgoff);
-> >
-> > um, the only possible reason for wanting to access __vunmap() is that you
-> > want to do vunmap() from interrupt context, which is deadlockable.
->
-> Argh... I'm stupid, ignore it !
->
-> I just want to __vunmap(addr, 0); which is just what vunmap() does :-)
->
-> Why is __vunmap not static btw ? If there's no reason, I'll send a patch
-> to make it so.
+On Sun, 13 May 2007 11:47:53 +0200,
+Borislav Petkov <bbpetkov@yahoo.de> wrote:
 
-Yeah, it has no users outside mm/vmalloc.c and is not
-EXPORT_SYMBOL'ed anyway (plus it's a BUG from in_interrupt() as
-Andrew says, so must be called as either vfree() or vunmap()), so clearly
-it does want to be static.
+> if I'm not mistaken, despite the PCI_MULTITHREAD_PROBE removal,
+> Cornelia Huck wanted to keep driver-core-per-subsystem-multithreaded-probing.patch:
+> 
+> <quote>
+> > Wouldn't per-subsystem multithreaded probing just expose bugs that
+> > could also be exposed on SMP systems?
+> 
+> Yes, it would be the same.
+> </quote>
+
+Hm, I don't think I'll follow up with this - we need a different
+approach, I guess.
+
+> However, device_probe_drivers() remains temporarily unused, so we either
+> suppress the compiler warning or remove the whole function altogether. The
+> following patch does the first.
+
+I'd prefer to kill device_probe_drivers(). If we really need something
+like this sometime in the future, we can easily resurrect it.
+
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+
+---
+ drivers/base/dd.c |   13 -------------
+ 1 file changed, 13 deletions(-)
+
+--- linux-2.6.orig/drivers/base/dd.c
++++ linux-2.6/drivers/base/dd.c
+@@ -207,19 +207,6 @@ static int __device_attach(struct device
+ 	return driver_probe_device(drv, dev);
+ }
+ 
+-static int device_probe_drivers(void *data)
+-{
+-	struct device *dev = data;
+-	int ret = 0;
+-
+-	if (dev->bus) {
+-		down(&dev->sem);
+-		ret = bus_for_each_drv(dev->bus, NULL, dev, __device_attach);
+-		up(&dev->sem);
+-	}
+-	return ret;
+-}
+-
+ /**
+  *	device_attach - try to attach device to a driver.
+  *	@dev:	device.
