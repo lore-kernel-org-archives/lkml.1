@@ -1,109 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbXENUPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760380AbXENUPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759360AbXENUPO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbXENUO6
+	id S1760380AbXENUPl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759345AbXENUPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:14:58 -0400
-Received: from mx34.mail.ru ([194.67.23.200]:30317 "EHLO mx27.mail.ru"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754392AbXENUO6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:14:58 -0400
-Date: Tue, 15 May 2007 00:12:56 +0400
-From: Anton Vorontsov <cbou@mail.ru>
-To: Richard Purdie <rpurdie@rpsys.net>
-Cc: kogiidena@eggplant.ddo.jp, linux-kernel@vger.kernel.org,
-       lethal@linux-sh.org
-Subject: Re: [PATCH 1/2] leds:arch/sh/boards/landisk LEDs supports
-Message-ID: <20070514201256.GB26554@zarina>
-Reply-To: cbou@mail.ru
-References: <1743.192.168.1.10.1178627210.squirrel@eggplant.ddo.jp> <1178628889.6061.33.camel@localhost.localdomain> <2490.192.168.1.10.1178720780.squirrel@eggplant.ddo.jp> <1178723594.6291.21.camel@localhost.localdomain> <20070509160328.GA13640@zarina> <1179098182.5883.31.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+	Mon, 14 May 2007 16:15:25 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:58210 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758583AbXENUPY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:15:24 -0400
+Date: Mon, 14 May 2007 21:15:16 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jean Delvare <khali@linux-fr.org>,
+       Antonino Ingargiola <tritemio@gmail.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc1
+Message-ID: <20070514201516.GA20783@infradead.org>
+Mail-Followup-To: Christoph Hellwig <hch@infradead.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Jean Delvare <khali@linux-fr.org>,
+	Antonino Ingargiola <tritemio@gmail.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.98.0705131046400.6739@woody.linux-foundation.org> <5486cca80705131150u313eeb43i30bf040e160ac419@mail.gmail.com> <20070514081022.7fcee97f@hyperion.delvare> <5486cca80705140134r318296b8k37ad6f4562b4b535@mail.gmail.com> <20070514141437.631fcfd1@hyperion.delvare> <5486cca80705140628w5ff43ebdqf6a5413203226d5@mail.gmail.com> <20070514172138.1c870793@hyperion.delvare> <alpine.LFD.0.98.0705140914410.6739@woody.linux-foundation.org> <20070514202419.33a90f57@hyperion.delvare> <alpine.LFD.0.98.0705141139560.6739@woody.linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1179098182.5883.31.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+In-Reply-To: <alpine.LFD.0.98.0705141139560.6739@woody.linux-foundation.org>
+User-Agent: Mutt/1.4.2.2i
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 12:16:22AM +0100, Richard Purdie wrote:
-> On Wed, 2007-05-09 at 20:03 +0400, Anton Vorontsov wrote:
-> > +	led_cdev->trigger = trigger;
-> >  	if (trigger) {
-> >  		write_lock_irqsave(&trigger->leddev_list_lock, flags);
-> >  		list_add_tail(&led_cdev->trig_list, &trigger->led_cdevs);
-> > @@ -134,7 +140,6 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trigger)
-> >  		if (trigger->activate)
-> >  			trigger->activate(led_cdev);
-> >  	}
-> > -	led_cdev->trigger = trigger;
-> >  }
-> >  
-> >  void led_trigger_set_default(struct led_classdev *led_cdev)
+On Mon, May 14, 2007 at 11:43:45AM -0700, Linus Torvalds wrote:
 > 
-> Why was the above was changed?
 > 
-> I think we've discussed this before
+> On Mon, 14 May 2007, Jean Delvare wrote:
+> > 
+> > Sure, we don't allow that. Except for xfsprogs in 2.6.1, procps in
+> > 2.6.4, oprofile in 2.6.13 and udev in 2.6.19, of course.
+> 
+> And we really complained about it! The oprofile thing should be fixed, 
+> btw, and yeah,if udev breaks any more, I'll have to stop taking patches 
+> from Greg. That thing has been a disaster, and everybody involved should 
+> be ashamed and now hopefully *very* aware of the fact that we don't break 
+> user-level interfaces.
 
-Yup.
-
-> and it would be better to add a
-> trigger parameter to activate/deactivate if we really need it.
-
-Well.. Passing trigger parameter to activate/deactivate function is not
-only purpose of that patch...
-
-
-From: Anton Vorontsov <cbou@mail.ru>
-Date: Mon, 14 May 2007 23:49:09 +0400
-Subject: [PATCH] Attach trigger to LED prior calling activate function.
-
-This change needed for two purposes:
-
-1. When somebody sets trigger, and that trigger would setup
-   brightness in its activate() function, and led driver would check
-   if that trigger supported (used by hwtimer trigger and drivers
-   supporting hw blinking LEDs, not in mainline yet).
-
-2. If trigger would access itself through led_cdev in its activate()
-   function.
-
-Pros of that patch:
-
-1. Just sane to do;
-2. Trivial;
-3. Can't break anything;
-4. No new code, just one line movement.
-
-Cons of applying that patch:
-
-1. No mainline kernel user, but offshores.
-
-Signed-off-by: Anton Vorontsov <cbou@mail.ru>
----
- drivers/leds/led-triggers.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/leds/led-triggers.c b/drivers/leds/led-triggers.c
-index 7fde7d0..d3ab5d0 100644
---- a/drivers/leds/led-triggers.c
-+++ b/drivers/leds/led-triggers.c
-@@ -134,6 +134,7 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trigger)
- 			led_cdev->trigger->deactivate(led_cdev);
- 		led_set_brightness(led_cdev, LED_OFF);
- 	}
-+	led_cdev->trigger = trigger;
- 	if (trigger) {
- 		write_lock_irqsave(&trigger->leddev_list_lock, flags);
- 		list_add_tail(&led_cdev->trig_list, &trigger->led_cdevs);
-@@ -141,7 +142,6 @@ void led_trigger_set(struct led_classdev *led_cdev, struct led_trigger *trigger)
- 		if (trigger->activate)
- 			trigger->activate(led_cdev);
- 	}
--	led_cdev->trigger = trigger;
- }
- 
- void led_trigger_set_default(struct led_classdev *led_cdev)
--- 
-1.5.1.1-dirty
+sysfs is an even bigger desaster.  Even if people know they can't break
+userspace apis sysfs can force it on them.  As long as we tightly couple
+kernel data structures and a userspace ABI that's unavoidable.  Unfortunately
+sorting that mess out properly would be such a massive amount of work
+that it'd alsmost require a 2.7 series.
 
