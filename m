@@ -1,87 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759130AbXENT3A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbXENTb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759130AbXENT3A (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:29:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757398AbXENT2r
+	id S1757622AbXENTb4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbXENTbu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:28:47 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:3338 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755753AbXENT2q (ORCPT
+	Mon, 14 May 2007 15:31:50 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:59305 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754519AbXENTbt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:28:46 -0400
-Subject: Re: [PATCH 0/5] make slab gfp fair
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-In-Reply-To: <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl>
-	 <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com>
-	 <20070514161224.GC11115@waste.org>
-	 <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-	 <1179164453.2942.26.camel@lappy>
-	 <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 21:28:32 +0200
-Message-Id: <1179170912.2942.37.camel@lappy>
+	Mon, 14 May 2007 15:31:49 -0400
+Date: Mon, 14 May 2007 12:30:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Li Yang <leoli@freescale.com>,
+       Linus <torvalds@linux-foundation.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist
+ for powerpc
+Message-Id: <20070514123046.d75cc170.akpm@linux-foundation.org>
+In-Reply-To: <3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
+References: <46483FAC.60503@freescale.com>
+	<20070514110636.GB10143@uranus.ravnborg.org>
+	<3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 10:57 -0700, Christoph Lameter wrote:
-> On Mon, 14 May 2007, Peter Zijlstra wrote:
+On Mon, 14 May 2007 08:56:52 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
+
+> On May 14, 2007, at 6:06 AM, Sam Ravnborg wrote:
 > 
-> > On Mon, 2007-05-14 at 09:29 -0700, Christoph Lameter wrote:
-> > > On Mon, 14 May 2007, Matt Mackall wrote:
-> > > 
-> > > > privileged thread                      unprivileged greedy process
-> > > > kmem_cache_alloc(...)
-> > > >    adds new slab page from lowmem pool
-> > > 
-> > > Yes but it returns an object for the privileged thread. Is that not 
-> > > enough?
-> > 
-> > No, because we reserved memory for n objects, and like matt illustrates
-> > most of those that will be eaten by the greedy process.
-> > We could reserve 1 page per object but that rather bloats the reserve.
+> > On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
+> >> This patch fixes the following "Section mismatch" warnings when
+> >> build powerpc platforms.
+> >>
+> >> -------------
+> >> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to
+> >> .init.text:early_get_page from .text between  
+> >> 'pte_alloc_one_kernel' (at
+> >> offset 0xc68) and 'pte_alloc_one'
+> >> WARNING: mm/built-in.o - Section mismatch: reference to
+> >> .init.text:set_up_list3s from .text between  
+> >> 'kmem_cache_create' (at offset
+> >> 0x20300) and 'cache_reap'
+> >> -------------
 > 
-> 1 slab per object not one page. But yes thats some bloat.
+> This warnings should be handled by __init_refok instead.
 > 
-> You can pull the big switch (only on a SLUB slab I fear) to switch 
-> off the fast path. Do SetSlabDebug() when allocating a precious 
-> allocation that should not be gobbled up by lower level processes. 
-> Then you can do whatever you want in the __slab_alloc debug section and we 
-> wont care because its not the hot path.
 
-One allocator is all I need; it would just be grand if all could be
-supported.
+Yes, I think so.
 
-So what you suggest is not placing the 'emergency' slab into the regular
-place so that normal allocations will not be able to find it. Then if an
-emergency allocation cannot be satified by the regular path, we fall
-back to the slow path and find the emergency slab.
+> 
+> >> Massive warnings represented by:
+> >> -------------
+> >> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch:  
+> >> reference to
+> >> .init.data:.got2 from prom_entry (offset 0x0)
+> >> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
+> >> reference to
+> >> .init.text:mpc8313_rdb_probe from .machine.desc after  
+> >> 'mach_mpc8313_rdb'
+> >> (at offset 0x4)
+> >> -------------
+> >>
+> >> Signed-off-by: Li Yang <leoli@freescale.com>
+> > Acked-by: Sam Ravnborg <sam@ravnborg.org>
 
-> SLAB is a bit different. There we already have issues with the fast path 
-> due to the attempt to handle numa policies at the object level. SLUB fixes 
-> that issue (if we can avoid you hot path patch). It intentionally does 
-> defer all special object handling to the slab level to increase NUMA 
-> performance. If you do the same to SLAB then you will get the NUMA 
-> troubles propagated to the SMP and UP level.
+I always get confused when a git-tree-owner says "acked-by" against a patch
+which falls within his tree's area.  An acked-by would mean "I'm OK with
+the patch, please apply it".  But I'd have expected to see a "thanks,
+applied" instead.
 
-I could hack in a similar reserve slab; by catching the failure of the
-regular allocation path. It'd not make it prettier though.
-
-The thing is; I'm not needing any speed, as long as the machine stay
-alive I'm good. However others are planing to build a full reserve based
-allocator to properly fix the places that now use __GFP_NOFAIL and
-situation such as in add_to_swap().
-
-A well, one thing at a time. I'll hack this up.
+If it was "Andrew: please merge and send to Linus because it's urgent and I
+can't be bothered setting up a git pull for it" then fine, but please be
+explicit about that.
 
