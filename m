@@ -1,42 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755406AbXENOPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755318AbXENO2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbXENOPY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 10:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754130AbXENOPN
+	id S1755318AbXENO2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 10:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754419AbXENO2F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 10:15:13 -0400
-Received: from hp3.statik.TU-Cottbus.De ([141.43.120.68]:52930 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753075AbXENOPM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 10:15:12 -0400
-Message-ID: <46486EAE.3060009@s5r6.in-berlin.de>
-Date: Mon, 14 May 2007 16:14:06 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.2) Gecko/20070222 SeaMonkey/1.1.1
+	Mon, 14 May 2007 10:28:05 -0400
+Received: from gate.crashing.org ([63.228.1.57]:32861 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754241AbXENO2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 10:28:03 -0400
+Date: Mon, 14 May 2007 09:24:43 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@gate.crashing.org
+To: Johannes Berg <johannes@sipsolutions.net>
+cc: Simon Horman <horms@verge.net.au>, Timur Tabi <timur@freescale.com>,
+       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       Ismail =?ISO-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
+       Michael Schmitz <schmitz@debian.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: Kconfig warnings on latest GIT
+In-Reply-To: <1179147311.2647.47.camel@johannes.berg>
+Message-ID: <Pine.LNX.4.64.0705140923470.24559@gate.crashing.org>
+References: <200705080004.14570.ismail@pardus.org.tr> 
+ <20070508143127.38fafa3c.kim.phillips@freescale.com>  <4640D988.1040504@freescale.com>
+ <20070510051042.GA16812@verge.net.au>  <1178811570.3806.18.camel@johannes.berg>
+  <20070511012216.GB10715@verge.net.au>  <1178883937.8896.11.camel@johannes.berg>
+  <20070514013230.GJ3588@verge.net.au> <1179147311.2647.47.camel@johannes.berg>
 MIME-Version: 1.0
-To: mgarski@post.pl
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Convert files to UTF-8 and some cleanups
-References: <4647A52A.8000709@post.pl> <4647A868.4070201@post.pl>
-In-Reply-To: <4647A868.4070201@post.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcin Garski wrote:
-> Content-Type: application/octet-stream;
->  name="linux-2.6.22-rc1-utf-8-strings.patch.bz2"
-> Content-Transfer-Encoding: base64
-> Content-Disposition: attachment;
->  filename="linux-2.6.22-rc1-utf-8-strings.patch.bz2"
-> 
-> QlpoOTFBWSZTWSc/F00Ahxp/v///itd///////////////8QQO6yN0QYAABArrIlRGBofng9
-> APLeS9999e3t9HBeePnl0PJwG73R777qguxoH3sAPfYaKB0BwABdbe4C9nRevqU6lwXTg8De
+On Mon, 14 May 2007, Johannes Berg wrote:
 
-It's customary to post in plain text.  Best is inline plain text. Thanks,
--- 
-Stefan Richter
--=====-=-=== -=-= -===-
-http://arcgraph.de/sr/
+> Simon,
+>
+> > I don't think that this is quite right, or at least it isn't quite the
+> > same as before.
+>
+> Yeah, I think you're right.
+>
+> >  I think that was is below will toggle
+> > SYS_SUPPORTS_APM_EMULATION when PMAC_APM_EMU is selected,
+> > which I think is what you want. Is it also neccessary to
+> > add a dependancy on PPC_PMAC to PMAC_APM_EMU ?
+>
+> No, it depends on ADB_PMU which depends on PPC_PMAC.
+>
+> > config PMAC_APM_EMU
+> > 	tristate "APM emulation"
+> > 	select APM_EMULATION
+> > 	depends on ADB_PMU && PM
+> >
+> > config SYS_SUPPORTS_APM_EMULATION
+> > 	bool
+> > 	default y if PMAC_APM_EMU
+>
+> I still have to try it, I haven't been yet seen Kumar's fix that he said
+> he'd done.
+>
+> johannes
+
+this was my fix which looks pretty much the same.
+
+- k
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index ccc5410..af70799 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -118,6 +118,7 @@ config GENERIC_BUG
+ 	depends on BUG
+
+ config SYS_SUPPORTS_APM_EMULATION
++	default y if PMAC_APM_EMU
+ 	bool
+
+ config DEFAULT_UIMAGE
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index 58926da..f44c94a 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -113,7 +113,6 @@ config PMAC_SMU
+
+ config PMAC_APM_EMU
+ 	tristate "APM emulation"
+-	select SYS_SUPPORTS_APM_EMULATION
+ 	select APM_EMULATION
+ 	depends on ADB_PMU && PM
+
