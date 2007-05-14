@@ -1,82 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbXENTb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756584AbXENTfv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757622AbXENTb4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 15:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbXENTbu
+	id S1756584AbXENTfv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 15:35:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbXENTfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 15:31:50 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:59305 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754519AbXENTbt (ORCPT
+	Mon, 14 May 2007 15:35:42 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:34799 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753569AbXENTfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 15:31:49 -0400
-Date: Mon, 14 May 2007 12:30:46 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Li Yang <leoli@freescale.com>,
-       Linus <torvalds@linux-foundation.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist
- for powerpc
-Message-Id: <20070514123046.d75cc170.akpm@linux-foundation.org>
-In-Reply-To: <3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
-References: <46483FAC.60503@freescale.com>
-	<20070514110636.GB10143@uranus.ravnborg.org>
-	<3DF58590-DFD9-4665-8C47-33F407AAD1E7@kernel.crashing.org>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 May 2007 15:35:41 -0400
+Date: Mon, 14 May 2007 20:35:21 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Jan Blunck <jblunck@suse.de>
+cc: Bharata B Rao <bharata@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH 14/14] tmpfs whiteout support
+In-Reply-To: <4de7f8a60705141220j2764f326u69545490cdd23c08@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0705142022090.21607@blonde.wat.veritas.com>
+References: <20070514093722.GB4139@in.ibm.com>  <20070514094519.GP4139@in.ibm.com>
+  <Pine.LNX.4.64.0705141710280.29949@blonde.wat.veritas.com>
+ <4de7f8a60705141220j2764f326u69545490cdd23c08@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 14 May 2007 19:35:41.0088 (UTC) FILETIME=[0E649200:01C7965F]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGpibHVuY2tAc3VzZS5kZQBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnAGxpbnV4LWZzZGV2ZWxAdmdlci5rZXJuZWwub3JnAGouYmx1bmNrQHR1LWhhcmJ1cmcuZGUAYmhhcmF0YUBsaW51eC52bmV0LmlibS5jb20A
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007 08:56:52 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
-
-> On May 14, 2007, at 6:06 AM, Sam Ravnborg wrote:
+On Mon, 14 May 2007, Jan Blunck wrote:
+> On 5/14/07, Hugh Dickins <hugh@veritas.com> wrote:
+> > >
+> > > /* Pretend that each entry is of this size in directory's i_size */
+> > > -#define BOGO_DIRENT_SIZE 20
+> > > +#define BOGO_DIRENT_SIZE 1
+> >
+> > Why would that change be needed for whiteout support?
 > 
-> > On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
-> >> This patch fixes the following "Section mismatch" warnings when
-> >> build powerpc platforms.
-> >>
-> >> -------------
-> >> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to
-> >> .init.text:early_get_page from .text between  
-> >> 'pte_alloc_one_kernel' (at
-> >> offset 0xc68) and 'pte_alloc_one'
-> >> WARNING: mm/built-in.o - Section mismatch: reference to
-> >> .init.text:set_up_list3s from .text between  
-> >> 'kmem_cache_create' (at offset
-> >> 0x20300) and 'cache_reap'
-> >> -------------
-> 
-> This warnings should be handled by __init_refok instead.
-> 
+> Good question. It seems that this a survivor of the changes necessary
+> for union readdir.
 
-Yes, I think so.
+(I'd be asking the same question in that case, but don't worry about it!)
 
-> 
-> >> Massive warnings represented by:
-> >> -------------
-> >> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch:  
-> >> reference to
-> >> .init.data:.got2 from prom_entry (offset 0x0)
-> >> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
-> >> reference to
-> >> .init.text:mpc8313_rdb_probe from .machine.desc after  
-> >> 'mach_mpc8313_rdb'
-> >> (at offset 0x4)
-> >> -------------
-> >>
-> >> Signed-off-by: Li Yang <leoli@freescale.com>
-> > Acked-by: Sam Ravnborg <sam@ravnborg.org>
+> This isn't necessary for white-outs.
 
-I always get confused when a git-tree-owner says "acked-by" against a patch
-which falls within his tree's area.  An acked-by would mean "I'm OK with
-the patch, please apply it".  But I'd have expected to see a "thanks,
-applied" instead.
+Phew, thanks, please drop that hunk.
 
-If it was "Andrew: please merge and send to Linus because it's urgent and I
-can't be bothered setting up a git pull for it" then fine, but please be
-explicit about that.
+> BTW: Why do we claim this to be 20??? Is there any meaning behind this?
 
+No great meaning, hence "BOGO".  I put that in when hpa (IIRC) found
+tmpfs directory size 0 didn't suit some apps.  I thought it would be
+nice to have a size which indicates the current number of entries
+(which your 1 would do), looks plausible (for short filenames),
+and easy to make sense of in an "ls -l".  Bogus, yes; but I'd
+resist changing it after all this time, without very good reason.
+
+Hugh
