@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S966559AbXENLqH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966668AbXENLqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S966559AbXENLqH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:46:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966124AbXENLdw
+	id S966668AbXENLqf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966142AbXENLd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:33:52 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27941 "EHLO
+	Mon, 14 May 2007 07:33:56 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27943 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762283AbXENLcm (ORCPT
+	with ESMTP id S965635AbXENLcq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:42 -0400
-Message-Id: <20070514110617.496093604@suse.de>
+	Mon, 14 May 2007 07:32:46 -0400
+Message-Id: <20070514110610.285451473@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:34 -0700
+Date: Mon, 14 May 2007 04:06:14 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
        John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 27/45] Add a struct vfsmount parameter to vfs_removexattr()
-Content-Disposition: inline; filename=vfs-removexattr.diff
+Subject: [AppArmor 07/45] Add a struct vfsmount parameter to vfs_mknod()
+Content-Disposition: inline; filename=vfs-mknod.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -32,105 +32,92 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/nfsd/vfs.c         |    7 ++++---
- fs/xattr.c            |   12 ++++++------
- include/linux/xattr.h |    2 +-
- 3 files changed, 11 insertions(+), 10 deletions(-)
+ fs/ecryptfs/inode.c |    5 ++++-
+ fs/namei.c          |   10 ++++++----
+ fs/nfsd/vfs.c       |    3 ++-
+ include/linux/fs.h  |    2 +-
+ net/unix/af_unix.c  |    2 +-
+ 5 files changed, 14 insertions(+), 8 deletions(-)
 
+--- a/fs/ecryptfs/inode.c
++++ b/fs/ecryptfs/inode.c
+@@ -560,11 +560,14 @@ ecryptfs_mknod(struct inode *dir, struct
+ {
+ 	int rc;
+ 	struct dentry *lower_dentry;
++	struct vfsmount *lower_mnt;
+ 	struct dentry *lower_dir_dentry;
+ 
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
++	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+ 	lower_dir_dentry = lock_parent(lower_dentry);
+-	rc = vfs_mknod(lower_dir_dentry->d_inode, lower_dentry, mode, dev);
++	rc = vfs_mknod(lower_dir_dentry->d_inode, lower_dentry, lower_mnt, mode,
++		       dev);
+ 	if (rc || !lower_dentry->d_inode)
+ 		goto out;
+ 	rc = ecryptfs_interpose(lower_dentry, dentry, dir->i_sb, 0);
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1855,7 +1855,8 @@ fail:
+ }
+ EXPORT_SYMBOL_GPL(lookup_create);
+ 
+-int vfs_mknod(struct inode *dir, struct dentry *dentry, int mode, dev_t dev)
++int vfs_mknod(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt,
++	      int mode, dev_t dev)
+ {
+ 	int error = may_create(dir, dentry, NULL);
+ 
+@@ -1907,11 +1908,12 @@ asmlinkage long sys_mknodat(int dfd, con
+ 			error = vfs_create(nd.dentry->d_inode,dentry,mode,&nd);
+ 			break;
+ 		case S_IFCHR: case S_IFBLK:
+-			error = vfs_mknod(nd.dentry->d_inode,dentry,mode,
+-					new_decode_dev(dev));
++			error = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt,
++					  mode, new_decode_dev(dev));
+ 			break;
+ 		case S_IFIFO: case S_IFSOCK:
+-			error = vfs_mknod(nd.dentry->d_inode,dentry,mode,0);
++			error = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt,
++					  mode, 0);
+ 			break;
+ 		case S_IFDIR:
+ 			error = -EPERM;
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1957,6 +1957,7 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
- int
- nfsd_set_posix_acl(struct svc_fh *fhp, int type, struct posix_acl *acl)
- {
-+	struct vfsmount *mnt;
- 	struct inode *inode = fhp->fh_dentry->d_inode;
- 	char *name;
- 	void *value = NULL;
-@@ -1989,14 +1990,14 @@ nfsd_set_posix_acl(struct svc_fh *fhp, i
- 	} else
- 		size = 0;
- 
-+	mnt = fhp->fh_export->ex_mnt;
- 	if (size)
--		error = vfs_setxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt,
--				     name, value, size,0);
-+		error = vfs_setxattr(fhp->fh_dentry, mnt, name, value, size,0);
- 	else {
- 		if (!S_ISDIR(inode->i_mode) && type == ACL_TYPE_DEFAULT)
- 			error = 0;
- 		else {
--			error = vfs_removexattr(fhp->fh_dentry, name);
-+			error = vfs_removexattr(fhp->fh_dentry, mnt, name);
- 			if (error == -ENODATA)
- 				error = 0;
- 		}
---- a/fs/xattr.c
-+++ b/fs/xattr.c
-@@ -165,7 +165,7 @@ vfs_listxattr(struct dentry *dentry, str
- EXPORT_SYMBOL_GPL(vfs_listxattr);
- 
- int
--vfs_removexattr(struct dentry *dentry, char *name)
-+vfs_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name)
- {
- 	struct inode *inode = dentry->d_inode;
- 	int error;
-@@ -438,7 +438,7 @@ sys_flistxattr(int fd, char __user *list
-  * Extended attribute REMOVE operations
-  */
- static long
--removexattr(struct dentry *d, char __user *name)
-+removexattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name)
- {
- 	int error;
- 	char kname[XATTR_NAME_MAX + 1];
-@@ -449,7 +449,7 @@ removexattr(struct dentry *d, char __use
- 	if (error < 0)
- 		return error;
- 
--	return vfs_removexattr(d, kname);
-+	return vfs_removexattr(dentry, mnt, kname);
- }
- 
- asmlinkage long
-@@ -461,7 +461,7 @@ sys_removexattr(char __user *path, char 
- 	error = user_path_walk(path, &nd);
- 	if (error)
- 		return error;
--	error = removexattr(nd.dentry, name);
-+	error = removexattr(nd.dentry, nd.mnt, name);
- 	path_release(&nd);
- 	return error;
- }
-@@ -475,7 +475,7 @@ sys_lremovexattr(char __user *path, char
- 	error = user_path_walk_link(path, &nd);
- 	if (error)
- 		return error;
--	error = removexattr(nd.dentry, name);
-+	error = removexattr(nd.dentry, nd.mnt, name);
- 	path_release(&nd);
- 	return error;
- }
-@@ -492,7 +492,7 @@ sys_fremovexattr(int fd, char __user *na
- 		return error;
- 	dentry = f->f_path.dentry;
- 	audit_inode(NULL, dentry->d_inode);
--	error = removexattr(dentry, name);
-+	error = removexattr(dentry, f->f_path.mnt, name);
- 	fput(f);
- 	return error;
- }
---- a/include/linux/xattr.h
-+++ b/include/linux/xattr.h
-@@ -52,7 +52,7 @@ ssize_t vfs_listxattr(struct dentry *d, 
- 		      size_t size);
- int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
- 		 int);
--int vfs_removexattr(struct dentry *, char *);
-+int vfs_removexattr(struct dentry *, struct vfsmount *, char *);
- 
- ssize_t generic_getxattr(struct dentry *dentry, const char *name, void *buffer, size_t size);
- ssize_t generic_listxattr(struct dentry *dentry, char *buffer, size_t buffer_size);
+@@ -1194,7 +1194,8 @@ nfsd_create(struct svc_rqst *rqstp, stru
+ 	case S_IFBLK:
+ 	case S_IFIFO:
+ 	case S_IFSOCK:
+-		host_err = vfs_mknod(dirp, dchild, iap->ia_mode, rdev);
++		host_err = vfs_mknod(dirp, dchild, exp->ex_mnt, iap->ia_mode,
++				     rdev);
+ 		break;
+ 	default:
+ 	        printk("nfsd: bad file type %o in nfsd_create\n", type);
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -993,7 +993,7 @@ extern void unlock_super(struct super_bl
+ extern int vfs_permission(struct nameidata *, int);
+ extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
+ extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
+-extern int vfs_mknod(struct inode *, struct dentry *, int, dev_t);
++extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
+ extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
+ extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
+ extern int vfs_rmdir(struct inode *, struct dentry *);
+--- a/net/unix/af_unix.c
++++ b/net/unix/af_unix.c
+@@ -807,7 +807,7 @@ static int unix_bind(struct socket *sock
+ 		 */
+ 		mode = S_IFSOCK |
+ 		       (SOCK_INODE(sock)->i_mode & ~current->fs->umask);
+-		err = vfs_mknod(nd.dentry->d_inode, dentry, mode, 0);
++		err = vfs_mknod(nd.dentry->d_inode, dentry, nd.mnt, mode, 0);
+ 		if (err)
+ 			goto out_mknod_dput;
+ 		mutex_unlock(&nd.dentry->d_inode->i_mutex);
 
 -- 
