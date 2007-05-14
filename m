@@ -1,55 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbXENRWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757679AbXENRYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757620AbXENRWl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 13:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755736AbXENRWf
+	id S1757679AbXENRYR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 13:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbXENRYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 13:22:35 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:34607 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754877AbXENRWe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 13:22:34 -0400
-Subject: Re: [VOYAGER] fix build broken by shift to smp_ops
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Andrew Morton <akpm@osdl.org>, Linus Torvalds <torvalds@osdl.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <46489818.4000408@goop.org>
-References: <1179158912.3703.47.camel@mulgrave.il.steeleye.com>
-	 <46489818.4000408@goop.org>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 12:22:28 -0500
-Message-Id: <1179163348.3703.57.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 May 2007 13:24:05 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:54714 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755492AbXENRYE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 13:24:04 -0400
+Date: Mon, 14 May 2007 19:23:12 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: David Howells <dhowells@redhat.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.22-rc1, 'nother randconfig
+In-Reply-To: <21094.1179143087@redhat.com>
+Message-ID: <Pine.LNX.4.61.0705141922470.9570@yvahk01.tjqt.qr>
+References: <Pine.LNX.4.61.0705131125270.9570@yvahk01.tjqt.qr>
+ <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+ <21094.1179143087@redhat.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 10:10 -0700, Jeremy Fitzhardinge wrote:
-> James Bottomley wrote:
-> > From: Jeremy Fitzhardinge <jeremy@xensource.com>
-> > Subject: [VOYAGER] fix build broken by shift to smp_ops
-> >
-> > This adds an smp_ops for voyager, and hooks things up appropriately.
-> > This is the first baby-step to making subarch runtime switchable.
-> >
-> > Signed-off-by: Jeremy Fitzhardinge <jeremy@xensource.com>
-> >
-> > Rediffed to work in the absence of the smp consolidation patch
-> >   
-> 
-> I think Andrew is carrying that in -mm.  If you're proposing this for
-> git, then we may as well pull in that patch too.
 
-No, I'm proposing this for 2.6.22-rc1 ... Andi has already said he won't
-push the smp consolidation patch for 2.6.22.
+On May 14 2007 12:44, David Howells wrote:
+>Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+>
+>> net/built-in.o: In function `rxrpc_destroy_all_calls':
+>> (.exit.text+0x71d): undefined reference to `rxrpc_call_states'
+>> make: *** [.tmp_vmlinux1] Error 1
+>
+>This is the problem:
+>
+>	# CONFIG_PROC_FS is not set
+>	CONFIG_AF_RXRPC=y
 
-Without this patch, voyager won't even build, since the smp_ops broke
-it, so it needs to be fixed *now*.
-
-James
+Are you going to fix it?
 
 
+
+	Jan
+-- 
