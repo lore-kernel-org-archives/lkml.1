@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759097AbXENUCg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759360AbXENUCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759097AbXENUCg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:02:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755602AbXENUC2
+	id S1759360AbXENUCv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759222AbXENUCl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:02:28 -0400
-Received: from gprs189-60.eurotel.cz ([160.218.189.60]:4348 "EHLO spitz.ucw.cz"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751747AbXENUC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:02:27 -0400
-Date: Mon, 14 May 2007 20:00:11 +0000
-From: Pavel Machek <pavel@ucw.cz>
+	Mon, 14 May 2007 16:02:41 -0400
+Received: from waste.org ([66.93.16.53]:53866 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755602AbXENUCk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:02:40 -0400
+Date: Mon, 14 May 2007 15:01:44 -0500
+From: Matt Mackall <mpm@selenic.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Serge E. Hallyn" <serue@us.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, Stephen Smalley <sds@tycho.nsa.gov>,
-       jeffschroeder@computer.org, Chris Wright <chrisw@sous-sol.org>,
-       Karl MacMillan <kmacmillan@mentalrootkit.com>,
-       KaiGai Kohei <kaigai@kaigai.gr.jp>
-Subject: Re: [PATCH 0/2] file capabilities: Introduction
-Message-ID: <20070514200011.GB3969@ucw.cz>
-References: <20070508191548.GA29913@sergelap.austin.ibm.com> <20070508130517.ecef3dcb.akpm@linux-foundation.org>
-Mime-Version: 1.0
+Cc: Christoph Lameter <clameter@sgi.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
+       David Miller <davem@davemloft.net>,
+       Daniel Phillips <phillips@google.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 0/5] make slab gfp fair
+Message-ID: <20070514200144.GI11115@waste.org>
+References: <20070514131904.440041502@chello.nl> <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com> <20070514161224.GC11115@waste.org> <20070514124451.c868c4c0.akpm@linux-foundation.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070508130517.ecef3dcb.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <20070514124451.c868c4c0.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> "Serge E. Hallyn" <serue@us.ibm.com> wrote:
+On Mon, May 14, 2007 at 12:44:51PM -0700, Andrew Morton wrote:
+> On Mon, 14 May 2007 11:12:24 -0500
+> Matt Mackall <mpm@selenic.com> wrote:
 > 
-> > Following are two patches which have been sitting for some time in -mm.
+> > If I understand this correctly:
+> > 
+> > privileged thread                      unprivileged greedy process
+> > kmem_cache_alloc(...)
+> >    adds new slab page from lowmem pool
+> > do_io()
+> >                                        kmem_cache_alloc(...)
+> >                                        kmem_cache_alloc(...)
+> >                                        kmem_cache_alloc(...)
+> >                                        kmem_cache_alloc(...)
+> >                                        kmem_cache_alloc(...)
+> >                                        ...
+> >                                           eats it all
+> > kmem_cache_alloc(...) -> ENOMEM
+> >    who ate my donuts?!
 > 
-> Where "some time" == "nearly six months".
+> Yes, that's my understanding also.
 > 
-> We need help considering, reviewing and testing this code, please.
+> I can see why it's a problem in theory, but I don't think Peter has yet
+> revealed to us why it's a problem in practice.  I got all excited when
+> Christoph asked "I am not sure what the point of all of this is.", but
+> Peter cunningly avoided answering that ;)
+> 
+> What observed problem is being fixed here?
 
-I did quick scan, and it looks ok. Plus, it means we can finally start
-using that old capabilities subsystem... so I think we should do it.
+(From my recollection of looking at this problem a few years ago:)
 
-							Pavel
+There are various critical I/O paths that aren't protected by
+mempools that need to dip into reserves when we approach OOM.
+
+If, say, we need some number of SKBs in the critical I/O cleaning path
+while something else is cheerfully sending non-I/O data, that second
+stream can eat the SKBs that the first had budgeted for in its
+reserve.
+
+I think the simplest thing to do is to make everyone either fail or
+sleep if they're not marked critical and a global memory crisis flag
+is set.
+
+To make this not impact the fast path, we could pull some trick like
+swapping out and hiding all the real slab caches when turning the crisis
+flag on.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Mathematics is the supreme nostalgia of our time.
