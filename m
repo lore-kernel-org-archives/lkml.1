@@ -1,52 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757507AbXENUZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761019AbXENUZn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757507AbXENUZY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757004AbXENUZH
+	id S1761019AbXENUZn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:25:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759345AbXENUZK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:25:07 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:51194 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757303AbXENUZF (ORCPT
+	Mon, 14 May 2007 16:25:10 -0400
+Received: from mailout.stusta.mhn.de ([141.84.69.5]:34516 "EHLO
+	mailhub.stusta.mhn.de" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759051AbXENUZI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:25:05 -0400
-Date: Mon, 14 May 2007 13:25:02 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <1179172994.2942.49.camel@lappy>
-Message-ID: <Pine.LNX.4.64.0705141324340.12479@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl> 
- <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com> 
- <20070514161224.GC11115@waste.org>  <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-  <1179164453.2942.26.camel@lappy>  <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-  <1179170912.2942.37.camel@lappy>  <Pine.LNX.4.64.0705141253130.12045@schroedinger.engr.sgi.com>
- <1179172994.2942.49.camel@lappy>
+	Mon, 14 May 2007 16:25:08 -0400
+Date: Mon, 14 May 2007 22:25:09 +0200
+From: Adrian Bunk <bunk@stusta.de>
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Cc: Stefan Richter <stefanr@s5r6.in-berlin.de>, mgarski@post.pl,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Convert files to UTF-8 and some cleanups
+Message-ID: <20070514202509.GA1515@stusta.de>
+References: <4647A52A.8000709@post.pl> <4647A868.4070201@post.pl> <46486EAE.3060009@s5r6.in-berlin.de> <Pine.LNX.4.61.0705141947390.9570@yvahk01.tjqt.qr> <tkrat.0d89f95b66d8bb2c@s5r6.in-berlin.de> <Pine.LNX.4.61.0705142209090.9570@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.61.0705142209090.9570@yvahk01.tjqt.qr>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007, Peter Zijlstra wrote:
-
-> > > The thing is; I'm not needing any speed, as long as the machine stay
-> > > alive I'm good. However others are planing to build a full reserve based
-> > > allocator to properly fix the places that now use __GFP_NOFAIL and
-> > > situation such as in add_to_swap().
-> > 
-> > Well I have version of SLUB here that allows you do redirect the alloc 
-> > calls at will. Adds a kmem_cache_ops structure and in the kmem_cache_ops 
-> > structure you can redirect allocation and freeing of slabs (not objects!) 
-> > at will. Would that help?
+On Mon, May 14, 2007 at 10:10:20PM +0200, Jan Engelhardt wrote:
 > 
-> I'm not sure; I need kmalloc as well.
+> On May 14 2007 20:06, Stefan Richter wrote:
+> >On 14 May, Jan Engelhardt wrote:
+> >> I've had a quick look at it...
+> >> 
+> >>   * Copyright (C) 2004 Nokia Corporation
+> >>   * Written by Tony Lindgren <tony@atomide.com>
+> >> - * Major cleanups by Juha YrjXlX <juha.yrjola@nokia.com>
+> >> + * Major cleanups by Juha Yrjölä <juha.yrjola@nokia.com>
+> >> 
+> >> 
+> >> I thought I already fixed that part with the patch from
+> >> http://lkml.org/lkml/2007/1/8/222
+> >> 
+> >> but of course I can't tell without getting at that .bz2 thing I
+> >> sent back them. Anyone know of a site that stores these too?
+> >
+> >http://marc.info/?l=linux-kernel&m=116828781409931
+> 
+> I checked.
+> Now that kinda sucks, everyone does the same job over and over,
+> I did a ton of utf8 fixes and they did not get applied. (Granted,
+> I did not cc Andrew, Linus or trivial).
 
-We could add a kmalloc_ops structuret to allow redirects?
+If you had Cc'ed trivial they would now be in Linus' tree...
+
+> 	Jan
+
+cu
+Adrian
+
+-- 
+
+       "Is there not promise of rain?" Ling Tan asked suddenly out
+        of the darkness. There had been need of rain for many days.
+       "Only a promise," Lao Er said.
+                                       Pearl S. Buck - Dragon Seed
 
