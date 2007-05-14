@@ -1,52 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbXENBax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761807AbXENBcs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761541AbXENBax (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 21:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758435AbXENBaq
+	id S1761807AbXENBcs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 21:32:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758531AbXENBck
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 21:30:46 -0400
-Received: from ozlabs.org ([203.10.76.45]:53074 "EHLO ozlabs.org"
+	Sun, 13 May 2007 21:32:40 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:52696 "EHLO koto.vergenet.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757878AbXENBap (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 21:30:45 -0400
-Subject: Re: [PATCH 1/5] lguest host feedback tidyups
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Al Viro <viro@ftp.linux.org.uk>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       virtualization <virtualization@lists.linux-foundation.org>,
-       hch <hch@infradead.org>
-In-Reply-To: <20070513184750.GA4095@ftp.linux.org.uk>
-References: <1178846246.23513.21.camel@localhost.localdomain>
-	 <1178846354.23513.23.camel@localhost.localdomain>
-	 <1179029245.23513.121.camel@localhost.localdomain>
-	 <20070513184750.GA4095@ftp.linux.org.uk>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 11:30:30 +1000
-Message-Id: <1179106230.23513.136.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	id S1757737AbXENBcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 21:32:39 -0400
+Date: Mon, 14 May 2007 10:32:32 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Timur Tabi <timur@freescale.com>,
+       Kim Phillips <kim.phillips@freescale.com>, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org,
+       Ismail =?iso-8859-1?Q?D=F6nmez?= <ismail@pardus.org.tr>,
+       Kumar Gala <galak@kernel.crashing.org>,
+       Michael Schmitz <schmitz@debian.org>,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, Ralf Baechle <ralf@linux-mips.org>
+Subject: Re: Kconfig warnings on latest GIT
+Message-ID: <20070514013230.GJ3588@verge.net.au>
+References: <200705080004.14570.ismail@pardus.org.tr> <20070508143127.38fafa3c.kim.phillips@freescale.com> <4640D988.1040504@freescale.com> <20070510051042.GA16812@verge.net.au> <1178811570.3806.18.camel@johannes.berg> <20070511012216.GB10715@verge.net.au> <1178883937.8896.11.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1178883937.8896.11.camel@johannes.berg>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2007-05-13 at 19:47 +0100, Al Viro wrote:
-> On Sun, May 13, 2007 at 02:07:25PM +1000, Rusty Russell wrote:
-> > Most importantly, I now realize that Christoph's incorrect ranting
-> > about lgread_u32 et al was in fact a subtle ploy to make me diagnose
-> > the real issue: sparse 0.3 complains about casting a __user pointer
-> > to/from u32, but not an "unsigned long".  They are (currently)
-> > equivalent for lguest, but this is a much better solution than __force.
+On Fri, May 11, 2007 at 01:45:37PM +0200, Johannes Berg wrote:
+> On Fri, 2007-05-11 at 10:22 +0900, Simon Horman wrote:
 > 
-> The real fix would be to declare it with u32 __user * as argument and deal
-> with callers.
+> > Actually, it was with ARCH=ia64. I have a feeling that you can get
+> > it to show up quite easily with anything other than ARCH=powerpc.
+> 
+> Ick, I didn't know that drivers/macintosh was now included for all
+> arches! Hmm. That's a bit of a problem.
+> 
+> I could do
+> 
+> config PMAC_APM_EMU
+>         tristate "APM emulation"
+>         depends on SYS_SUPPORTS_APM_EMULATION
+>         select APM_EMULATION
+>         depends on ADB_PMU && PM
+> 
+> and then
+> 
+> config SYS_SUPPORTS_APM_EMULATION
+> 	bool
+> 	default y
+> 	depends on PPC_PMAC
+> 
+> I'll have to run test that.
 
-Hi Al.
+Hi Johannes,
 
-	Arguments come in from the guest in registers.  I could use a funky
-union in the structure definition, but I don't think we're winning
-anything at that point.
+I don't think that this is quite right, or at least it isn't quite the
+same as before. I think that was is below will toggle
+SYS_SUPPORTS_APM_EMULATION when PMAC_APM_EMU is selected,
+which I think is what you want. Is it also neccessary to
+add a dependancy on PPC_PMAC to PMAC_APM_EMU ?
 
-Hope that clarifies,
-Rusty.
+config PMAC_APM_EMU
+	tristate "APM emulation"
+	select APM_EMULATION
+	depends on ADB_PMU && PM
+
+config SYS_SUPPORTS_APM_EMULATION
+	bool
+	default y if PMAC_APM_EMU
+
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
