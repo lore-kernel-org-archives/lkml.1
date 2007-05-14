@@ -1,107 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1030812AbXENLFr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762052AbXENLIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1030812AbXENLFr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:05:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXENLFl
+	id S1762052AbXENLIS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756599AbXENLIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:05:41 -0400
-Received: from pasmtpa.tele.dk ([80.160.77.114]:51891 "EHLO pasmtpA.tele.dk"
+	Mon, 14 May 2007 07:08:07 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:39237 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756490AbXENLFk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:05:40 -0400
-Date: Mon, 14 May 2007 13:06:36 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Li Yang <leoli@freescale.com>
-Cc: Linus <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for powerpc
-Message-ID: <20070514110636.GB10143@uranus.ravnborg.org>
-References: <46483FAC.60503@freescale.com>
+	id S1756490AbXENLIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 07:08:04 -0400
+Date: Mon, 14 May 2007 16:45:21 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Carsten Otte <cotte.de@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH 9/14] Union-mount readdir
+Message-ID: <20070514111521.GQ4139@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20070514093722.GB4139@in.ibm.com> <20070514094249.GK4139@in.ibm.com> <5c77e7070705140343q51208efdk2746b4d80db353ba@mail.gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <46483FAC.60503@freescale.com>
+In-Reply-To: <5c77e7070705140343q51208efdk2746b4d80db353ba@mail.gmail.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
-> This patch fixes the following "Section mismatch" warnings when
-> build powerpc platforms.
+On Mon, May 14, 2007 at 12:43:43PM +0200, Carsten Otte wrote:
+> On 5/14/07, Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+> >+/* This is a copy from fs/readdir.c */
+> >+struct getdents_callback {
+> >+       struct linux_dirent __user *current_dir;
+> >+       struct linux_dirent __user *previous;
+> >+       int count;
+> >+       int error;
+> >+};
+> This should go into a header file.
+
+Yes ideally. As the comment above says, it is copied from fs/readdir.c and
+we should be using the definition from there. But that needs touching
+additional files and we wanted to avoid that for this initial RFC post.
+
 > 
-> -------------
-> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference to 
-> .init.text:early_get_page from .text between 'pte_alloc_one_kernel' (at 
-> offset 0xc68) and 'pte_alloc_one'
-> WARNING: mm/built-in.o - Section mismatch: reference to 
-> .init.text:set_up_list3s from .text between 'kmem_cache_create' (at offset 
-> 0x20300) and 'cache_reap'
-> -------------
+> >+static int union_cache_find_entry(struct list_head *uc_list,
+> >+                                 const char *name, int namelen)
+> >+{
+> >+       struct union_cache_entry *p;
+> >+       int ret = 0;
+> >+
+> >+       list_for_each_entry(p, uc_list, list) {
+> >+               if (p->name.len != namelen)
+> >+                       continue;
+> >+               if (strncmp(p->name.name, name, namelen) == 0) {
+> >+                       ret = 1;
+> >+                       break;
+> >+               }
+> >+       }
+> >+       return ret;
+> >+}
+> Why not use strlen instead of having both string and length as parameter?
 > 
-> Massive warnings represented by:
-> -------------
-> WARNING: arch/powerpc/kernel/built-in.o - Section mismatch: reference to 
-> .init.data:.got2 from prom_entry (offset 0x0)
-> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch: reference to 
-> .init.text:mpc8313_rdb_probe from .machine.desc after 'mach_mpc8313_rdb' 
-> (at offset 0x4)
-> -------------
-> 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-Acked-by: Sam Ravnborg <sam@ravnborg.org>
-> ---
-> scripts/mod/modpost.c |   16 ++++++++++++----
-> 1 files changed, 12 insertions(+), 4 deletions(-)
-> 
-> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-> index c89cb71..aa3a881 100644
-> --- a/scripts/mod/modpost.c
-> +++ b/scripts/mod/modpost.c
-> @@ -649,9 +649,10 @@ static int strrcmp(const char *s, const char *sub)
->  *  tosec    = .init.text
->  *
->  * Pattern 10:
-> - *  ia64 has machvec table for each platform. It is mixture of function
-> - *  pointer of .init.text and .text.
-> - *  fromsec  = .machvec
-> + *  ia64 has machvec table and powerpc has machine desc table for each
-> + *  platform. It is mixture of function pointer of .init.text and .text.
-> + *  fromsec  = .machvec | .machine.desc
-> + *
->  **/
-> static int secref_whitelist(const char *modname, const char *tosec,
-> 			    const char *fromsec, const char *atsym,
-> @@ -681,6 +682,8 @@ static int secref_whitelist(const char *modname, const 
-> char *tosec,
-> 	const char *pat4sym[] = {
-> 		"sparse_index_alloc",
-> 		"zone_wait_table_init",
-> +		"pte_alloc_one_kernel",
-> +		"kmem_cache_create",
-> 		NULL
-> 	};
-> 
-> @@ -750,7 +753,8 @@ static int secref_whitelist(const char *modname, const 
-> char *tosec,
-> 				return 1;
-> 
-> 	/* Check for pattern 10 */
-> -	if (strcmp(fromsec, ".machvec") == 0)
-> +	if ((strcmp(fromsec, ".machvec") == 0) ||
-> +	    (strcmp(fromsec, ".machine.desc") == 0))
-> 		return 1;
-> 
-> 	return 0;
-> @@ -883,6 +887,10 @@ static void warn_sec_mismatch(const char *modname, 
-> const char *fromsec,
-> 	    secref_whitelist(modname, secname, fromsec,
-> 			     elf->strtab + before->st_name, refsymname))
-> 		return;
-> +	/* fromsec whitelist - without a valid 'before' */
-> +	/* powerpc has a GOT table in .got2 section */
-> +	if (strcmp(fromsec, ".got2") == 0)
-> +		return;
-> 
-> 	if (before && after) {
-> 		warn("%s - Section mismatch: reference to %s:%s from %s "
-> 
+
+All generic filldir routines in fs/readdir.c (filldir, fillonedir and
+filldir64) don't depend on the dirent->d_name to be NULL terminated and
+put a 0 themselves at the end. Hence we are also not depending on the
+name string to be NULL terminated.
+
+> >+static struct file * __dentry_open_read(struct dentry *dentry,
+> >+                                       struct vfsmount *mnt, int flags)
+> >+{
+> >+       struct file *f;
+> >+       struct inode *inode;
+> >+       int error;
+> >+
+> >+       error = -ENFILE;
+> >+       f = get_empty_filp();
+> >+       if (!f)
+> >+               goto out;
+> This is the only case where error is not explicitly set to a different
+> value before hitting out/cleanup => consider setting conditionally.
+
+Sure can be done. Again this routine is copied from dentry_open() and
+hence it is like that atm.
+
+Thanks for your review.
+
+Regards,
+Bharata.
