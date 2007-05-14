@@ -1,93 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755675AbXENObZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756186AbXENOb7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755675AbXENObZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 10:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbXENObT
+	id S1756186AbXENOb7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 10:31:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbXENObu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 10:31:19 -0400
-Received: from dhazelton.dsl.enter.net ([216.193.185.50]:50417 "EHLO mail"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754094AbXENObS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 10:31:18 -0400
-From: Daniel Hazelton <dhazelton@enter.net>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: fair clock use in CFS
-Date: Mon, 14 May 2007 10:31:13 -0400
-User-Agent: KMail/1.9.6
-Cc: William Lee Irwin III <wli@holomorphy.com>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, efault@gmx.de,
-       tingy@cs.umass.edu, linux-kernel@vger.kernel.org
-References: <20070514083358.GA29775@in.ibm.com> <20070514110500.GV19966@holomorphy.com> <20070514115049.GA28721@elte.hu>
-In-Reply-To: <20070514115049.GA28721@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 14 May 2007 10:31:50 -0400
+Received: from hancock.steeleye.com ([71.30.118.248]:38750 "EHLO
+	hancock.sc.steeleye.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754532AbXENObt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 10:31:49 -0400
+Subject: Re: why does x86 "make defconfig" build a single, lonely module?
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+Cc: Dave Jones <davej@redhat.com>, "Robert P. J. Day" <rpjday@mindspring.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org
+In-Reply-To: <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
+References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
+	 <20070513160608.GA29024@redhat.com>
+	 <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
+	 <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
+	 <a781481a0705140235h6a96563cw63ed2c7a85a4f736@mail.gmail.com>
+	 <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com>
+	 <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com>
+	 <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 09:31:36 -0500
+Message-Id: <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705141031.13528.dhazelton@enter.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 May 2007 07:50:49 Ingo Molnar wrote:
-> * William Lee Irwin III <wli@holomorphy.com> wrote:
-> > On Mon, May 14, 2007 at 12:31:20PM +0200, Ingo Molnar wrote:
-> > > please clarify - exactly what is a mistake? Thanks,
+On Mon, 2007-05-14 at 17:53 +0530, Satyam Sharma wrote:
+> > I guess this is probably the behaviour that James wanted originally?
+
+No ... you're still not reading the explanation in the thread:
+
+The wait scan module is designed to wait for scans of driver modules.
+Whether SCSI=y or m has no effect on this ... you can still have modular
+drivers with built in SCSI.
+
+> > Anyway, attached patch (subsumes previous one) cleans up all this.
+> > Now, scsi_wait_scan is the only guy who controls waiting upon async
+> > scans to complete:
 > >
-> > The variability in ->fair_clock advancement rate was the mistake, at
-> > least according to my way of thinking. [...]
->
-> you are quite wrong. Lets consider the following example:
->
-> we have 10 tasks running (all at nice 0). The current task spends 20
-> msecs on the CPU and a new task is picked. How much CPU time did that
-> waiting task get entitled to during its 20 msecs wait? If fair_clock was
-> constant as you suggest then we'd give it 20 msecs - but its true 'fair
-> expectation' of CPU time was only 20/10 == 2 msecs!
+> > If SCSI=n, SCSI_WAIT_SCAN=n, obviously.
+> >
+> > If SCSI=y, SCSI_WAIT_SCAN=y, so it gets built-in and is run at
+> > late_initcall.
+> >
+> > If SCSI=m, SCSI_WAIT_SCAN=m too and would hopefully be run
+> > by the initrd/initramfs scripts to wait for async SCSI bus scans to
+> > finish before allowing the boot to proceed.
+> >
+> > [ Attached patch does _not_ expose SCSI_WAIT_SCAN to the
+> > user at kernel configuration time, so if somebody wants it to be
+> > built as a module even when SCSI=y (why would anybody
+> > want that, doesn't make much sense to me to modprobe
+> > scsi_wait_scan _after_ boot-up), it would not be possible to
+> > do so. But if someone really wants that, let me know, we can
+> > add a depends, tristate "..." and help in this Kconfig option to
+> > accomplish that too. ]
+> 
+> This has sadly become a one-person thread, but Robert informs
+> me in private mail that we can further clean/simplify the patch:
+> 
+> [subsumes both previous patches]
+> 
+> Signed-off-by: Satyam Sharma <satyam.sharma@gmail.com>
+> 
+> ---
+> 
+>  drivers/scsi/Kconfig     |    3 +--
+>  drivers/scsi/scsi_scan.c |    5 +----
+>  2 files changed, 2 insertions(+), 6 deletions(-)
+> 
+> ---
+> 
+> diff -ruNp a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
+> --- a/drivers/scsi/Kconfig	2007-05-10 23:19:32.000000000 +0530
+> +++ b/drivers/scsi/Kconfig	2007-05-14 17:59:51.000000000 +0530
+> @@ -243,9 +243,8 @@ config SCSI_SCAN_ASYNC
+> 
+>  config SCSI_WAIT_SCAN
+>  	tristate
+> -	default m
+>  	depends on SCSI
+> -	depends on MODULES
+> +	default SCSI
+> 
+>  menu "SCSI Transports"
+>  	depends on SCSI
+> diff -ruNp a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
+> --- a/drivers/scsi/scsi_scan.c	2007-05-14 16:06:43.000000000 +0530
+> +++ b/drivers/scsi/scsi_scan.c	2007-05-14 16:10:34.000000000 +0530
+> @@ -184,14 +184,11 @@ int scsi_complete_async_scans(void)
+>  /* Only exported for the benefit of scsi_wait_scan */
+>  EXPORT_SYMBOL_GPL(scsi_complete_async_scans);
+> 
+> -#ifndef MODULE
+>  /*
+>   * For async scanning we need to wait for all the scans to complete before
+>   * trying to mount the root fs.  Otherwise non-modular drivers may not be ready
+> - * yet.
+> + * yet.  This is done by scsi_wait_scan.
+>   */
+> -late_initcall(scsi_complete_async_scans);
+> -#endif
 
-Either you have a strange definition of fairness or you chose an extremely 
-poor example, Ingo. In a fair scheduler I'd expect all tasks to get the exact 
-same amount of time on the processor. So if there are 10 tasks running at 
-nice 0 and the current task has run for 20msecs before a new task is swapped 
-onto the CPU, the new task and *all* other tasks waiting to get onto the CPU 
-should get the same 20msecs. What you've described above is fundamentally 
-unfair - one process running for 20msecs while the 10 processes that are 
-waiting for their chance each get a period that increases from a short period 
-at a predictable rate.
+This is actually not in mainline.  It's an incorrect patch in -mm.  The
+problem with late_initcall is that they queue in link order ... so any
+SCSI module (and there a few) linked after this won't benefit from it.
+The obvious hack is to have a separate file with this in the final link.
+However, Matthew Wilcox thinks he can do better.
 
-Some numbers based on your above description:
-Process 1 runs for 20msecs
-Process 2 runs for 2msecs  (20/10 == 2msecs) 
-Process 3 runs for 2.2msecs (has waited 22msecs, 22/10 == 2.2)
-Process 4 runs for 2.4msecs (has waited 24.2msecs - rounded for brevity)
-Process 5 runs for 2.7msecs (has waited 26.6msecs - rounded for brevity)
-process 6 runs for 3msecs  (has waited 30.3msecs)
-process 7 runs for 3.3msecs (has waited approx. 33msecs)
-process 8 runs for 3.6msecs (has waited approx. 36msecs)
-process 9 runs for 3.9msecs (has waited approx. 39msecs)
-process 10 runs for 4.2msecs (has waited approx. 42msecs)
+James
 
-Now if the "process time" isn't scaled to match the length of time that the 
-process has spent waiting to get on the CPU you get some measure of fairness 
-back, but even then the description of CFS you've given shows a fundamental 
-unfairness.
 
-However, if you meant that "the new process has spent 20msecs waiting to get 
-on the CPU", then the rest of your description does show what I'd expect from 
-a fair scheduler. If not, then I guess that CFS is only "Completely Fair" for 
-significantly large values of "fair".
-
-(I will not, however, argue that CFS is'nt a damned good scheduler that has 
-improved interactivity on the systems of those people that have tested it)
-
-> So a 'constant' fair_clock would turn the whole equilibrium upside down
-> (it would inflate p->wait_runtime values and the global sum would not be
-> roughly constant anymore but would run up very fast), especially during
-> fluctuating loads.
-
-Hrm... Okay, so you're saying that "fair_clock" runs slower the more process 
-there are running to keep the above run-up in "Time Spent on CPU" I noticed 
-based solely on your initial example? If that is the case, then I can see the 
-fairness - its just not visible from a really quick look at the code and the 
-simplified description you gave earlier.
-
-DRH
