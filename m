@@ -1,304 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031582AbXENLyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S966643AbXENLyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031582AbXENLyT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762594AbXENLeu
+	id S966643AbXENLyu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S966019AbXENLex
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:34:50 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:48361 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1030572AbXENLdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:33:16 -0400
-Date: Mon, 14 May 2007 15:41:23 +0400
-From: Alexey Dobriyan <adobriyan@sw.ru>
-To: akpm@osdl.org
-Cc: linux-kernel@vger.kernel.org, viro@ftp.linux.org.uk, devel@openvz.org
-Subject: [PATCH -mm] proc: introduce and use pde_users_dec()
-Message-ID: <20070514114123.GA6060@localhost.sw.ru>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.11
+	Mon, 14 May 2007 07:34:53 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27949 "EHLO
+	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S964810AbXENLcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 07:32:43 -0400
+Message-Id: <20070514110620.570242846@suse.de>
+References: <20070514110607.549397248@suse.de>
+User-Agent: quilt/0.46-14
+Date: Mon, 14 May 2007 04:06:43 -0700
+From: jjohansen@suse.de
+To: linux-kernel@vger.kernel.org
+Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Andreas Gruenbacher <agruen@suse.de>, John Johansen <jjohansen@suse.de>
+Subject: [AppArmor 36/45] Export audit subsystem for use by modules
+Content-Disposition: inline; filename=apparmor-audit.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@sw.ru>
+Adds necessary export symbols for audit subsystem routines.
+Changes audit_log_vformat to be externally visible (analagous to vprintf)
+Patch is not in mainline -- pending AppArmor code submission to lkml
+
+Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
+Signed-off-by: John Johansen <jjohansen@suse.de>
+
 ---
+ include/linux/audit.h |    5 +++++
+ kernel/audit.c        |    6 ++++--
+ 2 files changed, 9 insertions(+), 2 deletions(-)
 
- Please, fold into fix-rmmod-read-write-races-in-proc-entries.patch
- This should address last review comment.
-
- fs/proc/inode.c |  135 ++++++++++++++++++++++----------------------------------
- 1 file changed, 54 insertions(+), 81 deletions(-)
-
---- a/fs/proc/inode.c
-+++ b/fs/proc/inode.c
-@@ -141,6 +141,15 @@ static const struct super_operations pro
- 	.remount_fs	= proc_remount,
- };
+--- a/include/linux/audit.h
++++ b/include/linux/audit.h
+@@ -114,6 +114,8 @@
+ #define AUDIT_ANOM_PROMISCUOUS      1700 /* Device changed promiscuous mode */
+ #define AUDIT_ANOM_ABEND            1701 /* Process ended abnormally */
  
-+static void pde_users_dec(struct proc_dir_entry *pde)
-+{
-+	spin_lock(&pde->pde_unload_lock);
-+	pde->pde_users--;
-+	if (pde->pde_unload_completion && pde->pde_users == 0)
-+		complete(pde->pde_unload_completion);
-+	spin_unlock(&pde->pde_unload_lock);
-+}
++#define AUDIT_APPARMOR		1500	/* AppArmor audit */
 +
- static loff_t proc_reg_llseek(struct file *file, loff_t offset, int whence)
+ #define AUDIT_KERNEL		2000	/* Asynchronous audit record. NOT A REQUEST. */
+ 
+ /* Rule flags */
+@@ -499,6 +501,9 @@ extern void		    audit_log(struct audit_
+ 				      __attribute__((format(printf,4,5)));
+ 
+ extern struct audit_buffer *audit_log_start(struct audit_context *ctx, gfp_t gfp_mask, int type);
++extern void		    audit_log_vformat(struct audit_buffer *ab,
++					      const char *fmt, va_list args)
++			    __attribute__((format(printf,2,0)));
+ extern void		    audit_log_format(struct audit_buffer *ab,
+ 					     const char *fmt, ...)
+ 			    __attribute__((format(printf,2,3)));
+--- a/kernel/audit.c
++++ b/kernel/audit.c
+@@ -1054,8 +1054,7 @@ static inline int audit_expand(struct au
+  * will be called a second time.  Currently, we assume that a printk
+  * can't format message larger than 1024 bytes, so we don't either.
+  */
+-static void audit_log_vformat(struct audit_buffer *ab, const char *fmt,
+-			      va_list args)
++void audit_log_vformat(struct audit_buffer *ab, const char *fmt, va_list args)
  {
- 	struct proc_dir_entry *pde = PDE(file->f_path.dentry->d_inode);
-@@ -152,8 +161,10 @@ static loff_t proc_reg_llseek(struct fil
- 	 * remove_proc_entry() is going to delete PDE (as part of module
- 	 * cleanup sequence). No new callers into module allowed.
- 	 */
--	if (!pde->proc_fops)
--		goto out_unlock;
-+	if (!pde->proc_fops) {
-+		spin_unlock(&pde->pde_unload_lock);
-+		return rv;
-+	}
- 	/*
- 	 * Bump refcount so that remove_proc_entry will wail for ->llseek to
- 	 * complete.
-@@ -170,13 +181,7 @@ static loff_t proc_reg_llseek(struct fil
- 		llseek = default_llseek;
- 	rv = llseek(file, offset, whence);
- 
--	spin_lock(&pde->pde_unload_lock);
--	pde->pde_users--;
--	if (pde->pde_unload_completion && pde->pde_users == 0)
--		complete(pde->pde_unload_completion);
--out_unlock:
--	spin_unlock(&pde->pde_unload_lock);
--
-+	pde_users_dec(pde);
- 	return rv;
- }
- 
-@@ -187,8 +192,10 @@ static ssize_t proc_reg_read(struct file
- 	ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);
- 
- 	spin_lock(&pde->pde_unload_lock);
--	if (!pde->proc_fops)
--		goto out_unlock;
-+	if (!pde->proc_fops) {
-+		spin_unlock(&pde->pde_unload_lock);
-+		return rv;
-+	}
- 	pde->pde_users++;
- 	read = pde->proc_fops->read;
- 	spin_unlock(&pde->pde_unload_lock);
-@@ -196,13 +203,7 @@ static ssize_t proc_reg_read(struct file
- 	if (read)
- 		rv = read(file, buf, count, ppos);
- 
--	spin_lock(&pde->pde_unload_lock);
--	pde->pde_users--;
--	if (pde->pde_unload_completion && pde->pde_users == 0)
--		complete(pde->pde_unload_completion);
--out_unlock:
--	spin_unlock(&pde->pde_unload_lock);
--
-+	pde_users_dec(pde);
- 	return rv;
- }
- 
-@@ -213,8 +214,10 @@ static ssize_t proc_reg_write(struct fil
- 	ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);
- 
- 	spin_lock(&pde->pde_unload_lock);
--	if (!pde->proc_fops)
--		goto out_unlock;
-+	if (!pde->proc_fops) {
-+		spin_unlock(&pde->pde_unload_lock);
-+		return rv;
-+	}
- 	pde->pde_users++;
- 	write = pde->proc_fops->write;
- 	spin_unlock(&pde->pde_unload_lock);
-@@ -222,13 +225,7 @@ static ssize_t proc_reg_write(struct fil
- 	if (write)
- 		rv = write(file, buf, count, ppos);
- 
--	spin_lock(&pde->pde_unload_lock);
--	pde->pde_users--;
--	if (pde->pde_unload_completion && pde->pde_users == 0)
--		complete(pde->pde_unload_completion);
--out_unlock:
--	spin_unlock(&pde->pde_unload_lock);
--
-+	pde_users_dec(pde);
- 	return rv;
- }
- 
-@@ -239,8 +236,10 @@ static unsigned int proc_reg_poll(struct
- 	unsigned int (*poll)(struct file *, struct poll_table_struct *);
- 
- 	spin_lock(&pde->pde_unload_lock);
--	if (!pde->proc_fops)
--		goto out_unlock;
-+	if (!pde->proc_fops) {
-+		spin_unlock(&pde->pde_unload_lock);
-+		return rv;
-+	}
- 	pde->pde_users++;
- 	poll = pde->proc_fops->poll;
- 	spin_unlock(&pde->pde_unload_lock);
-@@ -248,13 +247,7 @@ static unsigned int proc_reg_poll(struct
- 	if (poll)
- 		rv = poll(file, pts);
- 
--	spin_lock(&pde->pde_unload_lock);
--	pde->pde_users--;
--	if (pde->pde_unload_completion && pde->pde_users == 0)
--		complete(pde->pde_unload_completion);
--out_unlock:
--	spin_unlock(&pde->pde_unload_lock);
--
-+	pde_users_dec(pde);
- 	return rv;
- }
- 
-@@ -266,8 +259,10 @@ static long proc_reg_unlocked_ioctl(stru
- 	int (*ioctl)(struct inode *, struct file *, unsigned int, unsigned long);
- 
- 	spin_lock(&pde->pde_unload_lock);
--	if (!pde->proc_fops)
--		goto out_unlock;
-+	if (!pde->proc_fops) {
-+		spin_unlock(&pde->pde_unload_lock);
-+		return rv;
-+	}
- 	pde->pde_users++;
- 	unlocked_ioctl = pde->proc_fops->unlocked_ioctl;
- 	ioctl = pde->proc_fops->ioctl;
-@@ -283,13 +278,7 @@ static long proc_reg_unlocked_ioctl(stru
- 		unlock_kernel();
- 	}
- 
--	spin_lock(&pde->pde_unload_lock);
--	pde->pde_users--;
--	if (pde->pde_unload_completion && pde->pde_users == 0)
--		complete(pde->pde_unload_completion);
--out_unlock:
--	spin_unlock(&pde->pde_unload_lock);
--
-+	pde_users_dec(pde);
- 	return rv;
- }
- 
-@@ -301,8 +290,10 @@ static long proc_reg_compat_ioctl(struct
- 	long (*compat_ioctl)(struct file *, unsigned int, unsigned long);
- 
- 	spin_lock(&pde->pde_unload_lock);
--	if (!pde->proc_fops)
--		goto out_unlock;
-+	if (!pde->proc_fops) {
-+		spin_unlock(&pde->pde_unload_lock);
-+		return rv;
-+	}
- 	pde->pde_users++;
- 	compat_ioctl = pde->proc_fops->compat_ioctl;
- 	spin_unlock(&pde->pde_unload_lock);
-@@ -310,13 +301,7 @@ static long proc_reg_compat_ioctl(struct
- 	if (compat_ioctl)
- 		rv = compat_ioctl(file, cmd, arg);
- 
--	spin_lock(&pde->pde_unload_lock);
--	pde->pde_users--;
--	if (pde->pde_unload_completion && pde->pde_users == 0)
--		complete(pde->pde_unload_completion);
--out_unlock:
--	spin_unlock(&pde->pde_unload_lock);
--
-+	pde_users_dec(pde);
- 	return rv;
- }
- #endif
-@@ -328,8 +313,10 @@ static int proc_reg_mmap(struct file *fi
- 	int (*mmap)(struct file *, struct vm_area_struct *);
- 
- 	spin_lock(&pde->pde_unload_lock);
--	if (!pde->proc_fops)
--		goto out_unlock;
-+	if (!pde->proc_fops) {
-+		spin_unlock(&pde->pde_unload_lock);
-+		return rv;
-+	}
- 	pde->pde_users++;
- 	mmap = pde->proc_fops->mmap;
- 	spin_unlock(&pde->pde_unload_lock);
-@@ -337,13 +324,7 @@ static int proc_reg_mmap(struct file *fi
- 	if (mmap)
- 		rv = mmap(file, vma);
- 
--	spin_lock(&pde->pde_unload_lock);
--	pde->pde_users--;
--	if (pde->pde_unload_completion && pde->pde_users == 0)
--		complete(pde->pde_unload_completion);
--out_unlock:
--	spin_unlock(&pde->pde_unload_lock);
--
-+	pde_users_dec(pde);
- 	return rv;
- }
- 
-@@ -354,8 +335,10 @@ static int proc_reg_open(struct inode *i
- 	int (*open)(struct inode *, struct file *);
- 
- 	spin_lock(&pde->pde_unload_lock);
--	if (!pde->proc_fops)
--		goto out_unlock;
-+	if (!pde->proc_fops) {
-+		spin_unlock(&pde->pde_unload_lock);
-+		return rv;
-+	}
- 	pde->pde_users++;
- 	open = pde->proc_fops->open;
- 	spin_unlock(&pde->pde_unload_lock);
-@@ -363,13 +346,7 @@ static int proc_reg_open(struct inode *i
- 	if (open)
- 		rv = open(inode, file);
- 
--	spin_lock(&pde->pde_unload_lock);
--	pde->pde_users--;
--	if (pde->pde_unload_completion && pde->pde_users == 0)
--		complete(pde->pde_unload_completion);
--out_unlock:
--	spin_unlock(&pde->pde_unload_lock);
--
-+	pde_users_dec(pde);
- 	return rv;
- }
- 
-@@ -380,8 +357,10 @@ static int proc_reg_release(struct inode
- 	int (*release)(struct inode *, struct file *);
- 
- 	spin_lock(&pde->pde_unload_lock);
--	if (!pde->proc_fops)
--		goto out_unlock;
-+	if (!pde->proc_fops) {
-+		spin_unlock(&pde->pde_unload_lock);
-+		return rv;
-+	}
- 	pde->pde_users++;
- 	release = pde->proc_fops->release;
- 	spin_unlock(&pde->pde_unload_lock);
-@@ -389,13 +368,7 @@ static int proc_reg_release(struct inode
- 	if (release)
- 		rv = release(inode, file);
- 
--	spin_lock(&pde->pde_unload_lock);
--	pde->pde_users--;
--	if (pde->pde_unload_completion && pde->pde_users == 0)
--		complete(pde->pde_unload_completion);
--out_unlock:
--	spin_unlock(&pde->pde_unload_lock);
--
-+	pde_users_dec(pde);
- 	return rv;
- }
- 
+ 	int len, avail;
+ 	struct sk_buff *skb;
+@@ -1311,3 +1310,6 @@ EXPORT_SYMBOL(audit_log_start);
+ EXPORT_SYMBOL(audit_log_end);
+ EXPORT_SYMBOL(audit_log_format);
+ EXPORT_SYMBOL(audit_log);
++EXPORT_SYMBOL_GPL(audit_log_vformat);
++EXPORT_SYMBOL_GPL(audit_log_untrustedstring);
++EXPORT_SYMBOL_GPL(audit_log_d_path);
 
+-- 
