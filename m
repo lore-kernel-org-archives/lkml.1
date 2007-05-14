@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758358AbXENJic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761785AbXENJnF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758358AbXENJic (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 05:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762340AbXENJh5
+	id S1761785AbXENJnF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 05:43:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755701AbXENJmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 05:37:57 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:46762 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S966129AbXENJhy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 05:37:54 -0400
-Date: Mon, 14 May 2007 15:15:19 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+	Mon, 14 May 2007 05:42:54 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:54652 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755350AbXENJmx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 05:42:53 -0400
 To: linux-kernel@vger.kernel.org
-Cc: linux-fsdevel@vger.kernel.org, Jan Blunck <j.blunck@tu-harburg.de>
-Subject: [RFC][PATCH 14/14] tmpfs whiteout support
-Message-ID: <20070514094519.GP4139@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070514093722.GB4139@in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514093722.GB4139@in.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Cc: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>,
+       Richard Henderson <rth@twiddle.net>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+From: Simon Horman <horms@verge.net.au>
+Subject: [ALPHA] Fix hard_smp_processor_id compile error
+Message-Id: <20070514094249.E29144FA28@tabatha.lab.ultramonkey.org>
+Date: Mon, 14 May 2007 18:42:49 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jan Blunck <j.blunck@tu-harburg.de>
-Subject: tmpfs whiteout support
+"Remove hardcoding of hard_smp_processor_id on UP systems",
+2f4dfe206a2fc07099dfad77a8ea2f4b4ae2140f in Linus' tree, moved
+the definition of hard_smp_processor_id linux/smp.h to asm/smp.h
+for UP systems. This causes a regression on Alpha.
 
-Introduce whiteout support to tmpfs.
+cc1: warnings being treated as errors
+arch/alpha/kernel/setup.c: In function 'setup_arch':
+arch/alpha/kernel/setup.c:506: warning: implicit declaration of function 'hard_smp_processor_id'
+make[1]: *** [arch/alpha/kernel/setup.o] error 1
+make: *** [arch/alpha/kernel] error 2
 
-Signed-off-by: Jan Blunck <j.blunck@tu-harburg.de>
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
----
- mm/shmem.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletion(-)
+By including asm/smp.h non-conditionally in asm/mmu_context.h
+the problem appears to be resolved.
 
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -74,7 +74,7 @@
- #define LATENCY_LIMIT	 64
- 
- /* Pretend that each entry is of this size in directory's i_size */
--#define BOGO_DIRENT_SIZE 20
-+#define BOGO_DIRENT_SIZE 1
- 
- /* Flag allocation requirements to shmem_getpage and shmem_swp_alloc */
- enum sgp_type {
-@@ -1772,6 +1772,11 @@ static int shmem_create(struct inode *di
- 	return shmem_mknod(dir, dentry, mode | S_IFREG, 0);
- }
- 
-+static int shmem_whiteout(struct inode *dir, struct dentry *dentry)
-+{
-+	return shmem_mknod(dir, dentry, S_IRUGO | S_IWUGO | S_IFWHT, 0);
-+}
-+
- /*
-  * Link a file..
+Cc: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+Signed-off-by: Simon Horman <horms@verge.net.au>
+
+Index: linux-2.6/include/asm-alpha/mmu_context.h
+===================================================================
+--- linux-2.6.orig/include/asm-alpha/mmu_context.h	2007-05-14 16:29:22.000000000 +0900
++++ linux-2.6/include/asm-alpha/mmu_context.h	2007-05-14 16:29:40.000000000 +0900
+@@ -85,8 +85,8 @@ __reload_thread(struct pcb_struct *pcb)
+  * +-------------+----------------+--------------+
   */
-@@ -2399,6 +2404,7 @@ static const struct inode_operations shm
- 	.rmdir		= shmem_rmdir,
- 	.mknod		= shmem_mknod,
- 	.rename		= shmem_rename,
-+	.whiteout       = shmem_whiteout,
- #endif
- #ifdef CONFIG_TMPFS_POSIX_ACL
- 	.setattr	= shmem_notify_change,
-@@ -2453,6 +2459,7 @@ static struct file_system_type tmpfs_fs_
- 	.name		= "tmpfs",
- 	.get_sb		= shmem_get_sb,
- 	.kill_sb	= kill_litter_super,
-+	.fs_flags	= FS_WHT,
- };
- static struct vfsmount *shm_mnt;
  
+-#ifdef CONFIG_SMP
+ #include <asm/smp.h>
++#ifdef CONFIG_SMP
+ #define cpu_last_asn(cpuid)	(cpu_data[cpuid].last_asn)
+ #else
+ extern unsigned long last_asn;
