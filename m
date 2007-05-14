@@ -1,51 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757667AbXENWlH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbXENWlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757667AbXENWlH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 18:41:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbXENWky
+	id S1760948AbXENWlq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 18:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756670AbXENWli
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 18:40:54 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:52481 "EHLO mx1.redhat.com"
+	Mon, 14 May 2007 18:41:38 -0400
+Received: from mail.parknet.jp ([210.171.160.80]:1846 "EHLO parknet.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756323AbXENWkx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 18:40:53 -0400
-Subject: Re: [RFC] - LXR on kernel.org ? was: Re: What tools to use?
-From: Jon Masters <jcm@redhat.com>
-To: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-Cc: devzero@web.de, linux-kernel@vger.kernel.org
-In-Reply-To: <20070514194451.GN27871@lug-owl.de>
-References: <1783741195@web.de>  <20070514194451.GN27871@lug-owl.de>
-Content-Type: text/plain
-Organization: Red Hat, Inc.
-Date: Mon, 14 May 2007 18:40:49 -0400
-Message-Id: <1179182449.32158.32.camel@jcmlaptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-33.el5) 
-Content-Transfer-Encoding: 7bit
+	id S1756822AbXENWlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 18:41:37 -0400
+X-AuthUser: hirofumi@parknet.jp
+To: Hubertus Grobbel <hubertus@grobbel.net>
+Cc: Linux List <linux-kernel@vger.kernel.org>
+Subject: Re: O_DIRECT for FAT
+References: <200705150103.02398.hubertus@grobbel.net>
+From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Date: Tue, 15 May 2007 07:41:27 +0900
+In-Reply-To: <200705150103.02398.hubertus@grobbel.net> (Hubertus Grobbel's message of "Tue\, 15 May 2007 01\:02\:51 +0100")
+Message-ID: <87sl9z3u5k.fsf@duaron.myhome.or.jp>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.1.50 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 21:44 +0200, Jan-Benedict Glaw wrote:
-> On Fri, 2007-05-11 10:06:17 +0200, devzero@web.de <devzero@web.de> wrote:
-> > Jesper Juhl <jesper.juhl () gmail ! com> wrote:
-> > > On 10/05/07, Shahbaz Khan <shaz.linux@gmail.com> wrote:
+Hubertus Grobbel <hubertus@grobbel.net> writes:
 
-> > why not adding a link to every kernel an kernel.org kernel,
-> > pointing to recent lxr`ed kernel source - or - even better -
-> > make lxr`ed kernel source part of kernel.org (so we
-> > have "B V VI 	C Changelog LXR" ) ? 
-> 
-> I'd support the idea, but somebody needs to offer a machine or two and
-> enough bandwidth. (Though I hope that it's used rarely enough so that
-> only one machine is needed.)
+> I found out, that the option O_DIRECT for opening a file on a fat-
+> filesystem successfully completes. But reading and writing to that
+> file leads to EINVAL errors (using kernel 2.6.18).
 
-This is what I was interested in getting setup. I'm away on vacation
-this week (I'm currently out on the road to Yosemite and about to have
-no email whatsoever), but I just asked an intern of mine to start
-looking into it and will followup when I get back next week.
+EINVAL may be meaning the memory alignment which you passed to syscall
+is wrong.
 
-Please keep me copied on any mail.
+> Do you see a way to solve my problem by any workaround? Is O_DIRECT
+> support for fat-fs feasible in future?
 
-Jon.
-
-
+The fatfs is supporting O_DIRECT for read, for write it's partially
+supporting (can't extend file size).
+-- 
+OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
