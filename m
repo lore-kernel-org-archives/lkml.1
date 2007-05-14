@@ -1,65 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757477AbXENX1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758158AbXENX2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757477AbXENX1W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 19:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbXENX1Q
+	id S1758158AbXENX2T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 19:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752625AbXENX2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 19:27:16 -0400
-Received: from mx1.suse.de ([195.135.220.2]:34277 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752016AbXENX1P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 19:27:15 -0400
-From: Andi Kleen <ak@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [patch] Let smp_call_function_single return -EBUSY.
-Date: Tue, 15 May 2007 01:24:40 +0200
-User-Agent: KMail/1.9.1
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, randy.dunlap@oracle.com, paulus@samba.org,
-       benh@kernel.crashing.org, David Miller <davem@davemloft.net>
-References: <20070514092317.GB8968@osiris.boeblingen.de.ibm.com> <20070514121137.ddcc3f5a.akpm@linux-foundation.org>
-In-Reply-To: <20070514121137.ddcc3f5a.akpm@linux-foundation.org>
+	Mon, 14 May 2007 19:28:11 -0400
+Received: from smtp121.iad.emailsrvr.com ([207.97.245.121]:49477 "EHLO
+	smtp121.iad.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752055AbXENX2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 19:28:10 -0400
+Message-ID: <4648F04B.9050204@gentoo.org>
+Date: Mon, 14 May 2007 19:27:07 -0400
+From: Daniel Drake <dsd@gentoo.org>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Kevin Lloyd <klloyd@sierrawireless.com>
+CC: gregkh@suse.de, mdharm-usb@one-eyed-alien.net,
+       linux-usb-users@lists.sourceforge.net,
+       usb-storage@lists.one-eyed-alien.net, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] usb-storage: Add support for unusual device by Sierra
+ Wireless
+References: <4648D851.2030500@sierrawireless.com> <4648E9CB.2000509@gentoo.org> <3415E2A2AB26944B9159CDB22001004D01773F61@nestea.sierrawireless.local>
+In-Reply-To: <3415E2A2AB26944B9159CDB22001004D01773F61@nestea.sierrawireless.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705150124.41486.ak@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 May 2007 21:11, Andrew Morton wrote:
-> On Mon, 14 May 2007 11:23:17 +0200
->
-> Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
-> > From: Heiko Carstens <heiko.carstens@de.ibm.com>
-> >
-> > All architectures that have an implementation of smp_call_function_single
-> > let it return -EBUSY if it is asked to execute func on the current cpu.
-> > Therefore the UP version must always return -EBUSY.
->
-> smp_call_function_single() is a mess.
->
-> - it's unclear to me why smp_call_function_single(cpu, ...) doesn't just
->   call the darn function if cpu==smp_processor_id().
+Kevin Lloyd wrote:
+> Not a bad idea. When using the US_FL_IGNORE_DEVICE flag, that causes the
+> usb-storage driver to no load the device and allow another driver
+> properly load it? The reason I ask is because I previously had a
+> separate driver for the device, however there were priority issues
+> regarding which loaded first usb-storage or the separate driver.
 
-I always wondered that too.
+Yes, that's what it's designed for. If usb-storage does come first, the 
+US_FL_IGNORE_DEVICE flag causes it to return -ENODEV from probe, which 
+causes the driver core to look for other candidate drivers to claim the 
+device.
 
-Also I think we really need a cpu notifier that does smp_call_single 
-automatically; i  find myself reimplementing that multiple times.
-
-> - it's unclear to me why smp_call_function_single(cpu, ...) doesn't just
->   call the darn function if CONFIG_SMP=n.
-
-Yes.
-
->
-> - it's unclear to me why smp_call_function_single(cpu, ...) isn't called
->   smp_call_function_on(cpu, ...)
->
-> - the x86_64 version doesn't return -EBUSY: it returns zero.  Despite its
->   claim "Retrurns 0 on success, else a negative status code.".
-
-Will fix.
-
--Andi
+Daniel
