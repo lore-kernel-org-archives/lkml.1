@@ -1,170 +1,154 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758386AbXENDes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbXENDh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758386AbXENDes (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 23:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754655AbXENDel
+	id S1758781AbXENDh0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 23:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbXENDhU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 23:34:41 -0400
-Received: from gateway.insightbb.com ([74.128.0.19]:2747 "EHLO
-	asav08.insightbb.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752696AbXENDek (ORCPT
+	Sun, 13 May 2007 23:37:20 -0400
+Received: from wx-out-0506.google.com ([66.249.82.238]:54821 "EHLO
+	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752696AbXENDhS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 23:34:40 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AutRAPx1R0ZKhRO4W2dsb2JhbACHMIhFHQ0FEQE
-From: Dmitry Torokhov <dtor@insightbb.com>
-To: Jason Riedy <ejr@eecs.berkeley.edu>
-Subject: Re: Regression in 2.6.21-mm1 (git-input) on Dell D610 laptop
-Date: Sun, 13 May 2007 23:34:37 -0400
-User-Agent: KMail/1.9.3
-Cc: Remi Colinet <remi.colinet@free.fr>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-References: <4010.1179028730@argus.EECS.Berkeley.EDU>
-In-Reply-To: <4010.1179028730@argus.EECS.Berkeley.EDU>
+	Sun, 13 May 2007 23:37:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=l9tA8/u7OTetPEpB8z8PvOXmgm4wICp7nPRfhRgUV6QjLXh80BkJBcRN2x8pN0+ruKU5ACjRYDBQOVzEIsOV+WZFSabN4qNqFsmXoIBJAcOxAMJgpCBWZlFtTdVY/GBgCCDSGgettQ6Eg9H5+5rkFK5lLIsbeuTF4WSgjwC08Oc=
+Message-ID: <a781481a0705132037v2229e675p1f51a9f18222b46b@mail.gmail.com>
+Date: Mon, 14 May 2007 09:07:16 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: 7eggert@gmx.de
+Subject: Re: [PATCH] "volatile considered harmful", take 3
+Cc: "H. Peter Anvin" <hpa@zytor.com>, "Jonathan Corbet" <corbet@lwn.net>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       "Johannes Stezenbach" <js@linuxtv.org>,
+       "Jesper Juhl" <jesper.juhl@gmail.com>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>,
+       "Heikki Orsila" <shdl@zakalwe.fi>,
+       "jimmy bahuleyan" <knight.camelot@gmail.com>,
+       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
+In-Reply-To: <E1Hn1VO-0001Gp-Ka@be1.lrz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200705132334.38386.dtor@insightbb.com>
+References: <8jHg3-1T2-5@gated-at.bofh.it> <8jQt5-7As-3@gated-at.bofh.it>
+	 <8jSuQ-28J-21@gated-at.bofh.it> <8jT7y-39x-9@gated-at.bofh.it>
+	 <E1Hn1VO-0001Gp-Ka@be1.lrz>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 12 May 2007 23:58, Jason Riedy wrote:
-> And Dmitry Torokhov writes:
-> > Have you tried any other -mm? Also, does it help if you stick
-> >         ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_SETSTREAM);
-> > at the very beginning of psmouse_initialize() in
-> > drivers/input/mouse/psmouse-base.c?
-> 
-> Seems to fix it for me on a D620.
-> 
+Hi Bodo,
 
-Ok, thanks. 
-
-> Bisecting on mainline gave commit
-> f42649e84831efc69d5f621f1c36a39b4e384a99 (Input: ALPS - handle
-> errors from input_register_device()) as the place where the
-> trackpoint half stopped working.  I don't necessarily believe it,
-> unless the psmouse_reset on failure caused problems without
-> logging anything.
+On 5/13/07, Bodo Eggert <7eggert@gmx.de> wrote:
+> Satyam Sharma <satyam.sharma@gmail.com> wrote:
 >
+> > In fact you can't really say the same for
+> > volatile. We already assume the compiler _actually_ took some
+> > pains to stuff meaning into C's (lack of) definition of volatile and
+> > implement it -- but in what sense, nobody knows (the C standard
+>                                                    ^^^^^^^^^^^^^^
+> > doesn't, so what are we).
+>   ^^^^^^^
+> It does:
 
-I don't think so. Could you please try the patch below? Thanks!
+I don't think so ... the ambiguity in 6.7.3:6 is why.
 
--- 
-Dmitry
+> ISO/IEC 9899:1999 (E)
+>
+> 5.1.2.3 Program execution
+>
+> 5 The least requirements on a conforming implementation are:
+>  At sequence points, volatile objects are stable in the sense that previous
+>  accesses are complete and subsequent accesses have not yet occurred.
 
-Input: ALPS - force stream mode
+Worthy goal, indeed, but you've yourself pointed out later in your mail
+why this may not be possible for a compiler/assembler to guarantee safely
+(in a sense that the programmer usually wants, anyway), even with the C
+standard-blessed "volatile" type-qualifier, what with the *hardware*
+optimizing memory accesses _independently_ at a granularity finer than
+the "sequence points" understood by a compiler.
 
-ALPS appears to need SETSTREAM command after reset, otherwise it
-does not produce any data. Now that we do not request stream mode
-by default individual drivers need to take care of it.
+> 9 Alternatively, an implementation might perform various optimizations
+>  within each translation unit, such that the actual semantics would agree
+>  with the abstract semantics only when making function calls across
+>  translation unit boundaries. In such an implementation, at the time of each
+>  function entry and function return where the calling function and the
+>  called function are in different translation units, the values of all
+>  externally linked objects and of all objects accessible via pointers
+>  therein would agree with the abstract semantics. Furthermore, at the time
+>  of each such function entry the values of the parameters of the called
+>  function and of all objects accessible via pointers therein would agree
+>  with the abstract semantics. In this type of implementation, objects
+>  referred to by interrupt service routines activated by the signal function
+>  would require explicit specification of volatile storage, as well as other
+>  implementation-defined restrictions.
+>
+>
+> 6.7.3 Type qualifiers
+>
+> 6 An object that has volatile-qualified type may be modified in ways unknown
+>  to the implementation or have other unknown side effects. Therefore any
+>  expression referring to such an object shall be evaluated strictly according
+>  to the rules of the abstract machine, as described in 5.1.2.3. Furthermore,
+>  at every sequence point the value last stored in the object shall agree with
+>  that prescribed by the abstract machine, except as modified by the unknown
+>  factors mentioned previously.114) What constitutes an access to an object
+>  that has volatile-qualified type is implementation-defined.
 
-Signed-off-by: Dmitry Torokhov <dtor@mail.ru>
----
+The way I read it, "What constitutes an access to an object that has
+volatile-qualified type is implementation-defined" is the standard's way
+of saying: "All bets are off." Actually I wonder how the various _compiler
+implementations_ read this clause (and whether *all* of them read it
+consistently and equally, which is what a portable codebase probably
+wants), because _their_ interpretation of this clause is more important
+than mine, after all. But I don't really see how generic C code that uses
+"volatile" can also claim dialect-independence.
 
- drivers/input/mouse/alps.c |   55 +++++++++++++++++++++++----------------------
- 1 files changed, 29 insertions(+), 26 deletions(-)
+So, IMO, the trouble with the volatile type-qualifier is that it is (what
+should have been defined as in the first place, and what is in effect)
+a _compiler extension_ *masquerading* as a _language keyword_.
 
-Index: work/drivers/input/mouse/alps.c
-===================================================================
---- work.orig/drivers/input/mouse/alps.c
-+++ work/drivers/input/mouse/alps.c
-@@ -251,11 +251,15 @@ static const struct alps_model_info *alp
- 
- 	dbg("E7 report: %2.2x %2.2x %2.2x", param[0], param[1], param[2]);
- 
--	for (i = 0; i < ARRAY_SIZE(rates) && param[2] != rates[i]; i++);
--	*version = (param[0] << 8) | (param[1] << 4) | i;
-+	if (version) {
-+		for (i = 0; i < ARRAY_SIZE(rates) && param[2] != rates[i]; i++)
-+			/* empty */;
-+		*version = (param[0] << 8) | (param[1] << 4) | i;
-+	}
- 
- 	for (i = 0; i < ARRAY_SIZE(alps_model_data); i++)
--		if (!memcmp(param, alps_model_data[i].signature, sizeof(alps_model_data[i].signature)))
-+		if (!memcmp(param, alps_model_data[i].signature,
-+			    sizeof(alps_model_data[i].signature)))
- 			return alps_model_data + i;
- 
- 	return NULL;
-@@ -380,32 +384,46 @@ static int alps_poll(struct psmouse *psm
- 	return 0;
- }
- 
--static int alps_reconnect(struct psmouse *psmouse)
-+static int alps_hw_init(struct psmouse *psmouse, int *version)
- {
- 	struct alps_data *priv = psmouse->private;
--	int version;
--
--	psmouse_reset(psmouse);
- 
--	if (!(priv->i = alps_get_model(psmouse, &version)))
-+	priv->i = alps_get_model(psmouse, version);
-+	if (!priv->i)
- 		return -1;
- 
- 	if ((priv->i->flags & ALPS_PASS) && alps_passthrough_mode(psmouse, 1))
- 		return -1;
- 
- 	if (alps_tap_mode(psmouse, 1)) {
--		printk(KERN_WARNING "alps.c: Failed to reenable hardware tapping\n");
-+		printk(KERN_WARNING "alps.c: Failed to enable hardware tapping\n");
- 		return -1;
- 	}
- 
- 	if (alps_absolute_mode(psmouse)) {
--		printk(KERN_ERR "alps.c: Failed to reenable absolute mode\n");
-+		printk(KERN_ERR "alps.c: Failed to enable absolute mode\n");
- 		return -1;
- 	}
- 
- 	if ((priv->i->flags & ALPS_PASS) && alps_passthrough_mode(psmouse, 0))
- 		return -1;
- 
-+	/* ALPS needs stream mode, otherwise it won't report any data */
-+	if (ps2_command(&psmouse->ps2dev, NULL, PSMOUSE_CMD_SETSTREAM)) {
-+		printk(KERN_ERR "alps.c: Failed to enable stream mode\n");
-+		return -1;
-+	}
-+
-+	return 0;
-+}
-+
-+static int alps_reconnect(struct psmouse *psmouse)
-+{
-+	psmouse_reset(psmouse);
-+
-+	if (alps_hw_init(psmouse, NULL))
-+		return -1;
-+
- 	return 0;
- }
- 
-@@ -431,22 +449,7 @@ int alps_init(struct psmouse *psmouse)
- 
- 	priv->dev2 = dev2;
- 
--	priv->i = alps_get_model(psmouse, &version);
--	if (!priv->i)
--		goto init_fail;
--
--	if ((priv->i->flags & ALPS_PASS) && alps_passthrough_mode(psmouse, 1))
--		goto init_fail;
--
--	if (alps_tap_mode(psmouse, 1))
--		printk(KERN_WARNING "alps.c: Failed to enable hardware tapping\n");
--
--	if (alps_absolute_mode(psmouse)) {
--		printk(KERN_ERR "alps.c: Failed to enable absolute mode\n");
--		goto init_fail;
--	}
--
--	if ((priv->i->flags & ALPS_PASS) && alps_passthrough_mode(psmouse, 0))
-+	if (alps_hw_init(psmouse, &version))
- 		goto init_fail;
- 
- 	dev1->evbit[LONG(EV_KEY)] |= BIT(EV_KEY);
+*Unfortunately* (the trouble with C itself, is that a *committee* has made
+it into ... something ... that it should not have made it into) -- anyway,
+unfortunately C took it upon itself to solve a problem that it did not
+have (and does not even bring about) in the first place: and the
+half-hearted (or vague, call it what you will) attempt _then_ ends up
+being a problem -- by making people _feel_ as if they are doing things
+right, when that is probably not the case.
+
+[ And we've not even touched the issue of whether the _same_ compiler's
+implementation of volatile across archs/platforms is consistent. ]
+
+> It does not guarantee ordering or consistency beyond the scope of the
+> assembler layer, especially the CPU or other hardware may be free to cache
+> or reorder load/stores to these volatile objects (see e.g. MTRR), which is
+> why you'll usurally want to use something completely different. If you know
+
+Exactly. So this combined with the issue above, is the last nail in volatile's
+coffin as far as I'm concerned.
+
+> an object to not be modified from outside the scope of the C state machine
+> and it does not have relevant side effects, you can however use volatile
+> (likely on an atomic value).
+
+Yes, but I'd prefer to stick to the straight-and-narrow (well-defined-and-
+well-understood), and avoid volatile altogether. The kernel codebase does
+contain APIs that allow one to avoid it and are also what one probably
+wants for most situations.
+
+> I think you should say something like:
+>
+> 1) Don't use volatile
+> 2) Read memory-barriers.txt carefully!
+> 3) If you still use volatile, explain
+>   a) Why it's nescensary
+>   b) Why it's enough (see (2))
+>  to specify volatile on that object. Be sure to consider hardware cache and
+>  reordering, as well as prohibited optimizations on volatile access and on
+>  functions possibly doing volatile access.
+
+Yeah, I agree with the wording above, also with Jimmy's summary that Jeff
+and Peter agreed to already.
+
+Satyam
