@@ -1,215 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031538AbXENLs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1032273AbXENLt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031538AbXENLs7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030954AbXENLeL
+	id S1032273AbXENLt1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S965880AbXENLeO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:34:11 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27953 "EHLO
+	Mon, 14 May 2007 07:34:14 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27939 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S965749AbXENLcr (ORCPT
+	with ESMTP id S1759952AbXENLci (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:47 -0400
-Message-Id: <20070514110616.161274517@suse.de>
+	Mon, 14 May 2007 07:32:38 -0400
+Message-Id: <20070514110617.871430700@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:30 -0700
+Date: Mon, 14 May 2007 04:06:35 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
        John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 23/45] Add a struct vfsmount parameter to vfs_getxattr()
-Content-Disposition: inline; filename=vfs-getxattr.diff
+Subject: [AppArmor 28/45] Pass struct vfsmount to the inode_removexattr LSM hook
+Content-Disposition: inline; filename=security-removexattr.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The vfsmount will be passed down to the LSM hook so that LSMs can compute
-pathnames.
+This is needed for computing pathnames in the AppArmor LSM.
 
 Signed-off-by: Tony Jones <tonyj@suse.de>
 Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/nfsd/nfs4xdr.c         |    2 +-
- fs/nfsd/vfs.c             |   21 ++++++++++++---------
- fs/xattr.c                |   14 ++++++++------
- include/linux/nfsd/nfsd.h |    3 ++-
- include/linux/xattr.h     |    3 ++-
- 5 files changed, 25 insertions(+), 18 deletions(-)
+ fs/xattr.c               |    2 +-
+ include/linux/security.h |   15 +++++++++------
+ security/commoncap.c     |    3 ++-
+ security/dummy.c         |    3 ++-
+ security/selinux/hooks.c |    3 ++-
+ 5 files changed, 16 insertions(+), 10 deletions(-)
 
---- a/fs/nfsd/nfs4xdr.c
-+++ b/fs/nfsd/nfs4xdr.c
-@@ -1469,7 +1469,7 @@ nfsd4_encode_fattr(struct svc_fh *fhp, s
- 	}
- 	if (bmval0 & (FATTR4_WORD0_ACL | FATTR4_WORD0_ACLSUPPORT
- 			| FATTR4_WORD0_SUPPORTED_ATTRS)) {
--		err = nfsd4_get_nfs4_acl(rqstp, dentry, &acl);
-+		err = nfsd4_get_nfs4_acl(rqstp, dentry, exp->ex_mnt, &acl);
- 		aclsupport = (err == 0);
- 		if (bmval0 & FATTR4_WORD0_ACL) {
- 			if (err == -EOPNOTSUPP)
---- a/fs/nfsd/vfs.c
-+++ b/fs/nfsd/vfs.c
-@@ -378,11 +378,12 @@ out_nfserr:
- #if defined(CONFIG_NFSD_V2_ACL) || \
-     defined(CONFIG_NFSD_V3_ACL) || \
-     defined(CONFIG_NFSD_V4)
--static ssize_t nfsd_getxattr(struct dentry *dentry, char *key, void **buf)
-+static ssize_t nfsd_getxattr(struct dentry *dentry, struct vfsmount *mnt,
-+			     char *key, void **buf)
- {
- 	ssize_t buflen;
- 
--	buflen = vfs_getxattr(dentry, key, NULL, 0);
-+	buflen = vfs_getxattr(dentry, mnt, key, NULL, 0);
- 	if (buflen <= 0)
- 		return buflen;
- 
-@@ -390,7 +391,7 @@ static ssize_t nfsd_getxattr(struct dent
- 	if (!*buf)
- 		return -ENOMEM;
- 
--	return vfs_getxattr(dentry, key, *buf, buflen);
-+	return vfs_getxattr(dentry, mnt, key, *buf, buflen);
- }
- #endif
- 
-@@ -479,13 +480,13 @@ out_nfserr:
- }
- 
- static struct posix_acl *
--_get_posix_acl(struct dentry *dentry, char *key)
-+_get_posix_acl(struct dentry *dentry, struct vfsmount *mnt, char *key)
- {
- 	void *buf = NULL;
- 	struct posix_acl *pacl = NULL;
- 	int buflen;
- 
--	buflen = nfsd_getxattr(dentry, key, &buf);
-+	buflen = nfsd_getxattr(dentry, mnt, key, &buf);
- 	if (!buflen)
- 		buflen = -ENODATA;
- 	if (buflen <= 0)
-@@ -497,14 +498,15 @@ _get_posix_acl(struct dentry *dentry, ch
- }
- 
- int
--nfsd4_get_nfs4_acl(struct svc_rqst *rqstp, struct dentry *dentry, struct nfs4_acl **acl)
-+nfsd4_get_nfs4_acl(struct svc_rqst *rqstp, struct dentry *dentry,
-+		   struct vfsmount *mnt, struct nfs4_acl **acl)
- {
- 	struct inode *inode = dentry->d_inode;
- 	int error = 0;
- 	struct posix_acl *pacl = NULL, *dpacl = NULL;
- 	unsigned int flags = 0;
- 
--	pacl = _get_posix_acl(dentry, POSIX_ACL_XATTR_ACCESS);
-+	pacl = _get_posix_acl(dentry, mnt, POSIX_ACL_XATTR_ACCESS);
- 	if (IS_ERR(pacl) && PTR_ERR(pacl) == -ENODATA)
- 		pacl = posix_acl_from_mode(inode->i_mode, GFP_KERNEL);
- 	if (IS_ERR(pacl)) {
-@@ -514,7 +516,7 @@ nfsd4_get_nfs4_acl(struct svc_rqst *rqst
- 	}
- 
- 	if (S_ISDIR(inode->i_mode)) {
--		dpacl = _get_posix_acl(dentry, POSIX_ACL_XATTR_DEFAULT);
-+		dpacl = _get_posix_acl(dentry, mnt, POSIX_ACL_XATTR_DEFAULT);
- 		if (IS_ERR(dpacl) && PTR_ERR(dpacl) == -ENODATA)
- 			dpacl = NULL;
- 		else if (IS_ERR(dpacl)) {
-@@ -1942,7 +1944,8 @@ nfsd_get_posix_acl(struct svc_fh *fhp, i
- 		return ERR_PTR(-EOPNOTSUPP);
- 	}
- 
--	size = nfsd_getxattr(fhp->fh_dentry, name, &value);
-+	size = nfsd_getxattr(fhp->fh_dentry, fhp->fh_export->ex_mnt, name,
-+			     &value);
- 	if (size < 0)
- 		return ERR_PTR(size);
- 
 --- a/fs/xattr.c
 +++ b/fs/xattr.c
-@@ -106,7 +106,8 @@ out:
- EXPORT_SYMBOL_GPL(vfs_setxattr);
- 
- ssize_t
--vfs_getxattr(struct dentry *dentry, char *name, void *value, size_t size)
-+vfs_getxattr(struct dentry *dentry, struct vfsmount *mnt, char *name,
-+	     void *value, size_t size)
- {
- 	struct inode *inode = dentry->d_inode;
- 	int error;
-@@ -278,7 +279,8 @@ sys_fsetxattr(int fd, char __user *name,
-  * Extended attribute GET operations
-  */
- static ssize_t
--getxattr(struct dentry *d, char __user *name, void __user *value, size_t size)
-+getxattr(struct dentry *dentry, struct vfsmount *mnt, char __user *name,
-+	 void __user *value, size_t size)
- {
- 	ssize_t error;
- 	void *kvalue = NULL;
-@@ -298,7 +300,7 @@ getxattr(struct dentry *d, char __user *
- 			return -ENOMEM;
- 	}
- 
--	error = vfs_getxattr(d, kname, kvalue, size);
-+	error = vfs_getxattr(dentry, mnt, kname, kvalue, size);
- 	if (error > 0) {
- 		if (size && copy_to_user(value, kvalue, error))
- 			error = -EFAULT;
-@@ -321,7 +323,7 @@ sys_getxattr(char __user *path, char __u
- 	error = user_path_walk(path, &nd);
+@@ -177,7 +177,7 @@ vfs_removexattr(struct dentry *dentry, s
  	if (error)
  		return error;
--	error = getxattr(nd.dentry, name, value, size);
-+	error = getxattr(nd.dentry, nd.mnt, name, value, size);
- 	path_release(&nd);
- 	return error;
- }
-@@ -336,7 +338,7 @@ sys_lgetxattr(char __user *path, char __
- 	error = user_path_walk_link(path, &nd);
+ 
+-	error = security_inode_removexattr(dentry, name);
++	error = security_inode_removexattr(dentry, mnt, name);
  	if (error)
  		return error;
--	error = getxattr(nd.dentry, name, value, size);
-+	error = getxattr(nd.dentry, nd.mnt, name, value, size);
- 	path_release(&nd);
- 	return error;
- }
-@@ -351,7 +353,7 @@ sys_fgetxattr(int fd, char __user *name,
- 	if (!f)
- 		return error;
- 	audit_inode(NULL, f->f_path.dentry->d_inode);
--	error = getxattr(f->f_path.dentry, name, value, size);
-+	error = getxattr(f->f_path.dentry, f->f_path.mnt, name, value, size);
- 	fput(f);
- 	return error;
- }
---- a/include/linux/nfsd/nfsd.h
-+++ b/include/linux/nfsd/nfsd.h
-@@ -77,7 +77,8 @@ __be32		nfsd_setattr(struct svc_rqst *, 
- #ifdef CONFIG_NFSD_V4
- __be32          nfsd4_set_nfs4_acl(struct svc_rqst *, struct svc_fh *,
-                     struct nfs4_acl *);
--int             nfsd4_get_nfs4_acl(struct svc_rqst *, struct dentry *, struct nfs4_acl **);
-+int             nfsd4_get_nfs4_acl(struct svc_rqst *, struct dentry *,
-+				struct vfsmount *mnt, struct nfs4_acl **);
- #endif /* CONFIG_NFSD_V4 */
- __be32		nfsd_create(struct svc_rqst *, struct svc_fh *,
- 				char *name, int len, struct iattr *attrs,
---- a/include/linux/xattr.h
-+++ b/include/linux/xattr.h
-@@ -46,7 +46,8 @@ struct xattr_handler {
- 		   size_t size, int flags);
- };
  
--ssize_t vfs_getxattr(struct dentry *, char *, void *, size_t);
-+ssize_t vfs_getxattr(struct dentry *, struct vfsmount *, char *, void *,
-+		     size_t);
- ssize_t vfs_listxattr(struct dentry *d, char *list, size_t size);
- int vfs_setxattr(struct dentry *, struct vfsmount *, char *, void *, size_t,
- 		 int);
+--- a/include/linux/security.h
++++ b/include/linux/security.h
+@@ -50,7 +50,7 @@ extern int cap_bprm_set_security (struct
+ extern void cap_bprm_apply_creds (struct linux_binprm *bprm, int unsafe);
+ extern int cap_bprm_secureexec(struct linux_binprm *bprm);
+ extern int cap_inode_setxattr(struct dentry *dentry, struct vfsmount *mnt, char *name, void *value, size_t size, int flags);
+-extern int cap_inode_removexattr(struct dentry *dentry, char *name);
++extern int cap_inode_removexattr(struct dentry *dentry, struct vfsmount *mnt, char *name);
+ extern int cap_task_post_setuid (uid_t old_ruid, uid_t old_euid, uid_t old_suid, int flags);
+ extern void cap_task_reparent_to_init (struct task_struct *p);
+ extern int cap_syslog (int type);
+@@ -1251,7 +1251,8 @@ struct security_operations {
+ 	int (*inode_getxattr) (struct dentry *dentry, struct vfsmount *mnt,
+ 			       char *name);
+ 	int (*inode_listxattr) (struct dentry *dentry, struct vfsmount *mnt);
+-	int (*inode_removexattr) (struct dentry *dentry, char *name);
++	int (*inode_removexattr) (struct dentry *dentry, struct vfsmount *mnt,
++				  char *name);
+ 	const char *(*inode_xattr_getsuffix) (void);
+   	int (*inode_getsecurity)(const struct inode *inode, const char *name, void *buffer, size_t size, int err);
+   	int (*inode_setsecurity)(struct inode *inode, const char *name, const void *value, size_t size, int flags);
+@@ -1799,11 +1800,12 @@ static inline int security_inode_listxat
+ 	return security_ops->inode_listxattr (dentry, mnt);
+ }
+ 
+-static inline int security_inode_removexattr (struct dentry *dentry, char *name)
++static inline int security_inode_removexattr (struct dentry *dentry,
++					      struct vfsmount *mnt, char *name)
+ {
+ 	if (unlikely (IS_PRIVATE (dentry->d_inode)))
+ 		return 0;
+-	return security_ops->inode_removexattr (dentry, name);
++	return security_ops->inode_removexattr (dentry, mnt, name);
+ }
+ 
+ static inline const char *security_inode_xattr_getsuffix(void)
+@@ -2502,9 +2504,10 @@ static inline int security_inode_listxat
+ 	return 0;
+ }
+ 
+-static inline int security_inode_removexattr (struct dentry *dentry, char *name)
++static inline int security_inode_removexattr (struct dentry *dentry,
++					      struct vfsmount *mnt, char *name)
+ {
+-	return cap_inode_removexattr(dentry, name);
++	return cap_inode_removexattr(dentry, mnt, name);
+ }
+ 
+ static inline const char *security_inode_xattr_getsuffix (void)
+--- a/security/commoncap.c
++++ b/security/commoncap.c
+@@ -200,7 +200,8 @@ int cap_inode_setxattr(struct dentry *de
+ 	return 0;
+ }
+ 
+-int cap_inode_removexattr(struct dentry *dentry, char *name)
++int cap_inode_removexattr(struct dentry *dentry, struct vfsmount *mnt,
++			  char *name)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1)  &&
+--- a/security/dummy.c
++++ b/security/dummy.c
+@@ -379,7 +379,8 @@ static int dummy_inode_listxattr (struct
+ 	return 0;
+ }
+ 
+-static int dummy_inode_removexattr (struct dentry *dentry, char *name)
++static int dummy_inode_removexattr (struct dentry *dentry, struct vfsmount *mnt,
++				    char *name)
+ {
+ 	if (!strncmp(name, XATTR_SECURITY_PREFIX,
+ 		     sizeof(XATTR_SECURITY_PREFIX) - 1) &&
+--- a/security/selinux/hooks.c
++++ b/security/selinux/hooks.c
+@@ -2404,7 +2404,8 @@ static int selinux_inode_listxattr (stru
+ 	return dentry_has_perm(current, NULL, dentry, FILE__GETATTR);
+ }
+ 
+-static int selinux_inode_removexattr (struct dentry *dentry, char *name)
++static int selinux_inode_removexattr (struct dentry *dentry,
++				      struct vfsmount *mnt, char *name)
+ {
+ 	if (strcmp(name, XATTR_NAME_SELINUX)) {
+ 		if (!strncmp(name, XATTR_SECURITY_PREFIX,
 
 -- 
