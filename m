@@ -1,79 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbXENUya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758887AbXENU7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760176AbXENUya (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 16:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbXENUyX
+	id S1758887AbXENU7f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 16:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbXENU70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 16:54:23 -0400
-Received: from accolon.hansenpartnership.com ([64.109.89.108]:52880 "EHLO
-	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755752AbXENUyV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 16:54:21 -0400
-Subject: Re: [VOYAGER] fix build broken by shift to smp_ops
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>, Andi Kleen <ak@suse.de>,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <20070514133745.5bfc34ac.akpm@linux-foundation.org>
-References: <1179158912.3703.47.camel@mulgrave.il.steeleye.com>
-	 <46489818.4000408@goop.org>
-	 <20070514125946.0f74221c.akpm@linux-foundation.org>
-	 <4648C062.5090704@goop.org>
-	 <20070514133745.5bfc34ac.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Mon, 14 May 2007 15:54:18 -0500
-Message-Id: <1179176058.3703.85.camel@mulgrave.il.steeleye.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	Mon, 14 May 2007 16:59:26 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:60921 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755105AbXENU7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 16:59:25 -0400
+Date: Mon, 14 May 2007 22:57:52 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH  6/14] Union-mount dentry reference counting
+In-Reply-To: <20070514094114.GH4139@in.ibm.com>
+Message-ID: <Pine.LNX.4.61.0705142252510.9570@yvahk01.tjqt.qr>
+References: <20070514093722.GB4139@in.ibm.com> <20070514094114.GH4139@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 13:37 -0700, Andrew Morton wrote:
-> On Mon, 14 May 2007 13:02:42 -0700
-> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-> 
-> > Andrew Morton wrote:
-> > > Does "that" have name?  I can find no patch in -mm which appears to have
-> > > anything to do with SMP consolidation, and this patch applies cleanly to
-> > > the current -mm lineup.
-> > >   
-> > Sorry, I thought you'd picked this up:
-> > 
-> > 
-> > Subject: i386: move common parts of smp into their own file
-> > 
-> > Several parts of kernel/smp.c and smpboot.c are generally useful for
-> > other subarchitectures and paravirt_ops implementations, so make them
-> > available for reuse.
-> 
-> Confused.  This patch conflicts a lot with James's one (which I named
-> voyager-fix-build-broken-by-shift-to-smp_ops.patch).
 
-> If your "i386: move common parts of smp into their own file" also fixes
-> Voyager and is preferred then cool, but a) the changelog should tell us
-> that and b) could James please test it?
+On May 14 2007 15:11, Bharata B Rao wrote:
+>+void __union_check(struct dentry *dentry)
+>+{
+>+	if (likely(!(dentry->d_topmost || dentry->d_overlaid))) {
 
-OK, let me try a brief history.  A while ago Eric pointed out that the
-smp ops patch in -mm would break voyager.  So we worked on (and tested a
-fix for it).  Part of the fix was the prerequisite patch "i386: move
-common parts of smp into their own file".  The fix on top of this was
-called "i386: fix voyager build" which actually fixed the voyager build.
+This could be simplified to
 
-I've been nagging Andi for a couple of weeks now to get these two
-upstream.  Finally he replied that the he wasn't planning on sending the
-precursor "i386: move common parts of smp into their own file" upstream
-for 2.6.22.  So I had to do a patch that would fix the voyager build
-without this ... which is what you have.
+   if (likely(!dentry->d_topmost && !dentry->d_overlaid))
 
-So, you either need the single patch you have, or the other two entitled
+(I prefer x==NULL over !x for pointers, though)
+And then again, do not assume everything is (un)likely [also elsewhere].
 
-"i386: move common parts of smp into their own file".
-"i386: fix voyager build" 
+>+		if (unlikely(dentry->d_union)) {
+>+			printk(KERN_ERR "%s: \"%s\" stale union reference\n" \
+>+			       "\tdentry=%p, inode=%p, count=%d, u_count=%d\n",
+>+			       __FUNCTION__,
+>+			       dentry->d_name.name,
+>+			       dentry,
+>+			       dentry->d_inode,
+>+			       atomic_read(&dentry->d_count),
+>+			       atomic_read(&dentry->d_union->u_count));
+>+			dump_stack();
+>+		}
+>+		return;
+>+	}
+>+
+>--- a/net/unix/af_unix.c
+>+++ b/net/unix/af_unix.c
+>@@ -1082,8 +1082,11 @@ restart:
+> 		newu->addr = otheru->addr;
+> 	}
+> 	if (otheru->dentry) {
+>-		newu->dentry	= dget(otheru->dentry);
+>+		/* Is this safe here? I don't know ... */
 
-James
+Figure it out :)
 
 
+	Jan
+-- 
