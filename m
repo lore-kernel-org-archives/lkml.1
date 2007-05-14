@@ -1,56 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932690AbXENBnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762116AbXENBoo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932690AbXENBnV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 13 May 2007 21:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762059AbXENBmi
+	id S1762116AbXENBoo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 13 May 2007 21:44:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759104AbXENBoi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 13 May 2007 21:42:38 -0400
-Received: from ns2.suse.de ([195.135.220.15]:33059 "EHLO mx2.suse.de"
+	Sun, 13 May 2007 21:44:38 -0400
+Received: from ozlabs.org ([203.10.76.45]:39797 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762053AbXENBmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 13 May 2007 21:42:36 -0400
-Date: Sun, 13 May 2007 02:35:58 -0700
-From: Greg KH <gregkh@suse.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       linux-s390@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH 6/8] Kconfig: no userspace I/O on s390.
-Message-ID: <20070513093558.GA11317@suse.de>
-References: <20070420113430.GG3738@skybase> <20070503053047.GB7458@kroah.com> <1178181374.32267.17.camel@localhost>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1178181374.32267.17.camel@localhost>
-User-Agent: Mutt/1.5.15 (2007-04-06)
+	id S1758531AbXENBoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 13 May 2007 21:44:37 -0400
+Subject: Re: [PATCH 1/5] lguest host feedback tidyups
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Al Viro <viro@ftp.linux.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <20070513183934.GY4095@ftp.linux.org.uk>
+References: <1178846246.23513.21.camel@localhost.localdomain>
+	 <1178846354.23513.23.camel@localhost.localdomain>
+	 <20070513183934.GY4095@ftp.linux.org.uk>
+Content-Type: text/plain
+Date: Mon, 14 May 2007 11:44:22 +1000
+Message-Id: <1179107062.23513.152.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 03, 2007 at 10:36:14AM +0200, Martin Schwidefsky wrote:
-> On Wed, 2007-05-02 at 22:30 -0700, Greg KH wrote:
-> > > Hide the config menu for userspace I/O on s390.
-> > 
-> > Why?  Who says s390 can't have userspace I/O drivers someday?
+On Sun, 2007-05-13 at 19:39 +0100, Al Viro wrote:
+> On Fri, May 11, 2007 at 11:19:14AM +1000, Rusty Russell wrote:
+> > @@ -218,7 +218,7 @@ u32 lgread_u32(struct lguest *lg, u32 ad
+> >  
+> >  	/* Don't let them access lguest binary */
+> >  	if (!lguest_address_ok(lg, addr, sizeof(val))
+> > -	    || get_user(val, (u32 __user *)addr) != 0)
+> > +	    || get_user(val, (__force u32 __user *)addr) != 0)
+> >  		kill_guest(lg, "bad read address %u", addr);
+> >  	return val;
 > 
-> Theoretically yes, but in practice this is very unlikely to happen. Some
-> reasons why:
-> 1) There are only very few device drivers for s390, the few we need
-> we'll do as kernel space drivers
-> 2) The irq abstraction of uio is awkward. The irq handler uses a 32-bit
-> integer. On s390 each ccw device has it's own irq and ccw devices are
-> identified with a string "x.y.zzzz". Then there are devices that deliver
-> external interrupts where a 16-bit number is used to identify the
-> source. You could invent some mapping logic of a 32 bit integer to all
-> the possible interrupt sources but it doesn't really match.
-> 3) s390 doesn't use memory mapped i/o, you always need to execute a
-> privileged instruction to trigger activity on the device, e.g. ssch for
-> a ccw device, siga for qdio, nqap for crypto, ...
+> *Ahem*
 > 
-> So I have my doubts that we will ever see a uio driver for s390. If we
-> do we can unhide the config menu again.
+> What kind of address are we really getting there?  IOW, where does it
+> ultimately come from?
 
-Ok, that's find, can you bounce me the patch that made this change
-again?
+Hi Al,
 
-thanks,
+	This patch has been superseded.  But to clarify, the address generally
+comes from a guest register.  My confusion came from sparse warnings on
+the above code like the following:
 
-greg k-h
+	warning: cast removes address space of expression
+
+I inserted __force, but it's actually caused by the "addr" being a
+"u32": if it's an "unsigned long" sparse doesn't warn.  This is a win
+anyway: although the code is i386-specific at the moment, that will
+change.  I prefer to use u32 rather than unsigned long to declare
+registers (eg. if I ever wanted to support 32 bit guests on a 64 bit
+host), but that's not even a consideration at this stage.
+
+> >  	lock_cpu_hotplug();
+> >  	if (cpu_has_pge) { /* We have a broader idea of "global". */
+> >  		cpu_had_pge = 1;
+> > -		on_each_cpu(adjust_pge, 0, 0, 1);
+> > +		on_each_cpu(adjust_pge, (void *)0, 0, 1);
+> 
+> That's called NULL...
+
+	Yes, but this is clearer.  Here's adjust_pge:
+
+static void adjust_pge(void *on)
+{
+	if (on)
+		write_cr4(read_cr4() | X86_CR4_PGE);
+	else
+		write_cr4(read_cr4() & ~X86_CR4_PGE);
+}
+
+And here's the two calls to it:
+
+		on_each_cpu(adjust_pge, (void *)0, 0, 1);
+...
+		on_each_cpu(adjust_pge, (void *)1, 0, 1);
+
+> >  	case LHCALL_LOAD_TLS:
+> > -		guest_load_tls(lg, (struct desc_struct __user*)regs->edx);
+> > +		guest_load_tls(lg,
+> > +			       (__force struct desc_struct __user*)regs->edx);
+> 
+> Umm...  That's borderline OK, but...
+
+Yeah, gone in replacement patch.
+
+> >  static void push_guest_stack(struct lguest *lg, u32 __user **gstack, u32 val)
+> >  {
+> > -	lgwrite_u32(lg, (u32)--(*gstack), val);
+> > +	lgwrite_u32(lg, (__force u32)--(*gstack), val);
+> >  }
+> 
+> Now, _that_ is just plain dumb.  Why not declare that lgwrite_u32() as taking
+> u32 __user * as argument and kill the casts?
+
+Last I tried, this turns out to create even more casts.
+
+> > -	lg->regs->esp = (u32)gstack + lg->page_offset;
+> > +	lg->regs->esp = (__force u32)gstack + lg->page_offset;
+> 
+> Yuck.  Cast to unsigned long (or uintptr_t), please.  In this case it is
+> legitimate.
+
+Indeed, replacement patch uses unsigned long.
+
+Thanks,
+Rusty.
+
