@@ -1,141 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbXENOuY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbXENOul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbXENOuY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 10:50:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756414AbXENOuG
+	id S1756797AbXENOul (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 10:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756504AbXENOuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 10:50:06 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:39945 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756412AbXENOuB (ORCPT
+	Mon, 14 May 2007 10:50:13 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:35254 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756428AbXENOuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 10:50:01 -0400
-Date: Mon, 14 May 2007 20:20:08 +0530
-From: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-To: torvalds@osdl.org, akpm@linux-foundation.org
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com,
-       cmm@us.ibm.com
-Subject: [PATCH 3/5][TAKE2] ext4: Extent overlap bugfix
-Message-ID: <20070514145008.GC31748@amitarora.in.ibm.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org> <20070330071417.GI355@devserv.devel.redhat.com> <20070417125514.GA7574@amitarora.in.ibm.com> <20070418130600.GW5967@schatzie.adilger.int> <20070420135146.GA21352@amitarora.in.ibm.com> <20070420145918.GY355@devserv.devel.redhat.com> <20070424121632.GA10136@amitarora.in.ibm.com> <20070426175056.GA25321@amitarora.in.ibm.com> <20070514132926.GA30768@amitarora.in.ibm.com> <20070514142820.GA31468@amitarora.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514142820.GA31468@amitarora.in.ibm.com>
-User-Agent: Mutt/1.4.1i
+	Mon, 14 May 2007 10:50:09 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Mon, 14 May 2007 10:49:19 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: David Woodhouse <dwmw2@infradead.org>, Andrew Morton <akpm@osdl.org>
+Subject: [PATCH] MTD: Remove unused header file include/linux/mtd/jedec.h.
+Message-ID: <Pine.LNX.4.64.0705140825370.11197@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a check for overlap of extents and cuts short the
-new extent to be inserted, if there is a chance of overlap.
 
-Changelog:
----------
-As suggested by Andrew, a check for wrap though zero has been added.
+Remove the apparently unreferenced header file
+include/linux/mtd/jedec.h.
 
-Here is the new patch:
+Signed-off-by: Robert P. J. Day <rpjday@mindspring.com>
 
-Signed-off-by: Amit Arora <aarora@in.ibm.com>
 ---
- fs/ext4/extents.c               |   60 ++++++++++++++++++++++++++++++++++++++--
- include/linux/ext4_fs_extents.h |    1 
- 2 files changed, 59 insertions(+), 2 deletions(-)
 
-Index: linux-2.6.21/fs/ext4/extents.c
-===================================================================
---- linux-2.6.21.orig/fs/ext4/extents.c
-+++ linux-2.6.21/fs/ext4/extents.c
-@@ -1129,6 +1129,55 @@ ext4_can_extents_be_merged(struct inode 
- }
- 
- /*
-+ * check if a portion of the "newext" extent overlaps with an
-+ * existing extent.
-+ *
-+ * If there is an overlap discovered, it updates the length of the newext
-+ * such that there will be no overlap, and then returns 1.
-+ * If there is no overlap found, it returns 0.
-+ */
-+unsigned int ext4_ext_check_overlap(struct inode *inode,
-+				    struct ext4_extent *newext,
-+				    struct ext4_ext_path *path)
-+{
-+	unsigned long b1, b2;
-+	unsigned int depth, len1;
-+	unsigned int ret = 0;
-+
-+	b1 = le32_to_cpu(newext->ee_block);
-+	len1 = le16_to_cpu(newext->ee_len);
-+	depth = ext_depth(inode);
-+	if (!path[depth].p_ext)
-+		goto out;
-+	b2 = le32_to_cpu(path[depth].p_ext->ee_block);
-+
-+	/*
-+	 * get the next allocated block if the extent in the path
-+	 * is before the requested block(s) 
-+	 */
-+	if (b2 < b1) {
-+		b2 = ext4_ext_next_allocated_block(path);
-+		if (b2 == EXT_MAX_BLOCK)
-+			goto out;
-+	}
-+
-+	/* check for wrap through zero */
-+	if (b1 + len1 < b1) {
-+		len1 = EXT_MAX_BLOCK - b1;
-+		newext->ee_len = cpu_to_le16(len1);
-+		ret = 1;
-+	}
-+
-+	/* check for overlap */
-+	if (b1 + len1 > b2) {
-+		newext->ee_len = cpu_to_le16(b2 - b1);
-+		ret = 1;
-+	}
-+out:
-+	return ret;
-+}
-+
-+/*
-  * ext4_ext_insert_extent:
-  * tries to merge requsted extent into the existing extent or
-  * inserts requested extent as new one into the tree,
-@@ -2032,7 +2081,15 @@ int ext4_ext_get_blocks(handle_t *handle
- 
- 	/* allocate new block */
- 	goal = ext4_ext_find_goal(inode, path, iblock);
--	allocated = max_blocks;
-+
-+	/* Check if we can really insert (iblock)::(iblock+max_blocks) extent */
-+	newex.ee_block = cpu_to_le32(iblock);
-+	newex.ee_len = cpu_to_le16(max_blocks);
-+	err = ext4_ext_check_overlap(inode, &newex, path);
-+	if (err)
-+		allocated = le16_to_cpu(newex.ee_len);
-+	else
-+		allocated = max_blocks;
- 	newblock = ext4_new_blocks(handle, inode, goal, &allocated, &err);
- 	if (!newblock)
- 		goto out2;
-@@ -2040,7 +2097,6 @@ int ext4_ext_get_blocks(handle_t *handle
- 			goal, newblock, allocated);
- 
- 	/* try to insert new extent into found leaf and return */
--	newex.ee_block = cpu_to_le32(iblock);
- 	ext4_ext_store_pblock(&newex, newblock);
- 	newex.ee_len = cpu_to_le16(allocated);
- 	err = ext4_ext_insert_extent(handle, inode, path, &newex);
-Index: linux-2.6.21/include/linux/ext4_fs_extents.h
-===================================================================
---- linux-2.6.21.orig/include/linux/ext4_fs_extents.h
-+++ linux-2.6.21/include/linux/ext4_fs_extents.h
-@@ -190,6 +190,7 @@ ext4_ext_invalidate_cache(struct inode *
- 
- extern int ext4_extent_tree_init(handle_t *, struct inode *);
- extern int ext4_ext_calc_credits_for_insert(struct inode *, struct ext4_ext_path *);
-+extern unsigned int ext4_ext_check_overlap(struct inode *, struct ext4_extent *, struct ext4_ext_path *);
- extern int ext4_ext_insert_extent(handle_t *, struct inode *, struct ext4_ext_path *, struct ext4_extent *);
- extern int ext4_ext_walk_space(struct inode *, unsigned long, unsigned long, ext_prepare_callback, void *);
- extern struct ext4_ext_path * ext4_ext_find_extent(struct inode *, int, struct ext4_ext_path *);
+  this header file *appears* to be unnecessary, but i've been wrong
+before.
+
+
+diff --git a/include/linux/mtd/jedec.h b/include/linux/mtd/jedec.h
+deleted file mode 100644
+index 9006feb..0000000
+--- a/include/linux/mtd/jedec.h
++++ /dev/null
+@@ -1,66 +0,0 @@
+-
+-/* JEDEC Flash Interface.
+- * This is an older type of interface for self programming flash. It is
+- * commonly use in older AMD chips and is obsolete compared with CFI.
+- * It is called JEDEC because the JEDEC association distributes the ID codes
+- * for the chips.
+- *
+- * See the AMD flash databook for information on how to operate the interface.
+- *
+- * $Id: jedec.h,v 1.4 2005/11/07 11:14:54 gleixner Exp $
+- */
+-
+-#ifndef __LINUX_MTD_JEDEC_H__
+-#define __LINUX_MTD_JEDEC_H__
+-
+-#include <linux/types.h>
+-
+-#define MAX_JEDEC_CHIPS 16
+-
+-// Listing of all supported chips and their information
+-struct JEDECTable
+-{
+-   __u16 jedec;
+-   char *name;
+-   unsigned long size;
+-   unsigned long sectorsize;
+-   __u32 capabilities;
+-};
+-
+-// JEDEC being 0 is the end of the chip array
+-struct jedec_flash_chip
+-{
+-   __u16 jedec;
+-   unsigned long size;
+-   unsigned long sectorsize;
+-
+-   // *(__u8*)(base + (adder << addrshift)) = data << datashift
+-   // Address size = size << addrshift
+-   unsigned long base;           // Byte 0 of the flash, will be unaligned
+-   unsigned int datashift;       // Useful for 32bit/16bit accesses
+-   unsigned int addrshift;
+-   unsigned long offset;         // linerized start. base==offset for unbanked, uninterleaved flash
+-
+-   __u32 capabilities;
+-
+-   // These markers are filled in by the flash_chip_scan function
+-   unsigned long start;
+-   unsigned long length;
+-};
+-
+-struct jedec_private
+-{
+-   unsigned long size;         // Total size of all the devices
+-
+-   /* Bank handling. If sum(bank_fill) == size then this is linear flash.
+-      Otherwise the mapping has holes in it. bank_fill may be used to
+-      find the holes, but in the common symetric case
+-      bank_fill[0] == bank_fill[*], thus addresses may be computed
+-      mathmatically. bank_fill must be powers of two */
+-   unsigned is_banked;
+-   unsigned long bank_fill[MAX_JEDEC_CHIPS];
+-
+-   struct jedec_flash_chip chips[MAX_JEDEC_CHIPS];
+-};
+-
+-#endif
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
