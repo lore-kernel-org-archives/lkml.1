@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1031394AbXENLi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762775AbXENLir@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1031394AbXENLi3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 07:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030371AbXENLdG
+	id S1762775AbXENLir (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 07:38:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1030476AbXENLdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 07:33:06 -0400
-Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27933 "EHLO
+	Mon, 14 May 2007 07:33:09 -0400
+Received: from 213.210.179.104.adsl.nextra.cz ([213.210.179.104]:27931 "EHLO
 	duck8.pdx.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759310AbXENLce (ORCPT
+	with ESMTP id S1759236AbXENLcf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 07:32:34 -0400
-Message-Id: <20070514110612.337329969@suse.de>
+	Mon, 14 May 2007 07:32:35 -0400
+Message-Id: <20070514110611.003462684@suse.de>
 References: <20070514110607.549397248@suse.de>
 User-Agent: quilt/0.46-14
-Date: Mon, 14 May 2007 04:06:19 -0700
+Date: Mon, 14 May 2007 04:06:16 -0700
 From: jjohansen@suse.de
 To: linux-kernel@vger.kernel.org
 Cc: linux-security-module@vger.kernel.org, linux-fsdevel@vger.kernel.org,
        Tony Jones <tonyj@suse.de>, Andreas Gruenbacher <agruen@suse.de>,
        John Johansen <jjohansen@suse.de>
-Subject: [AppArmor 12/45] Add struct vfsmount parameters to vfs_link()
-Content-Disposition: inline; filename=vfs-link.diff
+Subject: [AppArmor 09/45] Add a struct vfsmount parameter to vfs_symlink()
+Content-Disposition: inline; filename=vfs-symlink.diff
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
@@ -32,84 +32,116 @@ Signed-off-by: Andreas Gruenbacher <agruen@suse.de>
 Signed-off-by: John Johansen <jjohansen@suse.de>
 
 ---
- fs/ecryptfs/inode.c |    9 +++++++--
- fs/namei.c          |    5 +++--
- fs/nfsd/vfs.c       |    3 ++-
+ fs/ecryptfs/inode.c |    4 +++-
+ fs/namei.c          |    6 ++++--
+ fs/nfsd/vfs.c       |   12 ++++++++----
  include/linux/fs.h  |    2 +-
- 4 files changed, 13 insertions(+), 6 deletions(-)
+ 4 files changed, 16 insertions(+), 8 deletions(-)
 
 --- a/fs/ecryptfs/inode.c
 +++ b/fs/ecryptfs/inode.c
-@@ -411,19 +411,24 @@ static int ecryptfs_link(struct dentry *
- 			 struct dentry *new_dentry)
+@@ -470,6 +470,7 @@ static int ecryptfs_symlink(struct inode
  {
- 	struct dentry *lower_old_dentry;
-+	struct vfsmount *lower_old_mnt;
- 	struct dentry *lower_new_dentry;
-+	struct vfsmount *lower_new_mnt;
- 	struct dentry *lower_dir_dentry;
- 	u64 file_size_save;
  	int rc;
+ 	struct dentry *lower_dentry;
++	struct vfsmount *lower_mnt;
+ 	struct dentry *lower_dir_dentry;
+ 	umode_t mode;
+ 	char *encoded_symname;
+@@ -478,6 +479,7 @@ static int ecryptfs_symlink(struct inode
  
- 	file_size_save = i_size_read(old_dentry->d_inode);
- 	lower_old_dentry = ecryptfs_dentry_to_lower(old_dentry);
-+	lower_old_mnt = ecryptfs_dentry_to_lower_mnt(old_dentry);
- 	lower_new_dentry = ecryptfs_dentry_to_lower(new_dentry);
-+	lower_new_mnt = ecryptfs_dentry_to_lower_mnt(new_dentry);
- 	dget(lower_old_dentry);
- 	dget(lower_new_dentry);
- 	lower_dir_dentry = lock_parent(lower_new_dentry);
--	rc = vfs_link(lower_old_dentry, lower_dir_dentry->d_inode,
--		      lower_new_dentry);
-+	rc = vfs_link(lower_old_dentry, lower_old_mnt,
-+		      lower_dir_dentry->d_inode, lower_new_dentry,
-+		      lower_new_mnt);
- 	if (rc || !lower_new_dentry->d_inode)
+ 	lower_dentry = ecryptfs_dentry_to_lower(dentry);
+ 	dget(lower_dentry);
++	lower_mnt = ecryptfs_dentry_to_lower_mnt(dentry);
+ 	lower_dir_dentry = lock_parent(lower_dentry);
+ 	mode = S_IALLUGO;
+ 	encoded_symlen = ecryptfs_encode_filename(crypt_stat, symname,
+@@ -487,7 +489,7 @@ static int ecryptfs_symlink(struct inode
+ 		rc = encoded_symlen;
  		goto out_lock;
- 	rc = ecryptfs_interpose(lower_new_dentry, new_dentry, dir->i_sb, 0);
+ 	}
+-	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry,
++	rc = vfs_symlink(lower_dir_dentry->d_inode, lower_dentry, lower_mnt,
+ 			 encoded_symname, mode);
+ 	kfree(encoded_symname);
+ 	if (rc || !lower_dentry->d_inode)
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2268,7 +2268,7 @@ asmlinkage long sys_symlink(const char _
- 	return sys_symlinkat(oldname, AT_FDCWD, newname);
+@@ -2203,7 +2203,8 @@ asmlinkage long sys_unlink(const char __
+ 	return do_unlinkat(AT_FDCWD, pathname);
  }
  
--int vfs_link(struct dentry *old_dentry, struct inode *dir, struct dentry *new_dentry)
-+int vfs_link(struct dentry *old_dentry, struct vfsmount *old_mnt, struct inode *dir, struct dentry *new_dentry, struct vfsmount *new_mnt)
+-int vfs_symlink(struct inode *dir, struct dentry *dentry, const char *oldname, int mode)
++int vfs_symlink(struct inode *dir, struct dentry *dentry, struct vfsmount *mnt,
++		const char *oldname, int mode)
  {
- 	struct inode *inode = old_dentry->d_inode;
- 	int error;
-@@ -2346,7 +2346,8 @@ asmlinkage long sys_linkat(int olddfd, c
- 	error = PTR_ERR(new_dentry);
- 	if (IS_ERR(new_dentry))
+ 	int error = may_create(dir, dentry, NULL);
+ 
+@@ -2249,7 +2250,8 @@ asmlinkage long sys_symlinkat(const char
+ 	if (IS_ERR(dentry))
  		goto out_unlock;
--	error = vfs_link(old_nd.dentry, nd.dentry->d_inode, new_dentry);
-+	error = vfs_link(old_nd.dentry, old_nd.mnt, nd.dentry->d_inode,
-+			 new_dentry, nd.mnt);
- 	dput(new_dentry);
+ 
+-	error = vfs_symlink(nd.dentry->d_inode, dentry, from, S_IALLUGO);
++	error = vfs_symlink(nd.dentry->d_inode, dentry, nd.mnt, from,
++			    S_IALLUGO);
+ 	dput(dentry);
  out_unlock:
  	mutex_unlock(&nd.dentry->d_inode->i_mutex);
 --- a/fs/nfsd/vfs.c
 +++ b/fs/nfsd/vfs.c
-@@ -1536,7 +1536,8 @@ nfsd_link(struct svc_rqst *rqstp, struct
- 	dold = tfhp->fh_dentry;
- 	dest = dold->d_inode;
+@@ -1436,6 +1436,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 				struct iattr *iap)
+ {
+ 	struct dentry	*dentry, *dnew;
++	struct svc_export *exp;
+ 	__be32		err, cerr;
+ 	int		host_err;
+ 	umode_t		mode;
+@@ -1462,6 +1463,7 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 	if (iap && (iap->ia_valid & ATTR_MODE))
+ 		mode = iap->ia_mode & S_IALLUGO;
  
--	host_err = vfs_link(dold, dirp, dnew);
-+	host_err = vfs_link(dold, tfhp->fh_export->ex_mnt, dirp,
-+			    dnew, ffhp->fh_export->ex_mnt);
++	exp = fhp->fh_export;
+ 	if (unlikely(path[plen] != 0)) {
+ 		char *path_alloced = kmalloc(plen+1, GFP_KERNEL);
+ 		if (path_alloced == NULL)
+@@ -1469,20 +1471,22 @@ nfsd_symlink(struct svc_rqst *rqstp, str
+ 		else {
+ 			strncpy(path_alloced, path, plen);
+ 			path_alloced[plen] = 0;
+-			host_err = vfs_symlink(dentry->d_inode, dnew, path_alloced, mode);
++			host_err = vfs_symlink(dentry->d_inode, dnew,
++					       exp->ex_mnt, path_alloced, mode);
+ 			kfree(path_alloced);
+ 		}
+ 	} else
+-		host_err = vfs_symlink(dentry->d_inode, dnew, path, mode);
++		host_err = vfs_symlink(dentry->d_inode, dnew, exp->ex_mnt, path,
++				       mode);
+ 
  	if (!host_err) {
- 		if (EX_ISSYNC(ffhp->fh_export)) {
- 			err = nfserrno(nfsd_sync_dir(ddir));
+-		if (EX_ISSYNC(fhp->fh_export))
++		if (EX_ISSYNC(exp))
+ 			host_err = nfsd_sync_dir(dentry);
+ 	}
+ 	err = nfserrno(host_err);
+ 	fh_unlock(fhp);
+ 
+-	cerr = fh_compose(resfhp, fhp->fh_export, dnew, fhp);
++	cerr = fh_compose(resfhp, exp, dnew, fhp);
+ 	dput(dnew);
+ 	if (err==0) err = cerr;
+ out:
 --- a/include/linux/fs.h
 +++ b/include/linux/fs.h
-@@ -995,7 +995,7 @@ extern int vfs_create(struct inode *, st
+@@ -994,7 +994,7 @@ extern int vfs_permission(struct nameida
+ extern int vfs_create(struct inode *, struct dentry *, int, struct nameidata *);
  extern int vfs_mkdir(struct inode *, struct dentry *, struct vfsmount *, int);
  extern int vfs_mknod(struct inode *, struct dentry *, struct vfsmount *, int, dev_t);
- extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
--extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
-+extern int vfs_link(struct dentry *, struct vfsmount *, struct inode *, struct dentry *, struct vfsmount *);
+-extern int vfs_symlink(struct inode *, struct dentry *, const char *, int);
++extern int vfs_symlink(struct inode *, struct dentry *, struct vfsmount *, const char *, int);
+ extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
  extern int vfs_rmdir(struct inode *, struct dentry *);
  extern int vfs_unlink(struct inode *, struct dentry *);
- extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
 
 -- 
