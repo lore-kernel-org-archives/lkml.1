@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761806AbXEOR2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762016AbXEOR3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761806AbXEOR2r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 13:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756669AbXEOR2i
+	id S1762016AbXEOR3U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 13:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbXEOR3K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 13:28:38 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:43544 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755657AbXEOR2h (ORCPT
+	Tue, 15 May 2007 13:29:10 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:59438 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757278AbXEOR3I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 13:28:37 -0400
-Subject: select(0, ..) is valid ?
-From: Badari Pulavarty <pbadari@us.ibm.com>
-To: netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>
-Cc: Christoph Lameter <clameter@sgi.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 10:29:18 -0700
-Message-Id: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-4) 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 May 2007 13:29:08 -0400
+Date: Tue, 15 May 2007 11:29:06 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Simon Arlott <simon@fire.lp0.eu>
+Cc: James Bottomley <james.bottomley@steeleye.com>,
+       Dave Jones <davej@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org
+Subject: Re: Asynchronous scsi scanning
+Message-ID: <20070515172905.GJ10562@parisc-linux.org>
+References: <1179073116.3723.45.camel@mulgrave.il.steeleye.com> <a781481a0705140235h6a96563cw63ed2c7a85a4f736@mail.gmail.com> <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com> <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com> <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com> <1179153096.3703.23.camel@mulgrave.il.steeleye.com> <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com> <17841.simon.1179228389@5ec7c279.invalid> <20070515120228.GI10562@parisc-linux.org> <4649E03A.1090004@simon.arlott.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4649E03A.1090004@simon.arlott.org.uk>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, May 15, 2007 at 05:30:50PM +0100, Simon Arlott wrote:
+> On 15/05/07 13:02, Matthew Wilcox wrote:
+> >It's easy to suggest a sysfs attribute.  What you've failed to do is
+> >suggest the pathname of the sysfs attribute, the contents of it, or the
+> >semantics of it (read-only?  read-write?  write-only?  blocking?)
+> 
+> I would assume that should be up to SCSI users/maintainer(s). The only 
+> thing I use the SCSI driver for is usb-storage/ATAPI.
 
-Is select(0, ..) is a valid operation ?
+Then you're not so much "suggesting a sysfs attribute" as whining.
 
-I see that there is no check to prevent this or return
-success early, without doing any work. Do we need one ?
+> >I'd *really* like to hear from distro people.  What is the most
+> >convenient way for you to implement "load all the scsi modules, then
+> >wait until all devices are found"?  James and I had thought that loading
+> >a new module would be the easiest way for you, but it seems inconvenient
+> >for you.
+> 
+> It's inconvenient for people who *don't* use it to be unable to stop the 
+> module being built and installed.
 
-slub code is complaining that we are doing kmalloc(0).
-
-Thanks,
-Badari
-
-------------[ cut here ]------------
-Badness at include/linux/slub_def.h:88
-Call Trace:
-[c0000001e4eb7640] [c00000000000e650] .show_stack+0x68/0x1b0
-(unreliable)
-[c0000001e4eb76e0] [c00000000029b854] .report_bug+0x94/0xe8
-[c0000001e4eb7770] [c0000000000219f0] .program_check_exception
-+0x12c/0x568
-[c0000001e4eb77f0] [c000000000004a84] program_check_common+0x104/0x180
---- Exception: 700 at .get_slab+0x4c/0x234
-    LR = .__kmalloc+0x24/0xc4
-[c0000001e4eb7ae0] [c0000001e4eb7b80] 0xc0000001e4eb7b80 (unreliable)
-[c0000001e4eb7b80] [c0000000000a7ff0] .__kmalloc+0x24/0xc4
-[c0000001e4eb7c10] [c0000000000ea720] .compat_core_sys_select+0x90/0x240
-[c0000001e4eb7d00] [c0000000000ec3a4] .compat_sys_select+0xb0/0x190
-[c0000001e4eb7dc0] [c000000000014944] .ppc32_select+0x14/0x28
-[c0000001e4eb7e30] [c00000000000872c] syscall_exit+0x0/0x40
-
-
+Why?  You're not forced to load the module.  In what way does it
+inconvenience you?  Nobody's making you run 'make modules_install'.
+I often forget to myself.
