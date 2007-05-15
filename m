@@ -1,238 +1,588 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbXEOAb6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759494AbXEOAga@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759302AbXEOAb6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 20:31:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXEOAbv
+	id S1759494AbXEOAga (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 20:36:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754737AbXEOAgX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 20:31:51 -0400
-Received: from agminet01.oracle.com ([141.146.126.228]:17605 "EHLO
-	agminet01.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753043AbXEOAbu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 20:31:50 -0400
-Date: Mon, 14 May 2007 17:35:40 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: akpm <akpm@linux-foundation.org>, ak@suse.de, rusty@rustcorp.com.au
-Subject: [PATCH] docbook: make kernel-locking table readable
-Message-Id: <20070514173540.6c5bb806.randy.dunlap@oracle.com>
-Organization: Oracle Linux Eng.
-X-Mailer: Sylpheed 2.3.1 (GTK+ 2.8.10; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Whitelist: TRUE
-X-Whitelist: TRUE
-X-Brightmail-Tracker: AAAAAQAAAAI=
+	Mon, 14 May 2007 20:36:23 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:59155 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754512AbXEOAgW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 20:36:22 -0400
+Date: Mon, 14 May 2007 17:36:19 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH 1/2] scalable rw_mutex
+Message-ID: <20070515003619.GC9273@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20070511131541.992688403@chello.nl> <20070511132321.895740140@chello.nl> <20070511230023.GA449@tv-sign.ru> <1178977276.6810.59.camel@twins> <20070512160428.GA173@tv-sign.ru> <1178989068.19461.3.camel@lappy> <20070512180321.GA320@tv-sign.ru> <1179140350.6810.63.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179140350.6810.63.camel@twins>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+On Mon, May 14, 2007 at 12:59:10PM +0200, Peter Zijlstra wrote:
+> Changes include:
+> 
+>  - wmb+rmb != mb
+>  - ->state folded into ->waiter
+> 
+> ---
+> Subject: scalable rw_mutex
+> 
+> Scalable reader/writer lock.
+> 
+> Its scalable in that the read count is a percpu counter and the reader fast
+> path does not write to a shared cache-line.
+> 
+> Its not FIFO fair, but starvation proof by alternating readers and writers.
 
-Andi Kleen pointed out to me that the kernel locking cheat sheet
-table entries are unreadable.
+Hmmm...  brlock reincarnates, but as sleeplock.  ;-)
 
-Make table entries smaller so that pdf and ps output is readable
-(columns were being overwritten and garbled) by using abbreviations.
-This allows the tables to fit on one page cleanly.
-Add a Legend for the abbreviations:
-  SLIS: spin_lock_irqsave
-  SLI:  spin_lock_irq
-  SL:   spin_lock
-  SLBH: spin_lock_bh
-  DI:   down_interruptible
+I believe that there are a few severe problems in this code, search
+for "!!!" to quickly find the specific areas that concern me.
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/DocBook/kernel-locking.tmpl |  123 +++++++++++++++++++-----------
- 1 file changed, 78 insertions(+), 45 deletions(-)
+						Thanx, Paul
 
---- linux-2.6.22-rc1.orig/Documentation/DocBook/kernel-locking.tmpl
-+++ linux-2.6.22-rc1/Documentation/DocBook/kernel-locking.tmpl
-@@ -551,10 +551,12 @@
- 	<function>spin_lock_irqsave()</function>, which is a superset
- 	of all other spinlock primitives.
-    </para>
-+
-    <table>
- <title>Table of Locking Requirements</title>
- <tgroup cols="11">
- <tbody>
-+
- <row>
- <entry></entry>
- <entry>IRQ Handler A</entry>
-@@ -576,97 +578,128 @@
- 
- <row>
- <entry>IRQ Handler B</entry>
--<entry>spin_lock_irqsave</entry>
-+<entry>SLIS</entry>
- <entry>None</entry>
- </row>
- 
- <row>
- <entry>Softirq A</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock</entry>
-+<entry>SLI</entry>
-+<entry>SLI</entry>
-+<entry>SL</entry>
- </row>
- 
- <row>
- <entry>Softirq B</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
-+<entry>SLI</entry>
-+<entry>SLI</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
- </row>
- 
- <row>
- <entry>Tasklet A</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
-+<entry>SLI</entry>
-+<entry>SLI</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
- <entry>None</entry>
- </row>
- 
- <row>
- <entry>Tasklet B</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
-+<entry>SLI</entry>
-+<entry>SLI</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
- <entry>None</entry>
- </row>
- 
- <row>
- <entry>Timer A</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
-+<entry>SLI</entry>
-+<entry>SLI</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
- <entry>None</entry>
- </row>
- 
- <row>
- <entry>Timer B</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
--<entry>spin_lock</entry>
-+<entry>SLI</entry>
-+<entry>SLI</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
-+<entry>SL</entry>
- <entry>None</entry>
- </row>
- 
- <row>
- <entry>User Context A</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock_bh</entry>
--<entry>spin_lock_bh</entry>
--<entry>spin_lock_bh</entry>
--<entry>spin_lock_bh</entry>
--<entry>spin_lock_bh</entry>
--<entry>spin_lock_bh</entry>
-+<entry>SLI</entry>
-+<entry>SLI</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
- <entry>None</entry>
- </row>
- 
- <row>
- <entry>User Context B</entry>
-+<entry>SLI</entry>
-+<entry>SLI</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
-+<entry>SLBH</entry>
-+<entry>DI</entry>
-+<entry>None</entry>
-+</row>
-+
-+</tbody>
-+</tgroup>
-+</table>
-+
-+   <table>
-+<title>Legend for Locking Requirements Table</title>
-+<tgroup cols="2">
-+<tbody>
-+
-+<row>
-+<entry>SLIS</entry>
-+<entry>spin_lock_irqsave</entry>
-+</row>
-+<row>
-+<entry>SLI</entry>
- <entry>spin_lock_irq</entry>
--<entry>spin_lock_irq</entry>
--<entry>spin_lock_bh</entry>
--<entry>spin_lock_bh</entry>
--<entry>spin_lock_bh</entry>
--<entry>spin_lock_bh</entry>
--<entry>spin_lock_bh</entry>
-+</row>
-+<row>
-+<entry>SL</entry>
-+<entry>spin_lock</entry>
-+</row>
-+<row>
-+<entry>SLBH</entry>
- <entry>spin_lock_bh</entry>
-+</row>
-+<row>
-+<entry>DI</entry>
- <entry>down_interruptible</entry>
--<entry>None</entry>
- </row>
- 
- </tbody>
- </tgroup>
- </table>
-+
- </sect1>
- </chapter>
- 
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  include/linux/rwmutex.h |   82 ++++++++++++++++
+>  kernel/Makefile         |    3 
+>  kernel/rwmutex.c        |  232 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 316 insertions(+), 1 deletion(-)
+
+List of races that must be resolved:
+
+1.	Read acquire vs. write acquire.
+
+	rw_mutex_read_lock() invokes __rw_mutex_read_trylock(), if
+		this fails, invokes rw_mutex_read_lock_slow().
+
+		__rw_mutex_read_trylock() increments the per-CPU counter,
+			does smp_mb(), picks up ->waiter:
+				if non-NULL decrements the per-CPU
+				counter, does a barrier(), does
+				wake_up_process() on the task fetched
+				from ->waiter.  Return failure.
+
+				Otherwise, return success.
+
+		rw_mutex_read_lock_slow() increments ->read_waiters,
+			acquires ->read_mutex, increments the ->readers
+			counter, and decrements the ->read_waiters
+			counter.  It then fetches ->waiter, and, if
+			non-NULL, wakes up the tasks.
+			Either way, releases ->read_mutex.
+
+	rw_mutex_write_lock_nested(): acquires ->write_mutex, which
+		prevents any writer-writer races.  Acquires ->read_mutex,
+		which does -not- prevent readers from continuing to
+		acquire.  Sets ->waiter to current, which -does-
+		(eventually) stop readers.  smp_mb(), then invokes
+		rw_mutex_writer_wait() for the sum of the per-CPU
+		counters to go to zero.
+
+		!In principle, this could be indefinitely postponed,
+		but in practice would require an infinite number of
+		reading tasks, so probably OK to ignore.  ;-)
+		This can occur because the readers unconditionally
+		increment their per-CPU counters, and decrement it
+		only later.
+
+	The smp_mb()s currently in the reader and the writer code
+	forms a Dekker-algorithm-like barrier, preventing both the
+	reader and writer from entering their critical section, as
+	required.
+
+2.	Read acquire vs. write release (need to avoid reader sleeping
+	forever, even in the case where no one ever uses the lock again).
+
+	rw_mutex_read_lock() invokes __rw_mutex_read_trylock(), if
+		this fails, invokes rw_mutex_read_lock_slow().
+
+		__rw_mutex_read_trylock() increments the per-CPU counter,
+			does smp_mb(), picks up ->waiter:
+				if non-NULL decrements the per-CPU
+				counter, does a barrier(), does
+				wake_up_process() on the task fetched
+				from ->waiter.  Return failure.
+
+				Otherwise, return success.
+
+		rw_mutex_read_lock_slow() increments ->read_waiters,
+			acquires ->read_mutex, increments the ->readers
+			counter, and decrements the ->read_waiters
+			counter.  It then fetches ->waiter, and, if
+			non-NULL, wakes up the tasks.
+			Either way, releases ->read_mutex.
+
+	rw_mutex_write_unlock(): pick up ->read_waiters, release
+		->read_mutex, if copy of ->read_waiters was non-NULL
+		do slow path (but refetches ->read_waiters??? why???
+		[Ah -- refetched each time through the loop in the
+		rw_mutex_writer_wait() macro), NULL out ->waiter,
+		then release ->write_mutex.
+
+		Slow path: Pick up ->waiter, make sure it is us,
+			set state to uninterruptible, loop while
+			->read_waiters less than the value fetched
+			earlier from ->read_waiters, scheduling each time
+			through, set state back to running.
+
+		(!!!This is subject to indefinite postponement by a
+		flurry of readers, see the commentary for 
+		rw_mutex_write_unlock() interspersed below.)
+
+	However, the fact that ->read_mutex is unconditionally released
+	by the writer prevents the readers from being starved.
+
+3.	Read release vs. write acquire (similar to #2).
+
+	rw_mutex_read_unlock(): decrement the per-CPU counter, smb_mb(),
+		pick up ->waiter, if non-NULL, wake it up.
+
+	rw_mutex_write_lock_nested(): acquires ->write_mutex, which
+		prevents any writer-writer races.  Acquires ->read_mutex,
+		which does -not- prevent readers from continuing to
+		acquire.  Sets ->waiter to current, which -does-
+		(eventually) stop readers.  smp_mb(), then invokes
+		rw_mutex_writer_wait() for the sum of the per-CPU
+		counters to go to zero.
+
+	As written, the writer never really blocks, so omitting the
+	wakeup is OK.  (Failing to really block is -not- OK given realtime
+	processes, but more on that later.)
+
+4.	Read release vs. write release -- presumably this one cannot
+	happen, but wouldn't want to fall prey to complacency.  ;-)
+
+	Strangely enough, this -can- happen!!!	When the readers
+	indefinitely postpone writer release, the readers will also
+	be read-releasing...  So the readers will be needlessly waking
+	up the task that is trying to finish releasing the write lock.
+	:-/  Not a big deal in this case, but just shows to go that
+	when reviewing locking algorithms, you should -never- restrict
+	yourself to considering only things that seem possible.  ;-)
+
+> Index: linux-2.6/include/linux/rwmutex.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6/include/linux/rwmutex.h	2007-05-14 10:34:32.000000000 +0200
+> @@ -0,0 +1,82 @@
+> +/*
+> + * Scalable reader/writer lock.
+> + *
+> + *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
+> + *
+> + * This file contains the public data structure and API definitions.
+> + */
+> +#ifndef _LINUX_RWMUTEX_H
+> +#define _LINUX_RWMUTEX_H
+> +
+> +#include <linux/preempt.h>
+> +#include <linux/wait.h>
+> +#include <linux/percpu_counter.h>
+> +#include <linux/lockdep.h>
+> +#include <linux/mutex.h>
+> +#include <asm/atomic.h>
+> +
+> +struct rw_mutex {
+> +	/* Read mostly global */
+> +	struct percpu_counter	readers;
+> +
+> +	/* The following variables are only for the slowpath */
+> +	struct task_struct	*waiter;	/* w -> r waiting */
+> +	struct mutex		read_mutex;	/* r -> w waiting */
+> +	struct mutex		write_mutex;	/* w -> w waiting */
+
+Priority-inheritance relationship?  Seems like this would be tough
+to arrange while still avoiding deadlock...
+
+Readers currently do boost the writer via ->read_mutex.
+
+!!!
+
+Writers currently do -not- boost readers.  In fact, the identities of
+the readers are not tracked, so there is no way for the writer to tell
+what to boost.  Admittedly, write-to-read priority boosting is quite
+the can of worms if you allow more than one reader, but something will
+be needed for realtime kernels.
+
+A brlock-like implementation can allow boosting in both directions,
+but has other issues (such as write-side performance even in the case
+where there are no readers).
+
+> +	atomic_t		read_waiters;
+> +
+> +#ifdef CONFIG_DEBUG_LOCK_ALLOC
+> +	struct lockdep_map dep_map;
+> +#endif
+> +};
+> +
+> +void __rw_mutex_init(struct rw_mutex *rw_mutex, const char * name,
+> +		struct lock_class_key *key);
+> +void rw_mutex_destroy(struct rw_mutex *rw_mutex);
+> +
+> +#define rw_mutex_init(rw_mutex)					\
+> +	do {							\
+> +		static struct lock_class_key __key;		\
+> +		__rw_mutex_init((rw_mutex), #rw_mutex, &__key);	\
+> +	} while (0)
+> +
+> +void rw_mutex_read_lock_slow(struct rw_mutex *rw_mutex);
+> +
+> +void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass);
+> +void rw_mutex_write_unlock(struct rw_mutex *rw_mutex);
+> +
+> +int __rw_mutex_read_trylock(struct rw_mutex *rw_mutex);
+> +
+> +static inline int rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
+> +{
+> +	int ret = __rw_mutex_read_trylock(rw_mutex);
+> +	if (ret)
+> +		rwsem_acquire_read(&rw_mutex->dep_map, 0, 1, _RET_IP_);
+> +	return ret;
+> +}
+> +
+> +static inline void rw_mutex_read_lock(struct rw_mutex *rw_mutex)
+> +{
+> +	int ret;
+> +
+> +	might_sleep();
+> +	rwsem_acquire_read(&rw_mutex->dep_map, 0, 0, _RET_IP_);
+> +
+> +	ret = __rw_mutex_read_trylock(rw_mutex);
+> +	if (!ret)
+> +		rw_mutex_read_lock_slow(rw_mutex);
+> +}
+> +
+> +void rw_mutex_read_unlock(struct rw_mutex *rw_mutex);
+> +
+> +static inline int rw_mutex_is_locked(struct rw_mutex *rw_mutex)
+> +{
+> +	return mutex_is_locked(&rw_mutex->write_mutex);
+> +}
+> +
+> +static inline void rw_mutex_write_lock(struct rw_mutex *rw_mutex)
+> +{
+> +	rw_mutex_write_lock_nested(rw_mutex, 0);
+> +}
+> +
+> +#endif /* _LINUX_RWMUTEX_H */
+> Index: linux-2.6/kernel/rwmutex.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6/kernel/rwmutex.c	2007-05-14 11:32:01.000000000 +0200
+> @@ -0,0 +1,229 @@
+> +/*
+> + * Scalable reader/writer lock.
+> + *
+> + *  Copyright (C) 2007 Red Hat, Inc., Peter Zijlstra <pzijlstr@redhat.com>
+> + *
+> + * Its scalable in that the read count is a percpu counter and the reader fast
+> + * path does not write to a shared cache-line.
+> + *
+> + * Its not FIFO fair, but starvation proof by alternating readers and writers.
+> + */
+> +#include <linux/sched.h>
+> +#include <linux/rwmutex.h>
+> +#include <linux/debug_locks.h>
+> +#include <linux/module.h>
+> +
+> +/*
+> + * rw mutex - oxymoron when we take mutex to stand for 'MUTual EXlusion'
+> + *
+> + * However in this context we take mutex to mean a sleeping lock, with the
+> + * property that it must be released by the same context that acquired it.
+> + *
+> + * design goals:
+> + *
+> + * A sleeping reader writer lock with a scalable read side, to avoid bouncing
+> + * cache-lines.
+> + *
+> + * dynamics:
+> + *
+> + * The reader fast path is modification of a percpu_counter and a read of a
+> + * shared cache-line.
+> + *
+> + * The write side is quite heavy; it takes two mutexes, a writer mutex and a
+> + * readers mutex. The writer mutex is for w <-> w interaction, the read mutex
+> + * for r -> w. The read side is forced into the slow path by setting the
+> + * status bit. Then it waits for all current readers to disappear.
+> + *
+> + * The read lock slow path; taken when the status bit is set; takes the read
+> + * mutex. Because the write side also takes this mutex, the new readers are
+> + * blocked. The read unlock slow path tickles the writer every time a read
+> + * lock is released.
+> + *
+> + * Write unlock clears the status bit, and drops the read mutex; allowing new
+> + * readers. It then waits for at least one waiting reader to get a lock (if
+> + * there were any readers waiting) before releasing the write mutex which will
+> + * allow possible other writers to come in an stop new readers, thus avoiding
+> + * starvation by alternating between readers and writers
+> + *
+> + * considerations:
+> + *
+> + * The lock's space footprint is quite large (on x86_64):
+> + *
+> + *   88 bytes				[struct rw_mutex]
+> + *    8 bytes per cpu NR_CPUS		[void *]
+> + *   32 bytes per cpu (nr_cpu_ids)	[smallest slab]
+> + *
+> + *  408 bytes for x86_64 defconfig (NR_CPUS = 32) on a 2-way box.
+> + *
+> + * The write side is quite heavy; this lock is best suited for situations
+> + * where the read side vastly dominates the write side.
+> + */
+> +
+> +void __rw_mutex_init(struct rw_mutex *rw_mutex, const char *name,
+> +		struct lock_class_key *key)
+> +{
+> +#ifdef CONFIG_DEBUG_LOCK_ALLOC
+> +	debug_check_no_locks_freed((void *)rw_mutex, sizeof(*rw_mutex));
+> +	lockdep_init_map(&rw_mutex->dep_map, name, key, 0);
+> +#endif
+> +
+> +	percpu_counter_init(&rw_mutex->readers, 0);
+> +	rw_mutex->waiter = NULL;
+> +	mutex_init(&rw_mutex->read_mutex);
+> +	mutex_init(&rw_mutex->write_mutex);
+> +}
+> +EXPORT_SYMBOL(__rw_mutex_init);
+> +
+> +void rw_mutex_destroy(struct rw_mutex *rw_mutex)
+> +{
+> +	percpu_counter_destroy(&rw_mutex->readers);
+> +	mutex_destroy(&rw_mutex->read_mutex);
+> +	mutex_destroy(&rw_mutex->write_mutex);
+> +}
+> +EXPORT_SYMBOL(rw_mutex_destroy);
+> +
+> +#define rw_mutex_writer_wait(rw_mutex, condition)		\
+> +do {								\
+> +	struct task_struct *tsk = (rw_mutex)->waiter;		\
+> +	BUG_ON(tsk != current);					\
+> +								\
+> +	set_task_state(tsk, TASK_UNINTERRUPTIBLE);		\
+> +	while (!(condition)) {					\
+> +		schedule();					\
+
+!!!
+
+If there are at least as many of these scalable reader-writer locks
+as there are CPUs, and each such lock has a realtime-priority writer
+executing, you can have an infinite loop starving all the non-realtime
+readers, who are then unable to ever read-release the lock, preventing
+the writers from making progress.  Or am I missing something subtle here?
+
+> +		set_task_state(tsk, TASK_UNINTERRUPTIBLE);	\
+> +	}							\
+> +	tsk->state = TASK_RUNNING;				\
+> +} while (0)
+
+Can't something like __wait_event() be used here?
+
+> +void rw_mutex_read_lock_slow(struct rw_mutex *rw_mutex)
+> +{
+> +	struct task_struct *tsk;
+> +
+> +	/*
+> +	 * read lock slow path;
+> +	 * count the number of readers waiting on the read_mutex
+> +	 */
+> +	atomic_inc(&rw_mutex->read_waiters);
+> +	mutex_lock(&rw_mutex->read_mutex);
+> +
+> +	percpu_counter_inc(&rw_mutex->readers);
+> +
+> +	/*
+> +	 * wake up a possible write unlock; waiting for at least a single
+> +	 * reader to pass before letting a new writer through.
+> +	 */
+> +	atomic_dec(&rw_mutex->read_waiters);
+> +	tsk = rw_mutex->waiter;
+> +	if (tsk)
+> +		wake_up_process(tsk);
+> +	mutex_unlock(&rw_mutex->read_mutex);
+> +}
+> +EXPORT_SYMBOL(rw_mutex_read_lock_slow);
+> +
+> +int __rw_mutex_read_trylock(struct rw_mutex *rw_mutex)
+> +{
+> +	struct task_struct *tsk;
+> +
+> +	percpu_counter_inc(&rw_mutex->readers);
+> +	/*
+> +	 * ensure the ->readers store and the ->waiter load is properly
+> +	 * sequenced
+> +	 */
+> +	smp_mb();
+> +	tsk = rw_mutex->waiter;
+> +	if (unlikely(tsk)) {
+> +		percpu_counter_dec(&rw_mutex->readers);
+> +		/*
+> +		 * ensure the ->readers store has taken place before we issue
+> +		 * the wake_up
+> +		 *
+> +		 * XXX: or does this require an smp_wmb() and the waiter to do
+> +		 *   (smp_rmb(), percpu_counter(&rw_mutex->readers) == 0)
+
+I don't think that -anything- is needed here as written.  The "sleeping"
+writers don't really block, they instead simply loop on schedule().  Of
+course that in itself is a -really- bad idea if case of realtime-priority
+writers...
+
+So the writers need to really block, which will make the wakeup code
+much more ticklish.  In that case, it seems to me that smp_mb() will
+be needed here, but much will depend on the exact structure of the
+block/wakeup scheme chosen.
+
+> +		barrier();
+> +		/*
+> +		 * possibly wake up a writer waiting for this reference to
+> +		 * disappear
+> +		 */
+
+!!!
+
+Suppose we get delayed here (preempted, interrupted, whatever) and the
+task referenced by tsk has exited and cleaned up before we get a chance
+to wake it up?  We might well be "waking up" some entirely different
+data structure in that case, not?
+
+> +		wake_up_process(tsk);
+> +		return 0;
+> +	}
+> +	return 1;
+> +}
+> +EXPORT_SYMBOL(__rw_mutex_read_trylock);
+> +
+> +void rw_mutex_read_unlock(struct rw_mutex *rw_mutex)
+> +{
+> +	struct task_struct *tsk;
+> +
+> +	rwsem_release(&rw_mutex->dep_map, 1, _RET_IP_);
+> +
+> +	percpu_counter_dec(&rw_mutex->readers);
+> +	/*
+> +	 * ensure the ->readers store and the ->waiter load is properly
+> +	 * sequenced
+> +	 */
+> +	smp_mb();
+> +	tsk = rw_mutex->waiter;
+> +	if (unlikely(tsk)) {
+> +		/*
+> +		 * on the slow path; nudge the writer waiting for the last
+> +		 * reader to go away
+> +		 */
+
+!!!
+
+What if we are delayed (interrupted, preempted, whatever) here, so that
+the task referenced by tsk has exited and been cleaned up before we can
+execute the following?  We could end up "waking up" the freelist, not?
+
+> +		wake_up_process(tsk);
+> +	}
+> +}
+> +EXPORT_SYMBOL(rw_mutex_read_unlock);
+> +
+> +void rw_mutex_write_lock_nested(struct rw_mutex *rw_mutex, int subclass)
+> +{
+> +	might_sleep();
+> +	rwsem_acquire(&rw_mutex->dep_map, subclass, 0, _RET_IP_);
+> +
+> +	mutex_lock_nested(&rw_mutex->write_mutex, subclass);
+> +	BUG_ON(rw_mutex->waiter);
+> +
+> +	/*
+> +	 * block new readers
+> +	 */
+> +	mutex_lock_nested(&rw_mutex->read_mutex, subclass);
+> +	rw_mutex->waiter = current;
+> +	/*
+> +	 * full barrier to sequence the store of ->waiter
+> +	 * and the load of ->readers
+> +	 */
+> +	smp_mb();
+> +	/*
+> +	 * and wait for all current readers to go away
+> +	 */
+> +	rw_mutex_writer_wait(rw_mutex,
+> +			(percpu_counter_sum(&rw_mutex->readers) == 0));
+> +}
+> +EXPORT_SYMBOL(rw_mutex_write_lock_nested);
+> +
+> +void rw_mutex_write_unlock(struct rw_mutex *rw_mutex)
+> +{
+> +	int waiters;
+> +
+> +	might_sleep();
+> +	rwsem_release(&rw_mutex->dep_map, 1, _RET_IP_);
+> +
+> +	/*
+> +	 * let the readers rip
+> +	 */
+> +	waiters = atomic_read(&rw_mutex->read_waiters);
+> +	mutex_unlock(&rw_mutex->read_mutex);
+> +	/*
+> +	 * wait for at least 1 reader to get through
+> +	 */
+> +	if (waiters) {
+> +		rw_mutex_writer_wait(rw_mutex,
+> +			(atomic_read(&rw_mutex->read_waiters) < waiters));
+> +	}
+
+!!!
+
+Readers can indefinitely postpone the write-unlock at this point.
+Suppose that there is one reader waiting when we fetch ->read_waiters
+above.  Suppose that as soon as the mutex is released, a large number
+of readers arrive.  Because we have not yet NULLed ->waiter, all of
+these readers will take the slow path, incrementing the ->read_waiters
+counter, acquiring the ->read_mutex, and so on.  The ->read_mutex lock
+acquisition is likely to be the bottleneck for large systems, which
+would result in the count remaining 2 or higher indefinitely.  The
+readers would make progress (albeit quite inefficiently), but the
+writer would never get out of the loop in the rw_mutex_writer_wait()
+macro.
+
+Consider instead using a generation number that just increments every
+time a reader successfully acquires the lock and is never decremented.
+That way, you can unambiguously determine when at least one reader has
+made progress.  An additional counter required, but might be able to
+multiplex with something else.  Or get rid of the current ->read_waiters
+in favor of the generation number?  This latter seems like it should be
+possible, at least at first glance...  Just change the name of the field,
+get rid of the decrement, and change the comparison to "!=", right?
+
+> +	rw_mutex->waiter = NULL;
+> +	/*
+> +	 * before we let the writers rip
+> +	 */
+> +	mutex_unlock(&rw_mutex->write_mutex);
+> +}
+> +EXPORT_SYMBOL(rw_mutex_write_unlock);
+> Index: linux-2.6/kernel/Makefile
+> ===================================================================
+> --- linux-2.6.orig/kernel/Makefile	2007-05-12 15:33:00.000000000 +0200
+> +++ linux-2.6/kernel/Makefile	2007-05-12 15:33:02.000000000 +0200
+> @@ -8,7 +8,8 @@ obj-y     = sched.o fork.o exec_domain.o
+>  	    signal.o sys.o kmod.o workqueue.o pid.o \
+>  	    rcupdate.o extable.o params.o posix-timers.o \
+>  	    kthread.o wait.o kfifo.o sys_ni.o posix-cpu-timers.o mutex.o \
+> -	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o die_notifier.o
+> +	    hrtimer.o rwsem.o latency.o nsproxy.o srcu.o die_notifier.o \
+> +	    rwmutex.o
+> 
+>  obj-$(CONFIG_STACKTRACE) += stacktrace.o
+>  obj-y += time/
+> 
+> 
