@@ -1,49 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759303AbXEOSg4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758572AbXEOSiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759303AbXEOSg4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 14:36:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758255AbXEOSgp
+	id S1758572AbXEOSiU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 14:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbXEOSiO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 14:36:45 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:50918 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756615AbXEOSgo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 14:36:44 -0400
-Date: Tue, 15 May 2007 11:36:43 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Badari Pulavarty <pbadari@us.ibm.com>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: select(0, ..) is valid ?
-In-Reply-To: <20070515113033.75d7bff6.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705151136150.31972@schroedinger.engr.sgi.com>
-References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
- <20070515104453.f901e91f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com>
- <20070515113033.75d7bff6.akpm@linux-foundation.org>
+	Tue, 15 May 2007 14:38:14 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:34054 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754094AbXEOSiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 14:38:14 -0400
+Message-ID: <4649FDEA.2050703@redhat.com>
+Date: Tue, 15 May 2007 14:37:30 -0400
+From: Chuck Ebbert <cebbert@redhat.com>
+Organization: Red Hat
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+CC: Folkert van Heusden <folkert@vanheusden.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [2.6.21.1] OOPS in timer stats code
+References: <3644.62.177.207.163.1179227559.squirrel@klant.bhosted.nl> <6bffcb0e0705150433o95c801eo4818a9f36e5bb770@mail.gmail.com>
+In-Reply-To: <6bffcb0e0705150433o95c801eo4818a9f36e5bb770@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007, Andrew Morton wrote:
+Michal Piotrowski wrote:
+> [Adding Thomas to CC]
+> 
+> On 15/05/07, Folkert van Heusden <folkert@vanheusden.com> wrote:
+>> Hi,
+>>
+>> After an uptime of, say, 4 hours I got an oops on my P4 with HT and
+>> 2GB ram.
+>> It has dynamic ticks enabled as well has timer stats. I cannot reboot the
+>> machine to give more details right now (19:00 gmt+1 i can).
+>>
+>> For now, this is the oops:
+>>
+>> [13092.479019] BUG: unable to handle kernel paging request at virtual
+>> address b9d0458f
 
-> Perhaps putting a size=0 detector into slab also would speed this
-> process up.
-
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
-
-Index: linux-2.6/mm/slab.c
-===================================================================
---- linux-2.6.orig/mm/slab.c	2007-05-15 11:32:25.000000000 -0700
-+++ linux-2.6/mm/slab.c	2007-05-15 11:35:55.000000000 -0700
-@@ -792,6 +792,7 @@ static inline struct kmem_cache *__find_
- 	 */
- 	BUG_ON(malloc_sizes[INDEX_AC].cs_cachep == NULL);
- #endif
-+	WARN_ON_ONCE(size == 0);
- 	while (size > csizep->cs_size)
- 		csizep++;
- 
+Timer hash list contains a user address.
