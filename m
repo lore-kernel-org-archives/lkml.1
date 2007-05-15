@@ -1,55 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761510AbXEOEdb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761508AbXEOEiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761510AbXEOEdb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 00:33:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755927AbXEOEdY
+	id S1761508AbXEOEiX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 00:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756245AbXEOEiR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 00:33:24 -0400
-Received: from lixom.net ([66.141.50.11]:40889 "EHLO mail.lixom.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755886AbXEOEdY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 00:33:24 -0400
-Date: Mon, 14 May 2007 23:36:28 -0500
-To: linux-pcmcia@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org, akpm@osdl.org, hch@lst.de
-Subject: [PATCH v3] pcmcia: export pcmcia_bus_type (GPL-only)
-Message-ID: <20070515043628.GA6648@lixom.net>
-References: <20070512153307.GA13223@lixom.net> <20070512180658.GA14291@lixom.net>
+	Tue, 15 May 2007 00:38:17 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:41546 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756044AbXEOEiQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 00:38:16 -0400
+Date: Mon, 14 May 2007 21:38:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: andrew hendry <andrew.hendry@gmail.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.22-rc1
+In-Reply-To: <d45a3acc0705142114t2ed13889p5ed97740782d2821@mail.gmail.com>
+Message-ID: <alpine.LFD.0.98.0705142135390.6739@woody.linux-foundation.org>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+ <d45a3acc0705142114t2ed13889p5ed97740782d2821@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070512180658.GA14291@lixom.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: olof@lixom.net (Olof Johansson)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Export pcmcia_bus_type so module-based drivers can register bus notifiers.
-
-Signed-off-by: Olof Johansson <olof@lixom.net>
 
 
-Index: powerpc/drivers/pcmcia/ds.c
-===================================================================
---- powerpc.orig/drivers/pcmcia/ds.c
-+++ powerpc/drivers/pcmcia/ds.c
-@@ -1404,6 +1404,7 @@ struct bus_type pcmcia_bus_type = {
- 	.suspend = pcmcia_dev_suspend,
- 	.resume = pcmcia_dev_resume,
- };
-+EXPORT_SYMBOL_GPL(pcmcia_bus_type);
+On Tue, 15 May 2007, andrew hendry wrote:
+>
+> from a randconfig, attached.
+> 
+> arch/i386/mm/discontig.c:107: error: expected identifier or '(' before numeric constant
+
+Gaah. That file is horrible. It redeclares a lot of stuff that it has no 
+business declaring.
+
+Does this patch help?
+
+		Linus
+---
+ arch/i386/mm/discontig.c |   10 +++-------
+ 1 files changed, 3 insertions(+), 7 deletions(-)
+
+diff --git a/arch/i386/mm/discontig.c b/arch/i386/mm/discontig.c
+index aa58720..baac2a4 100644
+--- a/arch/i386/mm/discontig.c
++++ b/arch/i386/mm/discontig.c
+@@ -31,6 +31,7 @@
+ #include <linux/module.h>
+ #include <linux/kexec.h>
+ #include <linux/pfn.h>
++#include <linux/swap.h>
  
+ #include <asm/e820.h>
+ #include <asm/setup.h>
+@@ -97,15 +98,8 @@ unsigned long node_memmap_size_bytes(int nid, unsigned long start_pfn,
+ #endif
  
- static int __init init_pcmcia_bus(void)
-Index: powerpc/include/pcmcia/ss.h
-===================================================================
---- powerpc.orig/include/pcmcia/ss.h
-+++ powerpc/include/pcmcia/ss.h
-@@ -298,6 +298,7 @@ extern int pcmcia_register_socket(struct
- extern void pcmcia_unregister_socket(struct pcmcia_socket *socket);
+ extern unsigned long find_max_low_pfn(void);
+-extern void find_max_pfn(void);
+ extern void add_one_highpage_init(struct page *, int, int);
  
- extern struct class pcmcia_socket_class;
-+extern struct bus_type pcmcia_bus_type;
+-extern struct e820map e820;
+-extern unsigned long highend_pfn, highstart_pfn;
+-extern unsigned long max_low_pfn;
+-extern unsigned long totalram_pages;
+-extern unsigned long totalhigh_pages;
+-
+ #define LARGE_PAGE_BYTES (PTRS_PER_PTE * PAGE_SIZE)
  
- /* socket drivers are expected to use these callbacks in their .drv struct */
- extern int pcmcia_socket_dev_suspend(struct device *dev, pm_message_t state);
+ unsigned long node_remap_start_pfn[MAX_NUMNODES];
+@@ -360,7 +354,9 @@ void __init zone_sizes_init(void)
+ 	max_zone_pfns[ZONE_DMA] =
+ 		virt_to_phys((char *)MAX_DMA_ADDRESS) >> PAGE_SHIFT;
+ 	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
++#ifdef CONFIG_HIGHMEM
+ 	max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
++#endif
+ 
+ 	/* If SRAT has not registered memory, register it now */
+ 	if (find_max_pfn_with_active_regions() == 0) {
