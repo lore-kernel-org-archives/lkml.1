@@ -1,52 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934142AbXEOJgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934196AbXEOJh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934142AbXEOJgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 05:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760088AbXEOJgP
+	id S934196AbXEOJh7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 05:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760398AbXEOJhw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 05:36:15 -0400
-Received: from mail.syneticon.net ([213.239.212.131]:46516 "EHLO
-	mail2.syneticon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759952AbXEOJgN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 05:36:13 -0400
-Message-ID: <46497EFD.6050900@wpkg.org>
-Date: Tue, 15 May 2007 11:35:57 +0200
-From: Tomasz Chmielewski <mangoo@wpkg.org>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.0.8) Gecko/20061110 Mandriva/1.5.0.8-1mdv2007.1 (2007.1) Thunderbird/1.5.0.8 Mnenhy/0.7.4.666
+	Tue, 15 May 2007 05:37:52 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:38281 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760357AbXEOJhv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 05:37:51 -0400
+Message-ID: <46497F49.7070109@drzeus.cx>
+Date: Tue, 15 May 2007 11:37:13 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: what does e2fsck's "non-contiguous" really say?
-Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+To: Pavel Pisa <ppisa@pikron.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Nicolas FERRE <nicolas.ferre@rfo.atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Manuel Lauss <mano@roarinelk.homelinux.net>,
+       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, David Brownell <david-b@pacbell.net>,
+       "=?ISO-8859-2?Q?Juha_Yrj=F6l=E4?=" <juha.yrjola@solidboot.com>,
+       Carlos Aguiar <carlos.aguiar@indt.org.br>,
+       "Briglia >> \"Anderson F. Briglia\"" <anderson.briglia@indt.org.br>,
+       Kyungmin Park <kmpark@infradead.org>, "Khasim, Syed" <x0khasim@ti.com>
+Subject: Re: [RFC] Orphaning MMC host drivers
+References: <4648BAC9.5020405@drzeus.cx> <200705150230.38617.ppisa@pikron.com>
+In-Reply-To: <200705150230.38617.ppisa@pikron.com>
+Content-Type: text/plain; charset=ISO-8859-2
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What does e2fsck's "non-contiguous" really say? I always thought it may 
-give a clue about how a filesystem is fragmented.
+Pavel Pisa wrote:
+> 
+> as I have already stated, I would take responsibility
+> for I.MX SDHC driver. It is not perfect, but I am trying
+> to keep and fix it and I would be happy to receive
+> feedback or help from others.
+> 
 
-However, I had set up a filesystem on a 365 GB RAID-5 array:
+Great.
 
-/dev/sdao             365G  195M  347G   1% /mnt/1
+> 
+> Do you include change or should I send my own patch
+> for review? Would you suggest change in driver name
+> to MOTOROLA I.MX MMCI DRIVER ?
+> 
 
+I'll included it in my end.
 
-The filesystem contains only one directory (lost+found).
+As for the name, I think it's easier for people to find stuff if the vendor name
+is included. I'll take your name (which is more detailed) and stick a MOTOROLA
+in the front.
 
-I ran e2fsck on that filesystem, and it says "9.1% non-contiguous":
-
-# e2fsck -f part
-e2fsck 1.39 (29-May-2006)
-Pass 1: Checking inodes, blocks, and sizes
-Pass 2: Checking directory structure
-Pass 3: Checking directory connectivity
-Pass 4: Checking reference counts
-Pass 5: Checking group summary information
-part: 11/48594944 files (9.1% non-contiguous), 1574757/97187200 blocks
-
-
-"9.1% non-contiguous" - what meaning does it really have?
-
-
+Rgds
 -- 
-Tomasz Chmielewski
-http://wpkg.org
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
