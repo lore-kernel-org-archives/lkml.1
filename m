@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbXEOSkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758255AbXEOSvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759444AbXEOSkY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 14:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754820AbXEOSkN
+	id S1758255AbXEOSvf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 14:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbXEOSv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 14:40:13 -0400
-Received: from mo-p00-fb.rzone.de ([81.169.146.163]:55967 "EHLO
-	mo-p00-fb.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754763AbXEOSkM (ORCPT
+	Tue, 15 May 2007 14:51:28 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:21769 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754940AbXEOSv2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 14:40:12 -0400
-From: Till Harbaum / Lists <lists@harbaum.org>
-To: linux-usb-devel@lists.sourceforge.net, jroberson@gtcocalcomp.com
-Subject: Re: [linux-usb-devel] Cannot find our GTCO USB Driver in the 2.6.22-rc1 kernel
-Date: Tue, 15 May 2007 20:38:53 +0200
-User-Agent: KMail/1.9.6
-Cc: Randy Dunlap <randy.dunlap@oracle.com>, Greg KH <gregkh@suse.de>,
-       linux-kernel@vger.kernel.org
-References: <1176912010.6215.17.camel@EdgyEft.Home> <20070515111250.e869634b.randy.dunlap@oracle.com> <1179252727.3101.68.camel@EdgyEft.Home>
-In-Reply-To: <1179252727.3101.68.camel@EdgyEft.Home>
+	Tue, 15 May 2007 14:51:28 -0400
+Date: Tue, 15 May 2007 19:51:05 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andi Kleen <ak@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <clameter@sgi.com>,
+       William Lee Irwin III <wli@holomorphy.com>,
+       David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Subject: [PATCH] i386: don't check_pgt_cache in flush_tlb_mm
+Message-ID: <Pine.LNX.4.64.0705151946550.30826@blonde.wat.veritas.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705152038.53676.lists@harbaum.org>
-X-RZG-AUTH: lrVwt3eQkFsB0N4NN6ByxoEgzafUGJAl9sa8ZuPyEW4S2CcRRqQ/xUw=
-X-RZG-CLASS-ID: mo00
-X-RZG-CLASS-ID: mo00
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 15 May 2007 18:51:26.0074 (UTC) FILETIME=[0A4B55A0:01C79722]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABmluYm94AGFrQHN1c2UuZGUAbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZwBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAGNsYW1ldGVyQHNnaS5jb20AZGF2ZW1AZGF2ZW1sb2Z0Lm5ldAB3bGlAaG9sb21vcnBoeS5jb20A
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+No other architecture calls check_pgt_cache() from within flush_tlb_mm(),
+and i386 is already calling check_pgt_cache() from the usual places,
+tlb_finish_mmu() and cpu_idle() (the latter being odd, but not unusual).
+flush_tlb_mm() has no business to be freeing pages: remove that line,
+which sneaked in with slub's i386 support.
 
-which leads to the question: Why is the "Enable Tablets" entry not
-inside the tablets menu. This way it's more obvious that it's disabled
-if it's the only entry in the menu. Plus the parent menu gets
-cleaned up as well.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+ arch/i386/kernel/smp.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Till
-
-Am Dienstag 15 Mai 2007 schrieb Jeremy Roberson:
-> LOL.  Thanks, I forgot to enable Tablets before entering the Tablets
-> tree.
->
-> On Tue, 2007-05-15 at 11:12 -0700, Randy Dunlap wrote:
-> > On Tue, 15 May 2007 10:47:23 -0700 Jeremy Roberson wrote:
-> > > I just got finished configuring the 2.6.22-rc1 kernel and noticed that
-> > > the driver for my GTCO USB Digitizer isn't listed anymore.  For that
-> > > matter, non of the tablet drivers appear to be there.  I did notice
-> > > that there is a new Tablet section but, it's empty.  Will the Tablet
-> > > drivers be put back in for the 2.6.22 release?
-> >
-> > I see the driver listed in the Tablets section, but first
-> > you must enable/check the Tablets entry...
-> > Does that work/help you?
-> >
-> > ---
-> > ~Randy
-> > *** Remember to use Documentation/SubmitChecklist when testing your code
-> > ***
-
-
+--- 2.6.22-rc1/arch/i386/kernel/smp.c	2007-05-13 05:40:51.000000000 +0100
++++ linux/arch/i386/kernel/smp.c	2007-05-15 17:49:48.000000000 +0100
+@@ -421,7 +421,7 @@ void flush_tlb_mm (struct mm_struct * mm
+ 	}
+ 	if (!cpus_empty(cpu_mask))
+ 		flush_tlb_others(cpu_mask, mm, TLB_FLUSH_ALL);
+-	check_pgt_cache();
++
+ 	preempt_enable();
+ }
+ 
