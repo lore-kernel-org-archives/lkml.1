@@ -1,70 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760239AbXEOAPY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbXEOAPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760239AbXEOAPY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 20:15:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756691AbXEOAPN
+	id S1760859AbXEOAPn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 20:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756691AbXEOAPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 20:15:13 -0400
-Received: from netops-testserver-3-out.sgi.com ([192.48.171.28]:34882 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756669AbXEOAPM (ORCPT
-	<rfc822;@relay.sgi.com:linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 20:15:12 -0400
-Date: Tue, 15 May 2007 10:14:50 +1000
-From: David Chinner <dgc@sgi.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: David Chinner <dgc@sgi.com>, Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Matt Mackall <mpm@selenic.com>, xfs@oss.sgi.com
-Subject: Re: 2.6.21-git10/11: files getting truncated on xfs? or maybe an nlink problem?
-Message-ID: <20070515001450.GS86004887@sgi.com>
-References: <4642598E.3000607@goop.org> <20070510000119.GO85884050@sgi.com> <46426194.3040403@goop.org> <46439185.5060207@redhat.com> <464392B4.3070009@goop.org> <464393E1.3050705@redhat.com> <46439491.9010604@goop.org> <Pine.LNX.4.61.0705121323030.9570@yvahk01.tjqt.qr> <20070512135143.GG85884050@sgi.com> <4645D594.4070801@goop.org>
+	Mon, 14 May 2007 20:15:35 -0400
+Received: from mga03.intel.com ([143.182.124.21]:34629 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760642AbXEOAPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 20:15:34 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,533,1170662400"; 
+   d="scan'208";a="228049447"
+Date: Mon, 14 May 2007 17:12:50 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: akpm@linux-foundation.org, "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       Christoph Lameter <clameter@sgi.com>, kiran@scalex86.org,
+       linux-kernel@vger.kernel.org
+Cc: fenghua.yu@intel.com
+Subject: [PATCH 2/2] Use the new percpu interface for shared data -- version 2
+Message-ID: <20070515001250.GA29172@linux-os.sc.intel.com>
+References: <33E1C72C74DBE747B7B59C1740F7443701A2F0AB@orsmsx417.amr.corp.intel.com> <20070505001222.GA26142@linux-os.sc.intel.com> <Pine.LNX.4.64.0705050951040.27326@schroedinger.engr.sgi.com> <20070507171129.GA21638@linux-os.sc.intel.com> <Pine.LNX.4.64.0705071029470.5447@schroedinger.engr.sgi.com> <20070507174608.GB21638@linux-os.sc.intel.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4645D594.4070801@goop.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20070507174608.GB21638@linux-os.sc.intel.com>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 12, 2007 at 07:56:20AM -0700, Jeremy Fitzhardinge wrote:
-> David Chinner wrote:
-> > What I don't understand is that on unmount dirty xfs inodes get
-> > written out. Clearly this is not happening - either there's a hole
-> > in the writeback logic (unlikely - it was unchanged) or we've missed
-> > some case where we need to update the filesize and mark the inode
-> > dirty.
-> >
-> > Hmmmm - if the write was just a short append to the file, then the
-> > block that was written to should already be mapped. Then we'll just
-> > look up the extent by doing a BMAPI_READ lookup, set the type to
-> > IOMAP_READ and add the block to ioend we are building.
-> >   
-> 
-> Well, that result I mailed you showed that the difference was just over
-> 16k, and that there was a 32 block difference in the final extent
-> length.  Does that fit with this theory?
 
-Yes - because when we do specualtive allocation of 64k beyond EOF
-by default on appends....
+Currently most of the per cpu data, which is accessed by different cpus, has a
+____cacheline_aligned_in_smp attribute. Move all this data to the new per cpu
+shared data section: .data.percpu.shared_aligned.
 
-> > The type IOMAP_READ determines the I/O completion behaviour - in this case
-> > it is xfs_end_bio_read(), which fails to update the file size....
-> >
-> > Bingo.
-> >
-> > A patch for you to try, Jeremy. I've just started a test run on it...
-> >   
-> 
-> Thanks, I'll give it a spin.  Have you reproduced the bug yourself?
+This will seperate  the percpu data which is referenced frequently by other cpus
+from the local only percpu data.
 
-No, not yet. I haven't had chance because I'm travelling at the moment....
+Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
+Acked-by: Suresh Siddha <suresh.b.siddha@intel.com>
 
-Cheers,
+---
 
-Dave.
--- 
-Dave Chinner
-Principal Engineer
-SGI Australian Software Group
+ arch/i386/kernel/init_task.c   |    2 +-
+ arch/i386/kernel/irq.c         |    2 +-
+ arch/ia64/kernel/smp.c         |    2 +-
+ arch/x86_64/kernel/init_task.c |    2 +-
+ kernel/sched.c                 |    2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff -Nurp linux-2.6.21-rc7.0/arch/i386/kernel/init_task.c linux-2.6.21-rc7.1/arch/i386/kernel/init_task.c
+--- linux-2.6.21-rc7.0/arch/i386/kernel/init_task.c	2007-04-15 16:50:57.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/i386/kernel/init_task.c	2007-05-14 12:44:43.000000000 -0700
+@@ -42,5 +42,5 @@ EXPORT_SYMBOL(init_task);
+  * per-CPU TSS segments. Threads are completely 'soft' on Linux,
+  * no more per-task TSS's.
+  */ 
+-DEFINE_PER_CPU(struct tss_struct, init_tss) ____cacheline_internodealigned_in_smp = INIT_TSS;
++DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, init_tss) = INIT_TSS;
+ 
+diff -Nurp linux-2.6.21-rc7.0/arch/i386/kernel/irq.c linux-2.6.21-rc7.1/arch/i386/kernel/irq.c
+--- linux-2.6.21-rc7.0/arch/i386/kernel/irq.c	2007-05-01 07:32:59.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/i386/kernel/irq.c	2007-05-14 12:44:43.000000000 -0700
+@@ -21,7 +21,7 @@
+ #include <asm/apic.h>
+ #include <asm/uaccess.h>
+ 
+-DEFINE_PER_CPU(irq_cpustat_t, irq_stat) ____cacheline_internodealigned_in_smp;
++DEFINE_PER_CPU_SHARED_ALIGNED(irq_cpustat_t, irq_stat);
+ EXPORT_PER_CPU_SYMBOL(irq_stat);
+ 
+ DEFINE_PER_CPU(struct pt_regs *, irq_regs);
+diff -Nurp linux-2.6.21-rc7.0/arch/ia64/kernel/smp.c linux-2.6.21-rc7.1/arch/ia64/kernel/smp.c
+--- linux-2.6.21-rc7.0/arch/ia64/kernel/smp.c	2007-04-15 16:50:57.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/ia64/kernel/smp.c	2007-05-14 12:44:43.000000000 -0700
+@@ -70,7 +70,7 @@ static volatile struct call_data_struct 
+ #define IPI_KDUMP_CPU_STOP	3
+ 
+ /* This needs to be cacheline aligned because it is written to by *other* CPUs.  */
+-static DEFINE_PER_CPU(u64, ipi_operation) ____cacheline_aligned;
++static DEFINE_PER_CPU_SHARED_ALIGNED(u64, ipi_operation);
+ 
+ extern void cpu_halt (void);
+ 
+diff -Nurp linux-2.6.21-rc7.0/arch/x86_64/kernel/init_task.c linux-2.6.21-rc7.1/arch/x86_64/kernel/init_task.c
+--- linux-2.6.21-rc7.0/arch/x86_64/kernel/init_task.c	2007-04-15 16:50:57.000000000 -0700
++++ linux-2.6.21-rc7.1/arch/x86_64/kernel/init_task.c	2007-05-14 12:44:43.000000000 -0700
+@@ -44,7 +44,7 @@ EXPORT_SYMBOL(init_task);
+  * section. Since TSS's are completely CPU-local, we want them
+  * on exact cacheline boundaries, to eliminate cacheline ping-pong.
+  */ 
+-DEFINE_PER_CPU(struct tss_struct, init_tss) ____cacheline_internodealigned_in_smp = INIT_TSS;
++DEFINE_PER_CPU_SHARED_ALIGNED(struct tss_struct, init_tss) = INIT_TSS;
+ 
+ /* Copies of the original ist values from the tss are only accessed during
+  * debugging, no special alignment required.
+diff -Nurp linux-2.6.21-rc7.0/kernel/sched.c linux-2.6.21-rc7.1/kernel/sched.c
+--- linux-2.6.21-rc7.0/kernel/sched.c	2007-05-01 07:33:07.000000000 -0700
++++ linux-2.6.21-rc7.1/kernel/sched.c	2007-05-14 12:44:43.000000000 -0700
+@@ -263,7 +263,7 @@ struct rq {
+ 	struct lock_class_key rq_lock_key;
+ };
+ 
+-static DEFINE_PER_CPU(struct rq, runqueues) ____cacheline_aligned_in_smp;
++static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
+ static DEFINE_MUTEX(sched_hotcpu_mutex);
+ 
+ static inline int cpu_of(struct rq *rq)
