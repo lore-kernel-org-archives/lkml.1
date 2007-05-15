@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761679AbXEPAnB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761051AbXEPAqq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761679AbXEPAnB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 20:43:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760158AbXEPAmw
+	id S1761051AbXEPAqq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 20:46:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760568AbXEPAqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 20:42:52 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:34077 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759664AbXEPAmu (ORCPT
+	Tue, 15 May 2007 20:46:33 -0400
+Received: from ug-out-1314.google.com ([66.249.92.173]:36716 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760575AbXEPAqc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 20:42:50 -0400
-Subject: Re: [PATCH 1/5][TAKE3] fallocate() implementation on i86, x86_64
-	and powerpc
-From: Mingming Cao <cmm@us.ibm.com>
-Reply-To: cmm@us.ibm.com
-To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
-Cc: torvalds@osdl.org, akpm@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
-In-Reply-To: <20070515200359.GA5834@amitarora.in.ibm.com>
-References: <20070329101010.7a2b8783.akpm@linux-foundation.org>
-	 <20070330071417.GI355@devserv.devel.redhat.com>
-	 <20070417125514.GA7574@amitarora.in.ibm.com>
-	 <20070418130600.GW5967@schatzie.adilger.int>
-	 <20070420135146.GA21352@amitarora.in.ibm.com>
-	 <20070420145918.GY355@devserv.devel.redhat.com>
-	 <20070424121632.GA10136@amitarora.in.ibm.com>
-	 <20070426175056.GA25321@amitarora.in.ibm.com>
-	 <20070515193722.GA3487@amitarora.in.ibm.com>
-	 <20070515195421.GA2948@amitarora.in.ibm.com>
-	 <20070515200359.GA5834@amitarora.in.ibm.com>
-Content-Type: text/plain
-Organization: IBM LTC
-Date: Tue, 15 May 2007 17:42:46 -0700
-Message-Id: <1179276167.4819.22.camel@dyn9047017103.beaverton.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.0.4 (2.0.4-7) 
+	Tue, 15 May 2007 20:46:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:from:to:subject:date:user-agent:cc:references:in-reply-to:mime-version:content-disposition:message-id:content-type:content-transfer-encoding;
+        b=l4SHvE+936cad9sYfHLPxNwVYuPZ82htr6zAq6eUDT5KxewogK2Cn34QVM6lJAqmYogs/XM+j9wpBll9cN97RoE7+AQivqYuIXUpsSmV8ZZRDo9ComZrmiIjXChA/M/eeQVlyZawfVblYlJzi0qvjjK0nftukKdLP3WyogWTWOk=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
+Subject: Re: [PATCH 2/5] Use mutex instead of semaphore in IDE driver
+Date: Wed, 16 May 2007 00:04:48 +0200
+User-Agent: KMail/1.9.6
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+References: <20070514090256.GF29206@traven> <20070514091424.GH29206@traven>
+In-Reply-To: <20070514091424.GH29206@traven>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200705160004.48294.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2007-05-16 at 01:33 +0530, Amit K. Arora wrote:
-> This patch implements sys_fallocate() and adds support on i386, x86_64
-> and powerpc platforms.
+On Monday 14 May 2007, Matthias Kaehlcke wrote:
+> The IDE driver uses a semaphore as mutex. Use the mutex API instead of
+> the (binary) semaphore.
+> 
+> Signed-off-by: Matthias Kaehlcke <matthias.kaehlcke@gmail.com>
 
-> @@ -1137,6 +1148,8 @@ struct inode_operations {
->  	ssize_t (*listxattr) (struct dentry *, char *, size_t);
->  	int (*removexattr) (struct dentry *, const char *);
->  	void (*truncate_range)(struct inode *, loff_t, loff_t);
-> +	long (*fallocate)(struct inode *inode, int mode, loff_t offset,
-> +			  loff_t len);
->  };
+applied
 
-Does the return value from fallocate inode operation has to be *long*?
-It's not consistent with the ext4_fallocate() define in patch 4/5, 
+Since I already had a patch from you with identical patch summary/description
+(but for ide_cfg_sem semaphore) in my tree, I almost overlooked this one. :)
 
-+int ext4_fallocate(struct inode *inode, int mode, loff_t offset, loff_t
-len)
+Please choose more descriptive patch summary/description next time.
 
-thus cause compile warnings.
-
-
-
-Mingming
-
+Thanks,
+Bart
