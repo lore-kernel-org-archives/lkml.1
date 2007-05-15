@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760571AbXEOF3H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760738AbXEOFgR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760571AbXEOF3H (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 01:29:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757617AbXEOF25
+	id S1760738AbXEOFgR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 01:36:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756438AbXEOFgI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 01:28:57 -0400
-Received: from koto.vergenet.net ([210.128.90.7]:56798 "EHLO koto.vergenet.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755057AbXEOF24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 01:28:56 -0400
-Date: Tue, 15 May 2007 14:28:55 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
-Subject: Re: [ARM] Fix hard_smp_processor_id compile error
-Message-ID: <20070515052854.GH13708@verge.net.au>
-References: <20070515022014.CC2A44F910@tabatha.lab.ultramonkey.org> <1179197981.4519.2.camel@sebastian.intellilink.co.jp> <20070514214818.16b36610.akpm@linux-foundation.org> <20070515045422.GD13708@verge.net.au> <20070514222234.0eb5d149.akpm@linux-foundation.org>
+	Tue, 15 May 2007 01:36:08 -0400
+Received: from server021.webpack.hosteurope.de ([80.237.130.29]:56046 "EHLO
+	server021.webpack.hosteurope.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755057AbXEOFgH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 01:36:07 -0400
+From: Michael Gerdau <mgd@technosis.de>
+Organization: Technosis GmbH
+To: Jan Engelhardt <jengelh@linux01.gwdg.de>
+Subject: Re: Linux 2.6.22-rc1
+Date: Tue, 15 May 2007 07:35:50 +0200
+User-Agent: KMail/1.9.5
+Cc: Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org> <4648A3DF.7040004@imap.cc> <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>
+In-Reply-To: <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070514222234.0eb5d149.akpm@linux-foundation.org>
-User-Agent: mutt-ng/devel-r804 (Debian)
+Content-Type: multipart/signed;
+  boundary="nextPart1808731.JI5qUjThgq";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200705150736.04227.mgd@technosis.de>
+X-bounce-key: webpack.hosteurope.de;mgd@technosis.de;1179207367;0ce9cd94;
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 10:22:34PM -0700, Andrew Morton wrote:
-> On Tue, 15 May 2007 13:54:23 +0900 Simon Horman <horms@verge.net.au> wrote:
-> 
-> > On Mon, May 14, 2007 at 09:48:18PM -0700, Andrew Morton wrote:
-> > > On Tue, 15 May 2007 11:59:41 +0900 Fernando Luis Vázquez Cao <fernando@oss.ntt.co.jp> wrote:
-> > > 
-> > > > On Tue, 2007-05-15 at 11:18 +0900, Simon Horman wrote: 
-> > > > > "Remove hardcoding of hard_smp_processor_id on UP systems",
-> > > > > 2f4dfe206a2fc07099dfad77a8ea2f4b4ae2140f in Linus' tree, moved
-> > > > > the definition of hard_smp_processor_id linux/smp.h to asm/smp.h
-> > > > > for UP systems. This causes a regression on ARM as the definition
-> > > > > was not added to asm-arm/smp.h.
-> > > > Hi Simon!
-> > > > 
-> > > > Thank you for catching and fixing these compile errors. I should install
-> > > > a cross-compiler ASAP.
-> > > 
-> > > Mine are at http://userweb.kernel.org/~akpm/cross-compilers/
-> > 
-> > Do you have / know of tools to create a set of configs for testing?
-> > What I am thinking of is something that takes the default configs,
-> > then toggles SMP, PREEMT and stuff like that, testing all the
-> > permutations.
-> 
-> `make randconfig'?
+--nextPart1808731.JI5qUjThgq
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-I was thinking of something a little more predictable.
-But that end up could working just as well.
+> >Seriously, it might be a tad more efficient if the help texts were
+> >written by those who invented the options in the first place.
+>=20
+> menuconfig NETDEV_10000
+> 	bool "Ethernet (10GbE)"
+> 	---help--
+> 	Say Y here to actually be able to go into this menu
+> 	and select some drivers that we think belong to the
+> 	"10 Gigabit Ethernet" family.
+>=20
+> 	If unsure, it is unwise to say N!
+>=20
+> See, this looks so fundamentally basic to me that I find it
+> almost funny. YMMV, hence I asked for suggestions from
+> other people.
 
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+I remember very well the time when I first issued make menuconfig.
+Ever since then I've been grateful for all those "fundamentally basic"
+explanations. And I've learned quite alot about kernelconfig just
+by reading them.
 
+Best,
+Michael
+=2D-=20
+ Technosis GmbH, Gesch=E4ftsf=FChrer: Michael Gerdau, Tobias Dittmar
+ Sitz Hamburg; HRB 89145 Amtsgericht Hamburg
+ Vote against SPAM - see http://www.politik-digital.de/spam/
+ Michael Gerdau       email: mgd@technosis.de
+ GPG-keys available on request or at public keyserver
+
+--nextPart1808731.JI5qUjThgq
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQBGSUbEUYYhyuxDQc4RAqZcAJ9j0RK7eb1hB6jl7NeeOiJPuq0yZgCeN4EX
+oPCtURiCrPusvbHa8kXiC2o=
+=L9WE
+-----END PGP SIGNATURE-----
+
+--nextPart1808731.JI5qUjThgq--
