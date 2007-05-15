@@ -1,93 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760869AbXEORph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759827AbXEORuv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760869AbXEORph (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 13:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759898AbXEORpF
+	id S1759827AbXEORuv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 13:50:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755102AbXEORuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 13:45:05 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:44846 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756873AbXEORpD (ORCPT
+	Tue, 15 May 2007 13:50:46 -0400
+Received: from mail4.webhostingstar.com ([67.106.77.50]:35946 "HELO
+	mail4.webhostingstar.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755314AbXEORup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 13:45:03 -0400
-Date: Tue, 15 May 2007 10:44:53 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: netdev@vger.kernel.org, lkml <linux-kernel@vger.kernel.org>,
-       Christoph Lameter <clameter@sgi.com>
-Subject: Re: select(0, ..) is valid ?
-Message-Id: <20070515104453.f901e91f.akpm@linux-foundation.org>
-In-Reply-To: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
-References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 15 May 2007 13:50:45 -0400
+X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 13:50:45 EDT
+Message-ID: <20070515124256.ijmnpcako4g8w8g0@67.106.77.50>
+Date: Tue, 15 May 2007 12:42:56 -0500
+From: art@usfltd.com
+To: linux-kernel@vger.kernel.org
+Cc: torvalds@osdl.org
+Subject: usb-scanner-cameras kernel-2.6.22 and udev-095 problem
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 10:29:18 -0700
-Badari Pulavarty <pbadari@us.ibm.com> wrote:
+Linux 2.6.22-rc1-gfaa8b6c3 #130 SMP PREEMPT Tue May 15 08:45:16 CDT  
+2007 x86_64 x86_64 x86_64 GNU/Linux
 
-> Hi,
-> 
-> Is select(0, ..) is a valid operation ?
+udev.x86_64  095
 
-Probably - it becomes an elaborate way of doing a sleep.  Whatever - we
-used to permit it without error, so we should continue to do so.
+usb hotplug/udev cannot correctly register usb/scanners, usb/cameras
+udev doesn't create devices in /dev like /dev/scanner etc
+but we can see devices in /proc/bus/usb/devices
+...
+T:  Bus=02 Lev=02 Prnt=03 Port=01 Cnt=02 Dev#= 10 Spd=12  MxCh= 0
+D:  Ver= 1.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS= 8 #Cfgs=  1
+P:  Vendor=03f0 ProdID=0601 Rev= 1.00
+S:  Manufacturer=Hewlett-Packard
+S:  Product=HP ScanJet 6300C
+S:  SerialNumber=xxxxxxxxxx
+C:* #Ifs= 1 Cfg#= 1 Atr=60 MxPwr=  0mA
+I:* If#= 0 Alt= 0 #EPs= 3 Cls=00(>ifc ) Sub=00 Prot=00 Driver=(none)
+E:  Ad=81(I) Atr=02(Bulk) MxPS=  64 Ivl=0ms
+E:  Ad=02(O) Atr=02(Bulk) MxPS=  16 Ivl=0ms
+E:  Ad=83(I) Atr=03(Int.) MxPS=   1 Ivl=250ms
+...
 
-> I see that there is no check to prevent this or return
-> success early, without doing any work. Do we need one ?
-> 
-> slub code is complaining that we are doing kmalloc(0).
-> 
-> ------------[ cut here ]------------
-> Badness at include/linux/slub_def.h:88
-> Call Trace:
-> [c0000001e4eb7640] [c00000000000e650] .show_stack+0x68/0x1b0
-> (unreliable)
-> [c0000001e4eb76e0] [c00000000029b854] .report_bug+0x94/0xe8
-> [c0000001e4eb7770] [c0000000000219f0] .program_check_exception
-> +0x12c/0x568
-> [c0000001e4eb77f0] [c000000000004a84] program_check_common+0x104/0x180
-> --- Exception: 700 at .get_slab+0x4c/0x234
->     LR = .__kmalloc+0x24/0xc4
-> [c0000001e4eb7ae0] [c0000001e4eb7b80] 0xc0000001e4eb7b80 (unreliable)
-> [c0000001e4eb7b80] [c0000000000a7ff0] .__kmalloc+0x24/0xc4
-> [c0000001e4eb7c10] [c0000000000ea720] .compat_core_sys_select+0x90/0x240
-> [c0000001e4eb7d00] [c0000000000ec3a4] .compat_sys_select+0xb0/0x190
-> [c0000001e4eb7dc0] [c000000000014944] .ppc32_select+0x14/0x28
-> [c0000001e4eb7e30] [c00000000000872c] syscall_exit+0x0/0x40
->
+it works OK with kernel-2.6.20
 
-I _think_ we can just do
+can update udev to version 111 help solve this problem ???
 
---- a/fs/compat.c~a
-+++ a/fs/compat.c
-@@ -1566,9 +1566,13 @@ int compat_core_sys_select(int n, compat
- 	 */
- 	ret = -ENOMEM;
- 	size = FDS_BYTES(n);
--	bits = kmalloc(6 * size, GFP_KERNEL);
--	if (!bits)
--		goto out_nofds;
-+	if (likely(size)) {
-+		bits = kmalloc(6 * size, GFP_KERNEL);
-+		if (!bits)
-+			goto out_nofds;
-+	} else {
-+		bits = NULL;
-+	}
- 	fds.in      = (unsigned long *)  bits;
- 	fds.out     = (unsigned long *) (bits +   size);
- 	fds.ex      = (unsigned long *) (bits + 2*size);
-_
+xboom
 
-I mean, if that oopses then I'd be very interested in finding out why.
 
-But I'm starting to suspect that it would be better to permit kmalloc(0) in
-slub.  It depends on how many more of these things need fixing.
-
-otoh, a kmalloc(0) could be a sign of some buggy/inefficient/weird code, so
-there's some value in forcing us to go look at all the callsites.
 
