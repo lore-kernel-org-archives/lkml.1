@@ -1,100 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760201AbXEONAT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760360AbXEONCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760201AbXEONAT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 09:00:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbXEONAH
+	id S1760360AbXEONCj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 09:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754418AbXEONCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 09:00:07 -0400
-Received: from mailhub.sw.ru ([195.214.233.200]:6560 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753984AbXEONAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 09:00:04 -0400
-Message-ID: <4649AEC5.1060501@sw.ru>
-Date: Tue, 15 May 2007 16:59:49 +0400
-From: Vasily Averin <vvs@sw.ru>
-User-Agent: Thunderbird 1.5.0.10 (X11/20060911)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, devel@openvz.org,
-       Markus Lidel <Markus.Lidel@shadowconnect.com>
-Subject: Re: [Devel] [patch i2o 5/6] i2o_proc files permission
-References: <4649AA6C.2080808@sw.ru> <4649ABC9.6020605@sw.ru>
-In-Reply-To: <4649ABC9.6020605@sw.ru>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: text/plain; charset=KOI8-R
-Content-Transfer-Encoding: 7bit
+	Tue, 15 May 2007 09:02:32 -0400
+Received: from mx10.go2.pl ([193.17.41.74]:52530 "EHLO poczta.o2.pl"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753984AbXEONCc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 09:02:32 -0400
+Date: Tue, 15 May 2007 15:09:04 +0200
+From: Jarek Poplawski <jarkao2@o2.pl>
+To: Tejun Heo <htejun@gmail.com>
+Cc: Oleg Nesterov <oleg@tv-sign.ru>, Andrew Morton <akpm@linux-foundation.org>,
+       David Chinner <dgc@sgi.com>, David Howells <dhowells@redhat.com>,
+       Gautham Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
+Message-ID: <20070515130904.GB3050@ff.dom.local>
+References: <20070503204226.GA212@tv-sign.ru> <464475EB.3000408@gmail.com> <20070511134714.GA191@tv-sign.ru> <46448965.7070500@gmail.com> <20070511145345.GA240@tv-sign.ru> <4645559D.4050602@gmail.com> <20070513192753.GA3014@tv-sign.ru> <46477239.9030007@gmail.com> <20070514194446.GA159@tv-sign.ru> <46496EC1.3090109@gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <46496EC1.3090109@gmail.com>
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I would add:
-I've reported about this issue some time ago to security@kernel.org
-How this lockup can be reproduced:
-- boot the kernel,
-- load i2o_proc module
-- login as user and read all entries in /proc/i2o/ directory
-
-My testnode hangs when I try to read any file from /proc/i2o/iop0/030/
-directory: I have the shell prompt and even can try to start any new command
-which hangs due exec is not works.
-Node is pingable, but I cannot login to it nor via ssh neither from local
-console. Magic Sysrq keys are works. Kernel space software watchdog module
-works OK. But all the new commnds hangs, looks like i2o controller is in coma.
-
-Greg KH wrote:
-And I'd classify this a "low" security issue, as you have to be root to
-load the i2o_proc module, and I doubt that the distros automatically
-load it.
-
-Markus Lidel:
-The problem is not really driver related, IIRC. The driver properly send
-a I2O command to the controller, but this one couldn't handle it and
-instead of just aborting the command "panic's". IIRC it's only Adaptec
-related, the Promise controllers doesn't show this behaviour.
-
-Thank you,
-	Vasily Averin
-
-Vasily Averin wrote:
-> Reading from some i2o related proc files can lead to the i2o controller hang due
-> unknown reasons. As a workaround this patch changes the permission of these
-> files to root-only accessible.
+On Tue, May 15, 2007 at 10:26:41AM +0200, Tejun Heo wrote:
+> Oleg Nesterov wrote:
+...
+> > So, try_to_grab_pending() should check "VALID && pointers equal" atomically.
+> > We can't do "if (VALID && cwq == get_wq_data(work))". We should do something
+> > like this
+> > 
+> > 	(((long)cwq) | VALID | PENDING) == atomic_long_read(&work->data)
+> > 
+> > Yes? I need to think more about this.
 > 
-> Signed-off-by: Vasily Averin <vvs@sw.ru>
-> 
-> --- lk2.6/drivers/message/i2o/i2o_proc.c
-> +++ lk2.6/drivers/message/i2o/i2o_proc.c
-> @@ -1855,17 +1855,17 @@ static i2o_proc_entry i2o_proc_generic_i
->   * Device specific entries
->   */
->  static i2o_proc_entry generic_dev_entries[] = {
-> -	{"groups", S_IFREG | S_IRUGO, &i2o_seq_fops_groups},
-> -	{"phys_dev", S_IFREG | S_IRUGO, &i2o_seq_fops_phys_device},
-> -	{"claimed", S_IFREG | S_IRUGO, &i2o_seq_fops_claimed},
-> -	{"users", S_IFREG | S_IRUGO, &i2o_seq_fops_users},
-> -	{"priv_msgs", S_IFREG | S_IRUGO, &i2o_seq_fops_priv_msgs},
-> -	{"authorized_users", S_IFREG | S_IRUGO, &i2o_seq_fops_authorized_users},
-> -	{"dev_identity", S_IFREG | S_IRUGO, &i2o_seq_fops_dev_identity},
-> -	{"ddm_identity", S_IFREG | S_IRUGO, &i2o_seq_fops_ddm_identity},
-> -	{"user_info", S_IFREG | S_IRUGO, &i2o_seq_fops_uinfo},
-> -	{"sgl_limits", S_IFREG | S_IRUGO, &i2o_seq_fops_sgl_limits},
-> -	{"sensors", S_IFREG | S_IRUGO, &i2o_seq_fops_sensors},
-> +	{"groups", S_IFREG | S_IRUSR, &i2o_seq_fops_groups},
-> +	{"phys_dev", S_IFREG | S_IRUSR, &i2o_seq_fops_phys_device},
-> +	{"claimed", S_IFREG | S_IRUSR, &i2o_seq_fops_claimed},
-> +	{"users", S_IFREG | S_IRUSR, &i2o_seq_fops_users},
-> +	{"priv_msgs", S_IFREG | S_IRUSR, &i2o_seq_fops_priv_msgs},
-> +	{"authorized_users", S_IFREG | S_IRUSR, &i2o_seq_fops_authorized_users},
-> +	{"dev_identity", S_IFREG | S_IRUSR, &i2o_seq_fops_dev_identity},
-> +	{"ddm_identity", S_IFREG | S_IRUSR, &i2o_seq_fops_ddm_identity},
-> +	{"user_info", S_IFREG | S_IRUSR, &i2o_seq_fops_uinfo},
-> +	{"sgl_limits", S_IFREG | S_IRUSR, &i2o_seq_fops_sgl_limits},
-> +	{"sensors", S_IFREG | S_IRUSR, &i2o_seq_fops_sensors},
->  	{NULL, 0, NULL}
->  };
-> 
-> _______________________________________________
-> Devel mailing list
-> Devel@openvz.org
-> https://openvz.org/mailman/listinfo/devel
-> 
+> I don't think the test for PENDING should be atomic too.  cwq pointer
+> and VALID is one package.  PENDING lives its own life as a atomic bit
+> switch.
 
+Hi,
+
+I've overheared somebody is talking about my favorite 2-nd bit!
+Probably I miss many points (your talk isn't the most clear),
+but I wonder if this bit couldn't be used otherwise: try_to_grab_
+sets the bit - others know cancel is pending, so don't disturb:
+e.g. insert_work doesn't queue (at least after works' cpu change,
+which seems to be the main problem here). Probably there is
+no reason to test this bit in all places - only in the most
+problematic; so, in insert_work maybe only after checking
+the cpu was changed. If this way is possible, we could avoid
+setting the VALID bit when not needed (no cancel pending). Maybe
+we could also think about some form of cooperation - e.g. clearing
+of this or other bit to ack the work was catched - of course
+this last thing could be too much, so not necessarily now.
+
+Regards,
+Jarek P.
