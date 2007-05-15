@@ -1,54 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbXEOAIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759231AbXEOANw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758569AbXEOAIR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 20:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbXEOAII
+	id S1759231AbXEOANw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 20:13:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756134AbXEOANp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 20:08:08 -0400
-Received: from pentafluge.infradead.org ([213.146.154.40]:47334 "EHLO
-	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755877AbXEOAIH (ORCPT
+	Mon, 14 May 2007 20:13:45 -0400
+Received: from shawidc-mo1.cg.shawcable.net ([24.71.223.10]:64934 "EHLO
+	pd2mo3so.prod.shaw.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756132AbXEOANo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 20:08:07 -0400
-Subject: Re: +
-	timer_stats-slimmed-down-using-statistics-infrastucture.patch added to -mm
-	tree
-From: Arjan van de Ven <arjan@infradead.org>
-To: Martin Peschke <mp3@de.ibm.com>
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
-       tglx@linutronix.de
-In-Reply-To: <46481D18.7080302@de.ibm.com>
-References: <200704210018.l3L0IJBN027188@shell0.pdx.osdl.net>
-	 <1179082720.19106.4.camel@laptopd505.fenrus.org>
-	 <46481D18.7080302@de.ibm.com>
-Content-Type: text/plain
-Organization: Intel International BV
-Date: Mon, 14 May 2007 17:06:18 -0700
-Message-Id: <1179187579.3654.0.camel@laptopd505.fenrus.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 14 May 2007 20:13:44 -0400
+Date: Mon, 14 May 2007 18:13:15 -0600
+From: Robert Hancock <hancockr@shaw.ca>
+Subject: Re: [announce] Intel announces the PowerTOP utility for Linux
+In-reply-to: <fa.FTEkheuP0nHOUv0cCp0k8pBuoMU@ifi.uio.no>
+To: Arjan van de Ven <arjan@linux.intel.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Message-id: <4648FB1B.90208@shaw.ca>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
+References: <fa.FTEkheuP0nHOUv0cCp0k8pBuoMU@ifi.uio.no>
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2007-05-14 at 10:26 +0200, Martin Peschke wrote:
-> >
-> >> [root@t2930041 timer_stats]# cat data
-> > 
-> > this patch changes the userspace API though, and breaks PowerTOP :(
-> 
-> Though I think it was unfortunate to add the "old" proc API in 2.6.21.
-> timer_stats is clearly labeled as debug stuff in config help, which is why 
-> debugfs would have been a proper place.
-
-but it's not there, it's in it's current place. And userspace apps
-depend on it... so what's the reason to change this after it became
-ABI ? If there's a good one I can fix powertop.. but.... 
-oh well I hope you kept the rest of the file format the same ;)
+Looks like the radeon driver has the same problem as the i915 driver 
+mentioned on the known problems page - I get 60 wakeups/sec from it on 
+my Compaq X1000 laptop (Radeon 9000 graphics) while in X, which 
+essentially prevents entry into C3.
 
 -- 
-if you want to mail me at work (you don't), use arjan (at) linux.intel.com
-Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
+Robert Hancock      Saskatoon, SK, Canada
+To email, remove "nospam" from hancockr@nospamshaw.ca
+Home Page: http://www.roberthancock.com/
 
