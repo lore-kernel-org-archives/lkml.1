@@ -1,94 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760097AbXEOPed@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760100AbXEOPm1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760097AbXEOPed (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 11:34:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbXEOPe0
+	id S1760100AbXEOPm1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 11:42:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbXEOPmU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 11:34:26 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:39806 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754060AbXEOPe0 (ORCPT
+	Tue, 15 May 2007 11:42:20 -0400
+Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:59259 "EHLO
+	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754985AbXEOPmT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 11:34:26 -0400
-Date: Tue, 15 May 2007 08:33:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Tjenarvi Tjenarvi <tjenarvi@yahoo.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeff Garzik <jgarzik@pobox.com>, Tejun Heo <htejun@gmail.com>
-Subject: Re: no DRQ after issuing MULTWRITE_EXT AND PCI: Bus #0b (-#0e) is
- hidden behind transparent bridge #0a (-#0a) (try 'pci=assign-busses')
-In-Reply-To: <466481.34138.qm@web58810.mail.re1.yahoo.com>
-Message-ID: <alpine.LFD.0.98.0705150819140.16401@woody.linux-foundation.org>
-References: <466481.34138.qm@web58810.mail.re1.yahoo.com>
+	Tue, 15 May 2007 11:42:19 -0400
+Date: Wed, 16 May 2007 00:42:08 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       sam@ravnborg.org
+Subject: Re: Fwd: Re: Linux 2.6.22-rc1
+Message-ID: <20070515154208.GJ5043@inferi.kami.home>
+References: <Pine.LNX.4.61.0705131123280.9570@yvahk01.tjqt.qr> <20070514015541.GB4800@inferi.kami.home> <Pine.LNX.4.61.0705140742350.9570@yvahk01.tjqt.qr> <20070514104546.10a4368f.randy.dunlap@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070514104546.10a4368f.randy.dunlap@oracle.com>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.21-rc7-mm2-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 15 May 2007, Tjenarvi Tjenarvi wrote:
+On Mon, May 14, 2007 at 10:45:46AM -0700, Randy Dunlap wrote:
+> On Mon, 14 May 2007 07:49:31 +0200 (MEST) Jan Engelhardt wrote:
 > 
-> "PCI: Bus #0b (-#0e) is hidden behind transparent bridge #0a (-#0a) (try 
-> 'pci=assign-busses') Please report the result to linux-kernel to fix 
-> this permanently"
-
-This one is most likely totally harmless, but you might try to see if that 
-"pci=assign-busses" makes any difference. Do a "lspci" with and without 
-that, and send them to me and the kernel mailing list.
-
-But I assume that everything still *works*? The thing about a transparent 
-bridge is that it doesn't act as a normal PCI bridge - it just passes 
-everything through, so anything that is "hidden" behind one really is 
-quite visible, even if the setup of the bridging registers is odd.
-
-So the reason for that report is most likely just that the BIOS set up the 
-bridge bus numbers in a really odd (and technically incorrect) way - but 
-it probably all still works perfectly fine. You can see all the devices in 
-the machine, right?
-
-We migth have to just change the error message - the case is interesting, 
-but the "to fix this permanently" part is misleading. There's probably 
-nothing to fix (except for a firmware update, and I doubt the BIOS will 
-really be fixed either - BIOS vendors wouldn't care, as long as things 
-work).
-
-> I just a few days ago found this bug. In, 
-> http://lkml.org/lkml/2007/2/28/297 got the same problem, and tells that 
-> had to pass combined_mode=libata as kernel option, otherwise DMA does 
-> not work and the hard disk is terribly slow.  My DMA also can't work 
-> properly on my /dev/hda and my /dev/cdrom,furthermore, now, my dmesg is 
-> full of these messages:
+> > 
+> > On May 14 2007 10:55, Mattia Dongili wrote:
+> > >On Sun, May 13, 2007 at 11:27:31AM +0200, Jan Engelhardt wrote:
+> > >> On May 12 2007 20:20, Linus Torvalds wrote:
+> > >> >
+> > >> >Ok, the merge window has closed, and 2.6.22-rc1 is out there.
+> > >> 
+> > >> I have hit a randconfig compile failure. .config attached.
+> > >> 
+> > >>   LD      .tmp_vmlinux1
+> > >> drivers/built-in.o: In function `acpi_bus_generate_event':
+> > >> (.text+0x233f7): undefined reference to `event_is_open'
+> > >> drivers/built-in.o: In function `acpi_bus_get_power':
+> > >> (.text+0x236ad): undefined reference to `acpi_power_get_inferred_state'
+> > >> drivers/built-in.o: In function `acpi_bus_set_power':
+> > >> (.text+0x237c3): undefined reference to `acpi_power_transition'
+> > >> drivers/built-in.o: In function `acpi_bus_set_power':
+> > >> (.text+0x23835): undefined reference to `acpi_power_transition'
+> > >> drivers/built-in.o: In function `sony_pic_fanspeed_store':
+> > >> sony-laptop.c:(.text+0x91930): undefined reference to `ec_write'
+> > >> drivers/built-in.o: In function `sony_pic_fanspeed_show':
+> > >> sony-laptop.c:(.text+0x9195d): undefined reference to `ec_read'
+> > >> make: *** [.tmp_vmlinux1] Error 1
+> > >
+> > >I actually can't reproduce it with your .config.
+> > 
+> > But I can. Did you try it on x86_64? From 2.6.22-rc1 [
+> > commit 39403865d2e4590802553370a56c9ab93131e4ee in /linux-2.6.git] ?
+> > 
+> > 	bzip2 -cd randconfig-1.bz2 >.config
+> > 	make -j8
 > 
-> hda: status timeout: status=0xd0 { Busy }
-> ide: failed opcode was: unknown
-> hda: no DRQ after issuing MULTWRITE_EXT
-> ide0: reset: success
-> 
-> My opinion is that PCI bus bug and DMA problem and then the 
-> MULTWRITE_EXT error might be somehow related
+> Yes, build easily fails for me also.
 
-I suspect they are unrelated, although they certainly *could* be related 
-(where "related" is possibly something indirect like "the firmware set up 
-something _else_ strangely too").
+ok, as far as sony-laptop is concerned a dependency on ACPI_EC suffices
+to fix the link failure, but I guess that would just hide the real
+issue.
+IOW: why does ACPI_EC, ACPI_SYSTEM and ACPI_POWER are not set when the
+ACPI symbol is?
 
-> I have tried Slackware default kernel 2.4.33.3, and the dmesg is a little different with 2.6.x.
-> 
-> hda: no DRQ after issuing WRITE
+Given the drivers/acpi/Kconfig portion
 
-Ok, so the exact same thing basically happens with a 2.4.x kernel, the 
-message is just different. So this is not a new issue, it's really 
-somethgn about your machine.
+  if ACPI
+  ...
+  config ACPI_EC
+          bool
+          default y
+          help
+            ...
+  
+  config ACPI_POWER
+          bool
+          default y
+  
+  config ACPI_SYSTEM
+          bool
+          default y
+          help
+	  ...
+  ...
+  endif
 
-> Someone got this link to patch this bug, 
-> http://www.spinics.net/lists/linux-ide/msg04810.html.  Then I post 
-> another thread in 
-> http://www.linuxquestions.org/questions/showthread.php?t=551630
+I'd expect the 3 symbols to be all set when CONFIG_ACPI=y.
+What am I overseeing?
 
-Have you tried it, and does that patch actually fix things for you?
-
-That patch has not been merged, possibly because it got forgotten, but 
-possibly because it had other problems. So if you can test it and send the 
-results back to Tejun and Jeff (both Cc'd), please do.
-
-		Linus
+-- 
+mattia
+:wq!
