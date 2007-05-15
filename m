@@ -1,64 +1,37 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbXEOSBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbXEOSDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758509AbXEOSBk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 14:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbXEOSBe
+	id S1758950AbXEOSDV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 14:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbXEOSDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 14:01:34 -0400
-Received: from webmail.gtco.com ([209.36.34.20]:61173 "EHLO
-	mdmailserv.gtcocalcomp.local" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754553AbXEOSBe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 14:01:34 -0400
-X-Greylist: delayed 846 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 14:01:34 EDT
-Subject: Cannot find our GTCO USB Driver in the 2.6.22-rc1 kernel
-From: Jeremy Roberson <jroberson@gtcocalcomp.com>
-Reply-To: jroberson@gtcocalcomp.com
-To: Greg KH <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, linux-usb-devel@lists.sourceforge.net
-In-Reply-To: <20070515030038.GA8159@suse.de>
-References: <1176912010.6215.17.camel@EdgyEft.Home>
-	 <20070418181859.GA8658@suse.de> <1178046346.14152.43.camel@EdgyEft.Home>
-	 <20070502005252.GA23349@suse.de> <1178693022.4044.62.camel@EdgyEft.Home>
-	 <20070509072130.GA24274@suse.de> <1178768377.11163.3.camel@EdgyEft.Home>
-	 <20070511091845.GA3652@suse.de> <1179193541.3101.25.camel@EdgyEft.Home>
-	 <20070515030038.GA8159@suse.de>
-Content-Type: text/plain
+	Tue, 15 May 2007 14:03:17 -0400
+Received: from mail.tnnet.fi ([217.112.240.26]:48263 "EHLO mail.tnnet.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753152AbXEOSDQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 14:03:16 -0400
+Message-ID: <4649F5DC.87043316@users.sourceforge.net>
+Date: Tue, 15 May 2007 21:03:08 +0300
+From: Jari Ruusu <jariruusu@users.sourceforge.net>
+To: linux-crypto@nl.linux.org
+Cc: linux-kernel@vger.kernel.org
+Subject: Announce loop-AES-v3.2a file/swap crypto package
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Organization: GTCO CalComp
-Date: Tue, 15 May 2007 10:47:23 -0700
-Message-Id: <1179251243.3101.57.camel@EdgyEft.Home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 15 May 2007 17:47:39.0295 (UTC) FILETIME=[215B32F0:01C79719]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I just got finished configuring the 2.6.22-rc1 kernel and noticed that
-the driver for my GTCO USB Digitizer isn't listed anymore.  For that
-matter, non of the tablet drivers appear to be there.  I did notice that
-there is a new Tablet section but, it's empty.  Will the Tablet drivers
-be put back in for the 2.6.22 release?
+loop-AES changes since previous release:
+- loop_twofish.c loop_serpent.c loop_blowfish.c modules included. They are
+  not built by default. Add EXTRA_CIPHERS=y make parameter to build them.
+- Makefile rewritten to always use kbuild method on 2.6 kernels.
+- Work around invalidate_bdev() changes on recent 2.6 kernels.
 
+bzip2 compressed tarball is here:
+
+    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/loop-AES-v3.2a.tar.bz2
+    md5sum d0b5b0f104ce0e1ee9e3ba9608f24ec4
+
+    http://osdn.dl.sourceforge.net/sourceforge/loop-aes/loop-AES-v3.2a.tar.bz2.sign
 
 -- 
-Jeremy Roberson
-Software Engineer
-Interwrite Learning
-
-"Do not go gentle into that good night,
-Old age should burn and rave at the 
-close of the day; Rage, rage against the
-dying of the light."
-- Dylan Thomas
-
-
-
-Note: The information contained within this electronic transmission is
-intended by Interwrite Learning for the use of the named individual or
-entity to which it is directed and contains confidential and/or
-privileged information.  It is not intended for transmission or receipt
-by anyone other than the named addressee or entity.  It should not be
-forwarded or copied to any unauthorized persons.  If you have received
-this is error, please remove it from your system, without copying or
-forwarding it and notify the sender by return email. Thank you.
+Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
