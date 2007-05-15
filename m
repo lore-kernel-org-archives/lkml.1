@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbXEOQNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760351AbXEOQQO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759511AbXEOQNq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 12:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755347AbXEOQNj
+	id S1760351AbXEOQQO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 12:16:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756671AbXEOQQA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 12:13:39 -0400
-Received: from wx-out-0506.google.com ([66.249.82.236]:12729 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753678AbXEOQNi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 12:13:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=uRoDelmGz376QS+bUBIAnYTqxNA/GGn+j0KNzwdKTBinesDbIdk1mA+NImqpMo2s1qMAj3qOHg+3AlK41utG8agXK9s64OHyfojJMgyrusuPGFoNbZbLwNO0kELLg6ivN0gPgGlppOQ0YbdBt0WyMXBUGq+du5mQ/vbTmfPRSNs=
-Message-ID: <4d8e3fd30705150913g6c870941w50e5567588e81f2d@mail.gmail.com>
-Date: Tue, 15 May 2007 18:13:34 +0200
-From: "Paolo Ciarrocchi" <paolo.ciarrocchi@gmail.com>
-To: "Brad Campbell" <brad@wasp.net.au>
-Subject: Re: Standalone swap prefetch patch for mainline
-Cc: "Con Kolivas" <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org
-In-Reply-To: <4649D60C.7020101@wasp.net.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 15 May 2007 12:16:00 -0400
+Received: from verein.lst.de ([213.95.11.210]:38039 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756095AbXEOQP7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 12:15:59 -0400
+Date: Tue, 15 May 2007 18:15:00 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Christoph Hellwig <hch@lst.de>, nate.diller@gmail.com,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Timothy Shimmin <tes@sgi.com>, Michael Halcrow <mhalcrow@us.ibm.com>
+Subject: Re: [PATCH] deprecate memclear_highpage_flush deprecation warnings
+Message-ID: <20070515161500.GA23538@lst.de>
+References: <20070515122440.GA8765@lst.de> <20070515090032.e6f94d58.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <200705141210.43614.kernel@kolivas.org>
-	 <4649C789.6050305@wasp.net.au>
-	 <4d8e3fd30705150818g1755b441w536763d0902ca3cf@mail.gmail.com>
-	 <4649D60C.7020101@wasp.net.au>
+In-Reply-To: <20070515090032.e6f94d58.akpm@linux-foundation.org>
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/15/07, Brad Campbell <brad@wasp.net.au> wrote:
-> Paolo Ciarrocchi wrote:
->
-> > Brad, is it possible for you to do some more test with the latest
-> > version of both SD and CFS  and post some more detailed feedbacks?
-> > That would help a lot.
->
-> Err.. Ok. I have the latest version of SD (that I know about). I could upgrade CFS, but unlike those
-> doing real scientific testing, I'm just getting a feel with my usual usage patterns (thunderbird,
-> firefox, openoffice, gimp, x-chat and gnome). I don't have any hard fast metrics I can measure
-> against really.
+On Tue, May 15, 2007 at 09:00:32AM -0700, Andrew Morton wrote:
+> On Tue, 15 May 2007 14:24:40 +0200 Christoph Hellwig <hch@lst.de> wrote:
+> 
+> > Recent builds get tons of warnings about memclear_highpage_flush
+> > beeing deprecated.  Turns out it's replaced by zero_user_page
+> > which takes an additional argument.
+> > 
+> > Now folks, deprecated is for actual functionality going away, there
+> > is no need to mark the old name deprecated for such a trivial
+> > paramter change and rename.
+> 
+> Yes, it's rather trivial, but memclear_highpage_flush() *is* going away.
 
-I think that just some words about your feeling while you doing your
-standard workload would be sufficient.
-Latest CFS is here:
-http://people.redhat.com/mingo/cfs-scheduler/
-and according to your email you already have latest SD.
+Well, it's renamed to zero_user_page and gained an argument.  We do
+changed like that all the time and don't put silly deprecation warnings
+in.
 
-> Anything I post would be subjective at best. (And to be honest, once I get a stable and usable
-> kernel I tend to stick with it for a month or so as I don't reboot - suspend2 regularly goes 100
-> suspend/resume cycles to S3 between reboots for me)
->
-> I'm a little more willing to experiment on my desktop box, but I really live from the laptop.
+> > Here's a patch to kill memclear_highpage_flush and convert the reaming
+> > user to make the build a littler more silent, it's more than noisy
+> > enough due to all the useless addition of __deprecated or __must_check
+> > to widely used functionality and gcc stupid false positives.
+> 
+> Patches have been prepared which convert all in-kernel users.  I thought
+> I'd dtrt and feed them through maintainers, but that takes time.  The
+> laggards are on cc ;)
 
-Many thanks in advance.
-
-regards,
--- 
-Paolo
-"Tutto cio' che merita di essere fatto,merita di essere fatto bene"
-Philip Stanhope IV conte di Chesterfield
+No, there is absolutely no point in feeding this through maintainers.
+For something as trivial as a rename and adding an argument doing one
+patch is enough and the right thing.  We can't feed any trivial global
+search & replace through maintainer and generate warnings in the
+meantime.
