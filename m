@@ -1,120 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756307AbXEOG5y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbXEOHAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756307AbXEOG5y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 02:57:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753999AbXEOG5r
+	id S1757321AbXEOHAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 03:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbXEOHAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 02:57:47 -0400
-Received: from host2.marvell.com ([65.219.4.2]:43159 "EHLO maili.marvell.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753729AbXEOG5q convert rfc822-to-8bit (ORCPT
+	Tue, 15 May 2007 03:00:10 -0400
+Received: from an-out-0708.google.com ([209.85.132.240]:7408 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752864AbXEOHAI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 02:57:46 -0400
-X-Greylist: delayed 1390 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 02:57:46 EDT
-Content-class: urn:content-classes:message
-Subject: AW: [PATCH] drivers/net/skfp/drvfbi.c: trivial cleanup
-Date: Tue, 15 May 2007 08:34:33 +0200
+	Tue, 15 May 2007 03:00:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
+        b=PIkp9Cfrui1cTcNw5/9/bHSNoUzrqidkkuc3nqzSNrLKWURSiDkbBQ6xNCVApVIA1zOUGz8qC79I4uGqQcSbbiw/csL62IH+LUOeQTosVm4S6JgAfdz1FS7f6+M98/n1V51bvx0g2VsLdPgV7Wr3Zl5Osa4h1+cnynRI8I6xvWQ=
+Message-ID: <46495A5C.4050609@gmail.com>
+Date: Tue, 15 May 2007 08:59:40 +0200
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <4D634BCFD1A2144ABECC75FF512D7A90DA8D2A@SKGExch01.marvell.com>
-In-Reply-To: <200705142327.52458.frank@kernalert.de>
-X-MimeOLE: Produced By Microsoft Exchange V6.5.7226.0
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/net/skfp/drvfbi.c: trivial cleanup
-Thread-Index: AceWbseXp1prJ5hHQv6xQH2FTftqhwATDxcQ
-From: "Abdelkarim Jamal" <ajamal@marvell.com>
-To: "Frank Seidel" <frank@kernalert.de>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>
-Cc: <linux@syskonnect.de>
-X-OriginalArrivalTime: 15 May 2007 06:34:35.0654 (UTC) FILETIME=[1AD49A60:01C796BB]
+To: Francesco Pretto <ceztko@gmail.com>
+CC: Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>	 <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca>	 <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com>	 <463B858E.6060002@cfl.rr.com> <463B99EE.2090001@gmail.com>	 <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com>	 <46489D3B.8050805@gmail.com> <e5ab0f710705141346o45ac8721jacbcb753f9d45406@mail.gmail.com>
+In-Reply-To: <e5ab0f710705141346o45ac8721jacbcb753f9d45406@mail.gmail.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vielen Dank Herr Seidel fuer Ihr Feedback.
+Francesco Pretto wrote:
+> 2007/5/14, Tejun Heo <htejun@gmail.com>
+>>
+>> Okay, the patch made upstream and webpage posted.
+>>
+>>  http://linux-ata.org/shutdown.html
+>>
+>> -- 
+>> tejun
+>>
+> 
+> Ubuntu [1] ang Gentoo [2] bugs opened. Sent a mail to Miquel van
+> Smoorenburg, dev  of sysvinit.
+> 
+> [1] https://bugs.launchpad.net/upstart/+bug/114683
+> [2] http://bugs.gentoo.org/show_bug.cgi?id=178559
 
-Mit freundlichen Gruessen
-Jamal
+Thanks a lot.  I've notified suse.  I'll ask Jeff whether rh is notified.
 
-Marvell® Semiconductor Germany GmbH 
-------------------------------------- 
-Dipl. -Ing. Karim Jamal 
-Technical Support Engineer 
--------------------------------------- 
-Phone: +49 (0) 7243502-330 
-Fax: +49 (0) 7243502-364 
-Mail: support@syskonnect.de 
-Web: http:\\www.syskonnect.de 
-Marvell Semiconductor Germany GmbH, Siemensstr. 23, 76275 Ettlingen, Amtsgericht Karlsruhe HRB 1620 E Geschäftsführer: Dipl.-Volksw. Mathias Horak, Thomas Ruf
-
-
-
------Ursprüngliche Nachricht-----
-Von: Frank Seidel [mailto:frank@kernalert.de] 
-Gesendet: Montag, 14. Mai 2007 23:28
-An: Linux Kernel
-Cc: linux@syskonnect.de
-Betreff: [PATCH] drivers/net/skfp/drvfbi.c: trivial cleanup
-
-
-This patch (for 2.6.21-mm2) contains a trivial cleanup:
-- removes unused exist_board() variation
-- removed part is depecrated and doesn't compile anymore
-
-Signed-off-by: Frank Seidel <frank@kernalert.de>
-
----
- drivers/net/skfp/drvfbi.c |   40 ----------------------------------------
- 1 file changed, 40 deletions(-)
-
-Index: b/drivers/net/skfp/drvfbi.c ===================================================================
---- a/drivers/net/skfp/drvfbi.c
-+++ b/drivers/net/skfp/drvfbi.c
-@@ -1224,46 +1224,6 @@ int get_board_para(struct s_smc *smc, in  }
- #endif	/* ISA */
- 
--#ifdef PCI
--#ifdef USE_BIOS_FUN
--int exist_board(struct s_smc *smc, int slot)
--{
--	u_short dev_id ;
--	u_short ven_id ;
--	int found ; 
--	int i ;
--
--	found = FALSE ;		/* make sure we returned with adatper not found*/
--				/* if an empty oemids.h was included */
--
--#ifdef MULT_OEM
--        smc->hw.oem_id = (struct s_oem_ids *) &oem_ids[0] ;
--	for (; smc->hw.oem_id->oi_status != OI_STAT_LAST; smc->hw.oem_id++) {
--		if (smc->hw.oem_id->oi_status < smc->hw.oem_min_status)
--			continue ;
--#endif
--		ven_id = OEMID(smc,0) + (OEMID(smc,1) << 8) ; 
--		dev_id = OEMID(smc,2) + (OEMID(smc,3) << 8) ; 
--		for (i = 0; i < slot; i++) {
--			if (pci_find_device(i,&smc->hw.pci_handle,
--				dev_id,ven_id) != 0) {
--
--				found = FALSE ;
--			} else {
--				found = TRUE ;
--			}
--		}
--		if (found) {
--			return(1) ;	/* adapter was found */
--		}
--#ifdef MULT_OEM
--	}
--#endif
--	return(0) ;	/* adapter was not found */
--}
--#endif	/* PCI */
--#endif	/* USE_BIOS_FUNC */
--
- void driver_get_bia(struct s_smc *smc, struct fddi_addr *bia_addr)  {
- 	int i ;
-
+-- 
+tejun
