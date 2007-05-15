@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759848AbXEOFJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760258AbXEOFKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759848AbXEOFJV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 01:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756721AbXEOFJO
+	id S1760258AbXEOFKt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 01:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757124AbXEOFKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 01:09:14 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:35205 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756330AbXEOFJM (ORCPT
+	Tue, 15 May 2007 01:10:39 -0400
+Received: from nz-out-0506.google.com ([64.233.162.232]:17788 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756318AbXEOFKh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 01:09:12 -0400
-Date: Mon, 14 May 2007 22:09:01 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       dang@gentoo.org
-Subject: Re: [Bugme-new] [Bug 8479] New: gettimeofday returning 1000000 in
- tv_usec on core2duo
-Message-Id: <20070514220901.90aab9e0.akpm@linux-foundation.org>
-In-Reply-To: <200705150417.l4F4HlvS013354@fire-2.osdl.org>
-References: <200705150417.l4F4HlvS013354@fire-2.osdl.org>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 15 May 2007 01:10:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=L4YpNZcj24A7RZyYNAU+MmnSSYU9RQyNBgegSTDDb9HvMAb831GAXXbIAtuGi4ivMWN2XlNba8VyrQcRm6j5wy0A4ozxQgoCcX9XJAKVxRnpZX3ikYCH/KjfpYcjetKgSmQQtjAF4lM+4jkuDP+fRd5phXVzBpyvAVRmqOl/ktw=
+Message-ID: <d45a3acc0705142210w3982c14ep8afac73c1352ec7e@mail.gmail.com>
+Date: Tue, 15 May 2007 15:10:36 +1000
+From: "andrew hendry" <andrew.hendry@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.22-rc1
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.98.0705142135390.6739@woody.linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+	 <d45a3acc0705142114t2ed13889p5ed97740782d2821@mail.gmail.com>
+	 <alpine.LFD.0.98.0705142135390.6739@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 14 May 2007 21:17:47 -0700 bugme-daemon@bugzilla.kernel.org wrote:
+almost, highstart_pfn is used in a few printks
 
-> http://bugzilla.kernel.org/show_bug.cgi?id=8479
-> 
->            Summary: gettimeofday returning 1000000 in tv_usec on core2duo
->     Kernel Version: 2.6.21
->             Status: NEW
->           Severity: normal
->              Owner: ak@suse.de
->          Submitter: dang@gentoo.org
-> 
-> 
-> Most recent kernel where this bug did *NOT* occur: 2.6.20
-> Distribution: Gentoo
-> Hardware Environment: core2duo T7200 (all reporters had this same CPU)
-> Software Environment: Linux 2.6.21, glibc 2.5
-> Problem Description:
-> 
-> gettimeofday returns 1 - 1000000 in tv_usec, not 0 - 999999 
-> This does not happen on any of my AMD-based 32 or 64 bit boxes, only on my
-> core2duo; I have 2 other reports of this problem, all on T7200's
-> 
-> Steps to reproduce:
-> 
-> call gettimeofday a lot.  Eventually, you'll get 1000000 returned in tv_usec. My
-> average is ~1 in 1000000 calls.  I've attached my test program, with output from
-> various boxes.  One of the other reporters tried the test program too, and got
-> similar output.  .config will be attached too.
+arch/i386/mm/discontig.c: In function 'setup_memory':
+arch/i386/mm/discontig.c:314: error: 'highstart_pfn' undeclared (first
+use in this function)
+arch/i386/mm/discontig.c:314: error: (Each undeclared identifier is
+reported only once
+arch/i386/mm/discontig.c:314: error: for each function it appears in.)
 
-err, whoops.
+On 5/15/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
+>
+>
+> On Tue, 15 May 2007, andrew hendry wrote:
+> >
+> > from a randconfig, attached.
+> >
+> > arch/i386/mm/discontig.c:107: error: expected identifier or '(' before numeric constant
+>
+> Gaah. That file is horrible. It redeclares a lot of stuff that it has no
+> business declaring.
+>
+> Does this patch help?
+>
+>                 Linus
+> ---
+>  arch/i386/mm/discontig.c |   10 +++-------
+>  1 files changed, 3 insertions(+), 7 deletions(-)
+>
+> diff --git a/arch/i386/mm/discontig.c b/arch/i386/mm/discontig.c
+> index aa58720..baac2a4 100644
+> --- a/arch/i386/mm/discontig.c
+> +++ b/arch/i386/mm/discontig.c
+> @@ -31,6 +31,7 @@
+>  #include <linux/module.h>
+>  #include <linux/kexec.h>
+>  #include <linux/pfn.h>
+> +#include <linux/swap.h>
+>
+>  #include <asm/e820.h>
+>  #include <asm/setup.h>
+> @@ -97,15 +98,8 @@ unsigned long node_memmap_size_bytes(int nid, unsigned long start_pfn,
+>  #endif
+>
+>  extern unsigned long find_max_low_pfn(void);
+> -extern void find_max_pfn(void);
+>  extern void add_one_highpage_init(struct page *, int, int);
+>
+> -extern struct e820map e820;
+> -extern unsigned long highend_pfn, highstart_pfn;
+> -extern unsigned long max_low_pfn;
+> -extern unsigned long totalram_pages;
+> -extern unsigned long totalhigh_pages;
+> -
+>  #define LARGE_PAGE_BYTES (PTRS_PER_PTE * PAGE_SIZE)
+>
+>  unsigned long node_remap_start_pfn[MAX_NUMNODES];
+> @@ -360,7 +354,9 @@ void __init zone_sizes_init(void)
+>         max_zone_pfns[ZONE_DMA] =
+>                 virt_to_phys((char *)MAX_DMA_ADDRESS) >> PAGE_SHIFT;
+>         max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
+> +#ifdef CONFIG_HIGHMEM
+>         max_zone_pfns[ZONE_HIGHMEM] = highend_pfn;
+> +#endif
+>
+>         /* If SRAT has not registered memory, register it now */
+>         if (find_max_pfn_with_active_regions() == 0) {
+>
