@@ -1,78 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758894AbXEOVbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757907AbXEOVfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758894AbXEOVbX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbXEOVbR
+	id S1757907AbXEOVfk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755084AbXEOVfd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:31:17 -0400
-Received: from nz-out-0506.google.com ([64.233.162.228]:37862 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752141AbXEOVbQ (ORCPT
+	Tue, 15 May 2007 17:35:33 -0400
+Received: from avexch1.qlogic.com ([198.70.193.115]:38813 "EHLO
+	avexch1.qlogic.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754403AbXEOVfd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 17:31:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=f0SYoo25BG6QOBqLuPdnc8eplQhTqEqkNl642r4T9940u396j1BnLYtvW73qc7GEtptnZm+EEYflj9xualp9ixQkf7VWp3bX9tqB0UxSGicvSWa92mhmjs5U8THhIPpclBVXNLDdTKo6CmMNOIB/SINxn3QkB9CRwkr+MLri5nU=
-Message-ID: <92a12cdb0705151431r57cdd98cq9b77e218f5293214@mail.gmail.com>
-Date: Tue, 15 May 2007 22:31:15 +0100
-From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
-To: "Heikki Orsila" <shdl@zakalwe.fi>
-Subject: Re: [PATCH] ALSA sound driver for SEGA Dreamcast AICA (pcm)
-Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
-       linuxsh-dev@lists.sourceforge.net
-In-Reply-To: <92a12cdb0705151430o66e11fc3m2ec0abd423dc4a6e@mail.gmail.com>
+	Tue, 15 May 2007 17:35:33 -0400
+Date: Tue, 15 May 2007 14:35:31 -0700
+From: Andrew Vasquez <andrew.vasquez@qlogic.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Oruba <peter.oruba@amd.com>, gregkh@suse.de, cramerj@intel.com,
+       john.ronciak@intel.com, jesse.brandeburg@intel.com,
+       jeffrey.t.kirsher@intel.com, auke-jan.h.kok@intel.com,
+       rolandd@cisco.com, halr@voltaire.com, linux-driver@qlogic.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH 0/2] PCI-X/PCI-Express read control interfaces
+Message-ID: <20070515213531.GG29996@n7651av69tz181.qlogic.org>
+References: <200705151350.28330.peter.oruba@amd.com> <20070515123721.1bfb02a3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-References: <92a12cdb0705141514v4c928041i6030267fd322e87@mail.gmail.com>
-	 <20070515004751.GD10873@zakalwe.fi>
-	 <92a12cdb0705151430o66e11fc3m2ec0abd423dc4a6e@mail.gmail.com>
+In-Reply-To: <20070515123721.1bfb02a3.akpm@linux-foundation.org>
+Organization: QLogic Corporation
+User-Agent: Mutt/1.5.13 (2006-08-11)
+X-OriginalArrivalTime: 15 May 2007 21:35:01.0909 (UTC) FILETIME=[E4FCE450:01C79738]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 15/05/07, Adrian McMenamin <adrianmcmenamin@gmail.com> wrote:
-> On 15/05/07, Heikki Orsila <shdl@zakalwe.fi> wrote:
-> > I still noticed some type cleanups, and possibly a good debug message..
-> >
-> > On Mon, May 14, 2007 at 11:14:55PM +0100, Adrian McMenamin wrote:
-> > > +/* spu_memload - write to SPU address space */
-> > > +static void spu_memload(u32 toi, void __iomem * from, int length)
-> > > +{
-> > > +     u32 __iomem *froml = from;
-> > > +     u32 __iomem *to = (u32 __iomem *) (SPU_MEMORY_BASE + toi);
-> > > +     int i, val;
-> >
-> > You should use "void *from" because it's not IO memory. Also, use "u32 val"
-> > since that is the native type of "u32 *from".
-> >
-> > > +     length = DIV_ROUND_UP(length, 4);
-> > > +     spu_write_wait();
-> > > +     for (i = 0; i < length; i++) {
-> > > +             val = *froml;
-> > > +             writel(val, to);
-> > > +             froml++;
-> > > +             to++;
-> > > +             if (i && !(i % 8))
-> > > +                     spu_write_wait();
-> > > +     }
-> > > +}
-> >
-> > It seems a small simplification is possible:
-> >
-> >         /* remove first spu_write_wait(); */
-> >         for (i = 0; i < length; i++) {
-> >                 if (!(i % 8))
-> >                         spu_write_wait();
-> >                 val = *froml;
-> >                 ...
-> >         }
-> >
->
-> No, that would be dangerous because we don't know what state the FIFO
-> is in when this is called.
->
+On Tue, 15 May 2007, Andrew Morton wrote:
+
+> On Tue, 15 May 2007 13:50:27 +0200
+> "Peter Oruba" <peter.oruba@amd.com> wrote:
+> 
+> > This patch set introduces a PCI-X / PCI-Express read byte count control 
+> > interface. Instead of letting every driver to directly read/write to PCI 
+> > config space for that, an interface is provided. The interface functions then 
+> > can be used for quirks since some PCI bridges require that read byte count 
+> > values are set by the BIOS and left unchanged by device drivers.
+> 
+> Some of the patches were wordwrapped, which I fixed.
+> 
+> The way we would merge a feature like this is
+> 
+> - get maintainers to review-and-ack the change
+
+This is definetly good cleanup, and I ACK the QLogic changes.
+
+I do though have some questions on call prerequisites given the
+driver-changes, most in the form of:
+
+> diff -uprN -X linux-2.6.22-rc1.orig/Documentation/dontdiff 
+> linux-2.6.22-rc1.orig/drivers/infiniband/hw/mthca/mthca_main.c 
+> linux-2.6.22-rc1/drivers/infiniband/hw/mthca/mthca_main.c
+> --- linux-2.6.22-rc1.orig/drivers/infiniband/hw/mthca/mthca_main.c	2007-05-14 
+> 11:29:29.358547000 +0200
+> +++ linux-2.6.22-rc1/drivers/infiniband/hw/mthca/mthca_main.c	2007-05-15 
+> 10:55:24.954074000 +0200
+> @@ -137,45 +137,27 @@ static const char mthca_version[] __devi
+>  
+>  static int mthca_tune_pci(struct mthca_dev *mdev)
+>  {
+> -	int cap;
+> -	u16 val;
+> -
+>  	if (!tune_pci)
+>  		return 0;
+>  
+>  	/* First try to max out Read Byte Count */
+> -	cap = pci_find_capability(mdev->pdev, PCI_CAP_ID_PCIX);
+> -	if (cap) {
+> -		if (pci_read_config_word(mdev->pdev, cap + PCI_X_CMD, &val)) {
+> -			mthca_err(mdev, "Couldn't read PCI-X command register, "
+> -				  "aborting.\n");
+> -			return -ENODEV;
+> -		}
+> -		val = (val & ~PCI_X_CMD_MAX_READ) | (3 << 2);
+> -		if (pci_write_config_word(mdev->pdev, cap + PCI_X_CMD, val)) {
+> -			mthca_err(mdev, "Couldn't write PCI-X command register, "
+> -				  "aborting.\n");
+> +	if (pci_find_capability(mdev->pdev, PCI_CAP_ID_PCIX)) {
+> +		if (pcix_set_mmrbc(mdev->pdev, pcix_get_max_mmrbc(mdev->pdev))) {
+> +			mthca_err(mdev, "Couldn't set PCI-X max read count, "
+> +				"aborting.\n");
+...
+> -	cap = pci_find_capability(mdev->pdev, PCI_CAP_ID_EXP);
+> -	if (cap) {
+> -		if (pci_read_config_word(mdev->pdev, cap + PCI_EXP_DEVCTL, &val)) {
+> -			mthca_err(mdev, "Couldn't read PCI Express device control "
+> -				  "register, aborting.\n");
+> -			return -ENODEV;
+> -		}
+> -		val = (val & ~PCI_EXP_DEVCTL_READRQ) | (5 << 12);
+> -		if (pci_write_config_word(mdev->pdev, cap + PCI_EXP_DEVCTL, val)) {
+> -			mthca_err(mdev, "Couldn't write PCI Express device control "
+> -				  "register, aborting.\n");
+> +	if (pci_find_capability(mdev->pdev, PCI_CAP_ID_EXP)) {
+> +		if (pcie_set_readrq(mdev->pdev, 4096)) {
+> +			mthca_err(mdev, "Couldn't write PCI Express read request, "
+> +				"aborting.\n");
 
 
-Sorry, should think before I post!
+In general, if PCI-[Xe] capability structure exists do set-
+mmrbc()/readrq(), yet each of those pre-condition checks are already
+present in the pcix_set_mmrbc() and pcie_set_readrq().
+
+At least for the qla2xxx case, the patch could easily distill down from:
+
+	...
+	/* PCIe -- adjust Maximum Read Request Size (2048). */
+	pcie_dctl_reg = pci_find_capability(ha->pdev, PCI_CAP_ID_EXP);
+	if (pcie_dctl_reg)
+		if (pcie_set_readrq(ha->pdev, 2048))
+			DEBUG2(printk("Couldn't write PCI Express read request\n"));
+
+to:
+
+	...
+	pcie_set_readrq(ha->pdev, 2048);
+
+
+Whatever the decision, I can fold this into my next patchset for
+qla2xxx and submit.
