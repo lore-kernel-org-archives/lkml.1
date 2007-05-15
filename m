@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbXEOXao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbXEOXcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbXEOXao (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 19:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760696AbXEOXaJ
+	id S1760187AbXEOXcx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 19:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756924AbXEOXcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 19:30:09 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:37108 "EHLO e3.ny.us.ibm.com"
+	Tue, 15 May 2007 19:32:46 -0400
+Received: from ozlabs.org ([203.10.76.45]:57851 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760606AbXEOXaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 19:30:06 -0400
-Date: Tue, 15 May 2007 16:30:02 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, ak@suse.de
-Subject: How to force Kconfig tristate into range n..m?
-Message-ID: <20070515233002.GA9614@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	id S1756051AbXEOXcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 19:32:46 -0400
+Subject: Re: [PATCH 1/6] lguest: host code tidyups
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       lkml - Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       virtualization <virtualization@lists.linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>, hch <hch@infradead.org>
+In-Reply-To: <20070515214756.b8020d4e.sfr@canb.auug.org.au>
+References: <1179191827.10836.24.camel@localhost.localdomain>
+	 <20070515214235.b0625699.sfr@canb.auug.org.au>
+	 <20070515214756.b8020d4e.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 09:32:16 +1000
+Message-Id: <1179271936.23574.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello!
+On Tue, 2007-05-15 at 21:47 +1000, Stephen Rothwell wrote:
+> On Tue, 15 May 2007 21:42:35 +1000 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+> >
+> > On Tue, 15 May 2007 11:17:07 +1000 Rusty Russell <rusty@rustcorp.com.au> wrote:
+> > > -		on_each_cpu(adjust_pge, 0, 0, 1);
+> > > +		on_each_cpu(adjust_pge, (void *)0, 0, 1);
+> >
+> > Sorry?  What ever happened to a simple NULL?
+> 
+> Oh, I guess that is an explicit (numeric) 0 (of some type) caste to
+> "void *" because of the prototype - rather than not passing anything?
 
-It would be nice to constrain RCU_TORTURE_TEST to "n" or "m", excluding
-"y", since "y" gives anti-social results that I have never seen a use
-for.  So I tried adding a "range n m" to the Kconfig.debug entry for
-RCU_TORTURE_TEST.  This gives me the following warning at "make xconfig"
-time:
+Indeed.  We really want to pass a bool, but on_each_cpu uses a void *.
+Hence the clearest solution seemed "(void *)0" and "(void *)1" in the
+callers.
 
-   lib/Kconfig.debug:386:warning: range is only allowed for int or hex symbols
+Thanks,
+Rusty.
 
-and xconfig ignores the restriction.
 
-A few clumsy hacks get rid of the error message, but fail to cause
-xconfig to enforce the limit.
-
-Is there some other way to prohibit modules from being compiled into
-the main kernel?
-
-						Thanx, Paul
