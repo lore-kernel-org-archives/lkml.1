@@ -1,75 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbXEOVZB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbXEOV1Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757968AbXEOVZB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:25:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbXEOVYz
+	id S1758251AbXEOV1Q (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:27:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbXEOV1E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:24:55 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:46099 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754467AbXEOVYz (ORCPT
+	Tue, 15 May 2007 17:27:04 -0400
+Received: from webmail.gtcocalcomp.com ([209.36.34.20]:24542 "EHLO
+	mdmailserv.gtcocalcomp.local" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754566AbXEOV1D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 17:24:55 -0400
-Date: Tue, 15 May 2007 14:23:39 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johann Lombardi <johann@clusterfs.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Clear PG_error before reading a page
-Message-Id: <20070515142339.4d9098f3.akpm@linux-foundation.org>
-In-Reply-To: <20070515210124.GA23698@chiva>
-References: <20070515143726.GC2160@chiva>
-	<20070515101144.f7072476.akpm@linux-foundation.org>
-	<20070515210124.GA23698@chiva>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 15 May 2007 17:27:03 -0400
+Subject: Re: [linux-usb-devel] Cannot find our GTCO USB Driver in the
+	2.6.22-rc1 kernel
+From: Jeremy Roberson <jroberson@gtcocalcomp.com>
+Reply-To: jroberson@gtcocalcomp.com
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Till Harbaum / Lists <lists@harbaum.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Greg KH <gregkh@suse.de>,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <d120d5000705151416v4dafa176h556d03d692170b39@mail.gmail.com>
+References: <1176912010.6215.17.camel@EdgyEft.Home>
+	 <20070515111250.e869634b.randy.dunlap@oracle.com>
+	 <1179252727.3101.68.camel@EdgyEft.Home>
+	 <200705152038.53676.lists@harbaum.org>
+	 <1179255411.3101.79.camel@EdgyEft.Home>
+	 <d120d5000705151416v4dafa176h556d03d692170b39@mail.gmail.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
+Organization: GTCO CalComp
+Date: Tue, 15 May 2007 14:26:59 -0700
+Message-Id: <1179264419.3101.135.camel@EdgyEft.Home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
+X-OriginalArrivalTime: 15 May 2007 21:27:15.0561 (UTC) FILETIME=[CF05D590:01C79737]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 23:01:24 +0200
-Johann Lombardi <johann@clusterfs.com> wrote:
+What is Top Posting?
 
-> On Tue, May 15, 2007 at 10:11:44AM -0700, Andrew Morton wrote:
-> > We need to make sure that this page has PG_uptodate cleared, so
-> > that a re-read is forced.  And the affected buffer_head, if any, should have
-> > buffer_uptodate() cleared.
+On Tue, 2007-05-15 at 17:16 -0400, Dmitry Torokhov wrote:
+> Hi,
 > 
-> ok.
+> On 5/15/07, Jeremy Roberson <jroberson@gtcocalcomp.com> wrote:
+> > A very good question.  Had it been, I probably would not have missed it.
+> >
+> > On Tue, 2007-05-15 at 20:38 +0200, Till Harbaum / Lists wrote:
+> > > Hi,
+> > >
+> > > which leads to the question: Why is the "Enable Tablets" entry not
+> > > inside the tablets menu. This way it's more obvious that it's disabled
+> > > if it's the only entry in the menu. Plus the parent menu gets
+> > > cleaned up as well.
+> > >
 > 
-> > This change might have horrid interactions with readahead and various
-> > application access patterns: if for some reason a dud sector takes 30
-> > seconds of driver futzing to return -EIO and someone (application or
-> > kernel) tries to read the same sector tens or hundreds of times, suckiness
-> > ensues.  This will be hard to test for.
+> Because some people want to be able to turn off entire set of options
+> without having to descend into submenu.
 > 
-> Yes, I agree. So according to you, what's the best way to address the
-> initial problem (i.e. PG_error never cleared)?
+-- 
+Jeremy Roberson
+Software Engineer
+Interwrite Learning
 
-ooh, hard.
+"Do not go gentle into that good night,
+Old age should burn and rave at the 
+close of the day; Rage, rage against the
+dying of the light."
+- Dylan Thomas
 
-umm, a very safe way would be to free the dang page.  Make sure that we
-have no references on it and that we have a ref on the inode (ie: we're
-within a syscall which was passed an fd) then run
-invalidate_mapping_pages()
 
-> > Most reads don't (or shouldn't) go through block_read_full_page().
-> > mpage_readpages() does the heavy lifting.
-> 
-> Yes, indeed. However, as soon as a call to get_block() fails,
-> do_mpage_readpage() will call block_read_full_page() which will attach
-> buffers to this page.
-> Consequently, all subsequent reads will go through block_read_full_page().
 
-hm, confused.  Why is get_block() failing?  That has to go and read
-metadata.  If get_block() failed then we don't know what blocks to read to
-bring this page uptodate, so the pagecache page should remain in state
-!PageUptodate(), !PageError().  But then, we shouldn't have populated
-pagecache at that offset at all.
-
-I think I'm missing something here.  I suspect you're referring to a mix
-of reading the blockdev via /dev/hda1 and then using the already-populated
-pagecache as filesystem metadata, or something?
-
-Is the PageError page part of an S_ISREG file, or is it part of an S_ISBLK
-file?
+Note: The information contained within this electronic transmission is
+intended by Interwrite Learning for the use of the named individual or
+entity to which it is directed and contains confidential and/or
+privileged information.  It is not intended for transmission or receipt
+by anyone other than the named addressee or entity.  It should not be
+forwarded or copied to any unauthorized persons.  If you have received
+this is error, please remove it from your system, without copying or
+forwarding it and notify the sender by return email. Thank you.
