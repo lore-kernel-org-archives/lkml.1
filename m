@@ -1,65 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757295AbXEOUuq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759445AbXEOUvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757295AbXEOUuq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 16:50:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbXEOUui
+	id S1759445AbXEOUvU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 16:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754640AbXEOUvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 16:50:38 -0400
-Received: from nwk-ea-fw-1.sun.com ([192.18.42.249]:25171 "EHLO
-	nwk-ea-fw-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754526AbXEOUuh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 16:50:37 -0400
-Date: Tue, 15 May 2007 13:48:14 -0700
-From: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Subject: [PATCH] serial: set DTR in uart for kernel serial console
-In-reply-to: <4648B2CC.2020403@sun.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Andi Kleen <ak@suse.de>,
-       bjorn.helgaas@hp.com, rmk@arm.linux.org.uk
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Yinghai.Lu@Sun.COM
-Reply-to: Yinghai Lu <Yinghai.Lu@Sun.COM>
-Message-id: <200705151348.15355.yinghai.lu@sun.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-References: <86802c440705122233y327756e7te534199f46b2059d@mail.gmail.com>
- <20070514181007.GA29682@flint.arm.linux.org.uk> <4648B2CC.2020403@sun.com>
-User-Agent: KMail/1.8.2
+	Tue, 15 May 2007 16:51:07 -0400
+Received: from mga01.intel.com ([192.55.52.88]:9248 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753089AbXEOUvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 16:51:05 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.14,538,1170662400"; 
+   d="scan'208";a="245990022"
+Message-ID: <464A1D35.8030701@intel.com>
+Date: Tue, 15 May 2007 13:51:01 -0700
+From: "Kok, Auke" <auke-jan.h.kok@intel.com>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070420)
+MIME-Version: 1.0
+To: Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de
+CC: Peter Oruba <peter.oruba@amd.com>, cramerj@intel.com,
+       john.ronciak@intel.com, jesse.brandeburg@intel.com,
+       jeffrey.t.kirsher@intel.com, rolandd@cisco.com, halr@voltaire.com,
+       linux-driver@qlogic.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Stephen Hemminger <shemminger@linux-foundation.org>
+Subject: Re: [PATCH 0/2] PCI-X/PCI-Express read control interfaces
+References: <200705151350.28330.peter.oruba@amd.com> <20070515123721.1bfb02a3.akpm@linux-foundation.org>
+In-Reply-To: <20070515123721.1bfb02a3.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 May 2007 20:51:02.0800 (UTC) FILETIME=[BFF4D100:01C79732]
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hope format is OK. Sending with KMail Message/Insert File
+Andrew Morton wrote:
+> On Tue, 15 May 2007 13:50:27 +0200
+> "Peter Oruba" <peter.oruba@amd.com> wrote:
+> 
+>> This patch set introduces a PCI-X / PCI-Express read byte count control 
+>> interface. Instead of letting every driver to directly read/write to PCI 
+>> config space for that, an interface is provided. The interface functions then 
+>> can be used for quirks since some PCI bridges require that read byte count 
+>> values are set by the BIOS and left unchanged by device drivers.
+> 
+> Some of the patches were wordwrapped, which I fixed.
+> 
+> The way we would merge a feature like this is
+> 
+> - get maintainers to review-and-ack the change
+> 
+> - merge the core patch into Greg's PCI tree and later into
+>   mainline.
+> 
+> - Once the base infrastructure is in mainline, feed the per-driver
+>   changes into the tree via the appropriate maintainers.
+> 
+> This takes, umm, months and consumes quite a bit of my time.  I'm becoming
+> inclined just to slam stuff like this straight in as you've proposed, but
+> for now, let's play the game - I split the patches up appropriately.  I
+> don't think there's any particular urgency behind this, is there?
 
-YH
+While Jeff just Acked the changes to e1000-specific for me, I think this is a 
+good approach and would appreciate it. I'll be happy to pull the change and push 
+it through in due time.
 
-[PATCH] serial: set DTR in uart for kernel serial console
+Auke
 
-Some UARTs on other side need host uart DTR is set, otherwise will not 
-receive char from the host that kernel is runing during kernel boot stage.
-
-BTW:
-earlyprintk and early_uart are hard coded to set DTR/RTS.
-
-Signed-off-by: Yinghai Lu <yinghai.lu@sun.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Andi Kleen <ak@suse.de>
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com> 
-
-diff --git a/drivers/serial/8250.c b/drivers/serial/8250.c
-index 48e259a..a925547 100644
---- a/drivers/serial/8250.c
-+++ b/drivers/serial/8250.c
-@@ -2397,6 +2397,11 @@ static void __init serial8250_isa_init_ports(void)
- 		up->mcr_force = ALPHA_KLUDGE_MCR;
- 
- 		up->port.ops = &serial8250_pops;
-+
-+		/* some uarts on other side don't support no flow control. So we set
-+		 * DTR in host uart to make them happy  --- YHLU
-+		 */
-+		up->port.mctrl |= TIOCM_DTR; 
- 	}
- 
- 	for (i = 0, up = serial8250_ports;
