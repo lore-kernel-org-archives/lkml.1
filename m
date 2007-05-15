@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934088AbXEOJVe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933955AbXEOJXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934088AbXEOJVe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 05:21:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760276AbXEOJVS
+	id S933955AbXEOJXh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 05:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759645AbXEOJXa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 05:21:18 -0400
-Received: from az33egw01.freescale.net ([192.88.158.102]:47409 "EHLO
-	az33egw01.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759876AbXEOJVR convert rfc822-to-8bit (ORCPT
+	Tue, 15 May 2007 05:23:30 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:45900 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759471AbXEOJX3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 05:21:17 -0400
-Content-class: urn:content-classes:message
+	Tue, 15 May 2007 05:23:29 -0400
+X-Originating-Ip: 72.143.66.196
+Date: Tue, 15 May 2007 05:22:51 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@mindspring.com>
+X-X-Sender: rpjday@localhost.localdomain
+To: Heikki Orsila <shdl@zakalwe.fi>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: On __pure and __attribute_pure__
+In-Reply-To: <20070515091246.GE10873@zakalwe.fi>
+Message-ID: <Pine.LNX.4.64.0705150521020.20664@localhost.localdomain>
+References: <20070515091246.GE10873@zakalwe.fi>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: RE: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for powerpc
-Date: Tue, 15 May 2007 17:22:56 +0800
-Message-ID: <989B956029373F45A0B8AF0297081890B76040@zch01exm26.fsl.freescale.net>
-In-Reply-To: <a781481a0705141717v2669805aoa590bfd54da7856b@mail.gmail.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH 1/2] kbuild: Add "Section mismatch" warning whitelist for powerpc
-Thread-Index: AceWhnRcRVxuzJABRxiAw0CTQNFTJgASTCUQ
-From: "Li Yang-r58472" <LeoLi@freescale.com>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>,
-       "Kumar Gala" <galak@kernel.crashing.org>
-Cc: "Sam Ravnborg" <sam@ravnborg.org>, "Linus" <torvalds@linux-foundation.org>,
-       "Andrew Morton" <akpm@osdl.org>,
-       "Linux Kernel" <linux-kernel@vger.kernel.org>,
-       <linuxppc-dev@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
+	RCVD_IN_SORBS_DUL 20.00)
+X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -----Original Message-----
-> From: Satyam Sharma [mailto:satyam.sharma@gmail.com]
-> Sent: Tuesday, May 15, 2007 8:18 AM
-> To: Kumar Gala
-> Cc: Sam Ravnborg; Li Yang-r58472; Linus; Andrew Morton; Linux Kernel;
-> linuxppc-dev@ozlabs.org
-> Subject: Re: [PATCH 1/2] kbuild: Add "Section mismatch" warning
-whitelist for
-> powerpc
-> 
-> Hi,
-> 
-> On 5/14/07, Kumar Gala <galak@kernel.crashing.org> wrote:
-> >
-> > On May 14, 2007, at 6:06 AM, Sam Ravnborg wrote:
-> >
-> > > On Mon, May 14, 2007 at 06:53:32PM +0800, Li Yang wrote:
-> > >> This patch fixes the following "Section mismatch" warnings when
-> > >> build powerpc platforms.
-> > >>
-> > >> -------------
-> > >> WARNING: arch/powerpc/mm/built-in.o - Section mismatch: reference
-to
-> > >> .init.text:early_get_page from .text between
-> > >> 'pte_alloc_one_kernel' (at
-> > >> offset 0xc68) and 'pte_alloc_one'
-> > >> WARNING: mm/built-in.o - Section mismatch: reference to
-> > >> .init.text:set_up_list3s from .text between
-> > >> 'kmem_cache_create' (at offset
-> > >> 0x20300) and 'cache_reap'
-> > >> -------------
-> >
-> > This warnings should be handled by __init_refok instead.
-> 
-> Actually, once __init_refok comes in, would we need any other
-> whitelisting mechanism at all? I think the exception patterns in
-> secref_whitelist() and those two other whitelisting functions
-> (init_section_ref_ok and exit_section_ref_ok) could all be
-> subsumed and made redundant if / when __init_refok is used
-> in the actual sources.
+On Tue, 15 May 2007, Heikki Orsila wrote:
 
-I don't think so.  __init_refok can be used to mark special functions
-which are legitimate to reference .init.text/.init.data but cannot be
-used to mark special sections.
+> Both __pure and __attribute_pure__ are the same, and I found out that
+> there is only a handful of users for these. __attribute_pure__ is
+> used in approximately 15 places, and __pure is not used anywhere.
+>
+> Is either __pure or __attribute_pure__ preferred? Imo, __pure looks
+> much nicer than __attribute_pure__ so we could do a replacement.
 
-- Leo
+that was pretty much the point of my earlier post -- given the
+precedent for all of the other short forms, there seems to be no
+reason not to simply use "__pure" and delete the longer definition.
+
+i'll post a patch for that shortly.
+
+rday
+-- 
+========================================================================
+Robert P. J. Day
+Linux Consulting, Training and Annoying Kernel Pedantry
+Waterloo, Ontario, CANADA
+
+http://fsdev.net/wiki/index.php?title=Main_Page
+========================================================================
