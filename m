@@ -1,296 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760727AbXEOCAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760936AbXEOCU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760727AbXEOCAr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 22:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbXEOCAk
+	id S1760936AbXEOCU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 22:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbXEOCUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 22:00:40 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:56736 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756513AbXEOCAi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 22:00:38 -0400
-Date: Mon, 14 May 2007 19:00:37 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
+	Mon, 14 May 2007 22:20:21 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:56283 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754494AbXEOCUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 22:20:21 -0400
 To: linux-kernel@vger.kernel.org
-cc: David Miller <davem@davemloft.net>, sparclinux@vger.kernel.org,
-       Pekka J Enberg <penberg@cs.helsinki.fi>, akpm@linux-foundation.org,
-       linux-mm@vger.kernel.org
-Subject: [RFC] Slab allocators: Define common size limitations
-Message-ID: <Pine.LNX.4.64.0705141857250.27577@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Russell King <rmk@arm.linux.org.uk>
+From: Simon Horman <horms@verge.net.au>
+Subject: [ARM] Fix hard_smp_processor_id compile error
+Date: Tue, 15 May 2007 11:18:50 +0900
+Message-Id: <20070515022014.CC2A44F910@tabatha.lab.ultramonkey.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently we have a maze of configuration variables that determine
-the maximum slab size. Worst of all it seems to vary between SLAB and SLUB.
+"Remove hardcoding of hard_smp_processor_id on UP systems",
+2f4dfe206a2fc07099dfad77a8ea2f4b4ae2140f in Linus' tree, moved
+the definition of hard_smp_processor_id linux/smp.h to asm/smp.h
+for UP systems. This causes a regression on ARM as the definition
+was not added to asm-arm/smp.h.
 
-So define a common maximum size for kmalloc. For conveniences sake
-we use the maximum size ever supported which is 32 MB. We limit the maximum
-size to a lower limit if MAX_ORDER does not allow such large allocations.
+Cc: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+Signed-off-by: Simon Horman <horms@verge.net.au>
 
-For many architectures this patch will have the effect of adding large
-possible kmalloc sizes. x86_64 adds 5 new kmalloc sizes. So a small amount
-of memory will be needed for these caches (contemporary SLAB has dynamically
-sizeable node and cpu structure so the waste is less than in the past).
+--- 
+ arch/arm/mach-integrator/core.c |    1 +
+ include/asm-arm/smp.h           |   10 ++++++----
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-Most architectures will then be able to allocate object sizes up to MAX_ORDER.
-We have had repeated breakage on IA64 because a NUMA structure grew beyond
-what the slab allocators supported (thus some of the conditions regarding 
-cpu sizes and node numbers). This patch will avoid future issues.
+arm-unknown-linux-gnu-gcc (GCC) 4.1.1
+Copyright (C) 2006 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-CONFIG_LARGE_ALLOCS is no longer necessary so drop it.
+  CC      arch/arm/mach-integrator/core.o
+arch/arm/mach-integrator/core.c: In function 'integrator_timer_interrupt':
+arch/arm/mach-integrator/core.c:264: warning: implicit declaration of function 'hard_smp_processor_id'
+[snip]
+  LD      .tmp_vmlinux1
+arch/arm/mach-integrator/built-in.o: In function `integrator_timer_interrupt':
+cpu.c:(.text+0x398): undefined reference to `hard_smp_processor_id'
+make: *** [.tmp_vmlinux1] error 1
 
-Signed-off-by: Christoph Lameter <clameter@sgi.com>
+This was produced by running the following in a crosstool cross-compiling
+environment:
+ cp arch/arm/configs/integrator_defconfig .config
+ yes "" | make modconfig
+ make
 
----
- arch/blackfin/Kconfig         |    8 --------
- arch/frv/Kconfig              |    8 --------
- arch/m68knommu/Kconfig        |    8 --------
- arch/sparc64/Kconfig          |    3 ---
- arch/v850/Kconfig             |    8 --------
- include/linux/kmalloc_sizes.h |   20 +++++++++++++++-----
- include/linux/slab.h          |   15 +++++++++++++++
- include/linux/slub_def.h      |   15 ++-------------
- mm/slab.c                     |   19 ++-----------------
- 9 files changed, 34 insertions(+), 70 deletions(-)
-
-Index: slub/include/linux/slab.h
+Index: linux-2.6/arch/arm/mach-integrator/core.c
 ===================================================================
---- slub.orig/include/linux/slab.h	2007-05-14 17:26:56.000000000 -0700
-+++ slub/include/linux/slab.h	2007-05-14 17:43:58.000000000 -0700
-@@ -77,6 +77,21 @@ static inline void *kmem_cache_alloc_nod
- #endif
+--- linux-2.6.orig/arch/arm/mach-integrator/core.c	2007-05-15 10:56:06.000000000 +0900
++++ linux-2.6/arch/arm/mach-integrator/core.c	2007-05-15 10:56:16.000000000 +0900
+@@ -28,6 +28,7 @@
+ #include <asm/system.h>
+ #include <asm/leds.h>
+ #include <asm/mach/time.h>
++#include <asm/smp.h>
  
- /*
-+ * The largest kmalloc size supported by the slab allocators is
-+ * 32 megabyte (2^25) or the maximum allocatable page order if that is
-+ * less than 32 MB.
-+ *
-+ * WARNING: Its not easy to increase this value since the allocators have
-+ * to do various tricks to work around compiler limitations in order to
-+ * ensure proper constant folding.
-+ */
-+#define KMALLOC_SHIFT_HIGH	((MAX_ORDER + PAGE_SHIFT) <= 25 ? \
-+				(MAX_ORDER + PAGE_SHIFT) : 25)
+ #include "common.h"
+ 
+Index: linux-2.6/include/asm-arm/smp.h
+===================================================================
+--- linux-2.6.orig/include/asm-arm/smp.h	2007-05-15 10:51:54.000000000 +0900
++++ linux-2.6/include/asm-arm/smp.h	2007-05-15 10:56:34.000000000 +0900
+@@ -10,16 +10,16 @@
+ #ifndef __ASM_ARM_SMP_H
+ #define __ASM_ARM_SMP_H
+ 
++#ifndef CONFIG_SMP
++#define hard_smp_processor_id()		0
++#else
 +
-+#define KMALLOC_MAX_SIZE	(1UL << KMALLOC_SHIFT_HIGH)
-+#define KMALLOC_MAX_ORDER	(KMALLOC_SHIFT_HIGH - PAGE_SHIFT)
+ #include <linux/threads.h>
+ #include <linux/cpumask.h>
+ #include <linux/thread_info.h>
+ 
+ #include <asm/arch/smp.h>
+ 
+-#ifndef CONFIG_SMP
+-# error "<asm-arm/smp.h> included in non-SMP build"
+-#endif
+-
+ #define raw_smp_processor_id() (current_thread_info()->cpu)
+ 
+ /*
+@@ -134,4 +134,6 @@ extern void show_local_irqs(struct seq_f
+  */
+ asmlinkage void do_local_timer(struct pt_regs *);
+ 
++#endif /* CONFIG_SMP */
 +
-+/*
-  * Common kmalloc functions provided by all allocators
-  */
- void *__kmalloc(size_t, gfp_t);
-Index: slub/include/linux/slub_def.h
-===================================================================
---- slub.orig/include/linux/slub_def.h	2007-05-14 17:26:56.000000000 -0700
-+++ slub/include/linux/slub_def.h	2007-05-14 17:43:39.000000000 -0700
-@@ -58,17 +58,6 @@ struct kmem_cache {
-  */
- #define KMALLOC_SHIFT_LOW 3
- 
--#ifdef CONFIG_LARGE_ALLOCS
--#define KMALLOC_SHIFT_HIGH ((MAX_ORDER + PAGE_SHIFT) < 25 ? \
--				MAX_ORDER + PAGE_SHIFT - 1 : 25)
--#else
--#if !defined(CONFIG_MMU) || NR_CPUS > 512 || MAX_NUMNODES > 256
--#define KMALLOC_SHIFT_HIGH 20
--#else
--#define KMALLOC_SHIFT_HIGH 18
--#endif
--#endif
--
- /*
-  * We keep the general caches in an array of slab caches that are used for
-  * 2^x bytes of allocations.
-@@ -79,7 +68,7 @@ extern struct kmem_cache kmalloc_caches[
-  * Sorry that the following has to be that ugly but some versions of GCC
-  * have trouble with constant propagation and loops.
-  */
--static inline int kmalloc_index(int size)
-+static inline int kmalloc_index(size_t size)
- {
- 	/*
- 	 * We should return 0 if size == 0 but we use the smallest object
-@@ -87,7 +76,7 @@ static inline int kmalloc_index(int size
- 	 */
- 	WARN_ON_ONCE(size == 0);
- 
--	if (size >= (1UL << KMALLOC_SHIFT_HIGH))
-+	if (size > KMALLOC_MAX_SIZE)
- 		return -1;
- 
- 	if (size > 64 && size <= 96)
-Index: slub/include/linux/kmalloc_sizes.h
-===================================================================
---- slub.orig/include/linux/kmalloc_sizes.h	2007-05-14 17:26:56.000000000 -0700
-+++ slub/include/linux/kmalloc_sizes.h	2007-05-14 18:42:45.000000000 -0700
-@@ -19,17 +19,27 @@
- 	CACHE(32768)
- 	CACHE(65536)
- 	CACHE(131072)
--#if (NR_CPUS > 512) || (MAX_NUMNODES > 256) || !defined(CONFIG_MMU)
-+#if KMALLOC_MAX_SIZE >= 262144
- 	CACHE(262144)
- #endif
--#ifndef CONFIG_MMU
-+#if KMALLOC_MAX_SIZE >= 524288
- 	CACHE(524288)
-+#endif
-+#if KMALLOC_MAX_SIZE >= 1048576
- 	CACHE(1048576)
--#ifdef CONFIG_LARGE_ALLOCS
-+#endif
-+#if KMALLOC_MAX_SIZE >= 2097152
- 	CACHE(2097152)
-+#endif
-+#if KMALLOC_MAX_SIZE >= 4194304
- 	CACHE(4194304)
-+#endif
-+#if KMALLOC_MAX_SIZE >= 8388608
- 	CACHE(8388608)
-+#endif
-+#if KMALLOC_MAX_SIZE >= 16777216
- 	CACHE(16777216)
-+#endif
-+#if KMALLOC_MAX_SIZE >= 33554432
- 	CACHE(33554432)
--#endif /* CONFIG_LARGE_ALLOCS */
--#endif /* CONFIG_MMU */
-+#endif
-Index: slub/mm/slab.c
-===================================================================
---- slub.orig/mm/slab.c	2007-05-14 17:26:56.000000000 -0700
-+++ slub/mm/slab.c	2007-05-14 17:27:00.000000000 -0700
-@@ -569,21 +569,6 @@ static void **dbg_userword(struct kmem_c
- #endif
- 
- /*
-- * Maximum size of an obj (in 2^order pages) and absolute limit for the gfp
-- * order.
-- */
--#if defined(CONFIG_LARGE_ALLOCS)
--#define	MAX_OBJ_ORDER	13	/* up to 32Mb */
--#define	MAX_GFP_ORDER	13	/* up to 32Mb */
--#elif defined(CONFIG_MMU)
--#define	MAX_OBJ_ORDER	5	/* 32 pages */
--#define	MAX_GFP_ORDER	5	/* 32 pages */
--#else
--#define	MAX_OBJ_ORDER	8	/* up to 1Mb */
--#define	MAX_GFP_ORDER	8	/* up to 1Mb */
--#endif
--
--/*
-  * Do not go above this order unless 0 objects fit into the slab.
-  */
- #define	BREAK_GFP_ORDER_HI	1
-@@ -2001,7 +1986,7 @@ static size_t calculate_slab_order(struc
- 	size_t left_over = 0;
- 	int gfporder;
- 
--	for (gfporder = 0; gfporder <= MAX_GFP_ORDER; gfporder++) {
-+	for (gfporder = 0; gfporder <= KMALLOC_MAX_ORDER; gfporder++) {
- 		unsigned int num;
- 		size_t remainder;
- 
-@@ -2147,7 +2132,7 @@ kmem_cache_create (const char *name, siz
- 	 * Sanity checks... these are all serious usage bugs.
- 	 */
- 	if (!name || in_interrupt() || (size < BYTES_PER_WORD) ||
--	    (size > (1 << MAX_OBJ_ORDER) * PAGE_SIZE) || dtor) {
-+	    size > KMALLOC_MAX_SIZE || dtor) {
- 		printk(KERN_ERR "%s: Early error in slab %s\n", __FUNCTION__,
- 				name);
- 		BUG();
-Index: slub/arch/blackfin/Kconfig
-===================================================================
---- slub.orig/arch/blackfin/Kconfig	2007-05-14 17:30:31.000000000 -0700
-+++ slub/arch/blackfin/Kconfig	2007-05-14 17:30:45.000000000 -0700
-@@ -560,14 +560,6 @@ endchoice
- 
- source "mm/Kconfig"
- 
--config LARGE_ALLOCS
--	bool "Allow allocating large blocks (> 1MB) of memory"
--	help
--	  Allow the slab memory allocator to keep chains for very large
--	  memory sizes - upto 32MB. You may need this if your system has
--	  a lot of RAM, and you need to able to allocate very large
--	  contiguous chunks. If unsure, say N.
--
- config BFIN_DMA_5XX
- 	bool "Enable DMA Support"
- 	depends on (BF533 || BF532 || BF531 || BF537 || BF536 || BF534 || BF561)
-Index: slub/arch/frv/Kconfig
-===================================================================
---- slub.orig/arch/frv/Kconfig	2007-05-14 17:30:32.000000000 -0700
-+++ slub/arch/frv/Kconfig	2007-05-14 17:31:08.000000000 -0700
-@@ -102,14 +102,6 @@ config HIGHPTE
- 	  with a lot of RAM, this can be wasteful of precious low memory.
- 	  Setting this option will put user-space page tables in high memory.
- 
--config LARGE_ALLOCS
--	bool "Allow allocating large blocks (> 1MB) of memory"
--	help
--	  Allow the slab memory allocator to keep chains for very large memory
--	  sizes - up to 32MB. You may need this if your system has a lot of
--	  RAM, and you need to able to allocate very large contiguous chunks.
--	  If unsure, say N.
--
- source "mm/Kconfig"
- 
- choice
-Index: slub/arch/m68knommu/Kconfig
-===================================================================
---- slub.orig/arch/m68knommu/Kconfig	2007-05-14 17:30:32.000000000 -0700
-+++ slub/arch/m68knommu/Kconfig	2007-05-14 17:31:16.000000000 -0700
-@@ -470,14 +470,6 @@ config AVNET
- 	default y
- 	depends on (AVNET5282)
- 
--config LARGE_ALLOCS
--	bool "Allow allocating large blocks (> 1MB) of memory"
--	help
--	  Allow the slab memory allocator to keep chains for very large
--	  memory sizes - upto 32MB. You may need this if your system has
--	  a lot of RAM, and you need to able to allocate very large
--	  contiguous chunks. If unsure, say N.
--
- config 4KSTACKS
- 	bool "Use 4Kb for kernel stacks instead of 8Kb"
- 	default y
-Index: slub/arch/sparc64/Kconfig
-===================================================================
---- slub.orig/arch/sparc64/Kconfig	2007-05-14 17:30:32.000000000 -0700
-+++ slub/arch/sparc64/Kconfig	2007-05-14 17:31:24.000000000 -0700
-@@ -226,9 +226,6 @@ config ARCH_SPARSEMEM_DEFAULT
- 	def_bool y
- 	select SPARSEMEM_STATIC
- 
--config LARGE_ALLOCS
--	def_bool y
--
- source "mm/Kconfig"
- 
- config ISA
-Index: slub/arch/v850/Kconfig
-===================================================================
---- slub.orig/arch/v850/Kconfig	2007-05-14 17:30:32.000000000 -0700
-+++ slub/arch/v850/Kconfig	2007-05-14 17:31:33.000000000 -0700
-@@ -240,14 +240,6 @@ menu "Processor type and features"
-    config RESET_GUARD
-    	  bool "Reset Guard"
- 
--   config LARGE_ALLOCS
--	  bool "Allow allocating large blocks (> 1MB) of memory"
--	  help
--	     Allow the slab memory allocator to keep chains for very large
--	     memory sizes - upto 32MB. You may need this if your system has
--	     a lot of RAM, and you need to able to allocate very large
--	     contiguous chunks. If unsure, say N.
--
- source "mm/Kconfig"
- 
- endmenu
+ #endif /* ifndef __ASM_ARM_SMP_H */
