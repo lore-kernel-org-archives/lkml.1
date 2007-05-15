@@ -1,62 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758135AbXEOOpm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbXEOOzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758135AbXEOOpm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 10:45:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754497AbXEOOpf
+	id S1758975AbXEOOzu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 10:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756139AbXEOOzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 10:45:35 -0400
-Received: from wasp.net.au ([203.190.192.17]:57665 "EHLO wasp.net.au"
+	Tue, 15 May 2007 10:55:43 -0400
+Received: from tuxrocks.com ([63.99.9.217]:50620 "EHLO tuxrocks.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754467AbXEOOpe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 10:45:34 -0400
-Message-ID: <4649C789.6050305@wasp.net.au>
-Date: Tue, 15 May 2007 18:45:29 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	id S1754497AbXEOOzn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 10:55:43 -0400
+X-Greylist: delayed 2830 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 10:55:43 EDT
+Message-ID: <4649BE4A.8000707@tuxrocks.com>
+Date: Tue, 15 May 2007 09:06:02 -0500
+From: Frank Sorenson <frank@tuxrocks.com>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
 MIME-Version: 1.0
-To: Con Kolivas <kernel@kolivas.org>
-CC: linux-kernel@vger.kernel.org, ck@vds.kolivas.org
-Subject: Re: Standalone swap prefetch patch for mainline
-References: <200705141210.43614.kernel@kolivas.org>
-In-Reply-To: <200705141210.43614.kernel@kolivas.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Alistair John Strachan <s0348365@sms.ed.ac.uk>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v4
+References: <1178485128.31213.98.camel@localhost.localdomain>	 <200705142215.08910.s0348365@sms.ed.ac.uk> <1179180314.7074.36.camel@chaos>	 <200705142342.29994.s0348365@sms.ed.ac.uk> <1179217082.7074.47.camel@chaos>
+In-Reply-To: <1179217082.7074.47.camel@chaos>
+X-Enigmail-Version: 0.94.3.0
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Con Kolivas wrote:
-> I've had a few requests for a standalone patch implementing swap prefetch for 
-> mainline.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Thomas Gleixner wrote:
+> I've uploaded a new version of the x86_64 highres/dyntick patches:
 > 
-> Here is a patch that is a current rollup that should apply and work for 
-> vanilla 2.6.21 (ie not a -ck kernel):
-> 
-> http://ck.kolivas.org/patches/swap-prefetch/2.6.21-swap_prefetch-38.patch
-> 
+> http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-highres-v4.patch
 
-Heh.. 20 mins after I finished scraping the relevant bits from -ck1 and patching my kernel this arrives!
+Hangs at boot here:
+	Kernel alive
+	Kernel direct mapping tables up to 100000000 @ 8000-d000
+(and that's it)
 
-<WARNING - Fanboy rant ahead>
+This is a Dell Inspiron E1705 with a Core 2 Duo 2.16GHz
 
-I don't normally get/take the time to pass personal comment, but I have to say Con I've just taken a 
-2.6.21 kernel, applied your 0.48 SD scheduler and swap-prefetch from -ck1 (needed to separate them 
-out so I could also apply suspend2) and it's like I've bought a new machine.
+highres-v3 also hung at the same point, but 2.6.21-git2-v2 worked
+2.6.22-rc1 boots without problem
 
-I'm running on a tiny Vaio with a 4800RPM 1.8" drive, so it's not fast by any stretch of the 
-imagination. But the combination of SD and swap-prefetch has given it a new lease on life completely.
+Is there any information I can provide to help track down the problem?
 
-Really, you have done a great job with SD. I was so impressed I built a new kernel for my Core Duo 
-Mac Mini with the full 2.6.21-ck1 patchset. I wish I'd tried it years ago!
+Thanks,
 
-This also prompted me to have a play with CFS, but for my desktop workload on either machine, SD 
-just "felt" better (for whatever that may be worth).
+Frank
+- --
+Frank Sorenson - KD7TZK
+Linux Systems Engineer, DSS Engineering, UBS AG
+frank@tuxrocks.com
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.7 (GNU/Linux)
+Comment: Using GnuPG with Fedora - http://enigmail.mozdev.org
 
-+1 for SD
-+1 for swap-prefetch
-
-Regards,
-Brad
--- 
-"Human beings, who are almost unique in having the ability
-to learn from the experience of others, are also remarkable
-for their apparent disinclination to do so." -- Douglas Adams
+iD8DBQFGSb5JaI0dwg4A47wRAjkgAJ9Urvpo+cTAbRvblYovBYy3PD76jACfbtjj
+EZSrOZDFMnOYjc02nHSAxaM=
+=/ffY
+-----END PGP SIGNATURE-----
