@@ -1,54 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbXEOHAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757622AbXEOHH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbXEOHAV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 03:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754173AbXEOHAK
+	id S1757622AbXEOHH3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 03:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754567AbXEOHHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 03:00:10 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:7408 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752864AbXEOHAI (ORCPT
+	Tue, 15 May 2007 03:07:21 -0400
+Received: from uhweb15152.united-hoster.com ([85.88.15.152]:59272 "EHLO
+	uhweb15152.united-hoster.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754512AbXEOHHV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 03:00:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=PIkp9Cfrui1cTcNw5/9/bHSNoUzrqidkkuc3nqzSNrLKWURSiDkbBQ6xNCVApVIA1zOUGz8qC79I4uGqQcSbbiw/csL62IH+LUOeQTosVm4S6JgAfdz1FS7f6+M98/n1V51bvx0g2VsLdPgV7Wr3Zl5Osa4h1+cnynRI8I6xvWQ=
-Message-ID: <46495A5C.4050609@gmail.com>
-Date: Tue, 15 May 2007 08:59:40 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 15 May 2007 03:07:21 -0400
+From: Frank Seidel <frank@kernalert.de>
+To: "Abdelkarim Jamal" <ajamal@marvell.com>
+Subject: Re: AW: [PATCH] drivers/net/skfp/drvfbi.c: trivial cleanup
+Date: Tue, 15 May 2007 09:07:08 +0200
+User-Agent: KMail/1.9.5
+Cc: "Linux Kernel" <linux-kernel@vger.kernel.org>, linux@syskonnect.de
+References: <4D634BCFD1A2144ABECC75FF512D7A90DA8D2A@SKGExch01.marvell.com>
+In-Reply-To: <4D634BCFD1A2144ABECC75FF512D7A90DA8D2A@SKGExch01.marvell.com>
 MIME-Version: 1.0
-To: Francesco Pretto <ceztko@gmail.com>
-CC: Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no>	 <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca>	 <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com>	 <463B858E.6060002@cfl.rr.com> <463B99EE.2090001@gmail.com>	 <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com>	 <46489D3B.8050805@gmail.com> <e5ab0f710705141346o45ac8721jacbcb753f9d45406@mail.gmail.com>
-In-Reply-To: <e5ab0f710705141346o45ac8721jacbcb753f9d45406@mail.gmail.com>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705150907.09031.frank@kernalert.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francesco Pretto wrote:
-> 2007/5/14, Tejun Heo <htejun@gmail.com>
->>
->> Okay, the patch made upstream and webpage posted.
->>
->>  http://linux-ata.org/shutdown.html
->>
->> -- 
->> tejun
->>
+On Tuesday 15 May 2007 08:34, Abdelkarim Jamal wrote:
+> Vielen Dank Herr Seidel fuer Ihr Feedback.
 > 
-> Ubuntu [1] ang Gentoo [2] bugs opened. Sent a mail to Miquel van
-> Smoorenburg, dev  of sysvinit.
-> 
-> [1] https://bugs.launchpad.net/upstart/+bug/114683
-> [2] http://bugs.gentoo.org/show_bug.cgi?id=178559
+> Mit freundlichen Gruessen
+> Jamal
 
-Thanks a lot.  I've notified suse.  I'll ask Jeff whether rh is notified.
+My pleasure! Just a small side note/question: On my first
+mail i CCed Christoph Goos who is noted in skfddi.c to
+be the maintainer,
+but i finally received a failure notice containing
+Remote host said: 550 5.2.1 <cgoos@syskonnect.de>... Mailbox disabled for this recipient
 
--- 
-tejun
+So, are you Mr. Goos' successor and to be contacted on
+changes/suggestions for the skfp driver in the future?
+
+Thanks,
+Frank
