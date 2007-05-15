@@ -1,345 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761647AbXEOHSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbXEOHTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761647AbXEOHSv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 03:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761434AbXEOHRH
+	id S1761959AbXEOHTt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 03:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755156AbXEOHTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 03:17:07 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43260 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761407AbXEOHRG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 03:17:06 -0400
-From: NeilBrown <neilb@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Tue, 15 May 2007 17:16:57 +1000
-Message-Id: <1070515071657.16360@suse.de>
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YDui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
-Cc: nfs@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Neil Brown <neilb@suse.de>
-Subject: [PATCH 008 of 8] knfsd: exportfs: split out reconnecting a dentry from find_exported_dentry.
-References: <20070515170405.15621.patches@notabene>
+	Tue, 15 May 2007 03:19:39 -0400
+Received: from an-out-0708.google.com ([209.85.132.245]:23489 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754909AbXEOHTi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 03:19:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:sender:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references:x-google-sender-auth;
+        b=MaSz3MM8iiC8txBC9uKrKsEcF4OHeOxmrDIRzGAZxtdA5Y95s/hDHP5EhIwsSgJoY/XSl9rXseiSQrFIH27PGd6TcufiTjO5GfNhJfREp6HTNn3qzBI1cReSQ8Ehqeak/PGZf5yo6KZutaIGsU+eoCZNx7ApHLGN692XrQd9KOY=
+Message-ID: <4de7f8a60705150019q768b292al12c08a3a53c820e9@mail.gmail.com>
+Date: Tue, 15 May 2007 09:19:37 +0200
+From: "Jan Blunck" <jblunck@suse.de>
+To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>, pbadari@us.ibm.com
+Subject: Re: [RFC][PATCH 5/14] Introduce union stack
+Cc: "Bharata B Rao" <bharata@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, "Jan Blunck" <j.blunck@tu-harburg.de>
+In-Reply-To: <Pine.LNX.4.61.0705142241070.9570@yvahk01.tjqt.qr>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <20070514093722.GB4139@in.ibm.com>
+	 <20070514094047.GG4139@in.ibm.com>
+	 <Pine.LNX.4.61.0705142241070.9570@yvahk01.tjqt.qr>
+X-Google-Sender-Auth: dd188a07c5c470cb
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 5/14/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+>
+> >+static inline void union_lock(struct dentry *dentry)
+> >+{
+> >+      if (unlikely(dentry && dentry->d_union)) {
+> >+              struct union_info *ui = dentry->d_union;
+> >+
+> >+              UM_DEBUG_LOCK("\"%s\" locking %p (count=%d)\n",
+> >+                            dentry->d_name.name, ui,
+> >+                            atomic_read(&ui->u_count));
+> >+              __union_lock(dentry->d_union);
+> >+      }
+> >+}
+> >+
+> >+static inline void union_unlock(struct dentry *dentry)
+> >+{
+> >+      if (unlikely(dentry && dentry->d_union)) {
+> >+              struct union_info *ui = dentry->d_union;
+> >+
+> >+              UM_DEBUG_LOCK("\"%s\" unlocking %p (count=%d)\n",
+> >+                            dentry->d_name.name, ui,
+> >+                            atomic_read(&ui->u_count));
+> >+              __union_unlock(dentry->d_union);
+> >+      }
+> >+}
+>
+> Do we really need the unlikely()? d_union may be a new feature,
+> but it may very well be possible that someone puts the bigger
+> part of his/her files under a union. And when d_unions get
+> stable, people will probably begin making their root filesystem
+> unioned for livecds, and then unlikely() will rather be a
+> likely penalty. My stance: just
+>         if (dentry != NULL && dentry->d_union != NULL)
+> This also goes for union_trylock.
 
-From: Christoph Hellwig <hch@infradead.org>
+Good question. My intention was that since most of the union code
+costs performance (stack traversal, readdir) I optimize for the normal
+(not unified) case.
 
-There's a clear subfunctionality of reconnecting a given dentry to
-the main dentry tree in find_exported_dentry, that can be called
-both for the dentry we're looking for or it's parent directory.
+> >+static inline int union_trylock(struct dentry *dentry)
+> >+{
+> >+      int locked = 1;
+> >+
+> >+      if (unlikely(dentry && dentry->d_union)) {
+> >+              UM_DEBUG_LOCK("\"%s\" try locking %p (count=%d)\n",
+> >+                            dentry->d_name.name, dentry->d_union,
+> >+                            atomic_read(&dentry->d_union->u_count));
+> >+              BUG_ON(!atomic_read(&dentry->d_union->u_count));
+> >+              locked = mutex_trylock(&dentry->d_union->u_mutex);
+> >+              UM_DEBUG_LOCK("\"%s\" trylock %p %s\n", dentry->d_name.name,
+> >+                            dentry->d_union,
+> >+                            locked ? "succeeded" : "failed");
+> >+      }
+> >+      return (locked ? 1 : 0);
+> >+}
+>
+>         return locked ? 1 : 0
+> or even
+>         return !!locked;
+> or since we're just passing up from mutex_trylock:
+>         return locked;
+> ?
 
-This patch splits the subfunctionality out into a separate helper to
-make the code more readable and document it's intent.  As a nice
-side-optimization we can avoid getting a superfluous dentry reference
-count in the case we need to reconnect a directory on it's own.
+Ahh, this seems to be a left-over of the semaphore -> mutex conversion.
+
+> >+/*
+> >+ * This is a *I can't get no sleep* helper
+>
+> More commonly known as "insomnia". :)
+>
+
+:)
 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-Signed-off-by: Neil Brown <neilb@suse.de>
+Before I forget this: thank you (and Badari) for reviewing the patches!
 
-### Diffstat output
- ./fs/exportfs/expfs.c |  213 ++++++++++++++++++++++++++------------------------
- 1 file changed, 113 insertions(+), 100 deletions(-)
-
-diff .prev/fs/exportfs/expfs.c ./fs/exportfs/expfs.c
---- .prev/fs/exportfs/expfs.c	2007-05-14 11:15:51.000000000 +1000
-+++ ./fs/exportfs/expfs.c	2007-05-14 11:15:54.000000000 +1000
-@@ -91,101 +91,27 @@ find_disconnected_root(struct dentry *de
- 	return dentry;
- }
- 
--/**
-- * find_exported_dentry - helper routine to implement export_operations->decode_fh
-- * @sb:		The &super_block identifying the filesystem
-- * @obj:	An opaque identifier of the object to be found - passed to
-- *		get_inode
-- * @parent:	An optional opqaue identifier of the parent of the object.
-- * @acceptable:	A function used to test possible &dentries to see if they are
-- *		acceptable
-- * @context:	A parameter to @acceptable so that it knows on what basis to
-- *		judge.
-- *
-- * find_exported_dentry is the central helper routine to enable file systems
-- * to provide the decode_fh() export_operation.  It's main task is to take
-- * an &inode, find or create an appropriate &dentry structure, and possibly
-- * splice this into the dcache in the correct place.
-- *
-- * The decode_fh() operation provided by the filesystem should call
-- * find_exported_dentry() with the same parameters that it received except
-- * that instead of the file handle fragment, pointers to opaque identifiers
-- * for the object and optionally its parent are passed.  The default decode_fh
-- * routine passes one pointer to the start of the filehandle fragment, and
-- * one 8 bytes into the fragment.  It is expected that most filesystems will
-- * take this approach, though the offset to the parent identifier may well be
-- * different.
-+
-+/*
-+ * Make sure target_dir is fully connected to the dentry tree.
-  *
-- * find_exported_dentry() will call get_dentry to get an dentry pointer from
-- * the file system.  If any &dentry in the d_alias list is acceptable, it will
-- * be returned.  Otherwise find_exported_dentry() will attempt to splice a new
-- * &dentry into the dcache using get_name() and get_parent() to find the
-- * appropriate place.
-+ * It may already be, as the flag isn't always updated when connection happens.
-  */
--
--struct dentry *
--find_exported_dentry(struct super_block *sb, void *obj, void *parent,
--		     int (*acceptable)(void *context, struct dentry *de),
--		     void *context)
-+static int
-+reconnect_path(struct super_block *sb, struct dentry *target_dir)
- {
--	struct dentry *result = NULL;
--	struct dentry *target_dir;
--	int err = -ESTALE;
--	struct export_operations *nops = sb->s_export_op;
--	struct dentry *alias;
--	int noprogress;
- 	char nbuf[NAME_MAX+1];
-+	int noprogress = 0;
-+	int err = -ESTALE;
- 
- 	/*
--	 * Attempt to find the inode.
--	 */
--	result = exportfs_get_dentry(sb, obj);
--	if (IS_ERR(result))
--		return result;
--
--	if (S_ISDIR(result->d_inode->i_mode)) {
--		if (!(result->d_flags & DCACHE_DISCONNECTED)) {
--			if (acceptable(context, result))
--				return result;
--			err = -EACCES;
--			goto err_result;
--		}
--
--		target_dir = dget(result);
--	} else {
--		alias = find_acceptable_alias(result, acceptable, context);
--		if (alias)
--			return alias;
--
--		if (parent == NULL)
--			goto err_result;
--
--		target_dir = exportfs_get_dentry(sb,parent);
--		if (IS_ERR(target_dir)) {
--			err = PTR_ERR(target_dir);
--			goto err_result;
--		}
--	}
--
--	/*
--	 * Now we need to make sure that target_dir is properly connected.
--	 * It may already be, as the flag isn't always updated when connection
--	 * happens.
--	 * So, we walk up parent links until we find a connected directory,
--	 * or we run out of directories.  Then we find the parent, find
--	 * the name of the child in that parent, and do a lookup.
--	 * This should connect the child into the parent
--	 * We then repeat.
--	 */
--
--	/* it is possible that a confused file system might not let us complete 
-+	 * It is possible that a confused file system might not let us complete
- 	 * the path to the root.  For example, if get_parent returns a directory
- 	 * in which we cannot find a name for the child.  While this implies a
- 	 * very sick filesystem we don't want it to cause knfsd to spin.  Hence
- 	 * the noprogress counter.  If we go through the loop 10 times (2 is
- 	 * probably enough) without getting anywhere, we just give up
- 	 */
--	noprogress = 0;
- 	while (target_dir->d_flags & DCACHE_DISCONNECTED && noprogress++ < 10) {
- 		struct dentry *pd = find_disconnected_root(target_dir);
- 
-@@ -221,18 +147,20 @@ find_exported_dentry(struct super_block 
- 			struct dentry *npd;
- 
- 			mutex_lock(&pd->d_inode->i_mutex);
--			if (nops->get_parent)
--				ppd = nops->get_parent(pd);
-+			if (sb->s_export_op->get_parent)
-+				ppd = sb->s_export_op->get_parent(pd);
- 			mutex_unlock(&pd->d_inode->i_mutex);
- 
- 			if (IS_ERR(ppd)) {
- 				err = PTR_ERR(ppd);
--				dprintk("find_exported_dentry: get_parent of %ld failed, err %d\n",
--					pd->d_inode->i_ino, err);
-+				dprintk("%s: get_parent of %ld failed, err %d\n",
-+					__FUNCTION__, pd->d_inode->i_ino, err);
- 				dput(pd);
- 				break;
- 			}
--			dprintk("find_exported_dentry: find name of %lu in %lu\n", pd->d_inode->i_ino, ppd->d_inode->i_ino);
-+
-+			dprintk("%s: find name of %lu in %lu\n", __FUNCTION__,
-+				pd->d_inode->i_ino, ppd->d_inode->i_ino);
- 			err = exportfs_get_name(ppd, nbuf, pd);
- 			if (err) {
- 				dput(ppd);
-@@ -244,13 +172,14 @@ find_exported_dentry(struct super_block 
- 					continue;
- 				break;
- 			}
--			dprintk("find_exported_dentry: found name: %s\n", nbuf);
-+			dprintk("%s: found name: %s\n", __FUNCTION__, nbuf);
- 			mutex_lock(&ppd->d_inode->i_mutex);
- 			npd = lookup_one_len(nbuf, ppd, strlen(nbuf));
- 			mutex_unlock(&ppd->d_inode->i_mutex);
- 			if (IS_ERR(npd)) {
- 				err = PTR_ERR(npd);
--				dprintk("find_exported_dentry: lookup failed: %d\n", err);
-+				dprintk("%s: lookup failed: %d\n",
-+					__FUNCTION__, err);
- 				dput(ppd);
- 				dput(pd);
- 				break;
-@@ -263,7 +192,7 @@ find_exported_dentry(struct super_block 
- 			if (npd == pd)
- 				noprogress = 0;
- 			else
--				printk("find_exported_dentry: npd != pd\n");
-+				printk("%s: npd != pd\n", __FUNCTION__);
- 			dput(npd);
- 			dput(ppd);
- 			if (IS_ROOT(pd)) {
-@@ -279,15 +208,101 @@ find_exported_dentry(struct super_block 
- 		/* something went wrong - oh-well */
- 		if (!err)
- 			err = -ESTALE;
--		goto err_target;
-+		return err;
- 	}
--	/* if we weren't after a directory, have one more step to go */
--	if (result != target_dir) {
--		struct dentry *nresult;
-+
-+	return 0;
-+}
-+
-+/**
-+ * find_exported_dentry - helper routine to implement export_operations->decode_fh
-+ * @sb:		The &super_block identifying the filesystem
-+ * @obj:	An opaque identifier of the object to be found - passed to
-+ *		get_inode
-+ * @parent:	An optional opqaue identifier of the parent of the object.
-+ * @acceptable:	A function used to test possible &dentries to see if they are
-+ *		acceptable
-+ * @context:	A parameter to @acceptable so that it knows on what basis to
-+ *		judge.
-+ *
-+ * find_exported_dentry is the central helper routine to enable file systems
-+ * to provide the decode_fh() export_operation.  It's main task is to take
-+ * an &inode, find or create an appropriate &dentry structure, and possibly
-+ * splice this into the dcache in the correct place.
-+ *
-+ * The decode_fh() operation provided by the filesystem should call
-+ * find_exported_dentry() with the same parameters that it received except
-+ * that instead of the file handle fragment, pointers to opaque identifiers
-+ * for the object and optionally its parent are passed.  The default decode_fh
-+ * routine passes one pointer to the start of the filehandle fragment, and
-+ * one 8 bytes into the fragment.  It is expected that most filesystems will
-+ * take this approach, though the offset to the parent identifier may well be
-+ * different.
-+ *
-+ * find_exported_dentry() will call get_dentry to get an dentry pointer from
-+ * the file system.  If any &dentry in the d_alias list is acceptable, it will
-+ * be returned.  Otherwise find_exported_dentry() will attempt to splice a new
-+ * &dentry into the dcache using get_name() and get_parent() to find the
-+ * appropriate place.
-+ */
-+
-+struct dentry *
-+find_exported_dentry(struct super_block *sb, void *obj, void *parent,
-+		     int (*acceptable)(void *context, struct dentry *de),
-+		     void *context)
-+{
-+	struct dentry *result, *alias;
-+	int err = -ESTALE;
-+
-+	/*
-+	 * Attempt to find the inode.
-+	 */
-+	result = exportfs_get_dentry(sb, obj);
-+	if (IS_ERR(result))
-+		return result;
-+
-+	if (S_ISDIR(result->d_inode->i_mode)) {
-+		if (!(result->d_flags & DCACHE_DISCONNECTED)) {
-+			if (acceptable(context, result))
-+				return result;
-+			err = -EACCES;
-+			goto err_result;
-+		}
-+
-+		err = reconnect_path(sb, result);
-+		if (err)
-+			goto err_result;
-+	} else {
-+		struct dentry *target_dir, *nresult;
-+		char nbuf[NAME_MAX+1];
-+
-+		alias = find_acceptable_alias(result, acceptable, context);
-+		if (alias)
-+			return alias;
-+
-+		if (parent == NULL)
-+			goto err_result;
-+
-+		target_dir = exportfs_get_dentry(sb,parent);
-+		if (IS_ERR(target_dir)) {
-+			err = PTR_ERR(target_dir);
-+			goto err_result;
-+		}
-+
-+		err = reconnect_path(sb, target_dir);
-+		if (err) {
-+			dput(target_dir);
-+			goto err_result;
-+		}
-+
-+		/*
-+		 * As we weren't after a directory, have one more step to go.
-+		 */
- 		err = exportfs_get_name(target_dir, nbuf, result);
- 		if (!err) {
- 			mutex_lock(&target_dir->d_inode->i_mutex);
--			nresult = lookup_one_len(nbuf, target_dir, strlen(nbuf));
-+			nresult = lookup_one_len(nbuf, target_dir,
-+						 strlen(nbuf));
- 			mutex_unlock(&target_dir->d_inode->i_mutex);
- 			if (!IS_ERR(nresult)) {
- 				if (nresult->d_inode) {
-@@ -297,8 +312,8 @@ find_exported_dentry(struct super_block 
- 					dput(nresult);
- 			}
- 		}
-+		dput(target_dir);
- 	}
--	dput(target_dir);
- 
- 	alias = find_acceptable_alias(result, acceptable, context);
- 	if (alias)
-@@ -308,13 +323,11 @@ find_exported_dentry(struct super_block 
- 	dput(result);
- 	/* It might be justifiable to return ESTALE here,
- 	 * but the filehandle at-least looks reasonable good
--	 * and it just be a permission problem, so returning
-+	 * and it may just be a permission problem, so returning
- 	 * -EACCESS is safer
- 	 */
- 	return ERR_PTR(-EACCES);
- 
-- err_target:
--	dput(target_dir);
-  err_result:
- 	dput(result);
- 	return ERR_PTR(err);
+Cheers,
+Jan
