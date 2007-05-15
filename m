@@ -1,63 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759319AbXEOWt2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759935AbXEOWum@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759319AbXEOWt2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 18:49:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756746AbXEOWtT
+	id S1759935AbXEOWum (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 18:50:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756748AbXEOWug
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 18:49:19 -0400
-Received: from wx-out-0506.google.com ([66.249.82.227]:30729 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756728AbXEOWtR (ORCPT
+	Tue, 15 May 2007 18:50:36 -0400
+Received: from nz-out-0506.google.com ([64.233.162.228]:21408 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756704AbXEOWuf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 18:49:17 -0400
+	Tue, 15 May 2007 18:50:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=dgIe07OdLJco7ZZANBkXK/Pd/Vg9TD+1j02wRbsdhPvPye5vGqbFlUjqeHzvShRwBYJs8jPXb2hxYiuhUsibDM5weA6ZTvYuOaEq4p7GAYCwbSS0MqmPYc7FATbfepQbqqKULr4RVMRE7P6L+R4vaswICbzVF0/aR1SnWYc6+Jw=
-Message-ID: <a2ebde260705151549r2762ac1fk9a68db7b903e6525@mail.gmail.com>
-Date: Wed, 16 May 2007 06:49:16 +0800
-From: "Dong Feng" <middle.fengdong@gmail.com>
-To: "Phillip Susi" <psusi@cfl.rr.com>
-Subject: Re: Why can't we sleep in an ISR?
-Cc: "pradeep singh" <2500.pradeep@gmail.com>,
-       "Bahadir Balban" <bahadir.balban@gmail.com>,
-       "Learning Linux" <learninglinux4@gmail.com>, kernelnewbies@nl.linux.org,
-       linux-newbie@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <4649E680.9020102@cfl.rr.com>
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:references;
+        b=M6avXFcgmsDxBb+O1Ns5jY8UeTySgUn4PVV/F3pRB8Zl5eIu6GUqbrpuHz+R9LXDnG5N5TIc7sc0ynFrpPpY617K8LiPA/cWsxA+3BLnEQHI1XxxPdLuu+i6SynHl9aoRwpyXRzYfCpiX04v+xjmOZZC3Txs01I0C/f12mWjUA8=
+Message-ID: <d45a3acc0705151550s48af38dfkc6bf2d0696a6aaef@mail.gmail.com>
+Date: Wed, 16 May 2007 08:50:34 +1000
+From: "andrew hendry" <andrew.hendry@gmail.com>
+To: "Linus Torvalds" <torvalds@linux-foundation.org>
+Subject: Re: Linux 2.6.22-rc1
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.LFD.0.98.0705150855270.16401@woody.linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9f1dc2cf0705132337k13aa3ccesc575d4550492a24e@mail.gmail.com>
-	 <366312910705140010m78b215a2t1753445e81120288@mail.gmail.com>
-	 <9f1dc2cf0705140016w6d8f44f9wec7586e7879af873@mail.gmail.com>
-	 <7ac1e90c0705140824i54e1c43ela3ab3d89827c0339@mail.gmail.com>
-	 <a2ebde260705142345m440c70fbu33934334fbb69f8e@mail.gmail.com>
-	 <4649E680.9020102@cfl.rr.com>
+Content-Type: multipart/mixed; 
+	boundary="----=_Part_9421_23234982.1179269434281"
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+	 <d45a3acc0705142114t2ed13889p5ed97740782d2821@mail.gmail.com>
+	 <alpine.LFD.0.98.0705142135390.6739@woody.linux-foundation.org>
+	 <d45a3acc0705142210w3982c14ep8afac73c1352ec7e@mail.gmail.com>
+	 <alpine.LFD.0.98.0705150855270.16401@woody.linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2007/5/16, Phillip Susi <psusi@cfl.rr.com>:
-> Dong Feng wrote:
-> >> Doesn't it run in current process's context ?
-> >>
-> >
-> > No. I think the concept of process context is a higher-level logical
-> > concept. Though the interrupt share stack with the interrupted
-> > process, in my opinion it logically does not share the context with
-> > the process.
+------=_Part_9421_23234982.1179269434281
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Yes, putting the extern highstart_pfn back compiles clean for that rand config.
+
+Sorry for the attachment, no access to a patch friendly mailer at work.
+
+Andrew.
+
+On 5/16/07, Linus Torvalds <torvalds@linux-foundation.org> wrote:
 >
-> No, the term context here has a specific meaning.  It refers to those
-> things which flow from the current pointer, including the virtual memory
-> space, file descriptor table, current uid, and so forth.  Because the
-> current pointer is not changed on entry to an ISR, the ISR is executing
-> in the context of the interrupted process, and thus uses that process'
-> virtual memory, etc.
+>
+> On Tue, 15 May 2007, andrew hendry wrote:
+> >
+> > almost, highstart_pfn is used in a few printks
+> >
+> > arch/i386/mm/discontig.c: In function 'setup_memory':
+> > arch/i386/mm/discontig.c:314: error: 'highstart_pfn' undeclared (first
+> > use in this function)
+> > arch/i386/mm/discontig.c:314: error: (Each undeclared identifier is
+> > reported only once
+> > arch/i386/mm/discontig.c:314: error: for each function it appears in.)
+>
+> Gaah. highstart_pfn is declared in <asm/highmem.h>, but that one is
+> protected by a
+>
+>         #ifdef CONFIG_HIGHMEM
+>         #include <asm/highmem.h>
+>
+> in <linux/highmem.h>, so even though we include highmem.h, we never see
+> the declaration.
+>
+> Your config is insane, but anyway, does it compile if you just add back
+> the extra "unnecessary" declaration of highstart_pfn?
+>
+>                 Linus
 >
 
-If what you say were true, then an ISR would be running in the same
-context as the interrupted process. But please check any article or
-book, it will say ISR running in different context from any process.
-So ISR is considered in its own context, although it shares a lot of
-things with the interrupted process. I would only say *context* is a
-higher-level logical concept.
+------=_Part_9421_23234982.1179269434281
+Content-Type: text/x-patch; name=himem.patch; charset=ANSI_X3.4-1968
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f1qxtktq
+Content-Disposition: attachment; filename="himem.patch"
+
+ZGlmZiAtdXByTiAtWCBkb250ZGlmZiBhL2FyY2gvaTM4Ni9tbS9kaXNjb250aWcuYyBiL2FyY2gv
+aTM4Ni9tbS9kaXNjb250aWcuYwotLS0gYS9hcmNoL2kzODYvbW0vZGlzY29udGlnLmMJMjAwNy0w
+NS0xNSAxNToxOTo0OS4wMDAwMDAwMDAgKzEwMDAKKysrIGIvYXJjaC9pMzg2L21tL2Rpc2NvbnRp
+Zy5jCTIwMDctMDUtMTUgMTU6MzU6MjYuMDAwMDAwMDAwICsxMDAwCkBAIC0zMSw2ICszMSw3IEBA
+CiAjaW5jbHVkZSA8bGludXgvbW9kdWxlLmg+CiAjaW5jbHVkZSA8bGludXgva2V4ZWMuaD4KICNp
+bmNsdWRlIDxsaW51eC9wZm4uaD4KKyNpbmNsdWRlIDxsaW51eC9zd2FwLmg+CiAKICNpbmNsdWRl
+IDxhc20vZTgyMC5oPgogI2luY2x1ZGUgPGFzbS9zZXR1cC5oPgpAQCAtOTcsMTQgKzk4LDkgQEAg
+dW5zaWduZWQgbG9uZyBub2RlX21lbW1hcF9zaXplX2J5dGVzKGludAogI2VuZGlmCiAKIGV4dGVy
+biB1bnNpZ25lZCBsb25nIGZpbmRfbWF4X2xvd19wZm4odm9pZCk7Ci1leHRlcm4gdm9pZCBmaW5k
+X21heF9wZm4odm9pZCk7CiBleHRlcm4gdm9pZCBhZGRfb25lX2hpZ2hwYWdlX2luaXQoc3RydWN0
+IHBhZ2UgKiwgaW50LCBpbnQpOwogCi1leHRlcm4gc3RydWN0IGU4MjBtYXAgZTgyMDsKLWV4dGVy
+biB1bnNpZ25lZCBsb25nIGhpZ2hlbmRfcGZuLCBoaWdoc3RhcnRfcGZuOwotZXh0ZXJuIHVuc2ln
+bmVkIGxvbmcgbWF4X2xvd19wZm47Ci1leHRlcm4gdW5zaWduZWQgbG9uZyB0b3RhbHJhbV9wYWdl
+czsKLWV4dGVybiB1bnNpZ25lZCBsb25nIHRvdGFsaGlnaF9wYWdlczsKK2V4dGVybiB1bnNpZ25l
+ZCBsb25nIGhpZ2hzdGFydF9wZm47CiAKICNkZWZpbmUgTEFSR0VfUEFHRV9CWVRFUyAoUFRSU19Q
+RVJfUFRFICogUEFHRV9TSVpFKQogCkBAIC0zNjAsNyArMzU2LDkgQEAgdm9pZCBfX2luaXQgem9u
+ZV9zaXplc19pbml0KHZvaWQpCiAJbWF4X3pvbmVfcGZuc1taT05FX0RNQV0gPQogCQl2aXJ0X3Rv
+X3BoeXMoKGNoYXIgKilNQVhfRE1BX0FERFJFU1MpID4+IFBBR0VfU0hJRlQ7CiAJbWF4X3pvbmVf
+cGZuc1taT05FX05PUk1BTF0gPSBtYXhfbG93X3BmbjsKKyNpZmRlZiBDT05GSUdfSElHSE1FTQog
+CW1heF96b25lX3BmbnNbWk9ORV9ISUdITUVNXSA9IGhpZ2hlbmRfcGZuOworI2VuZGlmCiAJLyog
+SWYgU1JBVCBoYXMgbm90IHJlZ2lzdGVyZWQgbWVtb3J5LCByZWdpc3RlciBpdCBub3cgKi8KIAlp
+ZiAoZmluZF9tYXhfcGZuX3dpdGhfYWN0aXZlX3JlZ2lvbnMoKSA9PSAwKSB7CiAJCWZvcl9lYWNo
+X29ubGluZV9ub2RlKG5pZCkgewo=
+------=_Part_9421_23234982.1179269434281--
