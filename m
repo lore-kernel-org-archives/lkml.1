@@ -1,58 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759307AbXEOVoU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758844AbXEOVto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759307AbXEOVoU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:44:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbXEOVoM
+	id S1758844AbXEOVto (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbXEOVth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:44:12 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:54772 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755466AbXEOVoL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 17:44:11 -0400
-Date: Tue, 15 May 2007 14:40:07 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Howells <dhowells@redhat.com>
-Cc: nickpiggin@yahoo.com.au, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, Nick Piggin <nickpiggin@yahoo.com.au>,
-       Hugh Dickins <hugh@veritas.com>
-Subject: Re: [PATCH 2/2] AFS: Implement shared-writable mmap
-Message-Id: <20070515144007.f87d9be5.akpm@linux-foundation.org>
-In-Reply-To: <20070515155231.29345.6212.stgit@warthog.cambridge.redhat.com>
-References: <20070515155224.29345.22719.stgit@warthog.cambridge.redhat.com>
-	<20070515155231.29345.6212.stgit@warthog.cambridge.redhat.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 15 May 2007 17:49:37 -0400
+Received: from www.osadl.org ([213.239.205.134]:60311 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755720AbXEOVth (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 17:49:37 -0400
+Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v4
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Frank Sorenson <frank@tuxrocks.com>
+Cc: Alistair John Strachan <s0348365@sms.ed.ac.uk>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <4649BE4A.8000707@tuxrocks.com>
+References: <1178485128.31213.98.camel@localhost.localdomain>
+	 <200705142215.08910.s0348365@sms.ed.ac.uk> <1179180314.7074.36.camel@chaos>
+	 <200705142342.29994.s0348365@sms.ed.ac.uk> <1179217082.7074.47.camel@chaos>
+	  <4649BE4A.8000707@tuxrocks.com>
+Content-Type: text/plain
+Date: Tue, 15 May 2007 23:53:33 +0200
+Message-Id: <1179266013.12838.31.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 16:52:31 +0100
-David Howells <dhowells@redhat.com> wrote:
+Frank,
 
-> Implement shared-writable mmap for AFS.
+On Tue, 2007-05-15 at 09:06 -0500, Frank Sorenson wrote:
+> Hangs at boot here:
+> 	Kernel alive
+> 	Kernel direct mapping tables up to 100000000 @ 8000-d000
+> (and that's it)
+> 
+> This is a Dell Inspiron E1705 with a Core 2 Duo 2.16GHz
+> 
+> highres-v3 also hung at the same point, but 2.6.21-git2-v2 worked
+> 2.6.22-rc1 boots without problem
 
-This blows up in -mm:
+Can you please try the following three command line option addons ?
 
-fs/afs/file.c:59: error: 'filemap_nopage' undeclared here (not in a function)
-fs/afs/file.c:60: error: unknown field 'populate' specified in initializer
-fs/afs/file.c:60: error: 'filemap_populate' undeclared here (not in a function)
+1: highres=off nohz=off
+2: highres=off
+3: nohz=off
 
-because Nick went and renamed half the VM and deleted the other half.
+Thanks,
 
-I need to work out what to do with
+	tglx
 
-mm-fix-fault-vs-invalidate-race-for-linear-mappings.patch
-mm-merge-populate-and-nopage-into-fault-fixes-nonlinear.patch
-mm-merge-populate-and-nopage-into-fault-fixes-nonlinear-doc-fix.patch
-mm-merge-populate-and-nopage-into-fault-fixes-nonlinear-fix.patch
-mm-merge-nopfn-into-fault.patch
-convert-hugetlbfs-to-use-vm_ops-fault.patch
-mm-remove-legacy-cruft.patch
-mm-debug-check-for-the-fault-vs-invalidate-race.patch
-mm-fix-clear_page_dirty_for_io-vs-fault-race.patch
-
-Probably merge them, I guess.  Hugh had concerns, I think over small
-additional overhead from the lock_page()?
 
