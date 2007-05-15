@@ -1,86 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758642AbXEOVWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbXEOVZB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758642AbXEOVWb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755221AbXEOVWJ
+	id S1757968AbXEOVZB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:25:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbXEOVYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:22:09 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:35112 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754129AbXEOVWD (ORCPT
+	Tue, 15 May 2007 17:24:55 -0400
+Received: from smtp2.linux-foundation.org ([207.189.120.14]:46099 "EHLO
+	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754467AbXEOVYz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 17:22:03 -0400
-Date: Tue, 15 May 2007 19:44:58 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.wat.veritas.com
-To: Christoph Lameter <clameter@sgi.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Badari Pulavarty <pbadari@us.ibm.com>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: select(0, ..) is valid ?
-In-Reply-To: <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com>
-Message-ID: <Pine.LNX.4.64.0705151927360.28895@blonde.wat.veritas.com>
-References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
- <20070515104453.f901e91f.akpm@linux-foundation.org>
- <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-OriginalArrivalTime: 15 May 2007 21:22:01.0123 (UTC) FILETIME=[139A6730:01C79737]
-X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABWluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAbmV0ZGV2QHZnZXIua2VybmVsLm9yZwBha3BtQGxpbnV4LWZvdW5kYXRpb24ub3JnAHBiYWRhcmlAdXMuaWJtLmNvbQBjbGFtZXRlckBzZ2kuY29tAA==
-X-Brightmail-Tracker: AAAAAA==
+	Tue, 15 May 2007 17:24:55 -0400
+Date: Tue, 15 May 2007 14:23:39 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Johann Lombardi <johann@clusterfs.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Clear PG_error before reading a page
+Message-Id: <20070515142339.4d9098f3.akpm@linux-foundation.org>
+In-Reply-To: <20070515210124.GA23698@chiva>
+References: <20070515143726.GC2160@chiva>
+	<20070515101144.f7072476.akpm@linux-foundation.org>
+	<20070515210124.GA23698@chiva>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007, Christoph Lameter wrote:
-> On Tue, 15 May 2007, Andrew Morton wrote:
+On Tue, 15 May 2007 23:01:24 +0200
+Johann Lombardi <johann@clusterfs.com> wrote:
+
+> On Tue, May 15, 2007 at 10:11:44AM -0700, Andrew Morton wrote:
+> > We need to make sure that this page has PG_uptodate cleared, so
+> > that a re-read is forced.  And the affected buffer_head, if any, should have
+> > buffer_uptodate() cleared.
 > 
-> > I _think_ we can just do
-> > 
-> > --- a/fs/compat.c~a
-> > +++ a/fs/compat.c
-> > @@ -1566,9 +1566,13 @@ int compat_core_sys_select(int n, compat
-> >  	 */
-> >  	ret = -ENOMEM;
-> >  	size = FDS_BYTES(n);
-> > -	bits = kmalloc(6 * size, GFP_KERNEL);
-> > -	if (!bits)
-> > -		goto out_nofds;
-> > +	if (likely(size)) {
-> > +		bits = kmalloc(6 * size, GFP_KERNEL);
-> > +		if (!bits)
-> > +			goto out_nofds;
-> > +	} else {
-> > +		bits = NULL;
-> > +	}
+> ok.
+> 
+> > This change might have horrid interactions with readahead and various
+> > application access patterns: if for some reason a dud sector takes 30
+> > seconds of driver futzing to return -EIO and someone (application or
+> > kernel) tries to read the same sector tens or hundreds of times, suckiness
+> > ensues.  This will be hard to test for.
+> 
+> Yes, I agree. So according to you, what's the best way to address the
+> initial problem (i.e. PG_error never cleared)?
 
-It's interesting that compat_core_sys_select() shows this kmalloc(0)
-failure but core_sys_select() does not.  That's because core_sys_select()
-avoids kmalloc by using a buffer on the stack for small allocations (and
-0 sure is small).  Shouldn't compat_core_sys_select() do just the same?
-Or is SLUB going to be so efficient that doing so is a waste of time?
+ooh, hard.
 
-> >  	fds.in      = (unsigned long *)  bits;
-> >  	fds.out     = (unsigned long *) (bits +   size);
-> >  	fds.ex      = (unsigned long *) (bits + 2*size);
-> > _
-> > 
-> > I mean, if that oopses then I'd be very interested in finding out why.
-> > 
-> > But I'm starting to suspect that it would be better to permit kmalloc(0) in
-> > slub.  It depends on how many more of these things need fixing.
-> > 
-> > otoh, a kmalloc(0) could be a sign of some buggy/inefficient/weird code, so
-> > there's some value in forcing us to go look at all the callsites.
->  
-> Hmmm... We could have kmalloc(0) return a pointer to the zero page? That 
-> would catch any writers?
+umm, a very safe way would be to free the dang page.  Make sure that we
+have no references on it and that we have a ref on the inode (ie: we're
+within a syscall which was passed an fd) then run
+invalidate_mapping_pages()
 
-I don't think using the zero page that way would be at all safe:
-there's probably configurations/architectures in which it is write
-protected, but I don't believe that's a given at all.
+> > Most reads don't (or shouldn't) go through block_read_full_page().
+> > mpage_readpages() does the heavy lifting.
+> 
+> Yes, indeed. However, as soon as a call to get_block() fails,
+> do_mpage_readpage() will call block_read_full_page() which will attach
+> buffers to this page.
+> Consequently, all subsequent reads will go through block_read_full_page().
 
-But the principle is good: ERR_PTR(-MAX_ERRNO) should work,
-that area up the top should always give a fault.
-Hmm, but perhaps there are architectures on which it does not?
+hm, confused.  Why is get_block() failing?  That has to go and read
+metadata.  If get_block() failed then we don't know what blocks to read to
+bring this page uptodate, so the pagecache page should remain in state
+!PageUptodate(), !PageError().  But then, we shouldn't have populated
+pagecache at that offset at all.
 
-Hugh
+I think I'm missing something here.  I suspect you're referring to a mix
+of reading the blockdev via /dev/hda1 and then using the already-populated
+pagecache as filesystem metadata, or something?
+
+Is the PageError page part of an S_ISREG file, or is it part of an S_ISBLK
+file?
