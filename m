@@ -1,66 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761164AbXEOXph@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbXEOXtv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761164AbXEOXph (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 19:45:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760792AbXEOXpY
+	id S1760608AbXEOXtv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 19:49:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757558AbXEOXtn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 19:45:24 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:38862 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760748AbXEOXpW (ORCPT
+	Tue, 15 May 2007 19:49:43 -0400
+Received: from ug-out-1314.google.com ([66.249.92.169]:36397 "EHLO
+	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757391AbXEOXtl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 19:45:22 -0400
-Date: Tue, 15 May 2007 16:45:22 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: mroos@linux.ee, David Miller <davem@davemloft.net>,
-       sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: slab hang on boot
-In-Reply-To: <20070515163321.744e2388.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.64.0705151642530.3886@schroedinger.engr.sgi.com>
-References: <Pine.SOC.4.64.0705142133190.17204@math>
- <20070514.151148.45744375.davem@davemloft.net>
- <Pine.LNX.4.64.0705141642350.13606@schroedinger.engr.sgi.com>
- <20070515163321.744e2388.akpm@linux-foundation.org>
+	Tue, 15 May 2007 19:49:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=V/WkJXFwliVzkBF95I93AScqR1GVEumLyRSvqbWfk9xYf/BU3kcInmhxTRIF+dKlWIo9nPQfRL8v2mdBxHCC+S8ZaqNA076vNHrJi6iPEnMFfHCeFZkvbcGV7X7a57aSP7Pxl8lRdqgkXAitBswuiaT/wyS1QmDcMYRgJbu+KQQ=
+Message-ID: <a781481a0705151649p4cc61bceqd61d778a67776c7f@mail.gmail.com>
+Date: Wed, 16 May 2007 05:19:40 +0530
+From: "Satyam Sharma" <satyam.sharma@gmail.com>
+To: "Arjan van de Ven" <arjan@linux.intel.com>
+Subject: Re: Asynchronous scsi scanning
+Cc: "Matthew Wilcox" <matthew@wil.cx>, "Simon Arlott" <simon@fire.lp0.eu>,
+       "James Bottomley" <james.bottomley@steeleye.com>,
+       "Dave Jones" <davej@redhat.com>,
+       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
+       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
+       "Robert P. J. Day" <rpjday@mindspring.com>
+In-Reply-To: <464A4222.4000208@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+References: <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
+	 <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
+	 <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
+	 <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
+	 <17841.simon.1179228389@5ec7c279.invalid>
+	 <20070515120228.GI10562@parisc-linux.org>
+	 <4649E03A.1090004@simon.arlott.org.uk>
+	 <20070515172905.GJ10562@parisc-linux.org>
+	 <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
+	 <464A4222.4000208@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007, Andrew Morton wrote:
+On 5/16/07, Arjan van de Ven <arjan@linux.intel.com> wrote:
+> Satyam Sharma wrote:
+> >> > >semantics of it (read-only?  read-write?  write-only?
+> >
+> > Well, it _has_ to be write, don't really care if it's read-write or
+> > write-only. I would still prefer read-write, but we can go ahead with
+> > write-only too. It doesn't really matter, does it?
+>
+> just to be devils advocate...
+> it should be a read that returns when done,
 
-> On Mon, 14 May 2007 16:46:17 -0700 (PDT)
-> Christoph Lameter <clameter@sgi.com> wrote:
-> 
-> > @@ -86,6 +87,9 @@ static inline int kmalloc_index(int size
-> >  	 */
-> >  	WARN_ON_ONCE(size == 0);
-> >  
-> > +	if (size >= (1UL << KMALLOC_SHIFT_HIGH))
-> > +		return -1;
-> > +
-> 
-> I don't quite understand why we did this.  The subsequent logic in
-> kmalloc_index() should return -1 for this `size' anyway.  If it doesn't,
-> it's bust, isn't it?
+Heh, yeah. We just need to trigger that scsi_complete_async_scans()
+after all ... might as well abuse all intuition on the user's behalf :-)
 
-KMALLOC_SHIFT_HIGH is not a constant but may be less than 25.
+> and that can be polled
 
-> Also, afaict kmalloc_slab() will totally mishandle the -1 return value and
-> will return a garbage kmem_cache*, via
-> 
->         return &kmalloc_caches[index];
+Gaah! :-)
 
-It does an
-
-if (index < 0)
-
-before getting to that statement.
- 
-> Could you double-check it all please?
-
-It was already checked.
-
-
- 
+But seriously, though, this sysfs attribute can be implemented
+_any which way_. Better for us if we do it the simplest way (and which
+taxes the user's intuition the least). Just that Matthew asked so many
+questions so I thought I might as well answer them :-)
