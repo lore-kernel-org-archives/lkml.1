@@ -1,105 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760272AbXEOAxW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761026AbXEOAyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760272AbXEOAxW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 20:53:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbXEOAxQ
+	id S1761026AbXEOAyb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 20:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755805AbXEOAyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 20:53:16 -0400
-Received: from gw.goop.org ([64.81.55.164]:44155 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753999AbXEOAxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 20:53:15 -0400
-Message-ID: <46490478.3010409@goop.org>
-Date: Mon, 14 May 2007 17:53:12 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070302)
+	Mon, 14 May 2007 20:54:25 -0400
+Received: from nz-out-0506.google.com ([64.233.162.229]:35794 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752443AbXEOAyY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 20:54:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:mime-version:content-type:content-transfer-encoding:content-disposition;
+        b=eibyz82c63GBk5pb0SEytOgeuke2/D6eLOsVmC34PW/b2Wx3aUxSd0qbtMJJqazAn1PLuVxtFF94q4bArf2YRUvs4ThrIB/yf/MLLk1dkyJHDoHD/qieue98uIBDdxym4e3azX5OEWSpuUfMXXRzcdauykt6WJMJHeokM1/SN6A=
+Message-ID: <3aa654a40705141754g21f5659bif25c0cbef8e8fcb0@mail.gmail.com>
+Date: Tue, 15 May 2007 00:54:23 +0000
+From: "Avuton Olrich" <avuton@gmail.com>
+To: LMKL <linux-kernel@vger.kernel.org>
+Subject: 2.6.22-rc1 creating an invalid randconfig
 MIME-Version: 1.0
-To: David Chinner <dgc@sgi.com>
-CC: xfs@oss.sgi.com, Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: 2.6.22-rc1 xfs lockdep messages
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I tend to get this when doing unlinks or rms in xfs:
+I recently was using randconfig to fish for some broken configs, when
+I came to a .config[1], The failure appeared to be related to
+CONFIGFS, so I mailed the maintainer, and was told CONFIGFS is
+selected but SYSFS is not, and it shouldn't be possible unless edited
+by hand which I didn't. Next, I forwarded the conversation to the
+Kconfig maintainer, to where I was told it's not directly a Kconfig
+problem. Anyone know which maintainer takes responsibility in this
+area?
 
-=======================================================
-[ INFO: possible circular locking dependency detected ]
-2.6.22-rc1-paravirt #1382
--------------------------------------------------------
-rm/1451 is trying to acquire lock:
- (&(&ip->i_lock)->mr_lock/1){--..}, at: [<e1209f9d>] xfs_ilock+0x64/0x8d [xfs]
+[1] http://avuton.googlepages.com/config
 
-but task is already holding lock:
- (&(&ip->i_lock)->mr_lock){----}, at: [<e1209f9d>] xfs_ilock+0x64/0x8d [xfs]
-
-which lock already depends on the new lock.
-
-
-the existing dependency chain (in reverse order) is:
-
--> #1 (&(&ip->i_lock)->mr_lock){----}:
-       [<c0146b33>] __lock_acquire+0xa1f/0xbab
-       [<c0146d3a>] lock_acquire+0x7b/0x9f
-       [<c013e61b>] down_write_nested+0x3d/0x58
-       [<e1209f9d>] xfs_ilock+0x64/0x8d [xfs]
-       [<e120a8cd>] xfs_iget_core+0x2bd/0x605 [xfs]
-       [<e120acc1>] xfs_iget+0xac/0x133 [xfs]
-       [<e1221d2a>] xfs_trans_iget+0xdc/0x142 [xfs]
-       [<e120e46f>] xfs_ialloc+0xa5/0x457 [xfs]
-       [<e12226f5>] xfs_dir_ialloc+0x6d/0x260 [xfs]
-       [<e122812d>] xfs_create+0x2f4/0x5a6 [xfs]
-       [<e1232124>] xfs_vn_mknod+0x130/0x1e5 [xfs]
-       [<e1232202>] xfs_vn_create+0x12/0x14 [xfs]
-       [<c01806b9>] vfs_create+0x9b/0xe5
-       [<c0182f4e>] open_namei+0x176/0x593
-       [<c0178480>] do_filp_open+0x26/0x3b
-       [<c01784d8>] do_sys_open+0x43/0xc7
-       [<c0178594>] sys_open+0x1c/0x1e
-       [<c0108080>] syscall_call+0x7/0xb
-       [<ffffffff>] 0xffffffff
-
--> #0 (&(&ip->i_lock)->mr_lock/1){--..}:
-       [<c0146a17>] __lock_acquire+0x903/0xbab
-       [<c0146d3a>] lock_acquire+0x7b/0x9f
-       [<c013e61b>] down_write_nested+0x3d/0x58
-       [<e1209f9d>] xfs_ilock+0x64/0x8d [xfs]
-       [<e122591f>] xfs_lock_inodes+0x11d/0x12f [xfs]
-       [<e122a9de>] xfs_lock_dir_and_entry+0xc2/0xcc [xfs]
-       [<e122b04e>] xfs_remove+0x213/0x425 [xfs]
-       [<e1231782>] xfs_vn_unlink+0x1c/0x44 [xfs]
-       [<c0180c2b>] vfs_unlink+0x75/0xb3
-       [<c01826b7>] do_unlinkat+0x96/0x12c
-       [<c0182760>] sys_unlink+0x13/0x15
-       [<c0108080>] syscall_call+0x7/0xb
-       [<ffffffff>] 0xffffffff
-
-other info that might help us debug this:
-
-3 locks held by rm/1451:
- #0:  (&inode->i_mutex/1){--..}, at: [<c018267f>] do_unlinkat+0x5e/0x12c
- #1:  (&inode->i_mutex){--..}, at: [<c0378b93>] mutex_lock+0x1f/0x23
- #2:  (&(&ip->i_lock)->mr_lock){----}, at: [<e1209f9d>] xfs_ilock+0x64/0x8d [xfs]
-
-stack backtrace:
- [<c0109173>] show_trace_log_lvl+0x1a/0x30
- [<c0109c7f>] show_trace+0x12/0x14
- [<c0109d0c>] dump_stack+0x16/0x18
- [<c01451af>] print_circular_bug_tail+0x5f/0x68
- [<c0146a17>] __lock_acquire+0x903/0xbab
- [<c0146d3a>] lock_acquire+0x7b/0x9f
- [<c013e61b>] down_write_nested+0x3d/0x58
- [<e1209f9d>] xfs_ilock+0x64/0x8d [xfs]
- [<e122591f>] xfs_lock_inodes+0x11d/0x12f [xfs]
- [<e122a9de>] xfs_lock_dir_and_entry+0xc2/0xcc [xfs]
- [<e122b04e>] xfs_remove+0x213/0x425 [xfs]
- [<e1231782>] xfs_vn_unlink+0x1c/0x44 [xfs]
- [<c0180c2b>] vfs_unlink+0x75/0xb3
- [<c01826b7>] do_unlinkat+0x96/0x12c
- [<c0182760>] sys_unlink+0x13/0x15
- [<c0108080>] syscall_call+0x7/0xb
- =======================
-
-	J
-
+Thanks
+-- 
+avuton
+--
+ Anyone who quotes me in their sig is an idiot. -- Rusty Russell.
