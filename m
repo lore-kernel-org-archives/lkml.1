@@ -1,155 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbXEOHbZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762055AbXEOHcJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760944AbXEOHbZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 03:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754494AbXEOHbS
+	id S1762055AbXEOHcJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 03:32:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755318AbXEOHb5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 03:31:18 -0400
-Received: from mailer.gwdg.de ([134.76.10.26]:48791 "EHLO mailer.gwdg.de"
+	Tue, 15 May 2007 03:31:57 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:55524 "EHLO smtps.tip.net.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752004AbXEOHbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 03:31:16 -0400
-Date: Tue, 15 May 2007 09:29:39 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Bharata B Rao <bharata@linux.vnet.ibm.com>
-cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       Jan Blunck <j.blunck@tu-harburg.de>
-Subject: Re: [RFC][PATCH  7/14] Union-mount mounting
-In-Reply-To: <20070514094150.GI4139@in.ibm.com>
-Message-ID: <Pine.LNX.4.61.0705150921300.9570@yvahk01.tjqt.qr>
-References: <20070514093722.GB4139@in.ibm.com> <20070514094150.GI4139@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Spam-Report: Content analysis: 0.0 points, 6.0 required
-	_SUMMARY_
+	id S1754494AbXEOHb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 03:31:57 -0400
+Date: Tue, 15 May 2007 17:31:46 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: __must_check (stir the pot :-))
+Message-Id: <20070515173146.505952d1.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.4.0 (GTK+ 2.10.12; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Tue__15_May_2007_17_31_46_+1000_0irBbUzg=NlS5FyU"
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Tue__15_May_2007_17_31_46_+1000_0irBbUzg=NlS5FyU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-On May 14 2007 15:11, Bharata B Rao wrote:
->
->TODO: bind and move mounts aren't yet supported with union mounts.
+So I am looking at "fixing" some of the warning produced by __must_check
+but then I see (things like):
 
-Are the semantics already set?
+drivers/base/core.c: In function 'device_add':
+drivers/base/core.c:714: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c:719: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c:722: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c:728: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c: In function 'device_rename':
+drivers/base/core.c:1187: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
+drivers/base/core.c:1197: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
 
->@@ -294,6 +294,10 @@ static struct vfsmount *clone_mnt(struct
-> 	if (!mnt)
-> 		goto alloc_failed;
-> 
->+	/*
->+	 * As of now, cloning of union mounted mnt isn't permitted.
->+	 */
->+	BUG_ON(mnt->mnt_flags & MNT_UNION);
+and things like this in drivers/base/sys.c:
 
-One, please avoid BUG_ONs. Now I am not sure if clone_mnt is called
-as part of kthread creation when CLONE_FS is it. If so, get rid of
-this one real fast. Also see chunk "@@ -1031,.. @@ do_loopback"
-below.
+int sysdev_create_file(struct sys_device * s, struct sysdev_attribute * a)
+{
+        return sysfs_create_file(&s->kobj, &a->attr);
+}
 
-	if(mnt->mnt_flags & MNT_UNION)
-		goto return_einval;
+where sysfs_create_file() is marked __must_check and sysdev_create_file()
+isn't.
 
-or something.
+So the questions come to mind:  Do we really care if our core
+infrastructure doesn't?  Can we care if the core infrastructure doesn't
+propogate the error returns?
 
->+#ifdef CONFIG_UNION_MOUNT
->+	struct union_info *uinfo = NULL;
->+#endif
-> 
-> 	retval = security_sb_umount(mnt, flags);
-> 	if (retval)
->@@ -685,6 +696,14 @@ static int do_umount(struct vfsmount *mn
-> 	}
-> 
-> 	down_write(&namespace_sem);
->+#ifdef CONFIG_UNION_MOUNT
->+	/*
->+	 * Grab a reference to the union_info which gets detached
->+	 * from the dentries in release_mounts().
->+	 */
->+	if (mnt->mnt_flags & MNT_UNION)
->+		uinfo = union_lock_and_get(mnt->mnt_root);
->+#endif
-> 	spin_lock(&vfsmount_lock);
-> 	event++;
-> 
->@@ -699,6 +718,15 @@ static int do_umount(struct vfsmount *mn
-> 		security_sb_umount_busy(mnt);
-> 	up_write(&namespace_sem);
-> 	release_mounts(&umount_list);
->+#ifdef CONFIG_UNION_MOUNT
->+	if (uinfo) {
->+		if (atomic_read(&uinfo->u_count) == 1)
->+			/* We are the last user of this union_info */
->+			union_release(uinfo);
->+		else
->+			union_put_and_unlock(uinfo);
->+	}
->+#endif
-> 	return retval;
-> }
-> 
+Flame away, I am prepared to ignore all opinions :-)
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Is it feasible to do with with some less #if/#endif magic?:
+--Signature=_Tue__15_May_2007_17_31_46_+1000_0irBbUzg=NlS5FyU
+Content-Type: application/pgp-signature
 
->@@ -1031,6 +1070,15 @@ static int do_loopback(struct nameidata 
-> 	if (err)
-> 		return err;
-> 
->+	/*
->+	 * bind mounting to or from union mounts is not supported
->+	 */
->+	err = -EINVAL;
->+	if (nd->mnt->mnt_flags & MNT_UNION)
->+		goto out_unlocked;
->+	if (old_nd.mnt->mnt_flags & MNT_UNION)
->+		goto out_unlocked;
->+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Do the same in clone_mnt.
+iD8DBQFGSWHnFdBgD/zoJvwRAhHmAKCbyoQjI5lXj2zyrVvbhNqDiz/5fwCfYhU9
+mwtsIYV0gTI+xl8ZhejpWw4=
+=BoZs
+-----END PGP SIGNATURE-----
 
-> 	down_write(&namespace_sem);
-> 	err = -EINVAL;
-> 	if (IS_MNT_UNBINDABLE(old_nd.mnt))
->@@ -1064,6 +1112,7 @@ static int do_loopback(struct nameidata 
-> 
-> out:
-> 	up_write(&namespace_sem);
->+out_unlocked:
-> 	path_release(&old_nd);
-> 	return err;
-> }
-
->+++ b/include/linux/fs.h
->@@ -1984,6 +1984,9 @@ static inline ino_t parent_ino(struct de
-> /* kernel/fork.c */
-> extern int unshare_files(void);
-> 
->+/* fs/union.c */
->+#include <linux/union.h>
->+
-> /* Transaction based IO helpers */
-> 
-> /*
-
-This raises a big eyebrow. If linux/fs.h can compile without the
-inclusion of linux/union.h, do not put linux/union.h in fs.h.
-
->+#ifdef CONFIG_UNION_MOUNT
->+
->+#include <linux/fs_struct.h>
->+
->+/* namespace stuff used at mount time */
->+extern void attach_mnt_union(struct vfsmount *, struct nameidata *);
->+extern void detach_mnt_union(struct vfsmount *, struct path *);
-
-You do not need that #include I suppose. Just predeclare the structs.
-
-	struct path;
-	struct vfsmount;
-	extern void ...
-
-Saves us the "compiler slurps in so many .h files" problem.
-
-
-	Jan
--- 
+--Signature=_Tue__15_May_2007_17_31_46_+1000_0irBbUzg=NlS5FyU--
