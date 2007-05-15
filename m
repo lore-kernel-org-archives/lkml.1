@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756659AbXEOVKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbXEOVQ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756659AbXEOVKe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754046AbXEOVK2
+	id S1756826AbXEOVQ4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:16:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbXEOVQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:10:28 -0400
-Received: from www17.your-server.de ([213.133.104.17]:2703 "EHLO
-	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752318AbXEOVK2 (ORCPT
+	Tue, 15 May 2007 17:16:49 -0400
+Received: from wr-out-0506.google.com ([64.233.184.232]:20159 "EHLO
+	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752140AbXEOVQt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 17:10:28 -0400
-Message-ID: <464A215D.3010701@web.de>
-Date: Tue, 15 May 2007 23:08:45 +0200
-From: Thomas Meyer <thomas.mey@web.de>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070421)
+	Tue, 15 May 2007 17:16:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=Adl55IzVzgJ6W4wXaZZUOL8joQcmirs87yRHgPyRBAS9wvMGLYDlMS5NXNB4IBFwy+gVjFbgvNc7owdwojYpl3VUQGGaSIjI+GriOMAwDDrf0QnWdN0NNfK+qRpXEtfSk6shZLpyQaPMs3Ea+jophMoqXmDmXn5Sdu0QQj0qJQ8=
+Message-ID: <d120d5000705151416v4dafa176h556d03d692170b39@mail.gmail.com>
+Date: Tue, 15 May 2007 17:16:47 -0400
+From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
+To: jroberson@gtcocalcomp.com
+Subject: Re: [linux-usb-devel] Cannot find our GTCO USB Driver in the 2.6.22-rc1 kernel
+Cc: "Till Harbaum / Lists" <lists@harbaum.org>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, "Greg KH" <gregkh@suse.de>,
+       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <1179255411.3101.79.camel@EdgyEft.Home>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: BUG: at include/linux/slub_def.h:89 kmalloc_index()
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: thomas@m3y3r.de
+Content-Disposition: inline
+References: <1176912010.6215.17.camel@EdgyEft.Home>
+	 <20070515111250.e869634b.randy.dunlap@oracle.com>
+	 <1179252727.3101.68.camel@EdgyEft.Home>
+	 <200705152038.53676.lists@harbaum.org>
+	 <1179255411.3101.79.camel@EdgyEft.Home>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-head: f653c34dd3d8bde2c918316fd5ba2e2c4f95afcf
+Hi,
 
-May 15 23:02:07 [kernel] BUG: at include/linux/slub_def.h:89 kmalloc_index()
-May 15 23:02:07 [kernel]  [<c015fc10>] get_slab+0x43/0x1cc
-May 15 23:02:07 [kernel]  [<f934b101>] usb_get_configuration+0x93f/0xd06
-[usbcore]
-May 15 23:02:07 [kernel]  [<c0160d82>] __kmalloc_track_caller+0x10/0x62
-May 15 23:02:07 [kernel]  [<c014ea37>] __kzalloc+0x11/0x3a
-May 15 23:02:07 [kernel]  [<f934b101>] usb_get_configuration+0x93f/0xd06
-[usbcore]
-May 15 23:02:07 [kernel]  [<f934854f>] usb_control_msg+0xcf/0xd9 [usbcore]
-May 15 23:02:07 [kernel]  [<f9348dff>] usb_get_descriptor+0x85/0xaf
-[usbcore]
-May 15 23:02:07 [kernel]  [<f93495ca>]
-usb_get_device_descriptor+0x72/0x7c [usbcore]
-May 15 23:02:07 [kernel]  [<f9344375>] hub_port_init+0x542/0x54c [usbcore]
-May 15 23:02:07 [kernel]  [<f9344c44>] usb_new_device+0x17/0xed [usbcore]
-May 15 23:02:07 [kernel]  [<f934581a>] hub_thread+0x6fb/0xa67 [usbcore]
-May 15 23:02:07 [kernel]  [<c02c783c>] __sched_text_start+0x6cc/0x782
-May 15 23:02:07 [kernel]  [<c012f7b5>] autoremove_wake_function+0x0/0x35
-May 15 23:02:07 [kernel]  [<f934511f>] hub_thread+0x0/0xa67 [usbcore]
-May 15 23:02:07 [kernel]  [<c012f6ea>] kthread+0x3b/0x61
-May 15 23:02:07 [kernel]  [<c012f6af>] kthread+0x0/0x61
-May 15 23:02:07 [kernel]  [<c0104917>] kernel_thread_helper+0x7/0x10
-May 15 23:02:07 [kernel]  =======================
+On 5/15/07, Jeremy Roberson <jroberson@gtcocalcomp.com> wrote:
+> A very good question.  Had it been, I probably would not have missed it.
+>
+> On Tue, 2007-05-15 at 20:38 +0200, Till Harbaum / Lists wrote:
+> > Hi,
+> >
+> > which leads to the question: Why is the "Enable Tablets" entry not
+> > inside the tablets menu. This way it's more obvious that it's disabled
+> > if it's the only entry in the menu. Plus the parent menu gets
+> > cleaned up as well.
+> >
 
+Because some people want to be able to turn off entire set of options
+without having to descend into submenu.
 
+-- 
+Dmitry
+
+P.S. Please do not top-post.
