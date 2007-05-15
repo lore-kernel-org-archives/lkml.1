@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758251AbXEOV1Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758403AbXEOVaP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758251AbXEOV1Q (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:27:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbXEOV1E
+	id S1758403AbXEOVaP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:30:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbXEOVaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:27:04 -0400
-Received: from webmail.gtcocalcomp.com ([209.36.34.20]:24542 "EHLO
-	mdmailserv.gtcocalcomp.local" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754566AbXEOV1D (ORCPT
+	Tue, 15 May 2007 17:30:05 -0400
+Received: from nz-out-0506.google.com ([64.233.162.234]:37198 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753729AbXEOVaE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 17:27:03 -0400
-Subject: Re: [linux-usb-devel] Cannot find our GTCO USB Driver in the
-	2.6.22-rc1 kernel
-From: Jeremy Roberson <jroberson@gtcocalcomp.com>
-Reply-To: jroberson@gtcocalcomp.com
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Till Harbaum / Lists <lists@harbaum.org>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Greg KH <gregkh@suse.de>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <d120d5000705151416v4dafa176h556d03d692170b39@mail.gmail.com>
-References: <1176912010.6215.17.camel@EdgyEft.Home>
-	 <20070515111250.e869634b.randy.dunlap@oracle.com>
-	 <1179252727.3101.68.camel@EdgyEft.Home>
-	 <200705152038.53676.lists@harbaum.org>
-	 <1179255411.3101.79.camel@EdgyEft.Home>
-	 <d120d5000705151416v4dafa176h556d03d692170b39@mail.gmail.com>
-Content-Type: text/plain
+	Tue, 15 May 2007 17:30:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=C6shr+8XSN9mmU34m3DQlK0TVjN1vR/2fTO4pVCo347lb7wAvSZ55FzwKFmvdTev3voQd673uBeDQu7S3bY1uG+3iFnu4ITWgc+dVAZRw3FHfU3tSwcPtmHfjoU7UUnLSiqeGg5hp3B9vljo704lFhAuPDI33PHsuqFy8X83NwI=
+Message-ID: <92a12cdb0705151430o66e11fc3m2ec0abd423dc4a6e@mail.gmail.com>
+Date: Tue, 15 May 2007 22:30:02 +0100
+From: "Adrian McMenamin" <adrianmcmenamin@gmail.com>
+To: "Heikki Orsila" <shdl@zakalwe.fi>
+Subject: Re: [PATCH] ALSA sound driver for SEGA Dreamcast AICA (pcm)
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       linuxsh-dev@lists.sourceforge.net
+In-Reply-To: <20070515004751.GD10873@zakalwe.fi>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: GTCO CalComp
-Date: Tue, 15 May 2007 14:26:59 -0700
-Message-Id: <1179264419.3101.135.camel@EdgyEft.Home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 15 May 2007 21:27:15.0561 (UTC) FILETIME=[CF05D590:01C79737]
+Content-Disposition: inline
+References: <92a12cdb0705141514v4c928041i6030267fd322e87@mail.gmail.com>
+	 <20070515004751.GD10873@zakalwe.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-What is Top Posting?
+On 15/05/07, Heikki Orsila <shdl@zakalwe.fi> wrote:
+> I still noticed some type cleanups, and possibly a good debug message..
+>
+> On Mon, May 14, 2007 at 11:14:55PM +0100, Adrian McMenamin wrote:
+> > +/* spu_memload - write to SPU address space */
+> > +static void spu_memload(u32 toi, void __iomem * from, int length)
+> > +{
+> > +     u32 __iomem *froml = from;
+> > +     u32 __iomem *to = (u32 __iomem *) (SPU_MEMORY_BASE + toi);
+> > +     int i, val;
+>
+> You should use "void *from" because it's not IO memory. Also, use "u32 val"
+> since that is the native type of "u32 *from".
+>
+> > +     length = DIV_ROUND_UP(length, 4);
+> > +     spu_write_wait();
+> > +     for (i = 0; i < length; i++) {
+> > +             val = *froml;
+> > +             writel(val, to);
+> > +             froml++;
+> > +             to++;
+> > +             if (i && !(i % 8))
+> > +                     spu_write_wait();
+> > +     }
+> > +}
+>
+> It seems a small simplification is possible:
+>
+>         /* remove first spu_write_wait(); */
+>         for (i = 0; i < length; i++) {
+>                 if (!(i % 8))
+>                         spu_write_wait();
+>                 val = *froml;
+>                 ...
+>         }
+>
 
-On Tue, 2007-05-15 at 17:16 -0400, Dmitry Torokhov wrote:
-> Hi,
-> 
-> On 5/15/07, Jeremy Roberson <jroberson@gtcocalcomp.com> wrote:
-> > A very good question.  Had it been, I probably would not have missed it.
-> >
-> > On Tue, 2007-05-15 at 20:38 +0200, Till Harbaum / Lists wrote:
-> > > Hi,
-> > >
-> > > which leads to the question: Why is the "Enable Tablets" entry not
-> > > inside the tablets menu. This way it's more obvious that it's disabled
-> > > if it's the only entry in the menu. Plus the parent menu gets
-> > > cleaned up as well.
-> > >
-> 
-> Because some people want to be able to turn off entire set of options
-> without having to descend into submenu.
-> 
--- 
-Jeremy Roberson
-Software Engineer
-Interwrite Learning
-
-"Do not go gentle into that good night,
-Old age should burn and rave at the 
-close of the day; Rage, rage against the
-dying of the light."
-- Dylan Thomas
-
-
-
-Note: The information contained within this electronic transmission is
-intended by Interwrite Learning for the use of the named individual or
-entity to which it is directed and contains confidential and/or
-privileged information.  It is not intended for transmission or receipt
-by anyone other than the named addressee or entity.  It should not be
-forwarded or copied to any unauthorized persons.  If you have received
-this is error, please remove it from your system, without copying or
-forwarding it and notify the sender by return email. Thank you.
+No, that would be dangerous because we don't know what state the FIFO
+is in when this is called.
