@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758695AbXEOXXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbXEOXYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758695AbXEOXXl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 19:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbXEOXXd
+	id S1759677AbXEOXYR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 19:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758816AbXEOXYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 19:23:33 -0400
-Received: from 203-97-71-235.dsl.clear.net.nz ([203.97.71.235]:46494 "EHLO
-	gazelle.ad.endace.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755845AbXEOXXd convert rfc822-to-8bit (ORCPT
+	Tue, 15 May 2007 19:24:04 -0400
+Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:1357 "EHLO
+	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758707AbXEOXYB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 19:23:33 -0400
-X-Greylist: delayed 850 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 19:23:32 EDT
-Content-class: urn:content-classes:message
+	Tue, 15 May 2007 19:24:01 -0400
+X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
+From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v4
+Date: Wed, 16 May 2007 00:23:55 +0100
+User-Agent: KMail/1.9.6
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <1178485128.31213.98.camel@localhost.localdomain> <200705142342.29994.s0348365@sms.ed.ac.uk> <1179217082.7074.47.camel@chaos>
+In-Reply-To: <1179217082.7074.47.camel@chaos>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Subject: Software raid0 will crash the file-system, when each disk is 5TB
-Date: Wed, 16 May 2007 11:09:20 +1200
-Message-ID: <659F626D666070439A4A5965CD6EBF406836C6@gazelle.ad.endace.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: Software raid0 will crash the file-system, when each disk is 5TB
-Thread-Index: AceXRhGsbzMG9dV9Qk2NbqlR20dznw==
-From: "Jeff Zheng" <Jeff.Zheng@endace.com>
-To: <linux-kernel@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200705160023.55899.s0348365@sms.ed.ac.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi everyone:
+On Tuesday 15 May 2007 09:18:02 Thomas Gleixner wrote:
+> I've uploaded a new version of the x86_64 highres/dyntick patches:
+>
+> http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-hig
+>hres-v4.patch
+>
+> Broken out version:
+>
+> http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-hig
+>hres-v4.patches.tar.bz2
+>
+> Changes since last version:
+>
+> - TSC calibration against PM-Timer
 
-	We are experiencing problems with software raid0, with very
-large disk arrays.
-We are using two 3ware disk array controllers, each of them is connected
-8 750GB harddrives. And we build a software raid0 on top of that. The
-total capacity is 5.5TB+5.5TB=11TB
+Working fine now, thanks a lot. Great latencies on usleep() now too, just what 
+I was looking for.
 
-We use jfs as the file-system, we have a test application that write
-data continuously to the disks. After writing 52 10GB files, jfs
-crashed. And we are not able to recover it, fsck doesn't recognise it
-anymore.
-We then tried xfs, same application, lasted a little longer, but gives
-kernel crash later.
+(BTW, with HRT (but not NO_HZ), does the HZ value have any effect on usleep() 
+(and friends) latencies?)
 
-We then reconfigured the hardware array, this time we configured two
-disk array from each controller, than we have 4 disk arrays, each of
-them have 4 750GB harddrives. Than build a new software raid0 on top of
-that. Total capacity is still the same, but 2.75T+2.75T+2.75T+2.75T=11T.
+-- 
+Cheers,
+Alistair.
 
-This time we managed to fill the whole 11T data without problem, we are
-still doing validation on all 11TB of data written to the disks.
-
-It happened on 2.6.20 and 2.6.13.
-
-So I think the problem is in the way on software raid handling very
-large disk, maybe a integer overflow or something. I've searched on the
-web, only find another guy complaining the same thing on the xfs mailing
-list.
-
-Anybody have a clue?
-
-
-Jeff
+Final year Computer Science undergraduate.
+1F2 55 South Clerk Street, Edinburgh, UK.
