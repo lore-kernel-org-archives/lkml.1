@@ -1,96 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758202AbXEOUiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbXEOUov@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758202AbXEOUiq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 16:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbXEOUik
+	id S1757350AbXEOUov (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 16:44:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbXEOUoo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 16:38:40 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:40165 "EHLO pasmtpB.tele.dk"
+	Tue, 15 May 2007 16:44:44 -0400
+Received: from pasmtpb.tele.dk ([80.160.77.98]:55980 "EHLO pasmtpB.tele.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755064AbXEOUij (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 16:38:39 -0400
-Date: Tue, 15 May 2007 22:39:35 +0200
+	id S1753089AbXEOUoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 16:44:44 -0400
+Date: Tue, 15 May 2007 22:45:40 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] PowerPC64 symbols start with '.'
-Message-ID: <20070515203935.GB22966@uranus.ravnborg.org>
-References: <20070511154501.1961fb92.sfr@canb.auug.org.au>
+To: Meelis Roos <mroos@linux.ee>
+Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: ppc modprost warnings in 2.6.22-rc1
+Message-ID: <20070515204540.GC22966@uranus.ravnborg.org>
+References: <Pine.SOC.4.64.0705141717110.23895@math>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20070511154501.1961fb92.sfr@canb.auug.org.au>
+In-Reply-To: <Pine.SOC.4.64.0705141717110.23895@math>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 11, 2007 at 03:45:01PM +1000, Stephen Rothwell wrote:
-> which we want to skip during modpost processing.  We need this to make
-> some of the whitelisting work.
+On Mon, May 14, 2007 at 05:20:20PM +0300, Meelis Roos wrote:
+> Trying to compile 2.6.22-rc1 for ppc (prep) arch. While section 
+> mismatches are an old thing, what are these COMMON symbols?
+> 
+>   MODPOST vmlinux
+> WARNING: "fee_restarts" [arch/ppc/kernel/built-in] is COMMON symbol
+> WARNING: "ee_restarts" [arch/ppc/kernel/built-in] is COMMON symbol
 
-I have a popwerpc64 crosscompiler and would like to reproduce
-this bug.
-It is gcc 4.1.0 build with Dan Kegel's crosstool.
+Symbols that modpst see belongs to SHN_COMMON.
+Should we drop that warning?
 
-What config shall I use to try it out.
-Can you please supply the exact warning message too.
+> WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x18) and 'Mesquite_pci_IRQ_map'
+.....
 
-Thanks,
+mot_info is only used by functions marked __init.
+So why not mark it __init so it get discarded and we get rid of all those warnings?
+
 	Sam
-
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  scripts/mod/modpost.c |   18 +++++++++++++++++-
->  1 files changed, 17 insertions(+), 1 deletions(-)
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-> index 113dc77..748b058 100644
-> --- a/scripts/mod/modpost.c
-> +++ b/scripts/mod/modpost.c
-> @@ -164,7 +164,13 @@ static inline unsigned int tdb_hash(const char *name)
->  static struct symbol *alloc_symbol(const char *name, unsigned int weak,
->  				   struct symbol *next)
->  {
-> -	struct symbol *s = NOFAIL(malloc(sizeof(*s) + strlen(name) + 1));
-> +	struct symbol *s;
-> +
-> +	/* For our purposes, .foo matches foo.  PPC64 needs this. */
-> +	if (name[0] == '.')
-> +		name++;
-> +
-> +	s = NOFAIL(malloc(sizeof(*s) + strlen(name) + 1));
->  
->  	memset(s, 0, sizeof(*s));
->  	strcpy(s->name, name);
-> @@ -180,6 +186,10 @@ static struct symbol *new_symbol(const char *name, struct module *module,
->  	unsigned int hash;
->  	struct symbol *new;
->  
-> +	/* For our purposes, .foo matches foo.  PPC64 needs this. */
-> +	if (name[0] == '.')
-> +		name++;
-> +
->  	hash = tdb_hash(name) % SYMBOL_HASH_SIZE;
->  	new = symbolhash[hash] = alloc_symbol(name, 0, symbolhash[hash]);
->  	new->module = module;
-> @@ -684,6 +694,12 @@ static int secref_whitelist(const char *modname, const char *tosec,
->  		NULL
->  	};
->  
-> +	/* For our purposes, .foo matches foo.  PPC64 needs this. */
-> +	if (atsym[0] == '.')
-> +		atsym++;
-> +	if (refsymname[0] == '.')
-> +		refsymname++;
-> +
->  	/* Check for pattern 1 */
->  	if (strcmp(tosec, ".init.data") != 0)
->  		f1 = 0;
-> -- 
-> 1.5.1.4
-> 
