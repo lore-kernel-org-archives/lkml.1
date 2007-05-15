@@ -1,83 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbXEONsW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760364AbXEONtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758629AbXEONsW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 09:48:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755368AbXEONsN
+	id S1760364AbXEONtQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 09:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196AbXEONtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 09:48:13 -0400
-Received: from nz-out-0506.google.com ([64.233.162.234]:37151 "EHLO
-	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755322AbXEONsM (ORCPT
+	Tue, 15 May 2007 09:49:05 -0400
+Received: from clem.clem-digital.net ([68.16.168.10]:47989 "EHLO
+	clem.clem-digital.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756155AbXEONtE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 09:48:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:x-enigmail-version:content-type:content-transfer-encoding;
-        b=GgG8DQsbj376atqQWohKOyRP1v1OAM5rYktqiZNop3jgkjTqQPyng51yrYbHfjWcSTrddC4FNs3DcA2jmf+GH5BFlurTewmv7LthAriaktqOITAqQgZH8DonAO4UeC794II7EQ/IUb4jpOKrX8QlmPIdVD40/Uw/3D8dCZBNHvs=
-Message-ID: <4649B9EF.1070605@gmail.com>
-Date: Tue, 15 May 2007 15:47:27 +0200
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.0 (X11/20070326)
+	Tue, 15 May 2007 09:49:04 -0400
+From: Pete Clements <clem@clem.clem-digital.net>
+Message-Id: <200705151348.l4FDmlD7001813@clem.clem-digital.net>
+Subject: Re: 2.6.22-rc1 lost snd_4236 device
+To: tiwai@suse.de (Takashi Iwai)
+Date: Tue, 15 May 2007 09:48:47 -0400 (EDT)
+Cc: rene.herman@gmail.com (Rene Herman),
+       clem@clem.clem-digital.net (Pete Clements),
+       linux-kernel@vger.kernel.org (linux-kernel),
+       alsa-devel@alsa-project.org (ALSA devel)
+In-Reply-To: <s5hy7jqgymj.wl%tiwai@suse.de>
+X-Mailer: ELM [version 2.5 PL7]
 MIME-Version: 1.0
-To: Henrique de Moraes Holschuh <hmh@debian.org>
-CC: Francesco Pretto <ceztko@gmail.com>, Phillip Susi <psusi@cfl.rr.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       pkg-sysvinit-devel@lists.alioth.debian.org, linux-scsi@vger.kernel.org,
-       Jeff Garzik <jeff@garzik.org>
-Subject: Re: Weird hard disk noise on shutdown (bug #7674)
-References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca> <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com> <463B858E.6060002@cfl.rr.com> <463B99EE.2090001@gmail.com> <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com> <46489D3B.8050805@gmail.com> <e5ab0f710705141346o45ac8721jacbcb753f9d45406@mail.gmail.com> <20070515131632.GC16673@khazad-dum.debian.net>
-In-Reply-To: <20070515131632.GC16673@khazad-dum.debian.net>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Henrique.
+Quoting Takashi Iwai
+  > At Tue, 15 May 2007 07:42:41 +0200,
+  > Rene Herman wrote:
+  > > 
+  > > [1  <text/plain; ISO-8859-15 (7bit)>]
+  > > On 05/13/2007 06:23 PM, Pete Clements wrote:
+  > > 
+  > > > Fyi:
+  > > > With 2.6.22-rc1 get following when loading sound device module. Introduced
+  > > > with 2.6.21-git16.
+  > > > 
+  > > > FATAL: Error inserting snd_cs4236 (/lib/modules/2.6.22-rc1/kernel/sound/isa/cs423x/snd-cs4236.ko): No such device
+  > > > FATAL: Error running install command for snd_cs4236
+  > > 
+  > > Yup; the conversion of the mixed legacy/pnp ALSA drivers to the isa_bus 
+  > > framework is not quite right. Wants the attached.
+  > 
+  > Grr, forgot about the error return at probe.
+  > 
+  > > Takashi, this needs to go to Linus. Can you make sure it gets there? This is 
+  > > against -linus HEAD.
+  > > 
+  > > Signed-off-by: Rene Herman <rene.herman@gmail.com>
+  > 
+  > Thanks.  I applied it to ALSA tree so that it will be queued in the
+  > next push round.
+  > 
+  > 
+  > Takashi
+  > -
 
-Henrique de Moraes Holschuh wrote:
-> On Mon, 14 May 2007, Francesco Pretto wrote:
->> Ubuntu [1] ang Gentoo [2] bugs opened. Sent a mail to Miquel van
->> Smoorenburg, dev  of sysvinit.
-> 
-> For all Debian sysvinit issues, please send email to
-> pkg-sysvinit-devel@lists.alioth.debian.org (added to CC).
-> 
-> For the Debian sysvinit crew: Guys, have a look at
-> http://linux-ata.org/shutdown.html.  We need to act on it, and also file a
-> bug on all of our current kernels (poweroff causes minor but accumulating-
-> over-time damage to all hardware under control of libata).  This is really
-> something we should be trying to fix on our 2.6.18 kernels and stable
-> sysvinit.
-> 
->> [1] https://bugs.launchpad.net/upstart/+bug/114683
->> [2] http://bugs.gentoo.org/show_bug.cgi?id=178559
-
-There have been further developments,
-
-	http://article.gmane.org/gmane.linux.ide/18823	(bugfix)
-	http://article.gmane.org/gmane.linux.ide/18846	(in discussion)
-
-The second patch makes libata turn off the warning message and just
-issue STANDBYNOW without userland modification, iff userland
-halt/shutdown doesn't issue STANDBYNOW during shutdown.  I'm not sure
-whether this will be accepted or not.  It makes the change much less
-intrusive for distros which don't issue STANDBYNOW from userland but
-disks will always do emergency-unload on all kernels with this problem.
-
-> Tejun, am I right to assume that any servers with self-contained SCSI disks
-> (i.e. that are not plugged into externally powered drive enclosures, etc)
-> also get the emergency head unloads when they are powered off?
-
-AFAIK, yes, all SCSI disks attached to a single host and shares power
-on/off status will do emergency unload on poweroff.  In the updated
-kernel, this is controlled by the following sysfs node.
-
- /sys/class/scsi_disk/h:c:i:l/manage_start_stop.
-
-It defaults to 1 for libata devices and 0 for all others.  Echoing 1 to
-it makes the sd driver spindown the device on suspend to ram/disk and
-poweroff.
+Applied patch. Module loads.
 
 -- 
-tejun
+Pete Clements 
