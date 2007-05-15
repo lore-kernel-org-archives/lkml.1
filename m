@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934164AbXEOJwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933997AbXEOJ6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934164AbXEOJwm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 05:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759438AbXEOJwf
+	id S933997AbXEOJ6W (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 05:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759141AbXEOJ6O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 05:52:35 -0400
-Received: from moutng.kundenserver.de ([212.227.126.179]:58102 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758936AbXEOJwf (ORCPT
+	Tue, 15 May 2007 05:58:14 -0400
+Received: from viefep13-int.chello.at ([213.46.255.15]:47355 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759122AbXEOJ6O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 05:52:35 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] pasemi: Electra CF driver
-Date: Tue, 15 May 2007 11:52:23 +0200
-User-Agent: KMail/1.9.6
-Cc: Olof Johansson <olof@lixom.net>, paulus@samba.org,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
-References: <20070515044515.GA6731@lixom.net>
-In-Reply-To: <20070515044515.GA6731@lixom.net>
-X-Face: >j"dOR3XO=^3iw?0`(E1w<L^(+[DJB_w&ik~>Z/&le9!.ok[JrI=S~VlsF~}"P\+jx.GT@=?utf-8?q?=0A=09-oaEG?=,9Ba>v;3>:kcw#yO5?B:l{(Ln.2)=?utf-8?q?=27=7Dfw07+4-=26=5E=7CScOpE=3F=5D=5EXdv=5B/zWkA7=60=25M!DxZ=0A=09?=
- =?utf-8?q?8MJ=2EU5?="hi+2yT(k`PF~Zt;tfT,i,JXf=x@eLP{7B:"GyA\=UnN)
- =?utf-8?q?=26=26qdaA=3A=7D-Y*=7D=3A3YvzV9=0A=09=7E=273a=7E7I=7CWQ=5D?=<50*%U-6Ewmxfzd<JV4tqSh>n/CK_E/ouMU(r?FAQG/ev^JyuX.%(By`"
- =?utf-8?q?L=5F=0A=09H=3Dbj?=)"y7*XOqz|SS"mrZ$`Q_syCd
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Tue, 15 May 2007 05:58:14 -0400
+Subject: Re: [PATCH] mm: swap prefetch more improvements
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, ck@vds.kolivas.org
+In-Reply-To: <20070514150032.d3ef6bb1.akpm@linux-foundation.org>
+References: <200705141050.55038.kernel@kolivas.org>
+	 <20070514150032.d3ef6bb1.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 15 May 2007 11:58:01 +0200
+Message-Id: <1179223081.6810.133.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.10.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705151152.23940.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/DRxU8eiw97Wq5+QUwYqH3Xq7IjMLGTbQoz+L
- ZRdVITETQoMg8ppSN7deIBxYMtRkTaIoqwEKSz6k6yWn8x+MMD
- LV+vcw4Sn+S1geHJncCAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 May 2007, Olof Johansson wrote:
-> Driver for the CompactFlash slot on the PA Semi Electra eval board. It's
-> a simple device sitting on localbus, with interrupts and detect/voltage
-> control over GPIO.
+On Mon, 2007-05-14 at 15:00 -0700, Andrew Morton wrote:
+> On Mon, 14 May 2007 10:50:54 +1000
+> Con Kolivas <kernel@kolivas.org> wrote:
+> 
+> > akpm, please queue on top of "mm: swap prefetch improvements"
+> > 
+> > ---
+> > Failed radix_tree_insert wasn't being handled leaving stale kmem.
+> > 
+> > The list should be iterated over in the reverse order when prefetching.
+> > 
+> > Make the yield within kprefetchd stronger through the use of cond_resched.
+> 
+> hm.
+> 
+> > 
+> > -		might_sleep();
+> > -		if (!prefetch_suitable())
+> > +		/* Yield to anything else running */
+> > +		if (cond_resched() || !prefetch_suitable())
+> >  			goto out_unlocked;
+> 
+> So if cond_resched() happened to schedule away, we terminate this
+> swap-tricking attempt.  It's not possible to determine the reasons for this
+> from the code or from the changelog (==bad).
+> 
+> How come?
 
-The driver looks really good, there is nothing for me to complain about.
+I think Con meant need_resched(). That would indicate someone else wants
+to use the CPU and and has higher priority than kprefetchd.
 
-> The driver is implemented as an of_platform driver, and adds localbus
-> as a bus being probed by the of_platform framework.
 
-I supposed "localbus" is what the current firmware ships with in the
-device tree, right? If you still have the choice on how this is
-represented it might be better not to invent another device-type
-but rather make this "soc" or whatever existing type we know about.
 
-	Arnd <><
