@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760988AbXEPASm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761301AbXEPAUE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760988AbXEPASm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 20:18:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758927AbXEPASf
+	id S1761301AbXEPAUE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 20:20:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758927AbXEPATz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 20:18:35 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:56864 "EHLO e4.ny.us.ibm.com"
+	Tue, 15 May 2007 20:19:55 -0400
+Received: from mailgw.cvut.cz ([147.32.3.235]:58828 "EHLO mailgw.cvut.cz"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757053AbXEPASe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 20:18:34 -0400
-Date: Tue, 15 May 2007 17:18:32 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, ak@suse.de
-Subject: Re: How to force Kconfig tristate into range n..m?
-Message-ID: <20070516001832.GO9884@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20070515233002.GA9614@linux.vnet.ibm.com> <20070515164130.77ff2962.randy.dunlap@oracle.com>
+	id S1754653AbXEPATz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 20:19:55 -0400
+X-Greylist: delayed 1678 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 20:19:55 EDT
+Message-ID: <464A4799.10203@vandrovec.name>
+Date: Tue, 15 May 2007 16:51:53 -0700
+From: Petr Vandrovec <petr@vandrovec.name>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.8.1.3) Gecko/20070217 Iceape/1.1.1 (Debian-1.1.1-2)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070515164130.77ff2962.randy.dunlap@oracle.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+CC: dan@dennedy.org, linux1394-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix/add raw1394 CONFIG_COMPAT code
+References: <20070507021447.GA22197@vana.vc.cvut.cz> <tkrat.a2f16b56bae46a1e@s5r6.in-berlin.de>
+In-Reply-To: <tkrat.a2f16b56bae46a1e@s5r6.in-berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 15, 2007 at 04:41:30PM -0700, Randy Dunlap wrote:
-> On Tue, 15 May 2007 16:30:02 -0700 Paul E. McKenney wrote:
+Stefan Richter wrote:
+> On  7 May, Petr Vandrovec wrote:
+>> This patch makes raw1394 in current Linux git tree (2.6.21-1570) usable to 32bit
+>> applications running on 64bit kernel (tested on i386 app using x86_64 kernel).
+> [...]
+>> With this in place I was able to run my test app and grab some mpegs, so I believe
+>> that I got everything necessary done.  If you believe I have missed some ioctl, yell
+>> at me.
 > 
-> > Hello!
-> > 
-> > It would be nice to constrain RCU_TORTURE_TEST to "n" or "m", excluding
-> > "y", since "y" gives anti-social results that I have never seen a use
-> > for.  So I tried adding a "range n m" to the Kconfig.debug entry for
-> > RCU_TORTURE_TEST.  This gives me the following warning at "make xconfig"
-> > time:
-> > 
-> >    lib/Kconfig.debug:386:warning: range is only allowed for int or hex symbols
-> > 
-> > and xconfig ignores the restriction.
-> > 
-> > A few clumsy hacks get rid of the error message, but fail to cause
-> > xconfig to enforce the limit.
-> > 
-> > Is there some other way to prohibit modules from being compiled into
-> > the main kernel?
+> Petr, thanks once again for the fixes.  I took the liberty to split your
+> patch into the read(), write(), and ioctl() parts but kept your From:
+> and Signed-off-by: and Dan's ACK.  Is this OK with you?  I will reply to
+> this message with
+
+Yes, of course.  Thanks a lot.
+
+> [PATCH 1/3] ieee1394: raw1394: Fix read() for 32bit userland on 64bit kernel
+> [PATCH 2/3] ieee1394: raw1394: Fix write() for 32bit userland on 64bit kernel
+> [PATCH 3/3] ieee1394: raw1394: Add ioctl() for 32bit userland on 64bit kernel
 > 
-> I think that
-> 	depends on m
-> will do what you want.  That's what some ancient PCMCIA drivers
-> do, as well as the crypto test module.
+> I plan to do some own testing on a x86-64 box on Thursday and will then
+> pass it upstream ASAP.
 
-This indeed works!  Thank you!!!
+Thanks.
+								Petr
 
-						Thanx, Paul
