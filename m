@@ -1,517 +1,418 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbXEOArf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760835AbXEOAst@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760278AbXEOArf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 20:47:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbXEOAr1
+	id S1760835AbXEOAst (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 20:48:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbXEOAsm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 20:47:27 -0400
-Received: from smtp1.linux-foundation.org ([65.172.181.25]:33484 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755236AbXEOAr0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 20:47:26 -0400
-Date: Mon, 14 May 2007 17:46:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
-       linux-kernel@vger.kernel.org,
-       Alessandro Zummo <alessandro.zummo@towertech.it>
-Subject: Re: [PATCH] Add driver for Dallas DS1682 elapsed time recorder
-Message-Id: <20070514174619.f552ff64.akpm@linux-foundation.org>
-In-Reply-To: <20070513073906.24149.1292.stgit@trillian.secretlab.ca>
-References: <20070513073906.24149.1292.stgit@trillian.secretlab.ca>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 14 May 2007 20:48:42 -0400
+Received: from zakalwe.fi ([80.83.5.154]:52095 "EHLO zakalwe.fi"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755657AbXEOAsm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 20:48:42 -0400
+Date: Tue, 15 May 2007 03:47:51 +0300
+From: Heikki Orsila <shdl@zakalwe.fi>
+To: Adrian McMenamin <adrianmcmenamin@gmail.com>
+Cc: alsa-devel@alsa-project.org, linux-kernel@vger.kernel.org,
+       linuxsh-dev@lists.sourceforge.net
+Subject: Re: [PATCH] ALSA sound driver for SEGA Dreamcast AICA (pcm)
+Message-ID: <20070515004751.GD10873@zakalwe.fi>
+References: <92a12cdb0705141514v4c928041i6030267fd322e87@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <92a12cdb0705141514v4c928041i6030267fd322e87@mail.gmail.com>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 13 May 2007 01:43:42 -0600
-Grant Likely <grant.likely@secretlab.ca> wrote:
+I still noticed some type cleanups, and possibly a good debug message..
 
-> 
-> Here is the 3rd iteration with the following changes:
-> - Modified to be an i2c "new style" driver based on David Brownell's work
-> - uses the new prototype for i2c_smbus_read_i2c_block_data() for block data
->   reads instead of a single byte at a time.
-> 
->  drivers/i2c/chips/ds1682.c |  270 ++++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 270 insertions(+), 0 deletions(-)
+On Mon, May 14, 2007 at 11:14:55PM +0100, Adrian McMenamin wrote:
+> +/* spu_memload - write to SPU address space */
+> +static void spu_memload(u32 toi, void __iomem * from, int length)
+> +{
+> +	u32 __iomem *froml = from;
+> +	u32 __iomem *to = (u32 __iomem *) (SPU_MEMORY_BASE + toi);
+> +	int i, val;
 
-This version of the patch omitted the changes to drivers/i2c/chips/Kconfig
-and drivers/i2c/chips/Makefile, which I assume was accidental.
+You should use "void *from" because it's not IO memory. Also, use "u32 val"
+since that is the native type of "u32 *from".
 
-As usual, I generated the delta so we can see what was done:
+> +	length = DIV_ROUND_UP(length, 4);
+> +	spu_write_wait();
+> +	for (i = 0; i < length; i++) {
+> +		val = *froml;
+> +		writel(val, to);
+> +		froml++;
+> +		to++;
+> +		if (i && !(i % 8))
+> +			spu_write_wait();
+> +	}
+> +}
+
+It seems a small simplification is possible:
+
+	/* remove first spu_write_wait(); */
+	for (i = 0; i < length; i++) {
+		if (!(i % 8))
+			spu_write_wait();
+		val = *froml;
+		...
+	}
 
 
-From: Grant Likely <grant.likely@secretlab.ca>
+> +/* SPU specific functions */
+> +/* spu_write_wait - wait for G2-SH FIFO to clear */
+> +static void spu_write_wait(void)
+> +{
+> +	int time_count; 
+> +	time_count = 0;
+> +	while (1) {
+> +		if (!(readl(G2_FIFO) & 0x11))
+> +			break;
+> +		/* To ensure hardware failure doesn't wedge kernel */
+> +		time_count++;
+> +		if (time_count > 0x10000)
 
-- Modified to be an i2c "new style" driver based on David Brownell's work
-- uses the new prototype for i2c_smbus_read_i2c_block_data() for block data
-  reads instead of a single byte at a time.
+Maybe this deserves a printk() message?
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-Cc: Jean Delvare <khali@linux-fr.org>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
+> +static struct snd_pcm_hardware snd_pcm_aica_playback_hw = {
+> +	.info = (SNDRV_PCM_INFO_NONINTERLEAVED),
+> +	.formats =
+> +	    (SNDRV_PCM_FMTBIT_S8 | SNDRV_PCM_FMTBIT_S16_LE |
+> +	     SNDRV_PCM_FMTBIT_IMA_ADPCM),
+> +	.rates = SNDRV_PCM_RATE_8000_48000,
+> +	.rate_min = 8000,
+> +	.rate_max = 48000,
+> +	.channels_min = 1,
+> +	.channels_max = 2,
+> +	.buffer_bytes_max = AICA_BUFFER_SIZE,
+> +	.period_bytes_min = AICA_PERIOD_SIZE,
+> +	.period_bytes_max = AICA_PERIOD_SIZE,
+> +	.periods_min = AICA_PERIOD_NUMBER,
+> +	.periods_max = AICA_PERIOD_NUMBER,
+> +};
+> +
+> +static int aica_dma_transfer(int channels, int buffer_size,
+> +			     struct snd_pcm_substream *substream)
+> +{
+> +	int q, err, period_offset;
+> +	struct snd_card_aica *dreamcastcard;
+> +	struct snd_pcm_runtime *runtime;
+> +	err = 0;
+> +	dreamcastcard = substream->pcm->private_data;
+> +	period_offset = dreamcastcard->clicks;
+> +	period_offset %= (AICA_PERIOD_NUMBER / channels);
+> +	runtime = substream->runtime;
+> +	for (q = 0; q < channels; q++) {
+> +		err = dma_xfer(AICA_DMA_CHANNEL,
+> +			       (unsigned long)(runtime->dma_area +
+> +					       (AICA_BUFFER_SIZE * q) /
+> +					       channels +
+> +					       AICA_PERIOD_SIZE *
+> +					       period_offset),
+> +			       AICA_CHANNEL0_OFFSET + q * CHANNEL_OFFSET +
+> +			       AICA_PERIOD_SIZE * period_offset,
+> +			       buffer_size / channels, AICA_DMA_MODE);
+> +		if (unlikely(err < 0))
+> +			break;
+> +		dma_wait_for_completion(AICA_DMA_CHANNEL);
+> +	}
+> +	return err;
+> +}
+> +
+> +static void startup_aica(struct snd_card_aica *dreamcastcard)
+> +{
+> +	spu_memload(AICA_CHANNEL0_CONTROL_OFFSET,
+> +		    (u8 *) dreamcastcard->channel,
 
- drivers/i2c/chips/ds1682.c |  333 ++++++++++++-----------------------
- 1 files changed, 121 insertions(+), 212 deletions(-)
+Why cast to u8 *? spu_memload gets a void *, and the void * is casted 
+into an u32 *. 
 
-diff -puN drivers/i2c/chips/ds1682.c~i2c-add-driver-for-dallas-ds1682-elapsed-time-recorder-update drivers/i2c/chips/ds1682.c
---- a/drivers/i2c/chips/ds1682.c~i2c-add-driver-for-dallas-ds1682-elapsed-time-recorder-update
-+++ a/drivers/i2c/chips/ds1682.c
-@@ -16,132 +16,106 @@
- 
- /*
-  * The DS1682 elapsed timer recorder is a simple device that implements
-- * one elapsed time counters, one event counter, an alarm signal and 10
-+ * one elapsed time counter, one event counter, an alarm signal and 10
-  * bytes of general purpose EEPROM.
-  *
-  * This driver provides access to the DS1682 counters and user data via
-  * the sysfs.  The following attributes are added to the device node:
-- *     elapsed_time (u32): Total elapsed event time in 1/4s resolution
-+ *     elapsed_time (u32): Total elapsed event time in ms resolution
-  *     alarm_time (u32): When elapsed time exceeds the value in alarm_time,
-  *                       then the alarm pin is asserted.
-  *     event_count (u16): number of times the event pin has gone low.
-- *     user_data (u8[10]): general purpose EEPROM
-+ *     eeprom (u8[10]): general purpose EEPROM
-  *
-  * Counter registers and user data are both read/write unless the device
-- * has been write protected.  This driver does not support turning on write
-+ * has been write protected.  This driver does not support turning off write
-  * protection.  Once write protection is turned on, it is impossible to
-- * turn off so I have left the feature out of this driver to avoid
-+ * turn it off again, so I have left the feature out of this driver to avoid
-  * accidental enabling, but it is trivial to add write protect support.
-  *
-  */
- 
--#include <linux/device.h>
- #include <linux/module.h>
- #include <linux/init.h>
- #include <linux/slab.h>
- #include <linux/i2c.h>
- #include <linux/string.h>
--#include <linux/bcd.h>
- #include <linux/list.h>
- #include <linux/sysfs.h>
- #include <linux/ctype.h>
-+#include <linux/hwmon-sysfs.h>
- 
- /* Device registers */
--#define DS1682_ADDR			0x6B
--
- #define DS1682_REG_CONFIG		0x00
- #define DS1682_REG_ALARM		0x01
- #define DS1682_REG_ELAPSED		0x05
- #define DS1682_REG_EVT_CNTR		0x09
--#define DS1682_REG_USER_DATA		0x0b
-+#define DS1682_REG_EEPROM		0x0b
- #define DS1682_REG_RESET		0x1d
- #define DS1682_REG_WRITE_DISABLE	0x1e
- #define DS1682_REG_WRITE_MEM_DISABLE	0x1f
- 
--/*
-- * Probing class
-- */
--static unsigned short normal_i2c[] = { DS1682_ADDR, I2C_CLIENT_END };
--
--I2C_CLIENT_INSMOD;
--
--/*
-- * Low level chip access functions
-- */
--static int ds1682_read(struct i2c_client *client, int reg, void *buf, int len)
--{
--	u8 *bytes = buf;
--	int val;
--
--	while (len--) {
--		val = i2c_smbus_read_byte_data(client, reg++);
--		if (val < 0)
--			return -EIO;
--		*bytes++ = val;
--	}
--	return 0;
--}
-+#define DS1682_EEPROM_SIZE		10
- 
- /*
-  * Generic counter attributes
-  */
--static int ds1682_attr_to_reg(struct device_attribute *attr, int *regsize);
--
--static ssize_t ds1682_show(struct device *dev,
--			   struct device_attribute *attr, char *buf)
-+static ssize_t ds1682_show(struct device *dev, struct device_attribute *attr,
-+			   char *buf)
- {
--	u32 val = 0;
--	int reg;
--	int regsize;
--
--	dev_dbg(dev, "ds1682_show() called for %s\n", attr->attr.name);
--
--	/* Get the register address */
--	reg = ds1682_attr_to_reg(attr, &regsize);
--	if (reg < 0)
--		return -EIO;
-+	struct sensor_device_attribute_2 *sattr = to_sensor_dev_attr_2(attr);
-+	struct i2c_client *client = to_i2c_client(dev);
-+	__le32 val = 0;
-+	int rc;
-+
-+	dev_dbg(dev, "ds1682_show() called on %s\n", attr->attr.name);
- 
- 	/* Read the register */
--	if (ds1682_read(to_i2c_client(dev), reg, &val, regsize))
-+	rc = i2c_smbus_read_i2c_block_data(client, sattr->index, sattr->nr,
-+					   (u8 *) & val);
-+	if (rc < 0)
- 		return -EIO;
- 
-+	/* Special case: the 32 bit regs are time values with 1/4s
-+	 * resolution, scale them up to milliseconds */
-+	if (sattr->nr == 4)
-+		return sprintf(buf, "%lli\n", ((u64) le32_to_cpu(val)) * 250);
-+
- 	/* Format the output string and return # of bytes */
--	return sprintf(buf, "0x%.2x\n", le32_to_cpu(val));
-+	return sprintf(buf, "%li\n", (long)le32_to_cpu(val));
- }
- 
--static ssize_t ds1682_store(struct device *dev,
--			    struct device_attribute *attr, const char *buf,
--			    size_t count)
-+static ssize_t ds1682_store(struct device *dev, struct device_attribute *attr,
-+			    const char *buf, size_t count)
- {
-+	struct sensor_device_attribute_2 *sattr = to_sensor_dev_attr_2(attr);
- 	struct i2c_client *client = to_i2c_client(dev);
--	int reg;
--	int regsize;
- 	char *endp;
--	u32 val;
-+	u64 val;
-+	__le32 val_le;
- 	int rc;
- 
--	/* Sanitize the input */
--	reg = ds1682_attr_to_reg(attr, &regsize);
--
--	if ((reg < 0) || (count >= 16) || (buf[count] != '\0')) {
--		dev_dbg(dev, "insane input; reg=0x%i count=%zd%s\n",
--			reg, count, buf[count] == '\0' ? " unterminated" : "");
--		return -EIO;
--	}
-+	dev_dbg(dev, "ds1682_store() called on %s\n", attr->attr.name);
- 
- 	/* Decode input */
--	val = simple_strtoul(buf, &endp, 0);
-+	val = simple_strtoull(buf, &endp, 0);
- 	if (buf == endp) {
- 		dev_dbg(dev, "input string not a number\n");
- 		return -EIO;
- 	}
- 
-+	/* Special case: the 32 bit regs are time values with 1/4s
-+	 * resolution, scale input down to quarter-seconds */
-+	if (sattr->nr == 4)
-+		do_div(val, 250);
-+
- 	/* write out the value */
--	val = cpu_to_le32(val);
--	rc = i2c_smbus_write_i2c_block_data(client, reg, regsize, (void *)&val);
-+	val_le = cpu_to_le32(val);
-+	rc = i2c_smbus_write_i2c_block_data(client, sattr->index, sattr->nr,
-+					    (u8 *) & val);
- 	if (rc < 0) {
- 		dev_err(dev, "register write failed; reg=0x%x, size=%i\n",
--			reg, regsize);
-+			sattr->index, sattr->nr);
- 		return -EIO;
- 	}
- 
-@@ -151,196 +125,131 @@ static ssize_t ds1682_store(struct devic
- /*
-  * Simple register attributes
-  */
--DEVICE_ATTR(config, S_IRUGO, ds1682_show, NULL);
--DEVICE_ATTR(elapsed_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store);
--DEVICE_ATTR(alarm_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store);
--DEVICE_ATTR(event_count, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store);
--
--/* Get register size and address from device_attribute structure.  This
-- * function must come after the DEVICE_ATTR() lines as it depends on the
-- * device_attribute lines being declared */
--static int ds1682_attr_to_reg(struct device_attribute *attr, int *regsize)
--{
--	if (attr == &dev_attr_elapsed_time) {
--		*regsize = 4;
--		return DS1682_REG_ELAPSED;
--	}
--
--	if (attr == &dev_attr_alarm_time) {
--		*regsize = 4;
--		return DS1682_REG_ALARM;
--	}
--
--	if (attr == &dev_attr_event_count) {
--		*regsize = 2;
--		return DS1682_REG_EVT_CNTR;
--	}
--
--	if (attr == &dev_attr_config) {
--		*regsize = 1;
--		return DS1682_REG_CONFIG;
--	}
--
--	pr_debug("Cannot find registers for device_attribute %p\n", attr);
--	return -ENODEV;
--}
-+SENSOR_DEVICE_ATTR_2(config, S_IRUGO, ds1682_show, NULL, DS1682_REG_CONFIG, 1);
-+SENSOR_DEVICE_ATTR_2(elapsed_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
-+		     4, DS1682_REG_ELAPSED);
-+SENSOR_DEVICE_ATTR_2(alarm_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
-+		     4, DS1682_REG_ALARM);
-+SENSOR_DEVICE_ATTR_2(event_count, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
-+		     2, DS1682_REG_EVT_CNTR);
-+
-+static const struct attribute_group ds1682_group = {
-+	.attrs = (struct attribute *[]) {
-+		&sensor_dev_attr_config.dev_attr.attr,
-+		&sensor_dev_attr_elapsed_time.dev_attr.attr,
-+		&sensor_dev_attr_alarm_time.dev_attr.attr,
-+		&sensor_dev_attr_event_count.dev_attr.attr,
-+		NULL,
-+	},
-+};
- 
- /*
-  * User data attribute
-  */
--static ssize_t ds1682_user_data_show(struct device *dev,
--				     struct device_attribute *attr, char *buf)
-+static ssize_t ds1682_eeprom_read(struct kobject *kobj, char *buf, loff_t off,
-+				  size_t count)
- {
--	char *end = buf;
--	u8 val[10];
--	int i;
-+	struct i2c_client *client = kobj_to_i2c_client(kobj);
-+	int rc;
- 
--	if (ds1682_read(to_i2c_client(dev), DS1682_REG_USER_DATA, &val, 10))
--		return -EIO;
-+	dev_dbg(&client->dev, "ds1682_eeprom_read(p=%p, off=%lli, c=%zi)\n",
-+		buf, off, count);
- 
--	for (i = 0; i < 10; i++)
--		end += sprintf(end, "%.2x ", val[i]);
-+	if (off > DS1682_EEPROM_SIZE)
-+		return 0;
- 
--	*(end - 1) = '\n';	/* Eliminate trailing space */
--	return end - buf;
-+	if (off + count > DS1682_EEPROM_SIZE)
-+		count = DS1682_EEPROM_SIZE - off;
-+
-+	rc = i2c_smbus_read_i2c_block_data(client, DS1682_REG_EEPROM + off,
-+					   count, buf);
-+	if (rc < 0)
-+		return -EIO;
-+
-+	return count;
- }
- 
--static ssize_t ds1682_user_data_store(struct device *dev,
--				      struct device_attribute *attr,
--				      const char *buf, size_t count)
-+static ssize_t ds1682_eeprom_write(struct kobject *kobj, char *buf, loff_t off,
-+				   size_t count)
- {
--	u8 data[10];
--	char *endp;
--	int bytecount = 0;
--
--	/* Check input for sanity */
--	if ((count >= 80) || (buf[count] != '\0')) {
--		dev_dbg(dev, "insane input; count=%zd%s\n",
--			count, buf[count] == '\0' ? " unterminated" : "");
--		return -EIO;
--	}
-+	struct i2c_client *client = kobj_to_i2c_client(kobj);
- 
--	/* Parse the data */
--	while (bytecount < 10) {
--		while (isspace(*buf))
--			buf++;
--
--		data[bytecount] = simple_strtoul(buf, &endp, 16);
--		if (endp == buf)	/* make sure it's a real data value */
--			break;
-+	dev_dbg(&client->dev, "ds1682_eeprom_write(p=%p, off=%lli, c=%zi)\n",
-+		buf, off, count);
- 
--		buf = endp;
--		bytecount++;
--	}
--	while (isspace(*endp))
--		endp++;
-+	if (off >= DS1682_EEPROM_SIZE)
-+		return -ENOSPC;
- 
--	/* Abort on invalid data */
--	if ((bytecount == 0) || (*endp != '\0')) {
--		dev_dbg(dev, "invalid input *buf=\"%s\" *endp=\"%s\"\n",
--			buf, endp);
--		return -EIO;
--	}
-+	if (off + count > DS1682_EEPROM_SIZE)
-+		count = DS1682_EEPROM_SIZE - off;
- 
- 	/* Write out to the device */
--	if (i2c_smbus_write_i2c_block_data(to_i2c_client(dev),
--					   DS1682_REG_USER_DATA, bytecount,
--					   data) < 0)
-+	if (i2c_smbus_write_i2c_block_data(client, DS1682_REG_EEPROM + off,
-+					   count, buf) < 0)
- 		return -EIO;
-+
- 	return count;
- }
- 
--DEVICE_ATTR(user_data, S_IRUGO | S_IWUSR, ds1682_user_data_show,
--	    ds1682_user_data_store);
-+static struct bin_attribute ds1682_eeprom_attr = {
-+	.attr = {
-+		.name = "eeprom",
-+		.mode = S_IRUGO | S_IWUSR,
-+		.owner = THIS_MODULE,
-+	},
-+	.size = DS1682_EEPROM_SIZE,
-+	.read = ds1682_eeprom_read,
-+	.write = ds1682_eeprom_write,
-+};
- 
- /*
-  * Called when a device is found at the ds1682 address
-  */
--static struct i2c_driver ds1682_driver;
--static int ds1682_detect(struct i2c_adapter *adapter, int address, int kind)
-+static int ds1682_probe(struct i2c_client *client)
- {
--	struct i2c_client *new_client;
- 	int err = 0;
- 
--	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA |
--				     I2C_FUNC_I2C))
--		goto exit;
-+	if (client->addr != 0x6b) {
-+		dev_err(&client->dev, "%x is not a valid address\n",
-+			client->addr);
-+		return -ENODEV;
-+	}
- 
--	if (!(new_client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL))) {
--		err = -ENOMEM;
-+	if (!i2c_check_functionality(client->adapter,
-+				     I2C_FUNC_SMBUS_READ_BYTE_DATA |
-+				     I2C_FUNC_SMBUS_WRITE_I2C_BLOCK)) {
-+		dev_err(&client->dev, "i2c bus does not support the ds1682\n");
- 		goto exit;
- 	}
- 
--	new_client->addr = address;
--	new_client->adapter = adapter;
--	new_client->driver = &ds1682_driver;
--	new_client->flags = 0;
--
--	/* Note: Ignoring 'kind' value as the ds1682 uses a fixed address */
--
--	/* We can fill in the remaining client fields */
--	strlcpy(new_client->name, "ds1682", I2C_NAME_SIZE);
--
--	/* Tell the I2C layer a new client has arrived */
--	if ((err = i2c_attach_client(new_client)))
--		goto exit_free;
--
--	if (device_create_file(&new_client->dev, &dev_attr_config))
--		goto exit_attr_config;
--	if (device_create_file(&new_client->dev, &dev_attr_elapsed_time))
--		goto exit_attr_elapsed;
--	if (device_create_file(&new_client->dev, &dev_attr_alarm_time))
--		goto exit_attr_alarm;
--	if (device_create_file(&new_client->dev, &dev_attr_event_count))
--		goto exit_attr_event;
--	if (device_create_file(&new_client->dev, &dev_attr_user_data))
--		goto exit_attr_userdata;
-+	if (sysfs_create_group(&client->dev.kobj, &ds1682_group))
-+		goto exit;
-+
-+	if (sysfs_create_bin_file(&client->dev.kobj, &ds1682_eeprom_attr))
-+		goto exit_bin_attr;
- 
- 	return 0;
- 
--      exit_attr_userdata:
--	device_remove_file(&new_client->dev, &dev_attr_event_count);
--      exit_attr_event:
--	device_remove_file(&new_client->dev, &dev_attr_alarm_time);
--      exit_attr_alarm:
--	device_remove_file(&new_client->dev, &dev_attr_elapsed_time);
--      exit_attr_elapsed:
--	device_remove_file(&new_client->dev, &dev_attr_config);
--      exit_attr_config:
--	i2c_detach_client(new_client);
--      exit_free:
--	kfree(new_client);
-+      exit_bin_attr:
-+	sysfs_remove_group(&client->dev.kobj, &ds1682_group);
-       exit:
- 	return err;
- }
- 
--static int ds1682_attach_adapter(struct i2c_adapter *adapter)
-+static int ds1682_remove(struct i2c_client *client)
- {
--	return i2c_probe(adapter, &addr_data, ds1682_detect);
--}
--
--static int ds1682_detach_client(struct i2c_client *client)
--{
--	int err;
--	device_remove_file(&client->dev, &dev_attr_user_data);
--	device_remove_file(&client->dev, &dev_attr_event_count);
--	device_remove_file(&client->dev, &dev_attr_alarm_time);
--	device_remove_file(&client->dev, &dev_attr_elapsed_time);
--	device_remove_file(&client->dev, &dev_attr_config);
--
--	if ((err = i2c_detach_client(client)))
--		return err;
-+	sysfs_remove_bin_file(&client->dev.kobj, &ds1682_eeprom_attr);
-+	sysfs_remove_group(&client->dev.kobj, &ds1682_group);
- 
--	kfree(client);
- 	return 0;
- }
- 
- static struct i2c_driver ds1682_driver = {
- 	.driver = {
--		   .name = "ds1682",
--		   },
--	.attach_adapter = ds1682_attach_adapter,
--	.detach_client = ds1682_detach_client,
-+		.name = "ds1682",
-+	},
-+	.probe = ds1682_probe,
-+	.remove = ds1682_remove,
- };
- 
- static int __init ds1682_init(void)
-_
+> +		    sizeof(struct aica_channel));
+> +	aica_chn_start();
+> +}
+> +
+> +static void run_spu_dma(struct work_struct *work)
+> +{
+> +	int buffer_size;
+> +	struct snd_pcm_substream *substream;
+> +	struct snd_pcm_runtime *runtime;
+> +	struct snd_card_aica *dreamcastcard;
+> +	struct spu_work_holder *holder = container_of(work, struct spu_work_holder, spu_dma_work);
+> +	substream = holder-> sspointer;
+> +	dreamcastcard = substream->pcm->private_data;
+> +	runtime = substream->runtime;
+> +	if (unlikely(dreamcastcard->dma_check == 0)) {
+> +		buffer_size = frames_to_bytes(runtime, runtime->buffer_size);
+> +		if (runtime->channels > 1)
+> +			dreamcastcard->channel->flags |= 0x01;
+> +		aica_dma_transfer(runtime->channels, buffer_size, substream);
+> +		startup_aica(dreamcastcard);
+> +		dreamcastcard->clicks =
+> +		    buffer_size / (AICA_PERIOD_SIZE * runtime->channels);
+> +		return;
+> +	} else {
+> +		aica_dma_transfer(runtime->channels,
+> +				  AICA_PERIOD_SIZE * runtime->channels,
+> +				  substream);
+> +		snd_pcm_period_elapsed(dreamcastcard->substream);
+> +		dreamcastcard->clicks++;
+> +		if (unlikely(dreamcastcard->clicks >= AICA_PERIOD_NUMBER))
+> +		{
+> +			dreamcastcard->clicks %= AICA_PERIOD_NUMBER;
+> +		}
+> +		mod_timer(&dreamcastcard->timer, jiffies + 1);
+> +	}
+> +}
+> +
+> +static void aica_period_elapsed(unsigned long timer_var)
+> +{
+> +	/*timer function - so cannot sleep */
+> +	int play_period;
+> +	struct snd_pcm_runtime *runtime;
+> +	struct snd_pcm_substream *substream;
+> +	struct snd_card_aica *dreamcastcard;
+> +	substream = (struct snd_pcm_substream *)timer_var;
+> +	runtime = substream->runtime;
+> +	dreamcastcard = substream->pcm->private_data;
+> +	/* Have we played out an additional period? */
+> +	play_period =
+> +	    frames_to_bytes(runtime,
+> +			    readl
+> +			    (AICA_CONTROL_CHANNEL_SAMPLE_NUMBER)) /
+> +	    AICA_PERIOD_SIZE;
+> +	if (play_period == dreamcastcard->current_period) {
+> +		/* reschedule the timer */
+> +		mod_timer(&(dreamcastcard->timer), jiffies + 1);
+> +		return;
+> +	}
+> +	if (runtime->channels > 1)
+> +		dreamcastcard->current_period = play_period;
+> +	if (unlikely(dreamcastcard->dma_check == 0))
+> +		dreamcastcard->dma_check = 1;
+> +		queue_work(aica_queue, &(spu_working.spu_dma_work));
+> +}
+> +
+> +static void spu_begin_dma(struct snd_pcm_substream *substream)
+> +{
+> +	/* Must be atomic */
+> +	struct snd_card_aica *dreamcastcard;
+> +	struct snd_pcm_runtime *runtime;
+> +	runtime = substream->runtime;
+> +	dreamcastcard = substream->pcm->private_data;
+> +	/*  Use queue to do the heavy lifting */
+> +	spu_working.sspointer = substream;
+> +	INIT_WORK(&(spu_working.spu_dma_work), run_spu_dma);
+> +	queue_work(aica_queue, &(spu_working.spu_dma_work));
+> +	/* Timer may already be running */
+> +	if (unlikely(dreamcastcard->timer.data)) {
+> +		mod_timer(&dreamcastcard->timer, jiffies + 4);
+> +		return;
+> +	}
+> +	init_timer(&(dreamcastcard->timer));
+> +	dreamcastcard->timer.data = (unsigned long)substream;
+> +	dreamcastcard->timer.function = aica_period_elapsed;
+> +	dreamcastcard->timer.expires = jiffies + 4;
+> +	add_timer(&(dreamcastcard->timer));
+> +}
+> +
+> +static int snd_aicapcm_pcm_open(struct snd_pcm_substream
+> +				*substream)
+> +{
+> +	struct snd_pcm_runtime *runtime;
+> +	struct aica_channel *channel;
+> +	struct snd_card_aica *dreamcastcard;
+> +	if (!enable)
+> +		return -ENOENT;
+> +	dreamcastcard = substream->pcm->private_data;
+> +	channel = kmalloc(sizeof(struct aica_channel), GFP_KERNEL);
+> +	if (!channel)
+> +		return -ENOMEM;
+> +	/* set defaults for channel */
+> +	channel->sfmt = SM_8BIT;
+> +	channel->cmd = AICA_CMD_START;
+> +	channel->vol = dreamcastcard->master_volume;
+> +	channel->pan = 0x80;
+> +	channel->pos = 0;
+> +	channel->flags = 0;	/* default to mono */
+> +	dreamcastcard->channel = channel;
+> +	runtime = substream->runtime;
+> +	runtime->hw = snd_pcm_aica_playback_hw;
+> +	spu_enable();
+> +	dreamcastcard->clicks = 0;
+> +	dreamcastcard->current_period = 0;
+> +	dreamcastcard->dma_check = 0;
+> +	return 0;
+> +}
+> +
+> +static int snd_aicapcm_pcm_close(struct snd_pcm_substream
+> +				 *substream)
+> +{
+> +	struct snd_card_aica *dreamcastcard = substream->pcm->private_data;
+> +	del_timer(&dreamcastcard->timer);
+> +	kfree(dreamcastcard->channel);
+> +	spu_disable();
+> +	return 0;
+> +}
+> +
+> +static int snd_aicapcm_pcm_hw_free(struct snd_pcm_substream
+> +				   *substream)
+> +{
+> +	/* Free the DMA buffer */
+> +	return snd_pcm_lib_free_pages(substream);
+> +}
+> +
+> +static int snd_aicapcm_pcm_hw_params(struct snd_pcm_substream
+> +				     *substream, struct snd_pcm_hw_params
+> +				     *hw_params)
+> +{
+> +	/* Allocate a DMA buffer using ALSA built-ins */
+> +	return
+> +	    snd_pcm_lib_malloc_pages(substream, params_buffer_bytes(hw_params));
+> +}
+> +
+> +static int snd_aicapcm_pcm_prepare(struct snd_pcm_substream
+> +				   *substream)
+> +{
+> +	struct snd_card_aica *dreamcastcard = substream->pcm->private_data;
+> +	if ((substream->runtime)->format == SNDRV_PCM_FORMAT_S16_LE)
+> +		dreamcastcard->channel->sfmt = SM_16BIT;
+> +	dreamcastcard->channel->freq = substream->runtime->rate;
+> +	dreamcastcard->substream = substream;
+> +	return 0;
+> +}
+> +
+> +static int snd_aicapcm_pcm_trigger(struct snd_pcm_substream
+> +				   *substream, int cmd)
+> +{
+> +	struct snd_card_aica *dreamcastcard;
+> +	switch (cmd) {
+> +	case SNDRV_PCM_TRIGGER_START:
+> +		spu_begin_dma(substream);
+> +		break;
+> +	case SNDRV_PCM_TRIGGER_STOP:
+> +		dreamcastcard = substream->pcm->private_data;
+> +		if (dreamcastcard->timer.data)
+> +			del_timer(&dreamcastcard->timer);
+> +		aica_chn_halt();
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +	return 0;
+> +}
+> +
+> +static unsigned long snd_aicapcm_pcm_pointer(struct snd_pcm_substream
+> +					     *substream)
+> +{
+> +	return readl(AICA_CONTROL_CHANNEL_SAMPLE_NUMBER);
+> +}
+> +
+> +static struct snd_pcm_ops snd_aicapcm_playback_ops = {
+> +	.open = snd_aicapcm_pcm_open,
+> +	.close = snd_aicapcm_pcm_close,
+> +	.ioctl = snd_pcm_lib_ioctl,
+> +	.hw_params = snd_aicapcm_pcm_hw_params,
+> +	.hw_free = snd_aicapcm_pcm_hw_free,
+> +	.prepare = snd_aicapcm_pcm_prepare,
+> +	.trigger = snd_aicapcm_pcm_trigger,
+> +	.pointer = snd_aicapcm_pcm_pointer,
+> +};
+> +
+> +/* TO DO: set up to handle more than one pcm instance */
+> +static int __init snd_aicapcmchip(struct snd_card_aica
+> +				  *dreamcastcard, int pcm_index)
+> +{
+> +	struct snd_pcm *pcm;
+> +	int err;
+> +	/* AICA has no capture ability */
+> +	err =
+> +	    snd_pcm_new(dreamcastcard->card, "AICA PCM", pcm_index, 1, 0, &pcm);
+> +	if (unlikely(err < 0))
+> +		return err;
+> +	pcm->private_data = dreamcastcard;
+> +	strcpy(pcm->name, "AICA PCM");
+> +	snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_PLAYBACK,
+> +			&snd_aicapcm_playback_ops);
+> +	/* Allocate the DMA buffers */
+> +	err =
+> +	    snd_pcm_lib_preallocate_pages_for_all(pcm,
+> +						  SNDRV_DMA_TYPE_CONTINUOUS,
+> +						  snd_dma_continuous_data
+> +						  (GFP_KERNEL),
+> +						  AICA_BUFFER_SIZE,
+> +						  AICA_BUFFER_SIZE);
+> +	return err;
+> +}
+> +
+> +/* Mixer controls */
+> +static int aica_pcmswitch_info(struct snd_kcontrol *kcontrol,
+> +			       struct snd_ctl_elem_info *uinfo)
+> +{
+> +	uinfo->type = SNDRV_CTL_ELEM_TYPE_BOOLEAN;
+> +	uinfo->count = 1;
+> +	uinfo->value.integer.min = 0;
+> +	uinfo->value.integer.max = 1;
+> +	return 0;
+> +}
+> +
+> +static int aica_pcmswitch_get(struct snd_kcontrol *kcontrol,
+> +			      struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	ucontrol->value.integer.value[0] = 1;	/* TO DO: Fix me */
+> +	return 0;
+> +}
+> +
+> +static int aica_pcmswitch_put(struct snd_kcontrol *kcontrol,
+> +			      struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	if (ucontrol->value.integer.value[0] == 1)
+> +		return 0;	/* TO DO: Fix me */
+> +	else
+> +		aica_chn_halt();
+> +	return 0;
+> +}
+> +
+> +static int aica_pcmvolume_info(struct snd_kcontrol *kcontrol,
+> +			       struct snd_ctl_elem_info *uinfo)
+> +{
+> +	uinfo->type = SNDRV_CTL_ELEM_TYPE_INTEGER;
+> +	uinfo->count = 1;
+> +	uinfo->value.integer.min = 0;
+> +	uinfo->value.integer.max = 0xFF;
+> +	return 0;
+> +}
+> +
+> +static int aica_pcmvolume_get(struct snd_kcontrol *kcontrol,
+> +			      struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	struct snd_card_aica *dreamcastcard;
+> +	dreamcastcard = kcontrol->private_data;
+> +	if (unlikely(!dreamcastcard->channel))
+> +		return -ETXTBSY;	/* we've not yet been set up */
+> +	ucontrol->value.integer.value[0] = dreamcastcard->channel->vol;
+> +	return 0;
+> +}
+> +
+> +static int aica_pcmvolume_put(struct snd_kcontrol *kcontrol,
+> +			      struct snd_ctl_elem_value *ucontrol)
+> +{
+> +	struct snd_card_aica *dreamcastcard;
+> +	dreamcastcard = kcontrol->private_data;
+> +	if (unlikely(!dreamcastcard->channel))
+> +		return -ETXTBSY;
+> +	if (unlikely(dreamcastcard->channel->vol ==
+> +		     ucontrol->value.integer.value[0]))
+> +		return 0;
+> +	dreamcastcard->channel->vol = ucontrol->value.integer.value[0];
+> +	dreamcastcard->master_volume = ucontrol->value.integer.value[0];
+> +	spu_memload(AICA_CHANNEL0_CONTROL_OFFSET,
+> +		    (u8 *) dreamcastcard->channel,
 
+Unuseful cast again.
+
+-- 
+Heikki Orsila			Barbie's law:
+heikki.orsila@iki.fi		"Math is hard, let's go shopping!"
+http://www.iki.fi/shd
