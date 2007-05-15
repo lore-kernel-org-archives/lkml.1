@@ -1,50 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761787AbXEOGVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933251AbXEOG1j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761787AbXEOGVX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 02:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759441AbXEOGVQ
+	id S933251AbXEOG1j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 02:27:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759653AbXEOG1c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 02:21:16 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:49162 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759333AbXEOGVP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 02:21:15 -0400
-Date: Tue, 15 May 2007 11:58:37 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Badari Pulavarty <pbadari@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Jan Blunck <j.blunck@tu-harburg.de>
-Subject: Re: [RFC][PATCH  5/14] Introduce union stack
-Message-ID: <20070515062837.GB3465@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20070514093722.GB4139@in.ibm.com> <20070514094047.GG4139@in.ibm.com> <1179182457.2836.92.camel@dyn9047017100.beaverton.ibm.com>
+	Tue, 15 May 2007 02:27:32 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:56632 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759441AbXEOG1b convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 02:27:31 -0400
+Date: Mon, 14 May 2007 23:23:01 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       dang@gentoo.org, Andi Kleen <ak@suse.de>, stable@kernel.org
+Subject: Re: [Bugme-new] [Bug 8479] New: gettimeofday returning 1000000 in
+ tv_usec on core2duo
+Message-Id: <20070514232301.69e27bbe.akpm@linux-foundation.org>
+In-Reply-To: <46494DFC.6080104@cosmosbay.com>
+References: <200705150417.l4F4HlvS013354@fire-2.osdl.org>
+	<20070514220901.90aab9e0.akpm@linux-foundation.org>
+	<46494DFC.6080104@cosmosbay.com>
+X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1179182457.2836.92.camel@dyn9047017100.beaverton.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 03:40:57PM -0700, Badari Pulavarty wrote:
-> On Mon, 2007-05-14 at 15:10 +0530, Bharata B Rao wrote:
-< snip >
-> > +
-> > +/* Shouldn't be called with last reference to union_info */
-> > +static inline void union_put_and_unlock(struct union_info *uinfo)
-> > +{
-> > +	union_put(uinfo);
-> > +	__union_unlock(&uinfo->u_mutex);
-> 	               ^^^^^^^^^^^^^^^^^^^
-> 
-> It should be
-> 	
-> 	__union_unlock(uinfo);
-> 
+On Tue, 15 May 2007 08:06:52 +0200 Eric Dumazet <dada1@cosmosbay.com> wrote:
 
-True, thanks for pointing this out. Will fix this.
+> Andrew Morton a écrit :
+> > On Mon, 14 May 2007 21:17:47 -0700 bugme-daemon@bugzilla.kernel.org wrote:
+> > 
+> >> http://bugzilla.kernel.org/show_bug.cgi?id=8479
+> >>
+> >>            Summary: gettimeofday returning 1000000 in tv_usec on core2duo
+> >>     Kernel Version: 2.6.21
+> >>             Status: NEW
+> >>           Severity: normal
+> >>              Owner: ak@suse.de
+> >>          Submitter: dang@gentoo.org
+> >>
+> >>
+> >> Most recent kernel where this bug did *NOT* occur: 2.6.20
+> >> Distribution: Gentoo
+> >> Hardware Environment: core2duo T7200 (all reporters had this same CPU)
+> >> Software Environment: Linux 2.6.21, glibc 2.5
+> >> Problem Description:
+> >>
+> >> gettimeofday returns 1 - 1000000 in tv_usec, not 0 - 999999 
+> >> This does not happen on any of my AMD-based 32 or 64 bit boxes, only on my
+> >> core2duo; I have 2 other reports of this problem, all on T7200's
+> >>
+> >> Steps to reproduce:
+> >>
+> >> call gettimeofday a lot.  Eventually, you'll get 1000000 returned in tv_usec. My
+> >> average is ~1 in 1000000 calls.  I've attached my test program, with output from
+> >> various boxes.  One of the other reporters tried the test program too, and got
+> >> similar output.  .config will be attached too.
+> > 
+> > err, whoops.
+> 
+> I remember I already hit this and corrected it
+> 
+> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdiff;f=arch/x86_64/kernel/vsyscall.c;h=dc32cef961950915fbaa185e36ab802d5f7cea3b;hp=ba330f87067996a17495f7d03466d646c718b52c;hb=c8118c6c07f2edfd697aaa0b93e08c3b65a5a675;hpb=272a3713bb9e302e0455c894c41180a482d2c8a3
 
-Regards,
-Bharata.
+Oh, OK.
+
+> Maybe a stable push is necessary ?
+
+yup.  Please always think of -stable when preparing fixes.  I'm sure many
+useful fixes are slipping past simply because those who _are_ looking out
+for backportable fixes are missing things.
+
+Greg, Chris: please consider c8118c6c07f2edfd697aaa0b93e08c3b65a5a675
+for -stable, if it isn't already there.
