@@ -1,64 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761449AbXEOCmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761464AbXEOCsQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761449AbXEOCmT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 22:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757069AbXEOCmM
+	id S1761464AbXEOCsQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 22:48:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755139AbXEOCsB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 22:42:12 -0400
-Received: from wx-out-0506.google.com ([66.249.82.232]:26603 "EHLO
-	wx-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755139AbXEOCmM (ORCPT
+	Mon, 14 May 2007 22:48:01 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:4104 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754694AbXEOCsA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 22:42:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=T3xQkUji/fNlsNvSojEXGhby6zxCixE8poCXZ2/uJnFDzrqaqMs9vp1NNVP2MgB0L0Rn33bmvuOeIgVwDsm/ibp2/xSZ2pAiLbqcbZAqOu0ThaHv9onCbTvrnZ2xewHU6xEhEdmUBz3L7YlMNWG8+Clofw8pimKpRBx60Ipw1m4=
-Message-ID: <a781481a0705141942x3033c72alf8bf7e9582bb59d7@mail.gmail.com>
-Date: Tue, 15 May 2007 08:12:10 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Jan Engelhardt" <jengelh@linux01.gwdg.de>
-Subject: Re: Linux 2.6.22-rc1
-Cc: "Tilman Schmidt" <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>,
-       "Stefan Richter" <stefanr@s5r6.in-berlin.de>
-In-Reply-To: <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com>
+	Mon, 14 May 2007 22:48:00 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: undeprecate raw driver.
+Date: Mon, 14 May 2007 19:47:34 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKCENKDMAC.davids@webmaster.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
-	 <4647569D.7010709@imap.cc>
-	 <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr>
-	 <4648A3DF.7040004@imap.cc>
-	 <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>
-	 <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com>
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <Pine.LNX.4.64.0705140957370.12444@localhost.localdomain>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Mon, 14 May 2007 20:47:55 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Mon, 14 May 2007 20:47:57 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On 5/15/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
-> > [...]
-> > They are just a menu
->
-> Ok, so they don't really affect Makefiles / sources (and thus builds).
-> In that case I'd suggest that let's please change the names of such
-> menuconfig options from CONFIG_ to CONFIG_MENU_, otherwise
 
-Or perhaps we could change the text associated with these
-"menu-only" dummy constructs instead ...
+> On Mon, 14 May 2007, Bob Johnston wrote:
 
-> we really screw the text-based "make oldconfig" folks who think
-> that they're taking a build-related (and not presentation-related)
-> decision when confronted with a:
+> > Alan Cox <alan <at> lxorguk.ukuu.org.uk> writes:
+> >
+> > > > Why not just use the terms:
+> > > > * outdated - as a replacement for "deprecated".
+> > >
+> > > Because they don't actually mean the same thing ?
+> >
+> > "superseded" would probably be a better word, perhaps lacking the
+> > negative connotations of "deprecated"
 
-So:
+> except that you *want* the negative connotation associated with the
+> word "deprecated."  you don't just want to say something's been
+> superseded.  rather, you want to say that it's not only been
+> superseded but that you really want people to *stop using it* and move
+> up to the newer version; otherwise, there is no motivation to upgrade.
 
-> Ethernet (1000 Mbit) (NETDEV_1000) [Y/n] (NEW)
+> i'm just baffled by the resistance to the word "deprecated" since it
+> represents *exactly* the idea you want to get across here.  its use
+> in software projects is well-established.  why are some people so put
+> off by it?
 
-becomes:
+Let me give this a big AOL-style "me too". Terms such as "deprecated" and
+"obsolete" have been used by programmers for as long as I can remember, and
+if you don't know exactly what they mean, you probably should just learn.
 
-[MENU] Ethernet (1000 Mbit) (NETDEV_1000) [Y/n] (NEW)
+A feature is "deprecated" if there is some other feature or mechanism that
+is considered superior to it in all cases. It may just be more efficient, it
+may avoid potential pitfalls of the deprecated mechanism.
 
-?
+You should avoid using a deprecated feature in new code and should try to
+remove use of it from old code. The classic example of a deprecated function
+is 'gets'. Deprecated features are generally kept for compatability purposes
+or because standards require them. A function deprecated on one platform may
+be perfectly fine on another.
 
-Thanks,
-Satyam
+You might choose to use a deprecated feature for compatability purposes. It
+is not urgent to hack use of deprecated features out of existing code.
+(However, you should evaluate whether the reason for deprecation creates a
+problem in your code, especially if it's a security issue.)
+
+Deprecated features can reasonably be expected to continue to work as well
+as they ever have. They should not be newly-broken. If a deprecated feature
+is broken in a new version, that is a regression.
+
+A feature is "obsolete" if it no longer serves any purpose. It may be so
+broken that it is no longer even usable. It might still be technically
+working but not have any actual case of any significance in which you might
+want to use it. Linux's Sony CDU-535 driver is obsolete (a driver for an old
+CDROM drive with a specialized ISA controller that transferred data at well
+less than 1X and supports only a *very* slow PIO mode).
+
+Obsolete features are generally scheduled for removal. They are usually not
+removed just on the off chance that the removal might harm someone. It may
+not even be possible to test them and the last time they were tested may
+have been several major releases ago. One should generally not expect
+obsolete features to work.
+
+Something obsolete may conflict with never features. For example, a driver
+that breaks with hotpluggable CPUs. One contemplating using an obsolete
+feature in a new design should have a damn good reason and might possibly
+need to have their head examined.
+
+The raw driver *is* deprecated. It is *not* obsolete.
+
+DS
+
+
