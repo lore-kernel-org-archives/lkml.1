@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbXEORYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761455AbXEOR0S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758509AbXEORYm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 13:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbXEORYg
+	id S1761455AbXEOR0S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 13:26:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbXEOR0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 13:24:36 -0400
-Received: from mail1.webmaster.com ([216.152.64.169]:1707 "EHLO
-	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755657AbXEORYf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 13:24:35 -0400
-From: "David Schwartz" <davids@webmaster.com>
-To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
-Subject: RE: Why can't we sleep in an ISR?
-Date: Tue, 15 May 2007 10:23:34 -0700
-Message-ID: <MDEHLPKNGKAHNMBLJOLKKEBBDNAC.davids@webmaster.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-X-Priority: 3 (Normal)
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
-In-Reply-To: <4649E680.9020102@cfl.rr.com>
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
-Importance: Normal
-X-Authenticated-Sender: joelkatz@webmaster.com
-X-Spam-Processed: mail1.webmaster.com, Tue, 15 May 2007 11:23:56 -0700
-	(not processed: message from trusted or authenticated source)
-X-MDRemoteIP: 206.171.168.138
-X-Return-Path: davids@webmaster.com
-X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
-Reply-To: davids@webmaster.com
-X-MDAV-Processed: mail1.webmaster.com, Tue, 15 May 2007 11:23:57 -0700
+	Tue, 15 May 2007 13:26:12 -0400
+Received: from brick.kernel.dk ([80.160.20.94]:8155 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755058AbXEOR0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 13:26:11 -0400
+Date: Tue, 15 May 2007 19:24:49 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Martin Michlmayr <tbm@cyrius.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Fix section conflict of current_io_context
+Message-ID: <20070515172448.GC23798@kernel.dk>
+References: <20070515171540.GA20425@deprecation.cyrius.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070515171540.GA20425@deprecation.cyrius.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 15 2007, Martin Michlmayr wrote:
+> Building with GCC 4.2, I get the following error:
+> 
+>   CC      block/ll_rw_blk.o
+> block/ll_rw_blk.c:3751: error: __ksymtab_current_io_context causes a section type conflict
+> 
+> This is because current_io_context is both declared static and exported.
+> 
+> Signed-off-by: Martin Michlmayr <tbm@cyrius.com>
+> 
+> --- a/block/ll_rw_blk.c
+> +++ b/block/ll_rw_blk.c
+> @@ -41,7 +41,7 @@ static void blk_unplug_timeout(unsigned long data);
+>  static void drive_stat_acct(struct request *rq, int nr_sectors, int new_io);
+>  static void init_request_from_bio(struct request *req, struct bio *bio);
+>  static int __make_request(request_queue_t *q, struct bio *bio);
+> -static struct io_context *current_io_context(gfp_t gfp_flags, int node);
+> +struct io_context *current_io_context(gfp_t gfp_flags, int node);
+>  
+>  /*
+>   * For the allocated request tables
+> @@ -3723,7 +3723,7 @@ void exit_io_context(void)
+>   * but since the current task itself holds a reference, the context can be
+>   * used in general code, so long as it stays within `current` context.
+>   */
+> -static struct io_context *current_io_context(gfp_t gfp_flags, int node)
+> +struct io_context *current_io_context(gfp_t gfp_flags, int node)
+>  {
+>  	struct task_struct *tsk = current;
+>  	struct io_context *ret;
 
-> No, the term context here has a specific meaning.  It refers to those
-> things which flow from the current pointer, including the virtual memory
-> space, file descriptor table, current uid, and so forth.
+There are no users outside ll_rw_blk.c, so the export just needs to be
+removed.
 
-And none of these things are used by an ISR.
+diff --git a/block/ll_rw_blk.c b/block/ll_rw_blk.c
+index 1e853f4..b085d0e 100644
+--- a/block/ll_rw_blk.c
++++ b/block/ll_rw_blk.c
+@@ -3807,7 +3807,6 @@ static struct io_context *current_io_context(gfp_t gfp_flags, int node)
+ 
+ 	return ret;
+ }
+-EXPORT_SYMBOL(current_io_context);
+ 
+ /*
+  * If the current task has no IO context then create one and initialise it.
 
-> Because the
-> current pointer is not changed on entry to an ISR, the ISR is executing
-> in the context of the interrupted process, and thus uses that process'
-> virtual memory, etc.
-
-You mean it would be if it ever looked at the current pointer. It is not the
-setting of the current pointer that determines the context but actually
-*using* that pointer.
-
-As you said, it is the "things which flow from the current pointer" that
-matter, not the value of the pointer itself. An ISR uses none of those
-things.
-
-DS
-
+-- 
+Jens Axboe
 
