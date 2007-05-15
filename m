@@ -1,52 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbXEOWIm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbXEOWLE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759569AbXEOWIm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 18:08:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755616AbXEOWIf
+	id S1758253AbXEOWLE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 18:11:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbXEOWK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 18:08:35 -0400
-Received: from mail.screens.ru ([213.234.233.54]:43662 "EHLO mail.screens.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755286AbXEOWIe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 18:08:34 -0400
-Date: Wed, 16 May 2007 02:08:12 +0400
-From: Oleg Nesterov <oleg@tv-sign.ru>
-To: Jarek Poplawski <jarkao2@o2.pl>
-Cc: Tejun Heo <htejun@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
-       David Chinner <dgc@sgi.com>, David Howells <dhowells@redhat.com>,
-       Gautham Shenoy <ego@in.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Srivatsa Vaddagiri <vatsa@in.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] make cancel_rearming_delayed_work() reliable
-Message-ID: <20070515220812.GB615@tv-sign.ru>
-References: <464475EB.3000408@gmail.com> <20070511134714.GA191@tv-sign.ru> <46448965.7070500@gmail.com> <20070511145345.GA240@tv-sign.ru> <4645559D.4050602@gmail.com> <20070513192753.GA3014@tv-sign.ru> <46477239.9030007@gmail.com> <20070514194446.GA159@tv-sign.ru> <46496EC1.3090109@gmail.com> <20070515130904.GB3050@ff.dom.local>
+	Tue, 15 May 2007 18:10:56 -0400
+Received: from www.osadl.org ([213.239.205.134]:46952 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755739AbXEOWKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 18:10:55 -0400
+Subject: Re: [2.6.21.1] OOPS in timer stats code
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Chuck Ebbert <cebbert@redhat.com>
+Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+       Folkert van Heusden <folkert@vanheusden.com>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4649FDEA.2050703@redhat.com>
+References: <3644.62.177.207.163.1179227559.squirrel@klant.bhosted.nl>
+	 <6bffcb0e0705150433o95c801eo4818a9f36e5bb770@mail.gmail.com>
+	 <4649FDEA.2050703@redhat.com>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 00:14:52 +0200
+Message-Id: <1179267292.12838.42.camel@chaos>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070515130904.GB3050@ff.dom.local>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/15, Jarek Poplawski wrote:
+On Tue, 2007-05-15 at 14:37 -0400, Chuck Ebbert wrote:
+> Michal Piotrowski wrote:
+> > [Adding Thomas to CC]
+
+Added Ingo as well :)
+
+> > On 15/05/07, Folkert van Heusden <folkert@vanheusden.com> wrote:
+> >> Hi,
+> >>
+> >> After an uptime of, say, 4 hours I got an oops on my P4 with HT and
+> >> 2GB ram.
+> >> It has dynamic ticks enabled as well has timer stats. I cannot reboot the
+> >> machine to give more details right now (19:00 gmt+1 i can).
+> >>
+> >> For now, this is the oops:
+> >>
+> >> [13092.479019] BUG: unable to handle kernel paging request at virtual
+> >> address b9d0458f
 > 
-> I've overheared somebody is talking about my favorite 2-nd bit!
-> Probably I miss many points (your talk isn't the most clear),
-> but I wonder if this bit couldn't be used otherwise: try_to_grab_
-> sets the bit - others know cancel is pending, so don't disturb:
-> e.g. insert_work doesn't queue (at least after works' cpu change,
-> which seems to be the main problem here). Probably there is
-> no reason to test this bit in all places - only in the most
-> problematic; so, in insert_work maybe only after checking
-> the cpu was changed. If this way is possible, we could avoid
-> setting the VALID bit when not needed (no cancel pending). Maybe
-> we could also think about some form of cooperation - e.g. clearing
-> of this or other bit to ack the work was catched - of course
-> this last thing could be too much, so not necessarily now.
+> Timer hash list contains a user address.
 
-We already discussed this... Surely, we can do this. I believe
-this will complicate (and _imho_ uglify) the code too much.
+Dammit. It's a HT enabled box again. I don't have one.
 
-May be I am wrong. Please provide a detailed description?
+Folkert, does the problem go away when you disable HT
+(CONFIG_SCHED_SMT) ?
 
-Oleg.
+	tglx
+
 
