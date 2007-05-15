@@ -1,136 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762245AbXEOHpA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbXEOH7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762245AbXEOHpA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 03:45:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757417AbXEOHoy
+	id S1756222AbXEOH7P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 03:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755240AbXEOH67
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 03:44:54 -0400
-Received: from viefep13-int.chello.at ([213.46.255.15]:36421 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756956AbXEOHox (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 03:44:53 -0400
-Subject: Re: [PATCH 00/15] per device dirty throttling -v6
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, miklos@szeredi.hu,
-       akpm@linux-foundation.org, dgc@sgi.com, tomoki.sekiyama.qu@hitachi.com,
-       nikita@clusterfs.com, trond.myklebust@fys.uio.no,
-       yingchao.zhou@gmail.com
-In-Reply-To: <17993.15236.442636.502640@notabene.brown>
-References: <20070510100839.621199408@chello.nl>
-	 <17993.15236.442636.502640@notabene.brown>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 09:44:49 +0200
-Message-Id: <1179215089.6810.128.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 May 2007 03:58:59 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:39896 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754139AbXEOH66 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 03:58:58 -0400
+Date: Tue, 15 May 2007 09:57:24 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH  8/14] Union-mount lookup
+In-Reply-To: <20070514094218.GJ4139@in.ibm.com>
+Message-ID: <Pine.LNX.4.61.0705150937590.9570@yvahk01.tjqt.qr>
+References: <20070514093722.GB4139@in.ibm.com> <20070514094218.GJ4139@in.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-15 at 14:48 +1000, Neil Brown wrote:
-> On Thursday May 10, a.p.zijlstra@chello.nl wrote:
-> > The latest version of the per device dirty throttling patches.
-> > 
-> > I put in quite a few comments, and added an patch to do per task dirty
-> > throttling as well, for RFCs sake :-)
-> > 
-> > I haven't yet come around to do anything but integrety testing on this code
-> > base, ie. it built a kernel. I hope to do more tests shorty if time permits...
-> > 
-> > Perhaps the people on bugzilla.kernel.org #7372 might be willing to help out
-> > there.
-> > 
-> > Oh, patches are against 2.6.21-mm2
-> > 
-> > -- 
+
+On May 14 2007 15:12, Bharata B Rao wrote:
 > 
-> Patch 12 has:
->   +#include <linux/proportions.h>
-> 
-> But that file isn't added until patch 14.
+>+struct dentry * d_lookup_single(struct dentry *parent, struct qstr *name)
+>+{
+>+	struct dentry *dentry;
+>+	unsigned long seq;
+>+
+>+        do {
+>+                seq = read_seqbegin(&rename_lock);
+>+                dentry = __d_lookup_single(parent, name);
+>+                if (dentry)
+>+			break;
+>+	} while (read_seqretry(&rename_lock, seq));
+>+	return dentry;
+>+}
 
-Oops :-)
+Replace with tabs.
 
-> Splitting the "proportions" stuff out into lib/ is a good idea.
-> You have left some remnants of it's origin though, which mentions of
->    BDI
->    pages
->    total page writeback
-> 
-> The "proportions" library always uses a percpu counter, which is
-> perfect of the per-bdi counter, but seems wrong when you use the same
-> code for per-task throttling.  Have a percpu counter in struct task
-> seems very wasteful.  You don't need to lock the access to this
-> counter as it is only ever access as current-> so a simple "long"
-> (or "long long") would do.  The global "vm_dirties" still needs to be
-> percpu....  I'm not sure what best to do about this.
+>+lookup_union:
+>+	do {
+>+		struct vfsmount *mnt = find_mnt(topmost);
+>+		UM_DEBUG_DCACHE("name=\"%s\", inode=%p, device=%s\n",
+>+				topmost->d_name.name, topmost->d_inode,
+>+				mnt->mnt_devname);
+>+		mntput(mnt);
+>+	} while (0);
 
-Right, I did it just to quickly reuse the concept. The task throttling
-is very much an RFC (I even had that in the subject, but it magically
-got lost in sending).
-   
-But if you like it, I could put this patch before the per bdi affair and
-clean it up. I though having only 1 user would not warrant its own lib/
-file.
+Why the extra do{}while? [elsewhere too]
 
-> The per-task throttling is interesting.
-> You reduce the point where a task has to throttle by up to half, based
-> on the fraction of recently dirtied pages that the task is responsible
-> for.
-> So if there is one writer, it now gets only half the space that it
-> used to.  That is probably OK, we can just increase the space
-> available...
-> If there are two equally eager writers, they can both use up to the
-> 75% mark, so they probably each get 37%, which is reasonable.
-> If there is one fast an one slow writer where the slow writer is
-> generating dirty pages well below the writeout rate of the device, the
-> fast writer will throttle at around 50% and the slow writer will never
-> block.  That is nice.
+>+	if (topmost->d_union) {
+>+		union_lock_spinlock(topmost, &topmost->d_lock);
+>+	}
 
-Yes, if only ext3's fsync would not be global... :-/
+Extra {} could go [elsewhere too].
 
-> If you have two writers A and B writing aggressively to two devices X
-> and Y with different speeds, say X twice the speed of Y, then in the
-> steady state, X gets 2/3 of the space and Y gets 1/3.
-> A will dirty twice the pages that B dirties so A will get to use
-> 1 - (2/3)/2 == 2/3 of that space or 4/9, and B will get to use 1 - (1/3)/2 ==
-> 5/6 of that space or 5/18.  Did I get that right?
-> So they will each reduce the space available to the other, even though
-> they aren't really competing.   That might not be a problem, but it is
-> interesting... 
+>+		if (last->d_overlaid
+>+		    && (last->d_overlaid != dentry)) {
 
-Indeed, quite an interesting scenario. /me must ponder this; per bdi
-task proportions are way overkill...
+As can these extra () [elsewhere too].
 
-> It seems that the 'one half' is fairly arbitrary.  It could equally
-> well be 3/4.  That would simply mean there is less differentiation
-> between the more and less aggressive writer.  I would probably lean
-> towards a higher number like 3/4.  It should still give reasonable
-> differentiation without cutting max amount of dirty memory in half for
-> the common 1-writer case.
+>+static inline struct dentry * __lookup_hash_single(struct qstr *name, struct dentry *base, struct nameidata *nd)
+>+{
+>+	struct dentry *dentry;
+>+	struct inode *inode;
+>+	int err;
+>+
+>+	inode = base->d_inode;
+>+
+>+	err = permission(inode, MAY_EXEC, nd);
+>+	dentry = ERR_PTR(err);
+>+	if (err)
+>+		goto out;
+>+
+>+	dentry = __lookup_hash_kern_single(name, base, nd);
+>+out:
+>+	return dentry;
+>+}
 
-Yes its pulled from a dark place,... pretty much anything would do, I
-even ran into someone who wanted it to be almost 1 - so that heavy
-writers would act almost synchonous.
-
-> A couple of years ago Andrea Arcangeli wrote a patch that did per-task
-> throttling, which it is worth comparing with.
->   http://lwn.net/Articles/152277/
-> 
-> It takes each task separately, measure rate-of-dirtying over a fixed
-> time period, and throttle when that rate would put the system over the
-> limit soon.  Thus slower dirtiers throttle later.
-> 
-> Having to configure the fixed number (the period) is always awkward,
-> and I think your floating average is better suited for the task.
-> I doubt if Andrea's patch still applies so a direct comparison might
-> be awkward, but it might not hurt to read through it if you haven't
-> already. 
-
-I remember now, thanks for the pointer, I'll see if I can come up with
-something hybrid here.
+This looks a little big for being inline.
 
 
 
+	Jan
+-- 
