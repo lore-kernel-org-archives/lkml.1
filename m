@@ -1,55 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760832AbXEONPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761999AbXEONQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760832AbXEONPy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 09:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbXEONPs
+	id S1761999AbXEONQp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 09:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755269AbXEONQj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 09:15:48 -0400
-Received: from ug-out-1314.google.com ([66.249.92.171]:49154 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754758AbXEONPr (ORCPT
+	Tue, 15 May 2007 09:16:39 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:52928 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754758AbXEONQi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 09:15:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:user-agent:mime-version:to:cc:subject:references:in-reply-to:content-type:content-transfer-encoding;
-        b=ghqcWqzGte+TCEC2gdKgRME4zENFsuZRYTCjX0MiAT6/1ffhvLlkc3wxpDoKFVuIgCgpO4XwanjidqndxanXBPJRFYLyeRUyaP1/k99+zLwNXHCtB98Hdo0tKm+GnNGwSAfKJgDgwdn7K/xaITjySYXnuGoTYD+HpkNOu+ieuYU=
-Message-ID: <4649B270.8050002@gmail.com>
-Date: Tue, 15 May 2007 17:15:28 +0400
-From: Manu Abraham <abraham.manu@gmail.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	Tue, 15 May 2007 09:16:38 -0400
+X-Sasl-enc: dxwY22UZyb76ZhqgW74vAxI+BM8UEdd7jfGwBrv6kQr0 1179234998
+Date: Tue, 15 May 2007 10:16:33 -0300
+From: Henrique de Moraes Holschuh <hmh@debian.org>
+To: Francesco Pretto <ceztko@gmail.com>
+Cc: Tejun Heo <htejun@gmail.com>, Phillip Susi <psusi@cfl.rr.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       pkg-sysvinit-devel@lists.alioth.debian.org
+Subject: Re: Weird hard disk noise on shutdown (bug #7674)
+Message-ID: <20070515131632.GC16673@khazad-dum.debian.net>
+References: <fa.Ia7dfo7Zd5kB6KhSYisfswa1aj4@ifi.uio.no> <fa.YHt2nIlQmoW5r2enmTSzsaySwH4@ifi.uio.no> <45DD0348.5040005@shaw.ca> <e5ab0f710702231235ucb559eerb3639ec312aa312a@mail.gmail.com> <463B858E.6060002@cfl.rr.com> <463B99EE.2090001@gmail.com> <e5ab0f710705061119k35ba223j2ecca6e0f8495ed5@mail.gmail.com> <46489D3B.8050805@gmail.com> <e5ab0f710705141346o45ac8721jacbcb753f9d45406@mail.gmail.com>
 MIME-Version: 1.0
-To: linux-kernel <linux-kernel@vger.kernel.org>
-CC: Greg KH <greg@kroah.com>
-Subject: Re: pci probe
-References: <4648B29A.6080406@gmail.com>
-In-Reply-To: <4648B29A.6080406@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <e5ab0f710705141346o45ac8721jacbcb753f9d45406@mail.gmail.com>
+X-GPG-Fingerprint: 1024D/1CDB0FE3 5422 5C61 F6B7 06FB 7E04  3738 EE25 DE3F 1CDB 0FE3
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Manu Abraham wrote:
-> Hi,
-> 
-> I do have a device that's a multifunction device. Eventhough a MFD, it
-> just has one Interrupt which is shared by by a Configuration space for
-> each function. ie, INTA is shared between them functions.
-> 
-> In such a case, i am wondering, (since pci_probe returns a pointer to
-> one PCI function alone and i need to use both the functions in one
-> module alone rather than using a module for each function and that the
-> functions are quite similar for them to be used in different modules,
-> such that a separate probe/ISR etc is used) whether using pci_get_device
-> would be a better alternative to do manual searching for the functions
-> in such a case.
-> 
+On Mon, 14 May 2007, Francesco Pretto wrote:
+> Ubuntu [1] ang Gentoo [2] bugs opened. Sent a mail to Miquel van
+> Smoorenburg, dev  of sysvinit.
 
-Just figured out that pci_get_subsys() does work in a better. Looking at
-kernel sources all i find is just one single user of pci_get_subsys()
+For all Debian sysvinit issues, please send email to
+pkg-sysvinit-devel@lists.alioth.debian.org (added to CC).
 
-building the code around pci_get_subsys(), does this have any negative
-impact ?
+For the Debian sysvinit crew: Guys, have a look at
+http://linux-ata.org/shutdown.html.  We need to act on it, and also file a
+bug on all of our current kernels (poweroff causes minor but accumulating-
+over-time damage to all hardware under control of libata).  This is really
+something we should be trying to fix on our 2.6.18 kernels and stable
+sysvinit.
 
-Thanks,
-Manu
+> [1] https://bugs.launchpad.net/upstart/+bug/114683
+> [2] http://bugs.gentoo.org/show_bug.cgi?id=178559
+
+Tejun, am I right to assume that any servers with self-contained SCSI disks
+(i.e. that are not plugged into externally powered drive enclosures, etc)
+also get the emergency head unloads when they are powered off?
+
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
