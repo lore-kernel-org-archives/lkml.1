@@ -1,259 +1,471 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933646AbXEOKKu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934061AbXEOKWy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933646AbXEOKKu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 06:10:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759141AbXEOKKm
+	id S934061AbXEOKWy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 06:22:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760328AbXEOKWr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 06:10:42 -0400
-Received: from py-out-1112.google.com ([64.233.166.181]:3516 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758782AbXEOKKl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 06:10:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:mime-version:content-type:content-transfer-encoding:content-disposition;
-        b=kW62QoEFdKxGETDxGtz9XNovKir0bJfMBVBU5BV1XV/t2U9mgcMDBGqBEJCWzLdW2ONMDLcqFhHygzUlZ3+szXagkpmP2kWGUMpfUBNAJoVzOzxlWWiQEZXrZAhzGy+1qAypEGrBxkH6GmAsE4vigN0/f+yvDieGRh/8EqnajqM=
-Message-ID: <bd345f9c0705150310yca61812s5204ef8449042ddf@mail.gmail.com>
-Date: Tue, 15 May 2007 12:10:40 +0200
-From: "Morten Banzon" <morten.banzon@gmail.com>
-To: galak@kernel.crashing.org
-Subject: [PATCH] PPC : MPC82xx MCC parameter structures and definitions
-Cc: linux-kernel@vger.kernel.org,
-       "Morten Banzon (HA/ETO)" <morten.banzon@ericsson.com>
+	Tue, 15 May 2007 06:22:47 -0400
+Received: from mailhub.sw.ru ([195.214.233.200]:34324 "EHLO relay.sw.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759141AbXEOKWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 06:22:46 -0400
+Message-ID: <464989B4.1090202@sw.ru>
+Date: Tue, 15 May 2007 14:21:40 +0400
+From: Pavel Emelianov <xemul@sw.ru>
+User-Agent: Thunderbird 1.5 (X11/20060317)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@osdl.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Dave Hansen <hansendc@us.ibm.com>, Serge Hallyn <serue@us.ibm.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linux Containers <containers@lists.osdl.org>, devel@openvz.org
+Subject: [PATCH] Brush up task's session and group numbers manipulations
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-from: Morten Banzon <morten.banzon@ericsson.com>
+The set of functions process_session, task_session, process_group
+and task_pgrp is confusing, as the names can be mixed with each other
+when looking at the code for a long time.
 
-Adds MPC82xx MCC parameter structures and definitions to the file
-include/asm-ppc/cpm2.h.
+The proposals are to
+* equip the functions that return the integer with _nr suffix to
+  represent that fact,
+* and to make all functions work with task (not process) by making
+  the common prefix of the same name.
 
-signed-off-by: Morten Banzon <morten.banzon@ericsson.com>
+For monotony the routines signal_session() and set_signal_session()
+are replaced with task_session_nr() and set_task_session(), especially
+since they are only used with the explicit task->signal dereference.
+
+Fits 2.6.21-mm2
+
+Signed-off-by: Pavel Emelianov <xemul@openvz.org>
 
 ---
-The patch applies to linux-2.6.21.1
 
-
-diff -uprN linux-2.6.21.1.orig/include/asm-ppc/cpm2.h
-linux-2.6.21.1/include/asm-ppc/cpm2.h
---- linux-2.6.21.1.orig/include/asm-ppc/cpm2.h  2007-04-27
-23:49:26.000000000 +0200
-+++ linux-2.6.21.1/include/asm-ppc/cpm2.h       2007-05-15
-11:09:54.000000000 +0200
-@@ -41,6 +41,7 @@
- #define CPM_CR_IDMA3_SBLOCK    (0x16)
- #define CPM_CR_IDMA4_SBLOCK    (0x17)
- #define CPM_CR_MCC1_SBLOCK     (0x1c)
-+#define CPM_CR_MCC2_SBLOCK     (0x1d)
-
- #define CPM_CR_FCC_SBLOCK(x)   (x + 0x10)
-
-@@ -72,11 +73,16 @@
- #define CPM_CR_INIT_RX         ((ushort)0x0001)
- #define CPM_CR_INIT_TX         ((ushort)0x0002)
- #define CPM_CR_HUNT_MODE       ((ushort)0x0003)
-+#define CPM_CR_INIT_MCC_TRX    ((ushort)0x0003)
- #define CPM_CR_STOP_TX         ((ushort)0x0004)
- #define CPM_CR_GRA_STOP_TX     ((ushort)0x0005)
-+#define CPM_CR_INIT_MCC_TX     ((ushort)0x0005)
-+#define CPM_CR_INIT_MCC_RX     ((ushort)0x0006)
- #define CPM_CR_RESTART_TX      ((ushort)0x0006)
-+#define CPM_CR_MCC_RESET       ((ushort)0x0007)
- #define CPM_CR_SET_GADDR       ((ushort)0x0008)
- #define CPM_CR_START_IDMA      ((ushort)0x0009)
-+#define CPM_CR_STOP_RX         ((ushort)0x0009)
- #define CPM_CR_STOP_IDMA       ((ushort)0x000b)
-
- #define mk_cr_cmd(PG, SBC, MCN, OP) \
-@@ -555,6 +561,186 @@ typedef struct scc_trans {
-
- #define BD_SCC_TX_LAST         ((ushort)0x0800)
-
-+
-+/* Global MCC Parameters.
-+ * These parameters are stored in Parameter RAM, i.e. DPRAM2.
-+ * MCC1 global parameters are stored in the first 128 bytes of page 8.
-+ * MCC2 global parameters are stored in the first 128 bytes of page 9.
-+ */
-+typedef struct mcc_param {
-+       uint    mccbase;        /* Multi-channel controller base pointer */
-+       ushort  mccstate;       /* Multi-channel controller state */
-+       ushort  mrblr;          /* Max. receive buffer length */
-+       ushort  grfthr;         /* Global receive frame threshold */
-+       ushort  grfcnt;         /* Global receive frame count */
-+       uint    rinttmp;        /* Temp. location for holding the receive */
-+                               /* interrupt queue entry */
-+       uint    data0;          /* Temp. location for holding data */
-+       uint    data1;          /* Temp. location for holding data */
-+       uint    tintbase;       /* Multi-channel transmitter circular */
-+                               /* interrupt table base address */
-+       uint    tintptr;        /* Pointer to the transmitter circular */
-+                               /* interrupt table. */
-+       uint    tinttmp;        /* Temp. location for holding the transmit */
-+                               /* interrrupt queue entry */
-+       ushort  sctpbase;       /* Internal pointer for the super channel */
-+                               /* transmit table */
-+       ushort  reserved;
-+       uint    c_mask32;       /* CRC constant */
-+       ushort  xtrabase;       /* Pointer to the beginning of the extra */
-+                               /* parameters information */
-+       ushort  c_mask16;       /* CRC constant */
-+       uint    rinttmp0;       /* Temp. location for holding a receive */
-+       uint    rinttmp1;       /* circular interrupt table entry for */
-+       uint    rinttmp2;       /* tables 0-3 */
-+       uint    rinttmp3;
-+       uint    rintbase0;      /* Multi-channel receiver circular interrupt */
-+                               /* table base address */
-+       uint    rintptr0;       /* Pointer to the receiver circular table. */
-+       uint    rintbase1;
-+       uint    rintptr1;
-+       uint    rintbase2;
-+       uint    rintptr2;
-+       uint    rintbase3;
-+       uint    rintptr3;
-+       uint    ts_tmp;         /* Temp. place for time stamp */
-+} mcc_param_t;
-+
-+
-+/* MCC Channel Extra Parameters.
-+ */
-+typedef struct mcc_chan_xtra {
-+       ushort  tbase;          /* TxBD base address */
-+       ushort  tbptr;          /* TxBD pointer */
-+       ushort  rbase;          /* RxBD base address */
-+       ushort  rbptr;          /* RxBD pointer */
-+} mcc_chan_xtra_t;
-+
-+
-+/* MCC Channel-Specific HDLC Parameters.
-+ * MCC Internal Transmitter State (TSTATE)
-+ */
-+#define MCC_TSTATE_GBL         ((uint)0x20000000)      /* Activates snooping */
-+#define MCC_TSTATE_BO_BIG      ((uint)0x18000000)      /* Byte ordering */
-+#define MCC_TSTATE_BO_LITTLE   ((uint)0x08000000)
-+#define MCC_TSTATE_TC2         ((uint)0x04000000)      /* Transfer code */
-+#define MCC_TSTATE_DTB         ((uint)0x02000000)      /* Data bus */
-+#define MCC_TSTATE_BDB         ((uint)0x01000000)      /* BD bus */
-+
-+
-+/* MCC Channel Mode Register (CHAMR)
-+ */
-+#define MCC_CHAMR_MODE ((ushort)0x8000)        /* Channel mode */
-+#define MCC_CHAMR_POL  ((ushort)0x4000)        /* Polling */
-+#define MCC_CHAMR_MBS  ((ushort)0x2000)        /* Must be set */
-+#define MCC_CHAMR_IDLM ((ushort)0x1000)        /* Idle mode */
-+#define MCC_CHAMR_CRC  ((ushort)0x0080)        /* CRC mode */
-+#define MCC_CHAMR_TS   ((ushort)0x0020)        /* Time stamp */
-+#define MCC_CHAMR_RQN3 ((ushort)0x0018)        /* Receive queue number 3 */
-+#define MCC_CHAMR_RQN2 ((ushort)0x0010)        /* Receive queue number 2 */
-+#define MCC_CHAMR_RQN1 ((ushort)0x0008)        /* Receive queue number 1 */
-+#define MCC_CHAMR_RQN0 ((ushort)0x0000)        /* Receive queue number 0 */
-+
-+
-+/* MCC Internal Receiver State (RSTATE)
-+ */
-+#define MCC_RSTATE_GBL         ((uint)0x20000000)      /* Activates snooping */
-+#define MCC_RSTATE_BO_BIG      ((uint)0x18000000)      /* Byte ordering */
-+#define MCC_RSTATE_BO_LITTLE   ((uint)0x08000000)
-+#define MCC_RSTATE_TC2         ((uint)0x04000000)      /* Transfer code */
-+#define MCC_RSTATE_DTB         ((uint)0x02000000)      /* Data bus */
-+#define MCC_RSTATE_BDB         ((uint)0x01000000)      /* BD bus */
-+
-+
-+typedef struct mcc_chan_hdlc {
-+       uint    tstate;         /* Tx internal state */
-+       uint    zistate;        /* Zero-insertion machine state */
-+       uint    zidata0;        /* Zero-insertion high word data buffer */
-+       uint    zidata1;        /* Zero-insertion low word data buffer */
-+       ushort  tbdflags;       /* TxBD flags */
-+       ushort  tbdcnt;         /* Tx internal byte count */
-+       uint    tbdptr;         /* Tx internal data pointer */
-+       ushort  intmsk;         /* Channel's interrupt mask */
-+       ushort  chamr;          /* Channel mode register */
-+       uint    tcrc;           /* Temp transmit CRC */
-+       uint    rstate;         /* Rx internal state */
-+       uint    zdstate;        /* Zero-deletion machine state */
-+       uint    zddata0;        /* Zero-deletion high word data buffer */
-+       uint    zddata1;        /* Zero-deletion low word data buffer */
-+       ushort  rbdflags;       /* RxBD flags */
-+       ushort  rbdcnt;         /* Rx internal byte count */
-+       uint    rbdptr;         /* Rx internal data pointer */
-+       ushort  mflr;           /* Max. frame length register */
-+       ushort  max_cnt;        /* Max_length counter */
-+       uint    rcrc;           /* Temp. receive CRC */
-+} mcc_chan_hdlc_t;
-+
-+
-+/* MCC Configuration Register (MCCFx)
-+ */
-+#define MCC_MCCF_TDM_D ((u_char)0x03)
-+#define MCC_MCCF_TDM_C ((u_char)0x02)
-+#define MCC_MCCF_TDM_B ((u_char)0x01)
-+#define MCC_MCCF_TDM_A ((u_char)0x00)
-+
-+
-+/* MCC Event and Mask Register.
-+ */
-+#define MCCM_QOV0      ((ushort)0x8000)        /* Rx int. queue overflow */
-+#define MCCM_RINT0     ((ushort)0x4000)        /* Rx interrupt */
-+#define MCCM_QOV1      ((ushort)0x2000)
-+#define MCCM_RINT1     ((ushort)0x1000)
-+#define MCCM_QOV2      ((ushort)0x0800)
-+#define MCCM_RINT2     ((ushort)0x0400)
-+#define MCCM_QOV3      ((ushort)0x0200)
-+#define MCCM_RINT3     ((ushort)0x0100)
-+#define MCCM_TQOV      ((ushort)0x0008)        /* Tx int. queue overflow */
-+#define MCCM_TINT      ((ushort)0x0004)        /* Tx interrupt */
-+#define MCCM_GUN       ((ushort)0x0002)        /* Global tx underrun */
-+#define MCCM_GOV       ((ushort)0x0001)        /* Global rx overrun */
-+
-+
-+/* MCC Interrupt Table Entries.
-+ */
-+#define MCCI_V         ((uint)0x80000000)      /* Valid bit */
-+#define MCCI_W         ((uint)0x40000000)      /* Wrap bit */
-+#define MCCI_UN                ((uint)0x02000000)      /* Tx no data */
-+#define MCCI_TXB       ((uint)0x01000000)      /* Tx buffer */
-+#define MCCI_NID       ((uint)0x00200000)      /* Not idle pattern */
-+#define MCCI_IDL       ((uint)0x00100000)      /* Idle */
-+#define MCCI_MRF       ((uint)0x00080000)      /* Rx frame length violation */
-+#define MCCI_RXF       ((uint)0x00040000)      /* Rx frame */
-+#define MCCI_BSY       ((uint)0x00020000)      /* Busy */
-+#define MCCI_RXB       ((uint)0x00010000)      /* Rx buffer */
-+#define MCCI_CHAN      ((uint)0x00003FC0)      /* Channel number mask */
-+
-+
-+/* MCC Receive Buffer Descriptor.
-+ */
-+#define BD_MCC_RX_E    ((ushort)0x8000)        /* Empty */
-+#define BD_MCC_RX_W    ((ushort)0x2000)        /* Wrap */
-+#define BD_MCC_RX_I    ((ushort)0x1000)        /* Interrupt */
-+#define BD_MCC_RX_L    ((ushort)0x0800)        /* Last */
-+#define BD_MCC_RX_F    ((ushort)0x0400)        /* First in frame */
-+#define BD_MCC_RX_CM   ((ushort)0x0200)        /* Continuous mode */
-+#define BD_MCC_RX_UB   ((ushort)0x0080)        /* User bit */
-+#define BD_MCC_RX_LG   ((ushort)0x0020)        /* Frame length violation */
-+#define BD_MCC_RX_NO   ((ushort)0x0010)        /* Nonoctet-aligned frame */
-+#define BD_MCC_RX_AB   ((ushort)0x0008)        /* Abort sequence */
-+#define BD_MCC_RX_CR   ((ushort)0x0004)        /* CRC error */
-+
-+
-+/* MCC Transmit Buffer Descriptor.
-+ */
-+#define BD_MCC_TX_R    ((ushort)0x8000)        /* Ready */
-+#define BD_MCC_TX_W    ((ushort)0x2000)        /* Wrap */
-+#define BD_MCC_TX_I    ((ushort)0x1000)        /* Interrupt */
-+#define BD_MCC_TX_L    ((ushort)0x0800)        /* Last */
-+#define BD_MCC_TX_TC   ((ushort)0x0400)        /* CRC */
-+#define BD_MCC_TX_CM   ((ushort)0x0200)        /* Continuous mode */
-+#define BD_MCC_TX_UB   ((ushort)0x0080)        /* User bit */
-+
-+
- /* How about some FCCs.....
- */
- #define FCC_GFMR_DIAG_NORM     ((uint)0x00000000)
+diff --git a/arch/mips/kernel/irixelf.c b/arch/mips/kernel/irixelf.c
+index 403d96f..10ba0a5 100644
+--- a/arch/mips/kernel/irixelf.c
++++ b/arch/mips/kernel/irixelf.c
+@@ -1170,8 +1170,8 @@ static int irix_core_dump(long signr, st
+ 	prstatus.pr_sighold = current->blocked.sig[0];
+ 	psinfo.pr_pid = prstatus.pr_pid = current->pid;
+ 	psinfo.pr_ppid = prstatus.pr_ppid = current->parent->pid;
+-	psinfo.pr_pgrp = prstatus.pr_pgrp = process_group(current);
+-	psinfo.pr_sid = prstatus.pr_sid = process_session(current);
++	psinfo.pr_pgrp = prstatus.pr_pgrp = task_pgrp_nr(current);
++	psinfo.pr_sid = prstatus.pr_sid = task_session_nr(current);
+ 	if (current->pid == current->tgid) {
+ 		/*
+ 		 * This is the record for the group leader.  Add in the
+diff --git a/arch/mips/kernel/irixsig.c b/arch/mips/kernel/irixsig.c
+index 6980deb..210503e 100644
+--- a/arch/mips/kernel/irixsig.c
++++ b/arch/mips/kernel/irixsig.c
+@@ -609,7 +609,7 @@ repeat:
+ 		p = list_entry(_p,struct task_struct,sibling);
+ 		if ((type == IRIX_P_PID) && p->pid != pid)
+ 			continue;
+-		if ((type == IRIX_P_PGID) && process_group(p) != pid)
++		if ((type == IRIX_P_PGID) && task_pgrp_nr(p) != pid)
+ 			continue;
+ 		if ((p->exit_signal != SIGCHLD))
+ 			continue;
+diff --git a/arch/mips/kernel/sysirix.c b/arch/mips/kernel/sysirix.c
+index 93a1484..23c3e82 100644
+--- a/arch/mips/kernel/sysirix.c
++++ b/arch/mips/kernel/sysirix.c
+@@ -763,11 +763,11 @@ asmlinkage int irix_setpgrp(int flags)
+ 	printk("[%s:%d] setpgrp(%d) ", current->comm, current->pid, flags);
+ #endif
+ 	if(!flags)
+-		error = process_group(current);
++		error = task_pgrp_nr(current);
+ 	else
+ 		error = sys_setsid();
+ #ifdef DEBUG_PROCGRPS
+-	printk("returning %d\n", process_group(current));
++	printk("returning %d\n", task_pgrp_nr(current));
+ #endif
+ 
+ 	return error;
+diff --git a/arch/sparc64/solaris/misc.c b/arch/sparc64/solaris/misc.c
+index 3b67de7..c86cb30 100644
+--- a/arch/sparc64/solaris/misc.c
++++ b/arch/sparc64/solaris/misc.c
+@@ -415,7 +415,7 @@ asmlinkage int solaris_procids(int cmd, 
+ 	
+ 	switch (cmd) {
+ 	case 0: /* getpgrp */
+-		return process_group(current);
++		return task_pgrp_nr(current);
+ 	case 1: /* setpgrp */
+ 		{
+ 			int (*sys_setpgid)(pid_t,pid_t) =
+@@ -426,7 +426,7 @@ asmlinkage int solaris_procids(int cmd, 
+ 			ret = sys_setpgid(0, 0);
+ 			if (ret) return ret;
+ 			proc_clear_tty(current);
+-			return process_group(current);
++			return task_pgrp_nr(current);
+ 		}
+ 	case 2: /* getsid */
+ 		{
+diff --git a/drivers/char/tty_io.c b/drivers/char/tty_io.c
+index 6a7ba37..3bae36f 100644
+--- a/drivers/char/tty_io.c
++++ b/drivers/char/tty_io.c
+@@ -3470,7 +3470,7 @@ void __do_SAK(struct tty_struct *tty)
+ 	/* Kill the entire session */
+ 	do_each_pid_task(session, PIDTYPE_SID, p) {
+ 		printk(KERN_NOTICE "SAK: killed process %d"
+-			" (%s): process_session(p)==tty->session\n",
++			" (%s): task_session_nr(p)==tty->session\n",
+ 			p->pid, p->comm);
+ 		send_sig(SIGKILL, p, 1);
+ 	} while_each_pid_task(session, PIDTYPE_SID, p);
+@@ -3480,7 +3480,7 @@ void __do_SAK(struct tty_struct *tty)
+ 	do_each_thread(g, p) {
+ 		if (p->signal->tty == tty) {
+ 			printk(KERN_NOTICE "SAK: killed process %d"
+-			    " (%s): process_session(p)==tty->session\n",
++			    " (%s): task_session_nr(p)==tty->session\n",
+ 			    p->pid, p->comm);
+ 			send_sig(SIGKILL, p, 1);
+ 			continue;
+diff --git a/fs/autofs/inode.c b/fs/autofs/inode.c
+index e7204d7..45f5992 100644
+--- a/fs/autofs/inode.c
++++ b/fs/autofs/inode.c
+@@ -80,7 +80,7 @@ static int parse_options(char *options, 
+ 
+ 	*uid = current->uid;
+ 	*gid = current->gid;
+-	*pgrp = process_group(current);
++	*pgrp = task_pgrp_nr(current);
+ 
+ 	*minproto = *maxproto = AUTOFS_PROTO_VERSION;
+ 
+diff --git a/fs/autofs/root.c b/fs/autofs/root.c
+index c148953..592f640 100644
+--- a/fs/autofs/root.c
++++ b/fs/autofs/root.c
+@@ -215,7 +215,7 @@ static struct dentry *autofs_root_lookup
+ 	oz_mode = autofs_oz_mode(sbi);
+ 	DPRINTK(("autofs_lookup: pid = %u, pgrp = %u, catatonic = %d, "
+ 				"oz_mode = %d\n", pid_nr(task_pid(current)),
+-				process_group(current), sbi->catatonic,
++				task_pgrp_nr(current), sbi->catatonic,
+ 				oz_mode));
+ 
+ 	/*
+@@ -536,7 +536,7 @@ static int autofs_root_ioctl(struct inod
+ 	struct autofs_sb_info *sbi = autofs_sbi(inode->i_sb);
+ 	void __user *argp = (void __user *)arg;
+ 
+-	DPRINTK(("autofs_ioctl: cmd = 0x%08x, arg = 0x%08lx, sbi = %p, pgrp = %u\n",cmd,arg,sbi,process_group(current)));
++	DPRINTK(("autofs_ioctl: cmd = 0x%08x, arg = 0x%08lx, sbi = %p, pgrp = %u\n",cmd,arg,sbi,task_pgrp_nr(current)));
+ 
+ 	if (_IOC_TYPE(cmd) != _IOC_TYPE(AUTOFS_IOC_FIRST) ||
+ 	     _IOC_NR(cmd) - _IOC_NR(AUTOFS_IOC_FIRST) >= AUTOFS_IOC_COUNT)
+diff --git a/fs/autofs4/autofs_i.h b/fs/autofs4/autofs_i.h
+index d85f42f..2d4ae40 100644
+--- a/fs/autofs4/autofs_i.h
++++ b/fs/autofs4/autofs_i.h
+@@ -131,7 +131,7 @@ static inline struct autofs_info *autofs
+    filesystem without "magic".) */
+ 
+ static inline int autofs4_oz_mode(struct autofs_sb_info *sbi) {
+-	return sbi->catatonic || process_group(current) == sbi->oz_pgrp;
++	return sbi->catatonic || task_pgrp_nr(current) == sbi->oz_pgrp;
+ }
+ 
+ /* Does a dentry have some pending activity? */
+diff --git a/fs/autofs4/inode.c b/fs/autofs4/inode.c
+index 692364e..32a39b0 100644
+--- a/fs/autofs4/inode.c
++++ b/fs/autofs4/inode.c
+@@ -226,7 +226,7 @@ static int parse_options(char *options, 
+ 
+ 	*uid = current->uid;
+ 	*gid = current->gid;
+-	*pgrp = process_group(current);
++	*pgrp = task_pgrp_nr(current);
+ 
+ 	*minproto = AUTOFS_MIN_PROTO_VERSION;
+ 	*maxproto = AUTOFS_MAX_PROTO_VERSION;
+@@ -325,7 +325,7 @@ int autofs4_fill_super(struct super_bloc
+ 	sbi->pipe = NULL;
+ 	sbi->catatonic = 1;
+ 	sbi->exp_timeout = 0;
+-	sbi->oz_pgrp = process_group(current);
++	sbi->oz_pgrp = task_pgrp_nr(current);
+ 	sbi->sb = s;
+ 	sbi->version = 0;
+ 	sbi->sub_version = 0;
+diff --git a/fs/autofs4/root.c b/fs/autofs4/root.c
+index 2d4c8a3..c766ff8 100644
+--- a/fs/autofs4/root.c
++++ b/fs/autofs4/root.c
+@@ -582,7 +582,7 @@ static struct dentry *autofs4_lookup(str
+ 	oz_mode = autofs4_oz_mode(sbi);
+ 
+ 	DPRINTK("pid = %u, pgrp = %u, catatonic = %d, oz_mode = %d",
+-		 current->pid, process_group(current), sbi->catatonic, oz_mode);
++		 current->pid, task_pgrp_nr(current), sbi->catatonic, oz_mode);
+ 
+ 	unhashed = autofs4_lookup_unhashed(sbi, dentry->d_parent, &dentry->d_name);
+ 	if (!unhashed) {
+@@ -973,7 +973,7 @@ static int autofs4_root_ioctl(struct ino
+ 	void __user *p = (void __user *)arg;
+ 
+ 	DPRINTK("cmd = 0x%08x, arg = 0x%08lx, sbi = %p, pgrp = %u",
+-		cmd,arg,sbi,process_group(current));
++		cmd,arg,sbi,task_pgrp_nr(current));
+ 
+ 	if (_IOC_TYPE(cmd) != _IOC_TYPE(AUTOFS_IOC_FIRST) ||
+ 	     _IOC_NR(cmd) - _IOC_NR(AUTOFS_IOC_FIRST) >= AUTOFS_IOC_COUNT)
+diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
+index fa8ea33..7893feb 100644
+--- a/fs/binfmt_elf.c
++++ b/fs/binfmt_elf.c
+@@ -1327,8 +1327,8 @@ static void fill_prstatus(struct elf_prs
+ 	prstatus->pr_sighold = p->blocked.sig[0];
+ 	prstatus->pr_pid = p->pid;
+ 	prstatus->pr_ppid = p->parent->pid;
+-	prstatus->pr_pgrp = process_group(p);
+-	prstatus->pr_sid = process_session(p);
++	prstatus->pr_pgrp = task_pgrp_nr(p);
++	prstatus->pr_sid = task_session_nr(p);
+ 	if (thread_group_leader(p)) {
+ 		/*
+ 		 * This is the record for the group leader.  Add in the
+@@ -1373,8 +1373,8 @@ static int fill_psinfo(struct elf_prpsin
+ 
+ 	psinfo->pr_pid = p->pid;
+ 	psinfo->pr_ppid = p->parent->pid;
+-	psinfo->pr_pgrp = process_group(p);
+-	psinfo->pr_sid = process_session(p);
++	psinfo->pr_pgrp = task_pgrp_nr(p);
++	psinfo->pr_sid = task_session_nr(p);
+ 
+ 	i = p->state ? ffz(~p->state) + 1 : 0;
+ 	psinfo->pr_state = i;
+diff --git a/fs/binfmt_elf_fdpic.c b/fs/binfmt_elf_fdpic.c
+index 9d62fba..9bb9ff1 100644
+--- a/fs/binfmt_elf_fdpic.c
++++ b/fs/binfmt_elf_fdpic.c
+@@ -1334,8 +1334,8 @@ static void fill_prstatus(struct elf_prs
+ 	prstatus->pr_sighold = p->blocked.sig[0];
+ 	prstatus->pr_pid = p->pid;
+ 	prstatus->pr_ppid = p->parent->pid;
+-	prstatus->pr_pgrp = process_group(p);
+-	prstatus->pr_sid = process_session(p);
++	prstatus->pr_pgrp = task_pgrp_nr(p);
++	prstatus->pr_sid = task_session_nr(p);
+ 	if (thread_group_leader(p)) {
+ 		/*
+ 		 * This is the record for the group leader.  Add in the
+@@ -1383,8 +1383,8 @@ static int fill_psinfo(struct elf_prpsin
+ 
+ 	psinfo->pr_pid = p->pid;
+ 	psinfo->pr_ppid = p->parent->pid;
+-	psinfo->pr_pgrp = process_group(p);
+-	psinfo->pr_sid = process_session(p);
++	psinfo->pr_pgrp = task_pgrp_nr(p);
++	psinfo->pr_sid = task_session_nr(p);
+ 
+ 	i = p->state ? ffz(~p->state) + 1 : 0;
+ 	psinfo->pr_state = i;
+diff --git a/fs/coda/upcall.c b/fs/coda/upcall.c
+index a5b5e63..3c35721 100644
+--- a/fs/coda/upcall.c
++++ b/fs/coda/upcall.c
+@@ -53,7 +53,7 @@ static void *alloc_upcall(int opcode, in
+ 
+         inp->ih.opcode = opcode;
+ 	inp->ih.pid = current->pid;
+-	inp->ih.pgid = process_group(current);
++	inp->ih.pgid = task_pgrp_nr(current);
+ #ifdef CONFIG_CODA_FS_OLD_API
+ 	memset(&inp->ih.cred, 0, sizeof(struct coda_cred));
+ 	inp->ih.cred.cr_fsuid = current->fsuid;
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index 74f30e0..75b1127 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -381,8 +381,8 @@ static int do_task_stat(struct task_stru
+ 			stime = cputime_add(stime, sig->stime);
+ 		}
+ 
+-		sid = signal_session(sig);
+-		pgid = process_group(task);
++		sid = task_session_nr(task);
++		pgid = task_pgrp_nr(task);
+ 		ppid = rcu_dereference(task->real_parent)->tgid;
+ 
+ 		unlock_task_sighand(task, &flags);
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 40645b4..567a1df 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1094,24 +1094,19 @@ struct task_struct {
+ #endif
+ };
+ 
+-static inline pid_t process_group(struct task_struct *tsk)
++static inline pid_t task_pgrp_nr(struct task_struct *tsk)
+ {
+ 	return tsk->signal->pgrp;
+ }
+ 
+-static inline pid_t signal_session(struct signal_struct *sig)
++static inline pid_t task_session_nr(struct task_struct *tsk)
+ {
+-	return sig->__session;
++	return tsk->signal->__session;
+ }
+ 
+-static inline pid_t process_session(struct task_struct *tsk)
++static inline void set_task_session(struct task_struct *tsk, pid_t session)
+ {
+-	return signal_session(tsk->signal);
+-}
+-
+-static inline void set_signal_session(struct signal_struct *sig, pid_t session)
+-{
+-	sig->__session = session;
++	tsk->signal->__session = session;
+ }
+ 
+ static inline struct pid *task_pid(struct task_struct *task)
+diff --git a/kernel/exit.c b/kernel/exit.c
+index c6d14b8..43ce25b 100644
+--- a/kernel/exit.c
++++ b/kernel/exit.c
+@@ -308,12 +308,12 @@ void __set_special_pids(pid_t session, p
+ {
+ 	struct task_struct *curr = current->group_leader;
+ 
+-	if (process_session(curr) != session) {
++	if (task_session_nr(curr) != session) {
+ 		detach_pid(curr, PIDTYPE_SID);
+-		set_signal_session(curr->signal, session);
++		set_task_session(curr, session);
+ 		attach_pid(curr, PIDTYPE_SID, find_pid(session));
+ 	}
+-	if (process_group(curr) != pgrp) {
++	if (task_pgrp_nr(curr) != pgrp) {
+ 		detach_pid(curr, PIDTYPE_PGID);
+ 		curr->signal->pgrp = pgrp;
+ 		attach_pid(curr, PIDTYPE_PGID, find_pid(pgrp));
+@@ -1050,10 +1050,10 @@ static int eligible_child(pid_t pid, int
+ 		if (p->pid != pid)
+ 			return 0;
+ 	} else if (!pid) {
+-		if (process_group(p) != process_group(current))
++		if (task_pgrp_nr(p) != task_pgrp_nr(current))
+ 			return 0;
+ 	} else if (pid != -1) {
+-		if (process_group(p) != -pid)
++		if (task_pgrp_nr(p) != -pid)
+ 			return 0;
+ 	}
+ 
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 4239de2..4228187 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1251,8 +1251,8 @@ static struct task_struct *copy_process(
+ 
+ 		if (thread_group_leader(p)) {
+ 			p->signal->tty = current->signal->tty;
+-			p->signal->pgrp = process_group(current);
+-			set_signal_session(p->signal, process_session(current));
++			p->signal->pgrp = task_pgrp_nr(current);
++			set_task_session(p, task_session_nr(current));
+ 			attach_pid(p, PIDTYPE_PGID, task_pgrp(current));
+ 			attach_pid(p, PIDTYPE_SID, task_session(current));
+ 
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 2a4e530..fad8430 100644
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -501,7 +501,7 @@ static int check_kill_permission(int sig
+ 	error = -EPERM;
+ 	if ((info == SEND_SIG_NOINFO || (!is_si_special(info) && SI_FROMUSER(info)))
+ 	    && ((sig != SIGCONT) ||
+-		(process_session(current) != process_session(t)))
++		(task_session_nr(current) != task_session_nr(t)))
+ 	    && (current->euid ^ t->suid) && (current->euid ^ t->uid)
+ 	    && (current->uid ^ t->suid) && (current->uid ^ t->uid)
+ 	    && !capable(CAP_KILL))
+diff --git a/kernel/sys.c b/kernel/sys.c
+index c0aa0a2..edbfdef 100644
+--- a/kernel/sys.c
++++ b/kernel/sys.c
+@@ -1484,7 +1484,7 @@ asmlinkage long sys_setpgid(pid_t pid, p
+ 	if (err)
+ 		goto out;
+ 
+-	if (process_group(p) != pgid) {
++	if (task_pgrp_nr(p) != pgid) {
+ 		detach_pid(p, PIDTYPE_PGID);
+ 		p->signal->pgrp = pgid;
+ 		attach_pid(p, PIDTYPE_PGID, find_pid(pgid));
+@@ -1500,7 +1500,7 @@ out:
+ asmlinkage long sys_getpgid(pid_t pid)
+ {
+ 	if (!pid)
+-		return process_group(current);
++		return task_pgrp_nr(current);
+ 	else {
+ 		int retval;
+ 		struct task_struct *p;
+@@ -1512,7 +1512,7 @@ asmlinkage long sys_getpgid(pid_t pid)
+ 		if (p) {
+ 			retval = security_task_getpgid(p);
+ 			if (!retval)
+-				retval = process_group(p);
++				retval = task_pgrp_nr(p);
+ 		}
+ 		read_unlock(&tasklist_lock);
+ 		return retval;
+@@ -1524,7 +1524,7 @@ asmlinkage long sys_getpgid(pid_t pid)
+ asmlinkage long sys_getpgrp(void)
+ {
+ 	/* SMP - assuming writes are word atomic this is fine */
+-	return process_group(current);
++	return task_pgrp_nr(current);
+ }
+ 
+ #endif
+@@ -1532,7 +1532,7 @@ asmlinkage long sys_getpgrp(void)
+ asmlinkage long sys_getsid(pid_t pid)
+ {
+ 	if (!pid)
+-		return process_session(current);
++		return task_session_nr(current);
+ 	else {
+ 		int retval;
+ 		struct task_struct *p;
+@@ -1544,7 +1544,7 @@ asmlinkage long sys_getsid(pid_t pid)
+ 		if (p) {
+ 			retval = security_task_getsid(p);
+ 			if (!retval)
+-				retval = process_session(p);
++				retval = task_session_nr(p);
+ 		}
+ 		read_unlock(&tasklist_lock);
+ 		return retval;
+@@ -1581,7 +1581,7 @@ asmlinkage long sys_setsid(void)
+ 	group_leader->signal->tty = NULL;
+ 	spin_unlock(&group_leader->sighand->siglock);
+ 
+-	err = process_group(group_leader);
++	err = task_pgrp_nr(group_leader);
+ out:
+ 	write_unlock_irq(&tasklist_lock);
+ 	return err;
