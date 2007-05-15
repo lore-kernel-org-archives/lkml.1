@@ -1,80 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761190AbXEOIPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760622AbXEOISO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761190AbXEOIPy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 04:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbXEOIPm
+	id S1760622AbXEOISO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 04:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756386AbXEOISD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 04:15:42 -0400
-Received: from gw-e.panasas.com ([65.194.124.178]:34589 "EHLO
-	cassoulet.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755887AbXEOIPl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 04:15:41 -0400
-Message-ID: <46496C1F.3090209@panasas.com>
-Date: Tue, 15 May 2007 11:15:27 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070221)
+	Tue, 15 May 2007 04:18:03 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:53507 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756087AbXEOISA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 04:18:00 -0400
+Date: Tue, 15 May 2007 10:16:26 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Satyam Sharma <satyam.sharma@gmail.com>
+cc: Tilman Schmidt <tilman@imap.cc>, LKML <linux-kernel@vger.kernel.org>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: Re: Linux 2.6.22-rc1
+In-Reply-To: <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com>
+Message-ID: <Pine.LNX.4.61.0705151009400.9570@yvahk01.tjqt.qr>
+References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>
+  <4647569D.7010709@imap.cc>  <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr>
+  <4648A3DF.7040004@imap.cc>  <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>
+ <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com>
 MIME-Version: 1.0
-To: gregkh@suse.de
-CC: linux-kernel@vger.kernel.org
-Subject: synchronization in usb_serial_put
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 May 2007 08:15:29.0288 (UTC) FILETIME=[3313D880:01C796C9]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
 
-I think there is a race between usb_serial_put() and
-usb_serial_get_by_index() (and get_free_serial()) with regards
-to handling the serial port refcount.
+On May 15 2007 08:04, Satyam Sharma wrote:
+> On 5/15/07, Jan Engelhardt <jengelh@linux01.gwdg.de> wrote:
+>> that can be switched on or off.
+>> It is for those people that start with an arbitrary .config and
+>> work their way through menuconfig to disable all the parts they
+>> do not want. So, point no. 1:
+>> 
+>> * Disabling this menu disables all the fluff inside it,
+>> without needing to enter the menu and disable each
+>> option one by one (as was the case previously)
+>
+> This kind of promise was really nice, and why I liked Jan's
+> menuconfig patches a lot.
+>
+> But if:
+>
+> On 5/15/07, Tilman Schmidt <tilman@imap.cc> wrote:
+>> Another essential piece of information. I seem to remember other
+>> menus which, when disabled, kept the selection status of the
+>> options inside and just hid them from view.
+>
+> is true, then are we really gaining much from these configmenu's?
 
-usb_serial_get_by_index() gets a reference on the serial port under
-table_lock while return_serial releases all the returned ports
-from the table under the same lock.  However, the table_lock is not
-taken around the call to kref_put, theoretically allowing to sneak
-in and grab a reference after kref_put has already determined that
-the reference count is zero (and before calling destroy_serial)
-causing use after free.
+If you transform a menu with hidden options (which do NOT "depend on"
+the menu - they can't even) into a menuconfig (continuing not to
+depend on the menuconfig), the presentation fucks up (especially in
+ncurses-menuconfig). That is a good hint something should be taken
+more seriously.
 
-How about this fix?
+So, for menus with hidden options I had a number of options how to
+go about them:
 
->From b91b9cffd8bbb727c6480dfb18f79655806237e6 Mon Sep 17 00:00:00 2001
-From: Benny Halevy <bhalevy@ns1.bhalevy.com>
-Date: Tue, 15 May 2007 10:41:31 +0300
-Subject: [PATCH] fix usb_serial_put synchronization
+ - move the hidden options before the menuconfig or after, so
+   the presentation does not bork;
+
+ - leave the menu as-is because there's just so many hidden
+   options and a menuconfig entry is detrimental
+
+> [unrelated]
+> I wish these new constructs were called "configmenu" and
+> _not_ "menuconfig". It causes confusion with the "menuconfig"
+> master Makefile rule which has nothing to do with these new
+> "configmenu"s.
+> [/unrelated]
+
+Indeed.
+
+>> Then of course, one can also turn these menuconfig on (apparently!)
+>> to be able to descend into them and select some drivers they like.
+>> Point no. 2:
+>> 
+>> * Since Jens Axboe's stance ["default y idiocy"] is to have
+>> these menus disabled by default, people should most likely
+>> enable them first before they will be able to enter them.
+>
+> I do agree that anything non-essential (even if it's just a presentation
+> menu that doesn't affect builds) must be default n.
+>
+>> (I would have wanted them to be always 'y' - it does not affect
+>> the build, just opens all menus by default)
+>
+> IMHO, the real problem with "default y" menuconfig's, is that they
+> cause unpleasant surprises to those folks that use the text-based
+> "make oldconfig". They get confronted with choices that they never
+> bothered about (or even knew existed) previously, and have no
+> idea how to answer them -- same problem faced by Tilman, when
+> he used oldconfig.
+>
 
 
-Signed-off-by: Benny Halevy <bhalevy@ns1.bhalevy.com>
----
- drivers/usb/serial/usb-serial.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> I think what happened here is that Jan really only considered the
+> "make menuconfig" users with these new constructs (which makes life
+> really simple for them), but "oldconfig" users were unfortunately in for
+> unpleasant surprises ...
 
-diff --git a/drivers/usb/serial/usb-serial.c b/drivers/usb/serial/usb-serial.c
-index 87f3788..4e5b996 100644
---- a/drivers/usb/serial/usb-serial.c
-+++ b/drivers/usb/serial/usb-serial.c
-@@ -120,11 +120,9 @@ static void return_serial(struct usb_serial *serial)
- 	if (serial == NULL)
- 		return;
- 
--	spin_lock(&table_lock);
- 	for (i = 0; i < serial->num_ports; ++i) {
- 		serial_table[serial->minor + i] = NULL;
- 	}
--	spin_unlock(&table_lock);
- }
- 
- static void destroy_serial(struct kref *kref)
-@@ -172,7 +170,9 @@ static void destroy_serial(struct kref *kref)
- 
- void usb_serial_put(struct usb_serial *serial)
- {
-+	spin_lock(&table_lock);
- 	kref_put(&serial->kref, destroy_serial);
-+	spin_unlock(&table_lock);
- }
- 
- /*****************************************************************************
+I can't tell, since I'd just say yes if it asks "Ethernet (10 GbE)?" -
+either I have such an adapter or I don't.
 
+
+
+So what do we need?
+
+ * 'configmenu' option (with 'endconfigmenu') that works the same as
+   'menu' and 'endmenu' (so we can have hidden options), but at the
+   same time make the ---> and options inside it disappear when it is
+   not selected. Currently, no other type seems to satisfy this.
+
+
+	Jan
+-- 
