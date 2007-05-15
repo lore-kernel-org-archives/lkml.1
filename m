@@ -1,49 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbXEOPrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760572AbXEOPwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760293AbXEOPrg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 11:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757459AbXEOPr3
+	id S1760572AbXEOPwq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 11:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757515AbXEOPwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 11:47:29 -0400
-Received: from wasp.net.au ([203.190.192.17]:57831 "EHLO wasp.net.au"
+	Tue, 15 May 2007 11:52:36 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:38855 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756263AbXEOPr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 11:47:29 -0400
-Message-ID: <4649D60C.7020101@wasp.net.au>
-Date: Tue, 15 May 2007 19:47:24 +0400
-From: Brad Campbell <brad@wasp.net.au>
-User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
+	id S1757309AbXEOPwf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 11:52:35 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+	Directors: Michael Cunningham (USA), Charlie Peters (USA) and
+	David Owens (Ireland)
+From: David Howells <dhowells@redhat.com>
+Subject: [PATCH 1/2] AFS: Fix afs_prepare_write()
+To: akpm@osdl.org, nickpiggin@yahoo.com.au
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       dhowells@redhat.com
+Date: Tue, 15 May 2007 16:52:24 +0100
+Message-ID: <20070515155224.29345.22719.stgit@warthog.cambridge.redhat.com>
+User-Agent: StGIT/0.12.1
 MIME-Version: 1.0
-To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
-CC: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
-       ck@vds.kolivas.org
-Subject: Re: Standalone swap prefetch patch for mainline
-References: <200705141210.43614.kernel@kolivas.org>	 <4649C789.6050305@wasp.net.au> <4d8e3fd30705150818g1755b441w536763d0902ca3cf@mail.gmail.com>
-In-Reply-To: <4d8e3fd30705150818g1755b441w536763d0902ca3cf@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paolo Ciarrocchi wrote:
+afs_prepare_write() should not mark a page up to date if it only partially
+fills it in, in expectation of the caller filling in the rest prior to calling
+commit_write().  commit_write(), however, should mark the page up to date.
 
-> Brad, is it possible for you to do some more test with the latest
-> version of both SD and CFS  and post some more detailed feedbacks?
-> That would help a lot.
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
 
-Err.. Ok. I have the latest version of SD (that I know about). I could upgrade CFS, but unlike those 
-doing real scientific testing, I'm just getting a feel with my usual usage patterns (thunderbird, 
-firefox, openoffice, gimp, x-chat and gnome). I don't have any hard fast metrics I can measure 
-against really.
+ fs/afs/write.c |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Anything I post would be subjective at best. (And to be honest, once I get a stable and usable 
-kernel I tend to stick with it for a month or so as I don't reboot - suspend2 regularly goes 100 
-suspend/resume cycles to S3 between reboots for me)
+diff --git a/fs/afs/write.c b/fs/afs/write.c
+index 28f3751..a03b92a 100644
+--- a/fs/afs/write.c
++++ b/fs/afs/write.c
+@@ -206,7 +206,6 @@ int afs_prepare_write(struct file *file, struct page *page,
+ 			_leave(" = %d [prep]", ret);
+ 			return ret;
+ 		}
+-		SetPageUptodate(page);
+ 	}
+ 
+ try_again:
+@@ -311,8 +310,8 @@ int afs_commit_write(struct file *file, struct page *page,
+ 		spin_unlock(&vnode->writeback_lock);
+ 	}
+ 
++	SetPageUptodate(page);
+ 	set_page_dirty(page);
+-
+ 	if (PageDirty(page))
+ 		_debug("dirtied");
+ 
 
-I'm a little more willing to experiment on my desktop box, but I really live from the laptop.
-
-Brad
--- 
-"Human beings, who are almost unique in having the ability
-to learn from the experience of others, are also remarkable
-for their apparent disinclination to do so." -- Douglas Adams
