@@ -1,67 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760608AbXEOXtv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760843AbXEOXws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760608AbXEOXtv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 19:49:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757558AbXEOXtn
+	id S1760843AbXEOXws (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 19:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757600AbXEOXwj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 19:49:43 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:36397 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757391AbXEOXtl (ORCPT
+	Tue, 15 May 2007 19:52:39 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:58407 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757391AbXEOXwi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 19:49:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=V/WkJXFwliVzkBF95I93AScqR1GVEumLyRSvqbWfk9xYf/BU3kcInmhxTRIF+dKlWIo9nPQfRL8v2mdBxHCC+S8ZaqNA076vNHrJi6iPEnMFfHCeFZkvbcGV7X7a57aSP7Pxl8lRdqgkXAitBswuiaT/wyS1QmDcMYRgJbu+KQQ=
-Message-ID: <a781481a0705151649p4cc61bceqd61d778a67776c7f@mail.gmail.com>
-Date: Wed, 16 May 2007 05:19:40 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "Arjan van de Ven" <arjan@linux.intel.com>
-Subject: Re: Asynchronous scsi scanning
-Cc: "Matthew Wilcox" <matthew@wil.cx>, "Simon Arlott" <simon@fire.lp0.eu>,
-       "James Bottomley" <james.bottomley@steeleye.com>,
-       "Dave Jones" <davej@redhat.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org, kernel-packagers@vger.kernel.org,
-       "Robert P. J. Day" <rpjday@mindspring.com>
-In-Reply-To: <464A4222.4000208@linux.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 May 2007 19:52:38 -0400
+Subject: Re: [PATCH 0/5][TAKE3] fallocate system call
+From: Mingming Cao <cmm@us.ibm.com>
+Reply-To: cmm@us.ibm.com
+To: "Amit K. Arora" <aarora@linux.vnet.ibm.com>
+Cc: torvalds@osdl.org, akpm@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org, xfs@oss.sgi.com, suparna@in.ibm.com
+In-Reply-To: <20070515193722.GA3487@amitarora.in.ibm.com>
+References: <20070321120425.GA27273@amitarora.in.ibm.com>
+	 <20070329115126.GB7374@amitarora.in.ibm.com>
+	 <20070329101010.7a2b8783.akpm@linux-foundation.org>
+	 <20070330071417.GI355@devserv.devel.redhat.com>
+	 <20070417125514.GA7574@amitarora.in.ibm.com>
+	 <20070418130600.GW5967@schatzie.adilger.int>
+	 <20070420135146.GA21352@amitarora.in.ibm.com>
+	 <20070420145918.GY355@devserv.devel.redhat.com>
+	 <20070424121632.GA10136@amitarora.in.ibm.com>
+	 <20070426175056.GA25321@amitarora.in.ibm.com>
+	 <20070515193722.GA3487@amitarora.in.ibm.com>
+Content-Type: text/plain
+Organization: IBM LTC
+Date: Tue, 15 May 2007 16:52:23 -0700
+Message-Id: <1179273143.4819.15.camel@dyn9047017103.beaverton.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.4 (2.0.4-7) 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
-	 <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
-	 <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
-	 <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
-	 <17841.simon.1179228389@5ec7c279.invalid>
-	 <20070515120228.GI10562@parisc-linux.org>
-	 <4649E03A.1090004@simon.arlott.org.uk>
-	 <20070515172905.GJ10562@parisc-linux.org>
-	 <a781481a0705151627n18d3be55t6b77885fd7775ffd@mail.gmail.com>
-	 <464A4222.4000208@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/16/07, Arjan van de Ven <arjan@linux.intel.com> wrote:
-> Satyam Sharma wrote:
-> >> > >semantics of it (read-only?  read-write?  write-only?
-> >
-> > Well, it _has_ to be write, don't really care if it's read-write or
-> > write-only. I would still prefer read-write, but we can go ahead with
-> > write-only too. It doesn't really matter, does it?
->
-> just to be devils advocate...
-> it should be a read that returns when done,
+On Wed, 2007-05-16 at 01:07 +0530, Amit K. Arora wrote:
 
-Heh, yeah. We just need to trigger that scsi_complete_async_scans()
-after all ... might as well abuse all intuition on the user's behalf :-)
+> ToDos:
+> -----
+> 1> Implementation on other architectures (other than i386, x86_64,
+> ppc64 and s390(x)). David Chinner has already posted a patch for ia64.
 
-> and that can be polled
+Here is the 2.6.22-rc1 version of David's patch: add fallocate() on ia64
 
-Gaah! :-)
+From: David Chinner <dgc@sgi.com>
+Subject: [PATCH] ia64 fallocate syscall
+Cc: "Amit K. Arora" <aarora@linux.vnet.ibm.com>, 
+        akpm@linux-foundation.org, linux-ext4@vger.kernel.org,
+        suparna@in.ibm.com, cmm@us.ibm.com
 
-But seriously, though, this sysfs attribute can be implemented
-_any which way_. Better for us if we do it the simplest way (and which
-taxes the user's intuition the least). Just that Matthew asked so many
-questions so I thought I might as well answer them :-)
+ia64 fallocate syscall support.
+
+Signed-Off-By: Dave Chinner <dgc@sgi.com>
+
+---
+ arch/ia64/kernel/entry.S  |    1 +
+ include/asm-ia64/unistd.h |    3 ++-
+ 2 files changed, 3 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.22-rc1/arch/ia64/kernel/entry.S
+===================================================================
+--- linux-2.6.22-rc1.orig/arch/ia64/kernel/entry.S	2007-05-12 18:45:56.000000000 -0700
++++ linux-2.6.22-rc1/arch/ia64/kernel/entry.S	2007-05-15 15:36:48.000000000 -0700
+@@ -1585,5 +1585,6 @@
+ 	data8 sys_getcpu
+ 	data8 sys_epoll_pwait			// 1305
+ 	data8 sys_utimensat
++	data8 sys_fallocate
+ 
+ 	.org sys_call_table + 8*NR_syscalls	// guard against failures to increase NR_syscalls
+Index: linux-2.6.22-rc1/include/asm-ia64/unistd.h
+===================================================================
+--- linux-2.6.22-rc1.orig/include/asm-ia64/unistd.h	2007-05-12 18:45:56.000000000 -0700
++++ linux-2.6.22-rc1/include/asm-ia64/unistd.h	2007-05-15 15:37:51.000000000 -0700
+@@ -296,6 +296,7 @@
+ #define __NR_getcpu			1304
+ #define __NR_epoll_pwait		1305
+ #define __NR_utimensat			1306
++#define __NR_fallocate			1307
+ 
+ #ifdef __KERNEL__
+ 
+
+
