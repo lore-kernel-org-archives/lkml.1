@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761927AbXEOTg5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762044AbXEOThV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761927AbXEOTg5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 15:36:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbXEOTge
+	id S1762044AbXEOThV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 15:37:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757727AbXEOTgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 15:36:34 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:45126 "EHLO
+	Tue, 15 May 2007 15:36:42 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45128 "EHLO
 	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761300AbXEOTgd (ORCPT
+	with ESMTP id S1761545AbXEOTgl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 15:36:33 -0400
+	Tue, 15 May 2007 15:36:41 -0400
 To: torvalds@linux-foundation.org
-Subject: [PATCH] missing includes in mlx4
-Cc: linux-kernel@vger.kernel.org, jgarzik@pobox.com
-Message-Id: <E1Ho2ow-0003TZ-Au@ZenIV.linux.org.uk>
+Subject: [PATCH] em28xx and ivtv should depend on PCI
+Cc: linux-kernel@vger.kernel.org, mchehab@infradead.org
+Message-Id: <E1Ho2p6-0003Tt-B7@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Tue, 15 May 2007 20:36:30 +0100
+Date: Tue, 15 May 2007 20:36:40 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/net/mlx4/alloc.c |    1 +
- drivers/net/mlx4/eq.c    |    1 +
- drivers/net/mlx4/icm.c   |    1 +
- drivers/net/mlx4/reset.c |    1 +
- 4 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/media/video/em28xx/Kconfig |    2 +-
+ drivers/media/video/ivtv/Kconfig   |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/mlx4/alloc.c b/drivers/net/mlx4/alloc.c
-index 9ffdb9d..dfbd580 100644
---- a/drivers/net/mlx4/alloc.c
-+++ b/drivers/net/mlx4/alloc.c
-@@ -33,6 +33,7 @@
- #include <linux/errno.h>
- #include <linux/slab.h>
- #include <linux/bitmap.h>
-+#include <linux/dma-mapping.h>
- 
- #include "mlx4.h"
- 
-diff --git a/drivers/net/mlx4/eq.c b/drivers/net/mlx4/eq.c
-index af016d0..0f11adb 100644
---- a/drivers/net/mlx4/eq.c
-+++ b/drivers/net/mlx4/eq.c
-@@ -33,6 +33,7 @@
- 
- #include <linux/init.h>
- #include <linux/interrupt.h>
-+#include <linux/dma-mapping.h>
- 
- #include <linux/mlx4/cmd.h>
- 
-diff --git a/drivers/net/mlx4/icm.c b/drivers/net/mlx4/icm.c
-index e96feae..b7a4aa8 100644
---- a/drivers/net/mlx4/icm.c
-+++ b/drivers/net/mlx4/icm.c
-@@ -33,6 +33,7 @@
- 
- #include <linux/init.h>
- #include <linux/errno.h>
-+#include <linux/mm.h>
- 
- #include <linux/mlx4/cmd.h>
- 
-diff --git a/drivers/net/mlx4/reset.c b/drivers/net/mlx4/reset.c
-index 51eef84..e4dfd4b 100644
---- a/drivers/net/mlx4/reset.c
-+++ b/drivers/net/mlx4/reset.c
-@@ -35,6 +35,7 @@
- #include <linux/pci.h>
- #include <linux/delay.h>
- #include <linux/slab.h>
-+#include <linux/jiffies.h>
- 
- #include "mlx4.h"
- 
+diff --git a/drivers/media/video/em28xx/Kconfig b/drivers/media/video/em28xx/Kconfig
+index 3823b62..2c450bd 100644
+--- a/drivers/media/video/em28xx/Kconfig
++++ b/drivers/media/video/em28xx/Kconfig
+@@ -1,6 +1,6 @@
+ config VIDEO_EM28XX
+ 	tristate "Empia EM2800/2820/2840 USB video capture support"
+-	depends on VIDEO_V4L1 && I2C
++	depends on VIDEO_V4L1 && I2C && PCI
+ 	select VIDEO_BUF
+ 	select VIDEO_TUNER
+ 	select VIDEO_TVEEPROM
+diff --git a/drivers/media/video/ivtv/Kconfig b/drivers/media/video/ivtv/Kconfig
+index e854f3f..0cc98a0 100644
+--- a/drivers/media/video/ivtv/Kconfig
++++ b/drivers/media/video/ivtv/Kconfig
+@@ -1,6 +1,6 @@
+ config VIDEO_IVTV
+ 	tristate "Conexant cx23416/cx23415 MPEG encoder/decoder support"
+-	depends on VIDEO_V4L1 && VIDEO_V4L2 && USB && I2C && EXPERIMENTAL
++	depends on VIDEO_V4L1 && VIDEO_V4L2 && USB && I2C && EXPERIMENTAL && PCI
+ 	select FW_LOADER
+ 	select VIDEO_TUNER
+ 	select VIDEO_TVEEPROM
 -- 
 1.5.0-rc2.GIT
 
