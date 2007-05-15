@@ -1,70 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759015AbXEOWCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758777AbXEOWGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759015AbXEOWCv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 18:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbXEOWCp
+	id S1758777AbXEOWGX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 18:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbXEOWGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 18:02:45 -0400
-Received: from netops-testserver-4-out.sgi.com ([192.48.171.29]:34172 "EHLO
-	relay.sgi.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754460AbXEOWCo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 18:02:44 -0400
-Date: Tue, 15 May 2007 15:02:40 -0700 (PDT)
-From: Christoph Lameter <clameter@sgi.com>
-X-X-Sender: clameter@schroedinger.engr.sgi.com
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-cc: Matt Mackall <mpm@selenic.com>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Thomas Graf <tgraf@suug.ch>,
-       David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Daniel Phillips <phillips@google.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 0/5] make slab gfp fair
-In-Reply-To: <1179250036.7173.7.camel@twins>
-Message-ID: <Pine.LNX.4.64.0705151457060.3155@schroedinger.engr.sgi.com>
-References: <20070514131904.440041502@chello.nl> 
- <Pine.LNX.4.64.0705140852150.10442@schroedinger.engr.sgi.com> 
- <20070514161224.GC11115@waste.org>  <Pine.LNX.4.64.0705140927470.10801@schroedinger.engr.sgi.com>
-  <1179164453.2942.26.camel@lappy>  <Pine.LNX.4.64.0705141051170.11251@schroedinger.engr.sgi.com>
-  <1179170912.2942.37.camel@lappy> <1179250036.7173.7.camel@twins>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 15 May 2007 18:06:16 -0400
+Received: from www.osadl.org ([213.239.205.134]:42892 "EHLO mail.tglx.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1754996AbXEOWGQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 18:06:16 -0400
+Subject: Re: clockevent questions
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Francis Moreau <francis.moro@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <38b2ab8a0705150147s4ce72914qfa30d543ed8a4839@mail.gmail.com>
+References: <38b2ab8a0705120754l281f54eevd1e91e2f01fff6f2@mail.gmail.com>
+	 <1178982892.22481.183.camel@localhost.localdomain>
+	 <38b2ab8a0705121313k37be467cy55402b490101ac9c@mail.gmail.com>
+	 <1179001391.22481.216.camel@localhost.localdomain>
+	 <38b2ab8a0705150147s4ce72914qfa30d543ed8a4839@mail.gmail.com>
+Content-Type: text/plain
+Date: Wed, 16 May 2007 00:10:14 +0200
+Message-Id: <1179267014.12838.38.camel@chaos>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007, Peter Zijlstra wrote:
+Francis,
 
-> How about something like this; it seems to sustain a little stress.
+On Tue, 2007-05-15 at 10:47 +0200, Francis Moreau wrote:
+> My question is about the clock resolution field which is equal to 1ns.
+> How is this possible since my timer's frequency is only 100Mhz ?
 
-Argh again mods to kmem_cache.
+you are right. It is a bit strange. The resolution info is not really
+reflecting the clock event source capability. I look if there is a sane
+solution for that.
 
-Could we do this with a new slab page flag? F.e. SlabEmergPool.
+	tglx
 
-
-in alloc_slab() do
-
-if (is_emergency_pool_page(page)) {
-	SetSlabDebug(page);
-	SetSlabEmerg(page);
-}
-
-So now you can intercept allocs to the SlabEmerg slab in __slab_alloc 
-
-debug:
-
-if (SlabEmergPool(page)) {
-	if (mem_no_longer_critical()) {
-		/* Avoid future trapping */
-		ClearSlabDebug(page);
-		ClearSlabEmergPool(page);
-	} else
-	if (process_not_allowed_this_memory()) {
-		do_something_bad_to_the_caller();
-	} else {
-		/* Allocation permitted */
-	}
-}
-
-....
 
