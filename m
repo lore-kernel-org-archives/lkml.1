@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758253AbXEOWLE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758801AbXEOWWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758253AbXEOWLE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 18:11:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755806AbXEOWK4
+	id S1758801AbXEOWWR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 18:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756739AbXEOWWG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 18:10:56 -0400
-Received: from www.osadl.org ([213.239.205.134]:46952 "EHLO mail.tglx.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755739AbXEOWKz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 18:10:55 -0400
-Subject: Re: [2.6.21.1] OOPS in timer stats code
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Chuck Ebbert <cebbert@redhat.com>
-Cc: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-       Folkert van Heusden <folkert@vanheusden.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4649FDEA.2050703@redhat.com>
-References: <3644.62.177.207.163.1179227559.squirrel@klant.bhosted.nl>
-	 <6bffcb0e0705150433o95c801eo4818a9f36e5bb770@mail.gmail.com>
-	 <4649FDEA.2050703@redhat.com>
-Content-Type: text/plain
-Date: Wed, 16 May 2007 00:14:52 +0200
-Message-Id: <1179267292.12838.42.camel@chaos>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+	Tue, 15 May 2007 18:22:06 -0400
+Received: from 85.8.24.16.se.wasadata.net ([85.8.24.16]:48051 "EHLO
+	smtp.drzeus.cx" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756566AbXEOWWF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 18:22:05 -0400
+Message-ID: <464A3260.3060603@drzeus.cx>
+Date: Wed, 16 May 2007 00:21:20 +0200
+From: Pierre Ossman <drzeus-mmc@drzeus.cx>
+User-Agent: Thunderbird 2.0.0.0 (X11/20070419)
+MIME-Version: 1.0
+To: "Syed Mohammed, Khasim" <x0khasim@ti.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       Nicolas FERRE <nicolas.ferre@rfo.atmel.com>,
+       Andrew Victor <andrew@sanpeople.com>,
+       Ralf Baechle <ralf@linux-mips.org>,
+       Manuel Lauss <mano@roarinelk.homelinux.net>,
+       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
+       Pavel Pisa <pisa@cmp.felk.cvut.cz>,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, David Brownell <david-b@pacbell.net>,
+       "=?ISO-8859-1?Q?Juha_Yrj=F6l=E4?=" <juha.yrjola@solidboot.com>,
+       "Briglia >> \"Anderson F. Briglia\"" <anderson.briglia@indt.org.br>,
+       Kyungmin Park <kmpark@infradead.org>,
+       Carlos Aguiar <carlos.aguiar@indt.org.br>
+Subject: Re: [RFC] Orphaning MMC host drivers
+References: <9C23CDD79DA20A479D4615857B2E2C47E9FDD8@dlee13.ent.ti.com>
+In-Reply-To: <9C23CDD79DA20A479D4615857B2E2C47E9FDD8@dlee13.ent.ti.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-15 at 14:37 -0400, Chuck Ebbert wrote:
-> Michal Piotrowski wrote:
-> > [Adding Thomas to CC]
-
-Added Ingo as well :)
-
-> > On 15/05/07, Folkert van Heusden <folkert@vanheusden.com> wrote:
-> >> Hi,
-> >>
-> >> After an uptime of, say, 4 hours I got an oops on my P4 with HT and
-> >> 2GB ram.
-> >> It has dynamic ticks enabled as well has timer stats. I cannot reboot the
-> >> machine to give more details right now (19:00 gmt+1 i can).
-> >>
-> >> For now, this is the oops:
-> >>
-> >> [13092.479019] BUG: unable to handle kernel paging request at virtual
-> >> address b9d0458f
+Syed Mohammed, Khasim wrote:
+> Hi Pierre,
 > 
-> Timer hash list contains a user address.
+> Carlos Aguiar and Anderson Briglia are interested in making sure the driver works for existing boards as they have access to them, and I can make it work for new omaps (2430, 3430).
+> 
 
-Dammit. It's a HT enabled box again. I don't have one.
+Great. I'll update my info.
 
-Folkert, does the problem go away when you disable HT
-(CONFIG_SCHED_SMT) ?
+-- 
+     -- Pierre Ossman
 
-	tglx
-
-
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  PulseAudio, core developer          http://pulseaudio.org
+  rdesktop, core developer          http://www.rdesktop.org
