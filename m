@@ -1,87 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757528AbXEOSax@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbXEOSgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757528AbXEOSax (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 14:30:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbXEOSao
+	id S1757585AbXEOSgj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 14:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbXEOSgb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 14:30:44 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:38670 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754114AbXEOSan (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 14:30:43 -0400
-Date: Tue, 15 May 2007 11:30:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Christoph Lameter <clameter@sgi.com>
-Cc: Badari Pulavarty <pbadari@us.ibm.com>, netdev@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: select(0, ..) is valid ?
-Message-Id: <20070515113033.75d7bff6.akpm@linux-foundation.org>
-In-Reply-To: <Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com>
-References: <1179250159.2836.117.camel@dyn9047017100.beaverton.ibm.com>
-	<20070515104453.f901e91f.akpm@linux-foundation.org>
-	<Pine.LNX.4.64.0705151109021.31972@schroedinger.engr.sgi.com>
-X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+	Tue, 15 May 2007 14:36:31 -0400
+Received: from pasmtpa.tele.dk ([80.160.77.114]:46145 "EHLO pasmtpA.tele.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754948AbXEOSga (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 14:36:30 -0400
+Date: Tue, 15 May 2007 20:37:25 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: =?iso-8859-1?Q?J=F6rn?= Engel <joern@lazybastard.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-mtd@lists.infradead.org, akpm@osdl.org,
+       Albert Cahalan <acahalan@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Jan Engelhardt <jengelh@linux01.gwdg.de>,
+       Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
+       Ingo Oeser <ioe-lkml@rameria.de>
+Subject: Re: [PATCH] LogFS take three
+Message-ID: <20070515183725.GA22003@uranus.ravnborg.org>
+References: <20070515151919.GA32510@lazybastard.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070515151919.GA32510@lazybastard.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 11:10:22 -0700 (PDT)
-Christoph Lameter <clameter@sgi.com> wrote:
-
-> On Tue, 15 May 2007, Andrew Morton wrote:
+On Tue, May 15, 2007 at 05:19:20PM +0200, Jörn Engel wrote:
+> [ I have put everyone that gave comments to the last patch on Cc:.  Hope
+> that doesn't offend anyone. ]
 > 
-> > I _think_ we can just do
-> > 
-> > --- a/fs/compat.c~a
-> > +++ a/fs/compat.c
-> > @@ -1566,9 +1566,13 @@ int compat_core_sys_select(int n, compat
-> >  	 */
-> >  	ret = -ENOMEM;
-> >  	size = FDS_BYTES(n);
-> > -	bits = kmalloc(6 * size, GFP_KERNEL);
-> > -	if (!bits)
-> > -		goto out_nofds;
-> > +	if (likely(size)) {
-> > +		bits = kmalloc(6 * size, GFP_KERNEL);
-> > +		if (!bits)
-> > +			goto out_nofds;
-> > +	} else {
-> > +		bits = NULL;
-> > +	}
-> >  	fds.in      = (unsigned long *)  bits;
-> >  	fds.out     = (unsigned long *) (bits +   size);
-> >  	fds.ex      = (unsigned long *) (bits + 2*size);
-> > _
-> > 
-> > I mean, if that oopses then I'd be very interested in finding out why.
-> > 
-> > But I'm starting to suspect that it would be better to permit kmalloc(0) in
-> > slub.  It depends on how many more of these things need fixing.
-> > 
-> > otoh, a kmalloc(0) could be a sign of some buggy/inefficient/weird code, so
-> > there's some value in forcing us to go look at all the callsites.
->  
-> Hmmm... We could have kmalloc(0) return a pointer to the zero page? That 
-> would catch any writers?
+> 
+> Add LogFS, a scalable flash filesystem.
 
-Returning NULL would have the same effect..
+Have you run sparse on this code?
+I do not recall if you have written something about it.
+I do not see any obvious things sparse would catch (just browsing quickly)
+but it's always a good thing to do.
 
-But the problem is that we won't get 100% coverage of all codepaths
-for ages, so any oopses we added won't get found.
+ 
++++ linux-2.6.21logfs/fs/logfs/progs/fsck.c     2007-05-15 00:54:22.000000000 +0200
+@@ -0,0 +1,332 @@
++/*
++ * fs/logfs/prog/fsck.c        - filesystem check
++ *
++ * As should be obvious for Linux kernel code, license is GPLv2
++ *
++ * Copyright (c) 2005-2007 Joern Engel
++ *
++ * In principle this could get moved to userspace.  However it might still
++ * make some sense to keep it in the kernel.  It is a pure checker and will
++ * only report problems, not attempt to repair them.
++ */
++#include "../logfs.h"
++
+If potential userspace tools needs to include ../logfs.h then there is
+something that ought to be moved to include/linux/logfs.h instead.
 
-otoh, any code which does dereference that pointer is buggy anwyay.
-
-The problem here is that code which does
-
-	kmalloc(some-expression-which-returns-0)
-
-will go and assume that the kmalloc(0) got an ENOMEM and it'll take the
-error path.
-
-Oh well, let's persist with things as they now are.
-
-Perhaps putting a size=0 detector into slab also would speed this
-process up.
+	Sam
