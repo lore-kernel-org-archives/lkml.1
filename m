@@ -1,44 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757350AbXEOUov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbXEOUqB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757350AbXEOUov (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 16:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbXEOUoo
+	id S1758460AbXEOUqB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 16:46:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755711AbXEOUpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 16:44:44 -0400
-Received: from pasmtpb.tele.dk ([80.160.77.98]:55980 "EHLO pasmtpB.tele.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753089AbXEOUoo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 16:44:44 -0400
-Date: Tue, 15 May 2007 22:45:40 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Meelis Roos <mroos@linux.ee>
-Cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: ppc modprost warnings in 2.6.22-rc1
-Message-ID: <20070515204540.GC22966@uranus.ravnborg.org>
-References: <Pine.SOC.4.64.0705141717110.23895@math>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 15 May 2007 16:45:55 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:39074
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755061AbXEOUpy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 16:45:54 -0400
+From: Rob Landley <rob@landley.net>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: x86 setup rewrite tree ready for flamage^W review
+Date: Tue, 15 May 2007 16:45:44 -0400
+User-Agent: KMail/1.9.1
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <464158E9.2000207@zytor.com> <4645032E.1030109@gmail.com> <46450910.8080503@zytor.com>
+In-Reply-To: <46450910.8080503@zytor.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.SOC.4.64.0705141717110.23895@math>
-User-Agent: Mutt/1.4.2.1i
+Message-Id: <200705151645.44524.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 05:20:20PM +0300, Meelis Roos wrote:
-> Trying to compile 2.6.22-rc1 for ppc (prep) arch. While section 
-> mismatches are an old thing, what are these COMMON symbols?
+On Friday 11 May 2007 8:23 pm, H. Peter Anvin wrote:
+> Kevin Winchester wrote:
+> > Not sure if you were looking for testing, but I fuzzed it to apply to
+> > 2.6.21-git and gave it a spin.  Worked just like a normal boot (which I
+> > assume was the point).
 > 
->   MODPOST vmlinux
-> WARNING: "fee_restarts" [arch/ppc/kernel/built-in] is COMMON symbol
-> WARNING: "ee_restarts" [arch/ppc/kernel/built-in] is COMMON symbol
+> That would be the point, yes :)  Looking for breakage in video mode
+> detection, memory detection, and APM are probably the trickiest areas.
 
-Symbols that modpst see belongs to SHN_COMMON.
-Should we drop that warning?
+This may not be the most useful datapoint, but applying the patch to 
+current -git didn't give me something that qemu could boot.
 
-> WARNING: arch/ppc/platforms/built-in.o - Section mismatch: reference to .init.text:Powerplus_Map_Non0 from .data between 'mot_info' (at offset 0x18) and 'Mesquite_pci_IRQ_map'
-.....
+I applied the patch to current -git (well, current -hg but same thing).  The 
+flat patch didn't quite apply cleanly.  (Hunks in Documentation, video.S, and 
+verify_cpu.S claimed to be already applied.  I told it to ignore them.)  The 
+result compiled cleanly enough, but didn't boot under qemu.  (It 
+said "booting from hard drive" and then hung.  No decompressing message.)  
+I've confirmed that without the patch, current -hg does boot under qemu.
 
-mot_info is only used by functions marked __init.
-So why not mark it __init so it get discarded and we get rid of all those warnings?
+Awaiting the broken-out patchset mentioned earlier, with interest if not 
+skill... :)
 
-	Sam
+Rob
