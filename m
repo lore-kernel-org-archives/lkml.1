@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbXEOVQ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbXEOVR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756826AbXEOVQ4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:16:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbXEOVQt
+	id S1758246AbXEOVR1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbXEOVRP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:16:49 -0400
-Received: from wr-out-0506.google.com ([64.233.184.232]:20159 "EHLO
-	wr-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752140AbXEOVQt (ORCPT
+	Tue, 15 May 2007 17:17:15 -0400
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:54921 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752140AbXEOVRO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 17:16:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=Adl55IzVzgJ6W4wXaZZUOL8joQcmirs87yRHgPyRBAS9wvMGLYDlMS5NXNB4IBFwy+gVjFbgvNc7owdwojYpl3VUQGGaSIjI+GriOMAwDDrf0QnWdN0NNfK+qRpXEtfSk6shZLpyQaPMs3Ea+jophMoqXmDmXn5Sdu0QQj0qJQ8=
-Message-ID: <d120d5000705151416v4dafa176h556d03d692170b39@mail.gmail.com>
-Date: Tue, 15 May 2007 17:16:47 -0400
-From: "Dmitry Torokhov" <dmitry.torokhov@gmail.com>
-To: jroberson@gtcocalcomp.com
-Subject: Re: [linux-usb-devel] Cannot find our GTCO USB Driver in the 2.6.22-rc1 kernel
-Cc: "Till Harbaum / Lists" <lists@harbaum.org>,
-       "Randy Dunlap" <randy.dunlap@oracle.com>, "Greg KH" <gregkh@suse.de>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <1179255411.3101.79.camel@EdgyEft.Home>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <1176912010.6215.17.camel@EdgyEft.Home>
-	 <20070515111250.e869634b.randy.dunlap@oracle.com>
-	 <1179252727.3101.68.camel@EdgyEft.Home>
-	 <200705152038.53676.lists@harbaum.org>
-	 <1179255411.3101.79.camel@EdgyEft.Home>
+	Tue, 15 May 2007 17:17:14 -0400
+Date: Tue, 15 May 2007 23:16:42 +0200
+From: markus reichelt <ml@mareichelt.de>
+Subject: Re: Announce loop-AES-v3.2a file/swap crypto package
+In-reply-to: <4649F5DC.87043316@users.sourceforge.net>
+To: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
+Mail-followup-to: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
+Message-id: <20070515211642.GA1058@tatooine.rebelbase.local>
+Organization: still stuck in reorganization mode
+MIME-version: 1.0
+Content-type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary=Kj7319i9nmIyA2yE
+Content-disposition: inline
+X-PGP-Key: 0xC2A3FEE4
+X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
+X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
+References: <4649F5DC.87043316@users.sourceforge.net>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-On 5/15/07, Jeremy Roberson <jroberson@gtcocalcomp.com> wrote:
-> A very good question.  Had it been, I probably would not have missed it.
->
-> On Tue, 2007-05-15 at 20:38 +0200, Till Harbaum / Lists wrote:
-> > Hi,
-> >
-> > which leads to the question: Why is the "Enable Tablets" entry not
-> > inside the tablets menu. This way it's more obvious that it's disabled
-> > if it's the only entry in the menu. Plus the parent menu gets
-> > cleaned up as well.
-> >
+--Kj7319i9nmIyA2yE
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Because some people want to be able to turn off entire set of options
-without having to descend into submenu.
+* Jari Ruusu <jariruusu@users.sourceforge.net> wrote:
 
--- 
-Dmitry
+> loop-AES changes since previous release:
+> - loop_twofish.c loop_serpent.c loop_blowfish.c modules included.
+>   They are not built by default. Add EXTRA_CIPHERS=3Dy make parameter
+>   to build them.
 
-P.S. Please do not top-post.
+Just curious, will the ciphers package also be continued/available
+separately as before or is it merged from now on into the loop-aes
+package?
+
+
+--=20
+left blank, right bald
+
+--Kj7319i9nmIyA2yE
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5 (GNU/Linux)
+
+iD8DBQFGSiM6LMyTO8Kj/uQRAgTcAJ4vVlVBhDS29vwsDoBNNhdrhIWkuQCfYfSm
+2aFWm6FlxBGhtevH9ojub78=
+=IvrL
+-----END PGP SIGNATURE-----
+
+--Kj7319i9nmIyA2yE--
+
