@@ -1,65 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760971AbXEOL0r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934310AbXEOL1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760971AbXEOL0r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 07:26:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755553AbXEOL0h
+	id S934310AbXEOL1J (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 07:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761055AbXEOL04
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 07:26:37 -0400
-Received: from proxima.lp0.eu ([85.158.45.36]:44257 "EHLO proxima.lp0.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755936AbXEOL0g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 07:26:36 -0400
-Message-ID: <17841.simon.1179228389@5ec7c279.invalid>
-In-Reply-To: <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
-References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
-    <20070513160608.GA29024@redhat.com>
-    <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
-    <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
-    <a781481a0705140235h6a96563cw63ed2c7a85a4f736@mail.gmail.com>
-    <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com>
-    <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com>
-    <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
-    <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
-    <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
-Date: Tue, 15 May 2007 12:26:29 +0100
-Subject: Re: why does x86 "make defconfig" build a single, lonely module?
-From: "Simon Arlott" <simon@fire.lp0.eu>
-To: "Satyam Sharma" <satyam.sharma@gmail.com>
-Cc: "James Bottomley" <james.bottomley@steeleye.com>,
-       "Dave Jones" <davej@redhat.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-User-Agent: SquirrelMail/1.4.9a
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
+	Tue, 15 May 2007 07:26:56 -0400
+Received: from mail.gmx.net ([213.165.64.20]:34754 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755553AbXEOL0z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 07:26:55 -0400
+X-Authenticated: #19452082
+X-Provags-ID: V01U2FsdGVkX1/wuBAqwB7wmLvwwUCACcPEL18yeZPCHC5l8wvQzd
+	PZkRD9YcfmBajb
+Date: Tue, 15 May 2007 13:26:46 +0200
+From: Thomas Kuther <gimpel@sonnenkinder.org>
+To: linux-kernel@vger.kernel.org
+Cc: Thomas Kuther <gimpel@sonnenkinder.org>
+Subject: Re: IT821x: no DMA since 2.6.21
+Message-ID: <20070515132646.745fcd35@SiRiUS.home>
+In-Reply-To: <20070515125308.3a9f6442@SiRiUS.home>
+References: <20070515125308.3a9f6442@SiRiUS.home>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_XtfHJqE9jqSk2ze5SUwpe5U;
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 15, 2007 01:41, Satyam Sharma wrote:
-> On 5/14/07, James Bottomley <James.Bottomley@steeleye.com> wrote:
->> On Mon, 2007-05-14 at 17:53 +0530, Satyam Sharma wrote:
->> > > I guess this is probably the behaviour that James wanted originally?
->>
->> No ... you're still not reading the explanation in the thread:
->>
->> The wait scan module is designed to wait for scans of driver modules.
->> Whether SCSI=y or m has no effect on this ... you can still have modular
->> drivers with built in SCSI.
->
-> Ah, I see why we _want_ this built as a _module_ only, and don't even
-> want to expose the Kconfig option to the user, lest he screw himself later.
-> But dangling "default m"'s or "default y"'s not exposed to the user do
-> stand out discomfortingly in Kconfigs, wish there was a better way to
-> handle this.
+--Sig_XtfHJqE9jqSk2ze5SUwpe5U
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-I've already suggested a sysfs attribute - or something equivalent - would
-be much better. It's just one function that a user might want to run multiple
-times (e.g. after adding scsi devices?) - why should loading a module be used
-for this?
+On Di, 15.05.07 12:53 Thomas Kuther wrote:
 
--- 
-Simon Arlott
+> Hi!
+>=20
+> Since 2.6.21 I have a problem with the it821x driver on my ITE 8212
+> controller.
+> Now I saw some updates to it821x in 2.6.22-rc1 and gave that a try,
+> but the problem persists.
+>=20
+
+Back on 2.6.20 - here is some output from the working driver.
+
+There is actually no difference in dmesg:
+-------------------------8<---------------------------
+IT8212: IDE controller at PCI slot 0000:00:09.0
+ACPI: PCI Interrupt 0000:00:09.0[A] -> GSI 17 (level, low) -> IRQ 18
+IT8212: chipset revision 17
+it821x: controller in smart mode.
+IT8212: 100% native mode on irq 18
+    ide2: BM-DMA at 0xdc00-0xdc07, BIOS settings: hde:pio, hdf:pio
+    ide3: BM-DMA at 0xdc08-0xdc0f, BIOS settings: hdg:pio, hdh:pio
+Probing IDE interface ide2...
+hde: SAMSUNG SP2514N, ATA DISK drive
+hdf: Maxtor 6Y120L0, ATA DISK drive
+hde: Performing identify fixups.
+hdf: Performing identify fixups.
+ide2 at 0xec00-0xec07,0xe802 on irq 18
+hde: max request size: 128KiB
+hde: 488397168 sectors (250059 MB) w/8192KiB Cache, CHS=3D30401/255/63,
+BUG DMA OFF=20
+hde:hde: recal_intr: status=3D0x51 { DriveReady SeekComplete Error }=20
+hde:recal_intr: error=3D0x04 { DriveStatusError } ide: failed opcode was:
+unknown
+ hde1
+hdf: max request size: 128KiB
+hdf: 240121728 sectors (122942 MB) w/2048KiB Cache, CHS=3D65535/16/63,
+BUG DMA OFF=20
+hdf:hdf: recal_intr: status=3D0x51 { DriveReady SeekComplete Error }=20
+hdf:recal_intr: error=3D0x04 { DriveStatusError } ide: failed opcode was:
+unknown hdf1
+------------------------------>8-------------------------------
+
+But hdparm works:
+---------------
+# hdparm -d1 /dev/hde
+/dev/hde:
+ setting using_dma to 1 (on)
+ using_dma     =3D  1 (on)
+----------------
+# hdparm -tT /dev/hde
+
+/dev/hde:
+ Timing cached reads:   372 MB in  2.01 seconds =3D 185.17 MB/sec
+HDIO_DRIVE_CMD(null) (wait for flush complete) failed: Input/output
+error=20
+ Timing buffered disk reads:  124 MB in  3.01 seconds =3D  41.18 MB/sec
+HDIO_DRIVE_CMD(null) (wait for flush complete) failed: Input/output
+error
+----------------
+hdparm version is 7.3.
+DMA is enabled in the controller's BIOS, of course.
+
+Hope this helps a bit.
+
+Thanks,
+Thomas
+
+--Sig_XtfHJqE9jqSk2ze5SUwpe5U
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
+
+iD8DBQFGSZj8MQFfAqZTGfwRAr15AJ4xXNNO5jeDdZFf+FM8JPgNkB2rRwCgj1O/
+2G9zGW+A5QM+PE5owvqAtnU=
+=bV1V
+-----END PGP SIGNATURE-----
+
+--Sig_XtfHJqE9jqSk2ze5SUwpe5U--
