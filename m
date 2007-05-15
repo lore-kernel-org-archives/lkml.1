@@ -1,63 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbXEOXYR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbXEOXZ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759677AbXEOXYR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 19:24:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758816AbXEOXYE
+	id S1760023AbXEOXZ0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 19:25:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756428AbXEOXZN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 19:24:04 -0400
-Received: from mcr-smtp-001.bulldogdsl.com ([212.158.248.7]:1357 "EHLO
-	mcr-smtp-001.bulldogdsl.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758707AbXEOXYB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 19:24:01 -0400
-X-Spam-Abuse: Please report all spam/abuse matters to abuse@bulldogdsl.com
-From: Alistair John Strachan <s0348365@sms.ed.ac.uk>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] x86-64 highres/dyntick support 2.6.22-rc1-v4
-Date: Wed, 16 May 2007 00:23:55 +0100
-User-Agent: KMail/1.9.6
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Andi Kleen <ak@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <1178485128.31213.98.camel@localhost.localdomain> <200705142342.29994.s0348365@sms.ed.ac.uk> <1179217082.7074.47.camel@chaos>
-In-Reply-To: <1179217082.7074.47.camel@chaos>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200705160023.55899.s0348365@sms.ed.ac.uk>
+	Tue, 15 May 2007 19:25:13 -0400
+Received: from main.gmane.org ([80.91.229.2]:35315 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756431AbXEOXZM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 19:25:12 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: soruk@eridani.co.uk (Soruk)
+Subject: Re: MAINTAINERS update.
+Date: Tue, 15 May 2007 22:05:06 +0000 (UTC)
+Message-ID: <slrnf4kbkj.83c.soruk@zeskia.int.eridani.co.uk>
+References: <20070513230746.GA3607@redhat.com> <46479AFC.7020404@zytor.com> <20070513232953.GJ27604@redhat.com> <4647ACA5.7040901@zytor.com>
+X-Complaints-To: usenet@sea.gmane.org
+X-Gmane-NNTP-Posting-Host: eridanilinux.demon.co.uk
+User-Agent: slrn/0.9.6.4 (Linux)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 15 May 2007 09:18:02 Thomas Gleixner wrote:
-> I've uploaded a new version of the x86_64 highres/dyntick patches:
+On Sun, 13 May 2007 17:26:13 -0700, H. Peter Anvin <hpa@zytor.com> wrote:
+>Dave Jones wrote:
+>> 
+>> That previous entry of MAINTAINERS raised an eyebrow too.
+>> You, Eric, Andi, and Zach seem to have done more work on 'i386 BOOT CODE'
+>> in the last few months than I recall Riley doing, well.. since ages.
+>> Not to belittle whatever work he did, but perhaps his entry belongs
+>> more in CREDITS than MAINTAINERS.  It felt a little cheeky to be
+>> messing with someone elses entry though.  Riley?
+>> 
 >
-> http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-hig
->hres-v4.patch
->
-> Broken out version:
->
-> http://www.tglx.de/projects/hrtimers/2.6.22-rc1/linux-2.6.22-rc1-x86_64-hig
->hres-v4.patches.tar.bz2
->
-> Changes since last version:
->
-> - TSC calibration against PM-Timer
+>Riley passed away about a month ago (traffic accident.)
 
-Working fine now, thanks a lot. Great latencies on usleep() now too, just what 
-I was looking for.
+The news article I mentioned in my email is dated 15 December 2004.
 
-(BTW, with HRT (but not NO_HZ), does the HZ value have any effect on usleep() 
-(and friends) latencies?)
+(I don't often read the MAINTAINERS file, but happened to spot him still 
+listed there when I had a look recently.  I was in Riley's class at 
+university.)
+
+I hope this post makes it through, I'm posting via Gmane's NNTP server.
 
 -- 
-Cheers,
-Alistair.
+-- Michael "Soruk" McConnell         Eridani Star System
+   MailStripper - http://www.MailStripper.eu/ - SMTP spam filter
+   Mail Me Anywhere - http://www.MailMeAnywhere.com/ - Mobile email
 
-Final year Computer Science undergraduate.
-1F2 55 South Clerk Street, Edinburgh, UK.
