@@ -1,101 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758101AbXEOVkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758974AbXEOVmE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758101AbXEOVkf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755286AbXEOVk3
+	id S1758974AbXEOVmE (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:42:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755512AbXEOVlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:40:29 -0400
-Received: from dns.gtcocalcomp.com ([209.36.34.20]:25170 "EHLO
-	mdmailserv.gtcocalcomp.local" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755262AbXEOVk2 (ORCPT
+	Tue, 15 May 2007 17:41:55 -0400
+Received: from nz-out-0506.google.com ([64.233.162.225]:44970 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755466AbXEOVly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 17:40:28 -0400
-Subject: Re: [linux-usb-devel] Cannot find our GTCO USB Driver in
-	the	2.6.22-rc1 kernel
-From: Jeremy Roberson <jroberson@gtcocalcomp.com>
-Reply-To: jroberson@gtcocalcomp.com
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Till Harbaum / Lists <lists@harbaum.org>, Greg KH <gregkh@suse.de>,
-       linux-usb-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
-In-Reply-To: <464A286B.1060406@oracle.com>
-References: <1176912010.6215.17.camel@EdgyEft.Home>
-	 <20070515111250.e869634b.randy.dunlap@oracle.com>
-	 <1179252727.3101.68.camel@EdgyEft.Home>
-	 <200705152038.53676.lists@harbaum.org>
-	 <1179255411.3101.79.camel@EdgyEft.Home>
-	 <d120d5000705151416v4dafa176h556d03d692170b39@mail.gmail.com>
-	 <1179264419.3101.135.camel@EdgyEft.Home>  <464A286B.1060406@oracle.com>
-Content-Type: text/plain
+	Tue, 15 May 2007 17:41:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=beta;
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=tAQF39F4w6hN2/R32Y/EclpOLV5tcRkK3gTWvC66u5XelQj318/UG8g876sYJu4o9Rw9EEon0/hpdbTAaUJ2kp5nvJjF2lHu5IuhuFvKZ9dntAOf7sB52DaY0qnHDpFWRGn+0zOW7u6mz+GJqbaOtyLoTm32hmtRcg6fjFjSU7Q=
+Message-ID: <6bffcb0e0705151441m727b337ej5a7d3a1473bd997e@mail.gmail.com>
+Date: Tue, 15 May 2007 23:41:53 +0200
+From: "Michal Piotrowski" <michal.k.k.piotrowski@gmail.com>
+To: "Thomas Meyer" <thomas.mey@web.de>
+Subject: Re: BUG: at include/linux/slub_def.h:89 kmalloc_index()
+Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
+In-Reply-To: <464A215D.3010701@web.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Organization: GTCO CalComp
-Date: Tue, 15 May 2007 14:40:25 -0700
-Message-Id: <1179265225.3101.139.camel@EdgyEft.Home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.10.1 
-X-OriginalArrivalTime: 15 May 2007 21:40:41.0504 (UTC) FILETIME=[AF66FA00:01C79739]
+Content-Disposition: inline
+References: <464A215D.3010701@web.de>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-15 at 14:38 -0700, Randy Dunlap wrote:
-> Jeremy Roberson wrote:
-> > What is Top Posting?
-> 
-> Yes, like that or this:
-> 
-> 
-> A: http://en.wikipedia.org/wiki/Top_post
-> Q: Were do I find info about this thing called top-posting?
-> A: Because it messes up the order in which people normally read text.
-> Q: Why is top-posting such a bad thing?
-> A: Top-posting.
-> Q: What is the most annoying thing in e-mail?
-> 
-> A: No.
-> Q: Should I include quotations after my reply?
-> 
-> 
-> or read http://www.html-faq.com/etiquette/?toppost (e.g.)
-> or http://mailformat.dan.info/quoting/top-posting.html
-> 
-> > On Tue, 2007-05-15 at 17:16 -0400, Dmitry Torokhov wrote:
-> >> Hi,
-> >>
-> >> On 5/15/07, Jeremy Roberson <jroberson@gtcocalcomp.com> wrote:
-> >>> A very good question.  Had it been, I probably would not have missed it.
-> >>>
-> >>> On Tue, 2007-05-15 at 20:38 +0200, Till Harbaum / Lists wrote:
-> >>>> Hi,
-> >>>>
-> >>>> which leads to the question: Why is the "Enable Tablets" entry not
-> >>>> inside the tablets menu. This way it's more obvious that it's disabled
-> >>>> if it's the only entry in the menu. Plus the parent menu gets
-> >>>> cleaned up as well.
-> >>>>
-> >> Because some people want to be able to turn off entire set of options
-> >> without having to descend into submenu.
-> >>
-> 
-> 
+Hi Thomas,
 
-Gotcha.  Thanks.
+On 15/05/07, Thomas Meyer <thomas.mey@web.de> wrote:
+> head: f653c34dd3d8bde2c918316fd5ba2e2c4f95afcf
+>
+> May 15 23:02:07 [kernel] BUG: at include/linux/slub_def.h:89 kmalloc_index()
+> May 15 23:02:07 [kernel]  [<c015fc10>] get_slab+0x43/0x1cc
+> May 15 23:02:07 [kernel]  [<f934b101>] usb_get_configuration+0x93f/0xd06
+> [usbcore]
+> May 15 23:02:07 [kernel]  [<c0160d82>] __kmalloc_track_caller+0x10/0x62
+> May 15 23:02:07 [kernel]  [<c014ea37>] __kzalloc+0x11/0x3a
+> May 15 23:02:07 [kernel]  [<f934b101>] usb_get_configuration+0x93f/0xd06
+> [usbcore]
+> May 15 23:02:07 [kernel]  [<f934854f>] usb_control_msg+0xcf/0xd9 [usbcore]
+> May 15 23:02:07 [kernel]  [<f9348dff>] usb_get_descriptor+0x85/0xaf
+> [usbcore]
+> May 15 23:02:07 [kernel]  [<f93495ca>]
+> usb_get_device_descriptor+0x72/0x7c [usbcore]
+> May 15 23:02:07 [kernel]  [<f9344375>] hub_port_init+0x542/0x54c [usbcore]
+> May 15 23:02:07 [kernel]  [<f9344c44>] usb_new_device+0x17/0xed [usbcore]
+> May 15 23:02:07 [kernel]  [<f934581a>] hub_thread+0x6fb/0xa67 [usbcore]
+> May 15 23:02:07 [kernel]  [<c02c783c>] __sched_text_start+0x6cc/0x782
+> May 15 23:02:07 [kernel]  [<c012f7b5>] autoremove_wake_function+0x0/0x35
+> May 15 23:02:07 [kernel]  [<f934511f>] hub_thread+0x0/0xa67 [usbcore]
+> May 15 23:02:07 [kernel]  [<c012f6ea>] kthread+0x3b/0x61
+> May 15 23:02:07 [kernel]  [<c012f6af>] kthread+0x0/0x61
+> May 15 23:02:07 [kernel]  [<c0104917>] kernel_thread_helper+0x7/0x10
+> May 15 23:02:07 [kernel]  =======================
+
+Known issue
+http://bugzilla.kernel.org/show_bug.cgi?id=8476
+
+Thanks for the report.
+
+Regards,
+Michal
 
 -- 
-Jeremy Roberson
-Software Engineer
-Interwrite Learning
-
-"Do not go gentle into that good night,
-Old age should burn and rave at the 
-close of the day; Rage, rage against the
-dying of the light."
-- Dylan Thomas
-
-Note: The information contained within this electronic transmission is
-intended by Interwrite Learning for the use of the named individual or
-entity to which it is directed and contains confidential and/or
-privileged information.  It is not intended for transmission or receipt
-by anyone other than the named addressee or entity.  It should not be
-forwarded or copied to any unauthorized persons.  If you have received
-this is error, please remove it from your system, without copying or
-forwarding it and notify the sender by return email. Thank you.
+Michal K. K. Piotrowski
+Kernel Monkeys
+(http://kernel.wikidot.com/start)
