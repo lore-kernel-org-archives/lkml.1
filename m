@@ -1,60 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S965691AbXEOGTu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761787AbXEOGVX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S965691AbXEOGTu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 02:19:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761673AbXEOGTl
+	id S1761787AbXEOGVX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 02:21:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759441AbXEOGVQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 02:19:41 -0400
-Received: from hqemgate01.nvidia.com ([216.228.112.170]:5158 "EHLO
-	HQEMGATE01.nvidia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761637AbXEOGTk convert rfc822-to-8bit (ORCPT
+	Tue, 15 May 2007 02:21:16 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:49162 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759333AbXEOGVP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 02:19:40 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: 8BIT
-Subject: [PATCH] drivers/ata: correct a wrong free function for sata_nv driver
-Date: Tue, 15 May 2007 14:22:42 +0800
-Message-ID: <15F501D1A78BD343BE8F4D8DB854566B13CD8F45@hkemmail01.nvidia.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] drivers/ata: correct a wrong free function for sata_nv driver
-Thread-Index: AceWuXHfxAB1ZFdkQAqnYSvlrhm3Eg==
-From: "Peer Chen" <pchen@nvidia.com>
-To: <linux-kernel@vger.kernel.org>
-Cc: <jeff@garzik.org>, <akpm@linux-foundation.org>
-X-OriginalArrivalTime: 15 May 2007 06:19:38.0965 (UTC) FILETIME=[045CB850:01C796B9]
+	Tue, 15 May 2007 02:21:15 -0400
+Date: Tue, 15 May 2007 11:58:37 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: Badari Pulavarty <pbadari@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
+       Jan Blunck <j.blunck@tu-harburg.de>
+Subject: Re: [RFC][PATCH  5/14] Introduce union stack
+Message-ID: <20070515062837.GB3465@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20070514093722.GB4139@in.ibm.com> <20070514094047.GG4139@in.ibm.com> <1179182457.2836.92.camel@dyn9047017100.beaverton.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1179182457.2836.92.camel@dyn9047017100.beaverton.ibm.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-For sata_nv driver in kernel 2.6.21 onward, Inside nv_init_one(),use
-'hpriv = devm_kzalloc(&pdev->dev, sizeof(*hpriv), GFP_KERNEL);' but
-using the kfree(hpriv) to free that data struction in nv_remove_one(),
-which will cause system hang when removing the sata_nv module.
+On Mon, May 14, 2007 at 03:40:57PM -0700, Badari Pulavarty wrote:
+> On Mon, 2007-05-14 at 15:10 +0530, Bharata B Rao wrote:
+< snip >
+> > +
+> > +/* Shouldn't be called with last reference to union_info */
+> > +static inline void union_put_and_unlock(struct union_info *uinfo)
+> > +{
+> > +	union_put(uinfo);
+> > +	__union_unlock(&uinfo->u_mutex);
+> 	               ^^^^^^^^^^^^^^^^^^^
+> 
+> It should be
+> 	
+> 	__union_unlock(uinfo);
+> 
 
-Change the 'kfree()' function to 'devm_kfree' will fix this bug.
+True, thanks for pointing this out. Will fix this.
 
-The patch base on kernel 2.6.22-rc1.
-
-Signed-off-by: Peer Chen <pchen@nvidia.com>
-=====================================
---- linux-2.6.22-rc1/drivers/ata/sata_nv.c.orig
-+++ linux-2.6.22-rc1/drivers/ata/sata_nv.c
-@@ -1619,7 +1619,7 @@ static void nv_remove_one (struct pci_de
- 	struct nv_host_priv *hpriv = host->private_data;
- 
- 	ata_pci_remove_one(pdev);
--	kfree(hpriv);
-+	devm_kfree(&pci_dev->dev, hpriv);
- }
- 
- #ifdef CONFIG_PM
------------------------------------------------------------------------------------
-This email message is for the sole use of the intended recipient(s) and may contain
-confidential information.  Any unauthorized review, use, disclosure or distribution
-is prohibited.  If you are not the intended recipient, please contact the sender by
-reply email and destroy all copies of the original message.
------------------------------------------------------------------------------------
+Regards,
+Bharata.
