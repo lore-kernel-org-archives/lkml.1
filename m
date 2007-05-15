@@ -1,78 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933332AbXEOIoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759810AbXEOIsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933332AbXEOIoy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 04:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbXEOIor
+	id S1759810AbXEOIsA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 04:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbXEOIry
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 04:44:47 -0400
-Received: from py-out-1112.google.com ([64.233.166.179]:64072 "EHLO
-	py-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757893AbXEOIoq (ORCPT
+	Tue, 15 May 2007 04:47:54 -0400
+Received: from nz-out-0506.google.com ([64.233.162.239]:56956 "EHLO
+	nz-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757649AbXEOIry (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 04:44:46 -0400
+	Tue, 15 May 2007 04:47:54 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=beta;
-        h=received:date:from:to:cc:subject:message-id:reply-to:mail-followup-to:references:mime-version:content-type:content-disposition:in-reply-to:user-agent;
-        b=DKZADDYjqwWwBbe374Tl5LqJ/96gw+oaqEVOm16Pu7TXkSNYDm4PTzjZaQPokcZXYcps4ujkUpslw2VMtTfGri89rWbpE0Zoy7NsYqKMj419qyiTvF/O2inQRyRT4BobSJc2Uhx9QtPwabW7dgpxtnkG48JyosHgoSPxPZReutw=
-Date: Tue, 15 May 2007 16:50:16 +0800
-From: WANG Cong <xiyou.wangcong@gmail.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de, akpm@osdl.org
-Subject: Re: __must_check (stir the pot :-))
-Message-ID: <20070515085016.GB3838@localhost.localdomain>
-Reply-To: WANG Cong <xiyou.wangcong@gmail.com>
-Mail-Followup-To: Stephen Rothwell <sfr@canb.auug.org.au>,
-	LKML <linux-kernel@vger.kernel.org>, gregkh@suse.de, akpm@osdl.org
-References: <20070515173146.505952d1.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
+        b=QA2qsNeSk1duA7KrK0k33Q7pHoEghzkOn1T2iy+1pnJPzfcx/eXsWVHPhHOEOmbe5oJH82HQiQLtXmo5ugwUWXLnCoIQmnFRf6JhGgi4hWCv/rbBDPOVaUe6iZFuCFHDDUJRnSVMi2PgYccewS4K1zXWB5AV9YesjHLi1/GCXd8=
+Message-ID: <38b2ab8a0705150147s4ce72914qfa30d543ed8a4839@mail.gmail.com>
+Date: Tue, 15 May 2007 10:47:52 +0200
+From: "Francis Moreau" <francis.moro@gmail.com>
+To: tglx@linutronix.de
+Subject: Re: clockevent questions
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1179001391.22481.216.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20070515173146.505952d1.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.4.2.1i
+References: <38b2ab8a0705120754l281f54eevd1e91e2f01fff6f2@mail.gmail.com>
+	 <1178982892.22481.183.camel@localhost.localdomain>
+	 <38b2ab8a0705121313k37be467cy55402b490101ac9c@mail.gmail.com>
+	 <1179001391.22481.216.camel@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 15, 2007 at 05:31:46PM +1000, Stephen Rothwell wrote:
->So I am looking at "fixing" some of the warning produced by __must_check
->but then I see (things like):
+Thomas,
+
+On 5/12/07, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Well, it ends up in hrtimer_interrupt() and the code there finds out,
+> that the next timer is not due right now, so it simply requests the same
+> (absolute) time event again, which is processed by the clock events code
+> and eventually limited to the max delta of the device again.
 >
->drivers/base/core.c: In function 'device_add':
->drivers/base/core.c:714: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
->drivers/base/core.c:719: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
->drivers/base/core.c:722: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
->drivers/base/core.c:728: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
->drivers/base/core.c: In function 'device_rename':
->drivers/base/core.c:1187: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
->drivers/base/core.c:1197: warning: ignoring return value of 'sysfs_create_link', declared with attribute warn_unused_result
->
->and things like this in drivers/base/sys.c:
->
->int sysdev_create_file(struct sys_device * s, struct sysdev_attribute * a)
->{
->        return sysfs_create_file(&s->kobj, &a->attr);
->}
->
->where sysfs_create_file() is marked __must_check and sysdev_create_file()
->isn't.
->
->So the questions come to mind:  Do we really care if our core
->infrastructure doesn't?  Can we care if the core infrastructure doesn't
->propogate the error returns?
->
->Flame away, I am prepared to ignore all opinions :-)
+
+My timer is finally using the clockevent subsystem. Below is the
+output of '/proc/timer_list':
+
+cat /proc/timer_list
+Timer List Version: v0.3
+HRTIMER_MAX_CLOCK_BASES: 2
+now at 64696544360531 nsecs
+
+cpu: 0
+ clock 0:
+  .index:      0
+  .resolution: 1 nsecs
+  .get_time:   ktime_get_real
+  .offset:     1179151153000000000 nsecs
+active timers:
+ clock 1:
+  .index:      1
+  .resolution: 1 nsecs
+  .get_time:   ktime_get
+  .offset:     0 nsecs
+active timers:
+ #0: <c03fde10>, tick_sched_timer, S:01
+ # expires at 64696546875000 nsecs [in 2514469 nsecs]
+  .expires_next   : 64696546875000 nsecs
+  .hres_active    : 1
+  .nr_events      : 16562163
+  .nohz_mode      : 0
+  .idle_tick      : 0 nsecs
+  .tick_stopped   : 0
+  .idle_jiffies   : 0
+  .idle_calls     : 0
+  .idle_sleeps    : 0
+  .idle_entrytime : 0 nsecs
+  .idle_sleeptime : 0 nsecs
+  .last_jiffies   : 0
+  .next_jiffies   : 0
+  .idle_expires   : 0 nsecs
+jiffies: 16485515
 
 
-Hi!
+Tick Device: mode:     1
+Clock Event Device: hrt
+ max_delta_ns:   2147483647
+ min_delta_ns:   1000
+ mult:           206158430
+ shift:          32
+ mode:           3
+ next_event:     64696546875000 nsecs
+ set_next_event: hrt_next_event
+ set_mode:       hrt_timer_setup
+ event_handler:  hrtimer_interrupt
 
-I had noticed these warnings yet and had tried to fix them. But these ones are not relatively easy to fix, since they are nested in some complex contexts.
+My question is about the clock resolution field which is equal to 1ns.
+How is this possible since my timer's frequency is only 100Mhz ?
 
-Can we leave this job to Greg? (Add some CCs below.)
+My 2 cents, it looks like some tabs are missing when printing the list
+of hrtimers of each clock...
 
-CC: gregkh@suse.de
-CC: akpm@osdl.org
-
-
-Regards!
-
-WANG Cong
-
+Thanks
+-- 
+Francis
