@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbXEOH76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbXEOIIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760740AbXEOH76 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 03:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759564AbXEOH7o
+	id S1758774AbXEOIIX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 04:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754812AbXEOIIK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 03:59:44 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:40151 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759447AbXEOH7n (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 03:59:43 -0400
-X-Originating-Ip: 72.143.66.196
-Date: Tue, 15 May 2007 03:59:03 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@mindspring.com>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: why both "__pure" and "__attribute_pure__"?
-Message-ID: <Pine.LNX.4.64.0705150353590.19109@localhost.localdomain>
+	Tue, 15 May 2007 04:08:10 -0400
+Received: from mailer.gwdg.de ([134.76.10.26]:46116 "EHLO mailer.gwdg.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754585AbXEOIII (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 04:08:08 -0400
+Date: Tue, 15 May 2007 10:05:51 +0200 (MEST)
+From: Jan Engelhardt <jengelh@linux01.gwdg.de>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+cc: Adrian Bunk <bunk@stusta.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       trivial@kernel.org
+Subject: Re: [PATCH] Convert files to UTF-8 and some cleanups
+In-Reply-To: <4648E0AE.6010709@s5r6.in-berlin.de>
+Message-ID: <Pine.LNX.4.61.0705151005330.9570@yvahk01.tjqt.qr>
+References: <4647A52A.8000709@post.pl> <4647A868.4070201@post.pl>
+ <46486EAE.3060009@s5r6.in-berlin.de> <Pine.LNX.4.61.0705141947390.9570@yvahk01.tjqt.qr>
+ <tkrat.0d89f95b66d8bb2c@s5r6.in-berlin.de> <Pine.LNX.4.61.0705142209090.9570@yvahk01.tjqt.qr>
+ <20070514202509.GA1515@stusta.de> <Pine.LNX.4.61.0705142235320.9570@yvahk01.tjqt.qr>
+ <20070514204107.GB1515@stusta.de> <Pine.LNX.4.61.0705142258120.9570@yvahk01.tjqt.qr>
+ <4648E0AE.6010709@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-16.8, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -15.00, INIT_RECVD_OUR_AUTH -20.00,
-	RCVD_IN_SORBS_DUL 20.00)
-X-Net-Direct-Inc-MailScanner-From: rpjday@mindspring.com
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Spam-Report: Content analysis: 0.0 points, 6.0 required
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  is there a reason that compiler-gcc.h defines both:
+On May 15 2007 00:20, Stefan Richter wrote:
+>
+>You forgot this in the plain-text part of your mail:
 
-#define __pure                          __attribute__((pure))
-#define __attribute_pure__              __attribute__((pure))
+Well thanks for pasting :)
 
-one would think that the shorter form would be preferable to go along
-with the other short forms defined in that header file, but a quick
-tree scan shows that the longer form is used exclusively (although
-still not in what you'd call overwhelming numbers):
+>
+>[quote]
+>
+>  * Convert files to UTF-8.
+>
+>  * Also correct some people's names
+>    (one example is Eißfeldt, which was found in a source file.
+>    Given that the author used an ß at all in a source file
+>    indicates that the real name has in fact a 'ß' and not an 'ss',
+>    which is commonly used as a substitute for 'ß' when limited to
+>    7bit.)
+>
+>  * Correct town names (Goettingen -> Göttingen)
+>
+>  * Update Eberhard Mönkeberg's address (http://lkml.org/lkml/2007/1/8/313)
+>
+>[...]
 
-$ grep -rw __attribute_pure__ * | wc -l
-17
-$ grep -rw __pure * | wc -l
-1
-
-  is there any reason not to just change those few instances to the
-short form?
-
-rday
+	Jan
 -- 
-========================================================================
-Robert P. J. Day
-Linux Consulting, Training and Annoying Kernel Pedantry
-Waterloo, Ontario, CANADA
-
-http://fsdev.net/wiki/index.php?title=Main_Page
-========================================================================
