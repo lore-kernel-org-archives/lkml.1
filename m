@@ -1,81 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761810AbXEOEtZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761508AbXEOEyh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761810AbXEOEtZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 00:49:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758006AbXEOEtS
+	id S1761508AbXEOEyh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 00:54:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756318AbXEOEy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 00:49:18 -0400
-Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:45018
-	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757628AbXEOEtQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 00:49:16 -0400
-From: Rob Landley <rob@landley.net>
-To: Dave Jones <davej@redhat.com>
-Subject: Re: tracking down disk spinups.
-Date: Tue, 15 May 2007 00:49:06 -0400
-User-Agent: KMail/1.9.1
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>
-References: <20070514185734.GM27604@redhat.com> <200705141628.35617.rob@landley.net> <20070514204651.GA7242@redhat.com>
-In-Reply-To: <20070514204651.GA7242@redhat.com>
+	Tue, 15 May 2007 00:54:28 -0400
+Received: from koto.vergenet.net ([210.128.90.7]:56647 "EHLO koto.vergenet.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755723AbXEOEy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 00:54:27 -0400
+Date: Tue, 15 May 2007 13:54:23 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, Russell King <rmk@arm.linux.org.uk>
+Subject: Re: [ARM] Fix hard_smp_processor_id compile error
+Message-ID: <20070515045422.GD13708@verge.net.au>
+References: <20070515022014.CC2A44F910@tabatha.lab.ultramonkey.org> <1179197981.4519.2.camel@sebastian.intellilink.co.jp> <20070514214818.16b36610.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200705150049.06974.rob@landley.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20070514214818.16b36610.akpm@linux-foundation.org>
+User-Agent: mutt-ng/devel-r804 (Debian)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 14 May 2007 4:46 pm, Dave Jones wrote:
-> On Mon, May 14, 2007 at 04:28:35PM -0400, Rob Landley wrote:
->  > On Monday 14 May 2007 2:57 pm, Dave Jones wrote:
->  > > Why did the kernel ignore what I told it to do ?
->  > > I'm sure it thinks it knows better than me for a reason, but
->  > > I'd like to know what it is.
->  > 
->  > Remount doesn't switch filesystem drivers, it tells the existing 
-filesystem 
->  > driver to accept new flags and/or a new option string.
+On Mon, May 14, 2007 at 09:48:18PM -0700, Andrew Morton wrote:
+> On Tue, 15 May 2007 11:59:41 +0900 Fernando Luis Vázquez Cao <fernando@oss.ntt.co.jp> wrote:
 > 
-> yes, I had misinterpreted what 'remount' did. I thought behind the scenes
-> it actually did a umount/mount.
-
-I implemented the BusyBox mount command last year.  (Well, rewrote three times 
-until just about none of the old code was left.)  Getting remount to work 
-right is a monster headache.  (The new flags _replace_ the old flags, not 
-delta against them, so you have to parse /etc/mtab (or /proc/mounts), read 
-the old flags out of that, mask them yourself, and supply them back in.  And 
-of course, not all of them are flags, some remain strings, but you can't keep 
-strings you turned into flags because the driver will barf that it's an 
-unrecognized string option...  Headache.  And don't get me started on vfat 
-spitting back string options from /proc/mounts that are THE DEFAULT VALUES...  
-Grrr.  I'll stop now.)
-
-You can always umount/mount yourself.
-
->  > To switch drivers you have to umount the old sucker and mount the new 
-one.  
->  > (The idea of handing off consistent cache data from one mounted 
-filesystem 
->  > driver to another...  Ouch.)
+> > On Tue, 2007-05-15 at 11:18 +0900, Simon Horman wrote: 
+> > > "Remove hardcoding of hard_smp_processor_id on UP systems",
+> > > 2f4dfe206a2fc07099dfad77a8ea2f4b4ae2140f in Linus' tree, moved
+> > > the definition of hard_smp_processor_id linux/smp.h to asm/smp.h
+> > > for UP systems. This causes a regression on ARM as the definition
+> > > was not added to asm-arm/smp.h.
+> > Hi Simon!
+> > 
+> > Thank you for catching and fixing these compile errors. I should install
+> > a cross-compiler ASAP.
 > 
-> a umount would purge the cache, but that's irrelevant given it doesn't
-> work that way.
-> 
-> Anyways, I rebooted after s/ext3/ext2/ on my fstab, and found things
-> hadn't really got any more obvious what was going on.
-> Instead of 'kjournald' writing stuff out, now it's 'pdflush'.
-> 
-> *has sudden brainwave*
-> 
-> Ahh, it's doing atime updates. Duh.
+> Mine are at http://userweb.kernel.org/~akpm/cross-compilers/
 
-I had to add MS_SILENT (1<<15) to the default mount options for busybox 
-(because otherwise the kernel got log message diarrhea).  I was seriously 
-tempted to add MS_NOATIME to that, but didn't.
+Do you have / know of tools to create a set of configs for testing?
+What I am thinking of is something that takes the default configs,
+then toggles SMP, PREEMT and stuff like that, testing all the
+permutations.
 
-I should write up a good "mount" spec, from the kernel's point of view.  
-(There isn't one.  I looked.)
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
 
-Rob
