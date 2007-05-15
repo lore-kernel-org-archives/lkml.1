@@ -1,104 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760100AbXEOPm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760293AbXEOPrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760100AbXEOPm1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 11:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757339AbXEOPmU
+	id S1760293AbXEOPrg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 11:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757459AbXEOPr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 11:42:20 -0400
-Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:59259 "EHLO
-	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754985AbXEOPmT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 11:42:19 -0400
-Date: Wed, 16 May 2007 00:42:08 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Jan Engelhardt <jengelh@linux01.gwdg.de>, linux-acpi@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       sam@ravnborg.org
-Subject: Re: Fwd: Re: Linux 2.6.22-rc1
-Message-ID: <20070515154208.GJ5043@inferi.kami.home>
-References: <Pine.LNX.4.61.0705131123280.9570@yvahk01.tjqt.qr> <20070514015541.GB4800@inferi.kami.home> <Pine.LNX.4.61.0705140742350.9570@yvahk01.tjqt.qr> <20070514104546.10a4368f.randy.dunlap@oracle.com>
+	Tue, 15 May 2007 11:47:29 -0400
+Received: from wasp.net.au ([203.190.192.17]:57831 "EHLO wasp.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756263AbXEOPr3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 11:47:29 -0400
+Message-ID: <4649D60C.7020101@wasp.net.au>
+Date: Tue, 15 May 2007 19:47:24 +0400
+From: Brad Campbell <brad@wasp.net.au>
+User-Agent: Thunderbird 1.5.0.10 (X11/20070306)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514104546.10a4368f.randy.dunlap@oracle.com>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.21-rc7-mm2-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Paolo Ciarrocchi <paolo.ciarrocchi@gmail.com>
+CC: Con Kolivas <kernel@kolivas.org>, linux-kernel@vger.kernel.org,
+       ck@vds.kolivas.org
+Subject: Re: Standalone swap prefetch patch for mainline
+References: <200705141210.43614.kernel@kolivas.org>	 <4649C789.6050305@wasp.net.au> <4d8e3fd30705150818g1755b441w536763d0902ca3cf@mail.gmail.com>
+In-Reply-To: <4d8e3fd30705150818g1755b441w536763d0902ca3cf@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 14, 2007 at 10:45:46AM -0700, Randy Dunlap wrote:
-> On Mon, 14 May 2007 07:49:31 +0200 (MEST) Jan Engelhardt wrote:
-> 
-> > 
-> > On May 14 2007 10:55, Mattia Dongili wrote:
-> > >On Sun, May 13, 2007 at 11:27:31AM +0200, Jan Engelhardt wrote:
-> > >> On May 12 2007 20:20, Linus Torvalds wrote:
-> > >> >
-> > >> >Ok, the merge window has closed, and 2.6.22-rc1 is out there.
-> > >> 
-> > >> I have hit a randconfig compile failure. .config attached.
-> > >> 
-> > >>   LD      .tmp_vmlinux1
-> > >> drivers/built-in.o: In function `acpi_bus_generate_event':
-> > >> (.text+0x233f7): undefined reference to `event_is_open'
-> > >> drivers/built-in.o: In function `acpi_bus_get_power':
-> > >> (.text+0x236ad): undefined reference to `acpi_power_get_inferred_state'
-> > >> drivers/built-in.o: In function `acpi_bus_set_power':
-> > >> (.text+0x237c3): undefined reference to `acpi_power_transition'
-> > >> drivers/built-in.o: In function `acpi_bus_set_power':
-> > >> (.text+0x23835): undefined reference to `acpi_power_transition'
-> > >> drivers/built-in.o: In function `sony_pic_fanspeed_store':
-> > >> sony-laptop.c:(.text+0x91930): undefined reference to `ec_write'
-> > >> drivers/built-in.o: In function `sony_pic_fanspeed_show':
-> > >> sony-laptop.c:(.text+0x9195d): undefined reference to `ec_read'
-> > >> make: *** [.tmp_vmlinux1] Error 1
-> > >
-> > >I actually can't reproduce it with your .config.
-> > 
-> > But I can. Did you try it on x86_64? From 2.6.22-rc1 [
-> > commit 39403865d2e4590802553370a56c9ab93131e4ee in /linux-2.6.git] ?
-> > 
-> > 	bzip2 -cd randconfig-1.bz2 >.config
-> > 	make -j8
-> 
-> Yes, build easily fails for me also.
+Paolo Ciarrocchi wrote:
 
-ok, as far as sony-laptop is concerned a dependency on ACPI_EC suffices
-to fix the link failure, but I guess that would just hide the real
-issue.
-IOW: why does ACPI_EC, ACPI_SYSTEM and ACPI_POWER are not set when the
-ACPI symbol is?
+> Brad, is it possible for you to do some more test with the latest
+> version of both SD and CFS  and post some more detailed feedbacks?
+> That would help a lot.
 
-Given the drivers/acpi/Kconfig portion
+Err.. Ok. I have the latest version of SD (that I know about). I could upgrade CFS, but unlike those 
+doing real scientific testing, I'm just getting a feel with my usual usage patterns (thunderbird, 
+firefox, openoffice, gimp, x-chat and gnome). I don't have any hard fast metrics I can measure 
+against really.
 
-  if ACPI
-  ...
-  config ACPI_EC
-          bool
-          default y
-          help
-            ...
-  
-  config ACPI_POWER
-          bool
-          default y
-  
-  config ACPI_SYSTEM
-          bool
-          default y
-          help
-	  ...
-  ...
-  endif
+Anything I post would be subjective at best. (And to be honest, once I get a stable and usable 
+kernel I tend to stick with it for a month or so as I don't reboot - suspend2 regularly goes 100 
+suspend/resume cycles to S3 between reboots for me)
 
-I'd expect the 3 symbols to be all set when CONFIG_ACPI=y.
-What am I overseeing?
+I'm a little more willing to experiment on my desktop box, but I really live from the laptop.
 
+Brad
 -- 
-mattia
-:wq!
+"Human beings, who are almost unique in having the ability
+to learn from the experience of others, are also remarkable
+for their apparent disinclination to do so." -- Douglas Adams
