@@ -1,91 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761082AbXEOMUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761631AbXEOMZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761082AbXEOMUz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 08:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758277AbXEOMUr
+	id S1761631AbXEOMZA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 08:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758082AbXEOMYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 08:20:47 -0400
-Received: from mail.gmx.net ([213.165.64.20]:50111 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757458AbXEOMUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 08:20:46 -0400
-X-Authenticated: #19452082
-X-Provags-ID: V01U2FsdGVkX1/go5kHK8/gSw8am1CIaB7ynPzmbc6wEMfKDbVYJF
-	NDRtbjNO5v+Bxw
-Date: Tue, 15 May 2007 14:20:39 +0200
-From: Thomas Kuther <gimpel@sonnenkinder.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: IT821x: no DMA since 2.6.21
-Message-ID: <20070515142039.2eca8927@SiRiUS.home>
-In-Reply-To: <20070515124836.1ce42b0f@the-village.bc.nu>
-References: <20070515125308.3a9f6442@SiRiUS.home>
-	<20070515123132.2e596d69@the-village.bc.nu>
-	<20070515133555.0111c063@SiRiUS.home>
-	<20070515124836.1ce42b0f@the-village.bc.nu>
-X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i686-pc-linux-gnu)
+	Tue, 15 May 2007 08:24:54 -0400
+Received: from verein.lst.de ([213.95.11.210]:60064 "EHLO mail.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756330AbXEOMYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 08:24:53 -0400
+Date: Tue, 15 May 2007 14:24:40 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: nate.diller@gmail.com, akpm@osdl.org, torvalds@osdl.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] deprecate memclear_highpage_flush deprecation warnings
+Message-ID: <20070515122440.GA8765@lst.de>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_yZcgU7TIMR7bTabJ/G8RS1w";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
-X-Y-GMX-Trusted: 0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: 0 () 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_yZcgU7TIMR7bTabJ/G8RS1w
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Recent builds get tons of warnings about memclear_highpage_flush
+beeing deprecated.  Turns out it's replaced by zero_user_page
+which takes an additional argument.
 
-On Di, 15.05.07 12:48 Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+Now folks, deprecated is for actual functionality going away, there
+is no need to mark the old name deprecated for such a trivial
+paramter change and rename.  This stuff should go to Linus in one
+patch that doesn't create utterly useless warnings and keeps around
+stale interfaces.
 
-> > I already tried pata_it821x and it failed to recognize the second
-> > harddisk hdf. I use the controller only for additional harddrives,
-> > no RAID, no cd-rom.
->=20
-> Logs from that would be most helpful as I am maintaining the
-> pata_it821x driver.
->=20
-> Alan
+Here's a patch to kill memclear_highpage_flush and convert the reaming
+user to make the build a littler more silent, it's more than noisy
+enough due to all the useless addition of __deprecated or __must_check
+to widely used functionality and gcc stupid false positives.
 
-Okay, I removed the IDE one and tried your libata driver again.
 
-What I maybe just did wrong on my first try, was loading it without any
-parameters, as:
---------------------------
-pata_it821x: Unknown parameter `it8212.noraid'
-pata_it821x: Unknown parameter `it8212_noraid'
---------------------------
-Loading without any parameters on this kernel resulted in:
---------------------------
-pata_it821x: controller in smart mode.
-ACPI: PCI Interrupt 0000:00:09.0[A] -> GSI 17 (level, low) -> IRQ 18
-scsi3 : pata_it821x
-scsi4 : pata_it821x
-ata3: PATA max MWDMA2 cmd 0x0001ec00 ctl 0x0001e802 bmdma 0x0001dc00
-irq 0=20
-ata4: PATA max MWDMA2 cmd 0x0001e400 ctl 0x0001e002 bmdma 0x0001dc08
-irq 0=20
-ata3: SRST failed (errno=3D-16)
-ata3: SRST failed (errno=3D-16)
-ata3: SRST failed (errno=3D-16)
-ata3: SRST failed (errno=3D-16)
-ata3: reset failed, giving up
----------------------------
+Signed-off-by: Christoph Hellwig <hch@lst.de>
 
-Now I tried with "noraid=3D1", and now all seems to be working fine.
+Index: linux-2.6/fs/nfs/read.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/read.c	2007-05-15 14:19:59.000000000 +0200
++++ linux-2.6/fs/nfs/read.c	2007-05-15 14:21:24.000000000 +0200
+@@ -79,7 +79,7 @@ void nfs_readdata_release(void *data)
+ static
+ int nfs_return_empty_page(struct page *page)
+ {
+-	memclear_highpage_flush(page, 0, PAGE_CACHE_SIZE);
++	zero_user_page(page, 0, PAGE_CACHE_SIZE, KM_USER0);
+ 	SetPageUptodate(page);
+ 	unlock_page(page);
+ 	return 0;
+@@ -103,10 +103,10 @@ static void nfs_readpage_truncate_uninit
+ 	pglen = PAGE_CACHE_SIZE - base;
+ 	for (;;) {
+ 		if (remainder <= pglen) {
+-			memclear_highpage_flush(*pages, base, remainder);
++			zero_user_page(*pages, base, remainder, KM_USER0);
+ 			break;
+ 		}
+-		memclear_highpage_flush(*pages, base, pglen);
++		zero_user_page(*pages, base, pglen, KM_USER0);
+ 		pages++;
+ 		remainder -= pglen;
+ 		pglen = PAGE_CACHE_SIZE;
+@@ -130,7 +130,7 @@ static int nfs_readpage_async(struct nfs
+ 		return PTR_ERR(new);
+ 	}
+ 	if (len < PAGE_CACHE_SIZE)
+-		memclear_highpage_flush(page, len, PAGE_CACHE_SIZE - len);
++		zero_user_page(page, len, PAGE_CACHE_SIZE - len, KM_USER0);
+ 
+ 	nfs_list_add_request(new, &one_request);
+ 	if (NFS_SERVER(inode)->rsize < PAGE_CACHE_SIZE)
+@@ -532,7 +532,7 @@ readpage_async_filler(void *data, struct
+ 			return PTR_ERR(new);
+ 	}
+ 	if (len < PAGE_CACHE_SIZE)
+-		memclear_highpage_flush(page, len, PAGE_CACHE_SIZE - len);
++		zero_user_page(page, len, PAGE_CACHE_SIZE - len, KM_USER0);
+ 	nfs_pageio_add_request(desc->pgio, new);
+ 	return 0;
+ }
+Index: linux-2.6/fs/nfs/write.c
+===================================================================
+--- linux-2.6.orig/fs/nfs/write.c	2007-05-15 14:19:59.000000000 +0200
++++ linux-2.6/fs/nfs/write.c	2007-05-15 14:21:21.000000000 +0200
+@@ -168,7 +168,7 @@ static void nfs_mark_uptodate(struct pag
+ 	if (count != nfs_page_length(page))
+ 		return;
+ 	if (count != PAGE_CACHE_SIZE)
+-		memclear_highpage_flush(page, count, PAGE_CACHE_SIZE - count);
++		zero_user_page(page, count, PAGE_CACHE_SIZE - count, KM_USER0);
+ 	SetPageUptodate(page);
+ }
+ 
+Index: linux-2.6/fs/xfs/linux-2.6/xfs_lrw.c
+===================================================================
+--- linux-2.6.orig/fs/xfs/linux-2.6/xfs_lrw.c	2007-05-15 14:19:59.000000000 +0200
++++ linux-2.6/fs/xfs/linux-2.6/xfs_lrw.c	2007-05-15 14:21:27.000000000 +0200
+@@ -159,7 +159,7 @@ xfs_iozero(
+ 		if (status)
+ 			goto unlock;
+ 
+-		memclear_highpage_flush(page, offset, bytes);
++		zero_user_page(page, offset, bytes, KM_USER0);
+ 
+ 		status = mapping->a_ops->commit_write(NULL, page, offset,
+ 							offset + bytes);
+Index: linux-2.6/include/linux/highmem.h
+===================================================================
+--- linux-2.6.orig/include/linux/highmem.h	2007-05-15 14:19:59.000000000 +0200
++++ linux-2.6/include/linux/highmem.h	2007-05-15 14:21:12.000000000 +0200
+@@ -110,12 +110,6 @@ static inline void clear_highpage(struct
+ 		kunmap_atomic(kaddr, (km_type));		\
+ 	} while (0)
+ 
+-static inline void __deprecated memclear_highpage_flush(struct page *page,
+-			unsigned int offset, unsigned int size)
+-{
+-	zero_user_page(page, offset, size, KM_USER0);
+-}
+-
+ #ifndef __HAVE_ARCH_COPY_USER_HIGHPAGE
+ 
+ static inline void copy_user_highpage(struct page *to, struct page *from,
 
-Thanks very much!
-Thomas
-
---Sig_yZcgU7TIMR7bTabJ/G8RS1w
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.3 (GNU/Linux)
-
-iD8DBQFGSaWbMQFfAqZTGfwRAg0pAJ9qmezuLHvkdtMYs4DuhszAmK8y1gCfa+gT
-CDC2YvBYybJLReGEccjH5Hg=
-=bIHK
------END PGP SIGNATURE-----
-
---Sig_yZcgU7TIMR7bTabJ/G8RS1w--
