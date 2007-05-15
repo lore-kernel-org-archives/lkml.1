@@ -1,59 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761425AbXEOI6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbXEOJIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761425AbXEOI6V (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 04:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758387AbXEOI6F
+	id S1760703AbXEOJIU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 05:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbXEOJIN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 04:58:05 -0400
-Received: from an-out-0708.google.com ([209.85.132.240]:41360 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757883AbXEOI6D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 04:58:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=imbCfKbnVmfaWsiho7/rGPgk/HUt38B9mOlTDwjDSJhsYiorVCPJ5/8qKMpe5VOAU+vN1sB5enepI2FPU1w29cSMLxtT0nYcLuEXyHeDuO1qXoYgjMbYg8aGrcWE4FaLpiL0FtKOiUspUuOnOkBlDD7/UMwL2oofhjz0bDjAJRg=
-Message-ID: <a2ebde260705150158m45286bd6u5007be863b6ff791@mail.gmail.com>
-Date: Tue, 15 May 2007 16:58:02 +0800
-From: "Dong Feng" <middle.fengdong@gmail.com>
-To: "Learning Linux" <learninglinux4@gmail.com>
-Subject: Re: Why can't we sleep in an ISR?
-Cc: "pradeep singh" <2500.pradeep@gmail.com>,
-       "Bahadir Balban" <bahadir.balban@gmail.com>, kernelnewbies@nl.linux.org,
-       linux-newbie@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <9f1dc2cf0705150140k1fef87acvd774c7e171e4a660@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 15 May 2007 05:08:13 -0400
+Received: from pfx2.jmh.fr ([194.153.89.55]:56185 "EHLO pfx2.jmh.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758048AbXEOJIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 05:08:12 -0400
+Date: Tue, 15 May 2007 10:17:58 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+To: Andi Kleen <ak@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       dang@gentoo.org, stable@kernel.org
+Subject: Re: [Bugme-new] [Bug 8479] New: gettimeofday returning 1000000 in
+ tv_usec on core2duo
+Message-Id: <20070515101758.51d6bc47.dada1@cosmosbay.com>
+In-Reply-To: <200705150922.47702.ak@suse.de>
+References: <200705150417.l4F4HlvS013354@fire-2.osdl.org>
+	<46494DFC.6080104@cosmosbay.com>
+	<20070514232301.69e27bbe.akpm@linux-foundation.org>
+	<200705150922.47702.ak@suse.de>
+X-Mailer: Sylpheed 2.3.1 (GTK+ 2.10.11; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <9f1dc2cf0705132337k13aa3ccesc575d4550492a24e@mail.gmail.com>
-	 <366312910705140010m78b215a2t1753445e81120288@mail.gmail.com>
-	 <9f1dc2cf0705140016w6d8f44f9wec7586e7879af873@mail.gmail.com>
-	 <7ac1e90c0705140824i54e1c43ela3ab3d89827c0339@mail.gmail.com>
-	 <366312910705142217geba69dbm98a6c0bf2aabb937@mail.gmail.com>
-	 <a2ebde260705142345m440c70fbu33934334fbb69f8e@mail.gmail.com>
-	 <366312910705150010p623f9732mc498f457245d23a1@mail.gmail.com>
-	 <a2ebde260705150028j16cc12a2ya6d5906c97ce193b@mail.gmail.com>
-	 <9f1dc2cf0705150140k1fef87acvd774c7e171e4a660@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Yes, you are right in this regard. An interrupt handler does steal the
-time slice from the interrupted process.
+On Tue, 15 May 2007 09:22:47 +0200
+Andi Kleen <ak@suse.de> wrote:
 
-So now I think it is considered an acceptable deviation in calculating
-the process run time as well as determine process scheduling because
-an ISR should take very short time to return, in part as a consequence
-of the rule that ISR should not sleep.
+> 
+> > >
+> > > I remember I already hit this and corrected it
+> > >
+> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdi
+> > >ff;f=arch/x86_64/kernel/vsyscall.c;h=dc32cef961950915fbaa185e36ab802d5f7ce
+> > >a3b;hp=ba330f87067996a17495f7d03466d646c718b52c;hb=c8118c6c07f2edfd697aaa0
+> > >b93e08c3b65a5a675;hpb=272a3713bb9e302e0455c894c41180a482d2c8a3
+> >
+> > Oh, OK.
+> >
+> > > Maybe a stable push is necessary ?
+> >
+> > yup.  Please always think of -stable when preparing fixes.  I'm sure many
+> > useful fixes are slipping past simply because those who _are_ looking out
+> > for backportable fixes are missing things.
+> >
+> > Greg, Chris: please consider c8118c6c07f2edfd697aaa0b93e08c3b65a5a675
+> > for -stable, if it isn't already there.
+> 
+> The full patch is overkill because 99% of it is an totally unrelated 
+> optimization. Only the > -> >= change should be backported
 
+OK, here is the fix only patch, for linux-2.6.21-stable only, since 2.6.22 is already fixed.
 
-2007/5/15, Learning Linux <learninglinux4@gmail.com>:
-> > The interrupt handler's execution time will definitely defer the
-> > execution of the process, but I think it does not steal the process's
-> > time slice (the time_slice field not subtracted).
->
-> It will definitely be substracted from the process's time slice.
-> Because the timeslice is substracted in timer interrupt, and does not
-> differenciate if the process is executing ISR or not.
->
+[PATCH] x86_64 : Fix vgettimeofday()
+
+vgettimeofday() may return some bad timeval values, (tv_usec = 1000000), because of a wrong compare.
+
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+
+--- arch/x86_64/kernel/vsyscall.c
++++ arch/x86_64/kernel/vsyscall.c
+@@ -132,7 +132,7 @@ static __always_inline void do_vgettimeo
+ 
+ 	/* convert to usecs and add to timespec: */
+ 	tv->tv_usec += nsec_delta / NSEC_PER_USEC;
+-	while (tv->tv_usec > USEC_PER_SEC) {
++	while (tv->tv_usec >= USEC_PER_SEC) {
+ 		tv->tv_sec += 1;
+ 		tv->tv_usec -= USEC_PER_SEC;
+ 	}
