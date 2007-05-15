@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760209AbXEOTPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759989AbXEOTX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760209AbXEOTPW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 15:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756583AbXEOTPK
+	id S1759989AbXEOTX7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 15:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbXEOTXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 15:15:10 -0400
-Received: from lazybastard.de ([212.112.238.170]:50369 "EHLO
+	Tue, 15 May 2007 15:23:51 -0400
+Received: from lazybastard.de ([212.112.238.170]:33379 "EHLO
 	longford.lazybastard.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756333AbXEOTPI (ORCPT
+	with ESMTP id S1755427AbXEOTXu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 15:15:08 -0400
-Date: Tue, 15 May 2007 21:10:46 +0200
+	Tue, 15 May 2007 15:23:50 -0400
+Date: Tue, 15 May 2007 21:19:26 +0200
 From: =?utf-8?B?SsO2cm4=?= Engel <joern@lazybastard.org>
-To: Sam Ravnborg <sam@ravnborg.org>
+To: John Stoffel <john@stoffel.org>
 Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        linux-mtd@lists.infradead.org, akpm@osdl.org,
        Albert Cahalan <acahalan@gmail.com>,
@@ -22,62 +22,56 @@ Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
        Pekka Enberg <penberg@cs.helsinki.fi>, Greg KH <greg@kroah.com>,
        Ingo Oeser <ioe-lkml@rameria.de>
 Subject: Re: [PATCH] LogFS take three
-Message-ID: <20070515191046.GA1220@lazybastard.org>
-References: <20070515151919.GA32510@lazybastard.org> <20070515183725.GA22003@uranus.ravnborg.org>
+Message-ID: <20070515191926.GB1220@lazybastard.org>
+References: <20070515151919.GA32510@lazybastard.org> <17994.1241.436841.681216@stoffel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20070515183725.GA22003@uranus.ravnborg.org>
+In-Reply-To: <17994.1241.436841.681216@stoffel.org>
 User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 20:37:25 +0200, Sam Ravnborg wrote:
-> On Tue, May 15, 2007 at 05:19:20PM +0200, Jörn Engel wrote:
-> > [ I have put everyone that gave comments to the last patch on Cc:.  Hope
-> > that doesn't offend anyone. ]
-> > 
-> > 
-> > Add LogFS, a scalable flash filesystem.
+On Tue, 15 May 2007 15:07:05 -0400, John Stoffel wrote:
 > 
-> Have you run sparse on this code?
+> I've been semi watching this, and the only comment I really can give
+> is that I hate the name.  To me, logfs implies a filesystem for
+> logging purposes, not for Flash hardware with wear leveling issues to
+> be taken into account.
 
-Several thousand times. :)
+Yeah, well, ...
 
-> I do not recall if you have written something about it.
-> I do not see any obvious things sparse would catch (just browsing quickly)
-> but it's always a good thing to do.
+Two years ago when I started all this, I was looking for a good name.
+All I could come up with sounded stupid, so I picked "LogFS" as a code
+name.  As soon as I find a better name, the code name should get
+replaced.
 
-Absolutely! I added this line for sparse:
-+#define __CHECK_ENDIAN__ 
+By now I still don't have anything better.  All alternatives that were
+proposed are just as bad - with the added disadvantage of being new and
+not established yet.  My hope of ever finding a better name is nearly
+zero.
 
-Not sure how much of the kernel is endian-clean.  Logfs should be.
+> Also, having scanned through the code, I find the name "cookie" using
+> in logfs_inode(), logfs_iput(), logfs_iget() to be badly named.  It
+> should really be something like *cached_inode, which would seem to
+> give more natural semantics of
+> 
+> 	if (cached_inode)
+> 		do_cached_inode_ops(...)
+> 	else
+> 		do_inode_ops(...)
 
-> +++ linux-2.6.21logfs/fs/logfs/progs/fsck.c     2007-05-15 00:54:22.000000000 +0200
-> @@ -0,0 +1,332 @@
-> +/*
-> + * fs/logfs/prog/fsck.c        - filesystem check
-> + *
-> + * As should be obvious for Linux kernel code, license is GPLv2
-> + *
-> + * Copyright (c) 2005-2007 Joern Engel
-> + *
-> + * In principle this could get moved to userspace.  However it might still
-> + * make some sense to keep it in the kernel.  It is a pure checker and will
-> + * only report problems, not attempt to repair them.
-> + */
-> +#include "../logfs.h"
-> +
-> If potential userspace tools needs to include ../logfs.h then there is
-> something that ought to be moved to include/linux/logfs.h instead.
+Half-agreed.  For callers, the name "cookie" makes sense.  It is a
+transparent thing they should not tough and hand back unchanged.  For
+logfs_iget() and logfs_iput() something like "is_cached" would be
+better.
 
-There shouldn't be anything left in ../logfs.h that is needed for
-userspace.  But the kernel fsck is lame and calls into functions like
-iget(), which it pulls in from ../logfs.h.
+Will change.
 
 Jörn
 
 -- 
-The only real mistake is the one from which we learn nothing.
--- John Powell
+Linux [...] existed just for discussion between people who wanted
+to show off how geeky they were.
+-- Rob Enderle
