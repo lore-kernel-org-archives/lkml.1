@@ -1,67 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbXEOVR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756350AbXEOVWT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbXEOVR1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 17:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757333AbXEOVRP
+	id S1756350AbXEOVWT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:22:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbXEOVWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 17:17:15 -0400
-Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:54921 "EHLO
-	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752140AbXEOVRO (ORCPT
+	Tue, 15 May 2007 17:22:05 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:35115 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754287AbXEOVWD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 17:17:14 -0400
-Date: Tue, 15 May 2007 23:16:42 +0200
-From: markus reichelt <ml@mareichelt.de>
-Subject: Re: Announce loop-AES-v3.2a file/swap crypto package
-In-reply-to: <4649F5DC.87043316@users.sourceforge.net>
-To: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
-Mail-followup-to: linux-crypto@nl.linux.org, linux-kernel@vger.kernel.org
-Message-id: <20070515211642.GA1058@tatooine.rebelbase.local>
-Organization: still stuck in reorganization mode
-MIME-version: 1.0
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=Kj7319i9nmIyA2yE
-Content-disposition: inline
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-References: <4649F5DC.87043316@users.sourceforge.net>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Tue, 15 May 2007 17:22:03 -0400
+Date: Tue, 15 May 2007 19:56:31 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.wat.veritas.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Jayson Santos <jaysonsantos2003@yahoo.com.br>,
+       Randy Dunlap <randy.dunlap@oracle.com>, linux-kernel@vger.kernel.org
+Subject: [PATCH] prio_tree: debugging patch
+Message-ID: <Pine.LNX.4.64.0705151953050.30826@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-OriginalArrivalTime: 15 May 2007 21:22:02.0134 (UTC) FILETIME=[1434AB60:01C79737]
+X-Brightmail-Verdict: VlJEQwAAAAIAAAABAAAAAAAAAAEAAAAAAAAABGluYm94AGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcAYWtwbUBsaW51eC1mb3VuZGF0aW9uLm9yZwBqYXlzb25zYW50b3MyMDAzQHlhaG9vLmNvbS5icgByYW5keS5kdW5sYXBAb3JhY2xlLmNvbQA=
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jayson Santos has sighted mm/prio_tree.c:78,79 BUGs (kernel bugzilla 8446),
+and one was sighted a couple of years ago.  No reason yet to suppose they're
+prio_tree bugs, but we can't tell much about them without seeing the vmas.
 
---Kj7319i9nmIyA2yE
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+So dump vma and the one it's supposed to resemble: I had expected to use
+print_hex_dump(), but that's designed for u8 dumps, whereas almost every
+field of vm_area_struct is either a pointer or an unsigned long - which
+look nonsense dumped as u8s.
 
-* Jari Ruusu <jariruusu@users.sourceforge.net> wrote:
+Replace the two BUG_ONs by a single WARN_ON; and if it fires, just keep
+this vma out of the tree (truncation and swapout won't be able to find it).
+How safe this is depends on what the error really is; but we hold a file's
+i_mmap_lock here, so it may be impossible to recover from BUG_ON.
 
-> loop-AES changes since previous release:
-> - loop_twofish.c loop_serpent.c loop_blowfish.c modules included.
->   They are not built by default. Add EXTRA_CIPHERS=3Dy make parameter
->   to build them.
+Signed-off-by: Hugh Dickins <hugh@veritas.com>
+---
+Andrew, please replace -mm's prio-tree-debugging.patch by this one,
+which is now suitable for both 32-bit and 64-bit architectures.
 
-Just curious, will the ciphers package also be continued/available
-separately as before or is it merged from now on into the loop-aes
-package?
+Jayson, you can use either this one or the one I sent earlier:
+they provide the same information so no need to update; but this
+one might allow you to continue working (depending on the corruption).
 
+ mm/prio_tree.c |   33 ++++++++++++++++++++++++++++-----
+ 1 file changed, 28 insertions(+), 5 deletions(-)
 
---=20
-left blank, right bald
-
---Kj7319i9nmIyA2yE
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.5 (GNU/Linux)
-
-iD8DBQFGSiM6LMyTO8Kj/uQRAgTcAJ4vVlVBhDS29vwsDoBNNhdrhIWkuQCfYfSm
-2aFWm6FlxBGhtevH9ojub78=
-=IvrL
------END PGP SIGNATURE-----
-
---Kj7319i9nmIyA2yE--
-
+--- 2.6.22-rc1/mm/prio_tree.c	2005-03-02 07:39:17.000000000 +0000
++++ linux/mm/prio_tree.c	2007-05-15 17:49:48.000000000 +0100
+@@ -67,6 +67,20 @@
+  * 	vma->shared.vm_set.head == NULL ==> a list node
+  */
+ 
++static void dump_vma(struct vm_area_struct *vma)
++{
++	void **ptr = (void **) vma;
++	int i;
++
++	printk("vm_area_struct at %p:", ptr);
++	for (i = 0; i < sizeof(*vma)/sizeof(*ptr); i++, ptr++) {
++		if (!(i & 3))
++			printk("\n");
++		printk(" %p", *ptr);
++	}
++	printk("\n");
++}
++
+ /*
+  * Add a new vma known to map the same set of pages as the old vma:
+  * useful for fork's dup_mmap as well as vma_prio_tree_insert below.
+@@ -74,14 +88,23 @@
+  */
+ void vma_prio_tree_add(struct vm_area_struct *vma, struct vm_area_struct *old)
+ {
+-	/* Leave these BUG_ONs till prio_tree patch stabilizes */
+-	BUG_ON(RADIX_INDEX(vma) != RADIX_INDEX(old));
+-	BUG_ON(HEAP_INDEX(vma) != HEAP_INDEX(old));
+-
+ 	vma->shared.vm_set.head = NULL;
+ 	vma->shared.vm_set.parent = NULL;
+ 
+-	if (!old->shared.vm_set.parent)
++	if (WARN_ON(RADIX_INDEX(vma) != RADIX_INDEX(old) ||
++		    HEAP_INDEX(vma)  != HEAP_INDEX(old))) {
++		/*
++		 * This should never happen, yet it has been seen a few times:
++		 * we cannot say much about it without seeing the vma contents.
++		 */
++		dump_vma(vma);
++		dump_vma(old);
++		/*
++		 * Don't try to link this (corrupt?) vma into the (corrupt?)
++		 * prio_tree, but arrange for its removal to succeed later.
++		 */
++		INIT_LIST_HEAD(&vma->shared.vm_set.list);
++	} else if (!old->shared.vm_set.parent)
+ 		list_add(&vma->shared.vm_set.list,
+ 				&old->shared.vm_set.list);
+ 	else if (old->shared.vm_set.head)
