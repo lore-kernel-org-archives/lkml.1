@@ -1,98 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760532AbXEOOH5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760322AbXEOOZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760532AbXEOOH5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 10:07:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755698AbXEOOHu
+	id S1760322AbXEOOZT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 10:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756196AbXEOOZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 10:07:50 -0400
-Received: from nommos.sslcatacombnetworking.com ([67.18.224.114]:21955 "EHLO
-	nommos.sslcatacombnetworking.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754981AbXEOOHt (ORCPT
+	Tue, 15 May 2007 10:25:07 -0400
+Received: from mtagate7.uk.ibm.com ([195.212.29.140]:56131 "EHLO
+	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755698AbXEOOZE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 10:07:49 -0400
-In-Reply-To: <46484110.5020607@freescale.com>
-References: <46484110.5020607@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4575ED11-C144-49CF-9FBA-0613B61EFCE3@kernel.crashing.org>
-Cc: Paul <paulus@samba.org>, linuxppc-dev@ozlabs.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
+	Tue, 15 May 2007 10:25:04 -0400
+Message-ID: <4649C2D1.7020704@de.ibm.com>
+Date: Tue, 15 May 2007 16:25:21 +0200
+From: Martin Peschke <mp3@de.ibm.com>
+Organization: =?ISO-8859-1?Q?IBM_Deutschland_Entwicklung_GmbH_Vor?=
+ =?ISO-8859-1?Q?sitzender_des_Aufsichtsrats=3A_Johann_Weihen_Ge?=
+ =?ISO-8859-1?Q?sch=E4ftsf=FChrung=3A_Herbert_Kircher_Sitz_der_?=
+ =?ISO-8859-1?Q?Gesellschaft=3A_B=F6blingen_Registergericht=3A_Amts?=
+ =?ISO-8859-1?Q?gericht_Stuttgart=2C_HRB_243294?=
+User-Agent: Thunderbird 2.0.0.0 (Windows/20070326)
+MIME-Version: 1.0
+To: Valdis.Kletnieks@vt.edu
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: 2.6.21-mm2 - CONFIG_STATISTIC and Intel PowerTOP...
+References: <20070509012322.199f292b.akpm@linux-foundation.org> <8277.1179199530@turing-police.cc.vt.edu>
+In-Reply-To: <8277.1179199530@turing-police.cc.vt.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/2] powerpc: Fix Section mismatch warnings
-Date: Tue, 15 May 2007 09:06:53 -0500
-To: Li Yang <leoli@freescale.com>
-X-Mailer: Apple Mail (2.752.2)
-X-PopBeforeSMTPSenders: kumar-chaos@kgala.com,kumar-statements@kgala.com,kumar@kgala.com
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - nommos.sslcatacombnetworking.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [0 0] / [47 12]
-X-AntiAbuse: Sender Address Domain - kernel.crashing.org
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Valdis.Kletnieks@vt.edu wrote:
+> On Wed, 09 May 2007 01:23:22 PDT, Andrew Morton said:
+>> ftp://ftp.kernel.org/pub/linux/kernel/people/akpm/patches/2.6/2.6.21/2.6.21-mm2/
+> 
+> So I'm trying to get the Intel PowerTop stuff working, and discovered that /
+> proc/timer_stats and/or /proc/tstats has moved to /debug in -mm2 - but only if
+> you're building for S390.  For other architechtures it just evaporates
+> entirely.  I had to bash this patch in to get it to get included in an x86_64
+> build:
 
-On May 14, 2007, at 5:59 AM, Li Yang wrote:
+My mistake. I should have submitted patches that make CONFIG_STATISTICS a 
+Kconfig option for all archs.
 
-> This patch fix the following Section mismatch warnings
-> in powerpc code.
->
-> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
-> reference to .init.data:mv643xx_eth_pd_devs from .text between  
-> 'mv643xx_eth_add_pds' (at offset 0x9ed2) and 'gg2_read_config'
-> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
-> reference to .init.data:mv643xx_eth_pd_devs from .text between  
-> 'mv643xx_eth_add_pds' (at offset 0x9ed6) and 'gg2_read_config'
-> WARNING: arch/powerpc/platforms/built-in.o - Section mismatch:  
-> reference to .init.text:note_scsi_host from __ksymtab between  
-> '__ksymtab_note_scsi_host' (at offset 0x8) and '__ksymtab_sys_ctrler'
->
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
->  arch/powerpc/platforms/chrp/pegasos_eth.c |    2 +-
->  arch/powerpc/platforms/powermac/setup.c   |    2 +-
->  2 files changed, 2 insertions(+), 2 deletions(-)
+Meanwhile, the patch that implements timerstats using lib/statistic.c
+has been dropped from -mm, because there is already a tool, called powertop, 
+that looks for timerstats in procfs. This fixes your issue.
 
-Did you change anything?
+I am wondering whether I should submit Kconfig patches as a precautionary 
+measure anyway.
 
-- k
+> 
+> --- linux-2.6.21-mm2/arch/x86_64/Kconfig.statistics     2007-05-14 23:01:00.000000000 -0400
+> +++ linux-2.6.21-mm2/arch/x86_64/Kconfig        2007-05-14 23:00:45.000000000 -0400
+> @@ -793,6 +793,8 @@
+> 
+>  source "kernel/Kconfig.marker"
+> 
+> +source "lib/Kconfig.statistic"
+> +
+>  endmenu
+> 
+>  source "arch/x86_64/Kconfig.debug"
+> 
+> Am just replicating the choice to put it in arch/s390/Kconfig - not sure why
+> it was in there rather than lib/Kconfig.debug - is there a reason here?
 
-> diff --git a/arch/powerpc/platforms/chrp/pegasos_eth.c b/arch/ 
-> powerpc/platforms/chrp/pegasos_eth.c
-> index 7104567..5c9f135 100644
-> --- a/arch/powerpc/platforms/chrp/pegasos_eth.c
-> +++ b/arch/powerpc/platforms/chrp/pegasos_eth.c
-> @@ -169,7 +169,7 @@ static int Enable_SRAM(void)
->
->  /***********/
->  /***********/
-> -int mv643xx_eth_add_pds(void)
-> +int __init mv643xx_eth_add_pds(void)
->  {
->  	int ret = 0;
->  	static struct pci_device_id pci_marvell_mv64360[] = {
-> diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/ 
-> platforms/powermac/setup.c
-> index a410bc7..07b1c4e 100644
-> --- a/arch/powerpc/platforms/powermac/setup.c
-> +++ b/arch/powerpc/platforms/powermac/setup.c
-> @@ -384,7 +384,7 @@ int boot_part;
->  static dev_t boot_dev;
->
->  #ifdef CONFIG_SCSI
-> -void __init note_scsi_host(struct device_node *node, void *host)
-> +void note_scsi_host(struct device_node *node, void *host)
->  {
->  	int l;
->  	char *p;
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+CONFIG_STATISTICS really is instrumentation support. Its users might provide 
+statistics of general interest just as well as for debugging purposes, though.
+
+> 
+> Having bashed *that* into place, I hit this at kernel link time:
+> 
+> WARNING: lib/built-in.o - Section mismatch: reference to .init.text:statistic_hotcpu from .data between 'statistic_hotcpu_notifier' (at offset 0x640) and 'io_tlb_lock'
+> 
+
+I am not confident, but my guess is:
+
+I should mark statistic_hotcpu_notifier as __cpuinitdata because it references 
+statistic_hotcpu(), which is marked __cpuinit. This makes a similar warning just 
+seen during a test compile on i386 go away.
+
+
+Martin
 
