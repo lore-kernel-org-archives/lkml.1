@@ -1,53 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759665AbXENX53@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758569AbXEOAIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759665AbXENX53 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 19:57:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756382AbXENX5X
+	id S1758569AbXEOAIR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 20:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756132AbXEOAII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 19:57:23 -0400
-Received: from holomorphy.com ([66.93.40.71]:54449 "EHLO holomorphy.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755289AbXENX5W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 19:57:22 -0400
-Date: Mon, 14 May 2007 16:57:59 -0700
-From: William Lee Irwin III <wli@holomorphy.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Srivatsa Vaddagiri <vatsa@in.ibm.com>, efault@gmx.de, tingy@cs.umass.edu,
-       linux-kernel@vger.kernel.org
-Subject: Re: fair clock use in CFS
-Message-ID: <20070514235759.GN31925@holomorphy.com>
-References: <20070514083358.GA29775@in.ibm.com> <20070514102929.GL31925@holomorphy.com> <20070514103120.GA23766@elte.hu> <20070514110500.GV19966@holomorphy.com> <20070514112259.GC28348@in.ibm.com> <20070514112016.GW19966@holomorphy.com> <20070514120405.GA3364@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20070514120405.GA3364@elte.hu>
-Organization: The Domain of Holomorphy
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Mon, 14 May 2007 20:08:08 -0400
+Received: from pentafluge.infradead.org ([213.146.154.40]:47334 "EHLO
+	pentafluge.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755877AbXEOAIH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 14 May 2007 20:08:07 -0400
+Subject: Re: +
+	timer_stats-slimmed-down-using-statistics-infrastucture.patch added to -mm
+	tree
+From: Arjan van de Ven <arjan@infradead.org>
+To: Martin Peschke <mp3@de.ibm.com>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org, mingo@elte.hu,
+       tglx@linutronix.de
+In-Reply-To: <46481D18.7080302@de.ibm.com>
+References: <200704210018.l3L0IJBN027188@shell0.pdx.osdl.net>
+	 <1179082720.19106.4.camel@laptopd505.fenrus.org>
+	 <46481D18.7080302@de.ibm.com>
+Content-Type: text/plain
+Organization: Intel International BV
+Date: Mon, 14 May 2007 17:06:18 -0700
+Message-Id: <1179187579.3654.0.camel@laptopd505.fenrus.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by pentafluge.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* William Lee Irwin III <wli@holomorphy.com> wrote:
->> [...] I'm suspicious of EEVDF's timekeeping now as well.
+On Mon, 2007-05-14 at 10:26 +0200, Martin Peschke wrote:
+> >
+> >> [root@t2930041 timer_stats]# cat data
+> > 
+> > this patch changes the userspace API though, and breaks PowerTOP :(
+> 
+> Though I think it was unfortunate to add the "old" proc API in 2.6.21.
+> timer_stats is clearly labeled as debug stuff in config help, which is why 
+> debugfs would have been a proper place.
 
-On Mon, May 14, 2007 at 02:04:05PM +0200, Ingo Molnar wrote:
-> well, EEVDF is a paper-only academic scheduler, one out of thousands 
-> that never touched real hardware. For nearly every mathematically 
-> possible scheduling algorithm i suspect there's at least one paper out 
-> there already describing it ;-) But this time the EEVDF paper got it 
-> right and you got it wrong. But really, if you want to make an impact on 
-> how CFS looks like then please try it and send test feedback and/or 
-> patches - not words. =B-)
+but it's not there, it's in it's current place. And userspace apps
+depend on it... so what's the reason to change this after it became
+ABI ? If there's a good one I can fix powertop.. but.... 
+oh well I hope you kept the rest of the file format the same ;)
 
-Perhaps the paper was inspired by preexisting code. Perhaps the code
-dated back to the 70's.
+-- 
+if you want to mail me at work (you don't), use arjan (at) linux.intel.com
+Test the interaction between Linux and your BIOS via http://www.linuxfirmwarekit.org
 
-The weight consistency testcase is largely done on account of Davide
-Libenzi's already having written such a load generator apart from
-incorporating the already-written code to postprocess the results.
-
-I have no particular need to rely on the cfs patches for whatever
-scheduler patches I'd care to write. I suppose I could write some if
-I feel particularly inspired. Code review is not my forte anyway.
-
-
--- wli
