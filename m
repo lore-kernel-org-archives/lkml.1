@@ -1,42 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761245AbXEOQly@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761508AbXEOQmM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761245AbXEOQly (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 12:41:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757347AbXEOQls
+	id S1761508AbXEOQmM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 12:42:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759048AbXEOQlv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 12:41:48 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:37037 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757343AbXEOQlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 12:41:47 -0400
-Subject: Re: [patch 0/4] IBMASM - miscellaneous fixes
-From: Max Asbock <masbock@us.ibm.com>
-To: Dmitry Torokhov <dtor@insightbb.com>
-Cc: Vernon Mauery <vernux@us.ibm.com>, Andrew Morton <akpm@osdl.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20070515041249.301642231.dtor@insightbb.com>
-References: <20070515041249.301642231.dtor@insightbb.com>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 09:41:40 -0700
-Message-Id: <1179247300.26643.1.camel@w-amax.beaverton.ibm.com>
+	Tue, 15 May 2007 12:41:51 -0400
+Received: from outpipe-village-512-1.bc.nu ([81.2.110.250]:33916 "EHLO
+	the-village.bc.nu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758688AbXEOQlu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 12:41:50 -0400
+Date: Tue, 15 May 2007 17:45:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Vasily Averin <vvs@sw.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       devel@openvz.org, Markus Lidel <Markus.Lidel@shadowconnect.com>
+Subject: Re: [patch i2o 5/6] i2o_proc files permission
+Message-ID: <20070515174533.1caf24bb@the-village.bc.nu>
+In-Reply-To: <4649ABC9.6020605@sw.ru>
+References: <4649AA6C.2080808@sw.ru>
+	<4649ABC9.6020605@sw.ru>
+X-Mailer: Claws Mail 2.9.1 (GTK+ 2.10.8; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.8.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-15 at 00:12 -0400, Dmitry Torokhov wrote:
-> Hi,
-> 
-> Here is bunch of fixes for ibmasm driver. They are untested as
-> I do not have the hardware.
-> 
-> --
-> Dmitry
+On Tue, 15 May 2007 16:47:05 +0400
+Vasily Averin <vvs@sw.ru> wrote:
 
-Thanks for the fixes. I will test.
+> Reading from some i2o related proc files can lead to the i2o controller hang due
+> unknown reasons. As a workaround this patch changes the permission of these
+> files to root-only accessible.
 
-Max
+I guess you have a crap controller in this case. 
 
+This isn't the right fix: Detect your specific buggy control and do not
+register the problem /proc nodes for it at all.
 
-
+Alan
