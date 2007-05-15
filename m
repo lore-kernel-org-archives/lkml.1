@@ -1,140 +1,517 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760194AbXEOAlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbXEOArf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760194AbXEOAlS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 14 May 2007 20:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755520AbXEOAlG
+	id S1760278AbXEOArf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 14 May 2007 20:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbXEOAr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 14 May 2007 20:41:06 -0400
-Received: from ug-out-1314.google.com ([66.249.92.169]:5218 "EHLO
-	ug-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755235AbXEOAlD (ORCPT
+	Mon, 14 May 2007 20:47:27 -0400
+Received: from smtp1.linux-foundation.org ([65.172.181.25]:33484 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755236AbXEOAr0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 14 May 2007 20:41:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=beta;
-        h=received:message-id:date:from:to:subject:cc:in-reply-to:mime-version:content-type:content-transfer-encoding:content-disposition:references;
-        b=FBZVHBiiWxGiNIUGG8ag2rvlt30Rk60Ck58p9FRI8dzNfLgMn8b0eALXFGf9gO2kBT/8e5kjpX00jGS/7uvVj04FLxkD/du944PkYVGS96+AxldDWT49wDF7YW1P6uCfnGj1YAiaV4kn3LaBasyzdhMQyt0+PVY6Ea8TepA92K8=
-Message-ID: <a781481a0705141741u4c2f442dk76c68f757cadc38d@mail.gmail.com>
-Date: Tue, 15 May 2007 06:11:00 +0530
-From: "Satyam Sharma" <satyam.sharma@gmail.com>
-To: "James Bottomley" <James.Bottomley@steeleye.com>
-Subject: Re: why does x86 "make defconfig" build a single, lonely module?
-Cc: "Dave Jones" <davej@redhat.com>,
-       "Robert P. J. Day" <rpjday@mindspring.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       linux-scsi@vger.kernel.org
-In-Reply-To: <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 14 May 2007 20:47:26 -0400
+Date: Mon, 14 May 2007 17:46:19 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Cc: Jean Delvare <khali@linux-fr.org>, i2c@lm-sensors.org,
+       linux-kernel@vger.kernel.org,
+       Alessandro Zummo <alessandro.zummo@towertech.it>
+Subject: Re: [PATCH] Add driver for Dallas DS1682 elapsed time recorder
+Message-Id: <20070514174619.f552ff64.akpm@linux-foundation.org>
+In-Reply-To: <20070513073906.24149.1292.stgit@trillian.secretlab.ca>
+References: <20070513073906.24149.1292.stgit@trillian.secretlab.ca>
+X-Mailer: Sylpheed version 2.2.7 (GTK+ 2.8.6; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-References: <Pine.LNX.4.64.0705131106160.3197@localhost.localdomain>
-	 <20070513160608.GA29024@redhat.com>
-	 <1179072655.3723.42.camel@mulgrave.il.steeleye.com>
-	 <1179073116.3723.45.camel@mulgrave.il.steeleye.com>
-	 <a781481a0705140235h6a96563cw63ed2c7a85a4f736@mail.gmail.com>
-	 <a781481a0705140245s6823df32l5bbf81abf92b0347@mail.gmail.com>
-	 <a781481a0705140500q32a891d6g69b40c2d45ec40c6@mail.gmail.com>
-	 <a781481a0705140523y789e012bj2ec317565e34366f@mail.gmail.com>
-	 <1179153096.3703.23.camel@mulgrave.il.steeleye.com>
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 5/14/07, James Bottomley <James.Bottomley@steeleye.com> wrote:
-> On Mon, 2007-05-14 at 17:53 +0530, Satyam Sharma wrote:
-> > > I guess this is probably the behaviour that James wanted originally?
->
-> No ... you're still not reading the explanation in the thread:
->
-> The wait scan module is designed to wait for scans of driver modules.
-> Whether SCSI=y or m has no effect on this ... you can still have modular
-> drivers with built in SCSI.
+On Sun, 13 May 2007 01:43:42 -0600
+Grant Likely <grant.likely@secretlab.ca> wrote:
 
-Ah, I see why we _want_ this built as a _module_ only, and don't even
-want to expose the Kconfig option to the user, lest he screw himself later.
-But dangling "default m"'s or "default y"'s not exposed to the user do
-stand out discomfortingly in Kconfigs, wish there was a better way to
-handle this.
+> 
+> Here is the 3rd iteration with the following changes:
+> - Modified to be an i2c "new style" driver based on David Brownell's work
+> - uses the new prototype for i2c_smbus_read_i2c_block_data() for block data
+>   reads instead of a single byte at a time.
+> 
+>  drivers/i2c/chips/ds1682.c |  270 ++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 270 insertions(+), 0 deletions(-)
 
-> > > Anyway, attached patch (subsumes previous one) cleans up all this.
-> > > Now, scsi_wait_scan is the only guy who controls waiting upon async
-> > > scans to complete:
-> > >
-> > > If SCSI=n, SCSI_WAIT_SCAN=n, obviously.
-> > >
-> > > If SCSI=y, SCSI_WAIT_SCAN=y, so it gets built-in and is run at
-> > > late_initcall.
-> > >
-> > > If SCSI=m, SCSI_WAIT_SCAN=m too and would hopefully be run
-> > > by the initrd/initramfs scripts to wait for async SCSI bus scans to
-> > > finish before allowing the boot to proceed.
-> > >
-> > > [ Attached patch does _not_ expose SCSI_WAIT_SCAN to the
-> > > user at kernel configuration time, so if somebody wants it to be
-> > > built as a module even when SCSI=y (why would anybody
-> > > want that, doesn't make much sense to me to modprobe
-> > > scsi_wait_scan _after_ boot-up), it would not be possible to
-> > > do so. But if someone really wants that, let me know, we can
-> > > add a depends, tristate "..." and help in this Kconfig option to
-> > > accomplish that too. ]
-> >
-> > This has sadly become a one-person thread, but Robert informs
-> > me in private mail that we can further clean/simplify the patch:
-> >
-> > [subsumes both previous patches]
-> >
-> > Signed-off-by: Satyam Sharma <satyam.sharma@gmail.com>
-> >
-> > ---
-> >
-> >  drivers/scsi/Kconfig     |    3 +--
-> >  drivers/scsi/scsi_scan.c |    5 +----
-> >  2 files changed, 2 insertions(+), 6 deletions(-)
-> >
-> > ---
-> >
-> > diff -ruNp a/drivers/scsi/Kconfig b/drivers/scsi/Kconfig
-> > --- a/drivers/scsi/Kconfig    2007-05-10 23:19:32.000000000 +0530
-> > +++ b/drivers/scsi/Kconfig    2007-05-14 17:59:51.000000000 +0530
-> > @@ -243,9 +243,8 @@ config SCSI_SCAN_ASYNC
-> >
-> >  config SCSI_WAIT_SCAN
-> >       tristate
-> > -     default m
-> >       depends on SCSI
-> > -     depends on MODULES
-> > +     default SCSI
-> >
-> >  menu "SCSI Transports"
-> >       depends on SCSI
-> > diff -ruNp a/drivers/scsi/scsi_scan.c b/drivers/scsi/scsi_scan.c
-> > --- a/drivers/scsi/scsi_scan.c        2007-05-14 16:06:43.000000000 +0530
-> > +++ b/drivers/scsi/scsi_scan.c        2007-05-14 16:10:34.000000000 +0530
-> > @@ -184,14 +184,11 @@ int scsi_complete_async_scans(void)
-> >  /* Only exported for the benefit of scsi_wait_scan */
-> >  EXPORT_SYMBOL_GPL(scsi_complete_async_scans);
-> >
-> > -#ifndef MODULE
-> >  /*
-> >   * For async scanning we need to wait for all the scans to complete before
-> >   * trying to mount the root fs.  Otherwise non-modular drivers may not be ready
-> > - * yet.
-> > + * yet.  This is done by scsi_wait_scan.
-> >   */
-> > -late_initcall(scsi_complete_async_scans);
-> > -#endif
->
-> This is actually not in mainline.  It's an incorrect patch in -mm.  The
-> problem with late_initcall is that they queue in link order ... so any
-> SCSI module (and there a few) linked after this won't benefit from it.
-> The obvious hack is to have a separate file with this in the final link.
-> However, Matthew Wilcox thinks he can do better.
+This version of the patch omitted the changes to drivers/i2c/chips/Kconfig
+and drivers/i2c/chips/Makefile, which I assume was accidental.
 
-Yeah, thanks for this explanation. -mm is probably what confused me
-here. I did consider the fact that late_initcall's are called in link order,
-but saw that there was an explicit effort (hack?) in drivers/scsi/Makefile
-to keep scsi_wait_scan last so that SCSI devices probe earlier ... not
-that this helps us with modular drivers, of course.
+As usual, I generated the delta so we can see what was done:
 
-Thanks,
-Satyam
+
+From: Grant Likely <grant.likely@secretlab.ca>
+
+- Modified to be an i2c "new style" driver based on David Brownell's work
+- uses the new prototype for i2c_smbus_read_i2c_block_data() for block data
+  reads instead of a single byte at a time.
+
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Cc: Jean Delvare <khali@linux-fr.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/i2c/chips/ds1682.c |  333 ++++++++++++-----------------------
+ 1 files changed, 121 insertions(+), 212 deletions(-)
+
+diff -puN drivers/i2c/chips/ds1682.c~i2c-add-driver-for-dallas-ds1682-elapsed-time-recorder-update drivers/i2c/chips/ds1682.c
+--- a/drivers/i2c/chips/ds1682.c~i2c-add-driver-for-dallas-ds1682-elapsed-time-recorder-update
++++ a/drivers/i2c/chips/ds1682.c
+@@ -16,132 +16,106 @@
+ 
+ /*
+  * The DS1682 elapsed timer recorder is a simple device that implements
+- * one elapsed time counters, one event counter, an alarm signal and 10
++ * one elapsed time counter, one event counter, an alarm signal and 10
+  * bytes of general purpose EEPROM.
+  *
+  * This driver provides access to the DS1682 counters and user data via
+  * the sysfs.  The following attributes are added to the device node:
+- *     elapsed_time (u32): Total elapsed event time in 1/4s resolution
++ *     elapsed_time (u32): Total elapsed event time in ms resolution
+  *     alarm_time (u32): When elapsed time exceeds the value in alarm_time,
+  *                       then the alarm pin is asserted.
+  *     event_count (u16): number of times the event pin has gone low.
+- *     user_data (u8[10]): general purpose EEPROM
++ *     eeprom (u8[10]): general purpose EEPROM
+  *
+  * Counter registers and user data are both read/write unless the device
+- * has been write protected.  This driver does not support turning on write
++ * has been write protected.  This driver does not support turning off write
+  * protection.  Once write protection is turned on, it is impossible to
+- * turn off so I have left the feature out of this driver to avoid
++ * turn it off again, so I have left the feature out of this driver to avoid
+  * accidental enabling, but it is trivial to add write protect support.
+  *
+  */
+ 
+-#include <linux/device.h>
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/slab.h>
+ #include <linux/i2c.h>
+ #include <linux/string.h>
+-#include <linux/bcd.h>
+ #include <linux/list.h>
+ #include <linux/sysfs.h>
+ #include <linux/ctype.h>
++#include <linux/hwmon-sysfs.h>
+ 
+ /* Device registers */
+-#define DS1682_ADDR			0x6B
+-
+ #define DS1682_REG_CONFIG		0x00
+ #define DS1682_REG_ALARM		0x01
+ #define DS1682_REG_ELAPSED		0x05
+ #define DS1682_REG_EVT_CNTR		0x09
+-#define DS1682_REG_USER_DATA		0x0b
++#define DS1682_REG_EEPROM		0x0b
+ #define DS1682_REG_RESET		0x1d
+ #define DS1682_REG_WRITE_DISABLE	0x1e
+ #define DS1682_REG_WRITE_MEM_DISABLE	0x1f
+ 
+-/*
+- * Probing class
+- */
+-static unsigned short normal_i2c[] = { DS1682_ADDR, I2C_CLIENT_END };
+-
+-I2C_CLIENT_INSMOD;
+-
+-/*
+- * Low level chip access functions
+- */
+-static int ds1682_read(struct i2c_client *client, int reg, void *buf, int len)
+-{
+-	u8 *bytes = buf;
+-	int val;
+-
+-	while (len--) {
+-		val = i2c_smbus_read_byte_data(client, reg++);
+-		if (val < 0)
+-			return -EIO;
+-		*bytes++ = val;
+-	}
+-	return 0;
+-}
++#define DS1682_EEPROM_SIZE		10
+ 
+ /*
+  * Generic counter attributes
+  */
+-static int ds1682_attr_to_reg(struct device_attribute *attr, int *regsize);
+-
+-static ssize_t ds1682_show(struct device *dev,
+-			   struct device_attribute *attr, char *buf)
++static ssize_t ds1682_show(struct device *dev, struct device_attribute *attr,
++			   char *buf)
+ {
+-	u32 val = 0;
+-	int reg;
+-	int regsize;
+-
+-	dev_dbg(dev, "ds1682_show() called for %s\n", attr->attr.name);
+-
+-	/* Get the register address */
+-	reg = ds1682_attr_to_reg(attr, &regsize);
+-	if (reg < 0)
+-		return -EIO;
++	struct sensor_device_attribute_2 *sattr = to_sensor_dev_attr_2(attr);
++	struct i2c_client *client = to_i2c_client(dev);
++	__le32 val = 0;
++	int rc;
++
++	dev_dbg(dev, "ds1682_show() called on %s\n", attr->attr.name);
+ 
+ 	/* Read the register */
+-	if (ds1682_read(to_i2c_client(dev), reg, &val, regsize))
++	rc = i2c_smbus_read_i2c_block_data(client, sattr->index, sattr->nr,
++					   (u8 *) & val);
++	if (rc < 0)
+ 		return -EIO;
+ 
++	/* Special case: the 32 bit regs are time values with 1/4s
++	 * resolution, scale them up to milliseconds */
++	if (sattr->nr == 4)
++		return sprintf(buf, "%lli\n", ((u64) le32_to_cpu(val)) * 250);
++
+ 	/* Format the output string and return # of bytes */
+-	return sprintf(buf, "0x%.2x\n", le32_to_cpu(val));
++	return sprintf(buf, "%li\n", (long)le32_to_cpu(val));
+ }
+ 
+-static ssize_t ds1682_store(struct device *dev,
+-			    struct device_attribute *attr, const char *buf,
+-			    size_t count)
++static ssize_t ds1682_store(struct device *dev, struct device_attribute *attr,
++			    const char *buf, size_t count)
+ {
++	struct sensor_device_attribute_2 *sattr = to_sensor_dev_attr_2(attr);
+ 	struct i2c_client *client = to_i2c_client(dev);
+-	int reg;
+-	int regsize;
+ 	char *endp;
+-	u32 val;
++	u64 val;
++	__le32 val_le;
+ 	int rc;
+ 
+-	/* Sanitize the input */
+-	reg = ds1682_attr_to_reg(attr, &regsize);
+-
+-	if ((reg < 0) || (count >= 16) || (buf[count] != '\0')) {
+-		dev_dbg(dev, "insane input; reg=0x%i count=%zd%s\n",
+-			reg, count, buf[count] == '\0' ? " unterminated" : "");
+-		return -EIO;
+-	}
++	dev_dbg(dev, "ds1682_store() called on %s\n", attr->attr.name);
+ 
+ 	/* Decode input */
+-	val = simple_strtoul(buf, &endp, 0);
++	val = simple_strtoull(buf, &endp, 0);
+ 	if (buf == endp) {
+ 		dev_dbg(dev, "input string not a number\n");
+ 		return -EIO;
+ 	}
+ 
++	/* Special case: the 32 bit regs are time values with 1/4s
++	 * resolution, scale input down to quarter-seconds */
++	if (sattr->nr == 4)
++		do_div(val, 250);
++
+ 	/* write out the value */
+-	val = cpu_to_le32(val);
+-	rc = i2c_smbus_write_i2c_block_data(client, reg, regsize, (void *)&val);
++	val_le = cpu_to_le32(val);
++	rc = i2c_smbus_write_i2c_block_data(client, sattr->index, sattr->nr,
++					    (u8 *) & val);
+ 	if (rc < 0) {
+ 		dev_err(dev, "register write failed; reg=0x%x, size=%i\n",
+-			reg, regsize);
++			sattr->index, sattr->nr);
+ 		return -EIO;
+ 	}
+ 
+@@ -151,196 +125,131 @@ static ssize_t ds1682_store(struct devic
+ /*
+  * Simple register attributes
+  */
+-DEVICE_ATTR(config, S_IRUGO, ds1682_show, NULL);
+-DEVICE_ATTR(elapsed_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store);
+-DEVICE_ATTR(alarm_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store);
+-DEVICE_ATTR(event_count, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store);
+-
+-/* Get register size and address from device_attribute structure.  This
+- * function must come after the DEVICE_ATTR() lines as it depends on the
+- * device_attribute lines being declared */
+-static int ds1682_attr_to_reg(struct device_attribute *attr, int *regsize)
+-{
+-	if (attr == &dev_attr_elapsed_time) {
+-		*regsize = 4;
+-		return DS1682_REG_ELAPSED;
+-	}
+-
+-	if (attr == &dev_attr_alarm_time) {
+-		*regsize = 4;
+-		return DS1682_REG_ALARM;
+-	}
+-
+-	if (attr == &dev_attr_event_count) {
+-		*regsize = 2;
+-		return DS1682_REG_EVT_CNTR;
+-	}
+-
+-	if (attr == &dev_attr_config) {
+-		*regsize = 1;
+-		return DS1682_REG_CONFIG;
+-	}
+-
+-	pr_debug("Cannot find registers for device_attribute %p\n", attr);
+-	return -ENODEV;
+-}
++SENSOR_DEVICE_ATTR_2(config, S_IRUGO, ds1682_show, NULL, DS1682_REG_CONFIG, 1);
++SENSOR_DEVICE_ATTR_2(elapsed_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
++		     4, DS1682_REG_ELAPSED);
++SENSOR_DEVICE_ATTR_2(alarm_time, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
++		     4, DS1682_REG_ALARM);
++SENSOR_DEVICE_ATTR_2(event_count, S_IRUGO | S_IWUSR, ds1682_show, ds1682_store,
++		     2, DS1682_REG_EVT_CNTR);
++
++static const struct attribute_group ds1682_group = {
++	.attrs = (struct attribute *[]) {
++		&sensor_dev_attr_config.dev_attr.attr,
++		&sensor_dev_attr_elapsed_time.dev_attr.attr,
++		&sensor_dev_attr_alarm_time.dev_attr.attr,
++		&sensor_dev_attr_event_count.dev_attr.attr,
++		NULL,
++	},
++};
+ 
+ /*
+  * User data attribute
+  */
+-static ssize_t ds1682_user_data_show(struct device *dev,
+-				     struct device_attribute *attr, char *buf)
++static ssize_t ds1682_eeprom_read(struct kobject *kobj, char *buf, loff_t off,
++				  size_t count)
+ {
+-	char *end = buf;
+-	u8 val[10];
+-	int i;
++	struct i2c_client *client = kobj_to_i2c_client(kobj);
++	int rc;
+ 
+-	if (ds1682_read(to_i2c_client(dev), DS1682_REG_USER_DATA, &val, 10))
+-		return -EIO;
++	dev_dbg(&client->dev, "ds1682_eeprom_read(p=%p, off=%lli, c=%zi)\n",
++		buf, off, count);
+ 
+-	for (i = 0; i < 10; i++)
+-		end += sprintf(end, "%.2x ", val[i]);
++	if (off > DS1682_EEPROM_SIZE)
++		return 0;
+ 
+-	*(end - 1) = '\n';	/* Eliminate trailing space */
+-	return end - buf;
++	if (off + count > DS1682_EEPROM_SIZE)
++		count = DS1682_EEPROM_SIZE - off;
++
++	rc = i2c_smbus_read_i2c_block_data(client, DS1682_REG_EEPROM + off,
++					   count, buf);
++	if (rc < 0)
++		return -EIO;
++
++	return count;
+ }
+ 
+-static ssize_t ds1682_user_data_store(struct device *dev,
+-				      struct device_attribute *attr,
+-				      const char *buf, size_t count)
++static ssize_t ds1682_eeprom_write(struct kobject *kobj, char *buf, loff_t off,
++				   size_t count)
+ {
+-	u8 data[10];
+-	char *endp;
+-	int bytecount = 0;
+-
+-	/* Check input for sanity */
+-	if ((count >= 80) || (buf[count] != '\0')) {
+-		dev_dbg(dev, "insane input; count=%zd%s\n",
+-			count, buf[count] == '\0' ? " unterminated" : "");
+-		return -EIO;
+-	}
++	struct i2c_client *client = kobj_to_i2c_client(kobj);
+ 
+-	/* Parse the data */
+-	while (bytecount < 10) {
+-		while (isspace(*buf))
+-			buf++;
+-
+-		data[bytecount] = simple_strtoul(buf, &endp, 16);
+-		if (endp == buf)	/* make sure it's a real data value */
+-			break;
++	dev_dbg(&client->dev, "ds1682_eeprom_write(p=%p, off=%lli, c=%zi)\n",
++		buf, off, count);
+ 
+-		buf = endp;
+-		bytecount++;
+-	}
+-	while (isspace(*endp))
+-		endp++;
++	if (off >= DS1682_EEPROM_SIZE)
++		return -ENOSPC;
+ 
+-	/* Abort on invalid data */
+-	if ((bytecount == 0) || (*endp != '\0')) {
+-		dev_dbg(dev, "invalid input *buf=\"%s\" *endp=\"%s\"\n",
+-			buf, endp);
+-		return -EIO;
+-	}
++	if (off + count > DS1682_EEPROM_SIZE)
++		count = DS1682_EEPROM_SIZE - off;
+ 
+ 	/* Write out to the device */
+-	if (i2c_smbus_write_i2c_block_data(to_i2c_client(dev),
+-					   DS1682_REG_USER_DATA, bytecount,
+-					   data) < 0)
++	if (i2c_smbus_write_i2c_block_data(client, DS1682_REG_EEPROM + off,
++					   count, buf) < 0)
+ 		return -EIO;
++
+ 	return count;
+ }
+ 
+-DEVICE_ATTR(user_data, S_IRUGO | S_IWUSR, ds1682_user_data_show,
+-	    ds1682_user_data_store);
++static struct bin_attribute ds1682_eeprom_attr = {
++	.attr = {
++		.name = "eeprom",
++		.mode = S_IRUGO | S_IWUSR,
++		.owner = THIS_MODULE,
++	},
++	.size = DS1682_EEPROM_SIZE,
++	.read = ds1682_eeprom_read,
++	.write = ds1682_eeprom_write,
++};
+ 
+ /*
+  * Called when a device is found at the ds1682 address
+  */
+-static struct i2c_driver ds1682_driver;
+-static int ds1682_detect(struct i2c_adapter *adapter, int address, int kind)
++static int ds1682_probe(struct i2c_client *client)
+ {
+-	struct i2c_client *new_client;
+ 	int err = 0;
+ 
+-	if (!i2c_check_functionality(adapter, I2C_FUNC_SMBUS_BYTE_DATA |
+-				     I2C_FUNC_I2C))
+-		goto exit;
++	if (client->addr != 0x6b) {
++		dev_err(&client->dev, "%x is not a valid address\n",
++			client->addr);
++		return -ENODEV;
++	}
+ 
+-	if (!(new_client = kzalloc(sizeof(struct i2c_client), GFP_KERNEL))) {
+-		err = -ENOMEM;
++	if (!i2c_check_functionality(client->adapter,
++				     I2C_FUNC_SMBUS_READ_BYTE_DATA |
++				     I2C_FUNC_SMBUS_WRITE_I2C_BLOCK)) {
++		dev_err(&client->dev, "i2c bus does not support the ds1682\n");
+ 		goto exit;
+ 	}
+ 
+-	new_client->addr = address;
+-	new_client->adapter = adapter;
+-	new_client->driver = &ds1682_driver;
+-	new_client->flags = 0;
+-
+-	/* Note: Ignoring 'kind' value as the ds1682 uses a fixed address */
+-
+-	/* We can fill in the remaining client fields */
+-	strlcpy(new_client->name, "ds1682", I2C_NAME_SIZE);
+-
+-	/* Tell the I2C layer a new client has arrived */
+-	if ((err = i2c_attach_client(new_client)))
+-		goto exit_free;
+-
+-	if (device_create_file(&new_client->dev, &dev_attr_config))
+-		goto exit_attr_config;
+-	if (device_create_file(&new_client->dev, &dev_attr_elapsed_time))
+-		goto exit_attr_elapsed;
+-	if (device_create_file(&new_client->dev, &dev_attr_alarm_time))
+-		goto exit_attr_alarm;
+-	if (device_create_file(&new_client->dev, &dev_attr_event_count))
+-		goto exit_attr_event;
+-	if (device_create_file(&new_client->dev, &dev_attr_user_data))
+-		goto exit_attr_userdata;
++	if (sysfs_create_group(&client->dev.kobj, &ds1682_group))
++		goto exit;
++
++	if (sysfs_create_bin_file(&client->dev.kobj, &ds1682_eeprom_attr))
++		goto exit_bin_attr;
+ 
+ 	return 0;
+ 
+-      exit_attr_userdata:
+-	device_remove_file(&new_client->dev, &dev_attr_event_count);
+-      exit_attr_event:
+-	device_remove_file(&new_client->dev, &dev_attr_alarm_time);
+-      exit_attr_alarm:
+-	device_remove_file(&new_client->dev, &dev_attr_elapsed_time);
+-      exit_attr_elapsed:
+-	device_remove_file(&new_client->dev, &dev_attr_config);
+-      exit_attr_config:
+-	i2c_detach_client(new_client);
+-      exit_free:
+-	kfree(new_client);
++      exit_bin_attr:
++	sysfs_remove_group(&client->dev.kobj, &ds1682_group);
+       exit:
+ 	return err;
+ }
+ 
+-static int ds1682_attach_adapter(struct i2c_adapter *adapter)
++static int ds1682_remove(struct i2c_client *client)
+ {
+-	return i2c_probe(adapter, &addr_data, ds1682_detect);
+-}
+-
+-static int ds1682_detach_client(struct i2c_client *client)
+-{
+-	int err;
+-	device_remove_file(&client->dev, &dev_attr_user_data);
+-	device_remove_file(&client->dev, &dev_attr_event_count);
+-	device_remove_file(&client->dev, &dev_attr_alarm_time);
+-	device_remove_file(&client->dev, &dev_attr_elapsed_time);
+-	device_remove_file(&client->dev, &dev_attr_config);
+-
+-	if ((err = i2c_detach_client(client)))
+-		return err;
++	sysfs_remove_bin_file(&client->dev.kobj, &ds1682_eeprom_attr);
++	sysfs_remove_group(&client->dev.kobj, &ds1682_group);
+ 
+-	kfree(client);
+ 	return 0;
+ }
+ 
+ static struct i2c_driver ds1682_driver = {
+ 	.driver = {
+-		   .name = "ds1682",
+-		   },
+-	.attach_adapter = ds1682_attach_adapter,
+-	.detach_client = ds1682_detach_client,
++		.name = "ds1682",
++	},
++	.probe = ds1682_probe,
++	.remove = ds1682_remove,
+ };
+ 
+ static int __init ds1682_init(void)
+_
+
