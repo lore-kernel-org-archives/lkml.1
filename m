@@ -1,87 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbXEORXt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758509AbXEORYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760948AbXEORXt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 13:23:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755928AbXEORXn
+	id S1758509AbXEORYm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 13:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755138AbXEORYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 13:23:43 -0400
-Received: from smtp2.linux-foundation.org ([207.189.120.14]:51239 "EHLO
-	smtp2.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755657AbXEORXm (ORCPT
+	Tue, 15 May 2007 13:24:36 -0400
+Received: from mail1.webmaster.com ([216.152.64.169]:1707 "EHLO
+	mail1.webmaster.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755657AbXEORYf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 13:23:42 -0400
-X-Greylist: delayed 703 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 13:23:42 EDT
-Date: Tue, 15 May 2007 10:11:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johann Lombardi <johann@clusterfs.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Clear PG_error before reading a page
-Message-Id: <20070515101144.f7072476.akpm@linux-foundation.org>
-In-Reply-To: <20070515143726.GC2160@chiva>
-References: <20070515143726.GC2160@chiva>
-X-Mailer: Sylpheed 2.4.1 (GTK+ 2.8.17; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 15 May 2007 13:24:35 -0400
+From: "David Schwartz" <davids@webmaster.com>
+To: "Linux-Kernel@Vger. Kernel. Org" <linux-kernel@vger.kernel.org>
+Subject: RE: Why can't we sleep in an ISR?
+Date: Tue, 15 May 2007 10:23:34 -0700
+Message-ID: <MDEHLPKNGKAHNMBLJOLKKEBBDNAC.davids@webmaster.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+X-Priority: 3 (Normal)
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook IMO, Build 9.0.6604 (9.0.2911.0)
+In-Reply-To: <4649E680.9020102@cfl.rr.com>
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.3028
+Importance: Normal
+X-Authenticated-Sender: joelkatz@webmaster.com
+X-Spam-Processed: mail1.webmaster.com, Tue, 15 May 2007 11:23:56 -0700
+	(not processed: message from trusted or authenticated source)
+X-MDRemoteIP: 206.171.168.138
+X-Return-Path: davids@webmaster.com
+X-MDaemon-Deliver-To: linux-kernel@vger.kernel.org
+Reply-To: davids@webmaster.com
+X-MDAV-Processed: mail1.webmaster.com, Tue, 15 May 2007 11:23:57 -0700
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 15 May 2007 16:37:26 +0200 Johann Lombardi <johann@clusterfs.com> wrote:
 
-> We've observed that transient disk errors can result in persistent I/O issues
-> at the filesystem level. I can at least put forward the problem with ext2/ext3
-> and scsci_debug.
-> 
-> Here are the steps to reproduce:
-> * format an ext3 fs on a SCSI disk simulated by scsci_debug
-> * mount the fs and create a 10MB file
-> * unmount/remount the fs
-> * enable the medium error flag in scsi_debug (please note that I've slightly
->   modified scsi_debug to return a medium error indication when any sector >=
->   0x1234 is read)
-> * try to read the file (as expected, got -EIO)
-> * disable medium error injection in scsi_debug
-> * try to read the file (keep getting -EIO)
-> 
-> In fact, when the underlying device experiences errors, block_read_full_page()
-> calls ext3_get_block() which correctly returns an I/O error.
-> Consequently, block_read_full_page() set the PG_error flag.
-> However, the problem is that afterwards, when the device no longer returns
-> any errors, PG_error is never cleared and, as a consequence, we are still
-> getting -EIO at the filesystem level.
-> 
-> Granted that block_read_full_page() always tries to fill a full page,
-> I think it should first clear the PG_error flag and set it back if a call
-> to get_block() fails. Besides, we should handle this in block_read_full_page
-> but also in other places that do full page reads. Any comments?
-> I am not able to reproduce the problem with the patch below.
-> 
-> Johann
-> 
-> Signed-off-by: Johann Lombardi <johann@clusterfs.com>
-> --
-> 
-> --- linux-2.6.12.6.orig/fs/buffer.c	2005-08-29 18:55:27.000000000 +0200
-> +++ linux-2.6.12.6/fs/buffer.c	2007-05-11 15:51:03.000000000 +0200
-> @@ -2078,6 +2078,7 @@ int block_read_full_page(struct page *pa
->  	int fully_mapped = 1;
->  
->  	BUG_ON(!PageLocked(page));
-> +	ClearPageError(page);
->  	blocksize = 1 << inode->i_blkbits;
->  	if (!page_has_buffers(page))
->  		create_empty_buffers(page, blocksize, 0);
+> No, the term context here has a specific meaning.  It refers to those
+> things which flow from the current pointer, including the virtual memory
+> space, file descriptor table, current uid, and so forth.
 
-We need to make sure that this page has PG_uptodate cleared, so
-that a re-read is forced.  And the affected buffer_head, if any, should have
-buffer_uptodate() cleared.
+And none of these things are used by an ISR.
 
-This change might have horrid interactions with readahead and various
-application access patterns: if for some reason a dud sector takes 30
-seconds of driver futzing to return -EIO and someone (application or
-kernel) tries to read the same sector tens or hundreds of times, suckiness
-ensues.  This will be hard to test for.
+> Because the
+> current pointer is not changed on entry to an ISR, the ISR is executing
+> in the context of the interrupted process, and thus uses that process'
+> virtual memory, etc.
 
-Most reads don't (or shouldn't) go through block_read_full_page(). 
-mpage_readpages() does the heavy lifting.
+You mean it would be if it ever looked at the current pointer. It is not the
+setting of the current pointer that determines the context but actually
+*using* that pointer.
+
+As you said, it is the "things which flow from the current pointer" that
+matter, not the value of the pointer itself. An ISR uses none of those
+things.
+
+DS
+
 
