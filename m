@@ -1,105 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760016AbXEOKoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760327AbXEOKxe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760016AbXEOKoR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 06:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751922AbXEOKoF
+	id S1760327AbXEOKxe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 06:53:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754512AbXEOKx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 06:44:05 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:3463 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754268AbXEOKoE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 06:44:04 -0400
-Message-ID: <46498EE3.8010907@imap.cc>
-Date: Tue, 15 May 2007 12:43:47 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.0.9) Gecko/20061211 SeaMonkey/1.0.7 Mnenhy/0.7.4.666
-MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: Linux 2.6.22-rc1
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>	 <4647569D.7010709@imap.cc>	 <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr>	 <4648A3DF.7040004@imap.cc>	 <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr> <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com>
-In-Reply-To: <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com>
-X-Enigmail-Version: 0.94.2.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig4844379BE802602F3A23F9B8"
+	Tue, 15 May 2007 06:53:27 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58019 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751076AbXEOKx0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 06:53:26 -0400
+X-Authenticated: #19452082
+X-Provags-ID: V01U2FsdGVkX182bXMd6bw2PU1F5QM9rOBow0Vdh+RYAZzXIsm/qU
+	Q1Y5YFVSXK5Xro
+Date: Tue, 15 May 2007 12:53:08 +0200
+From: Thomas Kuther <gimpel@sonnenkinder.org>
+To: linux-kernel@vger.kernel.org
+Subject: IT821x: no DMA since 2.6.21
+Message-ID: <20070515125308.3a9f6442@SiRiUS.home>
+X-Mailer: Claws Mail 2.9.2 (GTK+ 2.10.12; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_.1ceZwssRDnffYcwDLzDtP2;
+ protocol="application/pgp-signature"; micalg=PGP-SHA1
+X-Y-GMX-Trusted: 0
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig4844379BE802602F3A23F9B8
-Content-Type: text/plain; charset=ISO-8859-1
+--Sig_.1ceZwssRDnffYcwDLzDtP2
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-Hi,
+Hi!
 
-Satyam Sharma schrieb:
+Since 2.6.21 I have a problem with the it821x driver on my ITE 8212
+controller.
+Now I saw some updates to it821x in 2.6.22-rc1 and gave that a try, but
+the problem persists.
 
->>   * Since Jens Axboe's stance ["default y idiocy"] is to have
->>     these menus disabled by default, people should most likely
->>     enable them first before they will be able to enter them.
->=20
-> I do agree that anything non-essential (even if it's just a presentatio=
-n
-> menu that doesn't affect builds) must be default n.
+It seems that DMA is broken on it8212 somehow since the merge of
+the it8213 driver.
 
-It's tricky for "make oldconfig" when introducing a new "menuconfig"
-around some previously existing "config"s, because just accepting
-the default for the new option then causes previously selected
-ones to be silently dropped. But I don't know a perfect solution
-for that. Perhaps we'll just have to live with it. Or perhaps a
-warning message along the line of "deselecting option xxx" would
-be in order.
+dmesg shows some BUG DMA OFF:
+-----------------8<-----------------
+IT8212: IDE controller at PCI slot 0000:00:09.0
+ACPI: PCI Interrupt 0000:00:09.0[A] -> GSI 17 (level, low) -> IRQ 18
+IT8212: chipset revision 17
+it821x: controller in smart mode.
+IT8212: 100% native mode on irq 18
+    ide2: BM-DMA at 0xdc00-0xdc07, BIOS settings: hde:pio, hdf:pio
+    ide3: BM-DMA at 0xdc08-0xdc0f, BIOS settings: hdg:pio, hdh:pio
+Probing IDE interface ide2...
+hde: SAMSUNG SP2514N, ATA DISK drive
+hdf: Maxtor 6Y120L0, ATA DISK drive
+hde: selected mode 0x45
+hdf: selected mode 0x46
+hde: Performing identify fixups.
+hdf: Performing identify fixups.
+ide2 at 0xec00-0xec07,0xe802 on irq 18
+hde: max request size: 128KiB
+hde: 488397168 sectors (250059 MB) w/8192KiB Cache, CHS=3D30401/255/63,
+BUG DMA OFF=20
+hde:hde: recal_intr: status=3D0x51 { DriveReady SeekComplete Error }=20
+hde:recal_intr: error=3D0x04 { DriveStatusError }=20
+ide: failed opcode was: unknown hde1
+hdf: max request size: 128KiB
+hdf: 240121728 sectors (122942 MB) w/2048KiB Cache, CHS=3D65535/16/63,
+BUG DMA OFF=20
+hdf:hdf: recal_intr: status=3D0x51 { DriveReady SeekComplete Error }=20
+hdf:recal_intr: error=3D0x04 { DriveStatusError }=20
+ide: failed opcode was: unknown hdf1
+------------------------>8-----------------------
 
-> IMHO, the real problem with "default y" menuconfig's, is that they
-> cause unpleasant surprises to those folks that use the text-based
-> "make oldconfig". They get confronted with choices that they never
-> bothered about (or even knew existed) previously, and have no
-> idea how to answer them -- same problem faced by Tilman, when
-> he used oldconfig.
+Until 2.6.20 (since 2.6.10) the driver worked quite fine, but since
+2.6.21 moving/copying files from/to any drive on the controller is=20
+a) really slow,=20
+b) music starts skipping,=20
+c) mouse stopps moving for short periods,=20
+and hdparm does not work anymore:
 
-It's actually the other way around, all those options now tucked
-underneath the menuconfig were previously directly visible, so
-selecting "y" (either explicitly or by default) makes everything
-work as before while "n" very conveniently skips them all.
-It's really quite nice if you know how it works. The only thing
-that's missing is instructions for those seeing it for the first
-time.
+# hdparm -d1 /dev/hde
+/dev/hde:
+ setting using_dma to 1 (on)
+ HDIO_SET_DMA failed: Input/output error
+ using_dma     =3D  0 (off)
 
-> IMHO, those using "oldconfig" are often looking towards doing
-> things quickly ... doesn't help them if they have default y menu's
-> that they need to "?" upon then to see what they're really about.
+This has not been a problem before. hdparm -tT showed something around
+40MB/s for buffered reads, now it looks like this:
 
-Well, yes and no. I am of course trying to get through the new
-options as quickly as possible. But if I hit an option I don't
-understand then typing "?" is the quickest way to sort it out,
-so it's doubly annoying if that yields nothing.
+# hdparm -tT /dev/hde
+
+/dev/hde:
+ Timing cached reads:   356 MB in  2.01 seconds =3D 177.30 MB/sec
+HDIO_DRIVE_CMD(null) (wait for flush complete) failed: Input/output
+error=20
+ Timing buffered disk reads:   10 MB in  3.28 seconds =3D   3.05 MB/sec=20
+HDIO_DRIVE_CMD(null) (wait for flush complete) failed: Input/output
+error
+
+more: http://phpfi.com/234217
+
+If there is more info needed, please tell me what. And please CC as I
+am not subscribed.
 
 Thanks,
-Tilman
+Thomas
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig4844379BE802602F3A23F9B8
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+--Sig_.1ceZwssRDnffYcwDLzDtP2
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+Version: GnuPG v2.0.3 (GNU/Linux)
 
-iD8DBQFGSY7kMdB4Whm86/kRAg3CAJ4vsVmcxGddt1Qi1ntHGevm+jCwdgCfaTIU
-Mr14G9lp9gtUM9IAUVN893w=
-=UByS
+iD8DBQFGSZEgMQFfAqZTGfwRAqhtAJwMZYzh1kF6WRzoGG9RSCg4Whk0jACdFJqC
+4TxfFtC1Sf/KRzWX1+02sF4=
+=oCx0
 -----END PGP SIGNATURE-----
 
---------------enig4844379BE802602F3A23F9B8--
+--Sig_.1ceZwssRDnffYcwDLzDtP2--
