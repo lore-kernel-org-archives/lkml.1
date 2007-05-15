@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbXEOPCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbXEOPRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759232AbXEOPCk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 11:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754308AbXEOPCe
+	id S1758461AbXEOPRy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 11:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755199AbXEOPRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 11:02:34 -0400
-Received: from nemesis.fprintf.net ([66.134.112.218]:4188 "EHLO
-	nemesis.fprintf.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754072AbXEOPCd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 11:02:33 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Tue, 15 May 2007 11:02:33 EDT
-Subject: Re: [Bugme-new] [Bug 8479] New: gettimeofday returning 1000000 in
-	tv_usec on core2duo
-From: Daniel Gryniewicz <dang@gentoo.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Andi Kleen <ak@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
-       linux-kernel@vger.kernel.org,
-       "bugme-daemon@kernel-bugs.osdl.org" 
-	<bugme-daemon@bugzilla.kernel.org>,
-       stable@kernel.org
-In-Reply-To: <20070515101758.51d6bc47.dada1@cosmosbay.com>
-References: <200705150417.l4F4HlvS013354@fire-2.osdl.org>
-	 <46494DFC.6080104@cosmosbay.com>
-	 <20070514232301.69e27bbe.akpm@linux-foundation.org>
-	 <200705150922.47702.ak@suse.de>
-	 <20070515101758.51d6bc47.dada1@cosmosbay.com>
-Content-Type: text/plain
-Date: Tue, 15 May 2007 10:55:51 -0400
-Message-Id: <1179240951.7903.0.camel@athena.fprintf.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.11.1 
-Content-Transfer-Encoding: 7bit
+	Tue, 15 May 2007 11:17:47 -0400
+Received: from waste.org ([66.93.16.53]:41536 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755003AbXEOPRr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 11:17:47 -0400
+Date: Tue, 15 May 2007 10:17:31 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [rfc][patch] slob: improvements
+Message-ID: <20070515151731.GO11115@waste.org>
+References: <20070515084305.GA28631@wotan.suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20070515084305.GA28631@wotan.suse.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2007-05-15 at 10:17 +0200, Eric Dumazet wrote:
-> OK, here is the fix only patch, for linux-2.6.21-stable only, since 2.6.22 is already fixed.
+On Tue, May 15, 2007 at 10:43:05AM +0200, Nick Piggin wrote:
+> This patch goes on top of my previous RCU patch, and has various
+> improvements for slob I noticed while implementing said patch ;)
 > 
-> [PATCH] x86_64 : Fix vgettimeofday()
-> 
-> vgettimeofday() may return some bad timeval values, (tv_usec = 1000000), because of a wrong compare.
-> 
-> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> 
-> --- arch/x86_64/kernel/vsyscall.c
-> +++ arch/x86_64/kernel/vsyscall.c
-> @@ -132,7 +132,7 @@ static __always_inline void do_vgettimeo
->  
->  	/* convert to usecs and add to timespec: */
->  	tv->tv_usec += nsec_delta / NSEC_PER_USEC;
-> -	while (tv->tv_usec > USEC_PER_SEC) {
-> +	while (tv->tv_usec >= USEC_PER_SEC) {
->  		tv->tv_sec += 1;
->  		tv->tv_usec -= USEC_PER_SEC;
->  	}
+> Comments?
 
-That fixed it, thanks.
+I'm warming to this. Please check that the comment block at the top is
+still accurate.
 
-Daniel
+> +/*
+> + * slob_block has a field 'units', which indicates size of block if +ve,
+> + * or offset of next block if -ve (in SLOB_UNITs).
+> + *
+> + * Free blocks of size 1 unit simply contain the offset of the next block.
+> + * Those with larger size contain their size in the first SLOB_UNIT of
+> + * memory, and the offset of the next free block in the second SLOB_UNIT.
+> + */
+> +#if PAGE_SIZE <= (32*1024)
+> +typedef s16 slobidx_t;
+> +#else
+> +typedef s32 slobidx_t;
+> +#endif
 
+This math is wrong because you're doing pointer math on slobidx_ts:
+
+> +static slob_t *slob_next(slob_t *s)
+> +{
+> +	slob_t *base = (slob_t *)((unsigned long)s & PAGE_MASK);
+> +	slobidx_t next;
+> +
+> +	if (s[0].units < 0)
+> +		next = -s[0].units;
+> +	else
+> +		next = s[1].units;
+> +	return base+next;
+> +}
+
+The max is 64K.
+
+-- 
+Mathematics is the supreme nostalgia of our time.
