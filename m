@@ -1,79 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758215AbXEOU44@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757191AbXEOVBf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758215AbXEOU44 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 16:56:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbXEOU4t
+	id S1757191AbXEOVBf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 17:01:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752336AbXEOVB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 16:56:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51396 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753000AbXEOU4t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 16:56:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Tue, 15 May 2007 17:01:29 -0400
+Received: from mail.clusterfs.com ([206.168.112.78]:54741 "EHLO
+	mail.clusterfs.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751669AbXEOVB2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 15 May 2007 17:01:28 -0400
+Date: Tue, 15 May 2007 23:01:24 +0200
+From: Johann Lombardi <johann@clusterfs.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] swsusp: Fix sysfs interface
-Date: Tue, 15 May 2007 23:02:01 +0200
-User-Agent: KMail/1.9.5
-Cc: LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Peter Moulder <Peter.Moulder@infotech.monash.edu.au>,
-       Johannes Berg <johannes@sipsolutions.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Clear PG_error before reading a page
+Message-ID: <20070515210124.GA23698@chiva>
+Mail-Followup-To: Johann Lombardi <johann@clusterfs.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-kernel@vger.kernel.org
+References: <20070515143726.GC2160@chiva> <20070515101144.f7072476.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200705152302.02048.rjw@sisk.pl>
+In-Reply-To: <20070515101144.f7072476.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+On Tue, May 15, 2007 at 10:11:44AM -0700, Andrew Morton wrote:
+> We need to make sure that this page has PG_uptodate cleared, so
+> that a re-read is forced.  And the affected buffer_head, if any, should have
+> buffer_uptodate() cleared.
 
-The sysfs files /sys/power/disk and /sys/power/state do not work as documented,
-since they allow the user to write only a few initial characters of the
-input string to trigger the option (eg. 'echo pl > /sys/power/disk' activates
-the platform mode of hibernation).  Fix it.
+ok.
 
-Special thanks to Peter Moulder <Peter.Moulder@infotech.monash.edu.au> for
-pointing out the problem.
+> This change might have horrid interactions with readahead and various
+> application access patterns: if for some reason a dud sector takes 30
+> seconds of driver futzing to return -EIO and someone (application or
+> kernel) tries to read the same sector tens or hundreds of times, suckiness
+> ensues.  This will be hard to test for.
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
----
- kernel/power/disk.c |    3 ++-
- kernel/power/main.c |    4 ++--
- 2 files changed, 4 insertions(+), 3 deletions(-)
+Yes, I agree. So according to you, what's the best way to address the
+initial problem (i.e. PG_error never cleared)?
 
-Index: linux-2.6.21/kernel/power/disk.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/disk.c	2007-05-11 12:06:28.000000000 +0200
-+++ linux-2.6.21/kernel/power/disk.c	2007-05-11 12:06:33.000000000 +0200
-@@ -416,7 +416,8 @@ static ssize_t disk_store(struct subsyst
- 
- 	mutex_lock(&pm_mutex);
- 	for (i = HIBERNATION_FIRST; i <= HIBERNATION_MAX; i++) {
--		if (!strncmp(buf, hibernation_modes[i], len)) {
-+		if (len == strlen(hibernation_modes[i])
-+		    && !strncmp(buf, hibernation_modes[i], len)) {
- 			mode = i;
- 			break;
- 		}
-Index: linux-2.6.21/kernel/power/main.c
-===================================================================
---- linux-2.6.21.orig/kernel/power/main.c	2007-05-11 12:06:28.000000000 +0200
-+++ linux-2.6.21/kernel/power/main.c	2007-05-11 12:07:02.000000000 +0200
-@@ -289,13 +289,13 @@ static ssize_t state_store(struct subsys
- 	len = p ? p - buf : n;
- 
- 	/* First, check if we are requested to hibernate */
--	if (!strncmp(buf, "disk", len)) {
-+	if (len == 4 && !strncmp(buf, "disk", len)) {
- 		error = hibernate();
- 		return error ? error : n;
- 	}
- 
- 	for (s = &pm_states[state]; state < PM_SUSPEND_MAX; s++, state++) {
--		if (*s && !strncmp(buf, *s, len))
-+		if (*s && len == strlen(*s) && !strncmp(buf, *s, len))
- 			break;
- 	}
- 	if (state < PM_SUSPEND_MAX && *s)
+> Most reads don't (or shouldn't) go through block_read_full_page().
+> mpage_readpages() does the heavy lifting.
+
+Yes, indeed. However, as soon as a call to get_block() fails,
+do_mpage_readpage() will call block_read_full_page() which will attach
+buffers to this page.
+Consequently, all subsequent reads will go through block_read_full_page().
+
+Johann
