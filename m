@@ -1,52 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761511AbXEOGFY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761372AbXEOGHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761511AbXEOGFY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 15 May 2007 02:05:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755414AbXEOGFQ
+	id S1761372AbXEOGHz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 15 May 2007 02:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758980AbXEOGHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 15 May 2007 02:05:16 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:56210 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758814AbXEOGFO (ORCPT
+	Tue, 15 May 2007 02:07:47 -0400
+Received: from gw1.cosmosbay.com ([86.65.150.130]:59003 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756111AbXEOGHq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 15 May 2007 02:05:14 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <46494D8E.2080503@s5r6.in-berlin.de>
-Date: Tue, 15 May 2007 08:05:02 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070408 SeaMonkey/1.1.1
+	Tue, 15 May 2007 02:07:46 -0400
+Message-ID: <46494DFC.6080104@cosmosbay.com>
+Date: Tue, 15 May 2007 08:06:52 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 1.5.0.10 (Windows/20070221)
 MIME-Version: 1.0
-To: Satyam Sharma <satyam.sharma@gmail.com>
-CC: Jan Engelhardt <jengelh@linux01.gwdg.de>, Tilman Schmidt <tilman@imap.cc>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.22-rc1
-References: <alpine.LFD.0.98.0705121857100.6739@woody.linux-foundation.org>	 <4647569D.7010709@imap.cc>	 <Pine.LNX.4.61.0705141918180.9570@yvahk01.tjqt.qr>	 <4648A3DF.7040004@imap.cc>	 <Pine.LNX.4.61.0705142227350.9570@yvahk01.tjqt.qr>	 <a781481a0705141934u6b369dd5ob1715f14890af914@mail.gmail.com> <a781481a0705141942x3033c72alf8bf7e9582bb59d7@mail.gmail.com>
-In-Reply-To: <a781481a0705141942x3033c72alf8bf7e9582bb59d7@mail.gmail.com>
-X-Enigmail-Version: 0.94.1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>,
+       linux-kernel@vger.kernel.org,
+       "bugme-daemon@kernel-bugs.osdl.org" 
+	<bugme-daemon@bugzilla.kernel.org>,
+       dang@gentoo.org, Andi Kleen <ak@suse.de>
+Subject: Re: [Bugme-new] [Bug 8479] New: gettimeofday returning 1000000 in
+ tv_usec on core2duo
+References: <200705150417.l4F4HlvS013354@fire-2.osdl.org> <20070514220901.90aab9e0.akpm@linux-foundation.org>
+In-Reply-To: <20070514220901.90aab9e0.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [86.65.150.130]); Tue, 15 May 2007 08:06:58 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Satyam Sharma wrote:
-> Or perhaps we could change the text associated with these
-> "menu-only" dummy constructs instead ...
+Andrew Morton a écrit :
+> On Mon, 14 May 2007 21:17:47 -0700 bugme-daemon@bugzilla.kernel.org wrote:
 > 
->> we really screw the text-based "make oldconfig" folks who think
->> that they're taking a build-related (and not presentation-related)
->> decision when confronted with a:
+>> http://bugzilla.kernel.org/show_bug.cgi?id=8479
+>>
+>>            Summary: gettimeofday returning 1000000 in tv_usec on core2duo
+>>     Kernel Version: 2.6.21
+>>             Status: NEW
+>>           Severity: normal
+>>              Owner: ak@suse.de
+>>          Submitter: dang@gentoo.org
+>>
+>>
+>> Most recent kernel where this bug did *NOT* occur: 2.6.20
+>> Distribution: Gentoo
+>> Hardware Environment: core2duo T7200 (all reporters had this same CPU)
+>> Software Environment: Linux 2.6.21, glibc 2.5
+>> Problem Description:
+>>
+>> gettimeofday returns 1 - 1000000 in tv_usec, not 0 - 999999 
+>> This does not happen on any of my AMD-based 32 or 64 bit boxes, only on my
+>> core2duo; I have 2 other reports of this problem, all on T7200's
+>>
+>> Steps to reproduce:
+>>
+>> call gettimeofday a lot.  Eventually, you'll get 1000000 returned in tv_usec. My
+>> average is ~1 in 1000000 calls.  I've attached my test program, with output from
+>> various boxes.  One of the other reporters tried the test program too, and got
+>> similar output.  .config will be attached too.
 > 
-> So:
-> 
->> Ethernet (1000 Mbit) (NETDEV_1000) [Y/n] (NEW)
-> 
-> becomes:
-> 
-> [MENU] Ethernet (1000 Mbit) (NETDEV_1000) [Y/n] (NEW)
+> err, whoops.
 
-Make menuconfig and xconfig already have hints that these are menus.
-Make oldconfig and gconfig and maybe others lack such hints.
--- 
-Stefan Richter
--=====-=-=== -=-= -====
-http://arcgraph.de/sr/
+I remember I already hit this and corrected it
+
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blobdiff;f=arch/x86_64/kernel/vsyscall.c;h=dc32cef961950915fbaa185e36ab802d5f7cea3b;hp=ba330f87067996a17495f7d03466d646c718b52c;hb=c8118c6c07f2edfd697aaa0b93e08c3b65a5a675;hpb=272a3713bb9e302e0455c894c41180a482d2c8a3
+
+Maybe a stable push is necessary ?
+
+
